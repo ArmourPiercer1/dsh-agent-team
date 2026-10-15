@@ -1,0 +1,121 @@
+{
+  "header": {
+    "recorded_at_utc": "2026-10-15T22:15:23.288Z",
+    "team_HEAD": "e6212c03fb8af4bde27d3013a193be31efd38540",
+    "team_branch": "exp/alpha5-poc-20261016",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain": "CLEAN",
+    "node": "v24.21.0",
+    "platform": "linux 6.8.0-142-generic",
+    "model_verbatim": "You are a coding agent powered by the qwen3.8-flash-next model.",
+    "family": "jobs",
+    "import": "file-URL imports of jobs-local / tool-jobs (no new junctions)"
+  },
+  "observations": {
+    "shape": {
+      "dsh_jobs_exports": [
+        "JobId",
+        "JobRegistry",
+        "default"
+      ],
+      "abstract_guard": "@deepseek-ai/dsh-jobs is the abstract job registry seam; load an implementation such as @deepseek-ai/dsh-jobs-local inst",
+      "jobs_local_default": "LocalJobRegistry",
+      "tool_jobs_plugin": {
+        "name": "tool-jobs",
+        "inject": [
+          "tools",
+          "jobs",
+          "systemPrompt"
+        ]
+      }
+    },
+    "j7_owner_not_run": "background job ownership requires the agent registry (load @deepseek-ai/dsh-agent)",
+    "list_final": [
+      {
+        "id": "synthetic-1",
+        "status": "completed"
+      },
+      {
+        "id": "synthetic-2",
+        "status": "killed"
+      },
+      {
+        "id": "synthetic-3",
+        "status": "failed"
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "id": "J.J0.seam-shape",
+      "verdict": "PASS",
+      "detail": "dsh-jobs default=function abstract_threw=\"@deepseek-ai/dsh-jobs is the abstract job registry seam; load an imple\"; jobs-local=LocalJobRegistry; tool-jobs inject=[\"tools\",\"jobs\",\"systemPrompt\"]"
+    },
+    {
+      "id": "J.J1.start-refused-without-controller",
+      "verdict": "PASS",
+      "detail": "exact observable: \"background jobs unavailable: no job controller serves this agent (load @deepseek-ai/dsh-tool-jobs in its composition)\""
+    },
+    {
+      "id": "J.J2.tools-are-exactly-three",
+      "verdict": "PASS",
+      "detail": "schemas=[\"job_kill\",\"job_list\",\"job_output\"] (no start tool exists in pinned tree)"
+    },
+    {
+      "id": "J.J3.complete-lifecycle",
+      "verdict": "PASS",
+      "detail": "id=synthetic-1 status=completed chunks=[\"chunk-a\\n\",\"chunk-b\\n\"] result-once=true/true (result handed out by first terminal read only)"
+    },
+    {
+      "id": "J.J4.kill-in-flight",
+      "verdict": "PASS",
+      "detail": "preKill=running kill=requested final=killed producer_saw_reason=\"fixture-stop\" detail=\"producer-cancelled; fixture-stop\""
+    },
+    {
+      "id": "J.J5.failed-outcome",
+      "verdict": "PASS",
+      "detail": "status=failed detail=\"boom\""
+    },
+    {
+      "id": "J.J6.throwing-starter-no-registration",
+      "verdict": "PASS",
+      "detail": "threw=\"starter-boom:j6\" list 3→3"
+    },
+    {
+      "id": "J.J7.owner-scoped-start-observably-deferred",
+      "verdict": "PASS",
+      "detail": "owner-scoped jobs need dsh-agent (absent by fixture design) — exact fail-loud: \"background job ownership requires the agent registry (load @deepseek-ai/dsh-agent)\" → owner-fence legs = NOT_RUN (recorded, not faked)"
+    },
+    {
+      "id": "J.J8a.job_list-tool",
+      "verdict": "PASS",
+      "detail": "job_list shows synthetic-1/synthetic-2; head=\"synthetic-1 [synthetic] completed — j3-complete\\nsynthetic-2 [synthetic] killed — j4-kill\\nsynthetic-3\""
+    },
+    {
+      "id": "J.J8b.job_output-tool",
+      "verdict": "PASS",
+      "detail": "job_output(j4) head=\"tick-1\\n[status: killed, producer-cancelled; fixture-stop]\""
+    },
+    {
+      "id": "J.J8c.job_kill-on-settled-is-already-finished",
+      "verdict": "PASS",
+      "detail": "kill on settled job: \"job synthetic-1 had already finished [status: completed]\""
+    },
+    {
+      "id": "J.J9.assembly-shadow-jobs-path",
+      "verdict": "PASS",
+      "detail": "masked-first=true; A→ADAPTER (count=1, text=\"ran:job_list@ADAPTER.job_list\"); B text=\"synthetic-1 [synthetic] completed — j3-c\" (no adapter marker in B = native body)"
+    }
+  ],
+  "verdict": {
+    "family": "jobs (ctx.jobs seam + dsh-jobs-local provider + tool-jobs 3-tool surface)",
+    "level": "FIXTURE-LEVEL (synthetic producers over the public JobSpec seam; not a real-host proof — no GO writable)",
+    "family_shape": "pinned 0.2.0-rc.2 has NO model-facing job-start tool; producers call ctx.jobs.start (kinds bash/subagent). Model surface = job_output/job_list/job_kill only.",
+    "directional": "INCONCLUSIVE(方向性: service-direct 闭环可行) — start/wait/kill/read/list/remove 全生产 service 直调闭环 PASS（complete/kill+reason/fail/throwing-starter 零泄漏）；三工具经 ToolRuntime 执行 PASS；P0-1 装配结论在 jobs 注入路径复现 PASS；owner-scoped 隔离面 NOT_RUN（需 dsh-agent，缺服务时生产面 fail-loud 原文已录）",
+    "NOT_RUN": [
+      "owner-scoped fence/隔离（需真实 dsh-agent + Session owner）",
+      "pull-source pump 与真实子进程输出（需 subprocess producer，如真实 bash 后台）",
+      "completion wakeup 投递（需 agent loop/inbox）"
+    ]
+  }
+}

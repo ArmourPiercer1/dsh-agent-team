@@ -26,3 +26,4 @@
 | 影响面留痕 | `rm -rf dev/tests/`（21:42 一次 smoke 脚本路径缺陷遗留的世界目录 a5p0-smoke-20261015T214220Z，gitignored，非测试证据） | 0 | <1s | 已删（TEST_METHODS §7 留痕） | §7 | 本行 |
 
 web/jobs/MCP 族 = NOT RUN（本会话无网络授权，非阻塞项：§5 允许登记后补）。
+| 续-4 web/jobs/MCP 回环/mock | 代理 e2630132 → 09-web-jobs-mcp/run-all.sh（web/jobs/mcp 三 runner） | 0（幂等×2） | ~13m | web=INCONCLUSIVE(方向支持组合 Adapter；30 断言中 10：拒绝在 fetch 前、零 socket/零 DNS、tripwire 0、重定向/超限/超时闭环、卸载零泄漏)；jobs=INCONCLUSIVE(生产 service 直调闭环 12/12；族形态钉死：无 job-start 工具面，owner-scoped 腿 NOT_RUN)；MCP=INCONCLUSIVE(mcp-client 注入路径与 P0-1 一致 8/8，真 OS 子进程+代际回收)；raw-SDK 腿 BLOCKED-SKIPPED 留痕 | §P0-2/§P0-5 同型 | 本轮提交 |

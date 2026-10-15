@@ -1,0 +1,203 @@
+{
+  "header": {
+    "recorded_at_utc": "2026-10-15T22:15:22.336Z",
+    "team_HEAD": "e6212c03fb8af4bde27d3013a193be31efd38540",
+    "team_branch": "exp/alpha5-poc-20261016",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain": "CLEAN",
+    "node": "v24.21.0",
+    "platform": "linux 6.8.0-142-generic",
+    "model_verbatim": "You are a coding agent powered by the qwen3.8-flash-next model.",
+    "port_main": 3187,
+    "port_tripwire": 3188,
+    "proxy_env_removed": {
+      "HTTP_PROXY": "http://192.168.223.1:7897",
+      "http_proxy": "http://192.168.223.1:7897",
+      "HTTPS_PROXY": "http://192.168.223.1:7897",
+      "https_proxy": "http://192.168.223.1:7897"
+    },
+    "adapter": {
+      "allow": [
+        "127.0.0.1:3187"
+      ],
+      "maxBytes": 65536,
+      "timeoutMs": 800
+    }
+  },
+  "observations": {
+    "inject_surfaces": {
+      "web": "dsh-web = WebRuntime Service (ctx.web)",
+      "toolWeb": [
+        "tools",
+        "web",
+        "systemPrompt"
+      ],
+      "webFetchHttp": [
+        "web"
+      ]
+    },
+    "access_log": [
+      {
+        "at": 1792102522423,
+        "method": "GET",
+        "url": "/page",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522432,
+        "method": "GET",
+        "url": "/redirect-same",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522434,
+        "method": "GET",
+        "url": "/page",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522435,
+        "method": "GET",
+        "url": "/redirect-cross",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522436,
+        "method": "GET",
+        "url": "/big-declared",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522439,
+        "method": "GET",
+        "url": "/big-stream",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522442,
+        "method": "GET",
+        "url": "/missing",
+        "host": "127.0.0.1:3187"
+      },
+      {
+        "at": 1792102522443,
+        "method": "GET",
+        "url": "/slow",
+        "host": "127.0.0.1:3187"
+      }
+    ],
+    "tripwire": {
+      "attempts": [
+        {
+          "at": 1792102522416,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/page"
+        },
+        {
+          "at": 1792102522430,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/redirect-same"
+        },
+        {
+          "at": 1792102522433,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/page"
+        },
+        {
+          "at": 1792102522434,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/redirect-cross"
+        },
+        {
+          "at": 1792102522435,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/big-declared"
+        },
+        {
+          "at": 1792102522438,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/big-stream"
+        },
+        {
+          "at": 1792102522441,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/missing"
+        },
+        {
+          "at": 1792102522443,
+          "target": "127.0.0.1:3187",
+          "href": "http://127.0.0.1:3187/slow"
+        }
+      ],
+      "blocked": []
+    },
+    "tripwire_server_hits": [],
+    "body_counters": {
+      "adapter": 9,
+      "native_tagged": 0
+    }
+  },
+  "assertions": [
+    {
+      "id": "W.W1.mount-and-registers-native",
+      "verdict": "PASS",
+      "detail": "ctx.web=function schemas=[\"web_fetch\"] (search disabled by config)"
+    },
+    {
+      "id": "W.W2.restrict-first-then-adapter",
+      "verdict": "PASS",
+      "detail": "masked=true A=ADAPTER.web_fetch B=NATIVE.web_fetch"
+    },
+    {
+      "id": "W.W3.A-adapter-gets-synthetic-page",
+      "verdict": "PASS",
+      "detail": "A ran ADAPTER (count=1), page token present=true, fixture accessLog +1"
+    },
+    {
+      "id": "W.W4.deny-not-allowed-no-connection",
+      "verdict": "PASS",
+      "detail": "deny(:9)=\"Error: TEAM_ADAPTER_DENY host-not-allowed:127.0.0.1:9 (allow-list = {127.0.0.1:3\" deny(10.255.255.1)=\"Error: TEAM_ADAPTER_DENY host-not-allowed:10.255.255.1:80 (allow-list = {127.0.0.1:3187})\"; adapter fetchInvocations +0 [expect 0], intercepted +2 [expect 2]; fixture accessLog +0, tripwire attempts-to-denied=0 (never issued, never DNS'd — pre-invoker hostname check)"
+    },
+    {
+      "id": "W.W5.redirect-same-and-cross",
+      "verdict": "PASS",
+      "detail": "same-origin followed=true (log +2); cross-origin denied=true, tripwire(:3188) hits=0"
+    },
+    {
+      "id": "W.W6.oversize-declared-refused-stream-truncated",
+      "verdict": "PASS",
+      "detail": "declared(300000>cap)=\"Error: TEAM_ADAPTER_TOO_LARGE declared:300000>cap:65536\"; stream truncated=true contentLen=65536 (cap 65536)"
+    },
+    {
+      "id": "W.W7.404-as-result",
+      "verdict": "PASS",
+      "detail": "statusCode=404 isError=false"
+    },
+    {
+      "id": "W.W8.slow-endpoint-timeout",
+      "verdict": "PASS",
+      "detail": "timeout after 800ms (budget 800ms), server logged the attempt (+1), error=\"Error: TEAM_ADAPTER_TIMEOUT after budget\""
+    },
+    {
+      "id": "W.W9.B-native-unaffected-and-loopback-failclosed",
+      "verdict": "PASS",
+      "detail": "B→NATIVE web_fetch ran and production provider refused loopback pre-socket: \"Error: URL hostname \\\"127.0.0.1\\\" resolves to a non-public IP address\"; fixture accessLog +0; adapter count unchanged"
+    },
+    {
+      "id": "W.W10.safe-unload-order",
+      "verdict": "PASS",
+      "detail": "afterUnload A=UNKNOWN outcome=\"Error: unknown tool \\\"web_fetch\\\"\" accessLog +0"
+    }
+  ],
+  "verdict": {
+    "family": "web (ctx.web seam + tool-web web_fetch + web-fetch-http provider)",
+    "level": "FIXTURE-LEVEL (loopback mock; NOT a real-host proof — no GO writable)",
+    "assembly": "restrict-first + A-scope same-name adapter (P0-1 frozen interface) — reproduced on the web injection path",
+    "directional": "INCONCLUSIVE(方向性: supports composed Adapter) — A→Adapter 闭环拿合成页; 名单外 URL 在 fetch 调用前被拒且三路零连接证明(access-log=0/adapter 无 fetch 调用/tripwire 零尝试); B 原生面不受影响且生产 provider 对回环 fail-closed (WEB_BLOCKED_URL, 预 socket); 重定向/超限/404/超时语义闭环",
+    "NOT_RUN": [
+      "真实宿主 (cordis.yml 装配 + 真实 web_search provider)",
+      "spill/取消在 web 体上的表现",
+      "HTTP proxy 语义下的 Team 策略交互"
+    ]
+  }
+}
