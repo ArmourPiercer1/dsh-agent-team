@@ -1,0 +1,126 @@
+{
+  "leg": "02-search supplement — SRCH-04 post-execute Spill (production modules)",
+  "agent": "Alpha.5 P0 supplement leg (qwen3.8-flash-next)",
+  "model_name_verbatim": {
+    "powered_by_line": "You are a coding agent powered by the qwen3.8-flash-next model.",
+    "model": "qwen3.8-flash-next"
+  },
+  "recorded_at_utc": "2026-10-15T22:09:55.399Z",
+  "import_mechanism": "ESM resolve hook ../05-ptc/p05-ai-hook.mjs → absolute lib/index.js file URLs inside T; transitive deps via T own node_modules layout; no new junctions; T read-only",
+  "production_modules_under_test": [
+    "packages/core/tools (ToolRuntime scheduler + tools/post-execute waterfall)",
+    "packages/fs/tool-fs-search (production grep tool + production post-execute spill handler, src/grep.ts:342-367; identity check src/direct-call.ts:26)",
+    "packages/spill/spill-local (production LocalSpillStore backend)",
+    "packages/subprocess/subprocess-local (production subprocess service)",
+    "node_modules @vscode/ripgrep (packaged real rg binary, resolved by production resolveRipgrep path)"
+  ],
+  "commands": [
+    {
+      "label": "git T HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use rev-parse HEAD",
+      "code": 0,
+      "out": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "err": ""
+    },
+    {
+      "label": "git T status before",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    {
+      "label": "git W HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016 rev-parse HEAD",
+      "code": 0,
+      "out": "01a4801551ccf6eace0f5a3d474ad3d92365380b",
+      "err": ""
+    },
+    {
+      "label": "node -v",
+      "cmd": "/home/user/.nvm/versions/node/v24.21.0/bin/node -v",
+      "code": 0,
+      "out": "v24.21.0",
+      "err": ""
+    },
+    {
+      "label": "git T status after",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    }
+  ],
+  "legs": [
+    {
+      "id": "SPILL-1.control-spill-generated",
+      "verdict": "PASS",
+      "detail": {
+        "canonical_matches": 3,
+        "spill_file_delta": 1,
+        "footer": "Full grep result stored at",
+        "artifact_holds_all_3": true,
+        "inline_header": "Found 2 of 3 matches",
+        "locator_in_text": "/srv/workspace/dsh-plugins/dsh-agent-team/"
+      }
+    },
+    {
+      "id": "SPILL-2.replacement-identity-spill-abstains",
+      "verdict": "PASS",
+      "detail": {
+        "get_grep_for_agent_is_shadow": true,
+        "get_grep_for_agent_not_original": true,
+        "canonical_matches": 3,
+        "spill_file_delta": 0,
+        "abstain_footer": true,
+        "inline_header": "Found 2 of 3 matches",
+        "identity_home": "packages/fs/tool-fs-search/src/direct-call.ts:26 (ctx.tools.get(exec.name, exec.agent) !== tool)"
+      }
+    },
+    {
+      "id": "SPILL-3.other-scope-still-spills",
+      "verdict": "PASS",
+      "detail": {
+        "canonical_matches": 3,
+        "spill_file_delta": 1,
+        "note": "plain production path unaffected while agent A abstains"
+      }
+    },
+    {
+      "id": "SPILL-4.revert-identity-restores-spill",
+      "verdict": "PASS",
+      "detail": {
+        "tools_get_restores_original_object": true,
+        "spill_file_delta": 1
+      }
+    }
+  ],
+  "counters": {
+    "grep_body_executions": 4,
+    "runs": 4,
+    "spill_artifacts_generated": 3,
+    "spill_abstentions_under_identity_replacement": 1,
+    "spill_files_on_disk": 3,
+    "canonical_matches_per_run": [
+      3,
+      3,
+      3,
+      3
+    ]
+  },
+  "host_env": {
+    "node": "v24.21.0",
+    "platform": "linux x64",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain_empty_before": true,
+    "test_use_porcelain_empty_after": true,
+    "worktree_HEAD": "01a4801551ccf6eace0f5a3d474ad3d92365380b"
+  },
+  "verdict": {
+    "srch04_spill": "PASS",
+    "s09_identity_abstention": "PASS — behavior-level reproduction of direct-call.ts:26 on pinned production code (previous round: source-level only)",
+    "scope_of_claim": "fixture-level over the pinned prebuilt libs (real rg, real subprocess service, real LocalSpillStore backend); grep family; not a host-server E2E",
+    "core_seam_blocker": "NOT_REQUIRED — public seams sufficed (plugin Config for caps, scope.ctx.tools.register for the replacement, LocalSpillStore public class for the backend)"
+  },
+  "exit_code_planned": 0
+}
