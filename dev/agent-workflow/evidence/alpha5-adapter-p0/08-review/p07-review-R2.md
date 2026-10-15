@@ -88,3 +88,10 @@ sed/grep（pinned fiber.ts / tools.spec.ts 引文锚点；grep -n 'GO' 各报告
 ```
 
 （W=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016；全程未触碰 :3080，未 commit/push，未扩权，除本报告外零手写文件。）
+
+## 7. Addendum — 第二轮复跑确认（对 HEAD `9e422ff5` 全套各再 ×2）与协调者工作树变更披露
+
+- **复跑确认轮（本 Reviewer，均对 HEAD 9e422ff5）**：`node 02-search/p02-search-runner.mjs` EXIT=0 ×2；`node 03-fs/p03-fs-runner.mjs` EXIT=0 ×2（11/11 PASS、strace=true、junctions_unchanged=true）；`node 05-ptc/p05-runner.mjs` EXIT=0 ×2；`timeout 120 node 06-lsp/p05-runner.mjs` EXIT=0 ×2；`bash run-all.sh` EXIT=0 ×2（内部 P0-0/P0-1/P0-2/P0-3/P0-5-ptc/P0-5-lsp 六段 EXIT 全 0）。**至此每脚本在本 Reviewer 会话内累计 ≥4 次 EXIT=0（含幂等轮）**。
+- **复跑后终测**：`git -C W/tests/deepseek-harness-test-use rev-parse HEAD` = `639ed015397290b3745d163aafe02ffee4aa3f84`、`status --porcelain` = **0 行**；HEAD 未再移动（仍 9e422ff5）。
+- **协调者工作树变更（非本 Reviewer 所为，如实披露）**：确认轮期间 `EXECUTION-LOG.md`（tracked）出现**未提交**工作树修改：① N2 已修（"LSP 10 腿"→"LSP **11 腿**（P05-LSP-0..10…）"，与我实测一致）；② 新增一行登记本次 R2 delta 复核（代理 de223951，其摘要与本报告一致，N3 精确行注记入内）。该 diff 属协调者对 R2 findings 的处置，**未 commit**（HEAD 仍 9e422ff5）；其内容与我所见事实一致，不改变任何裁决。本 Reviewer 对该文件的唯一动作=读。
+- 裁决不变：**PASS（delta 复核面）；PASS ≠ P0 关闭 ≠ GO。**
