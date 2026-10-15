@@ -331,14 +331,14 @@ async function runLeg(legId, harness) {
     evidence.refusalBody = res.text; evidence.before = before; evidence.after = after
     evidence.observerVia = 'hash/mtime read through observer hardlink alias (same inode, outside fixture anchor)'
     check('write-only edit = typed refusal', 'READ_REQUIRED_FOR_EDIT', res.parsed, res.parsed?.refused === true && res.parsed?.code === 'READ_REQUIRED_FOR_EDIT')
-    check('returned body contains NO old content', `body lacks "${OLD_TOKEN}"`, { body: res.text }, !res.text.includes(OLD_TOKEN))
+    check('returned body contains NO old content', 'body lacks OLD-content marker (constant in runner)', { body: res.text }, !res.text.includes(OLD_TOKEN))
     check('file untouched (sha256+mtimeNs via observer inode)', 'before==after', { before, after }, before?.sha256 === after?.sha256 && before?.mtimeNs === after?.mtimeNs)
   } else if (legId === 'FS-02.pos') {
     const res = await callTool(f, 'write', { path: 'out/new-file.txt', content: SYN('FS-02 positive write') }, agentKey)
     const stamp = statStamp(FILES.outNew)
     evidence.writeResult = res.parsed; evidence.after = stamp
     check('write to out/ succeeds', 'ok + file hash present', res.parsed, res.parsed?.ok === true && stamp?.sha256 === sha256OfText(SYN('FS-02 positive write')))
-    check('write body discloses no old content', `no "${OLD_TOKEN}"`, { body: res.text }, !res.text.includes(OLD_TOKEN))
+    check('write body discloses no old content', 'no OLD-content marker in result body', { body: res.text }, !res.text.includes(OLD_TOKEN))
   } else if (legId === 'FS-02.neg') {
     const before = statStamp(FILES.obsSecret)
     const res = await callTool(f, 'write', { path: 'private/secret.txt', content: SYN('attempted overwrite') }, agentKey)
