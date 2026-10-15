@@ -1461,7 +1461,13 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
               </span>
             )
             : withFrameRefreshing
-              ? <span data-team-view-refreshing>{t('view.refreshing')}</span>
+              ? (
+                // RG4-RG5-01: same slot, same fallback rule — the pending
+                // text clips under narrow widths too.
+                <span data-team-view-refreshing title={t('view.refreshing')}>
+                  {t('view.refreshing')}
+                </span>
+              )
               : null}
         </div>
         <button

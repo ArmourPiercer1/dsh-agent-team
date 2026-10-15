@@ -1141,4 +1141,33 @@ describe('UI-3 no-jump law: pending never inserts a row sibling (register UI-3)'
     expect(banner!.getAttribute('title'), 'the clipped banner text must stay readable via a native tooltip').toBe(banner!.textContent)
     view.unmount()
   })
+
+  // RG4-RG5-01 (delta review): the pending span lives in the SAME
+  // overflow:hidden slot; under narrow widths even a short i18n string can
+  // clip — the title fallback covers it for consistency.
+  it('the pending text carries the same title fallback (RG4-RG5-01)', () => {
+    const hanging = new Promise<never>(() => {})
+    const readyState: TeamProjectionState = {
+      teamSessionId: LEADER,
+      appliedGeneration: 7,
+      appliedLiveToken: null,
+      frame: null,
+      lastAssessment: { status: 'duplicate', receivedGeneration: 7 },
+      retryAttempt: 0,
+      nextRetryDelayMs: null,
+      status: 'ready',
+    }
+    const view = render(
+      <TeamView
+        {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, { [LEADER]: readyState })}
+        refreshCoordinator={{ attach: vi.fn(), detach: vi.fn(), trigger: vi.fn(() => hanging) }}
+      />,
+    )
+    const button = view.container.querySelector<HTMLButtonElement>('[data-team-refresh]')!
+    fireEvent.click(button)
+    const pending = view.container.querySelector<HTMLElement>('[data-team-view-refreshing]')
+    expect(pending).toBeTruthy()
+    expect(pending!.getAttribute('title')).toBe(pending!.textContent)
+    view.unmount()
+  })
 })

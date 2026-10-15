@@ -879,7 +879,40 @@ describe('TM-8: builtinToolDeny is an EXACT-tool-name grammar (no silent cleanin
     ['word joiner U+2060 embedded', 'sub\\u2060agent'],
     ['soft hyphen U+00AD embedded', 'ba\\u00adsh'],
     ['BOM U+FEFF leading', '\\ufeffbash'],
-  ])('TM8-9 %s rejects with the entry-index identity', (_label, name) => {
+  ])('TM8-REV1 %s rejects with the entry-index identity', (_label, name) => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source(`    builtinToolDeny: ["${name}"]`)),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  // rev-D RG4-F1-01/-02 (delta review @eebe5248): (1) the invisible/C1
+  // scanner runs AFTER the \s branch, so the three code points BOTH
+  // rulers hit (U+2028, U+2029, U+FEFF) keep their established
+  // "whitespace is not permitted" wording — pinned here so the human
+  // reason text can never silently swap branches; (2) bidi ISOLATES
+  // (U+2066-U+2069) join the bidi overrides/embeddings already refused:
+  // same spoof-the-rendered-diagnostic class, same typed refusal.
+  it.each([
+    ['line separator U+2028', 'bash\\u2028'],
+    ['paragraph separator U+2029', 'read\\u2029'],
+    ['BOM U+FEFF', '\\ufeffbash'],
+  ])('TM8-REV2a %s keeps the whitespace-branch wording (code AND path unchanged)', (_label, name) => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(tm8Source(`    builtinToolDeny: ["${name}"]`)),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+    expect(err.message).toContain('whitespace is not permitted')
+  })
+
+  it.each([
+    ['LRI U+2066 trailing', 'bash\\u2066'],
+    ['RLI U+2067 trailing', 'read\\u2067'],
+    ['FSI U+2068 embedded', 'wri\\u2068te'],
+    ['PDI U+2069 trailing', 'write\\u2069'],
+  ])('TM8-REV2b bidi isolate %s rejects like its override siblings', (_label, name) => {
     expectErrorDetails(
       () => parseBlueprint(tm8Source(`    builtinToolDeny: ["${name}"]`)),
       'MALFORMED_DTO',
