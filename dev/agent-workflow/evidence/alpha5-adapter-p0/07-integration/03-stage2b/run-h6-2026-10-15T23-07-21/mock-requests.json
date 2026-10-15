@@ -1,0 +1,730 @@
+[
+  {
+    "seq": 1,
+    "userHead": "[{\"type\":\"text\",\"text\":\"A5P0MK_DISC_2026-10-15T23-07-21\"},{\"type\":\"text\",\"text\":\"Current runtime context. This",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 22,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_DISC_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 3,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-ns1x4ywy",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-c1-2026-10-15T23-07-21",
+            "delegationTemplateId": "strict",
+            "label": "m1-fs"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 5,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 1,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-z9bj9dan",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-c2-2026-10-15T23-07-21",
+            "delegationTemplateId": "strict",
+            "label": "m3-search"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 2,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-n8ees6du",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-c3-2026-10-15T23-07-21",
+            "delegationTemplateId": "ctl",
+            "label": "m2-native-grep"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 3,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-t427ozn6",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-c4-2026-10-15T23-07-21",
+            "delegationTemplateId": "nobash",
+            "label": "m4-nobash"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 4,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-nvstqxno",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-d1-2026-10-15T23-07-21",
+            "delegationInstanceId": "inst-0okq9hn1i90p",
+            "label": "m1-fs",
+            "prompt": "A5P0MK_M1_2026-10-15T23-07-21 Follow this script EXACTLY, one tool call per turn: (1) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-seed.txt; (2) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-readarm-H6ARMREAD_2026-10-15T23-07-21.txt; (3) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-seed.txt again; (4) read h6-2026-10-15T23-07-21/allowed/../private/secret.txt; (5) read h6-2026-10-15T23-07-21/allowed/h6-escape-link.txt; (6) write to /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/h6-deny-target.txt the text \"h6-write-attempt\"; (7) run bash command: echo H6BASHRAN_2026-10-15T23-07-21 >> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-bash-out.txt; (8) run the SAME bash command again; (9) finish with the final marker.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 9,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 5,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-xt5yhe52",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-d2-2026-10-15T23-07-21",
+            "delegationInstanceId": "inst-021ju3y0dc02",
+            "label": "m3-search",
+            "prompt": "A5P0MK_M3_2026-10-15T23-07-21 Follow EXACTLY, one grep per turn: (1) grep pattern H6ARMGREP_2026-10-15T23-07-21 path /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir; (2) grep pattern H6QSEARCH_2026-10-15T23-07-21 path /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir; (3) grep pattern H6QSEARCH_2026-10-15T23-07-21 path /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/private; (4) grep pattern H6QSEARCH_2026-10-15T23-07-21 path /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-dirlink; (5) finish.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 10,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-bb3phc97",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-seed.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 12,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 6,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-v7cuc9o9",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-d3-2026-10-15T23-07-21",
+            "delegationInstanceId": "inst-1bylu9l1anrl",
+            "label": "m2-native-grep",
+            "prompt": "A5P0MK_M2_2026-10-15T23-07-21 Call grep exactly once with pattern H6QSEARCH_2026-10-15T23-07-21 and path /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir, then finish.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 13,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d2-2026-10-15T23-07-21] A5P0MK_M3_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-yk8yg4bh",
+          "name": "grep",
+          "arguments": {
+            "pattern": "H6ARMGREP_2026-10-15T23-07-21",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 15,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 1,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-i1xuyuk1",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-readarm-H6ARMREAD_2026-10-15T23-07-21.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 16,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 2,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-c53dqnyc",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-seed.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 17,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 7,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-8cgyzr3t",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-d4-2026-10-15T23-07-21",
+            "delegationInstanceId": "inst-1susebo0yjym",
+            "label": "m4-nobash",
+            "prompt": "A5P0MK_M4_2026-10-15T23-07-21 Follow EXACTLY, one tool call per turn: (1) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-basharm-H6ARMBASH_2026-10-15T23-07-21.txt; (2) run bash command: touch /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/h6-ownlayer-bash-marker.txt && echo RAN; (3) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-rcarm-H6ARMRC_2026-10-15T23-07-21-H6ARMDYN_2026-10-15T23-07-21.txt; (4) call the tool h6_dyn_probe with no arguments; (5) finish.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 18,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d3-2026-10-15T23-07-21] A5P0MK_M2_2026-10-15T23-07-21 Call ",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 22,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-dv6i2txw",
+          "name": "grep",
+          "arguments": {
+            "pattern": "H6QSEARCH_2026-10-15T23-07-21",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 19,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 20,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 3,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-99jayhvk",
+          "name": "read",
+          "arguments": {
+            "file_path": "h6-2026-10-15T23-07-21/allowed/../private/secret.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 21,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d2-2026-10-15T23-07-21] A5P0MK_M3_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 1,
+    "toolCount": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-61dq5r6f",
+          "name": "grep",
+          "arguments": {
+            "pattern": "H6QSEARCH_2026-10-15T23-07-21",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/fxdir"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 22,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 4,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-mp8k4yn5",
+          "name": "read",
+          "arguments": {
+            "file_path": "h6-2026-10-15T23-07-21/allowed/h6-escape-link.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 23,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d2-2026-10-15T23-07-21] A5P0MK_M3_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 2,
+    "toolCount": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-pgv0unuc",
+          "name": "grep",
+          "arguments": {
+            "pattern": "H6QSEARCH_2026-10-15T23-07-21",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/private"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 24,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 5,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-ffs5ap8b",
+          "name": "write",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/h6-deny-target.txt",
+            "content": "h6-write-attempt (deny lane probe)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 25,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 8,
+    "toolCount": 13,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_L1_DONE"
+    }
+  },
+  {
+    "seq": 26,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d2-2026-10-15T23-07-21] A5P0MK_M3_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 3,
+    "toolCount": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-6uf0djot",
+          "name": "grep",
+          "arguments": {
+            "pattern": "H6_SECRET_CONTENT_2026-10-15T23-07-21",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-dirlink"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 27,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d3-2026-10-15T23-07-21] A5P0MK_M2_2026-10-15T23-07-21 Call ",
+    "toolMsgAfterTrigger": 1,
+    "toolCount": 22,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M2_DONE"
+    }
+  },
+  {
+    "seq": 28,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d4-2026-10-15T23-07-21] A5P0MK_M4_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-ohuvmk2n",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-basharm-H6ARMBASH_2026-10-15T23-07-21.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 29,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text",
+    "toolMsgAfterTrigger": 0,
+    "toolCount": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 h6 session"
+    }
+  },
+  {
+    "seq": 30,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 6,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-wzgkmv8o",
+          "name": "bash",
+          "arguments": {
+            "command": "echo H6BASHRAN_2026-10-15T23-07-21 >> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-bash-out.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 31,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d2-2026-10-15T23-07-21] A5P0MK_M3_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 4,
+    "toolCount": 6,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M3_DONE"
+    }
+  },
+  {
+    "seq": 32,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d4-2026-10-15T23-07-21] A5P0MK_M4_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 1,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-ggn5x7o4",
+          "name": "bash",
+          "arguments": {
+            "command": "touch /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/h6-ownlayer-bash-marker.txt && echo RAN"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 33,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 8,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-0hihdm27",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-npl-kkqjrn1t"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 34,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d4-2026-10-15T23-07-21] A5P0MK_M4_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 2,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-gowxcry7",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-rcarm-H6ARMRC_2026-10-15T23-07-21-H6ARMDYN_2026-10-15T23-07-21.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 35,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d4-2026-10-15T23-07-21] A5P0MK_M4_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 3,
+    "toolCount": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-nfw285s0",
+          "name": "h6_dyn_probe",
+          "arguments": {}
+        }
+      ]
+    }
+  },
+  {
+    "seq": 36,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d4-2026-10-15T23-07-21] A5P0MK_M4_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 4,
+    "toolCount": 6,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M4_DONE"
+    }
+  },
+  {
+    "seq": 37,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 9,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-2sgp5bcz",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-nr-t1nhteea",
+            "requestId": "ctrl-161fnit0o3jvfm0ifce3z0u6",
+            "decision": "allow",
+            "note": "h6 scripted approval (mock world, fake fixture only)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 38,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 10,
+    "toolCount": 13,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_LN_DONE"
+    }
+  },
+  {
+    "seq": 39,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 10,
+    "toolCount": 13,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_LN_DONE"
+    }
+  },
+  {
+    "seq": 40,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 7,
+    "toolCount": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-zgjjl2cr",
+          "name": "bash",
+          "arguments": {
+            "command": "echo H6BASHRAN_2026-10-15T23-07-21 >> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/allowed/h6-bash-out.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 41,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 10,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-t0ewzma7",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-npl-i13jhqqk"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 42,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 11,
+    "toolCount": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-h6-ko4lnhx9",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T23-07-21",
+            "requestToken": "h6-nr-xov5emch",
+            "requestId": "ctrl-0393foh001b0bu1wstkij0wi",
+            "decision": "allow",
+            "note": "h6 scripted approval (mock world, fake fixture only)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 43,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 12,
+    "toolCount": 13,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_LN_DONE"
+    }
+  },
+  {
+    "seq": 44,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=h6-d1-2026-10-15T23-07-21] A5P0MK_M1_2026-10-15T23-07-21 Follo",
+    "toolMsgAfterTrigger": 8,
+    "toolCount": 5,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M1_DONE"
+    }
+  },
+  {
+    "seq": 45,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c9dbe2e3d7409077e37a9870",
+    "toolMsgAfterTrigger": 12,
+    "toolCount": 13,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_LN_DONE"
+    }
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "idx": 0,
+    "text": "H6_ADAPTER_GREP_RAN_2026-10-15T23-15-50 call=1 agent=session-team-child-298a8f523b50791ccff8c9cb80f26a84 impl=package-root\nfound=0\nNo matches found"
+  },
+  {
+    "idx": 1,
+    "text": "H6_ADAPTER_GREP_RAN_2026-10-15T23-15-50 call=2 agent=session-team-child-298a8f523b50791ccff8c9cb80f26a84 impl=package-root\nfound=4\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-15-50/workspace/h6-2026-10-15T23-15-50/allowed/fxdir/h6fx-a.txt\nLine 1: alpha line H6QSEARCH_2026-10-15T23-15-50 alpha\nLine 3: beta line H6QSEARCH_2026-10-15T23-15-50 beta\nLine 5: H6QSEARCH_2026-10-15T23-15-50 tail alpha\n\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-15-50/workspace/h6-2026-10-15T23-15-50/allowed/fxdir/h6fx-b.txt\nLine 1: delta H6QSEARCH_2026-10-15T23-15-50 delta"
+  },
+  {
+    "idx": 2,
+    "text": "H6_ADAPTER_DENY(op=grep) reason=outside-allowedRoot arg=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-15-50/workspace/h6-2026-10-15T23-15-50/private — nothing was spawned (zero OS reads, zero hits)"
+  },
+  {
+    "idx": 3,
+    "text": "H6_ADAPTER_DENY(op=grep) reason=outside-allowedRoot arg=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-15-50/workspace/h6-2026-10-15T23-15-50/allowed/h6-dirlink — nothing was spawned (zero OS reads, zero hits)"
+  }
+]

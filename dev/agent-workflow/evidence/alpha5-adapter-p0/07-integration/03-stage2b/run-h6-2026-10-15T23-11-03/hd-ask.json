@@ -1,0 +1,76 @@
+{
+  "bash1": "Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.",
+  "bash2": "Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.",
+  "edit1": "Error: cannot modify \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-11-03/workspace/h6-2026-10-15T23-11-03/h6-edit-target.txt\": file has not been read — read the file, then retry",
+  "edit2": "Error: cannot modify \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-11-03/workspace/h6-2026-10-15T23-11-03/h6-edit-target.txt\": file has not been read — read the file, then retry",
+  "bashOutLines": -1,
+  "editContentPost": "H6EDIT_ORIGINAL_2026-10-15T23-11-03 line\n",
+  "bashSandboxEnv": "host sandbox backend unusable on this host (bash body fail-closed by the host itself; verbatim in hd-bash-ask.json)",
+  "notifRids": [
+    "ctrl-0pjqk8r0gybi340nziynd02s",
+    "ctrl-1gkdjtx14qywk20n3t7sr16y",
+    "ctrl-1n1xgl71u6q6fw16sd3rh1w0",
+    "ctrl-17cvzc81wwsb8f0iqbm8u1wq"
+  ],
+  "ledger": {
+    "requests": [
+      {
+        "requestId": "ctrl-0pjqk8r0gybi340nziynd02s",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-0oi87ef01v16"
+      },
+      {
+        "requestId": "ctrl-1gkdjtx14qywk20n3t7sr16y",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-0oi87ef01v16"
+      },
+      {
+        "requestId": "ctrl-1n1xgl71u6q6fw16sd3rh1w0",
+        "kind": "leader-approval",
+        "toolName": "edit",
+        "targetInstanceId": "inst-0oi87ef01v16"
+      },
+      {
+        "requestId": "ctrl-17cvzc81wwsb8f0iqbm8u1wq",
+        "kind": "leader-approval",
+        "toolName": "edit",
+        "targetInstanceId": "inst-0oi87ef01v16"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-0pjqk8r0gybi340nziynd02s",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1gkdjtx14qywk20n3t7sr16y",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-1n1xgl71u6q6fw16sd3rh1w0",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-17cvzc81wwsb8f0iqbm8u1wq",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-0pjqk8r0gybi340nziynd02s"
+      },
+      {
+        "requestId": "ctrl-1gkdjtx14qywk20n3t7sr16y"
+      },
+      {
+        "requestId": "ctrl-1n1xgl71u6q6fw16sd3rh1w0"
+      },
+      {
+        "requestId": "ctrl-17cvzc81wwsb8f0iqbm8u1wq"
+      }
+    ],
+    "error": null
+  }
+}

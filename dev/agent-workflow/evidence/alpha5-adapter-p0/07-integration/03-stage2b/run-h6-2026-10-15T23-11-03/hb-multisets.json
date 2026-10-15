@@ -1,0 +1,9 @@
+{
+  "native": [
+    "h6fx-a.txt:1:alpha line H6QSEARCH_2026-10-15T23-11-03 alpha",
+    "h6fx-a.txt:3:beta line H6QSEARCH_2026-10-15T23-11-03 beta",
+    "h6fx-a.txt:5:H6QSEARCH_2026-10-15T23-11-03 tail alpha",
+    "h6fx-b.txt:1:delta H6QSEARCH_2026-10-15T23-11-03 delta"
+  ],
+  "adapter": []
+}

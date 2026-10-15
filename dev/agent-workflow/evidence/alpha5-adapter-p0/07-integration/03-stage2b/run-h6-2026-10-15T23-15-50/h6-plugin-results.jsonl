@@ -1,0 +1,3 @@
+{"ts":"2026-10-15T23:15:54.574Z","leg":"bash-register","agent":"session-team-child-6004154c22e799dc6160905aa99d7149","ok":true,"note":"own-layer same-name registration of the builtinToolDeny-shielded name SUCCEEDED at the runtime layer (reachability is the clause question)"}
+{"ts":"2026-10-15T23:15:54.629Z","leg":"runcode-register","agent":"session-team-child-6004154c22e799dc6160905aa99d7149","ok":false,"error":"tool name \"run_code\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed"}
+{"ts":"2026-10-15T23:15:54.630Z","leg":"dyn-register","agent":"session-team-child-6004154c22e799dc6160905aa99d7149","ok":true}
