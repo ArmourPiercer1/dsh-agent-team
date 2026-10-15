@@ -11,4 +11,7 @@
 | NEG-5 | **run_code 命名冲突尝试** | 保留传输不可注册/遮蔽 | register 与 restrict 双侧 throw（含 run_code 字样） | 01-routing `L7` |
 | NEG-6 | **早期 allow listener 试图绕过 guard** | guard 单调、不可被前段 allow force-allow | 仍 deny（`Error: team-guard-denial`），体计数 0/0 | 01-routing `L4` |
 
-（P0-2/P0-3/P0-5 代理产出的反例由各自 notes.md 归入，收齐后在此追加行。）
+| NEG-7 | **同步面泄露 Promise**（SRCH-02）：若 Adapter 在必须同步返回 argv 的位置调用 async confine | sync/async 形状不匹配会产生不可用 argv（S-07 的可执行形态） | 未 await 时 argv[0]="[object Promise]"→spawnSync ENOENT（rg 实际未跑）；原对象直传 TypeError；awaited 正控 exit=0——原生体本就在同步 spawn 前 await（search-core.ts:238-239），Adapter 必须同型 | 02-search/p02-result.json observations.srch02_*，notes.md |
+| NEG-8 | **R2 前置缺失形态**：无 subprocess 服务时挂载 tool-fs-search | 缺服务不应静默成功 | 不 throw 而是 fiber PENDING + tools.schemas()=[]（零注册悬挂）→ 装配必须显式校验服务存在，否则工具静默消失（"隐藏但仍可达/消失"辨别面的实证） | 02-search/p02-result.json observations.srch01_r2_prereq.exact_observable |
+
+（P0-3/P0-5 代理产出的反例由各自 notes.md 归入，收齐后在此追加行。）
