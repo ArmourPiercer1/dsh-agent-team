@@ -25,7 +25,7 @@
 | P0-6 阶段2a 公开 seam 插件 | §3 P0-6 装配面 | **PASS**（Team 插件经 cordis.patch.yml file-URL 行在真实宿主进程内注册成功） | 07-integration/stage2-boot.log,02-plugin/ | 7559b652 |
 | P0-2 grep/glob 竞速 | §3 P0-2,§4 SRCH-* | **INCONCLUSIVE(fixture-supports-R3)**：SRCH-03 12/12 真 rg 对照 PASS（argv 全存）、async confine→spawn 桥 PASS、A/B 结果深相等；**R2=fixture-shows-prereq-missing**（无 subprocess 服务→fiber PENDING 零注册，非 throw）；R4 NOT-ELIGIBLE；SRCH-04 spill NOT_RUN | 02-search/p02-search-runner.mjs→p02-result.json+notes.md | df5b27df |
 | P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | PENDING（代理 3aac5394） | 03-fs/ | — |
-| P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | PENDING（代理 f5f944b8；PTC-01 已由 01-routing L7 覆盖） | 05-ptc/,06-lsp/ | — |
+| P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
 | P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **BOUNDED-DEFER**：需 mock-model team world（c1 kit 链：profiles 行+蓝图 world+mock 部署+3181 启动+会话驱动）；机制已在 kit 与阶段2a 分别实证，组合执行超出本轮预算 | 07-integration/p06-stage1-note.md | — |
 | P0-7 独立 Reviewer | §2.7/§6 | PENDING（对本报告全部 commit 的 HEAD 复核，另行派发） | 08-review/ | — |
 
@@ -35,8 +35,8 @@
 | read/write/edit/move（Controlled FS 面） | PENDING→暂记 INCONCLUSIVE | fixture 腿未完；S-10 已证原生读直通=必须有覆盖策略 |
 | grep/glob | **INCONCLUSIVE（fixture-supports-R3；倾向 R3 候选）** | fixture 级 parity/桥全绿但 GO 需真实宿主（spill/取消/并发/隔离未覆盖）；R2 需 subprocess 服务前置；登记差异 presentationMeta 非包根可复现 |
 | bash/pwsh（Confined Spawn 面） | **ENV_BLOCK（本宿主）** | P0-4：嵌套 bwrap/landlock/netns 全部不可行；**宿主/管理员动作是前置**，非 CORE_SEAM_BLOCKER 也非工具 fork 理由（guide §0 R4 明文：缺能力不是 fork 触发器） |
-| run_code/PTC | 部分：保留传输拒绝 CONFIRMED；内层准入腿 PENDING | 01-routing L7 + 05-ptc 结果 |
-| LSP | PENDING（池/宿主预读源码 CONFIRMED=S-11） | 06-lsp 结果 |
+| run_code/PTC | **BOUNDED-DEFER（内层准入已证，外层待真实宿主）** | 保留拒绝 CONFIRMED；内层 guard 断链 PASS；外层直接 I/O NOT_RUN（无 ptc 外层进程） |
+| LSP | **INCONCLUSIVE + 严格 Profile fail-closed 为安全兜底（族=Bounded Defer）** | 池键=仅路径身份、seam 无策略通道、服务器侧 I/O 不受限（真实池化代码路径+虚构服务器）；CORE 素材十一字段已录，留待上游接口讨论；fixture 不构成 LSP-01 全量 PASS |
 | web/jobs/MCP | NOT RUN（本会话无网络；不在本轮已具备前置的项） | 登记为后续项 |
 
 ## 3. 关键设计证据（喂给后续实施计划）

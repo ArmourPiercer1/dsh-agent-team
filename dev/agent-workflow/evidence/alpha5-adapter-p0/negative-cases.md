@@ -14,4 +14,7 @@
 | NEG-7 | **同步面泄露 Promise**（SRCH-02）：若 Adapter 在必须同步返回 argv 的位置调用 async confine | sync/async 形状不匹配会产生不可用 argv（S-07 的可执行形态） | 未 await 时 argv[0]="[object Promise]"→spawnSync ENOENT（rg 实际未跑）；原对象直传 TypeError；awaited 正控 exit=0——原生体本就在同步 spawn 前 await（search-core.ts:238-239），Adapter 必须同型 | 02-search/p02-result.json observations.srch02_*，notes.md |
 | NEG-8 | **R2 前置缺失形态**：无 subprocess 服务时挂载 tool-fs-search | 缺服务不应静默成功 | 不 throw 而是 fiber PENDING + tools.schemas()=[]（零注册悬挂）→ 装配必须显式校验服务存在，否则工具静默消失（"隐藏但仍可达/消失"辨别面的实证） | 02-search/p02-result.json observations.srch01_r2_prereq.exact_observable |
 
-（P0-3/P0-5 代理产出的反例由各自 notes.md 归入，收齐后在此追加行。）
+| NEG-9 | **LSP 池键=仅路径身份**（LSP-3/5/7）：同 workspace 路径、调用方策略不同的两个查询 | per-caller 策略无法进入池键/seam（types.ts:38-47 无 agent/policy 字段） | 同一常驻 pid 服务两个"策略"（opens=2）；不同路径 pid 分离（正控）；keyA===keyB demo 固化为可执行断言 → 每成员 ACL 隔离在 LSP 面**结构性不可表达**，安全兜底=严格 Profile 拒绝常驻服务器 | 06-lsp/p05-result.json L3/L5/L7 |
+| NEG-10 | **LSP 服务器侧任意读**（LSP-4/6）：常驻服务器以自身 OS 权限经自定义 JSON-RPC 方法读任意路径 | provider 级任意方法=任意 I/O 面，不经 ctx.fs/Agent Scope | 虚构服务器 initialize 期与 $/p05ReadProbe 均成功读 forbidden（虚构敏感数据；host.ts:91 containment 只护宿主预读） | 06-lsp/p05-result.json L4/L6 |
+
+（P0-3 代理产出的反例收齐后在此追加行。）
