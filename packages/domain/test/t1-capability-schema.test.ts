@@ -863,6 +863,30 @@ describe('TM-8: builtinToolDeny is an EXACT-tool-name grammar (no silent cleanin
     )
   })
 
+  // rev-A2 F1 (independent-review round, 2026-10-16): JS \s and CONTROL_CHARS
+  // miss the C1 range and the invisible/format code points; a name carrying
+  // one can never match the live restrictable set either, and RLO-type bidi
+  // overrides additionally spoof the name in rendered diagnostics. Same
+  // rationale, same typed refusal — accepted names stay verbatim (only the
+  // previously-accepted invisible set flips to explicit refusal).
+  it.each([
+    ['C1 U+0080 trailing', 'bash\\u0080'],
+    ['C1 NEL U+0085 trailing', 'bash\\u0085'],
+    ['C1 U+009f trailing', 'read\\u009f'],
+    ['ZWSP U+200B embedded', 'b\\u200bsh'],
+    ['ZWJ U+200D trailing', 'read\\u200d'],
+    ['RLO U+202E trailing', 'write\\u202e'],
+    ['word joiner U+2060 embedded', 'sub\\u2060agent'],
+    ['soft hyphen U+00AD embedded', 'ba\\u00adsh'],
+    ['BOM U+FEFF leading', '\\ufeffbash'],
+  ])('TM8-9 %s rejects with the entry-index identity', (_label, name) => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source(`    builtinToolDeny: ["${name}"]`)),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
   it('TM8-5 a unicode-whitespace-bearing name rejects (NBSP inside)', () => {
     expectErrorDetails(
       () => parseBlueprint(tm8Source('    builtinToolDeny: ["ba\\u00a0sh"]')),

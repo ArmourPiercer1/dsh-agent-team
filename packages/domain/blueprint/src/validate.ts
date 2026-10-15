@@ -157,6 +157,18 @@ import type {
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/
 
 /**
+ * The TM-8 exact-tool-name scanner (see `builtinToolDeny` in
+ * `validateCapabilities`): everything JS `/\\s/` and CONTROL_CHARS both miss
+ * that still cannot appear in a live built-in tool name — the C1 range
+ * (U+0080-U+009F, which is NOT `\\s` and not CONTROL_CHARS), soft hyphen,
+ * zero-width/joiner/direction marks (U+200B-U+200F), bidi overrides
+ * (U+202A-U+202E), word joiner (U+2060), and BOM (U+FEFF). Lane-scoped on
+ * purpose: it tightens the exact-name grammar only; prose/display fields
+ * keep their existing scanners untouched.
+ */
+const TOOL_NAME_INVISIBLE_OR_C1 = /[\u0080-\u009f\u00ad\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060\ufeff]/
+
+/**
  * The prose scanner: the same C0/DEL ban MINUS the three characters a
  * document legitimately contains — tab (0x09), newline (0x0A) and carriage
  * return (0x0D). `carriage return` is included because a CRLF-authored
@@ -963,6 +975,20 @@ function validateTemplateCapabilities(
       throw teamContractError(
         'MALFORMED_DTO',
         `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; control characters are not permitted, got ${JSON.stringify(item)}`,
+        { path: `${path}.builtinToolDeny[${index}]` },
+      )
+    }
+    // TM-8 review-round extension (rev-A2 F1): C1 controls and the
+    // invisible/format code points are neither CONTROL_CHARS (C0/DEL) nor
+    // JS \s, yet they share the exact-name rationale — no live tool name
+    // contains one, and bidi overrides (U+202A-U+202E) additionally spoof
+    // the entry in rendered diagnostics. Same typed refusal; accepted
+    // spellings stay verbatim, only this invisible set flips to explicit
+    // refusal instead of entering the hash as a permanent silent no-op.
+    if (TOOL_NAME_INVISIBLE_OR_C1.test(item)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; C1 controls and invisible/format characters are not permitted, got ${JSON.stringify(item)}`,
         { path: `${path}.builtinToolDeny[${index}]` },
       )
     }

@@ -1113,4 +1113,32 @@ describe('UI-3 no-jump law: pending never inserts a row sibling (register UI-3)'
     expect(refreshing!.parentElement).not.toBe(row)
     view.unmount()
   })
+
+  // RG5-05 (independent-review round): the status-text slot is
+  // `overflow:hidden` (the no-jump law), which CLIPS a long refresh-failure
+  // code+message that the pre-UI-3 layout let wrap. The repo's established
+  // truncation fallback (TeamLedger `.summary`: ellipsis + title) applies
+  // here too — every clipped status text must carry its full text as a
+  // native tooltip.
+  it('clipped status texts carry a title fallback (RG5-05)', () => {
+    const errorState: TeamProjectionState = {
+      teamSessionId: LEADER,
+      appliedGeneration: 7,
+      appliedLiveToken: null,
+      frame: null,
+      lastAssessment: { status: 'rpc-error', receivedGeneration: 8 },
+      retryAttempt: 0,
+      nextRetryDelayMs: null,
+      status: 'error',
+      lastError: { code: 'TEAM_REMOTE_INTERNAL_ERROR', message: 'a very long operator-facing refresh failure message that the hidden overflow clips' } as never,
+    }
+    const view = render(
+      <TeamView {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, { [LEADER]: errorState })} />,
+    )
+    const banner = view.container.querySelector<HTMLElement>('[data-team-view-error]')
+    expect(banner).toBeTruthy()
+    expect(banner!.textContent).toContain('TEAM_REMOTE_INTERNAL_ERROR')
+    expect(banner!.getAttribute('title'), 'the clipped banner text must stay readable via a native tooltip').toBe(banner!.textContent)
+    view.unmount()
+  })
 })

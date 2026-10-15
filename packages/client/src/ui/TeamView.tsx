@@ -1441,13 +1441,20 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
             // over a last good frame: the frame is KEPT (never degraded to
             // none, never dropped) + the explicit stale banner (guide §4.2
             // "已有旧 frame").
-            <span className={styles.legacyNote} data-team-ownership-stale>
+            <span className={styles.legacyNote} data-team-ownership-stale title={t('view.ownership.stale')}>
               {t('view.ownership.stale')}
             </span>
           ) : null}
           {withFrameError !== null
             ? (
-              <span className={styles.legacyNote} data-team-view-error>
+              // RG5-05: this slot is overflow:hidden (the UI-3 no-jump law),
+              // so the full code+message stays reachable via a native
+              // tooltip — the repo's established truncated-text fallback.
+              <span
+                className={styles.legacyNote}
+                data-team-view-error
+                title={`${t('view.refresh.failed')} — ${withFrameError.code}${withFrameError.message !== '' ? `: ${withFrameError.message}` : ''}`}
+              >
                 {t('view.refresh.failed')}
                 {` — ${withFrameError.code}`}
                 {withFrameError.message !== '' ? `: ${withFrameError.message}` : ''}
