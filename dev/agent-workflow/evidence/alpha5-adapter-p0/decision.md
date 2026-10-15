@@ -23,7 +23,7 @@
 1. 装配/卸载=原子有序单元 + 在飞排空证明（D-1）。
 2. binding 覆盖检查必须枚举：preset 继承面、own 层、MCP 后到面、**agentless lane**、pre-execute 后挂 listener 面（S-12 顺序为审计基准）。
 3. 服务前置缺失必须 **throw**，不接受 fiber PENDING 静默（NEG-8）。
-4. FS 策略三要素：realpath+(dev,ino)、不 trim 保留语义名、grant 一次性消费账本。
+4. FS 策略三要素：realpath+**(dev,ino)**、不 trim 保留语义名、grant 一次性消费账本。**边界注记（收紧）**：(dev,ino) 拒绝集是**策略编译期快照，仅覆盖登记时已存在的被禁对象**；未闭合边界=①登记后新建的指向被禁 inode 的硬链接（同 inode 仍可命中，但**新写入的新对象**不在集内）②unlink+重建（inode 变、旧别名仍携旧数据 nlink≥1）③检查与 open 之间的 TOCTOU/替换竞态。PoC 只证"快照内对象+别名"闭环，不得宣称完全闭合；实施需 openat2(O_NOFOLLOW|O_NOCACHE 类)按 fd 定权或周期性重登记+竞态论证（后续项）。
 5. spill 语义：替换 ToolDefinition 会因精确对象同一性丢 spill（S-09）→ Adapter 需自管 spill/大输出语义并显式声明。
 6. 一切 GO 判定的最后一步 = 在 pinned 真实宿主重跑对应反例集（本轮 stage1/2a 已打通装配路径；stage2b 用 c1 kit 链：profiles 行+蓝图 world+mock model+会话驱动，机制两段已分别实证）。
 7. 环境动作申请清单（唯一允许的"非代码前置"）：userns 映射或 landlock 强制通道（P0-4）、网络访问（web/jobs/MCP）、可选：真实宿主上的 GUI 维度。

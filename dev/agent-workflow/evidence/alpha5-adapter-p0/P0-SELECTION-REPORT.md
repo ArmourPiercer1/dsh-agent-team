@@ -12,7 +12,7 @@
 | pinned Host | 0.2.0-rc.2 @ `639ed015397290b3745d163aafe02ffee4aa3f84`（test-use 克隆自建，全程 porcelain=0） |
 | 基线保护 | 主树 `master@6259cf4b`（脏 1 既有文件）与 `fix/post-alpha4-20261016@7e2a25ec` 全程未动；G1 trim 未触碰 |
 | 模型 | 主代理+全部子代理 qwen3.8-flash-next（rev-D/E 及 E1/E6 有逐字自报；其余由 workflow/subagent 参数钉定） |
-| 沙箱事实 | 本 harness 会话运行于宿主 bwrap 沙箱内（PID1=bwrapProfileArgs(workspace-write)，NoNewPrivs=1）→ 嵌套 OS 强制不可行（§P0-4） |
+| 沙箱事实 | 本 harness 会话运行于宿主 bwrap 沙箱内（PID1=bwrapProfileArgs(workspace-write)）。**定性（按实测，不外推）**：拦截点=userns 可创建但 uid_map 写 EPERM + 会话 NoNewPrivs=1 + bwrap 非 setuid 无法自建 namespace；"嵌套结构性不可能"**不作为结论**，landlock 是否内核不执法待诊断代理最小正负控复核 |
 
 ## 1. 执行面（每项=commit+日志+命令+耗时+判定）
 | 实验 | 计划条款 | 结果 | 证据/复跑 | commit |
@@ -34,7 +34,7 @@
 | --- | --- | --- |
 | read/write/edit/move（Controlled FS 面） | **INCONCLUSIVE（方向支持进程内 Controlled FS）** | 11/11 腿绿但前置未满足：①INV-1 全覆盖（bypass 腿实证 T_dispatchable⊋T_governed 时缺口即成）②真实宿主复核；策略要求新增：realpath+**(dev,ino) 对象身份**双检（硬链接绕过实证） |
 | grep/glob | **INCONCLUSIVE（fixture-supports-R3；倾向 R3 候选）** | fixture 级 parity/桥全绿但 GO 需真实宿主（spill/取消/并发/隔离未覆盖）；R2 需 subprocess 服务前置；登记差异 presentationMeta 非包根可复现 |
-| bash/pwsh（Confined Spawn 面） | **ENV_BLOCK（本宿主）** | P0-4：嵌套 bwrap/landlock/netns 全部不可行；**宿主/管理员动作是前置**，非 CORE_SEAM_BLOCKER 也非工具 fork 理由（guide §0 R4 明文：缺能力不是 fork 触发器） |
+| bash/pwsh（Confined Spawn 面） | **ENV_BLOCK（本宿主，按实测拦截点定性）** | 实测：嵌套 bwrap 建 namespace rc=1、netns rc=1、uid_map 写 EPERM、landlock 探针未观测到强制（**正在用最小正确正负控复核，可能是探针配置问题，不升级为"内核不执法"**）；宿主/管理员动作是前置，非 CORE_SEAM_BLOCKER 也非 fork 理由（R4 明文） |
 | run_code/PTC | **BOUNDED-DEFER（内层准入已证，外层待真实宿主）** | 保留拒绝 CONFIRMED；内层 guard 断链 PASS；外层直接 I/O NOT_RUN（无 ptc 外层进程） |
 | LSP | **INCONCLUSIVE + 严格 Profile fail-closed 为安全兜底（族=Bounded Defer）** | 池键=仅路径身份、seam 无策略通道、服务器侧 I/O 不受限（真实池化代码路径+虚构服务器）；CORE 素材十一字段已录，留待上游接口讨论；fixture 不构成 LSP-01 全量 PASS |
 | web/jobs/MCP | NOT RUN（本会话无网络；不在本轮已具备前置的项） | 登记为后续项 |
