@@ -1062,3 +1062,55 @@ describe('TeamView.module.css host-width column geometry contract', () => {
     expect(zero).toContain('margin: 0 auto')
   })
 })
+
+// ---------------------------------------------------------------------------
+// UI-3 (post-Alpha.4 debt register, 2026-10-16 round): the refreshing
+// indicator must NEVER be expressed by inserting a node into the status
+// row's flex flow — inserting pushes the refresh button sideways (operator:
+// "点击后按钮跳到右边去"). The law pinned here is the DOM-shape invariance
+// jsdom CAN check: between idle and pending the status row's DIRECT children
+// are identical in count (the button holds its slot), and the "正在更新…"
+// text lives inside the fixed status group, never as a row sibling. The
+// geometric consequence (zero displacement) follows from that invariance;
+// the CSS itself is pinned by structure, not by guessed pixels.
+// ---------------------------------------------------------------------------
+describe('UI-3 no-jump law: pending never inserts a row sibling (register UI-3)', () => {
+  it('the refresh button keeps its slot while the refresh is pending', async () => {
+    const hanging = new Promise<never>(() => {})
+    // (the closed store-state shape, inlined: the main describe's `stateOf`
+    // helper is scoped inside it; this block is a sibling describe.)
+    const readyState: TeamProjectionState = {
+      teamSessionId: LEADER,
+      appliedGeneration: 7,
+      appliedLiveToken: null,
+      frame: null,
+      lastAssessment: { status: 'duplicate', receivedGeneration: 7 },
+      retryAttempt: 0,
+      nextRetryDelayMs: null,
+      status: 'ready',
+    }
+    const view = render(
+      <TeamView
+        {...viewProps(TEAM_PROJECTION_MIRROR, LEADER, {}, { [LEADER]: readyState })}
+        refreshCoordinator={{ attach: vi.fn(), detach: vi.fn(), trigger: vi.fn(() => hanging) }}
+      />,
+    )
+    const row = view.container.querySelector<HTMLElement>('[data-team-view-status]')
+    expect(row).toBeTruthy()
+    const button = row!.querySelector<HTMLButtonElement>('[data-team-refresh]')
+    expect(button).toBeTruthy()
+    expect(button!.disabled).toBe(false)
+    const idleChildren = row!.children.length
+    fireEvent.click(button!)
+    // Pending is now displayed (text + disabled button IN PLACE).
+    expect(row!.getAttribute('data-refresh-pending')).toBe('true')
+    expect(button!.disabled).toBe(true)
+    const refreshing = row!.querySelector('[data-team-view-refreshing]')
+    expect(refreshing, 'the pending text is shown while the refresh is in flight').toBeTruthy()
+    // THE NO-JUMP LAW: the row's direct shape did not change, and the text
+    // is NOT a direct flex sibling of the button.
+    expect(row!.children.length, 'pending must not insert a row sibling').toBe(idleChildren)
+    expect(refreshing!.parentElement).not.toBe(row)
+    view.unmount()
+  })
+})

@@ -1428,26 +1428,35 @@ export function TeamView(props: TeamViewProps): React.JSX.Element {
         data-team-view-status={withFrameStatus}
         data-refresh-pending={withFrameRefreshing || undefined}
       >
-        {viewMode.kind === 'team-ready' && viewMode.stale ? (
-          // (PR #35 second follow-up P1-A) the read-state refresh FAILED
-          // over a last good frame: the frame is KEPT (never degraded to
-          // none, never dropped) + the explicit stale banner (guide §4.2
-          // "已有旧 frame").
-          <span className={styles.legacyNote} data-team-ownership-stale>
-            {t('view.ownership.stale')}
-          </span>
-        ) : null}
-        {withFrameError !== null
-          ? (
-            <span className={styles.legacyNote} data-team-view-error>
-              {t('view.refresh.failed')}
-              {` — ${withFrameError.code}`}
-              {withFrameError.message !== '' ? `: ${withFrameError.message}` : ''}
+        {/* UI-3 (post-Alpha.4 register, 2026-10-16 round): ALL status text
+            lives in ONE fixed left slot; the refresh button is the row's
+            only other child and holds its slot forever. Before this, the
+            pending "正在更新…" was INSERTED as a row sibling — its width
+            pushed the button sideways (operator: "点击后按钮跳到右边去").
+            The row's DOM shape is now state-invariant; the pin is the
+            UI-3 no-jump law in `team-view.client.spec.tsx`. */}
+        <div className={styles.viewStatusText} data-team-view-status-text>
+          {viewMode.kind === 'team-ready' && viewMode.stale ? (
+            // (PR #35 second follow-up P1-A) the read-state refresh FAILED
+            // over a last good frame: the frame is KEPT (never degraded to
+            // none, never dropped) + the explicit stale banner (guide §4.2
+            // "已有旧 frame").
+            <span className={styles.legacyNote} data-team-ownership-stale>
+              {t('view.ownership.stale')}
             </span>
-          )
-          : withFrameRefreshing
-            ? <span data-team-view-refreshing>{t('view.refreshing')}</span>
-            : null}
+          ) : null}
+          {withFrameError !== null
+            ? (
+              <span className={styles.legacyNote} data-team-view-error>
+                {t('view.refresh.failed')}
+                {` — ${withFrameError.code}`}
+                {withFrameError.message !== '' ? `: ${withFrameError.message}` : ''}
+              </span>
+            )
+            : withFrameRefreshing
+              ? <span data-team-view-refreshing>{t('view.refreshing')}</span>
+              : null}
+        </div>
         <button
           type="button"
           className={styles.zeroStart}
