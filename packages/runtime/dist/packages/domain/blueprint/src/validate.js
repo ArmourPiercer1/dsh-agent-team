@@ -153,7 +153,15 @@ function takePositiveInt(record, field, path) {
     if (!Object.hasOwn(record, field) || record[field] === undefined)
         return undefined;
     const value = record[field];
-    if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    // NRM-2 (2026-10-16 round): SAFE-integer acceptance, aligned with the
+    // same-worded gate in the frozen contracts package (`assertPositiveInteger`,
+    // contracts/src/ids/common.ts) — one message, one acceptance set. 2^53 and
+    // above are not safe integers; a literal like 2^53+1 already arrives
+    // float-normalized (to 2^53) from the YAML layer and is caught here.
+    if (typeof value !== 'number' ||
+        !Number.isInteger(value) ||
+        value < 1 ||
+        !Number.isSafeInteger(value)) {
         throw teamContractError('MALFORMED_DTO', `field ${fieldPath} must be a positive integer, got ${JSON.stringify(value)}`, { path: fieldPath });
     }
     return value;
@@ -591,6 +599,22 @@ function validateTemplateCapabilities(raw, path, role) {
     const builtinToolDeny = builtinToolDenyRaw.map((item, index) => {
         if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
             throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        // TM-8 (2026-10-16 round): an entry must be an EXACT built-in tool name
+        // (authoring contract). Enforcement passes entries verbatim to the
+        // upstream public `tools.restrict({ deny })`, which matches names by
+        // exact string equality against the live restrictable set — a name
+        // carrying whitespace or a control character CANNOT exist there, so it
+        // is not a typo this layer may clean (cleaning would silently change
+        // which tool is denied). Reject it AT PARSE with the entry identity
+        // instead of letting it into the hash and deferring the failure to
+        // agent-bind time as an untyped host error. No trimming, no case
+        // folding, no rewriting: valid names parse verbatim.
+        if (CONTROL_CHARS.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; control characters are not permitted, got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        if (/\s/.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; whitespace is not permitted (leading/trailing or embedded), got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
         }
         return item;
     });
