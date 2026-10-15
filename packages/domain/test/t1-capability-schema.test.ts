@@ -782,3 +782,134 @@ describe('T1: Blueprint Capability Schema', () => {
     expect(values!['mcp']).toEqual({ kind: 'allow', items: ['mcp-a'] })
   })
 })
+
+// ---------------------------------------------------------------------------
+// TM-8 (2026-10-16 authorized round): `builtinToolDeny` entries must be
+// EXACT built-in tool names (authoring contract, blueprint-authoring §5).
+// The enforcement reaches the upstream public `tools.restrict({ deny })`
+// verbatim (packages/tools/src/builtin-deny.ts — no rewriting), and that
+// seam matches names by exact string equality against the live
+// restrictable set; a whitespace/control-char entry is therefore not a
+// typo to be CLEANED — it is a name that cannot exist. Parsing it into the
+// blueprint (and its contentHash) defers the failure to agent-bind time as
+// an untyped host `Error` ("tools.restrict() names unknown global tool…").
+// The grammar rule rejects these AT PARSE with the typed error and the
+// entry-index identity; nothing is trimmed or otherwise cleaned.
+// ---------------------------------------------------------------------------
+
+const tm8Source = (builtinToolDenyLine: string): string =>
+  [
+    '---',
+    'schemaVersion: 3',
+    'blueprintId: tm8-grammar',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    '  capabilities:',
+    '    teamTools:',
+    '      kind: allow',
+    '      items: []',
+    builtinToolDenyLine,
+    '    skills:',
+    '      kind: allow',
+    '      items: []',
+    '    mcp:',
+    '      kind: allow',
+    '      items: []',
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
+    '---',
+    '',
+  ].join('\n')
+
+describe('TM-8: builtinToolDeny is an EXACT-tool-name grammar (no silent cleaning)', () => {
+  it('TM8-1 a trailing-space name rejects with the entry-index identity', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: ["bash "]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-2 a leading-space name rejects', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: [" write"]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-3 a NUL-bearing name rejects (control chars never reach the hash)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: ["read\\u0000"]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-4 a newline-bearing name rejects (copy-paste tail)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: ["subagent_fork\\n"]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-5 a unicode-whitespace-bearing name rejects (NBSP inside)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: ["ba\\u00a0sh"]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-6 a whitespace-only entry rejects (it is NOT an empty-name pass)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: [" "]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-7 the SECOND entry carries the failing index (error identity)', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: ["bash", "bash "]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[1]' },
+    )
+  })
+
+  it('TM8-8 an empty entry keeps the non-empty rejection identity', () => {
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source('    builtinToolDeny: [""]')),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+
+  it('TM8-9 legitimate exact names parse VERBATIM (no cleaning of any kind)', () => {
+    const names = ['bash', 'write', 'read_image', 'subagent_fork', 'web_fetch', 'todo_write', 'fs.write', 'team_x', 'a.b-c_1']
+    const doc = parseBlueprint(tm8Source(`    builtinToolDeny: [${names.map((n) => JSON.stringify(n)).join(', ')}]`))
+    expect(doc.leader.capabilities!.builtinToolDeny).toEqual(names)
+  })
+
+  it('TM8-10 the 128-char boundary keeps its identity (128 ok, 129 rejects)', () => {
+    const ok = 'a'.repeat(128)
+    const doc = parseBlueprint(tm8Source(`    builtinToolDeny: ["${ok}"]`))
+    expect(doc.leader.capabilities!.builtinToolDeny).toEqual([ok])
+    const tooLong = 'a'.repeat(129)
+    expectErrorDetails(
+      () => parseBlueprint(tm8Source(`    builtinToolDeny: ["${tooLong}"]`)),
+      'MALFORMED_DTO',
+      { path: '$.leader.capabilities.builtinToolDeny[0]' },
+    )
+  })
+})

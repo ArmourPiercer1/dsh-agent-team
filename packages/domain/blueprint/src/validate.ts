@@ -939,6 +939,30 @@ function validateTemplateCapabilities(
         { path: `${path}.builtinToolDeny[${index}]` },
       )
     }
+    // TM-8 (2026-10-16 round): an entry must be an EXACT built-in tool name
+    // (authoring contract). Enforcement passes entries verbatim to the
+    // upstream public `tools.restrict({ deny })`, which matches names by
+    // exact string equality against the live restrictable set — a name
+    // carrying whitespace or a control character CANNOT exist there, so it
+    // is not a typo this layer may clean (cleaning would silently change
+    // which tool is denied). Reject it AT PARSE with the entry identity
+    // instead of letting it into the hash and deferring the failure to
+    // agent-bind time as an untyped host error. No trimming, no case
+    // folding, no rewriting: valid names parse verbatim.
+    if (CONTROL_CHARS.test(item)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; control characters are not permitted, got ${JSON.stringify(item)}`,
+        { path: `${path}.builtinToolDeny[${index}]` },
+      )
+    }
+    if (/\s/.test(item)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; whitespace is not permitted (leading/trailing or embedded), got ${JSON.stringify(item)}`,
+        { path: `${path}.builtinToolDeny[${index}]` },
+      )
+    }
     return item
   })
 
