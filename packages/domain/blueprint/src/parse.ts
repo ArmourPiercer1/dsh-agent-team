@@ -124,21 +124,33 @@ export function decodeYamlFrontmatter(frontmatterText: string): unknown {
   } catch (err) {
     if (err instanceof YAMLError) {
       const line = err.linePos?.[0]
-      throw teamContractError(
+      const typed = teamContractError(
         'MALFORMED_DTO',
         `blueprint frontmatter is not valid YAML${line !== undefined ? ` (line ${line.line})` : ''}: ${err.message.split('\n')[0] ?? ''}`,
         { reason: 'yaml-invalid' },
       )
+      // PRS-2 follow-up (regression round): the typed code is the contract,
+      // the ORIGINAL error stays reachable as `cause` — the guard wraps, it
+      // never erases the diagnosis.
+      typed.cause = err
+      throw typed
     }
     // PRS-2: a NON-YAMLError decode failure keeps its concrete cause in the
     // message instead of collapsing to a fixed one-liner — the typed code is
-    // the contract, the reason text is the operator's diagnosis.
+    // the contract, the reason text is the operator's diagnosis. (The yaml
+    // library's resource-limit rejections — `Excessive alias count…`,
+    // `Unresolved alias…` — land HERE as plain ReferenceErrors; a
+    // stack-overflow the library hit itself arrives as a YAMLError whose
+    // message keeps the diagnosis. BOTH branches keep the original error as
+    // `cause`: the guard wraps, it never erases.)
     const detail = err instanceof Error ? `${err.name}: ${err.message.split('\n')[0] ?? ''}` : String(err)
-    throw teamContractError(
+    const typed = teamContractError(
       'MALFORMED_DTO',
       `blueprint frontmatter could not be decoded: ${detail}`,
       { reason: 'yaml-invalid' },
     )
+    typed.cause = err
+    throw typed
   }
   // PRS-1: YAML v2 RESOLVES a recursive anchor (`&m { self: *m }`) into a real
   // cyclic JS object and returns it clean — the blow-up is deferred until
@@ -156,24 +168,44 @@ export function decodeYamlFrontmatter(frontmatterText: string): unknown {
  * Reject a cyclic decoded YAML structure with the typed MALFORMED_DTO.
  * The walk tracks the CURRENT PATH (ancestor set), not merely seen nodes:
  * shared non-cyclic alias reuse (a diamond) is visited again on a different
- * path and never false-positives. Depth here is the document's own finite
- * depth — the recursion the downstream traversal would run anyway; what it
- * can no longer hit is the INFINITE descent of a resolved anchor cycle.
+ * path and never false-positives.
+ *
+ * BOUNDED by construction (regression round): an EXPLICIT stack (enter /
+ * children-indexed frames with ancestor backtracking), so the guard's own
+ * depth lives on the HEAP — a legitimate-but-deep document can never
+ * convert the very crash this guard exists to type into an untyped
+ * RangeError leaking from the guard itself. (Empirics: the yaml library
+ * itself refuses nesting around ~800 frames with its own typed
+ * YAMLParseError, so the guard would not see deeper graphs — but the
+ * guard's boundedness must not DEPEND on that fact; the original defect
+ * was precisely a deferred crash nobody had bounded.)
  */
-function assertAcyclicDecodedYaml(value: unknown, onPath: Set<object> = new Set()): void {
+function assertAcyclicDecodedYaml(value: unknown): void {
   if (value === null || typeof value !== 'object') return
-  if (onPath.has(value)) {
-    throw teamContractError(
-      'MALFORMED_DTO',
-      'blueprint frontmatter is not valid YAML: recursive anchor — a YAML node contains itself',
-      { reason: 'yaml-invalid', problem: 'recursive-yaml-anchor' },
-    )
+  const onPath = new Set<object>()
+  const stack: { readonly node: object; readonly children: readonly unknown[]; next: number }[] = []
+  const enter = (node: object): void => {
+    if (onPath.has(node)) {
+      throw teamContractError(
+        'MALFORMED_DTO',
+        'blueprint frontmatter is not valid YAML: recursive anchor — a YAML node contains itself',
+        { reason: 'yaml-invalid', problem: 'recursive-yaml-anchor' },
+      )
+    }
+    onPath.add(node)
+    stack.push({ node, children: Array.isArray(node) ? node : Object.values(node), next: 0 })
   }
-  onPath.add(value)
-  if (Array.isArray(value)) {
-    for (const item of value) assertAcyclicDecodedYaml(item, onPath)
-  } else {
-    for (const child of Object.values(value)) assertAcyclicDecodedYaml(child, onPath)
+  enter(value)
+  while (stack.length > 0) {
+    const frame = stack[stack.length - 1]
+    if (frame === undefined) break
+    if (frame.next >= frame.children.length) {
+      onPath.delete(frame.node) // backtrack: ancestors only, siblings stay free
+      stack.pop()
+      continue
+    }
+    const child = frame.children[frame.next]
+    frame.next += 1
+    if (child !== null && typeof child === 'object') enter(child)
   }
-  onPath.delete(value)
 }

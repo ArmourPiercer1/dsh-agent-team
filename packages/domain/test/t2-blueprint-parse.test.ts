@@ -316,3 +316,80 @@ describe('PRS-1/PRS-2: recursive YAML anchor is a typed decode rejection', () =>
     expect(decoded.mirror).toBe(decoded.leader)
   })
 })
+
+// ---------------------------------------------------------------------------
+// G4-R (regression round, 2026-10-16): the GUARD ITSELF is bounded and the
+// typed error never erases the diagnosis. Empirical world (pinned by these
+// legs, measured against the pinned yaml library): the library resolves a
+// SELF-referential anchor into a real cyclic object (the guard's target);
+// MUTUAL anchors are impossible past the library (anchor-before-alias law,
+// plain ReferenceError); nesting beyond ~1k frames is refused BY the library
+// as a YAMLError that wraps its own stack overflow; alias counts beyond the
+// resource limit arrive as a plain ReferenceError. Every outcome must be the
+// typed MALFORMED_DTO (or success), the original error rides as `cause`,
+// and NONE of them may surface as an untyped RangeError — including from
+// inside the guard, whose walk is an explicit-stack DFS (heap-bounded).
+// ---------------------------------------------------------------------------
+describe('G4-R: guard boundedness and cause preservation', () => {
+  const decodeError = (source: string): unknown => {
+    try {
+      decodeYamlFrontmatter(source)
+      throw new Error('expected decode to refuse')
+    } catch (error) {
+      return error
+    }
+  }
+
+  it('R1 self-cycle: typed refusal, problem recursive-yaml-anchor (never a RangeError)', () => {
+    const error = decodeError('a: &m { self: *m }\n') as { code?: string; details?: Record<string, unknown> }
+    expect(error.code).toBe('MALFORMED_DTO')
+    expect(error.details?.['reason']).toBe('yaml-invalid')
+    expect(error.details?.['problem']).toBe('recursive-yaml-anchor')
+    expect(error).not.toBeInstanceOf(RangeError)
+  })
+
+  it('R2 mutual anchors: the library itself refuses (anchor-before-alias) — typed, with the ORIGINAL ReferenceError as cause', () => {
+    for (const source of ['x: &mx { y: *my }\ny: &my { x: *mx }\n', 'p: &mp { q: *mq }\nq: &mq { p: *mp }\n']) {
+      const error = decodeError(source) as { code?: string; details?: Record<string, unknown>; cause?: unknown }
+      expect(error.code, source).toBe('MALFORMED_DTO')
+      expect(error.details?.['reason'], source).toBe('yaml-invalid')
+      expect((error.cause as Error | undefined)?.name, source).toBe('ReferenceError')
+      expect(error).not.toBeInstanceOf(RangeError)
+    }
+  })
+
+  it('R3 deep but LEGAL nesting (120 frames): decodes successfully — the guard walks the depth on the HEAP (explicit-stack DFS), never the call stack', () => {
+    const source = `a: ${'{ '.repeat(120)}x: 1${' }'.repeat(120)}\n`
+    const value = decodeYamlFrontmatter(source)
+    expect(value).toBeTypeOf('object')
+  })
+
+  // R4 (deep OVER-LIMIT) deliberately lives in the EVIDENCE LOG, not in the
+  // suite: the measurement (logs/G4R-green.txt) shows the library's deep
+  // behaviour is ENVIRONMENT-DEPENDENT — a bare node stack refuses ~1k
+  // nesting with a typed-wrapped YAMLParseError ("Maximum call stack size
+  // exceeded"), while under vitest the SAME 1000-frame source decodes
+  // SUCCESSFULLY after ~280s and 500 frames already exceed the 5s test
+  // budget. Two consequences, both recorded honestly: (a) the guard's
+  // boundedness may NEVER lean on "the parser refuses first" — that is
+  // exactly why it is an explicit-stack DFS now; (b) a ~4KB deeply-nested
+  // frontmatter costing minutes to parse is a NEW resource finding
+  // (OBS-1): an acceptance cap (size/depth) is a product decision, pending
+  // a ruling — this round does not add one. The YAMLError-cause law R4 was
+  // meant to pin is pinned deterministically by R6; the non-YAML
+  // ReferenceError-cause law by R2/R5.
+
+  it('R5 alias over the resource limit (150 > default cap): typed refusal, original ReferenceError kept as cause', () => {
+    const source = `a: &b [1]\nc: [${Array.from({ length: 150 }, () => '*b').join(', ')}]\n`
+    const error = decodeError(source) as { code?: string; message?: string; cause?: unknown }
+    expect(error.code).toBe('MALFORMED_DTO')
+    expect(error.message).toContain('Excessive alias count')
+    expect((error.cause as Error | undefined)?.name).toBe('ReferenceError')
+  })
+
+  it('R6 plain syntax refusal ALSO carries the original YAMLError as cause (wrapping never erases)', () => {
+    const error = decodeError('leader: [unclosed\n') as { code?: string; cause?: unknown }
+    expect(error.code).toBe('MALFORMED_DTO')
+    expect((error.cause as Error | undefined)?.name).toBe('YAMLParseError')
+  })
+})
