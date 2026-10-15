@@ -18,7 +18,7 @@
 | 实验 | 计划条款 | 结果 | 证据/复跑 | commit |
 | --- | --- | --- | --- | --- |
 | E1 源码锚定 S-01..S-12 | §0.1 | **12/12 CONFIRMED**（4 条位置注记） | 00-baseline/source-map.md | 74151aad |
-| P0-0 双 Scope fixture+计数器 | §3 P0-0 | **4/4 PASS**（<1s） | 00-baseline/p00-runner.mjs→p00-run.log | 74151aad |
+| P0-0 双 Scope fixture+计数器 | §3 P0-0 | **5/5 PASS**（<1s；含 preset 父子拓扑腿） | 00-baseline/p00-runner.mjs→p00-run.log | 74151aad+aaf327a8 |
 | P0-1 路由/竞态 BND | §3 P0-1,§4 BND-01..06 | **12/12 leg PASS**：own-layer 同名遮蔽即独占（BND-01）；safe-unload native=0（BND-02）；**竞态窗实存**=dispatch 期 `resolveExecution`(index.ts:1578) 晚期重解析：safe 序 native=0，**lift-mask 危险序 native=1（预期反例=设计防护证据）**；guard-after-allow 单调（BND-04）；agentless=全局 lane 不覆盖（INV-1 素材）；run_code 双面拒绝 | 01-routing/p01-runner.mjs | 74151aad |
 | P0-4 OS 强制能力 | §4 PROC/NET/SRCH 依赖 | **ENV_BLOCK×4**（bwrap 嵌套拒/netns EPERM/userns 不可映射/landlock 强制不可观测）；S-10 源码 CONFIRMED | 04-process/env-capability-probe.sh（幂等） | 5406a21e |
 | P0-6 阶段1 真实宿主冷启动 | §3 公共前置/P0-6 | **PASS**（boot 行+401 门+303+test-use byte-clean+token 已脱敏） | 07-integration/host-boot.log | d523a7d4 |
@@ -27,7 +27,7 @@
 | P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | PENDING（代理 3aac5394） | 03-fs/ | — |
 | P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
 | P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **BOUNDED-DEFER**：需 mock-model team world（c1 kit 链：profiles 行+蓝图 world+mock 部署+3181 启动+会话驱动）；机制已在 kit 与阶段2a 分别实证，组合执行超出本轮预算 | 07-integration/p06-stage1-note.md | — |
-| P0-7 独立 Reviewer | §2.7/§6 | PENDING（对本报告全部 commit 的 HEAD 复核，另行派发） | 08-review/ | — |
+| P0-7 独立 Reviewer | §2.7/§6 | **R1 = PASS（复核面，HEAD c46ffb76）**：已提交主张逐条 VERIFIED/零 REFUTED/无夸大；NOT_VERIFIED 项均如实 PENDING。R1 明示"PASS≠P0 关闭≠GO"。findings：F1 遗留 world 已删（留痕）、F2 4/4→5/5 已回填、F3 报告已 tracked。**终态 HEAD 仍需 delta 复核**（见 08-review/） | 08-review/p07-review-R1.md | 本轮提交 |
 
 ## 2. 逐工具族 verdict（§5 算法；含 PENDING 者按已证部分写 INCONCLUSIVE）
 | 族 | verdict | 理由（真实值） |

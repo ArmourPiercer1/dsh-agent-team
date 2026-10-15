@@ -1,0 +1,1900 @@
+{
+  "header": {
+    "recorded_at_utc": "2026-10-15T21:49:36.889Z",
+    "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs",
+    "team_HEAD": "7233f2ed7444e6a0696dc5f5c3898b128bad06f8",
+    "team_branch": "exp/alpha5-poc-20261016",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain": "CLEAN",
+    "node": "v24.21.0",
+    "platform": "linux 6.8.0-142-generic",
+    "strace_available": true,
+    "model_reported_by_agent": "qwen3.8-flash-next",
+    "junctions_before": {
+      "cordis": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/vendor/cordis",
+      "dsh": "LINK->../.pnpm/@deepseek-ai+dsh@0.2.0-rc.2_8cae2469de0a473718a81e9935bc2302/node_modules/@deepseek-ai/dsh",
+      "dsh-llm": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/llm/llm",
+      "dsh-scope": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/scope",
+      "dsh-subprocess": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/subprocess/subprocess",
+      "dsh-system-prompt": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/system-prompt",
+      "dsh-tool-fs-search": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/fs/tool-fs-search",
+      "dsh-tools": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools"
+    },
+    "junctions_after": {
+      "cordis": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/vendor/cordis",
+      "dsh": "LINK->../.pnpm/@deepseek-ai+dsh@0.2.0-rc.2_8cae2469de0a473718a81e9935bc2302/node_modules/@deepseek-ai/dsh",
+      "dsh-llm": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/llm/llm",
+      "dsh-scope": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/scope",
+      "dsh-subprocess": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/subprocess/subprocess",
+      "dsh-system-prompt": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/system-prompt",
+      "dsh-tool-fs-search": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/fs/tool-fs-search",
+      "dsh-tools": "LINK->/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools"
+    },
+    "junctions_unchanged": true
+  },
+  "semantics": "In-process Trusted FS boundary: the Team adapter enforces policy at its own real node:fs call sites (architecture.md §14.5: read/write/edit family = Controlled FS, no process sandbox). The un-adapted native-style lane is a bypass control surface; the real native read pass-through is separately source-confirmed (00-baseline S-10 CONFIRMED: fs-sandbox fences only mutations, reads pass through). All fixture contents are SYNTHETIC.",
+  "legs": [
+    {
+      "id": "FS-01.pos",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "positive read succeeds",
+          "expect": "ok + ALLOWED token",
+          "observed": {
+            "ok": true,
+            "token": true,
+            "realPath": "allowed/read.txt"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: exactly 1 successful open of allowed/read.txt",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 1,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "adapterResult": {
+          "callId": "p03-c1",
+          "parsed": {
+            "ok": true,
+            "realPath": "allowed/read.txt",
+            "bytes": 101,
+            "content": "<elided-below>"
+          },
+          "isError": false
+        },
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-01.neg",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "negative read refused",
+          "expect": "READ_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "READ_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "no disclosure",
+          "expect": "secret token absent from body",
+          "observed": {
+            "bodyIncludesToken": false
+          },
+          "pass": true
+        },
+        {
+          "name": "adapter NEVER opened the file (open ledger)",
+          "expect": "0 open-issued + >=1 refused(READ_DENIED)",
+          "observed": {
+            "openIssued": 0,
+            "refused": 1
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of private/secret.txt",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "adapterResult": {
+          "refused": true,
+          "code": "READ_DENIED"
+        },
+        "openLedgerForSecret": [
+          {
+            "at": "1056933374252239",
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          }
+        ],
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-01.native-bypass",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "bypass tool is dispatchable (T_dispatchable)",
+          "expect": "get+schemas",
+          "observed": {
+            "get": true,
+            "schemas": [
+              "read",
+              "oneshot_read",
+              "write",
+              "str_replace",
+              "legacy_native_read"
+            ]
+          },
+          "pass": true
+        },
+        {
+          "name": "bypass lane READ private => coverage gap (leak EXPECTED)",
+          "expect": "leak observed -> INV-1 coverage/deny must coexist",
+          "observed": {
+            "leakedToken": true
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: bypass lane DID open private/secret.txt (gap evidence)",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 1,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "bypassResult": {
+          "leakedToken": true
+        },
+        "dispatchableSurface": {
+          "get": true,
+          "schemas": [
+            "read",
+            "oneshot_read",
+            "write",
+            "str_replace",
+            "legacy_native_read"
+          ]
+        },
+        "nativeLedger": [
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt"
+          }
+        ],
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-02.refusal",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "write-only edit = typed refusal",
+          "expect": "READ_REQUIRED_FOR_EDIT",
+          "observed": {
+            "refused": true,
+            "code": "READ_REQUIRED_FOR_EDIT",
+            "note": "str_replace needs read authority for old-content search; grant is write-only; old content never read (suppressed)"
+          },
+          "pass": true
+        },
+        {
+          "name": "returned body contains NO old content",
+          "expect": "body lacks \"OLD-CONTENT-TEST-TOKEN-b4c9\"",
+          "observed": {
+            "body": "{\"refused\":true,\"code\":\"READ_REQUIRED_FOR_EDIT\",\"note\":\"str_replace needs read authority for old-content search; grant is write-only; old content never read (suppressed)\"}"
+          },
+          "pass": true
+        },
+        {
+          "name": "file untouched (sha256+mtimeNs via observer inode)",
+          "expect": "before==after",
+          "observed": {
+            "before": {
+              "sha256": "9b85a28105d443962014631f30ad61b033b9c62670af64aa5bfc366ffeb0e0c7",
+              "mtimeNs": "undefined",
+              "size": 128,
+              "inode": "64512:5184726",
+              "nlink": 2
+            },
+            "after": {
+              "sha256": "9b85a28105d443962014631f30ad61b033b9c62670af64aa5bfc366ffeb0e0c7",
+              "mtimeNs": "undefined",
+              "size": 128,
+              "inode": "64512:5184726",
+              "nlink": 2
+            }
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of sub/nested-target.txt (refused before read)",
+          "expect": "OS-level syscall evidence",
+          "observed": [
+            {
+              "pid": 57,
+              "op": "openat",
+              "path": "private",
+              "failed": false
+            }
+          ],
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "refusalBody": "{\"refused\":true,\"code\":\"READ_REQUIRED_FOR_EDIT\",\"note\":\"str_replace needs read authority for old-content search; grant is write-only; old content never read (suppressed)\"}",
+        "before": {
+          "sha256": "9b85a28105d443962014631f30ad61b033b9c62670af64aa5bfc366ffeb0e0c7",
+          "mtimeNs": "undefined",
+          "size": 128,
+          "inode": "64512:5184726",
+          "nlink": 2
+        },
+        "after": {
+          "sha256": "9b85a28105d443962014631f30ad61b033b9c62670af64aa5bfc366ffeb0e0c7",
+          "mtimeNs": "undefined",
+          "size": 128,
+          "inode": "64512:5184726",
+          "nlink": 2
+        },
+        "observerVia": "hash/mtime read through observer hardlink alias (same inode, outside fixture anchor)",
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/sub/nested-target.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_REQUIRED_FOR_EDIT"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-02.pos",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "write to out/ succeeds",
+          "expect": "ok + file hash present",
+          "observed": {
+            "ok": true,
+            "realPath": "out/new-file.txt",
+            "bytesWritten": 59
+          },
+          "pass": true
+        },
+        {
+          "name": "write body discloses no old content",
+          "expect": "no \"OLD-CONTENT-TEST-TOKEN-b4c9\"",
+          "observed": {
+            "body": "{\"ok\":true,\"realPath\":\"out/new-file.txt\",\"bytesWritten\":59}"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: write open of out/new-file.txt occurred",
+          "expect": "OS-level syscall evidence",
+          "observed": [
+            {
+              "pid": 68,
+              "op": "openat",
+              "path": "private",
+              "failed": false
+            },
+            {
+              "pid": 68,
+              "op": "openat",
+              "path": "out/new-file.txt",
+              "failed": false
+            },
+            {
+              "pid": 68,
+              "op": "openat",
+              "path": "out/new-file.txt",
+              "failed": false
+            }
+          ],
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "writeResult": {
+          "ok": true,
+          "realPath": "out/new-file.txt",
+          "bytesWritten": 59
+        },
+        "after": {
+          "sha256": "f1c36544d4ccb7ddf1d6b7d0d92047aef2e7cab2a52a53c821a899d5cd1cc277",
+          "mtimeNs": "undefined",
+          "size": 59,
+          "inode": "64512:5184731",
+          "nlink": 1
+        },
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/read.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/sub/nested-target.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_REQUIRED_FOR_EDIT"
+          },
+          {
+            "member": "m-alice",
+            "tool": "write",
+            "req": "out/new-file.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+            "mode": "write",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "write",
+            "req": "out/new-file.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+            "mode": "write",
+            "stage": "open-returned",
+            "code": "OK"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-02.neg",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "write to private refused",
+          "expect": "WRITE_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "WRITE_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "file unchanged (sha256+mtimeNs)",
+          "expect": "before==after",
+          "observed": {
+            "before": {
+              "sha256": "33c22c3f83ba6aa651b30065298759b858027f53ff547713838020867be7398d",
+              "mtimeNs": "undefined",
+              "size": 101,
+              "inode": "64512:5184724",
+              "nlink": 3
+            },
+            "after": {
+              "sha256": "33c22c3f83ba6aa651b30065298759b858027f53ff547713838020867be7398d",
+              "mtimeNs": "undefined",
+              "size": 101,
+              "inode": "64512:5184724",
+              "nlink": 3
+            }
+          },
+          "pass": true
+        },
+        {
+          "name": "no open issued for denied write",
+          "expect": "0 open-issued",
+          "observed": {
+            "opens": 0
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of private/secret.txt",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "writeResult": {
+          "refused": true,
+          "code": "WRITE_DENIED"
+        },
+        "before": {
+          "sha256": "33c22c3f83ba6aa651b30065298759b858027f53ff547713838020867be7398d",
+          "mtimeNs": "undefined",
+          "size": 101,
+          "inode": "64512:5184724",
+          "nlink": 3
+        },
+        "after": {
+          "sha256": "33c22c3f83ba6aa651b30065298759b858027f53ff547713838020867be7398d",
+          "mtimeNs": "undefined",
+          "size": 101,
+          "inode": "64512:5184724",
+          "nlink": 3
+        },
+        "observerVia": "hash/mtime read through observer hardlink alias (same inode, outside fixture anchor)",
+        "deniedPathInode": "64512:5184724",
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/sub/nested-target.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-wonly",
+            "tool": "str_replace",
+            "req": "sub/nested-target.txt",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_REQUIRED_FOR_EDIT"
+          },
+          {
+            "member": "m-alice",
+            "tool": "write",
+            "req": "out/new-file.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+            "mode": "write",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "write",
+            "req": "out/new-file.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+            "mode": "write",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "write",
+            "req": "private/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "write",
+            "stage": "refused",
+            "code": "WRITE_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-03.race",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "A reads special-a via its one-shot grant",
+          "expect": "ok + A token",
+          "observed": {
+            "ok": true,
+            "token": true
+          },
+          "pass": true
+        },
+        {
+          "name": "B never gets A resource (own grant scope)",
+          "expect": "GRANT_SCOPE_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "GRANT_SCOPE_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "B cannot consume A grant (call binding)",
+          "expect": "GRANT_CALL_MISMATCH",
+          "observed": {
+            "refused": true,
+            "code": "GRANT_CALL_MISMATCH"
+          },
+          "pass": true
+        },
+        {
+          "name": "consumed grant not reusable (fresh call)",
+          "expect": "GRANT_CONSUMED",
+          "observed": {
+            "refused": true,
+            "code": "GRANT_CONSUMED"
+          },
+          "pass": true
+        },
+        {
+          "name": "B outputs never disclose A token",
+          "expect": "no token",
+          "observed": {
+            "leaked": false
+          },
+          "pass": true
+        },
+        {
+          "name": "event order: B-wait < A-consume < B-denied",
+          "expect": "monotone",
+          "observed": [
+            "B:await-gate-before-io",
+            "A:consumed-grant",
+            "B:denied"
+          ],
+          "pass": true
+        },
+        {
+          "name": "exactly one open for special-a (ledger)",
+          "expect": "1 open-issued",
+          "observed": {
+            "opens": 1
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: exactly 1 successful open of special-a/oneshot.txt",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 1,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "resA": {
+          "callId": "p03-callA",
+          "parsed": {
+            "ok": true,
+            "realPath": "special-a/oneshot.txt",
+            "bytes": 111,
+            "content": "<elided>"
+          },
+          "isError": false
+        },
+        "resB": {
+          "steal": {
+            "refused": true,
+            "code": "GRANT_SCOPE_DENIED"
+          },
+          "replay": {
+            "refused": true,
+            "code": "GRANT_CALL_MISMATCH"
+          }
+        },
+        "resC": {
+          "refused": true,
+          "code": "GRANT_CONSUMED"
+        },
+        "grantLedger": [
+          {
+            "id": "G1",
+            "consumed": true,
+            "replayAttempts": 1,
+            "foreignUseAttempts": 0
+          },
+          {
+            "id": "G2",
+            "consumed": false,
+            "replayAttempts": 0,
+            "foreignUseAttempts": 0
+          },
+          {
+            "id": "G3",
+            "consumed": false,
+            "replayAttempts": 0,
+            "foreignUseAttempts": 1
+          }
+        ],
+        "openLedgerTail": [
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G1",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "grant-consumed",
+            "code": "OK",
+            "grant": "G1"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "special-a/oneshot.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "special-a/oneshot.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G2",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G2",
+            "stage": "refused",
+            "code": "GRANT_SCOPE_DENIED"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G3",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G3",
+            "stage": "refused",
+            "code": "GRANT_CALL_MISMATCH"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G1",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G1",
+            "stage": "refused",
+            "code": "GRANT_CONSUMED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-04.symlink",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "symlink->private refused via real object identity (realpath)",
+          "expect": "code in {READ_DENIED, ALIAS_DENIED, SYMLINK_ESCAPED}",
+          "observed": {
+            "refused": true,
+            "code": "READ_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "no disclosure",
+          "expect": "no secret token",
+          "observed": {
+            "body": "{\"refused\":true,\"code\":\"READ_DENIED\"}"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of private/secret.txt via alias",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "aliasResult": {
+          "refused": true,
+          "code": "READ_DENIED"
+        },
+        "openLedgerTail": [
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "special-a/oneshot.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "special-a/oneshot.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G2",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G2",
+            "stage": "refused",
+            "code": "GRANT_SCOPE_DENIED"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G3",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G3",
+            "stage": "refused",
+            "code": "GRANT_CALL_MISMATCH"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G1",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G1",
+            "stage": "refused",
+            "code": "GRANT_CONSUMED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "alias/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-04.hardlink",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "fixture: hard link shares denied inode",
+          "expect": "same dev:ino",
+          "observed": {
+            "secret": "64512:5184724",
+            "link": "64512:5184724",
+            "nlink": 3,
+            "sameInode": true
+          },
+          "pass": true
+        },
+        {
+          "name": "hard-link alias refused (object identity, not realpath)",
+          "expect": "ALIAS_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "ALIAS_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "no disclosure through alias",
+          "expect": "no secret token",
+          "observed": {
+            "body": "{\"refused\":true,\"code\":\"ALIAS_DENIED\"}"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of alias AND secret",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "inodeFacts": {
+          "secret": "64512:5184724",
+          "link": "64512:5184724",
+          "nlink": 3,
+          "sameInode": true
+        },
+        "hardlinkResult": {
+          "refused": true,
+          "code": "ALIAS_DENIED"
+        },
+        "openLedgerTail": [
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "special-a/oneshot.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G2",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G2",
+            "stage": "refused",
+            "code": "GRANT_SCOPE_DENIED"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G3",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G3",
+            "stage": "refused",
+            "code": "GRANT_CALL_MISMATCH"
+          },
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G1",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G1",
+            "stage": "refused",
+            "code": "GRANT_CONSUMED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "alias/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/secret-alias.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
+            "mode": "read",
+            "ino": "64512:5184724",
+            "stage": "refused",
+            "code": "ALIAS_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-04.traversal",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "relative \"..\" refused",
+          "expect": "TRAVERSAL_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "TRAVERSAL_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "absolute outside anchor refused",
+          "expect": "ANCHOR_OUT",
+          "observed": {
+            "refused": true,
+            "code": "ANCHOR_OUT"
+          },
+          "pass": true
+        },
+        {
+          "name": "in-anchor \"..\" also refused (fail-closed, never normalize)",
+          "expect": "TRAVERSAL_DENIED",
+          "observed": {
+            "refused": true,
+            "code": "TRAVERSAL_DENIED"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: 0 successful opens of /etc/passwd",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 0,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 0,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "results": [
+          {
+            "refused": true,
+            "code": "TRAVERSAL_DENIED"
+          },
+          {
+            "refused": true,
+            "code": "ANCHOR_OUT"
+          },
+          {
+            "refused": true,
+            "code": "TRAVERSAL_DENIED"
+          }
+        ],
+        "openLedgerTail": [
+          {
+            "member": "m-oneshot",
+            "tool": "read",
+            "req": "grant:G1",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+            "mode": "read",
+            "grant": "G1",
+            "stage": "refused",
+            "code": "GRANT_CONSUMED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "alias/secret.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+            "mode": "read",
+            "stage": "refused",
+            "code": "READ_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/secret-alias.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
+            "mode": "read",
+            "ino": "64512:5184724",
+            "stage": "refused",
+            "code": "ALIAS_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "../../etc/passwd",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "TRAVERSAL_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "/etc/passwd",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "ANCHOR_OUT"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/../allowed/read.txt",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "TRAVERSAL_DENIED"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FS-04.spaces",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "trailing-space name readable as authorized (NOT trimmed)",
+          "expect": "ok + realPath \"allowed/sp \"",
+          "observed": {
+            "ok": true,
+            "realPath": "allowed/sp "
+          },
+          "pass": true
+        },
+        {
+          "name": "trimmed variant does NOT exist (ENOENT probe)",
+          "expect": "ENOENT",
+          "observed": {
+            "trimmedPath": "allowed/sp",
+            "openResult": "ENOENT"
+          },
+          "pass": true
+        },
+        {
+          "name": "strace: >=1 open of \"allowed/sp \"; trimmed \"allowed/sp\" ONLY as failed ENOENT probe",
+          "expect": "OS-level syscall evidence",
+          "observed": {
+            "secret_okOpens": 0,
+            "specialA_okOpens": 0,
+            "etcPasswd_okOpens": 0,
+            "allowedRead_okOpens": 0,
+            "spacedExact_okOpens": 1,
+            "spacedTrimmed_okOpens": 0,
+            "spacedTrimmed_FAILEDAttempts": 1,
+            "hardlink_okOpens": 0
+          },
+          "pass": true
+        }
+      ],
+      "evidence": {
+        "readResult": {
+          "ok": true,
+          "realPath": "allowed/sp ",
+          "bytes": 86,
+          "content": "<elided>"
+        },
+        "trimmedProbe": {
+          "trimmedPath": "allowed/sp",
+          "openResult": "ENOENT"
+        },
+        "openLedgerTail": [
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/secret-alias.txt",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
+            "mode": "read",
+            "ino": "64512:5184724",
+            "stage": "refused",
+            "code": "ALIAS_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "../../etc/passwd",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "TRAVERSAL_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "/etc/passwd",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "ANCHOR_OUT"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/../allowed/read.txt",
+            "real": null,
+            "mode": "read",
+            "stage": "refused",
+            "code": "TRAVERSAL_DENIED"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/sp ",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/sp ",
+            "mode": "read",
+            "stage": "open-issued",
+            "code": "OK"
+          },
+          {
+            "member": "m-alice",
+            "tool": "read",
+            "req": "allowed/sp ",
+            "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/sp ",
+            "mode": "read",
+            "stage": "open-returned",
+            "code": "OK"
+          }
+        ]
+      }
+    }
+  ],
+  "ledgers": {
+    "adapter": [
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/read.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+        "mode": "read",
+        "stage": "open-issued",
+        "code": "OK"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/read.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/read.txt",
+        "mode": "read",
+        "stage": "open-returned",
+        "code": "OK"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "private/secret.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+        "mode": "read",
+        "stage": "refused",
+        "code": "READ_DENIED"
+      },
+      {
+        "member": "m-wonly",
+        "tool": "str_replace",
+        "req": "sub/nested-target.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/sub/nested-target.txt",
+        "mode": "read",
+        "stage": "refused",
+        "code": "READ_DENIED"
+      },
+      {
+        "member": "m-wonly",
+        "tool": "str_replace",
+        "req": "sub/nested-target.txt",
+        "real": null,
+        "mode": "read",
+        "stage": "refused",
+        "code": "READ_REQUIRED_FOR_EDIT"
+      },
+      {
+        "member": "m-alice",
+        "tool": "write",
+        "req": "out/new-file.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+        "mode": "write",
+        "stage": "open-issued",
+        "code": "OK"
+      },
+      {
+        "member": "m-alice",
+        "tool": "write",
+        "req": "out/new-file.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/out/new-file.txt",
+        "mode": "write",
+        "stage": "open-returned",
+        "code": "OK"
+      },
+      {
+        "member": "m-alice",
+        "tool": "write",
+        "req": "private/secret.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+        "mode": "write",
+        "stage": "refused",
+        "code": "WRITE_DENIED"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "grant:G1",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "stage": "grant-consumed",
+        "code": "OK",
+        "grant": "G1"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "special-a/oneshot.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "stage": "open-issued",
+        "code": "OK"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "special-a/oneshot.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "stage": "open-returned",
+        "code": "OK"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "grant:G2",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "grant": "G2",
+        "stage": "refused",
+        "code": "GRANT_SCOPE_DENIED"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "grant:G3",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "grant": "G3",
+        "stage": "refused",
+        "code": "GRANT_CALL_MISMATCH"
+      },
+      {
+        "member": "m-oneshot",
+        "tool": "read",
+        "req": "grant:G1",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/special-a/oneshot.txt",
+        "mode": "read",
+        "grant": "G1",
+        "stage": "refused",
+        "code": "GRANT_CONSUMED"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "alias/secret.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt",
+        "mode": "read",
+        "stage": "refused",
+        "code": "READ_DENIED"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/secret-alias.txt",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
+        "mode": "read",
+        "ino": "64512:5184724",
+        "stage": "refused",
+        "code": "ALIAS_DENIED"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "../../etc/passwd",
+        "real": null,
+        "mode": "read",
+        "stage": "refused",
+        "code": "TRAVERSAL_DENIED"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "/etc/passwd",
+        "real": null,
+        "mode": "read",
+        "stage": "refused",
+        "code": "ANCHOR_OUT"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/../allowed/read.txt",
+        "real": null,
+        "mode": "read",
+        "stage": "refused",
+        "code": "TRAVERSAL_DENIED"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/sp ",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/sp ",
+        "mode": "read",
+        "stage": "open-issued",
+        "code": "OK"
+      },
+      {
+        "member": "m-alice",
+        "tool": "read",
+        "req": "allowed/sp ",
+        "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/sp ",
+        "mode": "read",
+        "stage": "open-returned",
+        "code": "OK"
+      }
+    ],
+    "grants": [
+      {
+        "id": "G1",
+        "memberId": "m-oneshot",
+        "callId": "p03-callA",
+        "consumed": true,
+        "replayAttempts": 1,
+        "foreignUseAttempts": 0,
+        "consumedFor": {
+          "rp": "special-a/oneshot.txt"
+        }
+      },
+      {
+        "id": "G2",
+        "memberId": "m-oneshot",
+        "callId": "p03-callB",
+        "consumed": false,
+        "replayAttempts": 0,
+        "foreignUseAttempts": 0,
+        "consumedFor": null
+      },
+      {
+        "id": "G3",
+        "memberId": "m-oneshot",
+        "callId": "p03-callZ",
+        "consumed": false,
+        "replayAttempts": 0,
+        "foreignUseAttempts": 1,
+        "consumedFor": null
+      }
+    ],
+    "native_lane_observation_only": [
+      {
+        "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/private/secret.txt"
+      }
+    ]
+  },
+  "strace": {
+    "FS-01.pos": {
+      "available": true,
+      "log": "strace-FS-01.pos.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 1,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 24,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        },
+        {
+          "pid": 24,
+          "op": "openat",
+          "path": "allowed/read.txt",
+          "failed": false
+        }
+      ]
+    },
+    "FS-01.neg": {
+      "available": true,
+      "log": "strace-FS-01.neg.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 35,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-01.native-bypass": {
+      "available": true,
+      "log": "strace-FS-01.native-bypass.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 1,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 46,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        },
+        {
+          "pid": 46,
+          "op": "openat",
+          "path": "private/secret.txt",
+          "failed": false
+        }
+      ]
+    },
+    "FS-02.refusal": {
+      "available": true,
+      "log": "strace-FS-02.refusal.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 57,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-02.pos": {
+      "available": true,
+      "log": "strace-FS-02.pos.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 68,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        },
+        {
+          "pid": 68,
+          "op": "openat",
+          "path": "out/new-file.txt",
+          "failed": false
+        },
+        {
+          "pid": 68,
+          "op": "openat",
+          "path": "out/new-file.txt",
+          "failed": false
+        }
+      ]
+    },
+    "FS-02.neg": {
+      "available": true,
+      "log": "strace-FS-02.neg.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 79,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-03.race": {
+      "available": true,
+      "log": "strace-FS-03.race.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 1,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 90,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        },
+        {
+          "pid": 90,
+          "op": "openat",
+          "path": "special-a/oneshot.txt",
+          "failed": false
+        }
+      ]
+    },
+    "FS-04.symlink": {
+      "available": true,
+      "log": "strace-FS-04.symlink.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 101,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-04.hardlink": {
+      "available": true,
+      "log": "strace-FS-04.hardlink.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 112,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-04.traversal": {
+      "available": true,
+      "log": "strace-FS-04.traversal.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 0,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 0,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 123,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        }
+      ]
+    },
+    "FS-04.spaces": {
+      "available": true,
+      "log": "strace-FS-04.spaces.log",
+      "childVerdict": "PASS",
+      "counts": {
+        "secret_okOpens": 0,
+        "specialA_okOpens": 0,
+        "etcPasswd_okOpens": 0,
+        "allowedRead_okOpens": 0,
+        "spacedExact_okOpens": 1,
+        "spacedTrimmed_okOpens": 0,
+        "spacedTrimmed_FAILEDAttempts": 1,
+        "hardlink_okOpens": 0
+      },
+      "fixtureOpens": [
+        {
+          "pid": 134,
+          "op": "openat",
+          "path": "private",
+          "failed": false
+        },
+        {
+          "pid": 134,
+          "op": "openat",
+          "path": "allowed/sp ",
+          "failed": false
+        },
+        {
+          "pid": 134,
+          "op": "openat",
+          "path": "allowed/sp",
+          "failed": true
+        }
+      ]
+    }
+  },
+  "family_verdict": {
+    "per_leg": [
+      {
+        "id": "FS-01.pos",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-01.neg",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-01.native-bypass",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-02.refusal",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-02.pos",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-02.neg",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-03.race",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-04.symlink",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-04.hardlink",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-04.traversal",
+        "verdict": "PASS"
+      },
+      {
+        "id": "FS-04.spaces",
+        "verdict": "PASS"
+      }
+    ],
+    "family": "INCONCLUSIVE (fixture-level candidate)",
+    "leaning": "fixture evidence is consistent with in-process Controlled FS enforcement at adapter node:fs call sites for the read/write/edit family (FS-01..FS-04 legs all behaved as designed)",
+    "preconditions_not_met": [
+      "INV-1 full coverage (T_dispatchable ⊆ T_governed) NOT enforced here — the bypass control leg deliberately demonstrates an un-adapted dispatchable tool reading private; deny/coverage must coexist before any family conclusion",
+      "real pinned-host re-verification (P0-6 / REG-01) not performed"
+    ],
+    "non_claims": [
+      "not OS-level enforcement",
+      "not a real-host result",
+      "strace here only observes this sandboxed test process"
+    ]
+  }
+}

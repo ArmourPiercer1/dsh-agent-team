@@ -18,6 +18,7 @@
 | P0-3 | 代理 3aac5394 → 03-fs/p03-fs-runner.mjs | PENDING | — | PENDING | §P0-3 | — |
 | P0-5 | 代理 f5f944b8 → node 05-ptc/p05-runner.mjs; timeout 120 node 06-lsp/p05-runner.mjs | 0/0（各含幂等重跑 0） | ~12m | PTC 8 腿（7 绿+1 NOT_RUN）→族 BOUNDED-DEFER；LSP 10 腿（含 HAZARD×2/UNCONFINED-READ/CORE 素材）→族 INCONCLUSIVE+Profile 兜底 | §P0-5 | eaec6c55 |
 | P0-6 s2b Team world | （未执行：c1 kit 全链=profiles 行+蓝图 world+mock model+会话驱动） | — | — | BOUNDED-DEFER（缺项=c1 链组合，机制两段已分别实证） | §P0-6 | 记录于 p06-stage1-note.md |
-| P0-7 独立复核 | 代理 81a39aec（HEAD c46ffb76 起） | PENDING | — | PENDING | §6.2 | 08-review/ |
+| P0-7 独立复核 | 代理 81a39aec 复跑 p00/p01/probe/smoke@:3184 等（HEAD c46ffb76） | 其复跑全 0 | ~18m | **R1 PASS（复核面；PASS≠P0 关闭）**；F1/F2/F3 已处置 | §6.2 | 08-review/p07-review-R1.md |
+| 影响面留痕 | `rm -rf dev/tests/`（21:42 一次 smoke 脚本路径缺陷遗留的世界目录 a5p0-smoke-20261015T214220Z，gitignored，非测试证据） | 0 | <1s | 已删（TEST_METHODS §7 留痕） | §7 | 本行 |
 
 web/jobs/MCP 族 = NOT RUN（本会话无网络授权，非阻塞项：§5 允许登记后补）。

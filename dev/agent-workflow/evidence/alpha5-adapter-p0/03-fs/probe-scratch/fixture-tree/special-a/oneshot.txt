@@ -1,0 +1,2 @@
+SYNTHETIC ALPHA.5 P0-3 fs fixture — special-a one-shot grant target (leg A)
+token=ONE-SHOT-A-TEST-TOKEN-77aa

@@ -1,8 +1,8 @@
 {
   "header": {
-    "recorded_at_utc": "2026-10-15T21:41:13.902Z",
+    "recorded_at_utc": "2026-10-15T21:45:12.871Z",
     "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline",
-    "team_HEAD": "7559b65277a8c9147187d85f73f48cab65d2c4eb",
+    "team_HEAD": "c46ffb76e33c8ce097a84963c72a60d88a9d263e",
     "team_branch": "exp/alpha5-poc-20261016",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain": "CLEAN",
@@ -39,7 +39,7 @@
   "observations": [
     {
       "event": "body",
-      "at": 1792100473975,
+      "at": 1792100712932,
       "name": "grep",
       "identity": "NATIVE.grep",
       "scopeId": "agent-A",
@@ -48,7 +48,7 @@
     },
     {
       "event": "body",
-      "at": 1792100473976,
+      "at": 1792100712933,
       "name": "read",
       "identity": "NATIVE.read",
       "scopeId": "agent-B",
@@ -57,7 +57,7 @@
     },
     {
       "event": "body",
-      "at": 1792100473976,
+      "at": 1792100712934,
       "name": "grep",
       "identity": "ADAPTER.grep",
       "scopeId": "agent-A",
@@ -66,7 +66,7 @@
     },
     {
       "event": "body",
-      "at": 1792100473977,
+      "at": 1792100712934,
       "name": "grep",
       "identity": "NATIVE.grep",
       "scopeId": "agent-B",
@@ -75,7 +75,7 @@
     },
     {
       "event": "body",
-      "at": 1792100473978,
+      "at": 1792100712935,
       "name": "psp_grep",
       "identity": "ADAPTER.psp_grep",
       "scopeId": "agent-A",
