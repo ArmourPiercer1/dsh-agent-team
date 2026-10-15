@@ -183,3 +183,70 @@ describe('A4-PR7 W1 (contract v9): team.listCorruptControlLegs', () => {
     expect((error.details as unknown as Record<string, unknown>)['reason']).toBe('port-contract')
   })
 })
+
+// ---------------------------------------------------------------------------
+// G7 (2026-10-16 authorized round): the CAP BOUNDARY MATRIX. The law
+// (`corruptControlLegsValue`) slices BEFORE validating, so below / exactly /
+// above the cap must be pinned at the exact edges, and a MIXED world must
+// answer the position question honestly:
+//   - a malformed row INSIDE the listed prefix is a port-contract violation
+//     the whole read refuses (the existing loop only pins single-row lists);
+//   - a malformed row BEYOND the cap never serializes — it is discarded but
+//     still COUNTED (corruptCount is exact) while `truncated` rides. That
+//     position-dependence (refuse vs discard-and-count) is a disclosed
+//     boundary; its counting/pagination evolution is an OPEN product
+//     decision this pin records, it does not decide.
+// ---------------------------------------------------------------------------
+
+describe('G7: corrupt-legs cap boundary matrix (below / exactly / above; clean, corrupt, mixed)', () => {
+  const clean = (n: number, from = 1): Record<string, unknown>[] =>
+    Array.from({ length: n }, (_, i) => ({ sequence: from + i, disclosesMember: true }))
+
+  const read = async (legs: readonly Record<string, unknown>[]) => {
+    const { port } = corruptionPort(legs)
+    const { dispatch } = makeDispatcher({ teamControlCorruption: port as never })
+    return dispatch('team.listCorruptControlLegs', v9Wire({ teamSessionId: SID }))
+  }
+
+  it('B1 below the cap (19): every row lists, corruptCount exact, truncated false', async () => {
+    const corruption = corruptionOf(await read(clean(19))) as Record<string, unknown>
+    expect(corruption['corruptCount']).toBe(19)
+    expect((corruption['legs'] as unknown[]).length).toBe(19)
+    expect(corruption['truncated']).toBe(false)
+  })
+
+  it('B2 EXACTLY at the cap: the cap is inclusive — truncated stays false', async () => {
+    const corruption = corruptionOf(await read(clean(REMOTE_CORRUPT_CONTROL_LEGS_CAP))) as Record<string, unknown>
+    expect(corruption['corruptCount']).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP)
+    expect((corruption['legs'] as unknown[]).length).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP)
+    expect(corruption['truncated']).toBe(false)
+  })
+
+  it('B3 one above the cap: corruptCount exact (21), the OLDEST 20 list in service order, truncated true', async () => {
+    const corruption = corruptionOf(await read(clean(REMOTE_CORRUPT_CONTROL_LEGS_CAP + 1))) as Record<string, unknown>
+    expect(corruption['corruptCount']).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP + 1)
+    const legs = corruption['legs'] as { sequence: number }[]
+    expect(legs.length).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP)
+    expect(legs.map((leg) => leg.sequence)).toEqual(clean(REMOTE_CORRUPT_CONTROL_LEGS_CAP).map((leg) => leg.sequence))
+    expect(corruption['truncated']).toBe(true)
+  })
+
+  it('B4 MIXED — malformed row BEYOND the cap: the report still serves (the row never serializes), counted exactly, truncated rides (OPEN semantics: discard-and-count vs refuse; pinned, not decided)', async () => {
+    const mixed = [...clean(REMOTE_CORRUPT_CONTROL_LEGS_CAP), { sequence: 999, disclosesMember: 'yes' }]
+    const corruption = corruptionOf(await read(mixed)) as Record<string, unknown>
+    expect(corruption['corruptCount']).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP + 1)
+    expect((corruption['legs'] as unknown[]).length).toBe(REMOTE_CORRUPT_CONTROL_LEGS_CAP)
+    expect(corruption['truncated']).toBe(true)
+  })
+
+  it('B5 MIXED — malformed row INSIDE the prefix: the whole read refuses typed (port-contract), no partial disclosure', async () => {
+    const mixed = [...clean(2), { sequence: 3, disclosesMember: 'yes' }, ...clean(18, 4)]
+    const { port } = corruptionPort(mixed)
+    const { dispatch } = makeDispatcher({ teamControlCorruption: port as never })
+    const { error } = expectError(
+      await dispatch('team.listCorruptControlLegs', v9Wire({ teamSessionId: SID })),
+    )
+    expect(error.code).toBe('internal-error')
+    expect((error.details as unknown as Record<string, unknown>)['reason']).toBe('port-contract')
+  })
+})
