@@ -1,0 +1,68 @@
+{
+  "header": {
+    "recorded_at_utc": "2026-10-15T21:34:29.772Z",
+    "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline",
+    "team_HEAD": "d3c9760d8f8ea2a2bfac4fd628133261b127f756",
+    "team_branch": "exp/alpha5-poc-20261016",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain": "CLEAN",
+    "node": "v24.21.0",
+    "platform": "linux 6.8.0-142-generic"
+  },
+  "results": [
+    {
+      "id": "P0-0.repro-native",
+      "verdict": "PASS",
+      "detail": "A ran NATIVE.grep; B ran NATIVE.read"
+    },
+    {
+      "id": "P0-0.scope-distinction.get",
+      "verdict": "PASS",
+      "detail": "A=ADAPTER.grep B=NATIVE.grep global=NATIVE.grep"
+    },
+    {
+      "id": "P0-0.counters",
+      "verdict": "PASS",
+      "detail": "ADAPTER=1 NATIVE=2 (expect 1/2: A0+B1 ran native, A1 ran adapter)"
+    },
+    {
+      "id": "P0-0.schemas",
+      "verdict": "PASS",
+      "detail": "A=[grep,read] B=[grep,read]"
+    }
+  ],
+  "observations": [
+    {
+      "event": "body",
+      "at": 1792100069836,
+      "name": "grep",
+      "identity": "NATIVE.grep",
+      "scopeId": "agent-A",
+      "callId": "p00-c1"
+    },
+    {
+      "event": "body",
+      "at": 1792100069838,
+      "name": "read",
+      "identity": "NATIVE.read",
+      "scopeId": "agent-B",
+      "callId": "p00-c2"
+    },
+    {
+      "event": "body",
+      "at": 1792100069838,
+      "name": "grep",
+      "identity": "ADAPTER.grep",
+      "scopeId": "agent-A",
+      "callId": "p00-c3"
+    },
+    {
+      "event": "body",
+      "at": 1792100069838,
+      "name": "grep",
+      "identity": "NATIVE.grep",
+      "scopeId": "agent-B",
+      "callId": "p00-c4"
+    }
+  ]
+}

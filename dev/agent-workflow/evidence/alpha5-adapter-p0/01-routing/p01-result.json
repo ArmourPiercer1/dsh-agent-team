@@ -1,0 +1,65 @@
+{
+  "recorded_at_utc": "2026-10-15T21:34:59.911Z",
+  "legs": [
+    {
+      "id": "L1.BND-01.shadow-no-restrict",
+      "verdict": "PASS",
+      "detail": "A→ADAPTER.grep B→NATIVE.grep nativeCount=1 (finding: own-layer registration already shadows inheritance for that scope)"
+    },
+    {
+      "id": "L2.restrict-after-global-visible",
+      "verdict": "PASS",
+      "detail": "A=UNKNOWN B=NATIVE.grep"
+    },
+    {
+      "id": "L2.adapter-live",
+      "verdict": "PASS",
+      "detail": "A→ADAPTER.grep native=0"
+    },
+    {
+      "id": "L2.native-zero",
+      "verdict": "PASS",
+      "detail": "native=0"
+    },
+    {
+      "id": "L2b.post-unload-resolution",
+      "verdict": "PASS",
+      "detail": "ran=ADAPTER.grep afterUnload=UNKNOWN"
+    },
+    {
+      "id": "L2b.BND-02.safe-unload-native-zero",
+      "verdict": "PASS",
+      "detail": "secondRun=\"Error: unknown tool \\\"grep\\\"\" native=0"
+    },
+    {
+      "id": "L3-safe.BND-03.dispose-under-race-mask-lives",
+      "verdict": "PASS",
+      "detail": "outcome=\"Error: unknown tool \\\"grep\\\"\" native=0 adapter=0"
+    },
+    {
+      "id": "L3-hazard.BND-03.lift-mask-under-race (characterization)",
+      "verdict": "PASS",
+      "detail": "expected-documented-hazard native-body-ran once via dispatch-time re-resolution; got native=1 outcome=\"ran:grep@NATIVE.grep\" — evidence that mask lifetime MUST outlive in-flight calls (atomic ordered assembly)"
+    },
+    {
+      "id": "L4.BND-04.guard-after-allow",
+      "verdict": "PASS",
+      "detail": "outcome=\"Error: team-guard-denial\" adapter=0 native=0"
+    },
+    {
+      "id": "L5.BND-05.conflict-and-reinstall",
+      "verdict": "PASS",
+      "detail": "dupScopedThrew=true afterReinstall=ADAPTER.grep#3"
+    },
+    {
+      "id": "L6.agentless-global-lane",
+      "verdict": "PASS",
+      "detail": "agentless→NATIVE.grep (finding: agentless dispatch runs the global body — Team adapters do NOT cover agentless callers; out-of-Team lane must be excluded or bound separately)"
+    },
+    {
+      "id": "L7.PTC-01.reserved-run-code",
+      "verdict": "PASS",
+      "detail": "register_threw=\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\" restrict_threw=\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\""
+    }
+  ]
+}
