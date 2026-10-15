@@ -1,0 +1,308 @@
+[
+  {
+    "seq": 1,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"A5P0MK_DISC_2026-10-15T22-44-01\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot ",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_DISC_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5P0M",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 stage2b session"
+    }
+  },
+  {
+    "seq": 3,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a3507c8ac1caaa52692e4cf404803f0fb7c",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-sa3th3kn",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T22-44-01",
+            "requestToken": "a5-c1-2026-10-15T22-44-01",
+            "delegationTemplateId": "worker",
+            "label": "m-adp"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 stage2b session"
+    }
+  },
+  {
+    "seq": 5,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a3507c8ac1caaa52692e4cf404803f0fb7c",
+    "toolMsgAfterTrigger": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-t15xw4jh",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T22-44-01",
+            "requestToken": "a5-c2-2026-10-15T22-44-01",
+            "delegationTemplateId": "worker",
+            "label": "m-ctl"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a3507c8ac1caaa52692e4cf404803f0fb7c",
+    "toolMsgAfterTrigger": 2,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-vo06k2qp",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T22-44-01",
+            "requestToken": "a5-d1-2026-10-15T22-44-01",
+            "delegationInstanceId": "inst-1kagruf11p51",
+            "label": "m-adp",
+            "prompt": "A5P0MK_M1_2026-10-15T22-44-01 Follow this script EXACTLY, one tool call per turn: (1) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt; (2) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-arm-A5P0ARM_2026-10-15T22-44-01.txt; (3) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt again; (4) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-dispose-A5P0DISP_2026-10-15T22-44-01.txt; (5) read /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt again; (6) finish. Reply with the final marker when done.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a3507c8ac1caaa52692e4cf404803f0fb7c",
+    "toolMsgAfterTrigger": 3,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_L1_DONE"
+    }
+  },
+  {
+    "seq": 8,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-kp9j4dx4",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 9,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 stage2b session"
+    }
+  },
+  {
+    "seq": 10,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-gj9dbbwo",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-arm-A5P0ARM_2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 2,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-7njrqsww",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 12,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-the4v2ek",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-dispose-A5P0DISP_2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 13,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-c9xyjekc",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d1-2026-10-15T22-44-01] A5P0MK_M1_2026-10-15T22-44-01 Follow this scr",
+    "toolMsgAfterTrigger": 5,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M1_DONE"
+    }
+  },
+  {
+    "seq": 15,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:a3507c8ac1caaa52692e4cf404803f0fb7c",
+    "toolMsgAfterTrigger": 3,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_L1_DONE"
+    }
+  },
+  {
+    "seq": 16,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"A5P0MK_D2_2026-10-15T22-44-01 Now delegate the control script to m-ctl (second member): one read",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-vm785iqf",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p0-team-2026-10-15T22-44-01",
+            "requestToken": "a5-d2-2026-10-15T22-44-01",
+            "delegationInstanceId": "inst-03aqhii0jjnv",
+            "label": "m-ctl",
+            "prompt": "A5P0MK_M2_2026-10-15T22-44-01 Call read on /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt exactly once, then finish.",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 17,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"A5P0MK_D2_2026-10-15T22-44-01 Now delegate the control script to m-ctl (second member): one read",
+    "toolMsgAfterTrigger": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_D2_DONE"
+    }
+  },
+  {
+    "seq": 18,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d2-2026-10-15T22-44-01] A5P0MK_M2_2026-10-15T22-44-01 Call read on /s",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5-jztcxhfr",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 19,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team",
+    "toolMsgAfterTrigger": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5p0 stage2b session"
+    }
+  },
+  {
+    "seq": 20,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5-d2-2026-10-15T22-44-01] A5P0MK_M2_2026-10-15T22-44-01 Call read on /s",
+    "toolMsgAfterTrigger": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_M2_DONE"
+    }
+  },
+  {
+    "seq": 21,
+    "status": 200,
+    "userHead": "[{\"type\":\"text\",\"text\":\"A5P0MK_D2_2026-10-15T22-44-01 Now delegate the control script to m-ctl (second member): one read",
+    "toolMsgAfterTrigger": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5P0_D2_DONE"
+    }
+  }
+]

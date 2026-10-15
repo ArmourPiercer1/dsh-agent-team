@@ -11,3 +11,6 @@
 [2026-10-15T22:24:52.044Z] FAIL I2c: I2: Leader (mock script) created both members and delegated to M1 — requests=2
 [2026-10-15T22:24:52.044Z] FAIL I2c: I2: Leader (mock script) create member x2 (instanceIds) + async delegate to M1 — instanceIds=[]
 [2026-10-15T22:24:52.065Z] FAIL I2d: I2: member sessions active — projection carries the instances; p6t6 liveSessions grew (root + 2 members); session/list recorded — projectionHasInstance=false newLive=[]
+[2026-10-15T22:27:52.322Z] mock wait timed out: M1 native read result (requests=2)
+[2026-10-15T22:27:52.322Z] FAIL I3: I3: member native tool REAL execution — scripted read returned the unique on-disk seed content — result=
+[2026-10-15T22:30:52.610Z] mock wait timed out: M1 ARM read result (requests=2)

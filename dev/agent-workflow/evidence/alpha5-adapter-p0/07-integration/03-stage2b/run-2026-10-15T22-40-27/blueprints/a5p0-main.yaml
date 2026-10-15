@@ -1,0 +1,89 @@
+---
+schemaVersion: 3
+blueprintId: team.a5p0-main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5p0 stage2b main team. A5P0MK_L1_2026-10-15T22-40-27 and A5P0MK_D2_2026-10-15T22-40-27 drive your chains."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_collect
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      ask:
+        - tool: bash
+          resource:
+            kind: any
+      deny:
+        - tool: read
+          resource:
+            kind: subtree
+            path: runtime
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+members:
+  - templateId: worker
+    persona: "You are a worker of the a5p0 stage2b main team. Follow the delegated script exactly, one tool call at a time."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask: []
+        deny:
+          - tool: read
+            resource:
+              kind: subtree
+              path: runtime
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

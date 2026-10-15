@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.probe-anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "probe PROBEMK_2026-10-15T22-34-43"
+members:
+  - templateId: worker
+    persona: "probe worker"
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

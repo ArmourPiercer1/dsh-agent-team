@@ -463,11 +463,36 @@ function lastUserTextOf(req) {
   const last = messages[i]
   return typeof last.content === 'string' ? last.content : JSON.stringify(last.content ?? '')
 }
-function toolMsgsOf(req) {
+// WIRE SHAPE PIN (probe-wire-shape.mjs, this host generation, Anthropic-style
+// message blocks): a tool result arrives as a role='user' message carrying a
+// content block { type:'tool_result', tool_use_id, content:[{type:'text'}],
+// is_error }. There are NO role='tool' messages on this wire.
+function toolResultsAfterTrigger(req) {
   const messages = messagesOf(req)
-  return messages.slice(lastTriggerIndex(req) + 1).filter((m) => m.role === 'tool')
+  const out = []
+  for (const m of messages.slice(lastTriggerIndex(req) + 1)) {
+    const blocks = Array.isArray(m.content) ? m.content : []
+    for (const b of blocks) {
+      if (b?.type === 'tool_result') {
+        const text = (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join('')
+        out.push({ text, isError: b.is_error === true, toolUseId: b.tool_use_id ?? null })
+      }
+    }
+    if (m.role === 'tool') out.push({ text: typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? ''), isError: false, toolUseId: m.tool_call_id ?? null })
+  }
+  return out
 }
-function allToolMsgsOf(req) { return messagesOf(req).filter((m) => m.role === 'tool') }
+function toolMsgsOf(req) { return toolResultsAfterTrigger(req) }
+function allToolResultsOf(req) {
+  const out = []
+  for (const m of messagesOf(req)) {
+    const blocks = Array.isArray(m.content) ? m.content : []
+    for (const b of blocks) {
+      if (b?.type === 'tool_result') out.push({ text: (Array.isArray(b.content) ? b.content : []).map((c) => c?.text ?? '').join(''), toolUseId: b.tool_use_id ?? null })
+    }
+  }
+  return out
+}
 function extractInstanceId(content) {
   const m = /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(String(content))
     ?? /"instanceId"\s*:\s*"([^"]+)"/.exec(String(content))
@@ -478,7 +503,7 @@ function extractInstanceId(content) {
 function discoverReadArgKey(req) {
   const tools = bodyOf(req)?.tools ?? []
   const read = tools.find((t) => (t?.function?.name ?? t?.name) === 'read')
-  const props = read?.function?.parameters?.properties ?? read?.parameters?.properties ?? {}
+  const props = read?.function?.parameters?.properties ?? read?.input_schema?.properties ?? read?.parameters?.properties ?? {}
   for (const key of ['file_path', 'path', 'filename', 'filePath']) if (key in props) return key
   const first = Object.keys(props)[0]
   return first ?? 'file_path'
@@ -491,7 +516,8 @@ function makeDecide() {
   const st = { readArgKey: 'file_path' }
   return function decide({ req }) {
     const firstMsg = messagesOf(req)[0]
-    if (typeof firstMsg?.content === 'string' && firstMsg.content.startsWith('Create a concise title')) {
+    const firstText = typeof firstMsg?.content === 'string' ? firstMsg.content : JSON.stringify(firstMsg?.content ?? '')
+    if (firstText.includes('session title')) {
       return { kind: 'text', content: 'a5p0 stage2b session' }
     }
     const lastUser = lastUserTextOf(req)
@@ -520,8 +546,8 @@ function makeDecide() {
         case 0: return toolCall('team_create_member', { rootSessionId: CREATE_ROOT, requestToken: `a5-c1-${RUN_STAMP}`, delegationTemplateId: 'worker', label: 'm-adp' })
         case 1: return toolCall('team_create_member', { rootSessionId: CREATE_ROOT, requestToken: `a5-c2-${RUN_STAMP}`, delegationTemplateId: 'worker', label: 'm-ctl' })
         case 2: {
-          const id = extractInstanceId(toolMsgsOf(req)[0]?.content)
-          if (id === null) return { kind: 'text', content: `A5P0_L1_ID_FAIL :: ${String(toolMsgsOf(req)[0]?.content).slice(0, 300)}` }
+          const id = extractInstanceId(toolResultsAfterTrigger(req)[0]?.text ?? '')
+          if (id === null) return { kind: 'text', content: `A5P0_L1_ID_FAIL :: ${String(toolResultsAfterTrigger(req)[0]?.text).slice(0, 300)}` }
           return toolCall('team_delegate', { rootSessionId: CREATE_ROOT, requestToken: `a5-d1-${RUN_STAMP}`, delegationInstanceId: id, label: 'm-adp', prompt: M1_PROMPT, async: true })
         }
         case 3: return { kind: 'text', content: 'A5P0_L1_DONE' }
@@ -531,7 +557,7 @@ function makeDecide() {
     if (lastUser.includes(MK_D2)) {
       switch (tools) {
         case 0: {
-          const ids = allToolMsgsOf(req).map((m) => extractInstanceId(String(m.content ?? ''))).filter((v) => v !== null)
+          const ids = allToolResultsOf(req).map((r) => extractInstanceId(r.text)).filter((v) => v !== null)
           const id2 = ids.length >= 2 ? ids[1] : null
           if (id2 === null) return { kind: 'text', content: `A5P0_D2_ID_FAIL ids=${String(ids.length)}` }
           return toolCall('team_delegate', { rootSessionId: CREATE_ROOT, requestToken: `a5-d2-${RUN_STAMP}`, delegationInstanceId: id2, label: 'm-ctl', prompt: M2_PROMPT, async: true })
@@ -548,11 +574,14 @@ async function waitForMock(mock, pred, timeoutMs, label) {
   for (;;) {
     const hit = mock.requests.find(pred)
     if (hit !== undefined) return hit
+    // Storm fuse (run 22-32-37 OOM): a stuck oracle loop must never grow the
+    // corpus unboundedly — fail the wait instead.
+    if (mock.requests.length > 300) { log(`mock storm fuse: ${label} (requests=${String(mock.requests.length)})`); return null }
     if (Date.now() >= deadline) { log(`mock wait timed out: ${label} (requests=${String(mock.requests.length)})`); return null }
     await new Promise((r) => setTimeout(r, 400))
   }
 }
-const toolResultText = (req, idx) => String(toolMsgsOf(req)[idx]?.content ?? '')
+const toolResultText = (req, idx) => String(toolMsgsOf(req)[idx]?.text ?? '')
 const markerLineCount = () => { try { return readFileSync(MARKER_FILE, 'utf8').split('\n').filter((l) => l.startsWith('ADAPTER_CALL')).length } catch { return 0 } }
 
 // ── main ────────────────────────────────────────────────────────────────────
@@ -610,7 +639,13 @@ async function main() {
     if (discReq === null) dieFatal(`L0 discovery request absent; cannot compute the deny list`)
     const surface = (discReq.body.tools ?? []).map((t) => t.function?.name ?? t.name ?? String(t)).sort()
     writeEvidence('l0-surface.json', { surface })
-    const denyList = surface.filter((n) => !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n) && !TEAM_TOOL_CATALOG.includes(n))
+    // denyList: builtinToolDeny is applied with `tools.restrict()` on the
+    // agent scope, which ONLY names the inherited/global surface (run
+    // 2026-10-15T22-21-48 typed error: "known global tools: bash, edit, read,
+    // read_image, write" — team tools are OWN-layer registrations and are not
+    // restrictable). So team_* names are always dropped from the deny list.
+    const denyList = surface.filter((n) => !n.startsWith('team_')
+      && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n) && !TEAM_TOOL_CATALOG.includes(n))
     writeFileSync(join(BLUEPRINT_DIR, 'a5p0-main.yaml'), savedBlueprintYaml(denyList))
     log(`main blueprint written (denyList=${denyList.length} names)`)
 
@@ -634,7 +669,7 @@ async function main() {
     // Leader chain: create_member x2 + async delegate M1.
     const l1Done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_L1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_L1_DONE', 180_000, 'L1 leader chain done')
     if (l1Done === null) { check('I2c', 'I2: Leader (mock script) created both members and delegated to M1', false, `requests=${String(mock.requests.length)}`); fail('I2c') }
-    const createResults = l1Done === null ? [] : toolMsgsOf(l1Done).slice(0, 2).map((m) => String(m.content ?? ''))
+    const createResults = l1Done === null ? [] : toolMsgsOf(l1Done).slice(0, 2).map((r) => String(r.text ?? ''))
     writeEvidence('i2-member-create-results.json', createResults.map((c) => c.slice(0, 1500)))
     const instanceIds = createResults.map((c) => extractInstanceId(c))
     const membersCreated = instanceIds.length === 2 && instanceIds.every((v) => v !== null)
@@ -694,11 +729,16 @@ async function main() {
     if (!i4bok) fail('I4b')
 
     // ══ I5: dispose (restrict KEPT) -> typed unknown, no native fallback ══
-    const m1disp = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 5, 180_000, 'M1 dispose-token read result')
-    const dispResult = m1disp === null ? '' : toolResultText(m1disp, 3)
-    const m1unk = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && toolMsgsOf(r).length === 6, 180_000, 'M1 unknown-tool read result')
-    const unkResult = m1unk === null ? '' : toolResultText(m1unk, 4)
-    writeEvidence('i5-unknown-read.json', { seq: m1unk?.seq ?? null, disposeResult: dispResult.slice(0, 400), result: unkResult.slice(0, 1200) })
+    // M1 chain results ride: [0]=seed native, [1]=arm->adapter, [2]=seed
+    // adapter, [3]=dispose-token read (typed unknown — the assembly drops
+    // before its own dispatch), [4]=seed read after dispose (typed unknown).
+    // The request carrying results[3]+[4] is the one that replies DONE
+    // (oracle case 5). Run 22-40-27 pinned this ride; asserting a 6-result
+    // request was the kit's off-by-one, not host behavior.
+    const m1done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_M1_DONE', 180_000, 'M1 chain done (carries the post-dispose results)')
+    const dispResult = m1done === null ? '' : toolResultText(m1done, 3)
+    const unkResult = m1done === null ? '' : toolResultText(m1done, 4)
+    writeEvidence('i5-unknown-read.json', { seq: m1done?.seq ?? null, resultsTotal: m1done === null ? null : toolMsgsOf(m1done).length, disposeRideResult: dispResult.slice(0, 400), result: unkResult.slice(0, 1200) })
     // Session-event evidence: the public core read (session/page) over every
     // member session (which id is M1 is not fixed, so scan all new sessions).
     const memberPages = []
@@ -711,10 +751,9 @@ async function main() {
     const pageHasUnknown = pagesText.toLowerCase().includes('unknown')
     const pageHasAdapter = pagesText.includes(ADAPTER_MARK)
     const i5ok = check('I5', 'I5: safe-unload — after dispose (restrict kept) the same name yields the typed unknown-tool result in the turn (no native fallback: seed content absent, marker count unchanged)',
-      /unknown tool|unknown_tool/i.test(unkResult) && !unkResult.includes(SEED_UNIQUE) && markerLineCount() === 2,
+      m1done !== null && /unknown tool|unknown_tool|UNKNOWN_TOOL/i.test(unkResult) && !unkResult.includes(SEED_UNIQUE) && markerLineCount() === 2,
       `unkResult=${unkResult.slice(0, 200)} markerLines=${String(markerLineCount())} sessionPageUnknown=${String(pageHasUnknown)} sessionPageAdapter=${String(pageHasAdapter)}`)
     if (!i5ok) fail('I5')
-    const m1done = await waitForMock(mock, (r) => r.body !== null && lastUserTextOf(r).includes(MK_M1) && (r.reply?.kind === 'text' ? r.reply.content : '') === 'A5P0_M1_DONE', 120_000, 'M1 chain done')
     check('I5z', 'I5 (closure): the M1 scripted chain terminated after the unknown-tool result', m1done !== null, `m1done=${String(m1done === null ? 'null' : m1done.seq)}`)
     if (m1done === null) fail('I5z')
   } catch (error) {

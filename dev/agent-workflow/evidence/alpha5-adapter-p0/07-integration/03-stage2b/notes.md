@@ -35,3 +35,33 @@
   (restrict-first -> register; the p01-fixture topology), sibling-inert.
 - Model: mock staticModel provider=deepseek-official model=a5p0-model; harness
   session model = qwen3.8-flash-next (this agent).
+
+## run 2026-10-15T22-21-48 — I2a FAIL (denyList team_* names)
+- Typed error (i2-team-create.json, verbatim): "tools.restrict() names unknown
+  global tools \"team_archive_member\", \"team_grant_permission\",
+  \"team_revoke_permission\"; known global tools: bash, edit, read, read_image,
+  write" → builtinToolDeny is scoped to the INHERITED surface; team tools are
+  own-layer. Kit fix: denyList drops all `team_*`. World removed after kill.
+
+## run 2026-10-15T22-32-37 — I1 PASS again; I2 loop → KIT OOM (exit 134)
+- ROOT CAUSE (probe-wire-shape.mjs + wire-capture.json, this host generation):
+  the model-request message array is ANTHROPIC-style: assistant tool calls are
+  content blocks {type:'tool_use', id, name, input}; tool results ride a
+  role='user' message as {type:'tool_result', tool_use_id, content:[…],
+  is_error}. NO role='tool' messages exist. The c1-shaped oracle
+  (role==='tool' counting) therefore stuck at count 0 and replayed
+  create_member 1747 times (leader session step/start=1747; harness
+  repeat-tool-call reminders fired but the ORACLE, not the model, drove the
+  loop). Kit OOMed at the 2GB heap storing the corpus.
+- Also pinned: the title-generation request prompt on this generation starts
+  "Generate the session title from this JSON array of human messages:" (the
+  c1 kit's "Create a concise title" guard does NOT match — oracle must guard
+  on /session title/).
+- Native read output characteristic (probe): "<path>…</path> <type>file</type>
+  <content> 1: <line> … (End of file - total N lines) </content>".
+- FIXES: toolMsgsOf→tool_result-block scan; toolResultText→block text; title
+  guard 'session title'; discoverReadArgKey reads input_schema.properties;
+  mock storm fuse (>300 requests fails the wait instead of looping to OOM).
+- IMPACT RECORD: stray detached kit start (shell-& mistake) + its world
+  a5p0-s2b-2026-10-15T22-40-12 killed/removed; sandbox pid1 kill affected only
+  the ephemeral bwrap wrapper. Port 3185 re-verified free (000) before rerun.

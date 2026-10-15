@@ -1,0 +1,48 @@
+{
+  "type": "server-response",
+  "rpcId": "a5cat-hrfxlzp4u1",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "blueprints": [
+          {
+            "blueprintId": "team.a5p0-anchor",
+            "revisions": [
+              1
+            ],
+            "revisionStates": [
+              {
+                "revision": 1,
+                "schemaVersion": 3,
+                "migrationState": "current"
+              }
+            ]
+          },
+          {
+            "blueprintId": "team.a5p0-main",
+            "revisions": [
+              1
+            ],
+            "revisionStates": [
+              {
+                "revision": 1,
+                "schemaVersion": 3,
+                "migrationState": "current"
+              }
+            ]
+          }
+        ]
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "catalog.list",
+        "endpoint": "catalog.list",
+        "contractVersion": 1,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}
