@@ -65,3 +65,22 @@
 - IMPACT RECORD: stray detached kit start (shell-& mistake) + its world
   a5p0-s2b-2026-10-15T22-40-12 killed/removed; sandbox pid1 kill affected only
   the ephemeral bwrap wrapper. Port 3185 re-verified free (000) before rerun.
+
+## run 2026-10-15T22-44-01 — VERDICT PASS 10/10 (KIT_EXIT=0)
+- Single boot: I1 | I2a-d | I3 | I4a/I4b | I5/I5z all PASS (summary.json).
+  instanceIds inst-1kagruf11p51 / inst-03aqhii0jjnv; M1 agent
+  session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01.
+- I5 typed result verbatim (turn tool_result + member session events seq38/47
+  archived in i5-member-session-events.json): Error: unknown tool "read" —
+  no native fallback (seed absent), marker file stays at 2 lines, plugin log
+  "DISPOSED adapter=unregistered restrict=KEPT (safe-unload)".
+- I5 kit fix this round = oracle off-by-one only (results ride the DONE
+  request; pinned by run 22-40-27 artifacts — see run-*/i5-unknown-read.json).
+- WORLD CLEANUP RECORD (TEST_METHODS §7): removed a5p0-s2b-2026-10-15T22-32-37,
+  -22-40-27, -22-44-01 (all hosts already dead; full evidence retained in
+  run-*/ dirs; i5-member-session-events.json extracted from the PASS world
+  before removal). Pre-existing a5p0-boot/smoke/stage2 worlds (other steps,
+  earlier today) left untouched.
+- Post-run gates: port 3185 no response (curl 000); :3080 stable instance
+  untouched (401 pre AND post, never connected otherwise); :3180 unreachable;
+  test-use porcelain=0 @ 639ed015397290b3745d163aafe02ffee4aa3f84.

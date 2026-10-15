@@ -1,0 +1,51 @@
+[
+ {
+  "seq": 19,
+  "type": "tool/result",
+  "tool": null,
+  "role": "tool",
+  "text": "{\"turn\":1,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-a5-kp9j4dx4\"},\"toolCallId\":\"call-a5-kp9j4dx4\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-seed-2026-10-15T22-44-01.txt</path>\\n<type>file</type>\\n<content>\\n1: a5p0 stage2b seed file (run 2026-10-15T22-44-01)\\n2: second line\\n3: A5P0_SEED_CONTENT_2026-10-15T22-44-01\\n4: fourth line\\n\\n(E"
+ },
+ {
+  "seq": 23,
+  "type": "assistant/message",
+  "tool": null,
+  "role": "assistant",
+  "text": "{\"turn\":1,\"step\":2,\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool-call\",\"id\":\"call-a5-gj9dbbwo\",\"name\":\"read\",\"arguments\":\"{\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-arm-A5P0ARM_2026-10-15T22-44-01.txt\\\"}\"}],\"source\":{\"kind\":\"model\",\"provider\":\"deepseek-official\",\"model\":\"a5p0-model\",\"replayState\":{\"response\":{\"kind\":\"deepseek-messages\",\"version\":1,\"model\":\"a5p0-model\"},\"blocks\":[{\""
+ },
+ {
+  "seq": 25,
+  "type": "tool/result",
+  "tool": null,
+  "role": "tool",
+  "text": "{\"turn\":1,\"step\":2,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-a5-gj9dbbwo\"},\"toolCallId\":\"call-a5-gj9dbbwo\",\"content\":[{\"type\":\"text\",\"text\":\"A5P0_ADAPTER_RAN_2026-10-15T22-44-01 call=1 agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01\"}],\"isError\":false,\"id\":\"1bb6cd54-6c95-41e1-934e-b26858e41b0f\"}}"
+ },
+ {
+  "seq": 32,
+  "type": "tool/result",
+  "tool": null,
+  "role": "tool",
+  "text": "{\"turn\":1,\"step\":3,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-a5-7njrqsww\"},\"toolCallId\":\"call-a5-7njrqsww\",\"content\":[{\"type\":\"text\",\"text\":\"A5P0_ADAPTER_RAN_2026-10-15T22-44-01 call=2 agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01\"}],\"isError\":false,\"id\":\"2ce8d735-31fa-4b92-b07a-faac78c39cf6\"}}"
+ },
+ {
+  "seq": 36,
+  "type": "assistant/message",
+  "tool": null,
+  "role": "assistant",
+  "text": "{\"turn\":1,\"step\":4,\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"tool-call\",\"id\":\"call-a5-the4v2ek\",\"name\":\"read\",\"arguments\":\"{\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-44-01/workspace/a5p0-dispose-A5P0DISP_2026-10-15T22-44-01.txt\\\"}\"}],\"source\":{\"kind\":\"model\",\"provider\":\"deepseek-official\",\"model\":\"a5p0-model\",\"replayState\":{\"response\":{\"kind\":\"deepseek-messages\",\"version\":1,\"model\":\"a5p0-model\"},\"blocks"
+ },
+ {
+  "seq": 38,
+  "type": "tool/result",
+  "tool": null,
+  "role": "tool",
+  "text": "{\"turn\":1,\"step\":4,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-a5-the4v2ek\"},\"toolCallId\":\"call-a5-the4v2ek\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"read\\\"\"}],\"isError\":true,\"id\":\"9bcf80c1-73ce-462d-886f-1ec2c2d6c292\"},\"error\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}"
+ },
+ {
+  "seq": 47,
+  "type": "tool/result",
+  "tool": null,
+  "role": "tool",
+  "text": "{\"turn\":1,\"step\":5,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"call-a5-c9xyjekc\"},\"toolCallId\":\"call-a5-c9xyjekc\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"read\\\"\"}],\"isError\":true,\"id\":\"2b265a17-7e83-4277-a9fb-8c443349c291\"},\"error\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}}"
+ }
+]
