@@ -50,3 +50,18 @@
 ## 4. 诚实边界
 - fixture/替身证据不写成真实宿主 PASS；每个 TEST DOUBLE 在其 notes.md 有界限声明。
 - 未跑项一律 NOT RUN/ENV_BLOCK/BOUNDED-DEFER + 缺项说明；无 P0 GO；不新增 fork（A5-FORK-001 仍 CONDITIONAL/未产生）；不触碰 PR249/不改 PR 状态；G1 与各待裁项未动。
+
+---
+
+## 6. 续轮增补（用户裁定"无本轮时限"后，HEAD c31e8cc7）
+
+| 车道 | 判定 | 提交 |
+| --- | --- | --- |
+| SRCH-04 spill | 行为级 PASS（生产 handler+LocalSpillStore+真 rg；S-09 对象身份弃权=Δ0+footer，他 scope Δ1，dispose 恢复） | 2b61441a |
+| PTC-08 外层 | PASS（dsh-ptc-runtime-node EXISTS-PUBLIC；外层/内层均真实 OS 进程；guard 拒内层原体 0） | 2b61441a |
+| P0-4 修正 | **landlock ENFORCE-WORKS**（根因=探针 READ=3 实为 EXECUTE\|WRITE_FILE，handled 从未含 READ_FILE(4)；逐字复现假 ABSENT） | da67ed8e |
+| landlock 通路补做 | L1/L1FD/L2/L3/L4+TOCTOU 全 **OS_ENFORCED**（受限读、受控 spawn 含不可信命令注入负控、锁不可自解=交集棘轮、双层拒；适配要求=子进程入口自锁+非交付 fd 强制 O_CLOEXEC）；bwrap/netns/uid_map 维持各自实测 ENV_BLOCK | 56a2091d |
+| web/jobs/MCP | 三族 INCONCLUSIVE(方向性)（回环 30/30；拒绝在 fetch 前零 socket/零 DNS；jobs 族形态钉死；MCP 注入路径与 P0-1 一致） | 43c8e8c8 |
+| **P0-6 stage2b** | **PASS 10/10**（隔离真实宿主 :3185、mock-model Team world：成员原生 read 真实执行、同名 Adapter 遮蔽+对照成员不受影响、dispose→typed unknown 且 restrict 保留；失败全留痕：蓝图校验×2、块形 wire OOM 根因+storm fuse、oracle off-by-one） | c43fc41b |
+
+**P0 状态更新：核心装配/路由/FS/spill/PTC/受限读/受控 spawn/web/MCP 均已有 fixture 级或真实宿主级证据；剩余缺口 = ①LSP per-member 隔离（结构性，上游接口项）②真实外网 web 行为（第三方外联申请项）③浏览器维度 ④宿主级补强：把 FS-01..04/SRCH 反例集在 stage2b world 内重跑（机制已双证，属 REG 系列而非 P0 缺口）。GO 仍未产生，任何族不得写成 GO。**
