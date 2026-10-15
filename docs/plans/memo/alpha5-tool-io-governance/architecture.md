@@ -1,7 +1,7 @@
 # Alpha.5 Tool I/O Governance — Architecture Design (Draft for P0)
 
 **Date:** 2026-10-14
-**Status:** Design draft. Governance intent accepted in [ADR](./ADR-alpha5-tool-io-governance.md); execution wiring **unproven** until P0. No implementation/preset/schema migration performed.
+**Status:** Design draft; [ADR](./ADR-alpha5-tool-io-governance.md) §8 and V2 addendum below supersede obsolete route/coverage descriptions. Execution wiring **unproven** until P0. No implementation/preset/schema migration performed.
 **Scope:** ONLY tools, native adapters, I/O restrictions, custom adapters and Linux shadow-run. Other Alpha.5 work deferred to other documents.
 **Current production baseline:** Team pins DSH `0.2.0-rc.2`; investigate newer Core features without silently switching support.
 
@@ -168,3 +168,94 @@ Full provider owner authentication; freeze preset+Blueprint actual implementatio
 - DSH `packages/fs/tool-fs-search/src/search-core.ts`: current unconstrained ripgrep `ctx.subprocess.spawn`.
 - DSH `packages/sandbox/sandbox-local/src/profiles.ts`: current Linux workspace-write/bwrap profile, **not** read-confinement.
 - Team Alpha.4 ADR/spec, `docs/TEST_METHODS.md`, `docs/ROUTER_RULES.md`, and `AGENTS.md` govern implementation constraints.
+
+---
+
+## 14. Alpha.5 V2 — controlling architecture addendum (2026-10-16)
+
+This addendum controls where the original sections 1–13 conflict. It retains all earlier non-conflicting safety rules and deferrals. See the revised [ADR §8](./ADR-alpha5-tool-io-governance.md) and [tool-fork debt register](./tool-fork-debt.md).
+
+### 14.1 Five responsibility boundaries, one Team permission authority
+
+- **Binding:** final DISPATCHABLE surface (including PTC inner calls, Team tools, MCP and scoped registrations), scoped Member identity, trusted deployed Provider binding. A model-visible PTC `run_code` schema is not the full dispatchable set. Explicit denial fulfills binding coverage. Detected drift blocks affected calls.
+- **Admission:** single logical permission judgment for Tool invocation + file read/write + network. The constraints are orthogonal, but Team asks are aggregated into one immutable `RequestedEffectSet` and routed through the EXISTING Alpha.4 ApprovalCase; each effect retains its own matcher and envelope ceiling. The reviewer must lawfully cover ALL requested effects. An unknown authority or definite denial refuses the whole invocation; no automatic truncation or partial execution.
+- **Execution grant:** exact one-dispatch approval bound to Agent/MemberInstance, Blueprint authority generation, tool binding, argument fingerprint, execution realm, requested effect set and consumption identity. Ordinary static allow needs no new durable ledger. Child dispatch is checked independently and cannot exceed the parent fixed scope. Long-running jobs additionally declare an `ExecutionLifetime` (process/children, duration, cancel/revocation guarantees). One-shot grant never promises job rollback or immediate cancellation.
+- **Enforcement:** controlled FS for trusted in-process DSH file operations; confined process for subprocess-backed ripgrep, Bash/pwsh, PTC and LSP, including actual read restriction, write restriction and any promised network rules. External Web/HPC/MCP and domain operations must be checked by the actual remote or trusted Provider; a local process sandbox has no power over remote effects. All required enforcement is DERIVED from the effective policy; do not let optional assurance declarations weaken it.
+- **Domain authority:** trusted binding references the actual domain gate and its independently enforced object/state/business authority. Research state versioning/CAS, HPC job rights and equipment safety interlocks are examples. The gate must be rechecked at the actual domain effect boundary; Team approval does not override domain denial and a domain permit does not override Team denial. No new generic Team reviewer rung, domain-policy database or super-envelope.
+
+### 14.2 Actual V2 execution sequence
+
+```text
+Team Agent assembly / detectable registration drift:
+  compose preset + Team + scoped + MCP + PTC-dispatchable tools
+  -> validate complete governed binding + required implementation capabilities
+
+Each call:
+  DSH ToolRuntime (actual Agent identity + immutable arguments)
+  -> binding and authority-generation check
+  -> compile canonical RequestedEffectSet in target Execution Realm
+  -> Team admission (tool + file read + file write + network)
+     -> deny/unknown: no body
+     -> ask: one Alpha.4 ApprovalCase, every effect must be lawfully approved
+     -> allow: proceed
+  -> derive immutable, single-dispatch OperationGrant
+  -> domain pre-authorization if applicable; match enforceable provider capabilities
+  -> last-mile grant/identity/args/binding/abort revalidation
+  -> monotonic end-cap guard + exactly one guarded dispatch
+  -> controlled FS / confined process / delegated trusted provider
+  -> domain gate again at actual effect commit where required
+  -> normalized ToolResult + existing control facts and scoped execution evidence
+```
+
+Only one logical Team decision exists; preflight, last-mile guard and OS/provider confinement enforce different aspects of that SAME decision. Remote domain refusal and non-transactional execution remain distinct result classes. Under PTC, inner native dispatch is NOT automatically authorized by the `run_code` outer approval. A general-purpose script obtains a bounded sandbox scope *before start*, not automatic interactive escalation on every file fault.
+
+### 14.3 Three orthogonal execution axes
+
+| Axis | Values / ownership | Meaning |
+| --- | --- | --- |
+| `implementationOrigin` | DSH-native / Team or trusted-extension / standalone runner / remote provider | Who supplies the business implementation; does NOT imply isolation |
+| `executionBoundary` | trusted Host / confined process / delegated remote | Where the real effects occur |
+| `assurance` | per capability, Team-enforced / provider-enforced / author-trusted / unsupported plus verifiable scope | Who actually guarantees file read, write, network, subprocess and cancellation limits |
+
+`native`, `custom` and `shadow-run` in the original proposal are historical routes, **not** V2 mutually exclusive permissions. An independently registered native-tool adapter may start a confined process. A third-party standalone runner may use the same confinement. `shadow-run` always means a REAL isolated process, not a speculative COW/transaction/rollback execution.
+
+### 14.4 File/realm assurance closure
+
+For each file/network permission, derive required enforcement by comparing the effective policy to the default access of the actual execution identity. A permissive `all` policy does not confer extra OS privilege. `restricted` file read/write and network limitations are mandatory to enforce; a provider that only supports write filtering cannot be selected for restricted reads. A generic binary-presence check (`bwrap` installed) is insufficient: use bounded functional probes and enforce the exact compiled policy before execution. Report the actual mechanism and per-capability coverage; unsupported means typed refusal, not a silently weaker launch.
+
+Relative paths anchor to the bound immutable Workspace IN THE ACTUAL REALM; `~/` uses the trusted execution identity's home IN THAT REALM. Equal path strings on two hosts do not imply equivalent resources. Reject relative `..`, preserve meaningful path whitespace, prevent alias/rename/symlink/mount/FD bypass to the extent required by the advertised guarantee. File READ includes content, list and metadata observations; WRITE includes create, replace, delete, rename, link and metadata mutation. Mixed read/write commands (e.g., edit; write results exposing old content) need the permissions of their true effects or must suppress forbidden disclosures. Runtime binaries/libraries/paths are a separately identified trusted execution base, not an implicit all-host-business-data read grant.
+
+### 14.5 Native-tool handling matrix (supported capability proposals, not proven deployment)
+
+| DSH tool | Primary actual I/O | V2 control / isolation |
+| --- | --- | --- |
+| `read`, `read_image`, `write`, `edit` | `ctx.fs` operations | Team-aware Controlled FS at the real I/O boundary; no extra process sandbox. Include hidden reads/returned old content, actual target identity and intent/version checks. |
+| `str_replace_editor` | `ctx.fs` read/list/write/edit | Controlled FS with subcommand-specific effective read/write scope; no additional process sandbox. |
+| `glob`, `grep` | packaged `ripgrep` via plain `ctx.subprocess.spawn` | Confined Spawn around the **actual rg process**. Preserve upstream parser/result semantics; no post-filter as substitute for read isolation. |
+| `bash`, `pwsh` | `ctx.shell` then subprocess | Sandbox-bound Shell Executor / Confined Spawn; command and descendants constrained; Windows strict read parity is not assumed. |
+| `run_code` / PTC | managed Node subprocess plus nested tools | Apply the enhanced restricted-process policy for direct Node file/network effects; every nested ToolRuntime dispatch independently admitted and parent-scoped. |
+| `lsp` | `ctx.lsp`, file reads plus persistent language-server subprocess | Controlled host source reads AND confined language server process, with policy-compatible process lifetime and rebind/restart on scope change. |
+| `web_fetch`, `web_search` | `ctx.web` provider | Network Provider/effect gateway, no pretend OS confinement of remote server; endpoint grammar explicit. |
+| `job_list`, `job_output`, `job_kill` | `ctx.jobs` | Job ownership and OperationGrant/Lifetime controls; no new OS process sandbox for the controller itself. |
+| Team, todo, orchestration tools | trusted Team/session services | Ordinary Team governance and explicit delegation constraints; no automatic sandbox for trusted Host code. |
+| MCP/remote/HPC/research/equipment | actual local process, in-process or remote provider | Bind the true execution boundary; remote domain/equipment effects governed at remote domain gate. No universal local-sandbox guarantee. |
+
+Current pinned DSH `fs-sandbox` fences writes but leaves reads unrestricted; current Linux bwrap profile read-only binds `/` and therefore does NOT meet restricted business-file read policy. Both require stronger policy-aware providers. The existing `glob/grep` process spawn is unconfined, even when a shell sandbox is installed. These facts are motivations for Controlled FS and Confined Spawn, not proof that all combinations are implementable.
+
+### 14.6 Adapter-first and conditional tool-level fork — default fallback
+
+**Priority:** (A) independently register a Team-owned adapter through public DSH scope-safe tool/service seams. For a given native tool, P0 must instrument original `ToolDefinition.execute()` and demonstrate that every Team-controlled call reaches the adapter exactly once, and that no original body runs on error, denial, nested dispatch, cancellation or retry.
+
+**Fallback only after proof:** if minimum public-seam repro establishes `CORE_SEAM_BLOCKER` (not merely greater implementation effort), (B) use a narrow **independently registered downstream fork of that native TOOL implementation** as the pre-approved default fallback. It may copy only the minimum necessary upstream TOOL code, preserving names/schema/errors/results, under Team-owned source and clear version/license provenance. It must not patch DSH Core or the upstream checkout, import private APIs, silently override deployment-global tools, or weaken safety on fallback. If even the tool fork cannot route exclusively, refuse and report blocker; fork is not a universal bypass around unexposed Core control points.
+
+The user-ratified exception is limited to modified TOOL code needed for independent registration and **does not repeal** the broad repository redlines. A fork actually used is recorded as a named technical debt with upstream SHA, patch/delta, compatibility and security-update owner, parity and adversarial tests, exit owner, and a required removal gate after DSH exposes equivalent PUBLIC seams. See [tool-fork debt ledger](./tool-fork-debt.md). As of this memo, no fork debt is incurred; P0 remains unproven.
+
+### 14.7 P0 gates and explicit remaining non-claims
+
+- Verify actual **dispatchable**, not only model-visible, Team scope in native/hybrid/PTC modes, including nested and newly registered tools.
+- Verify whole requested effect set approval authority against Alpha.4 `teamHardEnvelope` / `permissionMutationEnvelope`, with mismatched, missing and changed resources failing closed.
+- Verify controlled FS read/write/metadata and write-result disclosure; confined rg/shell/PTC/LSP read/write/network effects and child escape negatives; environment base readability without arbitrary host-home access.
+- Verify exactly-one-body routing (both standalone adapter and tool-fork candidate when triggered), monotonic guards, nested PTC, jobs, cancellation and cold resume; no fallback to original body.
+- Verify trusted Domain Gate binding and final-effect refusal even after Team approval; no modeled actor can override the domain result by choosing different tool arguments.
+- Verify long-lived job scope and cancellation semantics; cancellation requested is not guaranteed terminated.
+- Keep user-facing schema vNext, provider trust attestation, exact domain identity plumbing, restricted-network endpoint grammar, full Windows parity, and implementation-specific sandbox internals explicitly pending separate design/P0 contracts. Never present them as Alpha.4 shipped behavior.
