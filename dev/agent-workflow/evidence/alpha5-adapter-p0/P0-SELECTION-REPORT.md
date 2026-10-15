@@ -35,9 +35,10 @@
 | read/write/edit/move（Controlled FS 面） | **INCONCLUSIVE（方向支持进程内 Controlled FS）** | 11/11 腿绿但前置未满足：①INV-1 全覆盖（bypass 腿实证 T_dispatchable⊋T_governed 时缺口即成）②真实宿主复核；策略要求新增：realpath+**(dev,ino) 对象身份**双检（硬链接绕过实证） |
 | grep/glob | **INCONCLUSIVE（fixture-supports-R3；倾向 R3 候选）** | fixture 级 parity/桥全绿但 GO 需真实宿主（spill/取消/并发/隔离未覆盖）；R2 需 subprocess 服务前置；登记差异 presentationMeta 非包根可复现 |
 | bash/pwsh（Confined Spawn 面） | **LANDLOCK 读面 SUPPORTED（修正）/ bwrap·netns·uid_map 维持 ENV_BLOCK** | 诊断代理实测 landlock ABI v4 ENFORCE-WORKS（前轮假 ABSENT=探针 handled_access 常量 bug，逐字复现+正确正负控+fork/exec 继承腿，ext4/tmpfs 双 fs）→ adapter 侧 landlock 预 exec 自锁即可做读收缩，不依赖 userns/bwrap；嵌套限制按实测拦截点表述（uid_map EPERM 与 unshare() EPERM 两层，不外推"结构性不可能"）|
+| bash/pwsh 补强 | **landlock 通路 OS_ENFORCED（10-landlock-lanes）** | 受限读/受控 spawn/不可信命令注入负控/双层拒全绿；机制=子进程入口自锁（ruleset fd CLOEXEC 不可跨 exec）；锁不可自解=能力域交集棘轮；适配要求=非交付 fd 强制 O_CLOEXEC；bwrap/netns/uid_map 维持各自实测 ENV_BLOCK |
 | run_code/PTC | **fixture 级全证（外层腿已补；宿主级复核归 P0-6）** | 保留拒绝 CONFIRMED；内层 guard 断链 PASS；**PTC-08 外层 PASS**：dsh-ptc-runtime-node EXISTS-PUBLIC，生产 NodePtcRuntime 外层真实进程+真 run_code 桥，guard 拒内层=原体 0+durable isError、正控=原体 1、同管线 exec.parent=true |
 | LSP | **INCONCLUSIVE + 严格 Profile fail-closed 为安全兜底（族=Bounded Defer）** | 池键=仅路径身份、seam 无策略通道、服务器侧 I/O 不受限（真实池化代码路径+虚构服务器）；CORE 素材十一字段已录，留待上游接口讨论；fixture 不构成 LSP-01 全量 PASS |
-| web/jobs/MCP | NOT RUN（本会话无网络；不在本轮已具备前置的项） | 登记为后续项 |
+| web/jobs/MCP | **INCONCLUSIVE(方向性)×3，无 GO**（09 路本地回环/mock，30/30） | web：拒绝发生在 fetch 调用点前（零 socket/零 DNS/tripwire=0），重定向/超限/超时闭环，生产 provider 回环预 socket fail-closed；真实外网行为=申请项非默认缺失。jobs：生产 service 直调闭环（族形态钉死：模型面仅 job_output/list/kill）；owner-scoped NOT_RUN(缺 dsh-agent)。MCP：生产 mcp-client+stdio mock 真子进程，同名遮蔽下子进程侧零调用，代际回收全验。证据 09-web-jobs-mcp/ |
 
 ## 3. 关键设计证据（喂给后续实施计划）
 1. **独占分发机制已在 pinned ToolRuntime 上实证**（fixture 级）：own-scope 同名注册即遮蔽继承面（BND-01）；restrict-first 装配 + 原子有序卸载在竞态窗（prepare→dispatch 重解析）下保持原体 0；**卸载顺序错误（先撤 mask）确定性复现危险时序** → 实施必须原子有序装配+调用排空证明（guide §3 P0-1 步骤 6 由本反例闭环）。
