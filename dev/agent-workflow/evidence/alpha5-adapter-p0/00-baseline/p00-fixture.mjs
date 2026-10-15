@@ -70,7 +70,7 @@ export function countingTool(obs, name, identity, opts = {}) {
       render: (_args, value) => [{ type: 'text', text: String(value) }],
     },
     execute: async (_args, exec) => {
-      obs.push({ event: 'body', at: Date.now(), name, identity: identityOf(def), scopeId: exec?.agent?.id ?? '(agentless)', callId: String(exec?.callId ?? '?') })
+      obs.push({ event: 'body', at: Date.now(), name, identity: identityOf(def), scopeId: exec?.agent?.id ?? '(agentless)', callId: String(exec?.callId ?? '?'), parentPresent: exec?.parent !== undefined })
       if (opts.throwOnCall !== undefined && obs.filter((o) => o.event === 'body' && o.identity === identityOf(def)).length >= opts.throwOnCall) {
         throw new Error(`p00 fixture body failure (${identity})`)
       }

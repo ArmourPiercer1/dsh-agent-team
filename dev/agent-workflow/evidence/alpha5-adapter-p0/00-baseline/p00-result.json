@@ -1,8 +1,8 @@
 {
   "header": {
-    "recorded_at_utc": "2026-10-15T21:34:29.772Z",
+    "recorded_at_utc": "2026-10-15T21:41:13.902Z",
     "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline",
-    "team_HEAD": "d3c9760d8f8ea2a2bfac4fd628133261b127f756",
+    "team_HEAD": "7559b65277a8c9147187d85f73f48cab65d2c4eb",
     "team_branch": "exp/alpha5-poc-20261016",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain": "CLEAN",
@@ -29,40 +29,58 @@
       "id": "P0-0.schemas",
       "verdict": "PASS",
       "detail": "A=[grep,read] B=[grep,read]"
+    },
+    {
+      "id": "P0-0.preset-topology",
+      "verdict": "PASS",
+      "detail": "boundA→ADAPTER.psp_grep; unboundB→fail-closed:\"Error: unknown tool \\\"psp_grep\\\"\"; presetBodyCount=0 (finding: own-layer adapter shadows the INHERITED preset body; non-bound scopes fail closed)"
     }
   ],
   "observations": [
     {
       "event": "body",
-      "at": 1792100069836,
+      "at": 1792100473975,
       "name": "grep",
       "identity": "NATIVE.grep",
       "scopeId": "agent-A",
-      "callId": "p00-c1"
+      "callId": "p00-c1",
+      "parentPresent": false
     },
     {
       "event": "body",
-      "at": 1792100069838,
+      "at": 1792100473976,
       "name": "read",
       "identity": "NATIVE.read",
       "scopeId": "agent-B",
-      "callId": "p00-c2"
+      "callId": "p00-c2",
+      "parentPresent": false
     },
     {
       "event": "body",
-      "at": 1792100069838,
+      "at": 1792100473976,
       "name": "grep",
       "identity": "ADAPTER.grep",
       "scopeId": "agent-A",
-      "callId": "p00-c3"
+      "callId": "p00-c3",
+      "parentPresent": false
     },
     {
       "event": "body",
-      "at": 1792100069838,
+      "at": 1792100473977,
       "name": "grep",
       "identity": "NATIVE.grep",
       "scopeId": "agent-B",
-      "callId": "p00-c4"
+      "callId": "p00-c4",
+      "parentPresent": false
+    },
+    {
+      "event": "body",
+      "at": 1792100473978,
+      "name": "psp_grep",
+      "identity": "ADAPTER.psp_grep",
+      "scopeId": "agent-A",
+      "callId": "p00-c5",
+      "parentPresent": false
     }
   ]
 }

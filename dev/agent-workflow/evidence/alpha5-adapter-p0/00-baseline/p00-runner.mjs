@@ -68,6 +68,23 @@ try {
   const names = (agent) => ctx.tools.schemas(agent).map((s) => s.name).sort().join(',')
   assert('P0-0.schemas', names(A.key) === 'grep,read' && names(B.key) === 'grep,read', `A=[${names(A.key)}] B=[${names(B.key)}]`)
 
+  // P0-0-5 — real Preset topology (plan §P0-0 "绑定真实 Preset" fixture analogue):
+  // natives live on a PRESET scope; Agent A is bound as preset child via
+  // bindScopeParent (S-01 mechanism); Agent B is NOT bound to the preset.
+  {
+    const preset = await mintScope('preset-1')
+    const presetNative = countingTool(obs, 'psp_grep', 'PRESET.psp_grep')
+    preset.scope.ctx.tools.register(presetNative)
+    f.bindScopeParent(A.key, { id: 'preset-1' })
+    const ad2 = countingTool(obs, 'psp_grep', 'ADAPTER.psp_grep')
+    A.scope.ctx.tools.register(ad2)
+    const ra = await run('psp_grep', A.key)
+    const rb = await run('psp_grep', B.key) // unbound agent must not reach preset tools
+    assert('P0-0.preset-topology',
+      ra.bodies?.[0]?.identity === 'ADAPTER.psp_grep' && rb.bodies?.length === 0 && (rb.isError === true || String(rb.text).includes('unknown tool')) && f.counters('PRESET.psp_grep') === 0,
+      `boundA→${ra.bodies?.[0]?.identity ?? ra.threw}; unboundB→${rb.bodies?.length ? rb.bodies[0].identity : 'fail-closed:' + JSON.stringify(rb.text ?? rb.threw).slice(0, 60)}; presetBodyCount=${String(f.counters('PRESET.psp_grep'))} (finding: own-layer adapter shadows the INHERITED preset body; non-bound scopes fail closed)`)
+  }
+
   const out = { header, results, observations: obs }
   const path = join(HERE, 'p00-result.json')
   writeFileSync(path, JSON.stringify(out, null, 2))
