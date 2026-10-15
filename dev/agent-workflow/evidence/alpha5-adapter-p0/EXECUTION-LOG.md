@@ -20,6 +20,9 @@
 | P0-6 s2b Team world | （未执行：c1 kit 全链=profiles 行+蓝图 world+mock model+会话驱动） | — | — | BOUNDED-DEFER（缺项=c1 链组合，机制两段已分别实证） | §P0-6 | 记录于 p06-stage1-note.md |
 | P0-7 独立复核 | 代理 81a39aec 复跑 p00/p01/probe/smoke@:3184 等（HEAD c46ffb76） | 其复跑全 0 | ~18m | **R1 PASS（复核面；PASS≠P0 关闭）**；F1/F2/F3 已处置 | §6.2 | 08-review/p07-review-R1.md |
 | P0-7 R2 delta 复核 | 代理 de223951：4 runner×2+run-all×2+独立 strace 负/正控+3 例 rg argv 重放（HEAD afc5e039→9e422ff5） | 其复跑全 0 | ~8m | **R2 PASS（delta 面，13/13 VERIFIED 零 REFUTED）**；FS-03 与 read-before-write 升格 fixture 级 VERIFIED；缺 Sandbox fail-closed 行为级维持 NOT_VERIFIED；N2（10→11 腿）已修、N3（fiber 引文 147-156→精确 140-146）记录于此 | §6.2 | 08-review/p07-review-R2.md |
+| 续-1 SRCH-04 spill | 代理 5a44532d → node 02-search/spill-runner.mjs | 0（幂等复跑 0） | ~9m | **PASS 4/4**：生产 grep+spill handler+LocalSpillStore+真 rg；S-09 对象身份弃权行为级复现（Δ0+footer；他 scope Δ1；dispose 恢复）| §P0-2 SRCH-04 | 2b61441a |
+| 续-2 PTC-08 外层 | 同上 → node 05-ptc/ptc-outer-runner.mjs | 0（幂等 0） | 同 | **PASS 5/5**：dsh-ptc-runtime-node EXISTS-PUBLIC；外层真实 pid45/内层真实 pid59；guard 拒内层原体=0，durable isError；同管线 exec.parent=true。前轮 NOT_RUN→PASS | §P0-5 | 2b61441a |
+| 续-3 P0-4 修正诊断 | 代理 3f019dcc → 04-process/landlock-diag.sh | 0（ENFORCE-WORKS） | ~10m | **landlock=ENFORCE-WORKS**（前轮 ENV_BLOCK 系探针 handled_access 常量 bug，逐字复现假 ABSENT+正确正负控+继承腿+denyall 鉴别器，ext4/tmpfs 双 fs）；嵌套按实测层表述（uid_map EPERM 与 unshare() EPERM 两拦截点；aa profiles 不可读不外推）；bwrap/netns/uid-map 维持 ENV_BLOCK | §P0-4 | da67ed8e |
 | 影响面留痕 | `rm -rf dev/tests/`（21:42 一次 smoke 脚本路径缺陷遗留的世界目录 a5p0-smoke-20261015T214220Z，gitignored，非测试证据） | 0 | <1s | 已删（TEST_METHODS §7 留痕） | §7 | 本行 |
 
 web/jobs/MCP 族 = NOT RUN（本会话无网络授权，非阻塞项：§5 允许登记后补）。
