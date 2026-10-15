@@ -1,0 +1,6 @@
+{"at":1792102281237,"pid":13,"ev":"spawn"}
+{"at":1792102281242,"pid":13,"ev":"sigterm"}
+{"at":1792102281280,"pid":21,"ev":"spawn"}
+{"at":1792102281281,"pid":21,"ev":"initialize","client_protocol":"2025-11-25"}
+{"at":1792102281283,"pid":21,"ev":"initialized"}
+{"at":1792102281283,"pid":21,"ev":"tools/list"}

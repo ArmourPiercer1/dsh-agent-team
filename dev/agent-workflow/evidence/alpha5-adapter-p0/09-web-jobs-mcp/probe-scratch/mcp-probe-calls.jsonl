@@ -1,0 +1,9 @@
+{"at":1792102164451,"pid":12,"ev":"spawn"}
+{"at":1792102164455,"pid":12,"ev":"sigterm"}
+{"at":1792102164490,"pid":20,"ev":"spawn"}
+{"at":1792102164491,"pid":20,"ev":"initialize","client_protocol":"2025-11-25"}
+{"at":1792102164493,"pid":20,"ev":"initialized"}
+{"at":1792102164493,"pid":20,"ev":"tools/list"}
+{"at":1792102164496,"pid":20,"ev":"tools/call","name":"echo","message":""}
+{"at":1792102164498,"pid":20,"ev":"tools/call","name":"echo","message":"hi"}
+{"at":1792102164504,"pid":20,"ev":"stdin-end"}
