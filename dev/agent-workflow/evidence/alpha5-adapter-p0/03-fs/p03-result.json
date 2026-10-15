@@ -1,8 +1,8 @@
 {
   "header": {
-    "recorded_at_utc": "2026-10-15T21:51:18.178Z",
+    "recorded_at_utc": "2026-10-15T21:56:46.424Z",
     "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs",
-    "team_HEAD": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
+    "team_HEAD": "9e422ff5b37a219f4ce87e5175165ce66d357400",
     "team_branch": "exp/alpha5-poc-20261016",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain": "CLEAN",
@@ -150,7 +150,7 @@
         },
         "openLedgerForSecret": [
           {
-            "at": "1057034663304603",
+            "at": "1057359344129301",
             "member": "m-alice",
             "tool": "read",
             "req": "private/secret.txt",
@@ -332,7 +332,7 @@
           "expect": "OS-level syscall evidence",
           "observed": [
             {
-              "pid": 166,
+              "pid": 165,
               "op": "openat",
               "path": "private",
               "failed": false
@@ -434,19 +434,19 @@
           "expect": "OS-level syscall evidence",
           "observed": [
             {
-              "pid": 177,
+              "pid": 176,
               "op": "openat",
               "path": "private",
               "failed": false
             },
             {
-              "pid": 177,
+              "pid": 176,
               "op": "openat",
               "path": "out/new-file.txt",
               "failed": false
             },
             {
-              "pid": 177,
+              "pid": 176,
               "op": "openat",
               "path": "out/new-file.txt",
               "failed": false
@@ -1558,13 +1558,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 133,
+          "pid": 132,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 133,
+          "pid": 132,
           "op": "openat",
           "path": "allowed/read.txt",
           "failed": false
@@ -1587,7 +1587,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 144,
+          "pid": 143,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1610,13 +1610,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 155,
+          "pid": 154,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 155,
+          "pid": 154,
           "op": "openat",
           "path": "private/secret.txt",
           "failed": false
@@ -1639,7 +1639,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 166,
+          "pid": 165,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1662,19 +1662,19 @@
       },
       "fixtureOpens": [
         {
-          "pid": 177,
+          "pid": 176,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 177,
+          "pid": 176,
           "op": "openat",
           "path": "out/new-file.txt",
           "failed": false
         },
         {
-          "pid": 177,
+          "pid": 176,
           "op": "openat",
           "path": "out/new-file.txt",
           "failed": false
@@ -1697,7 +1697,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 188,
+          "pid": 187,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1720,13 +1720,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 199,
+          "pid": 198,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 199,
+          "pid": 198,
           "op": "openat",
           "path": "special-a/oneshot.txt",
           "failed": false
@@ -1749,7 +1749,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 210,
+          "pid": 209,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1772,7 +1772,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 221,
+          "pid": 220,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1795,7 +1795,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 232,
+          "pid": 231,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1818,19 +1818,19 @@
       },
       "fixtureOpens": [
         {
-          "pid": 243,
+          "pid": 242,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 243,
+          "pid": 242,
           "op": "openat",
           "path": "allowed/sp ",
           "failed": false
         },
         {
-          "pid": 243,
+          "pid": 242,
           "op": "openat",
           "path": "allowed/sp",
           "failed": true

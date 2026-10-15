@@ -1,6 +1,6 @@
 # Alpha.5 P0 — 路线选择报告（PoC，非产品 GO）
 
-> **状态：EXECUTED-PARTIAL / P0 NOT CLOSED。** 本报告记录 2026-10-16 授权的 P0 PoC 实验事实。
+> **状态：EXECUTED-PARTIAL / P0 NOT CLOSED（双独立复核 R1+R2 = PASS 复核面）。** 本报告记录 2026-10-16 授权的 P0 PoC 实验事实。
 > 依据 `P0-independent-adapter-poc-implementation-guide.md`（PR#249 @`d3c9760d`）§5 算法逐工具族出 verdict。
 > **fixture 级证据只收窄范围；GO 只能来自真实 pinned Host（§5 明文）。本报告不含任何 GO。**
 
@@ -27,7 +27,7 @@
 | P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | **11/11 PASS**（strace 逐腿孵化复跑=OS 级 open 计数；观察自污染通道修正留痕）；硬链接发现：realpath≠对象身份→需 realpath+(dev,ino) 拒绝集；未适配旁路腿实证 INV-1 缺口 | 03-fs/p03-fs-runner.mjs→p03-result.json+notes.md | 25cfa3c1 |
 | P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
 | P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **BOUNDED-DEFER**：需 mock-model team world（c1 kit 链：profiles 行+蓝图 world+mock 部署+3181 启动+会话驱动）；机制已在 kit 与阶段2a 分别实证，组合执行超出本轮预算 | 07-integration/p06-stage1-note.md | — |
-| P0-7 独立 Reviewer | §2.7/§6 | **R1 = PASS（复核面，HEAD c46ffb76）**：已提交主张逐条 VERIFIED/零 REFUTED/无夸大；NOT_VERIFIED 项均如实 PENDING。R1 明示"PASS≠P0 关闭≠GO"。findings：F1 遗留 world 已删（留痕）、F2 4/4→5/5 已回填、F3 报告已 tracked。**终态 HEAD 仍需 delta 复核**（见 08-review/） | 08-review/p07-review-R1.md | 本轮提交 |
+| P0-7 独立 Reviewer | §2.7/§6 | **R1 PASS（c46ffb76）+ R2 PASS（delta→9e422ff5，13/13 VERIFIED 零 REFUTED）**：两轮均亲手复跑/独立反"恒真"抽验（strace 负/正控、rg argv 重放、obs 计数、真实 spawn pid）；两位 Reviewer 均自报 qwen3.8-flash-next；均明示"复核 PASS≠P0 关闭≠GO" | 08-review/p07-review-R1.md, p07-review-R2.md | 42867b7b+本轮 |
 
 ## 2. 逐工具族 verdict（§5 算法；含 PENDING 者按已证部分写 INCONCLUSIVE）
 | 族 | verdict | 理由（真实值） |

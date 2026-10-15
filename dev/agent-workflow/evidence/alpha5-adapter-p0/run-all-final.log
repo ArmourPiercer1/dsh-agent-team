@@ -1,5 +1,5 @@
 === P0-0 ===
-{"results":["P0-0.repro-native:PASS","P0-0.scope-distinction.get:PASS","P0-0.counters:PASS","P0-0.schemas:PASS","P0-0.preset-topology:PASS"],"header_frozen":{"team":"25cfa3c1","host":"639ed01539"},"out":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline/p00-result.json"}
+{"results":["P0-0.repro-native:PASS","P0-0.scope-distinction.get:PASS","P0-0.counters:PASS","P0-0.schemas:PASS","P0-0.preset-topology:PASS"],"header_frozen":{"team":"9e422ff5","host":"639ed01539"},"out":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline/p00-result.json"}
 --- P0-0 EXIT=0 SECONDS=0
 === P0-1 ===
 ["L1.BND-01.shadow-no-restrict:PASS","L2.restrict-after-global-visible:PASS","L2.adapter-live:PASS","L2.native-zero:PASS","L2b.post-unload-resolution:PASS","L2b.BND-02.safe-unload-native-zero:PASS","L3-safe.BND-03.dispose-under-race-mask-lives:PASS","L3-hazard.BND-03.lift-mask-under-race (characterization):PASS","L4.BND-04.guard-after-allow:PASS","L5.BND-05.conflict-and-reinstall:PASS","L6.agentless-global-lane:PASS","L7.PTC-01.reserved-run-code:PASS"]
@@ -31,10 +31,10 @@ PASS S4b.scope.A-glob-still-native — A glob 未被遮蔽 → 原生（经 doub
 PASS S4c.seam.spawn-sync-vs-confine-async — ctx.subprocess.spawn 同步返回 handle（非 Promise=true，rg --version exit=0）；executionMode 同步返回 {"kind":"exclusive"}；对照 sandbox.confine→Promise<ConfinedArgv>（S-07 静态）= SRCH-02 形状差异的服务层实证面
 
 WRITTEN p02-result.json (cases 12/12 PASS; assertions 24/24 PASS)
---- P0-2 EXIT=0 SECONDS=1
+--- P0-2 EXIT=0 SECONDS=0
 === P0-3 ===
 {"legs":["FS-01.pos:PASS","FS-01.neg:PASS","FS-01.native-bypass:PASS","FS-02.refusal:PASS","FS-02.pos:PASS","FS-02.neg:PASS","FS-03.race:PASS","FS-04.symlink:PASS","FS-04.hardlink:PASS","FS-04.traversal:PASS","FS-04.spaces:PASS"],"failed":[],"strace":true,"junctions_unchanged":true,"out":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/p03-result.json"}
---- P0-3 EXIT=0 SECONDS=1
+--- P0-3 EXIT=0 SECONDS=2
 P0-4 skipped (RUN_P04=1 to run OS capability probe)
 === P0-5-ptc ===
 [PASS] P05-PTC-1.config-mode-ptc-mount — {"assembly_surface":"ctx.plugin(ToolRuntime, {mode:\"ptc\"}) — ToolRuntime.static Config z{mode:native|ptc|both} (packages/core/tools/src/index.ts:810-813); same call shape as pristine packages/core/tools/tests/ptc.spec.ts:68","ptcRuntime_double":"ctx.ptcRuntime = P05TestDoublePtcRuntime (isolation 
@@ -47,17 +47,17 @@ P0-4 skipped (RUN_P04=1 to run OS capability probe)
 [NOT_RUN] P05-PTC-8.outer-direct-io — {"reason":"this fixture has no real outer PTC Node process: the runtime TEST DOUBLE executes the program in the fixture process (in-process new Function), so outer-process direct fs/net I/O under OS enforcement is NOT exercised here","required_for_eventual_GO":"real pinned host + a ctx.ptcRuntime wo
 
 wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/p05-result.json; legs=8; failing(PASS-candidates)=0
---- P0-5-ptc EXIT=0 SECONDS=1
+--- P0-5-ptc EXIT=0 SECONDS=0
 === P0-5-lsp ===
 [CONFIRMED-CODEPATH] P05-LSP-0.static-judgment — {"public_package_roots":{"ctx.lsp service definition + registry":"T/packages/lsp/lsp (lib/index.js)","stdio provider":"T/packages/lsp/lsp-stdio (lib/index.js)","model tool":"T/packages/lsp/tool-lsp (lib/index.js)"},"per_provider_workspace_resident_pool":"YES — one plugin instance
 [PASS] P05-LSP-1.full-stack-mount — public plugin surface: ctx.plugin(fs-local)+ctx.plugin(Lsp)+ctx.plugin(subprocess-local)+ctx.plugin(lsp-stdio ns plugin, {servers}) — namespace plugin with inject [fs, lsp, subprocess]
-[PASS] P05-LSP-2.first-query — {"hover":"P05AUDIT pid=374 opens=1 boot_forbidden={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/forbidden/secret.txt\",\"ok\":true,\"bytes\":36,\"head\":\"P05-FABRICATED-
-[HAZARD-OBSERVED] P05-LSP-3.same-path-different-policy-shared-server — {"pid_A":374,"pid_B":374,"opens_B_after_second_query":2,"reading":"two policy principals whose workspaceRoot strings are identical share ONE resident server process (same pid), and the share key cannot contain policy because LspQueryRequest carries no policy/agent field (types.ts
+[PASS] P05-LSP-2.first-query — {"hover":"P05AUDIT pid=373 opens=1 boot_forbidden={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/forbidden/secret.txt\",\"ok\":true,\"bytes\":36,\"head\":\"P05-FABRICATED-
+[HAZARD-OBSERVED] P05-LSP-3.same-path-different-policy-shared-server — {"pid_A":373,"pid_B":373,"opens_B_after_second_query":2,"reading":"two policy principals whose workspaceRoot strings are identical share ONE resident server process (same pid), and the share key cannot contain policy because LspQueryRequest carries no policy/agent field (types.ts
 [UNCONFINED-READ-OBSERVED] P05-LSP-4.server-side-read-probe — {"positive_control_allowed_read":{"path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/ws/a.p05","ok":true,"bytes":22,"head":"hello p05 source line\n"},"forbidden_read_by_server_pro
-[PASS] P05-LSP-5.distinct-workspace-distinct-server — {"pid_ws":374,"pid_ws2":383,"note":"pool granularity = per canonical workspace; proves L3 sharing is key-driven, not a single-process accident"}
+[PASS] P05-LSP-5.distinct-workspace-distinct-server — {"pid_ws":373,"pid_ws2":382,"note":"pool granularity = per canonical workspace; proves L3 sharing is key-driven, not a single-process accident"}
 [SERVER-READS-ARBITRARY-PATH] P05-LSP-6.custom-method-read-probe — {"ctx_lsp_seam_fact":"ctx.lsp exposes exactly 4 semantic operations and no JSON-RPC escape hatch (lsp/src/index.ts:9-10 doc; types.ts:5-6) — the arbitrary-method path exists at the connection/provider level a production provider may use; used here via the package-root exported Ls
 [DANGEROUS-SHARING-CODEPATH-SHOWN] P05-LSP-7.policy-to-key-demo — {"as_built_key":"key = canonical workspace targetKey (path identity)","keyA":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/ws","keyB":"/srv/workspace/dsh-plugins/dsh-agent-team/.wor
-[PASS] P05-LSP-8.teardown-no-residual — {"pids":[374,383],"alive_before":[true,true],"alive_after_dispose":[false,false],"note":"bounded to the fictional servers; ctx.fiber disposal runs the lsp-stdio effect disposer (index.ts:179-185) → disposeAll shutdown/exit/terminate"}
+[PASS] P05-LSP-8.teardown-no-residual — {"pids":[373,382],"alive_before":[true,true],"alive_after_dispose":[false,false],"note":"bounded to the fictional servers; ctx.fiber disposal runs the lsp-stdio effect disposer (index.ts:179-185) → disposeAll shutdown/exit/terminate"}
 [NOT_RUN] P05-LSP-9.not-run-items — {"real_host_per_agent_ctx_lsp":"INCONCLUSIVE (needs real pinned host + per-Agent ctx.lsp composition; none exists in pinned 0.2.0-rc.2: Lsp is a single context-global service)","real_language_server_reuse":"NOT_RUN (fictional server used; typescript-language-server or similar not
 [RECORDED] P05-LSP-10.core-seam-blocker-material — {"type":"CORE_SEAM_BLOCKER (candidate — filed as material; P0-6/Gate adjudication owns final classification)","hostSHA":"639ed015397290b3745d163aafe02ffee4aa3f84","publicSeam":"ctx.lsp (packages/lsp/lsp/src/types.ts LspQueryRequest/LspService) + @deepseek-ai/dsh-lsp-stdio provide
 
