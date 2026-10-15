@@ -375,3 +375,63 @@ describe('Gate A: parseModelPreferenceToken (the pure parser)', () => {
     })
   })
 })
+
+// ---------------------------------------------------------------------------
+// NRM-2 (2026-10-16 authorized round): quota integers must be SAFE integers,
+// aligning the acceptance set with the same-worded gate in the frozen
+// contracts package (`assertPositiveInteger`, contracts/src/ids/common.ts) —
+// one message, one set. 2^53 itself (9007199254740992) is NOT a safe integer
+// and rejects; 2^53+1 arrives at the validator already normalized by the
+// YAML layer to 2^53 (float) and rejects through that same gate; the
+// MAX_SAFE boundary (9007199254740991) stays legal.
+// ---------------------------------------------------------------------------
+
+const quotaSource = (maxInstances: string): string =>
+  [
+    '---',
+    'schemaVersion: 3',
+    'blueprintId: nrm2-quotas',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    'quotas:',
+    '  team:',
+    `    maxInstances: ${maxInstances}`,
+    'metadata: {}',
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
+    '---',
+    '',
+  ].join('\n')
+
+describe('NRM-2: quota integers are safe integers (contracts-sibling alignment)', () => {
+  it('Q1: MAX_SAFE_INTEGER boundary value stays legal', () => {
+    const doc = parseBlueprint(quotaSource('9007199254740991'))
+    expect(doc.quotas?.team?.maxInstances).toBe(9007199254740991)
+  })
+
+  it('Q2: 2^53 (unsafe, exactly representable) rejects', () => {
+    expectErrorDetails(() => parseBlueprint(quotaSource('9007199254740992')), 'MALFORMED_DTO', {
+      path: '$.quotas.team.maxInstances',
+    })
+  })
+
+  it('Q3: 2^53+1 rejects (YAML float-normalizes to 2^53, the safe-int gate catches it)', () => {
+    expectErrorDetails(() => parseBlueprint(quotaSource('9007199254740993')), 'MALFORMED_DTO', {
+      path: '$.quotas.team.maxInstances',
+    })
+  })
+
+  it('Q4: 2^53+2 rejects (unsafe even though exactly representable)', () => {
+    expectErrorDetails(() => parseBlueprint(quotaSource('9007199254740994')), 'MALFORMED_DTO', {
+      path: '$.quotas.team.maxInstances',
+    })
+  })
+})

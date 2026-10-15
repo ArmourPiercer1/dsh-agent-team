@@ -11,6 +11,7 @@ import {
   decodeYamlFrontmatter,
   parseBlueprint,
   splitFrontmatter,
+  inspectBlueprintSource,
 } from '../blueprint/src/index.js'
 import {
   CRLF_BOM_SOURCE,
@@ -236,5 +237,82 @@ describe('t2 parse: decodeYamlFrontmatter', () => {
       'MALFORMED_DTO',
       { reason: 'yaml-invalid' },
     )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// PRS-1 / PRS-2 (2026-10-16 authorized round): a recursive YAML anchor
+// (`&m { self: *m }`) decodes into a CYCLIC JS value; the YAML layer accepts
+// it, and the cycle then detonates downstream as an UNTYPED `RangeError:
+// Maximum call stack size exceeded` (identity/freeze/hash traversal), while
+// the inspector calls the same file OK — the PRS-1 inspector/parser split.
+// The decode stage must therefore detect the cycle and reject it with the
+// typed MALFORMED_DTO (`reason: yaml-invalid`, recursive-anchor named in the
+// message — the PRS-2 "no fixed one-liner swallowing the reason" rule), so
+// every entry point (decode / parse / inspect) reaches the SAME conclusion.
+// Shared non-cyclic alias reuse stays legal (no false positives).
+// ---------------------------------------------------------------------------
+
+const g4FullSource = (frontmatterTail: string): string =>
+  [
+    '---',
+    'schemaVersion: 3',
+    'blueprintId: g4-recursive',
+    'revision: "1"',
+    'leader:',
+    '  templateId: leader',
+    '  persona: "Lead."',
+    'members: []',
+    'requirements: []',
+    'memberEnvelopes: []',
+    'policyStates: []',
+    frontmatterTail,
+    'permissionMutationEnvelope:',
+    '  rules: []',
+    'teamHardEnvelope:',
+    '  rules: []',
+    '---',
+    '',
+  ].join('\n')
+
+const RECURSIVE_FM = 'metadata: &g4m\n  self: *g4m'
+const RECURSIVE_SOURCE = g4FullSource(RECURSIVE_FM)
+
+describe('PRS-1/PRS-2: recursive YAML anchor is a typed decode rejection', () => {
+  it('P1: decodeYamlFrontmatter rejects a recursive anchor with the typed MALFORMED_DTO (no RangeError escape)', () => {
+    expectErrorDetails(() => decodeYamlFrontmatter(RECURSIVE_FM + '\n'), 'MALFORMED_DTO', {
+      reason: 'yaml-invalid',
+    })
+  })
+
+  it('P2: parseBlueprint reaches the same typed rejection for the same file', () => {
+    expectErrorDetails(() => parseBlueprint(RECURSIVE_SOURCE), 'MALFORMED_DTO', {
+      reason: 'yaml-invalid',
+    })
+  })
+
+  it('P3: the error names the concrete cause (recursive anchor), not a fixed one-liner', () => {
+    let message = ''
+    try {
+      parseBlueprint(RECURSIVE_SOURCE)
+    } catch (err) {
+      message = (err as Error).message
+    }
+    expect(message.toLowerCase()).toContain('recursive')
+  })
+
+  it('P4: the inspector reaches the SAME conclusion (no inspector-ok/parser-explode split)', () => {
+    const outcome = inspectBlueprintSource(RECURSIVE_SOURCE)
+    expect(outcome.status).toBe('rejected')
+  })
+
+  it('P5: shared NON-cyclic alias reuse is NOT flagged (only true cycles reject)', () => {
+    // `a` and `b` point at the SAME anchor object (a diamond, not a cycle).
+    // A naive "seen node" set would false-positive here; the detector must
+    // track the CURRENT PATH, so a shared-but-acyclic object decodes clean.
+    const diamond = 'leader: &g4s\n  templateId: t\n  persona: p\nmirror: *g4s\n'
+    const decoded = decodeYamlFrontmatter(diamond) as Record<string, unknown>
+    // Same object identity shared, and the decoder did not throw.
+    expect(decoded.mirror).toBe(decoded.leader)
   })
 })

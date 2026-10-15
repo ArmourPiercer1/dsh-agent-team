@@ -130,11 +130,50 @@ export function decodeYamlFrontmatter(frontmatterText: string): unknown {
         { reason: 'yaml-invalid' },
       )
     }
+    // PRS-2: a NON-YAMLError decode failure keeps its concrete cause in the
+    // message instead of collapsing to a fixed one-liner — the typed code is
+    // the contract, the reason text is the operator's diagnosis.
+    const detail = err instanceof Error ? `${err.name}: ${err.message.split('\n')[0] ?? ''}` : String(err)
     throw teamContractError(
       'MALFORMED_DTO',
-      'blueprint frontmatter could not be decoded',
+      `blueprint frontmatter could not be decoded: ${detail}`,
       { reason: 'yaml-invalid' },
     )
   }
+  // PRS-1: YAML v2 RESOLVES a recursive anchor (`&m { self: *m }`) into a real
+  // cyclic JS object and returns it clean — the blow-up is deferred until
+  // deep-freeze/hash traversal, where it detonates as an UNTYPED
+  // `RangeError: Maximum call stack size exceeded`, and the inspector (which
+  // stops before traversal) calls the same file OK. Detect the cycle HERE, at
+  // the single decode point, so every consumer (parse, inspect, catalog)
+  // reaches the same typed conclusion. The walk tracks the CURRENT PATH, not
+  // merely seen nodes: shared-but-acyclic alias reuse (a diamond) is legal.
+  assertAcyclicDecodedYaml(value)
   return value
+}
+
+/**
+ * Reject a cyclic decoded YAML structure with the typed MALFORMED_DTO.
+ * The walk tracks the CURRENT PATH (ancestor set), not merely seen nodes:
+ * shared non-cyclic alias reuse (a diamond) is visited again on a different
+ * path and never false-positives. Depth here is the document's own finite
+ * depth — the recursion the downstream traversal would run anyway; what it
+ * can no longer hit is the INFINITE descent of a resolved anchor cycle.
+ */
+function assertAcyclicDecodedYaml(value: unknown, onPath: Set<object> = new Set()): void {
+  if (value === null || typeof value !== 'object') return
+  if (onPath.has(value)) {
+    throw teamContractError(
+      'MALFORMED_DTO',
+      'blueprint frontmatter is not valid YAML: recursive anchor — a YAML node contains itself',
+      { reason: 'yaml-invalid', problem: 'recursive-yaml-anchor' },
+    )
+  }
+  onPath.add(value)
+  if (Array.isArray(value)) {
+    for (const item of value) assertAcyclicDecodedYaml(item, onPath)
+  } else {
+    for (const child of Object.values(value)) assertAcyclicDecodedYaml(child, onPath)
+  }
+  onPath.delete(value)
 }

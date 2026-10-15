@@ -285,7 +285,17 @@ function takePositiveInt(
   const fieldPath = `${path}.${field}`
   if (!Object.hasOwn(record, field) || record[field] === undefined) return undefined
   const value = record[field]
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+  // NRM-2 (2026-10-16 round): SAFE-integer acceptance, aligned with the
+  // same-worded gate in the frozen contracts package (`assertPositiveInteger`,
+  // contracts/src/ids/common.ts) — one message, one acceptance set. 2^53 and
+  // above are not safe integers; a literal like 2^53+1 already arrives
+  // float-normalized (to 2^53) from the YAML layer and is caught here.
+  if (
+    typeof value !== 'number' ||
+    !Number.isInteger(value) ||
+    value < 1 ||
+    !Number.isSafeInteger(value)
+  ) {
     throw teamContractError(
       'MALFORMED_DTO',
       `field ${fieldPath} must be a positive integer, got ${JSON.stringify(value)}`,
