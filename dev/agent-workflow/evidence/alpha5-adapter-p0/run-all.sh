@@ -22,5 +22,6 @@ run P0-1 "$EV/01-routing/p01-runner.mjs"
 [ -f "$EV/02-search/p02-search-runner.mjs" ] && run P0-2 "$EV/02-search/p02-search-runner.mjs" || echo "P0-2 runner absent (see notes)"
 [ -f "$EV/03-fs/p03-fs-runner.mjs" ] && run P0-3 "$EV/03-fs/p03-fs-runner.mjs" || echo "P0-3 runner absent (see notes)"
 if [ "${RUN_P04:-0}" = "1" ]; then bash "$EV/04-process/env-capability-probe.sh" || echo "--- P0-4 probe nonzero exit (ENV_BLOCK legs are expected; see matrix)"; else echo "P0-4 skipped (RUN_P04=1 to run OS capability probe)"; fi
-[ -f "$EV/05-ptc/p05-runner.mjs" ] && run P0-5 "$EV/05-ptc/p05-runner.mjs" || echo "P0-5 runner absent (see notes)"
+[ -f "$EV/05-ptc/p05-runner.mjs" ] && run P0-5-ptc "$EV/05-ptc/p05-runner.mjs" || echo "P0-5 runner absent (see notes)"
+[ -f "$EV/06-lsp/p05-runner.mjs" ] && run P0-5-lsp "$EV/06-lsp/p05-runner.mjs" || echo "P0-5 LSP runner absent (see notes)"
 exit "$fail"

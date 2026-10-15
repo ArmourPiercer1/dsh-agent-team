@@ -15,7 +15,7 @@
 | smoke 脚本化 | bash 07-integration/p06-host-smoke.sh :3183 | 0 SMOKE_OK | ~13s | PASS（复跑证明） | §6.1 可复跑 | c46ffb76 |
 | run-all 入口 | bash run-all.sh | 0 | ~2s | PASS | 同上 | c46ffb76 |
 | P0-2 | 代理 937ef64e → node 02-search/p02-search-runner.mjs | 首轮1(3实缺)→二轮0→三轮幂等0 | ~8m | INCONCLUSIVE(fixture-supports-R3)；R2=prereq-missing；SRCH-04 NOT_RUN | §P0-2 | df5b27df |
-| P0-3 | 代理 3aac5394 → 03-fs/p03-fs-runner.mjs | PENDING | — | PENDING | §P0-3 | — |
+| P0-3 | 代理 3aac5394 → node 03-fs/p03-fs-runner.mjs（内含每腿 strace 孵化重跑） | 首轮1(3腿fixture缺陷)→后两轮幂等0 | ~15m | 11/11 PASS；族 INCONCLUSIVE（方向支持进程内 Controlled FS；前置=INV-1 全覆盖+宿主复核） | §P0-3 | 25cfa3c1 |
 | P0-5 | 代理 f5f944b8 → node 05-ptc/p05-runner.mjs; timeout 120 node 06-lsp/p05-runner.mjs | 0/0（各含幂等重跑 0） | ~12m | PTC 8 腿（7 绿+1 NOT_RUN）→族 BOUNDED-DEFER；LSP 10 腿（含 HAZARD×2/UNCONFINED-READ/CORE 素材）→族 INCONCLUSIVE+Profile 兜底 | §P0-5 | eaec6c55 |
 | P0-6 s2b Team world | （未执行：c1 kit 全链=profiles 行+蓝图 world+mock model+会话驱动） | — | — | BOUNDED-DEFER（缺项=c1 链组合，机制两段已分别实证） | §P0-6 | 记录于 p06-stage1-note.md |
 | P0-7 独立复核 | 代理 81a39aec 复跑 p00/p01/probe/smoke@:3184 等（HEAD c46ffb76） | 其复跑全 0 | ~18m | **R1 PASS（复核面；PASS≠P0 关闭）**；F1/F2/F3 已处置 | §6.2 | 08-review/p07-review-R1.md |

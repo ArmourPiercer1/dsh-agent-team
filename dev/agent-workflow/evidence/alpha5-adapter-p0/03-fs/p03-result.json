@@ -1,8 +1,8 @@
 {
   "header": {
-    "recorded_at_utc": "2026-10-15T21:49:58.630Z",
+    "recorded_at_utc": "2026-10-15T21:51:18.178Z",
     "pwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs",
-    "team_HEAD": "42867b7be7090d3dfefa49bc50474876d14aab6a",
+    "team_HEAD": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
     "team_branch": "exp/alpha5-poc-20261016",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain": "CLEAN",
@@ -150,7 +150,7 @@
         },
         "openLedgerForSecret": [
           {
-            "at": "1056955109200400",
+            "at": "1057034663304603",
             "member": "m-alice",
             "tool": "read",
             "req": "private/secret.txt",
@@ -332,7 +332,7 @@
           "expect": "OS-level syscall evidence",
           "observed": [
             {
-              "pid": 49,
+              "pid": 166,
               "op": "openat",
               "path": "private",
               "failed": false
@@ -434,19 +434,19 @@
           "expect": "OS-level syscall evidence",
           "observed": [
             {
-              "pid": 60,
+              "pid": 177,
               "op": "openat",
               "path": "private",
               "failed": false
             },
             {
-              "pid": 60,
+              "pid": 177,
               "op": "openat",
               "path": "out/new-file.txt",
               "failed": false
             },
             {
-              "pid": 60,
+              "pid": 177,
               "op": "openat",
               "path": "out/new-file.txt",
               "failed": false
@@ -465,7 +465,7 @@
           "sha256": "f1c36544d4ccb7ddf1d6b7d0d92047aef2e7cab2a52a53c821a899d5cd1cc277",
           "mtimeNs": "undefined",
           "size": 59,
-          "inode": "64512:5184745",
+          "inode": "64512:5184731",
           "nlink": 1
         },
         "openLedgerTail": [
@@ -604,7 +604,7 @@
           "nlink": 1
         },
         "observerVia": "hash/mtime read through observer hardlink alias (same inode, outside fixture anchor)",
-        "deniedPathInode": "64512:5184723",
+        "deniedPathInode": "64512:5184722",
         "openLedgerTail": [
           {
             "member": "m-alice",
@@ -963,8 +963,8 @@
           "name": "fixture: hard link shares denied inode",
           "expect": "same dev:ino",
           "observed": {
-            "secret": "64512:5184723",
-            "link": "64512:5184723",
+            "secret": "64512:5184722",
+            "link": "64512:5184722",
             "nlink": 2,
             "sameInode": true
           },
@@ -1005,8 +1005,8 @@
       ],
       "evidence": {
         "inodeFacts": {
-          "secret": "64512:5184723",
-          "link": "64512:5184723",
+          "secret": "64512:5184722",
+          "link": "64512:5184722",
           "nlink": 2,
           "sameInode": true
         },
@@ -1069,7 +1069,7 @@
             "req": "allowed/secret-alias.txt",
             "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
             "mode": "read",
-            "ino": "64512:5184723",
+            "ino": "64512:5184722",
             "stage": "refused",
             "code": "ALIAS_DENIED"
           }
@@ -1164,7 +1164,7 @@
             "req": "allowed/secret-alias.txt",
             "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
             "mode": "read",
-            "ino": "64512:5184723",
+            "ino": "64512:5184722",
             "stage": "refused",
             "code": "ALIAS_DENIED"
           },
@@ -1254,7 +1254,7 @@
             "req": "allowed/secret-alias.txt",
             "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
             "mode": "read",
-            "ino": "64512:5184723",
+            "ino": "64512:5184722",
             "stage": "refused",
             "code": "ALIAS_DENIED"
           },
@@ -1454,7 +1454,7 @@
         "req": "allowed/secret-alias.txt",
         "real": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/03-fs/probe-scratch/fixture-tree/allowed/secret-alias.txt",
         "mode": "read",
-        "ino": "64512:5184723",
+        "ino": "64512:5184722",
         "stage": "refused",
         "code": "ALIAS_DENIED"
       },
@@ -1558,13 +1558,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 16,
+          "pid": 133,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 16,
+          "pid": 133,
           "op": "openat",
           "path": "allowed/read.txt",
           "failed": false
@@ -1587,7 +1587,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 27,
+          "pid": 144,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1610,13 +1610,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 38,
+          "pid": 155,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 38,
+          "pid": 155,
           "op": "openat",
           "path": "private/secret.txt",
           "failed": false
@@ -1639,7 +1639,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 49,
+          "pid": 166,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1662,19 +1662,19 @@
       },
       "fixtureOpens": [
         {
-          "pid": 60,
+          "pid": 177,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 60,
+          "pid": 177,
           "op": "openat",
           "path": "out/new-file.txt",
           "failed": false
         },
         {
-          "pid": 60,
+          "pid": 177,
           "op": "openat",
           "path": "out/new-file.txt",
           "failed": false
@@ -1697,7 +1697,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 71,
+          "pid": 188,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1720,13 +1720,13 @@
       },
       "fixtureOpens": [
         {
-          "pid": 82,
+          "pid": 199,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 82,
+          "pid": 199,
           "op": "openat",
           "path": "special-a/oneshot.txt",
           "failed": false
@@ -1749,7 +1749,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 93,
+          "pid": 210,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1772,7 +1772,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 104,
+          "pid": 221,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1795,7 +1795,7 @@
       },
       "fixtureOpens": [
         {
-          "pid": 115,
+          "pid": 232,
           "op": "openat",
           "path": "private",
           "failed": false
@@ -1818,19 +1818,19 @@
       },
       "fixtureOpens": [
         {
-          "pid": 126,
+          "pid": 243,
           "op": "openat",
           "path": "private",
           "failed": false
         },
         {
-          "pid": 126,
+          "pid": 243,
           "op": "openat",
           "path": "allowed/sp ",
           "failed": false
         },
         {
-          "pid": 126,
+          "pid": 243,
           "op": "openat",
           "path": "allowed/sp",
           "failed": true

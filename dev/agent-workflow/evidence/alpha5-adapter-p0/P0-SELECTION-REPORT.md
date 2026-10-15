@@ -24,7 +24,7 @@
 | P0-6 阶段1 真实宿主冷启动 | §3 公共前置/P0-6 | **PASS**（boot 行+401 门+303+test-use byte-clean+token 已脱敏） | 07-integration/host-boot.log | d523a7d4 |
 | P0-6 阶段2a 公开 seam 插件 | §3 P0-6 装配面 | **PASS**（Team 插件经 cordis.patch.yml file-URL 行在真实宿主进程内注册成功） | 07-integration/stage2-boot.log,02-plugin/ | 7559b652 |
 | P0-2 grep/glob 竞速 | §3 P0-2,§4 SRCH-* | **INCONCLUSIVE(fixture-supports-R3)**：SRCH-03 12/12 真 rg 对照 PASS（argv 全存）、async confine→spawn 桥 PASS、A/B 结果深相等；**R2=fixture-shows-prereq-missing**（无 subprocess 服务→fiber PENDING 零注册，非 throw）；R4 NOT-ELIGIBLE；SRCH-04 spill NOT_RUN | 02-search/p02-search-runner.mjs→p02-result.json+notes.md | df5b27df |
-| P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | PENDING（代理 3aac5394） | 03-fs/ | — |
+| P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | **11/11 PASS**（strace 逐腿孵化复跑=OS 级 open 计数；观察自污染通道修正留痕）；硬链接发现：realpath≠对象身份→需 realpath+(dev,ino) 拒绝集；未适配旁路腿实证 INV-1 缺口 | 03-fs/p03-fs-runner.mjs→p03-result.json+notes.md | 25cfa3c1 |
 | P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
 | P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **BOUNDED-DEFER**：需 mock-model team world（c1 kit 链：profiles 行+蓝图 world+mock 部署+3181 启动+会话驱动）；机制已在 kit 与阶段2a 分别实证，组合执行超出本轮预算 | 07-integration/p06-stage1-note.md | — |
 | P0-7 独立 Reviewer | §2.7/§6 | **R1 = PASS（复核面，HEAD c46ffb76）**：已提交主张逐条 VERIFIED/零 REFUTED/无夸大；NOT_VERIFIED 项均如实 PENDING。R1 明示"PASS≠P0 关闭≠GO"。findings：F1 遗留 world 已删（留痕）、F2 4/4→5/5 已回填、F3 报告已 tracked。**终态 HEAD 仍需 delta 复核**（见 08-review/） | 08-review/p07-review-R1.md | 本轮提交 |
@@ -32,7 +32,7 @@
 ## 2. 逐工具族 verdict（§5 算法；含 PENDING 者按已证部分写 INCONCLUSIVE）
 | 族 | verdict | 理由（真实值） |
 | --- | --- | --- |
-| read/write/edit/move（Controlled FS 面） | PENDING→暂记 INCONCLUSIVE | fixture 腿未完；S-10 已证原生读直通=必须有覆盖策略 |
+| read/write/edit/move（Controlled FS 面） | **INCONCLUSIVE（方向支持进程内 Controlled FS）** | 11/11 腿绿但前置未满足：①INV-1 全覆盖（bypass 腿实证 T_dispatchable⊋T_governed 时缺口即成）②真实宿主复核；策略要求新增：realpath+**(dev,ino) 对象身份**双检（硬链接绕过实证） |
 | grep/glob | **INCONCLUSIVE（fixture-supports-R3；倾向 R3 候选）** | fixture 级 parity/桥全绿但 GO 需真实宿主（spill/取消/并发/隔离未覆盖）；R2 需 subprocess 服务前置；登记差异 presentationMeta 非包根可复现 |
 | bash/pwsh（Confined Spawn 面） | **ENV_BLOCK（本宿主）** | P0-4：嵌套 bwrap/landlock/netns 全部不可行；**宿主/管理员动作是前置**，非 CORE_SEAM_BLOCKER 也非工具 fork 理由（guide §0 R4 明文：缺能力不是 fork 触发器） |
 | run_code/PTC | **BOUNDED-DEFER（内层准入已证，外层待真实宿主）** | 保留拒绝 CONFIRMED；内层 guard 断链 PASS；外层直接 I/O NOT_RUN（无 ptc 外层进程） |

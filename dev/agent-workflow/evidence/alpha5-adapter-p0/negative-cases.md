@@ -17,4 +17,7 @@
 | NEG-9 | **LSP 池键=仅路径身份**（LSP-3/5/7）：同 workspace 路径、调用方策略不同的两个查询 | per-caller 策略无法进入池键/seam（types.ts:38-47 无 agent/policy 字段） | 同一常驻 pid 服务两个"策略"（opens=2）；不同路径 pid 分离（正控）；keyA===keyB demo 固化为可执行断言 → 每成员 ACL 隔离在 LSP 面**结构性不可表达**，安全兜底=严格 Profile 拒绝常驻服务器 | 06-lsp/p05-result.json L3/L5/L7 |
 | NEG-10 | **LSP 服务器侧任意读**（LSP-4/6）：常驻服务器以自身 OS 权限经自定义 JSON-RPC 方法读任意路径 | provider 级任意方法=任意 I/O 面，不经 ctx.fs/Agent Scope | 虚构服务器 initialize 期与 $/p05ReadProbe 均成功读 forbidden（虚构敏感数据；host.ts:91 containment 只护宿主预读） | 06-lsp/p05-result.json L4/L6 |
 
-（P0-3 代理产出的反例收齐后在此追加行。）
+| NEG-11 | **硬链接别名绕过 realpath**（FS-04.hardlink）：在允许子树内对被禁对象建硬链接 | "授权对象==访问对象"须按实际对象身份判定 | realpath(别名)=别名∈allowed（POSIX 硬链接无正本）→ 单 realpath 策略被绕；加 (dev,ino) 拒绝集后 ALIAS_DENIED、两路径 strace open=0 | 03-fs/p03-result.json FS-04.hardlink + notes §发现2 |
+| NEG-12 | **未适配旁路**（FS-01.native-bypass）：注册一个未适配读工具 | 只要 T_dispatchable ⊋ T_governed，缺口立即可用 | bypass 工具经 get+schemas 实证 dispatchable 并直读 private 成功（strace=1）→ deny/适配并存是 FS 族任何结论的前置 | 03-fs/p03-result.json FS-01.native-bypass |
+
+（P0-3 反例已收齐；无更多待入。）

@@ -5,14 +5,14 @@
     "powered_by_line": "You are a coding agent powered by the qwen3.8-flash-next model.",
     "model": "qwen3.8-flash-next"
   },
-  "recorded_at_utc": "2026-10-15T21:47:16.206Z",
+  "recorded_at_utc": "2026-10-15T21:51:19.837Z",
   "host_env": {
     "node": "v24.21.0",
     "platform": "linux x64",
     "uname": "Linux 6.8.0-142-generic",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain_empty": true,
-    "worktree_HEAD": "df5b27dfebf32f93597a57e532b33900d1345ed0",
+    "worktree_HEAD": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
     "test_use_porcelain_empty_after": true
   },
   "import_mechanism": "ESM resolve hook p05-ai-hook.mjs → absolute lib/index.js file URLs inside T; no new node_modules junctions; T read-only",
@@ -36,7 +36,7 @@
       "label": "git W HEAD",
       "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016 rev-parse HEAD",
       "code": 0,
-      "out": "df5b27dfebf32f93597a57e532b33900d1345ed0",
+      "out": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
       "err": ""
     },
     {

@@ -5,13 +5,13 @@
     "powered_by_line": "You are a coding agent powered by the qwen3.8-flash-next model.",
     "model": "qwen3.8-flash-next"
   },
-  "recorded_at_utc": "2026-10-15T21:47:16.405Z",
+  "recorded_at_utc": "2026-10-15T21:51:20.039Z",
   "host_env": {
     "node": "v24.21.0",
     "platform": "linux x64",
     "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "test_use_porcelain_empty": true,
-    "worktree_HEAD": "df5b27dfebf32f93597a57e532b33900d1345ed0",
+    "worktree_HEAD": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
     "test_use_porcelain_empty_after": true
   },
   "import_mechanism": "ESM resolve hook 05-ptc/p05-ai-hook.mjs → absolute lib/index.js file URLs inside T; no new junctions; T read-only",
@@ -35,7 +35,7 @@
       "label": "git W HEAD",
       "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016 rev-parse HEAD",
       "code": 0,
-      "out": "df5b27dfebf32f93597a57e532b33900d1345ed0",
+      "out": "25cfa3c16a70ca3f99395b5f2cf64d77ff65bbe3",
       "err": ""
     },
     {
@@ -72,8 +72,8 @@
       "id": "P05-LSP-2.first-query",
       "verdict": "PASS",
       "detail": {
-        "hover": "P05AUDIT pid=99 opens=1 boot_forbidden={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/forbidden/secret.txt\",\"ok\":true,\"bytes\":36,\"head\":\"P05-FABRICATED-SECRET-NO\"} boot_allowed={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alp",
-        "pid": 99,
+        "hover": "P05AUDIT pid=374 opens=1 boot_forbidden={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/forbidden/secret.txt\",\"ok\":true,\"bytes\":36,\"head\":\"P05-FABRICATED-SECRET-NO\"} boot_allowed={\"path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/al",
+        "pid": 374,
         "host_pre_read_evidence": "provider read a.p05 via ctx.fs BEFORE spawn (index.ts:279; host.ts:99) — hover answered from host-supplied didOpen text",
         "boot_allowed_positive_control": {
           "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/06-lsp/probe-scratch/ws/a.p05",
@@ -93,8 +93,8 @@
       "id": "P05-LSP-3.same-path-different-policy-shared-server",
       "verdict": "HAZARD-OBSERVED",
       "detail": {
-        "pid_A": 99,
-        "pid_B": 99,
+        "pid_A": 374,
+        "pid_B": 374,
         "opens_B_after_second_query": 2,
         "reading": "two policy principals whose workspaceRoot strings are identical share ONE resident server process (same pid), and the share key cannot contain policy because LspQueryRequest carries no policy/agent field (types.ts:38-47; pool key index.ts:274 → targetKey only)",
         "hazard": "the shared process runs with the OS rights captured at ITS spawn (plain ctx.subprocess, index.ts:157); a stricter later caller inherits the first spawn’s capabilities; server-side boot probe below shows its reads are not ctx.fs-mediated"
@@ -124,8 +124,8 @@
       "id": "P05-LSP-5.distinct-workspace-distinct-server",
       "verdict": "PASS",
       "detail": {
-        "pid_ws": 99,
-        "pid_ws2": 108,
+        "pid_ws": 374,
+        "pid_ws2": 383,
         "note": "pool granularity = per canonical workspace; proves L3 sharing is key-driven, not a single-process accident"
       }
     },
@@ -168,8 +168,8 @@
       "verdict": "PASS",
       "detail": {
         "pids": [
-          99,
-          108
+          374,
+          383
         ],
         "alive_before": [
           true,
