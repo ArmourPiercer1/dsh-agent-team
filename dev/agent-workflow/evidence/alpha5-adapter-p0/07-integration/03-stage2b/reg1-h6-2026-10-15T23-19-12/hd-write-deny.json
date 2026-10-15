@@ -1,0 +1,5 @@
+{
+  "denyWrite": "Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-19-12/workspace/h6-2026-10-15T23-19-12/h6-deny-target.txt]: effective deny; decided by template(strict) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none",
+  "denyTargetUnchanged": true,
+  "shaAfter": "ca54165483121fa00f89185533b29c25b91eb4171552468ccf2f4997a7302a44"
+}

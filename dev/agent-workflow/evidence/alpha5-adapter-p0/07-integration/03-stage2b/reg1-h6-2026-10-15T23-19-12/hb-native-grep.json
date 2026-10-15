@@ -1,0 +1,3 @@
+{
+  "result": "Found 4 matches\n\nh6-2026-10-15T23-19-12/allowed/fxdir/h6fx-a.txt\nLine 1: alpha line H6QSEARCH_2026-10-15T23-19-12 alpha\nLine 3: beta line H6QSEARCH_2026-10-15T23-19-12 beta\nLine 5: H6QSEARCH_2026-10-15T23-19-12 tail alpha\n\nh6-2026-10-15T23-19-12/allowed/fxdir/h6fx-b.txt\nLine 1: delta H6QSEARCH_2026-10-15T23-19-12 delta"
+}

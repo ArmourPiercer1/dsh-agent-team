@@ -28,7 +28,7 @@
 | P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
 | P0-6 阶段2b+GO条款 | §3 P0-6（含 §186 GO 组与装配条款） | **PASS：stage2b 10/10 + h6 18/18（KIT_EXIT=0）**——受限 read/搜索 parity/Bash-PTC 对照/禁止+公开审批一次性消费全闭环；grepImplementation=package-root 宿主直用；装配顺序 OBSERVED；发现：自注册可重燃被屏蔽名但调用被权限指纹 typed deny（未声明动态工具的 fail-closed 线在 setup Coverage Gate，须实施期钉死） | 07-integration/03-stage2b/{run-…22-44-01/,run-h6-…23-15-50/,h6-result.json} | c43fc41b+本轮 |
 
-| P0-7 独立 Reviewer | §2.7/§6 | **R1 PASS（c46ffb76）+ R2 PASS（delta→9e422ff5，13/13 VERIFIED 零 REFUTED）**：两轮均亲手复跑/独立反"恒真"抽验（strace 负/正控、rg argv 重放、obs 计数、真实 spawn pid）；两位 Reviewer 均自报 qwen3.8-flash-next；均明示"复核 PASS≠P0 关闭≠GO" | 08-review/p07-review-R1.md, p07-review-R2.md | 42867b7b+本轮 |
+| P0-7 独立 Reviewer | §2.7/§6/**REG-01** | **R1 PASS + R2 PASS + REG-01 PASS（7d6de53a，固定 SHA 79d6aea7：两宿主 KIT 原样重跑全再现、零翻转、分层断言/账本/typed 原文亲验；≠GO）**：两轮均亲手复跑/独立反"恒真"抽验（strace 负/正控、rg argv 重放、obs 计数、真实 spawn pid）；两位 Reviewer 均自报 qwen3.8-flash-next；均明示"复核 PASS≠P0 关闭≠GO" | 08-review/p07-review-R1.md, p07-review-R2.md | 42867b7b+本轮 |
 
 ## 2. 逐工具族 verdict（§5 算法；含 PENDING 者按已证部分写 INCONCLUSIVE）
 | 族 | verdict | 理由（真实值） |

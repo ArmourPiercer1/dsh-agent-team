@@ -1,0 +1,14 @@
+{
+  "type": "server-response",
+  "rpcId": "a5list-zo43hq3tmw",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "gateway/arguments-invalid",
+      "message": "typert gateway: session/list: args fields do not match the descriptor: missing \"_request\"; unexpected \"request\"",
+      "details": {
+        "endpoint": "session/list"
+      }
+    }
+  }
+}

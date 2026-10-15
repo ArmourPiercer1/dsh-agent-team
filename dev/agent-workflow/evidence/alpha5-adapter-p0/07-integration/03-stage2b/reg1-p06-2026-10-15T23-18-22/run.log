@@ -1,0 +1,21 @@
+[2026-10-15T23:18:22.846Z] a5p0 stage2b kit — stamp 2026-10-15T23-18-22
+[2026-10-15T23:18:22.846Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016; testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use @ 639ed01539; evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/reg1-p06-2026-10-15T23-18-22
+[2026-10-15T23:18:22.897Z] world materialized; seed file written (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22/workspace/a5p0-seed-2026-10-15T23-18-22.txt)
+[2026-10-15T23:18:22.901Z] mock model listening on ephemeral port 41231
+[2026-10-15T23:18:25.158Z] host booted at http://127.0.0.1:3185 (pid 41); row ready — toolCount=15
+[2026-10-15T23:18:25.160Z] PASS I1: host cold boot on :3185: boot line + no-token 401 + auth 303 + p6t6 row health/state — port=3185 bootLines=1 noToken=401 healthOk=true
+[2026-10-15T23:18:25.577Z] main blueprint written (denyList=0 names)
+[2026-10-15T23:18:25.994Z] PASS I2a: I2: team.create (remote HTTP) creates the fresh root team session — status=200 body={"type":"server-response","rpcId":"a5x-4knatnl3tl","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5p0-team-2026-10-15T23-18-22","blueprint":{"blueprintId":"team.a5p0-main","revision":"1","contentHash":"sha256:7ae33df0740
+[2026-10-15T23:18:26.003Z] PASS I2b: I2: catalog.list (public endpoint) serves the saved blueprint — status=200
+[2026-10-15T23:18:26.004Z] PASS I2c: I2: Leader (mock script) create member x2 (instanceIds) + async delegate to M1 — instanceIds=["inst-0nx0q331j161","inst-0kh6mjq09vwr"]
+[2026-10-15T23:18:26.020Z] PASS I2d: I2: member sessions active — projection carries the instances; p6t6 liveSessions grew (root + 2 members); session/list recorded — projectionHasInstance=true newLive=["session-team-child-0c274acc93ceaba4e9d99e5d276187d8","session-team-child-c3ed90c56fad9ecb7fc0a368106d6255"]
+[2026-10-15T23:18:26.021Z] PASS I3: I3: member native tool REAL execution — scripted read returned the unique on-disk seed content — result=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22/workspace/a5p0-seed-2026-10-15T23-18-22.txt</path>
+<type>file</type>
+<conten
+[2026-10-15T23:18:26.423Z] PASS I4a: I4: after restrict-first + same-name register (preset plugin, armed member scope) — the same read call yields the Adapter marker text and the native output characteristics are GONE — adapterResult=A5P0_ADAPTER_RAN_2026-10-15T23-18-22 call=2 agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 armResult=A5P0_ADAPTER_RAN_2026-10-15T23-18-22 call=1 agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 markerLines=2
+[2026-10-15T23:18:26.834Z] PASS I4b: I4: control member (own scope NOT armed) keeps the native body — read returns seed content, no Adapter marker, marker file unchanged — ctlResult=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22/workspace/a5p0-seed-2026-10-15T23-18 markerLines=2
+[2026-10-15T23:18:26.840Z] PASS I5: I5: safe-unload — after dispose (restrict kept) the same name yields the typed unknown-tool result in the turn (no native fallback: seed content absent, marker count unchanged) — unkResult=Error: unknown tool "read" markerLines=2 sessionPageUnknown=false sessionPageAdapter=false
+[2026-10-15T23:18:26.840Z] PASS I5z: I5 (closure): the M1 scripted chain terminated after the unknown-tool result — m1done=14
+[2026-10-15T23:18:26.840Z] teardown: stopping host + mock
+[2026-10-15T23:18:28.384Z] world removed (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22)
+[2026-10-15T23:18:28.385Z] VERDICT PASS — 10/10 criteria

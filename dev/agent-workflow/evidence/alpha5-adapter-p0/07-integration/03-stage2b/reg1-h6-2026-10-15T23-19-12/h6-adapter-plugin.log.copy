@@ -1,0 +1,10 @@
+[2026-10-15T23:19:13.944Z] PLUGIN APPLIED (preset scope; allowedRoot=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-19-12/workspace/h6-2026-10-15T23-19-12/allowed)
+[2026-10-15T23:19:15.892Z] agent/created: per-agent listener installed agent=session-team-child-9a0f3acaa6063cabe58b451e38d54e10
+[2026-10-15T23:19:15.934Z] agent/created: per-agent listener installed agent=session-team-child-a834d161afbbb89fa8d0be9d965da714
+[2026-10-15T23:19:15.973Z] agent/created: per-agent listener installed agent=session-team-child-ac2a40c5f48e6550cb125006ac448da4
+[2026-10-15T23:19:16.008Z] agent/created: per-agent listener installed agent=session-team-child-c0e4374ba6c45812ab0255419f599072
+[2026-10-15T23:19:16.202Z] ARMED read agent=session-team-child-9a0f3acaa6063cabe58b451e38d54e10 nativeVisibleBeforeMask=yes
+[2026-10-15T23:19:16.242Z] ARMED grep agent=session-team-child-a834d161afbbb89fa8d0be9d965da714 nativeVisibleAtArm=no
+[2026-10-15T23:19:16.502Z] ARMED bash-probe agent=session-team-child-c0e4374ba6c45812ab0255419f599072
+[2026-10-15T23:19:16.582Z] ARMED runcode-probe agent=session-team-child-c0e4374ba6c45812ab0255419f599072
+[2026-10-15T23:19:16.582Z] ARMED dyn-probe agent=session-team-child-c0e4374ba6c45812ab0255419f599072
