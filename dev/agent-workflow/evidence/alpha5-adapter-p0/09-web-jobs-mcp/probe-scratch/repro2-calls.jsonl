@@ -4,3 +4,4 @@
 {"at":1792102281281,"pid":21,"ev":"initialize","client_protocol":"2025-11-25"}
 {"at":1792102281283,"pid":21,"ev":"initialized"}
 {"at":1792102281283,"pid":21,"ev":"tools/list"}
+{"at":1792102341081,"pid":21,"ev":"sigterm"}
