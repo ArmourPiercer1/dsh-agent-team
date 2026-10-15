@@ -26,7 +26,7 @@
 | P0-2 grep/glob 竞速 | §3 P0-2,§4 SRCH-* | **INCONCLUSIVE(fixture-supports-R3)**：SRCH-03 12/12 真 rg 对照 PASS（argv 全存）、async confine→spawn 桥 PASS、A/B 结果深相等；**R2=fixture-shows-prereq-missing**（无 subprocess 服务→fiber PENDING 零注册，非 throw）；R4 NOT-ELIGIBLE；SRCH-04 spill NOT_RUN | 02-search/p02-search-runner.mjs→p02-result.json+notes.md | df5b27df |
 | P0-3 Controlled FS | §3 P0-3,§4 FS-01..04 | **11/11 PASS**（strace 逐腿孵化复跑=OS 级 open 计数；观察自污染通道修正留痕）；硬链接发现：realpath≠对象身份→需 realpath+(dev,ino) 拒绝集；未适配旁路腿实证 INV-1 缺口 | 03-fs/p03-fs-runner.mjs→p03-result.json+notes.md | 25cfa3c1 |
 | P0-5 PTC/LSP | §3 P0-5,§4 PTC/LSP-01 | **PTC**：8 腿（1-7 PASS/CITED，8 NOT_RUN）——内层 dispatch 走同一分级管线且 scoped guard 可断内层（原体 0）；桥可公开构造=无需 blocker。**LSP**：全栈公开挂载+池化实证——同路径不同策略共享常驻 pid（HAZARD-OBSERVED），服务器侧 OS 读不受限（虚构数据）；§6.1 十一字段 CORE 素材已录（素材，非宣告） | 05-ptc/+06-lsp/ 各 runner+result+notes | eaec6c55 |
-| P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **BOUNDED-DEFER**：需 mock-model team world（c1 kit 链：profiles 行+蓝图 world+mock 部署+3181 启动+会话驱动）；机制已在 kit 与阶段2a 分别实证，组合执行超出本轮预算 | 07-integration/p06-stage1-note.md | — |
+| P0-6 阶段2b 宿主级 BND/Team 世界 | §3 P0-6 | **PASS（run-2026-10-15T22-44-01，VERDICT 10/10）**：隔离真实宿主 :3185、mock-model Team world；成员原生 read 真实执行、同名 Adapter 遮蔽+对照成员不受影响、dispose→typed unknown（restrict 保留）；原始失败全留痕（蓝图校验×2、mock 线块形 root-cause+storm fuse、oracle off-by-one） | 07-integration/03-stage2b/ | c43fc41b |
 | P0-7 独立 Reviewer | §2.7/§6 | **R1 PASS（c46ffb76）+ R2 PASS（delta→9e422ff5，13/13 VERIFIED 零 REFUTED）**：两轮均亲手复跑/独立反"恒真"抽验（strace 负/正控、rg argv 重放、obs 计数、真实 spawn pid）；两位 Reviewer 均自报 qwen3.8-flash-next；均明示"复核 PASS≠P0 关闭≠GO" | 08-review/p07-review-R1.md, p07-review-R2.md | 42867b7b+本轮 |
 
 ## 2. 逐工具族 verdict（§5 算法；含 PENDING 者按已证部分写 INCONCLUSIVE）
