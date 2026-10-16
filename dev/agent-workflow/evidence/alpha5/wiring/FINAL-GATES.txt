@@ -76,3 +76,15 @@ condition-A form-pin leg（quoted-path 形制 + 恰 6 行）→ lane 真值 **68
 门禁复跑（head 本轮）：census verdict pass（新指针，第 7 对 capture）+ 3 连绿先例；
 a5p0 全套+p4t6=103/103；a5p5 lane 68/68；tsc check/build 双 0；lint new 0（对
 BASELINES.lint=0237d487 正本 76 distinct 不变）；self-test 59/59。porcelain 0。
+
+── FOLLOW-UP ROUND 4 (CI merge-ref 口径；合并 ced9254c + tie 清偿 + 合并树正本) ──
+CI 事实修正了猜测：merge-ref 两红=**p4t6 coverage（1157≠1155）+ a5p1r G-5 wording
+lint（WIRING-SURFACE:36 无限定词）**，均 count/content-pinned 扫描在合并树上的真实
+形态（本地合并树首跑即复现=机制证实；分支树 0/12 是口径差不是玄学）→ 合法修：
+p4t6 入账 SCANNED_PATHS_GGPROBES（#265@ced9254c 两文件，PR3/5/7 合并纠偏同格，
+断言更紧不豁免）；措辞行加 不得/UNTESTED 限定（lint 认账）。census 2×2 @319a60d7
+合并树 全 pass（551f/6941l 恒等×4 capture）。正本九行手误被**逐字节校验**当场抓住
+修正——byte-equality 是机器门不是礼节。口径裁决写入新正本：baseline=CI 所跑的树
+（merge-ref 口径），tolerance 两度重录零漂移。旧 067225df 留史。
+门禁（合并树 head）：p4t6+wording 13/13；census 2 对 pass；self-test 59/59；
+其余见下行复跑记录。
