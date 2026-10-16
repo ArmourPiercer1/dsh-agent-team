@@ -6186,3 +6186,16 @@ RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.l
 ## 2026-10-16 Alpha.5 PR2 协调补充轮（08:2xZ 指令；branch `alpha5-pr2-admission-grant`，PR #256，仍 DO-NOT-MERGE）
 
 用户裁决经协调转发：① PR2 转入**纯准备**状态（契约/测试/文档可评审），但 admission 接口的"运行时放行"语义冻结挂起，待 `alpha5-pr1r-residual-boundaries`（代理 4d990c89，base master `db5cb5f7`）收口——R-a 全局 `schemas()` 非可信来源（同名异体须 `tools.get` 身份比较，无显式 bind = 拒/声明不支持）与 R-b 校验→晚解析窗口的确定性负控/seam 记录可能改形本 lane 只作为事实消费的"来源可信"假设（`parametersFingerprint`/调用身份将纳入哪条 definition-identity 腿、`consumeForExecution` 须引用哪条 seam 记录均未冻结）。与来源无关的代数（dual-plane 扩张、逐 effect A3-2 等式、一次性 validate-then-mark、H1/H2 门）不受影响、立即可评审。落点：lane README 新增 "NOT FROZEN" 节（代码旁可见，不只在 PR 正文）、PR 正文新增 dependency 节（"依赖 PR1r 收口结果"）、s12 (c)/(g) 同步。② CI 表述纪律：census-runtime 未终态，全 PR 与证据不作"全部 CI 绿"表述——所有数字均为本地 run 并列明（正文 Gates 节已加声明；原文 CI=NOT_RUN 不变）。③ §5 erratum 可裁项原样保留等用户，未动。
+
+
+## 2026-10-16 Alpha.5 PR2 复核修复轮（review round 1：F-1/F-2/F-4/F-5/F-6；branch `alpha5-pr2-admission-grant`，PR #256，仍 DO-NOT-MERGE）
+
+复核六项 PASS，本回合只动裁决指定的五项，F-1 严格 RED-first（`runs/red-F1-foreign-member.log`：修复前 A 的呈报给 B 的 request 会 mint 成功 + 伪造 caseId 也会 mint，2 红）。
+
+* **F-1**：`issueApprovedGrant` 在 clock/identity/assurance 之后、任何 legality 代数之前，用 request 自己的 member + effect-set fingerprint 在**呈报声称的 generation** 上重算 `toolAskApprovalCaseId` 与呈报 `approvalCaseId` 比对；不等 = `APPROVAL_STALE`（`refusal='approval-case-identity-mismatch'`，details 带 presented/expected），先于 mint。generation 移动的诊断仍由 verify 的既有腿给出（expected 用 creation-gen 计算，不吞掉 'authority generation moved'）。测试侧 `approvalFor` 改为计算真实 caseId（常量 caseId 会让这条腿不可测）；foreign-member + 伪造 caseId 两条新测试；kernel 套件 23/23。
+* **F-2**：A3-2 覆盖半腿隔离测试。一次性探针脚本（约 1080 输入全空间，按裁决不入库）实测：单一 `documents` 输入喂两条半腿时，DECIDED-not-allow 的覆盖臂在位置绑定下**不可达**（更高 rung 绑更少文档 ⇒ rung 腿蕴含覆盖腿）——该蕴含是 defense-in-depth；真正的隔离点在 containment：subtree 规则下同一呈报同一文档，仅 seam 缺席时拒绝落在 envelope 臂（断言 detail 含 'undetermined at execution' 且不含两条 rung 臂文案），seam 补上即合法。rung 半腿经 seam-true 腿（verify 仅在两半腿都过时 ok）证其通过。
+* **F-4**：删除 pre-tie 草稿 `fail-set-diff.json`（仍带 NEW=1 的旧口径），终版 `.txt` 为主，主从关系写入 s12(c)。
+* **F-5**：README 记账：harness 默认 `requiredAssurance` reader 返回零维度 ⇒ 不配 reader 的测试会空转通过 assurance 门（这是 harness 属性不是律）；PR3 装配必须自钉 reader 推导律测试，空 reader 不得未经测试进入装配。不改 domain 律。
+* **F-6**：s12(b) 的 head 行标注 **code head 口径**（branch head 随证据/文档/复核 commit 正常前进，权威 head 以 `gh pr view 256` 为准）。
+
+不动：H1/H2 实现、§5 erratum 可裁项、NOT FROZEN（PR1r）标注。目标套件 8 files 101/101；dist 重建随源同 commit（artifacts 门 C-drift 清零后复验）；全量普查与 identity diff 见下条更新。

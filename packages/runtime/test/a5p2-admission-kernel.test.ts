@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { parseOperationGrant, type AdmissionRequest, type OperationGrant } from '../../domain/tool-governance/src/index.js'
-import type { AssuranceProbe, PresentedApproval } from '../tool-admission/index.js'
+import { toolAskApprovalCaseId, type AssuranceProbe, type PresentedApproval } from '../tool-admission/index.js'
 import {
   assuranceContract,
   binding,
@@ -42,9 +42,16 @@ function requestOf(over: Partial<AdmissionRequest> = {}): AdmissionRequest {
   }
 }
 
+/** The presentation the case ACTUALLY opens for this request (F-1 round:
+ *  a constant caseId would make the member-binding check untestable). */
 function approvalFor(request: AdmissionRequest, over: Partial<PresentedApproval> = {}): PresentedApproval {
   return {
-    approvalCaseId: 'tadm-case-1',
+    approvalCaseId: toolAskApprovalCaseId({
+      teamSessionId: request.member.teamSessionId,
+      instanceId: request.member.instanceId,
+      effectSetFingerprint: request.requestedEffects.fingerprint,
+      authorityGeneration: over.authorityGenerationAtCreation ?? 1,
+    }),
     reviewerAuthority: 'leader',
     beneficiaryAuthority: 'member',
     requiredAuthorityAtCreation: 'leader',
@@ -267,6 +274,31 @@ describe('the approval → issue → consume ride (and everything that poisons i
     const issued = await kernel.issueApprovedGrant(request, forged)
     expect(issued.ok).toBe(false)
     if (!issued.ok) expect(issued.error.message).toContain('WHOLE set')
+  })
+
+  it('a presentation made for ANOTHER member never issues here — the case identity binds the member (F-1)', async () => {
+    const request = requestOf()
+    // A's approval (A's member leg of the case identity), presented for B's request.
+    const presentationForA = approvalFor(request)
+    const victim = { ...request, member: { teamSessionId: 'ts-1', instanceId: 'inst-VICTIM' } }
+    const { kernel } = makeHarness()
+    const issued = await kernel.issueApprovedGrant(victim, presentationForA)
+    expect(issued.ok).toBe(false)
+    if (!issued.ok) {
+      expect(issued.error.code).toBe('APPROVAL_STALE')
+      expect(issued.error.details?.refusal).toBe('approval-case-identity-mismatch')
+      expect(issued.error.details?.expected).toContain('inst-VICTIM')
+    }
+  })
+
+  it('a case identity forged around the fingerprint is refused on the same leg, before any mint', async () => {
+    const request = requestOf()
+    const forged = approvalFor(request, { approvalCaseId: 'tadm:ts-1:inst-2:sha256:' + 'f'.repeat(64) + ':g1' })
+    const { kernel, ports } = makeHarness()
+    const issued = await kernel.issueApprovedGrant(request, forged)
+    expect(issued.ok).toBe(false)
+    if (!issued.ok) expect(issued.error.details?.refusal).toBe('approval-case-identity-mismatch')
+    expect(ports.registrations).toBe(0)
   })
 
   it('cross-Member Grant theft: the leader-leg grant spent by ANOTHER member refuses', async () => {

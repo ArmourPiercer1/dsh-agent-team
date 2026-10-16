@@ -70,6 +70,14 @@ by `a5p2-assurance-probe`:
    `untestedAssurance` discipline holds until PR4's probe produces real
    Landlock/FD/network evidence rows into the same fields.
 
+F-5 bookkeeping (review round 1): the kernel harness's default
+`requiredAssurance` reader returns NO dimensions, so a test written without one
+vacuously passes the assurance gate (zero demanded = nothing to verify). That
+is a harness property, NOT the law: PR3's live assembly must pin the
+reader-derivation law (which dimensions a binding's demanded level actually
+pulls in) in its own tests — an empty reader must never reach the wiring
+unttested. No domain law changes here.
+
 ## One ApprovalCase, many effects (approval-case.ts)
 
 The case opens at the highest per-effect required rung (Alpha.4's
