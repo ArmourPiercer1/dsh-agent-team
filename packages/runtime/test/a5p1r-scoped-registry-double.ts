@@ -69,7 +69,8 @@ import type { ScopedGuardAgentCtx } from '../tool-dispatch/index.js'
 
 interface FakeDefinition {
   readonly name: string
-  readonly execute: () => Promise<unknown>
+  /** The pinned call site is `tool.execute(exec.arguments, exec)` (`:1581`). */
+  readonly execute: (args: unknown, exec: unknown) => Promise<unknown>
   /** Evidence only: which Body this row's `execute` is. */
   readonly identity: string
 }
@@ -130,6 +131,13 @@ export interface RunCallInput {
    * them.
    */
   readonly whileBodyRuns?: () => void | Promise<void>
+  /**
+   * A `tools/post-execute` policy that REWRITES the outcome. That edge really is
+   * a waterfall whose value is the decision (`:176`), so a later listener can
+   * replace what `tools/result` finally carries — including replacing it with
+   * something that no longer states which failure it was.
+   */
+  readonly postExecuteReplaces?: unknown
   /** A deterministic fence parked inside the `tools/pre-execute` waterfall. */
   readonly parkInPreExecute?: { readonly signal: { readonly arrived: () => void }; readonly gate: Promise<void> }
 }
