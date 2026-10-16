@@ -2237,6 +2237,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p1r-validate-resolve.test.ts',
       'packages/runtime/test/a5p1r-scoped-registry-double.ts',
     ]
+    // The Alpha.5 PR4 provider/launcher line (branch `alpha5-pr4-prov`, C
+    // Lane, base master db5cb5f7): EIGHT production sources — the frozen-
+    // vocabulary local contract stub, the C-PROC phase closed set, the FD-
+    // inheritance declaration set, the network-dimension closed set, the
+    // authoritative probe surface (bare-syscall GET_VERSION + real enforcement
+    // legs, PoC4), the realm/trustRoot hard-profile evidence gate (negative
+    // controls only, enablement compiled OFF), the no-fallback confined-
+    // process provider, and the lane barrel — plus their NINE RED-first
+    // artifacts (seven specs + the shared harness and this lane's own
+    // hygiene/dormancy pin). The reference launcher is a .py resource and the
+    // scratch worlds live under gitignored `tests/homes/a5p4-*` — neither is
+    // scanned source. The lane touches NO shared file (the audit script, both
+    // runtime tsconfigs, the barrel and the scanner stay untouched; the lane
+    // typechecks itself in-process via ts.createProgram in the hygiene spec),
+    // and it has NO production consumer (live wiring rides with PR5).
+    const SCANNED_PATHS_A5P4PROV: readonly string[] = [
+      'packages/runtime/sandbox-provider/contract-stub.ts',
+      'packages/runtime/sandbox-provider/phases.ts',
+      'packages/runtime/sandbox-provider/fd-inheritance.ts',
+      'packages/runtime/sandbox-provider/network.ts',
+      'packages/runtime/sandbox-provider/probe-abi.ts',
+      'packages/runtime/sandbox-provider/realm-evidence.ts',
+      'packages/runtime/sandbox-provider/provider.ts',
+      'packages/runtime/sandbox-provider/index.ts',
+      'packages/runtime/test/a5p4-harness.ts',
+      'packages/runtime/test/a5p4-phases.test.ts',
+      'packages/runtime/test/a5p4-fd-inheritance.test.ts',
+      'packages/runtime/test/a5p4-network-closure.test.ts',
+      'packages/runtime/test/a5p4-poc4-probe.test.ts',
+      'packages/runtime/test/a5p4-realm-evidence.test.ts',
+      'packages/runtime/test/a5p4-existence-wording.test.ts',
+      'packages/runtime/test/a5p4-provider.test.ts',
+      'packages/runtime/test/a5p4-lane-hygiene.test.ts',
+    ]
     // The Alpha.5 PR2 admission-grant line (branch `alpha5-pr2-admission-grant`,
     // stacked on PR1): SIX production sources — the finite-clock gate, the
     // assurance runtime-verification gate (stub probe port), the multi-effect
@@ -2293,6 +2327,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PR0.length +
         SCANNED_PATHS_A5PR1.length +
         SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5P4PROV.length +
         SCANNED_PATHS_A5PR2.length,
     )
     expect(scanResult.files.length).toBe(
@@ -2323,6 +2358,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PR0.length +
         SCANNED_PATHS_A5PR1.length +
         SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5P4PROV.length +
         SCANNED_PATHS_A5PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -2584,6 +2620,9 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // increment, and had the lane landed WITHOUT its paths here this sum
     // would be RED instead of silently moved.
     expect(SCANNED_PATHS_A5PR2.length).toBe(1087 - 1073)
+    // Lane-C (PR4 provider) ledger tie: this lane moves the scanned-total
+    // endpoint 1092 -> 1109 (its own pair only, pay-the-tie discipline).
+    expect(SCANNED_PATHS_A5P4PROV.length).toBe(1109 - 1092)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
