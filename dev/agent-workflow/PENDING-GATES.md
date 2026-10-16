@@ -8,6 +8,21 @@ PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDIN
 
 | id | 项目 | 状态 | owner | 验收依据 |
 | --- | --- | --- | --- | --- |
+## G 门行（自 evidence 正本合并，G-b..G-g 完整）
+| # | 项 | 状态 | 放行前动作 |
+|---|---|---|---|
+| G-a | PR257 取消语义 | **用户裁决 2026-10-16 17:52Z：接受扩大取消范围**（限定=工具 definition 变化/撤回→取消关联未执行调用+向关联已开始调用传播 abort 请求；不保证立即终止、不回滚已发生副作用；结果三分类：未执行/已执行可能有副作用/终止未确认）。**边界：不扩大为 provider 卸载自动杀全团队；G-g 不随之关闭；不回填为 17:02 合并时已批准**。运行接线验收自本裁决起可按门推进 | 文档落实=#258 分支更新中（裁决 UTC 引本行） |
+| G-b | PR257 seam-record/s12 必改点1（三事实+候选修法**仅项目内**+限定措辞） | follow-up 修复中（4d990c89） | 文档可先行；禁"已合规"措辞 |
+| G-c | PR256 F-1 数组顺序决定结局⇒deny-source-ambiguous；F-2 issue 复证只比 MAX rung⇒扩展 provenance 对；日志明细 NIT | 修复中 | 修复+新 head 独立复核+CI 后才谈 #256 合并 |
+| G-d | 各 lane（B/C/D/E/F/G）对契约 v1.1 的**集成确认**（含 p4t6 pin +14、tsconfig include、接线注、F-3 PR3 义务、OpenAtPort 前禁宣称任意树 Supported） | 未开始 | PR3/PR7/PR8 集成会话逐 lane 确认后其交付方可计入验收 |
+| G-e | 原 G1/G3/G7/YAML 待裁项 | 未裁 | 不默认旧提案 |
+| **G-g** | **静默已订阅通道的排除门=独立开放项（用户：不得随 G-a 默认关闭）**：支持契约须明确"订阅成功但永不投递"配置在支持矩阵中的位置+所需证据（送达+生效原文）；现状=名字级降级+响亮 alarm（事实已证，契约文本未收口） | 开放 | 契约文本+证据清单收口前，该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED |
+| G-f | census 非终态时禁称"全部 CI 绿" | 纪律 | 每次合并回报附 census 状态原文 |
+
+**唯一权威声明**：本文件（dev/agent-workflow/PENDING-GATES.md）为合并/验收门清单唯一权威；dev/agent-workflow/evidence/alpha5/PENDING-GATES.md 降级为指针存根（G-d 集成义务明细仍在 evidence 侧 INTEGRATION-PLAN.md/PENDING-GATES 注记，以本文件行引用为准）。
+
+**Owner 直接指派（17:54Z 授权，留名留证）**：D-1 恢复实施 owner=d9da2f74（PR1 dispatcher writer，qwen）；D-2 skills 执行 owner=4d990c89（followup 文档 writer，qwen），独立 reviewer=4dac3d04（≠writer）；G-g 技术证据收口 owner=4dac3d04 起草支持契约条款 + 4d990c89 落文；集成 owner（p4t6/tsconfig/接线）=协调者本人。均 qwen3.8-flash-next。
+
 | D-1 | 严格『只取消未执行调用』属性（NO-ABORT-AFTER-BODY-START） | 延期（DEFERRED，非放弃） | 待集成 owner 提名 → 用户确认 | 见下 |
 | D-2 | skills 文档与取消语义对齐（收尾必做） | 待收尾轮执行 | 待集成 owner 提名 → 用户确认 | 见下 |
 
