@@ -156,12 +156,25 @@ export interface ShellOutcome {
   readonly truncated: boolean
 }
 
+/**
+ * Phase 2 (spill slice): the attribution pointer a renderer adds when the
+ * FULL payload lives in the world-bound spill store. The pointer states the
+ * FACT (where the full bytes are, how many) — reading them re-checks
+ * authorization at read time (`spill.ts`), so the pointer is attribution,
+ * never an implicit grant.
+ */
+export interface SpillPointer {
+  readonly spillId: string
+  readonly bytes: number
+}
+
 /** Presentation meta of a rendered search (the closed `presentationMeta` arm, S0 D-3: the R3 renderer draws it itself). */
 export interface SearchPresentationMeta {
   readonly kind: 'search'
   readonly outputMode: GrepOutputMode
   readonly totalMatches: number
   readonly truncated: boolean
+  readonly spill?: SpillPointer
 }
 
 /** Presentation meta of a rendered shell run. */
@@ -171,6 +184,7 @@ export interface ShellPresentationMeta {
   readonly timedOut: boolean
   readonly cancelled: boolean
   readonly truncated: boolean
+  readonly spill?: SpillPointer
 }
 
 /** Either presentation meta arm. */

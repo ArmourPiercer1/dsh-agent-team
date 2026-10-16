@@ -38,6 +38,7 @@ import type {
   SearchPresentationMeta,
   ShellOutcome,
   ShellPresentationMeta,
+  SpillPointer,
 } from './types.js'
 
 /** The footer marker — structural, renderer-owned (see law 2). */
@@ -86,13 +87,25 @@ function footer(meta: SearchPresentationMeta | ShellPresentationMeta): string {
   return META_PREFIX + JSON.stringify(meta)
 }
 
+/** Options shared by both renderers (Phase 2 spill slice). */
+export interface RenderOptions {
+  /**
+   * The attribution pointer when the FULL payload lives in the spill store.
+   * The renderer only states the fact — reading the pointer re-checks
+   * authorization at read time (`spill.ts`); the inline presentation stays
+   * bounded and sanitized exactly as before.
+   */
+  readonly spill?: SpillPointer
+}
+
 /** Render one search outcome into the bounded, structure-safe presentation. */
-export function renderSearchResult(outcome: SearchOutcome): RenderedPresentation<SearchPresentationMeta> {
+export function renderSearchResult(outcome: SearchOutcome, options: RenderOptions = {}): RenderedPresentation<SearchPresentationMeta> {
   const meta: SearchPresentationMeta = {
     kind: 'search',
     outputMode: outcome.outputMode,
     totalMatches: outcome.totalMatches,
     truncated: outcome.truncated,
+    ...(options.spill ? { spill: options.spill } : {}),
   }
   const lines: string[] = [`search · ${outcome.outputMode} · ${outcome.totalMatches} matches`]
   if (outcome.outputMode === 'content') {
@@ -120,7 +133,7 @@ export function renderSearchResult(outcome: SearchOutcome): RenderedPresentation
 }
 
 /** Options of the shell renderer. */
-export interface ShellRenderOptions {
+export interface ShellRenderOptions extends RenderOptions {
   /** Per-stream character bound for the PRESENTATION (executor bounds may be smaller). */
   readonly maxBytes?: number
 }
@@ -136,6 +149,7 @@ export function renderShellResult(outcome: ShellOutcome, options: ShellRenderOpt
     timedOut: outcome.timedOut,
     cancelled: outcome.cancelled,
     truncated: outcome.truncated || stdoutCut || stderrCut,
+    ...(options.spill ? { spill: options.spill } : {}),
   }
   const lines: string[] = [
     outcome.cancelled
