@@ -39,9 +39,59 @@ export const ASSURANCE_DIMENSIONS = [
     'network-destination',
     'inherit-cancel',
 ];
+function parseNullableString(raw, path, problems) {
+    if (raw === null)
+        return null;
+    if (typeof raw !== 'string') {
+        problems.push({ code: 'field-type', path, detail: 'must be a non-empty string or an explicit null ("none", stated)' });
+        return undefined;
+    }
+    if (raw.trim().length === 0) {
+        problems.push({ code: 'empty-string', path, detail: 'state null for "none" — a blank string claims nothing and proves nothing' });
+        return undefined;
+    }
+    return raw;
+}
+function parseDimensionRecord(raw, dimension, problems) {
+    const path = `$.assurance.${dimension}`;
+    if (!isRecord(raw)) {
+        problems.push({ code: 'not-a-record', path, detail: 'each dimension records level + mechanism + realmId + trustRoot + evidence (design §2.1)' });
+        return undefined;
+    }
+    closeRecordKeys(raw, ['level', 'mechanism', 'realmId', 'trustRoot', 'evidence'], path, problems);
+    const levelRaw = raw['level'];
+    let level;
+    if (levelRaw === undefined) {
+        problems.push({ code: 'missing-field', path: `${path}.level`, detail: 'the dimension must state its level' });
+    }
+    else if (typeof levelRaw !== 'string' || !ASSURANCE_LEVELS.includes(levelRaw)) {
+        problems.push({ code: 'value-outside-closed-set', path: `${path}.level`, detail: `assurance level must be one of ${ASSURANCE_LEVELS.join(' | ')}` });
+    }
+    else {
+        level = levelRaw;
+    }
+    const mechanism = parseNullableString(raw['mechanism'], `${path}.mechanism`, problems);
+    const realmIdRaw = raw['realmId'];
+    let realmId;
+    if (realmIdRaw === undefined || realmIdRaw === null) {
+        problems.push({ code: 'missing-field', path: `${path}.realmId`, detail: 'an assurance claim names the Realm it holds in (作用 Realm) — it holds in no other' });
+    }
+    else if (typeof realmIdRaw !== 'string' || realmIdRaw.trim().length === 0) {
+        problems.push({ code: 'field-type', path: `${path}.realmId`, detail: '`realmId` must be a non-empty string' });
+    }
+    else {
+        realmId = realmIdRaw;
+    }
+    const trustRoot = parseNullableString(raw['trustRoot'], `${path}.trustRoot`, problems);
+    const evidence = parseNullableString(raw['evidence'], `${path}.evidence`, problems);
+    if (level === undefined || mechanism === undefined || realmId === undefined || trustRoot === undefined || evidence === undefined) {
+        return undefined;
+    }
+    return { level, mechanism, realmId, trustRoot, evidence };
+}
 /**
  * Strict parse: the record must state EVERY dimension (a missing one is a
- * refusal, never an implicit `untested`), each from the closed five, and the
+ * refusal, never an implicit `untested`), each as a full §2.1 record, and the
  * two origin/boundary fields from their closed sets.
  */
 export function parseAssuranceContract(raw) {
@@ -68,18 +118,18 @@ export function parseAssuranceContract(raw) {
         const built = {};
         let complete = true;
         for (const dimension of ASSURANCE_DIMENSIONS) {
-            const level = assuranceRaw[dimension];
-            if (level === undefined) {
+            const entry = assuranceRaw[dimension];
+            if (entry === undefined) {
                 problems.push({ code: 'missing-field', path: `$.assurance.${dimension}`, detail: `the Provider must state dimension '${dimension}' (design §1.4: 完整兑现其声称支持的维度)` });
                 complete = false;
                 continue;
             }
-            if (typeof level !== 'string' || !ASSURANCE_LEVELS.includes(level)) {
-                problems.push({ code: 'value-outside-closed-set', path: `$.assurance.${dimension}`, detail: `assurance level must be one of ${ASSURANCE_LEVELS.join(' | ')}` });
+            const record = parseDimensionRecord(entry, dimension, problems);
+            if (record === undefined) {
                 complete = false;
                 continue;
             }
-            built[dimension] = level;
+            built[dimension] = record;
         }
         if (complete)
             assurance = built;
@@ -92,7 +142,10 @@ export function parseAssuranceContract(raw) {
 }
 /**
  * Does the contract actually carry the demanded capability per dimension?
- * Reports every failing dimension (collected, never the first).
+ * Reports every failing dimension (collected, never the first). Reads the
+ * LEVEL only — the mechanism/trustRoot/evidence fields are what a reviewer
+ * (or PR3/PR4's evidence gate) checks the level claim against; the
+ * derivation law keeps this a capability question, never a grant.
  */
 export function assuranceSatisfies(contract, required) {
     const failing = [];
@@ -100,7 +153,7 @@ export function assuranceSatisfies(contract, required) {
         const demand = required[dimension];
         if (demand === undefined)
             continue;
-        const level = contract.assurance[dimension];
+        const level = contract.assurance[dimension].level;
         const satisfied = demand === 'hard' ? level === 'enforced' : level === 'enforced' || level === 'author-trusted';
         if (!satisfied)
             failing.push(dimension);

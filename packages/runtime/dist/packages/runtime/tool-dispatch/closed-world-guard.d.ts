@@ -55,13 +55,24 @@
  */
 import { type AssuranceContract, type ExecutionBoundary, type GovernanceError, type GovernanceResult, type ImplementationOrigin, type ToolBinding } from '../../domain/tool-governance/src/index.js';
 /**
- * The honest assurance record of a Binding whose I/O enforcement PR1 does NOT
- * claim: every dimension is `untested` (design §2.1 — Assurance is a record
- * of what was PROVEN, and PR1 proves dispatch governance only; PR3/PR4 fill
- * these rows). An empty or omitted record is not available: PR0's parser
- * refuses a missing dimension precisely so this claim cannot drift silent.
+ * The NAMED Realm every PR1 assurance claim holds in — and travels to no
+ * other (design §2.1: Realm 不可混淆). PR1's governance lives in the Host
+ * process at the Team trusted assembly point, so that is the realm it names;
+ * it is NOT the per-Agent ACL scope, and no other realm's evidence may be
+ * pasted into it.
  */
-export declare function untestedAssurance(implementationOrigin: ImplementationOrigin, executionBoundary: ExecutionBoundary): AssuranceContract;
+export declare const ASSURANCE_REALM_TRUSTED_ASSEMBLY = "dsh-host-realm:team-trusted-assembly";
+/**
+ * The honest assurance record of a Binding whose I/O enforcement PR1 does NOT
+ * claim: every dimension is `untested`, and — per PR0 review M-2 — an
+ * `untested` dimension still states the FULL §2.1 record: no mechanism, no
+ * trust root, no evidence (each written as an explicit `null`, the honest way
+ * of saying "none exists"), inside a named realm. A bare level would be the
+ * overclaim §1.4 refuses, and PR0's parser refuses a missing dimension
+ * precisely so this claim cannot drift silent. PR3/PR4 fill these rows with
+ * real mechanism/realm/evidence; they do not redefine them.
+ */
+export declare function untestedAssurance(implementationOrigin: ImplementationOrigin, executionBoundary: ExecutionBoundary, realmId?: string): AssuranceContract;
 /** Which trusted assembly step established one governed name (design §3 table). */
 export declare const GOVERNED_ORIGINS: readonly ["inherited-native", "team-own", "team-mcp"];
 /** One governed origin. */

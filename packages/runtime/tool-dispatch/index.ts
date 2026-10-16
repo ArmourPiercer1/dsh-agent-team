@@ -40,6 +40,7 @@ export {
   createGovernedSurface,
   guardDecision,
   guardDenialMessage,
+  ASSURANCE_REALM_TRUSTED_ASSEMBLY,
   untestedAssurance,
 } from './closed-world-guard.js'
 export type {

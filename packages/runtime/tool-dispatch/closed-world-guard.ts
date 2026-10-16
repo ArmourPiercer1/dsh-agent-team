@@ -58,6 +58,7 @@ import {
   ASSURANCE_DIMENSIONS,
   GOVERNANCE_ERROR_CODES,
   type AssuranceContract,
+  type AssuranceDimensionRecord,
   type AssuranceLevel,
   type ExecutionBoundary,
   type GovernanceError,
@@ -67,19 +68,37 @@ import {
 } from '../../domain/tool-governance/src/index.js'
 
 /**
+ * The NAMED Realm every PR1 assurance claim holds in — and travels to no
+ * other (design §2.1: Realm 不可混淆). PR1's governance lives in the Host
+ * process at the Team trusted assembly point, so that is the realm it names;
+ * it is NOT the per-Agent ACL scope, and no other realm's evidence may be
+ * pasted into it.
+ */
+export const ASSURANCE_REALM_TRUSTED_ASSEMBLY = 'dsh-host-realm:team-trusted-assembly'
+
+/**
  * The honest assurance record of a Binding whose I/O enforcement PR1 does NOT
- * claim: every dimension is `untested` (design §2.1 — Assurance is a record
- * of what was PROVEN, and PR1 proves dispatch governance only; PR3/PR4 fill
- * these rows). An empty or omitted record is not available: PR0's parser
- * refuses a missing dimension precisely so this claim cannot drift silent.
+ * claim: every dimension is `untested`, and — per PR0 review M-2 — an
+ * `untested` dimension still states the FULL §2.1 record: no mechanism, no
+ * trust root, no evidence (each written as an explicit `null`, the honest way
+ * of saying "none exists"), inside a named realm. A bare level would be the
+ * overclaim §1.4 refuses, and PR0's parser refuses a missing dimension
+ * precisely so this claim cannot drift silent. PR3/PR4 fill these rows with
+ * real mechanism/realm/evidence; they do not redefine them.
  */
 export function untestedAssurance(
   implementationOrigin: ImplementationOrigin,
   executionBoundary: ExecutionBoundary,
+  realmId: string = ASSURANCE_REALM_TRUSTED_ASSEMBLY,
 ): AssuranceContract {
-  const levels = {} as Record<(typeof ASSURANCE_DIMENSIONS)[number], AssuranceLevel>
-  for (const dimension of ASSURANCE_DIMENSIONS) levels[dimension] = 'untested'
-  return Object.freeze({ implementationOrigin, executionBoundary, assurance: Object.freeze(levels) })
+  // A blank realm is not a weaker claim, it is no claim: fall back to the
+  // named assembly realm rather than emitting a realm id the parser rejects.
+  const realm = typeof realmId === 'string' && realmId.trim().length > 0 ? realmId : ASSURANCE_REALM_TRUSTED_ASSEMBLY
+  const assurance = {} as Record<(typeof ASSURANCE_DIMENSIONS)[number], AssuranceDimensionRecord>
+  for (const dimension of ASSURANCE_DIMENSIONS) {
+    assurance[dimension] = Object.freeze({ level: 'untested' as AssuranceLevel, mechanism: null, realmId: realm, trustRoot: null, evidence: null })
+  }
+  return Object.freeze({ implementationOrigin, executionBoundary, assurance: Object.freeze(assurance) })
 }
 
 /** Which trusted assembly step established one governed name (design §3 table). */

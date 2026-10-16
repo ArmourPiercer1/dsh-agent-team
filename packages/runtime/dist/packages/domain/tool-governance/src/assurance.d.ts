@@ -42,21 +42,44 @@ export declare const ASSURANCE_DIMENSIONS: readonly ["content-read", "directory-
 export type AssuranceDimension = (typeof ASSURANCE_DIMENSIONS)[number];
 /** How much a consumer demands of one dimension. */
 export type AssuranceRequirement = 'hard' | 'authoritative';
+/**
+ * The per-dimension record of design §2.1 (verbatim): "逐项记录机制、作用
+ * Realm、可信根、证据与 enforced | author-trusted | partial | unsupported |
+ * untested". EVERY field is stated on EVERY dimension — a bare level with no
+ * mechanism, no realm, no trust root and no evidence is exactly the
+ * overclaim §1.4 refuses. `mechanism`/`trustRoot`/`evidence` are REQUIRED
+ * keys whose VALUE may be `null`: the honest way to state "none exists"
+ * (an `untested` dimension has no evidence — it must SAY so, not omit the
+ * field, and never fabricate a non-null). `realmId` is a required non-empty
+ * string: an assurance claim holds in a NAMED Realm and travels to no other
+ * (Realm 不可混淆). M-2 of the PR0 review; PR3/PR4 evidence rows land IN
+ * these fields, they do not redefine them.
+ */
+export interface AssuranceDimensionRecord {
+    readonly level: AssuranceLevel;
+    readonly mechanism: string | null;
+    readonly realmId: string;
+    readonly trustRoot: string | null;
+    readonly evidence: string | null;
+}
 /** The three-dimension contract of one bound tool/provider. */
 export interface AssuranceContract {
     readonly implementationOrigin: ImplementationOrigin;
     readonly executionBoundary: ExecutionBoundary;
-    readonly assurance: Readonly<Record<AssuranceDimension, AssuranceLevel>>;
+    readonly assurance: Readonly<Record<AssuranceDimension, AssuranceDimensionRecord>>;
 }
 /**
  * Strict parse: the record must state EVERY dimension (a missing one is a
- * refusal, never an implicit `untested`), each from the closed five, and the
+ * refusal, never an implicit `untested`), each as a full §2.1 record, and the
  * two origin/boundary fields from their closed sets.
  */
 export declare function parseAssuranceContract(raw: unknown): ParseResult<AssuranceContract>;
 /**
  * Does the contract actually carry the demanded capability per dimension?
- * Reports every failing dimension (collected, never the first).
+ * Reports every failing dimension (collected, never the first). Reads the
+ * LEVEL only — the mechanism/trustRoot/evidence fields are what a reviewer
+ * (or PR3/PR4's evidence gate) checks the level claim against; the
+ * derivation law keeps this a capability question, never a grant.
  */
 export declare function assuranceSatisfies(contract: AssuranceContract, required: Readonly<Partial<Record<AssuranceDimension, AssuranceRequirement>>>): {
     readonly ok: boolean;

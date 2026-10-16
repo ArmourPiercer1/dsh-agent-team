@@ -27,7 +27,7 @@ export type { ResourceKind, ResourceRef, ResourceRight } from './resource.js';
 export { EFFECT_KINDS, EFFECT_REQUIRED_RIGHT, effectIdentityKey, effectsAreSubset, parseRequestedEffectSet, } from './effects.js';
 export type { DomainRefEffect, Effect, EffectKind, RequestedEffectSet, ResourceEffect, ToolInvokeEffect } from './effects.js';
 export { ASSURANCE_DIMENSIONS, ASSURANCE_LEVELS, EXECUTION_BOUNDARIES, IMPLEMENTATION_ORIGINS, assuranceSatisfies, parseAssuranceContract, } from './assurance.js';
-export type { AssuranceContract, AssuranceDimension, AssuranceLevel, AssuranceRequirement, ExecutionBoundary, ImplementationOrigin } from './assurance.js';
+export type { AssuranceContract, AssuranceDimension, AssuranceDimensionRecord, AssuranceLevel, AssuranceRequirement, ExecutionBoundary, ImplementationOrigin } from './assurance.js';
 export { BINDING_STATES, BINDING_TRANSITIONS, advanceBindingStatus, parseToolBinding, } from './binding.js';
 export type { BindingAdvance, BindingState, ToolBinding } from './binding.js';
 export { GRANT_REFUSAL_REASONS, grantRefusalErrorCode, parseOperationGrant, validateGrantForCall, } from './grant.js';
