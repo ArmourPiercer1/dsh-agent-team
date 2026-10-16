@@ -423,6 +423,14 @@ import { installShellResultObserver } from '../../../artifact-read/index.js'
 // when the matching token ('bash' / 'pwsh') is present; otherwise the
 // adapter downgrades it to the user-approval ask path.
 import { leaderExecEnvelopeOps } from '../../../admission/envelope.js'
+// A5-PR1 (plan §4, design §4.1): the CLOSED-WORLD MONOTONIC GUARD and the
+// STABLE SCOPED DISPATCHER. This glue IS the Team's trusted assembly point, so
+// it is also the only production consumer of the lane (the allow-listed row in
+// scripts/audit-a5-tool-governance-imports.mjs). The Setup Coverage Gate below
+// stays as the assembly-time diagnostic it always was; what makes the
+// closed-world claim hold AFTER setup is this Guard, armed per agent here and
+// kept until the Dispatcher reaches TOMBSTONED/RELEASED.
+import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // A2C-2 (plan §7.2) + fix/alpha2-explicit-agent-setup-compat: the
 // agent-scoped tool surface is read through `tools.schemas(runtimeAgent)`
 // where `runtimeAgent` is the setup's CANONICAL runtime-Agent resolver
@@ -2176,9 +2184,95 @@ export function createAgentBindings(deps) {
       // resume re-applies it through this same setup. SELECTIVE mode only
       // (the field exists only there); an empty list is a no-op (zero
       // restrict calls).
+      // A5-PR1 STEP 1 (design §4.1 PREPARING: Guard -> mask -> Dispatcher):
+      // the closed-world Guard is armed on this agent's scope BEFORE the
+      // inherited-name mask exists and before any own-layer registration.
+      // While it is unpublished (PREPARING) it refuses EVERYTHING on this
+      // scope, so a half-assembled Agent is never a runnable Agent.
+      // Scoped to a permissions-carrying template — the same population the
+      // Coverage Gate and the A5 pre-execute adapter already govern; a legacy
+      // / alpha.1 template without `capabilities.permissions` installs zero
+      // listeners here, exactly as before (zero interference with ordinary
+      // Host sessions, NEG-2).
+      let a5p1Guard = undefined
+      /** The mask this assembly installs (design §4.1 step 2). The Guard
+       *  handle OWNS its teardown: an armed Guard never lets the ordinary
+       *  disposer drain lift it (NEG-1: "restrict first, adapter last" is
+       *  exactly the order that let the native body run once in the PoC). */
+      let a5p1MaskDisposer = undefined
+      if (permissionPolicy !== undefined) {
+        const trusted = new Set()
+        for (const candidate of [
+          sessionId,
+          runtimeAgent?.id,
+          runtimeAgent?.session?.header?.id,
+          agentCtx?.agent?.id,
+          agentCtx?.agent?.session?.header?.id,
+        ]) {
+          if (typeof candidate === 'string' && candidate.length > 0) trusted.add(candidate)
+        }
+        const outcome = installScopedToolGuard({
+          agentCtx,
+          runtimeAgent,
+          agentScopeKey: String(sessionId),
+          trustedIdentities: [...trusted],
+          // Generation 0 until PR2 (Operation Admission) feeds the overlay /
+          // authority generations into the Binding; the Guard validates every
+          // call against the generations it PUBLISHED with, so a change made
+          // later surfaces as a typed `binding-revision-drift` refusal the
+          // moment a revision is installed, never as a stale allow.
+          maskedNames: capabilities.mode === 'selective' ? capabilities.builtinToolDeny : [],
+          maskPort: {
+            lift: () => {
+              if (a5p1MaskDisposer !== undefined) a5p1MaskDisposer.dispose()
+            },
+          },
+          onObserve: (row) => {
+            observations.push(`a5p1-guard: ${String(row.event)} agent=${sessionId}${row.tool === undefined ? '' : ` tool=${String(row.tool)}`}${row.denied === undefined ? '' : ` denied=${JSON.stringify(row.denied)}`}`)
+          },
+        })
+        if (outcome.ok === true) {
+          a5p1Guard = outcome.value
+          // The Guard's ordered teardown rides the shared drain FIRST: it
+          // refuses new calls before anything else unwinds, and it owns the
+          // mask lift (only at RELEASED).
+          toolDisposers.push(() => {
+            const disposed = a5p1Guard.disposeOrdered()
+            if (disposed.ok !== true) {
+              observations.push(
+                `a5p1-guard: ordered dispose STOPPED for '${sessionId}' (${disposed.error.code}: ${disposed.error.message}) — the mask and the Guard STAY armed (a leak is a resource problem, a lifted mask is a safety problem)`,
+              )
+            }
+          })
+        } else {
+          // FAIL CLOSED, the AgentSetup contract: an agent whose Tool Guard
+          // cannot be armed is not published (the typed rejection rolls the
+          // unpublished agent back — the controlService / fs-seam pattern).
+          const error = new Error(
+            `agent-bindings: alpha.5 tool guard could not be armed for '${sessionId}': ${outcome.error.message} (code: ${outcome.error.code})`,
+          )
+          error.code = 'alpha5-tool-guard-unavailable'
+          observations.push(`a5p1-guard: install-REFUSED for ${sessionId} (${outcome.error.code})`)
+          throw error
+        }
+      }
+      // P0-3 (hardening §5) + A5-PR1 STEP 2: the built-in tool deny blacklist —
+      // applied AFTER the Guard is armed and BEFORE the Team tool scoped
+      // registrations (the frozen ordering: model selection -> agentPresets.mount
+      // -> [A5-PR1 Guard] -> builtinToolDeny -> Team tools -> Team skills -> MCP).
+      // tools.restrict() masks the tools the agent INHERITS from the parent /
+      // global scope (the preset base tools mounted above); tools the agent
+      // registers in its OWN scope (the team tools below) remain visible — which
+      // is precisely why a restrict() at setup cannot be the closed world
+      // (design §4.1) and the Guard above is. Sibling-inert (agent-scoped
+      // restrict); a cold resume re-applies it through this same setup.
+      // SELECTIVE mode only; an empty list is a no-op (zero restrict calls).
       if (capabilities.mode === 'selective') {
         const denyDisposer = applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)
-        toolDisposers.push(denyDisposer)
+        a5p1MaskDisposer = denyDisposer
+        // With the Guard armed, the handle owns the mask (it lifts it only at
+        // RELEASED). Without one, the alpha.4 disposer drain is unchanged.
+        if (a5p1Guard === undefined) toolDisposers.push(denyDisposer)
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
@@ -2310,6 +2404,48 @@ export function createAgentBindings(deps) {
           )
         }
       }
+      // A5-PR1 STEP 5 — PUBLISH (PREPARING -> ACTIVE). Only now, with the
+      // surface read through the public seam, the Team tools and the provably
+      // MCP-introduced names bound, and the Coverage diagnostic computed, does
+      // this Agent become callable. A publish failure is a setup failure: the
+      // Guard armed in step 1 refuses every call in the meantime.
+      if (a5p1Guard !== undefined) {
+        const ownNames = [...selectedTeamToolNames]
+        const ownBound = a5p1Guard.bindOwnTools(ownNames)
+        if (ownBound.ok !== true) {
+          const error = new Error(
+            `agent-bindings: alpha.5 Tool Binding rejected a Team tool '${ownNames.join(', ')}' for '${sessionId}': ${ownBound.error.message} (code: ${ownBound.error.code})`,
+          )
+          error.code = ownBound.error.code
+          observations.push(`a5p1-guard: own-tool-bind-REFUSED for ${sessionId} (${ownBound.error.code})`)
+          throw error
+        }
+        const mcpNames = mcpIntroducedToolNames(
+          state.a2c2PreMcpSurface ?? [],
+          coverageSurfaceNames(agentCtx, sessionId, runtimeAgent),
+        )
+        if (mcpNames.length > 0) {
+          const mcpBound = a5p1Guard.bindMcpTools(mcpNames)
+          if (mcpBound.ok !== true) {
+            const error = new Error(
+              `agent-bindings: alpha.5 Tool Binding rejected the MCP surface for '${sessionId}': ${mcpBound.error.message} (code: ${mcpBound.error.code})`,
+            )
+            error.code = mcpBound.error.code
+            observations.push(`a5p1-guard: mcp-bind-REFUSED for ${sessionId} (${mcpBound.error.code})`)
+            throw error
+          }
+        }
+        const published = a5p1Guard.publish()
+        if (published.ok !== true) {
+          const error = new Error(
+            `agent-bindings: alpha.5 Tool Dispatcher could not be published for '${sessionId}': ${published.error.message} (code: ${published.error.code})`,
+          )
+          error.code = 'alpha5-tool-dispatcher-not-published'
+          observations.push(`a5p1-guard: publish-REFUSED for ${sessionId} (${published.error.code})`)
+          throw error
+        }
+      }
+
       // alpha.2 (plan §11.3): the tools/pre-execute permission enforcement
       // (the A5 frozen adapter over the A2/A3/A4 APIs) — installed LAST in
       // the setup, on THIS agent's scope only. The adapter returns the

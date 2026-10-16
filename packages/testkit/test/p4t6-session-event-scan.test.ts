@@ -2202,6 +2202,25 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a5p0-grant-replay.test.ts',
       'packages/domain/test/a5p0-layer-audit.test.ts',
     ]
+    // The Alpha.5 PR1 guard-dispatch line (branch `alpha5-pr1-guard-dispatcher`,
+    // stacked on the PR0 contract line): FOUR production sources — the pure
+    // closed-world Guard decision, the stable Scoped Dispatcher assembly
+    // machine, the public-seam install (Guard -> mask -> bind -> publish ->
+    // ordered teardown) and the lane barrel — plus their THREE RED-first specs.
+    // The ONE production consumer is the ALREADY-COUNTED Team trusted assembly
+    // point `runtime/src/plugin/live/agent-bindings.mjs` (an edit to a scanned
+    // file is not an increment); `packages/runtime/dist/**` is outside the
+    // scanner's rules and the real-Host kit lives under `tests/kits/`, outside
+    // the packages/ scan — both move nothing.
+    const SCANNED_PATHS_A5PR1: readonly string[] = [
+      'packages/runtime/tool-dispatch/closed-world-guard.ts',
+      'packages/runtime/tool-dispatch/scoped-dispatcher.ts',
+      'packages/runtime/tool-dispatch/install.ts',
+      'packages/runtime/tool-dispatch/index.ts',
+      'packages/runtime/test/a5p1-closed-world-guard.test.ts',
+      'packages/runtime/test/a5p1-scoped-dispatcher.test.ts',
+      'packages/runtime/test/a5p1-guard-install.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2227,7 +2246,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W1.length +
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
-        SCANNED_PATHS_A5PR0.length,
+        SCANNED_PATHS_A5PR0.length +
+        SCANNED_PATHS_A5PR1.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2254,7 +2274,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W1.length +
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
-        SCANNED_PATHS_A5PR0.length,
+        SCANNED_PATHS_A5PR0.length +
+        SCANNED_PATHS_A5PR1.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2307,6 +2328,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4W2,
       ...SCANNED_PATHS_A4W6,
       ...SCANNED_PATHS_A5PR0,
+      ...SCANNED_PATHS_A5PR1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2497,6 +2519,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // suite JSON capture, `a5-final-test.json`), and 1048 is the derived
     // merged-tip total the a4-w6 tie above ends on.
     expect(SCANNED_PATHS_A5PR0.length).toBe(1066 - 1048)
+    // The A5-PR1 tie, same form: seven named files, each asserted present by
+    // path above. BOTH endpoints MEASURED on this branch: with the lane on
+    // disk and this entry absent the run reads `expected 1073 to be 1066`,
+    // and 1066 is the total the A5-PR0 tie above ends on.
+    expect(SCANNED_PATHS_A5PR1.length).toBe(1073 - 1066)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

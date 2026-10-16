@@ -25,8 +25,21 @@ const LANE_SRC = fileURLToPath(new URL('../tool-governance/src', import.meta.url
 describe('the tool-governance lane audit', () => {
   const verdict = auditA5ToolGovernanceImports()
 
-  it('reports no findings (pure domain, no cycles, zero production consumers)', () => {
+  it('reports no findings (pure domain, no cycles, only reviewed consumers)', () => {
     expect(verdict.findings).toEqual([])
+  })
+
+  // PR0 froze this lane DORMANT ("zero production consumers"). PR1 (plan §4)
+  // is the reviewed wiring step, so the law is now a NAMED SET — and this
+  // file pins the set, not just its emptiness: a new consumer is a design
+  // change that has to appear here, and a disappeared one is a broken wire.
+  it('the consumer set is exactly the reviewed PR1 wiring (no accretion)', () => {
+    expect(verdict.consumers).toEqual([
+      'runtime/src/plugin/live/agent-bindings.mjs',
+      'runtime/tool-dispatch/closed-world-guard.ts',
+      'runtime/tool-dispatch/install.ts',
+      'runtime/tool-dispatch/scoped-dispatcher.ts',
+    ])
   })
 
   it('is non-vacuous: it really walked the lane and its edges', () => {

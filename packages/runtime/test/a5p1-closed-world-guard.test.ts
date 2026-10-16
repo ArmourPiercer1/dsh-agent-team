@@ -1,0 +1,259 @@
+/**
+ * a5p1-closed-world-guard.test.ts — Alpha.5 PR1 (plan §4, design §4.1): the
+ * CLOSED-WORLD MONOTONIC GUARD's decision law.
+ *
+ * RED-FIRST, and the RED was specific: on the PoC host the Setup Coverage Gate
+ * passed and an undeclared tool registered AFTER setup still RAN
+ * (`hc-dyn-observation.dynRan = true`, evidence
+ * `dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/h6-result.json`).
+ * Every "abstain" arm the alpha.2 end-cap guard had for an unmanaged name is
+ * the hole; this file pins that the PR1 Guard has NO abstain arm for a name
+ * the Team assembly never bound.
+ *
+ * The lane under test is pure, so this file needs no host: it is the algebra.
+ * The same laws are re-proved end-to-end on the pinned real Host by
+ * `tests/kits/a5-pr1-guard-dispatch/` (NEG-1 / NEG-2 / dynRan / late MCP).
+ *
+ * @module test/a5p1-closed-world-guard
+ */
+import { describe, expect, it } from 'vitest'
+import {
+  GOVERNANCE_ERROR_CODES,
+  parseToolBinding,
+  type ToolBinding,
+} from '../../domain/tool-governance/src/index.js'
+import {
+  GUARD_DENIAL_REASONS,
+  GUARD_ERROR_CODES,
+  createGovernedSurface,
+  guardDecision,
+  guardDenialMessage,
+  untestedAssurance,
+  type GuardExecView,
+} from '../tool-dispatch/index.js'
+
+const SCOPE = { agentScopeKey: 'session-m1', trustedIdentities: ['session-m1', 'agent-m1'] }
+
+/** A governed Binding for one name, built through the PR0 parser's shape. */
+function bindingFor(name: string, over: Partial<ToolBinding> = {}): ToolBinding {
+  const raw = {
+    bindingId: `team-own:session-m1:${name}`,
+    agentScopeKey: 'session-m1',
+    toolName: name,
+    definitionIdentity: `team-own:${name}`,
+    providerId: 'dsh-agent-team',
+    implementationOrigin: 'team-trusted-extension',
+    executionBoundary: 'trusted-host',
+    assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
+    policyGeneration: 0,
+    authorityGeneration: 0,
+    revision: 1,
+    status: 'ACTIVE',
+  }
+  const parsed = parseToolBinding({ ...raw, ...over })
+  if (!parsed.ok) throw new Error(`fixture binding is not a valid ToolBinding: ${JSON.stringify(parsed.problems)}`)
+  return parsed.value
+}
+
+function surfaceWith(...names: string[]) {
+  const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
+  for (const name of names) {
+    const outcome = surface.bind({ name, origin: 'team-own', binding: bindingFor(name), verified: true })
+    if (!outcome.ok) throw new Error(`fixture bind failed: ${outcome.error.message}`)
+  }
+  return surface
+}
+
+function decide(
+  exec: GuardExecView,
+  opts: {
+    surface?: ReturnType<typeof surfaceWith>
+    active?: boolean
+    policyGeneration?: number
+    authorityGeneration?: number
+  } = {},
+) {
+  return guardDecision({
+    exec,
+    scope: SCOPE,
+    surface: opts.surface ?? createGovernedSurface({ agentScopeKey: 'session-m1' }),
+    active: opts.active ?? true,
+    policyGeneration: opts.policyGeneration ?? 0,
+    authorityGeneration: opts.authorityGeneration ?? 0,
+  })
+}
+
+describe('the closed world: an unbound name has no abstain arm', () => {
+  it('G1 denies an exec.name that was never bound (TEAM_TOOL_UNGOVERNED)', () => {
+    const verdict = decide({ name: 'h6_dyn_probe', agentIdentity: 'session-m1' })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TEAM_TOOL_UNGOVERNED')
+    expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.UNGOVERNED)
+    // The message is model-visible: it says what is missing, not just "no".
+    expect(verdict.error.message).toContain('h6_dyn_probe')
+    expect(verdict.error.message).toContain('no Team Tool Binding')
+  })
+
+  it('G2 abstains for a bound, verified, in-generation name called by this Agent', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface })
+    expect(verdict).toEqual({ kind: 'abstain', reason: 'governed-and-verified' })
+  })
+
+  it('G3 (the dynRan flip) a name that appears AFTER setup is still un-governed', () => {
+    // The exact PoC shape: setup assembled cleanly, then an own-layer
+    // registration added a name. `tools.restrict` cannot mask a scope's own
+    // registrations, and nothing bound this one — so the Guard, not the
+    // setup-time snapshot, decides.
+    const surface = surfaceWith('read', 'team_delegate')
+    const verdict = decide({ name: 'a5p1_dyn_probe', agentIdentity: 'agent-m1' }, { surface })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TEAM_TOOL_UNGOVERNED')
+  })
+
+  it('G4 an unverified Binding is governed but never allowed (no native fallback)', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
+    surface.bind({ name: 'read', origin: 'inherited-native', binding: bindingFor('read'), verified: false })
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.BINDING_UNVERIFIED)
+  })
+
+  it('G5 a foreign Agent identity on a governed name is refused, not inherited', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide({ name: 'read', agentIdentity: 'session-somebody-else' }, { surface })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.IDENTITY_FOREIGN)
+  })
+
+  it('G6 (NEG-2) a Team-scope exec with NO Agent identity is refused, never laundered global', () => {
+    const surface = surfaceWith('read')
+    for (const identity of [undefined, '', null]) {
+      const verdict = decide({ name: 'read', ...(identity === undefined ? {} : { agentIdentity: identity as string }) }, { surface })
+      expect(verdict.kind).toBe('deny')
+      if (verdict.kind !== 'deny') continue
+      expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+      expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.IDENTITY_ABSENT)
+    }
+  })
+
+  it('G7 every non-ACTIVE state refuses before the name lookup', () => {
+    // Even a fully governed name: assembly-in-progress, draining, tombstoned
+    // and released are all "no new calls" (design §4.1).
+    const surface = surfaceWith('read')
+    for (const active of [false]) {
+      const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface, active })
+      expect(verdict.kind).toBe('deny')
+      if (verdict.kind !== 'deny') continue
+      expect(verdict.error.code).toBe('ADAPTER_DRAINING')
+      expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.NOT_ACTIVE)
+    }
+  })
+
+  it('G8 a stale-generation Binding is a typed refusal, not a stale allow', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface, policyGeneration: 7 })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.REVISION_DRIFT)
+  })
+
+  it('G9 the verdict vocabulary is exactly three frozen §5 codes', () => {
+    // Derived from the frozen §5 table, so the ORDER is the frozen table's;
+    // what is pinned here is the exact three-element SET.
+    expect([...GUARD_ERROR_CODES].sort()).toEqual(['ADAPTER_DRAINING', 'TEAM_TOOL_UNGOVERNED', 'TOOL_BINDING_UNVERIFIED'])
+    for (const code of GUARD_ERROR_CODES) {
+      expect(GOVERNANCE_ERROR_CODES.includes(code), `${code} is not a frozen §5 code`).toBe(true)
+    }
+  })
+
+  it('G10 the Guard has no allow result to be traded for', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface })
+    // Structurally: the positive outcome is `abstain`, and abstain carries no
+    // permission — a `tools/pre-execute` listener or a `tools/change` event
+    // still has to earn the call somewhere else.
+    expect(verdict.kind === 'abstain' && !('allow' in verdict)).toBe(true)
+    expect(Object.keys(verdict).sort()).toEqual(['kind', 'reason'])
+  })
+
+  it('G11 every reason maps to a stable, named message (no stack-trace prose)', () => {
+    const seen = new Set<string>()
+    for (const reason of Object.values(GUARD_DENIAL_REASONS)) {
+      const message = guardDenialMessage('read', reason)
+      expect(message, reason).toContain('team tool guard')
+      expect(message, reason).toContain('read')
+      expect(seen.has(message), `duplicate message for ${reason}`).toBe(false)
+      seen.add(message)
+    }
+  })
+})
+
+describe('the governed surface only grows through the trusted assembly', () => {
+  it('S1 a name keeps ONE stable Definition identity (no unload-then-fall-back)', () => {
+    const surface = surfaceWith('read')
+    const swapped = surface.bind({
+      name: 'read',
+      origin: 'team-own',
+      binding: { ...bindingFor('read'), bindingId: 'something-else:read' },
+      verified: true,
+    })
+    expect(swapped.ok).toBe(false)
+    if (swapped.ok) return
+    expect(swapped.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(swapped.error.message).toContain('stable Definition identity')
+  })
+
+  it('S2 a change is a strictly higher immutable revision', () => {
+    const surface = surfaceWith('read')
+    const same = surface.bind({ name: 'read', origin: 'team-own', binding: bindingFor('read'), verified: true })
+    expect(same.ok).toBe(false)
+    const advanced = surface.bind({
+      name: 'read',
+      origin: 'team-own',
+      binding: bindingFor('read', { revision: 2, policyGeneration: 1 }),
+      verified: true,
+    })
+    expect(advanced.ok).toBe(true)
+    const entry = surface.entryOf('read')
+    expect(entry?.revision).toBe(2)
+    // The old revision is a frozen record, not a mutated one.
+    expect(advanced.ok && advanced.value.binding.revision).toBe(2)
+    expect(surface.entryOf('read')?.binding.policyGeneration).toBe(1)
+  })
+
+  it('S3 the setup surface is bound as one closed world, idempotently', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
+    expect(surface.bindInheritedSurface(['bash', 'read', 'write', 'read'])).toBe(3)
+    expect(surface.names()).toEqual(['bash', 'read', 'write'])
+    // A second pass never re-binds over an existing (possibly richer) entry.
+    expect(surface.bindInheritedSurface(['bash', 'grep'])).toBe(1)
+    expect(surface.names()).toEqual(['bash', 'grep', 'read', 'write'])
+    expect(surface.entryOf('bash')?.origin).toBe('inherited-native')
+  })
+
+  it('S4 markUnverified needs the bindingId in force (no identity confusion)', () => {
+    const surface = surfaceWith('read')
+    expect(surface.markUnverified('read', 'other').ok).toBe(false)
+    expect(surface.markUnverified('nope', 'team-own:session-m1:nope').ok).toBe(false)
+    const marked = surface.markUnverified('read', 'team-own:session-m1:read')
+    expect(marked.ok).toBe(true)
+    expect(surface.entryOf('read')?.verified).toBe(false)
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface })
+    expect(verdict.kind).toBe('deny')
+  })
+
+  it('S5 the inherited assurance record is honestly untested, never empty', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
+    surface.bindInheritedSurface(['read'])
+    const assurance = surface.entryOf('read')?.binding.assurance
+    expect(assurance?.implementationOrigin).toBe('dsh-native')
+    expect(Object.values(assurance?.assurance ?? {})).toEqual(['untested', 'untested', 'untested', 'untested', 'untested', 'untested'])
+  })
+})

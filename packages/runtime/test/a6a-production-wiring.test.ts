@@ -369,17 +369,66 @@ function makeSpyControlService(): SpyControlService {
 }
 
 // ── assertion helpers (the ctx doubles are separate scopes per agent) ──────
+/**
+ * A5-PR1 (design §4.1): the closed-world Guard registers its OWN listeners on
+ * the same waterfalls the alpha.2 permission adapter uses — installed FIRST,
+ * because the closed world is the safety line and must be evaluated before any
+ * policy that can abstain. Its listeners carry stable names (the lane names
+ * them so a reviewer inspecting a live ctx can tell the two lanes apart), so
+ * each lane is counted on its own instead of one lane's pin being bumped to
+ * swallow the other's registration.
+ */
+const GUARD_LISTENER_NAMES: readonly string[] = ['a5p1GuardPreExecuteGate', 'a5p1GuardDispatchGate', 'a5p1GuardResultEdge']
+function isGuardListener(fn: unknown): boolean {
+  return typeof fn === 'function' && GUARD_LISTENER_NAMES.includes((fn as { name?: string }).name ?? '')
+}
+/** The alpha.2 permission adapter's listener(s) only — the A5-P2 pin. */
 function activePreExecute(ctx: AgentCtxDouble): number {
-  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && l.active).length
+  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && l.active && !isGuardListener(l.listener)).length
 }
 function totalPreExecute(ctx: AgentCtxDouble): number {
-  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute').length
+  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && !isGuardListener(l.listener)).length
 }
+/** The A5-PR1 closed-world gate listener(s) — one per Guard install. */
+function activeClosedWorldGates(ctx: AgentCtxDouble): number {
+  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && l.active && isGuardListener(l.listener)).length
+}
+function totalClosedWorldGates(ctx: AgentCtxDouble): number {
+  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && isGuardListener(l.listener)).length
+}
+/** A5-PR1 (design §4.1): probe one recorded guard exactly the way the
+ *  registry calls it. The probe exec is a name NOBODY bound, carried by an
+ *  identity that is not this Agent's — the one input on which the two
+ *  monotonic guards are DEFINITIONALLY different: the alpha.2 end-cap guard
+ *  ABSTAINS on a name it does not manage (that abstention is the H6 hole the
+ *  PoC measured), while the alpha.5 closed-world Guard denies it. The probe
+ *  answer is therefore a classifier, not a guess. */
+function guardProbe(fn: unknown): string {
+  try {
+    return String(
+      (fn as (exec: unknown) => string | undefined)({
+        name: '__a6a_unbound_probe__',
+        agent: { id: '__a6a_foreign_agent__' },
+      }),
+    )
+  } catch {
+    return ''
+  }
+}
+const isClosedWorldGuard = (fn: unknown): boolean => guardProbe(fn).includes('team tool guard')
 /** H1 (alpha.2 hardening, P0): the ACTIVE end-cap guards on one ctx
  *  (the `tools.guard` registrations the install makes alongside the
- *  waterfall listener — the composite disposer removes both on close). */
+ *  waterfall listener — the composite disposer removes both on close).
+ *  A5-PR1 counts the SAME slot by kind: the end-cap guard is the one that
+ *  abstains on an unbound name. */
 function activeEndCapGuards(ctx: AgentCtxDouble): number {
-  return ctx.toolGuards.filter((g) => g.active).length
+  return ctx.toolGuards.filter((g) => g.active && !isClosedWorldGuard(g.fn)).length
+}
+/** A5-PR1: the ACTIVE closed-world guards on one ctx — ONE per
+ *  permissions-carrying install, zero anywhere else (the population the
+ *  Coverage Gate and the end-cap guard already govern; NEG-2 zero-impact). */
+function activeClosedWorldGuards(ctx: AgentCtxDouble): number {
+  return ctx.toolGuards.filter((g) => g.active && isClosedWorldGuard(g.fn)).length
 }
 function toolNames(ctx: AgentCtxDouble): string[] {
   return ctx.registeredTools.map((def) => String((def as { name?: string }).name ?? ''))
@@ -407,7 +456,9 @@ async function drivePreExecute(
   name: string,
   args: unknown,
 ): Promise<DriveOutcome> {
-  const entry = ctx.listeners.find((l) => l.event === 'tools/pre-execute' && l.active)
+  // The A5-P2 world drives the PERMISSION adapter; the closed-world gate is a
+  // separate listener (counted, and asserted, by its own tests below).
+  const entry = ctx.listeners.find((l) => l.event === 'tools/pre-execute' && l.active && !isGuardListener(l.listener))
   if (entry === undefined) {
     throw new Error('drivePreExecute: no active tools/pre-execute listener on the ctx')
   }
@@ -465,14 +516,36 @@ const w1BTotal = totalPreExecute(w1B)
 const w1LeaderGuards = activeEndCapGuards(w1Leader)
 const w1AGuards = activeEndCapGuards(w1A)
 const w1BGuards = activeEndCapGuards(w1B)
+// A5-PR1: the second monotonic guard the SAME install arms (one per
+// permissions install, none on member B); `closedWorldVerdict` records what
+// it says about an unbound name, verbatim — the H6 hole, closed at assembly.
+// A5-PR1: the Guard's own waterfall listener (the outer door: refuse while
+// the Dispatcher is not ACTIVE, and the lease that the drain waits on).
+const w1LeaderGates = activeClosedWorldGates(w1Leader)
+const w1AGates = activeClosedWorldGates(w1A)
+const w1BGates = activeClosedWorldGates(w1B)
+const w1LeaderClosedWorld = activeClosedWorldGuards(w1Leader)
+const w1AClosedWorld = activeClosedWorldGuards(w1A)
+const w1BClosedWorld = activeClosedWorldGuards(w1B)
+// The verdict text is captured too: it is a property of the LIVE guard.
+const w1AClosedWorldProbe = guardProbe(
+  (w1A.toolGuards.find((g) => g.active && isClosedWorldGuard(g.fn)) ?? { fn: undefined }).fn,
+)
+const w1AEndCapProbe = guardProbe(
+  (w1A.toolGuards.find((g) => g.active && !isClosedWorldGuard(g.fn)) ?? { fn: undefined }).fn,
+)
 await world1.binding.close()
 const w1LeaderActiveAfterClose = activePreExecute(w1Leader)
 const w1AActiveAfterClose = activePreExecute(w1A)
 const w1BActiveAfterClose = activePreExecute(w1B)
 // H1: the composite disposer removed BOTH (listener first, guard last).
+// A5-PR1: the closed-world guard rides the SAME drain (its ordered teardown
+// reaches RELEASED here — nothing is in flight at close — and only then is
+// its guard removed), so the after-close expectation is zero for both kinds.
 const w1LeaderGuardsAfterClose = activeEndCapGuards(w1Leader)
 const w1AGuardsAfterClose = activeEndCapGuards(w1A)
 const w1BGuardsAfterClose = activeEndCapGuards(w1B)
+const w1AClosedWorldAfterClose = activeClosedWorldGuards(w1A)
 
 // ══════════════════════════════════════════════════════════════════════════
 // WORLD 2 — the ALPHA.1 regression: capabilities present on all three
@@ -550,6 +623,14 @@ const w3AIsFreshCtx = w3A !== w1A
 // fresh ctxs are what enforce the §21 criterion AFTER a restart: the
 // hostile force-allow is dead on arrival because the fresh ctx's guard
 // has never seen a final-allow mark.
+// A5-PR1: captured BEFORE any drain — the assertions below run after
+// `close()`, and a guard that was correctly removed reads as zero then.
+const w3LeaderGates = activeClosedWorldGates(w3Leader)
+const w3AGates = activeClosedWorldGates(w3A)
+const w3BGates = activeClosedWorldGates(w3B)
+const w3LeaderClosedWorld = activeClosedWorldGuards(w3Leader)
+const w3AClosedWorld = activeClosedWorldGuards(w3A)
+const w3BClosedWorld = activeClosedWorldGuards(w3B)
 const w3LeaderGuards = activeEndCapGuards(w3Leader)
 const w3AGuards = activeEndCapGuards(w3A)
 const w3BGuards = activeEndCapGuards(w3B)
@@ -808,12 +889,48 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
     expect(w1BActive).toBe(0)
     expect(w1BTotal).toBe(0)
   })
+  // A5-PR1 (plan §4): the closed world is installed BEFORE the policy adapter,
+  // so a permissions-carrying Agent now carries TWO pre-execute listeners —
+  // the Guard's outer door and the alpha.2 adapter. Each is pinned on its own
+  // name: the alpha.1 lane's count (member B) must stay ZERO, and the alpha.2
+  // adapter must still be exactly one (no double policy install).
+  it('A5-PR1: the Guard adds its own outer-door listener, one per permissions install, zero on member B', () => {
+    expect(w1LeaderGates).toBe(1)
+    expect(w1AGates).toBe(1)
+    expect(w1BGates).toBe(0)
+  })
+  it('A5-PR1: the alpha.2 adapter count is untouched by the Guard (still exactly one, not two)', () => {
+    expect(w1LeaderActive).toBe(1)
+    expect(w1AActive).toBe(1)
+    expect(totalPreExecute(w1A)).toBe(1)
+  })
   it('H1: the leader AND member A each register EXACTLY ONE active end-cap guard (the install requires the tools.guard seam)', () => {
     expect(w1LeaderGuards).toBe(1)
     expect(w1AGuards).toBe(1)
   })
   it('H1: member B (permissions ABSENT) registers ZERO end-cap guards (no policy → no install at all)', () => {
     expect(w1BGuards).toBe(0)
+  })
+  // A5-PR1 (plan §4): the install is now TWO monotonic guards on a
+  // permissions-carrying agent — the alpha.2 end-cap guard and the alpha.5
+  // closed-world Guard — and ZERO on a permissions-less agent. The second
+  // guard is what turns the alpha.2 abstention on an unbound name into a
+  // typed refusal, which is the whole PR1 claim, stated at assembly level.
+  it('A5-PR1: each permissions install arms EXACTLY ONE closed-world guard next to the end-cap guard', () => {
+    expect(w1LeaderClosedWorld).toBe(1)
+    expect(w1AClosedWorld).toBe(1)
+    expect(w1BClosedWorld).toBe(0)
+  })
+  it('A5-PR1: the closed-world guard denies the name the end-cap guard abstains on', () => {
+    // The SAME probe exec, the two guards, the two answers — the H6 hole and
+    // its closure, side by side: the alpha.2 end-cap guard abstains on a name
+    // it does not manage, the alpha.5 Guard names the missing Binding.
+    expect(w1AEndCapProbe).toBe('undefined')
+    expect(w1AClosedWorldProbe).toContain('team tool guard')
+    expect(w1AClosedWorldProbe).toContain('__a6a_unbound_probe__')
+  })
+  it('A5-PR1: the shared drain removes the closed-world guard too (no orphan monotonic guard after close)', () => {
+    expect(w1AClosedWorldAfterClose).toBe(0)
   })
   it('alpha.1 world: capabilities present, permissions absent, no ref — ZERO listeners on all three agents', () => {
     expect(w2LeaderListeners).toBe(0)
@@ -846,6 +963,19 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
     expect(w3LeaderGuards).toBe(1)
     expect(w3AGuards).toBe(1)
     expect(w3BGuards).toBe(0)
+  })
+  // A5-PR1: the cold resume re-arms the closed-world Guard on the FRESH ctx
+  // (a resumed Agent inherits nothing — design §4.2 "冷恢复重新安装"), and the
+  // no-policy Agent still gets nothing.
+  it('A5-PR1: the cold resume re-arms the closed-world guard on the fresh ctxs (leader=1, member A=1, member B=0)', () => {
+    expect(w3LeaderClosedWorld).toBe(1)
+    expect(w3AClosedWorld).toBe(1)
+    expect(w3BClosedWorld).toBe(0)
+  })
+  it('A5-PR1: the cold resume re-arms the Guard outer door on the fresh ctxs (leader=1, member A=1, member B=0)', () => {
+    expect(w3LeaderGates).toBe(1)
+    expect(w3AGates).toBe(1)
+    expect(w3BGates).toBe(0)
   })
   it('cold resume: the resume ctxs are FRESH doubles (not the create-phase ctxs)', () => {
     expect(w3LeaderIsFreshCtx).toBe(true)
