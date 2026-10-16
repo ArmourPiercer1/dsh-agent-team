@@ -346,13 +346,18 @@ describe('the closed world over real registrations', () => {
     const handle = outcome.value
     expect(handle.publish().ok).toBe(true)
     // The handle exposes no way to allow a call: every door it has is a bind,
-    // a diagnostic or a refusal.
+    // a diagnostic or a refusal. `pendingCalls` and `changeChannelStatus` are
+    // diagnostics too — one reports the calls the lane can still cancel and
+    // whether the notification channel has actually spoken, neither grants
+    // permission and neither can mark a call executed.
     expect(Object.keys(handle).sort()).toEqual([
       'bindMcpTools',
       'bindOwnTools',
+      'changeChannelStatus',
       'dispatcher',
       'disposeOrdered',
       'observations',
+      'pendingCalls',
       'publish',
       'revalidate',
       'surfaceNames',

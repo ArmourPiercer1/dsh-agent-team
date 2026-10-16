@@ -2231,6 +2231,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `tests/kits/` (outside this scan) and `packages/runtime/dist/**` is
     // outside the scanner's rules, so nothing else moves.
     const SCANNED_PATHS_A5PR1R: readonly string[] = [
+      'packages/runtime/tool-dispatch/pending-calls.ts',
+      'packages/runtime/test/a5p1r-change-abort.test.ts',
       'packages/runtime/test/a5p1r-shadow-attribution.test.ts',
       'packages/runtime/test/a5p1r-validate-resolve.test.ts',
       'packages/runtime/test/a5p1r-scoped-registry-double.ts',

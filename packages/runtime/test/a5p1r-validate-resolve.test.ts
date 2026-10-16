@@ -85,22 +85,25 @@ describe('a5p1r R-b — the validate→resolve window under an ordinary re-regis
     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(false)
   })
 
-  it('RECORDED BOUNDARY: a re-registration after our inner door runs one Body the Guard never validated, and the lane withdraws the verification at that call edge so it cannot repeat', async () => {
+  it('CLOSED (B3, user ruling (ii)): the same re-registration after our inner door is cancelled BEFORE its Body — the old "one call" claim is retracted', async () => {
     const { double, handle } = governed()
     const run = await double.runCall({
       callId: 'c1',
       name: 'grep',
       swap: { stage: 'execute-after-ours' as SwapStage, name: 'grep', identity: 'V2.grep' },
     })
-    // The seam gap, asserted rather than glossed: no public seam sits between
-    // our last read and the registry's `resolveExecution`.
-    expect(run.bodies).toEqual(['V2.grep'])
-    // The fail-closed half: the exposure is exactly one call, because the lane
-    // notices at the call's own settled edge and burns the verification there.
+    // RETRACTED CLAIM, on the record: this test used to assert `bodies: ['V2.grep']`
+    // and filed the un-executed-Body exposure as "at most one call, withdrawn at
+    // the settled edge, therefore fail-closed". That claim is withdrawn. The
+    // notification channel is the public thing that reaches the last gap, and the
+    // pinned Host refuses a raised signal at `index.ts:1572` — BEFORE it resolves
+    // anything at `:1578` — so the correct behaviour here is that NO Body runs.
+    expect(run.bodies).toEqual([])
+    expect(run.code).toBe('ABORTED_BEFORE_DISPATCH')
+    expect(run.bodyInvoked).toBe(false)
+    // The withdrawal still happens and is still what makes the NEXT call refuse;
+    // it is hygiene now, not the safety mechanism it was sold as.
     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(false)
-    expect(
-      handle.observations().some((o) => String(o.event) === 'dispatcher-definition-change-at-call-edge'),
-    ).toBe(true)
     const second = await double.runCall({ callId: 'c2', name: 'grep' })
     expect(second.bodies).toEqual([])
     expect(second.threw ?? second.text).toContain('team tool guard')

@@ -85,6 +85,19 @@ async function main () {
   const { installScopedToolGuard } = await import(LANE_URL)
 
   const MODES = ['control-no-pr1', 'guarded-pre-execute', 'guarded-pre-execute-no-change', 'inner-before-ours', 'inner-after-ours']
+  // B3 (user ruling (ii)): the arms that measure the after-door cancellation
+  // itself, its limits and its side effects. Each is its own Host fixture, so no
+  // arm can contaminate another's counters.
+  const B3_MODES = [
+    'guarded-after-body-zero',
+    'guarded-after-no-change',
+    'guarded-after-abort-inside-body',
+    'guarded-after-two-names',
+    'guarded-after-multi-call',
+    'guarded-after-mcp-resync',
+    'guarded-after-hooks',
+    'guarded-after-change-inert',
+  ]
 
   /** @param {typeof MODES[number]} mode */
   async function arm (mode) {
@@ -155,7 +168,39 @@ async function main () {
         // `a5p1-order-hazard.mjs`'s R1R-SHADOW arm.
         assemblyOwnedNames: ['grep'],
       })
-      if (!outcome.ok) throw new Error(`${mode}: install refused: ${outcome.error.code} ${outcome.error.message}`)
+      if (!outcome.ok) {
+        if (!noChange) throw new Error(`${mode}: install refused: ${outcome.error.code} ${outcome.error.message}`)
+        // ②: since the B3 ruling this Host is DECLARED UNSUPPORTED instead of
+        // being delivered with the notification hole closed over. That refusal is
+        // this arm's outcome, and it is measured as one: nothing installs, nothing
+        // runs, nothing is silently downgraded.
+        const stray = await f.run('grep', A.key)
+        return {
+          mode,
+          installRefused: true,
+          refuseCode: String(outcome.error.code),
+          refuseMessage: String(outcome.error.message),
+          changeChannel: 'unavailable',
+          reRegistrations: 0,
+          v1: f.counters('V1'),
+          v2: f.counters('V2'),
+          text: String(stray?.text ?? stray?.threw ?? '').slice(0, 160),
+          verifiedBefore: null,
+          verifiedAfter: null,
+          decisionInWindowKind: null,
+          decisionInWindowReason: null,
+          resolutionInWindow: f.resolution('grep', A.key),
+          state: null,
+          driftPerCall: 0,
+          driftViaChange: 0,
+          innerDoorDenials: [],
+          callEdgeWithdrawal: 0,
+          laneEvents: [],
+          secondCallV2: null,
+          secondCallText: null,
+          obsTail: f.obs.slice(-10).map((o) => (o.event === 'body' ? `body:${o.identity}` : String(o.action ?? o.event))),
+        }
+      }
       handle = outcome.value
       const bound = handle.bindOwnTools(['grep'])
       if (!bound.ok) throw new Error(`${mode}: bindOwnTools refused: ${bound.error.code} ${bound.error.message}`)
@@ -232,8 +277,233 @@ async function main () {
     }
   }
 
+  /**
+   * The B3 arms. The mechanism under test is the one the pinned Host advertises
+   * to a wrapper — "wrappers may change only `exec.signal`" — used to CANCEL a
+   * call whose Definition moves after the lane's last check, so that the Host's
+   * own before-dispatch refusal (`index.ts:1572`, ahead of `resolveExecution` at
+   * `:1578`) is what stops the Body. These arms exist to prove three separate
+   * things, and each criterion names one: nothing un-validated runs; nothing
+   * that legitimately ran is re-labelled; nothing innocent is touched.
+   */
+  async function armB3 (mode) {
+    const f = await makeFixture()
+    const A = await f.mintScope('A')
+    const inner = A.scope.ctx
+
+    const bodyGate = makeGate()
+    const holdGate = makeGate()
+    // A CALLER-owned signal. NOTE (measured, runs/probe-cancel.mjs): on this Host
+    // a cancellation raised by the caller while the Body is in flight does NOT
+    // surface at the result edge for a direct `ctx.tools.execute()` call, so this
+    // arm does not rest on it — the lane's own inside-body case is what is
+    // measured here, and the caller path is disclosed in the seam record.
+    const names = mode === 'guarded-after-two-names' ? ['grep', 'read'] : ['grep']
+    /** Live registrations by name, so a re-registration is a real dispose+register. */
+    const live = new Map()
+    const put = (name, identity, opts) => {
+      live.get(name)?.()
+      live.set(name, inner.tools.register(countingTool(f.obs, name, identity, opts ?? {})))
+    }
+    let reRegisterCount = 0
+    const reRegisterName = (name) => {
+      put(name, name === 'grep' ? 'V2' : 'R2')
+      reRegisterCount += 1
+      f.obs.push({ event: 'action', at: Date.now(), action: 'legal-re-register', name, to: name === 'grep' ? 'V2' : 'R2' })
+    }
+    put('grep', 'V1', mode === 'guarded-after-abort-inside-body' ? { gate: bodyGate.promise } : {})
+    if (names.includes('read')) put('read', 'R1')
+
+    // The inert-channel arm subscribes and then never receives anything: the
+    // disposer is real, the Host is healthy, and the notification simply stops
+    // arriving. Undetectable at assembly time — which is why the call edge has to
+    // be the one that says so.
+    let cutChange = false
+    const changeDisposers = []
+    const onEvent = (event, listener) => {
+      const dispose = inner.on(event, listener)
+      if (event === 'tools/change' && mode === 'guarded-after-change-inert') changeDisposers.push(dispose)
+      return dispose
+    }
+
+    let nativeNames = []
+    try {
+      const globalSchemas = inner.tools.schemas()
+      if (Array.isArray(globalSchemas)) {
+        nativeNames = globalSchemas.map((row) => row?.name).filter((n) => typeof n === 'string' && n.length > 0)
+      }
+    } catch {
+      nativeNames = []
+    }
+    const outcome = installScopedToolGuard({
+      agentCtx: { tools: inner.tools, on: onEvent },
+      runtimeAgent: A.key,
+      agentScopeKey: 'A',
+      trustedIdentities: ['A'],
+      nativeNames,
+      assemblyOwnedNames: [...names],
+    })
+    if (!outcome.ok) throw new Error(`${mode}: install refused: ${outcome.error.code} ${outcome.error.message}`)
+    const handle = outcome.value
+    const bound = handle.bindOwnTools([...names])
+    if (!bound.ok) throw new Error(`${mode}: bindOwnTools refused: ${bound.error.code} ${bound.error.message}`)
+    const published = handle.publish()
+    if (!published.ok) throw new Error(`${mode}: publish refused: ${published.error.code} ${published.error.message}`)
+
+    // Result edges, observed from outside the lane: a cancelled call must still
+    // be a call that the rest of the system can see.
+    const edge = { post: [], result: [] }
+    // `tools/post-execute` is a WATERFALL whose value is the decision (`:176`),
+    // so an observer here must forward `next()` and hand its value back: a
+    // listener that returns nothing replaces the decision with `undefined` and
+    // the registry then fails inside its own post-execute handling. (That is how
+    // this arm first read the outcome as a crash instead of an abort.)
+    onEvent('tools/post-execute', (exec, result, next) => {
+      edge.post.push({ callId: String(exec?.callId ?? '?'), code: String(result?.error?.info?.code ?? 'none') })
+      return next()
+    })
+    onEvent('tools/result', (exec, result) => {
+      edge.result.push({ callId: String(exec?.callId ?? '?'), code: String(result?.error?.info?.code ?? 'none') })
+    })
+
+    // A third-party plugin's `tools/execute` listener, mounted AFTER the lane's
+    // door: the only place a legal re-registration can land that no public seam
+    // can see before the registry resolves the Body. It also holds the calls
+    // there, so "after the door" is a fence rather than a race.
+    let movedOnce = false
+    onEvent('tools/execute', (exec, next) => {
+      if (!names.includes(exec.name)) return next()
+      // In the two-names arm only ONE name moves: the neighbour must be left
+      // alone, which is the whole point of that arm.
+      if (mode === 'guarded-after-two-names' && exec.name !== 'grep') return next()
+      f.obs.push({ event: 'action', at: Date.now(), action: 'third-party-execute-listener', name: exec.name, mode })
+      if (mode === 'guarded-after-no-change') return next()
+      if (mode === 'guarded-after-abort-inside-body') {
+        // Let the Body START, then move its Definition while it runs: the
+        // cancellation can only arrive after the side effect began.
+        const running = next()
+        const started = Date.now() + 20_000
+        const waitBody = async () => {
+          while (f.counters('V1') < 1) {
+            if (Date.now() >= started) throw new Error(`${mode}: the Body never started`)
+            await tick()
+          }
+          reRegisterName('grep')
+          bodyGate.release()
+          return await running
+        }
+        return waitBody()
+      }
+      if (movedOnce && mode !== 'guarded-after-two-names') return next()
+      movedOnce = true
+      if (mode === 'guarded-after-multi-call') {
+        return holdGate.promise.then(() => {
+          if (reRegisterCount === 0) reRegisterName('grep')
+          return next()
+        })
+      }
+      if (mode === 'guarded-after-mcp-resync') {
+        // The MCP `syncTools` shape: the previous generation is disposed and a
+        // new one registered, all at once.
+        for (const name of names) reRegisterName(name)
+        return next()
+      }
+      reRegisterName(exec.name)
+      return next()
+    })
+
+    // Park at pre-execute so the calls are in flight before anything moves.
+    let parked = 0
+    const wantParked = mode === 'guarded-after-multi-call' ? 2 : 1
+    onEvent('tools/pre-execute', (exec, next) => {
+      if (!names.includes(exec.name) || parked >= wantParked) return next()
+      parked += 1
+      return holdGate.promise.then(() => next())
+    })
+
+    const verifiedBefore = handle.dispatcher.surface.entryOf('grep')?.verified ?? null
+    if (mode === 'guarded-after-change-inert') for (const dispose of changeDisposers) dispose()
+    const calls = []
+    if (mode === 'guarded-after-multi-call') {
+      calls.push(f.run('grep', A.key), f.run('grep', A.key))
+    } else if (mode === 'guarded-after-two-names') {
+      calls.push(f.run('grep', A.key), f.run('read', A.key))
+    } else {
+      calls.push(f.run('grep', A.key))
+    }
+
+    const deadline = Date.now() + 20_000
+    while (parked < wantParked) {
+      if (Date.now() >= deadline) throw new Error(`${mode}: the calls never reached the pre-execute fence (parked=${String(parked)})`)
+      await tick()
+    }
+    holdGate.release()
+    const pendingInWindow = handle.pendingCalls().map((row) => `${String(row.callId)}:${String(row.state)}`)
+    const watchedNames = handle.pendingCalls().map((row) => String(row.name))
+    const settled = await Promise.all(calls)
+    const first = settled[0] ?? null
+    const second = mode === 'guarded-after-body-zero' ? await f.run('grep', A.key) : null
+
+    // A re-bind is the documented way back; measure that it still is one.
+    let verifiedBeforeRebind = null
+    let rebind = null
+    let third = null
+    if (mode === 'guarded-after-mcp-resync') {
+      verifiedBeforeRebind = handle.dispatcher.surface.entryOf('grep')?.verified ?? null
+      rebind = handle.bindOwnTools([...names])
+      third = rebind.ok === true ? await f.run('grep', A.key) : null
+    }
+    let teardown = null
+    let teardownState = null
+    if (mode === 'guarded-after-body-zero') {
+      const gone = handle.disposeOrdered()
+      teardown = { ok: gone.ok === true, code: gone.ok === true ? null : String(gone.error?.code ?? '') }
+      teardownState = handle.dispatcher.state()
+    }
+
+    const laneObs = handle.observations()
+    const count = (event) => laneObs.filter((o) => String(o.event) === event).length
+    const issued = laneObs.filter((o) => String(o.event) === 'dispatcher-change-abort-issued')
+      .flatMap((o) => (Array.isArray(o.calls) ? o.calls.map((c) => `${String(c.tool)}:${String(c.callId)}`) : []))
+    const terminated = laneObs.filter((o) => String(o.event) === 'dispatcher-call-terminated-after-body-start')
+    return {
+      mode,
+      reRegistrations: reRegisterCount,
+      verifiedBefore,
+      v1: f.counters('V1'),
+      v2: f.counters('V2'),
+      r1: f.counters('R1'),
+      code: first?.code ?? null,
+      text: String(first?.text ?? first?.threw ?? '').slice(0, 240),
+      changeAbortIssued: count('dispatcher-change-abort-issued'),
+      cancelledBeforeBody: count('dispatcher-call-cancelled-before-body'),
+      terminatedAfterBodyStart: terminated.length,
+      terminatedSideEffectPossible: terminated.filter((o) => o.sideEffectPossible === true).length,
+      completedAfterAbort: count('dispatcher-call-completed-after-abort'),
+      executedUnvalidated: count('dispatcher-call-executed-unvalidated'),
+      abortIssuedCalls: issued,
+      watchedNames,
+      pendingInWindow,
+      pendingAfter: handle.pendingCalls().map((row) => String(row.callId)),
+      changeChannel: handle.changeChannelStatus(),
+      verifiedAfter: handle.dispatcher.surface.entryOf('grep')?.verified ?? null,
+      secondCallV2: second === null ? null : f.counters('V2'),
+      secondCallText: second === null ? null : String(second?.text ?? second?.threw ?? '').slice(0, 160),
+      verifiedBeforeRebind,
+      rebindOk: rebind === null ? null : rebind.ok === true,
+      rebindError: rebind === null || rebind.ok ? null : `${String(rebind.error?.code)} ${String(rebind.error?.message)}`.slice(0, 200),
+      thirdCallV2: third === null ? null : f.counters('V2'),
+      teardown,
+      teardownState,
+      edges: edge,
+      laneEvents: [...new Set(laneObs.map((o) => String(o.event)))],
+      obsTail: f.obs.slice(-12).map((o) => (o.event === 'body' ? `body:${o.identity}` : String(o.action ?? o.event))),
+    }
+  }
+
   const results = {}
   for (const mode of MODES) results[mode] = await arm(mode)
+  for (const mode of B3_MODES) results[mode] = await armB3(mode)
   const control = results['control-no-pr1']
   const guarded = results['guarded-pre-execute']
   const noChange = results['guarded-pre-execute-no-change']
@@ -245,17 +515,20 @@ async function main () {
   check('RW-CONTROL', 'without the lane, a legal re-registration inside the parked window decides which Body runs (protection control)',
     control.reRegistrations === 1 && control.v2 === 1 && control.v1 === 0,
     `v1=${String(control.v1)} v2=${String(control.v2)} resolution=${control.resolutionInWindow} text=${control.text.slice(0, 60)}`)
-  // F2 ALONE, ISOLATED: with no `tools/change` channel at all, the per-call
-  // definition read is the only thing that could refuse, and it must.
-  check('RW-F2-ISOLATED', 'with the tools/change channel unavailable, the per-call definition read alone refuses a Body re-registered after validation (typed definition-drift, no fallback)',
-    noChange.v2 === 0 && noChange.v1 === 0 && noChange.changeChannel === 'unavailable'
-      && noChange.decisionInWindowReason === 'definition-drift' && noChange.verifiedAfter === false,
-    `v1=${String(noChange.v1)} v2=${String(noChange.v2)} decideInWindow=${String(noChange.decisionInWindowKind)}/${String(noChange.decisionInWindowReason)} driftPerCall=${String(noChange.driftPerCall)} verifiedAfter=${String(noChange.verifiedAfter)} text=${noChange.text.slice(0, 90)}`)
+  // THE CHANNEL IS A CAPABILITY (②/⑧). This arm's Host cannot subscribe to
+  // `tools/change` at all. Before the B3 ruling the lane installed anyway and
+  // filed that as a diagnostic; the ruling made the promise, so the assembly is
+  // now REFUSED with a typed reason that names the channel — and nothing of the
+  // Team's runs on a lane that cannot keep the promise.
+  check('RW-NO-CHANGE-CHANNEL-UNSUPPORTED', 'a Host whose tools/change subscription is refused is declared unsupported at assembly time (typed IO_POLICY_UNSUPPORTED naming the channel), with no Body of the governed name running behind a lane that never armed',
+    noChange.installRefused === true && noChange.refuseCode === 'IO_POLICY_UNSUPPORTED' && /tools\/change/.test(String(noChange.refuseMessage))
+      && /unsupported/.test(String(noChange.refuseMessage)) && noChange.changeChannel === 'unavailable',
+    `refused=${String(noChange.installRefused)} code=${String(noChange.refuseCode)} message=${String(noChange.refuseMessage).slice(0, 150)}`)
   // THE SAME WINDOW with the diagnostic channel present: the outcome must not
   // depend on it (a `tools/change` event is not a safety mechanism).
-  check('RW-PRE-EXECUTE-COVERED', 'the pre-execute window is covered: no Body of either version runs, with or without the tools/change channel',
-    guarded.v2 === 0 && guarded.v1 === 0 && noChange.v2 === 0 && guarded.verifiedAfter === false,
-    `withChange v1=${String(guarded.v1)} v2=${String(guarded.v2)} verifiedAfter=${String(guarded.verifiedAfter)} | noChange v1=${String(noChange.v1)} v2=${String(noChange.v2)}`)
+  check('RW-PRE-EXECUTE-COVERED', 'the pre-execute window is covered: no Body of either version runs, and the verification is withdrawn',
+    guarded.v2 === 0 && guarded.v1 === 0 && guarded.verifiedAfter === false,
+    `withChange v1=${String(guarded.v1)} v2=${String(guarded.v2)} verifiedAfter=${String(guarded.verifiedAfter)} | noChange arm refused=${String(noChange.installRefused)}`)
   // THE INNER DOOR: a re-registration that lands after the Guard stage but
   // before our own `tools/execute` door must still be refused before the Body.
   check('RW-INNER-DOOR', 'a re-registration between the Guard stage and our inner door is refused at that door: the un-validated Body never runs',
@@ -266,9 +539,54 @@ async function main () {
   // resolution. This criterion asserts the HONEST fact — the Body ran, the lane
   // says so, and the verification is withdrawn at that same call so no later
   // call repeats it. It is the seam record, never a pass claim.
-  check('RW-RESIDUAL-RECORDED', 'boundary recorded: a re-registration after our door is invisible to every public seam before the late resolution (PoC-1 seam gap); exactly one un-validated Body ran, and the NEXT call is refused — the exposure is one call, never a standing state',
-    after.v2 === 1 && after.v1 === 0 && after.secondCallV2 === 1 && after.verifiedAfter === false,
-    `v1=${String(after.v1)} v2=${String(after.v2)} verifiedAfter=${String(after.verifiedAfter)} secondCall(v2=${String(after.secondCallV2)} text="${after.secondCallText?.slice(0, 70)}") obs=${after.obsTail.join('>')}`)
+  // THE POSTURE, RESTATED (B3, user ruling (ii)). This criterion used to assert
+  // `v2 === 1`: "exactly one un-validated Body ran, then the verification is
+  // withdrawn there, so the exposure is one call". THAT CLAIM IS RETRACTED. The
+  // public notification reaches the last gap and the Host refuses a raised signal
+  // at `index.ts:1572`, before it resolves anything at `:1578`, so the required
+  // outcome is that nothing runs — asserted below as body count zero.
+  const zero = results['guarded-after-body-zero']
+  check('RW-AFTER-DOOR-BODY-ZERO', 'B3 (ii): a re-registration after our dispatch door cancels the call before its Body — body count 0, the Host\'s own ABORTED_BEFORE_DISPATCH, the lane\'s own attribution event, and the next call still refused',
+    zero.v1 === 0 && zero.v2 === 0 && zero.secondCallV2 === 0 && zero.cancelledBeforeBody >= 1 && zero.changeAbortIssued >= 1
+      && /aborted before dispatch/.test(zero.text) && zero.verifiedAfter === false && zero.executedUnvalidated === 0,
+    `v1=${String(zero.v1)} v2=${String(zero.v2)} code=${String(zero.code)} issued=${JSON.stringify(zero.abortIssuedCalls)} verifiedAfter=${String(zero.verifiedAfter)} obs=${zero.obsTail.join('>')}`)
+  check('RW-TEARDOWN-NO-LEAK', 'the cancellation leaves no watch behind and the ordered teardown still reaches its lawful end (an abort is not used to declare a lease finished)',
+    zero.pendingAfter.length === 0 && zero.teardownState !== null && (zero.teardown.ok === true || zero.teardownState === 'TOMBSTONED'),
+    `pendingAfter=${JSON.stringify(zero.pendingAfter)} teardown=${JSON.stringify(zero.teardown)} state=${String(zero.teardownState)}`)
+  const still = results['guarded-after-no-change']
+  check('RW-AFTER-NO-CHANGE', 'positive control: with nothing moving the signal wrapper is inert — the Body runs, no cancellation event is raised, verification stands',
+    still.v1 === 1 && still.v2 === 0 && still.changeAbortIssued === 0 && still.cancelledBeforeBody === 0 && still.verifiedAfter === true
+      && still.text.startsWith('ran:grep@V1'),
+    `v1=${String(still.v1)} v2=${String(still.v2)} text=${still.text.slice(0, 40)} issued=${String(still.changeAbortIssued)} verifiedAfter=${String(still.verifiedAfter)}`)
+  const cancel = results['guarded-after-abort-inside-body']
+  check('RW-ABORT-INSIDE-BODY-IS-TERMINATION', '④ a cancellation that arrives while the Body is running is TERMINATION, not a cancellation: the Body ran (side effect real, its value still carried) and is never re-labelled as un-executed',
+    cancel.v1 === 1 && cancel.code === 'ABORTED' && cancel.terminatedAfterBodyStart >= 1 && cancel.terminatedSideEffectPossible >= 1
+      && cancel.cancelledBeforeBody === 0,
+    `v1=${String(cancel.v1)} code=${String(cancel.code)} terminated=${String(cancel.terminatedAfterBodyStart)}/${String(cancel.terminatedSideEffectPossible)} cancelledBeforeBody=${String(cancel.cancelledBeforeBody)} text=${cancel.text.slice(0, 70)}`)
+  const iso = results['guarded-after-two-names']
+  check('RW-ISOLATION-NEIGHBOUR-TOOL', 'isolation: a move on one name cancels only the calls that carried that name — the neighbour tool\'s Body runs and the abort set names nothing else',
+    iso.r1 === 1 && iso.v1 === 0 && iso.v2 === 0 && iso.abortIssuedCalls.length >= 1 && iso.abortIssuedCalls.every((row) => row.startsWith('grep:')),
+    `r1=${String(iso.r1)} v1=${String(iso.v1)} v2=${String(iso.v2)} issued=${JSON.stringify(iso.abortIssuedCalls)} watched=${JSON.stringify(iso.watchedNames)}`)
+  const multi = results['guarded-after-multi-call']
+  check('RW-MULTI-CALL-ALL-CANCELLED', 'isolation, other direction: every concurrent call of the moved name is cancelled, not only the one that happened to observe the change',
+    multi.v2 === 0 && multi.abortIssuedCalls.length >= 2
+      && multi.cancelledBeforeBody + multi.terminatedAfterBodyStart + multi.completedAfterAbort >= 2,
+    `v1=${String(multi.v1)} v2=${String(multi.v2)} cancelled=${String(multi.cancelledBeforeBody)} terminated=${String(multi.terminatedAfterBodyStart)} late=${String(multi.completedAfterAbort)} issued=${JSON.stringify(multi.abortIssuedCalls)}`)
+  const mcp = results['guarded-after-mcp-resync']
+  check('RW-MCP-RESYNC-CANCELS-AND-REBIND-RESTORES', 'an MCP whole-generation withdraw+re-register cancels the in-flight calls it moved, and the documented re-bind by the trusted assembly restores the name',
+    mcp.v1 === 0 && mcp.cancelledBeforeBody >= 1 && mcp.verifiedBeforeRebind === false && mcp.rebindOk === true && mcp.thirdCallV2 === 1 && mcp.verifiedAfter === true,
+    `v1=${String(mcp.v1)} cancelled=${String(mcp.cancelledBeforeBody)} withdrawnThenRestored=${String(mcp.verifiedBeforeRebind)}->${String(mcp.verifiedAfter)} rebindOk=${String(mcp.rebindOk)} thirdCallV2=${String(mcp.thirdCallV2)} rebindErr=${String(mcp.rebindError)}`)
+  const inert = results['guarded-after-change-inert']
+  check('RW-CHANGE-INERT-LOUD', '②⑦ a subscribed-but-silent channel is reported, not covered up: the moved Body does run (nothing can cancel it), and the call edge calls it EXECUTED UNVERIFIED with the channel still unproven',
+    inert.v2 === 1 && inert.executedUnvalidated >= 1 && inert.changeAbortIssued === 0 && inert.changeChannel === 'armed' && inert.verifiedAfter === false,
+    `v2=${String(inert.v2)} unvalidated=${String(inert.executedUnvalidated)} issued=${String(inert.changeAbortIssued)} channel=${String(inert.changeChannel)} verifiedAfter=${String(inert.verifiedAfter)}`)
+  const hooks = results['guarded-after-hooks']
+  check('RW-HOOKS-RESULT-IDENTITY', 'the cancelled call still reaches both result edges under its own callId with the Host\'s own code (hooks, telemetry and the durable session log see a call, not a hole)',
+    hooks.cancelledBeforeBody >= 1 && hooks.edges.post.length >= 1 && hooks.edges.result.length >= 1
+      && hooks.edges.post.every((row) => row.code === 'ABORTED_BEFORE_DISPATCH')
+      && hooks.edges.result.every((row) => row.code === 'ABORTED_BEFORE_DISPATCH')
+      && hooks.edges.post[0]?.callId === hooks.edges.result[0]?.callId,
+    `edges=${JSON.stringify(hooks.edges)} cancelled=${String(hooks.cancelledBeforeBody)}`)
 
   const result = { runStamp: new Date().toISOString(), criteria, arms: results }
   const text = JSON.stringify(result, null, 2)

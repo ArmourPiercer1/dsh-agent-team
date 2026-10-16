@@ -32,6 +32,7 @@
  *
  * @module @dsh-agent-team/runtime/tool-dispatch
  */
+export { createPendingCallLedger, } from './pending-calls.js';
 export { GOVERNED_UNVERIFIED_REASONS, GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, GOVERNED_ORIGINS, createGovernedSurface, guardDecision, guardDenialMessage, ASSURANCE_REALM_TRUSTED_ASSEMBLY, untestedAssurance, } from './closed-world-guard.js';
 export { createScopedDispatcher } from './scoped-dispatcher.js';
 export { hostExecToView, installScopedToolGuard, requireService } from './install.js';
