@@ -115,7 +115,7 @@ base is red here):
 
 | file red in BOTH | red identities (this branch) | why it is not this PR |
 | --- | --- | --- |
-| `packages/runtime/test/a2c7-subtree-matcher.test.ts` | 13 | red on the base with the same test names; alpha.4 subtree-matcher lane, untouched here |
+| `packages/runtime/test/a2c7-subtree-matcher.test.ts` | 13 | red on the base with the same test names; alpha.4 subtree-matcher lane, untouched here. **Condition, per the independent review (MINOR-3):** these 13 are order/environment-sensitive — running the file alone on a clean tree can be green, so the count in this table is a property of the FULL-suite run in this environment, not of the file in isolation; the direction (same identities on both trees) is what the no-new-red claim rests on |
 | `packages/runtime/test/p6t3-mediation.test.ts` | 5 | same identity red on the base; p6t3 mediation lane |
 | `packages/runtime/test/p6t3-restart.test.ts` | 2 | same |
 | `packages/tools/test/p6t6-actions.test.ts` | 1 | same |

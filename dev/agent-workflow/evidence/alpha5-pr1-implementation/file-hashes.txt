@@ -26,7 +26,7 @@ edcf6ede283ce38bb4ab22b55929aa056b0bb9a520b01065178613aa543caff7  packages/runti
 ## 2. kits and runner-side tooling — 5 file(s)
 
 af3c1e0079840ec4938e5129fc59810711ad44648c1d58403e3ae3b67b2c0a22  tests/kits/a5-pr1-guard-dispatch/README.md
-566fe64b23b582e033680f3103925978b9ceaaef610f353a0e73997707e84a7f  tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs
+56c0ccf8c7a85e7d22b77472cd7a69080c366fcfc60a73cc44a673e2b6cb9cf5  tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs
 64c84bb5cb63a0c7b0253a46c4fb20fc62bbd996779e447283611e4e701d013d  tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs
 578906b248c62e19259bf357c7750eec407d28d01ff39333866d79067e2a3b63  tests/kits/a5-pr1-guard-dispatch/a5p1-probe-plugin.mjs
 c40d202fcfa9ed791b92315085b8d25797d528008ff4b9356214e0f2d2591a5a  tests/kits/a5-pr1-guard-dispatch/sweep-worlds.mjs
@@ -39,7 +39,7 @@ c40d202fcfa9ed791b92315085b8d25797d528008ff4b9356214e0f2d2591a5a  tests/kits/a5-
 
 1157b8d042b544a8da70d2cf2103f7182a60f739467239b9ce44fd1958d5f635  dev/agent-workflow/SESSION_ROUTER_LOG.md
 
-## 4. evidence artifacts (the runs themselves) — 302 file(s)
+## 4. evidence artifacts (the runs themselves) — 303 file(s)
 
 2b2ca410e88a830c3fd0c26acd6fc8b6c92ece4a85537dacd3a819a01307af7c  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/blueprints/anchor.yaml
 5021f8d4ac3b8f460b395447ecb7e590afa3c21178c3e303b93a2b810f47aebc  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/instance.log
@@ -49,28 +49,28 @@ e644ca9a87ec992c4ba780c93eba0ba0f53f22045f5fee02cc7d7fc3e061e734  dev/agent-work
 28933d329967c9cc1aaaa376ab17873f643d85129c79ad81a0a5d1277bd96a83  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/row-state.json
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/stable-instance-before.json
 fa48e558d253d065541eb9fd2be4cc64118d67b27863787127cdc1d17a3bcafd  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/summary.json
-05b05ba1adc5a61a9c28af9d217b02c1b9284b3c585139f802e4ea700dee5233  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/anchor.yaml
-b3c76e50ee84ceeea25941740c0a19b67b53dfeffddb005d6bc4c2abf6d34afd  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/main.yaml
-1fa8d1ac243ed30bd01b81fe7952d261ad9b09dfddaac5267acf26092d8bc7ad  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-prompt-response.json
+6ebe8b7c0e01700ad1145fe713d57c5165ebe2de4737e8a580504d2e8d9b9bf7  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/anchor.yaml
+b98e4224f00afb648202eb6d9978f00fb7afeb26e5eac0228c1f5db84c14b3a2  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/main.yaml
+b3a04d422f06ff005215835b3700eb928bedccd533016807d8fc9d1bd211ee34  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-prompt-response.json
 fbf0d7d1e9e6354a49c87c9d10a736d5b708815af5762935bfd5515c2a30390a  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-surface.json
-1d8318d267bf6f268d41ee42225566cb1c9f6ebe0826b37e9c979a4bd61bec3f  dev/agent-workflow/evidence/alpha5-pr1-host/final/guard-observations.txt
+406523daaa6e47c12ccc4cf559bc13c7f550fd7b349084d52f5e383d14af393b  dev/agent-workflow/evidence/alpha5-pr1-host/final/guard-observations.txt
 b64b4d3dfbd0688051e3857baff6c48e38abf3d4d0ba3a9d3c2b415c606b48ca  dev/agent-workflow/evidence/alpha5-pr1-host/final/inherited-native-observation.json
-07b3a5867ad9b07a17daa92a33aadbe28d2e3f35deebdf87647c78b582f69486  dev/agent-workflow/evidence/alpha5-pr1-host/final/instance.log
-97a8d9bf0c3e76cd04edffde5d20e5ffc3b7d9ed1a92258173eeee27639a9a3a  dev/agent-workflow/evidence/alpha5-pr1-host/final/kit.log
-b8e548e971042d13eb5de13c62f16636b02b9fa3fbb76cc8d03890b65bd473d7  dev/agent-workflow/evidence/alpha5-pr1-host/final/leader-tool-results.json
+54d056b789cdcf3557400ab0b0f3e83d315861020845b9ce9ad9eed5dea1a3ae  dev/agent-workflow/evidence/alpha5-pr1-host/final/instance.log
+7ad88aac3322bdb26472e22a7825697eb61f7d34340f42d9fa4b890df17a0f86  dev/agent-workflow/evidence/alpha5-pr1-host/final/kit.log
+60534f72b904600d8f634fa850b47a31b4a782473087528052cef8fa10ef9a33  dev/agent-workflow/evidence/alpha5-pr1-host/final/leader-tool-results.json
 1ac4758527a2743e6bd522c945b51b2521ef5c885fee888d4e47e8412d42f823  dev/agent-workflow/evidence/alpha5-pr1-host/final/marker-dir.json
-4ec331c90e13804997a0d0065d3c9bb604500ec2669990d2008fca7828587b24  dev/agent-workflow/evidence/alpha5-pr1-host/final/member-model-views.json
-2daf536096a567c0b96c4092213c5338a189af85e06df924076e681551438740  dev/agent-workflow/evidence/alpha5-pr1-host/final/order-hazard.json
-1efc1148cbb2f68da89317138ebef9ac42eb247d4a44df7a4ac2f3ecf8714673  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.json
-1fb20f3ef5110944e01869c74f4bd30a79968fc77cca34c5827b2c293fc7d3e3  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.jsonl
-355945f0fa1036bdca6a137bbd10a96ca6928e012eb579a2bc3eee67fba47bf6  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state-final.json
-da4aad2aee32d67fd11938b590a3c5f1581f28de7b4e7575397aa564ba145219  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state.json
-29ccd030c7f8c7e9db29e5a54b88c11314fcbe1fa11b0202b7f30e49a290d58b  dev/agent-workflow/evidence/alpha5-pr1-host/final/run-receipt.md
+8a132c62c24cecc2b1caafa4e7ff61ea795a0e4d027bab2b8001b6b263c6ea3c  dev/agent-workflow/evidence/alpha5-pr1-host/final/member-model-views.json
+182355fd8a07e31802beeffd35c5760cc6edd889d9c0b11c49ddcac8c3a0284d  dev/agent-workflow/evidence/alpha5-pr1-host/final/order-hazard.json
+aee8878216857f5536cbe7a65a5f357e0231ebf0d102b435491833b7f7896cd1  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.json
+fa55e6250cb6f1f68b3a114500a663702deec2eff2c55bab839dd037ac0a29c5  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.jsonl
+7600b6d9226c68259eba9d1400c16ee401c9817c644faf6ed4d38048c390bbac  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state-final.json
+06496267187464de13ba4cf68ee91fa5d89761220901c605c5bceddf0bfd36cc  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state.json
+0e35d622ca5eabed94c0288899efacc939bbce0ec5b198f7f6a5a97353de280b  dev/agent-workflow/evidence/alpha5-pr1-host/final/run-receipt.md
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/final/stable-instance-after.json
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/final/stable-instance-before.json
-be198a6cf991a77f573fb2350f9861a380ac9da687d8a1cfceeb3379e58f39fa  dev/agent-workflow/evidence/alpha5-pr1-host/final/summary.json
-25a14cc4cc047f81c3c728a6977000d0c00c8480d55722bd78a4cbdd40e55630  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-name-evidence.json
-9694e8b5250a4b7d74e8a8f69b77a22e9b54ecbbb6b5cc6760c25b723956bfd3  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-team-tool-evidence.json
+442de1ffe4d168280766094ba3563166a870b4dcc071a53e3231b1806a386de3  dev/agent-workflow/evidence/alpha5-pr1-host/final/summary.json
+dd50d2ca5e44eb474b177c18d8246456db70aa1a0878e14a5e9ac9335ced18da  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-name-evidence.json
+5698c841b0c5d4656d10456b9fb30a6c49edbbbfe88862a63ef43dfc02e78f3a  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-team-tool-evidence.json
 3d11979baadedc9cb2babf81f8e7a6b76eb392ace00df910813fd2edbd19099b  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/blueprints/anchor.yaml
 6b58175a4665d3c16a99db3ccf29f7d1c4c0bf57df4954a4840ec1476e768c24  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/blueprints/main.yaml
 e5f470955809060f3a78e2558a16c963fdc353c911ab16fab23e3350afa0d790  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/discovery-prompt-response.json
@@ -342,7 +342,8 @@ d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-work
 f291622de20fc91429c97d21e4c3026342d145c41030b808a75d9b4d9ba8256a  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-install-RED.log
 2a554353d62734819a4b55c61937af5f8d141fd695531362a7fa3ac1f8e48ed3  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-lane-GREEN.log
 910f1060aeee17bb62eb2a23c6557a3a4194234c981f05417d5b768735eb4193  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F5-forced-fatal.log
-917c9c1f712bf039a69b40b1cec600444c81ff34ca8e79432c7168a3f0cb3b5e  dev/agent-workflow/evidence/alpha5-pr1-implementation/s12-evidence.md
+32a41eb6713339b2f467000a95b221790f57b69afd3cca966d8c05d1a4f37456  dev/agent-workflow/evidence/alpha5-pr1-implementation/s12-evidence.md
+87bf1b6b88a5b1c388aad2e5315301161e0b7a42b115c3700c0c3a9c07c6ebe2  dev/agent-workflow/evidence/alpha5/pr1/review-PR1.md
 
 ## 5. generated build output — 65 file(s) under packages/runtime/dist/
 
