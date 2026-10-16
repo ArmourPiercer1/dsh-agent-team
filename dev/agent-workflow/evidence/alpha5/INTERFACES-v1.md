@@ -28,3 +28,5 @@ tools/change=信息通道非安全机制；scope 过滤仅防误伤；取消集�
 - 上游未合=下游用**固定内容 stack**（cherry-pick 自审查 SHA，本地记录 baseSHA）或**契约 fixture**开发；**不得宣称整链已验证**——只可宣称"对 fixture/stack 验证"。
 - 契约争点：只冻结争点接口，其余 lane 继续；版本变更仅契约 owner 提，集成 owner 落。
 - 合并拓扑序不变：257→256→PR3/PR4(并行度=CI 资源)→PR5(FS/shell 各自)→PR6∥PR7→PR8 收口；每合一个→下游重指→required CI 真 SUCCESS→再合。
+
+- **消费者版本 pin 更新（v1.2，2026-10-16 20:4xZ，master 侧）**：C-ADM@v1.1=master ae3dcf54（PR256 merged 18:31Z）；C-BIND@v1.2=取消语义用户裁决（2026-10-16 17:52Z，边界三句见 PENDING-GATES.md G-a 行；DEFERRED D-1=严格"只取消未执行"待公开 body-start 接口）；C-FS@lane=B merged 74d947a3；C-PROC@lane=C merged 2cd5185f；工具面@D merged d69bfc4b（lint-fix 后）；PR6-evidence@E 6ce62c25；C-GW/adapters@F fc9f4a07（typefix 后）；PR8 候选+runner@G/#266 3b2c23c5。全部 DORMANT——合并≠接线验收；G-g 仍 OPEN。
