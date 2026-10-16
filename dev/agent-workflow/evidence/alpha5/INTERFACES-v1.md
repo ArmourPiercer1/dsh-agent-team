@@ -7,7 +7,7 @@
 - provenance（撤销的是哪条 DENY@rung）须随 planApproval/observe 事件可见（PR3 审批面依赖）。
 - Grant：one-shot、generation、spent-once 语义不变；时钟非有限⇒typed 拒先于一切（H1）。
 - 接口面：`admission-kernel.ts`/`approval-case.ts` 导出类型只读消费；禁第二授权库。
-- **C-ADM v1.1（PR256 @a51b903d 实现锚定）**：policy deny 来源=`PolicyDenySource` 读时投影（ownerAuthority+sourceRef+sourceVersion==generation 才可信）；case 层级=max(walk, rungAbove(owner))；issue 侧重跑证明；未接线=精确拒（非 DORMANT）；Envelope 内容永非来源证据；两平面 no-match 律不动。六态对照表=r1a-source-contrast.md（固定 SHA）。**消费者版本 pin：C-ADM@v1.1=PR256 a51b903d；C-BIND/取消分型@v1.1=PR257 merged 452a04c0（事件名逐字：dispatcher-call-cancelled-before-body / terminated-after-body-start / completed-after-abort / outcome-unreadable / cancelled-by-others / executed-unvalidated）**。
+- **C-ADM v1.1（PR256 @a51b903d 实现锚定）**：policy deny 来源=`PolicyDenySource` 读时投影（ownerAuthority+sourceRef+sourceVersion==generation 才可信）；case 层级=max(walk, rungAbove(owner))；issue 侧重跑证明；未接线=精确拒（非 DORMANT）；Envelope 内容永非来源证据；两平面 no-match 律不动。六态对照表=r1a-source-contrast.md（固定 SHA）。**消费者版本 pin：C-ADM@v1.1=PR256 a51b903d；C-BIND/取消分型@v1.1=PR257 merged 452a04c0；**发射名勘正 v1.1a（Lane D finding @e3f660fa）**：master 实发全名均带 dispatcher-call- 前缀=install.ts:673 cancelled-before-body / :662 terminated-after-body-start / :686 completed-after-abort / :651 outcome-unreadable / :763 executed-unvalidated（引用请以 :行+全名为准）；旧行后五个无缀短形系文档混写；"cancelled-by-others"在 master tool-dispatch 未检得发射点——消费者含此名者接线门对齐。**）。
 
 ## C-FS（owner=B  Lane）
 资源描述符 {fs,path,fd?}；错误闭集 typed（denied/hidden/undetermined 三分，hidden-read 永不静默——必须 typed deny+诊断行）；open-at-exec 重读与 PR1 指纹律对齐（集成前置：C-ADM 冻结后接线）。
