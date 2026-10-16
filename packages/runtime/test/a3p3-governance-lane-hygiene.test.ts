@@ -822,6 +822,14 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // not a wiring, not the permission plane, and not a decision path; PR2
     // wires admission.
     const A5_TOOL_GOVERNANCE_PLANES = '../domain/tool-governance/src/planes.ts'
+    // A5-PR2 (reviewed amendment, the route each PR row reserves for itself):
+    // the tool-admission lane REUSES the ceiling/evaluator half of this grammar
+    // for the per-effect legality check (plan §5: 每个 Effect 独立检查 reviewer
+    // 的批准位置与 Envelope 覆盖 — the A3-2 equation applied per effect), and
+    // imports NOTHING else from the governance lane. Type + law reuse; no
+    // storage edge, no plugin edge, no second ordering, no decision-path copy.
+    const A5_TOOL_ADMISSION_CASE = join('tool-admission', 'approval-case.ts')
+    const A5_TOOL_ADMISSION_KERNEL = join('tool-admission', 'admission-kernel.ts')
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -833,10 +841,10 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // TypeError has `code === undefined`, which the outcome mapping would read
       // as "not one of mine" and rethrow out of the governance path).
       ['bindingDocs', CEILING_LANE],
-      ['grantCeiling', CEILING_AND_GATE],
-      ['AuthorityEnvelopeDocuments', [...CEILING_AND_PROPOSAL, LANE_TYPES, OPERATION_ROUTING]],
-      ['AuthorityBindingError', CEILING_AND_PROPOSAL],
-      ['AUTHORITY_CEILING_ERROR_CODES', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING]],
+      ['grantCeiling', [...CEILING_AND_GATE, A5_TOOL_ADMISSION_CASE]],
+      ['AuthorityEnvelopeDocuments', [...CEILING_AND_PROPOSAL, LANE_TYPES, OPERATION_ROUTING, A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL]],
+      ['AuthorityBindingError', [...CEILING_AND_PROPOSAL, A5_TOOL_ADMISSION_CASE]],
+      ['AUTHORITY_CEILING_ERROR_CODES', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING, A5_TOOL_ADMISSION_CASE]],
       ['AuthorityBindingProblem', CEILING_LANE],
       ['AuthorityCeilingErrorCode', CEILING_LANE],
       ['AuthorityCeilingScope', CEILING_AND_EVALUATOR],
@@ -866,11 +874,11 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // rung, and a second ordering table is exactly what this row exists to
       // keep singular. No decision path is added: the reader only SHAPES which
       // actions the projection offers.
-      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts')]],
+      ['authorityRank', [...CEILING_AND_EVALUATOR, SERVICE, PERMISSION_APPROVAL, join('src', 'plugin', 'root.ts'), A5_TOOL_ADMISSION_CASE]],
       ['isHigherAuthority', [...CEILING_AND_EVALUATOR, OPERATION_ROUTING]],
       // WHO MAY ACT — the ladder half of "legal approval", never fused with the
       // ceiling half (ADR A3-2, spec §7.4).
-      ['mayReview', CEILING_AND_EVALUATOR],
+      ['mayReview', [...CEILING_AND_EVALUATOR, A5_TOOL_ADMISSION_CASE]],
       // The EXPANSION-plane ceiling: the number `grantCeiling` must never be
       // confused with (correction X7-R5). PR2 lane C's mutation gate is its next
       // consumer and must arrive as another amendment to this row.
@@ -883,7 +891,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // production consumer — it is where the ladder position of the acting
       // surface is chosen (plan:261), which is precisely the mapping that must
       // not be re-decided at each call site.
-      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts')]],
+      ['RuntimeAuthority', [RUNTIME_AUTHORITY, 'governance/index.ts', LANE_TYPES, join('src', 'plugin', 'permission-plane.ts'), A5_TOOL_ADMISSION_CASE, A5_TOOL_ADMISSION_KERNEL]],
       ['AuthorityEvaluation', [RUNTIME_AUTHORITY, 'governance/index.ts']],
       ['AuthorityEvaluationEvidence', [RUNTIME_AUTHORITY, 'governance/index.ts', OPERATION_ROUTING]],
       ['AuthorityEvaluationInput', [RUNTIME_AUTHORITY, 'governance/index.ts', PERMISSION_APPROVAL]],
@@ -892,7 +900,7 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // second ladder implementation); the refusal detail already did.
       // A4-PR4: the operation router asks the same ceiling question — same
       // walk, same documents, one ordering fact (A5-12).
-      ['evaluateAuthorityCeiling', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING]],
+      ['evaluateAuthorityCeiling', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING, A5_TOOL_ADMISSION_CASE]],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       // A5-PR0: `planes.ts` joins the TWO PLANE rows only (realm-scoped
@@ -1087,6 +1095,10 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // MAX rung. governance → governance; no plugin edge, no storage edge,
     // and it reaches no domain algebra (its SURFACE rows above state the
     // exact set; the leg below pins who may import IT).
+    // A5-PR2 (reviewed): the tool-admission lane joins — the ceiling module's
+    // TYPE/law consumers for the per-effect legality equation (plan §5), with
+    // the SAME direction discipline as every row above: no storage edge, no
+    // plugin edge; the lane reaches the ladder ONLY through these two files.
     expect([...importers].sort()).toEqual([
       join('governance', 'index.ts'),
       join('governance', 'permission-approval.ts'),
@@ -1094,6 +1106,8 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       join('governance', 'service.ts'),
       join('governance', 'types.ts'),
       join('src', 'plugin', 'permission-plane.ts'),
+      join('tool-admission', 'admission-kernel.ts'),
+      join('tool-admission', 'approval-case.ts'),
     ].sort())
   })
 
