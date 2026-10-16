@@ -1,0 +1,79 @@
+# PR8 负例 runner — matrix-machine @ base d69bfc4b  run-utc=2026-10-16T19:39:07.076Z
+# repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner
+
+## 结构 lint: 9 项违规
+  LINT-FAIL 措辞违规: G-g 语境禁 "fail-closed 已证/proven"（seam-record RETRACTION + 契约 §4.2）
+  LINT-FAIL 措辞违规: G-g 语境禁"已验收/已合规"（PENDING-GATES G-g 行：收口前=UNSUPPORTED/待证）
+  LINT-FAIL 措辞违规: "暴露恰为一次调用"口径已明文撤回（seam-record-post-door-resolution.md:99-122）
+  LINT-FAIL 措辞违规: G-g 语境禁 "fail-closed 已证/proven"（seam-record RETRACTION + 契约 §4.2）
+  LINT-FAIL 措辞违规: G-g 语境禁"已验收/已合规"（PENDING-GATES G-g 行：收口前=UNSUPPORTED/待证）
+  LINT-FAIL 措辞违规: "暴露恰为一次调用"口径已明文撤回（seam-record-post-door-resolution.md:99-122）
+  LINT-FAIL 措辞违规: G-g 语境禁 "fail-closed 已证/proven"（seam-record RETRACTION + 契约 §4.2）
+  LINT-FAIL 措辞违规: G-g 语境禁"已验收/已合规"（PENDING-GATES G-g 行：收口前=UNSUPPORTED/待证）
+  LINT-FAIL 措辞违规: "暴露恰为一次调用"口径已明文撤回（seam-record-post-door-resolution.md:99-122）
+
+## PENDING-GATES 台账: ABSENT-AS-OPEN（fail-closed：/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/dev/agent-workflow/PENDING-GATES.md 不在本 ref 树内）
+  open=[__ledger-absent__] closed=[]
+  dev/agent-workflow/PENDING-GATES.md 不在本 ref 树内；按 fail-closed 视为全部门未关（G-a/G-g/G-d 等行在 origin/alpha5-pr1r-followup 台账中为开放/裁决态）
+
+## 对照臂（观测面非盲证明）: ghost-anchor probe = FAIL ⇒ OK（FAIL 被如实捕获）
+
+## 逐行三态（criterion-level-fixture；NOT_RUN/RLW 不构成任何通过性结论）
+  PASS                  M-01    lvl=D auto=yes
+  PASS                  M-02    lvl=D auto=yes
+  PASS                  M-03    lvl=D auto=yes
+  REQUIRES-LIVE-WIRING  M-04    lvl=U auto=no 
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      LIVE-GATED: S0-SELECTION-MATRIX M-04 未测项：view/insert/delete 全谱、undo 历史 I/O（P0 未跑 editor 全谱）
+      LIVE-GATED: e2e-skeleton registry suite 20-controlled-fs run=null（PR8 正式轮实现）
+  REQUIRES-LIVE-WIRING  M-05    lvl=U auto=no 
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      LIVE-GATED: S0-SELECTION-MATRIX M-05 untested_carried_over=全链（03-fs 未测清单明文）
+      LIVE-GATED: registry suite 20-controlled-fs run=null
+  NOT_RUN               M-06    lvl=D auto=yes[G-a][G-g]
+      NOT_RUN kit a5p1r 重跑（in-process 钉定 registry，无端口）: kit 前置不齐（拒绝伪造 PASS）: tests/deepseek-harness-test-use/vendor/cordis — 已构建 pristine test-use 0.2.0-rc.2 缺失 ⇒ NOT_RUN；首跑尝试 FATAL 原文见 runner/runs/kit-attempt-verbatim.log
+  PASS                  M-07    lvl=D auto=yes
+  REQUIRES-LIVE-WIRING  M-08    lvl=U auto=no 
+      LIVE-GATED: doc M-08 current_status=s0-strict-disabled-pending-poc（严格 Profile 禁用直至 PoC-6a 通过或明示窄固定策略）
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      LIVE-GATED: g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）
+  REQUIRES-LIVE-WIRING  M-09    lvl=U auto=no 
+      LIVE-GATED: S0-SELECTION-MATRIX M-09：Strict deny（UNSUPPORTED/BOUNDED-DEFER）；池键 ⊇ Member+Realm+Provider+Workspace+PolicyGeneration 路线未证
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      LIVE-GATED: g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）
+  PASS                  M-10    lvl=D auto=yes
+  NOT_RUN               M-11    lvl=D auto=yes
+      NOT_RUN pinned Job 面 grep 位: 观测面文件缺 (tests/deepseek-harness-test-use/packages/core/tools/lib/index.js)：pristine test-use 检出为 gitignored 运行时；SUP-08：族名集合以 pinned 面 grep 为准，宿主升级须重枚举
+  PASS                  M-12    lvl=D auto=yes[G-a][G-g]
+  REQUIRES-LIVE-WIRING  M-13    lvl=U auto=no 
+      LIVE-GATED: doc M-13 current_status=s0-not-run-structural（明示 NOT_RUN）
+      LIVE-GATED: registry suite 60-web-jobs-mcp run=null；Domain mock 待建
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+  PASS                  M-14    lvl=D auto=yes[G-a][G-g]
+  PASS                  SUP-01  lvl=D auto=yes
+  PASS                  SUP-02  lvl=D auto=yes
+  PASS                  SUP-03  lvl=D auto=yes
+  PASS                  SUP-04  lvl=D auto=yes
+  PASS                  SUP-05  lvl=D auto=yes
+  PASS                  SUP-06  lvl=D auto=yes
+  PASS                  SUP-07  lvl=D auto=yes
+  NOT_RUN               SUP-08  lvl=D auto=yes
+      NOT_RUN pinned 面 grep 位: 观测面文件缺 (tests/deepseek-harness-test-use/packages/core/tools/lib/index.js)：pristine test-use 检出（gitignored 运行时）在本 worktree 不存在；宿主升级须重枚举
+  PASS                  SUP-09  lvl=D auto=yes
+  PASS                  SUP-10  lvl=D auto=yes
+  PASS                  SUP-11  lvl=D auto=yes[G-a]
+  PASS                  SUP-12  lvl=D auto=yes
+  PASS                  SUP-13  lvl=D auto=yes
+  PASS                  SUP-14  lvl=D auto=yes
+  PASS                  SUP-15  lvl=D auto=yes
+  PASS                  SUP-16  lvl=D auto=yes
+  PASS                  SUP-17  lvl=D auto=yes
+  PASS                  SUP-18  lvl=D auto=yes
+
+## 分布
+  PASS=24 FAIL=0 NOT_RUN=3 REQUIRES-LIVE-WIRING=5 TOTAL=32
+  level×auto: D|automatable = 27
+  level×auto: U|not-automatable = 5
+
+## final_declaration: 全 null（PENDING-GATES 未全关，代码位强制）
+## 反升格声明: 本运行全部为 fixture/记录级观测；不产出 SUPPORTED/已验收/整链已验证（INTERFACES-v1；review-LaneG 条件①）
