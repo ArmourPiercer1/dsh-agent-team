@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest'
 import { matchDenyListInText } from '../../testkit/fault-injection/session-event-scan.mjs'
 
 const REPO_PACKAGES = join(dirname(fileURLToPath(import.meta.url)), '..', '..') // packages/
+const REPO_LEDGER_FILE = join(REPO_PACKAGES, 'testkit', 'test', 'p4t6-session-event-scan.test.ts')
 const LANE_DIRS = ['runtime/jobs-gateway', 'runtime/test', 'domain/vnext-field-mapping/src', 'domain/test']
 
 function listFiles(dir: string, out: string[] = []): string[] {
@@ -72,6 +73,15 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
     expect(LANE_SOURCE_FILES.length).toBe(14)
   })
 
+  // Reviewed NAMES-ONLY exception — the G-d integration wiring round paid
+  // this lane's merge in the p4t6 session-event CENSUS (branch
+  // `alpha5-int-wiring`). A census names every scannable path by design;
+  // this is a name in a census, not a consumer (zero code, zero glue rides
+  // with it — the leg below pins every lane-naming census line to exactly
+  // one quoted path). Path-exact on purpose: a second census file, or any
+  // import edge, is still an offender.
+  const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts']
+
   it('zero production consumers: no importer outside the lanes and the a5p7 specs', () => {
     const importers: string[] = []
     for (const file of ALL_PACKAGE_FILES) {
@@ -81,11 +91,21 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         rel.startsWith('runtime/jobs-gateway/') ||
         rel.startsWith('domain/vnext-field-mapping/') ||
         /\/a5p7-/.test(rel)
-      if (isLaneOwn) continue
+      if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel)) continue
       const text = readFileSync(file, 'utf8')
       if (/jobs-gateway|vnext-field-mapping/.test(text)) importers.push(rel)
     }
     expect(importers).toEqual([])
+  })
+
+  it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {
+    const ledger = readFileSync(REPO_LEDGER_FILE, 'utf8')
+    for (const line of ledger.split('\n')) {
+      if (!/jobs-gateway|vnext-field-mapping/.test(line)) continue
+      // Census form: a quoted scannable path as a list entry — nothing else
+      // (imports and prose edges never take this shape).
+      expect(line.trim(), line.trim()).toMatch(/^'packages\/[^']+',$/)
+    }
   })
 
   it('every lane file carries zero frozen denylist vocabulary', () => {
