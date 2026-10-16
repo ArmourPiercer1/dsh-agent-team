@@ -226,6 +226,18 @@ export function createAdmissionKernel(options) {
                     },
                 };
             }
+            if (reason.sourceDiagnosis === 'ambiguous') {
+                // F-1: coexisting sources over one deny — which owns it is not this
+                // lane's to guess; a binding-plane refusal, never an order pick.
+                return {
+                    ok: false,
+                    error: {
+                        code: 'TOOL_BINDING_UNVERIFIED',
+                        message: `admission refused: ${reason.detail}`,
+                        details: { refusal: 'deny-source-ambiguous', effectIndex: reason.effectIndex },
+                    },
+                };
+            }
             if (reason.sourceDiagnosis === 'version-drift') {
                 return {
                     ok: false,
@@ -374,6 +386,29 @@ export function createAdmissionKernel(options) {
             if (!reproof.ok) {
                 observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: reproof.error.message });
                 return { ok: false, error: reproof.error };
+            }
+            const approvedDenials = approval.deniedEffectsAtCreation ?? [];
+            const reproofDenials = reproof.value.deniedEffects;
+            const denialsMoved = reproofDenials.length !== approvedDenials.length
+                || reproofDenials.some((pair, i) => {
+                    const seen = approvedDenials[i];
+                    return seen === undefined || pair.effectIndex !== seen.effectIndex || pair.requiredAuthority !== seen.requiredAuthority;
+                });
+            if (denialsMoved) {
+                // F-2: the MAX rung can stay put while a SECOND effect's deny arrives
+                // (or an existing one's provenance moves its pair) below it — that is
+                // a different case than the one approved. The pairs the presentation
+                // pinned are the case's per-effect provenance; moved = stale, never
+                // a mint, and never a retry.
+                observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: 'per-effect deny provenance moved' });
+                return {
+                    ok: false,
+                    error: {
+                        code: 'APPROVAL_STALE',
+                        message: `admission refused: the deny provenance of THIS case moved between approval and issue (approved over [${approvedDenials.map((p) => `${String(p.effectIndex)}:${p.requiredAuthority}`).join(', ') || 'none'}], now [${reproofDenials.map((p) => `${String(p.effectIndex)}:${p.requiredAuthority}`).join(', ') || 'none'}]) — a late or moved per-effect deny is a different case, stale is a refusal`,
+                        details: { refusal: 'deny-provenance-moved', effectSetFingerprint: request.requestedEffects.fingerprint },
+                    },
+                };
             }
             if (reproof.value.requiredAuthority !== approval.requiredAuthorityAtCreation) {
                 observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: 'deny provenance moved the rung' });

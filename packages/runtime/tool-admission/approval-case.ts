@@ -110,7 +110,7 @@ export interface UnapprovableReason {
    *  trust test — 'version-drift': the entry's authority version ≠ the call's
    *  generation; 'owner-above-ladder': the deny belongs to the top authority
    *  and no rung may lift it (only spec §8.2's permanent path can). */
-  readonly sourceDiagnosis?: 'version-drift' | 'owner-above-ladder'
+  readonly sourceDiagnosis?: 'version-drift' | 'owner-above-ladder' | 'ambiguous'
 }
 
 /**
@@ -287,7 +287,25 @@ export function planEffectSetApproval(input: {
       if (input.denySources === undefined) {
         return owned('the assembly wires NO deny-source projection: this DENY cannot be traced to an owning authority. The state is live and stated — unwired means precise refusal (③), not dormant grace')
       }
-      const entry = input.denySources.find((source) => source.realmId === input.realmId && source.effectKind === scope.operationClass && sourceCovers(source, scope.matcher, input.subtreeContains))
+      const covering = input.denySources.filter((source) => source.realmId === input.realmId && source.effectKind === scope.operationClass && sourceCovers(source, scope.matcher, input.subtreeContains))
+      // F-1 (final-head review): FIRST-WINS is forbidden — which entry answers
+      // decides WHO may lift the deny, so the array order would decide the
+      // outcome. Fully identical duplicates (same owner/version/ref) collapse;
+      // anything more that coexists over one deny is refused precisely.
+      const distinct = covering.filter((entry, i) =>
+        covering.findIndex((other) => other.ownerAuthority === entry.ownerAuthority && other.sourceVersion === entry.sourceVersion && other.sourceRef === entry.sourceRef) === i)
+      if (distinct.length > 1) {
+        return {
+          ok: false,
+          unapprovable: {
+            effectIndex: index,
+            plane: 'approval',
+            sourceDiagnosis: 'ambiguous',
+            detail: `${String(distinct.length)} authority-state entries project THIS deny with different owners/versions (${distinct.map((e) => `${e.ownerAuthority}@g${String(e.sourceVersion)}:${e.sourceRef}`).join(', ')}). Which one owns the deny changes who may lift it, and no precedence between authorities' projections is this lane's to invent — coexistence is refused (F-1); the assembly must resolve the projection to one source`,
+          },
+        }
+      }
+      const entry = distinct[0]
       if (entry === undefined) {
         return owned('no authority-state entry projects this deny — an unrelated Envelope rule is NOT backing (the Envelope answers WHO MAY APPROVE WHAT RANGE, never WHO WROTE the deny); forging the source by copying the deny into Envelope documents is forbidden (spec §3.2/§8.2)')
       }
@@ -400,6 +418,12 @@ export interface PresentedApproval {
   readonly requiredAuthorityAtCreation: ProposalAuthorityPosition
   readonly effectSetFingerprint: string
   readonly authorityGenerationAtCreation: number
+  /** F-2 (final-head review): the DENIED-EFFECT PAIRS the approval was
+   *  granted over — the presenter copies `planApproval().value.deniedEffects`
+   *  verbatim (empty when the set had no denies). The case is not only its
+   *  MAX rung: a second effect's deny arriving later, floored below the
+   *  approved rung, changes WHICH case was approved and must not mint. */
+  readonly deniedEffectsAtCreation?: readonly { readonly effectIndex: number; readonly requiredAuthority: ProposalAuthorityPosition }[]
 }
 
 /**

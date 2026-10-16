@@ -80,7 +80,7 @@ export interface UnapprovableReason {
      *  trust test — 'version-drift': the entry's authority version ≠ the call's
      *  generation; 'owner-above-ladder': the deny belongs to the top authority
      *  and no rung may lift it (only spec §8.2's permanent path can). */
-    readonly sourceDiagnosis?: 'version-drift' | 'owner-above-ladder';
+    readonly sourceDiagnosis?: 'version-drift' | 'owner-above-ladder' | 'ambiguous';
 }
 /**
  * R-1a (user ruling 2026-10-16 + review 520a250d): ONE DENY, ONE SOURCE PROOF.
@@ -200,6 +200,15 @@ export interface PresentedApproval {
     readonly requiredAuthorityAtCreation: ProposalAuthorityPosition;
     readonly effectSetFingerprint: string;
     readonly authorityGenerationAtCreation: number;
+    /** F-2 (final-head review): the DENIED-EFFECT PAIRS the approval was
+     *  granted over — the presenter copies `planApproval().value.deniedEffects`
+     *  verbatim (empty when the set had no denies). The case is not only its
+     *  MAX rung: a second effect's deny arriving later, floored below the
+     *  approved rung, changes WHICH case was approved and must not mint. */
+    readonly deniedEffectsAtCreation?: readonly {
+        readonly effectIndex: number;
+        readonly requiredAuthority: ProposalAuthorityPosition;
+    }[];
 }
 /**
  * The execution-boundary re-check of the presented approval, PER EFFECT
