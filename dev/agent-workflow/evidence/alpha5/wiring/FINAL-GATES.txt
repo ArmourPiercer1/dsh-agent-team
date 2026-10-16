@@ -59,3 +59,20 @@ condition-A form-pin leg（quoted-path 形制 + 恰 6 行）→ lane 真值 **68
 （67+新 leg，GREEN: a5p5-CENSUS-REGRESSION-GREEN.log）。B：WIRING-SURFACE 行3
 "五导出"→"七名"已勘正（按 barrel 实际 4 值+3 type）。C：dist policy-adapter
 悬空债 4 件（源删@3b7039e8）已注记于 WIRING-SURFACE §不在本轮，只注记不清算。
+
+── FOLLOW-UP ROUND 3 (CI census-runtime failure @2c955133 → baseline re-record + capture-DIFFER) ──
+① population baseline 重录：新正本 nine-root-067225df.md（549f/6936l/9红/0收集错，
+  3×2 captures 全同集合实测；9 红与 post-d3-4-split ids **逐字节同**=零新增豁免；
+  family 集 {p6t1-parallel, p6t6-actions路径} 逐字携带不变；旧正本原样留史）+
+  ids 副本 + ci-pr-gate 指针与 self-test 钉（59/59 绿）。依据注于文头=PR3/5/7 并入
+  群体（+41f/+563l，与 p4t6 合并纠偏账对账）+ 本分支 2 文件。
+② capture-DIFFER 定位=**LOCATED**：a5p7-lane-hygiene collection 期 listFiles 的
+  readdir→stat 竞态（6941−6937=该文件 4 legs；CI union 给 COLLECTION-ERROR 归属）。
+  构造性复现：churn 下载荷 旧码 3/7 红、修码 3/3 绿（poc3 同型不弱化：ENOENT/ENOTDIR
+  只跳瞬态消失项，其余抛；exact-set 钉继续钉死稳定集）→ 788db2fd + 067225df
+  （后者=merge-gate typecheck 腿抓到的 TS2554 兼容修，RED/GREEN 三份 log 留档）。
+  CI union 另两红（a5p1r G-5 / p4t6 coverage）本地 12+2 captures 零复现、机制未定
+  → 以 OPEN OBSERVATION 记于新正本（率=0/12，不设豁免不贴 family 标签，不猜修）。
+门禁复跑（head 本轮）：census verdict pass（新指针，第 7 对 capture）+ 3 连绿先例；
+a5p0 全套+p4t6=103/103；a5p5 lane 68/68；tsc check/build 双 0；lint new 0（对
+BASELINES.lint=0237d487 正本 76 distinct 不变）；self-test 59/59。porcelain 0。
