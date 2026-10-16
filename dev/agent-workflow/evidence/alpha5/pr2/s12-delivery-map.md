@@ -90,6 +90,22 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   falsified causal claim stood in `s12-delivery-map.md` §(e) and `runs/.pr-body.md` until that commit — both
   now read "cause not established", and the Alpha.4 hard-envelope observation is recorded in §(g). The round-1
   relay line that repeated the claim is corrected by this record rather than edited.
+- 评审尾轮 (review tail, parent relay of user read of `520a250d` + escalation 2026-10-16): RED pinned at
+  `e701d274` (3 reds: R-1a mint fail-open / R-2a unattributed-costume / R-1b missing provenance field),
+  GREEN at `b1dcc262` (deny-source PROJECTION: `PolicyDenySource` = read-time derived (ownerAuthority,
+  sourceRef, sourceVersion) from real authority state, trusted only at generation-matched version; case
+  rung = max(walk, rungAbove(owner)) — THE ladder's successor exported, one hygiene row, no second
+  ordering; proof re-run at issue — closes the residual mint fail-open; unwired state = precise refusal,
+  stated live, NOT deferred behind DORMANT; envelope content is never source evidence — forgery refused).
+  对照表 (six source states, same deny + same envelope): `r1a-source-contrast.md` — PASS/REFUSE pinned per
+  combination incl. distinguishability (a opens@human-user / b never opens / c opens@human-admin). R-2a
+  leg `ask-has-no-upper-rung` names §8.2, never a ③ costume. Gates this round: targeted 9 suites 131/131
+  (`runs/green-tail-r1-round.log`); census 6739p/21f (`runs/after-census-r1.json`), fail-set diff vs the
+  pinned base-45425a30 (tree-identical to db5cb5f7) capture = NEW=0 FIXED=1 (`runs/fail-set-diff-r1.txt`;
+  the FIXED leg is a4p7-merge-gate's dist-freshness leg — dist rode the source commit as designed);
+  lint-identities NEW=0 vs pinned base; token scan of the round's diffs = 0 hits; dist rebuilt inside
+  `b1dcc262`. INTERFACES-v1.md does not exist in this tree (nor master) — the C-ADM one-sentence law is
+  carried in the contrast doc's last section for the parallel lane's writer.
 - CI: NOT_RUN (stacked). Session discipline (coordination 08:2xZ): the census-runtime is not
   terminal, so NO claim of "all CI green" is made anywhere in this PR or its evidence —
   every number above is a local run.
