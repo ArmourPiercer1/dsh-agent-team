@@ -901,6 +901,12 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       // A4-PR4: the operation router asks the same ceiling question — same
       // walk, same documents, one ordering fact (A5-12).
       ['evaluateAuthorityCeiling', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING, A5_TOOL_ADMISSION_CASE]],
+      // A5-PR2 (reviewed amendment, user ruling 2026-10-16 R-1a): the DENY
+      // floor — a case must sit above the rung that OWNS a policy deny. The
+      // successor is THE ladder's (derived from AUTHORITY_RANK); importing it
+      // is the alternative to re-spelling a successor table, which X7-R3
+      // forbids. Exactly one consumer outside governance, no barrel route.
+      ['rungAbove', [RUNTIME_AUTHORITY, A5_TOOL_ADMISSION_CASE]],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
       // A5-PR0: `planes.ts` joins the TWO PLANE rows only (realm-scoped

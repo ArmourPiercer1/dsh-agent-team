@@ -115,26 +115,58 @@ path). The same underlying rules ALSO project into the
 stores nothing; approvals never write policy (the single-use grant is an
 ApprovalCase answer, not a mutation).
 
-**The in-lane classifier is the envelope walk, not an assembler label.** The
-lane must not accept a trusted `source:` tag from the assembly to decide what
-is upgradable — that would skip the proof. Instead, for every DENIED effect
-the approval plane runs `evaluateAuthorityCeiling` over the SAME
-realm-qualified scope with the SAME documents/binding the identity leg just
-verified, and the walk's answer IS the owning-authority answer:
+**Source proof is a PROJECTION, not an Envelope lookup (user review 2026-10-16,
+`520a250d`).** The Envelope answers WHO MAY APPROVE WHAT RANGE; it never records
+WHO WROTE a policy deny. So "some bound rule matches the denied scope" is NOT
+source proof — an unrelated `allow`/`ask` rule could otherwise launder a silent
+envelope into a pass. The proof is instead a `PolicyDenySource` entry per deny:
+internal DERIVED data projected read-time from the REAL authority state
+(blueprint permission lanes spec §3.2; `GovernanceMutationService` overlay
+entries spec §8.2), carrying `ownerAuthority` / `sourceRef` / `sourceVersion`.
+It is NOT a second authorization database: the projection stores nothing, and
+copying a policy deny INTO the Envelope documents as its "source" is forgery.
+Trust requires **version consistency**: `sourceVersion` must equal the call's
+authority generation, or the entry is a stale reference.
 
-* a rung can sign (leader/human-user by positional binding, human-admin via
-  its identity ceiling — the top inside envelope support) ⇒ **upgradable**:
-  the effect joins `needsApproval` and rides the ONE whole-set case at the
-  MAX required rung of the set (共同权威: the reviewer covers all effects or
-  none). A one-shot admin approval there is legal and mutates nothing;
-* NO rung can sign (beneficiary is already at the top) ⇒ typed refusal, no
-  case (there is no rung above to ask — the escalation ladder's own edge);
-* the walk is **undetermined / a bound document is unreadable** ⇒ ③: refusal
-  with a deny-source-unattributed diagnosis naming the index and the failed
-  leg, and explicitly NOT a "settled Team deny" message;
+**The classifier is the walk PLUS the source projection — never an assembler
+label.** The lane accepts no trusted `source:` tag to decide what is
+upgradable; for every DENIED effect the approval plane does both:
+
+* **source proof first** (`planEffectSetApproval`, before any rung): no
+  projection wired ⇒ `deny-source-unattributed`; no entry covers the scope ⇒
+  same precise refusal; `sourceVersion` drift ⇒ `deny-source-version-drift`;
+  deny owned by the TOP authority (no rung above `ownerAuthority`) ⇒
+  `deny-owner-above-ladder` — no one-shot exists, only spec §8.2's permanent
+  path. Every one of these is a live, stated refusal: the unwired state is
+  NOT deferred behind DORMANT;
+* **then the walk** (`evaluateAuthorityCeiling`) over the SAME realm-qualified
+  scope with the SAME documents/binding the identity leg verified. The case
+  rides at `max(walk rung, rungAbove(ownerAuthority))` — derived through
+  `rungAbove`, THE ladder's successor (governance exports it for exactly
+  this; a second successor table stays forbidden). So a rung can approve only
+  denys belonging to authorities BELOW it: a Leader-owned deny opens at
+  Human User, a Human-User-owned deny opens at Human Admin;
+* no rung can sign (beneficiary already at the top) ⇒ typed refusal
+  `ask-has-no-upper-rung` — its OWN leg, explicitly not a ③ unattributed
+  costume (R-2a): the authority is known, there is simply nobody above;
+* the walk undetermined / bound document unreadable ⇒ ③ refusal with a
+  deny-source-unattributed diagnosis naming the index and failed leg, never a
+  "settled Team deny" message;
 * `undetermined` on the EXPANSION plane still poisons the whole set (plan §5
-  fail-closed leg unchanged — ruling ① is about decided denies, not about
-  undetermined anything).
+  fail-closed leg unchanged).
+
+**The proof is re-run at issue, never remembered.** `issueApprovedGrant`
+re-executes the same source+walk proof (and compares its rung against the
+presentation's): unattributed / drifted / rung-moved ⇒ typed refusal, zero
+registrations. `planApproval().value.deniedEffects` (and the
+`admission-requires-approval` observe row) state WHICH deny rides at WHICH
+rung — PR3's presenter contract (INTERFACES-v1 C-ADM).
+
+**Admin 呈报鉴权是承重项.** The kernel verifies the approval PRESENTATION's
+authority fields, but it cannot itself authenticate whoever hands it a
+presentation: PR3's wiring MUST authenticate the admin channel before calling
+`issueApprovedGrant`. That authentication is load-bearing and lives outside
+this lane — stated here so the boundary is not mistaken for a gap.
 
 **Terminal sources are not policy rules at all.** externalHard capability
 facts and Domain-gate answers never enter the policy document; they gate
@@ -157,10 +189,19 @@ retry).
   `TEAM_POLICY_DENY` §5-erratum proposal is **已裁 withdrawn** (user ruling
   2026-10-16): an upgradable Team deny surfaces as `requires-approval`, not as
   an error; no frozen-code addition is needed.
-* a DENY whose owning authority cannot be established (unreadable bound
-  document / undeterminable containment) → `TOOL_BINDING_UNVERIFIED` with
+* a DENY whose owning authority cannot be established (no source projection
+  wired, no entry covering the scope, unreadable bound document, or
+  undeterminable containment) → `TOOL_BINDING_UNVERIFIED` with
   `details.refusal = 'deny-source-unattributed'` — ③: accurate diagnosis, never
   presented as a settled Team deny.
+* two further source-proof failures carry their OWN `details.refusal` on
+  `APPROVAL_STALE`: `'deny-source-version-drift'` (the entry's `sourceVersion`
+  ≠ the call's generation — trust requires version consistency) and
+  `'deny-owner-above-ladder'` (the deny belongs to the top authority; no rung
+  above it exists, so no one-shot exists — only spec §8.2's permanent path).
+* a denied effect asked by a beneficiary already at the top → `APPROVAL_STALE`
+  with `details.refusal = 'ask-has-no-upper-rung'` (R-2a): its own leg, with
+  the permanent path named, deliberately NOT lumped into the ③ diagnosis.
 * policy plane moved to deny after the case opened → the presentation is
   refused on the lane's existing stale legs, never minted: an
   envelope-projected deny surfaces as "required rung rose", a generation

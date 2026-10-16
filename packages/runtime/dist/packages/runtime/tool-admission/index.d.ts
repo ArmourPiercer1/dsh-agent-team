@@ -35,7 +35,7 @@
  */
 export { classifyClock, requireFiniteClock, type ClockRefusalKind } from './clock.js';
 export { createStubAssuranceProbe, verifyAssuranceForHardProfile, type AssuranceProbe, type AssuranceProbeAnswer, type AssuranceProbeRecord, type AssuranceRuntimeRefusal, type VerifiedAssurance, } from './assurance-runtime.js';
-export { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, toolAskApprovalCaseId, verifyEffectSetApproval, type EffectSetApprovalPlan, type EffectSetPlanOutcome, type EffectSetExpansion, type PresentedApproval, type UnapprovableReason, } from './approval-case.js';
+export { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, toolAskApprovalCaseId, verifyEffectSetApproval, type EffectSetApprovalPlan, type EffectSetPlanOutcome, type EffectSetExpansion, type PolicyDenySource, type PresentedApproval, type UnapprovableReason, } from './approval-case.js';
 export { createGrantLedger, mintOperationGrant, type ConsumeOutcome, type GrantLedger, type MintInputs, } from './grant-mint.js';
 export { createAdmissionKernel, grantIdForCall, type AdmissionKernel, type AdmissionKernelOptions, type ExecutionCallFields, type RequiredAssuranceReader, } from './admission-kernel.js';
 //# sourceMappingURL=index.d.ts.map

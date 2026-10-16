@@ -57,7 +57,7 @@ import type { SubtreeContains } from '../../domain/authority-envelope/src/index.
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js';
 import type { RuntimeAuthority } from '../governance/runtime-authority.js';
 import { type AssuranceProbe } from './assurance-runtime.js';
-import { type EffectSetApprovalPlan, type PresentedApproval } from './approval-case.js';
+import { type PolicyDenySource, type EffectSetApprovalPlan, type PresentedApproval } from './approval-case.js';
 import { type GrantLedger } from './grant-mint.js';
 /** Which assurance demand the call derives from Policy, per dimension. */
 export type RequiredAssuranceReader = (request: AdmissionRequest) => Readonly<Partial<Record<AssuranceDimension, AssuranceRequirement>>>;
@@ -68,6 +68,15 @@ export interface AdmissionKernelOptions {
     readonly clock: () => number;
     readonly authorityGeneration: () => number;
     readonly documents: () => AuthorityEnvelopeDocuments;
+    /** R-1a (user ruling 2026-10-16 + review 520a250d): the deny-source
+     *  projection — derived read-time from the REAL authority state (blueprint
+     *  §3.2 lanes / GovernanceMutationService overlay §8.2 entries), carrying
+     *  (owning rung, sourceRef, sourceVersion); trusted only when its version
+     *  matches the call's authority generation. ABSENT is the stated unwired
+     *  state: every DENIED effect then meets a precise refusal — a live gap,
+     *  deliberately NOT deferred behind DORMANT. Copying policy denies into
+     *  the Envelope as their "source" is forgery, refused by design. */
+    readonly denySources?: () => readonly PolicyDenySource[];
     readonly policyDocument: () => ToolPolicyDocument;
     /** The rung whose ask this is — derived server-side (the Member ask). */
     readonly beneficiaryAuthority: RuntimeAuthority;

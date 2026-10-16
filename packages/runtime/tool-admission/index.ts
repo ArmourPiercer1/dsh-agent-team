@@ -55,6 +55,7 @@ export {
   type EffectSetApprovalPlan,
   type EffectSetPlanOutcome,
   type EffectSetExpansion,
+  type PolicyDenySource,
   type PresentedApproval,
   type UnapprovableReason,
 } from './approval-case.js'

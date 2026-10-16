@@ -11,7 +11,7 @@ import type { ToolPolicyDocument } from '../../domain/tool-governance/src/index.
 import type { Effect } from '../../domain/tool-governance/src/index.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
-import { createAdmissionKernel, createGrantLedger, createStubAssuranceProbe, type AdmissionKernel, type AssuranceProbe, type GrantLedger, type RequiredAssuranceReader } from '../tool-admission/index.js'
+import { createAdmissionKernel, createGrantLedger, createStubAssuranceProbe, type AdmissionKernel, type AssuranceProbe, type GrantLedger, type PolicyDenySource, type RequiredAssuranceReader } from '../tool-admission/index.js'
 import { parseToolPolicyDocument, type RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 import { scopeResource } from './a5p2-fixtures.js'
 
@@ -75,6 +75,7 @@ export interface HarnessOptions {
   readonly authorityGeneration?: () => number
   readonly documents?: () => AuthorityEnvelopeDocuments
   readonly policy?: () => ToolPolicyDocument
+  readonly denySources?: () => readonly PolicyDenySource[]
   readonly probe?: AssuranceProbe
   readonly ledger?: GrantLedger
   readonly ports?: PortSpies
@@ -125,6 +126,7 @@ export function makeHarness(options: HarnessOptions = {}): Harness {
     authorityGeneration: options.authorityGeneration ?? (() => 1),
     documents: options.documents ?? emptyHardDocs,
     policyDocument: options.policy ?? emptyPolicy,
+    ...(options.denySources === undefined ? {} : { denySources: options.denySources }),
     beneficiaryAuthority: options.beneficiary ?? 'member',
     assuranceProbe: probe,
     requiredAssurance: options.requiredAssurance ?? (() => ({})),
