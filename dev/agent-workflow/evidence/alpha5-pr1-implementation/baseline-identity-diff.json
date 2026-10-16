@@ -1,5 +1,5 @@
 {
- "method": "identity = the verbatim `FAIL <file> > <suite> > <test>` line from two full `pnpm test` runs; identity set difference, never a count comparison alone",
+ "method": "identity = the verbatim `FAIL <file> > <suite> > <test>` line from two full `pnpm test` runs; identity set difference, never a count comparison alone; re-measured after the F1–F5 Gate-fix round, identity set byte-identical to the pre-round measurement (`only_in_after` still 0)",
  "baseline": {
   "tree": "PR0 tip cd13f781 (this branch's base), full `pnpm test`",
   "summary": "10 failed files | 509 passed (519); 36 failed tests | 6529 passed (6565)",
@@ -18,8 +18,8 @@
   ]
  },
  "after": {
-  "tree": "alpha5-pr1-guard-dispatcher @ HEAD (kit hardening + chain drives), full `pnpm test`",
-  "summary": "see prose in s12-evidence.md (e)",
+  "tree": "alpha5-pr1-guard-dispatcher @ HEAD (F1–F5 Gate-fix round: definition-identity verdicts, install atomicity, settled-edge lease law, forced-FATAL leg), full `pnpm test`",
+  "summary": "7 failed files | 515 passed (522); 24 failed tests | 6621 passed (6645)",
   "red_identities": 25,
   "red_files": [
    "packages/domain/test/t2-blueprint-hash.test.ts",
@@ -29,7 +29,16 @@
    "packages/runtime/test/p6t3-restart.test.ts",
    "packages/testkit/test/a4p7-merge-gate.test.ts",
    "packages/tools/test/p6t6-actions.test.ts"
-  ]
+  ],
+  "red_identities_per_file": {
+   "a2c7-subtree-matcher": 13,
+   "p6t3-mediation": 5,
+   "p6t3-restart": 2,
+   "a4p7-merge-gate": 2,
+   "p6t6-actions": 1,
+   "a2c1-pwsh-permission (collection)": 1,
+   "t2-blueprint-hash": 1
+  }
  },
  "common_red_files": [
   "packages/domain/test/t2-blueprint-hash.test.ts",
@@ -44,15 +53,15 @@
   "packages/runtime/test/rc2-persona-probe.test.ts > PP1 the probe follows the host persona interface, not an invented one > the probe names the slots by the host constants, with no private literals",
   "packages/runtime/test/rc2-persona-probe.test.ts > PP3 the harness residue is gone and stays gone > no harness re-inlines a persona lookup on the assembly",
   "packages/runtime/test/rc2-persona-probe.test.ts > PP3 the harness residue is gone and stays gone > no plugin source imports the invented PERSONA_SECTION export",
-  "packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 \u00a77.6 \u2014 the code merge gate, driven by real commands > the static legs > the scratch the commit-level instrument builds cannot change another instrument's measurement",
+  "packages/testkit/test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the scratch the commit-level instrument builds cannot change another instrument's measurement",
   "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)",
-  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet \u2014 the exact-RC range does not widen",
-  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.7-rc.1 (the generation this plugin left) \u2192 the evaluator reports the unmet peer with NO active exemption (the gate now rejects)",
-  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > positive: runtime 0.2.0-rc.2 \u2192 compatible, the evaluator reports no issue (no exemption needed)",
+  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen",
+  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)",
+  "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)",
   "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version",
   "packages/testkit/test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range)",
   "packages/testkit/test/rc2-kit-preset-seam.test.ts > P4 the pinned host really exposes that contract (read from the mandated runtime tree) > the row plugin is the published preset package and no host source reads the retired directory",
   "packages/testkit/test/rc2-kit-preset-seam.test.ts > P4 the pinned host really exposes that contract (read from the mandated runtime tree) > the tree under test is the pinned generation"
  ],
- "only_in_after": []
+ "only_in_after": 0
 }

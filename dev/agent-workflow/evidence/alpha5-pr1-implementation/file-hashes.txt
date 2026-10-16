@@ -23,15 +23,17 @@ ccdb1d57111ffdcc397e740bb8cfa8fc6336cbe65c810090c78a05b76a265c10  packages/runti
 edcf6ede283ce38bb4ab22b55929aa056b0bb9a520b01065178613aa543caff7  packages/runtime/tsconfig.json
 5a075b5e8a1d64f6af0fcaa80db868169dead9de59103b65e762b37a9cdc93bc  packages/testkit/test/p4t6-session-event-scan.test.ts
 
-## 2. kits and runner-side tooling — 7 file(s)
+## 2. kits and runner-side tooling — 5 file(s)
 
-be13c0a9c9e919a4f4fbbeea6ae283ab800f004d1299d54cdbb614101458794c  tests/.tmp-testuse-build.log
-dc88766ebfb6920a025d15c45f0e16de50da9bf40bcbdb395217e061f58a7413  tests/.tmp-testuse-install.log
 af3c1e0079840ec4938e5129fc59810711ad44648c1d58403e3ae3b67b2c0a22  tests/kits/a5-pr1-guard-dispatch/README.md
 566fe64b23b582e033680f3103925978b9ceaaef610f353a0e73997707e84a7f  tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs
 64c84bb5cb63a0c7b0253a46c4fb20fc62bbd996779e447283611e4e701d013d  tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs
 578906b248c62e19259bf357c7750eec407d28d01ff39333866d79067e2a3b63  tests/kits/a5-pr1-guard-dispatch/a5p1-probe-plugin.mjs
 c40d202fcfa9ed791b92315085b8d25797d528008ff4b9356214e0f2d2591a5a  tests/kits/a5-pr1-guard-dispatch/sweep-worlds.mjs
+
+## 2b. repo-side audit script — 1 file(s)
+
+8a01d349995fc3f23dd2be0a6899c81e4a37b22f1ffe0aa0fc9438656b517602  scripts/audit-a5-tool-governance-imports.mjs
 
 ## 3. orchestration log — 1 file(s)
 
@@ -335,7 +337,7 @@ f9253efeee407b7b745263f3d1b5dab8b0c526c4b4439963896979c054da014e  dev/agent-work
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/stable-instance-after.json
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/stable-instance-before.json
 9e4a1e102988dc3102a3469e9f87e3732af5aa6db729d5353b8296a3861acb18  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/summary.json
-6add8edcdaaed2497aaaea3071e2fdfe8103c3d9d0a6d3d250ba602e0a781970  dev/agent-workflow/evidence/alpha5-pr1-implementation/baseline-identity-diff.json
+5cf387765f58bf2d6a744baee05a284c0527a7426ef4284bcf8775aabf918f52  dev/agent-workflow/evidence/alpha5-pr1-implementation/baseline-identity-diff.json
 96abe3474a3547bdc019af98e0b164161f83c993b3d253f69381a775248e5f46  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F2-guard-RED.log
 f291622de20fc91429c97d21e4c3026342d145c41030b808a75d9b4d9ba8256a  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-install-RED.log
 2a554353d62734819a4b55c61937af5f8d141fd695531362a7fa3ac1f8e48ed3  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-lane-GREEN.log
@@ -409,7 +411,3 @@ f55c77e1415ce37802def79455a0de6c1a6b5bd271c3a08be55d6be8d9450e78  packages/runti
 74335bcf849977b7db1206bb420dc7baf38a531bde45143b8147af766054e0da  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.d.ts.map
 7f41bfa0463831be396a85728c692006dae5f9dbda6c51a42e0c9d79e6ee53c6  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js
 73fa87665c50629933e24e2b4cf047d2f1b57d42bf7c8af7982ab157a642d64d  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js.map
-
-## 6. other — 1 file(s)
-
-8a01d349995fc3f23dd2be0a6899c81e4a37b22f1ffe0aa0fc9438656b517602  scripts/audit-a5-tool-governance-imports.mjs
