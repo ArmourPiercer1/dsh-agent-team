@@ -2,7 +2,7 @@
 
 - **生成日期**：2026-10-16（UTC）。
 - **基线**：`origin/master = d455a274eee9e465df26d63f563d0cd4bbb0ec22`（#248，债务登记轮；本工作树检出实测）。
-- **修复分支**：`fix/post-alpha4-20261016`——FINAL-REPORT 口径为 12 提交止于 `7e2a25ec`；分支 tip = `9a44cf66bca5885f70481d005c36cba69aec6628`（第 13 个提交，纯文档：authoring 契约同步，`docs/blueprint-authoring.md` +43 行，无产品语义变化）。**状态更新（2026-10-16 本轮复核）**：分支已推送 origin（`git ls-remote` 实测 tip = `9a44cf66`）、已提 **PR #250**（https://github.com/ArmourPiercer1/dsh-agent-team/pull/250 ），用户已授权"提测 + CI + 通过后合并"流程（见第六节执行状态）。FINAL-REPORT 中"未 push / 未 merge / 未提 PR"字样为**其收尾时点（报告落笔时）的记录状态**，已被上述现况取代。
+- **修复分支**：`fix/post-alpha4-20261016`——FINAL-REPORT 口径为 12 提交止于 `7e2a25ec`；分支 tip = `9a44cf66bca5885f70481d005c36cba69aec6628`（第 13 个提交，纯文档：authoring 契约同步，`docs/blueprint-authoring.md` +43 行，无产品语义变化）。**状态更新（2026-10-16 本轮复核）**：分支已推送 origin（`git ls-remote` 实测 tip = `9a44cf66`）、已提 **PR #250**（https://github.com/ArmourPiercer1/dsh-agent-team/pull/250 ），用户已授权"提测 + CI + 通过后合并"流程；**现已合并**（见第六节执行状态：PR #250 MERGED @ 2026-10-16T02:43:05Z，master `94eeecf1…`）。FINAL-REPORT 中"未 push / 未 merge / 未提 PR"字样为**其收尾时点（报告落笔时）的记录状态**，已被上述现况取代。
 - **证据 HEAD**：探针与运行证据 = 本地未跟踪目录 `audit-reports/20261016-postalpha4-fix/`（逐条溯源见其 `logs/PROVENANCE.md`）；权威基线树 = `.worktrees/base-d455a274-baseline` @ `d455a274`；最终修复树 = `.worktrees/fix-postalpha4-20261016` @ `7e2a25ec`。文中「证据 §x」均指 `audit-reports/20261016-postalpha4-fix/FINAL-REPORT.md`。
 - **纪律**：本文**不预设任何裁决**；出现的每个数字都注明现有出处（常数/观测值），**本轮不新增任何阈值或魔法数字**。原文/行号按 2026-10-16 对 `origin/master` 与工作树复核；与证据包引用行号不一致处以「复核注」标出。
 
@@ -170,7 +170,7 @@
 - 基线既有债（按授权不修）：runtime p6t3×7、rc2-persona-probe×3、client creation-panel×2、governance×1、domain t2-blueprint-hash×1、eslint 既有 161 项。
 
 **用户看到什么（合入后）**
-非法工具名条目/自环成环文档/超大 quota 从"解析层接受但静默失效或极慢/卡死"变"解析阶段类型化拒绝"（实测腿口径）；徽标不再被已披露的损坏行污染；刷新按钮不跳；被裁文字可悬停看全。以上现况 = 在 fix 分支/**PR #250 上**（记录时刻 2026-10-16：本分支已推送、已提 PR、CI 进行中，**尚未进 master、未部署**；执行状态见下）。
+非法工具名条目/自环成环文档/超大 quota 从"解析层接受但静默失效或极慢/卡死"变"解析阶段类型化拒绝"（实测腿口径）；徽标不再被已披露的损坏行污染；刷新按钮不跳；被裁文字可悬停看全。以上现况 = 在 fix 分支/**PR #250 上**（现况 2026-10-16：**已经 PR #250 squash 合并进 master `94eeecf1…`@02:43:05Z，未部署**；执行状态见下）。
 
 **修后影响**
 - 兼容：整体是**收紧**——此前"解析层能加载但（旧解析面）静默失效"的文档（非法条目/递归/超大 quota/不可见字符名）改为整篇类型化拒绝（pre-alpha 无已发布语料；`43aa7221`/`7c241db5` 的收紧面已在 rev-D 披露）。
@@ -178,5 +178,7 @@
 
 **执行状态（替代此前"是否进入合并流程"之问——用户 2026-10-16 已明确授权"PR 提测 + CI + 通过后合并"）**
 - **PR #250**：https://github.com/ArmourPiercer1/dsh-agent-team/pull/250 ，head = `9a44cf66`（fix tip，含第 13 个纯文档提交），已推送 origin（本文档代理 `git ls-remote` 复核 tip 一致）。
-- **CI 记录时刻 = 2026-10-16 00:5xZ**（用户侧实测提供）：`pr-gate` = SUCCESS、`census-runtime` = **in_progress**（该时刻未完成；本代理撰写时 gh API 网络受阻未能二次复核，合并前以 GitHub 页面实时状态为准）。
+- **合并终态（来源=DSH GitHub 回执：gh API check-runs / PR 回执 + ls-remote 双核）**：**PR #250 已 SQUASH MERGED @ 2026-10-16T02:43:05Z**，新 origin/master = `94eeecf19a8fc272bc5739dfa9895bcea43800b0`（squash tree == PR head tree）。CI 终态：`pr-gate` = SUCCESS（1m46s，唯一 required check）、`census-runtime` = SUCCESS（8m16s）、`characterization` = workflow_dispatch-only（PR 不触发，N/A 非失败）。
+- 更正注：本文早前版本"00:5xZ（用户侧实测提供）"为**错误归因+占位时间**——00:5xZ 实为本代理当时的 gh 只读快照（census-runtime 尚 in_progress），终态与合并事实以本条 GitHub 回执为准。
+- **遗留措辞注记（纯文档后续项，不扩代码任务）**：master 新并入的 `docs/blueprint-authoring.md`（:114 "silently never matched"、:128 "heap-bounded"）与本文 G2 双阶段分层（解析接受/绑定 typed 拒）及绝对词限定（堆规模仅实测腿内、未测出上界）不符，后续以纯文档更正对齐。
 - 本节"本轮明确未动"清单（含 §4.5 记债与基线既有债）按授权口径**留待后续轮**，本轮不补做。
