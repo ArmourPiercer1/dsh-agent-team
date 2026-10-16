@@ -2201,14 +2201,31 @@ export function createAgentBindings(deps) {
        *  exactly the order that let the native body run once in the PoC). */
       let a5p1MaskDisposer = undefined
       if (permissionPolicy !== undefined) {
+        // The trusted identity set is assembled from what THIS closure already
+        // holds. `agentCtx.agent` is deliberately NOT read here: on the pinned
+        // Host a scope ctx is a cordis proxy, and touching `.agent` outside an
+        // inject context throws (`cannot get property "agent" without inject`)
+        // — which would abort the very assembly the Guard exists to protect.
+        // A candidate that cannot be read is therefore skipped, and skipping
+        // is SAFE here: the Guard denies anything whose identity is not in the
+        // set, so a missing candidate can only ever produce a typed refusal,
+        // never a wider allow. What it must not do is fail silent, so the
+        // read failure is recorded as an observation.
         const trusted = new Set()
-        for (const candidate of [
-          sessionId,
-          runtimeAgent?.id,
-          runtimeAgent?.session?.header?.id,
-          agentCtx?.agent?.id,
-          agentCtx?.agent?.session?.header?.id,
-        ]) {
+        const trustedCandidates = []
+        const readCandidate = (label, read) => {
+          try {
+            return read()
+          } catch (error) {
+            observations.push(`a5p1-guard: identity candidate '${label}' unreadable at assembly (${String(error?.message ?? error).slice(0, 120)}) — skipped; the Guard fails closed without it`)
+            return undefined
+          }
+        }
+        trustedCandidates.push(['sessionId', () => sessionId])
+        trustedCandidates.push(['runtimeAgent.id', () => runtimeAgent?.id])
+        trustedCandidates.push(['runtimeAgent.session.header.id', () => runtimeAgent?.session?.header?.id])
+        for (const [label, read] of trustedCandidates) {
+          const candidate = readCandidate(label, read)
           if (typeof candidate === 'string' && candidate.length > 0) trusted.add(candidate)
         }
         const outcome = installScopedToolGuard({

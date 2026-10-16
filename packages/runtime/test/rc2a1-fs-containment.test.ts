@@ -292,20 +292,28 @@ async function drivePreExecute(
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- the bridge agent ctx double
   const agentCtx: any = handle.agent.ctx
-  const entry = (agentCtx?.listeners ?? []).find(
-    (l: { event?: string; active?: boolean }) => l.event === 'tools/pre-execute' && l.active === true,
-  )
-  if (entry === undefined) {
+  // EVERY active leg in registration order: A5-PR1 installs the closed-world
+  // Guard as an outer door ahead of the permission adapter, so the first
+  // listener is no longer the permission answer. The chain is what the host
+  // registry actually drives, and `nextCalls` stays the BODY EDGE (1 == the
+  // tool ran), so every invariant below keeps its meaning. It also pins that a
+  // Guard abstention cannot launder a permission deny.
+  const chain = (agentCtx?.listeners ?? [])
+    .filter((l: { event?: string; active?: boolean }) => l.event === 'tools/pre-execute' && l.active === true)
+    .map((l: { listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> }) => l.listener)
+  if (chain.length === 0) {
     throw new Error('drivePreExecute: no active tools/pre-execute listener on the leader ctx')
   }
   let nextCalls = 0
-  const decision = (await entry.listener(
-    { callId, name, arguments: args, signal: new AbortController().signal },
-    async () => {
+  const exec = { callId, name, arguments: args, signal: new AbortController().signal }
+  const run = async (i: number): Promise<unknown> => {
+    if (i >= chain.length) {
       nextCalls += 1
       return { kind: 'allow' as const }
-    },
-  )) as { kind: string; reason?: string }
+    }
+    return chain[i](exec, () => run(i + 1))
+  }
+  const decision = (await run(0)) as { kind: string; reason?: string }
   return { decision, nextCalls }
 }
 

@@ -17,6 +17,8 @@
  * @module test/a5p1-closed-world-guard
  */
 import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   GOVERNANCE_ERROR_CODES,
@@ -303,10 +305,10 @@ describe('the governed surface only grows through the trusted assembly', () => {
   // ADMISSION layer's job in PR2; a clock path appearing HERE would mean this
   // lane started making time claims of its own, so the absence is pinned.
   it('S7 the lane reads no clock (the finite-clock law belongs to Admission, PR2)', () => {
-    const here = new URL('../tool-dispatch/', import.meta.url)
+    const here = join(dirname(fileURLToPath(import.meta.url)), '..', 'tool-dispatch')
     const banned = ['Date.now', 'new Date', 'setTimeout', 'setInterval', 'performance.now', 'process.hrtime']
     for (const file of ['closed-world-guard.ts', 'scoped-dispatcher.ts', 'install.ts', 'index.ts']) {
-      const source = readFileSync(new URL(file, here), 'utf8')
+      const source = readFileSync(join(here, file), 'utf8')
       const body = source.split('\n').filter((line) => !line.trimStart().startsWith('*') && !line.trimStart().startsWith('//')).join('\n')
       const hits = banned.filter((token) => body.includes(token))
       expect(hits, `${file} reads a clock: ${hits.join(', ')}`).toEqual([])

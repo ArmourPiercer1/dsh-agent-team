@@ -993,26 +993,46 @@ function glueBlueprintSource(targetKey: string): string {
   ].join('\n')
 }
 
-/** Drive the installed glue listener once; returns the decision + the
- *  next-call count (1 == the tool executed). */
+/**
+ * Every active `tools/pre-execute` leg, in REGISTRATION order — the order the
+ * host registry drives them. A5-PR1 installs the closed-world Guard as an outer
+ * door AHEAD of the alpha.2 adapter, so "the real glue pipeline" is a CHAIN of
+ * listeners: taking only the first one would drive the Guard and report that as
+ * the glue's answer.
+ */
+function preExecuteChain(ctx: any): Array<{ listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> }> {
+  return (ctx.listeners as Array<{ event: string; active: boolean; listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> }>)
+    .filter((l) => l.event === 'tools/pre-execute' && l.active)
+    .map((l) => ({ listener: l.listener }))
+}
+
+/**
+ * Drive the whole chain once. `nextCalls` counts the BODY EDGE — the terminal
+ * continuation past the last listener — so its meaning is unchanged by the
+ * chain (1 == the tool executed). A leg that refuses without calling `next`
+ * stops the chain, and its decision is the answer. Under A5-PR1 this also pins
+ * something new: the Guard's abstention must never launder the adapter's deny.
+ */
 async function driveOnce(
-  listener: { listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> },
+  chain: Array<{ listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> }>,
   callId: string,
   targetKey: string,
 ): Promise<{ kind: string; reason?: string; nextCalls: number }> {
   let nextCalls = 0
-  const decision = (await listener.listener(
-    {
-      callId,
-      name: 'write',
-      arguments: { file_path: targetKey, content: 'probe' },
-      signal: new AbortController().signal,
-    },
-    async () => {
+  const exec = {
+    callId,
+    name: 'write',
+    arguments: { file_path: targetKey, content: 'probe' },
+    signal: new AbortController().signal,
+  }
+  const run = async (i: number): Promise<unknown> => {
+    if (i >= chain.length) {
       nextCalls += 1
       return { kind: 'allow' }
-    },
-  )) as { kind: string; reason?: string }
+    }
+    return chain[i]!.listener(exec, () => run(i + 1))
+  }
+  const decision = (await run(0)) as { kind: string; reason?: string }
   return { ...decision, nextCalls }
 }
 
@@ -1119,16 +1139,14 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
       })
       await glueWorld.binding.boot()
       const ctxA = (glueWorld.agents.handles.get(GLUE_CHILD) as { agent: { ctx: any } }).agent.ctx
-      const listener = ctxA.listeners.find(
-        (l: { event: string; active: boolean }) => l.event === 'tools/pre-execute' && l.active,
-      ) as { listener: (exec: unknown, next: () => Promise<unknown>) => Promise<unknown> }
-      expect(listener, 'the glue installed the pre-execute listener on tpl-a').toBeDefined()
+      const chain = preExecuteChain(ctxA)
+      expect(chain.length, 'the glue installed a pre-execute leg on tpl-a').toBeGreaterThan(0)
 
       // CONTROL (key identity): with NO overlay row the template ALLOW
       // executes through the real glue (proves the canonical key of the
       // fake-fs target equals the granted key — the deny below then can
       // only come from the plane).
-      const control = await driveOnce(listener, 'e3-call-control', targetKey)
+      const control = await driveOnce(chain, 'e3-call-control', targetKey)
       expect(
         control.nextCalls,
         `the static allow must execute with no overlay present (control: ${JSON.stringify(control)})`,
@@ -1155,7 +1173,7 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
 
       // The overlay grant above stands — the glue (with the plane ref
       // FILLED) must beat the template allow with the persisted deny.
-      const denied = await driveOnce(listener, 'e3-call-deny', targetKey)
+      const denied = await driveOnce(chain, 'e3-call-deny', targetKey)
       expect(
         denied.nextCalls,
         `the glue executed despite the persisted overlay deny (decision: ${JSON.stringify(denied)})`,

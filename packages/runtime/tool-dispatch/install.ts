@@ -250,7 +250,6 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
   // the surface; it is the wrong place to decide anything, because a
   // registration event arrives AFTER the name is already dispatchable
   // (design §4.1: tools/change 用于无权限的重新校验/诊断，不代替执行时检查).
-  let lastSurface: readonly string[] = []
   const revalidate = (): SurfaceRevalidation => {
     const current = readSurface(input.agentCtx, input.runtimeAgent)
     if (!current.ok) {
@@ -258,7 +257,6 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
       return { added: [], removed: [], denied: [] }
     }
     const diff = dispatcher.revalidateSurface(current.value)
-    lastSurface = current.value
     return { added: diff.added, removed: diff.removed, denied: diff.added }
   }
   if (typeof input.agentCtx.on === 'function') {
@@ -434,7 +432,6 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
         dispatcher.failAssembly(surface.error.message)
         return surface
       }
-      lastSurface = surface.value
       dispatcher.bindInheritedSurface(surface.value)
       const outcome = dispatcher.publish()
       if (outcome.ok) {

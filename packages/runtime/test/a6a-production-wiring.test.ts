@@ -898,6 +898,12 @@ describe('A6 alpha.2 production wiring — the install decision (plan §11.1)', 
     expect(w1LeaderGates).toBe(1)
     expect(w1AGates).toBe(1)
     expect(w1BGates).toBe(0)
+    // A gate is never registered and left inactive: a listener that exists but
+    // does not run is the failure mode a count of ACTIVE listeners alone would
+    // read as healthy (and on member B neither count may be non-zero).
+    expect(totalClosedWorldGates(w1Leader)).toBe(w1LeaderGates)
+    expect(totalClosedWorldGates(w1A)).toBe(w1AGates)
+    expect(totalClosedWorldGates(w1B)).toBe(0)
   })
   it('A5-PR1: the alpha.2 adapter count is untouched by the Guard (still exactly one, not two)', () => {
     expect(w1LeaderActive).toBe(1)
