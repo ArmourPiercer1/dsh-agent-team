@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import {
   lintCorrespondence,
   assertMachineFinalDeclarations,
+  lintDocFinalDeclaration,
   runFixtureSurface,
   runRecordedEvidence,
   runKitRerun,
@@ -248,7 +249,7 @@ test('N1: doc 矩阵缺 final_declaration 键 ⇒ 显式点名清单（不按 un
 test('N2: 矩阵内 registry 套件引用必须用 registry.mjs 真实 id（M-13 须 60-web-jobs-mcp-domain）', async () => {
   const { SUITES } = await import(join(REPO_ROOT, 'docs/plans/memo/alpha5-tool-io-governance/pr8-accept/e2e-skeleton/suites/registry.mjs'));
   const ids = new Set(SUITES.map((s) => s.id));
-  const machine = JSON.parse(requireText(MACHINE.json ? MACHINE_PATH : MACHINE_PATH));
+  const machine = JSON.parse(requireText(MACHINE_PATH));
   const bad = [];
   for (const row of machine.rows) {
     const texts = [row.criterion, ...(row.live_gate_basis ?? []), row.note].filter((t) => typeof t === 'string');

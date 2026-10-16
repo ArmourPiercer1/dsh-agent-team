@@ -39,3 +39,17 @@ node --test --test-concurrency=1 dev/agent-workflow/evidence/alpha5/pr8/runner/p
 ## 与 PENDING-GATES 的联动（收口路径，不由本件执行）
 
 矩阵行 final_declaration 解锁 = ①`dev/agent-workflow/PENDING-GATES.md` 进入仓内且全部行 closed（runner 解析）+ ②对应行在机检矩阵中由 PR8 writer/集成 owner 经 `pending_update_template` 预留字段显式登记候选值 + ③90-final-matrix-gate 复跑。三闸缺一 ⇒ 输出 null（代码位强制，不靠自觉）。
+
+---
+
+## Scope-3a（正式轮第一轮，2026-10-16 夜）增补
+
+**N1（final_declaration 缺键不放行）**：机检矩阵行缺键 ⇒ `assertMachineFinalDeclarations` 显式判红（undefined≠null 声明）；doc 候选矩阵 SUP-01..18 无该键 ⇒ runner **逐行显式点名**（`DOC-MISSING-KEY`×18，见 final-matrix-run.log），不判红但**不再按 undefined 静默放行**——doc 侧补键属上游/集成 owner 转交项（Lane G 候选文档，本 lane 不代改）；doc 行显式非 null 声明 ⇒ 红。**N2**：M-13 依据串已改 registry 真实 id `60-web-jobs-mcp-domain`，并新增自跑判据（矩阵内 `suite NN-…` 引用必须唯一命中 registry.mjs 真实 id）。**N4**：红/绿分提交——RED 提交 `a82f474d`（四条新判据先行红，runs/scope3a-RED-self.log 18/22）与修复提交分离。
+
+**矩阵实例化第一轮**：本机按 TEST_METHODS §2 链构建 pristine 0.2.0-rc.2 运行时（clone --local --no-hardlinks 自只读 baseline + `pnpm install --ignore-scripts --frozen-lockfile --store-dir <workspace store>` + `DSH_CLIENT_COMMIT_HASH=639ed01539 ESBUILD_WORKER_THREADS=1 pnpm run build`；test-use porcelain=0 @639ed01539；构建在 gitignored 运行时世界，仓库跟踪树零影响）⇒ 三条 NOT_RUN 全部升级：**M-06** kit a5p1r 重跑 **13/13 PASS exit 0**（master 13 判据版；18 判据 probe 版在 origin/alpha5-g-g-probes 未合 master，本腿跑 master 版如实注明；原文 runs/kit-rerun-built/）；**M-11/SUP-08** pinned Job 面 grep 实挂：`job_output`/`job_kill`（tool-bash 面）+ `job_list`（api/job-controller 面）+ `absent_anchors: job_start`（全树零命中机检）。三态新分布 **PASS=27 / FAIL=0 / NOT_RUN=0 / REQUIRES-LIVE-WIRING=5**。kit 重跑=手动重跑型 D 观察（fixture/记录级），非行验收。
+
+**G-g 分级引用升级**（矩阵 M-06/M-12/M-14 三行 + `_meta.g_g_contract`）：基线快照 98ddbaa9 §2.2（E1/D3/UR1/U4）保留，另引 `review-G-g-probes.md` @origin/alpha5-g-g-probes `bbaf45de` 后状态——**P4/P6 达 D**（kit check() 级判据；unit 腿 E 形状：P2/P3/P6 完整谓词入常跑网）、kit-only 判据上限 D（ENFORCE 级对其不可达，§2.1 明文）、P9=UR 不变、**G-6/G-7 仍 LIVE-GATED=PR3 后维持 U**、G-g 行按 P8 保持开放至落文 owner；probe 件未合 master ⇒ 本 ref 观测面以 master 为准。自跑套件强制三行含 `review-G-g-probes.md` 引注且保持禁则（fail-closed 已证等仍红）。
+
+**skills 候选**：[skills-candidate-D2.md](./skills-candidate-D2.md) —— D-2 六要素（17:52Z 原文边界/触发与影响集合/取消≠终止/无回滚/插件卸载三区别/D-1 延期与恢复条件）的 `team-leader-operations` SKILL 增补段落候选 + 九条验收清单；**只写本 evidence 文件，不触碰 `.agents/**`**；收尾轮执行=4d990c89、独立核验=4dac3d04（PENDING-GATES.md:24 17:54Z 指派）。
+
+**Scope-3a 门禁实录**：token 扫描 0 真实凭据；porcelain 净（新增全在本 evidence 目录 + gitignored 运行时世界）；零端口零世界不变（kit in-process）；共用文件零触碰不变；p4t6 只读查询零隔离区外命中不变（M-14 腿在 27 PASS 内）。

@@ -1,11 +1,11 @@
 {
-  "run_utc": "2026-10-16T19:39:28.646Z",
+  "run_utc": "2026-10-16T20:08:06.689Z",
   "repo_root": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner",
   "gates_status": "ABSENT-AS-OPEN",
   "distribution": {
-    "PASS": 24,
+    "PASS": 27,
     "FAIL": 0,
-    "NOT_RUN": 3,
+    "NOT_RUN": 0,
     "REQUIRES_LIVE_WIRING": 5,
     "TOTAL": 32,
     "by_level": {
@@ -138,7 +138,7 @@
     },
     {
       "row_id": "M-06",
-      "result": "NOT_RUN",
+      "result": "PASS",
       "evidence_level": "D",
       "scope": "criterion-level-fixture（不构成整链验收；final_declaration 维持 null）",
       "hooks": [
@@ -180,8 +180,9 @@
         {
           "kind": "kit-rerun",
           "label": "kit a5p1r 重跑（in-process 钉定 registry，无端口）",
-          "status": "NOT_RUN",
-          "reason": "kit 前置不齐（拒绝伪造 PASS）: tests/deepseek-harness-test-use/vendor/cordis — 已构建 pristine test-use 0.2.0-rc.2 缺失 ⇒ NOT_RUN；首跑尝试 FATAL 原文见 runner/runs/kit-attempt-verbatim.log"
+          "status": "PASS",
+          "scope": "kit-criterion（fixture in-process，钉定 registry，无端口）",
+          "criteria_pass": 13
         },
         {
           "kind": "recorded-evidence",
@@ -304,7 +305,7 @@
     },
     {
       "row_id": "M-11",
-      "result": "NOT_RUN",
+      "result": "PASS",
       "evidence_level": "D",
       "scope": "criterion-level-fixture（不构成整链验收；final_declaration 维持 null）",
       "hooks": [
@@ -319,9 +320,10 @@
         },
         {
           "kind": "fixture-surface",
-          "label": "pinned Job 面 grep 位",
-          "status": "NOT_RUN",
-          "reason": "观测面文件缺 (tests/deepseek-harness-test-use/packages/core/tools/lib/index.js)：pristine test-use 检出为 gitignored 运行时；SUP-08：族名集合以 pinned 面 grep 为准，宿主升级须重枚举"
+          "label": "pinned Job 面 grep（三族在册）",
+          "status": "PASS",
+          "scope": "fixture-structural",
+          "files": 2
         }
       ],
       "final_declaration": null,
@@ -366,7 +368,7 @@
       "evidence_level": "U",
       "basis": [
         "doc M-13 current_status=s0-not-run-structural（明示 NOT_RUN）",
-        "registry suite 60-web-jobs-mcp run=null；Domain mock 待建",
+        "registry suite 60-web-jobs-mcp-domain run=null；Domain mock 待建",
         "PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported"
       ],
       "note": "REQUIRES-LIVE-WIRING：本行为 live 必需/未接线，未产任何通过性结论；不得计入 PASS/FAIL。",
@@ -599,15 +601,16 @@
     },
     {
       "row_id": "SUP-08",
-      "result": "NOT_RUN",
+      "result": "PASS",
       "evidence_level": "D",
       "scope": "criterion-level-fixture（不构成整链验收；final_declaration 维持 null）",
       "hooks": [
         {
           "kind": "fixture-surface",
           "label": "pinned 面 grep 位",
-          "status": "NOT_RUN",
-          "reason": "观测面文件缺 (tests/deepseek-harness-test-use/packages/core/tools/lib/index.js)：pristine test-use 检出（gitignored 运行时）在本 worktree 不存在；宿主升级须重枚举"
+          "status": "PASS",
+          "scope": "fixture-structural",
+          "files": 2
         }
       ],
       "final_declaration": null,

@@ -30,10 +30,17 @@
     },
     "g_g_contract": {
       "ref": "dev/agent-workflow/evidence/alpha5-pr1r/g-g-support-contract.md @origin/alpha5-pr1r-followup 98ddbaa9（G-g 行登记 cc47fb18）",
-      "grading": "§2.2 分级小结 E1/D3/UR1/U4：P1=D(记录级)、P2=D+unit 部分E、P3=E(主字段)+事件流D、P4=U(同配置 NO-EVIDENCE)、P5=D+unitE、P6=U(送达⇒proven 零断言)、P7=U(记录级非判据)、P8=U(机检缺失)、P9=UR ⇒ G-g 整体未达收口（硬缺口 P4/P6）",
+      "grading": "G-g 分级：快照 @origin/alpha5-pr1r-followup 98ddbaa9 §2.2 = E1/D3/UR1/U4（当时硬缺口 P4=U、P6=U）；post-probes 状态按 review-G-g-probes.md @origin/alpha5-g-g-probes bbaf45de（受审对象 726d6f83：kit 18/18 + a5p1r 36/36 + 措辞 lint 非空转复验，判定=可合、4 项非阻塞 nit）⇒ P4/P6 达 D（kit check() 级判据 RW-CHANGE-INERT-PINNED-UNTIL-REBIND / RW-CHANNEL-PROVEN-ON-FIRST-DELIVERY），unit 腿为 E 形状（P2/P3/P6 完整谓词入常跑网）；kit-only 判据上限 D、ENFORCE 级对其不可达（契约 §2.1 明文，不得宣称）；P9=UR 不变；G-6/G-7 仍 LIVE-GATED=PR3 后维持 U；probe 判据未合 master ⇒ 本 ref 观测面仍以 master 为准",
       "position": "PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭",
       "forbidden": "g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证",
-      "live_gated": "g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）"
+      "live_gated": "g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）",
+      "grading_baseline": "98ddbaa9 §2.2 快照：E1/D3/UR1/U4（P1=D记录级、P2=D+unit部分E、P3=E主字段+事件流D、P4=U、P5=D+unitE、P6=U、P7=U记录级、P8=U机检缺失、P9=UR）",
+      "post_probes": {
+        "ref": "dev/agent-workflow/evidence/alpha5-pr1r/g-g-probes/review-G-g-probes.md @origin/alpha5-g-g-probes bbaf45de（受审 726d6f83，base 74d947a3）",
+        "status": "P4/P6 达 D（kit check() 级判据），unit 腿 E 形状（P2/P3/P6 完整谓词入常跑断言网）；kit-only 判据上限 D、ENFORCE 级不可达（§2.1 明文）；P9=UR 不变；G-6/G-7 仍 LIVE-WIRING-GATED=PR3 后维持 U；G-5 措辞 lint 已存在（scripts/lint-g-g-wording.mjs@726d6f83，非空转复验）",
+        "closure": "G-g 行按 P8 保持开放，收口=落文 owner 完成 G-g 行/支持矩阵落文；本 runner 不代关，矩阵三行（M-06/M-12/M-14）判据已同步该状态",
+        "master_state": "probe 件未合入 origin/master ⇒ 本 ref kit/unit 观测面仍为 master 版本（13 判据 kit）；升级挂钩随 probe 合入后由 PR8 writer 更新"
+      }
     },
     "pending_gates_ledger": "唯一权威=dev/agent-workflow/PENDING-GATES.md（正本所在分支 origin/alpha5-pr1r-followup；本 ref 树内无该文件 ⇒ runner 按 ABSENT-AS-OPEN fail-closed 处理，G-a 行=裁决已登记/文档落实中、G-g/G-d 等=开放）",
     "final_declaration_rule": "所有行 final_declaration=null，直到全部 PENDING-GATES 关闭；由 lib.mjs deriveFinalDeclaration（台账非 ALL-CLOSED ⇒ 恒 null）+ assertMachineFinalDeclarations（矩阵内任何非空声明 ⇒ lint 直接判红）双代码位强制，不靠自觉",
@@ -251,7 +258,7 @@
     {
       "row_id": "M-06",
       "doc_row_ref": "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json rows[row_id=M-06] @origin/master d69bfc4b（内容 8118ff48 经 44e43452 并入）",
-      "criterion": "a5p5 lane 断言网在册：args 闭集/realmId 作未知字段拒、IO effects 精确声明、deny-before-backend、spill 闭集（C-BIND v1.1 事件名）、DORMANT 审计（barrel 不识 lane）；kit a5p1r 判据文本在册（RW-AFTER-DOOR-BODY-ZERO/RW-CHANGE-INERT-LOUD），其 runs 记录钉在 origin/alpha5-pr1r-followup，本 ref 重跑需已构建 pristine 0.2.0-rc.2 运行时（缺失 ⇒ NOT_RUN 如实）。G-g 投影（静默已订阅通道）：PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 g-g-support-contract.md §2.2 @origin/alpha5-pr1r-followup 98ddbaa9 分级：P1=D(记录级)、P2=D+unit 部分E、P3=E(主字段)+事件流D、P4=U(同配置 NO-EVIDENCE)、P5=D+unitE、P6=U(送达⇒proven 零断言)、P7=U(记录级非判据)、P8=U(机检缺失)、P9=UR；小结 E1/D3/UR1/U4 ⇒ G-g 整体未达收口；g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。",
+      "criterion": "a5p5 lane 断言网在册：args 闭集/realmId 作未知字段拒、IO effects 精确声明、deny-before-backend、spill 闭集（C-BIND v1.1 事件名）、DORMANT 审计（barrel 不识 lane）；kit a5p1r 判据在册（RW-AFTER-DOOR-BODY-ZERO/RW-CHANGE-INERT-LOUD 等 13 条），origin/alpha5-pr1r-followup 记录其历史 runs；本 Scope-3a 轮已在本机按 TEST_METHODS §2 链构建 pristine 0.2.0-rc.2 运行时并重跑 master kit ⇒ 13/13 PASS exit 0（runs/kit-rerun-built/ 原文在册；fixture/记录级 D 观察=kit check() 判据手动重跑形态，非整链验收；18 判据 probe 版在 origin/alpha5-g-g-probes 未合 master，本腿跑 master 版）。G-g 投影（静默已订阅通道）：PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 G-g 分级：快照 @origin/alpha5-pr1r-followup 98ddbaa9 §2.2 = E1/D3/UR1/U4（当时硬缺口 P4=U、P6=U）；post-probes 状态按 review-G-g-probes.md @origin/alpha5-g-g-probes bbaf45de（受审对象 726d6f83：kit 18/18 + a5p1r 36/36 + 措辞 lint 非空转复验，判定=可合、4 项非阻塞 nit）⇒ P4/P6 达 D（kit check() 级判据 RW-CHANGE-INERT-PINNED-UNTIL-REBIND / RW-CHANNEL-PROVEN-ON-FIRST-DELIVERY），unit 腿为 E 形状（P2/P3/P6 完整谓词入常跑网）；kit-only 判据上限 D、ENFORCE 级对其不可达（契约 §2.1 明文，不得宣称）；P9=UR 不变；G-6/G-7 仍 LIVE-GATED=PR3 后维持 U；probe 判据未合 master ⇒ 本 ref 观测面仍以 master 为准；g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。",
       "carried_current_status": "partial-pending-pr1r-update",
       "known_partial": true,
       "evidence_level": "D",
@@ -330,7 +337,7 @@
             "packages/runtime/dist/packages/runtime/tool-dispatch/index.js",
             "tests/deepseek-harness-test-use/vendor/cordis"
           ],
-          "prereq_note": "已构建 pristine test-use 0.2.0-rc.2 缺失 ⇒ NOT_RUN；首跑尝试 FATAL 原文见 runner/runs/kit-attempt-verbatim.log"
+          "prereq_note": "本机已按 TEST_METHODS §2 链构建 0.2.0-rc.2（porcelain 0）；重跑原文=runner/runs/kit-rerun-built/{rereg-window.json,kit-stdout.log}；全新 worktree 缺运行时 ⇒ 本钩 NOT_RUN（拒伪造 PASS）"
         },
         {
           "kind": "recorded-evidence",
@@ -477,7 +484,7 @@
     {
       "row_id": "M-11",
       "doc_row_ref": "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json rows[row_id=M-11] @origin/master d69bfc4b（内容 8118ff48 经 44e43452 并入）",
-      "criterion": "jobs 记录在册（p09-jobs assertions=12 fixture 直调；owner-scoped NOT_RUN 由 S0 原文如实）；owner fence/重启恢复未测；pinned Job 面枚举 grep 位需 tests/deepseek-harness-test-use 检出（gitignored 运行时，本一次性 worktree 缺 ⇒ NOT_RUN）。",
+      "criterion": "jobs 记录在册（p09-jobs assertions=12 fixture 直调；owner-scoped NOT_RUN 由 S0 原文如实）；owner fence/重启恢复未测；pinned Job 面枚举 grep 位：本 Scope-3a 轮运行时已构建 ⇒ job_output/job_kill（tool-bash 面）+ job_list（api/job-controller 面）在册、job_start 全树零命中（absent-anchor 机检）。",
       "carried_current_status": "s0-candidate-impl-pending",
       "known_partial": false,
       "evidence_level": "D",
@@ -492,14 +499,26 @@
         },
         {
           "kind": "fixture-surface",
-          "label": "pinned Job 面 grep 位",
+          "label": "pinned Job 面 grep（三族在册）",
           "files": [
             {
-              "path": "tests/deepseek-harness-test-use/packages/core/tools/lib/index.js",
-              "anchors": []
+              "path": "tests/deepseek-harness-test-use/packages/shell/tool-bash/lib/index.js",
+              "anchors": [
+                "job_output",
+                "job_kill"
+              ],
+              "absent_anchors": [
+                "job_start"
+              ]
+            },
+            {
+              "path": "tests/deepseek-harness-test-use/packages/api/job-controller/lib/typert.host.js",
+              "anchors": [
+                "job_list"
+              ]
             }
           ],
-          "environment_prerequisite": "pristine test-use 检出为 gitignored 运行时；SUP-08：族名集合以 pinned 面 grep 为准，宿主升级须重枚举"
+          "environment_prerequisite": "pristine test-use 检出为 gitignored 运行时（TEST_METHODS §2 链构建，跨设备用 --no-hardlinks）；本 worktree 已于本 Scope-3a 轮按该链构建 ⇒ 本环境可观测；全新 worktree 缺运行时 ⇒ NOT_RUN"
         }
       ],
       "live_gate_basis": [],
@@ -512,7 +531,7 @@
     {
       "row_id": "M-12",
       "doc_row_ref": "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json rows[row_id=M-12] @origin/master d69bfc4b（内容 8118ff48 经 44e43452 并入）",
-      "criterion": "MCP 面当前机检姿态=拒绝侧：closed-world Guard 对未绑定/未核验/外 Agent/无身份名 typed deny（G1..G8 unit 网）+ 装配期缺通道/订阅抛错 typed IO_POLICY_UNSUPPORTED 拒装（unit+kit 判据在册；契约分级 P9=UR，仅指拒绝姿态有证）。G-g 静默已订阅配置：PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 g-g-support-contract.md §2.2 @origin/alpha5-pr1r-followup 98ddbaa9 分级：P1=D(记录级)、P2=D+unit 部分E、P3=E(主字段)+事件流D、P4=U(同配置 NO-EVIDENCE)、P5=D+unitE、P6=U(送达⇒proven 零断言)、P7=U(记录级非判据)、P8=U(机检缺失)、P9=UR；小结 E1/D3/UR1/U4 ⇒ G-g 整体未达收口 ⇒ 该配置在本行判据中恒 UNSUPPORTED/待证。g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。撤销/重注册与结果身份腿属 PR1r B1-B3 冻结面 ⇒ partial。",
+      "criterion": "MCP 面当前机检姿态=拒绝侧：closed-world Guard 对未绑定/未核验/外 Agent/无身份名 typed deny（G1..G8 unit 网）+ 装配期缺通道/订阅抛错 typed IO_POLICY_UNSUPPORTED 拒装（unit+kit 判据在册；契约分级 P9=UR，仅指拒绝姿态有证）。G-g 静默已订阅配置：PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 G-g 分级：快照 @origin/alpha5-pr1r-followup 98ddbaa9 §2.2 = E1/D3/UR1/U4（当时硬缺口 P4=U、P6=U）；post-probes 状态按 review-G-g-probes.md @origin/alpha5-g-g-probes bbaf45de（受审对象 726d6f83：kit 18/18 + a5p1r 36/36 + 措辞 lint 非空转复验，判定=可合、4 项非阻塞 nit）⇒ P4/P6 达 D（kit check() 级判据 RW-CHANGE-INERT-PINNED-UNTIL-REBIND / RW-CHANNEL-PROVEN-ON-FIRST-DELIVERY），unit 腿为 E 形状（P2/P3/P6 完整谓词入常跑网）；kit-only 判据上限 D、ENFORCE 级对其不可达（契约 §2.1 明文，不得宣称）；P9=UR 不变；G-6/G-7 仍 LIVE-GATED=PR3 后维持 U；probe 判据未合 master ⇒ 本 ref 观测面仍以 master 为准 ⇒ 该配置在本行判据中恒 UNSUPPORTED/待证。g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。撤销/重注册与结果身份腿属 PR1r B1-B3 冻结面 ⇒ partial。",
       "carried_current_status": "partial-pending-pr1r-update",
       "known_partial": true,
       "evidence_level": "D",
@@ -576,7 +595,7 @@
       "hooks": [],
       "live_gate_basis": [
         "doc M-13 current_status=s0-not-run-structural（明示 NOT_RUN）",
-        "registry suite 60-web-jobs-mcp run=null；Domain mock 待建",
+        "registry suite 60-web-jobs-mcp-domain run=null；Domain mock 待建",
         "PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported"
       ],
       "g_g_related": false,
@@ -588,7 +607,7 @@
     {
       "row_id": "M-14",
       "doc_row_ref": "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json rows[row_id=M-14] @origin/master d69bfc4b（内容 8118ff48 经 44e43452 并入）",
-      "criterion": "team_*/todo_write：PR1 覆盖枚举断言网在册（dynRan flip=G3、无身份洗白=G6、非 ACTIVE 先拒=G7）+ legacy Team SessionEvent 词汇 p4t6 只读查询零隔离区外命中；撤销/重注册与结果身份腿属 PR1r B1-B3 冻结面 ⇒ partial。G-g 投影同 M-12（PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 g-g-support-contract.md §2.2 @origin/alpha5-pr1r-followup 98ddbaa9 分级：P1=D(记录级)、P2=D+unit 部分E、P3=E(主字段)+事件流D、P4=U(同配置 NO-EVIDENCE)、P5=D+unitE、P6=U(送达⇒proven 零断言)、P7=U(记录级非判据)、P8=U(机检缺失)、P9=UR；小结 E1/D3/UR1/U4 ⇒ G-g 整体未达收口）；g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。",
+      "criterion": "team_*/todo_write：PR1 覆盖枚举断言网在册（dynRan flip=G3、无身份洗白=G6、非 ACTIVE 先拒=G7）+ legacy Team SessionEvent 词汇 p4t6 只读查询零隔离区外命中；撤销/重注册与结果身份腿属 PR1r B1-B3 冻结面 ⇒ partial。G-g 投影同 M-12（PENDING-GATES.md G-g 行：开放；收口前该配置在验收矩阵中=UNSUPPORTED/待证，不得默认 SUPPORTED，不得随 G-a 默认关闭；分级按 G-g 分级：快照 @origin/alpha5-pr1r-followup 98ddbaa9 §2.2 = E1/D3/UR1/U4（当时硬缺口 P4=U、P6=U）；post-probes 状态按 review-G-g-probes.md @origin/alpha5-g-g-probes bbaf45de（受审对象 726d6f83：kit 18/18 + a5p1r 36/36 + 措辞 lint 非空转复验，判定=可合、4 项非阻塞 nit）⇒ P4/P6 达 D（kit check() 级判据 RW-CHANGE-INERT-PINNED-UNTIL-REBIND / RW-CHANNEL-PROVEN-ON-FIRST-DELIVERY），unit 腿为 E 形状（P2/P3/P6 完整谓词入常跑网）；kit-only 判据上限 D、ENFORCE 级对其不可达（契约 §2.1 明文，不得宣称）；P9=UR 不变；G-6/G-7 仍 LIVE-GATED=PR3 后维持 U；probe 判据未合 master ⇒ 本 ref 观测面仍以 master 为准）；g-g-support-contract.md §4.2 禁则：对静默配置禁 fail-closed/closed/已合规/compliant/无引注 SUPPORTED/暴露恰为一次调用；runner 判据与输出遵守之，绝不输出 fail-closed 已证。",
       "carried_current_status": "partial-pending-pr1r-update",
       "known_partial": true,
       "evidence_level": "D",
@@ -845,7 +864,7 @@
     {
       "row_id": "SUP-08",
       "doc_row_ref": "docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json rows[row_id=SUP-08] @origin/master d69bfc4b（内容 8118ff48 经 44e43452 并入）",
-      "criterion": "pinned 0.2.0-rc.2 Job 面枚举=可机检 grep 位（job_output/job_list/job_kill 三族、无 job_start，不杜撰）；pinned 检出为 gitignored 运行时，本一次性 worktree 缺 ⇒ 本环境 NOT_RUN（如实）。",
+      "criterion": "pinned 0.2.0-rc.2 Job 面枚举=可机检 grep 位（job_output/job_list/job_kill 三族、无 job_start，不杜撰）；pinned 检出为 gitignored 运行时；本 Scope-3a 轮已按 TEST_METHODS §2 构建 ⇒ 本环境可观测（job_output/job_kill/job_list 三族在册、job_start 零命中）；全新 worktree 缺运行时则 NOT_RUN（如实）。",
       "carried_current_status": "supersession-in-force",
       "known_partial": false,
       "evidence_level": "D",
@@ -856,11 +875,23 @@
           "label": "pinned 面 grep 位",
           "files": [
             {
-              "path": "tests/deepseek-harness-test-use/packages/core/tools/lib/index.js",
-              "anchors": []
+              "path": "tests/deepseek-harness-test-use/packages/shell/tool-bash/lib/index.js",
+              "anchors": [
+                "job_output",
+                "job_kill"
+              ],
+              "absent_anchors": [
+                "job_start"
+              ]
+            },
+            {
+              "path": "tests/deepseek-harness-test-use/packages/api/job-controller/lib/typert.host.js",
+              "anchors": [
+                "job_list"
+              ]
             }
           ],
-          "environment_prerequisite": "pristine test-use 检出（gitignored 运行时）在本 worktree 不存在；宿主升级须重枚举"
+          "environment_prerequisite": "pristine test-use 检出为 gitignored 运行时（TEST_METHODS §2 链构建，跨设备用 --no-hardlinks）；本 worktree 已于本 Scope-3a 轮按该链构建 ⇒ 本环境可观测；全新 worktree 缺运行时 ⇒ NOT_RUN"
         }
       ],
       "live_gate_basis": [],
