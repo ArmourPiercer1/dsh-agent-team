@@ -16,12 +16,12 @@
  * @module test/a5p7-lane-hygiene
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, relative, sep } from 'node:path'
+import { dirname, join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { matchDenyListInText } from '../../testkit/fault-injection/session-event-scan.mjs'
 
-const REPO_PACKAGES = fileURLToPath(new URL('../../', import.meta.url)) // packages/
+const REPO_PACKAGES = join(dirname(fileURLToPath(import.meta.url)), '..', '..') // packages/
 const LANE_DIRS = ['runtime/jobs-gateway', 'runtime/test', 'domain/vnext-field-mapping/src', 'domain/test']
 
 function listFiles(dir: string, out: string[] = []): string[] {
