@@ -29,11 +29,20 @@ value.
 | --- | --- | --- |
 | [`a5p1-order-hazard.mjs`](a5p1-order-hazard.mjs) | the pinned **registry** in-process (the PoC's `p00-fixture.mjs`), four teardown-order arms | the hazard is a registry race; driving a whole Host around it would only add noise |
 | [`a5p1-kit.mjs`](a5p1-kit.mjs) | a **booted Host** with the production `dsh-agent-team` row from this worktree's built `dist`, a real Team Session, leader + two members | the Guard only means something at the trusted assembly point, with real Agents behind it |
-| [`a5p1r-rereg-window.mjs`](a5p1r-rereg-window.mjs) | the pinned **registry** in-process, thirteen arms around deterministic parks, each performing a LEGAL same-scope re-registration (or explicitly not) | the PR1-residual R-b question is which Body the registry resolves when a Definition moves mid-call; that is a registry question, and its answer must not depend on a model turn (PR1-residual §12) |
+| [`a5p1r-rereg-window.mjs`](a5p1r-rereg-window.mjs) | the pinned **registry** in-process, fourteen arms around deterministic parks, each performing a LEGAL same-scope re-registration (or explicitly not) | the PR1-residual R-b question is which Body the registry resolves when a Definition moves mid-call; that is a registry question, and its answer must not depend on a model turn (PR1-residual §12) |
 
-Leg counts: the kit reports **36** criteria (13 Host legs + 10 order legs +
-13 re-registration-window legs). The window leg was folded into the Receipt in
+Leg counts: the kit reports **41** criteria (13 Host legs + 10 order legs +
+18 re-registration-window legs). The window leg was folded into the Receipt in
 the B3 round so its criteria cannot drift uncounted; leg counts only ever grow.
+The five legs added by the G-g support-contract probes (`alpha5-g-g-probes`
+round): `RW-INERT-ASSEMBLY-INDISTINGUISHABLE` (P1), `RW-CHANNEL-PROVEN-ON-FIRST-
+DELIVERY` (P6 forward half asserted, paired with the inert/swallow arms' `armed`
+reverse half), `RW-CHANGE-INERT-PINNED-UNTIL-REBIND` (P4, recovery measured
+inside the silent arm; counters are read at NAMED INSTANTS — `v2AfterFirstCall`
+/ `secondCallV2` — honoring the retraction above), `RW-CHANGE-SWALLOWED-LOUD`
+and `RW-CHANGE-SWALLOWED-PINNED-UNTIL-REBIND` (the swallow injection: an accepted,
+never-disposed subscription whose emissions are not forwarded, with a kit-owned
+control subscription proving the registry emits).
 
 **Retracted criterion, kept here so the record is unambiguous.** The window
 runner used to pass on `RW-RESIDUAL-RECORDED`, whose condition was

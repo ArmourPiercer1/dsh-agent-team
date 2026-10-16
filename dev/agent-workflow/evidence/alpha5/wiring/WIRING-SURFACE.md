@@ -33,4 +33,4 @@
 - dist 悬空债注记（review-Wiring C，**只注记不清算**）：`packages/runtime/dist/packages/runtime/policy-adapter.{js,js.map,d.ts,d.ts.map}` 4 件——其源 `packages/runtime/policy-adapter.ts` 已于 **3b7039e8**（pre-alpha3 PR-F increment 1，2026-09-30）删除，dist emit 未随删=该 commit 起既有的悬空债，先于本接线轮存在；本分支全部 dist 变动与之无关（drift 门对照的是自身重建）。清算=build/台账 owner 的独立动作。
 - jobs-gateway tsconfig（Lane F 条件 2）、p4t6 F/README 979→993 陈旧数：F 不在本轮接线清单（按协调队列顺序另轮）。
 - 未新增 §5 code、未新增 C-FS reason 闭集成员（unbound 拒走既有 `effect-outside-grant` + 诊断串；spill-id-in-use 属 Lane-D 自有拒绝闭集扩展）。
-- G-g：接线代码零"静默通道安全/fail-closed 已证"类宣称；涉事件通道消费处仅引 PENDING-GATES **G-g OPEN**（evidence/alpha5/PENDING-GATES.md 指针桩 + #258 分支正本）。
+- G-g：接线代码**不得**作出通道闭合类宣称（"静默通道安全/fail-closed 已证"属 UNTESTED，本闸未证——G-5 wording lint 同形校验本行）；涉事件通道消费处仅引 PENDING-GATES **G-g OPEN**（evidence/alpha5/PENDING-GATES.md 指针桩 + #258 分支正本）。
