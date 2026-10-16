@@ -28,3 +28,24 @@ static gates
     touched files: 0 real claims (2 hits are the law's own meta-text)
   ports used: 0 (no listener in 34xx from this round; :3080 never touched)
   worlds: tests/homes/a5w-* deleted after use (self-teardown + sweep); porcelain clean at HEAD
+
+── FOLLOW-UP ROUND (coordinator order: audit ledger + nine-root census) ──
+(1) PR1_CONSUMERS 正式登记：PR3 controlled-fs/src ×4（review #259@23dc3bd1）+
+    PR5 a5p5-tools/src ×6（review #260@5ccc5839）= 真实台账债入账（audit findings
+    10→0；a5p0-layer-audit 精确 19-file 集钉死=前缀不得夹带）。例外继续只留给
+    "名字出现≠引用"形态。a5p0 全套 5 suites GREEN。
+(2) nine-root census（workflow 同款命令 --full --only census --census-captures 2
+    --census-test-timeout 90000，宿主 @639ed01539 clone+build，porcelain 0）：
+    RED  @ e722665b: NEW 9（census-RED-vs-9-baseline.txt）——定性：8 件=本 worktree
+      环境缺件（client dist 未 build、宿主 app-boot 未 build；provision 后单跑
+      plugin-dsh-compat 7/7、a4p7-merge-gate 35/35 绿，未入账 tolerances）；
+      1 件=poc3 fd-recycling 真竞态（两次 capture 数字各异=fd 表争用），测试侧
+      修复 retry-until-OBSERVED（d1409059），lane solo 13/13 保持。
+    GREEN@ 2b41fab1: verdict=pass，"COUNTS MOVED (549f/6936l vs 508/6373), SET DID
+      NOT"，2 captures identical，new 0 / resolved 0 / escalations 0；9 红全部
+      ∈ pristine-24（双账本 NEW=0）。**未重录 baseline**——public ledger 九条
+      tolerances 即当前真相，无新债入账（诚实结论：RED 的账由 provisioning +
+      竞态修复 + 已付台账清偿，不洗进 tolerances）。
+(3) 复跑：a5p0 全套+p4t6 = 103/103；tsc 双 0；lint new 0（76 distinct 不变）；
+    root vitest NEW=0 由 census 双 capture（并行+union，强于串行）承担。
+    raw captures 留 gitignored scratch；a4-pr7 ci-gate/scratch 恢复原状 40 files。
