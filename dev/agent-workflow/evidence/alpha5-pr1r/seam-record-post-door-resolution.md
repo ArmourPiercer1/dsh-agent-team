@@ -282,6 +282,6 @@ to accept restore     : order:
                            propagates to a started Body" to "no abort is issued to a started
                            Body" — the change of the criterion is the evidence that the property,
                            not the wording, moved.
-owner                 : TO BE NAMED — the integration owner nominates, the user confirms. The
+owner                 : NAMED: d9da2f74 (implementation, qwen) — coordinator-assigned 17:54Z — the integration owner nominates, the user confirms. The
                         register entry carries no owner until that nomination exists; this round
                         does not self-assign.
