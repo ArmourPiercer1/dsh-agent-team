@@ -10,13 +10,12 @@
 - **选项 (iv=退)** 该拓扑（第三方 listener 挂我方门后+并发重注册）严格档禁用（fail-closed 声明）。
 可组合（如 ii 即时缓解 + W-1 长期解）。受影响支持矩阵行：M-12、M-06、M-01/02/03/14 记 partial（选定后写入矩阵）。
 
-## 决策 2 —— hard-envelope / human-admin 语义冲突 C1–C4（裁决=B，交您整理）
-证据：hard-envelope-admin-audit.md @375920aa（复现=真 mint+真 consume；今日被 Alpha.4 Control 闸挡住，PR3 装配决定可达性）。
-- **C1** ADR-alpha4:127/129（不建模 admin 不可越边界；admin 受信全权）↔ Architecture_20260829:1441（任何 actor 含 human override 不能越 external hard）。
-- **C2** alpha4-spec:322（超 Team Hard 可由 Human Admin 批=唯一达 admin 形状）+A5-1:905-910+§26.1:1102（反向改法 forbidden）↔ Architecture §25.4:1864-1866 + resolve.ts:326（Invariant 34 对所有人 deny）。
-- **C3** ADR-001:129-130（teamHardDeny 可显式越 / externalHard 经插件不可越）↔ ADR-a4:87-93/111；lane 无 externalHard 输入位（AuthorityDocumentName 两元）。
-- **C4** plan PR2:86+architecture.md:181（确定 deny⇒整拒）↔ spec:314+322（硬 deny 只升阶）；ADR-a5:71+architecture:184 禁新 rung/super-envelope。
-注：A 路（admin 不可越）需推翻 Alpha.4 四处明文（含一处 explicit forbidden）+触 Alpha.5 禁令=语义变更，非实现缺失。
+## 决策 2（已缩窄，2026-10-16 复核后）—— 仅余 R-1 一条
+**映射澄清（前版 C1/C2/C3 撤回）**：externalHard ≠ teamHardEnvelope（不同对象；Alpha.4 阶梯对 externalHard 无对应物系有意分工 ADR-a4:111）。**P1**（外部事实不在 ceiling 平面，由事实/执行面另层承担）成立且属规定性；**P2**（最终执行可被 admin 穿透外部边界）**不成立**——external-hard 形状经 ToolPolicyDocument 终局拒（"Team deny is final; no approval exists for it"）、live 三道外部闸 G1/G2/G3 17/17 含 "HUMAN allow cannot beat the external hard at the last mile"、注入 kernel 多余槽位不被读、G8 闸今日挡整个 admin leg。完整无省略探针+输出原文=hard-ceiling-object-mapping-reaudit.md 附录 A/B/C 与 pr2/probes/。
+**R-1（唯一剩余，交您裁）**：Alpha.5 plan PR2:86 + architecture.md:181 之 "确定 deny / definite denial" 是否涵盖 **teamHardEnvelope 的 deny**？
+- 狭义读（=policy/expansion 平面+undetermined）：与 Alpha.4 spec:322 相容，无需改任何东西。
+- 广义读（含 Envelope deny）：直撞 alpha4-spec §26.1:1102（反向改法明文 forbidden，active 期权威）。
+文档层级已逐处标注（冻结四份=语义权威现路径 docs/plans/finished/；alpha4/=active；alpha5 memo/=未来且其自述冲突须上交——未自动视同级）。
 
 ## 附：PUBLIC-seam 请求草案（待裁，不预设结果；源=review-PR1r.md :115-116）
 - **W-1（reviewer 首选）**：`tools/execute` waterfall **最内步之内**、`resolveExecution` 之后、`tool.execute` 之前的可拒点（形状：接收已解析 definition 的同步 veto hook；现有面为何不可达：我方 listener 全部早于 resolve）。

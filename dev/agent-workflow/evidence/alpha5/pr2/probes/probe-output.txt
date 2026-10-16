@@ -1,0 +1,37 @@
+== GATE G8 (Alpha.4 Control resolver-availability gate) ==
+CONTROL_UNRESOLVABLE_AUTHORITIES = ["human-admin"]
+hasAuthorityResolver('human-admin') = false
+
+== ARM A (baseline reproduction: teamHardEnvelope deny + human-admin reviewer) ==
+member      : bindingDocs = REFUSED AUTHORITY_BINDING_DEFECT/position-is-not-a-reviewer   grantCeiling = REFUSED AUTHORITY_BINDING_DEFECT/position-is-not-a-reviewer
+leader      : bindingDocs = [1,1]   grantCeiling = {"status":"decided","effect":"deny","matchedRules":[0]}
+human-user  : bindingDocs = [1]   grantCeiling = {"status":"decided","effect":"deny","matchedRules":[0]}
+human-admin : bindingDocs = []   grantCeiling = {"status":"decided","effect":"allow","matchedRules":[]}
+evaluateAuthorityCeiling   -> outcome=approval-required requiredAuthority=human-admin roseBecauseInsufficient=null
+evaluateEffectSetExpansion -> {"allowed":[],"needsApproval":[0],"unapprovable":null}
+planApproval               -> {"ok":true,"value":{"approvalCaseId":"tadm:ts-1:inst-2:sha256:f6c6efc971fc0f63895e429d81e4bd8b3e4a56ca892bd533fd68472056ba7777:g1","requiredAuthority":"human-admin","perEffectRequired":["human-admin"],"effectSetFingerprint":"sha256:f6c6efc971fc0f63895e429d81e4bd8b3e4a56ca892bd533fd68472056ba7777","authorityGeneration":1}}
+verifyEffectSetApproval(reviewer=human-admin) -> ACCEPTED {"reviewer":"human-admin"}
+verifyEffectSetApproval(reviewer=human-user) -> REFUSED {"code":"APPROVAL_STALE","message":"admission refused: the presented approval does not cover this execution (effect 0: the required rung rose to human-admin after the leg opened — the old reviewer cannot allow what the escalated ladder now needs)","details":{"refusal":"approval-stale","detail":"effect 0: the required rung rose to human-admin after the leg opened — the old reviewer cannot allow what the escalated ladder now needs"}}
+verifyEffectSetApproval(reviewer=leader) -> REFUSED {"code":"APPROVAL_STALE","message":"admission refused: the presented approval does not cover this execution (effect 0: the required rung rose to human-admin after the leg opened — the old reviewer cannot allow what the escalated ladder now needs)","details":{"refusal":"approval-stale","detail":"effect 0: the required rung rose to human-admin after the leg opened — the old reviewer cannot allow what the escalated ladder now needs"}}
+admit()                    -> {"kind":"requires-approval","reason":"one Alpha.4 ApprovalCase (tadm:ts-1:inst-2:sha256:f6c6efc971fc0f63895e429d81e4bd8b3e4a56ca892bd533fd68472056ba7777:g1) at rung human-admin must legally cover ALL 1 effects; per-effect rungs: 0:human-admin"}
+issueApprovedGrant()       -> MINTED grant grant:2388aeb71ecae73c40ff944a9d51c811 singleUse=true expiresAt=null events=["admission-requires-approval","admission-grant-minted","admission-approved-grant-issued"]
+consumeForExecution(grant) -> {"ok":true,"lease":null}
+consumeForExecution(again) -> REFUSED {"code":"APPROVAL_STALE","message":"grant \"grant:2388aeb71ecae73c40ff944a9d51c811\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)","details":{"refusal":"grant-consumed"}}
+
+== ARM B1 (inject external-hard-shaped DENY as an extra document slot) ==
+documents carries externalHard:{rules:[deny]} -> MINTED grant grant:2388aeb71ecae73c40ff944a9d51c811 (injection NOT READ by kernel) events=["admission-requires-approval","admission-grant-minted","admission-approved-grant-issued"]
+consumeForExecution        -> {"ok":true,"lease":null}
+grantCeiling('human-admin', DOCS_B1) = {"status":"decided","effect":"allow","matchedRules":[]}
+
+== ARM B2 (external-hard fact routed as ToolPolicyDocument deny) ==
+admit(policy=deny)         -> {"kind":"denied","value":{"kind":"denied","error":{"code":"IO_POLICY_UNSUPPORTED","message":"admission refused: the effect set is not executable as a whole (effect 0 (tool-invoke) is decided DENY by the policy — Team deny is final; no approval exists for it)","details":{"refusal":"effect-set-unapprovable","effectIndex":0,"plane":"expansion"}}}}
+issueApprovedGrant()       -> REFUSED {"code":"IO_POLICY_UNSUPPORTED","message":"admission refused: between approval and issue, effect 0 became non-executable (effect 0 (tool-invoke) is decided DENY by the policy — Team deny is final; no approval exists for it) — stale is a refusal, never a retry","details":{"refusal":"effect-set-unapprovable-at-issue","effectIndex":0}} events=[]
+
+== ARM C (policy allow, hard Envelope deny still present) ==
+admit()                    -> {"ok":true,"value":{"kind":"admitted","grant":{"grantId":"grant:2388aeb71ecae73c40ff944a9d51c811","member":{"teamSessionId":"ts-1","instanceId":"inst-2"},"callId":"call-1","realmId":"realm-a","bindingId":"bind-p2-secret-1","bindingRevision":1,"authorityGeneration":1,"parametersFingerprint":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","effects":{"effects":[{"kind":"tool-invoke","toolName":"p2.secret","resource":null}],"fingerprint":"sha256:f6c6efc971fc0f63895e429d81e4bd8b3e4a56ca892bd533fd68472056ba7777"},"singleUse":true,"issuedAt":1737000000000,"expiresAt":null}}} events=["admission-grant-minted","admission-admitted"]
+
+== ARM D (domain/policy stage-2 external-hard face, Invariant 34 / §25.4) ==
+D1 humanOverride allow + external hard deny -> {"effective":{"kind":"deny"},"note":"externalHardDeny","removedItems":["p2.secret"]}
+D2 humanOverride allow + hard allow-list excludes item -> {"effective":{"kind":"deny"},"note":"externalHardRemovedAll","removedItems":["p2.secret"]}
+D3 humanOverride allow + capabilityExists:false -> {"effective":{"kind":"deny"},"note":"capabilityMissing","removedItems":["p2.secret"]}
+probe done.
