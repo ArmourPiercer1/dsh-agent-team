@@ -16,6 +16,7 @@
  *
  * @module test/a5p1-closed-world-guard
  */
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   GOVERNANCE_ERROR_CODES,
@@ -23,6 +24,7 @@ import {
   type ToolBinding,
 } from '../../domain/tool-governance/src/index.js'
 import {
+  ASSURANCE_REALM_TRUSTED_ASSEMBLY,
   GUARD_DENIAL_REASONS,
   GUARD_ERROR_CODES,
   createGovernedSurface,
@@ -254,6 +256,60 @@ describe('the governed surface only grows through the trusted assembly', () => {
     surface.bindInheritedSurface(['read'])
     const assurance = surface.entryOf('read')?.binding.assurance
     expect(assurance?.implementationOrigin).toBe('dsh-native')
-    expect(Object.values(assurance?.assurance ?? {})).toEqual(['untested', 'untested', 'untested', 'untested', 'untested', 'untested'])
+    const dimensions = Object.values(assurance?.assurance ?? {})
+    expect(dimensions.map((d) => d.level)).toEqual(['untested', 'untested', 'untested', 'untested', 'untested', 'untested'])
+    // PR0 review M-2: `untested` is still a FULL §2.1 record — mechanism,
+    // realm, trust root and evidence are STATED (as explicit nulls), because a
+    // bare level is the overclaim §1.4 refuses and an omitted field is what
+    // lets a claim drift silent.
+    for (const dimension of dimensions) {
+      expect(dimension).toEqual({ level: 'untested', mechanism: null, realmId: ASSURANCE_REALM_TRUSTED_ASSEMBLY, trustRoot: null, evidence: null })
+    }
+  })
+  // A PR1 Binding is handed to the frozen PR0 parser as-is. If this lane ever
+  // invented a field, renamed one, or shrank a record, PR0 would refuse it —
+  // and the assembly that trusted it would be governing something no contract
+  // describes. This is the seam between the two PRs, pinned.
+  it('S6 every PR1 Binding is parseable by the frozen PR0 contract parser', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
+    surface.bindInheritedSurface(['read'])
+    surface.bind({
+      name: 'team_delegate',
+      origin: 'team-own',
+      binding: {
+        bindingId: 'team-own:session-m1:team_delegate',
+        agentScopeKey: 'session-m1',
+        toolName: 'team_delegate',
+        definitionIdentity: 'team-own:team_delegate',
+        providerId: 'dsh-agent-team',
+        implementationOrigin: 'team-trusted-extension',
+        executionBoundary: 'trusted-host',
+        assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
+        policyGeneration: 0,
+        authorityGeneration: 0,
+        revision: 1,
+        status: 'ACTIVE',
+      },
+      verified: true,
+    })
+    for (const entry of surface.snapshot()) {
+      const parsed = parseToolBinding(entry.binding)
+      if (!parsed.ok) throw new Error(`PR0 refuses the PR1 Binding for "${entry.name}": ${JSON.stringify(parsed.problems)}`)
+      expect(parsed.ok).toBe(true)
+    }
+  })
+  // PR1 reads NO clock: no deadline, no expiry, no TTL, no rate window. The
+  // finite-clock law (NaN / ±Infinity are typed fail-closed, body=0) is the
+  // ADMISSION layer's job in PR2; a clock path appearing HERE would mean this
+  // lane started making time claims of its own, so the absence is pinned.
+  it('S7 the lane reads no clock (the finite-clock law belongs to Admission, PR2)', () => {
+    const here = new URL('../tool-dispatch/', import.meta.url)
+    const banned = ['Date.now', 'new Date', 'setTimeout', 'setInterval', 'performance.now', 'process.hrtime']
+    for (const file of ['closed-world-guard.ts', 'scoped-dispatcher.ts', 'install.ts', 'index.ts']) {
+      const source = readFileSync(new URL(file, here), 'utf8')
+      const body = source.split('\n').filter((line) => !line.trimStart().startsWith('*') && !line.trimStart().startsWith('//')).join('\n')
+      const hits = banned.filter((token) => body.includes(token))
+      expect(hits, `${file} reads a clock: ${hits.join(', ')}`).toEqual([])
+    }
   })
 })
