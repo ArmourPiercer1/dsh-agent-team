@@ -1,0 +1,38 @@
+===== a5p5 lane =====
++ ]
+
+ ❯ test/a5p5-dormant-audit.test.ts:62:23
+     60|       if (text.includes('a5p5-tools')) offenders.push(relativePath)
+     61|     }
+     62|     expect(offenders).toEqual([])
+       |                       ^
+     63|   })
+     64|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 66 passed (67)
+   Start at  21:13:04
+   Duration  1.01s (transform 220ms, setup 0ms, import 362ms, tests 111ms, environment 0ms)
+
+===== audit imports findings =====
+tool-governance audit: 12 lane files, 44 edges, 19 consumer file(s)
+OK: pure-domain lane, no cycles, consumers = runtime/controlled-fs/src/cf-descriptor.ts, runtime/controlled-fs/src/cf-errors.ts, runtime/controlled-fs/src/controlled-fs.ts, runtime/controlled-fs/src/index.ts, runtime/src/plugin/live/agent-bindings.mjs, runtime/tool-admission/admission-kernel.ts, runtime/tool-admission/approval-case.ts, runtime/tool-admission/assurance-runtime.ts, runtime/tool-admission/clock.ts, runtime/tool-admission/grant-mint.ts, runtime/tool-dispatch/closed-world-guard.ts, runtime/tool-dispatch/install.ts, runtime/tool-dispatch/scoped-dispatcher.ts, tools/a5p5-tools/src/args.ts, tools/a5p5-tools/src/effects-schema.ts, tools/a5p5-tools/src/pipeline.ts, tools/a5p5-tools/src/render.ts, tools/a5p5-tools/src/spill.ts, tools/a5p5-tools/src/types.ts
+===== tsc typecheck =====
+EXIT_TSC=0
+===== rebuild dist from scratch =====
+EXIT_TSCB=0
+--- porcelain dist (empty=emit identical) ---
+ D packages/runtime/dist/packages/legacy/session-reader/errors.d.ts
+ D packages/runtime/dist/packages/legacy/session-reader/errors.d.ts.map
+ D packages/runtime/dist/packages/legacy/session-reader/errors.js
+ D packages/runtime/dist/packages/legacy/session-reader/errors.js.map
+ D packages/runtime/dist/packages/legacy/session-reader/format.d.ts
+25
+===== check:artifacts =====
+  A tracked-but-absent (stale): packages/runtime/dist/packages/runtime/policy-adapter.js.map
+  A tracked-but-absent (stale): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+  D glue placement drift (run pnpm build:composition and commit both): packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs != packages/runtime/src/plugin/live/agent-bindings.mjs
+ALL_DONE
