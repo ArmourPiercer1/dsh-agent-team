@@ -1,0 +1,6 @@
+# verbatim: first-time attempt to run tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs in this worktree (2026-10-16, environment probe by alpha5-pr8-runner writer; read-only w.r.t. repo tree)
+FATAL Error: p00-fixture: pristine package dir missing: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/tests/deepseek-harness-test-use/vendor/cordis (is the test-use checkout built?)
+    at ensureResolvable (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs:47:13)
+    at makeFixture (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/dev/agent-workflow/evidence/alpha5-adapter-p0/00-baseline/p00-fixture.mjs:90:3)
+    at arm (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs:104:21)
+    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-pr8-runner/tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs:507:51)
