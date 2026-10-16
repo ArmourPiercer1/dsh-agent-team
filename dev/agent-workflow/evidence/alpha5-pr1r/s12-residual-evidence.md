@@ -29,7 +29,7 @@ filing them under the excluded "attacker rewrites Host memory" class.
 | 1 | **R-a**: a name's native standing is earned by comparing TWO public reads, not by membership in a name list. `tools.get(name)` (no scope) is the registry's **global view** — the same view the trusted native list was read out of — and `tools.get(name, scope)` is what **this Agent** resolves. Agreement is the price of a verified `native:` Binding | the pinned `view()` puts a scope's own registrations last, "shadowing an inherited name and outside the filter above" (`packages/core/tools/src/index.ts` @ `639ed01539`), so a per-agent variant of a native name is admitted by the Host's own advice ("for a per-agent variant, register through that agent's agent.ctx"). Pinned by `a5p1r-shadow-attribution.test.ts` (8 tests), `a5p1-closed-world-guard.test.ts` R1R/R1R-b/R1R-c, and by the real-registry kit leg `R1R-SHADOW` |
 | 2 | Disagreement, and an unreadable trusted side, are **typed and separate**: `native-shadowed` / `native-unreadable`, each with its own message; both bind the name **UNVERIFIED** (governed, loud, refused at dispatch) instead of crediting it | `GOVERNED_UNVERIFIED_REASONS` + `GUARD_DENIAL_REASONS.NATIVE_SHADOWED / NATIVE_UNREADABLE` in [`closed-world-guard.ts`](../../../../packages/runtime/tool-dispatch/closed-world-guard.ts); `guardDecision` now states the recorded fact instead of flattening every case into `binding-unverified` (pinned: R1R-c, D15/D16, `R2`) |
 | 3 | **R-b**: the `tools/execute` door (the door nearest the Body) re-asks the whole closed-world question, not only "is the Dispatcher ACTIVE" | the Guard stage runs at `:1519`, i.e. after `pre-execute`, while `dispatchToolBody` → `resolveExecution` runs at `:1578`, after every listener: a re-registration between them used to be validated by nobody. Pinned by `a5p1r-validate-resolve.test.ts` and the kit runner's `RW-INNER-DOOR` arm |
-| 4 | **B3 (ruled, this round)**: what still cannot be refused at a seam is **cancelled before its Body**. The door arms a watch on the Definition identity it validated; the `tools/change` notification moves that watch; the watch's cancellation is what the Host reads at `:1572`, ahead of `resolveExecution` (`:1578`) — so the call is refused without any Body being resolved or invoked, and `bodyInvoked` stays false. The rejected design (a door that never calls `next()`) is not used; the native execute chain still runs | `pending-calls.ts` + `install.ts` `armWrapperSignal` (signal-wrapper contract `index.ts:155-159`); pinned by `a5p1r-change-abort.test.ts` and by the kit's `RW-AFTER-DOOR-BODY-ZERO` (real registry, body count 0). **Supersedes the previous row 4**, which claimed the exposure was "one call … never a standing state" — see the retraction below; that claim and its criterion are withdrawn |
+| 4 | **B3 (ruled; 运行接线验收挂 G-a — see (i))**: what still cannot be refused at a seam is **cancelled before its Body** — where the mechanism can act, and only there. The door arms a watch on the Definition identity it validated; the `tools/change` notification moves that watch; the watch's cancellation is what the Host reads at `:1572`, ahead of `resolveExecution` (`:1578`) — so the call is refused without any Body being resolved or invoked, and `bodyInvoked` stays false. The rejected design (a door that never calls `next()`) is not used; the native execute chain still runs | `pending-calls.ts` + `install.ts` `armWrapperSignal` (signal-wrapper contract `index.ts:155-159`); pinned by `a5p1r-change-abort.test.ts` and by the kit's `RW-AFTER-DOOR-BODY-ZERO` (real registry, body count 0). **Supersedes the previous row 4**, which claimed the exposure was "one call … never a standing state" — see the retraction below; that claim and its criterion are withdrawn. **Qualification (follow-up round, docs only)**: "cancelled" here is conditional on the channel having spoken and on the call not already being past `:1572`; the mechanism rests on three Host implementation facts pinned in [seam-record 增补](seam-record-post-door-resolution.md) §增补 (`pending-calls.ts:148-157`, `:1576`, `:1580`) and not on a public seam |
 | 5 | An explicit re-bind by the trusted assembly now carries `revision = (in force ?? 0) + 1`. PR1's own law is "a change is a strictly higher immutable revision", but `bindAll` always wrote `revision: 1`, so the documented "refuse + re-bind" recovery could not actually re-bind a drifted name | `install.ts` `bindAll`; observable in the second half of `R1R-SHADOW` (the same world, bound explicitly, runs the Body) |
 | 6 | The **kit's own** `pr1-*` arms take the documented `bindOwnTools` path for their adapter. Merged PR1 let them ride the very hole R-a closes — their adapter is a same-name shadow of a native name — so the legs measured what they claim *for the wrong reason* | `a5p1-order-hazard.mjs`'s pr1 branch. All nine `NEG1-*` legs pass unchanged with the explicit bind, which is what makes the count comparable: 22 → 23, one leg added, none weakened |
 | 7 | `tools/change` is proven **not** to be a safety mechanism in this window: an arm of the runner makes that registration throw, and the refusal still happens with the same typed reason | `a5p1r-rereg-window.mjs`'s `guarded-pre-execute-no-change` arm ⇒ `RW-F2-ISOLATED` |
@@ -184,7 +184,8 @@ here rather than in §(e)'s scan inventory.)
   now the rule, so the sentence "a native name ALREADY shadowed at publish time … enters
   governance as verified" no longer describes this lane.
 * R-b's Guard→inner-door half: refused at the door nearest the Body (`RW-INNER-DOOR`).
-* R-b's post-door half is **closed by the ruled mechanism** (this round): the moved Definition
+* R-b's post-door half is **closed by the ruled mechanism — conditionally, and with its run wiring
+  accepted only at G-a**: the moved Definition
   cancels the un-executed call and the Host refuses it before dispatch — `RW-AFTER-DOOR-BODY-ZERO`,
   `v1=0 v2=0 secondCallV2=0`, RED pair `runs/B3-after-door-RED.json` (`v2=1`) →
   `runs/B3-after-door-GREEN.json` (`v2=0`). The previous sentence in this file — "bounded rather
@@ -239,3 +240,35 @@ the runner-side repair.
 | R1 — R-a attribution rule vs the PR1 threat model (no re-wording) | _(empty)_ | _(empty)_ | _(empty)_ |
 | R2 — R-b posture: is "one call, then withdrawn" the honest claim, and is the seam record complete? | _(empty)_ | _(empty)_ | _(empty)_ |
 | R3 — kit honesty: 22 → 23 legs, and whether the explicit-bind change weakened anything | _(empty)_ | _(empty)_ | _(empty)_ |
+
+## (i) 增补（后续修复轮，文档 only）— 三事实 / 三候选修法 / 两处口径限定
+
+**G-d 纪律：本节与 seam-record 增补所述 (ii) 机制，其运行接线验收挂 G-a（(ii) 语义待用户裁）；
+本节不验收接线、不改实现，只把文档口径与机制实际所依赖之物对齐。**
+
+1. **`raise` 无 body 门槛** — `packages/runtime/tool-dispatch/pending-calls.ts:148-157`：
+   `onRegistryChange` 对每个 `watched` 记录（身份移动或不可读）**统一 abort**，没有也不可能有
+   "Body 是否已开始"的判据（见第 3 条）。因此"取消"与"终止"的分界不在 lane 手里，只由 Host 的
+   `:1572` 检查决定。
+2. **融合传播 `:1576`**（`exec.signal = signal`）：安装在 `:1572` 拒绝检查**之后**，且被检查的就是
+   同一个融合信号。故本机制的成立完全系于 `:1572` 一处；若上游把该检查移到 Body 之后、或改为
+   重新导出信号而非融合，所有"取消"会**静默退化为"终止"**，而 lane 仍会如实报告结果码——即性质
+   消失而叙述仍真。此为无公开契约固定的实现依赖。
+3. **body-start 无公开可观察性 `:1580`**（`state.bodyInvoked = true` 为私有字段）：无公开事件宣告
+   Body 已开始。lane 的取消/终止区分因此是**结果形状**（settled edge 读两个规范码），不是事件形状；
+   `dispatcher-call-outcome-unreadable` 正是为"码读不到时不把推断当事实"而存在。
+
+**三个候选修法**：① 上游 pre-body 事件（可拒绝、可观察 body 前缘）⇒ 需 Core ⇒ CORE_SEAM_BLOCKER 类；
+② 上游 resolution-pinned（钉住已解析 Definition，窗口整体消失，且不再依赖 F2 复读）⇒ 需 Core，对本威胁模型
+严格优于 ①；③ 裁决语义（把"定义已移动且 Body 可能已开始"上升为治理裁决：turn 级中止/重投或结果标记不可信）
+⇒ 不需 Core，但把取消语义上移至 Session 层，且需 G-a 所候的用户裁决。
+
+**"closed by ruled mechanism" 的限定读法**：= 对"机制能作用的那一类"（调用尚未被 dispatch 时定义移动）闭合，
+且其正确性依赖上述三条实现事实；**不等于**对静默通道闭合、**不等于**对与已开始 Body 竞争的移动闭合（后者按
+设计是终止、按已执行上报）、**不等于**由公开 seam 闭合。可检查的形式即 kit 的 `RW-AFTER-DOOR-BODY-ZERO` 与
+`RW-CHANGE-INERT-LOUD` 两条判据。
+
+**静默通道降级=名字级（精确表述）**：`tools/change` 已订阅但未投递时，实测（`RW-CHANGE-INERT-LOUD`：`v2=1` +
+`dispatcher-call-executed-unvalidated` + alarm）在飞调用**未被取消**（没有任何东西能取消它）；lane 做的是在该
+调用 settled edge **撤回该名字的 Binding**，于是该名字**后续**调用被拒，直到显式 re-bind。故可主张："被漂移的
+名字在其下一次调用前被钉住"；**不可**主张："被漂移名字的进行中调用被取消"（后者仅在通道确实投递时成立）。

@@ -114,3 +114,81 @@ retirement condition    : the mechanism retires when upstream offers option (1) 
                          Until then `RW-AFTER-DOOR-BODY-ZERO` asserts the body count is zero, so
                          the boundary cannot silently be re-labelled a pass OR a residual.
 ```
+
+## 增补（后续修复轮，文档 only）— 机制所依赖的三条实现事实、三个候选修法、两处口径限定
+
+> **G-d 纪律标注（先说适用范围）**：本文所描述的 (ii) 机制，其**运行接线验收挂 G-a**——
+> 用户尚未裁 (ii) 的语义（必改点 2 已上报，G-a 冻结该保证的运行接线验收）。本节**不构成**
+> 对该接线的验收，也不改变任何实现；它只把"文档口径"补到与机制实际所依赖的东西一致。
+
+```
+fact 1 — the raise has    : packages/runtime/tool-dispatch/pending-calls.ts:148-157.
+  no body gate            `onRegistryChange` walks every `watched` record and calls `raise(...)`
+                          for each one whose identity moved (or cannot be read). There is NO
+                          "has this call's Body started?" test — and the ledger CANNOT have one:
+                          nothing it can observe says so (fact 3). So the lane's action is
+                          uniformly "abort", and what separates a cancellation from a termination
+                          is decided entirely by the Host's own check at `:1572`, not by anything
+                          the lane knows at the moment it raises.
+fact 2 — the propagation  : packages/core/tools/src/index.ts:1576, `exec.signal = signal`.
+  point and what rides      The fused signal is installed on the execution AFTER the `:1572`
+  on it                     refusal check, and it is the same object that check consulted. Two
+                          consequences the record must own: (a) the wrapper-signal route works
+                          because `:1572` consults the fused signal — the guarantee is `:1572`'s
+                          and only `:1572`'s; (b) if a future Host revision moves that check
+                          after the Body starts, or re-derives the signal instead of fusing it,
+                          every "cancellation" here silently becomes a "termination" — with the
+                          lane still reporting accurately (it reads the resulting codes) and the
+                          property it was installed for gone. That is an implementation dependency
+                          no public contract currently pins.
+fact 3 — body start is    : packages/core/tools/src/index.ts:1580, `state.bodyInvoked = true`.
+  not publicly observable   This is a private field of the registry's cancellation state. No public
+                          event fires when the Body starts. The lane therefore learns
+                          "the Body ran" only RETROSPECTIVELY, from the two canonical codes on the
+                          settled edge. Its cancel/terminate distinction is RESULT-shaped, not
+                          event-shaped — which is exactly why `dispatcher-call-outcome-unreadable`
+                          exists: when the codes cannot be read, the lane declines both claims
+                          instead of promoting an inference into a fact.
+qualification of          : "closed by ruled mechanism" means: closed FOR THE CLASS THE MECHANISM
+  "closed by ruled          CAN ACT ON (a Definition that moved while the call has not been
+  mechanism"                dispatched), BY A MECHANISM whose correctness rests on the three
+                          implementation facts above. It does NOT mean: closed against a silent
+                          notification channel (nothing can cancel then — see the precision note),
+                          nor against a move that races an already-started Body (that one is
+                          TERMINATION, reported as executed, by design), nor closed by a public
+                          seam. Until one of the candidate routes below exists, the honest form of
+                          the claim is "closed, conditionally, by a wrapper contract plus three
+                          implementation facts" — and the kit criteria named BODY-ZERO / INERT-LOUD
+                          are what keep that form checkable rather than aspirational.
+candidate route 1         : a public pre-body step — a `tools/pre-body` (or making `:1572`'s
+  (upstream)                decision point a waterfall step) invoked after resolution and before
+                          invocation. Then refusal is a first-class act, the lane needs no signal
+                          proxy, and "did the Body start" becomes observable rather than inferred.
+                          Needs Core ⇒ CORE_SEAM_BLOCKER class; this lane will not route around it.
+candidate route 2         : resolution-pinned execution — `createExecution` pins the resolved
+  (upstream)                Definition into the execution and `dispatchToolBody` runs THAT instead
+                          of `resolveExecution(exec.name, …)`. The whole window disappears (and the
+                          pre-execute window stops depending on F2's re-read). Needs Core; same
+                          blocker class; strictly better than route 1 for the threat model because
+                          it removes the re-resolution rather than gating it.
+candidate route 3         : adjudication semantics — treat "the Definition moved and this call's
+  (this side, not          Body may already have started" as a governance decision rather than a
+  upstream)               dispatch one: e.g. an in-flight move forces a turn-level abort/re-drive of
+                          the affected member, or the result is marked untrusted and adjudicated.
+                          Reachable without Core (it lives in runtime/team semantics), at the cost
+                          of moving cancellation semantics up to the Session layer — and it needs
+                          the user ruling that G-a is holding.
+precision note on the     : when `tools/change` is subscribed but delivers nothing, what the lane
+  silent channel           degrades to is NAME-LEVEL, not call-level. Measured (`RW-CHANGE-INERT-
+                           LOUD`: `v2=1` + `dispatcher-call-executed-unvalidated` + alarm): the
+                           in-flight call is NOT cancelled — nothing can cancel it — and what the
+                           lane does instead is withdraw that NAME's Binding at the settled edge,
+                           so the name's FURTHER calls are refused until an explicit re-bind. The
+                           defensible sentence is therefore: "the moved name is pinned out before
+                           its next call". NOT: "in-flight calls of the moved name are cancelled"
+                           (that claim belongs only to the case where the channel actually spoke).
+```
+
+Cited lines were re-read at the pinned baseline (`0.2.0-rc.2` @ `639ed01539`) and at this
+branch's own `packages/runtime/tool-dispatch/pending-calls.ts`; the two Host facts are quoted with
+their line numbers as they appear there, not paraphrased from the previous round's notes.
