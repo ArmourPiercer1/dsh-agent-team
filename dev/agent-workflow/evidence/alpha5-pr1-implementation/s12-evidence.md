@@ -78,7 +78,7 @@ not a narrative.
 ## (d) real Host Run Receipt (required)
 
 [`../alpha5-pr1-host/final/run-receipt.md`](../alpha5-pr1-host/final/run-receipt.md)
-— same directory: `summary.json` (21/22-verdict table incl. the 8 order arms),
+— same directory: `summary.json` (the 21-criterion table: 8 order arms + 13 Host legs, all pass),
 `kit.log`, redacted `instance.log`, `guard-observations.txt`,
 `undeclared-team-tool-evidence.json`, `inherited-native-observation.json`,
 `member-model-views.json`, `row-state-final.json`, `blueprints/`,
