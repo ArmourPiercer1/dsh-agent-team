@@ -429,7 +429,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     expect(planned.value.requiredAuthority).toBe('human-user') // 升阶 IS the owning-authority answer
     const asLeader = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'leader', requiredAuthorityAtCreation: 'human-user' }))
     expect(asLeader.ok).toBe(false) // the rung the deny is bound at cannot sign over its own deny
-    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user', deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-user' }] }))
     expect(asUser.ok).toBe(true)
     expect(ports.registrations).toBe(1)
   })
@@ -443,7 +443,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     if (!planned.ok) throw new Error(JSON.stringify(planned))
     expect(planned.value.requiredAuthority).toBe('human-admin') // admin: the top rung INSIDE envelope support
     const policyBefore = JSON.stringify(denyWrite)
-    const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin' }))
+    const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin', deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-admin' }] }))
     if (!issued.ok) throw new Error(JSON.stringify(issued))
     expect(issued.ok).toBe(true) // a SINGLE-USE grant — no policy document was, or had to be, changed
     expect(JSON.stringify(denyWrite)).toBe(policyBefore) // ④ the policy bytes are byte-identical across the mint — an approval is not a mutation
@@ -470,7 +470,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(JSON.stringify(planned))
     expect(planned.value.requiredAuthority).toBe('human-admin') // ONE case at the set MAX
-    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user', deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-user' }] }))
     expect(asUser.ok).toBe(false) // covering the read is covering nothing: ALL effects or none
   })
 
@@ -537,7 +537,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
       const leaderLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { requiredAuthorityAtCreation: 'human-user' }))
       expect(leaderLeg.ok).toBe(false) // 'may not review' — its own authority's deny
       expect(ports.registrations).toBe(0)
-      const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+      const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user', deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-user' }] }))
       if (!issued.ok) throw new Error(`(a) issue: ${JSON.stringify(issued)}`)
       expect(ports.registrations).toBe(1)
     }
@@ -567,7 +567,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
       expect(planned.value.requiredAuthority).toBe('human-admin')
       const userLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-admin' }))
       expect(userLeg.ok).toBe(false) // not its deny to lift
-      const adminLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin' }))
+      const adminLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin', deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-admin' }] }))
       if (!adminLeg.ok) throw new Error(`(c) admin: ${JSON.stringify(adminLeg)}`)
       expect(ports.registrations).toBe(1)
     }
@@ -642,14 +642,14 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     })
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(`plan: ${JSON.stringify(planned)}`)
-    expect(planned.value.deniedEffects).toEqual([{ effectIndex: 0, requiredAuthority: 'human-user' }])
+    expect(planned.value.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
     second = true
     const issued = await kernel.issueApprovedGrant(
       request,
       approvalFor(request, {
         reviewerAuthority: 'human-user',
         requiredAuthorityAtCreation: 'human-user',
-        deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-user' }],
+        deniedEffectsAtCreation: [{ effectIndex: 1, requiredAuthority: 'human-user' }],
       }),
     )
     expect(issued.ok).toBe(false) // pre-fix: the MAX rung is unchanged, so this MINTS over the late deny
