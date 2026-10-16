@@ -1,0 +1,6 @@
+abi-probe: kind=abi-available version=4
+leg selective: verdict=ENFORCE-CONFIRMED rc=0
+leg denyall: verdict=ENFORCE-CONFIRMED rc=0
+leg badhandled: verdict=DEMO-CONFIRMED rc=0
+leg fd-close: verdict=FD-CLOSURE-CONFIRMED rc=0
+leg confined-exec: rc=0 deny-says-permission-denied=true secret-leaked=false
