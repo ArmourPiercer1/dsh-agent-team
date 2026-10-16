@@ -49,15 +49,30 @@ const PERMITTED_OUTSIDE = [
  * lane `runtime/tool-admission/**` (Operation Admission, the multi-effect Ask
  * on the one ApprovalCase, the one-shot grant — the frozen §5 vocabulary, the
  * grant algebra and the plane functions, imported not restated; live wiring
- * rides with the first PR that executes through it, PR3/PR4).
+ * rides with the first PR that executes through it, PR3/PR4). PR3 (Alpha.5
+ * C-FS lane, merged 74d947a3; review provenance PR #259 review 23dc3bd1): the
+ * ControlledFs lane `runtime/controlled-fs/src/**` (4 consumer files) imports
+ * the frozen §5 vocabulary and the C-FS error classes. PR5 (Alpha.5 tools
+ * lane, merged d69bfc4b; review provenance PR #260 review 5ccc5839): the
+ * Search/Shell schema + pipeline `tools/a5p5-tools/src/**` (6 consumer
+ * files), same posture. Both registrations book a REAL ledger debt (the
+ * merges landed the imports without paying the consumer set — an earlier
+ * round's "audit IDENTICAL to baseline" preserved the red, it did not clear
+ * it); registered per the integration coordinator's instruction. Exceptions
+ * stay reserved for name-appears-without-reference forms, never consumers.
  * Anything else that mentions the lane is a finding — a second consumer is a
- * design change, not an import accident.
+ * design change, not an import accident. The exact FILE set is pinned
+ * independently by packages/domain/test/a5p0-layer-audit.test.ts, so a
+ * subtree prefix cannot smuggle a new file past review.
  */
 const PR1_CONSUMERS = Object.freeze([
   'runtime/tool-dispatch/',
   'runtime/src/plugin/live/agent-bindings.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
+  // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
+  'runtime/controlled-fs/src/',
+  'tools/a5p5-tools/src/',
 ])
 
 const SPECIFIER_PATTERNS = [

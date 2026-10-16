@@ -34,8 +34,20 @@ describe('the tool-governance lane audit', () => {
   // NAMED SET — and this file pins the set, not just its emptiness: a new
   // consumer is a design change that has to appear here, and a disappeared
   // one is a broken wire.
-  it('the consumer set is exactly the reviewed PR1+PR2 wiring (no accretion)', () => {
+  //
+  // PR3 (controlled-fs/src ×4, review #259@23dc3bd1) and PR5 (a5p5-tools/src
+  // ×6, review #260@5ccc5839) merged WITH their lane imports already present
+  // but WITHOUT paying this set — a real ledger debt that carried this audit
+  // red on master since those merges. The integration round books the debt
+  // against the PR3/PR5 review provenance, file-by-file; the subtree prefixes
+  // in the audit script cannot smuggle a file this list does not name, so
+  // "no accretion" keeps biting exactly as before.
+  it('the consumer set is exactly the reviewed PR1+PR2+PR3+PR5 wiring (no accretion)', () => {
     expect(verdict.consumers).toEqual([
+      'runtime/controlled-fs/src/cf-descriptor.ts',
+      'runtime/controlled-fs/src/cf-errors.ts',
+      'runtime/controlled-fs/src/controlled-fs.ts',
+      'runtime/controlled-fs/src/index.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
       'runtime/tool-admission/admission-kernel.ts',
       'runtime/tool-admission/approval-case.ts',
@@ -45,6 +57,12 @@ describe('the tool-governance lane audit', () => {
       'runtime/tool-dispatch/closed-world-guard.ts',
       'runtime/tool-dispatch/install.ts',
       'runtime/tool-dispatch/scoped-dispatcher.ts',
+      'tools/a5p5-tools/src/args.ts',
+      'tools/a5p5-tools/src/effects-schema.ts',
+      'tools/a5p5-tools/src/pipeline.ts',
+      'tools/a5p5-tools/src/render.ts',
+      'tools/a5p5-tools/src/spill.ts',
+      'tools/a5p5-tools/src/types.ts',
     ])
   })
 
