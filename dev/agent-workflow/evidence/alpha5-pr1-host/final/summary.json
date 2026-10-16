@@ -1,5 +1,5 @@
 {
-  "runStamp": "2026-10-16T07-30-38",
+  "runStamp": "2026-10-16T07-35-26",
   "hostBaseline": {
     "version": "0.2.0-rc.2",
     "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
@@ -7,7 +7,7 @@
   },
   "port": 3185,
   "world": {
-    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-35-26",
     "disposition": "removed"
   },
   "criteria": [
@@ -75,7 +75,7 @@
       "id": "C1b",
       "name": "team.create (remote HTTP) starts the governed team session",
       "ok": true,
-      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-k973swisce\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:d290752fa9"
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-i3pagt52f8\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-35-26\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:6f5a39166e"
     },
     {
       "id": "C1c",
@@ -87,25 +87,25 @@
       "id": "C2a",
       "name": "the governed Leader is refused with a typed, readable reason when it asks for a Team tool nothing bound",
       "ok": true,
-      "detail": "asked=1 results=[{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"}]"
+      "detail": "asked=1 results=[{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"}]"
     },
     {
       "id": "C2b",
       "name": "the undeclared Team tool BODY produced no effect on the governed lane (PoC H6 recorded its equivalent running: dynRan=true)",
       "ok": true,
-      "detail": "results=[\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\"]"
+      "detail": "results=[\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\"]"
     },
     {
       "id": "C3",
       "name": "a governed allowed call still runs (the closed world closes a world, it does not shut the Agent down)",
       "ok": true,
-      "detail": "read=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-se"
+      "detail": "read=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-35-26/workspace/a5p1-se"
     },
     {
       "id": "C4",
       "name": "the SAME tool still runs on the permissions-less legacy lane (zero interference)",
       "ok": true,
-      "detail": "legacyLaneSaw=[{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-seed.txt</pa\"},{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-ctl.sideeffe\"}] sideEffect=A5P1_RAN_ctl_2026-10-16T07-30-38"
+      "detail": "legacyLaneSaw=[{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-35-26/workspace/a5p1-seed.txt</pa\"},{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-35-26/workspace/a5p1-ctl.sideeffe\"}] sideEffect=A5P1_RAN_ctl_2026-10-16T07-35-26"
     },
     {
       "id": "C4b",
