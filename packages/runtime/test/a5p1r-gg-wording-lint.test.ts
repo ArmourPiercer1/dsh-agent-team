@@ -22,7 +22,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { fileURLToPath } from 'node:url'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import {
   lintMarkdownText,
   lintPendingGatesText,
