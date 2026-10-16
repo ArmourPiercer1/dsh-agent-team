@@ -52,10 +52,12 @@ import {
 import {
   createGovernedSurface,
   guardDecision,
+  type GovernedUnverifiedReason,
   type GuardExecView,
   type GovernedOrigin,
   type GovernedSurface,
   type GuardVerdict,
+  type InheritedSurfaceBinding,
 } from './closed-world-guard.js'
 
 /** One outstanding call the Dispatcher handed out (self-counted). */
@@ -183,13 +185,31 @@ export interface ScopedDispatcher {
   readonly maskMayLift: () => boolean
   readonly bindInheritedSurface: (
     names: readonly string[],
-    identities?: Readonly<Record<string, string>>,
-  ) => { readonly verifiedBound: number; readonly unverifiedBound: number; readonly unverified: readonly string[] }
+    resolved: Readonly<Record<string, string>>,
+    trusted: Readonly<Record<string, string>>,
+  ) => InheritedSurfaceBinding
+  /**
+   * The call EDGE re-check (the residual round's R-b posture). The pinned
+   * registry resolves the Body of a call INSIDE its innermost step — after the
+   * Guard stage and after every `tools/execute` listener — so a legal
+   * re-registration in that last gap can put a Body on the wire that no public
+   * seam ever saw. Nothing can refuse it there (the exact seam gap is recorded
+   * in the PR1-residual §12 in PoC-1 form), so this lane refuses it as early as
+   * it CAN be refused: at the settled edge of the very call that carried it.
+   * The verification is withdrawn on the spot, so the exposure is bounded at one
+   * call and can never repeat without an explicit re-bind by the assembly.
+   */
+  readonly noteCallEdgeDefinition: (name: string) => {
+    readonly checked: boolean
+    readonly moved: boolean
+    readonly detail: string
+  }
   readonly bind: (input: {
     readonly name: string
     readonly origin: GovernedOrigin
     readonly binding: ToolBinding
     readonly verified?: boolean
+    readonly unverifiedReason?: GovernedUnverifiedReason
   }) => GovernanceResult<void>
   /** Binding CHANGE = a new immutable revision under the same identity. */
   readonly revise: (
@@ -280,6 +300,7 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
       readonly authorityGeneration?: number
       readonly assurance?: ToolBinding['assurance']
       readonly verified?: boolean
+      readonly unverifiedReason?: GovernedUnverifiedReason
     },
   ): GovernanceResult<void> => {
     const entry = surface.entryOf(name)
@@ -294,7 +315,16 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
       ...(change.assurance === undefined ? {} : { assurance: change.assurance }),
     })
     const verified = change.verified ?? entry.verified
-    const outcome = surface.bind({ name, origin: entry.origin, binding: next, verified })
+    const outcome = surface.bind({
+      name,
+      origin: entry.origin,
+      binding: next,
+      verified,
+      // A revision that lands UNVERIFIED states why. In this lane a revision is
+      // only ever downgraded because the definition moved, unless the caller
+      // (the call-edge re-check below) says otherwise.
+      ...(verified ? {} : { unverifiedReason: change.unverifiedReason ?? 'definition-drift' }),
+    })
     if (!outcome.ok) {
       observe({ event: 'dispatcher-revise-refused', tool: name, detail: outcome.error.message })
       return outcome
@@ -307,6 +337,49 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
 
   /** Withdraw a Binding's verification as a new immutable revision. */
   const reviseEntry = (name: string): GovernanceResult<void> => reviseImpl(name, { verified: false })
+
+  /**
+   * The R-b call-edge posture, in one place: after a call SETTLED, look the name
+   * up again through the same public seam and, if what it resolves to now is not
+   * what this Binding pinned, withdraw the verification NOW — not at some later
+   * call that already had to re-read it. `moved` is the honest word for "the
+   * Body this call ran may not have been the one the Guard validated"; the seam
+   * that would let this lane refuse earlier is recorded as missing in the
+   * PR1-residual §12 (PoC-1 format).
+   */
+  const noteCallEdgeDefinition = (name: string): { checked: boolean; moved: boolean; detail: string } => {
+    const entry = surface.entryOf(name)
+    if (entry === undefined) return { checked: false, moved: false, detail: `no Binding for "${name}" on this surface` }
+    if (!entry.verified) return { checked: false, moved: false, detail: `the Binding for "${name}" is already unverified` }
+    const probe = readDefinition(name)
+    if (!probe.ok) {
+      const revised = reviseImpl(name, { verified: false, unverifiedReason: 'definition-unreadable' })
+      observe({
+        event: 'dispatcher-definition-change-at-call-edge',
+        tool: name,
+        moved: true,
+        reason: 'definition-unreadable',
+        pinned: entry.binding.definitionIdentity,
+        downgraded: revised.ok,
+      })
+      return { checked: true, moved: true, detail: probe.detail }
+    }
+    if (probe.fingerprint === entry.binding.definitionIdentity) {
+      return { checked: true, moved: false, detail: 'the settled edge still resolves the Definition this Binding pinned' }
+    }
+    const revised = reviseImpl(name, { verified: false, unverifiedReason: 'definition-drift' })
+    observe({
+      event: 'dispatcher-definition-change-at-call-edge',
+      tool: name,
+      moved: true,
+      reason: 'definition-drift',
+      pinned: entry.binding.definitionIdentity,
+      current: probe.fingerprint,
+      downgraded: revised.ok,
+      note: 'the definition moved between the Guard stage and this call edge; the verification is withdrawn at THIS call, so at most one Body ran un-validated and none can follow it without an explicit re-bind',
+    })
+    return { checked: true, moved: true, detail: `pinned=${entry.binding.definitionIdentity} now=${probe.fingerprint}` }
+  }
 
   const readDefinition = (name: string): DefinitionProbe => {
     const resolver = options.resolveDefinition
@@ -515,8 +588,8 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
     },
     hostDisposeReturned: () => hostDisposeReturned,
     maskMayLift: () => status === 'RELEASED',
-    bindInheritedSurface: (names, identities) => {
-      const result = surface.bindInheritedSurface(names, identities)
+    bindInheritedSurface: (names, resolved, trusted) => {
+      const result = surface.bindInheritedSurface(names, resolved, trusted)
       // LOUD, by construction: whatever was observed but could not be trusted
       // is reported the moment the surface is taken, not at first call.
       observe({
@@ -525,14 +598,37 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
         verified: result.verifiedBound,
         unverified: result.unverified,
       })
+      if (result.shadowed.length > 0) {
+        // R-a gets its own event: these are names the assembly BELIEVED were
+        // native, each with the two identities that said otherwise.
+        observe({
+          event: 'dispatcher-native-shadowed',
+          names: result.shadowed.map((row) => row.name),
+          detail: result.shadowed.map((row) => `${row.name}: trusted=${row.trusted} resolved=${row.resolved}`).join(', '),
+        })
+      }
+      if (result.nativeUnreadable.length > 0) {
+        observe({
+          event: 'dispatcher-native-unreadable',
+          names: result.nativeUnreadable,
+          detail: 'the trusted (global) side of the definition read was unavailable for these names',
+        })
+      }
       return result
     },
-    bind: ({ name, origin, binding, verified = true }) => {
-      const outcome = surface.bind({ name, origin, binding, verified })
+    bind: ({ name, origin, binding, verified = true, unverifiedReason }) => {
+      const outcome = surface.bind({
+        name,
+        origin,
+        binding,
+        verified,
+        ...(unverifiedReason === undefined ? {} : { unverifiedReason }),
+      })
       if (!outcome.ok) observe({ event: 'dispatcher-bind-refused', tool: name, code: outcome.error.code })
       return outcome.ok ? { ok: true, value: undefined } : outcome
     },
     revise: (name, change) => reviseImpl(name, change),
+    noteCallEdgeDefinition,
     revalidateSurface: (observedNames, identities) => {
       const observed = new Set(observedNames)
       const governed = new Set(surface.names())

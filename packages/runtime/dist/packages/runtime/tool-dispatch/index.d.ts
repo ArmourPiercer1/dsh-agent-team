@@ -32,8 +32,8 @@
  *
  * @module @dsh-agent-team/runtime/tool-dispatch
  */
-export { GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, GOVERNED_ORIGINS, createGovernedSurface, guardDecision, guardDenialMessage, ASSURANCE_REALM_TRUSTED_ASSEMBLY, untestedAssurance, } from './closed-world-guard.js';
-export type { GovernedEntry, GovernedOrigin, GovernedSurface, GovernedSurfaceOptions, GuardDecisionInput, GuardDenialReason, GuardExecView, GuardScopeIdentity, GuardVerdict, } from './closed-world-guard.js';
+export { GOVERNED_UNVERIFIED_REASONS, GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, GOVERNED_ORIGINS, createGovernedSurface, guardDecision, guardDenialMessage, ASSURANCE_REALM_TRUSTED_ASSEMBLY, untestedAssurance, } from './closed-world-guard.js';
+export type { GovernedEntry, GovernedOrigin, GovernedUnverifiedReason, InheritedSurfaceBinding, GovernedSurface, GovernedSurfaceOptions, GuardDecisionInput, GuardDenialReason, GuardExecView, GuardScopeIdentity, GuardVerdict, } from './closed-world-guard.js';
 export { createScopedDispatcher } from './scoped-dispatcher.js';
 export type { CallToken, DispatcherObservation, ScopedDispatcher, ScopedDispatcherOptions, } from './scoped-dispatcher.js';
 export { hostExecToView, installScopedToolGuard, requireService } from './install.js';

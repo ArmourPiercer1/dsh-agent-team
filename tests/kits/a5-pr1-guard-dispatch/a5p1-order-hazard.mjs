@@ -136,11 +136,16 @@ async function main() {
     let handle = null
     if (order.startsWith('pr1')) {
       // The assembly's trusted native list, read the way production reads it:
-      // the Host's GLOBAL view (no scope). `grep` is registered globally by the
-      // fixture, so it is native-eligible; the Agent-scoped adapter that shadows
-      // it under the same name is NOT, and the definition this arm pins is the
-      // one the scope actually resolves (the shadowing adapter) — which is what
-      // makes the body swap in the R2 family visible at all.
+      // the Host's GLOBAL view (no scope). `grep` IS on that list, and this
+      // Agent's scope resolves the name to the Team adapter that shadows it —
+      // two public reads that DISAGREE, which since the PR1-residual round is
+      // precisely the case that may NOT inherit a native verification. So this
+      // arm does what the Team assembly does with its own Definition: it binds
+      // the name EXPLICITLY (`bindOwnTools`), which pins the adapter Body under
+      // the `team-own:` family. Everything these arms measure — the park, the
+      // lease, the drain, the mask — is unchanged by that; what changed is that
+      // the Binding is now the honest one. The refusal to inherit is measured by
+      // the R1R-SHADOW leg, which runs the SAME world with and without that bind.
       let nativeNames = []
       try {
         const globalSchemas = inner.tools.schemas()
@@ -161,6 +166,8 @@ async function main() {
       })
       if (!outcome.ok) throw new Error(`installScopedToolGuard refused: ${outcome.error.code} ${outcome.error.message}`)
       handle = outcome.value
+      const bound = handle.bindOwnTools(['grep'])
+      if (!bound.ok) throw new Error(`bindOwnTools refused: ${bound.error.code} ${bound.error.message}`)
       const published = handle.publish()
       if (!published.ok) throw new Error(`publish refused: ${published.error.code} ${published.error.message}`)
     }
@@ -313,10 +320,65 @@ async function main() {
     }
   }
 
+  /**
+   * THE RESIDUAL R-a LEG, on the pinned registry itself. One world, assembled
+   * twice: a normal third-party plugin registers a per-agent variant under a
+   * native name BEFORE the Team assembly assembles — the shape the pinned
+   * registry's own duplicate-registration error recommends ("for a per-agent
+   * variant, register through that agent's agent.ctx"). Nothing about it is
+   * malicious, and merged PR1 handed it a `native:` Binding. The two worlds are
+   * the two halves of the rule: NO explicit bind ⇒ refused; explicit bind ⇒ run.
+   */
+  async function shadowArm(bindIt) {
+    const f = await makeFixture()
+    f.ctx.tools.register(countingTool(f.obs, 'grep', 'NATIVE.grep'))
+    const A = await f.mintScope('A')
+    const inner = A.scope.ctx
+    inner.tools.register(countingTool(f.obs, 'grep', 'THIRD_PARTY.grep'))
+    let nativeNames = []
+    try {
+      const globalSchemas = inner.tools.schemas()
+      if (Array.isArray(globalSchemas)) {
+        nativeNames = globalSchemas.map((row) => row?.name).filter((n) => typeof n === 'string' && n.length > 0)
+      }
+    } catch {
+      nativeNames = []
+    }
+    const outcome = installScopedToolGuard({
+      agentCtx: inner,
+      runtimeAgent: A.key,
+      agentScopeKey: 'A',
+      trustedIdentities: ['A'],
+      nativeNames,
+    })
+    if (!outcome.ok) throw new Error(`shadow arm: install refused: ${outcome.error.code} ${outcome.error.message}`)
+    const handle = outcome.value
+    if (bindIt) {
+      const bound = handle.bindOwnTools(['grep'])
+      if (!bound.ok) throw new Error(`shadow arm: bindOwnTools refused: ${bound.error.code} ${bound.error.message}`)
+    }
+    const published = handle.publish()
+    if (!published.ok) throw new Error(`shadow arm: publish refused: ${published.error.code} ${published.error.message}`)
+    const entry = handle.dispatcher.surface.entryOf('grep')
+    const res = await f.run('grep', A.key)
+    return {
+      bind: bindIt,
+      nativeNamesSawGrep: nativeNames.includes('grep'),
+      verified: entry?.verified ?? null,
+      bindingId: entry?.binding.bindingId ?? null,
+      unverifiedReason: entry?.unverifiedReason ?? null,
+      bodies: f.obs.filter((o) => o.event === 'body').map((o) => o.identity),
+      text: String(res?.text ?? res?.threw ?? '').slice(0, 240),
+      shadowObservations: handle.observations().filter((o) => String(o.event) === 'published-surface-shadowed').length,
+    }
+  }
+
   const hazard = await arm('hazard')
   const safe = await arm('safe')
   const parked = await arm('pr1-parked')
   const inBody = await arm('pr1-body')
+  const shadowUnbound = await shadowArm(false)
+  const shadowBound = await shadowArm(true)
 
   check('NEG1-CONTROL', 'without PR1, lift-then-unload still hands the call to the native body (protection control)',
     hazard.native === 1, `native=${String(hazard.native)} bodies=${hazard.bodies.join(',')}`)
@@ -387,7 +449,25 @@ async function main() {
       && (parked.text ?? '').includes('not ACTIVE'),
     `code=${String(parked.teardownRefusalCode)} guardSays=${String(parked.refusedWhileDraining).slice(0, 80)} resumed=${String(parked.text).slice(0, 60)}`)
 
-  const result = { runStamp: new Date().toISOString(), criteria, arms: { hazard, safe, parked, inBody } }
+  // RESIDUAL R-a, ON THE REAL REGISTRY: a native NAME earns nothing without the
+  // trusted native DEFINITION behind it. The name is on the assembly's trusted
+  // list, the Agent resolves a different Body under it, and merged PR1 called
+  // that a verified native. The refusal is typed and names the shadow; the
+  // explicit Team bind — the documented path for the Team's own Definition — is
+  // what lets the same Body run. Both halves are measured, not asserted.
+  check('R1R-SHADOW', 'PR1-residual R-a: a normal same-name per-agent variant of a native name enters governance UNVERIFIED and its Body is refused at dispatch; the identical world with an explicit Team bind runs it',
+    shadowUnbound.nativeNamesSawGrep === true
+      && shadowUnbound.verified === false
+      && shadowUnbound.unverifiedReason === 'native-shadowed'
+      && shadowUnbound.shadowObservations === 1
+      && shadowUnbound.bodies.length === 0
+      && (shadowUnbound.text ?? '').includes('shadows')
+      && shadowBound.verified === true
+      && shadowBound.bindingId === 'team-own:A:grep'
+      && shadowBound.bodies.join(',') === 'THIRD_PARTY.grep',
+    `no-bind: nativeList=${String(shadowUnbound.nativeNamesSawGrep)} verified=${String(shadowUnbound.verified)} reason=${String(shadowUnbound.unverifiedReason)} bodies=[${shadowUnbound.bodies.join(',')}] text="${shadowUnbound.text.slice(0, 80)}" | explicit-bind: verified=${String(shadowBound.verified)} binding=${String(shadowBound.bindingId)} bodies=[${shadowBound.bodies.join(',')}]`)
+
+  const result = { runStamp: new Date().toISOString(), criteria, arms: { hazard, safe, parked, inBody, shadowUnbound, shadowBound } }
   const text = JSON.stringify(result, null, 2)
   if (OUT_ARG !== null) writeFileSync(OUT_ARG, text)
   console.log(text)

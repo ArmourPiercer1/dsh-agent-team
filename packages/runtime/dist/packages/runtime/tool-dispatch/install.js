@@ -215,6 +215,39 @@ export function installScopedToolGuard(input) {
             ? { ok: false, detail: `tools.get("${name}") returned a definition with no pinnable Body` }
             : { ok: true, fingerprint: id };
     };
+    /**
+     * THE TRUSTED SIDE OF THE SAME PUBLIC SEAM (residual R-a).
+     *
+     * `tools.get(name)` with NO scope is the registry's GLOBAL view — the very
+     * view `nativeNames` was read out of, so it is the one reading the assembly is
+     * entitled to trust as "what DSH ships". `tools.get(name, scope)` is what THIS
+     * Agent resolves, and the pinned `view()` puts the scope's own registrations
+     * LAST: "shadowing an inherited name and outside the filter above".
+     *
+     * Comparing the two is the whole of R-a. A name on the trusted list whose two
+     * reads disagree is not native for this Agent — somebody else's Definition is
+     * answering that name here — and an ordinary third-party row or MCP bridge gets
+     * into exactly that shape by following the Host's own advice for a per-agent
+     * variant. Neither read is privileged over the other for any OTHER purpose;
+     * for native standing, agreement is the price.
+     */
+    const readTrustedDefinition = (name) => {
+        let definition;
+        try {
+            definition = definitionSeam.value.call(toolsService, name);
+        }
+        catch (error) {
+            return { ok: false, detail: `tools.get("${name}") (global view) threw: ${String(error?.message ?? error)}` };
+        }
+        if (definition === undefined || definition === null) {
+            return { ok: false, detail: `tools.get("${name}") (global view) resolved to no definition` };
+        }
+        const body = definition.execute;
+        const id = definitionFingerprint(typeof body === 'function' ? body : definition);
+        return id === null
+            ? { ok: false, detail: `tools.get("${name}") (global view) returned a definition with no pinnable Body` }
+            : { ok: true, fingerprint: id };
+    };
     const dispatcher = createScopedDispatcher({
         agentScopeKey: input.agentScopeKey,
         trustedIdentities: input.trustedIdentities,
@@ -421,18 +454,42 @@ export function installScopedToolGuard(input) {
     }), 'without it the assembly cannot even tell that a call produced a result');
     if (!armedPostExecute.ok)
         return armedPostExecute;
-    // 3/5 — the settled edge: the Body returned. This is where a lease ends.
+    // 3/5 — the settled edge: the Body returned. This is where a lease ends, and
+    // (residual R-b) where a Definition that moved DURING the call is caught. The
+    // registry resolves the Body inside its own dispatch step, after every seam
+    // this lane owns, so a legal re-registration in that last gap cannot be
+    // refused before it runs — the seam gap is recorded in PoC-1 form in the
+    // PR1-residual §12. What the lane CAN do, and does here, is refuse it at the
+    // earliest moment it is observable: this call's own settled edge withdraws the
+    // verification, so the exposure is exactly one call and never a standing state.
     const armedResultSettled = armRequiredSeam('a5p1GuardResultSettledEdge', 'tools/result', ((exec) => {
         // A call this Dispatcher never leased (a Guard refusal, a call from
         // before assembly) has nothing to end, and that is not an anomaly.
         // A call it DID lease, arriving after the drain began, is refused as
         // evidence and recorded by the Dispatcher itself.
-        dispatcher.endCallById(callIdOf(exec));
+        const ended = dispatcher.endCallById(callIdOf(exec));
+        if (ended.ended) {
+            dispatcher.noteCallEdgeDefinition(String(exec?.name));
+        }
     }), 'without the settled edge no lease can ever end, so no teardown could ever be confirmed');
     if (!armedResultSettled.ok)
         return armedResultSettled;
-    // 4/5 — the dispatch gate: a call that reaches the inner waterfall while the
-    // Dispatcher is not ACTIVE is turned away before its Body.
+    // 4/5 — the dispatch gate: the door NEAREST THE BODY. Two questions are asked
+    // here, and PR1 asked only the first.
+    //   (a) is this Dispatcher still ACTIVE (a call racing the teardown is turned
+    //       away before its Body);
+    //   (b) does the name STILL resolve to the Definition its Binding pinned
+    //       (residual R-b). The pinned registry asks the Guard stage AFTER
+    //       `pre-execute` and resolves the Body LAST, inside its own dispatch step
+    //       — so every seam this lane owns sits before that resolution, and a
+    //       LEGAL re-registration landing between the Guard and this door would
+    //       otherwise put a Body on the wire that no decision ever validated.
+    //       Re-asking the whole closed-world question here is what makes the door
+    //       nearest the Body re-verify what the outer door verified. The residual
+    //       window this still cannot see (a re-registration in a listener mounted
+    //       AFTER this one, before the registry's own resolution) is recorded in
+    //       the PR1-residual §12 in PoC-1 form, and closed as far as a public seam
+    //       allows by `noteCallEdgeDefinition` at the settled edge below.
     const armedExecute = armRequiredSeam('a5p1GuardDispatchGate', 'tools/execute', ((exec, next) => {
         if (!dispatcher.active()) {
             // This call is turned away before its Body: its lease ends here, by us,
@@ -440,8 +497,15 @@ export function installScopedToolGuard(input) {
             dispatcher.endCallById(callIdOf(exec), 'refused');
             refuse('execute', exec);
         }
+        const doorDenial = dispatcher.guard(hostExecToView(exec));
+        if (doorDenial !== undefined) {
+            // Same reasoning as above: the Body is provably unreachable from here,
+            // so the lease ends at the door that refused it.
+            dispatcher.endCallById(callIdOf(exec), 'refused');
+            throw new Error(`${doorDenial} [refused at the dispatch door, the stage nearest the Body]`);
+        }
         return next();
-    }), 'without it a call racing the teardown could reach a Body');
+    }), 'without it a call racing the teardown, or one whose Definition moved after the Guard stage, could reach a Body');
     if (!armedExecute.ok)
         return armedExecute;
     // 5/5 — the Guard itself (already armed above; counted as a seam only now, so
@@ -475,6 +539,13 @@ export function installScopedToolGuard(input) {
                 observe({ event: 'bind-refused-unreadable-definition', tool: name, origin, detail: probe.detail });
                 return fail('TOOL_BINDING_UNVERIFIED', `cannot bind "${name}" as ${origin}: its current definition is unreadable at the public seam (${probe.detail}), and a Binding that cannot be re-verified is not a verification`);
             }
+            // An explicit re-bind by the trusted assembly is the ONLY documented way
+            // back from a withdrawal (definition drift, an unreadable definition, or a
+            // call-edge move), and PR1's own rule is that a change is an IMMUTABLE
+            // HIGHER revision under the same Binding identity. So the revision comes
+            // from what is in force, never from a constant: a second bind of the same
+            // name is revision 2, and a name that was never bound is revision 1.
+            const inForce = dispatcher.surface.entryOf(name);
             const binding = {
                 bindingId: `${origin}:${input.agentScopeKey}:${name}`,
                 agentScopeKey: input.agentScopeKey,
@@ -486,7 +557,7 @@ export function installScopedToolGuard(input) {
                 assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
                 policyGeneration: dispatcher.policyGeneration(),
                 authorityGeneration: dispatcher.authorityGeneration(),
-                revision: 1,
+                revision: (inForce?.revision ?? 0) + 1,
                 status: 'ACTIVE',
             };
             const outcome = dispatcher.bind({ name, origin, binding, verified: true });
@@ -513,20 +584,43 @@ export function installScopedToolGuard(input) {
             // The publish-surface observation is a LIST OF NAMES, and a name on a
             // surface proves only visibility. Pin each one through the public
             // definition seam, then let the surface decide: only a name on the
-            // assembly's explicit trusted native list AND pinnable right now is
-            // inherited as a verified native; every other observed name is bound
-            // UNVERIFIED (governed, loud, refused at dispatch). Registering an
-            // undeclared own tool before publish therefore produces a refusal after
-            // publish, not a `native:` Binding it earned by showing up.
+            // assembly's explicit trusted native list, pinnable right now, AND
+            // resolved to the SAME definition by the trusted global view, is inherited
+            // as a verified native. Every other observed name is bound UNVERIFIED
+            // (governed, loud, refused at dispatch). Registering an undeclared own
+            // tool before publish therefore produces a refusal after publish, not a
+            // `native:` Binding it earned by showing up — and so does registering a
+            // SAME-NAME shadow of a native one (residual R-a).
             const identities = {};
+            const trusted = {};
             for (const name of surface.value) {
                 const probe = readDefinition(name);
                 if (probe.ok)
                     identities[name] = probe.fingerprint;
+                const trustedProbe = readTrustedDefinition(name);
+                if (trustedProbe.ok)
+                    trusted[name] = trustedProbe.fingerprint;
             }
             const owned = new Set(input.assemblyOwnedNames ?? []);
             const nativeNames = (input.nativeNames ?? []).filter((n) => surface.value.includes(n) && !owned.has(n));
-            const inherited = dispatcher.bindInheritedSurface(surface.value, identities);
+            const inherited = dispatcher.bindInheritedSurface(surface.value, identities, trusted);
+            if (inherited.shadowed.length > 0) {
+                observe({
+                    event: 'published-surface-shadowed',
+                    names: inherited.shadowed.map((row) => row.name),
+                    detail: inherited.shadowed
+                        .map((row) => `${row.name}: the trusted global definition is ${row.trusted} but this Agent resolves ${row.resolved}`)
+                        .join('; '),
+                    note: 'on the trusted native list, but a same-name contribution shadows it for this Agent: bound UNVERIFIED and refused at dispatch, never credited with the native verification it does not carry',
+                });
+            }
+            if (inherited.nativeUnreadable.length > 0) {
+                observe({
+                    event: 'published-surface-native-unreadable',
+                    names: inherited.nativeUnreadable,
+                    note: 'the trusted (global) side of the definition read was unavailable, so the name-vs-definition comparison could not be made: bound UNVERIFIED rather than credited',
+                });
+            }
             if (inherited.unverified.length > 0) {
                 observe({
                     event: 'published-surface-unverified',
