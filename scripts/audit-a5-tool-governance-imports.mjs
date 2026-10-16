@@ -14,9 +14,16 @@
  *     second algebra) and `domain/blueprint/src/hash.ts` (sha256Hex).
  *  2. NO CYCLE: the module graph (including the visited leaf edges) must be
  *     acyclic.
- *  3. ZERO PRODUCTION CONSUMER (PR0 dormancy, plan §3 "零生产行为变化"): no
- *     shipped source file outside the lane itself imports it — PR1+ must wire
- *     it as a reviewed change, not by accretion.
+ *  3. THE CONSUMER SET IS THE REVIEWED SET. PR0 froze the lane DORMANT (zero
+ *     consumers, plan §3 "零生产行为变化"); PR1 (plan §4) is the reviewed wiring
+ *     step, so the law is now a NAMED allow-list instead of a blank: the PR1
+ *     runtime lane `runtime/tool-dispatch/**` (the closed-world Guard + the
+ *     Scoped Dispatcher, which import the frozen §5 vocabulary and the
+ *     transition table) and the ONE production assembly point that installs
+ *     them, `runtime/src/plugin/live/agent-bindings.mjs`. Anything else that
+ *     mentions the lane is a finding — a second consumer is a design change,
+ *     not an import accident. (PR2/PR3/PR4 add theirs as their PRs land; each
+ *     addition is a reviewed edit to THIS list, never a silent one.)
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
@@ -31,6 +38,15 @@ const PERMITTED_OUTSIDE = [
   'domain/authority-envelope/src/index.js',
   'domain/blueprint/src/hash.js',
 ]
+
+/**
+ * The PR1 reviewed consumers (repo-root/`packages`-relative). A prefix entry
+ * (ending in `/`) allows the whole subtree.
+ */
+const PR1_CONSUMERS = Object.freeze([
+  'runtime/tool-dispatch/',
+  'runtime/src/plugin/live/agent-bindings.mjs',
+])
 
 const SPECIFIER_PATTERNS = [
   /\bfrom\s+['"]([^'"]+)['"]/g,
@@ -83,13 +99,13 @@ function resolveSpecifier(fromFile, specifier) {
 }
 
 /**
- * @returns {{ findings: string[]; edgeCount: number; laneFiles: number }}
+ * @returns {{ findings: string[]; edgeCount: number; laneFiles: number; consumers: string[] }}
  */
 export function auditA5ToolGovernanceImports() {
   /** @type {string[]} */
   const findings = []
   const laneFiles = walkTs(LANE, [])
-  if (laneFiles.length === 0) return { findings: ['tool-governance lane has no sources — the audit is vacuous'], edgeCount: 0, laneFiles: 0 }
+  if (laneFiles.length === 0) return { findings: ['tool-governance lane has no sources — the audit is vacuous'], edgeCount: 0, laneFiles: 0, consumers: [] }
 
   /** @type {Map<string, string[]>} */
   const graph = new Map()
@@ -146,7 +162,11 @@ export function auditA5ToolGovernanceImports() {
   }
   for (const file of graph.keys()) if ((colour.get(file) ?? WHITE) === WHITE) dfs(file, [])
 
-  // ZERO PRODUCTION CONSUMER: no shipped source outside the lane imports it.
+  // THE CONSUMER SET (law 3). `.mjs` IS scanned on purpose: the Team trusted
+  // assembly point is plain JS, and a law that only sees `.ts` would miss the
+  // one production caller that matters most.
+  /** @type {string[]} */
+  const consumers = []
   const consumerWalk = /** @type {(dir: string) => void} */ (dir => {
     for (const entry of readdirSync(dir)) {
       const full = join(dir, entry)
@@ -157,25 +177,41 @@ export function auditA5ToolGovernanceImports() {
         consumerWalk(full)
         continue
       }
-      if (!entry.endsWith('.ts') || entry.endsWith('.d.ts') || entry.endsWith('.test.ts')) continue
+      if (entry.endsWith('.d.ts') || entry.endsWith('.test.ts') || entry.endsWith('.test.mjs')) continue
+      if (!entry.endsWith('.ts') && !entry.endsWith('.mjs')) continue
       const source = readFileSync(full, 'utf8')
-      if (/tool-governance/.test(source)) {
-        findings.push(`production consumer of tool-governance: ${relative(REPO_ROOT, full)} (PR0 is DORMANT by contract)`)
+      // Law 3 sees BOTH edges into the frozen lane (`tool-governance`) and
+      // edges into the PR1 runtime lane that consumes it (`tool-dispatch`):
+      // the assembly point imports only the latter, and it is the caller that
+      // matters. Comments are stripped first, so prose never counts.
+      if (!/tool-governance|tool-dispatch/.test(codeOnly(source))) continue
+      const fromPackages = relative(PACKAGES, full).split(sep).join('/')
+      consumers.push(fromPackages)
+      if (!PR1_CONSUMERS.some((allowed) => (allowed.endsWith('/') ? fromPackages.startsWith(allowed) : fromPackages === allowed))) {
+        findings.push(`un-listed production consumer of tool-governance: ${fromPackages} (the consumer set is the reviewed PR1_CONSUMERS list)`)
       }
     }
   })
   for (const pkg of readdirSync(PACKAGES)) consumerWalk(join(PACKAGES, pkg))
 
-  return { findings, edgeCount, laneFiles: laneFiles.length }
+  // Non-vacuity of law 3: the allow-list must have actually MATCHED
+  // something. An empty consumer set after PR1 means the wiring disappeared
+  // (or the walk stopped seeing files), which is exactly as bad as a finding.
+  for (const expected of PR1_CONSUMERS) {
+    const seen = consumers.some((c) => (expected.endsWith('/') ? c.startsWith(expected) : c === expected))
+    if (!seen) findings.push(`expected PR1 consumer never found: ${expected} (the wiring is gone or the walk is blind)`)
+  }
+
+  return { findings, edgeCount, laneFiles: laneFiles.length, consumers: consumers.sort() }
 }
 
 if (process.argv[1] !== undefined && relative(REPO_ROOT, process.argv[1]).replace(/\\/g, '/') === 'scripts/audit-a5-tool-governance-imports.mjs') {
-  const { findings, edgeCount, laneFiles } = auditA5ToolGovernanceImports()
-  console.log(`tool-governance audit: ${laneFiles} lane files, ${edgeCount} edges`)
+  const { findings, edgeCount, laneFiles, consumers } = auditA5ToolGovernanceImports()
+  console.log(`tool-governance audit: ${laneFiles} lane files, ${edgeCount} edges, ${consumers.length} consumer file(s)`)
   if (findings.length > 0) {
     for (const f of findings) console.error(`FINDING: ${f}`)
     process.exitCode = 1
   } else {
-    console.log('OK: pure-domain lane, no cycles, zero production consumers')
+    console.log(`OK: pure-domain lane, no cycles, consumers = ${consumers.join(', ')}`)
   }
 }
