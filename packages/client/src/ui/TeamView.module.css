@@ -239,6 +239,19 @@
   min-width: 0;
 }
 
+/* UI-3 (post-Alpha.4 register, 2026-10-16 round): the fixed LEFT slot for
+   all view-status text (stale / refresh-failed / refreshing). The button is
+   the row's only other child, so it never moves between states — pending
+   text changes reflow INSIDE this slot (min-width:0 + clip), never the row.
+   Structural pin: `team-view.client.spec.tsx` UI-3 no-jump law. */
+.viewStatusText {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+}
+
 /* A4-PR7 W1 (remote contract v9, RULING 5-B warning-first) — the fixed
    corrupt-record warning bar at the top of the team body: visibility
    only, never dismissible, warning-lane colours. The rows carry the

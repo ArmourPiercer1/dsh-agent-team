@@ -63,6 +63,18 @@ import { parseModelPreferenceToken } from './model-preference.js';
 // eslint-disable-next-line no-control-regex -- intentional scanner: rejects control characters in blueprint strings
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 /**
+ * The TM-8 exact-tool-name scanner (see `builtinToolDeny` in
+ * `validateCapabilities`): everything JS `/\\s/` and CONTROL_CHARS both miss
+ * that still cannot appear in a live built-in tool name — the C1 range
+ * (U+0080-U+009F, which is NOT `\\s` and not CONTROL_CHARS), soft hyphen,
+ * zero-width/joiner/direction marks (U+200B-U+200F), bidi controls —
+ * overrides/embeddings (U+202A-U+202E) and isolates (U+2066-U+2069,
+ * rev-D RG4-F1-02) — word joiner (U+2060), and BOM (U+FEFF). Lane-scoped on
+ * purpose: it tightens the exact-name grammar only; prose/display fields
+ * keep their existing scanners untouched.
+ */
+const TOOL_NAME_INVISIBLE_OR_C1 = /[\u0080-\u009f\u00ad\u200b-\u200f\u2028\u2029\u202a-\u202e\u2060\u2066-\u2069\ufeff]/;
+/**
  * The prose scanner: the same C0/DEL ban MINUS the three characters a
  * document legitimately contains — tab (0x09), newline (0x0A) and carriage
  * return (0x0D). `carriage return` is included because a CRLF-authored
@@ -153,7 +165,15 @@ function takePositiveInt(record, field, path) {
     if (!Object.hasOwn(record, field) || record[field] === undefined)
         return undefined;
     const value = record[field];
-    if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    // NRM-2 (2026-10-16 round): SAFE-integer acceptance, aligned with the
+    // same-worded gate in the frozen contracts package (`assertPositiveInteger`,
+    // contracts/src/ids/common.ts) — one message, one acceptance set. 2^53 and
+    // above are not safe integers; a literal like 2^53+1 already arrives
+    // float-normalized (to 2^53) from the YAML layer and is caught here.
+    if (typeof value !== 'number' ||
+        !Number.isInteger(value) ||
+        value < 1 ||
+        !Number.isSafeInteger(value)) {
         throw teamContractError('MALFORMED_DTO', `field ${fieldPath} must be a positive integer, got ${JSON.stringify(value)}`, { path: fieldPath });
     }
     return value;
@@ -591,6 +611,38 @@ function validateTemplateCapabilities(raw, path, role) {
     const builtinToolDeny = builtinToolDenyRaw.map((item, index) => {
         if (typeof item !== 'string' || item.length === 0 || item.length > CAPABILITY_ITEM_MAX_LENGTH) {
             throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be a non-empty string (max ${CAPABILITY_ITEM_MAX_LENGTH}), got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        // TM-8 (2026-10-16 round): an entry must be an EXACT built-in tool name
+        // (authoring contract). Enforcement passes entries verbatim to the
+        // upstream public `tools.restrict({ deny })`, which matches names by
+        // exact string equality against the live restrictable set — a name
+        // carrying whitespace or a control character CANNOT exist there, so it
+        // is not a typo this layer may clean (cleaning would silently change
+        // which tool is denied). Reject it AT PARSE with the entry identity
+        // instead of letting it into the hash and deferring the failure to
+        // agent-bind time as an untyped host error. No trimming, no case
+        // folding, no rewriting: valid names parse verbatim.
+        if (CONTROL_CHARS.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; control characters are not permitted, got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        // TM-8 review-round extension (rev-A2 F1; rev-D RG4-F1-02 closed the
+        // bidi-isolate gap): C1 controls and the invisible/format code points
+        // are neither CONTROL_CHARS (C0/DEL) nor JS \s, yet they share the
+        // exact-name rationale — no live tool name contains one, and bidi
+        // overrides/embeddings/isolates (U+202A-U+202E, U+2066-U+2069)
+        // additionally spoof the entry in rendered diagnostics. Same typed
+        // refusal; accepted spellings stay verbatim, only this invisible set
+        // flips to explicit refusal instead of entering the hash as a
+        // permanent silent no-op. ORDER (rev-D RG4-F1-01): this check runs
+        // AFTER the \s branch so the three code points both rulers match
+        // (U+2028, U+2029, U+FEFF) keep their established, pinned
+        // "whitespace is not permitted" wording — code and path never changed
+        // for any input; only the human reason text could branch-swap.
+        if (/\s/.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; whitespace is not permitted (leading/trailing or embedded), got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
+        }
+        if (TOOL_NAME_INVISIBLE_OR_C1.test(item)) {
+            throw teamContractError('MALFORMED_DTO', `capabilities at ${path}.builtinToolDeny[${index}] must be an exact built-in tool name; C1 controls and invisible/format characters are not permitted, got ${JSON.stringify(item)}`, { path: `${path}.builtinToolDeny[${index}]` });
         }
         return item;
     });

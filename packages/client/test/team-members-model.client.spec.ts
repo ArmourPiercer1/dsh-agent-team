@@ -293,3 +293,165 @@ describe('deriveTeamMembers', () => {
     expect(model.leader.templateId).toBe('tpl-lead')
   })
 })
+
+// ---------------------------------------------------------------------------
+// G5 (2026-10-16 authorized round): a control row the STRICT reader already
+// refused server-side (named by the v9 `team.listCorruptControlLegs` read at
+// its ledger sequence) is not adjudicable by ANYONE — the ledger renders it
+// with both commands disabled — yet the tolerant ledger fold still counted it
+// into `pendingControlByInstance`, so the member badge advertised a pending
+// approval that can never be resolved. The badge must subtract the rows the
+// corruption read names (the same sequence join the ledger row uses); the
+// pre-v9 posture (no corruption read at all) is byte-identical to the old
+// behavior.
+// ---------------------------------------------------------------------------
+
+describe('deriveTeamMembers — corrupt control rows never badge (G5 consistency)', () => {
+  const corruptLedger = () =>
+    ledger({
+      completeness: 'complete',
+      pendingControlByInstance: { [A]: 2 },
+      controls: [
+        { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+        { requestId: 'r6', requestSequence: 6, targetInstanceId: A, actionName: 'read_file', requestedAt: iso(1700000006000), pending: true },
+      ] as never,
+    })
+
+  const badgeA = (model: ReturnType<typeof deriveTeamMembers>): number | null =>
+    model.groups[0]?.instances[0]?.pendingControlCount ?? null
+
+  it('G5-1 a corrupt-named pending row is NOT counted in the member badge', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([6]),
+    )
+    expect(badgeA(model)).toBe(1)
+  })
+
+  it('G5-2 all-corrupt instance pending collapses to a known zero', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([5, 6]),
+    )
+    expect(badgeA(model)).toBe(0)
+  })
+
+  it('G5-3 an absent corruption read (pre-v9 host) keeps the legacy count', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+    )
+    expect(badgeA(model)).toBe(2)
+  })
+
+  it('G5-4 a corrupt sequence that names no pending chain never subtracts (no drift)', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      corruptLedger(),
+      new Set<number>([99]),
+    )
+    expect(badgeA(model)).toBe(2)
+  })
+
+  it('G5-5 partial ledger stays unknown regardless of the corruption read', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      ledger({
+        completeness: 'partial',
+        pendingControlByInstance: { [A]: 2 },
+        controls: [
+          { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+        ] as never,
+      }),
+      new Set<number>([5]),
+    )
+    expect(badgeA(model)).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// G5-R (regression round): the subtraction's EDGES. Uniqueness note: a
+// duplicate ledger sequence is not producible by the durable ledger (every
+// append allocates its sequence once — `ControlService` writes each control
+// row through the ledger append path), and the v9 corruption read is served
+// as a Set at the client seam, so "duplicate sequence" can only arrive as a
+// SET-deduplicated input; the legs below pin the arithmetic for the shapes
+// that ARE producible, including the disclosed OPEN gap where a corrupt row
+// is named but its chain is not in the client's fold (the v9 read is capped
+// at 20 rows — `REMOTE_CORRUPT_CONTROL_LEGS_CAP` — and a capped read cannot
+// subtract what it never named; the counting/pagination evolution stays an
+// OPEN product decision, recorded, not decided).
+// ---------------------------------------------------------------------------
+describe('deriveTeamMembers — corruption subtraction edges (G5-R)', () => {
+  const badgeOf = (
+    model: ReturnType<typeof deriveTeamMembers>,
+    groupIndex: number,
+  ): number | null => model.groups[groupIndex]?.instances[0]?.pendingControlCount ?? null
+
+  it('R1 cross-instance: a named sequence subtracts ONLY its target instance', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa'), mate(B, 'running', 'sb')]),
+      ledger({
+        completeness: 'complete',
+        pendingControlByInstance: { [A]: 1, [B]: 1 },
+        controls: [
+          { requestId: 'r6', requestSequence: 6, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000006000), pending: true },
+          { requestId: 'r7', requestSequence: 7, targetInstanceId: B, actionName: 'write_file', requestedAt: iso(1700000007000), pending: true },
+        ] as never,
+      }),
+      new Set<number>([6]),
+    )
+    expect(badgeOf(model, 0)).toBe(0)
+    expect(badgeOf(model, 1)).toBe(1)
+  })
+
+  it('R2 DISCLOSED OPEN: a corrupt row named beyond the capped read cannot be subtracted (badge keeps counting what the client cannot see; pinned, not decided)', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      ledger({
+        completeness: 'complete',
+        pendingControlByInstance: { [A]: 2 },
+        controls: [
+          { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+        ] as never,
+      }),
+      // the corruption read named a row whose chain the fold never carried
+      new Set<number>([6]),
+    )
+    expect(badgeOf(model, 0)).toBe(2)
+  })
+
+  it('R3 the subtraction clamps at zero — never a negative badge, even over-named', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      ledger({
+        completeness: 'complete',
+        pendingControlByInstance: { [A]: 1 },
+        controls: [
+          { requestId: 'r5', requestSequence: 5, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000005000), pending: true },
+          { requestId: 'r6', requestSequence: 6, targetInstanceId: A, actionName: 'read_file', requestedAt: iso(1700000006000), pending: true },
+        ] as never,
+      }),
+      new Set<number>([5, 6]),
+    )
+    expect(badgeOf(model, 0)).toBe(0)
+  })
+
+  it('R4 a repeated sequence in the corruption input is one subtraction (Set-seam dedup)', () => {
+    const model = deriveTeamMembers(
+      snapshot([leaderInstance(), mate(A, 'running', 'sa')]),
+      ledger({
+        completeness: 'complete',
+        pendingControlByInstance: { [A]: 2 },
+        controls: [
+          { requestId: 'r6', requestSequence: 6, targetInstanceId: A, actionName: 'write_file', requestedAt: iso(1700000006000), pending: true },
+          { requestId: 'r9', requestSequence: 9, targetInstanceId: A, actionName: 'read_file', requestedAt: iso(1700000009000), pending: true },
+        ] as never,
+      }),
+      new Set<number>([6, 6]),
+    )
+    expect(badgeOf(model, 0)).toBe(1)
+  })
+})

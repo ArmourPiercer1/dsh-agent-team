@@ -96,3 +96,46 @@ authority). **No Remote v5** was added to let a CLI query frozen state
   the user's explicit click (`[data-intent-refresh-catalog]`, plan
   §13: generation-guarded, per-row detail reset, selection reset when
   the picked blueprint disappears).
+
+## Author-visible grammar tightenings (post-Alpha.4 fix round, 2026-10-16)
+
+Documentation sync for `fix/post-alpha4-20261016` (audit items TM-8, PRS-1,
+PRS-2, NRM-2, G4/G4-R in `docs/plans/memo/post-alpha4-debt-register.md`).
+These are fail-closed tightenings of the strong parser/validator only —
+the stage/validate-save loop above is unchanged (`validate-save` still runs
+just the format inspector; a tighten-rejected document is written anyway
+and fails at resolution with the typed diagnosis). Blueprints that
+previously resolved may now be **refused at resolution**; the authoring fix
+is to correct the document, never a runtime relaxation.
+
+- **`capabilities.builtinToolDeny` exact-tool-name grammar (TM-8).** Each
+  entry must be an exact built-in tool name: no trimming and no case
+  folding happen, so a copy-pasted stray character used to create a deny
+  rule that silently never matched. Now refused **at parse** with a typed
+  `MALFORMED_DTO` carrying the entry path, in three branches:
+  1. C0 control characters or DEL (`U+0000–U+001F`, `U+007F`);
+  2. whitespace anywhere — leading, trailing, or embedded (JS `/\s/`);
+  3. C1 controls and invisible/format code points that both previous
+     scanners missed: `U+0080–U+009F`, soft hyphen, zero-width/joiner/
+     direction marks `U+200B–U+200F`, `U+2028`/`U+2029`, bidi overrides/
+     embeddings `U+202A–U+202E` and isolates `U+2066–U+2069`, word joiner
+     `U+2060`, BOM `U+FEFF`. Lane-scoped: prose/display fields keep their
+     existing scanners.
+- **Recursive YAML anchors are typed, not a crash (PRS-1).** A document
+  like `metadata: &m { self: *m }` decodes to a genuinely cyclic object;
+  it used to reach `RangeError: Maximum call stack size exceeded` in the
+  strong parser while the inspector called the same file OK. The cycle is
+  now detected at the single decode point (heap-bounded explicit-stack DFS,
+  G4-R — shared-but-acyclic alias reuse stays legal) and rejected with
+  typed `MALFORMED_DTO` ("recursive anchor — a YAML node contains
+  itself"), so `inspectBlueprintSource` and `parseBlueprint` give the same
+  verdict for the same file.
+- **Decode failures keep their cause (PRS-2).** A non-`YAMLError` decode
+  failure (e.g. the yaml library's `Excessive alias count` /
+  `Unresolved alias` ReferenceErrors) no longer collapses to a fixed
+  one-liner: the typed code is unchanged and the original error name plus
+  first message line are kept in the message and as `cause`.
+- **Quota fields must be positive SAFE integers (NRM-2).** Values beyond
+  `Number.MAX_SAFE_INTEGER` are rejected instead of silently coerced to
+  the nearest double (two different source documents used to hash
+  identically); the gate now matches the same-worded contracts gate.
