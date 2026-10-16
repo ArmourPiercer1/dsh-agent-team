@@ -1,0 +1,30 @@
+Alpha.5 wiring round — final measured gates (branch alpha5-int-wiring, HEAD = this commit; base fc9f4a07)
+轮次性质：局部实现 + 接线准备；零验收宣称；G-g 全程 OPEN，未宣称关闭。
+
+root vitest (whole repo, --maxWorkers=1, serial)
+  pristine base fc9f4a07: 10 failing FILES / 24 failing tests / 6884 tests   (.a5w-base-root.json)
+  final HEAD:             9 failing FILES / 23 failing tests / 6936 tests   (root-final.json)
+  identity diff: NEW = 0; RESOLVED = 1 (p4t6 ledger — the tie this round paid).
+  remaining reds are the baseline-known set unchanged (a5p0-layer-audit audit-
+  allow-list red = PR3/PR5 consumers not yet allow-listed: coordinator call,
+  listed in WIRING-SURFACE.md §不在本轮).
+
+suites (all --maxWorkers=1, green)
+  a5w-integration-wiring        14/14   (RED replay captured: 12 failed -> GREEN a5w-SUITE-*.log)
+  controlled-fs lane            37/37   (zero perturbation from the subtree seam)
+  a5p5-tools lane               67/67   (incl. Lane-D ②③ RED 3-leg -> GREEN a5p5-LANE-D-*.log)
+  a5p1 keys + a5p2              107/107 (a5p1-closed-world-guard / a5p1-guard-install / a5p1r-change-abort / a5p2-admission-kernel / a5p2-composition)
+  p4t6 ledger                   10/10   (chain 1109->1120->1139->1153->1155, BY-PATH legs included)
+  a5p4-lane-hygiene 8/8 + a5p4-provider 6/6 + a5p7-lane-hygiene 4/4 + a4p3 9/9 (hygiene full)
+
+static gates
+  tsc packages/runtime/tsconfig.json        exit 0
+  tsc packages/runtime/tsconfig.build.json  exit 0
+  check:artifacts (index)  OK 1656 files, drift 0   (at-head verdict recorded in the report)
+  lint-identities --diff a4 baseline: 161 lines / 76 distinct / new 0 / resolved 0, exit 0
+  audit-a5-tool-governance-imports vs pristine base worktree: findings IDENTICAL
+    (baseline red set unchanged; zero new consumers by design)
+  token scan (silent-channel safety / G-g closure phrasings) in all wiring+lane
+    touched files: 0 real claims (2 hits are the law's own meta-text)
+  ports used: 0 (no listener in 34xx from this round; :3080 never touched)
+  worlds: tests/homes/a5w-* deleted after use (self-teardown + sweep); porcelain clean at HEAD
