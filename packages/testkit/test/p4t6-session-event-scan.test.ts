@@ -2221,6 +2221,40 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p1-scoped-dispatcher.test.ts',
       'packages/runtime/test/a5p1-guard-install.test.ts',
     ]
+    // The Alpha.5 PR4 provider/launcher line (branch `alpha5-pr4-prov`, C
+    // Lane, base master db5cb5f7): EIGHT production sources — the frozen-
+    // vocabulary local contract stub, the C-PROC phase closed set, the FD-
+    // inheritance declaration set, the network-dimension closed set, the
+    // authoritative probe surface (bare-syscall GET_VERSION + real enforcement
+    // legs, PoC4), the realm/trustRoot hard-profile evidence gate (negative
+    // controls only, enablement compiled OFF), the no-fallback confined-
+    // process provider, and the lane barrel — plus their NINE RED-first
+    // artifacts (seven specs + the shared harness and this lane's own
+    // hygiene/dormancy pin). The reference launcher is a .py resource and the
+    // scratch worlds live under gitignored `tests/homes/a5p4-*` — neither is
+    // scanned source. The lane touches NO shared file (the audit script, both
+    // runtime tsconfigs, the barrel and the scanner stay untouched; the lane
+    // typechecks itself in-process via ts.createProgram in the hygiene spec),
+    // and it has NO production consumer (live wiring rides with PR5).
+    const SCANNED_PATHS_A5P4PROV: readonly string[] = [
+      'packages/runtime/sandbox-provider/contract-stub.ts',
+      'packages/runtime/sandbox-provider/phases.ts',
+      'packages/runtime/sandbox-provider/fd-inheritance.ts',
+      'packages/runtime/sandbox-provider/network.ts',
+      'packages/runtime/sandbox-provider/probe-abi.ts',
+      'packages/runtime/sandbox-provider/realm-evidence.ts',
+      'packages/runtime/sandbox-provider/provider.ts',
+      'packages/runtime/sandbox-provider/index.ts',
+      'packages/runtime/test/a5p4-harness.ts',
+      'packages/runtime/test/a5p4-phases.test.ts',
+      'packages/runtime/test/a5p4-fd-inheritance.test.ts',
+      'packages/runtime/test/a5p4-network-closure.test.ts',
+      'packages/runtime/test/a5p4-poc4-probe.test.ts',
+      'packages/runtime/test/a5p4-realm-evidence.test.ts',
+      'packages/runtime/test/a5p4-existence-wording.test.ts',
+      'packages/runtime/test/a5p4-provider.test.ts',
+      'packages/runtime/test/a5p4-lane-hygiene.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2247,7 +2281,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5P4PROV.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2275,7 +2310,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5P4PROV.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2329,6 +2365,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4W6,
       ...SCANNED_PATHS_A5PR0,
       ...SCANNED_PATHS_A5PR1,
+      ...SCANNED_PATHS_A5P4PROV,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2524,6 +2561,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // disk and this entry absent the run reads `expected 1073 to be 1066`,
     // and 1066 is the total the A5-PR0 tie above ends on.
     expect(SCANNED_PATHS_A5PR1.length).toBe(1073 - 1066)
+    // The A5-PR4-provider tie, same form: seventeen named files (eight lane
+    // sources + nine RED-first artifacts), each asserted present by path above.
+    // BOTH endpoints MEASURED on this branch: with the lane on disk and this
+    // entry absent the run reads `expected 1090 to be 1073` (capture
+    // `dev/agent-workflow/evidence/alpha5/pr4/runs/p4t6-PRE-EXTEND-RED.log`),
+    // and 1073 is the merged-tip total the PR1 line above ends on (base
+    // db5cb5f7; the PR2 entry lives on its own stacked branch and is absent
+    // on this tree — no double count here). The reference launcher (.py) and
+    // the a5p4-* scratch worlds under gitignored tests/homes/ are not scanned
+    // source; this ledger-test edit and the evidence files move nothing.
+    expect(SCANNED_PATHS_A5P4PROV.length).toBe(1090 - 1073)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

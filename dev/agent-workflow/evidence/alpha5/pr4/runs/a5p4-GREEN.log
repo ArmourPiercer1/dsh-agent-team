@@ -1,0 +1,18 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr4prov/packages/runtime
+
+ ✓ test/a5p4-existence-wording.test.ts (3 tests) 46ms
+ ✓ test/a5p4-fd-inheritance.test.ts (6 tests) 53ms
+ ✓ test/a5p4-poc4-probe.test.ts (7 tests) 68ms
+ ✓ test/a5p4-phases.test.ts (10 tests) 4ms
+ ✓ test/a5p4-provider.test.ts (6 tests) 266ms
+ ✓ test/a5p4-network-closure.test.ts (7 tests) 3ms
+ ✓ test/a5p4-realm-evidence.test.ts (9 tests) 4ms
+ ✓ test/a5p4-lane-hygiene.test.ts (8 tests) 662ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  620ms
+
+ Test Files  8 passed (8)
+      Tests  56 passed (56)
+   Start at  17:13:34
+   Duration  1.51s (transform 705ms, setup 0ms, import 1.41s, tests 1.11s, environment 0ms)
+
