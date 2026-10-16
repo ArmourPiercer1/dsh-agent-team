@@ -11,11 +11,10 @@
 可组合（如 ii 即时缓解 + W-1 长期解）。受影响支持矩阵行：M-12、M-06、M-01/02/03/14 记 partial（选定后写入矩阵）。
 **副作用矩阵（实测，供判断）**：(i)=绕过门后 listener 链+接管取消归类，结果身份三重分离（实测 "V2RENDER:ran:grep@V1"）；(ii)=链全保留但治理拒与真取消逐字段同形+筛选失败把已副作用的无关在飞改写 ABORTED（自我 DoS 最高）；W-1=当前树六面零副作用（风险全在上游接受度）；W-2=结果身份统一但"在飞跟随热替换"全局变形；(v)=运行期零自伤、M-12 不可满足+M-01/02/03/14 退 unsupported。全文=b3-options-side-effect-matrix.md（含探针原文）。
 
-## 决策 2（已缩窄，2026-10-16 复核后）—— 仅余 R-1 一条
+## 决策 2（已消解：用户裁定+来源诊断闭合，2026-10-16）
 **映射澄清（前版 C1/C2/C3 撤回）**：externalHard ≠ teamHardEnvelope（不同对象；Alpha.4 阶梯对 externalHard 无对应物系有意分工 ADR-a4:111）。**P1**（外部事实不在 ceiling 平面，由事实/执行面另层承担）成立且属规定性；**P2**（最终执行可被 admin 穿透外部边界）**不成立**——external-hard 形状经 ToolPolicyDocument 终局拒（"Team deny is final; no approval exists for it"）、live 三道外部闸 G1/G2/G3 17/17 含 "HUMAN allow cannot beat the external hard at the last mile"、注入 kernel 多余槽位不被读、G8 闸今日挡整个 admin leg。完整无省略探针+输出原文=hard-ceiling-object-mapping-reaudit.md 附录 A/B/C 与 pr2/probes/。
-**R-1（唯一剩余，交您裁）**：Alpha.5 plan PR2:86 + architecture.md:181 之 "确定 deny / definite denial" 是否涵盖 **teamHardEnvelope 的 deny**？
-- 狭义读（=policy/expansion 平面+undetermined）：与 Alpha.4 spec:322 相容，无需改任何东西。
-- 广义读（含 Envelope deny）：直撞 alpha4-spec §26.1:1102（反向改法明文 forbidden，active 期权威）。
+**R-1 已消解（用户 2026-10-16 裁定 + 来源诊断）**：externalHard=外部环境能力限制（非团队层；G1/G2/G3/G6 域）；环境允许内 admin 最高，不新增超 admin 层。终稿（toolpolicy-provenance.md §7）："definite deny 仅指 ToolPolicyDocument 扩权面 decided deny + undetermined，非阶梯一级、不涵盖 teamHardEnvelope deny；其终局属团队运行策略设计（admission-kernel.ts:319-332 于 rung walk 前的结构性 return，律=post-poc 设计:32+plan:86+architecture.md:181，层级=未来阶段备忘），与 admin 环境内最高权限不冲突。"实测对照：policy 面 deny+admin 正确 caseId 仍拒（events=[]）；Envelope deny 恒升 human-admin 可达（mint+consume）。ToolPolicyDocument 现仅测试注入、无生产 seam；残余=PR3/PR8 装配验收条款（扩权面 deny 须有 admin 可改写源面；可上提 deny 不得派生进扩权面）。
+
 文档层级已逐处标注（冻结四份=语义权威现路径 docs/plans/finished/；alpha4/=active；alpha5 memo/=未来且其自述冲突须上交——未自动视同级）。
 
 ## 附：PUBLIC-seam 请求草案（待裁，不预设结果；源=review-PR1r.md :115-116）

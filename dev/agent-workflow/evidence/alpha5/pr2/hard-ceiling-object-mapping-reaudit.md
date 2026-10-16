@@ -121,6 +121,7 @@ live 装配供给：`packages/runtime/src/plugin/root.ts:1367-1368` + `live/agen
   - 同文件 `:1102`（§26.1）：把 Envelope 约束推广到 Human Admin 的读法是 "a ceiling relaxation in the wrong direction and therefore **forbidden**"。
   - 实现：`authority-ceiling.ts:308`（admin 空绑定）/`:566-573`（identity ceiling）；bound Envelope 的审批面 deny 是**升阶信号**（`runtime-authority.ts:201` walk；探针 ARM A：hard deny → `requiredAuthority=human-admin`），不是终局拒绝；终局拒绝 = expansion 平面 policy deny（ARM B2）与 undetermined/无 reviewer 形状。
 - 裁断提示：狭义读（"确定 deny" = expansion/policy 平面确定 deny + undetermined）⇒ 两侧相容、零冲突；广义读（bound Envelope 的 deny 也整组拒批）⇒ 与 Alpha.4 spec §26.1:1102 的 forbidden 正撞，须按 `ADR-a5:63` 走用户 precedence 裁决并在 Alpha.5 当期计划显式列 intentional change。
+- **【追加轮注记，2026-10-27，不改动上文】** 用户已裁定：权限体系中没有名为 externalHard 的团队限制层（外部环境能力限制，非团队运行限制；环境允许范围内 admin 最高，不新增"超 admin"层）。据此 R-1 按狭义读收口、广义读分支前提被排除；ToolPolicyDocument 来源、deny 写权、终局律种与 A/B 对照实测见同目录 `toolpolicy-provenance.md`（§6 追加轮）。
 
 ## 6. 复现方式（免构建；全部只读）
 
