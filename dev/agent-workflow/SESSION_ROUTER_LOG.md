@@ -6199,3 +6199,8 @@ RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.l
 * **F-6**：s12(b) 的 head 行标注 **code head 口径**（branch head 随证据/文档/复核 commit 正常前进，权威 head 以 `gh pr view 256` 为准）。
 
 不动：H1/H2 实现、§5 erratum 可裁项、NOT FROZEN（PR1r）标注。目标套件 8 files 101/101；dist 重建随源同 commit（artifacts 门 C-drift 清零后复验）；全量普查与 identity diff 见下条更新。
+
+
+## 2026-10-16 Alpha.5 PR2 尾差收口轮（delta 复核 D-1…D-4，docs-only；PR #256，DO-NOT-MERGE）
+
+Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合，但揭穿一处更糟的东西：commit `af3e046b` 的**信息声称**改了 F-3 归因并记录 Alpha.4 观察，而 `git show --stat` 显示该 commit 只含 README +8 行——编辑从未入库，log 行却在替它背书。收口方式（红线：不改写历史、不 force）：s12(c) 增加 commit-message 口径更正记录（引 delta D-1 指向）；本轮用带 `assert` 的编辑真正落盘并逐一验证：s12(e) 行与 PR 正文 fail-set 行改为 "green again at head, cause not established"（原 dist-rebuild 归因撤回：eslint ignore `**/dist/**`，14,544 输入复扫与 lint universe 1172=1158+14 皆证 dist 贡献为 0）；Alpha.4 hard-deny-cap+human-admin 观察真正写入 s12(g)。D-2/D-4：F-2 测试与 s12(c) 的正名——发臂点是 documents 导出的 ceiling-walk 臂（'undetermined at execution time'），`grantCeiling` 覆盖臂为 monotonicity 不可达的 defense-in-depth，可引出处 = `review-PR2-delta.md` §4（14,544 输入：creation 5859/ACCEPTED 5651/rung-escalated 1882/walk-undetermined 1152/grantCeiling 0）。D-3：README 增 PR3/PR4 接线注——canonical case id 只能取自 `planApproval()`/observe 事件，禁止自拼；F-1 后任何其它呈报一律闭死并在 details 给 expected。复跑 9 套件全绿后才 commit，且 commit 后 `git show --stat` 逐项核对信息=内容。
