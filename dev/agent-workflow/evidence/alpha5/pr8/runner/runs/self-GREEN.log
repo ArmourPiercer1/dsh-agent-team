@@ -1,0 +1,24 @@
+✔ lint: machine matrix ↔ doc matrix 逐行 1:1 对应（同 id 集合、无重无缺、负例可 lint） (2.201724ms)
+✔ lint: 32 行齐（M-01..M-14 + SUP-01..SUP-18），doc 矩阵自身 32 行 (0.976779ms)
+✔ lint: 词汇封闭 + 携带状态一致 + automatable=false 必带 LIVE-GATED 依据且无 hooks (0.671831ms)
+✔ lint: 6 个 partial 行 = M-01/M-02/M-03/M-06/M-12/M-14（DECISION-PACK 决策 1 点名行） (0.410396ms)
+✔ lint: G-a 判据引用 17:52Z 裁决原文要点，且不得出现 17:02 回填句式 (0.555042ms)
+✔ lint: G-g 相关行必须引 g-g-support-contract.md 分级，且禁 "fail-closed 已证/proven" 类措辞 (1.078275ms)
+✔ tri-state: fixture-surface 锚点齐 ⇒ PASS；缺锚点 ⇒ FAIL；文件缺 ⇒ NOT_RUN(声明环境缺) 或 FAIL(未声明) (0.51811ms)
+✔ tri-state: recorded-evidence 计数与 verdict 词表判定；记录缺 ⇒ NOT_RUN（附他处登记引注） (0.387483ms)
+✔ tri-state: kit-rerun 前置不齐 ⇒ NOT_RUN（列出缺失前置，绝不伪造 PASS） (0.255518ms)
+✔ tri-state: kit-rerun 全 criteria PASS ⇒ PASS；有 FAIL ⇒ FAIL（真 spawn，临时世界即删） (76.571973ms)
+✔ tri-state: automatable=false ⇒ REQUIRES-LIVE-WIRING（含 LIVE-GATED 依据）；不得计入 PASS/FAIL (0.382812ms)
+✔ tri-state: p4t6 只读查询在真实树可跑且零新词（quarantine 之外零命中） (236.38568ms)
+✔ final_declaration: 台账缺文件 ⇒ 视为 OPEN ⇒ 恒 null（fail-closed 语义） (0.234255ms)
+✔ final_declaration: 台账有开放行 ⇒ null；全关 ⇒ 仍 null（本轮无任何行允许非空；非空尝试=throw） (0.105135ms)
+✔ final_declaration: 机检矩阵中任何非空 final_declaration ⇒ assertMachineFinalDeclarations 判红 (0.063835ms)
+✔ distribution: 计数只含四类，且 fixture/NOT_RUN/RLW 永不产出 SUPPORTED/已验收措辞 (0.154188ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 377.72373
