@@ -106,6 +106,16 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   lint-identities NEW=0 vs pinned base; token scan of the round's diffs = 0 hits; dist rebuilt inside
   `b1dcc262`. INTERFACES-v1.md does not exist in this tree (nor master) — the C-ADM one-sentence law is
   carried in the contrast doc's last section for the parallel lane's writer.
+- 最终 head 复核尾件 (final-head review `4f334d43`, RED `03bc0b05` → GREEN `HEAD`): F-1 数组顺序决定结局
+  (`find()` 取首个覆盖条目) 修为收集全部覆盖条目、完全重复折叠、不同来源并存 ⇒ `deny-source-ambiguous`
+  精确拒（双序同拒，测试钉死）；F-2 issue 复证只比 MAX rung 修为同腿比对 presentation 钉住的
+  `deniedEffectsAtCreation` 对（presentation 抄自 planApproval.deniedEffects）——晚到/变化的 per-effect
+  provenance ⇒ `deny-provenance-moved`/APPROVAL_STALE、regs=0（RED 场景 generation 故意不 bump：lane 不
+  信任装配层纪律）。NIT：两份 tail-截断日志删除，换为含命令行+per-test 行的完整 RED/GREEN 捕获
+  (`runs/red-f1f2-full.log` 2红/131、`runs/green-f1f2-full.log` 133/133)。未触：H1/H2/身份腿/one-shot/
+  两平面律/F-3 语义（mutation 作者阶+sourceRef 可解析 = PR3 义务，G-d 台账）。口径更正（承接 D-1 教训）：
+  上一轮 s12 把 FIXED 腿 (a4p7-merge-gate 的 commit-level instrument 测量腿) 归因于"dist 随源提交转正"——
+  该因果未经证实，撤回为"cause not established; green again at head"；历史不改写，更正记录于此。
 - CI: NOT_RUN (stacked). Session discipline (coordination 08:2xZ): the census-runtime is not
   terminal, so NO claim of "all CI green" is made anywhere in this PR or its evidence —
   every number above is a local run.
