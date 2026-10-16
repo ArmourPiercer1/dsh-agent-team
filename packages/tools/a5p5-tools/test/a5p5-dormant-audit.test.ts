@@ -35,6 +35,19 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
+/**
+ * Reviewed NAMES-ONLY exceptions (the header's "the wiring enters review as
+ * its own change" moment, G-d integration wiring round, branch
+ * `alpha5-int-wiring`): the p4t6 session-event ledger is a CENSUS whose whole
+ * purpose is to NAME every scannable path — the lane's merge tie was paid
+ * there (this is a name in a census, not a reference: zero code, zero barrel,
+ * zero glue rides with it; dormancy of the SHIPPED face is unchanged). The
+ * exception is path-exact on purpose — a second census-style file, or any
+ * import edge, is still an offender, and the leg below pins that every
+ * lane-naming line in the census is exactly one quoted path and nothing else.
+ */
+const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts']
+
 describe('a5p5-dormant-audit', () => {
   it('no shipped source outside the lane references a5p5-tools', () => {
     const offenders: string[] = []
@@ -42,10 +55,19 @@ describe('a5p5-dormant-audit', () => {
       const relativePath = relative(packagesRoot, file)
       const insideLane = file === laneRoot || file.startsWith(laneRoot + sep)
       if (insideLane) continue
+      if (NAMES_ONLY_LEDGER_EXCEPTIONS.includes(relativePath)) continue
       const text = readFileSync(file, 'utf8')
       if (text.includes('a5p5-tools')) offenders.push(relativePath)
     }
     expect(offenders).toEqual([])
+  })
+
+  it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {
+    const ledger = readFileSync(join(packagesRoot, 'testkit', 'test', 'p4t6-session-event-scan.test.ts'), 'utf8')
+    for (const line of ledger.split('\n')) {
+      if (!line.includes('a5p5-tools')) continue
+      expect(line.trim(), line.trim()).toMatch(/^'packages\/tools\/a5p5-tools\/[^']+',$/)
+    }
   })
 
   it('the shared tools barrel still does not know the lane (explicit leg)', () => {

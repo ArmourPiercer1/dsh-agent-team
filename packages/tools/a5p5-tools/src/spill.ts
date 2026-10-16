@@ -30,10 +30,15 @@
  *     authorization fact.
  *
  * The cancellation/settlement event vocabulary is the C-BIND v1.1 pin — the
- * six PR1r event names VERBATIM (dispatcher-call-cancelled-before-body /
- * terminated-after-body-start / completed-after-abort / outcome-unreadable /
- * cancelled-by-others / executed-unvalidated); normal completion is the one
- * non-cancelled settlement.
+ * six PR1r event names VERBATIM AS EMITTED by the merged dispatcher
+ * (v1.1 勘正, integration wiring round): the master@452a04c0 emission face
+ * carries the `dispatcher-call-` prefix on ALL SIX names
+ * (`tool-dispatch/install.ts:651,662,673,686,763`); the mixed full/short
+ * transcription in the pre-erratum INTERFACES line is superseded. Normal
+ * completion is the one non-cancelled settlement. The delivery semantics of
+ * these names ride the dispatcher's own channel — this lane only validates
+ * the NAME at a settlement it was given; nothing here makes any statement
+ * about that channel's delivery behaviour (PENDING-GATES G-g OPEN).
  *
  * Purity: no `node:*`, no I/O, no clock — all disk contact goes through the
  * injected `SpillFsPort`; the tests provide the `node:fs` adapter.
@@ -47,14 +52,18 @@ import { deepFreezeContracts } from '../../../domain/tool-governance/src/parse-u
 export const SPILL_LEASE_STATES = ['active', 'draining', 'closed'] as const
 export type SpillLeaseState = (typeof SPILL_LEASE_STATES)[number]
 
-/** The C-BIND v1.1 PR1r cancellation event names — VERBATIM, closed. */
+/**
+ * The C-BIND v1.1 PR1r cancellation event names — VERBATIM as the merged
+ * dispatcher emits them (v1.1 勘正: all six carry the `dispatcher-call-`
+ * prefix at master@452a04c0; closed set).
+ */
 export const SETTLEMENT_EVENTS = [
   'dispatcher-call-cancelled-before-body',
-  'terminated-after-body-start',
-  'completed-after-abort',
-  'outcome-unreadable',
-  'cancelled-by-others',
-  'executed-unvalidated',
+  'dispatcher-call-terminated-after-body-start',
+  'dispatcher-call-completed-after-abort',
+  'dispatcher-call-outcome-unreadable',
+  'dispatcher-call-cancelled-by-others',
+  'dispatcher-call-executed-unvalidated',
 ] as const
 export type SettlementEvent = (typeof SETTLEMENT_EVENTS)[number]
 
@@ -71,9 +80,11 @@ export type SpillErrorClass = (typeof SPILL_ERROR_CLASSES)[number]
 export const SPILL_REFUSAL_CODES = [
   'spill-root-outside-world',
   'spill-id-invalid',
+  'spill-id-in-use',
   'spill-write-after-drain',
   'spill-write-after-close',
   'spill-settled-twice',
+  'spill-settlement-event-unknown',
   'spill-close-without-settle',
   'spill-finalize-before-settle',
   'spill-finalized-twice',
@@ -182,7 +193,7 @@ export function createSpillLease(): SpillLease {
     settlement: () => settled,
     settle(next: LeaseSettlement) {
       if (state !== 'active') return refuse('spill-settled-twice', `the lease is already ${state}; the settled edge is single (C-GW)`)
-      if (next.kind === 'cancelled' && !SETTLEMENT_EVENTS.includes(next.event)) return refuse('spill-settled-twice', 'the cancellation event must be one of the six PR1r names verbatim')
+      if (next.kind === 'cancelled' && !SETTLEMENT_EVENTS.includes(next.event)) return refuse('spill-settlement-event-unknown', 'the cancellation event must be one of the six dispatcher-call-* names verbatim (v1.1 勘正: emission-face full names)')
       state = 'draining'
       settled = next
       return { ok: true }
@@ -237,6 +248,15 @@ export function openSpillStore(deps: { worldRoot: string; rootDir: string; fs: S
     openSink({ spillId, lease, attribution }) {
       const bad = validSpillId(spillId)
       if (bad) return { ok: false, refusal: bad } // ZERO port calls: refuse before touch
+      // Lane D ② (wiring gate): a spillId already on disk (payload OR meta) is
+      // NOT re-openable. Re-opening used to rewrite the meta with
+      // `settlement: null` — erasing a finalized record's terminal fact — and
+      // appended onto the existing payload (append-penetration). A caller who
+      // lost its sink reads through `readSpill` (authorization re-checked),
+      // never through a fresh sink. Typed refusal before any port call.
+      if (deps.fs.exists(spillPath(spillId)) || deps.fs.exists(metaPath(spillId))) {
+        return refuse('spill-id-in-use', `spill ${spillId} already exists on disk — a settled record is read through readSpill, never re-opened for append`)
+      }
       deps.fs.ensureDir(rootFull)
       deps.fs.writeFile(metaPath(spillId), JSON.stringify({ attribution, settlement: null } satisfies MetaRecord))
       registry.set(spillId, attribution)

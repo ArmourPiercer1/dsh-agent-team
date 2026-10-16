@@ -1,0 +1,21 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire/packages/tools/a5p5-tools
+
+ ✓ test/a5p5-dormant-audit.test.ts (3 tests) 66ms
+ ✓ test/a5p5-parity.test.ts (13 tests) 19ms
+ ✓ test/a5p5-effects-schema.test.ts (12 tests) 9ms
+ ✓ test/a5p5-spill.test.ts (11 tests) 8ms
+ ✓ test/a5p5-render-injection.test.ts (8 tests) 6ms
+ ✓ test/a5p5-args.test.ts (13 tests) 6ms
+ ✓ test/a5p5-render.test.ts (7 tests) 3ms
+
+ Test Files  7 passed (7)
+      Tests  67 passed (67)
+   Start at  20:29:12
+   Duration  986ms (transform 183ms, setup 0ms, import 322ms, tests 117ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
