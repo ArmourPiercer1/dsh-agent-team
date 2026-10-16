@@ -1,0 +1,303 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1r
+
+ ❯ packages/runtime/test/a5p1r-validate-resolve.test.ts (5 tests | 1 failed) 10ms
+     ✓ control: with nothing moving, the validated Body runs 3ms
+     ✓ a re-registration BEFORE the guard stage is refused by the per-call read: no Body runs 1ms
+     ✓ a re-registration AFTER the guard stage but BEFORE our inner door is refused AT THAT DOOR: the un-validated Body never runs 0ms
+     × CLOSED (B3, user ruling (ii)): the same re-registration after our inner door is cancelled BEFORE its Body — the old "one call" claim is retracted 4ms
+     ✓ a parked call whose Definition is re-registered while it waits meets a refusal, never the new Body 0ms
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts (18 tests | 15 failed) 18ms
+     × ① a re-registration after the dispatch door cancels the call BEFORE its Body: body count 0 4ms
+     × ① positive control: with nothing moving, the signal wrapper is inert and the Body runs 2ms
+     ✓ ② the change channel is a capability: a ctx with no event seam refuses the assembly 1ms
+     × ② an unsubscribe-able channel: a tools/change subscription that THROWS refuses the assembly, typed 2ms
+     × ②⑦ an accepted-but-silent channel is an alarm, not a pass: the moved Body runs and is reported as EXECUTED UNVERIFIED 0ms
+     ✓ ③ isolation — a move in ANOTHER Agent scope cancels nothing here 1ms
+     × ③ isolation — a move on one name cancels only the calls that carried that name 0ms
+     × ③ isolation — every concurrent call of the moved name is cancelled, and none of the untouched ones 0ms
+     × ④ a real caller cancellation is reported as TERMINATED after the Body started, never as un-executed 1ms
+     × ④ a lane abort that arrives while the Body is running is TERMINATION too — the side effect is never re-labelled away 1ms
+     × ④ an abort that loses the race is reported as EXECUTED, not swallowed 1ms
+     × ⑤ hooks, telemetry and result identity survive: the cancelled call reaches both result edges under its own callId with the Host shape 1ms
+     × ⑤ an MCP whole-generation resync cancels the in-flight calls it moved, and the re-bind path restores them 1ms
+     ✓ ⑥ bind → drift → re-bind grows the revision, and the recovery path is the one the documentation promises 1ms
+     × ④ a cancelled call whose outcome the lane cannot read is left UNRESOLVED, never counted as cancelled 0ms
+     × ③ isolation — the affected set stays whole: a global move cancels every Agent's in-flight call of that name 0ms
+     × ⑤ a teardown that meets a call parked past the drain start still refuses, and B3 changes nothing about that law 0ms
+     × ⑧ an execution that will not carry a wrapper is refused, not run unguarded 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ① a re-registration after the dispatch door cancels the call BEFORE its Body: body count 0
+TypeError: handle.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:148:19
+    146|     await call.parked
+    147|     // The door has run: the watch is armed and the signal is ours.
+    148|     expect(handle.pendingCalls().map((row) => row.callId)).toEqual(['c…
+       |                   ^
+    149|
+    150|     // An ordinary concurrent re-registration, from outside the call.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ① positive control: with nothing moving, the signal wrapper is inert and the Body runs
+TypeError: handle.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:195:19
+    193|     expect(events(handle)).not.toContain('dispatcher-call-cancelled-be…
+    194|     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(t…
+    195|     expect(handle.pendingCalls()).toEqual([])
+       |                   ^
+    196|   })
+    197|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ② an unsubscribe-able channel: a tools/change subscription that THROWS refuses the assembly, typed
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:233:24
+    231|       maskedNames: [],
+    232|     })
+    233|     expect(outcome.ok).toBe(false)
+       |                        ^
+    234|     if (outcome.ok) return
+    235|     // Typed, names the channel, and says what is no longer promised.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ②⑦ an accepted-but-silent channel is an alarm, not a pass: the moved Body runs and is reported as EXECUTED UNVERIFIED
+TypeError: handle.changeChannelStatus is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:251:19
+    249|     // assembly time, so the honesty moves to the call edge.
+    250|     double.listeners.delete('tools/change')
+    251|     expect(handle.changeChannelStatus()).toBe('armed')
+       |                   ^
+    252|
+    253|     const call = startParkedCall(double, { callId: 'c1', name: 'grep' …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ③ isolation — a move on one name cancels only the calls that carried that name
+TypeError: handle.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:302:19
+    300|     const sibling = startParkedCall(double, { callId: 'call-read', nam…
+    301|     await sibling.parked
+    302|     expect(handle.pendingCalls().map((row) => row.name).sort()).toEqua…
+       |                   ^
+    303|
+    304|     double.registerOwn('grep', 'V2.grep')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ③ isolation — every concurrent call of the moved name is cancelled, and none of the untouched ones
+TypeError: handle.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:328:19
+    326|     const untouched = startParkedCall(double, { callId: 'u', name: 're…
+    327|     await untouched.parked
+    328|     expect(handle.pendingCalls()).toHaveLength(4)
+       |                   ^
+    329|
+    330|     double.registerOwn('grep', 'V2.grep')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ④ a real caller cancellation is reported as TERMINATED after the Body started, never as un-executed
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:365:24
+    363|     // can claim, and not as something that never executed.
+    364|     const terminated = rowsFor(handle, 'dispatcher-call-terminated-aft…
+    365|     expect(terminated).toHaveLength(1)
+       |                        ^
+    366|     expect(terminated[0]!.sideEffectPossible).toBe(true)
+    367|     expect(terminated[0]!.abortIssuedBy).toBe('none')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ④ a lane abort that arrives while the Body is running is TERMINATION too — the side effect is never re-labelled away
+AssertionError: expected undefined to be 'ABORTED' // Object.is equality
+
+- Expected:
+"ABORTED"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:383:22
+    381|     expect(run.bodies).toEqual(['NATIVE.grep']) // ← it ran
+    382|     expect(run.bodyInvoked).toBe(true)
+    383|     expect(run.code).toBe('ABORTED')
+       |                      ^
+    384|     const terminated = rowsFor(handle, 'dispatcher-call-terminated-aft…
+    385|     expect(terminated).toHaveLength(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ④ an abort that loses the race is reported as EXECUTED, not swallowed
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:409:18
+    407|     expect(run.bodies).toEqual(['NATIVE.grep'])
+    408|     const late = rowsFor(handle, 'dispatcher-call-completed-after-abor…
+    409|     expect(late).toHaveLength(1)
+       |                  ^
+    410|     expect(late[0]!.sideEffectPossible).toBe(true)
+    411|     expect(events(handle)).not.toContain('dispatcher-call-cancelled-be…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ⑤ hooks, telemetry and result identity survive: the cancelled call reaches both result edges under its own callId with the Host shape
+AssertionError: expected '"ran:grep@V2.grep"' to contain 'ABORTED_BEFORE_DISPATCH'
+
+Expected: "ABORTED_BEFORE_DISPATCH"
+Received: ""ran:grep@V2.grep""
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:443:41
+    441|     expect(seen.postCallId).toBe('c1')
+    442|     expect(seen.resultCallId).toBe('c1')
+    443|     expect(JSON.stringify(seen.result)).toContain('ABORTED_BEFORE_DISP…
+       |                                         ^
+    444|     expect(JSON.stringify(seen.post)).toContain('ABORTED_BEFORE_DISPAT…
+    445|     // Call identity untouched: the lane changed a signal, never an id…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ⑤ an MCP whole-generation resync cancels the in-flight calls it moved, and the re-bind path restores them
+AssertionError: expected [ 'MCP.gen2.grep' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "MCP.gen2.grep",
++ ]
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:458:24
+    456|     call.release()
+    457|     const run = await call.settled
+    458|     expect(run.bodies).toEqual([])
+       |                        ^
+    459|     expect(run.code).toBe('ABORTED_BEFORE_DISPATCH')
+    460|     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(f…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ④ a cancelled call whose outcome the lane cannot read is left UNRESOLVED, never counted as cancelled
+AssertionError: expected [ 'V2.grep' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "V2.grep",
++ ]
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:516:24
+    514|       postExecuteReplaces: { isError: true, content: [{ type: 'text', …
+    515|     })
+    516|     expect(run.bodies).toEqual([])
+       |                        ^
+    517|     expect(events(handle)).toContain('dispatcher-change-abort-issued')
+    518|     // The lane refuses to file it as a cancellation it succeeded…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ③ isolation — the affected set stays whole: a global move cancels every Agent's in-flight call of that name
+TypeError: mine.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:540:17
+    538|     const b = startParkedCall(double, { callId: 'in-m2', name: 'grep',…
+    539|     await b.parked
+    540|     expect(mine.pendingCalls().map((row) => row.callId)).toEqual(['in-…
+       |                 ^
+    541|     expect(theirs.pendingCalls().map((row) => row.callId)).toEqual(['i…
+    542|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ⑤ a teardown that meets a call parked past the drain start still refuses, and B3 changes nothing about that law
+TypeError: handle.pendingCalls is not a function
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:566:19
+    564|     await call.parked
+    565|     // A call parked after the door holds a lease AND a watch.
+    566|     expect(handle.pendingCalls()).toHaveLength(1)
+       |                   ^
+    567|     const early = handle.disposeOrdered()
+    568|     expect(early.ok).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-change-abort.test.ts > a5p1r B3 — the after-door move cancels the call, not the world > ⑧ an execution that will not carry a wrapper is refused, not run unguarded
+AssertionError: expected [ 'NATIVE.grep' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "NATIVE.grep",
++ ]
+
+ ❯ packages/runtime/test/a5p1r-change-abort.test.ts:602:24
+    600|
+    601|     const run = await double.runCall({ callId: 'c1', name: 'grep' })
+    602|     expect(run.bodies).toEqual([])
+       |                        ^
+    603|     expect(run.threw ?? run.text).toContain('cannot be made cancellabl…
+    604|     expect(rowsFor(handle, 'dispatcher-signal-wrapper-unavailable')).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  packages/runtime/test/a5p1r-validate-resolve.test.ts > a5p1r R-b — the validate→resolve window under an ordinary re-registration > CLOSED (B3, user ruling (ii)): the same re-registration after our inner door is cancelled BEFORE its Body — the old "one call" claim is retracted
+AssertionError: expected [ 'V2.grep' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "V2.grep",
++ ]
+
+ ❯ packages/runtime/test/a5p1r-validate-resolve.test.ts:101:24
+     99|     // pinned Host refuses a raised signal at `index.ts:1572` — BEFORE…
+    100|     // anything at `:1578` — so the correct behaviour here is that NO …
+    101|     expect(run.bodies).toEqual([])
+       |                        ^
+    102|     expect(run.code).toBe('ABORTED_BEFORE_DISPATCH')
+    103|     expect(run.bodyInvoked).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  16 failed | 7 passed (23)
+   Start at  15:16:47
+   Duration  357ms (transform 367ms, setup 0ms, import 472ms, tests 28ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

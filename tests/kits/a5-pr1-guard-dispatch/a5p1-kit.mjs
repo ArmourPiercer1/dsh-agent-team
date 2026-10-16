@@ -43,6 +43,7 @@
  * recorded pid, and only on the recorded port.
  *
  * Usage: node a5p1-kit.mjs [--keep] [--evidence-dir <p>] [--skip-order-leg]
+ * Legs: 13 Host legs + the NEG-1 order arms + the B3 re-registration-window arms.
  *                          [--inject-fatal-after-boot]
  *
  * `--inject-fatal-after-boot` is the F5 proof leg: it forces a FATAL at the
@@ -680,6 +681,10 @@ async function main() {
   writeEvidence('stable-instance-before.json', stableBefore)
 
   const orderResult = SKIP_ORDER ? { skipped: true } : await runOrderLeg()
+  // The re-registration-window arms (B3): the after-door cancellation, its
+  // limits, and the shape of what it does NOT cancel. Its criteria join this
+  // table, so the Receipt counts them and the count can only grow.
+  const reregResult = SKIP_ORDER ? { skipped: true } : await runReregWindowLeg()
 
   mkdirSync(WORKSPACE, { recursive: true })
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
@@ -962,6 +967,7 @@ async function main() {
     world: { path: HOME, disposition: world },
     criteria,
     orderLeg: orderResult,
+    reregWindow: reregResult,
   })
   const failed = criteria.filter((c) => !c.ok)
   log(`criteria: ${String(criteria.length - failed.length)}/${String(criteria.length)} pass${failed.length === 0 ? '' : ` — FAILED: ${failed.map((c) => c.id).join(', ')}`}`)
@@ -1018,6 +1024,18 @@ function checkTreePristine() {
 
 /** The NEG-1 order-hazard arms, run in a child process against the pinned
  *  registry (`a5p1-order-hazard.mjs`); its criteria join this kit's table. */
+/** The B3 re-registration-window arms (`a5p1r-rereg-window.mjs`), same shape. */
+function runReregWindowLeg() {
+  const outFile = join(RUN_DIR, 'rereg-window.json')
+  const r = spawnSync(process.execPath, [join(KIT_DIR, 'a5p1r-rereg-window.mjs'), '--out', outFile], { encoding: 'utf8', timeout: 900_000 })
+  let parsed = null
+  try { parsed = JSON.parse(readFileSync(outFile, 'utf8')) } catch { parsed = null }
+  const legs = (parsed?.criteria ?? []).map((c) => ({ ...c, detail: `${c.detail} (exit=${String(r.status)})` }))
+  for (const c of legs) check(c.id, `rereg-leg — ${c.name}`, c.ok, c.detail)
+  if (legs.length === 0) check('REREG-RUN', 'the rereg-window leg produced a result file', false, `exit=${String(r.status)} stderr=${String(r.stderr).slice(0, 300)}`)
+  return { exit: r.status, criteria: legs, result: parsed === null ? null : parsed.arms }
+}
+
 function runOrderLeg() {
   const outFile = join(RUN_DIR, 'order-hazard.json')
   const r = spawnSync(process.execPath, [join(KIT_DIR, 'a5p1-order-hazard.mjs'), '--out', outFile], { encoding: 'utf8', timeout: 240_000 })

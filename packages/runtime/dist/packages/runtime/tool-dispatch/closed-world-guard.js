@@ -84,6 +84,28 @@ export function untestedAssurance(implementationOrigin, executionBoundary, realm
 }
 /** Which trusted assembly step established one governed name (design §3 table). */
 export const GOVERNED_ORIGINS = ['inherited-native', 'team-own', 'team-mcp'];
+/**
+ * WHY one governed name is not verified — a fact the assembly records when it
+ * binds, not a guess the Guard makes later. Each member is a distinct measured
+ * condition, and each one maps onto its own dispatch-time message, because
+ * "unverified" alone tells the operator nothing about what to fix.
+ *
+ *  - `unattributed`      observed on the surface, not on the trusted native list;
+ *  - `native-shadowed`   on the trusted native list, but THIS Agent resolves the
+ *                        name to a different Definition than the trusted global
+ *                        read (the residual R-a case: a name is not a definition);
+ *  - `native-unreadable` on the trusted native list, but the trusted side of the
+ *                        comparison could not be read at the public seam;
+ *  - `definition-drift`  it was verified and the definition moved underneath it;
+ *  - `definition-unreadable` the current definition cannot be read at all.
+ */
+export const GOVERNED_UNVERIFIED_REASONS = [
+    'unattributed',
+    'native-shadowed',
+    'native-unreadable',
+    'definition-drift',
+    'definition-unreadable',
+];
 /** Why one call was refused, in Guard terms (mapped onto the §5 codes). */
 export const GUARD_DENIAL_REASONS = {
     UNGOVERNED: 'ungoverned-name',
@@ -99,6 +121,15 @@ export const GUARD_DENIAL_REASONS = {
     /** The current definition could not be read at the public seam. Assuming
      *  "nothing changed" is exactly the failure this reason exists to refuse. */
     DEFINITION_UNREADABLE: 'definition-unreadable',
+    /** The name is on the assembly's trusted native list, but the definition THIS
+     *  Agent resolves is not the definition the trusted (global) view resolves:
+     *  a same-name contribution shadows it. R-a: a trusted NAME never transfers
+     *  its standing to somebody else's DEFINITION. */
+    NATIVE_SHADOWED: 'native-shadowed',
+    /** The name is on the trusted native list but the trusted side of that
+     *  comparison could not be read at the public seam, so the comparison the
+     *  rule needs does not exist. Unreadable is a refusal, never a pass. */
+    NATIVE_UNREADABLE: 'native-unreadable',
 };
 /** The stable, model-visible reason text of each §5 code (never a stack). */
 export function guardDenialMessage(name, reason) {
@@ -119,6 +150,10 @@ export function guardDenialMessage(name, reason) {
             return `team tool guard: "${name}" now resolves to a different ToolDefinition than the one its Binding pinned (definition drift: an old verification never transfers to a new body; re-bind required)`;
         case GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE:
             return `team tool guard: the current definition of "${name}" is unreadable at the public seam, so its Binding cannot be re-verified at dispatch (unreadable definition: refusing rather than assuming nothing changed)`;
+        case GUARD_DENIAL_REASONS.NATIVE_SHADOWED:
+            return `team tool guard: "${name}" is on the trusted native list, but this Agent resolves that name to a DIFFERENT ToolDefinition than the trusted global view does — a same-name contribution shadows it, and the Team assembly never bound this Body (a trusted name is not a trusted definition: refusing rather than inheriting a verification it was never given)`;
+        case GUARD_DENIAL_REASONS.NATIVE_UNREADABLE:
+            return `team tool guard: the trusted global definition of "${name}" is unreadable at the public seam, so the name-vs-definition comparison the native rule needs cannot be made (refusing rather than crediting a name nobody could pin)`;
     }
 }
 const NATIVE_PROVIDER = 'dsh-native-host';
@@ -130,7 +165,7 @@ export function createGovernedSurface(options) {
     const policyGeneration = options.policyGeneration ?? 0;
     const authorityGeneration = options.authorityGeneration ?? 0;
     const nativeNames = new Set(options.nativeNames ?? []);
-    const bind = ({ name, origin, binding, verified }) => {
+    const bind = ({ name, origin, binding, verified, unverifiedReason }) => {
         const previous = entries.get(name);
         if (previous !== undefined) {
             // A stable ToolDefinition identity: the same name keeps the same
@@ -159,6 +194,9 @@ export function createGovernedSurface(options) {
             origin,
             binding: Object.freeze({ ...binding }),
             verified,
+            // A verified entry has no "why not" to state; an unverified one always
+            // states the fact that made it so, defaulting to the plainest reading.
+            unverifiedReason: verified ? null : (unverifiedReason ?? 'unattributed'),
             revision: binding.revision,
         });
         entries.set(name, entry);
@@ -168,7 +206,7 @@ export function createGovernedSurface(options) {
         names: () => [...entries.keys()].sort(),
         entryOf: (name) => entries.get(name),
         bind,
-        markUnverified: (name, bindingId) => {
+        markUnverified: (name, bindingId, reason) => {
             const current = entries.get(name);
             if (current === undefined) {
                 return {
@@ -185,29 +223,51 @@ export function createGovernedSurface(options) {
                     },
                 };
             }
-            const entry = Object.freeze({ ...current, verified: false });
+            const entry = Object.freeze({
+                ...current,
+                verified: false,
+                unverifiedReason: reason ?? 'definition-drift',
+            });
             entries.set(name, entry);
             return { ok: true, value: entry };
         },
-        bindInheritedSurface: (names, identities) => {
+        bindInheritedSurface: (names, resolved, trusted) => {
             let verifiedBound = 0;
             const unverified = [];
+            const shadowed = [];
+            const nativeUnreadable = [];
             for (const name of names) {
                 if (entries.has(name))
                     continue;
-                const pinned = identities?.[name];
+                const pinned = resolved[name];
+                const trustedIdentity = trusted[name];
                 const hasPinnedIdentity = typeof pinned === 'string' && pinned.length > 0;
-                // Two independent facts, both required (PR1 Gate R1): an explicit
-                // trusted-native declaration AND a definition identity read at the
-                // public seam. Observation alone never earns a native Binding.
-                const isNative = nativeNames.has(name) && hasPinnedIdentity;
+                const hasTrustedIdentity = typeof trustedIdentity === 'string';
+                // THE FOUR CASES (see `bindInheritedSurface` above). Trusted-native
+                // standing is earned by the COMPARISON, never by the name.
+                const claimsNative = nativeNames.has(name);
+                const isNative = claimsNative && hasPinnedIdentity && hasTrustedIdentity && trustedIdentity === pinned;
+                const unverifiedReason = !claimsNative
+                    ? 'unattributed'
+                    : !hasPinnedIdentity
+                        ? 'definition-unreadable'
+                        : !hasTrustedIdentity
+                            ? 'native-unreadable'
+                            : 'native-shadowed';
+                if (claimsNative && hasPinnedIdentity && hasTrustedIdentity && trustedIdentity !== pinned) {
+                    shadowed.push({ name, trusted: String(trustedIdentity), resolved: String(pinned) });
+                }
+                if (claimsNative && hasPinnedIdentity && !hasTrustedIdentity)
+                    nativeUnreadable.push(name);
                 const binding = isNative
                     ? {
                         bindingId: `native:${name}`,
                         agentScopeKey,
                         toolName: name,
                         // The identity read from `tools.get(name, scope)` — the body the
-                        // assembly actually saw, not a name-shaped guess.
+                        // assembly actually saw, not a name-shaped guess. R-a pins that
+                        // this is ALSO what the trusted global view resolves, or the name
+                        // does not get here at all.
                         definitionIdentity: String(pinned),
                         providerId,
                         implementationOrigin: 'dsh-native',
@@ -228,7 +288,7 @@ export function createGovernedSurface(options) {
                         agentScopeKey,
                         toolName: name,
                         definitionIdentity: hasPinnedIdentity ? String(pinned) : `unpinned:${name}`,
-                        providerId: 'unattributed',
+                        providerId: typeof trustedIdentity === 'string' ? 'shadowed-same-name' : 'unattributed',
                         implementationOrigin: 'team-trusted-extension',
                         executionBoundary: 'trusted-host',
                         assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
@@ -237,7 +297,13 @@ export function createGovernedSurface(options) {
                         revision: 1,
                         status: 'ACTIVE',
                     };
-                const outcome = bind({ name, origin: 'inherited-native', binding, verified: isNative });
+                const outcome = bind({
+                    name,
+                    origin: 'inherited-native',
+                    binding,
+                    verified: isNative,
+                    unverifiedReason: isNative ? undefined : unverifiedReason,
+                });
                 if (!outcome.ok)
                     continue;
                 if (isNative)
@@ -249,6 +315,8 @@ export function createGovernedSurface(options) {
                 verifiedBound,
                 unverifiedBound: unverified.length,
                 unverified: Object.freeze(unverified.slice().sort()),
+                shadowed: Object.freeze(shadowed.slice().sort((a, b) => a.name.localeCompare(b.name))),
+                nativeUnreadable: Object.freeze(nativeUnreadable.slice().sort()),
             });
         },
         snapshot: () => [...entries.values()],
@@ -282,8 +350,22 @@ export function guardDecision(input) {
     const entry = surface.entryOf(exec.name);
     if (entry === undefined)
         return deny('TEAM_TOOL_UNGOVERNED', GUARD_DENIAL_REASONS.UNGOVERNED);
-    if (!entry.verified)
-        return deny('TOOL_BINDING_UNVERIFIED', GUARD_DENIAL_REASONS.BINDING_UNVERIFIED);
+    if (!entry.verified) {
+        // WHY it is unverified is a fact the assembly or the drift detector already
+        // recorded; the Guard states it instead of flattening every case into
+        // "cannot be verified", because a shadowed name, an unreadable trusted view
+        // and a body that moved are three different things to fix.
+        const reason = entry.unverifiedReason === 'native-shadowed'
+            ? GUARD_DENIAL_REASONS.NATIVE_SHADOWED
+            : entry.unverifiedReason === 'native-unreadable'
+                ? GUARD_DENIAL_REASONS.NATIVE_UNREADABLE
+                : entry.unverifiedReason === 'definition-drift'
+                    ? GUARD_DENIAL_REASONS.DEFINITION_DRIFT
+                    : entry.unverifiedReason === 'definition-unreadable'
+                        ? GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE
+                        : GUARD_DENIAL_REASONS.BINDING_UNVERIFIED;
+        return deny('TOOL_BINDING_UNVERIFIED', reason);
+    }
     if (entry.binding.policyGeneration !== input.policyGeneration ||
         entry.binding.authorityGeneration !== input.authorityGeneration) {
         return deny('TOOL_BINDING_UNVERIFIED', GUARD_DENIAL_REASONS.REVISION_DRIFT);

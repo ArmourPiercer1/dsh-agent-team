@@ -1,0 +1,11 @@
+NOTE ON THE EXIT MARKERS, recorded because an earlier revision of this very file
+was wrong in exactly this way: an exit code must be taken from the tool, never
+from a filtering pipe. The first version piped tsc through `grep -v` and printed
+`grep`'s status, so it read "exit=1" above an empty error list — a clean run
+wearing a failure's clothes. Markers below are tsc's own status.
+
+# typecheck gate at HEAD=dfcc0606 (files a5p1r double types + this round's spec)
+$ npx tsc --noEmit -p packages/runtime/tsconfig.json    # the package's own typecheck target: COVERS packages/runtime/test
+tsc(runtime) exit=0
+$ npx tsc --noEmit -p packages/testkit/tsconfig.json
+tsc(testkit) exit=0

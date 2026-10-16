@@ -108,19 +108,30 @@ export async function makeFixture() {
   }
 
   let callSeq = 0
-  async function run(name, agent) {
-    const callId = ToolCallId(`p00-c${String(++callSeq)}`)
+  /**
+   * `opts.signal` lets a CALLER own the cancellation (the Host fuses it with any
+   * wrapper signal before the Body); `opts.code` on the result is the Host's own
+   * `error.info.code`, which is what distinguishes "cancelled before dispatch"
+   * from "terminated after the Body started".
+   */
+  async function run(name, agent, opts = {}) {
+    const callId = opts.callId ?? ToolCallId(`p00-c${String(++callSeq)}`)
     const before = obs.length
     let result
     try {
-      result = await ctx.tools.execute({ signal: new AbortController().signal, callId, name, arguments: {}, ...(agent ? { agent } : {}) })
+      result = await ctx.tools.execute({ signal: opts.signal ?? new AbortController().signal, callId, name, arguments: {}, ...(agent ? { agent } : {}) })
     } catch (err) {
       obs.push({ event: 'action', at: Date.now(), action: 'execute-threw', name, scopeId: agent?.id ?? '(agentless)', callId: String(callId), message: String(err?.message ?? err) })
       return { threw: String(err?.message ?? err), bodies: obs.slice(before) }
     }
     const first = result?.content?.[0]
     const text = first?.type === 'text' ? first.text : JSON.stringify(result?.content ?? result)
-    return { text, isError: result?.isError === true, bodies: obs.slice(before) }
+    return {
+      text,
+      isError: result?.isError === true,
+      code: result?.error?.info?.code,
+      bodies: obs.slice(before),
+    }
   }
 
   const counters = (identity) => obs.filter((o) => o.event === 'body' && o.identity === identity).length
