@@ -124,12 +124,20 @@ describe('arm 2 — `requires-approval` (the ONE logical ApprovalCase)', () => {
     const request = requestOf({ requestedEffects: poisoned })
     const denyPolicy = policyDoc([{ effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
     const ports = recordPorts()
-    const { kernel } = makeHarness({ policy: () => denyPolicy, ports })
+    const { kernel } = makeHarness({
+      policy: () => denyPolicy,
+      // R-1a: the deny must be PROJECTED into the bound documents for the walk
+      // to answer at all — a silent envelope makes it unattributed, not a
+      // free leader leg. This arm keeps the no-short-circuit pin; R-1a's own
+      // control below pins the silent case.
+      documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      ports,
+    })
     const decision = await kernel.admit(request)
     if (!decision.ok || decision.value.kind !== 'requires-approval') throw new Error(JSON.stringify(decision))
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(JSON.stringify(planned))
-    expect(planned.value.requiredAuthority).toBe('leader')
+    expect(planned.value.requiredAuthority).toBe('human-user')
     expect(ports.registrations).toBe(0) // routed, not minted — the door still never grants alone
   })
 
@@ -426,9 +434,11 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(JSON.stringify(planned))
     expect(planned.value.requiredAuthority).toBe('human-admin') // admin: the top rung INSIDE envelope support
+    const policyBefore = JSON.stringify(denyWrite)
     const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin' }))
     if (!issued.ok) throw new Error(JSON.stringify(issued))
     expect(issued.ok).toBe(true) // a SINGLE-USE grant — no policy document was, or had to be, changed
+    expect(JSON.stringify(denyWrite)).toBe(policyBefore) // ④ the policy bytes are byte-identical across the mint — an approval is not a mutation
     expect(kernel.consumeForExecution(issued.value, consumeFields(request, issued.value)).ok).toBe(true)
     expect(kernel.consumeForExecution(issued.value, consumeFields(request, issued.value)).ok).toBe(false) // spent once — not a standing exception
     const again = await kernel.admit(request)
@@ -501,5 +511,58 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     expect(issued.ok).toBe(false) // Team approval changes no facts
     expect(ports.registrations).toBe(0)
     expect(ports.consumptions).toBe(0)
+  })
+
+  it('R-1a: a deny the envelope never projects is NOT a leader-leg mint — unattributed, zero mints (ruling ③, review R-1a)', async () => {
+    // The walk's DEFAULT rung (leader on an empty ladder) is not an owning
+    // authority for a deny: before the fix this MINTED — fail-open, costumed
+    // as authorization. R-1a law: a denied index's rung must be backed by at
+    // least one bound narrowing rule over the denied scope.
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    const ports = recordPorts()
+    const { kernel } = makeHarness({ policy: () => denyWrite, ports }) // envelope says NOTHING about the deny
+    const planned = await kernel.planApproval(request)
+    expect(planned.ok).toBe(false)
+    if (!planned.ok) {
+      expect(planned.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+      expect(planned.error.details?.refusal).toBe('deny-source-unattributed')
+    }
+    const issued = await kernel.issueApprovedGrant(request, approvalFor(request))
+    expect(issued.ok).toBe(false) // pre-fix: this minted
+    expect(ports.registrations).toBe(0) // pre-fix: 1
+  })
+
+  it('R-2a: a denied effect under a top-rung beneficiary says NO-UPPER-RUNG — the authority is known, nobody sits above (not ③)', async () => {
+    const { kernel } = makeHarness({
+      beneficiary: 'human-admin',
+      policy: () => denyWrite,
+      documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+    })
+    const decision = await kernel.admit(requestOf({ requestedEffects: effects(writeEffect()) }))
+    if (!decision.ok || decision.value.kind !== 'denied') throw new Error(JSON.stringify(decision))
+    expect(decision.value.error.details?.refusal).toBe('ask-has-no-upper-rung') // NOT deny-source-unattributed
+    expect(decision.value.error.message).toContain('no rung above')
+    expect(decision.value.error.message).toContain('§8.2') // the fix it suggests: the permanent mutation path
+  })
+
+  it('R-1b: the plan states WHICH deny rides at WHICH rung (plan value + observe) — PR3 presents exactly this', async () => {
+    const request = requestOf({ requestedEffects: effects(readEffect(), writeEffect()) })
+    const observed: ReadonlyArray<Record<string, unknown>>[] = [[]]
+    const { kernel } = makeHarness({
+      policy: () => policyDoc([
+        { effectKind: 'read', resource: scopeResource(readEffect()), maximumEffect: 'ask' }, // ordinary ask — no projection needed for absence/ask
+        { effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }, // the ONE deny, projected below
+      ]),
+      documents: () => mutationRulesDocs([
+        { operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' },
+      ]),
+      onObserve: (event) => observed[0].push(event),
+    })
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(JSON.stringify(planned))
+    expect(planned.value.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
+    await kernel.admit(request)
+    const evt = observed[0].find((e) => e.event === 'admission-requires-approval')
+    expect(evt?.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
   })
 })
