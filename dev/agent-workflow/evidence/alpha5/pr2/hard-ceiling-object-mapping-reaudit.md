@@ -3,6 +3,7 @@
 - powered-by: DeepSeek Harness
 - model: qwen3.8-flash-next（harness 名称另列 = DeepSeek Harness）
 - 性质：**纯证据**，零语义变更、零代码改动、合并冻结不变。主检出只读；本文件为主检出唯一写入（未跟踪证据路径）。未 commit / 未 push。
+- 〔修订轮 2026-10-16〕用户不接受"R-1 消解/闭环/无现行偏差"结论；本文件基址更正与逐条勘误见文末 §8（master 对照一律改用 origin/master `db5cb5f7dda80ab85a2e1e31ed56b2a43ff5d1ef` 或显式 SHA）。语义修正主体在同目录 `toolpolicy-provenance.md`（§3.2/§4/§7/§8 修订轮重写）。
 - 审计对象 HEAD：worktree `.worktrees/a5-pr2`，branch `alpha5-pr2-admission-grant`，HEAD `375920aa…`（前版审计提交），code head `af3e046bebf86c8879a3428f879e5494fc1c2be2`，dist 已提交（探针免构建）。
 - **方法修正（用户指示）**：不得因"两侧都含 hard 字样"就把「Alpha.4 允许 Admin 批到 Team Hard 之上」与「externalHard 连 admin 不可越」判成同一对象的冲突。拆成两个命题分别证明：
   - **P1（ceiling 建模范围）**："外部边界事实未被纳入 Team mutation ceiling"——可能只是未建模 / 另层承担，不是允许绕过。
@@ -23,7 +24,7 @@
 
 | 引用侧 | 路径 | 地位 |
 | --- | --- | --- |
-| 冻结基线（语义唯一权威） | `docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md` | 20260829 冻结四份之一。**路径注**：主 AGENTS.md/ROUTER_RULES 记作 `docs/plans/paused/`，现树（主检出 `6259cf4b` 与本分支 `375920aa`）实际在 `docs/plans/finished/`（`paused/` 现仅含 Alpha.1 时代文档）；本件按实际路径引用，冻结地位不变 |
+| 冻结基线（语义唯一权威） | `docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md` | 20260829 冻结四份之一。**路径注**：主 AGENTS.md/ROUTER_RULES 记作 `docs/plans/paused/`，现树（主检出 `6259cf4b` 与本分支 `375920aa`；〔修订轮：origin/master `db5cb5f7` 上同样成立，`git ls-tree` 已核〕）实际在 `docs/plans/finished/`（`paused/` 现仅含 Alpha.1 时代文档）；本件按实际路径引用，冻结地位不变 |
 | ADR 历史（Alpha.1 时代） | `docs/plans/paused/ADR-001-hierarchical-self-frozen-permission-governance.md` | paused 目录内，但**不在 20260829 冻结四份之列**——历史词汇参考层（`teamHardDeny`/`externalHard` 这对命名出自此），只作对象映射词源证据，不与冻结四份同级 |
 | active 当期权威（Alpha.4） | `docs/plans/active/alpha4-permission-governance/{ADR-alpha4-hard-governance.md, alpha4-permission-governance-spec.md, alpha4-implementation-plan.md}` | 本分支当期阶段计划（worktree AGENTS.md：当前阶段 = Alpha.4 硬治理）；其自载执行协议优先于 ROUTER_RULES 过时条款 |
 | 未来阶段备忘录（Alpha.5） | `docs/plans/memo/alpha5-tool-io-governance/{ADR-alpha5-tool-io-governance.md, architecture.md, alpha5-s0-pr0-pr8-implementation-plan.md, post-poc-technical-design.md}` | Alpha.5 未来阶段设计备忘。其**自身 `:63` 即地位声明**："it proposes a **future stage-local implementation contract**, not an in-place amendment to the accepted Alpha.4 production schema or the 2026-08-29 frozen historical plans. Any prospective contradiction must be listed as an intentional Alpha.5 change … and approved/validated under the repository's precedence rules." → 不与 Alpha.4 active / 冻结基线平级，冲突须上交 |
@@ -80,7 +81,7 @@
 | G7 | PR3 将接入的 I/O 强制点（计划） | `packages/domain/tool-governance/src/interfaces.ts:71+`（"ControlledFs (PR3) — trusted Host mediation, grant-per-call … every operation runs its check BEFORE the open"）；`alpha5 architecture.md:183` "All required enforcement is DERIVED from the effective policy; do not let optional assurance declarations weaken it."；`plan:87` "守卫用于**不可绕过的最终拒绝**，pre-execute/Control Flow 用来**等待 Ask**，不可用其他 Listener 强行允许。" | 计划（"DERIVED from the effective policy" ⇒ effective policy 含外部事实 ⇒ PR3 装配义务；属计划义务非已证旁路） |
 | G8 | Control 权威 resolver 可用性闸（今天挡住整个 admin leg） | `packages/runtime/control/types.ts:341-353`（`CONTROL_UNRESOLVABLE_AUTHORITIES = ['human-admin']`）+ `control/service.ts:4502-4531`（durable 零评审关闭，从不 pending） | 否（authority 可用性）——但它是今天事实上挡住 human-admin 呈报的最外层闸（探针 G8 行原文） |
 
-live 装配供给：`packages/runtime/src/plugin/root.ts:1367-1368` + `live/agent-bindings.mjs:1177-1189`（外部硬事实来自 boot config，由宿主注入——与冻结 §19.2 的注入面一致）；master 在用的 `guardDecision` 不含 Envelope 也不含外部事实（G4），外部硬在 live 由 G1/G2/G3/G6 承担。
+live 装配供给：`packages/runtime/src/plugin/root.ts:1367-1368` + `live/agent-bindings.mjs:1177-1189`（外部硬事实来自 boot config，由宿主注入——与冻结 §19.2 的注入面一致）；master 在用的 `guardDecision` 不含 Envelope 也不含外部事实（G4），外部硬在 live 由 G1/G2/G3/G6 承担。〔修订轮：对 origin/master `db5cb5f7` 重验**成立**——`packages/runtime/tool-dispatch/closed-world-guard.ts` 存在且 `grep -ci envelope` = 0；注意陈旧基址 `6259cf4b` 上 tool-dispatch 目录整体不存在，该论断在旧基址下无锚点，§8 H2〕
 
 ## 4. P1 / P2 终判
 
@@ -90,11 +91,11 @@ live 装配供给：`packages/runtime/src/plugin/root.ts:1367-1368` + `live/agen
 3. 结论措辞：P1 = "未纳入 ceiling 平面（另层承担）"成立；"Alpha.4 允许绕过外部边界"是前一版把建模范围声明误读为放行声明。
 
 **P2（"最终执行可以绕过外部边界"）——不成立**，证据（原文见附录 B/C）：
-1. PR2 kernel（DORMANT，master 零生产 importer）：**无外部事实输入位**；ARM B1 把 externalHard 形状的精确 deny 规则塞进 `documents` 的多余槽位——输出与基线完全相同（同一 `grant:2388aeb7…`，grant id 内容确定性），证明该注入从未被读取；能"批过去"的对象只有 `teamHardEnvelope`（ARM A），而它按 §2 映射是 Human 可越的 Team-owned 对象，**不是**外部边界。
+1. PR2 kernel（DORMANT，master 零生产 importer；〔修订轮：对 origin/master `db5cb5f7` 更强——`packages/runtime/tool-admission/` **目录整体不存在**，§8 E8））：**无外部事实输入位**；ARM B1 把 externalHard 形状的精确 deny 规则塞进 `documents` 的多余槽位——输出与基线完全相同（同一 `grant:2388aeb7…`，grant id 内容确定性），证明该注入从未被读取；能"批过去"的对象只有 `teamHardEnvelope`（ARM A），而它按 §2 映射是 Human 可越的 Team-owned 对象，**不是**外部边界。
 2. kernel 内唯一能终局拒绝的形状 = expansion 平面 policy deny：ARM B2 原文 `IO_POLICY_UNSUPPORTED … decided DENY by the policy — Team deny is final; no approval exists for it`（admit 与 issue 两处都拒，`events=[]`）。⇒ 若装配把外部硬事实路由进 `ToolPolicyDocument`（PR3 义务，`architecture.md:183`），kernel 面同样不可穿透。
 3. live 执行面（今天真正跑的路径）：外部事实在 G1（开 case 前）、G2（allow 写入前）、G3（批准后、消耗前）三次生效；测试 17/17 PASS，关键断言逐字（附录 C）："a hard-deny tools cell blocks even a HUMAN allow (fail closed)"（p6t4）、"G7: a HUMAN allow cannot beat the external hard at the last mile: the guard blocks with external-policy, the one-shot is NOT consumed…"（a2c4）、"G5: ask allow + external tighten after the decision -> zero execution, the guard verdict is external-policy, ZERO allow consumption…"。R1/R2 两个 "gap" 命名块是历史 RED 探针名，其断言已钉住修复后行为（`deny`/零执行/零消耗，源码 `:959-985` 可核）。
 4. human-admin 呈报今天还过不了 G8：探针原文 `hasAuthorityResolver('human-admin') = false`。
-5. 残余义务（只报事实）：PR3 接线时必须把外部硬事实接入 policy/guard 面（`architecture.md:183` "DERIVED from the effective policy"）；在那之前 PR2 lane 到不了执行（`index.ts:30-32` DORMANT 自述 + master 无 importer）。此系装配义务，非已证旁路。
+5. 残余义务（只报事实）：PR3 接线时必须把外部硬事实接入 policy/guard 面（`architecture.md:183` "DERIVED from the effective policy"）；在那之前 PR2 lane 到不了执行（`index.ts:30-32` DORMANT 自述 + master 无 importer〔修订轮：origin/master `db5cb5f7` 上为目录不存在，见 §8 E8〕）。此系装配义务，非已证旁路。
 
 附注（两平面法，只报事实）：ARM C 显示 policy=allow 且硬 Envelope deny 在场时 admit 直接 admitted——这符合 Alpha.4 两平面规则（审批平面 "无匹配 narrowing 不增加限制" vs 扩权平面；`post-poc-technical-design.md:173` 明令保持该差异），teamHardEnvelope 从来不是执行闸；执行闸 = ToolPolicyDocument（G5 内部）+ G1/G2/G3/G4/G6。
 
@@ -121,7 +122,7 @@ live 装配供给：`packages/runtime/src/plugin/root.ts:1367-1368` + `live/agen
   - 同文件 `:1102`（§26.1）：把 Envelope 约束推广到 Human Admin 的读法是 "a ceiling relaxation in the wrong direction and therefore **forbidden**"。
   - 实现：`authority-ceiling.ts:308`（admin 空绑定）/`:566-573`（identity ceiling）；bound Envelope 的审批面 deny 是**升阶信号**（`runtime-authority.ts:201` walk；探针 ARM A：hard deny → `requiredAuthority=human-admin`），不是终局拒绝；终局拒绝 = expansion 平面 policy deny（ARM B2）与 undetermined/无 reviewer 形状。
 - 裁断提示：狭义读（"确定 deny" = expansion/policy 平面确定 deny + undetermined）⇒ 两侧相容、零冲突；广义读（bound Envelope 的 deny 也整组拒批）⇒ 与 Alpha.4 spec §26.1:1102 的 forbidden 正撞，须按 `ADR-a5:63` 走用户 precedence 裁决并在 Alpha.5 当期计划显式列 intentional change。
-- **【追加轮注记，2026-10-27，不改动上文】** 用户已裁定：权限体系中没有名为 externalHard 的团队限制层（外部环境能力限制，非团队运行限制；环境允许范围内 admin 最高，不新增"超 admin"层）。据此 R-1 按狭义读收口、广义读分支前提被排除；ToolPolicyDocument 来源、deny 写权、终局律种与 A/B 对照实测见同目录 `toolpolicy-provenance.md`（§6 追加轮）。
+- **【追加轮注记，2026-10-27，不改动上文】** 用户已裁定：权限体系中没有名为 externalHard 的团队限制层（外部环境能力限制，非团队运行限制；环境允许范围内 admin 最高，不新增"超 admin"层）。据此 R-1 按狭义读收口、广义读分支前提被排除；ToolPolicyDocument 来源、deny 写权、终局律种与 A/B 对照实测见同目录 `toolpolicy-provenance.md`（§6 追加轮）。〔修订轮注记 2026-10-16：上句"终局律种"的归因已被修订轮撤销——"任何批准（含 Team 侧 human-admin 一次性批准）皆不可达扩权面 decided deny"的语义**未找到原始授权决策**（备忘 :32 限定 Core 批准；plan:86/architecture:181 不点名 rung），`admission-kernel.ts:319-332` 短路属实现自行收紧、正当性待用户裁；同件的"闭环/无现行偏差"宣布一并撤销——见 `toolpolicy-provenance.md` §3.2/§4/§7/§8 修订与本页 §8。〕
 
 ## 6. 复现方式（免构建；全部只读）
 
@@ -407,3 +408,14 @@ probe done.
 - **映射澄清清单（撤回）**：C1 → 撤回（Alpha.4 引文 = 建模范围声明，非存在/放行声明）；C2 → 撤回（"beyond Team Hard" ≠ "beyond External Hard"，两侧对象不同）；C3 → 撤回冲突判定，落为 §2 映射结论（`teamHardEnvelope` ↔ teamHardDeny/Team-autonomy 族 = Human 可越；externalHard ↔ `ExternalPolicyFacts` lane = 执行面强制；阶梯内无对应物）。
 - **剩余冲突（且仅一条）R-1**：Alpha.5 `plan:86` "禁止批准包含确定 deny/undetermined Effect 的请求。" + `architecture.md:181` "An unknown authority or definite denial refuses the whole invocation" 中的 "确定 deny / definite denial" **是否涵盖 `teamHardEnvelope`（bound Envelope）的 deny**——狭义读（policy/expansion 平面 + undetermined）与 Alpha.4 相容；广义读直撞 Alpha.4 spec `:1102` 的 forbidden。层级：Alpha.5 侧 = 未来阶段备忘（其 `ADR:63` 自述须上交裁决）；Alpha.4 侧 = active 当期权威；冻结基线对该阶梯问题未述（其 hard 只指 externalHard）。→ 交用户按 precedence 裁决。
 - **P2 可达性终判：不成立**（附探针原文 §4 + 附录 B/C）：PR2 kernel 无外部事实输入位且 DORMANT；外部硬形状经 policy 面即终局拒（ARM B2）；live 执行面 G1/G2/G3 三道外部闸（两道在批准后）17/17 实测不可穿透；admin leg 今日被 G8 挡住。P1 成立（外部事实不在 ceiling 平面 = 规定性分工，另层承担），P1 成立而 P2 不成立即本轮终局结论。
+
+## 8. 勘误（修订轮 2026-10-16；仅修本件既有论断的基址与 master 状态，零扩题）
+
+**8.1 基址更正**：本件写作时的 master 对照 = 主检出**本地 ref `6259cf4b`（陈旧）**。实测 `git ls-remote origin master` = **`db5cb5f7dda80ab85a2e1e31ed56b2a43ff5d1ef`**（`6259cf4b` 为其祖先；本地 ref 落后于 origin）。`db5cb5f7` 含 PR0 冻结代数 `packages/domain/tool-governance/`、Alpha.4 各 lane、PR1 guard、Alpha.5 memo（与审计分支 md5 一致）。此后所有 master 对照一律用 origin/master 或显式 SHA。共享勘误（tool-governance 存在 / tool-admission 不存在 / tools、remote 面"仅 PR2 分支"更正）全表见同目录 `toolpolicy-provenance.md` §8.2；本表只列本件内论断：
+
+| # | 原论断（位置） | 纠正/复验 | 证据（对 `db5cb5f7`） |
+| --- | --- | --- | --- |
+| H1 | 头部与 §1 路径注的基址 `6259cf4b`（写作时"现树"） | 基址陈旧；`docs/plans/finished/` 路径注在 `db5cb5f7` 上同样成立 | `git ls-remote origin master`；`git ls-tree db5cb5f7 docs/plans/finished/` 含冻结 Architecture；`git ls-tree db5cb5f7 docs/plans/paused/` |
+| H2 | §3 末行"master 在用的 `guardDecision` 不含 Envelope 也不含外部事实（G4）" | **复验成立**（对 `db5cb5f7`）；但注明：陈旧基址 `6259cf4b` 上 `tool-dispatch/` 目录整体不存在，原论断在旧基址下无锚点 | `git show db5cb5f7:packages/runtime/tool-dispatch/closed-world-guard.ts \| grep -ci envelope` = 0；`git ls-tree 6259cf4b -- packages/runtime/tool-dispatch` = 空 |
+| H3 | §4-P2.1/P2.5"PR2 kernel master 零生产 importer / 无 importer" | **成立且更强**：`tool-admission/` 目录在 `db5cb5f7` 整体不存在 | `git ls-tree db5cb5f7 packages/runtime/tool-admission/` = 空 |
+| H4 | §5 追加轮注记转述的"终局律种"（= `toolpolicy-provenance.md` §3.2 原律种判定） | **被修订轮撤销**：该语义（Team 自身 human-admin 一次性批准亦不可覆写扩权面 decided deny）**未找到原始授权决策**（post-poc:32 限定 Core 批准；plan:86/architecture:181 无限定、不点名 rung；ADR-alpha5:71 仅 undetermined；反向证据 ADR-001:142）；`:319-332` 短路属实现自行收紧，正当性待用户裁。"闭环/无现行偏差"宣布一并撤销（改判未闭合项） | 检索记录与逐字引文 = `toolpolicy-provenance.md` §3.2 修订表 + §8.3 |
