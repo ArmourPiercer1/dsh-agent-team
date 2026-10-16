@@ -106,6 +106,22 @@ export interface ScopedGuardHandle {
     /** Read the current agent-scoped surface names (fails closed typed). */
     readonly surfaceNames: () => GovernanceResult<readonly string[]>;
     readonly observations: () => readonly Record<string, unknown>[];
+    /**
+     * The calls this lane currently holds a cancellable watch on: between the
+     * dispatch door and the settled edge. A teardown asks this; a non-zero answer
+     * that never drains is a leak.
+     */
+    readonly pendingCalls: () => readonly {
+        callId: string;
+        name: string;
+        state: string;
+    }[];
+    /**
+     * Whether the cancellation mechanism has an actual notification behind it on
+     * this Host: `armed` = subscribed (the assembly is supported), `proven` = a
+     * notification has been delivered at least once. Reported, never assumed.
+     */
+    readonly changeChannelStatus: () => 'armed' | 'proven';
 }
 /**
  * Map one host `ToolExecution` (the pinned `ToolGuard` parameter) to the

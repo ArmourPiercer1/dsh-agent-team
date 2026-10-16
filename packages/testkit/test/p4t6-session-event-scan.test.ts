@@ -2221,6 +2221,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p1-scoped-dispatcher.test.ts',
       'packages/runtime/test/a5p1-guard-install.test.ts',
     ]
+    // The Alpha.5 PR1-RESIDUAL round (branch `alpha5-pr1r-residual-boundaries`,
+    // based on the merged PR1): NO new production source. It tightens the four
+    // already-counted `tool-dispatch` sources (the trusted-vs-resolved native
+    // comparison, the inner dispatch door, the call-edge withdrawal) and adds
+    // TWO RED-first specs plus the registry double they share — the double
+    // models the pinned registry's layer semantics and stage order, so it is
+    // source, not fixture-outside. The real-registry runners live under
+    // `tests/kits/` (outside this scan) and `packages/runtime/dist/**` is
+    // outside the scanner's rules, so nothing else moves.
+    const SCANNED_PATHS_A5PR1R: readonly string[] = [
+      'packages/runtime/tool-dispatch/pending-calls.ts',
+      'packages/runtime/test/a5p1r-change-abort.test.ts',
+      'packages/runtime/test/a5p1r-shadow-attribution.test.ts',
+      'packages/runtime/test/a5p1r-validate-resolve.test.ts',
+      'packages/runtime/test/a5p1r-scoped-registry-double.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2247,7 +2263,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5PR1R.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2275,7 +2292,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5PR1R.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one

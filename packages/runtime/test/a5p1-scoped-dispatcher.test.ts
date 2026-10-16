@@ -33,7 +33,15 @@ function makeDispatcher() {
     requiredSeams: 0,
     onObserve: (row) => observations.push(row),
   })
-  dispatcher.bindInheritedSurface(NATIVES, Object.fromEntries(NATIVES.map((n) => [n, `def:${n}`])))
+  // THREE facts now earn a native Binding (R-a): the trusted list, the identity
+  // THIS scope resolves, and the identity the TRUSTED global view resolves. This
+  // fixture's two views agree, so the third argument is the same pin — the test
+  // says so out loud instead of the API quietly assuming it.
+  dispatcher.bindInheritedSurface(
+    NATIVES,
+    Object.fromEntries(NATIVES.map((n) => [n, `def:${n}`])),
+    Object.fromEntries(NATIVES.map((n) => [n, `def:${n}`])),
+  )
   return { dispatcher, observations }
 }
 
@@ -245,7 +253,7 @@ describe('the change channel has live callers (PR1 Gate R2: revise() was dead co
       requiredSeams: 0,
       onObserve: (row) => observations.push(row),
     })
-    dispatcher.bindInheritedSurface(['read'], { read: 'def:read' })
+    dispatcher.bindInheritedSurface(['read'], { read: 'def:read' }, { read: 'def:read' })
     expect(dispatcher.beginAssembly().ok).toBe(true)
     expect(dispatcher.publish().ok).toBe(true)
     expect(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' })).toBeUndefined()
@@ -264,7 +272,9 @@ describe('the change channel has live callers (PR1 Gate R2: revise() was dead co
     // Refused ever after, until the trusted assembly re-binds it for real — and
     // "for real" means pinning the Body it actually inspected this time, not
     // re-stamping `verified: true` onto the stale pin.
-    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('cannot be verified')
+    // The withdrawal states WHAT moved (a drifted Binding is no longer the same
+    // refusal as an unattributed one: PR1-residual R-a made the reasons precise).
+    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('different ToolDefinition')
     const staleRetry = dispatcher.bind({
       name: 'read',
       origin: 'inherited-native',
@@ -303,7 +313,9 @@ describe('the change channel has live callers (PR1 Gate R2: revise() was dead co
     expect(swapped.drifted).toEqual(['read'])
     expect(swapped.unverified).toEqual(['read'])
     expect(dispatcher.surface.entryOf('read')?.verified).toBe(false)
-    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('cannot be verified')
+    // The withdrawal states WHAT moved (a drifted Binding is no longer the same
+    // refusal as an unattributed one: PR1-residual R-a made the reasons precise).
+    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('different ToolDefinition')
     expect(dispatcher.guard({ name: 'bash', agentIdentity: 'session-m1' })).toBeUndefined()
   })
 })

@@ -34,6 +34,13 @@
  */
 
 export {
+  createPendingCallLedger,
+  type PendingCall,
+  type PendingCallLedger,
+  type CancelledCall,
+} from './pending-calls.js'
+export {
+  GOVERNED_UNVERIFIED_REASONS,
   GUARD_DENIAL_REASONS,
   GUARD_ERROR_CODES,
   GOVERNED_ORIGINS,
@@ -46,6 +53,8 @@ export {
 export type {
   GovernedEntry,
   GovernedOrigin,
+  GovernedUnverifiedReason,
+  InheritedSurfaceBinding,
   GovernedSurface,
   GovernedSurfaceOptions,
   GuardDecisionInput,

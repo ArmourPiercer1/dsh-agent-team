@@ -29,6 +29,10 @@ interface FakeCtxOptions {
   readonly globalSurface?: string[]
   /** Definitions the public `tools.get(name, scope)` seam resolves, by name. */
   readonly definitions?: Record<string, string>
+  /** Definitions the GLOBAL view (`tools.get(name)`, no scope) resolves, by name.
+   *  A name listed here while `definitions` carries another body for it is the
+   *  same-name-shadow case (residual R-a); unlisted names agree with the agent. */
+  readonly globalDefinitions?: Record<string, string>
   /** Refuse to register one edge (the R3 assembly-atomicity tests). */
   readonly throwOn?: string
   /** Do not register one edge at all (the R3 required-seam test). */
@@ -61,6 +65,27 @@ function fakeCtx(options: FakeCtxOptions = {}) {
   }
   for (const name of surface) defineRow(name, `def:${name}`)
   for (const [name, identity] of Object.entries(options.definitions ?? {})) defineRow(name, identity)
+  // THE GLOBAL LAYER IS REAL. `tools.get(name)` with no scope is the registry's
+  // global view (pinned `packages/core/tools/src/index.ts`: "omitted = the global
+  // view"), and the PR1-residual round's native rule compares it against what
+  // THIS Agent resolves — so the fixture must answer it, not feign `undefined`.
+  // By default the global view holds the SAME registration the agent resolves
+  // (the ordinary agreed case, which is what these tests were always about); a
+  // fixture that wants the shadow case says so with `globalDefinitions`.
+  const globalDefinitions = new Map<string, { name: string; execute: () => unknown }>()
+  for (const [name, identity] of Object.entries(options.globalDefinitions ?? {})) {
+    globalDefinitions.set(name, { name, execute: () => identity })
+  }
+  const globalDefinitionOf = (name: string): { name: string; execute: () => unknown } | undefined => {
+    if (seamBroken) return undefined
+    const own = globalDefinitions.get(name)
+    if (own !== undefined) return own
+    if (!globalSurface.includes(name)) return undefined
+    const agreed = definitionOf(name)
+    if (agreed === undefined) return undefined
+    globalDefinitions.set(name, agreed)
+    return agreed
+  }
   const fired: string[] = []
   const guards: ((exec: { name: string; agent?: unknown }) => string | undefined)[] = []
   const listeners = new Map<string, ((...args: never[]) => unknown)[]>()
@@ -95,7 +120,7 @@ function fakeCtx(options: FakeCtxOptions = {}) {
         : {
             /** The pinned Host's public definition accessor. */
             get: (name: string, scope?: unknown) =>
-              scope === undefined ? undefined : definitionOf(name),
+              scope === undefined ? globalDefinitionOf(name) : definitionOf(name),
           }),
     },
     ...(options.without === 'on'
@@ -321,13 +346,18 @@ describe('the closed world over real registrations', () => {
     const handle = outcome.value
     expect(handle.publish().ok).toBe(true)
     // The handle exposes no way to allow a call: every door it has is a bind,
-    // a diagnostic or a refusal.
+    // a diagnostic or a refusal. `pendingCalls` and `changeChannelStatus` are
+    // diagnostics too — one reports the calls the lane can still cancel and
+    // whether the notification channel has actually spoken, neither grants
+    // permission and neither can mark a call executed.
     expect(Object.keys(handle).sort()).toEqual([
       'bindMcpTools',
       'bindOwnTools',
+      'changeChannelStatus',
       'dispatcher',
       'disposeOrdered',
       'observations',
+      'pendingCalls',
       'publish',
       'revalidate',
       'surfaceNames',
@@ -654,7 +684,8 @@ describe('PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge
     // …and the withdrawal is PERMANENT: the next call is still refused (now as
     // an unverified Binding), so only an explicit re-bind can bring the name
     // back — there is no "second call looks fine again" path.
-    expect(String(host.runGuards({ name: 'read', agent: { id: 'agent-m1' } }))).toContain('cannot be verified')
+    // and it names the FACT that withdrew it, not a generic "cannot be verified"
+    expect(String(host.runGuards({ name: 'read', agent: { id: 'agent-m1' } }))).toContain('different ToolDefinition')
     // The refusal took no lease: a turned-away call never blocks a teardown.
     expect(outcome.value.dispatcher.inFlight()).toBe(0)
   })
