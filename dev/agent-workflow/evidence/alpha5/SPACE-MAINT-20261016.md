@@ -48,8 +48,8 @@ git worktree remove .worktrees/g2           # 197M  clean, == origin/feat/g2-rea
 git worktree remove .worktrees/g3           # 197M  clean, == origin/feat/g3-semantic-write-tools
 git worktree remove .worktrees/g5           # 201M  clean, == origin/feat/g5-real-registry-acceptance
 git worktree remove .worktrees/maint-0.2.0-rc.2  # 2.0G clean, == origin/maintenance/dsh-0.2.0-rc.2
-rm -rf .worktrees/*/node_modules            # （保险项；正常随 worktree remove 一并消失，勿泛化）
-rm -rf node_modules                         # 主检出 174M 缓存
+（已删除的通配清理建议：不执行——与定点保护边界冲突；只读残留不再执行）
+（已删除的通配清理建议：不执行——与定点保护边界冲突；只读残留不再执行）
 ```
 
 类别与再生方式：以上 ≈ 每 worktree 200M 中 node_modules ≈ 174–191M（实测 baseline=174M、maint=191M）+ 检出文件。再生 = `git worktree add .worktrees/<name> <branch>` + `pnpm install --frozen-lockfile`（lockfile 已提交于 main；共享 store 可加速）。`.main-baseline`（21M，唯一脏项=未跟踪 node_modules，HEAD 9fa74ad ∈ origin/*）如愿先删其 node_modules 再 `git worktree remove .main-baseline` 亦可，本轮保守起见移入待确认。
@@ -93,7 +93,7 @@ git worktree add .worktrees/maint-0.2.0-rc.2 maintenance/dsh-0.2.0-rc.2
 - 本窗口磁盘净变化来自多方叠加（reviewer 一次性 worktree 回收 ≈29G + 用户清理 + lane 回收），非单因子归因；现 47G avail(55%)。
 - fp32/deepseek-harness 两项维持"待用户决策"，未动。
 
-## §8 最终孤儿清单（用户指令：不再升级权限重试、不改挂载；宿主侧删除路径）
+## §8 孤儿清单（保留；其"待用户决策"表述已由 §9 更正替代）（用户指令：不再升级权限重试、不改挂载；宿主侧删除路径）
 - **孤儿 worktree 目录（元数据已 prune；内容=下列分支的干净检出，均已推送 origin，恢复=`git worktree add <path> <branch>`）**：
   - /srv/workspace/dsh-plugins/dsh-research-control/.worktrees/baseline → branch baseline/stage0-docs-gates @a8d5cb6
   - .../g1 → feat/g1-trusted-boundary-lifecycle @45de4f8；g2 → feat/g2-readonly-tools @8245cfc；g3 → feat/g3-semantic-write-tools @f164aca；g5 → feat/g5-real-registry-acceptance @b80245f；maint-0.2.0-rc.2 → maintenance/dsh-0.2.0-rc.2 @0dc9911（合计≈1.4G）
@@ -101,8 +101,8 @@ git worktree add .worktrees/maint-0.2.0-rc.2 maintenance/dsh-0.2.0-rc.2
 - **deepseek-harness 宿主树（/home/user/deepseek-harness，2.5G）**：按用户指令**保持保护**，node_modules 2.0G 不清（pnpm-lock 未提交改动去留亦不代决）。
 - 原则重申：只读文件系统上的目录不再重试删除；一切保留项可恢复；无永久删除动作发生。
 
-## §9 用户终裁（17:5xZ）+ 可读提交链接
-- **fp32=原地保留**（366M、无远端、含唯一产物；不需要用户额外裁决，不代建备份目的地）。deepseek-harness 宿主树维持保护。清理任务到此**收尾**（安全边界内无剩余可动作）。
+## §9 处置记录（协调指令 2026-10-16 17:18Z UTC）+ 可读提交链接
+- **fp32=原地保留**：该处置为协调方对"无远端备份+唯一产物"采取的保守保全，**尚无对应的用户裁决条目**；此前"用户终裁"表述不准确，已更正。deepseek-harness 宿主树维持保护。deepseek-harness 宿主树维持保护。清理任务到此**收尾**（安全边界内无剩余可动作）。
 - 孤儿目录内容之权威来源（dsh-research-control@origin 实存 tip，逐条可核）：
   - baseline/stage0-docs-gates → github.com/ArmourPiercer1/dsh-research-control/tree/a8d5cb6e65
   - feat/g1-trusted-boundary-lifecycle → .../tree/45de4f81d2 ; g2 → .../tree/8245cfc347 ; g3 → .../tree/f164acaa88 ; g5 → .../tree/b80245fda3 ; maintenance/dsh-0.2.0-rc.2 → .../tree/0dc9911815
