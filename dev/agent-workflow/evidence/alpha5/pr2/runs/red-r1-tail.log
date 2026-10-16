@@ -1,0 +1,4 @@
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > R-1a: a deny the envelope never projects is NOT a leader-leg mint — unattributed, zero mints (ruling ③, review R-1a)
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > R-2a: a denied effect under a top-rung beneficiary says NO-UPPER-RUNG — the authority is known, nobody sits above (not ③)
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > R-1b: the plan states WHICH deny rides at WHICH rung (plan value + observe) — PR3 presents exactly this
+      Tests  3 failed | 29 passed (32)
