@@ -1,0 +1,152 @@
+{
+  "runStamp": "2026-10-15T23-07-21",
+  "hostBaseline": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "hostPort": 3185,
+  "mockPort": 35399,
+  "hostPid": 39,
+  "bootTs": "2026-10-15T23:07:24.018Z",
+  "teamHead": "c654a0ecda93b32f0a9f177846d7f8b6dba1e5ef",
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016",
+  "criteria": [
+    {
+      "id": "H1",
+      "name": "cold boot :3185: boot line + no-token 401 + auth 303 + p6t6 row health/state",
+      "ok": true,
+      "detail": "port=3185 bootLines=1 noToken=401 healthOk=true"
+    },
+    {
+      "id": "H2a",
+      "name": "team.create (remote HTTP) creates the fresh root team session",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"h6x-3k889qekd3\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p0-team-2026-10-15T23-07-21\",\"blueprint\":{\"blueprintId\":\"team.a5p0.h6-main\",\"revision\":\"1\",\"contentHash\":\"sha256:d5d41c7a"
+    },
+    {
+      "id": "H2b",
+      "name": "catalog.list serves the saved h6 blueprint",
+      "ok": true,
+      "detail": "status=200"
+    },
+    {
+      "id": "H2c",
+      "name": "Leader created 4 members (strict m1, strict m3, legacy m2, nobash m4) + async delegated each",
+      "ok": true,
+      "detail": "instanceIds=[\"inst-0okq9hn1i90p\",\"inst-021ju3y0dc02\",\"inst-1bylu9l1anrl\",\"inst-1susebo0yjym\"]"
+    },
+    {
+      "id": "H2d",
+      "name": "member sessions live (p6t6 liveSessions grew by >= 4; polled <=180s)",
+      "ok": true,
+      "detail": "newLive=[\"session-team-child-6b4c7dc69869d8204e92e65c833fba1a\",\"session-team-child-70e833e96d88193f3e71ecb3234b3fa4\",\"session-team-child-85153a35baa28b2ff6b557513ebd7243\",\"session-team-child-f5e6a5a0ff3aed4bd51e454dbdc4d6b1\"]"
+    },
+    {
+      "id": "HA-pos",
+      "name": "H-A positive: native read (pre-arm) then Adapter same-name read returns the real seed bytes with Adapter marker call=2 (positive control = real I/O through the Adapter)",
+      "ok": true,
+      "detail": "native=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/h | adapter=H6_ADAPTER_READ_RAN_2026-10-15T23-07-21 call=2 agent=session-team-child-6b4c7dc69869d8204e92e65c833fba1a real=/srv/works"
+    },
+    {
+      "id": "HA-neg",
+      "name": "H-A negative: ../private/secret.txt and the symlink into private/ both typed-denied; zero content features in results; ZERO secret substrings across all host wire",
+      "ok": false,
+      "detail": "neg1=H6_ADAPTER_DENY(op=read) reason=outside-allowedRoot arg=h6-2026-10-15T23-07-21/allowed/../private/secret.txt — no bytes were read neg2=H6_ADAPTER_DENY(op=read) reason=outside-allowedRoot arg=h6-2026-10-15T23-07-21/allowed/h6-escape-link.txt — no bytes were read wireSecretHits=5"
+    },
+    {
+      "id": "HA-ledger",
+      "name": "H-A OS side effects: Adapter access ledger shows exactly the opens it issued (2 allowed reads) + 2 denied attempts (realpath recorded, none under a real open)",
+      "ok": true,
+      "detail": "opens=2 denies=2 ledgerFile=h6-access-ledger.jsonl"
+    },
+    {
+      "id": "HB-ctl",
+      "name": "H-B control: legacy-template member native grep returned the fixture hits (real body)",
+      "ok": true,
+      "detail": "native=Found 4 matches\n\nh6-2026-10-15T23-07-21/allowed/fxdir/h6fx-a.txt\nLine 1: alpha line H6QSEARCH_2026-10-15T23-07-21 alpha\nLine 3: beta line H6QSEARCH_2026-10-15T2"
+    },
+    {
+      "id": "HB-adapter",
+      "name": "H-B adapter: same-name grep Adapter (package-root helpers over public subprocess provider) ran the query, count=2 calls (arm + query)",
+      "ok": true,
+      "detail": "impl=package-root adp=H6_ADAPTER_GREP_RAN_2026-10-15T23-07-21 call=2 agent=session-team-child-70e833e96d88193f3e71ecb3234b3fa4 impl=package-root\nfound=4\n/srv/workspace/dsh-plugins/ds"
+    },
+    {
+      "id": "HB-equiv",
+      "name": "H-B equivalence: Adapter result == native control result as order-normalized multisets of (file:line:text)",
+      "ok": true,
+      "detail": "native=4 adapter=4 equal=true"
+    },
+    {
+      "id": "HB-neg",
+      "name": "H-B negative: deny-dir + symlinked-dir queries typed-denied BEFORE any spawn; zero hit leakage",
+      "ok": true,
+      "detail": "neg1=H6_ADAPTER_DENY(op=grep) reason=outside-allowedRoot arg=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/h neg2=H6_ADAPTER_DENY(op=grep) reason=outside-allowedRoot arg=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/h"
+    },
+    {
+      "id": "HC1-surface",
+      "name": "H-C(1) assembly: builtinToolDeny([\"bash\"]) member dispatchable surface carries NO bash (control member does); surface diff recorded",
+      "ok": true,
+      "detail": "m4HasBash=false?true m1HasBash=true diff(m1-m4)=[\"bash\"]"
+    },
+    {
+      "id": "HC2-nonreach",
+      "name": "H-C(2) clause: after own-layer same-name self-registration of the builtinToolDeny-shielded bash, the call is NOT reachable again (typed deny/unknown per guard; zero execution markers)",
+      "ok": true,
+      "detail": "result=Error: permission denied: exec fingerprint sha256:5ad414cf416d2f9a0740a92c8bf25542ad7cd936133296eeb2af55b746ca23ef answered deny from the fallback ownBashMarker=false"
+    },
+    {
+      "id": "HC3-runcode",
+      "name": "H-C(3) PTC-01 host version: own-layer register(\"run_code\") rejected by the host with a typed error (recorded verbatim)",
+      "ok": true,
+      "detail": "runcode-register={\"ts\":\"2026-10-15T23:07:25.317Z\",\"leg\":\"runcode-register\",\"agent\":\"session-team-child-85153a35baa28b2ff6b557513ebd7243\",\"ok\":false,\"error\":\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\"}"
+    },
+    {
+      "id": "HD-deny",
+      "name": "H-D deny lane: same-name write call on the deny lane = typed rejection; target file bytes UNCHANGED (OS evidence)",
+      "ok": true,
+      "detail": "result=Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-h6-2026-10-15T23-07-21/workspace/h6-2026-10-15T23-07-21/h6-deny-target.txt bytesUnchanged=true"
+    },
+    {
+      "id": "HD-ask",
+      "name": "H-D ask lane: bash ask -> durable leader-approval x2, resolved allow through the PUBLIC team tools; executed once per approval; target file has exactly 2 marker lines",
+      "ok": false,
+      "detail": "bashOutLines=-1 requestIds=[] bashAskRequests=2 decisions=2 consumed=2"
+    },
+    {
+      "id": "HD-onshot",
+      "name": "H-D one-shot consumption: the repeat call produced a NEW pending request (distinct requestId, ledger shows consumption of the first allow before the second request) — no standing grant",
+      "ok": false,
+      "detail": "ids=[] secondResult=Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the co"
+    }
+  ],
+  "passed": 15,
+  "total": 18,
+  "failed": [
+    "HA-neg",
+    "HD-ask",
+    "HD-oneshot"
+  ],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    }
+  },
+  "port3185FreeAfterTeardown": true,
+  "verdict": "FAIL"
+}

@@ -1,0 +1,42 @@
+{
+  "bash1": "Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.",
+  "bash2": "Error: sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.",
+  "bashOutLines": -1,
+  "notifCount": 0,
+  "requestIds": [],
+  "ledger": {
+    "requests": [
+      {
+        "requestId": "ctrl-161fnit0o3jvfm0ifce3z0u6",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-0okq9hn1i90p"
+      },
+      {
+        "requestId": "ctrl-0393foh001b0bu1wstkij0wi",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-0okq9hn1i90p"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-161fnit0o3jvfm0ifce3z0u6",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0393foh001b0bu1wstkij0wi",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-161fnit0o3jvfm0ifce3z0u6"
+      },
+      {
+        "requestId": "ctrl-0393foh001b0bu1wstkij0wi"
+      }
+    ],
+    "error": null
+  }
+}

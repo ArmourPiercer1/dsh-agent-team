@@ -1,0 +1,33 @@
+# 执行台账（用户规则 7：commit/环境/命令/退出码/日志/耗时/判定/条款映射）
+
+环境（全程恒定）：Linux 6.8.0-142-generic x86；node v22；worktree `exp/alpha5-poc-20261016` @PR249 head `d3c9760d…`；pinned host 克隆 `tests/deepseek-harness-test-use` @`639ed01539…`（install 226s + `pnpm run build` 153s，porcelain 全程 0）；模型全 qwen3.8-flash-next。
+统一复跑：`bash run-all.sh`（fixture 腿）；`RUN_P04=1` 含 OS 探针；`bash 07-integration/p06-host-smoke.sh`（宿主腿）。
+
+| 项 | 命令 | 退出码 | 耗时 | 判定 | 条款 | commit |
+| --- | --- | --- | --- | --- | --- | --- |
+| host install+build | pnpm install; pnpm run build | 0/0 | 226s+153s | OK（前置） | TEST_METHODS §2 | 树 gitignored |
+| E1 源码锚定 | 子代理 dc3421e3（read/grep 清单见 source-map.md） | 0 | ~6m | 12/12 CONFIRMED | §0.1 | 74151aad |
+| P0-0 | node 00-baseline/p00-runner.mjs | 0 | <1s | PASS 5/5 | §P0-0 | 74151aad+aaf327a8 |
+| P0-1 | node 01-routing/p01-runner.mjs | 0 | 1s | PASS 12/12（含危险序反例） | §P0-1,BND-01..06 | 74151aad |
+| P0-4 OS 探针 | bash 04-process/env-capability-probe.sh | 0（判定腿 ENV_BLOCK×4） | ~40s | ENV_BLOCK | §P0-4 前置 | 5406a21e |
+| P0-6 s1 冷启动 | TEST_METHODS §2 链 :3181 | boot OK, 401/303 | ~12s | PASS | §P0-6 公共前置 | d523a7d4 |
+| P0-6 s2a seam 插件 | 同上 :3182 + patch 行 | 0 | ~14s | PASS（registered:true） | §P0-6 装配面 | 7559b652 |
+| smoke 脚本化 | bash 07-integration/p06-host-smoke.sh :3183 | 0 SMOKE_OK | ~13s | PASS（复跑证明） | §6.1 可复跑 | c46ffb76 |
+| run-all 入口 | bash run-all.sh | 0 | ~2s | PASS | 同上 | c46ffb76 |
+| P0-2 | 代理 937ef64e → node 02-search/p02-search-runner.mjs | 首轮1(3实缺)→二轮0→三轮幂等0 | ~8m | INCONCLUSIVE(fixture-supports-R3)；R2=prereq-missing；SRCH-04 NOT_RUN | §P0-2 | df5b27df |
+| P0-3 | 代理 3aac5394 → node 03-fs/p03-fs-runner.mjs（内含每腿 strace 孵化重跑） | 首轮1(3腿fixture缺陷)→后两轮幂等0 | ~15m | 11/11 PASS；族 INCONCLUSIVE（方向支持进程内 Controlled FS；前置=INV-1 全覆盖+宿主复核） | §P0-3 | 25cfa3c1 |
+| P0-5 | 代理 f5f944b8 → node 05-ptc/p05-runner.mjs; timeout 120 node 06-lsp/p05-runner.mjs | 0/0（各含幂等重跑 0） | ~12m | PTC 8 腿（7 绿+1 NOT_RUN）→族 BOUNDED-DEFER；LSP **11 腿**（P05-LSP-0..10；含 HAZARD×2/UNCONFINED-READ/CORE 素材）→族 INCONCLUSIVE+Profile 兜底 | §P0-5 | eaec6c55 |
+| P0-6 s2b Team world | （未执行：c1 kit 全链=profiles 行+蓝图 world+mock model+会话驱动） | — | — | BOUNDED-DEFER（缺项=c1 链组合，机制两段已分别实证） | §P0-6 | 记录于 p06-stage1-note.md |
+| P0-7 独立复核 | 代理 81a39aec 复跑 p00/p01/probe/smoke@:3184 等（HEAD c46ffb76） | 其复跑全 0 | ~18m | **R1 PASS（复核面；PASS≠P0 关闭）**；F1/F2/F3 已处置 | §6.2 | 08-review/p07-review-R1.md |
+| P0-7 R2 delta 复核 | 代理 de223951：4 runner×2+run-all×2+独立 strace 负/正控+3 例 rg argv 重放（HEAD afc5e039→9e422ff5） | 其复跑全 0 | ~8m | **R2 PASS（delta 面，13/13 VERIFIED 零 REFUTED）**；FS-03 与 read-before-write 升格 fixture 级 VERIFIED；缺 Sandbox fail-closed 行为级维持 NOT_VERIFIED；N2（10→11 腿）已修、N3（fiber 引文 147-156→精确 140-146）记录于此 | §6.2 | 08-review/p07-review-R2.md |
+| 续-1 SRCH-04 spill | 代理 5a44532d → node 02-search/spill-runner.mjs | 0（幂等复跑 0） | ~9m | **PASS 4/4**：生产 grep+spill handler+LocalSpillStore+真 rg；S-09 对象身份弃权行为级复现（Δ0+footer；他 scope Δ1；dispose 恢复）| §P0-2 SRCH-04 | 2b61441a |
+| 续-2 PTC-08 外层 | 同上 → node 05-ptc/ptc-outer-runner.mjs | 0（幂等 0） | 同 | **PASS 5/5**：dsh-ptc-runtime-node EXISTS-PUBLIC；外层真实 pid45/内层真实 pid59；guard 拒内层原体=0，durable isError；同管线 exec.parent=true。前轮 NOT_RUN→PASS | §P0-5 | 2b61441a |
+| 续-3 P0-4 修正诊断 | 代理 3f019dcc → 04-process/landlock-diag.sh | 0（ENFORCE-WORKS） | ~10m | **landlock=ENFORCE-WORKS**（前轮 ENV_BLOCK 系探针 handled_access 常量 bug，逐字复现假 ABSENT+正确正负控+继承腿+denyall 鉴别器，ext4/tmpfs 双 fs）；嵌套按实测层表述（uid_map EPERM 与 unshare() EPERM 两拦截点；aa profiles 不可读不外推）；bwrap/netns/uid-map 维持 ENV_BLOCK | §P0-4 | da67ed8e |
+| 影响面留痕 | `rm -rf dev/tests/`（21:42 一次 smoke 脚本路径缺陷遗留的世界目录 a5p0-smoke-20261015T214220Z，gitignored，非测试证据） | 0 | <1s | 已删（TEST_METHODS §7 留痕） | §7 | 本行 |
+
+web/jobs/MCP 族 = NOT RUN（本会话无网络授权，非阻塞项：§5 允许登记后补）。
+| 续-4 web/jobs/MCP 回环/mock | 代理 e2630132 → 09-web-jobs-mcp/run-all.sh（web/jobs/mcp 三 runner） | 0（幂等×2） | ~13m | web=INCONCLUSIVE(方向支持组合 Adapter；30 断言中 10：拒绝在 fetch 前、零 socket/零 DNS、tripwire 0、重定向/超限/超时闭环、卸载零泄漏)；jobs=INCONCLUSIVE(生产 service 直调闭环 12/12；族形态钉死：无 job-start 工具面，owner-scoped 腿 NOT_RUN)；MCP=INCONCLUSIVE(mcp-client 注入路径与 P0-1 一致 8/8，真 OS 子进程+代际回收)；raw-SDK 腿 BLOCKED-SKIPPED 留痕 | §P0-2/§P0-5 同型 | 本轮提交 |
+| 续-5 landlock 通路补做 | 代理 0892a58c → 10-landlock-lanes/run-landlock-lanes.sh | 0（幂等×3） | ~8m | L1 受限读 OS_ENFORCED 13/13；L1FD fork-hint 自锁 6/6；L2 受控 spawn 不可信命令注入负控 7/7 全 EACCES；L3 锁不可自解 8/8（扩权 syscall 放行但能力面恒 EACCES=域交集语义，预期 EPERM 未复现如实记）；L4 双层拒 5/5；TOCTOU：非 CLOEXEC fd 按设计存活/ CLOEXEC exec 即闭⇒适配要求=spawn 前强制 O_CLOEXEC。bwrap/netns/uid_map 维持各自 ENV_BLOCK | §P0-3/§P0-4 适用腿 | 本轮提交 |
+| 续-6 P0-6 stage2b | 代理 ef557586 → 07-integration/03-stage2b/p06-stage2b-kit.mjs（:3185 隔离 world a5p0-s2b-*） | 6 次 run（run1/2 工装蓝图校验拒、run3 I4 mock 时序、run4 I5 oracle off-by-one 全留痕）→ **run-22-44-01 VERDICT PASS 10/10** | ~35m | **真实宿主闭环 PASS**：I1 boot/401/303 双证；I2 team.create+2 成员；I3 成员真实原生 read 返回盘上唯一内容；I4 同名 Adapter（marker 文本+文件+原生特征消失）+对照成员不受影响；I5 dispose→typed unknown、restrict 保留、链收敛。根因留档：Anthropic 块形 tool_result(role=user) vs c1 role='tool' 计数恒 0→失控循环 1747 请求→**kit 进程 V8 堆耗尽（2GB heap 存语料，node abort，exit 134；exit134 单独不能断言内核 OOM killer，机制层级以 notes 的 V8 堆证据为准）**；请求全部打本地 ephemeral mock（零外发、零付费推理）；环境结论=观察到测试进程自身失败、无已发现的持续影响、内核层未验证（dmesg EPERM）；已修 oracle+storm fuse>300；allow-lane 禁整工具 bash；denyList 含 team_* typed 拒。world 清理留痕、porcelain=0 | §P0-6 | 本轮提交 |
+| 续-7 P0-6 GO 条款(h6) | 代理 76a3cc93 → 03-stage2b/h6-kit.mjs（:3185 单 boot，attempt3） | 0（attempt1/2 FAIL 原文留 notes） | ~28m | **PASS 18/18**：H-A 受限 read（内容标记命中=0/路径回显 60 已披露；账本 2 OPEN/2 DENY）；H-B 搜索 parity 4==4+deny-before-spawn；H-C bash 屏蔽+自注册**运行时重燃名但调用 typed deny（exec fingerprint 原文）**+run_code 保留名拒绝原文；H-D deny 车道+**公开审批面全驱动 4 请求→leader 通知→resolve→一次性消费、executes-once（edit 车道 EDIT_APPLIED_2 反证）**；bash 本体由宿主自身 fail-closed guard 拒（原文）；非门观察=未声明动态工具体运行（fail-closed 线在 setup Coverage Gate，UNKNOWN_UNMANAGED FATAL）；装配顺序 OBSERVED 无竞争；资格表行入 h6-result.json | §P0-6/§4 装配条款 | 本轮提交 |
+| 续-8 REG-01 定向复验 | 代理 7d6de53a：固定 SHA 79d6aea7 亲手重跑 p06+h6 两 KIT+分层字段/账本/typed 原文对合 | 两 KIT 均 EXIT=0 | ~8m | **REG1=PASS**（I1..I5 与 H-A..H-D 在同 SHA/干净 upstream 全再现、零翻转；H-A 分层字段断言角色独立亲验；H-D 账本每请求恰一 consumed 无 standing；run_code 拒绝逐字节等）；声明≠GO≠重开 fixture 面；4 项披露入报告 | §REG-01 | 本轮提交 |

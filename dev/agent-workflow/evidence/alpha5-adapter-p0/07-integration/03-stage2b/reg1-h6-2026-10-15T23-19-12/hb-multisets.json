@@ -1,0 +1,14 @@
+{
+  "native": [
+    "h6fx-a.txt:1:alpha line H6QSEARCH_2026-10-15T23-19-12 alpha",
+    "h6fx-a.txt:3:beta line H6QSEARCH_2026-10-15T23-19-12 beta",
+    "h6fx-a.txt:5:H6QSEARCH_2026-10-15T23-19-12 tail alpha",
+    "h6fx-b.txt:1:delta H6QSEARCH_2026-10-15T23-19-12 delta"
+  ],
+  "adapter": [
+    "h6fx-a.txt:1:alpha line H6QSEARCH_2026-10-15T23-19-12 alpha",
+    "h6fx-a.txt:3:beta line H6QSEARCH_2026-10-15T23-19-12 beta",
+    "h6fx-a.txt:5:H6QSEARCH_2026-10-15T23-19-12 tail alpha",
+    "h6fx-b.txt:1:delta H6QSEARCH_2026-10-15T23-19-12 delta"
+  ]
+}

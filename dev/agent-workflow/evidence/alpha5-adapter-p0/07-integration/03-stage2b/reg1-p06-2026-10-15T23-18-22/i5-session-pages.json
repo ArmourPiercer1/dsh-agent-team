@@ -1,0 +1,40 @@
+[
+  {
+    "sessionId": "session-team-child-0c274acc93ceaba4e9d99e5d276187d8",
+    "status": 200,
+    "raw": {
+      "type": "server-response",
+      "rpcId": "a5page-bqjcl5yrt9",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "gateway/input-invalid",
+          "message": "typert gateway: session/page: wire field \"request\" failed boundary validation",
+          "details": {
+            "endpoint": "session/page",
+            "field": "request"
+          }
+        }
+      }
+    }
+  },
+  {
+    "sessionId": "session-team-child-c3ed90c56fad9ecb7fc0a368106d6255",
+    "status": 200,
+    "raw": {
+      "type": "server-response",
+      "rpcId": "a5page-1zcjjtva8n",
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "gateway/input-invalid",
+          "message": "typert gateway: session/page: wire field \"request\" failed boundary validation",
+          "details": {
+            "endpoint": "session/page",
+            "field": "request"
+          }
+        }
+      }
+    }
+  }
+]

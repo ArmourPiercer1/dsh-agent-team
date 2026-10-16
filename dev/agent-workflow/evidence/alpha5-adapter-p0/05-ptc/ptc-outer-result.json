@@ -1,0 +1,193 @@
+{
+  "leg": "05-ptc supplement — PTC-08 outer process (production NodePtcRuntime, real OS processes)",
+  "agent": "Alpha.5 P0 supplement leg (qwen3.8-flash-next)",
+  "model_name_verbatim": {
+    "powered_by_line": "You are a coding agent powered by the qwen3.8-flash-next model.",
+    "model": "qwen3.8-flash-next"
+  },
+  "recorded_at_utc": "2026-10-15T22:09:55.651Z",
+  "concretizes": "p05-runner.mjs P05-PTC-8 (previously NOT_RUN — fixture used an in-process runtime double; see 05-ptc/notes.md)",
+  "import_mechanism": "ESM resolve hook p05-ai-hook.mjs → absolute lib/index.js file URLs inside T; transitive deps via T own layout; no new junctions; T read-only",
+  "commands": [
+    {
+      "label": "git T HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use rev-parse HEAD",
+      "code": 0,
+      "out": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "err": ""
+    },
+    {
+      "label": "git T status before",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    {
+      "label": "git W HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016 rev-parse HEAD",
+      "code": 0,
+      "out": "01a4801551ccf6eace0f5a3d474ad3d92365380b",
+      "err": ""
+    },
+    {
+      "label": "ls packages/ptc-runtime",
+      "cmd": "ls /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime",
+      "code": 0,
+      "out": "ptc-runtime\nptc-runtime-node\nREADME.i18n.yaml\nREADME.md\nREADME.zh.md",
+      "err": ""
+    },
+    {
+      "label": "package name",
+      "cmd": "node -e console.log(require(\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/package.json\").name)",
+      "code": 0,
+      "out": "@deepseek-ai/dsh-ptc-runtime-node",
+      "err": ""
+    },
+    {
+      "label": "grep RUN_CODE_NAME consumers (lib plane)",
+      "cmd": "grep -rl RUN_CODE_NAME /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib",
+      "code": 0,
+      "out": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/ptc.js\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/index.d.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/index.js\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/ptc.d.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js",
+      "err": ""
+    },
+    {
+      "label": "grep RUN_CODE_NAME in ptc-runtime pkgs",
+      "cmd": "grep -rl RUN_CODE_NAME\\|ptcRuntime /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime",
+      "code": 0,
+      "out": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/tests/setup.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/tests/built-lib.e2e.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/src/index.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/README.zh.md\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/package.json\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/README.md\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/types/index.d.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/types/index.js\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/index.js\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/tests/service.spec.ts\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/README.zh.md\n/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/README.md",
+      "err": ""
+    },
+    {
+      "label": "spawn outer child",
+      "cmd": "/home/user/.nvm/versions/node/v24.21.0/bin/node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/ptc-outer-child.mjs --test-use /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use --scratch /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/05-ptc/probe-scratch/ptc-outer-scratch",
+      "code": 0,
+      "out": "PTC_OUTER_RESULT:{\"outerPid\":135,\"ppid\":93,\"node\":\"v24.21.0\",\"platform\":\"linux\",\"assembly\":[\"sessions/sessionProjections/fs/subprocess/sandbox/sandboxPolicy(danger-full-access, ws)\",\"NodePtcRuntime(isolation=process, language=typescript, sandboxMode=danger-full-access)\",\"SystemPrompt + ToolRuntime(mode:\\\"ptc\\\")\",\"ctx.tools.guard(blocks \\\"blocked\\\" globally)\"],\"bodyCounts\":{\"echo\":1,\"blocked\":0},\"events\":[{\"type\":\"observer/post-execute\",\"name\":\"echo\",\"parentPresent\":true,\"isError\":false},{\"type\":\"observer/post-execute\",\"name\":\"blocked\",\"parentPresent\":true,\"isError\":true},{\"type\":\"observer/post-execute\",\"name\":\"run_code\",\"parentPresent\":false,\"isError\":false}],\"ok\":true,\"error\":null,\"sessionId\":\"session-1\",\"runCode\":{\"isError\":false,\"textHead\":\"{\\n  \\\"ok\\\": \\\"ran:echo@outer-pid-135\\\",\\n  \\\"denied\\\": {\\n    \\\"rejected\\\": true,\\n    \\\"name\\\": \\\"ToolCallError\\\",\\n    \\\"toolName\\\": \\\"blocked\\\",\\n    \\\"message\\\": \\\"PTC-OUTER-GUARD: blocked is denied by fixture policy\\\"\\n  },\\n  \\\"innerPid\\\": 149,\\n  \\\"innerNode\\\": \\\"v24.21.0\\\"\\n}\"},\"durableDispatchEvents\":[{\"type\":\"tool/ptc-dispatch-start\",\"name\":\"echo\"},{\"type\":\"tool/ptc-dispatch\",\"name\":\"echo\",\"isError\":false},{\"type\":\"tool/ptc-dispatch-start\",\"name\":\"blocked\"},{\"type\":\"tool/ptc-dispatch\",\"name\":\"blocked\",\"isError\":true}],\"innerPidFromProgramText\":149}",
+      "err": "(node:135) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n",
+      "spawn_pid": 135,
+      "wall_ms": 277
+    },
+    {
+      "label": "git T status after",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    }
+  ],
+  "legs": [
+    {
+      "id": "PTC-OUTER-1.outer-real-os-process",
+      "verdict": "PASS",
+      "detail": {
+        "outer_pid_self_reported": 135,
+        "outer_pid_spawn_side": 135,
+        "ppid": 93,
+        "node": "v24.21.0",
+        "runtime": "NodePtcRuntime(isolation=process, language=typescript, sandboxMode=danger-full-access)"
+      }
+    },
+    {
+      "id": "PTC-OUTER-2.inner-separate-os-process",
+      "verdict": "PASS",
+      "detail": {
+        "inner_pid_reported_by_program": 149,
+        "outer_pid": 135,
+        "mechanism": "NodePtcRuntime.isolation=\"process\" — run_code program runs in a fresh sandboxed Node child (spawned via pinned sandbox-local + subprocess-local under sandbox-policy danger-full-access)"
+      }
+    },
+    {
+      "id": "PTC-OUTER-3.guard-deny-original-body-zero",
+      "verdict": "PASS",
+      "detail": {
+        "blocked_body_counter": 0,
+        "guard_reason_reached_program": true,
+        "typed_error": {
+          "name": "ToolCallError",
+          "toolName": "blocked"
+        },
+        "durable_isError_settle": 1,
+        "outer_run_code_isError": false
+      }
+    },
+    {
+      "id": "PTC-OUTER-4.positive-control-body-plus-one",
+      "verdict": "PASS",
+      "detail": {
+        "echo_body_counter": 1,
+        "value_round_trip": true
+      }
+    },
+    {
+      "id": "PTC-OUTER-5.dispatch-through-production-pipeline",
+      "verdict": "PASS",
+      "detail": {
+        "inner_post_execute_obs": [
+          {
+            "type": "observer/post-execute",
+            "name": "echo",
+            "parentPresent": true,
+            "isError": false
+          },
+          {
+            "type": "observer/post-execute",
+            "name": "blocked",
+            "parentPresent": true,
+            "isError": true
+          }
+        ],
+        "note": "both inner calls settled through the SAME ToolRuntime pipeline (tools/post-execute observer, exec.parent set); durable tool/ptc-dispatch(-start) events on a real Session (dsh-session ctx.sessions.create)"
+      }
+    }
+  ],
+  "counters": {
+    "outer_pid": 135,
+    "spawn_side_pid": 135,
+    "inner_pid": 149,
+    "original_body_counts": {
+      "echo": 1,
+      "blocked": 0
+    },
+    "durable_dispatch_events": 4,
+    "guard_denials": 1
+  },
+  "package_existence": {
+    "dir_listing": "ptc-runtime\nptc-runtime-node\nREADME.i18n.yaml\nREADME.md\nREADME.zh.md",
+    "package_name": "@deepseek-ai/dsh-ptc-runtime-node",
+    "consumers_grep": {
+      "tools_lib": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/ptc.js",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/index.d.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/index.js",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/types/ptc.d.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/core/tools/lib/index.js"
+      ],
+      "ptc_pkgs": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/tests/setup.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/tests/built-lib.e2e.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/src/index.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/README.zh.md",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/package.json",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/README.md",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/types/index.d.ts",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/types/index.js",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/lib/index.js",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime/tests/service.spec.ts"
+      ]
+    },
+    "verdict": "EXISTS-PUBLIC — BLOCKED-CONFIRMED branch not applicable"
+  },
+  "host_env": {
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain_empty_before": true,
+    "test_use_porcelain_empty_after": true,
+    "worktree_HEAD": "01a4801551ccf6eace0f5a3d474ad3d92365380b"
+  },
+  "verdict": {
+    "ptc_08_outer": "PASS",
+    "replaces": "P05-PTC-8 NOT_RUN — now concretized on the pinned production outer (no runtime test double)",
+    "scope_of_claim": "fixture-level: real OS outer process + real sandboxed inner Node process, pinned libs (0.2.0-rc.2 @ 639ed01539). Sandbox strength (read/write/network enforcement matrix) remains P0-4 scope — this leg proves the bridge/inner-dispatch/guard path over the real process runtime, with policy mode danger-full-access.",
+    "s09_note": "spill abstention leg lives in 02-search/spill-result.json (SRCH-04, 4/4 PASS)"
+  },
+  "exit_code_planned": 0
+}

@@ -1,0 +1,8 @@
+[2026-10-15T23:18:23.840Z] PLUGIN APPLIED (preset scope; nativeName=read)
+[2026-10-15T23:18:25.762Z] agent/created: per-agent listener installed agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8
+[2026-10-15T23:18:25.804Z] agent/created: per-agent listener installed agent=session-team-child-c3ed90c56fad9ecb7fc0a368106d6255
+[2026-10-15T23:18:25.981Z] ARMED agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 nativeVisibleBeforeMask=yes restrict=applied register=applied
+[2026-10-15T23:18:25.983Z] ADAPTER BODY agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 call=1
+[2026-10-15T23:18:26.001Z] ADAPTER BODY agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 call=2
+[2026-10-15T23:18:26.020Z] DISPOSED agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 adapter=unregistered restrict=KEPT (safe-unload)
+[2026-10-15T23:18:26.879Z] PLUGIN DISPOSED (preset scope fiber stopped)

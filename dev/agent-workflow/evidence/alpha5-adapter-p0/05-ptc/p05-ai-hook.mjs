@@ -1,0 +1,79 @@
+/**
+ * p05-ai-hook.mjs — ESM resolve hook for the Alpha.5 P0-5 runners (Team-owned, PoC only).
+ *
+ * MECHANISM: the task rule allows importing pristine test-use packages "by absolute
+ * file URL to their lib/index.js" and FORBIDS adding new W/node_modules junctions.
+ * A resolve hook is that same mechanism generalized: every bare '@deepseek-ai/<name>'
+ * import (including the transitive ones inside the built libs themselves) resolves to
+ * the pristine test-use checkout's own entry file URL. Nothing is written into T;
+ * nothing is linked into W/node_modules. This is a TEST-HARNESS concern only
+ * (no product code path; the pinned host never uses it).
+ *
+ * The tree root is passed via register(..., { data: { testUse } }); the env var
+ * P05_TEST_USE is a fallback for worker-side inheritance.
+ * @module evidence/alpha5-adapter-p0/05-ptc/p05-ai-hook
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+let testUse = undefined
+let map = undefined
+
+/** Scan vendor/ + packages/<group>/<pkg>/ manifests once; map package name -> dir. */
+function buildMap() {
+  const out = new Map()
+  const scanDirs = []
+  const vendor = join(testUse, 'vendor')
+  for (const name of safeReaddir(vendor)) scanDirs.push(join(vendor, name))
+  const groups = join(testUse, 'packages')
+  for (const group of safeReaddir(groups)) {
+    const gdir = join(groups, group)
+    for (const pkg of safeReaddir(gdir)) scanDirs.push(join(gdir, pkg))
+  }
+  for (const dir of scanDirs) {
+    const manifest = join(dir, 'package.json')
+    if (!existsSync(manifest)) continue
+    try {
+      const j = JSON.parse(readFileSync(manifest, 'utf8'))
+      if (typeof j.name === 'string' && j.name.startsWith('@deepseek-ai/') && !out.has(j.name)) out.set(j.name, dir)
+    } catch { /* unreadable manifest: not addressable */ }
+  }
+  return out
+}
+
+function safeReaddir(dir) {
+  try { return readdirSync(dir) } catch { return [] }
+}
+
+/** Entry file for '.' export of a scanned package dir (built lib plane only). */
+function entryOf(dir) {
+  let j
+  try { j = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) } catch { j = {} }
+  const dot = j.exports && j.exports['.']
+  let rel = undefined
+  if (typeof dot === 'string') rel = dot
+  else if (dot && typeof dot === 'object') rel = dot.default ?? dot.import ?? dot.require
+  if (typeof rel === 'string') {
+    const p = join(dir, rel)
+    if (existsSync(p)) return p
+  }
+  for (const cand of ['lib/index.js', 'index.js']) {
+    if (existsSync(join(dir, cand))) return join(dir, cand)
+  }
+  throw new Error(`p05-ai-hook: no built entry found for ${dir} (is the test-use checkout built?)`)
+}
+
+export function initialize(data) {
+  testUse = data && data.testUse ? data.testUse : process.env.P05_TEST_USE
+  if (!testUse) throw new Error('p05-ai-hook: testUse root not provided')
+}
+
+export function resolve(specifier, context, nextResolve) {
+  if (specifier === '@deepseek-ai/cordis' || specifier.startsWith('@deepseek-ai/dsh-') || specifier.startsWith('@deepseek-ai/schemastery')) {
+    map ??= buildMap()
+    const dir = map.get(specifier)
+    if (dir !== undefined) return { url: pathToFileURL(entryOf(dir)).href, shortCircuit: true, format: 'module' }
+  }
+  return nextResolve(specifier, context)
+}

@@ -1,0 +1,7 @@
+[2026-10-15T22:44:02.624Z] PLUGIN APPLIED (preset scope; nativeName=read)
+[2026-10-15T22:44:04.557Z] agent/created: per-agent listener installed agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01
+[2026-10-15T22:44:04.599Z] agent/created: per-agent listener installed agent=session-team-child-31daa42e9bc704e467a9751398d9aee3
+[2026-10-15T22:44:04.789Z] ARMED agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01 nativeVisibleBeforeMask=yes restrict=applied register=applied
+[2026-10-15T22:44:04.798Z] ADAPTER BODY agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01 call=1
+[2026-10-15T22:44:04.823Z] ADAPTER BODY agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01 call=2
+[2026-10-15T22:44:04.832Z] DISPOSED agent=session-team-child-8eda9cdaf455a3b8d5a264a6031e5f01 adapter=unregistered restrict=KEPT (safe-unload)

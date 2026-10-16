@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5p0.h6-anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5p0 h6 boot team. A5P0MK_DISC_2026-10-15T23-00-51 is the discovery marker."
+members:
+  - templateId: worker
+    persona: "You are a worker of the a5p0 h6 boot team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

@@ -1,0 +1,4 @@
+{
+  "seq": 20,
+  "result": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T22-40-27/workspace/a5p0-seed-2026-10-15T22-40-27.txt</path>\n<type>file</type>\n<content>\n1: a5p0 stage2b seed file (run 2026-10-15T22-40-27)\n2: second line\n3: A5P0_SEED_CONTENT_2026-10-15T22-40-27\n4: fourth line\n\n(End of file - total 4 lines)\n</content>"
+}

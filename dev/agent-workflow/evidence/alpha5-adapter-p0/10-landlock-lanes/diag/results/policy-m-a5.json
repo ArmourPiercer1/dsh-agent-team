@@ -1,0 +1,58 @@
+{
+ "member": "m-a5",
+ "allow": [
+  {
+   "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/allowed",
+   "access": [
+    "READ_DIR",
+    "READ_FILE",
+    "WRITE_FILE",
+    "MAKE_REG",
+    "REMOVE_FILE",
+    "REMOVE_DIR",
+    "TRUNCATE"
+   ],
+   "label": "allowed"
+  }
+ ],
+ "system": [
+  {
+   "path": "/",
+   "access": [
+    "READ_DIR"
+   ],
+   "label": "/(仅穿越+枚举,不泄露内容;diag§3.4)"
+  },
+  {
+   "path": "/usr",
+   "access": [
+    "READ_DIR",
+    "READ_FILE",
+    "EXECUTE"
+   ],
+   "label": "/usr(exec链)"
+  },
+  {
+   "path": "/etc",
+   "access": [
+    "READ_DIR"
+   ],
+   "label": "/etc(仅穿越,shadow 不可读)"
+  },
+  {
+   "path": "/etc/ld.so.cache",
+   "access": [
+    "READ_FILE"
+   ],
+   "label": "ld.so.cache(exec 链需要)"
+  }
+ ],
+ "deny": [
+  "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/private",
+  "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/outside",
+  "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/10-landlock-lanes/workspace/a5ll/home-fixture",
+  "/home/user/.ssh",
+  "/etc/shadow",
+  "/home/user/.bashrc"
+ ]
+}

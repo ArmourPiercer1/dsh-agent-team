@@ -1,0 +1,2 @@
+SYNTHETIC ALPHA.5 P0-3 fs fixture — allowed positive-control read target
+token=ALLOWED-PUBLIC-1e6f

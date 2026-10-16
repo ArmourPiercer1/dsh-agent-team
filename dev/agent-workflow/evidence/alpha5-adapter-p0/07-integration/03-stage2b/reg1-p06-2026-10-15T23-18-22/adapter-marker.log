@@ -1,0 +1,2 @@
+ADAPTER_CALL 1 agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 native=read args={"file_path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22/workspace/a5p0-arm-A5P0ARM_2026-10-15T23-18-22.txt"}
+ADAPTER_CALL 2 agent=session-team-child-0c274acc93ceaba4e9d99e5d276187d8 native=read args={"file_path":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/homes/a5p0-s2b-2026-10-15T23-18-22/workspace/a5p0-seed-2026-10-15T23-18-22.txt"}

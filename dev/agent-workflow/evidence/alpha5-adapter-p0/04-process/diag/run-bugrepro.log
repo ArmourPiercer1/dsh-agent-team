@@ -1,0 +1,8 @@
+====BUG-REPRO (prior constants verbatim: READ=3)====
+ruleset_fd 3 
+add_rule (0, '')
+restrict (0, '')
+BUGGY(handled=0x3): secret READABLE (32B) == prior NEG-FAIL REPRODUCED
+====UIDMAP-RAW====
+current ns write uid_map -> EPERM Operation not permitted
+new empty userns write uid_map -> EPERM Operation not permitted

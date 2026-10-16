@@ -1,0 +1,17 @@
+{
+  "dynRow": {
+    "ts": "2026-10-15T23:19:16.582Z",
+    "leg": "dyn-register",
+    "agent": "session-team-child-c0e4374ba6c45812ab0255419f599072",
+    "ok": true
+  },
+  "dynRan": true,
+  "dynCallResult": "H6_DYN_RAN",
+  "bashRegisterRow": {
+    "ts": "2026-10-15T23:19:16.502Z",
+    "leg": "bash-register",
+    "agent": "session-team-child-c0e4374ba6c45812ab0255419f599072",
+    "ok": true,
+    "note": "own-layer same-name registration of the builtinToolDeny-shielded name SUCCEEDED at the runtime layer (reachability is the clause question)"
+  }
+}

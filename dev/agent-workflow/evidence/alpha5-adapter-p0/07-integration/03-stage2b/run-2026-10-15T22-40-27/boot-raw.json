@@ -1,0 +1,15 @@
+{
+  "bootLine": "dsh web: http://127.0.0.1:3185/?token=<REDACTED-TOKEN>",
+  "port": 3185,
+  "p6t6Health": {
+    "ok": true,
+    "boot": 1,
+    "ready": true,
+    "rootSessionId": "session-a5p0-root-2026-10-15T22-40-27",
+    "liveSessions": [
+      "session-a5p0-root-2026-10-15T22-40-27"
+    ],
+    "toolCount": 15
+  },
+  "note": "boot token redacted everywhere"
+}

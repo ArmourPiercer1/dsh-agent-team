@@ -1,0 +1,159 @@
+{
+  "leg": "05-ptc (P0-5 PTC leg)",
+  "agent": "independent experimenter (not the coordinator)",
+  "model_name_verbatim": {
+    "powered_by_line": "You are a coding agent powered by the qwen3.8-flash-next model.",
+    "model": "qwen3.8-flash-next"
+  },
+  "recorded_at_utc": "2026-10-15T21:56:48.090Z",
+  "host_env": {
+    "node": "v24.21.0",
+    "platform": "linux x64",
+    "uname": "Linux 6.8.0-142-generic",
+    "test_use_HEAD": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "test_use_porcelain_empty": true,
+    "worktree_HEAD": "9e422ff5b37a219f4ce87e5175165ce66d357400",
+    "test_use_porcelain_empty_after": true
+  },
+  "import_mechanism": "ESM resolve hook p05-ai-hook.mjs → absolute lib/index.js file URLs inside T; no new node_modules junctions; T read-only",
+  "test_double_declaration": "ctx.ptcRuntime is an in-process TEST DOUBLE of the @deepseek-ai/dsh-ptc-runtime Service Definition (same role as upstream ptc.spec.ts FakeRuntime). The run_code bridge + ToolRuntime scheduler under test are real pinned production libs. No claim is made about the real Node worker-thread runtime or real outer-process OS I/O.",
+  "commands": [
+    {
+      "label": "git T HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use rev-parse HEAD",
+      "code": 0,
+      "out": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "err": ""
+    },
+    {
+      "label": "git T status",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    },
+    {
+      "label": "git W HEAD",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016 rev-parse HEAD",
+      "code": 0,
+      "out": "9e422ff5b37a219f4ce87e5175165ce66d357400",
+      "err": ""
+    },
+    {
+      "label": "uname",
+      "cmd": "uname -sr",
+      "code": 0,
+      "out": "Linux 6.8.0-142-generic",
+      "err": ""
+    },
+    {
+      "label": "git T status after",
+      "cmd": "git -C /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use status --porcelain",
+      "code": 0,
+      "out": "",
+      "err": ""
+    }
+  ],
+  "legs": [
+    {
+      "id": "P05-PTC-1.config-mode-ptc-mount",
+      "verdict": "PASS",
+      "detail": {
+        "assembly_surface": "ctx.plugin(ToolRuntime, {mode:\"ptc\"}) — ToolRuntime.static Config z{mode:native|ptc|both} (packages/core/tools/src/index.ts:810-813); same call shape as pristine packages/core/tools/tests/ptc.spec.ts:68",
+        "ptcRuntime_double": "ctx.ptcRuntime = P05TestDoublePtcRuntime (isolation p05-in-process-test-double)"
+      }
+    },
+    {
+      "id": "P05-PTC-2.schemas-presentation",
+      "verdict": "PASS",
+      "detail": {
+        "registry_projection_tools_schemas_agent": [
+          "grep",
+          "run_code"
+        ],
+        "model_wire_tools_list": [
+          "run_code"
+        ],
+        "ptc_only_instruction_present": true,
+        "sdk_section_declares_grep": true,
+        "note": "collapse home: ToolRuntime.wireSchemas index.ts:1022-1026 (schemas filtered to run_code under ptc); raw registry projection schemas() intentionally NOT collapsed (index.ts:1260-1262) — recorded as the honest distinction; same-name registration ban = 01-routing L7"
+      }
+    },
+    {
+      "id": "P05-PTC-3.model-direct-denied",
+      "verdict": "PASS",
+      "detail": {
+        "result_text": "Error: unknown tool \"grep\": only `run_code` is callable directly — call `grep` from inside a `run_code` program instead",
+        "native_body_counter": 0,
+        "home": "collapses() index.ts:1351-1352; denial result index.ts:1453-1472"
+      }
+    },
+    {
+      "id": "P05-PTC-4.inner-dispatch-positive",
+      "verdict": "PASS",
+      "detail": {
+        "outer_value": {
+          "logs": [
+            "call grep ok"
+          ],
+          "result": "ran:grep@native-grep-double"
+        },
+        "native_body_counter": 1,
+        "ptc_dispatch_start_events": 1,
+        "ptc_dispatch_settle_events": 1,
+        "scheduler_evidence": "binding closure reads registry[TOOL_RUNTIME_SCHEDULER] (ptc.ts:557) and runs scheduler.prepare/dispatch/finalize/finish (ptc.ts:622-638 → index.ts:816-821) = the SAME ToolRuntime staged pipeline as the native loop (pre-execute→guard→body→post-execute)"
+      }
+    },
+    {
+      "id": "P05-PTC-5.guard-deny-inner-original-zero",
+      "verdict": "PASS",
+      "detail": {
+        "outer_isError": true,
+        "outer_text": "Error: code run failed (exception): P05-GUARD-DENY: grep not permitted by team policy\nCaptured output:\ncall grep failed: P05-GUARD-DENY: grep not permitted by team policy",
+        "native_body_counter_delta_after_guard": 0,
+        "guard_reason_reached_program": {
+          "name": "grep",
+          "ok": false,
+          "message": "P05-GUARD-DENY: grep not permitted by team policy"
+        },
+        "isError_settle_events": 1,
+        "home": "guard monotonic append index.ts:1136-1142; guardReason in prepare index.ts:1519; guard layer runs inside scheduler.prepare used by the PTC bridge"
+      }
+    },
+    {
+      "id": "P05-PTC-7.bridge-construction-public-seam",
+      "verdict": "PASS-CITED",
+      "detail": {
+        "bridge_home": "createRunCodeTool(registry, RunCodeBridgeOptions) ptc.ts:333; options are registry-private closures, minted only at ToolRuntime.requirePtcTransport index.ts:944-961",
+        "inner_dispatch_surface": "registry[TOOL_RUNTIME_SCHEDULER] ptc.ts:557 (symbol exported index.ts:480) — staged prepare/dispatch/finalize/finish",
+        "public_seam_for_inner_dispatch": "YES — implement ctx.ptcRuntime (abstract class PtcRuntime, @deepseek-ai/dsh-ptc-runtime package root) and dispatch via ctx.tools.execute({name:\"run_code\"}); P05-PTC-4/5 are the executed minimal pair (positive body=1 / guard-deny body=0)",
+        "core_seam_blocker_inner": "NOT REQUIRED for the \"inner call goes through the same ToolRuntime + guard\" question (public seam sufficed, executed)"
+      }
+    },
+    {
+      "id": "P05-PTC-6.PTC-01-citation",
+      "verdict": "CITED-PASS",
+      "detail": {
+        "source": "01-routing/p01-result.json leg L7.PTC-01.reserved-run-code (coordinator-run, do not re-run per task order)",
+        "register_threw": "register_threw=\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\" restrict_threw=\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\"",
+        "static_home": "register rejection index.ts:1080-1082; restrict rejection index.ts:1111-1113"
+      }
+    },
+    {
+      "id": "P05-PTC-8.outer-direct-io",
+      "verdict": "NOT_RUN",
+      "detail": {
+        "reason": "this fixture has no real outer PTC Node process: the runtime TEST DOUBLE executes the program in the fixture process (in-process new Function), so outer-process direct fs/net I/O under OS enforcement is NOT exercised here",
+        "required_for_eventual_GO": "real pinned host + a ctx.ptcRuntime worker-thread/process backend (@deepseek-ai/dsh-ptc-runtime-node lib is present in T/packages/ptc-runtime/ptc-runtime-node) + P0-4 OS enforcement (bwrap/landlock) — per guide §3 P0-5 \"外层 Node 进程直接 fs/net 必须符合强制保证\"",
+        "status": "NOT_RUN (never mark run_code PTC-02 as fully passed on this evidence)"
+      }
+    }
+  ],
+  "overall": {
+    "model_visible_transport": "PASS (P05-PTC-2): under mode ptc the model wire surface presents only run_code; grep reachable only nested",
+    "inner_dispatch_same_runtime": "PASS (P05-PTC-4/5): nested calls run through the same ToolRuntime staged pipeline; guard deny → original body 0 (counter evidence, not return-text evidence)",
+    "outer_direct_io": "NOT_RUN (P05-PTC-8)",
+    "PTC_01": "CITED from 01-routing L7 (PASS)",
+    "verdict_candidate": "run_code / PTC: BOUNDED-DEFER on strict guarantees pending real-host outer-process evidence; inner-dispatch admission+guard leg proven on pinned libs with an in-process runtime double; no CORE_SEAM_BLOCKER required for inner dispatch"
+  }
+}

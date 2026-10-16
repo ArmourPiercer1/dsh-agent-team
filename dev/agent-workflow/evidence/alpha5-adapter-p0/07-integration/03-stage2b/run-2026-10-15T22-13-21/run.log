@@ -1,0 +1,3 @@
+[2026-10-15T22:13:21.055Z] a5p0 stage2b kit — stamp 2026-10-15T22-13-21
+[2026-10-15T22:13:21.056Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev; testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/tests/deepseek-harness-test-use @ 639ed01539; evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/07-integration/03-stage2b/run-2026-10-15T22-13-21
+[2026-10-15T22:13:21.057Z] FATAL test-use not at baseline: undefined

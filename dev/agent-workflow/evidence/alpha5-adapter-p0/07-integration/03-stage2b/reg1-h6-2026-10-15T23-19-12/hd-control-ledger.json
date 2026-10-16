@@ -1,0 +1,69 @@
+{
+  "controlRows": {
+    "requests": [
+      {
+        "requestId": "ctrl-1w2u2o31qldr5g14jmscp1hd",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-175v64f121pi"
+      },
+      {
+        "requestId": "ctrl-05ckmcf19if8z4009xgbt0g5",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "targetInstanceId": "inst-175v64f121pi"
+      },
+      {
+        "requestId": "ctrl-0201i2u0pgtu9p1qwj1bs04p",
+        "kind": "leader-approval",
+        "toolName": "edit",
+        "targetInstanceId": "inst-175v64f121pi"
+      },
+      {
+        "requestId": "ctrl-02jciu40smbsuf0ujbk2u1sm",
+        "kind": "leader-approval",
+        "toolName": "edit",
+        "targetInstanceId": "inst-175v64f121pi"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-1w2u2o31qldr5g14jmscp1hd",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-05ckmcf19if8z4009xgbt0g5",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-0201i2u0pgtu9p1qwj1bs04p",
+        "decision": "allow"
+      },
+      {
+        "requestId": "ctrl-02jciu40smbsuf0ujbk2u1sm",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-1w2u2o31qldr5g14jmscp1hd"
+      },
+      {
+        "requestId": "ctrl-05ckmcf19if8z4009xgbt0g5"
+      },
+      {
+        "requestId": "ctrl-0201i2u0pgtu9p1qwj1bs04p"
+      },
+      {
+        "requestId": "ctrl-02jciu40smbsuf0ujbk2u1sm"
+      }
+    ],
+    "error": null
+  },
+  "notifRids": [
+    "ctrl-1w2u2o31qldr5g14jmscp1hd",
+    "ctrl-05ckmcf19if8z4009xgbt0g5",
+    "ctrl-0201i2u0pgtu9p1qwj1bs04p",
+    "ctrl-02jciu40smbsuf0ujbk2u1sm"
+  ]
+}

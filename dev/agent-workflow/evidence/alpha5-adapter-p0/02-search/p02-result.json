@@ -1,0 +1,3856 @@
+{
+  "recorded_at_utc": "2026-10-15T21:56:46.382Z",
+  "model_verbatim": "You are a coding agent powered by the qwen3.8-flash-next model.",
+  "pins": {
+    "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "host_status_porcelain_lines": 0,
+    "team_worktree_head": "9e422ff5b37a219f4ce87e5175165ce66d357400",
+    "node": "v24.21.0",
+    "platform": "linux/x64 kernel 6.8.0-142-generic",
+    "rg_direct": "ripgrep 15.0.0 (rev 3a612f88b8)",
+    "package_root_exports_count": 34,
+    "seven_helpers_present": [
+      [
+        "parseGrepArgs",
+        "function"
+      ],
+      [
+        "buildGrepCommand",
+        "function"
+      ],
+      [
+        "parseGrepMatches",
+        "function"
+      ],
+      [
+        "parseGlobArgs",
+        "function"
+      ],
+      [
+        "buildGlobCommand",
+        "function"
+      ],
+      [
+        "resolveRgPath",
+        "function"
+      ],
+      [
+        "toWorkdirRelative",
+        "function"
+      ]
+    ],
+    "module_inject": [
+      "tools",
+      "systemPrompt",
+      "subprocess"
+    ],
+    "module_name": "tool-fs-search"
+  },
+  "workdir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+  "test_double_declarations": [
+    "FixtureSubprocessDouble = TEST DOUBLE（薄真实传输 + 原生体计数代理；非生产 subprocess provider）",
+    "testDoubleConfine = TEST DOUBLE（async 恒等，仅证 confine-先行时序，不实施任何 I/O 策略）",
+    "R3 composed adapter 直连 node:child_process 跑真实 rg：披露性绕过 ctx.subprocess seam（fixture 无该服务）；真实 rg 二进制 = @vscode/ripgrep v15.0.0（非替身）"
+  ],
+  "observations": {
+    "pins": {
+      "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "host_status_porcelain_lines": 0,
+      "team_worktree_head": "9e422ff5b37a219f4ce87e5175165ce66d357400",
+      "node": "v24.21.0",
+      "platform": "linux/x64 kernel 6.8.0-142-generic",
+      "rg_direct": "ripgrep 15.0.0 (rev 3a612f88b8)",
+      "package_root_exports_count": 34,
+      "seven_helpers_present": [
+        [
+          "parseGrepArgs",
+          "function"
+        ],
+        [
+          "buildGrepCommand",
+          "function"
+        ],
+        [
+          "parseGrepMatches",
+          "function"
+        ],
+        [
+          "parseGlobArgs",
+          "function"
+        ],
+        [
+          "buildGlobCommand",
+          "function"
+        ],
+        [
+          "resolveRgPath",
+          "function"
+        ],
+        [
+          "toWorkdirRelative",
+          "function"
+        ]
+      ],
+      "module_inject": [
+        "tools",
+        "systemPrompt",
+        "subprocess"
+      ],
+      "module_name": "tool-fs-search"
+    },
+    "srch03": {
+      "cases_total": 12,
+      "cases_passed": 12,
+      "fixture_pitfall_discovered": "首轮 C04 零命中根因：spawnSync 默认管道 stdin + 无路径参数时 rg 启发式选择读 stdin 而非 ./（--debug 原文 heuristic chose to search stdin）；原生 runRipgrep 的 seam spec 固定 stdin:ignore（search-core.ts:241-245）正是该行为的防线——任何 R3 组装配 argv 直跑者必须同样显式处理 stdin。"
+    },
+    "srch02_async_bridge": {
+      "pinned_sample": "async execute: parse → build → await confine(argv) → spawnSync(confined.argv) → parse",
+      "source_reason": "native runRipgrep 已为 async 且在同步 spawn 之前 await resolveRgPath()（search-core.ts:238-239）：调用方层面的 pre-spawn await 与既有原生形态同构；本样例仅固化该观测，不提议新 API",
+      "exit": 0,
+      "matches": [
+        {
+          "path": "alpha.txt",
+          "lineNumber": 1,
+          "line": "needle line one"
+        },
+        {
+          "path": "alpha.txt",
+          "lineNumber": 3,
+          "line": "needle line three"
+        }
+      ]
+    },
+    "srch02_sync_seam": {
+      "resolveRgPath_returns": "Promise<string> (src/search-core.ts:171)；同步面可用形态 = Promise 对象本身",
+      "sync_assembled_argv0": "[object Promise]",
+      "raw_pass_threw": "TypeError",
+      "spawnSync_error_code": "ENOENT",
+      "positive_control_exit": 0,
+      "naming_note": "实读确认：tool-fs-search 无 searchRg；搜索体= runRipgrep（async）。ToolRuntime 公开调用面 execute/dispatchToolBody 均 async；同步面= ctx.subprocess.spawn 的返回约定（S-07）与 executionMode 调度分类（无 argv 语义）",
+      "boundary": "仅固化 sync/async 不匹配的观测与最小反例；不提议 API 改动"
+    },
+    "srch01_r2_prereq": {
+      "fixture_services": [
+        "SystemPrompt",
+        "ToolRuntime"
+      ],
+      "missing_service": "subprocess (module inject = [\"tools\",\"systemPrompt\",\"subprocess\"])",
+      "plugin_call_threw": null,
+      "fiber_state": 0,
+      "fiber_state_name": "PENDING",
+      "registered_tools": [],
+      "grep_resolution": "undefined",
+      "logger_lines": [],
+      "exact_observable": "ctx.plugin 正常返回，fiber.state=0(PENDING)，tools.schemas()=[] —— cordis 对缺失注入依赖的行为是 fiber 悬挂（PENDING=waiting for required services，vendor/cordis/src/fiber.ts:147-156 注释），不是 throw；upstream 自身测试 \"stays pending until ctx.subprocess exists (inject)\"（tool-fs-search/tests/tools.spec.ts:257-262）钉住同一形态"
+    },
+    "srch01_composed": {
+      "restrict_then_register": true,
+      "A_resolution_after_mask_before_adapter": "UNKNOWN (masked)",
+      "A_value": {
+        "matches": [
+          {
+            "path": "alpha.txt",
+            "lineNumber": 1,
+            "line": "needle line one"
+          },
+          {
+            "path": "alpha.txt",
+            "lineNumber": 3,
+            "line": "needle line three"
+          }
+        ]
+      },
+      "B_value": {
+        "matches": [
+          {
+            "path": "alpha.txt",
+            "lineNumber": 1,
+            "line": "needle line one"
+          },
+          {
+            "path": "alpha.txt",
+            "lineNumber": 3,
+            "line": "needle line three"
+          }
+        ]
+      },
+      "A_text": "Found 2 matches\n\nalpha.txt\nLine 1: needle line one\nLine 3: needle line three",
+      "B_text": "Found 2 matches\n\nalpha.txt\nLine 1: needle line one\nLine 3: needle line three",
+      "value_parity": true,
+      "content_parity": true,
+      "meta_divergence": {
+        "B_meta_present": true,
+        "A_meta_present": false,
+        "reason": "presentationMeta 投影函数 grepSearchMeta 不在包根导出（src/index.ts barrel 未含 presentation.ts）——R3 粘合面需自维护卡片投影或接受 UI 卡退化（观测记录，非 API 提议）"
+      },
+      "native_body_observability": "原生 grep/glob 体的唯一 I/O 面 = ctx.subprocess.spawn（src/search-core.ts:238）；TEST DOUBLE 计数器 = 原生体计数代理（未 monkey-patch 原生定义对象，避免破坏 direct-call.ts:26 的身份判断）",
+      "adapter_runs": 1,
+      "double_spawnCount_total": 2,
+      "double_specs": [
+        {
+          "argv": [
+            "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--json",
+            "--regexp=needle",
+            "--",
+            "alpha.txt"
+          ],
+          "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree"
+        },
+        {
+          "argv": [
+            "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--no-config",
+            "--files",
+            "--glob=*.never-zz",
+            "--sort=modified",
+            "--no-ignore",
+            "--hidden",
+            "--glob=!**/.git",
+            "--glob=!**/.git/**",
+            "--glob=!**/.svn",
+            "--glob=!**/.svn/**",
+            "--glob=!**/.hg",
+            "--glob=!**/.hg/**",
+            "--glob=!**/.bzr",
+            "--glob=!**/.bzr/**",
+            "--glob=!**/.jj",
+            "--glob=!**/.jj/**",
+            "--glob=!**/.sl",
+            "--glob=!**/.sl/**"
+          ],
+          "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree"
+        },
+        {
+          "argv": [
+            "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+            "--version"
+          ],
+          "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree"
+        }
+      ]
+    },
+    "srch02_seam_shapes": {
+      "subprocess_spawn_sync_handle": true,
+      "spawn_outcome_exit": 0,
+      "executionMode_sync_return": {
+        "kind": "exclusive"
+      },
+      "executionMode_note": "同步返回调度分类 {kind}，不产出 argv —— 非 body 执行 seam；ToolRuntime 公开体路径 execute/dispatchToolBody 全 async"
+    },
+    "srch04": {
+      "status": "NOT_RUN",
+      "reason": "fixture 无 spillStore 服务且 fixture agent 无 session owner：trySaveFormattedResult 需要 exec.agent.session.header.id 与 ctx.get('spillStore')（src/search-core.ts:382-412），两者在 fixture 中均不存在；post-execute spill 的身份判断（direct-call.ts:26 `ctx.tools.get(exec.name, exec.agent) !== tool`）还要求与注册定义的对象同一性。",
+      "missing_prerequisites": [
+        "ctx.spillStore 服务（真实 dsh-spill 后端）",
+        "exec.agent.session.header.{id,cwd}（真实 Session owner）",
+        "真实宿主上 A/B 对照下的 >250 matches 超量结果 + spill 落盘读取验证",
+        "替换 Definition 后 acceptedDirectCallValue 弃权（spill 丢失）路径的真实宿主验证（S-09）"
+      ],
+      "honest_boundary": "按 §5 规则：测试未运行 = NOT_RUN，不计入任何路线的正反证。"
+    }
+  },
+  "srch03_cases": [
+    {
+      "id": "C01.grep-empty-match",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle_zzz_absent"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle_zzz_absent"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 1,
+      "classification": "ok-noMatches",
+      "stdout_summary": {
+        "bytes": 266,
+        "sha256": "5de364a7a459ef09c18ea9418ab93da30564c93658a2ef26f4f88fa603ad4e19",
+        "head": "{\"data\":{\"elapsed_total\":{\"human\":\"0.004259s\",\"nanos\":4258674,\"secs\":0},\"stats\":{\"bytes_printed\":0,\"bytes_searched\":5233,\"elapsed\":{\"human\":\"0.000415s\",\"nanos\":414971,\"secs\":0},\"matched_lines\":0,\"matches\":0,\"searches\":12"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": []
+      },
+      "value_digest": {
+        "sha256": "1329bed5a664bbf035723754d90023adf1034d44b942c070a37741a1b762d35c",
+        "count": 0
+      },
+      "expected": {
+        "exit": 1,
+        "classification": "ok-noMatches",
+        "value": {
+          "matches": []
+        }
+      },
+      "match": true,
+      "detail": "exit=1 value={\"matches\":[]}"
+    },
+    {
+      "id": "C02.grep-invalid-regexp",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "(unclosed"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=(unclosed"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 2,
+      "classification": "SEARCH_INVALID_PATTERN",
+      "stdout_summary": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "head": ""
+      },
+      "stderr_head": "rg: regex parse error:\n    (?:(unclosed)\n    ^\nerror: unclosed group\n",
+      "parsed_value": {
+        "error": "SEARCH_INVALID_PATTERN",
+        "stderr_head": "rg: regex parse error:\n    (?:(unclosed)\n    ^\nerror: unclosed group\n"
+      },
+      "value_digest": {
+        "sha256": "3dbcd5b770d80d23d14020c698b728697b36fa903a369995a156aa872a2cfc7d"
+      },
+      "expected": {
+        "exit": 2,
+        "classification": "SEARCH_INVALID_PATTERN"
+      },
+      "match": true,
+      "detail": "exit=2 cls=SEARCH_INVALID_PATTERN stderr_head=\"rg: regex parse error:\\n    (?:(unclosed)\\n    ^\\nerror: unclosed group\\n\""
+    },
+    {
+      "id": "C03.glob-no-match-exit1",
+      "surface": "SRCH-03",
+      "tool": "glob",
+      "args": {
+        "pattern": "**/*.never-exists"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--files",
+        "--glob=**/*.never-exists",
+        "--sort=modified",
+        "--no-ignore",
+        "--hidden",
+        "--glob=!**/.git",
+        "--glob=!**/.git/**",
+        "--glob=!**/.svn",
+        "--glob=!**/.svn/**",
+        "--glob=!**/.hg",
+        "--glob=!**/.hg/**",
+        "--glob=!**/.bzr",
+        "--glob=!**/.bzr/**",
+        "--glob=!**/.jj",
+        "--glob=!**/.jj/**",
+        "--glob=!**/.sl",
+        "--glob=!**/.sl/**"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 1,
+      "classification": "ok-noMatches",
+      "stdout_summary": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "head": ""
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "root": ".",
+        "paths": []
+      },
+      "value_digest": {
+        "sha256": "7bb886723cffdfa28d8923a05d07112e1a654ebd1cdb03230c1360d87af53923",
+        "count": 0
+      },
+      "expected": {
+        "exit": 1,
+        "classification": "ok-noMatches",
+        "value": {
+          "root": ".",
+          "paths": []
+        }
+      },
+      "match": true,
+      "detail": "exit=1 value={\"paths\":[],\"root\":\".\"}"
+    },
+    {
+      "id": "C04.grep-hidden-ignored-default",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 52002,
+        "sha256": "7c164e643379f142680cb34c5c40ce6397a284986438721268a5e9651d02c0df",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"big.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"big.txt\"},\"lines\":{\"text\":\"needle hit 000\\n\"},\"line_number\":1,\"absolute_offset\":0,\"submatches\":[{\"match\":{\"text\":\"needle\"},\"star"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "big.txt",
+            "lineNumber": 1,
+            "line": "needle hit 000"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 2,
+            "line": "needle hit 001"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 3,
+            "line": "needle hit 002"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 4,
+            "line": "needle hit 003"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 5,
+            "line": "needle hit 004"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 6,
+            "line": "needle hit 005"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 7,
+            "line": "needle hit 006"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 8,
+            "line": "needle hit 007"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 9,
+            "line": "needle hit 008"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 10,
+            "line": "needle hit 009"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 11,
+            "line": "needle hit 010"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 12,
+            "line": "needle hit 011"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 13,
+            "line": "needle hit 012"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 14,
+            "line": "needle hit 013"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 15,
+            "line": "needle hit 014"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 16,
+            "line": "needle hit 015"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 17,
+            "line": "needle hit 016"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 18,
+            "line": "needle hit 017"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 19,
+            "line": "needle hit 018"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 20,
+            "line": "needle hit 019"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 21,
+            "line": "needle hit 020"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 22,
+            "line": "needle hit 021"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 23,
+            "line": "needle hit 022"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 24,
+            "line": "needle hit 023"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 25,
+            "line": "needle hit 024"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 26,
+            "line": "needle hit 025"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 27,
+            "line": "needle hit 026"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 28,
+            "line": "needle hit 027"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 29,
+            "line": "needle hit 028"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 30,
+            "line": "needle hit 029"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 31,
+            "line": "needle hit 030"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 32,
+            "line": "needle hit 031"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 33,
+            "line": "needle hit 032"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 34,
+            "line": "needle hit 033"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 35,
+            "line": "needle hit 034"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 36,
+            "line": "needle hit 035"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 37,
+            "line": "needle hit 036"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 38,
+            "line": "needle hit 037"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 39,
+            "line": "needle hit 038"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 40,
+            "line": "needle hit 039"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 41,
+            "line": "needle hit 040"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 42,
+            "line": "needle hit 041"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 43,
+            "line": "needle hit 042"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 44,
+            "line": "needle hit 043"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 45,
+            "line": "needle hit 044"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 46,
+            "line": "needle hit 045"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 47,
+            "line": "needle hit 046"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 48,
+            "line": "needle hit 047"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 49,
+            "line": "needle hit 048"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 50,
+            "line": "needle hit 049"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 51,
+            "line": "needle hit 050"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 52,
+            "line": "needle hit 051"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 53,
+            "line": "needle hit 052"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 54,
+            "line": "needle hit 053"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 55,
+            "line": "needle hit 054"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 56,
+            "line": "needle hit 055"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 57,
+            "line": "needle hit 056"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 58,
+            "line": "needle hit 057"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 59,
+            "line": "needle hit 058"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 60,
+            "line": "needle hit 059"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 61,
+            "line": "needle hit 060"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 62,
+            "line": "needle hit 061"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 63,
+            "line": "needle hit 062"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 64,
+            "line": "needle hit 063"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 65,
+            "line": "needle hit 064"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 66,
+            "line": "needle hit 065"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 67,
+            "line": "needle hit 066"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 68,
+            "line": "needle hit 067"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 69,
+            "line": "needle hit 068"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 70,
+            "line": "needle hit 069"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 71,
+            "line": "needle hit 070"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 72,
+            "line": "needle hit 071"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 73,
+            "line": "needle hit 072"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 74,
+            "line": "needle hit 073"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 75,
+            "line": "needle hit 074"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 76,
+            "line": "needle hit 075"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 77,
+            "line": "needle hit 076"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 78,
+            "line": "needle hit 077"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 79,
+            "line": "needle hit 078"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 80,
+            "line": "needle hit 079"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 81,
+            "line": "needle hit 080"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 82,
+            "line": "needle hit 081"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 83,
+            "line": "needle hit 082"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 84,
+            "line": "needle hit 083"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 85,
+            "line": "needle hit 084"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 86,
+            "line": "needle hit 085"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 87,
+            "line": "needle hit 086"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 88,
+            "line": "needle hit 087"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 89,
+            "line": "needle hit 088"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 90,
+            "line": "needle hit 089"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 91,
+            "line": "needle hit 090"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 92,
+            "line": "needle hit 091"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 93,
+            "line": "needle hit 092"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 94,
+            "line": "needle hit 093"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 95,
+            "line": "needle hit 094"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 96,
+            "line": "needle hit 095"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 97,
+            "line": "needle hit 096"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 98,
+            "line": "needle hit 097"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 99,
+            "line": "needle hit 098"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 100,
+            "line": "needle hit 099"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 101,
+            "line": "needle hit 100"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 102,
+            "line": "needle hit 101"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 103,
+            "line": "needle hit 102"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 104,
+            "line": "needle hit 103"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 105,
+            "line": "needle hit 104"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 106,
+            "line": "needle hit 105"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 107,
+            "line": "needle hit 106"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 108,
+            "line": "needle hit 107"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 109,
+            "line": "needle hit 108"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 110,
+            "line": "needle hit 109"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 111,
+            "line": "needle hit 110"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 112,
+            "line": "needle hit 111"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 113,
+            "line": "needle hit 112"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 114,
+            "line": "needle hit 113"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 115,
+            "line": "needle hit 114"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 116,
+            "line": "needle hit 115"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 117,
+            "line": "needle hit 116"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 118,
+            "line": "needle hit 117"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 119,
+            "line": "needle hit 118"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 120,
+            "line": "needle hit 119"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 121,
+            "line": "needle hit 120"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 122,
+            "line": "needle hit 121"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 123,
+            "line": "needle hit 122"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 124,
+            "line": "needle hit 123"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 125,
+            "line": "needle hit 124"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 126,
+            "line": "needle hit 125"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 127,
+            "line": "needle hit 126"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 128,
+            "line": "needle hit 127"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 129,
+            "line": "needle hit 128"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 130,
+            "line": "needle hit 129"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 131,
+            "line": "needle hit 130"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 132,
+            "line": "needle hit 131"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 133,
+            "line": "needle hit 132"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 134,
+            "line": "needle hit 133"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 135,
+            "line": "needle hit 134"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 136,
+            "line": "needle hit 135"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 137,
+            "line": "needle hit 136"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 138,
+            "line": "needle hit 137"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 139,
+            "line": "needle hit 138"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 140,
+            "line": "needle hit 139"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 141,
+            "line": "needle hit 140"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 142,
+            "line": "needle hit 141"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 143,
+            "line": "needle hit 142"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 144,
+            "line": "needle hit 143"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 145,
+            "line": "needle hit 144"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 146,
+            "line": "needle hit 145"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 147,
+            "line": "needle hit 146"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 148,
+            "line": "needle hit 147"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 149,
+            "line": "needle hit 148"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 150,
+            "line": "needle hit 149"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 151,
+            "line": "needle hit 150"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 152,
+            "line": "needle hit 151"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 153,
+            "line": "needle hit 152"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 154,
+            "line": "needle hit 153"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 155,
+            "line": "needle hit 154"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 156,
+            "line": "needle hit 155"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 157,
+            "line": "needle hit 156"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 158,
+            "line": "needle hit 157"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 159,
+            "line": "needle hit 158"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 160,
+            "line": "needle hit 159"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 161,
+            "line": "needle hit 160"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 162,
+            "line": "needle hit 161"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 163,
+            "line": "needle hit 162"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 164,
+            "line": "needle hit 163"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 165,
+            "line": "needle hit 164"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 166,
+            "line": "needle hit 165"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 167,
+            "line": "needle hit 166"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 168,
+            "line": "needle hit 167"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 169,
+            "line": "needle hit 168"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 170,
+            "line": "needle hit 169"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 171,
+            "line": "needle hit 170"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 172,
+            "line": "needle hit 171"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 173,
+            "line": "needle hit 172"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 174,
+            "line": "needle hit 173"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 175,
+            "line": "needle hit 174"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 176,
+            "line": "needle hit 175"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 177,
+            "line": "needle hit 176"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 178,
+            "line": "needle hit 177"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 179,
+            "line": "needle hit 178"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 180,
+            "line": "needle hit 179"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 181,
+            "line": "needle hit 180"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 182,
+            "line": "needle hit 181"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 183,
+            "line": "needle hit 182"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 184,
+            "line": "needle hit 183"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 185,
+            "line": "needle hit 184"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 186,
+            "line": "needle hit 185"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 187,
+            "line": "needle hit 186"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 188,
+            "line": "needle hit 187"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 189,
+            "line": "needle hit 188"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 190,
+            "line": "needle hit 189"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 191,
+            "line": "needle hit 190"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 192,
+            "line": "needle hit 191"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 193,
+            "line": "needle hit 192"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 194,
+            "line": "needle hit 193"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 195,
+            "line": "needle hit 194"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 196,
+            "line": "needle hit 195"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 197,
+            "line": "needle hit 196"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 198,
+            "line": "needle hit 197"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 199,
+            "line": "needle hit 198"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 200,
+            "line": "needle hit 199"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 201,
+            "line": "needle hit 200"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 202,
+            "line": "needle hit 201"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 203,
+            "line": "needle hit 202"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 204,
+            "line": "needle hit 203"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 205,
+            "line": "needle hit 204"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 206,
+            "line": "needle hit 205"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 207,
+            "line": "needle hit 206"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 208,
+            "line": "needle hit 207"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 209,
+            "line": "needle hit 208"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 210,
+            "line": "needle hit 209"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 211,
+            "line": "needle hit 210"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 212,
+            "line": "needle hit 211"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 213,
+            "line": "needle hit 212"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 214,
+            "line": "needle hit 213"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 215,
+            "line": "needle hit 214"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 216,
+            "line": "needle hit 215"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 217,
+            "line": "needle hit 216"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 218,
+            "line": "needle hit 217"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 219,
+            "line": "needle hit 218"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 220,
+            "line": "needle hit 219"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 221,
+            "line": "needle hit 220"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 222,
+            "line": "needle hit 221"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 223,
+            "line": "needle hit 222"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 224,
+            "line": "needle hit 223"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 225,
+            "line": "needle hit 224"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 226,
+            "line": "needle hit 225"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 227,
+            "line": "needle hit 226"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 228,
+            "line": "needle hit 227"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 229,
+            "line": "needle hit 228"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 230,
+            "line": "needle hit 229"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 231,
+            "line": "needle hit 230"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 232,
+            "line": "needle hit 231"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 233,
+            "line": "needle hit 232"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 234,
+            "line": "needle hit 233"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 235,
+            "line": "needle hit 234"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 236,
+            "line": "needle hit 235"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 237,
+            "line": "needle hit 236"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 238,
+            "line": "needle hit 237"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 239,
+            "line": "needle hit 238"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 240,
+            "line": "needle hit 239"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 241,
+            "line": "needle hit 240"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 242,
+            "line": "needle hit 241"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 243,
+            "line": "needle hit 242"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 244,
+            "line": "needle hit 243"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 245,
+            "line": "needle hit 244"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 246,
+            "line": "needle hit 245"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 247,
+            "line": "needle hit 246"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 248,
+            "line": "needle hit 247"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 249,
+            "line": "needle hit 248"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 250,
+            "line": "needle hit 249"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 251,
+            "line": "needle hit 250"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 252,
+            "line": "needle hit 251"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 253,
+            "line": "needle hit 252"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 254,
+            "line": "needle hit 253"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 255,
+            "line": "needle hit 254"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 256,
+            "line": "needle hit 255"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 257,
+            "line": "needle hit 256"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 258,
+            "line": "needle hit 257"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 259,
+            "line": "needle hit 258"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 260,
+            "line": "needle hit 259"
+          },
+          {
+            "path": "alpha.txt",
+            "lineNumber": 1,
+            "line": "needle line one"
+          },
+          {
+            "path": "alpha.txt",
+            "lineNumber": 3,
+            "line": "needle line three"
+          },
+          {
+            "path": "with space.txt",
+            "lineNumber": 1,
+            "line": "needle in a spaced file name"
+          },
+          {
+            "path": "sub/dir/deep/nested.txt",
+            "lineNumber": 1,
+            "line": "needle in deep nested file"
+          },
+          {
+            "path": "bin.dat",
+            "lineNumber": 1,
+            "line": "(line is not valid UTF-8)"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "5e95d287bc2e507989c6c0f7cbb67a9acca2f6484f27373cb57d0a1862bd1268",
+        "count": 265
+      },
+      "expected": {
+        "exit": 0,
+        "paths_include": [
+          "alpha.txt",
+          "big.txt",
+          "bin.dat",
+          "sub/dir/deep/nested.txt",
+          "with space.txt"
+        ],
+        "paths_exclude": [
+          ".hidden-secret.txt",
+          "ignored.txt"
+        ],
+        "per_path_counts": {
+          "alpha.txt": 2,
+          "big.txt": 260,
+          "bin.dat": 1,
+          "sub/dir/deep/nested.txt": 1,
+          "with space.txt": 1
+        },
+        "total": 265
+      },
+      "match": true,
+      "detail": "paths=[\"alpha.txt\",\"big.txt\",\"bin.dat\",\"sub/dir/deep/nested.txt\",\"with space.txt\"] hidden/ignored-excluded=true counts={\"alpha.txt\":2,\"big.txt\":260,\"bin.dat\":1,\"sub/dir/deep/nested.txt\":1,\"with space.txt\":1} total=265"
+    },
+    {
+      "id": "C05.glob-hidden-ignored-vcs",
+      "surface": "SRCH-03",
+      "tool": "glob",
+      "args": {
+        "pattern": "*.txt"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--files",
+        "--glob=*.txt",
+        "--sort=modified",
+        "--no-ignore",
+        "--hidden",
+        "--glob=!**/.git",
+        "--glob=!**/.git/**",
+        "--glob=!**/.svn",
+        "--glob=!**/.svn/**",
+        "--glob=!**/.hg",
+        "--glob=!**/.hg/**",
+        "--glob=!**/.bzr",
+        "--glob=!**/.bzr/**",
+        "--glob=!**/.jj",
+        "--glob=!**/.jj/**",
+        "--glob=!**/.sl",
+        "--glob=!**/.sl/**"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 1782,
+        "sha256": "8d518b1d22ba29ccb7e36e8e7d3290a6b1ab0ed4dd943835ddc7dbe9a7bc2ad1",
+        "head": "sub/dir/deep/nested.txt\nignored.txt\nwith space.txt\nmany/f020.txt\nmany/f010.txt\nmany/f003.txt\nmany/f011.txt\nmany/f008.txt\nmany/f014.txt\nmany/f004.txt\nmany/f009.txt\nmany/f015.txt\nmany/f005.txt\nmany/f013.txt\nmany/f001.txt\nm"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "root": ".",
+        "paths": [
+          "sub/dir/deep/nested.txt",
+          "ignored.txt",
+          "with space.txt",
+          "many/f020.txt",
+          "many/f010.txt",
+          "many/f003.txt",
+          "many/f011.txt",
+          "many/f008.txt",
+          "many/f014.txt",
+          "many/f004.txt",
+          "many/f009.txt",
+          "many/f015.txt",
+          "many/f005.txt",
+          "many/f013.txt",
+          "many/f001.txt",
+          "many/f006.txt",
+          "many/f016.txt",
+          "many/f021.txt",
+          "many/f017.txt",
+          "many/f019.txt",
+          "many/f007.txt",
+          "many/f002.txt",
+          "many/f012.txt",
+          "many/f018.txt",
+          "alpha.txt",
+          "big.txt",
+          ".hidden-secret.txt",
+          "many/f067.txt",
+          "many/f085.txt",
+          "many/f077.txt",
+          "many/f026.txt",
+          "many/f083.txt",
+          "many/f032.txt",
+          "many/f025.txt",
+          "many/f057.txt",
+          "many/f049.txt",
+          "many/f052.txt",
+          "many/f076.txt",
+          "many/f035.txt",
+          "many/f058.txt",
+          "many/f027.txt",
+          "many/f055.txt",
+          "many/f079.txt",
+          "many/f044.txt",
+          "many/f033.txt",
+          "many/f051.txt",
+          "many/f066.txt",
+          "many/f086.txt",
+          "many/f037.txt",
+          "many/f029.txt",
+          "many/f064.txt",
+          "many/f028.txt",
+          "many/f062.txt",
+          "many/f039.txt",
+          "many/f022.txt",
+          "many/f071.txt",
+          "many/f084.txt",
+          "many/f068.txt",
+          "many/f041.txt",
+          "many/f060.txt",
+          "many/f023.txt",
+          "many/f031.txt",
+          "many/f082.txt",
+          "many/f069.txt",
+          "many/f065.txt",
+          "many/f038.txt",
+          "many/f056.txt",
+          "many/f050.txt",
+          "many/f059.txt",
+          "many/f070.txt",
+          "many/f045.txt",
+          "many/f074.txt",
+          "many/f036.txt",
+          "many/f063.txt",
+          "many/f072.txt",
+          "many/f024.txt",
+          "many/f040.txt",
+          "many/f048.txt",
+          "many/f042.txt",
+          "many/f080.txt",
+          "many/f073.txt",
+          "many/f047.txt",
+          "many/f054.txt",
+          "many/f078.txt",
+          "many/f075.txt",
+          "many/f046.txt",
+          "many/f061.txt",
+          "many/f043.txt",
+          "many/f030.txt",
+          "many/f034.txt",
+          "many/f053.txt",
+          "many/f081.txt",
+          "many/f097.txt",
+          "many/f105.txt",
+          "many/f091.txt",
+          "many/f095.txt",
+          "many/f115.txt",
+          "many/f102.txt",
+          "many/f113.txt",
+          "many/f118.txt",
+          "many/f098.txt",
+          "many/f088.txt",
+          "many/f096.txt",
+          "many/f120.txt",
+          "many/f090.txt",
+          "many/f109.txt",
+          "many/f087.txt",
+          "many/f093.txt",
+          "many/f108.txt",
+          "many/f089.txt",
+          "many/f099.txt",
+          "many/f104.txt",
+          "many/f094.txt",
+          "many/f121.txt",
+          "many/f110.txt",
+          "many/f092.txt",
+          "many/f117.txt",
+          "many/f119.txt",
+          "many/f101.txt",
+          "many/f107.txt",
+          "many/f114.txt",
+          "many/f116.txt",
+          "many/f106.txt",
+          "many/f111.txt",
+          "many/f100.txt",
+          "many/f112.txt",
+          "many/f103.txt"
+        ]
+      },
+      "value_digest": {
+        "sha256": "5f8c529430d774e66a04401dac37b589c1b5f73794f266ffbda229bc11fafb29",
+        "count": 127
+      },
+      "expected": {
+        "exit": 0,
+        "includes": [
+          ".hidden-secret.txt",
+          "ignored.txt",
+          "with space.txt",
+          "sub/dir/deep/nested.txt"
+        ],
+        "excludes_any_with_dot_git": true,
+        "root": ".",
+        "total": 127
+      },
+      "match": true,
+      "detail": "root=. total=127 hidden+ignored visible=true .git-excluded=true"
+    },
+    {
+      "id": "C06.grep-absolute-path",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle",
+        "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree/sub/dir/deep/nested.txt"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle",
+        "--",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree/sub/dir/deep/nested.txt"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 1282,
+        "sha256": "679f658f088154cb9249ef639a61dc9f95a6a2797b98f1683a79144dedcefb61",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree/sub/dir/deep/nested."
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "sub/dir/deep/nested.txt",
+            "lineNumber": 1,
+            "line": "needle in deep nested file"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "57524b4e285a5b45e069eb24ef4561e6c498c6b1188cf94e232885e2b4cb27d9",
+        "count": 1
+      },
+      "expected": {
+        "exit": 0,
+        "value": {
+          "matches": [
+            {
+              "path": "sub/dir/deep/nested.txt",
+              "lineNumber": 1,
+              "line": "needle in deep nested file"
+            }
+          ]
+        }
+      },
+      "match": true,
+      "detail": "value={\"matches\":[{\"line\":\"needle in deep nested file\",\"lineNumber\":1,\"path\":\"sub/dir/deep/nested.txt\"}]}"
+    },
+    {
+      "id": "C07.grep-relative-dir",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle",
+        "path": "sub/dir"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle",
+        "--",
+        "sub/dir"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 803,
+        "sha256": "928c0c6d32114aac2f9dd1e33f9d5c8195bac46999a60e22a0215b6dfc8f2f52",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"sub/dir/deep/nested.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"sub/dir/deep/nested.txt\"},\"lines\":{\"text\":\"needle in deep nested file\\n\"},\"line_number\":1,\"absolute_offset\":0,\"s"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "sub/dir/deep/nested.txt",
+            "lineNumber": 1,
+            "line": "needle in deep nested file"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "57524b4e285a5b45e069eb24ef4561e6c498c6b1188cf94e232885e2b4cb27d9",
+        "count": 1
+      },
+      "expected": {
+        "exit": 0,
+        "value": {
+          "matches": [
+            {
+              "path": "sub/dir/deep/nested.txt",
+              "lineNumber": 1,
+              "line": "needle in deep nested file"
+            }
+          ]
+        }
+      },
+      "match": true,
+      "detail": "value={\"matches\":[{\"line\":\"needle in deep nested file\",\"lineNumber\":1,\"path\":\"sub/dir/deep/nested.txt\"}]}"
+    },
+    {
+      "id": "C08.grep-spaced-name",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle",
+        "path": "with space.txt"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle",
+        "--",
+        "with space.txt"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 777,
+        "sha256": "cacb3a5a0699845f296b761309f178be05a3c634c0f34b12af027701b911003c",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"with space.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"with space.txt\"},\"lines\":{\"text\":\"needle in a spaced file name\\n\"},\"line_number\":1,\"absolute_offset\":0,\"submatches\":[{\"ma"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "with space.txt",
+            "lineNumber": 1,
+            "line": "needle in a spaced file name"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "c650bc8ed71e8fe0d75557f857cb70f2e0a3940109bb14dc91f0fde53b777fda",
+        "count": 1
+      },
+      "expected": {
+        "exit": 0,
+        "argv_tail": [
+          "--",
+          "with space.txt"
+        ],
+        "value": {
+          "matches": [
+            {
+              "path": "with space.txt",
+              "lineNumber": 1,
+              "line": "needle in a spaced file name"
+            }
+          ]
+        }
+      },
+      "match": true,
+      "detail": "argv=[\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg\",\"--no-config\",\"--json\",\"--regexp=needle\",\"--\",\"with space.txt\"] value={\"matches\":[{\"line\":\"needle in a spaced file name\",\"lineNumber\":1,\"path\":\"with space.txt\"}]}"
+    },
+    {
+      "id": "C09.glob-over-100-files",
+      "surface": "SRCH-03",
+      "tool": "glob",
+      "args": {
+        "pattern": "*.txt",
+        "path": "many"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--files",
+        "--glob=*.txt",
+        "--sort=modified",
+        "--no-ignore",
+        "--hidden",
+        "--glob=!**/.git",
+        "--glob=!**/.git/**",
+        "--glob=!**/.svn",
+        "--glob=!**/.svn/**",
+        "--glob=!**/.hg",
+        "--glob=!**/.hg/**",
+        "--glob=!**/.bzr",
+        "--glob=!**/.bzr/**",
+        "--glob=!**/.jj",
+        "--glob=!**/.jj/**",
+        "--glob=!**/.sl",
+        "--glob=!**/.sl/**",
+        "--",
+        "many"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 1694,
+        "sha256": "bf6e386a9bceba4c06a11fc4c83ed60995b9f959fa7bfce438a5bea2b5251a14",
+        "head": "many/f020.txt\nmany/f010.txt\nmany/f003.txt\nmany/f011.txt\nmany/f008.txt\nmany/f014.txt\nmany/f004.txt\nmany/f009.txt\nmany/f015.txt\nmany/f005.txt\nmany/f013.txt\nmany/f001.txt\nmany/f006.txt\nmany/f016.txt\nmany/f021.txt\nmany/f017."
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "root": "many",
+        "paths": [
+          "many/f020.txt",
+          "many/f010.txt",
+          "many/f003.txt",
+          "many/f011.txt",
+          "many/f008.txt",
+          "many/f014.txt",
+          "many/f004.txt",
+          "many/f009.txt",
+          "many/f015.txt",
+          "many/f005.txt",
+          "many/f013.txt",
+          "many/f001.txt",
+          "many/f006.txt",
+          "many/f016.txt",
+          "many/f021.txt",
+          "many/f017.txt",
+          "many/f019.txt",
+          "many/f007.txt",
+          "many/f002.txt",
+          "many/f012.txt",
+          "many/f018.txt",
+          "many/f067.txt",
+          "many/f085.txt",
+          "many/f077.txt",
+          "many/f026.txt",
+          "many/f083.txt",
+          "many/f032.txt",
+          "many/f025.txt",
+          "many/f057.txt",
+          "many/f049.txt",
+          "many/f052.txt",
+          "many/f076.txt",
+          "many/f035.txt",
+          "many/f058.txt",
+          "many/f027.txt",
+          "many/f055.txt",
+          "many/f079.txt",
+          "many/f044.txt",
+          "many/f033.txt",
+          "many/f051.txt",
+          "many/f066.txt",
+          "many/f086.txt",
+          "many/f037.txt",
+          "many/f029.txt",
+          "many/f064.txt",
+          "many/f028.txt",
+          "many/f062.txt",
+          "many/f039.txt",
+          "many/f022.txt",
+          "many/f071.txt",
+          "many/f084.txt",
+          "many/f068.txt",
+          "many/f041.txt",
+          "many/f060.txt",
+          "many/f023.txt",
+          "many/f031.txt",
+          "many/f082.txt",
+          "many/f069.txt",
+          "many/f065.txt",
+          "many/f038.txt",
+          "many/f056.txt",
+          "many/f050.txt",
+          "many/f059.txt",
+          "many/f070.txt",
+          "many/f045.txt",
+          "many/f074.txt",
+          "many/f036.txt",
+          "many/f063.txt",
+          "many/f072.txt",
+          "many/f024.txt",
+          "many/f040.txt",
+          "many/f048.txt",
+          "many/f042.txt",
+          "many/f080.txt",
+          "many/f073.txt",
+          "many/f047.txt",
+          "many/f054.txt",
+          "many/f078.txt",
+          "many/f075.txt",
+          "many/f046.txt",
+          "many/f061.txt",
+          "many/f043.txt",
+          "many/f030.txt",
+          "many/f034.txt",
+          "many/f053.txt",
+          "many/f081.txt",
+          "many/f097.txt",
+          "many/f105.txt",
+          "many/f091.txt",
+          "many/f095.txt",
+          "many/f115.txt",
+          "many/f102.txt",
+          "many/f113.txt",
+          "many/f118.txt",
+          "many/f098.txt",
+          "many/f088.txt",
+          "many/f096.txt",
+          "many/f120.txt",
+          "many/f090.txt",
+          "many/f109.txt",
+          "many/f087.txt",
+          "many/f093.txt",
+          "many/f108.txt",
+          "many/f089.txt",
+          "many/f099.txt",
+          "many/f104.txt",
+          "many/f094.txt",
+          "many/f121.txt",
+          "many/f110.txt",
+          "many/f092.txt",
+          "many/f117.txt",
+          "many/f119.txt",
+          "many/f101.txt",
+          "many/f107.txt",
+          "many/f114.txt",
+          "many/f116.txt",
+          "many/f106.txt",
+          "many/f111.txt",
+          "many/f100.txt",
+          "many/f112.txt",
+          "many/f103.txt"
+        ]
+      },
+      "value_digest": {
+        "sha256": "04e0a75986b2753bc62320d099e852fb2f7129683b2b46d0e5b294e3c7b4f094",
+        "count": 121
+      },
+      "expected": {
+        "exit": 0,
+        "root": "many",
+        "value_len": 121,
+        "cap_note": "GLOB_MAX_RESULTS=100（inline render 截断层；canonical value 全量）"
+      },
+      "match": true,
+      "detail": "root=many paths=121 (>cap 100)"
+    },
+    {
+      "id": "C10.grep-over-250-matches",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle",
+        "path": "big.txt"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle",
+        "--",
+        "big.txt"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 49793,
+        "sha256": "b2a1a1fd2b2f04f34956369a80c6c335671a3cb1e0a5191c15c04350bb4a2bd9",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"big.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"big.txt\"},\"lines\":{\"text\":\"needle hit 000\\n\"},\"line_number\":1,\"absolute_offset\":0,\"submatches\":[{\"match\":{\"text\":\"needle\"},\"star"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "big.txt",
+            "lineNumber": 1,
+            "line": "needle hit 000"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 2,
+            "line": "needle hit 001"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 3,
+            "line": "needle hit 002"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 4,
+            "line": "needle hit 003"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 5,
+            "line": "needle hit 004"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 6,
+            "line": "needle hit 005"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 7,
+            "line": "needle hit 006"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 8,
+            "line": "needle hit 007"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 9,
+            "line": "needle hit 008"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 10,
+            "line": "needle hit 009"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 11,
+            "line": "needle hit 010"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 12,
+            "line": "needle hit 011"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 13,
+            "line": "needle hit 012"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 14,
+            "line": "needle hit 013"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 15,
+            "line": "needle hit 014"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 16,
+            "line": "needle hit 015"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 17,
+            "line": "needle hit 016"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 18,
+            "line": "needle hit 017"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 19,
+            "line": "needle hit 018"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 20,
+            "line": "needle hit 019"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 21,
+            "line": "needle hit 020"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 22,
+            "line": "needle hit 021"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 23,
+            "line": "needle hit 022"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 24,
+            "line": "needle hit 023"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 25,
+            "line": "needle hit 024"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 26,
+            "line": "needle hit 025"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 27,
+            "line": "needle hit 026"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 28,
+            "line": "needle hit 027"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 29,
+            "line": "needle hit 028"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 30,
+            "line": "needle hit 029"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 31,
+            "line": "needle hit 030"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 32,
+            "line": "needle hit 031"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 33,
+            "line": "needle hit 032"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 34,
+            "line": "needle hit 033"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 35,
+            "line": "needle hit 034"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 36,
+            "line": "needle hit 035"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 37,
+            "line": "needle hit 036"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 38,
+            "line": "needle hit 037"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 39,
+            "line": "needle hit 038"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 40,
+            "line": "needle hit 039"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 41,
+            "line": "needle hit 040"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 42,
+            "line": "needle hit 041"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 43,
+            "line": "needle hit 042"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 44,
+            "line": "needle hit 043"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 45,
+            "line": "needle hit 044"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 46,
+            "line": "needle hit 045"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 47,
+            "line": "needle hit 046"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 48,
+            "line": "needle hit 047"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 49,
+            "line": "needle hit 048"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 50,
+            "line": "needle hit 049"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 51,
+            "line": "needle hit 050"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 52,
+            "line": "needle hit 051"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 53,
+            "line": "needle hit 052"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 54,
+            "line": "needle hit 053"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 55,
+            "line": "needle hit 054"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 56,
+            "line": "needle hit 055"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 57,
+            "line": "needle hit 056"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 58,
+            "line": "needle hit 057"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 59,
+            "line": "needle hit 058"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 60,
+            "line": "needle hit 059"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 61,
+            "line": "needle hit 060"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 62,
+            "line": "needle hit 061"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 63,
+            "line": "needle hit 062"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 64,
+            "line": "needle hit 063"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 65,
+            "line": "needle hit 064"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 66,
+            "line": "needle hit 065"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 67,
+            "line": "needle hit 066"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 68,
+            "line": "needle hit 067"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 69,
+            "line": "needle hit 068"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 70,
+            "line": "needle hit 069"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 71,
+            "line": "needle hit 070"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 72,
+            "line": "needle hit 071"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 73,
+            "line": "needle hit 072"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 74,
+            "line": "needle hit 073"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 75,
+            "line": "needle hit 074"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 76,
+            "line": "needle hit 075"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 77,
+            "line": "needle hit 076"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 78,
+            "line": "needle hit 077"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 79,
+            "line": "needle hit 078"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 80,
+            "line": "needle hit 079"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 81,
+            "line": "needle hit 080"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 82,
+            "line": "needle hit 081"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 83,
+            "line": "needle hit 082"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 84,
+            "line": "needle hit 083"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 85,
+            "line": "needle hit 084"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 86,
+            "line": "needle hit 085"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 87,
+            "line": "needle hit 086"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 88,
+            "line": "needle hit 087"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 89,
+            "line": "needle hit 088"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 90,
+            "line": "needle hit 089"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 91,
+            "line": "needle hit 090"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 92,
+            "line": "needle hit 091"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 93,
+            "line": "needle hit 092"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 94,
+            "line": "needle hit 093"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 95,
+            "line": "needle hit 094"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 96,
+            "line": "needle hit 095"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 97,
+            "line": "needle hit 096"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 98,
+            "line": "needle hit 097"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 99,
+            "line": "needle hit 098"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 100,
+            "line": "needle hit 099"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 101,
+            "line": "needle hit 100"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 102,
+            "line": "needle hit 101"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 103,
+            "line": "needle hit 102"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 104,
+            "line": "needle hit 103"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 105,
+            "line": "needle hit 104"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 106,
+            "line": "needle hit 105"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 107,
+            "line": "needle hit 106"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 108,
+            "line": "needle hit 107"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 109,
+            "line": "needle hit 108"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 110,
+            "line": "needle hit 109"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 111,
+            "line": "needle hit 110"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 112,
+            "line": "needle hit 111"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 113,
+            "line": "needle hit 112"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 114,
+            "line": "needle hit 113"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 115,
+            "line": "needle hit 114"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 116,
+            "line": "needle hit 115"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 117,
+            "line": "needle hit 116"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 118,
+            "line": "needle hit 117"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 119,
+            "line": "needle hit 118"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 120,
+            "line": "needle hit 119"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 121,
+            "line": "needle hit 120"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 122,
+            "line": "needle hit 121"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 123,
+            "line": "needle hit 122"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 124,
+            "line": "needle hit 123"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 125,
+            "line": "needle hit 124"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 126,
+            "line": "needle hit 125"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 127,
+            "line": "needle hit 126"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 128,
+            "line": "needle hit 127"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 129,
+            "line": "needle hit 128"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 130,
+            "line": "needle hit 129"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 131,
+            "line": "needle hit 130"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 132,
+            "line": "needle hit 131"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 133,
+            "line": "needle hit 132"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 134,
+            "line": "needle hit 133"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 135,
+            "line": "needle hit 134"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 136,
+            "line": "needle hit 135"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 137,
+            "line": "needle hit 136"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 138,
+            "line": "needle hit 137"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 139,
+            "line": "needle hit 138"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 140,
+            "line": "needle hit 139"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 141,
+            "line": "needle hit 140"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 142,
+            "line": "needle hit 141"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 143,
+            "line": "needle hit 142"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 144,
+            "line": "needle hit 143"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 145,
+            "line": "needle hit 144"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 146,
+            "line": "needle hit 145"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 147,
+            "line": "needle hit 146"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 148,
+            "line": "needle hit 147"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 149,
+            "line": "needle hit 148"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 150,
+            "line": "needle hit 149"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 151,
+            "line": "needle hit 150"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 152,
+            "line": "needle hit 151"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 153,
+            "line": "needle hit 152"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 154,
+            "line": "needle hit 153"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 155,
+            "line": "needle hit 154"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 156,
+            "line": "needle hit 155"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 157,
+            "line": "needle hit 156"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 158,
+            "line": "needle hit 157"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 159,
+            "line": "needle hit 158"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 160,
+            "line": "needle hit 159"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 161,
+            "line": "needle hit 160"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 162,
+            "line": "needle hit 161"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 163,
+            "line": "needle hit 162"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 164,
+            "line": "needle hit 163"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 165,
+            "line": "needle hit 164"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 166,
+            "line": "needle hit 165"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 167,
+            "line": "needle hit 166"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 168,
+            "line": "needle hit 167"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 169,
+            "line": "needle hit 168"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 170,
+            "line": "needle hit 169"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 171,
+            "line": "needle hit 170"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 172,
+            "line": "needle hit 171"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 173,
+            "line": "needle hit 172"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 174,
+            "line": "needle hit 173"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 175,
+            "line": "needle hit 174"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 176,
+            "line": "needle hit 175"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 177,
+            "line": "needle hit 176"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 178,
+            "line": "needle hit 177"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 179,
+            "line": "needle hit 178"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 180,
+            "line": "needle hit 179"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 181,
+            "line": "needle hit 180"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 182,
+            "line": "needle hit 181"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 183,
+            "line": "needle hit 182"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 184,
+            "line": "needle hit 183"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 185,
+            "line": "needle hit 184"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 186,
+            "line": "needle hit 185"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 187,
+            "line": "needle hit 186"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 188,
+            "line": "needle hit 187"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 189,
+            "line": "needle hit 188"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 190,
+            "line": "needle hit 189"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 191,
+            "line": "needle hit 190"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 192,
+            "line": "needle hit 191"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 193,
+            "line": "needle hit 192"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 194,
+            "line": "needle hit 193"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 195,
+            "line": "needle hit 194"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 196,
+            "line": "needle hit 195"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 197,
+            "line": "needle hit 196"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 198,
+            "line": "needle hit 197"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 199,
+            "line": "needle hit 198"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 200,
+            "line": "needle hit 199"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 201,
+            "line": "needle hit 200"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 202,
+            "line": "needle hit 201"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 203,
+            "line": "needle hit 202"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 204,
+            "line": "needle hit 203"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 205,
+            "line": "needle hit 204"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 206,
+            "line": "needle hit 205"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 207,
+            "line": "needle hit 206"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 208,
+            "line": "needle hit 207"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 209,
+            "line": "needle hit 208"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 210,
+            "line": "needle hit 209"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 211,
+            "line": "needle hit 210"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 212,
+            "line": "needle hit 211"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 213,
+            "line": "needle hit 212"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 214,
+            "line": "needle hit 213"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 215,
+            "line": "needle hit 214"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 216,
+            "line": "needle hit 215"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 217,
+            "line": "needle hit 216"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 218,
+            "line": "needle hit 217"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 219,
+            "line": "needle hit 218"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 220,
+            "line": "needle hit 219"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 221,
+            "line": "needle hit 220"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 222,
+            "line": "needle hit 221"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 223,
+            "line": "needle hit 222"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 224,
+            "line": "needle hit 223"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 225,
+            "line": "needle hit 224"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 226,
+            "line": "needle hit 225"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 227,
+            "line": "needle hit 226"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 228,
+            "line": "needle hit 227"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 229,
+            "line": "needle hit 228"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 230,
+            "line": "needle hit 229"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 231,
+            "line": "needle hit 230"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 232,
+            "line": "needle hit 231"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 233,
+            "line": "needle hit 232"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 234,
+            "line": "needle hit 233"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 235,
+            "line": "needle hit 234"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 236,
+            "line": "needle hit 235"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 237,
+            "line": "needle hit 236"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 238,
+            "line": "needle hit 237"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 239,
+            "line": "needle hit 238"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 240,
+            "line": "needle hit 239"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 241,
+            "line": "needle hit 240"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 242,
+            "line": "needle hit 241"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 243,
+            "line": "needle hit 242"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 244,
+            "line": "needle hit 243"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 245,
+            "line": "needle hit 244"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 246,
+            "line": "needle hit 245"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 247,
+            "line": "needle hit 246"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 248,
+            "line": "needle hit 247"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 249,
+            "line": "needle hit 248"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 250,
+            "line": "needle hit 249"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 251,
+            "line": "needle hit 250"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 252,
+            "line": "needle hit 251"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 253,
+            "line": "needle hit 252"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 254,
+            "line": "needle hit 253"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 255,
+            "line": "needle hit 254"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 256,
+            "line": "needle hit 255"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 257,
+            "line": "needle hit 256"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 258,
+            "line": "needle hit 257"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 259,
+            "line": "needle hit 258"
+          },
+          {
+            "path": "big.txt",
+            "lineNumber": 260,
+            "line": "needle hit 259"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "8b6b8a06a2f24a99c28a3196ca787dedf120fa796b00e3f73a1646968ba6d382",
+        "count": 260
+      },
+      "expected": {
+        "exit": 0,
+        "value_len": 260,
+        "cap_note": "GREP_MAX_MATCHES=250（inline render 截断层；canonical value 全量）"
+      },
+      "match": true,
+      "detail": "matches=260 (>cap 250) first={\"path\":\"big.txt\",\"lineNumber\":1,\"line\":\"needle hit 000\"} last={\"path\":\"big.txt\",\"lineNumber\":260,\"line\":\"needle hit 259\"}"
+    },
+    {
+      "id": "C11.grep-binary-nonutf8",
+      "surface": "SRCH-03",
+      "tool": "grep",
+      "args": {
+        "pattern": "needle",
+        "path": "bin.dat"
+      },
+      "argv": [
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg",
+        "--no-config",
+        "--json",
+        "--regexp=needle",
+        "--",
+        "bin.dat"
+      ],
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": 0,
+      "classification": "ok",
+      "stdout_summary": {
+        "bytes": 737,
+        "sha256": "a825b41c2b0ecaa041883ede4f3314d3d9f983370e66e3336f3bb4023d3a0ff7",
+        "head": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"bin.dat\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"bin.dat\"},\"lines\":{\"bytes\":\"gIFuZWVkbGUK\"},\"line_number\":1,\"absolute_offset\":0,\"submatches\":[{\"match\":{\"text\":\"needle\"},\"start\":"
+      },
+      "stderr_head": "",
+      "parsed_value": {
+        "matches": [
+          {
+            "path": "bin.dat",
+            "lineNumber": 1,
+            "line": "(line is not valid UTF-8)"
+          }
+        ]
+      },
+      "value_digest": {
+        "sha256": "44e48f738b330e071e3869c12cb5a69db3128de9232a69b94aa7d49c677872e1",
+        "count": 1
+      },
+      "expected": {
+        "exit": 0,
+        "value": {
+          "matches": [
+            {
+              "path": "bin.dat",
+              "lineNumber": 1,
+              "line": "(line is not valid UTF-8)"
+            }
+          ]
+        }
+      },
+      "match": true,
+      "detail": "exit=0 value={\"matches\":[{\"line\":\"(line is not valid UTF-8)\",\"lineNumber\":1,\"path\":\"bin.dat\"}]}"
+    },
+    {
+      "id": "C12.parse-args-validation",
+      "surface": "SRCH-03",
+      "tool": "helpers",
+      "args": {
+        "grep": {
+          "pattern": ""
+        },
+        "glob": {
+          "pattern": "   "
+        }
+      },
+      "argv": null,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree",
+      "exit": null,
+      "classification": "pre-spawn-validation",
+      "expected": {
+        "grep_error": "pattern must be a non-empty string",
+        "glob_error": "pattern must be a non-empty string"
+      },
+      "parsed_value": {
+        "gThrew": "pattern must be a non-empty string",
+        "bThrew": "pattern must be a non-empty string"
+      },
+      "match": true,
+      "detail": "grep_threw=\"pattern must be a non-empty string\" glob_threw=\"pattern must be a non-empty string\"（无 argv：rg 未触达）"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "S1.fixture-tree",
+      "verdict": "PASS",
+      "detail": "tree at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/dev/agent-workflow/evidence/alpha5-adapter-p0/02-search/probe-scratch/fixture-tree, entries=10 (hidden/ignored/binary/spaced/deep/121-many/260-big)"
+    },
+    {
+      "id": "S2.C01.grep-empty-match",
+      "verdict": "PASS",
+      "detail": "exit=1 value={\"matches\":[]}"
+    },
+    {
+      "id": "S2.C02.grep-invalid-regexp",
+      "verdict": "PASS",
+      "detail": "exit=2 cls=SEARCH_INVALID_PATTERN stderr_head=\"rg: regex parse error:\\n    (?:(unclosed)\\n    ^\\nerror: unclosed group\\n\""
+    },
+    {
+      "id": "S2.C03.glob-no-match-exit1",
+      "verdict": "PASS",
+      "detail": "exit=1 value={\"paths\":[],\"root\":\".\"}"
+    },
+    {
+      "id": "S2.C04.grep-hidden-ignored-default",
+      "verdict": "PASS",
+      "detail": "paths=[\"alpha.txt\",\"big.txt\",\"bin.dat\",\"sub/dir/deep/nested.txt\",\"with space.txt\"] hidden/ignored-excluded=true counts={\"alpha.txt\":2,\"big.txt\":260,\"bin.dat\":1,\"sub/dir/deep/nested.txt\":1,\"with space.txt\":1} total=265"
+    },
+    {
+      "id": "S2.C05.glob-hidden-ignored-vcs",
+      "verdict": "PASS",
+      "detail": "root=. total=127 hidden+ignored visible=true .git-excluded=true"
+    },
+    {
+      "id": "S2.C06.grep-absolute-path",
+      "verdict": "PASS",
+      "detail": "value={\"matches\":[{\"line\":\"needle in deep nested file\",\"lineNumber\":1,\"path\":\"sub/dir/deep/nested.txt\"}]}"
+    },
+    {
+      "id": "S2.C07.grep-relative-dir",
+      "verdict": "PASS",
+      "detail": "value={\"matches\":[{\"line\":\"needle in deep nested file\",\"lineNumber\":1,\"path\":\"sub/dir/deep/nested.txt\"}]}"
+    },
+    {
+      "id": "S2.C08.grep-spaced-name",
+      "verdict": "PASS",
+      "detail": "argv=[\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/exp-alpha5-poc-20261016/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg\",\"--no-config\",\"--json\",\"--regexp=needle\",\"--\",\"with space.txt\"] value={\"matches\":[{\"line\":\"needle in a spaced file name\",\"lineNumber\":1,\"path\":\"with space.txt\"}]}"
+    },
+    {
+      "id": "S2.C09.glob-over-100-files",
+      "verdict": "PASS",
+      "detail": "root=many paths=121 (>cap 100)"
+    },
+    {
+      "id": "S2.C10.grep-over-250-matches",
+      "verdict": "PASS",
+      "detail": "matches=260 (>cap 250) first={\"path\":\"big.txt\",\"lineNumber\":1,\"line\":\"needle hit 000\"} last={\"path\":\"big.txt\",\"lineNumber\":260,\"line\":\"needle hit 259\"}"
+    },
+    {
+      "id": "S2.C11.grep-binary-nonutf8",
+      "verdict": "PASS",
+      "detail": "exit=0 value={\"matches\":[{\"line\":\"(line is not valid UTF-8)\",\"lineNumber\":1,\"path\":\"bin.dat\"}]}"
+    },
+    {
+      "id": "S2.C12.parse-args-validation",
+      "verdict": "PASS",
+      "detail": "grep_threw=\"pattern must be a non-empty string\" glob_threw=\"pattern must be a non-empty string\"（无 argv：rg 未触达）"
+    },
+    {
+      "id": "S3a.async-bridge.confine-then-spawn",
+      "verdict": "PASS",
+      "detail": "await confine(Promise) → string[] argv → spawn exit=0 matches=2（async 桥可行最小样例；confine=TEST DOUBLE 仅证时序不证策略）"
+    },
+    {
+      "id": "S3b.sync-seam.promise-is-not-argv",
+      "verdict": "PASS",
+      "detail": "resolveRgPath()→Promise(true); 同步拼装 argv[0]=\"[object Promise]\"; raw 传递 spawnSync TypeError=\"TypeError\"；字符串化后 spawnSync error=ENOENT（负控：rg 未运行）；正控 awaited exit=0"
+    },
+    {
+      "id": "S4a.r2-prereq.subprocess-missing-pending",
+      "verdict": "PASS",
+      "detail": "no-subprocess: threw=null fiber.state=0(PENDING) registered=[] —— R2 需要 fixture 中不存在的 subprocess 服务；缺服务时 apply() 永不执行（零注册），确切原文见 observations.srch01_r2_prereq.exact_observable"
+    },
+    {
+      "id": "S4b.double.registers-native-glob-grep",
+      "verdict": "PASS",
+      "detail": "double provided → fiber.state=2(ACTIVE) schemas=[\"glob\",\"grep\"] spawnCount@mount=0（注册零 spawn：装载期无探测）"
+    },
+    {
+      "id": "S4b.mask.restrict-hides-inherited-for-A-only",
+      "verdict": "PASS",
+      "detail": "restrict after: A=masked B=native visible; adapter registered → A resolves adapter"
+    },
+    {
+      "id": "S4b.adapter.A-grep-runs-adapter-native-zero",
+      "verdict": "PASS",
+      "detail": "A grep → composed adapter (runs=1, scope=agent-A); NATIVE body count (double spawn delta)=0 [期望 0]"
+    },
+    {
+      "id": "S4b.native.B-grep-runs-native-through-double",
+      "verdict": "PASS",
+      "detail": "B grep → native body via TEST DOUBLE seam: spawn delta=1 [期望 1], real rg argv[0]=RG ✓, exit-ok"
+    },
+    {
+      "id": "S4b.parity.A-value-content-equals-B",
+      "verdict": "PASS",
+      "detail": "value deep-equal=true content equal=true text=\"Found 2 matches\\n\\nalpha.txt\\nLine 1: needle line one\\nLine 3: needle line three\""
+    },
+    {
+      "id": "S4b.meta.divergence-recorded",
+      "verdict": "PASS",
+      "detail": "B presentationMeta present=true A=false（R3 已知差异面，登记不掩盖）"
+    },
+    {
+      "id": "S4b.scope.A-glob-still-native",
+      "verdict": "PASS",
+      "detail": "A glob 未被遮蔽 → 原生（经 double，spawn delta=1，'No files found'）：restrict 只命名 grep 生效"
+    },
+    {
+      "id": "S4c.seam.spawn-sync-vs-confine-async",
+      "verdict": "PASS",
+      "detail": "ctx.subprocess.spawn 同步返回 handle（非 Promise=true，rg --version exit=0）；executionMode 同步返回 {\"kind\":\"exclusive\"}；对照 sandbox.confine→Promise<ConfinedArgv>（S-07 静态）= SRCH-02 形状差异的服务层实证面"
+    }
+  ],
+  "verdict": {
+    "scope": "FIXTURE-LEVEL ONLY（plain node fixture over prebuilt public libs；非真实宿主 —— plan §0/§2：GO 需 pinned Real Host，本 runner 依约束不可写 GO）",
+    "tool_family": "grep/glob (tool-fs-search)",
+    "R1_exclusivity": "FIXTURE-Feasible (继承 p01：own-layer 同名遮蔽 + restrict-first 装配，Team 原体计数 0；本 runner S4b 在原生真注册路径上复证 A=adapter/原体=0)",
+    "R2_service_isolation": "INCONCLUSIVE — fixture-shows-prereq-missing：fixture 无 subprocess 服务 → ctx.plugin(tool-fs-search) 悬挂 PENDING、零注册（S4a 确切可观测）；ctx.isolate(\"subprocess\") realm + per-call Grant 串联在 fixture 不可测；spawn(sync) vs confine(async) 形状差异有服务层实证（S4c）",
+    "R3_composed_helpers": "INCONCLUSIVE — fixture-supports-R3（倾向 R3 的候选，待 Real Host）：12/12 helpers+真实 rg 对照 PASS；async confine→spawn 桥样例 PASS；组合 adapter 在 ToolRuntime 层独占分发 PASS；value/content 等价 PASS；已登记差异 = presentationMeta 非包根可复现、render 超量截断层与 spill 未覆盖",
+    "R4_fork": "NOT-ELIGIBLE（§5 规则 3/4：R3 未被最小 public-seam 反例否定，不进入 Fork 资格审查）",
+    "SRCH_04": "NOT_RUN（见 observations.srch04 缺项清单）",
+    "verdict": "INCONCLUSIVE(fixture-supports-R3) + R2=fixture-shows-prereq-missing + SRCH-04=NOT_RUN；禁止写 GO（GO 需真实宿主实证：spill/timeout/cancel/隔离服务/并发/生命周期全未覆盖）",
+    "next_for_real_host": [
+      "SRCH-01 真实 ctx.isolate(\"subprocess\") + applyGrepTool 闭包捕获验证",
+      "SRCH-04 spill 全链路",
+      "presentationMeta/render 超量层等价",
+      "取消/timeout/并发/卸载竞态（P0-1 已冻结接口的真实宿主复验）"
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+SYNTHETIC ALPHA.5 P0-3 fs fixture — sub/nested-target: old content for write-only edit probe
+prev=OLD-CONTENT-TEST-TOKEN-b4c9
