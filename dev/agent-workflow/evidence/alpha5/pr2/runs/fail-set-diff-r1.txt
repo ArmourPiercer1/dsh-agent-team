@@ -1,0 +1,2 @@
+FIXED TEST packages/testkit/test/a4p7-merge-gate.test.ts::A4-PR7 §7.6 — the code merge gate, driven by real commands the static legs the scratch the commit-level instrument builds cannot change another instrument's measurement
+[fail-set] baseline=22 current=21 NEW=0 FIXED=1

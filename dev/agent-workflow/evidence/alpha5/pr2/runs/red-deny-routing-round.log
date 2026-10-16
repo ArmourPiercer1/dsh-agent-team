@@ -1,0 +1,12 @@
+# RED for the 2026-10-16 policy-deny routing round (contract commit 477bbdcb first, tests before implementation)
+## approval-case
+ FAIL  packages/runtime/test/a5p2-approval-case.test.ts > expansion plane over the WHOLE effect set > a decided-DENY effect is ROUTED, not poison: it joins the Ask, tagged by source (ruling ①)
+ FAIL  packages/runtime/test/a5p2-approval-case.test.ts > expansion plane over the WHOLE effect set > a DENIED effect whose bound documents cannot answer WHO owns the deny refuses the plan — unattributed, never "settled" (ruling ③)
+      Tests  2 failed | 17 passed (19)
+## kernel
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > arm 2 — `requires-approval` (the ONE logical ApprovalCase) > a policy DENY no longer short-circuits the door: it rides the ONE case at its rung (ruling ①)
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > control 低阶 deny 升阶: an overlay-bound deny escalates to Human User — the Leader cannot lift it, Human User can
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > control Envelope deny 升阶 + admin 单次批准: a hard-envelope deny lands at Human Admin; the one-shot approval is legal and mutates nothing
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > control whole-effect joint authority: an allowed effect may not slip through beside a denied one
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > policy-deny routing — the controls of the 2026-10-16 ruling (问题2) > control 未知来源: a deny whose owning authority cannot be established refuses with an accurate diagnosis, zero mints (ruling ③)
+      Tests  5 failed | 24 passed (29)

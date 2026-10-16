@@ -30,12 +30,18 @@ describe('the tool-governance lane audit', () => {
   })
 
   // PR0 froze this lane DORMANT ("zero production consumers"). PR1 (plan §4)
-  // is the reviewed wiring step, so the law is now a NAMED SET — and this
-  // file pins the set, not just its emptiness: a new consumer is a design
-  // change that has to appear here, and a disappeared one is a broken wire.
-  it('the consumer set is exactly the reviewed PR1 wiring (no accretion)', () => {
+  // and PR2 (plan §5) are the reviewed wiring steps, so the law is now a
+  // NAMED SET — and this file pins the set, not just its emptiness: a new
+  // consumer is a design change that has to appear here, and a disappeared
+  // one is a broken wire.
+  it('the consumer set is exactly the reviewed PR1+PR2 wiring (no accretion)', () => {
     expect(verdict.consumers).toEqual([
       'runtime/src/plugin/live/agent-bindings.mjs',
+      'runtime/tool-admission/admission-kernel.ts',
+      'runtime/tool-admission/approval-case.ts',
+      'runtime/tool-admission/assurance-runtime.ts',
+      'runtime/tool-admission/clock.ts',
+      'runtime/tool-admission/grant-mint.ts',
       'runtime/tool-dispatch/closed-world-guard.ts',
       'runtime/tool-dispatch/install.ts',
       'runtime/tool-dispatch/scoped-dispatcher.ts',

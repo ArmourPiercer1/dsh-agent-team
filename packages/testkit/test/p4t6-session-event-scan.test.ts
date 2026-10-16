@@ -2237,6 +2237,34 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p1r-validate-resolve.test.ts',
       'packages/runtime/test/a5p1r-scoped-registry-double.ts',
     ]
+    // The Alpha.5 PR2 admission-grant line (branch `alpha5-pr2-admission-grant`,
+    // stacked on PR1): SIX production sources — the finite-clock gate, the
+    // assurance runtime-verification gate (stub probe port), the multi-effect
+    // ApprovalCase legality (per-effect A3-2 equation over the PR0 dual-plane +
+    // the Alpha.4 ladder), the one-shot grant mint/ledger, the admission kernel
+    // implementing the PR0 OperationAdmission seam, and the lane barrel — plus
+    // their EIGHT RED-first artifacts (six specs + the shared fixture builder
+    // and the kernel harness, inert without the lane). The reviewed EDITS to
+    // already-counted files (the consumer allow-list script, the PR0 layer-audit
+    // and governance-hygiene pins, both tsconfigs) move nothing; `dist/**` is
+    // outside the scan; the lane has NO production consumer yet (live wiring
+    // rides with PR3/PR4), so `agent-bindings.mjs` stays untouched this round.
+    const SCANNED_PATHS_A5PR2: readonly string[] = [
+      'packages/runtime/tool-admission/clock.ts',
+      'packages/runtime/tool-admission/assurance-runtime.ts',
+      'packages/runtime/tool-admission/approval-case.ts',
+      'packages/runtime/tool-admission/grant-mint.ts',
+      'packages/runtime/tool-admission/admission-kernel.ts',
+      'packages/runtime/tool-admission/index.ts',
+      'packages/runtime/test/a5p2-fixtures.ts',
+      'packages/runtime/test/a5p2-kernel-harness.ts',
+      'packages/runtime/test/a5p2-admission-clock.test.ts',
+      'packages/runtime/test/a5p2-assurance-probe.test.ts',
+      'packages/runtime/test/a5p2-approval-case.test.ts',
+      'packages/runtime/test/a5p2-grant-oneshot.test.ts',
+      'packages/runtime/test/a5p2-admission-kernel.test.ts',
+      'packages/runtime/test/a5p2-composition.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2264,7 +2292,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
         SCANNED_PATHS_A5PR1.length +
-        SCANNED_PATHS_A5PR1R.length,
+        SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5PR2.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2293,7 +2322,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
         SCANNED_PATHS_A5PR1.length +
-        SCANNED_PATHS_A5PR1R.length,
+        SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2347,6 +2377,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4W6,
       ...SCANNED_PATHS_A5PR0,
       ...SCANNED_PATHS_A5PR1,
+      ...SCANNED_PATHS_A5PR2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2542,6 +2573,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // disk and this entry absent the run reads `expected 1073 to be 1066`,
     // and 1066 is the total the A5-PR0 tie above ends on.
     expect(SCANNED_PATHS_A5PR1.length).toBe(1073 - 1066)
+    // The A5-PR2 tie, same form: fourteen named files (six lane sources +
+    // eight RED-first test artifacts), each asserted present by path above.
+    // BOTH endpoints MEASURED on this branch: with the lane on disk and this
+    // entry absent the run reads `expected 1087 to be 1073` (capture
+    // `dev/agent-workflow/evidence/alpha5/pr2/runs/p4t6-PRE-EXTEND-RED.log`),
+    // and 1073 is the total the A5-PR1 tie above ends on. The reviewed edits
+    // (allow-list script, layer-audit + hygiene pins, tsconfigs) are EDITS to
+    // already-counted paths and contribute nothing — an edit is not an
+    // increment, and had the lane landed WITHOUT its paths here this sum
+    // would be RED instead of silently moved.
+    expect(SCANNED_PATHS_A5PR2.length).toBe(1087 - 1073)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
