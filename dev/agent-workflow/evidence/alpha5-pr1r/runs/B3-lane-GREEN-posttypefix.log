@@ -1,0 +1,21 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1r
+
+ ✓ packages/runtime/test/a5p1-scoped-dispatcher.test.ts (16 tests) 11ms
+ ✓ packages/runtime/test/a5p1-closed-world-guard.test.ts (27 tests) 15ms
+ ✓ packages/runtime/test/a5p1r-shadow-attribution.test.ts (8 tests) 9ms
+ ✓ packages/runtime/test/a5p1-guard-install.test.ts (23 tests) 18ms
+ ✓ packages/runtime/test/a5p1r-change-abort.test.ts (18 tests) 16ms
+ ✓ packages/runtime/test/a5p1r-validate-resolve.test.ts (5 tests) 6ms
+
+ Test Files  6 passed (6)
+      Tests  97 passed (97)
+   Start at  16:40:52
+   Duration  532ms (transform 1.11s, setup 0ms, import 1.45s, tests 76ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

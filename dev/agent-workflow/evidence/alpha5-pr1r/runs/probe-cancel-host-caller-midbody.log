@@ -1,0 +1,3 @@
+body started, aborting caller
+signal.aborted now = true
+RESULT {"text":"ran:grep@V1","isError":false}

@@ -2221,6 +2221,84 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p1-scoped-dispatcher.test.ts',
       'packages/runtime/test/a5p1-guard-install.test.ts',
     ]
+    // The Alpha.5 PR1-RESIDUAL round (branch `alpha5-pr1r-residual-boundaries`,
+    // based on the merged PR1): NO new production source. It tightens the four
+    // already-counted `tool-dispatch` sources (the trusted-vs-resolved native
+    // comparison, the inner dispatch door, the call-edge withdrawal) and adds
+    // TWO RED-first specs plus the registry double they share — the double
+    // models the pinned registry's layer semantics and stage order, so it is
+    // source, not fixture-outside. The real-registry runners live under
+    // `tests/kits/` (outside this scan) and `packages/runtime/dist/**` is
+    // outside the scanner's rules, so nothing else moves.
+    const SCANNED_PATHS_A5PR1R: readonly string[] = [
+      'packages/runtime/tool-dispatch/pending-calls.ts',
+      'packages/runtime/test/a5p1r-change-abort.test.ts',
+      'packages/runtime/test/a5p1r-shadow-attribution.test.ts',
+      'packages/runtime/test/a5p1r-validate-resolve.test.ts',
+      'packages/runtime/test/a5p1r-scoped-registry-double.ts',
+    ]
+    // The Alpha.5 PR4 provider/launcher line (branch `alpha5-pr4-prov`, C
+    // Lane, base master db5cb5f7): EIGHT production sources — the frozen-
+    // vocabulary local contract stub, the C-PROC phase closed set, the FD-
+    // inheritance declaration set, the network-dimension closed set, the
+    // authoritative probe surface (bare-syscall GET_VERSION + real enforcement
+    // legs, PoC4), the realm/trustRoot hard-profile evidence gate (negative
+    // controls only, enablement compiled OFF), the no-fallback confined-
+    // process provider, and the lane barrel — plus their NINE RED-first
+    // artifacts (seven specs + the shared harness and this lane's own
+    // hygiene/dormancy pin). The reference launcher is a .py resource and the
+    // scratch worlds live under gitignored `tests/homes/a5p4-*` — neither is
+    // scanned source. The lane touches NO shared file (the audit script, both
+    // runtime tsconfigs, the barrel and the scanner stay untouched; the lane
+    // typechecks itself in-process via ts.createProgram in the hygiene spec),
+    // and it has NO production consumer (live wiring rides with PR5).
+    const SCANNED_PATHS_A5P4PROV: readonly string[] = [
+      'packages/runtime/sandbox-provider/contract-stub.ts',
+      'packages/runtime/sandbox-provider/phases.ts',
+      'packages/runtime/sandbox-provider/fd-inheritance.ts',
+      'packages/runtime/sandbox-provider/network.ts',
+      'packages/runtime/sandbox-provider/probe-abi.ts',
+      'packages/runtime/sandbox-provider/realm-evidence.ts',
+      'packages/runtime/sandbox-provider/provider.ts',
+      'packages/runtime/sandbox-provider/index.ts',
+      'packages/runtime/test/a5p4-harness.ts',
+      'packages/runtime/test/a5p4-phases.test.ts',
+      'packages/runtime/test/a5p4-fd-inheritance.test.ts',
+      'packages/runtime/test/a5p4-network-closure.test.ts',
+      'packages/runtime/test/a5p4-poc4-probe.test.ts',
+      'packages/runtime/test/a5p4-realm-evidence.test.ts',
+      'packages/runtime/test/a5p4-existence-wording.test.ts',
+      'packages/runtime/test/a5p4-provider.test.ts',
+      'packages/runtime/test/a5p4-lane-hygiene.test.ts',
+    ]
+    // The Alpha.5 PR2 admission-grant line (branch `alpha5-pr2-admission-grant`,
+    // stacked on PR1): SIX production sources — the finite-clock gate, the
+    // assurance runtime-verification gate (stub probe port), the multi-effect
+    // ApprovalCase legality (per-effect A3-2 equation over the PR0 dual-plane +
+    // the Alpha.4 ladder), the one-shot grant mint/ledger, the admission kernel
+    // implementing the PR0 OperationAdmission seam, and the lane barrel — plus
+    // their EIGHT RED-first artifacts (six specs + the shared fixture builder
+    // and the kernel harness, inert without the lane). The reviewed EDITS to
+    // already-counted files (the consumer allow-list script, the PR0 layer-audit
+    // and governance-hygiene pins, both tsconfigs) move nothing; `dist/**` is
+    // outside the scan; the lane has NO production consumer yet (live wiring
+    // rides with PR3/PR4), so `agent-bindings.mjs` stays untouched this round.
+    const SCANNED_PATHS_A5PR2: readonly string[] = [
+      'packages/runtime/tool-admission/clock.ts',
+      'packages/runtime/tool-admission/assurance-runtime.ts',
+      'packages/runtime/tool-admission/approval-case.ts',
+      'packages/runtime/tool-admission/grant-mint.ts',
+      'packages/runtime/tool-admission/admission-kernel.ts',
+      'packages/runtime/tool-admission/index.ts',
+      'packages/runtime/test/a5p2-fixtures.ts',
+      'packages/runtime/test/a5p2-kernel-harness.ts',
+      'packages/runtime/test/a5p2-admission-clock.test.ts',
+      'packages/runtime/test/a5p2-assurance-probe.test.ts',
+      'packages/runtime/test/a5p2-approval-case.test.ts',
+      'packages/runtime/test/a5p2-grant-oneshot.test.ts',
+      'packages/runtime/test/a5p2-admission-kernel.test.ts',
+      'packages/runtime/test/a5p2-composition.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2247,7 +2325,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5P4PROV.length +
+        SCANNED_PATHS_A5PR2.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2275,7 +2356,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4W2.length +
         SCANNED_PATHS_A4W6.length +
         SCANNED_PATHS_A5PR0.length +
-        SCANNED_PATHS_A5PR1.length,
+        SCANNED_PATHS_A5PR1.length +
+        SCANNED_PATHS_A5PR1R.length +
+        SCANNED_PATHS_A5P4PROV.length +
+        SCANNED_PATHS_A5PR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2329,6 +2413,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4W6,
       ...SCANNED_PATHS_A5PR0,
       ...SCANNED_PATHS_A5PR1,
+      ...SCANNED_PATHS_A5PR2,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2524,6 +2609,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // disk and this entry absent the run reads `expected 1073 to be 1066`,
     // and 1066 is the total the A5-PR0 tie above ends on.
     expect(SCANNED_PATHS_A5PR1.length).toBe(1073 - 1066)
+    // The A5-PR2 tie, same form: fourteen named files (six lane sources +
+    // eight RED-first test artifacts), each asserted present by path above.
+    // BOTH endpoints MEASURED on this branch: with the lane on disk and this
+    // entry absent the run reads `expected 1087 to be 1073` (capture
+    // `dev/agent-workflow/evidence/alpha5/pr2/runs/p4t6-PRE-EXTEND-RED.log`),
+    // and 1073 is the total the A5-PR1 tie above ends on. The reviewed edits
+    // (allow-list script, layer-audit + hygiene pins, tsconfigs) are EDITS to
+    // already-counted paths and contribute nothing — an edit is not an
+    // increment, and had the lane landed WITHOUT its paths here this sum
+    // would be RED instead of silently moved.
+    expect(SCANNED_PATHS_A5PR2.length).toBe(1087 - 1073)
+    // Lane-C (PR4 provider) ledger tie: this lane moves the scanned-total
+    // endpoint 1092 -> 1109 (its own pair only, pay-the-tie discipline).
+    expect(SCANNED_PATHS_A5P4PROV.length).toBe(1109 - 1092)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

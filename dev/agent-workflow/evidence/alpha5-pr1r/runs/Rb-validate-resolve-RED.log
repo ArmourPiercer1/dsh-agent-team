@@ -1,0 +1,64 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1r
+
+ ❯ packages/runtime/test/a5p1r-validate-resolve.test.ts (5 tests | 2 failed) 11ms
+     ✓ control: with nothing moving, the validated Body runs 3ms
+     ✓ a re-registration BEFORE the guard stage is refused by the per-call read: no Body runs 1ms
+     × a re-registration AFTER the guard stage but BEFORE our inner door is refused AT THAT DOOR: the un-validated Body never runs 5ms
+     × RECORDED BOUNDARY: a re-registration after our inner door runs one Body the Guard never validated, and the lane withdraws the verification at that call edge so it cannot repeat 1ms
+     ✓ a parked call whose Definition is re-registered while it waits meets a refusal, never the new Body 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p1r-validate-resolve.test.ts > a5p1r R-b — the validate→resolve window under an ordinary re-registration > a re-registration AFTER the guard stage but BEFORE our inner door is refused AT THAT DOOR: the un-validated Body never runs
+AssertionError: expected [ 'V2.grep' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "V2.grep",
++ ]
+
+ ❯ packages/runtime/test/a5p1r-validate-resolve.test.ts:83:24
+     81|     // in runs/Rb-validate-resolve-RED.log), because the inner door on…
+     82|     // whether the Dispatcher was ACTIVE.
+     83|     expect(run.bodies).toEqual([])
+       |                        ^
+     84|     expect(run.threw ?? run.text).toContain('team tool guard')
+     85|     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(f…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a5p1r-validate-resolve.test.ts > a5p1r R-b — the validate→resolve window under an ordinary re-registration > RECORDED BOUNDARY: a re-registration after our inner door runs one Body the Guard never validated, and the lane withdraws the verification at that call edge so it cannot repeat
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1r-validate-resolve.test.ts:100:65
+     98|     // The fail-closed half: the exposure is exactly one call, because…
+     99|     // notices at the call's own settled edge and burns the verificati…
+    100|     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(f…
+       |                                                                 ^
+    101|     expect(
+    102|       handle.observations().some((o) => String(o.event) === 'dispatche…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  08:29:34
+   Duration  291ms (transform 151ms, setup 0ms, import 191ms, tests 11ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

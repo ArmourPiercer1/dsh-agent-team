@@ -1,0 +1,11 @@
+{
+  // A5-PR3 (Lane B) — LANE-LOCAL typecheck config. NOT referenced by the
+  // package tsconfigs (shared files untouched; integration owner wires).
+  // Run: npx tsc -p packages/runtime/controlled-fs/tsconfig.lane.json
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "../.."
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

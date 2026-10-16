@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr5/packages/tools/a5p5-tools
+
+ ✓ test/a5p5-dormant-audit.test.ts (2 tests) 50ms
+ ❯ test/a5p5-parity.test.ts (0 test)
+ ✓ test/a5p5-effects-schema.test.ts (12 tests) 11ms
+ ❯ test/a5p5-spill.test.ts (0 test)
+ ✓ test/a5p5-args.test.ts (13 tests) 6ms
+ ✓ test/a5p5-render.test.ts (7 tests) 3ms
+ ✓ test/a5p5-render-injection.test.ts (6 tests) 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5p5-parity.test.ts [ test/a5p5-parity.test.ts ]
+Error: Cannot find module '../src/backend-direct.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr5/packages/tools/a5p5-tools/test/a5p5-parity.test.ts
+ ❯ test/a5p5-parity.test.ts:36:1
+     34| import { parseBashArgs, parseGlobArgs, parseGrepArgs } from '../src/ar…
+     35| import type { BackendFailure, ScenarioFixture } from '../src/backend-c…
+     36| import { createDirectBackend } from '../src/backend-direct.js'
+       | ^
+     37| import { createContractStubBackend } from '../src/backend-stub.js'
+     38| import { runToolCall, type AdmissionVerdict, type ToolCallResult } fro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a5p5-spill.test.ts [ test/a5p5-spill.test.ts ]
+Error: Cannot find module '../src/spill.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr5/packages/tools/a5p5-tools/test/a5p5-spill.test.ts
+ ❯ test/a5p5-spill.test.ts:36:1
+     34| import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+     35|
+     36| import {
+       | ^
+     37|   createSpillLease,
+     38|   openSpillStore,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 5 passed (7)
+      Tests  40 passed (40)
+   Start at  17:31:47
+   Duration  912ms (transform 177ms, setup 0ms, import 236ms, tests 74ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

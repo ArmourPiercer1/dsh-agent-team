@@ -1,0 +1,191 @@
+{
+  "agent": {
+    "model": "qwen3.8-flash-next",
+    "harness": "DeepSeek Harness (listed separately)"
+  },
+  "date": "2026-10-16T16:55:30.806Z",
+  "host": {
+    "release": "6.8.0-142-generic",
+    "note": "observations are fixture/subprocess level OS_ENFORCED; the launcher confines only its own process tree"
+  },
+  "abi": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "legs": {
+    "selective": {
+      "verdict": "ENFORCE-CONFIRMED",
+      "checks": [
+        {
+          "name": "BASE secret readable pre-restrict",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "BASE ok.txt readable pre-restrict",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "NEG read private/secret.txt",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        },
+        {
+          "name": "NEG read other/outside.txt",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        },
+        {
+          "name": "NEG create private/new.txt",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        },
+        {
+          "name": "NEG create other/newfile.txt",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        },
+        {
+          "name": "POS read allowed/ok.txt",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "POS write allowed/new.txt",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "POS read /etc/hostname",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "NOTE pre-restrict fd read (by-design OK)",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "EXEC POS cat allowed",
+          "expect": "rc=0",
+          "got": "rc=0",
+          "match": true
+        },
+        {
+          "name": "EXEC NEG cat private",
+          "expect": "rc!=0",
+          "got": "rc=1",
+          "match": true
+        }
+      ],
+      "raw": [
+        "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'",
+        "[SC] create_ruleset(selective): rc=4 errno=0 strerror='Success'",
+        "[SC] add_rule(access=0x8): rc=0 errno=0 strerror='Success'",
+        "[SC] add_rule(access=0xd): rc=0 errno=0 strerror='Success'",
+        "[SC] add_rule(access=0xc): rc=0 errno=0 strerror='Success'",
+        "[SC] add_rule(access=0xc): rc=0 errno=0 strerror='Success'",
+        "[SC] add_rule(access=0x412e): rc=0 errno=0 strerror='Success'",
+        "[SC] landlock_restrict_self: rc=0 errno=0 strerror='Success'"
+      ]
+    },
+    "denyall": {
+      "verdict": "ENFORCE-CONFIRMED",
+      "checks": [
+        {
+          "name": "DENYALL open secret",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        },
+        {
+          "name": "DENYALL open allowed",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        }
+      ],
+      "raw": [
+        "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'",
+        "[SC] create_ruleset(denyall): rc=3 errno=0 strerror='Success'",
+        "[SC] landlock_restrict_self: rc=0 errno=0 strerror='Success'"
+      ]
+    },
+    "badhandled": {
+      "verdict": "DEMO-CONFIRMED",
+      "checks": [
+        {
+          "name": "TRAP secret readable (READ_FILE unhandled)",
+          "expect": "OK",
+          "got": "OK",
+          "strerror": "",
+          "match": true
+        },
+        {
+          "name": "MAKE_REG create denied (handled, no rule)",
+          "expect": "EACCES",
+          "got": "EACCES",
+          "strerror": "Permission denied",
+          "match": true
+        }
+      ],
+      "raw": [
+        "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'",
+        "[SC] create_ruleset(badhandled): rc=3 errno=0 strerror='Success'",
+        "[SC] landlock_restrict_self: rc=0 errno=0 strerror='Success'"
+      ]
+    },
+    "fd_close": {
+      "declared_seen": true,
+      "undeclared_closed": true,
+      "domain_live": true,
+      "verdict": "FD-CLOSURE-CONFIRMED"
+    },
+    "confined_exec": {
+      "answer": {
+        "executed": true,
+        "rc": 0,
+        "pid": 21,
+        "out_ref": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr4prov/tests/homes/a5p4-kit-2026-10-16T16-55-30-671Z/out/out",
+        "err_ref": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr4prov/tests/homes/a5p4-kit-2026-10-16T16-55-30-671Z/out/err"
+      },
+      "out": "cat: deny/secret.txt: Permission denied\nok",
+      "err": ""
+    }
+  },
+  "laws": {
+    "authoritative_surface": "bare syscall GET_VERSION + real enforcement double evidence (selective & denyall); existence checks are precondition reports only",
+    "double_evidence": true,
+    "false_absent_discriminator": true,
+    "fd_law": "close-all-undeclared default; CLOEXEC is mechanism, not the guarantee (TOCTOU_A)",
+    "network_law": "landlock TCP ABI v4 is NOT general no-network (PoC-4b); deny/restricted refused pre-spawn IO_POLICY_UNSUPPORTED",
+    "hard_profile_enabled": false
+  },
+  "scratchWorld": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr4prov/tests/homes/a5p4-kit-2026-10-16T16-55-30-671Z"
+}

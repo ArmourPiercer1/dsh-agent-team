@@ -42,7 +42,7 @@
  * @module @dsh-agent-team/runtime/tool-dispatch/scoped-dispatcher
  */
 import { type BindingState, type GovernanceResult, type ToolBinding } from '../../domain/tool-governance/src/index.js';
-import { type GuardExecView, type GovernedOrigin, type GovernedSurface, type GuardVerdict } from './closed-world-guard.js';
+import { type GovernedUnverifiedReason, type GuardExecView, type GovernedOrigin, type GovernedSurface, type GuardVerdict, type InheritedSurfaceBinding } from './closed-world-guard.js';
 /** One outstanding call the Dispatcher handed out (self-counted). */
 export interface CallToken {
     readonly callId: string;
@@ -170,16 +170,29 @@ export interface ScopedDispatcher {
     readonly hostDisposeReturned: () => boolean;
     /** The ONLY state in which lifting the inherited-name mask is legal. */
     readonly maskMayLift: () => boolean;
-    readonly bindInheritedSurface: (names: readonly string[], identities?: Readonly<Record<string, string>>) => {
-        readonly verifiedBound: number;
-        readonly unverifiedBound: number;
-        readonly unverified: readonly string[];
+    readonly bindInheritedSurface: (names: readonly string[], resolved: Readonly<Record<string, string>>, trusted: Readonly<Record<string, string>>) => InheritedSurfaceBinding;
+    /**
+     * The call EDGE re-check (the residual round's R-b posture). The pinned
+     * registry resolves the Body of a call INSIDE its innermost step — after the
+     * Guard stage and after every `tools/execute` listener — so a legal
+     * re-registration in that last gap can put a Body on the wire that no public
+     * seam ever saw. Nothing can refuse it there (the exact seam gap is recorded
+     * in the PR1-residual §12 in PoC-1 form), so this lane refuses it as early as
+     * it CAN be refused: at the settled edge of the very call that carried it.
+     * The verification is withdrawn on the spot, so the exposure is bounded at one
+     * call and can never repeat without an explicit re-bind by the assembly.
+     */
+    readonly noteCallEdgeDefinition: (name: string) => {
+        readonly checked: boolean;
+        readonly moved: boolean;
+        readonly detail: string;
     };
     readonly bind: (input: {
         readonly name: string;
         readonly origin: GovernedOrigin;
         readonly binding: ToolBinding;
         readonly verified?: boolean;
+        readonly unverifiedReason?: GovernedUnverifiedReason;
     }) => GovernanceResult<void>;
     /** Binding CHANGE = a new immutable revision under the same identity. */
     readonly revise: (name: string, change: {

@@ -27,6 +27,7 @@ import {
 } from '../../domain/tool-governance/src/index.js'
 import {
   ASSURANCE_REALM_TRUSTED_ASSEMBLY,
+  GOVERNED_UNVERIFIED_REASONS,
   GUARD_DENIAL_REASONS,
   GUARD_ERROR_CODES,
   createGovernedSurface,
@@ -247,10 +248,13 @@ describe('the governed surface only grows through the trusted assembly', () => {
     // the two facts an inherited name needs before it counts as native.
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['bash', 'read', 'write', 'grep'] })
     const pin = (names: readonly string[]) => Object.fromEntries(names.map((n) => [n, `def:${n}`]))
-    expect(surface.bindInheritedSurface(['bash', 'read', 'write', 'read'], pin(['bash', 'read', 'write'])).verifiedBound).toBe(3)
+    // The second map is the TRUSTED (global) view, the third fact R-a adds. This
+    // fixture's agent scope and global view agree, so both pins are equal — and
+    // the assertion below keeps meaning what it meant before the rule tightened.
+    expect(surface.bindInheritedSurface(['bash', 'read', 'write', 'read'], pin(['bash', 'read', 'write']), pin(['bash', 'read', 'write'])).verifiedBound).toBe(3)
     expect(surface.names()).toEqual(['bash', 'read', 'write'])
     // A second pass never re-binds over an existing (possibly richer) entry.
-    expect(surface.bindInheritedSurface(['bash', 'grep'], pin(['bash', 'grep'])).verifiedBound).toBe(1)
+    expect(surface.bindInheritedSurface(['bash', 'grep'], pin(['bash', 'grep']), pin(['bash', 'grep'])).verifiedBound).toBe(1)
     expect(surface.names()).toEqual(['bash', 'grep', 'read', 'write'])
     expect(surface.entryOf('bash')?.origin).toBe('inherited-native')
   })
@@ -268,7 +272,10 @@ describe('the governed surface only grows through the trusted assembly', () => {
 
   it('S5 the inherited assurance record is honestly untested, never empty', () => {
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
-    surface.bindInheritedSurface(['read'], { read: 'def:read' })
+    // Both public reads agree here, which is exactly what a native Binding now
+    // requires (residual R-a): the second map is what THIS Agent resolves, the
+    // third what the trusted global view resolves.
+    surface.bindInheritedSurface(['read'], { read: 'def:read' }, { read: 'def:read' })
     const assurance = surface.entryOf('read')?.binding.assurance
     expect(assurance?.implementationOrigin).toBe('dsh-native')
     const dimensions = Object.values(assurance?.assurance ?? {})
@@ -287,7 +294,9 @@ describe('the governed surface only grows through the trusted assembly', () => {
   // describes. This is the seam between the two PRs, pinned.
   it('S6 every PR1 Binding is parseable by the frozen PR0 contract parser', () => {
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
-    surface.bindInheritedSurface(['read'])
+    // A native-shaped Binding (both reads agree) and a Team-owned one, both fed
+    // to the frozen parser below.
+    surface.bindInheritedSurface(['read'], { read: 'def:read' }, { read: 'def:read' })
     surface.bind({
       name: 'team_delegate',
       origin: 'team-own',
@@ -333,7 +342,7 @@ describe('the governed surface only grows through the trusted assembly', () => {
 describe('PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to', () => {
   it('R1 an observed name becomes a native Binding only if it is on the trusted native list', () => {
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
-    const result = surface.bindInheritedSurface(['read', 'evil_own_tool'], { read: 'def:read' })
+    const result = surface.bindInheritedSurface(['read', 'evil_own_tool'], { read: 'def:read' }, { read: 'def:read' })
     expect(result.verifiedBound).toBe(1)
     expect(result.unverified).toEqual(['evil_own_tool'])
     const evil = surface.entryOf('evil_own_tool')
@@ -352,10 +361,56 @@ describe('PR1 Gate R1 / R2 — inherited bindings and the definition a call actu
 
   it('R1b an allowlisted name whose definition cannot be pinned is bound UNVERIFIED', () => {
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
-    const result = surface.bindInheritedSurface(['read'], {})
+    const result = surface.bindInheritedSurface(['read'], {}, {})
     expect(result.verifiedBound).toBe(0)
     expect(result.unverified).toEqual(['read'])
     expect(surface.entryOf('read')?.verified).toBe(false)
+    // The recorded reason is the plainest true one: nothing was readable.
+    expect(surface.entryOf('read')?.unverifiedReason).toBe('definition-unreadable')
+  })
+
+  it('R1R (residual R-a) a name the two public reads disagree on is NEVER an inherited native', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
+    const result = surface.bindInheritedSurface(['read'], { read: 'def:somebody-else' }, { read: 'def:native-body' })
+    expect(result.verifiedBound).toBe(0)
+    expect(result.shadowed).toEqual([{ name: 'read', trusted: 'def:native-body', resolved: 'def:somebody-else' }])
+    const entry = surface.entryOf('read')
+    expect(entry?.verified).toBe(false)
+    expect(entry?.unverifiedReason).toBe('native-shadowed')
+    expect(entry?.binding.bindingId).not.toBe('native:read')
+    expect(entry?.binding.implementationOrigin).not.toBe('dsh-native')
+    const verdict = decide({ name: 'read', agentIdentity: 'session-m1' }, {
+      surface,
+      definition: { ok: true, fingerprint: 'def:somebody-else' },
+    })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(verdict.error.message).toContain('shadows')
+  })
+
+  it('R1R-b a native name whose TRUSTED read is unavailable is refused, never credited (unreadable is not a pass)', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
+    const result = surface.bindInheritedSurface(['read'], { read: 'def:read' }, {})
+    expect(result.verifiedBound).toBe(0)
+    expect(result.nativeUnreadable).toEqual(['read'])
+    expect(surface.entryOf('read')?.unverifiedReason).toBe('native-unreadable')
+  })
+
+  it('R1R-c the reason a name is unverified is stated, not flattened (three facts, three sentences)', () => {
+    const sentences = new Set<string>()
+    for (const reason of ['native-shadowed', 'native-unreadable', 'definition-drift', 'definition-unreadable'] as const) {
+      const message = guardDenialMessage('read', reason === 'native-shadowed' ? GUARD_DENIAL_REASONS.NATIVE_SHADOWED
+        : reason === 'native-unreadable' ? GUARD_DENIAL_REASONS.NATIVE_UNREADABLE
+        : reason === 'definition-drift' ? GUARD_DENIAL_REASONS.DEFINITION_DRIFT
+        : GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE)
+      expect(message).toContain('team tool guard')
+      sentences.add(message)
+    }
+    expect(sentences.size).toBe(4)
+    expect(GOVERNED_UNVERIFIED_REASONS).toEqual([
+      'unattributed', 'native-shadowed', 'native-unreadable', 'definition-drift', 'definition-unreadable',
+    ])
   })
 
   it('R2 a same-scope name resolving to a DIFFERENT definition never runs on the old verification', () => {

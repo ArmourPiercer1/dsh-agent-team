@@ -29,6 +29,24 @@ value.
 | --- | --- | --- |
 | [`a5p1-order-hazard.mjs`](a5p1-order-hazard.mjs) | the pinned **registry** in-process (the PoC's `p00-fixture.mjs`), four teardown-order arms | the hazard is a registry race; driving a whole Host around it would only add noise |
 | [`a5p1-kit.mjs`](a5p1-kit.mjs) | a **booted Host** with the production `dsh-agent-team` row from this worktree's built `dist`, a real Team Session, leader + two members | the Guard only means something at the trusted assembly point, with real Agents behind it |
+| [`a5p1r-rereg-window.mjs`](a5p1r-rereg-window.mjs) | the pinned **registry** in-process, thirteen arms around deterministic parks, each performing a LEGAL same-scope re-registration (or explicitly not) | the PR1-residual R-b question is which Body the registry resolves when a Definition moves mid-call; that is a registry question, and its answer must not depend on a model turn (PR1-residual §12) |
+
+Leg counts: the kit reports **36** criteria (13 Host legs + 10 order legs +
+13 re-registration-window legs). The window leg was folded into the Receipt in
+the B3 round so its criteria cannot drift uncounted; leg counts only ever grow.
+
+**Retracted criterion, kept here so the record is unambiguous.** The window
+runner used to pass on `RW-RESIDUAL-RECORDED`, whose condition was
+`v2 === 1 && secondCallV2 === 1` — "exactly one un-validated Body ran, then the
+next call was refused, therefore the exposure is one call". That criterion is
+**removed and its claim retracted**: the withdrawal it attributed to the call
+edge came from the `tools/change` channel, and `secondCallV2` is a cumulative
+counter. Its replacement `RW-AFTER-DOOR-BODY-ZERO` requires the body count of
+the after-door move to be **zero** (`v1=0 v2=0`, `code=ABORTED_BEFORE_DISPATCH`),
+with `RW-CHANGE-INERT-LOUD` holding the one configuration that cannot be proven
+at assembly time (an accepted-but-silent channel) to a loud per-call alarm
+instead of a quiet pass. Evidence: `runs/B3-after-door-RED.json` (pre-fix:
+`v2=1`) → `runs/B3-after-door-GREEN.json` (post-fix: `v2=0`).
 
 ```bash
 # both, in one run (the kit spawns the order leg first):
@@ -69,10 +87,40 @@ that hazard or its green PR1 arms mean nothing.
 | `safe` | no | — | native count 0 (the reverse order) |
 | `pr1-parked` | yes | pre-execute fence | native 0, adapter 0, teardown refused `EXECUTION_TERMINATION_UNCONFIRMED`, mask kept, and the mask lifts EXACTLY ONCE when the refused call's own lease is ended by that refusal |
 | `pr1-body` | yes | inside the Team Body (a wrapper parks the Body before its own `return`) | native 0, the Team Body completes, the lease is still held across the whole drain window, a second teardown is refused with the half-state armed |
+| `shadow` (×2: unbound / explicitly bound) | yes | nothing — one call each | `R1R-SHADOW`: the SAME world assembled twice, with and without `bindOwnTools` (see below) |
 
 Criteria: `NEG1-CONTROL`, `NEG1-SAFE`, `NEG1-PARKED`, `NEG1-BODY`, `NEG1-MASK`,
-`NEG1-SEAM`, `NEG1-R4`, `NEG1-STABLE`, `NEG1-LEAK`. Counters from body
+`NEG1-SEAM`, `NEG1-R4`, `NEG1-STABLE`, `NEG1-LEAK`, `R1R-SHADOW`. Counters from body
 invocations are the evidence — never the returned prose.
+
+**Why the `pr1-*` arms call `bindOwnTools(['grep'])`.** Their adapter is a
+same-name variant of the native `grep`, registered into the Agent's own scope —
+which since the PR1-residual round is exactly the shape that may NOT inherit a
+native verification. The arms therefore bind the adapter as what it is (the
+Team's own Definition, `team-own:A:grep`) and measure the teardown around it. Do
+not "simplify" that call away: without it those arms measure a lane that refuses
+their own adapter, and every one of them would pass vacuously.
+
+### `R1R-SHADOW` — the attribution leg (PR1-residual R-a)
+
+A normal third-party per-agent variant of a native name, mounted BEFORE the Team
+assembly — the shape the pinned registry's own duplicate-registration error
+recommends (`"for a per-agent variant, register through that agent's
+agent.ctx"`). Nothing about it is malicious. Merged PR1 handed it
+`native:grep / verified: true` and its Body ran. The leg assembles the world
+twice and asserts both halves of the rule:
+
+* **no explicit bind** ⇒ `verified: false`, `unverifiedReason: native-shadowed`,
+  exactly one `published-surface-shadowed` observation carrying the two
+  definition identities it compared, and **no Body at all** (neither the
+  shadowing one nor the native one) with a refusal that says the name is
+  shadowed;
+* **explicit bind** ⇒ `verified: true`, `bindingId: team-own:A:grep`, and the
+  same Body runs.
+
+The refusal is about the disagreement between the two public reads
+(`tools.get(name)` vs `tools.get(name, scope)`), never about the name being
+inherited: a name the two reads agree on is still inherited normally.
 
 `NEG1-MASK` and `NEG1-R4` are the R3/R4 laws on the real registry: an
 unproven termination never lifts the mask; a lease that is still outstanding
