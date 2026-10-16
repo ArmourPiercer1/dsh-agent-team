@@ -6166,3 +6166,18 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 **新增 Host 事实（实测，公开面无 provenance）**：registry 公开面没有任何"这是不是 native"的字段（`schemas()` 只白名单 name/description/parameters，`register()` 不记 owner，无 BUILTIN 常量），所以归属不可推导 ⇒ 装配自带受信名单 + 逐名 pin definition；pin 不了就拒。残留披露：publish 时已被 scope-local 定义遮蔽的 native 名会按该 scope 自己的解析被 pin 成 verified（缓解：每次调用比对同一解析、此 Host 上 preset row 无法注册工具、Team 装配在 preset 之后挂载）。
 
 **卫生**：`:3185` 无监听、`tests/homes/a5p1-*` 为 0、`:3080` 只读探测未操作、pinned 树 porcelain 干净；lint identity diff `new 0, resolved 0`（本轮自己引入的 2 条已修，未新增基线）；kit 最终 run `22/22` exit=0，Receipt `alpha5-pr1-host/final/run-receipt.md`。
+
+
+## 2026-10-16 Alpha.5 PR2 实现轮（Operation Admission + 多 Effect ApprovalCase + 一次性 Grant；branch `alpha5-pr2-admission-grant`，stacked-on-#255 base `45425a30`，DO-NOT-MERGE）
+
+RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.log` 记录 lane 源缺席时 6 files / no tests；随后实现全绿 73/73（`runs/a5p2-green-targeted.log`）。p4t6 扫描仪按本仓 tie 约定先测 PRE-EXTEND RED `expected 1087 to be 1073`（`runs/p4t6-PRE-EXTEND-RED.log`），再补 A5-PR2 行（6 源 + 8 测试工件，both endpoints MEASURED）。
+
+* **H1（时钟有限性归 Admission 拥有）**：`tool-admission/clock.ts` 的 `requireFiniteClock` 是 `admit`/`issueApprovedGrant`/`consumeForExecution` 三条路径的**第一条腿**，NaN/±∞/非 number = 类型化 `APPROVAL_STALE`（`refusal='clock-not-finite'`）且 **body=0**（probe/register/consume 计数全零，`sequence:[]` 钉住）；消耗边再设一道——非有限 now 拒绝且**不消费** grant；PR0 严格 `>` 过期语义原样复用并再钉（`now===expiresAt` 未过期）。
+* **H2（assurance 运行时验证在 hard-profile 之前）**：`assurance-runtime.ts` 规定 level 永不单独兑换能力——每个被要求维度必须有真实 mechanism/trustRoot/evidence/realmId 且与 probe 记录逐字段相等，`enforced`+null = `TOOL_BINDING_UNVERIFIED`；level 不足 = `IO_POLICY_UNSUPPORTED`；probe 是注入端口，stub 语义三条钉在 lane README（PR4 换真探针）；顺序探针先于 mint 用 `sequence=['probe:content-read','register']` 钉住。
+* **一个逻辑 ApprovalCase、多 Effect**：case 身份 = member + effect-set fingerprint + authority generation（**无 callId**）；开 case 取各 effect 梯级最高（Alpha.4 all-or-nothing），但执行期 legality **逐 effect** 走 A3-2 等式（`mayReview` ∧ reviewer 的 `grantCeiling` 覆盖该 effect 的 realm 限定 scope）——max-rung 捷径不可表示；policy-deny/undetermined 毒化整集（`IO_POLICY_UNSUPPORTED`，§5-erratum 提议 `TEAM_POLICY_DENY` 可裁）；部分覆盖拒绝整次执行；梯子升级使旧 reviewer 失效；自批拒绝。梯级/ceiling 全部复用 Alpha.4 冻结 walk，hygiene SURFACE 行按符号逐名扩名（reviewed amendment），layer-audit 消费者集钉到 9 文件，audit 脚本放行 `runtime/tool-admission/`。
+* **一次性 ExecutionGrant**：mint 必须过冻结 `parseOperationGrant`（`singleUse:true`）；validate-then-mark 一个同步步（交错异步双消费者恰好一个赢家）；grantId 确定性（双 mint=register 拒绝）；ledger 只存消费事实，无第二授权事实；所有拒绝 reason→code 复用 PR0 `grantRefusalErrorCode`。Cancel 前/中/后走 PR0 lease 代数，取消永不退还一次性消费，consume 后 lease 失败如实 `sideEffectUnknown:true`。
+* **PR1 组合**：Guard 仍是外门（deny 不触 Admission）；kernel 拒绝以 `refused` 结束 Dispatcher 调用且 drain 照常归零；一 call 不能花别 call 的 grant。
+
+**基线与门**：base 普查（pristine `45425a30`）22 红 / 6651 绿；head 全量 21 红 / **6725 绿**；fail-set identity diff `only_in_after=∅`，唯一 FIXED 是 a4p7 merge-gate 的 scratch-lint 腿（别的仪器的构建状态腿，base 时无 dist、lint universe 1159≠1158；本轮重建了 committed dist 后自绿，原文在 base 普查 JSON）。lint identity diff（base worktree vs head）：universe 1158→1172=+14 恰为本 PR 文件数，**new 0 / resolved 0**。全仓 typecheck 干净。CORE=0；:3080 未触碰（本轮零 spawn 零端口）；test-use 未实例化未运行；证据零 token（扫描 0 命中）。real-Host Receipt 本轮 N/A（无 live wiring、无 OS 能力声称，lane DORMANT，wiring 随 PR3/PR4）——理由写进 §12(d)。
+
+**观察上报**：#255 于 2026-10-16T08:06:56Z 被合入 master（merge `db5cb5f7`）——本分支仍内容堆叠在其精确树 `45425a30` 上、base 仍按指令指向 `alpha5-pr1-onto-master`，是否改指 master 归协调者裁决。§12(a)-(h) 见 `dev/agent-workflow/evidence/alpha5/pr2/s12-delivery-map.md`。
