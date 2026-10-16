@@ -6177,3 +6177,34 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 * **kit 22 ⇒ 23 条 criteria（只加 1 条 `R1R-SHADOW`，一条未删未弱）**：`pr1-*` 四条 arm 改走显式 `bindOwnTools(['grep'])`——它们本来正是靠 R-a 这个洞才被当成 verified native 的（同名的 Team adapter），显式 bind 后 9 条 `NEG1-*` 全部原义通过；新 leg 在同一世界跑两遍（不 bind ⇒ `verified=false reason=native-shadowed` 且**两个 Body 都不跑**+拒词含 `shadows`；显式 bind ⇒ `team-own:A:grep` 且跑）。整 kit 真 Host **23/23**，`C1d publishes=4 refused=0`，且全程没有一条 `published-surface-shadowed`/`dispatcher-native-unreadable`——收紧 R-a 没有把任何真实治理名变成拒绝。
 * **门**：lane 63⇒79 tests（+16，无删除）；`a5p1r-rereg-window.mjs` 5/5；全套 vitest 与基线 diff **`only_in_after=[]`**（首轮出现的两条都按规矩真修：`p4t6` 扫描清单登记 3 个新文件；`a4p7` install-surface fresh 要求 dist 与源码同 commit）；9 包 typecheck 干净；`eslint` 129 errors/32 warnings 与基线逐字相同（本轮改动文件 0 problem）；`lint-identities` 161 lines / 76 distinct 不变（扫描面 +3 文件）；`check:artifacts` ok 1572 files；token scan 0（Host 腿抓取时已脱敏，`instance.log` 留 `REDACTED-` 痕迹）；pinned 树 porcelain 干净；`:3080` 只读未操作（`C7a before=401 after=401`），世界 `tests/homes/a5p1-2026-10-16T08-40-31` 已 removed。
 * **披露（选择 fail-closed 的代价）**：可信侧读不到的治理名现在会被拒（合并版会计入），真实 Team lane 未出现该情形但原则上可达；未验证原因从 1 条消息变成 5 条可诊断消息（`R1R-c` 钉住不许再糊成一团）；kit 的 `pr1-*` arm 现在依赖 `bindOwnTools`，读者不得"顺手简化"掉——去掉后那四条腿会变成空测。
+
+## 2026-10-16 — alpha5-pr1r **B3 修复轮**（PR #257 修复轮，用户裁决 = 方案 (ii)）
+
+- **裁决**：用户裁定 B3 = 方案 (ii)（定义变化时**取消未执行调用**，signal-wrapper + change-abort 路线）；
+  明确否决"门内自执行／不调 `next()`"；CORE PATCH BUDGET 仍为 0，不改 Core、不偷加上游补丁、不缩威胁模型。
+- **撤回口径（本轮的诚实义务）**：上一轮与 kit 共同主张的"after-door 未验证 Body **恰好执行一次**、
+  随后在自身 settled edge 撤销验证 ⇒ 暴露 = 一次调用、fail-closed"**予以撤回**。撤回依据是同一 arm 原始
+  json：`callEdgeWithdrawal = 0`（撤销实际来自 `tools/change` 通道，不是调用边），且 `secondCallV2`
+  为**累计**计数器（`secondCallV2===1` 不能证明"下一次调用什么都没跑"）。kit 判据
+  `RW-RESIDUAL-RECORDED`（条件 `v2===1`）删除，改为 `RW-AFTER-DOOR-BODY-ZERO`（要求 body=0）。
+  本文件与 s12/seam-record 中的历史 RED 摘录作为**当时的测量**保留，不再作为口径引用。
+- **机制**：`packages/runtime/tool-dispatch/pending-calls.ts`（watch 台账：门内登记已验证身份；
+  `(scope,name)` 定义移动或不可读 ⇒ 取消；`tools/result` 结算）+ `install.ts` `armWrapperSignal`
+  （Host 自述契约 `index.ts:155-159`；`:1572` 在 `:1578` resolve **之前**拒绝已抬起的融合信号 ⇒
+  `bodyInvoked` 保持 false）。**台账不参与 drain**：取消不得用于把已开始 Body 判为未执行。
+- **②/⑧ 通道是能力而非诊断**：`tools/change` 订阅抛错或 `on` 缺失 ⇒ 装配期 typed
+  `IO_POLICY_UNSUPPORTED`（点名通道，已装四缝回滚）；订阅成功但**永不投递**无法在装配期证明 ⇒
+  `changeChannel:'armed'|'proven'` + 每调用 `dispatcher-call-executed-unvalidated`（alarm）。
+- **④ 取消 vs 终止**：读 Host 两个规范码区分（`ABORTED_BEFORE_DISPATCH`=未执行；`ABORTED`=Body 已开始、
+  值仍携带、`sideEffectPossible:true`，绝不标未执行）；abort 抢跑失败 ⇒ `dispatcher-call-completed-after-abort`
+  （按已执行上报）；已取消但结果码读不到 ⇒ `dispatcher-call-outcome-unreadable`（alarm，两个方向都不宣称）。
+- **实测披露（不改口径，只加事实）**：本 Host 上**调用方**在 Body 运行中 abort，对直接
+  `ctx.tools.execute()` 调用的结果面**不可见**（无 lane 对照：`runs/probe-cancel.mjs` ⇒ 成功形状、无 code）。
+  故真 Host 的"终止"腿改用 lane 自身 in-flight abort（`RW-ABORT-INSIDE-BODY-IS-TERMINATION`），
+  调用方路径只披露不宣称。lane 级另有 caller-signal 双腿（模型 `:1583`）。
+- **证据**：lane `a5p1* + a5p1r*` **97/97**（`runs/B3-lane-GREEN.log`；RED `runs/B3-lane-RED.log` 16 失败）；
+  真 registry RED→GREEN：`runs/B3-after-door-RED.json`（`v1=0 v2=1 secondCallV2=1`，8/13 判据失败）→
+  `runs/B3-after-door-GREEN.json`（`v1=0 v2=0 secondCallV2=0`，13/13）；kit **36/36**
+  （13 Host + 10 order + 13 rereg；`runs/kit-r1r-fix1/`，C7a `:3080` 前后同 401 未被操作，C7b test-use porcelain 净）。
+- **git**：首个修复提交 `83a0b994`；本地 rebase 到远端 head `dd70ef3c`（reviewer 的评审提交落在
+  `2b16de64` 之上）后 fast-forward push 至 `alpha5-pr1r-residual-boundaries`；无 force-push。

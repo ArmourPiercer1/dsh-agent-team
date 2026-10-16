@@ -66,24 +66,51 @@ have to provide for     : one, not all:
                             listener receives, so the door nearest the Body can compare
                             `exec.resolvedDefinition` against the Binding it validated — without
                             a refusal point this only makes the gap visible, not closable.
-fail-closed posture     : the lane refuses as early as a public seam allows and bounds what it
-  taken in the meantime : cannot refuse. (1) The Guard re-reads the Definition on EVERY call
-  :                       (:1519 territory) — a Body re-registered before the Guard stage never
-                          runs. (2) The `tools/execute` door (the door NEAREST the Body that this
-                          lane can own) re-asks the whole closed-world question after the Active
-                          check — a Body re-registered after the Guard stage but before our door
-                          is refused there (`RW-INNER-DOOR`, measured). (3) A Body re-registered
-                          AFTER our door runs exactly once, and at that same call's settled edge
-                          (`tools/result`) `noteCallEdgeDefinition` compares the pinned identity
-                          with what the name now resolves and WITHDRAWS the verification
-                          (`dispatcher-definition-change-at-call-edge`), so the next call is
-                          refused and only an explicit re-bind by the trusted assembly restores
-                          it — measured by `RW-RESIDUAL-RECORDED`: `v2=1` (one un-validated Body)
-                          then `secondCall v2=1` (the next call ran nothing).
-                          The exposure is therefore ONE call per move, never a standing state.
-retirement condition    : when (1) or (2) exists at a public seam, `noteCallEdgeDefinition`
-                          degrades to an assertion (a moved Definition at the settled edge becomes
-                          impossible by construction) and this record retires. Until then the
-                          kit's `RW-RESIDUAL-RECORDED` criterion asserts the HONEST fact — the
-                          Body ran — so the boundary cannot silently be re-labelled a pass.
+how the gap is closed   : by user ruling (option (ii)) in the B3 fix round. The lane does NOT
+  in this round          refuse from inside the door — the rejected design (a door that never
+  (was: "fail-closed     calls `next()`) is not used anywhere. It uses the seam the Host already
+  posture")              advertises to a wrapper: "wrappers may change only `exec.signal`, while
+                         call identity remains immutable. The registry re-fuses the original
+                         caller signal before the body, so replacement cannot detach caller
+                         cancellation" (`index.ts:155-159`). At `:1572` the Host refuses a raised
+                         fused signal BEFORE `resolveExecution` (`:1578`), so `bodyInvoked` stays
+                         false and no Body is resolved, invoked, or reported as executed.
+                         (1) The Guard re-read stays: a Body re-registered before the Guard stage
+                         never runs (`RW-PRE-EXECUTE-COVERED`). (2) The `tools/execute` door re-ask
+                         stays (`RW-INNER-DOOR`). (3) A Body re-registered AFTER our door is now
+                         CANCELLED before dispatch: the door arms a watch on the identity it
+                         validated, the `tools/change` notification moves that watch, and the
+                         watch's cancellation is what the Host reads at `:1572` — measured by
+                         `RW-AFTER-DOOR-BODY-ZERO`: `v1=0 v2=0`, code
+                         `ABORTED_BEFORE_DISPATCH`, `secondCall v2=0`.
+RETRACTION (this        : the previous text of this record claimed "(3) A Body re-registered
+  round, by ruling)      AFTER our door runs exactly once … The exposure is therefore ONE call
+                         per move, never a standing state", and the kit criterion
+                         `RW-RESIDUAL-RECORDED` asserted `v2 === 1` as its pass condition. THAT
+                         CLAIM IS WITHDRAWN. It rested on two things that do not hold: (a) the
+                         settled-edge withdrawal was attributed to the call edge but came from the
+                         `tools/change` channel (`callEdgeWithdrawal: 0` in the same-arm raw json);
+                         (b) `secondCallV2` is a CUMULATIVE counter, so `secondCallV2 === 1` did
+                         not show "the next call ran nothing". Redone against the pinned Host with
+                         body-count criteria, the un-validated exposure of one move was measured at
+                         1 Body (`runs/B3-after-door-RED.json`: `v1=0 v2=1
+                         secondCallV2=1`) and is now measured at 0 (`runs/B3-after-door-GREEN.json`:
+                         `v1=0 v2=0 secondCallV2=0`). "One call, then withdrawn" is not a
+                         fail-closed posture and may not be cited as one.
+what is still open      : the channel is a capability, and one configuration cannot be proven at
+                         assembly time: a `tools/change` subscription that is ACCEPTED but never
+                         delivered is undetectable from outside. That case is not covered over: the
+                         lane reports `changeChannel: 'armed'|'proven'`, and every call that
+                         completes with a moved Definition while the channel is unproven raises
+                         `dispatcher-call-executed-unvalidated` at alarm severity (kit
+                         `RW-CHANGE-INERT-LOUD`) — an assembly whose channel stays like this is
+                         reported as not-shown-to-be-closed, never as closed. A subscription that
+                         THROWS, or an `on` that does not exist, is a typed
+                         `IO_POLICY_UNSUPPORTED` refusal naming `tools/change`
+                         (`RW-NO-CHANGE-CHANNEL-UNSUPPORTED`): unsupported, not silently weaker.
+retirement condition    : the mechanism retires when upstream offers option (1) or (2) above: a
+                         pre-dispatch seam, or a resolution-stable call. Then the watch ledger and
+                         the signal wrapper both degrade to assertions and this record retires.
+                         Until then `RW-AFTER-DOOR-BODY-ZERO` asserts the body count is zero, so
+                         the boundary cannot silently be re-labelled a pass OR a residual.
 ```

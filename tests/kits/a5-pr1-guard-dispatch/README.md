@@ -29,12 +29,24 @@ value.
 | --- | --- | --- |
 | [`a5p1-order-hazard.mjs`](a5p1-order-hazard.mjs) | the pinned **registry** in-process (the PoC's `p00-fixture.mjs`), four teardown-order arms | the hazard is a registry race; driving a whole Host around it would only add noise |
 | [`a5p1-kit.mjs`](a5p1-kit.mjs) | a **booted Host** with the production `dsh-agent-team` row from this worktree's built `dist`, a real Team Session, leader + two members | the Guard only means something at the trusted assembly point, with real Agents behind it |
-| [`a5p1r-rereg-window.mjs`](a5p1r-rereg-window.mjs) | the pinned **registry** in-process, five arms around one deterministic park, each performing a LEGAL same-scope re-registration | the PR1-residual R-b question is which Body the registry resolves when a Definition moves mid-call; that is a registry question, and its answer must not depend on a model turn (PR1-residual §12) |
+| [`a5p1r-rereg-window.mjs`](a5p1r-rereg-window.mjs) | the pinned **registry** in-process, thirteen arms around deterministic parks, each performing a LEGAL same-scope re-registration (or explicitly not) | the PR1-residual R-b question is which Body the registry resolves when a Definition moves mid-call; that is a registry question, and its answer must not depend on a model turn (PR1-residual §12) |
 
-Leg counts: the kit reports **23** criteria (13 Host legs + 10 order legs).
-`a5p1r-rereg-window.mjs` reports its own 5 `RW-*` criteria and is not part of
-that count — it is the residual round's boundary measurement, run and filed
-separately (`dev/agent-workflow/evidence/alpha5-pr1r/runs/`).
+Leg counts: the kit reports **36** criteria (13 Host legs + 10 order legs +
+13 re-registration-window legs). The window leg was folded into the Receipt in
+the B3 round so its criteria cannot drift uncounted; leg counts only ever grow.
+
+**Retracted criterion, kept here so the record is unambiguous.** The window
+runner used to pass on `RW-RESIDUAL-RECORDED`, whose condition was
+`v2 === 1 && secondCallV2 === 1` — "exactly one un-validated Body ran, then the
+next call was refused, therefore the exposure is one call". That criterion is
+**removed and its claim retracted**: the withdrawal it attributed to the call
+edge came from the `tools/change` channel, and `secondCallV2` is a cumulative
+counter. Its replacement `RW-AFTER-DOOR-BODY-ZERO` requires the body count of
+the after-door move to be **zero** (`v1=0 v2=0`, `code=ABORTED_BEFORE_DISPATCH`),
+with `RW-CHANGE-INERT-LOUD` holding the one configuration that cannot be proven
+at assembly time (an accepted-but-silent channel) to a loud per-call alarm
+instead of a quiet pass. Evidence: `runs/B3-after-door-RED.json` (pre-fix:
+`v2=1`) → `runs/B3-after-door-GREEN.json` (post-fix: `v2=0`).
 
 ```bash
 # both, in one run (the kit spawns the order leg first):

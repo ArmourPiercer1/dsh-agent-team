@@ -438,8 +438,6 @@ async function main () {
       await tick()
     }
     holdGate.release()
-    const pendingInWindow = handle.pendingCalls().map((row) => `${String(row.callId)}:${String(row.state)}`)
-    const watchedNames = handle.pendingCalls().map((row) => String(row.name))
     const settled = await Promise.all(calls)
     const first = settled[0] ?? null
     const second = mode === 'guarded-after-body-zero' ? await f.run('grep', A.key) : null
@@ -461,6 +459,11 @@ async function main () {
       teardownState = handle.dispatcher.state()
     }
 
+    // Read the lane's NEW surface defensively: this harness must still produce
+    // evidence when it is pointed at a build that has no such surface (that is
+    // what a RED run against the previous build is), instead of dying on it.
+    const watches = typeof handle.pendingCalls === 'function' ? handle.pendingCalls() : []
+    const channelStatus = typeof handle.changeChannelStatus === 'function' ? handle.changeChannelStatus() : 'unknown'
     const laneObs = handle.observations()
     const count = (event) => laneObs.filter((o) => String(o.event) === event).length
     const issued = laneObs.filter((o) => String(o.event) === 'dispatcher-change-abort-issued')
@@ -482,10 +485,9 @@ async function main () {
       completedAfterAbort: count('dispatcher-call-completed-after-abort'),
       executedUnvalidated: count('dispatcher-call-executed-unvalidated'),
       abortIssuedCalls: issued,
-      watchedNames,
-      pendingInWindow,
-      pendingAfter: handle.pendingCalls().map((row) => String(row.callId)),
-      changeChannel: handle.changeChannelStatus(),
+      watchedNames: watches.map((row) => String(row.name)),
+      pendingAfter: watches.map((row) => String(row.callId)),
+      changeChannel: channelStatus,
       verifiedAfter: handle.dispatcher.surface.entryOf('grep')?.verified ?? null,
       secondCallV2: second === null ? null : f.counters('V2'),
       secondCallText: second === null ? null : String(second?.text ?? second?.threw ?? '').slice(0, 160),
