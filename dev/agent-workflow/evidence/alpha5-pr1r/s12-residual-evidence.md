@@ -105,7 +105,7 @@ evidence dir [`runs/kit-r1r/`](runs/kit-r1r/) (`run-receipt.md`, `summary.json`,
 
 | gate | baseline (`db5cb5f7`, run in the `.worktrees/a5-pr1` tree) | this branch | identity |
 | --- | --- | --- | --- |
-| full vitest suite | 7 files / 24 tests failed, 6621 passed (522 files) | 6 files / 13 tests failed, 6676 passed (524 files) | **`only_in_after = []`** (see the two entries below, both resolved before the final run) |
+| full vitest suite (final, committed tree) | 7 files / 24 tests failed, 6621 passed (522 files) | 5 files / 11 tests failed, 6678 passed (524 files) | **`only_in_after = []`** (the two entries that appeared in the first after-run were both real gaps and are fixed below, not explained away) |
 | PR1 lane (`a5p1-*.test.ts`) | 63 tests | 66 tests (3 R1R pins added) | nothing removed |
 | residual lane (`a5p1r-*.test.ts`) | — | 13 tests | added |
 | typecheck (`tsc -p` × 9 packages) | clean | clean | equal |
