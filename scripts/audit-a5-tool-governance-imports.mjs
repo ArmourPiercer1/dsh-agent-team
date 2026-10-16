@@ -40,12 +40,24 @@ const PERMITTED_OUTSIDE = [
 ]
 
 /**
- * The PR1 reviewed consumers (repo-root/`packages`-relative). A prefix entry
- * (ending in `/`) allows the whole subtree.
+ * The reviewed consumers (repo-root/`packages`-relative). A prefix entry
+ * (ending in `/`) allows the whole subtree. PR1: the runtime lane
+ * `runtime/tool-dispatch/**` (the closed-world Guard + the Scoped Dispatcher,
+ * which import the frozen §5 vocabulary and the transition table) and the ONE
+ * production assembly point that installs them,
+ * `runtime/src/plugin/live/agent-bindings.mjs`. PR2 (plan §5): the admission
+ * lane `runtime/tool-admission/**` (Operation Admission, the multi-effect Ask
+ * on the one ApprovalCase, the one-shot grant — the frozen §5 vocabulary, the
+ * grant algebra and the plane functions, imported not restated; live wiring
+ * rides with the first PR that executes through it, PR3/PR4).
+ * Anything else that mentions the lane is a finding — a second consumer is a
+ * design change, not an import accident.
  */
 const PR1_CONSUMERS = Object.freeze([
   'runtime/tool-dispatch/',
   'runtime/src/plugin/live/agent-bindings.mjs',
+  // PR2 (plan §5) reviewed addition — see the block comment.
+  'runtime/tool-admission/',
 ])
 
 const SPECIFIER_PATTERNS = [

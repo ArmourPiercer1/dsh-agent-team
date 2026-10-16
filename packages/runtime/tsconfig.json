@@ -11,6 +11,9 @@
     // that consumes it is plain .mjs, so without this entry the lane would be
     // typechecked by nothing at all.
     "tool-dispatch",
+    // A5-PR2: the tool-admission lane (Operation Admission + one-shot grant).
+    // Same rationale as PR1's entry: typecheck coverage for the lane.
+    "tool-admission",
     "test",
     "vitest.config.ts"
   ]

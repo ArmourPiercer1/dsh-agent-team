@@ -52,8 +52,13 @@ import { AUTHORITY_EFFECT_PRECEDENCE, } from '../../domain/authority-envelope/sr
 import { AUTHORITY_RANK, boundDocumentNames, grantCeiling, mayReview, AuthorityBindingError, AUTHORITY_CEILING_ERROR_CODES, } from './authority-ceiling.js';
 /** The rung immediately above one on the ladder, derived from `AUTHORITY_RANK`
  *  rather than from a second literal list — a `successor` table would be a second
- *  ordering, and the whole point of X7-R3 is that there is exactly one. */
-function rungAbove(position) {
+ *  ordering, and the whole point of X7-R3 is that there is exactly one.
+ *
+ *  EXPORTED (A5-PR2, reviewed): the deny-ownership floor needs exactly this
+ *  successor — a rung may approve only denys belonging to authorities BELOW it
+ *  (user ruling 2026-10-16 R-1a). The consumer is policed by name in
+ *  `a3p3-governance-lane-hygiene`; a second successor table stays forbidden. */
+export function rungAbove(position) {
     const target = AUTHORITY_RANK[position] + 1;
     for (const [candidate, rank] of Object.entries(AUTHORITY_RANK)) {
         if (rank === target)
