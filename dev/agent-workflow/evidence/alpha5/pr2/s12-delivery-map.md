@@ -45,11 +45,14 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
 
 - RED-first: `runs/red-first-a5p2.log` — the six specs + harness with the lane sources REMOVED:
   `Test Files 6 failed (6) / Tests no tests` (module-absent collection failures; before any implementation existed in the room).
-- GREEN (targeted): `runs/a5p2-green-targeted.log` — 6 files / **73 passed**.
+- GREEN (targeted): `runs/a5p2-green-targeted.log` — 6 files / **76 passed** (73 + the review-round F-1 pair and F-2 isolation test).
 - p4t6 scanner: PRE-EXTEND RED `runs/p4t6-PRE-EXTEND-RED.log` (`expected 1087 to be 1073`, both endpoints
   MEASURED) → tie added → 10/10 green.
 - Full suites: `runs/base-suite.log` (base 45425a30, EXIT=1: 22 known failures / 6651 passed),
-  `runs/after-suite.log` (head: 21 failed / **6725 passed**, 528 files), JSON censuses beside them.
+  `runs/after-suite.log` (head: 21 failed / **6728 passed**, 528 files), JSON censuses beside them —
+  recaptured after review round 1 on the COMMITTED tree (an interim capture, taken while the rebuilt dist
+  sat uncommitted, correctly lit a4p7-merge-gate's install-surface-freshness leg RED; committing dist with
+  its source turned it green again, and the final table shows NEW=0).
 - Review round 1 (coordinator relay, F-1/F-2): F-1 foreign-member ApprovalCase presentation — RED
   `runs/red-F1-foreign-member.log` (2 failed: A's presentation issued for B, and a forged caseId, both minted
   before the fix) → kernel recomputes the case identity from the request's own member/fingerprint at the
