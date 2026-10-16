@@ -285,19 +285,22 @@ describe('execution-boundary legality: per effect, all-or-nothing', () => {
   })
 })
 
-describe('the A3-2 coverage half-leg IN ISOLATION from the rung half-leg (review F-2)', () => {
-  // A one-shot probe of the whole input space (beneficiary x reviewer x
-  // claimed creation rung x 10 document families x seam on/off, ~1080
-  // inputs, script not kept in the repo) showed the DECIDED-not-allow
-  // coverage arm is UNREACHABLE while one `documents` input feeds both
-  // half-legs: positional binding means a higher rung is bound by FEWER
-  // documents, so passing the rung leg already implies the reviewer's
-  // ceiling reaches. That implication is defense-in-depth, and the honest
-  // isolation point is where coverage is genuinely undecided: subtree
-  // containment. SAME approval, SAME documents — only the containment seam
-  // differs. The refusal rides the envelope half-leg; the rung half-leg is
-  // then either irrelevant (never evaluated) or, on the seam-true leg,
-  // demonstrably passed (verify returns ok only if BOTH half-legs passed).
+describe('the execution-leg isolation: documents-derived ceiling walk vs reviewer position (review F-2, labelled per delta D-2/D-4)', () => {
+  // WHAT THIS ISOLATES: the DOCUMENTS-derived ceiling-walk arm — the refusal
+  // this test emits is the walk's 'effect N … is undetermined at execution
+  // time' message, reached when a subtree envelope cannot answer containment.
+  // The `grantCeiling` coverage arm further down the same function is
+  // documented-unreachable-by-monotonicity defense-in-depth: positional
+  // binding means a higher rung is bound by FEWER documents, so passing the
+  // rung leg already implies the reviewer's own ceiling reaches. Anchor for
+  // that claim (this file cannot keep a probe): the independent 14,544-input
+  // full-space sweep in review-PR2-delta.md §4 — arms fired: mayReview@creation
+  // 5859, ACCEPTED 5651, rung-escalated 1882, walk-undetermined 1152,
+  // grantCeiling coverage 0.
+  // SAME approval, SAME documents — only the containment seam differs. The
+  // refusal rides the documents half-leg; the rung half-leg is then either
+  // irrelevant (never evaluated) or, on the seam-true leg, demonstrably
+  // passed (verify returns ok only if BOTH half-legs passed).
   it('an unanswerable containment at execution refuses on the envelope leg; the seam alone legalizes the same presentation', () => {
     const set = effects(A)
     const docs = {

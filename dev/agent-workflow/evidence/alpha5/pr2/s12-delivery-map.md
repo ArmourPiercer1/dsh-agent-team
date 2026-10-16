@@ -59,11 +59,25 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   claimed generation → 23/23 GREEN. F-2 envelope-coverage isolation: a one-shot ~1080-input probe (script
   deliberately not kept in the repo) showed the DECIDED-not-allow coverage arm unreachable while one
   `documents` input feeds both half-legs (positional binding ⇒ rung leg implies coverage); the honest
-  isolation point is subtree containment — new test pins refusal on the envelope arm with the rung arms
+  isolation point is subtree containment — new test pins refusal on the ceiling-walk arm with the rung arms
   explicitly excluded, and the SAME presentation legalizing once the containment seam answers.
+- Naming precision (delta review D-2/D-4, adopted): the arm that EMITS the isolation refusal is the
+  documents-derived ceiling-walk arm (`approval-case.ts` — "effect N … is undetermined at execution time");
+  the `grantCeiling` coverage arm is documented-unreachable-by-monotonicity defense-in-depth, exercised by
+  no test in the tree. Citable anchor supplied by the reviewer (`review-PR2-delta.md` §4): a
+  14,544-input full-space sweep (3 effect sets × 101 document families incl. exact/subtree × 3 containment-seam
+  variants × 4 reviewers × 4 claimed creation rungs) fired `mayReview@creation` 5859, `ACCEPTED` 5651,
+  `rung-escalated` 1882, `walk-undetermined` 1152 — and the `grantCeiling` coverage arm **0**.
 - Fail-set table primary source: `runs/fail-set-diff.txt` (terminal, post-tie). The pre-tie `fail-set-diff.json`
   draft (it still carried NEW=1 from before the p4t6 tie landed) was removed to keep one master — the .txt
   is authoritative, any future .json is a derived convenience copy.
+- Commit-message 口径更正记录 (delta review D-1, `review-PR2-delta.md` §2): commit `af3e046b`'s message claimed
+  it applied the F-3 reword and recorded the Alpha.4 observation; `git show --stat af3e046b` shows one file,
+  README +8 — the claimed edits were NOT in that commit. History is not rewritten (no force, per the repo's
+  red line); the correction lands HERE and the edits themselves land in the commit carrying this file. The
+  falsified causal claim stood in `s12-delivery-map.md` §(e) and `runs/.pr-body.md` until that commit — both
+  now read "cause not established", and the Alpha.4 hard-envelope observation is recorded in §(g). The round-1
+  relay line that repeated the claim is corrected by this record rather than edited.
 - CI: NOT_RUN (stacked). Session discipline (coordination 08:2xZ): the census-runtime is not
   terminal, so NO claim of "all CI green" is made anywhere in this PR or its evidence —
   every number above is a local run.
@@ -85,7 +99,7 @@ after captured on the final tree (`runs/failing-identities-after.txt`, 21):
 | set | count | contents |
 | --- | --- | --- |
 | `only_in_after` (new red) | **0 (empty — the gate)** | — |
-| `only_in_base` (resolved) | 1 | `a4p7-merge-gate::…static legs the scratch…cannot change another instrument's measurement` — a build-state leg of ANOTHER instrument: at base capture the worktree had no built dist, its scratch lint universe read 1159 vs 1158; after this branch rebuilt the committed runtime dist the leg measures itself green (the base census carries its raw message verbatim). No PR2 code path is under this leg; recorded, not chased. |
+| `only_in_base` (resolved) | 1 | `a4p7-merge-gate::…static legs the scratch…cannot change another instrument's measurement` — build-state leg of another instrument, green again at head, **cause not established**; no PR2 code path under it (the instrument file is untouched by this diff; the base raw message is preserved in `runs/base-suite.log`). The earlier "dist rebuild made it green" attribution was falsified by the reviewer and is WITHDRAWN: `eslint.config.mjs` ignores `**/dist/**` and the independently re-measured lint universe (1172 = 1158 + exactly the 14 added files) shows the committed dist contributes 0 to what this leg counts. Recorded, not chased. |
 
 Corroboration: `scripts/lint-identities.mjs` identity diff (base worktree @ 45425a30 vs head):
 universe 1158 → 1172 (= +14 = exactly the files this PR adds), **new 0, resolved 0**.

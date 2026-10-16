@@ -111,6 +111,15 @@ algebra or mint. The case identity is enforced on all three of its legs
 (member / fingerprint / generation) at the execution boundary, the way the
 clock is treated as hostile rather than believed.
 
+Wiring instruction for PR3/PR4 (delta review D-3): the frozen PR0
+`requires-approval` decision arm carries only `kind / requestedEffects /
+reason` — the canonical case id is NOT on the arm. The live installer must
+take it from `kernel.planApproval()` (or the `admission-requires-approval`
+observe event) and present exactly that id back through
+`issueApprovedGrant`; never self-compose one. Since F-1 any other presentation
+is refused CLOSED (`approval-case-identity-mismatch`, with the expected id in
+`details`), which is the intended failure mode, not a retry hook.
+
 ## Grant one-shot (grant-mint.ts)
 
 `grantIdForCall` is deterministic (same call → same grantId → a double mint is
