@@ -6216,3 +6216,9 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - 用户抽读 `520a250d` 后升级 R-1a：envelope"命中"不是来源证明（Envelope 只答"谁能批多大范围"，不记"谁写的 deny"；无关规则可洗白）。实现改为 `PolicyDenySource` 投影：真实权威态的读时派生数据（ownerAuthority/sourceRef/sourceVersion），版本与 authority generation 一致才可信；case 层级 = max(walk, rungAbove(owner))——rung 只能批准低于其权威的拒绝；`rungAbove` 由 governance 导出（AUTHORITY_RANK 唯一序，hygiene 一行，无第二后继表）；issue 侧重跑证明（关闭残余 mint fail-open）。未接线 = 精确拒绝并明记（不 DORMANT 后移）；把 deny 复制进 Envelope 当来源 = 伪造，被对照 b/f 行拒绝；两平面 no-match 律未动。
 - 对照表（同 deny 同 envelope，六种来源态，全部分歧精确）落 `evidence/alpha5/pr2/r1a-source-contrast.md`；R-2a 独立腿 `ask-has-no-upper-rung`（点名 §8.2）；R-1b `deniedEffects`（plan 值 + observe 行，PR3 呈报契约）；NIT 断言 admin 单次批准前后 policy 字节不变。
 - 门：targeted 9 套 131/131；census 6739p/21f NEW=0 FIXED=1（FIXED=a4p7 dist-freshness 腿，dist 随源提交转正）；lint-identities NEW=0；token 0；push 前 rebase 过审阅者新提交 `520a250d`（零 force）。INTERFACES-v1.md 不在本树——C-ADM 律句由对照文档代持，交并行 lane 落档。磁盘满事故续：半程脚本只落了 RED 测试（源文件经 grep 证实未动），RED 先独立 commit+push 防再丢。
+
+## 2026-10-16 — alpha5-pr2 最终 head 复核尾件：F-1 歧义精确拒 + F-2 per-effect provenance 入案（RED `03bc0b05` → GREEN 本轮）
+
+- 复核确认升级项闭合（六态全对、issue 复证真、三小项核销、131/131 复现）后合并前三件：F-1 `find()` 首个覆盖条目 ⇒ 数组顺序决定结局，修为收集全部覆盖条目 + 完全重复折叠 + 并存不同来源 ⇒ `deny-source-ambiguous`（TOOL_BINDING_UNVERIFIED 族，双序同拒）；F-2 issue 复证只比 MAX rung ⇒ 第二效果 deny 晚到且 floor 低于已批 rung 照样 mint，修为 `PresentedApproval.deniedEffectsAtCreation`（presentation 钉住 planApproval.deniedEffects 对）同腿比对 ⇒ `deny-provenance-moved`/APPROVAL_STALE、regs=0（RED 不 bump generation：不信任装配层）。NIT：tail-截断日志换完整 RED/GREEN 捕获（命令行+per-test 行）。
+- 口径更正（承接 D-1 教训）：上一轮 s12 把 FIXED 腿归因"dist 随源提交转正"为未证因果，已撤回为 cause not established；历史未改写。
+- 门：targeted 9 套 133/133；census/fail-set/lint/token 见证据提交。未触 H1/H2/身份腿/one-shot/两平面律/F-3（owner 作者阶+sourceRef 可解析 = PR3 义务，G-d 台账）。push 前 rebase 过审阅者 `4f334d43`，零 force。
