@@ -33,8 +33,10 @@ const LANE_DIRS = ['runtime/jobs-gateway', 'runtime/test', 'domain/vnext-field-m
 // scan time: gone, it can import nothing and carry no vocabulary, so skipping
 // it weakens no claim — the exact-set pin below still asserts every STABLE
 // lane file is present, and every surviving file is still fully scanned.
-// ENOENT/ENOTDIR only are tolerated (and a stat that returns nothing); any
-// other fs error still throws, so a broken tree is never walked silently.
+// ENOENT/ENOTDIR only are tolerated; any other fs error still throws, so a
+// broken tree is never walked silently. (Plain statSync in try/catch, not the
+// `throwIfNoEntry` option: this package's declared @types/node predates it,
+// and the merge-gate typecheck leg is what caught that — TS2554.)
 function listFiles(dir: string, out: string[] = []): string[] {
   let entries: string[]
   try {
@@ -46,15 +48,14 @@ function listFiles(dir: string, out: string[] = []): string[] {
   }
   for (const entry of entries) {
     const full = join(dir, entry)
-    let st: ReturnType<typeof statSync> | undefined
+    let st: ReturnType<typeof statSync>
     try {
-      st = statSync(full, { throwIfNoEntry: false })
+      st = statSync(full)
     } catch (err) {
       const code = (err as NodeJS.ErrnoException).code
       if (code === 'ENOENT' || code === 'ENOTDIR') continue // vanished mid-walk
       throw err
     }
-    if (st === undefined) continue // vanished between readdir and stat
     if (st.isDirectory()) listFiles(full, out)
     else out.push(full)
   }
