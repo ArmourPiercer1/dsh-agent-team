@@ -25,10 +25,37 @@ const REPO_PACKAGES = join(dirname(fileURLToPath(import.meta.url)), '..', '..') 
 const REPO_LEDGER_FILE = join(REPO_PACKAGES, 'testkit', 'test', 'p4t6-session-event-scan.test.ts')
 const LANE_DIRS = ['runtime/jobs-gateway', 'runtime/test', 'domain/vnext-field-mapping/src', 'domain/test']
 
+// Census-load discipline (poc3 fd-recycling precedent, same family): this walk
+// runs at COLLECTION time, and the nine-root census executes files across
+// workers — other suites' tests create and delete transient paths under
+// packages/** (fault-injection state, test worlds) while this walk is in
+// flight. An entry that vanishes between readdir and stat was transient at
+// scan time: gone, it can import nothing and carry no vocabulary, so skipping
+// it weakens no claim — the exact-set pin below still asserts every STABLE
+// lane file is present, and every surviving file is still fully scanned.
+// ENOENT/ENOTDIR only are tolerated (and a stat that returns nothing); any
+// other fs error still throws, so a broken tree is never walked silently.
 function listFiles(dir: string, out: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
+  let entries: string[]
+  try {
+    entries = readdirSync(dir)
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === 'ENOENT' || code === 'ENOTDIR') return out // directory gone: transient
+    throw err
+  }
+  for (const entry of entries) {
     const full = join(dir, entry)
-    if (statSync(full).isDirectory()) listFiles(full, out)
+    let st: ReturnType<typeof statSync> | undefined
+    try {
+      st = statSync(full, { throwIfNoEntry: false })
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code
+      if (code === 'ENOENT' || code === 'ENOTDIR') continue // vanished mid-walk
+      throw err
+    }
+    if (st === undefined) continue // vanished between readdir and stat
+    if (st.isDirectory()) listFiles(full, out)
     else out.push(full)
   }
   return out
