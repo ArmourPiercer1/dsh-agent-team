@@ -91,12 +91,79 @@ escalated ladder outgrew, and a cross-generation replay are each refused as a
 WHOLE-set failure. Case identity = (member, effect-set fingerprint, authority
 generation) — never a callId; the GRANT stays per-call.
 
+## Policy-deny routing — 来源分流 contract (user ruling 2026-10-16; supersedes this lane's earlier blanket-deny arm)
+
+The ruling, verbatim in effect: ① a DENY must keep its **source and owning
+authority**: an upgradable ordinary Team deny enters the existing
+ApprovalCase/rung ladder — Human Admin is the top rung the environment
+supports and may LEGALLY approve once, without being forced to commit a
+permanent policy change first; ② `externalHard` answers only **capability
+facts**, the Domain gate is independent, and no Team approval changes a fact
+(an unsupported environment ⇒ refusal with zero side effects, probe-pinned);
+③ a deny whose source is **unknown or unwired** is refused with an accurate
+diagnosis — never dressed up as an authorized final Team deny.
+
+**Where the policy document comes from (no second authorization database).**
+The frozen PR0 `ToolPolicyDocument` carries no provenance field (its grammar
+is `{realmId, effectKind, matcher, maximumEffect}`). The assembler's
+`policyDocument()` reader is therefore a READ-TIME PROJECTION of the existing
+authority stores and nothing else: the blueprint's permission lanes
+(spec §3.2 required fields) plus the `GovernanceMutationService` overlay
+(spec §8.2 — direct commit vs proposal; permanent changes keep walking that
+path). The same underlying rules ALSO project into the
+`AuthorityEnvelopeDocuments` the kernel already identity-checks. The lane
+stores nothing; approvals never write policy (the single-use grant is an
+ApprovalCase answer, not a mutation).
+
+**The in-lane classifier is the envelope walk, not an assembler label.** The
+lane must not accept a trusted `source:` tag from the assembly to decide what
+is upgradable — that would skip the proof. Instead, for every DENIED effect
+the approval plane runs `evaluateAuthorityCeiling` over the SAME
+realm-qualified scope with the SAME documents/binding the identity leg just
+verified, and the walk's answer IS the owning-authority answer:
+
+* a rung can sign (leader/human-user by positional binding, human-admin via
+  its identity ceiling — the top inside envelope support) ⇒ **upgradable**:
+  the effect joins `needsApproval` and rides the ONE whole-set case at the
+  MAX required rung of the set (共同权威: the reviewer covers all effects or
+  none). A one-shot admin approval there is legal and mutates nothing;
+* NO rung can sign (beneficiary is already at the top) ⇒ typed refusal, no
+  case (there is no rung above to ask — the escalation ladder's own edge);
+* the walk is **undetermined / a bound document is unreadable** ⇒ ③: refusal
+  with a deny-source-unattributed diagnosis naming the index and the failed
+  leg, and explicitly NOT a "settled Team deny" message;
+* `undetermined` on the EXPANSION plane still poisons the whole set (plan §5
+  fail-closed leg unchanged — ruling ① is about decided denies, not about
+  undetermined anything).
+
+**Terminal sources are not policy rules at all.** externalHard capability
+facts and Domain-gate answers never enter the policy document; they gate
+behind H2 (assurance before any hard-profile use) and the Domain leg, and the
+issue path re-runs the same gates before mint — an approval can never mint
+over a fact that says no (probe + zero side effects stay pinned).
+
+**Deny that ARRIVES between case-open and issue:** the old case does not
+mint. The grant answers the case as planned; a policy plane that moved to
+deny re-opens admission at the escalated rung (live assembly bumps the
+authority generation on mutation, spec §8.2; the lane's generation leg turns
+the stale presentation into `APPROVAL_STALE` — stale is a refusal, not a
+retry).
+
 ## Error-code rulings (see the PR body's pre-freeze list)
 
-* `effect-set unapprovable` (policy `deny`/`undetermined`) → `IO_POLICY_UNSUPPORTED`
-  with `details.refusal = 'effect-set-unapprovable'`. The frozen §5 set has no
-  dedicated Team-policy-deny code; a dedicated `TEAM_POLICY_DENY` is proposed
-  for the §5 erratum (PR8 / user discretion — 可裁).
+* `effect-set unapprovable` now means **undetermined-only** (a decided deny is
+  routed, not refused — see the routing contract): `IO_POLICY_UNSUPPORTED` with
+  `details.refusal = 'effect-set-undetermined'`. The earlier
+  `TEAM_POLICY_DENY` §5-erratum proposal is **已裁 withdrawn** (user ruling
+  2026-10-16): an upgradable Team deny surfaces as `requires-approval`, not as
+  an error; no frozen-code addition is needed.
+* a DENY whose owning authority cannot be established (unreadable bound
+  document / undeterminable containment) → `TOOL_BINDING_UNVERIFIED` with
+  `details.refusal = 'deny-source-unattributed'` — ③: accurate diagnosis, never
+  presented as a settled Team deny.
+* policy plane moved to deny after the case opened → `APPROVAL_STALE` with
+  `details.refusal = 'policy-deny-at-issue'` (the case is stale, the request is
+  not; re-admission plans the escalated rung).
 * `effect-outside-grant` keeps PR0's frozen mapping → `TOOL_BINDING_UNVERIFIED`
   (the call exceeds the grant it carries = a call/binding mismatch, the same
   fact class PR1's Guard surfaces under this code; 可裁).
