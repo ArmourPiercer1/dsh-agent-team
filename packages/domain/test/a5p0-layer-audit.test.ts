@@ -1,0 +1,76 @@
+/**
+ * Alpha.5 PR0 — the lane-import gate (plan §3: "循环依赖/跨层 imports 审计").
+ *
+ * Runs `scripts/audit-a5-tool-governance-imports.mjs` IN-PROCESS (no spawn:
+ * the runner stays threads-pure per docs/TEST_METHODS.md §2) and additionally
+ * pins the two facts the script cannot see from the outside:
+ *
+ *  - the lane's barrel is the only sanctioned entry point (deep imports from
+ *    other packages reach a frozen file, not a moving part);
+ *  - the AUDIT ITSELF is non-vacuous: it must have walked real files and real
+ *    edges, or "no findings" means nothing (the a3p3 non-vacuity discipline).
+ *
+ * @module test/a5p0-layer-audit
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+
+// @ts-expect-error — plain-JS tooling script (the repo's scripts/ family is .mjs, no declarations)
+import { auditA5ToolGovernanceImports } from '../../../scripts/audit-a5-tool-governance-imports.mjs'
+
+const LANE_SRC = fileURLToPath(new URL('../tool-governance/src', import.meta.url))
+
+describe('the tool-governance lane audit', () => {
+  const verdict = auditA5ToolGovernanceImports()
+
+  it('reports no findings (pure domain, no cycles, zero production consumers)', () => {
+    expect(verdict.findings).toEqual([])
+  })
+
+  it('is non-vacuous: it really walked the lane and its edges', () => {
+    expect(verdict.laneFiles).toBeGreaterThanOrEqual(6)
+    expect(verdict.edgeCount).toBeGreaterThan(0)
+  })
+
+  it('the only outward edges are the sanctioned leaves', () => {
+    // Direct re-check independent of the script: every non-relative import in
+    // the lane is forbidden; every outward relative import resolves into one
+    // of the two named leaves.
+    const files: string[] = []
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry)
+        if (statSync(full).isDirectory()) walk(full)
+        else if (entry.endsWith('.ts') && !entry.endsWith('.d.ts')) files.push(full)
+      }
+    }
+    walk(LANE_SRC)
+    // Comment strip (a3p3 direction: prose may stop counting, an edge can
+    // never be erased) — prose `from "…"` is not a specifier.
+    const codeOnly = (source: string): string =>
+      source.replace(/^\s*\/\/.*$/gm, ' ').replace(/^\s*\/\*[\s\S]*?\*\//gm, ' ')
+    const outward = new Set<string>()
+    for (const file of files) {
+      const source = codeOnly(readFileSync(file, 'utf8'))
+      for (const match of source.matchAll(/\bfrom\s+['"]([^'"]+)['"]/g)) {
+        const spec = match[1] ?? ''
+        expect(spec.startsWith('.'), `bare specifier ${spec} in ${file}`).toBe(true)
+        if (!spec.startsWith('../')) continue
+        // Collapse the leading `../` ladder but KEEP the `.js` spelling — the
+        // endsWith checks below name the sanctioned leaves exactly as they
+        // are imported.
+        const normalized = spec.replace(/^\.\.(\/\.\.)+/, '..$1')
+        outward.add(normalized)
+      }
+    }
+    for (const spec of [...outward].sort()) {
+      expect(
+        spec.endsWith('authority-envelope/src/index.js') || spec.endsWith('blueprint/src/hash.js'),
+        `unsanctioned outward edge ${spec}`,
+      ).toBe(true)
+    }
+    expect(outward.size).toBeGreaterThan(0)
+  })
+})
