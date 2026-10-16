@@ -2171,6 +2171,37 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A4W6: readonly string[] = [
       'packages/runtime/test/a4w6-corrupt-not-pending.test.ts',
     ]
+    // The Alpha.5 PR0 tool-governance contract lane (branch
+    // `alpha5-pr0-contracts`, stacked on the S0 selection-matrix line):
+    // twelve PURE-DOMAIN sources (the closed contract records + the immutable
+    // algebra of `packages/domain/tool-governance/src`, shipped DORMANT —
+    // zero production consumers, pinned by a5p0-layer-audit — REUSING the
+    // Alpha.4 authority-envelope lattice rather than restating it) plus its
+    // six RED-first specs. The audit tooling lives in `scripts/`, outside the
+    // packages/ scan, and moves nothing; the edited files (the domain
+    // tsconfig include entry is not scanned, the a3p3 hygiene allow-list
+    // amendment is an EDIT) contribute no increment — an edit is not an
+    // increment, in either direction.
+    const SCANNED_PATHS_A5PR0: readonly string[] = [
+      'packages/domain/tool-governance/src/canonical-json.ts',
+      'packages/domain/tool-governance/src/parse-util.ts',
+      'packages/domain/tool-governance/src/resource.ts',
+      'packages/domain/tool-governance/src/effects.ts',
+      'packages/domain/tool-governance/src/assurance.ts',
+      'packages/domain/tool-governance/src/binding.ts',
+      'packages/domain/tool-governance/src/grant.ts',
+      'packages/domain/tool-governance/src/lease.ts',
+      'packages/domain/tool-governance/src/planes.ts',
+      'packages/domain/tool-governance/src/errors.ts',
+      'packages/domain/tool-governance/src/interfaces.ts',
+      'packages/domain/tool-governance/src/index.ts',
+      'packages/domain/test/a5p0-contracts.test.ts',
+      'packages/domain/test/a5p0-schema-negatives.test.ts',
+      'packages/domain/test/a5p0-fingerprint-negatives.test.ts',
+      'packages/domain/test/a5p0-planes.test.ts',
+      'packages/domain/test/a5p0-grant-replay.test.ts',
+      'packages/domain/test/a5p0-layer-audit.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2195,7 +2226,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4F2COLDSTART.length +
         SCANNED_PATHS_A4W1.length +
         SCANNED_PATHS_A4W2.length +
-        SCANNED_PATHS_A4W6.length,
+        SCANNED_PATHS_A4W6.length +
+        SCANNED_PATHS_A5PR0.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2221,7 +2253,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A4F2COLDSTART.length +
         SCANNED_PATHS_A4W1.length +
         SCANNED_PATHS_A4W2.length +
-        SCANNED_PATHS_A4W6.length,
+        SCANNED_PATHS_A4W6.length +
+        SCANNED_PATHS_A5PR0.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2273,6 +2306,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A4W1,
       ...SCANNED_PATHS_A4W2,
       ...SCANNED_PATHS_A4W6,
+      ...SCANNED_PATHS_A5PR0,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2456,6 +2490,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // dev/agent-workflow/evidence/a4-pr7/w2-rebuild-path/ (p4t6-before-measured.log
     // and p4t6-after-measured.log), not written by hand.
     expect(SCANNED_PATHS_A4W2.length).toBe(1043 - 1042)
+    // The A5-PR0 tie, same form: the movement equals the eighteen files this
+    // lane names, each asserted present by path in the loop above. BOTH
+    // endpoints MEASURED on this branch, not inferred: with the lane on disk
+    // and this entry absent the run reads `expected 1066 to be 1048` (full
+    // suite JSON capture, `a5-final-test.json`), and 1048 is the derived
+    // merged-tip total the a4-w6 tie above ends on.
+    expect(SCANNED_PATHS_A5PR0.length).toBe(1066 - 1048)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

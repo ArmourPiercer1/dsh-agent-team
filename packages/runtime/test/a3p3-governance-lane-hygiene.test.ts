@@ -813,6 +813,15 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
     // its own importer surface is pinned by a leg of its own below.
     const PERMISSION_APPROVAL = 'governance/permission-approval.ts'
     const CEILING_AND_PROPOSAL = [...CEILING_AND_GATE, PERMISSION_APPROVAL]
+    // A5-PR0 amendment (Alpha.5 plan §3): the DORMANT `tool-governance`
+    // contract lane composes the two shared plane functions realm-scoped —
+    // the sanctioned REUSE route for "复用 Alpha.4 rank 语义" (a second
+    // lattice is exactly what this leg exists to refuse). Pure types + pure
+    // algebra, ZERO production consumers (pinned by `a5p0-layer-audit`), and
+    // `a5p0-planes` proves rule-for-rule agreement with this algebra. It is
+    // not a wiring, not the permission plane, and not a decision path; PR2
+    // wires admission.
+    const A5_TOOL_GOVERNANCE_PLANES = '../domain/tool-governance/src/planes.ts'
     // The list's COMPLETENESS is asserted below against the module's own export
     // scan, so this array cannot quietly fall behind the file it polices.
     const SURFACE: readonly (readonly [name: string, allowed: readonly string[]])[] = [
@@ -886,12 +895,14 @@ describe('the shared authority grammar stays a DOMAIN LEAF (A4-PR1, ADR A3-9/A2-
       ['evaluateAuthorityCeiling', [...CEILING_AND_PROPOSAL, OPERATION_ROUTING]],
       // The domain algebra: the domain lane, plus the ceiling adapter where it
       // composes them. NOT the permission plane and NOT any decision path.
-      ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE]],
+      // A5-PR0: `planes.ts` joins the TWO PLANE rows only (realm-scoped
+      // composition, dormant contract lane — see the constant's comment).
+      ['narrowingForApproval', [...DOMAIN_LANE, ...CEILING_LANE, A5_TOOL_GOVERNANCE_PLANES]],
       ['meetAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['meetAllAuthorityCeilings', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['CEILING_IDENTITY', [...DOMAIN_LANE, ...CEILING_LANE]],
       ['CEILING_NO_AUTHORITY', [...DOMAIN_LANE, ...CEILING_LANE]],
-      ['effectiveAuthorityCeiling', [...DOMAIN_LANE, ...CEILING_LANE]],
+      ['effectiveAuthorityCeiling', [...DOMAIN_LANE, ...CEILING_LANE, A5_TOOL_GOVERNANCE_PLANES]],
       ['parseAuthorityEnvelope', DOMAIN_LANE],
       // The AST vocabulary: the domain lane and the ONE canonicalizer.
       ['AuthorityEnvelopeAst', [...DOMAIN_LANE, join('src', 'plugin', 'permission-plane.ts')]],

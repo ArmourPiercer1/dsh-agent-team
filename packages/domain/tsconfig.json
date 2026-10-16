@@ -14,6 +14,11 @@
     // new module is typechecked by nothing at all — a lane that looks green and
     // guards nothing. Runtime emits it transitively through its own build.
     "authority-envelope/src",
+    // A5-PR0 (plan §3): the tool-governance contract lane (pure types + pure
+    // algebra, DORMANT — zero production consumers, pinned by
+    // `a5p0-layer-audit`). Same rationale as the entry above: without this
+    // entry the lane is typechecked by nothing at all.
+    "tool-governance/src",
     "test",
     "vitest.config.ts"
   ]
