@@ -1,0 +1,63 @@
+a5p1-guard: dispatcher-preparing agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: guard-installed agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: tools-change-unbound-names agent=session-a5p1-team-2026-10-16T06-35-06 denied=["bash","edit","read","read_image","write"]
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: tools-change-unbound-names agent=session-a5p1-team-2026-10-16T06-35-06 denied=["bash","edit","read","read_image","team_list_members","write"]
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: tools-change-unbound-names agent=session-a5p1-team-2026-10-16T06-35-06 denied=["bash","edit","read","read_image","team_create_member","team_list_members","write"]
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: tools-change-unbound-names agent=session-a5p1-team-2026-10-16T06-35-06 denied=["bash","edit","read","read_image","team_create_member","team_delegate","team_list_members","write"]
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: tools-change-unbound-names agent=session-a5p1-team-2026-10-16T06-35-06 denied=["bash","edit","read","read_image","team_collect","team_create_member","team_delegate","team_list_members","write"]
+a5p1-guard: dispatcher-bind-inherited agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-active agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: agent-published agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-call-begin agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_create_member
+a5p1-guard: dispatcher-preparing agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: guard-installed agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: tools-change-unbound-names agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754 denied=["bash","edit","read","read_image","write"]
+a5p1-guard: dispatcher-bind-inherited agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-active agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: agent-published agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-call-end agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_create_member
+a5p1-guard: dispatcher-call-begin agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_create_member
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-surface-revalidated agent=session-a5p1-team-2026-10-16T06-35-06
+a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-85d12902d1e1fffd4f72c6bfd8897754
+a5p1-guard: dispatcher-call-end agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_create_member
+a5p1-guard: dispatcher-call-begin agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate
+a5p1-guard: dispatcher-call-end agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate
+a5p1-guard: dispatcher-call-begin agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate
+a5p1-guard: dispatcher-call-end agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate
+a5p1-guard: dispatcher-call-begin agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate
+a5p1-guard: dispatcher-call-end agent=session-a5p1-team-2026-10-16T06-35-06 tool=team_delegate

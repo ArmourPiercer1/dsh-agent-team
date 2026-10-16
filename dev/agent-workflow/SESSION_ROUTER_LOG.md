@@ -6138,3 +6138,14 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 
 **第二件是我自己的流程缺陷**：我把「会话不可用」当悬案报给你，其实流程是已知的——切入 Team 模式、等「Team 模式」字样、**然后刷新页面**。操作者给出并验证，我也实测：刷新后输入框可用，上面所有守卫操作都成功。机制归操作者提供并如此标注：重启后的会话重建在**上游 core**、缺切入接口，会话被重建为**普通会话**，按钮只更新后端不失效前端缓存。
 **冲突留在账上**：归档 `pr31_supplemental_fix_guide.md` **INV-7** 把「点一次、不 reload、composer 立即 usable」定为最终产品 hard gate，并禁止拿 reload 当 acceptance path；而今天的实测与操作者记录都说**这一步 reload 是承重的**。我把 `docs/**` + 日志 + evidence 全搜过，**只找到 INV-7 本身**——要么改判记录在本仓库之外，要么这道 gate 从未达成。运行记录两种都写，**请你指认出处**，别让我替它编故事。
+
+
+## 2026-10-16 Alpha.5 PR1 实现轮（closed-world Guard + Stable Scoped Dispatcher，branch `alpha5-pr1-guard-dispatcher`，stacked-on-#252）
+
+**落地的判断增量**（详证 `dev/agent-workflow/evidence/alpha5-pr1-implementation/s12-evidence.md` (a) 表）：closed world 装在 Team 可信装配点（仅对携带 `permissionPolicy` 的 Agent），拒绝顺序 state→identity→unknown name→binding drift；Coverage Gate 降级为诊断；publish 期已存在的 native 名按 `native:<name>` inherited 绑定并 **abstain**（是否放行属权限道，PR1 不改）；lease 边界为「最外门→结果事件」实测值，非「Body 未在跑」；teardown 不信 dispose 返回值，仍有 outstanding 即 `EXECUTION_TERMINATION_UNCONFIRMED` 且 mask/Guard 保持武装；本 lane 零时钟（`S7` 钉住）。
+
+**真实 Host 证据**：`dev/agent-workflow/evidence/alpha5-pr1-host/final/run-receipt.md`，21/21 断言（8 条 order-hazard 臂 + 13 条 Host 腿），端口 3185，world 即时删除，:3080 只读且前后一致，pinned test-use tree porcelain-clean。dynRan 翻转实据 = `Error: team tool guard: "team_follow_up" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)` 且该 tool 无任何副作用；PoC 记录 `dynRan=true` 原样不动。NEG1-CONTROL 仍在无 PR1 时复现 native body=1（保护对照未被削弱）。
+
+**本轮新增的 Host 事实（此前无人记录，全部实测）**：(1) preset/row scope 在 `apply()` 期读 `ctx.tools` 抛 `cannot get property "tools" without inject`，即第三方 row 在本 Host 无法自行注册工具；(2) 该 scope 的 `agent/created` / `tools/pre-execute` 订阅被接受但**永不投递**；(3) 子进程 stdout 改为 pipe 后 boot marker 180 s 未达（同世界 fd 直写 ~2 s 就绪）；(4) Team 工具在 `status:"rejected"` 时 `isError` 仍为 false。据此 H6 的 Host 侧改用 Team glue 自己在 publish 之后注册的 `team_follow_up`，probe row 退为纯观察者并把自身 liveness 写进 ledger；post-publish「时序」那一半由 `pr1-parked`/`pr1-body` 确定性臂与单元测试承担，两半分开报告、不合并成一条声称。
+
+**卫生**：kit 在成功/FATAL/throw 三条路径都删 world；新增 `tests/kits/a5-pr1-guard-dispatch/sweep-worlds.mjs`（`--dry` / `--scrub-raw`）承担 SIGKILL 遗留 world 与 `host-stdout.raw` 的 runner 侧修复；历史 run 证据中 15 处明文 token 已就地替换为 `REDACTED-<sha256-8>`，新 run 的 Host stdout 在 finalize `instance.log` 时同表脱敏并删原件。此前失败的 7 个 world 已清扫为 0。

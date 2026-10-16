@@ -1,0 +1,127 @@
+{
+  "runStamp": "2026-10-16T06:51:52.456Z",
+  "criteria": [
+    {
+      "id": "NEG1-CONTROL",
+      "name": "without PR1, lift-then-unload still hands the call to the native body (protection control)",
+      "ok": true,
+      "detail": "native=1 bodies=NATIVE.grep"
+    },
+    {
+      "id": "NEG1-SAFE",
+      "name": "without PR1, the reverse order keeps the native body out (protection control)",
+      "ok": true,
+      "detail": "native=0 bodies="
+    },
+    {
+      "id": "NEG1-PARKED",
+      "name": "PR1: a call resuming at the fence meets the state gate; no body of ANY kind runs (lease boundary disclosed)",
+      "ok": true,
+      "detail": "native=0 adapter=0 teardown=EXECUTION_TERMINATION_UNCONFIRMED text=Error: team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-prog"
+    },
+    {
+      "id": "NEG1-BODY",
+      "name": "PR1: a call already inside the Team Body drains; the teardown waits and the native body never appears",
+      "ok": true,
+      "detail": "native=0 adapter=1 bodies=ADAPTER.grep"
+    },
+    {
+      "id": "NEG1-MASK",
+      "name": "PR1: the mask survives a refused teardown and lifts exactly once per Agent, never before RELEASED",
+      "ok": true,
+      "detail": "parkedLifts=1 parkedFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED bodyLifts=1 nativeBeforeRelease=0"
+    },
+    {
+      "id": "NEG1-SEAM",
+      "name": "measured seam limit: the result edge precedes the Body return, so the self-count is dispatch->result (disclosed)",
+      "ok": true,
+      "detail": "postExecuteBeforeRelease=true bodyTeardownOk=null"
+    },
+    {
+      "id": "NEG1-STABLE",
+      "name": "PR1: the governed name resolves to the Team Definition before the drain (stable shape, no unload)",
+      "ok": true,
+      "detail": "parked=ADAPTER.grep body=ADAPTER.grep"
+    },
+    {
+      "id": "NEG1-LEAK",
+      "name": "an outstanding call stops the teardown: unconfirmed termination, never a release",
+      "ok": true,
+      "detail": "code=EXECUTION_TERMINATION_UNCONFIRMED guardSays=team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not A resumed=Error: team tool guard: \"grep\" is refused because this Agent"
+    }
+  ],
+  "arms": {
+    "hazard": {
+      "order": "hazard",
+      "resolutionBefore": "ADAPTER.grep",
+      "native": 1,
+      "adapter": 0,
+      "nativeBeforeRelease": 0,
+      "maskLifts": 1,
+      "edgeOrder": {
+        "postExecutedBeforeRelease": false,
+        "released": true
+      },
+      "inFlightAtTeardown": null,
+      "teardownRefusalCode": null,
+      "refusedWhileDraining": null,
+      "text": "ran:grep@NATIVE.grep",
+      "bodies": [
+        "NATIVE.grep"
+      ]
+    },
+    "safe": {
+      "order": "safe",
+      "resolutionBefore": "ADAPTER.grep",
+      "native": 0,
+      "adapter": 0,
+      "nativeBeforeRelease": 0,
+      "maskLifts": 0,
+      "edgeOrder": {
+        "postExecutedBeforeRelease": false,
+        "released": true
+      },
+      "inFlightAtTeardown": null,
+      "teardownRefusalCode": null,
+      "refusedWhileDraining": null,
+      "text": "Error: unknown tool \"grep\"",
+      "bodies": []
+    },
+    "parked": {
+      "order": "pr1-parked",
+      "resolutionBefore": "ADAPTER.grep",
+      "native": 0,
+      "adapter": 0,
+      "nativeBeforeRelease": 0,
+      "maskLifts": 1,
+      "edgeOrder": {
+        "postExecutedBeforeRelease": false,
+        "released": true
+      },
+      "inFlightAtTeardown": false,
+      "teardownRefusalCode": "EXECUTION_TERMINATION_UNCONFIRMED",
+      "refusedWhileDraining": "team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the ",
+      "text": "Error: team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the mask stays)",
+      "bodies": []
+    },
+    "inBody": {
+      "order": "pr1-body",
+      "resolutionBefore": "ADAPTER.grep",
+      "native": 0,
+      "adapter": 1,
+      "nativeBeforeRelease": 0,
+      "maskLifts": 1,
+      "edgeOrder": {
+        "postExecutedBeforeRelease": true,
+        "released": true
+      },
+      "inFlightAtTeardown": true,
+      "teardownRefusalCode": null,
+      "refusedWhileDraining": "team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the ",
+      "text": "ran:grep@ADAPTER.grep",
+      "bodies": [
+        "ADAPTER.grep"
+      ]
+    }
+  }
+}

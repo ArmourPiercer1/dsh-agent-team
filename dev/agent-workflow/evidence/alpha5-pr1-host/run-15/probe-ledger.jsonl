@@ -1,0 +1,4 @@
+{"at":"2026-10-16T06:41:50.352Z","leg":"plugin-apply","pid":24,"hasOn":true,"hasEffect":true}
+{"at":"2026-10-16T06:41:50.353Z","leg":"listen","event":"agent/created","scope":"row-scope","ok":true}
+{"at":"2026-10-16T06:41:50.353Z","leg":"listen","event":"tools/pre-execute","scope":"row-scope","ok":true}
+{"at":"2026-10-16T06:41:50.353Z","leg":"apply-done","agents":[]}

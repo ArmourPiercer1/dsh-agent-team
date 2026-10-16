@@ -1,0 +1,44 @@
+{
+  "strict": [
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-14-25/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T06-14-25\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_dyn_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_early_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    }
+  ],
+  "ctl": [
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-14-25/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T06-14-25\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_dyn_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_early_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    }
+  ],
+  "strictRedrive": [
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-14-25/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T06-14-25\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_dyn_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    },
+    {
+      "isError": true,
+      "text": "Error: team tool guard: \"a5p1_early_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+    }
+  ]
+}

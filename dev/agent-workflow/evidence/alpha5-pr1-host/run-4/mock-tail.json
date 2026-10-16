@@ -1,0 +1,162 @@
+[
+  {
+    "seq": 4,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:e4fe12fb58fd290b53f48622",
+    "reply": {
+      "kind": "text",
+      "content": "a5p1 assembly session"
+    }
+  },
+  {
+    "seq": 5,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-njuzexon\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"create-member\\\",\\\"rootSessionId\\\":\\\"session-a5p1-team-2026-10-16T06-07",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-jxfakn5x",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p1-team-2026-10-16T06-07-39",
+            "requestToken": "a5p1-c2-2026-10-16T06-07-39",
+            "delegationTemplateId": "ctl",
+            "label": "p1-ctl"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-jxfakn5x\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"create-member\\\",\\\"rootSessionId\\\":\\\"session-a5p1-team-2026-10-16T06-07",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-vkobgvpy",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p1-team-2026-10-16T06-07-39",
+            "requestToken": "a5p1-d1-2026-10-16T06-07-39",
+            "delegationInstanceId": "inst-1vu2v6b06b3u",
+            "label": "p1-strict",
+            "prompt": "A5P1_STRICT_2026-10-16T06-07-39",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-vkobgvpy\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5p1-team-2026-10-16T06-07-39\\\"",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-5lzaaqzv",
+          "name": "a5p1_dyn_probe",
+          "arguments": {
+            "tag": "strict"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 8,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=a5p1-d1-2026-10-16T06-07-39] A5P1_STRICT_2026-10-16T06-07-39\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-5g634el2",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-07-39/workspace/a5p1-seed.txt"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 9,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=a5p1-d1-2026-10-16T06-07-39] A5P1_STRICT_2026-10-16T06-07-39\\",
+    "reply": {
+      "kind": "text",
+      "content": "a5p1 assembly session"
+    }
+  },
+  {
+    "seq": 10,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-5lzaaqzv\",\"content\":[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"a5p1_dyn_probe\\\" has no Team Tool Binding on this Agent (closed world: an un-gover",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-28i2a723",
+          "name": "a5p1_early_probe",
+          "arguments": {
+            "tag": "strict"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 11,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-28i2a723\",\"content\":[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"a5p1_early_probe\\\" has no Team Tool Binding on this Agent (closed world: an un-gov",
+    "reply": {
+      "kind": "text",
+      "content": "A5P1_STRICT_DONE"
+    }
+  },
+  {
+    "seq": 12,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-5g634el2\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-07-39/works",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-1ygtms0x",
+          "name": "a5p1_dyn_probe",
+          "arguments": {
+            "tag": "strict"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 13,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-1ygtms0x\",\"content\":[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"a5p1_dyn_probe\\\" has no Team Tool Binding on this Agent (closed world: an un-gover",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-tsu3yjdn",
+          "name": "a5p1_early_probe",
+          "arguments": {
+            "tag": "strict"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 14,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-tsu3yjdn\",\"content\":[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"a5p1_early_probe\\\" has no Team Tool Binding on this Agent (closed world: an un-gov",
+    "reply": {
+      "kind": "text",
+      "content": "A5P1_STRICT_DONE"
+    }
+  },
+  {
+    "seq": 15,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work-settled requestToken=a5p1-d1-2026-10-16T06-07-39]\\n\\nAn asynchronous Team work unit has settled.\\ninstanceId: inst-1vu2v6b06b3u\\nrequestToken: a5p1-d1-2026-10-16T06-",
+    "reply": {
+      "kind": "text",
+      "content": "A5P1_STRICT_DONE"
+    }
+  }
+]

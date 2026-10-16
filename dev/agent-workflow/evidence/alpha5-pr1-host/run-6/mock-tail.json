@@ -1,0 +1,93 @@
+[
+  {
+    "seq": 1,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"A5P1_DISC_2026-10-16T06-15-20\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: workspac",
+    "reply": {
+      "kind": "text",
+      "content": "A5P1_NOOP_DONE"
+    }
+  },
+  {
+    "seq": 2,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5P1_DISC_2026-10-16T06-15-20\\\"}]\"}]",
+    "reply": {
+      "kind": "text",
+      "content": "a5p1 assembly session"
+    }
+  },
+  {
+    "seq": 3,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:83de1a63c88712022c7112dad41e2ef135085bcebda22e0cc7cc3ed4c5dd1928] A5P1_L1_2026-10-16T06-15-20\"},{\"type\":\"text\",\"tex",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-nejgcp53",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p1-team-2026-10-16T06-15-20",
+            "requestToken": "a5p1-c1-2026-10-16T06-15-20",
+            "delegationTemplateId": "strict",
+            "label": "p1-strict"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 4,
+    "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:83de1a63c88712022c7112da",
+    "reply": {
+      "kind": "text",
+      "content": "a5p1 assembly session"
+    }
+  },
+  {
+    "seq": 5,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-nejgcp53\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\\\",\\\"message\\\":\\\"activation: child-sess",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-vq1p2qcz",
+          "name": "team_create_member",
+          "arguments": {
+            "rootSessionId": "session-a5p1-team-2026-10-16T06-15-20",
+            "requestToken": "a5p1-c2-2026-10-16T06-15-20",
+            "delegationTemplateId": "ctl",
+            "label": "p1-ctl"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 6,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-vq1p2qcz\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\\\",\\\"message\\\":\\\"activation: child-sess",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a5p1-vabfafta",
+          "name": "team_delegate",
+          "arguments": {
+            "rootSessionId": "session-a5p1-team-2026-10-16T06-15-20",
+            "requestToken": "a5p1-d1-2026-10-16T06-15-20",
+            "delegationInstanceId": "inst-1gv71ui0qr5i",
+            "label": "p1-strict",
+            "prompt": "A5P1_STRICT_2026-10-16T06-15-20",
+            "async": true
+          }
+        }
+      ]
+    }
+  },
+  {
+    "seq": 7,
+    "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5p1-vabfafta\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"blocked\\\",\\\"toolName\\\":\\\"team_delegate\\\",\\\"correlation\\\":\\\"a5p1-d1-2026-10-16T06-15-20\\\",\\\"rea",
+    "reply": {
+      "kind": "text",
+      "content": "A5P1_ID_FAIL_2"
+    }
+  }
+]

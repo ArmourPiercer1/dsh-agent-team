@@ -1,0 +1,24 @@
+{
+  "runStamp": "2026-10-16T06-15-20",
+  "fatal": "member scripts did not finish (strict=false ctl=false); see mock-tail.json",
+  "criteria": [
+    {
+      "id": "C1a",
+      "name": "host booted on the recorded port with the production Team row mounted and the token gate live",
+      "ok": true,
+      "detail": "port=3185 healthOk=true toolCount=15 teamSession=true noToken=401"
+    },
+    {
+      "id": "C1b",
+      "name": "team.create (remote HTTP) starts the governed team session",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-u95dv9699a\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-15-20\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:0d20db521d"
+    },
+    {
+      "id": "C1c",
+      "name": "the leader created one governed member and one legacy member and delegated to both (plus the C5 re-drive)",
+      "ok": false,
+      "detail": "created=2 delegated=1 teamResults=0 errored=0 lastResult="
+    }
+  ]
+}
