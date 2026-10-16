@@ -1,7 +1,7 @@
 # Alpha.5 PR1 — file hash manifest (sha256)
 
 Universe: `git diff --name-only cd13f781...HEAD` + `git diff --name-only HEAD` (working-tree edits) + `git ls-files --others --exclude-standard`,
-minus `.tmp-a5p1/`, the gitignored test trees, and this manifest itself. Each file is hashed as committed.
+minus `.tmp-a5p1/`, the gitignored test trees, and this manifest itself (it cannot hash itself). Each file is hashed as committed.
 
 ## 1. lane source, tests and tsconfig — what a reviewer reads — 16 file(s)
 
@@ -306,7 +306,7 @@ d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-work
 
 ## 5. generated build output — 65 file(s) under packages/runtime/dist/
 
-Tracked in git (the Host loads `dist`), produced by `pnpm build` + `node scripts/place-dist-glue.mjs`, pinned fresh by `pnpm check:artifacts`.
-Folded into one digest rather than listed per file:
+Tracked in git (the Host loads `dist`), produced by `pnpm build` + `node scripts/place-dist-glue.mjs`, pinned fresh by `pnpm check:artifacts`
+(and `check:artifacts:head` reports HEAD carries its own build: 1572 compared files). Folded into one digest rather than listed per file:
 
 aggregate sha256 over the sorted per-file sha256 lines: `627dff685a0c4f24f6fe1a467c6fbd4887cd9dc77492c0a48f540972cdba0604`
