@@ -123,6 +123,18 @@ base is red here):
 | `packages/domain/test/t2-blueprint-hash.test.ts` | 1 (`projects absent optional singles as explicit null`) | same |
 | `packages/testkit/test/a4p7-merge-gate.test.ts` | 2 (the composition-smoke legs) | both legs are red on the base as well; the THIRD base-red leg (`the scratch the commit-level instrument builds…`) is green here, and a fourth leg that was red mid-round — `the committed install surface is fresh against the tree` (artifacts staleness) — went green the moment `dist` was committed, which is the mechanism that leg exists to enforce |
 
+The cause of the two red composition-smoke legs is named rather than waved at:
+`node scripts/composition-smoke.mjs` prints
+`SKIP client plugin (packages/client): host module closure unavailable — 1
+unresolvable: clsx`, and the gate's own rule is that a skipped step is a red
+(“A skipped step is an unverified claim, not a green one”). This environment's
+`node_modules/clsx` carries only `.d.ts` files and
+`packages/client/node_modules/clsx` does not exist, so the host module closure
+cannot be traversed — an installation gap that is present on the base as well,
+and nothing in this PR's diff touches it. Repairing it means re-running the
+dependency install, which changes far more than this branch; it is recorded here
+so a reviewer does not have to rediscover it.
+
 Reds that disappeared between the two runs are **not claimed as fixes**:
 `rc2-persona-probe`, `plugin-dsh-compat`, `rc2-kit-preset-seam` and one a4p7 leg
 read the mandated runtime tree (`tests/deepseek-harness-test-use`) and the shared
