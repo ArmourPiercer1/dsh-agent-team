@@ -103,6 +103,14 @@ generation) — never a callId; the GRANT stays per-call.
 * non-finite clock → `APPROVAL_STALE` (the clock feeds only freshness legs;
   an un-evaluable freshness leg has not passed).
 
+Presentation trust (review F-1, closed): `issueApprovedGrant` does NOT trust a
+presented `approvalCaseId` — it recomputes the case identity from the
+request's own member + effect-set fingerprint at the claimed generation and
+refuses a mismatch (`approval-case-identity-mismatch`) before any legality
+algebra or mint. The case identity is enforced on all three of its legs
+(member / fingerprint / generation) at the execution boundary, the way the
+clock is treated as hostile rather than believed.
+
 ## Grant one-shot (grant-mint.ts)
 
 `grantIdForCall` is deterministic (same call → same grantId → a double mint is
