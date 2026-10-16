@@ -106,6 +106,30 @@ describe('staleness is refused (过期 generation / 到期)', () => {
     const never = ok(parseOperationGrant({ ...grantRaw, expiresAt: null }))
     expect(validateGrantForCall(never, callFor({ now: 10 ** 12 }), freshLedger()).ok).toBe(true)
   })
+
+  // ---- PINNED CURRENT SEMANTICS (review item @ 3f8cfff8; the comparison is
+  // NOT changed). `grant.ts:142` uses the STRICT `now > expiresAt`, and a
+  // non-finite `now` cannot satisfy `>`. These tests pin both consequences so
+  // a later `>=`, a clamp, or a silent finite-coercion cannot move the line
+  // unnoticed. A contrary expiry-comparison contract does not exist anywhere
+  // in the repository (grep over docs/: no `expiresAt` semantics statement
+  // beyond design §4.2's "可选到期时间" itself). Call-clock validity is the
+  // PR2 wiring's concern; the module owns no clock.
+  it('the expiry instant itself is still inside the grant (strict > boundary, pinned)', () => {
+    expect(validateGrantForCall(grant, callFor({ now: 5000 }), freshLedger())).toEqual({ ok: true })
+  })
+  it('one tick past the expiry instant is refused (boundary pinned from the other side)', () => {
+    const r = validateGrantForCall(grant, callFor({ now: 5000.000001 }), freshLedger())
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.reason).toBe('grant-expired')
+  })
+  it('non-finite now: NaN/−∞ never satisfy `>` (NOT treated as expired); +∞ IS expired — all three pinned as the operator answers', () => {
+    expect(validateGrantForCall(grant, callFor({ now: Number.NaN }), freshLedger())).toEqual({ ok: true })
+    expect(validateGrantForCall(grant, callFor({ now: Number.NEGATIVE_INFINITY }), freshLedger())).toEqual({ ok: true })
+    const r = validateGrantForCall(grant, callFor({ now: Number.POSITIVE_INFINITY }), freshLedger())
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.reason).toBe('grant-expired')
+  })
   it('a grant bound to binding revision 3 does not cover revision 4', () => {
     const r = validateGrantForCall(grant, callFor({ bindingRevision: 4 }), freshLedger())
     expect(r.ok).toBe(false)

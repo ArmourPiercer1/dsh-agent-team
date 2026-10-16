@@ -123,20 +123,73 @@ describe('closed enumerations refuse wrong values (错枚举)', () => {
     )
   })
   it('assurance level outside the five-level set', () => {
+    const dim = (level: unknown) => ({ level, mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' })
     expectProblems(
       parseAssuranceContract({
         implementationOrigin: 'dsh-native',
         executionBoundary: 'trusted-host',
         assurance: {
-          'content-read': 'probably-enforced',
-          'directory-metadata': 'enforced',
-          write: 'enforced',
-          alias: 'enforced',
-          'network-destination': 'enforced',
-          'inherit-cancel': 'enforced',
+          'content-read': dim('probably-enforced'),
+          'directory-metadata': dim('enforced'),
+          write: dim('enforced'),
+          alias: dim('enforced'),
+          'network-destination': dim('enforced'),
+          'inherit-cancel': dim('enforced'),
         },
       }),
       'value-outside-closed-set',
+    )
+  })
+  it('M-2: a dimension must be a full §2.1 record — a bare level, a missing mechanism/realmId, or a blank "evidence" are all refused', () => {
+    // (a) a bare level string where a record belongs;
+    expectProblems(
+      parseAssuranceContract({
+        implementationOrigin: 'dsh-native',
+        executionBoundary: 'trusted-host',
+        assurance: {
+          'content-read': 'enforced',
+          'directory-metadata': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          write: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          alias: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'network-destination': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'inherit-cancel': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+        },
+      }),
+      'not-a-record',
+    )
+    // (b) a record omitting mechanism AND realmId (作用 Realm) — required,
+    // not optional; the claim must state HOW and WHERE it holds;
+    expectProblems(
+      parseAssuranceContract({
+        implementationOrigin: 'dsh-native',
+        executionBoundary: 'trusted-host',
+        assurance: {
+          'content-read': { level: 'enforced', trustRoot: null, evidence: null },
+          'directory-metadata': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          write: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          alias: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'network-destination': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'inherit-cancel': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+        },
+      }),
+      'missing-field',
+      'missing-field',
+    )
+    // (c) a blank string is not a claim — "none" must be an explicit null;
+    expectProblems(
+      parseAssuranceContract({
+        implementationOrigin: 'dsh-native',
+        executionBoundary: 'trusted-host',
+        assurance: {
+          'content-read': { level: 'enforced', mechanism: '  ', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'directory-metadata': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          write: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          alias: { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'network-destination': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+          'inherit-cancel': { level: 'enforced', mechanism: 'm', realmId: realm, trustRoot: 't', evidence: 'e' },
+        },
+      }),
+      'empty-string',
     )
   })
   it('execution boundary is the three-value set — not the retired native/custom/shadow-run triple', () => {
@@ -267,6 +320,34 @@ describe('requested-effect-set demands the CANONICAL form (immutable canonical e
   })
   it('an object that claims to be a set must expose `effects` as an array of canonical shape', () => {
     expectProblems(parseRequestedEffectSet({ effects: [] }), 'not-canonical')
+  })
+
+  // Review finding @ 3f8cfff8 — the claimed arm skipped the digest check when
+  // `fingerprint` was not a string, then re-canonicalized the effects and
+  // SUCCEEDED: a claimed set that never proved what it claimed. A claimed set
+  // must RE-VERIFY its own fingerprint; only the RAW ARRAY arm canonicalizes.
+  const claimedEffects = [
+    { kind: 'read', resource: baseRef },
+    { kind: 'tool-invoke', toolName: 'bash', resource: null },
+  ]
+  it('① claimed { effects } WITHOUT the fingerprint key → missing-field (never silent canonicalize)', () => {
+    expectProblems(parseRequestedEffectSet({ effects: claimedEffects }), 'missing-field')
+  })
+  it('② claimed { effects, fingerprint: null } → refused (null is absent, not a digest)', () => {
+    expectProblems(parseRequestedEffectSet({ effects: claimedEffects, fingerprint: null }), 'missing-field')
+  })
+  it('③ claimed { effects, fingerprint: 42 } → field-type (a digest is a string)', () => {
+    expectProblems(parseRequestedEffectSet({ effects: claimedEffects, fingerprint: 42 }), 'field-type')
+  })
+  it('④ claimed { effects, fingerprint: undefined } → refused like ① (undefined is absent)', () => {
+    expectProblems(parseRequestedEffectSet({ effects: claimedEffects, fingerprint: undefined }), 'missing-field')
+  })
+  it('…while the raw-array arm remains the ONLY canonicalizing path, and a claimed set carrying its TRUE digest still parses', () => {
+    const canonical = parseRequestedEffectSet(claimedEffects)
+    expect(canonical.ok).toBe(true)
+    if (!canonical.ok) return
+    expect(canonical.value.fingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(parseRequestedEffectSet(canonical.value).ok).toBe(true)
   })
 })
 

@@ -60,7 +60,7 @@ export {
   assuranceSatisfies,
   parseAssuranceContract,
 } from './assurance.js'
-export type { AssuranceContract, AssuranceDimension, AssuranceLevel, AssuranceRequirement, ExecutionBoundary, ImplementationOrigin } from './assurance.js'
+export type { AssuranceContract, AssuranceDimension, AssuranceDimensionRecord, AssuranceLevel, AssuranceRequirement, ExecutionBoundary, ImplementationOrigin } from './assurance.js'
 
 export {
   BINDING_STATES,

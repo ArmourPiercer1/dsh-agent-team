@@ -196,10 +196,18 @@ export function parseRequestedEffectSet(raw: unknown): ParseResult<RequestedEffe
         break
       }
     }
-    const claimedFingerprint = raw['fingerprint']
-    if (typeof claimedFingerprint === 'string' && parsed.length === list.length) {
+    const claimedFingerprintRaw = raw['fingerprint']
+    if (claimedFingerprintRaw === undefined || claimedFingerprintRaw === null) {
+      // A claimed set without a digest attestation is NOT a canonicalized
+      // array wearing a wrapper: the claimed arm exists to RE-VERIFY, and
+      // silently re-canonicalizing here would mint a fingerprint the claimant
+      // never asserted (review finding @ 3f8cfff8).
+      problems.push({ code: 'missing-field', path: '$.fingerprint', detail: 'a claimed effect set must carry its own `fingerprint` — only the raw-array arm canonicalizes' })
+    } else if (typeof claimedFingerprintRaw !== 'string') {
+      problems.push({ code: 'field-type', path: '$.fingerprint', detail: 'a fingerprint must be a `sha256:<hex>` string' })
+    } else if (parsed.length === list.length) {
       const recomputed = canonicalize(parsed)
-      if (recomputed.fingerprint !== claimedFingerprint) {
+      if (recomputed.fingerprint !== claimedFingerprintRaw) {
         problems.push({ code: 'fingerprint-mismatch', path: '$.fingerprint', detail: 'the claimed fingerprint is not the canonical digest of these effects' })
       }
     }
