@@ -67,6 +67,18 @@ Run the lane (from `packages/runtime/controlled-fs/`):
 
 ## §4 接线注 (for the integration owner — post C-ADM freeze)
 
+> **接线状态（集成轮 branch `alpha5-int-wiring`）**：§4.1/§4.2/§4.5 已落代码——
+> `src/admission-binding.ts`（unbound=typed 拒 `admission-unbound`；recheck 绑本调用
+> PR1 canonical `parametersFingerprint`，偏离/null 在端口查询前 typed 拒）+
+> `ControlledFsLaneConfig.subtreeContains`（authority-envelope `SubtreeContains`
+> 注入点；未注入=lane 窄律逐字节不变）+ runtime tsconfig（typecheck 全量、build 仅
+> `controlled-fs/src`）+ root vitest 收集本目录 `test/`。§4.3 不变（消费仍 PR2
+> durable ledger，lane 只读视图）。§4.4 **仍未落地**：`OpenAtPort` 未实现，任意可变
+> 树 profile 禁发布 Supported——`ARBITRARY_TREE_PROFILE_PUBLISHED=false` 常量钉 +
+> `a5w-integration-wiring` 套件断言（PR8 矩阵相关行仅经 pending_update 通道注记）。
+> 全部 fixture 级验证，非整链宣称；证据见
+> `dev/agent-workflow/evidence/alpha5/wiring/`。
+
 1. Replace `NO_RECHECK` with PR2 `OperationAdmission` bound to the **PR1
    canonical `parametersFingerprint` of THIS call** (fingerprint-law
    alignment: the exec-time recheck must present the same fingerprint the

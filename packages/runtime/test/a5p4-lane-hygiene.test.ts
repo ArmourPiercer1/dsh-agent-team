@@ -10,11 +10,16 @@
  *  (2) CONFORMANCE: the lane's closed sets are deep-equal to the frozen PR0
  *      sets (imported HERE, in a test file — outside the production consumer
  *      allow-list by the auditor's own walk).
- *  (3) TYPECHECK: the lane is not in the shared tsconfig (integration-owner
- *      file), so the lane typechecks ITSELF, in-process, via ts.createProgram.
- *  (4) DORMANT: no production file outside the lane references the lane; the
- *      hard-profile enablement constant stays false and appears flipped
- *      nowhere.
+ *  (3) TYPECHECK: the lane typechecks ITSELF, in-process, via
+ *      ts.createProgram. (Since the G-d integration wiring round the shared
+ *      runtime tsconfig DOES include `sandbox-provider` — the compile-face
+ *      entry — but the self-check stays: it pins the lane's own strictness
+ *      independent of the shared surface, and it predates the wiring.)
+ *  (4) DORMANT: no production file outside the lane references the lane —
+ *      the wiring round changed ONLY the compile surface, never the import
+ *      surface (factory export is for EXPLICIT calls; no live-registry
+ *      wiring); the hard-profile enablement constant stays false and appears
+ *      flipped nowhere.
  *
  * @module packages/runtime/test/a5p4-lane-hygiene.test
  */

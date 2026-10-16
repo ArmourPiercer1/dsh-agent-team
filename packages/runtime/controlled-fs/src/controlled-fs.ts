@@ -52,6 +52,8 @@ import {
   type ResourceRef,
 } from '../../../domain/tool-governance/src/index.js'
 
+import type { SubtreeContains } from '../../../domain/authority-envelope/src/index.js'
+
 import {
   descriptorToResourceRef,
   resourceRefToDescriptor,
@@ -94,8 +96,17 @@ export interface ControlledFsLaneConfig {
   readonly consumed?: (grantId: string) => boolean
   /** Observation policy seam: what this member may even see. */
   readonly visibility?: (member: MemberRef, desc: FsResourceDescriptor) => 'visible' | 'hidden'
-  /** Exec-time admission recheck seam (default = honest no-recheck pre-freeze). */
+  /** Exec-time admission recheck seam (default = honest no-recheck pre-freeze;
+   *  the WIRED face never uses this default — see `admission-binding.ts`). */
   readonly recheck?: AdmissionRecheck
+  /**
+   * G-d C1 (integration wiring): when the consumer wires the planes together
+   * it injects the authority-envelope `SubtreeContains` here, and directory
+   * coverage is decided by the planes' OWN containment law. Absent, the lane
+   * keeps its deliberately narrower identity + prefix rule (zero behaviour
+   * change for lane-local consumers).
+   */
+  readonly subtreeContains?: SubtreeContains
   readonly hooks?: LaneHooks
 }
 
@@ -150,8 +161,22 @@ function sha256Hex(text: string): string {
   return `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`
 }
 
-/** Lane scope law: identity, plus a `directory` effect covering paths below it. */
-function effectCovers(opKind: ResourceEffect['kind'], target: ResourceRef, grant: OperationGrant): boolean {
+/**
+ * Scope law: identity, plus a `directory` effect covering paths below it.
+ *
+ * G-d C1 (integration wiring landed): when the wiring consumer injects the
+ * authority-envelope `SubtreeContains` (via config), the SUBTREE arm is the
+ * planes' own containment law — this module decides nothing scope-shaped on
+ * its own in that mode. Without the injection the narrower lane rule below
+ * stays exactly as Lane B shipped it (identity + directory-prefix), so
+ * lane-local behaviour is byte-identical to the pre-wiring DORMANT round.
+ */
+function effectCovers(
+  opKind: ResourceEffect['kind'],
+  target: ResourceRef,
+  grant: OperationGrant,
+  subtreeContains?: SubtreeContains,
+): boolean {
   const need = EFFECT_REQUIRED_RIGHT[opKind]
   for (const effect of grant.effects.effects) {
     if (effect.kind !== opKind || effect.resource === null) continue
@@ -159,11 +184,14 @@ function effectCovers(opKind: ResourceEffect['kind'], target: ResourceRef, grant
     if (res.realmId !== target.realmId) continue
     if (need !== undefined && !res.rights.includes(need)) continue
     if (res.canonicalLocator === target.canonicalLocator) return true
-    // Subtree law (lane). INTEGRATION NOTE: replace with authority-envelope
-    // SubtreeContains when the integration owner wires the planes together.
     if (res.kind === 'directory') {
-      const root = res.canonicalLocator.replace(/\/+$/, '')
-      if (target.canonicalLocator.startsWith(`${root}/`)) return true
+      if (subtreeContains !== undefined) {
+        // C1: the injected containment answers for the pair, as-is.
+        if (subtreeContains(res.canonicalLocator, target.canonicalLocator)) return true
+      } else {
+        const root = res.canonicalLocator.replace(/\/+$/, '')
+        if (target.canonicalLocator.startsWith(`${root}/`)) return true
+      }
     }
   }
   return false
@@ -250,7 +278,7 @@ export function createControlledFsLane(config: ControlledFsLaneConfig): Controll
       return refused(op, grant, ref.canonicalLocator,
         FAIL(cfsDenial(reason, `admission refused at FS: grant re-validation failed (${selfCheck.reason})`)))
     }
-    if (!effectCovers(kind, ref, grant)) {
+    if (!effectCovers(kind, ref, grant, config.subtreeContains)) {
       return refused(op, grant, ref.canonicalLocator,
         FAIL(cfsDenial('effect-outside-grant', `admission refused at FS: no grant effect covers a ${kind} on this resource`)))
     }
