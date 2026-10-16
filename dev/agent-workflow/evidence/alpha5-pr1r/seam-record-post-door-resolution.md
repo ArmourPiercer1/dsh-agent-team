@@ -69,11 +69,17 @@ change would have       : one, not all. They are REGISTERED IN THIS PROJECT as s
                             listener receives, so the door nearest the Body can compare
                             `exec.resolvedDefinition` against the Binding it validated — without
                             a refusal point this only makes the gap visible, not closable.
-status of the gap       : **机制已按裁决记录；运行接线与安全验收挂 G-a 冻结，解除须用户裁决。**
-  (mechanism recorded   This entry describes what was built and what it leans on — not what has
-   per ruling (ii),       been accepted. Until G-a is lifted by a user ruling, neither this file
-   acceptance frozen)     nor any other document in this repository may be read as calling it
-                         closed or compliant. The lane does NOT
+status of the gap       : **取消语义已获用户裁决（2026-10-16 17:52Z）**：定义变化/撤回 ⇒
+  (cancellation         取消关联**未执行**调用 + 向关联**已开始**调用传播 abort 请求；
+   semantics ruled;      不保证立即终止；不回滚已发生副作用；结果三分类 = 未执行 /
+   boundaries            已执行可能有副作用（原值保留）/ 终止未确认。
+   verbatim)             G-a 的"解除待裁"状态由该裁决结束，它不再是本文的验收依据。
+                        三条边界（原样入文）：
+                          ① 不扩大为 provider 卸载自动杀全团队；
+                          ② G-g（静默通道）不随之关闭；
+                          ③ 本裁决为事后裁决，不回填 17:02 合并时点——该时点当时的
+                             口径以其原文为准。
+                        This entry describes what was built and what it leans on. The lane does NOT
   in this round          refuse from inside the door — the rejected design (a door that never
   (was: "fail-closed     calls `next()`) is not used anywhere. It uses the seam the Host already
   posture")              advertises to a wrapper: "wrappers may change only `exec.signal`, while
@@ -125,9 +131,10 @@ retirement condition    : the record retires when seam demand (1) or (2) is MET 
 
 ## 增补（后续修复轮，文档 only）— 机制所依赖的三条实现事实、三个候选修法、两处口径限定
 
-> **G-d 纪律标注（先说适用范围）**：本文所描述的 (ii) 机制，其**运行接线验收挂 G-a**——
-> 用户尚未裁 (ii) 的语义（必改点 2 已上报，G-a 冻结该保证的运行接线验收）。本节**不构成**
-> 对该接线的验收，也不改变任何实现；它只把"文档口径"补到与机制实际所依赖的东西一致。
+> **纪律标注（裁决后更新）**：本文所述 (ii) 机制的取消语义**已获用户裁决（2026-10-16 17:52Z）**，
+> G-a 就此结束"解除待裁"。该裁决为**事后裁决**，不回填 17:02 合并时点；本节仍不改任何实现，
+> 只把口径对齐到裁决与机制实际所依赖之物。严格的"只取消未执行"属性被**延期**，登记为 D-1
+> （见本文末 DEFERRED 与 [../../PENDING-GATES.md](../../PENDING-GATES.md)）。
 
 ```
 fact 1 — the raise has    : packages/runtime/tool-dispatch/pending-calls.ts:148-157.
@@ -157,20 +164,29 @@ fact 3 — body start is    : packages/core/tools/src/index.ts:1580, `state.body
                           event-shaped — which is exactly why `dispatcher-call-outcome-unreadable`
                           exists: when the codes cannot be read, the lane declines both claims
                           instead of promoting an inference into a fact.
-status wording, not     : this record says neither "closed" nor "compliant". It says: MECHANISM
-  a claim of closure      RECORDED PER RULING (ii); its run wiring and its safety acceptance are
-                          FROZEN AT G-a, and only a user ruling lifts that. What was measured
-                          (`RW-AFTER-DOOR-BODY-ZERO`, `RW-CHANGE-INERT-LOUD`) is a property of
-                          THIS build on THIS Host implementation, resting on the three facts
-                          above — a measurement is not an acceptance, and keeping the two apart is
-                          exactly what G-a is for. Two sub-cases are outside the mechanism and are
-                          not smuggled in by any wording here: (a) a Definition move that races an
-                          already-started Body — by design a TERMINATION, reported as executed;
-                          (b) a subscribed-but-silent notification channel — its own open item,
-                          recorded immediately below, which does NOT close together with G-a.
+acceptance basis, not   : the acceptance basis for the cancellation semantics is the user's ruling
+  a closure claim         at **2026-10-16 17:52Z**, not a freeze. What the ruling accepts is
+                          exactly its wording: a Definition change/withdrawal cancels the
+                          associated **un-executed** calls and propagates an abort REQUEST to the
+                          associated calls whose Body **already started**; immediate termination
+                          is not guaranteed; side effects that already happened are not rolled
+                          back; outcomes are reported in three classes — 未执行 / 已执行可能有
+                          副作用（原值保留）/ 终止未确认 — which the lane emits as
+                          `dispatcher-call-cancelled-before-body`,
+                          `dispatcher-call-terminated-after-body-start` (`sideEffectPossible:
+                          true`, value preserved) and `dispatcher-call-outcome-unreadable` /
+                          `EXECUTION_TERMINATION_UNCONFIRMED` respectively. This record still
+                          makes no CONTRACT claim of "closed"/"compliant" for two things the
+                          ruling did NOT absorb: the silent-channel configuration (open item
+                          **G-g**, below — explicitly not closed by the 17:52Z ruling) and the
+                          strict cancel-only-un-executed property (deferred, **D-1**). The
+                          measurement legs' verbatim results stay quoted as measurements.
 g-g — independent open  : the configuration "subscribing to `tools/change` SUCCEEDS but the
-  item, not covered by    notification is never delivered" is recorded as its own open item, not a
-  G-a by default          footnote of the G-a question. Its support-matrix position is
+  item, NOT closed by     notification is never delivered" is recorded as its own open item, not a
+  the 17:52Z ruling       footnote of the cancellation-semantics question. The ruling of
+                          2026-10-16 17:52Z does not close it either: its wording settles the
+                          cancellation semantics and names this configuration as staying open.
+                          Its support-matrix position is
                           **未收口 / not settled**: what this build does in that configuration
                           (name-level withdrawal + a loud per-call alarm; in-flight calls
                           unaffected) is a MEASURED FACT with filed evidence, not a supported
@@ -216,3 +232,56 @@ precision note on the     : when `tools/change` is subscribed but delivers nothi
 Cited lines were re-read at the pinned baseline (`0.2.0-rc.2` @ `639ed01539`) and at this
 branch's own `packages/runtime/tool-dispatch/pending-calls.ts`; the two Host facts are quoted with
 their line numbers as they appear there, not paraphrased from the previous round's notes.
+
+## DEFERRED — D-1：严格的"只取消未执行调用"属性（延期，非放弃）
+
+登记位置：[../../PENDING-GATES.md](../../PENDING-GATES.md) §D-1。**仅项目内登记：本轮不向 Host
+upstream 或任何外部发起请求；对外提交是将来须用户另行授权的动作。**
+
+```
+deferred property     : NO-ABORT-AFTER-BODY-START — "a call whose Body has already started is
+                        never given an abort by this lane". The 2026-10-16 17:52Z ruling
+                        explicitly WIDENED the scope instead (an abort request is propagated to
+                        started calls, with the three-way outcome reporting), so the strict
+                        property is deferred, not rejected: it remains the safer shape and this
+                        record keeps it on the register so it cannot be quietly forgotten.
+why it is deferred    : the property needs a publicly trustworthy "the Body started" (or
+                        pre-body) check. On the pinned Host there is none: `bodyInvoked` is a
+                        private field (`index.ts:1580`, fact 3), so a lane-side raise cannot be
+                        conditioned on it, and inferring it from result codes happens too late
+                        to withhold the abort. Writing the strict rule now would be a promise
+                        the implementation cannot keep — the exact failure mode this round's
+                        retraction was about.
+minimal upstream      : ONE publicly trustworthy body-start / pre-body check per call. Three
+condition (candidate  candidate mechanisms, registered without choosing between them — the
+trio; selection only   selection happens only once an interface is actually observable:
+after an interface       (a) a per-call pre-body event, invoked after resolution and before
+exists)                  invocation, carrying call identity and the resolved Definition, with a
+                         refusal result;
+                       (b) a public read point for `bodyInvoked`, per call, readable by a
+                         wrapper BEFORE it raises;
+                       (c) resolution-pinned execution — the resolved Definition is pinned into
+                         the execution, which removes the re-resolution window and makes the
+                         body-start question moot for this purpose.
+                       (c) subsumes the need for (a)/(b); (a) is the most direct. No choice is
+                       recorded now, deliberately: choosing an interface before it exists is
+                       how a document ends up pinning something upstream cannot offer.
+restore condition     : the strict property may be asserted only when one of (a)/(b)/(c) is
+                        present in the pinned Host AND the lane demonstrably reads it at the
+                        raise site. Until then the widened semantics of the ruling is what the
+                        lane implements and what the docs describe.
+regression required   : restoration is not accepted on the interface alone. Required, in this
+to accept restore     : order:
+                        1. a hard-gate leg in `packages/runtime/test/a5p1r-change-abort.test.ts`:
+                           a call whose Body has started must NOT be raised at — its outcome is
+                           reported as executed, with its own value preserved;
+                        2. an isolation counter-example: two concurrent calls of the moved name,
+                           one started and one not ⇒ ONLY the un-executed one is cancelled, and
+                           the started one is neither cancelled nor relabelled;
+                        3. the kit leg `RW-ABORT-INSIDE-BODY-IS-TERMINATION` flips from "abort
+                           propagates to a started Body" to "no abort is issued to a started
+                           Body" — the change of the criterion is the evidence that the property,
+                           not the wording, moved.
+owner                 : TO BE NAMED — the integration owner nominates, the user confirms. The
+                        register entry carries no owner until that nomination exists; this round
+                        does not self-assign.

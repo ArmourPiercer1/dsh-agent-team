@@ -17,7 +17,7 @@ was read, never written (`C7b`).
 > excerpts further down this file are kept as measurements of the time and are not restated as
 > posture. Neither version of this file moves the threat model.
 
-Two residuals from the PR1 review are closed or bounded here. Neither changes the threat model:
+Two residuals from the PR1 review are decided, recorded, or bounded here. Neither changes the threat model:
 both scenarios — a normal third-party same-name registration, and a normal concurrent
 re-registration — are **inside the supported scope**, and this round measures them instead of
 filing them under the excluded "attacker rewrites Host memory" class.
@@ -29,7 +29,7 @@ filing them under the excluded "attacker rewrites Host memory" class.
 | 1 | **R-a**: a name's native standing is earned by comparing TWO public reads, not by membership in a name list. `tools.get(name)` (no scope) is the registry's **global view** — the same view the trusted native list was read out of — and `tools.get(name, scope)` is what **this Agent** resolves. Agreement is the price of a verified `native:` Binding | the pinned `view()` puts a scope's own registrations last, "shadowing an inherited name and outside the filter above" (`packages/core/tools/src/index.ts` @ `639ed01539`), so a per-agent variant of a native name is admitted by the Host's own advice ("for a per-agent variant, register through that agent's agent.ctx"). Pinned by `a5p1r-shadow-attribution.test.ts` (8 tests), `a5p1-closed-world-guard.test.ts` R1R/R1R-b/R1R-c, and by the real-registry kit leg `R1R-SHADOW` |
 | 2 | Disagreement, and an unreadable trusted side, are **typed and separate**: `native-shadowed` / `native-unreadable`, each with its own message; both bind the name **UNVERIFIED** (governed, loud, refused at dispatch) instead of crediting it | `GOVERNED_UNVERIFIED_REASONS` + `GUARD_DENIAL_REASONS.NATIVE_SHADOWED / NATIVE_UNREADABLE` in [`closed-world-guard.ts`](../../../../packages/runtime/tool-dispatch/closed-world-guard.ts); `guardDecision` now states the recorded fact instead of flattening every case into `binding-unverified` (pinned: R1R-c, D15/D16, `R2`) |
 | 3 | **R-b**: the `tools/execute` door (the door nearest the Body) re-asks the whole closed-world question, not only "is the Dispatcher ACTIVE" | the Guard stage runs at `:1519`, i.e. after `pre-execute`, while `dispatchToolBody` → `resolveExecution` runs at `:1578`, after every listener: a re-registration between them used to be validated by nobody. Pinned by `a5p1r-validate-resolve.test.ts` and the kit runner's `RW-INNER-DOOR` arm |
-| 4 | **B3 (ruled; 运行接线验收挂 G-a — see (i))**: what still cannot be refused at a seam is **cancelled before its Body** — where the mechanism can act, and only there. The door arms a watch on the Definition identity it validated; the `tools/change` notification moves that watch; the watch's cancellation is what the Host reads at `:1572`, ahead of `resolveExecution` (`:1578`) — so the call is refused without any Body being resolved or invoked, and `bodyInvoked` stays false. The rejected design (a door that never calls `next()`) is not used; the native execute chain still runs | `pending-calls.ts` + `install.ts` `armWrapperSignal` (signal-wrapper contract `index.ts:155-159`); pinned by `a5p1r-change-abort.test.ts` and by the kit's `RW-AFTER-DOOR-BODY-ZERO` (real registry, body count 0). **Supersedes the previous row 4**, which claimed the exposure was "one call … never a standing state" — see the retraction below; that claim and its criterion are withdrawn. **Qualification (follow-up round, docs only)**: "cancelled" here is conditional on the channel having spoken and on the call not already being past `:1572`; the mechanism rests on three Host implementation facts pinned in [seam-record 增补](seam-record-post-door-resolution.md) §增补 (`pending-calls.ts:148-157`, `:1576`, `:1580`) and not on a public seam |
+| 4 | **B3 — 取消语义已获用户裁决（2026-10-16 17:52Z）；见 (i)/(k)**: what still cannot be refused at a seam is **cancelled before its Body** — where the mechanism can act, and only there. The door arms a watch on the Definition identity it validated; the `tools/change` notification moves that watch; the watch's cancellation is what the Host reads at `:1572`, ahead of `resolveExecution` (`:1578`) — so the call is refused without any Body being resolved or invoked, and `bodyInvoked` stays false. The rejected design (a door that never calls `next()`) is not used; the native execute chain still runs | `pending-calls.ts` + `install.ts` `armWrapperSignal` (signal-wrapper contract `index.ts:155-159`); pinned by `a5p1r-change-abort.test.ts` and by the kit's `RW-AFTER-DOOR-BODY-ZERO` (real registry, body count 0). **Supersedes the previous row 4**, which claimed the exposure was "one call … never a standing state" — see the retraction below; that claim and its criterion are withdrawn. **Qualification (follow-up round, docs only)**: "cancelled" here is conditional on the channel having spoken and on the call not already being past `:1572`; the mechanism rests on three Host implementation facts pinned in [seam-record 增补](seam-record-post-door-resolution.md) §增补 (`pending-calls.ts:148-157`, `:1576`, `:1580`) and not on a public seam |
 | 5 | An explicit re-bind by the trusted assembly now carries `revision = (in force ?? 0) + 1`. PR1's own law is "a change is a strictly higher immutable revision", but `bindAll` always wrote `revision: 1`, so the documented "refuse + re-bind" recovery could not actually re-bind a drifted name | `install.ts` `bindAll`; observable in the second half of `R1R-SHADOW` (the same world, bound explicitly, runs the Body) |
 | 6 | The **kit's own** `pr1-*` arms take the documented `bindOwnTools` path for their adapter. Merged PR1 let them ride the very hole R-a closes — their adapter is a same-name shadow of a native name — so the legs measured what they claim *for the wrong reason* | `a5p1-order-hazard.mjs`'s pr1 branch. All nine `NEG1-*` legs pass unchanged with the explicit bind, which is what makes the count comparable: 22 → 23, one leg added, none weakened |
 | 7 | `tools/change` is proven **not** to be a safety mechanism in this window: an arm of the runner makes that registration throw, and the refusal still happens with the same typed reason | `a5p1r-rereg-window.mjs`'s `guarded-pre-execute-no-change` arm ⇒ `RW-F2-ISOLATED` |
@@ -41,7 +41,7 @@ filing them under the excluded "attacker rewrites Host memory" class.
 | R-a — a native name already shadowed at publish time entered governance as `verified` | [`closed-world-guard.ts`](../../../../packages/runtime/tool-dispatch/closed-world-guard.ts) `bindInheritedSurface(names, resolved, trusted)` (three facts, four cases) + `GovernedEntry.unverifiedReason`; [`install.ts`](../../../../packages/runtime/tool-dispatch/install.ts) `readTrustedDefinition` (the scope-less read) and the `published-surface-shadowed` / `published-surface-native-unreadable` observations | `a5p1r-shadow-attribution.test.ts` (RED-first), R1R / R1R-b / R1R-c in `a5p1-closed-world-guard.test.ts`, kit `R1R-SHADOW` (real registry, both halves) |
 | R-a — explicit Team bind must still be the way a Team's own same-name Definition is admitted | unchanged entry points (`bindOwnTools` / `bindMcpTools`), plus decision 5's revision rule | `a5p1r-shadow-attribution.test.ts` "AN EXPLICIT Team Binding admits…", kit `R1R-SHADOW` second half, `NEG1-*` legs |
 | R-b — validation→resolution window under a legal concurrent re-registration | `install.ts` inner door (re-`guard` at `tools/execute`), `scoped-dispatcher.ts` `noteCallEdgeDefinition` | `a5p1r-validate-resolve.test.ts` (5 tests), `a5p1r-rereg-window.mjs` (5 arms on the pinned registry), kit `RW-*` |
-| Seam gap that no public seam can close | **机制已按裁决记录（route (ii)）；运行接线与安全验收挂 G-a 冻结，解除须用户裁决** — recorded in PoC-1 format, retraction inline (the file says neither closed nor compliant): [`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) | `RW-AFTER-DOOR-BODY-ZERO` asserts body count 0 every run; `RW-CHANGE-INERT-LOUD` asserts the one configuration that cannot be proven is reported, never covered over |
+| Seam gap that no public seam can close | **取消语义已获用户裁决（2026-10-16 17:52Z）**；机制按该裁决记录（route (ii)），严格『只取消未执行』属性延期为 **D-1**，静默通道另为 **G-g**（未被该裁决吸收）— PoC-1 format, retraction inline (the file says neither closed nor compliant): [`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) | `RW-AFTER-DOOR-BODY-ZERO` asserts body count 0 every run; `RW-CHANGE-INERT-LOUD` asserts the one configuration that cannot be proven is reported, never covered over |
 | Registry fidelity of the test doubles | [`a5p1r-scoped-registry-double.ts`](../../../../packages/runtime/test/a5p1r-scoped-registry-double.ts) (global layer + own layer, `get(name, scope?)` mirroring `view()`, measured stage order, Body resolved in the innermost step); the PR1 install double now answers the scope-less read (`globalDefinitions`) instead of feigning `undefined` | both doubles are the substrate of the 79-test lane |
 
 ## (c) RED-first record (verbatim first failures)
@@ -176,7 +176,7 @@ here rather than in §(e)'s scan inventory.)
 
 ## (h) unfinished capability, disclosed boundaries, residual status
 
-**Closed by this round (asserted, not argued):**
+**Decided and measured this round (asserted, not argued):**
 
 * R-a pre-assembly shadow: a same-name shadow of a native name no longer inherits verification
   (`R1R-SHADOW`, `a5p1r-shadow-attribution`, R1R/R1R-b/R1R-c). The residual case recorded at
@@ -184,8 +184,10 @@ here rather than in §(e)'s scan inventory.)
   now the rule, so the sentence "a native name ALREADY shadowed at publish time … enters
   governance as verified" no longer describes this lane.
 * R-b's Guard→inner-door half: refused at the door nearest the Body (`RW-INNER-DOOR`).
-* R-b's post-door half: **机制已按裁决记录（(ii)）；运行接线与安全验收挂 G-a 冻结，解除须用户裁决**。
-  本节不写 closed/compliant；下列句子是"实现了什么/量到了什么"，不是验收结论。The moved Definition
+* R-b's post-door half: **取消语义已获用户裁决（2026-10-16 17:52Z）**——定义变化/撤回取消关联**未执行**
+  调用，并向关联**已开始**调用传播 abort 请求；不保证立即终止、不回滚已发生副作用；结果三分类见 (k)。
+  该裁决为**事后裁决**，不回填 17:02 合并时点。严格"只取消未执行"属性延期（D-1）；静默通道 G-g 未被关闭。
+  The moved Definition
   cancels the un-executed call and the Host refuses it before dispatch — `RW-AFTER-DOOR-BODY-ZERO`,
   `v1=0 v2=0 secondCallV2=0`, RED pair `runs/B3-after-door-RED.json` (`v2=1`) →
   `runs/B3-after-door-GREEN.json` (`v2=0`). The previous sentence in this file — "bounded rather
@@ -204,10 +206,12 @@ here rather than in §(e)'s scan inventory.)
   (`ABORTED_BEFORE_DISPATCH` vs `ABORTED`), and does not claim a cancellation it cannot observe.
 * The `bindAll` revision defect that made the documented re-bind path unusable after a drift.
 
-**Recorded, with the mechanism pending acceptance:** the interval between the last
-`tools/execute` listener and `resolveExecution` at `:1578` — mechanism recorded per ruling (ii);
-**运行接线与安全验收挂 G-a 冻结，解除须用户裁决**; and the silent-subscription configuration as its
-own open item **G-g** ((j) below, 支持矩阵定位未收口). See
+**Ruled, with two things still open:** the interval between the last `tools/execute` listener and
+`resolveExecution` at `:1578` — cancellation semantics **ruled by the user at 2026-10-16 17:52Z**
+(widened scope; three-way outcome reporting; boundaries: 不扩大为 provider 卸载自动杀全团队 /
+G-g 不随之关闭 / 事后裁决不回填 17:02 合并时点); the strict cancel-only-un-executed property is
+**deferred as D-1** ([../../PENDING-GATES.md](../../PENDING-GATES.md)); and the silent-subscription
+configuration remains **G-g** ((j) below, 支持矩阵定位未收口). See
 [`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) (PoC-1 format: the
 seam asked for, where resolution actually happens, what the existing seams do and do not give,
 the seam demands registered inside this project, and the status wording — which is deliberately
@@ -246,9 +250,9 @@ the runner-side repair.
 
 ## (i) 增补（后续修复轮，文档 only）— 三事实 / 三个项目内登记的 seam 需求 / 两处口径收窄
 
-**G-d 纪律（并按用户裁决收紧）：本节与 seam-record 增补所述 (ii) 机制 = "机制已按裁决记录"；
-其运行接线与安全验收**挂 G-a 冻结，解除须用户裁决**。本节不写 "closed"/"合规"，不验收接线、不改实现，
-只把口径与机制实际所依赖之物对齐。三个候选修法一律以**项目内登记的 seam 需求**记：本轮**不向任何外部
+**纪律（裁决后更新）：本节所述 (ii) 机制的取消语义**已获用户裁决（2026-10-16 17:52Z）**，G-a 就此结束
+"解除待裁"。该裁决是**事后裁决**，不回填 17:02 合并时点；本节仍不改实现，只把口径与裁决及机制实际
+所依赖之物对齐。本节不写 "closed"/"合规"：合同性主张仍只欠两项——D-1（延期的严格属性）与 G-g（静默通道）。三个候选修法一律以**项目内登记的 seam 需求**记：本轮**不向任何外部
 （含 Host upstream）发起请求**；对外提交属将来须用户另行授权的动作，本仓库文档不得声称"已提交/将提交"。**
 
 1. **`raise` 无 body 门槛** — `packages/runtime/tool-dispatch/pending-calls.ts:148-157`：
@@ -273,8 +277,9 @@ the runner-side repair.
 
 **口径（本记录不写 "closed"/"合规"）**：本节所载为"机制已按裁决记录"。就已量到的部分说：机制只作用于
 "调用尚未被 dispatch 时定义移动"这一类，且其正确性依赖上述三条实现事实；它**不覆盖**静默通道（见 (j)：
-独立开放项 **G-g**，不随 G-a 默认关闭），也**不覆盖**与已开始 Body 竞争的移动（后者按设计是终止、按已执行
-上报）。`RW-AFTER-DOOR-BODY-ZERO` / `RW-CHANGE-INERT-LOUD` 是**测量**，不是验收——两者分开正是 G-a 的作用。
+独立开放项 **G-g**，不随 2026-10-16 17:52Z 裁决关闭），也**不覆盖**与已开始 Body 竞争的移动（后者按设计是终止、按已执行
+上报）。`RW-AFTER-DOOR-BODY-ZERO` / `RW-CHANGE-INERT-LOUD` 是**测量**，不是验收：裁决 (17:52Z) 接受的是
+"在此实现上按三分类如实上报取消/终止"，不是把测量升格为合同；合同性缺口由 D-1 与 G-g 承载。
 
 **静默通道降级=名字级（精确表述）**：`tools/change` 已订阅但未投递时，实测（`RW-CHANGE-INERT-LOUD`：`v2=1` +
 `dispatcher-call-executed-unvalidated` + alarm）在飞调用**未被取消**（没有任何东西能取消它）；lane 做的是在该
@@ -304,8 +309,46 @@ the runner-side repair.
   `runs/B3-lane-GREEN.log`。
 
 **支持矩阵定位：未收口（not settled）。** 上列是**事实**，不是"支持姿态"：该配置的验收状态按
-**UNSUPPORTED / 待证**处理，且**不因 G-a 解除而自动关闭**——G-g 需自己的契约收口动作（后续），
+**UNSUPPORTED / 待证**处理，且**不因 2026-10-16 17:52Z 裁决而关闭**（裁决原文即把该配置列为不随之关闭）
+——G-g 需自己的契约收口动作（后续），
 收口前不得在任何矩阵/文档中把它记为 supported、closed 或 compliant。
 
 **该配置下允许的说法**："被漂移的名字在其下一次调用前被钉住（并响亮上报）"。
 **不允许的说法**："被漂移名字的进行中调用被取消"（仅在通道确实投递时成立）。
+
+
+## (k) 支持矩阵 — 取消语义按 2026-10-16 17:52Z 裁决标注（测量腿原文保留）
+
+裁决内容（原文口径）：**定义变化/撤回 ⇒ 取消关联未执行调用 + 向关联已开始调用传播 abort 请求；
+不保证立即终止；不回滚已发生副作用；结果三分类 = 未执行 / 已执行可能有副作用（原值保留）/ 终止未确认。**
+边界：不扩大为 provider 卸载自动杀全团队；G-g 不随之关闭；事后裁决不回填 17:02 合并时点。
+下表**验收依据**一列本轮由"G-a 冻结"改为"用户裁决（17:52Z）"；**测量腿原文一律不动**。
+
+| 配置 | 本实现行为（三分类归属） | 测量腿原文（`runs/kit-r1r-fix1/rereg-window.json` 除注明外） | 验收依据 |
+| --- | --- | --- | --- |
+| A 定义变化/撤回，调用**尚未执行** | 取消；类别=未执行 | `RW-AFTER-DOOR-BODY-ZERO` `v1=0 v2=0 code=ABORTED_BEFORE_DISPATCH issued=["grep:p00-c1"]` | 用户裁决 2026-10-16 17:52Z |
+| B 定义变化，Body **已开始** | 传播 abort 请求；类别=已执行可能有副作用（原值保留）；不保证立即终止 | `RW-ABORT-INSIDE-BODY-IS-TERMINATION` `v1=1 code=ABORTED terminated=1/1 cancelledBeforeBody=0 text=Error: tool call aborted` | 同上（裁决明文含"不保证立即终止/不回滚副作用"） |
+| C 同一定义多调用并发（混合状态） | 未执行者取消、已开始者终止，均入账不误判 | `RW-MULTI-CALL-ALL-CANCELLED` `v1=1 v2=0 cancelled=1 terminated=1 late=0 issued=["grep:p00-c1","grep:p00-c2"]` | 同上 |
+| D MCP 整代撤回+重注册 | 在飞未执行调用取消；名字撤回至 re-bind | `RW-MCP-RESYNC-CANCELS-AND-REBIND-RESTORES` `v1=0 cancelled=1 withdrawnThenRestored=false->true rebindOk=true thirdCallV2=1 rebindErr=null` | 同上 |
+| E 终止无法确认 | 类别=终止未确认（不并入"未执行"，也不并入"已执行"） | `runs/kit-r1r-fix1/order-hazard.json` 的 `EXECUTION_TERMINATION_UNCONFIRMED`；lane 侧 `dispatcher-call-outcome-unreadable` | 同上（三分类之三即此） |
+| F 通道**不可**订阅（`on` 缺失/订阅抛错） | 装配期拒绝，不装弱 | `RW-NO-CHANGE-CHANNEL-UNSUPPORTED` `refused=true code=IO_POLICY_UNSUPPORTED message=cannot subscribe to the public notification "tools/change"` | 既有裁决链（PR257 修复轮 ②/⑧） |
+| G 通道**已订阅但永不投递**（=G-g） | 名字级撤回 + 响亮 alarm；在飞调用不受影响 | `RW-CHANGE-INERT-LOUD` `v2=1 unvalidated=1 issued=0 channel=armed verifiedAfter=false` | **未收口**：按 UNSUPPORTED/待证；**不因 17:52Z 裁决改变**（见 (j)） |
+| H 无变更正控 | 正常执行，不发 abort | `RW-AFTER-NO-CHANGE` `v1=1 v2=0 text=ran:grep@V1 issued=0 verifiedAfter=true` | 正控，无需新验收 |
+| I 隔离（邻工具） | 只点名被漂移者 | `RW-ISOLATION-NEIGHBOUR-TOOL` `r1=1 v1=0 v2=0 issued=["grep:p00-c1"] watched=[]` | 裁决未触及隔离方向，口径不变 |
+| J 结果身份 / teardown | 两条边同 callId 同码；台账空、有序 teardown 到 RELEASED | `RW-HOOKS-RESULT-IDENTITY` `edges={"post":[{"callId":"p00-c1","code":"ABORTED_BEFORE_DISPATCH"}],"result":[{"callId":"p00-c1","code":"ABORTED_BEFORE_DISPATCH"}]} cancelled=1`；`RW-TEARDOWN-NO-LEAK` `pendingAfter=[] teardown={"ok":true,"code":null} state=RELEASED` | 不变 |
+
+**延期项**：严格『只取消未执行』（不向已开始调用发 abort）= **D-1**，登记于
+[../../PENDING-GATES.md](../../PENDING-GATES.md)：恢复须公开可信 body-start/pre-body 检查（候选三件见
+seam-record DEFERRED 节），并须 a5p1r change-abort 的『已开始不取消』硬门腿 + 隔离反例先行通过。
+
+## (l) 收尾必做 D-2 — skills 文档对齐（本轮只钉路径/owner/验收，不动文件）
+
+- **路径（钉死）**：`.agents/skills/team-leader-operations/SKILL.md`；若 blueprint 侧语义受影响，一并
+  `.agents/skills/team-blueprint-authoring/SKILL.md`。
+- **执行时点**：本阶段（PR1r/PR258 文档线）完成**之后**的收尾轮执行；本轮**不触碰该文件**。
+- **owner**：集成 owner 提名 → 用户确认（与 D-1 同一规则；本轮不自行指派）。
+- **验收（先钉）**：skill 文本须与 (k) 的取消语义一致——三分类（未执行 / 已执行可能有副作用（原值保留）/
+  终止未确认）、不保证立即终止、不回滚已发生副作用；且**不得**残留两种旧口径：『定义移动只影响后续调用』
+  式的弱表述，或『已开始调用绝不收到 abort』这一尚未恢复（D-1）的强表述。
+- **核验方式**：收尾轮 review 逐条比对本文 (k)/(j) 与 skill 文本；不一致即不通过（文档一致性属 review
+  范围，不由写者自证）。

@@ -6208,3 +6208,24 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
   （13 Host + 10 order + 13 rereg；`runs/kit-r1r-fix1/`，C7a `:3080` 前后同 401 未被操作，C7b test-use porcelain 净）。
 - **git**：首个修复提交 `83a0b994`；本地 rebase 到远端 head `dd70ef3c`（reviewer 的评审提交落在
   `2b16de64` 之上）后 fast-forward push 至 `alpha5-pr1r-residual-boundaries`；无 force-push。
+
+
+## 2026-10-16 — 取消语义用户裁决（**2026-10-16 17:52Z**）落档于 PR #258 文档线
+
+- **裁决原文口径**：定义变化/撤回 ⇒ 取消关联**未执行**调用 + 向关联**已开始**调用**传播 abort 请求**；
+  不保证立即终止；不回滚已发生副作用；结果三分类 = 未执行 / 已执行可能有副作用（原值保留）/ 终止未确认。
+  **边界三句原样入文**：不扩大为 provider 卸载自动杀全团队；G-g（静默通道）不随之关闭；
+  **本裁决为事后裁决，不回填 17:02 合并时点**。
+- **G-a**：就此结束"解除待裁"。此前文档中的"验收挂 G-a 冻结"改注为"验收依据=用户裁决（17:52Z）"；
+  **测量腿原文一律不动**（s12 §(k) 表列原文）。
+- **D-1 登记（新建 `dev/agent-workflow/PENDING-GATES.md`）**：严格『只取消未执行』属性**延期**（非放弃）。
+  上游最小条件=公开可信 body-start/pre-body 检查，候选三件（per-call pre-body 事件 / `bodyInvoked` 公开读点 /
+  resolution-pinned Definition），**本轮不选型**；恢复须 a5p1r change-abort 的『已开始不取消』硬门腿 +
+  隔离反例 + kit 判据翻转。**仅项目内登记，不对外发请求**。owner=集成 owner 提名后用户确认。
+- **D-2 登记**：skills 收尾必做 —— 路径 `.agents/skills/team-leader-operations/SKILL.md`
+  （如涉及再含 `team-blueprint-authoring`），阶段完成后收尾轮执行 + review 核验；本轮**只钉路径/owner/验收，
+  不动文件**。
+- **G-g 状态不变**：静默已订阅通道（订阅成功而永不投递）支持矩阵定位**未收口**，按 UNSUPPORTED/待证处理，
+  **不因本裁决关闭**；证据原文见 s12 §(j)。
+- **文件面**：仅文档（`seam-record-post-door-resolution.md`、`s12-residual-evidence.md`、新建
+  `PENDING-GATES.md`、本日志）；实现/测试/kit 零改动。模型：qwen3.8-flash-next。
