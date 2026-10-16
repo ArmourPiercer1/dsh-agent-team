@@ -6149,3 +6149,20 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 **本轮新增的 Host 事实（此前无人记录，全部实测）**：(1) preset/row scope 在 `apply()` 期读 `ctx.tools` 抛 `cannot get property "tools" without inject`，即第三方 row 在本 Host 无法自行注册工具；(2) 该 scope 的 `agent/created` / `tools/pre-execute` 订阅被接受但**永不投递**；(3) 子进程 stdout 改为 pipe 后 boot marker 180 s 未达（同世界 fd 直写 ~2 s 就绪）；(4) Team 工具在 `status:"rejected"` 时 `isError` 仍为 false。据此 H6 的 Host 侧改用 Team glue 自己在 publish 之后注册的 `team_follow_up`，probe row 退为纯观察者并把自身 liveness 写进 ledger；post-publish「时序」那一半由 `pr1-parked`/`pr1-body` 确定性臂与单元测试承担，两半分开报告、不合并成一条声称。
 
 **卫生**：kit 在成功/FATAL/throw 三条路径都删 world；新增 `tests/kits/a5-pr1-guard-dispatch/sweep-worlds.mjs`（`--dry` / `--scrub-raw`）承担 SIGKILL 遗留 world 与 `host-stdout.raw` 的 runner 侧修复；历史 run 证据中 15 处明文 token 已就地替换为 `REDACTED-<sha256-8>`，新 run 的 Host stdout 在 finalize `instance.log` 时同表脱敏并删原件。此前失败的 7 个 world 已清扫为 0。
+
+
+## 2026-10-16 Alpha.5 PR1 Gate 复审修复轮（F1–F5；branch `alpha5-pr1-guard-dispatcher`，stacked-on-#252，仍 DO-NOT-MERGE）
+
+独立复核在 `f6eeec02` 的 dist 上复现了 4 条 BLOCKER（`review-PR1.md` @ `2075a815`）。本轮只做了裁决书指定的五项，全部 RED-first：每条的新测试先跑红，首失败原文进 `dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/`（`F1-F2-guard-RED.log` 5 红 / `F1-F4-install-RED.log` 11 红），修复后同一批测试 63/63 绿（`F1-F4-lane-GREEN.log`）。
+
+* **F1** unknown own name 不再被自动判成 `native:/verified:true`：native 许可只来自**显式受信名单**（公开全局视图 `tools.schemas()` 无 scope 的那次读）+ 可 pin 的 definition；其余落 `unbound-observed:<scope>:<name>` / `verified:false` ⇒ 调用期 typed deny（`TOOL_BINDING_UNVERIFIED`）。
+* **F2** 裁决改查**当前 definition 身份**（`tools.get(name, scope)` → 无内容指纹）：同名换体 ⇒ `DEFINITION_DRIFT`、读不到 ⇒ `DEFINITION_UNREADABLE`，两者都撤销 verified 并以新 immutable revision 永久拒绝，直到真正 re-bind（re-bind 必须 pin 新体，不能只重贴 `verified:true`）；公开 seam 拿不到 definition ⇒ **拒绝 publish**（"拿不到就当没换"被封死）。`revise()` 拿到真实调用者（漂移探测器 + `revalidateSurface`），name-diff no-op 变成真 diff。
+* **F3** `install.ts`：`ctx.on` 缺失或任一必需 seam 注册抛错 = **assembly failure**（回滚已装 listener+guard、`failAssembly`、`residue:'none'`），`publish()` 在 `seamsArmed() < requiredSeams`（默认 5）时拒绝——门缺一扇不是"更小的封闭世界"，是会说"封闭"的开放世界。
+* **F4** 租约只在**证明 Body 已返回**的边上结束：`tools/result`（registry 最终 emit 边，成功与错误路径都走）且仅在 ACTIVE 时；post-execute 只记账；越过 drain 边界的 settled 回调只记录并拒绝；一旦宣告 drain 放弃，`release()` 永久拒绝 `EXECUTION_TERMINATION_UNCONFIRMED`，mask 永不解除。自己写下的拒绝（guard 或两道 state gate）在任何状态结束自己的租约——"这通的 Body 没跑过"是我们自己的行为。
+* **F5** `a5p1-kit.mjs --inject-fatal-after-boot` 跑了一次故意 FATAL（Host 已起、world 已建）：trace `dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/`，`world=removed residue=verified absent (re-checked 500 ms after the sweep)`，exit 1，`tests/homes/a5p1-*` 为 0。liveness 用 `kill(pid,0)` 判，不用 child 的 `exited` 标志——那条路径没有事件循环，会把已死的进程报成活的（第一次跑就是这么误报的）。
+
+**撤回一条旧测量（写进 PR body 与 kit README）**：`NEG1-SEAM` 原先记录"post-execute 早于 parked Body 返回"，并据此在 post-execute 结束租约。复测发现那条**是空测量**——park 根本没把 Body 按住（park 点 obs 尾巴 `wrapper-enter → body → wrapper-return`、`inFlight=0`），断言只看了 `postExecutedBeforeRelease`，一通已完成的调用天然满足。把 park 移进 Definition 自己的 `execute` 后，钉住的 registry 给出相反事实：两条结果边都在 Body 返回**之后**，而租约整段仍然持有（`inFlightAtTeardown=1`）。law 随测量走：post-execute 只记账，租约在 `tools/result` 结束。order 腿 8→9 条、kit 21→22 条，`NEG1-CONTROL` 依旧 `native=1`（保护控制没被软化）。
+
+**新增 Host 事实（实测，公开面无 provenance）**：registry 公开面没有任何"这是不是 native"的字段（`schemas()` 只白名单 name/description/parameters，`register()` 不记 owner，无 BUILTIN 常量），所以归属不可推导 ⇒ 装配自带受信名单 + 逐名 pin definition；pin 不了就拒。残留披露：publish 时已被 scope-local 定义遮蔽的 native 名会按该 scope 自己的解析被 pin 成 verified（缓解：每次调用比对同一解析、此 Host 上 preset row 无法注册工具、Team 装配在 preset 之后挂载）。
+
+**卫生**：`:3185` 无监听、`tests/homes/a5p1-*` 为 0、`:3080` 只读探测未操作、pinned 树 porcelain 干净；lint identity diff `new 0, resolved 0`（本轮自己引入的 2 条已修，未新增基线）；kit 最终 run `22/22` exit=0，Receipt `alpha5-pr1-host/final/run-receipt.md`。

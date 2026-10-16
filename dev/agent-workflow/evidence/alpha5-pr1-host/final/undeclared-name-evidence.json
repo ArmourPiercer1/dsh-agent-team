@@ -3,51 +3,51 @@
   "governedLaneView": [
     {
       "isError": false,
-      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T06-51-52\n\n(End of file - total 1 lines)\n</content>"
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T07-30-38\n\n(End of file - total 1 lines)\n</content>"
     },
     {
       "isError": false,
-      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-strict.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-strict.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
     }
   ],
   "legacyLaneView": [
     {
       "isError": false,
-      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T06-51-52\n\n(End of file - total 1 lines)\n</content>"
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-16T07-30-38\n\n(End of file - total 1 lines)\n</content>"
     },
     {
       "isError": false,
-      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-ctl.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-ctl.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
     }
   ],
   "sideEffectFiles": {
-    "strict": "A5P1_RAN_strict_2026-10-16T06-51-52",
-    "ctl": "A5P1_RAN_ctl_2026-10-16T06-51-52"
+    "strict": "A5P1_RAN_strict_2026-10-16T07-30-38",
+    "ctl": "A5P1_RAN_ctl_2026-10-16T07-30-38"
   },
   "probeRowLedger": [
     {
-      "at": "2026-10-16T06:51:53.405Z",
+      "at": "2026-10-16T07:30:39.763Z",
       "leg": "plugin-apply",
-      "pid": 25,
+      "pid": 26,
       "hasOn": true,
       "hasEffect": true
     },
     {
-      "at": "2026-10-16T06:51:53.405Z",
+      "at": "2026-10-16T07:30:39.764Z",
       "leg": "listen",
       "event": "agent/created",
       "scope": "row-scope",
       "ok": true
     },
     {
-      "at": "2026-10-16T06:51:53.405Z",
+      "at": "2026-10-16T07:30:39.764Z",
       "leg": "listen",
       "event": "tools/pre-execute",
       "scope": "row-scope",
       "ok": true
     },
     {
-      "at": "2026-10-16T06:51:53.405Z",
+      "at": "2026-10-16T07:30:39.764Z",
       "leg": "apply-done",
       "agents": []
     }

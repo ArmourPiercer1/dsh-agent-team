@@ -378,7 +378,14 @@ function makeSpyControlService(): SpyControlService {
  * each lane is counted on its own instead of one lane's pin being bumped to
  * swallow the other's registration.
  */
-const GUARD_LISTENER_NAMES: readonly string[] = ['a5p1GuardPreExecuteGate', 'a5p1GuardDispatchGate', 'a5p1GuardResultEdge']
+const GUARD_LISTENER_NAMES: readonly string[] = [
+  'a5p1GuardPreExecuteGate',
+  'a5p1GuardDispatchGate',
+  'a5p1GuardResultEdge',
+  // A5-PR1 Gate R4: the settled edge (`tools/result`) is where a lease ends —
+  // it is a Guard listener like the rest, and must classify as one.
+  'a5p1GuardResultSettledEdge',
+]
 function isGuardListener(fn: unknown): boolean {
   return typeof fn === 'function' && GUARD_LISTENER_NAMES.includes((fn as { name?: string }).name ?? '')
 }

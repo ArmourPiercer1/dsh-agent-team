@@ -93,19 +93,69 @@ async function main() {
     if (typeof inner.tools.schemas !== 'function') throw new Error('pinned registry exposes no tools.schemas(scope)')
 
     const bodyGate = order === 'pr1-body' ? makeGate() : null
-    const edgeOrder = { postExecutedBeforeRelease: false, released: false }
-    const adapter = countingTool(f.obs, 'grep', 'ADAPTER.grep', bodyGate !== null ? { gate: bodyGate.promise } : {})
+    // Every field here is measured against `bodyReturned` (below), never against
+    // a marker in the kit's own control flow: what the arm needs to know is
+    // WHERE each result-side edge sits relative to the Body's own return.
+    const edgeOrder = {
+      postExecutedFired: false,
+      postExecutedAfterBodyReturn: null,
+      postExecutedWhileBodyParked: null,
+      released: false,
+    }
+    // `bodyReturned` is the fact every R4 measurement turns on: WHEN did the
+    // Body actually return, as seen from the Body itself. The wrapper sits
+    // outside the fixture's gate so it flips only after the parked Body's own
+    // `return` — not when it wakes up.
+    let bodyReturned = false
+    const adapter = countingTool(f.obs, 'grep', 'ADAPTER.grep', {})
+    // THE PARK IS OWNED BY THE WRAPPER, NOT BY THE FIXTURE'S `opts.gate`.
+    // Measured while re-casting this arm for R4: the fixture's gate did NOT keep
+    // the Body open (the obs tail at the park point read
+    // `wrapper-enter -> body -> wrapper-return`), so the old `pr1-body` arm let
+    // the call COMPLETE before its teardown, and its "seam limit" observation
+    // was vacuous. The wrapper below parks the Body before its own `return`,
+    // which is the only shape that can measure "a result edge while the Body is
+    // still alive" at all. The fixture's counting Body still runs inside it.
+    let wrapperCalls = 0
+    if (bodyGate !== null) {
+      const innerExecute = adapter.execute
+      adapter.execute = async (args, exec) => {
+        wrapperCalls += 1
+        f.obs.push({ event: 'wrapper-enter', name: 'grep', identity: 'ADAPTER.grep' })
+        const out = await innerExecute(args, exec)
+        await bodyGate.promise
+        bodyReturned = true
+        f.obs.push({ event: 'wrapper-return', name: 'grep', identity: 'ADAPTER.grep' })
+        return out
+      }
+    }
     const lift = inner.tools.restrict({ deny: ['grep'] })
     const disposeAdapter = inner.tools.register(adapter)
 
     let maskLifts = 0
     let handle = null
     if (order.startsWith('pr1')) {
+      // The assembly's trusted native list, read the way production reads it:
+      // the Host's GLOBAL view (no scope). `grep` is registered globally by the
+      // fixture, so it is native-eligible; the Agent-scoped adapter that shadows
+      // it under the same name is NOT, and the definition this arm pins is the
+      // one the scope actually resolves (the shadowing adapter) — which is what
+      // makes the body swap in the R2 family visible at all.
+      let nativeNames = []
+      try {
+        const globalSchemas = inner.tools.schemas()
+        if (Array.isArray(globalSchemas)) {
+          nativeNames = globalSchemas.map((row) => row?.name).filter((n) => typeof n === 'string' && n.length > 0)
+        }
+      } catch {
+        nativeNames = []
+      }
       const outcome = installScopedToolGuard({
         agentCtx: inner,
         runtimeAgent: A.key,
         agentScopeKey: 'A',
         trustedIdentities: ['A'],
+        nativeNames,
         maskedNames: ['grep'],
         maskPort: { lift: () => { maskLifts += 1; lift() } },
       })
@@ -132,12 +182,27 @@ async function main() {
       })
     }
 
+    // What the two result-side edges say, against the Body's own marker:
+    // `post-execute` may fire while the Body is still parked (the seam limit
+    // the PR1 Gate R4 fix exists for); `tools/result` must not.
+    const settledProbe = { fired: false, bodyReturnedAtSettled: null, inFlightAtSettled: null }
+    inner.on('tools/result', (exec) => {
+      if (order !== 'pr1-body') return
+      settledProbe.fired = true
+      settledProbe.bodyReturnedAtSettled = bodyReturned
+      settledProbe.inFlightAtSettled = handle === null ? null : handle.dispatcher.inFlight()
+    })
     if (order === 'pr1-body') {
       inner.on('tools/post-execute', (exec, result, next) => {
-        if (!edgeOrder.released) edgeOrder.postExecutedBeforeRelease = true
+        if (edgeOrder.postExecutedFired === false) {
+          edgeOrder.postExecutedFired = true
+          edgeOrder.postExecutedAfterBodyReturn = bodyReturned
+          edgeOrder.postExecutedWhileBodyParked = bodyReturned === false
+        }
         return next()
       })
     }
+    let parkProbe = null
     const inflight = f.run('grep', A.key)
     // DETERMINISTIC PARK, never a sleep lottery: wait until the call has
     // actually reached the point the arm is about to tear down around — the
@@ -150,6 +215,13 @@ async function main() {
         if (Date.now() >= deadline) throw new Error('pr1-body: the Team Body never started')
         await tick()
       }
+      parkProbe = {
+        bodyReturnedAlready: bodyReturned,
+        wrapperCalls,
+        inFlight: handle === null ? null : handle.dispatcher.inFlight(),
+        counters: f.counters('ADAPTER.grep'),
+        obsTail: f.obs.slice(-6).map((o) => o.event ?? String(o.action ?? '')),
+      }
     } else if (order === 'pr1-parked') {
       while (!reachedFence) {
         if (Date.now() >= deadline) throw new Error('pr1-parked: the call never reached the pre-execute fence')
@@ -160,6 +232,7 @@ async function main() {
     }
 
     let teardown = null
+    let leaseProbe = null
     let refusedWhileDraining = null
     // SEAM MEASUREMENT: does the result edge (`tools/post-execute`) fire while
     // the Team Body is still parked? If it does, no public seam can give a
@@ -178,6 +251,14 @@ async function main() {
     } else {
       // PR1: the ordered teardown runs WHILE the call is still outstanding.
       handle.dispatcher.noteHostDisposeReturned()
+      // Captured BEFORE the teardown call, because the ordering claim is about
+      // what the Dispatcher's own counter said at that instant.
+      leaseProbe = {
+        bodyReturnedAlready: bodyReturned,
+        inFlight: handle.dispatcher.inFlight(),
+        outstanding: handle.dispatcher.outstandingCallIds(),
+        stateBefore: handle.dispatcher.state(),
+      }
       teardown = handle.disposeOrdered()
       refusedWhileDraining = handle.dispatcher.guard({ name: 'grep', agentIdentity: 'A' })
       // The fence arm MUST be held by the lease: the parked call took it at
@@ -194,9 +275,19 @@ async function main() {
     bodyGate?.release()
     const res = await inflight
     let secondTeardown = null
-    if (order.startsWith('pr1')) {
+    if (order === 'pr1-parked') {
+      // The fence arm's call was REFUSED, so its lease ended at the refusal:
+      // once the parked call is out of the way the drain must finish and the
+      // mask must lift exactly once. That is the property that keeps this arm
+      // honest — a teardown that never completes would make the mask claim
+      // trivially true.
       secondTeardown = handle.disposeOrdered()
-      if (!secondTeardown.ok) throw new Error(`the ordered teardown must finish once the count is zero: ${secondTeardown.error?.message ?? ''}`)
+      if (!secondTeardown.ok) throw new Error(`the ordered teardown must finish once the count is zero: ${secondTeardown.error?.message ?? ''} | OBS=${JSON.stringify(handle.observations().slice(-10).map((o) => o.event))} | OUT=${JSON.stringify(handle.dispatcher.outstandingCallIds())}`)
+    } else if (order === 'pr1-body') {
+      // PR1 Gate R4: the Body returned AFTER the drain began, and its settled
+      // callback crossed that boundary. It is refused as termination evidence,
+      // so the half-state stands: still TOMBSTONED, still masked, still armed.
+      secondTeardown = handle.disposeOrdered()
     }
 
     return {
@@ -208,6 +299,13 @@ async function main() {
       maskLifts,
       edgeOrder,
       inFlightAtTeardown: teardown === null ? null : teardown.ok,
+      parkProbe,
+      leaseProbe,
+      settledProbe,
+      bodyReturned,
+      secondTeardownCode: secondTeardown === null ? null : (secondTeardown.ok ? 'OK' : secondTeardown.error.code),
+      lateSettledObserved: handle === null ? null : handle.observations().some((o) => String(o.event) === 'dispatcher-late-settled-after-teardown'),
+      finalState: handle === null ? null : handle.dispatcher.state(),
       teardownRefusalCode: teardown !== null && !teardown.ok ? teardown.error.code : null,
       refusedWhileDraining: refusedWhileDraining === null ? null : String(refusedWhileDraining).slice(0, 160),
       text: String(res?.text ?? res?.threw ?? '').slice(0, 200),
@@ -238,20 +336,48 @@ async function main() {
   // The strong property is asserted INSIDE the parked arm (it throws if the
   // first teardown lifted anything); here the accounting closes: one lift per
   // Agent, ever, and only after the state reached RELEASED.
-  check('NEG1-MASK', 'PR1: the mask survives a refused teardown and lifts exactly once per Agent, never before RELEASED',
-    parked.maskLifts === 1 && inBody.maskLifts === 1 && inBody.nativeBeforeRelease === 0 && parked.teardownRefusalCode === 'EXECUTION_TERMINATION_UNCONFIRMED',
-    `parkedLifts=${String(parked.maskLifts)} parkedFirstTeardown=${String(parked.teardownRefusalCode)} bodyLifts=${String(inBody.maskLifts)} nativeBeforeRelease=${String(inBody.nativeBeforeRelease)}`)
-  // THE HONEST BOUNDARY, asserted as a measured fact: on this host version the
-  // result edge fires before a parked Body returns, so the self-count bounds
-  // "outer door -> result event", NOT "no Body is running". What PR1 therefore
-  // relies on for the native-body hazard is (a) the lease holding the state
-  // below RELEASED for any call between its doors, and (b) the state gates at
-  // both doors — never the mask alone. Recorded in the PR's
-  // unfinished-capability section as the seam limitation PR2 must design
-  // around (ExecutionLease confirmation lives above these events).
-  check('NEG1-SEAM', 'measured seam limit: the result edge precedes the Body return, so the self-count is dispatch->result (disclosed)',
-    inBody.edgeOrder.postExecutedBeforeRelease === true,
-    `postExecuteBeforeRelease=${String(inBody.edgeOrder.postExecutedBeforeRelease)} bodyTeardownOk=${String(inBody.teardown?.ok ?? inBody.teardownRefusalCode)}`)
+  check('NEG1-MASK', 'PR1: the mask survives a refused teardown, lifts exactly once when the drain legitimately finishes, and never on an unproven termination',
+    parked.maskLifts === 1
+      && inBody.maskLifts === 0
+      && inBody.nativeBeforeRelease === 0
+      && parked.teardownRefusalCode === 'EXECUTION_TERMINATION_UNCONFIRMED'
+      && inBody.teardownRefusalCode === 'EXECUTION_TERMINATION_UNCONFIRMED',
+    `parkedLifts=${String(parked.maskLifts)} parkedFirstTeardown=${String(parked.teardownRefusalCode)} bodyLifts=${String(inBody.maskLifts)} bodyFirstTeardown=${String(inBody.teardownRefusalCode)} nativeBeforeRelease=${String(inBody.nativeBeforeRelease)}`)
+  // THE SEAM ORDER, MEASURED — AND A CORRECTION ON THE RECORD (PR1 Gate R4).
+  // The first version of this kit recorded `post-execute fires while the Body is
+  // parked` as a disclosed seam LIMIT. That measurement was VACUOUS: the arm's
+  // park did not actually hold the Body open (the obs tail read
+  // `wrapper-enter -> body -> wrapper-return` before the teardown ran), so the
+  // call had already completed and any edge order it reported was meaningless.
+  // With the park made real, the pinned registry says the opposite: neither
+  // `tools/post-execute` nor `tools/result` fires while the Body is alive — both
+  // come after it returned — while the Dispatcher's own lease is still held for
+  // the whole window. The law follows the measurement: `post-execute` only
+  // RECORDS that a result is in hand, and the lease ends at `tools/result`, the
+  // registry's final emit edge (dispatched after materialization and content
+  // finalization, on the success AND the error path).
+  check('NEG1-SEAM', 'measured seam order: the Body is still alive across the whole drain window (lease = 1) and BOTH result-side edges fire only after it returned',
+    inBody.edgeOrder.postExecutedFired === true
+      && inBody.edgeOrder.postExecutedAfterBodyReturn === true
+      && inBody.edgeOrder.postExecutedWhileBodyParked === false
+      && inBody.leaseProbe?.bodyReturnedAlready === false
+      && (inBody.leaseProbe?.inFlight ?? 0) >= 1
+      && inBody.settledProbe?.fired === true
+      && inBody.settledProbe?.bodyReturnedAtSettled === true
+      && inBody.bodyReturned === true,
+    `postExecutedFired=${String(inBody.edgeOrder.postExecutedFired)} postExecutedAfterBodyReturn=${String(inBody.edgeOrder.postExecutedAfterBodyReturn)} inFlightAtTeardown=${String(inBody.leaseProbe?.inFlight)} bodyReturnedAtTeardown=${String(inBody.leaseProbe?.bodyReturnedAlready)} bodyReturnedAtSettled=${String(inBody.settledProbe?.bodyReturnedAtSettled)}`)
+  // THE NEVER-DISARM LAW (PR1 Gate R4, the half-state): a Body that came back
+  // after the drain began cannot reopen the release. The Dispatcher stays
+  // TOMBSTONED with its mask and Guard armed, the late callback is recorded and
+  // refused, and no arm of the run hands the native Body another chance.
+  check('NEG1-R4', 'PR1: a Body returning after the drain began leaves the half-state armed — refused release, mask kept, late callback recorded',
+    inBody.secondTeardownCode === 'EXECUTION_TERMINATION_UNCONFIRMED'
+      && inBody.finalState === 'TOMBSTONED'
+      && inBody.lateSettledObserved === true
+      && inBody.maskLifts === 0
+      && inBody.native === 0
+      && inBody.adapter === 1,
+    `secondTeardown=${String(inBody.secondTeardownCode)} finalState=${String(inBody.finalState)} lateSettledRecorded=${String(inBody.lateSettledObserved)} lifts=${String(inBody.maskLifts)} native=${String(inBody.native)} adapter=${String(inBody.adapter)}`)
   check('NEG1-STABLE', 'PR1: the governed name resolves to the Team Definition before the drain (stable shape, no unload)',
     parked.resolutionBefore === 'ADAPTER.grep' && inBody.resolutionBefore === 'ADAPTER.grep',
     `parked=${parked.resolutionBefore} body=${inBody.resolutionBefore}`)

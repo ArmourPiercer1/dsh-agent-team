@@ -194,3 +194,72 @@ FILE-HASH-MANIFEST-BELOW
   servers beyond the publish-surface snapshot, the Admission finite-clock law
   (PR2), and any per-call budget/timeout enforcement — this lane contains no
   clock at all.
+
+---
+
+## (i) Gate re-review round — F1…F5 (RED-first again)
+
+The independent re-review (`review-PR1.md` @ `2075a815`) reproduced four
+BLOCKERs on this branch's `dist` at `f6eeec02`. All five directed items were done
+RED-first: the new failing tests were written and run BEFORE the behaviour
+changed, and the verbatim first failure of each is kept under
+[`runs/`](runs/).
+
+| item | the first failure (verbatim, from `runs/`) | the law that replaced it |
+| --- | --- | --- |
+| **F1** unknown own name auto-bound `native:/verified:true` | `× R1 an observed name becomes a native Binding only if it is on the trusted native list` · `× R1 a scope-local name present at publish is NOT bound as a verified native` (`F1-F2-guard-RED.log`, `F1-F4-install-RED.log`: `5 failed | 19 passed`, `11 failed | 12 passed`) | native allowance comes only from an **explicit trusted list** (`nativeNames`, taken from the public GLOBAL view `tools.schemas()` with no scope) **and** a pinnable definition. An unknown name on the publish surface is bound as `unbound-observed:<scope>:<name>`, `providerId: unattributed`, `verified: false` → dispatch is a typed `TOOL_BINDING_UNVERIFIED` denial. Test `R1` registers `evil` as an own tool BEFORE publish and asserts the call after publish is refused |
+| **F2** the verdict re-checked a name+generation, not the definition | `× R2 a same-scope name resolving to a DIFFERENT definition never runs on the old verification` · `× R2b an unreadable current definition is a refusal, never an assumption of no change` | every decision re-reads **what the name resolves to right now** (`tools.get(name, scope)` → a content-free fingerprint of the definition identity). Mismatch ⇒ `DEFINITION_DRIFT`, unreadable ⇒ `DEFINITION_UNREADABLE`; both are `TOOL_BINDING_UNVERIFIED` denials and both withdraw the verification as a new immutable revision, so the refusal is permanent until a real re-bind. `revise()` gained its production callers (the drift detector and `revalidateSurface`), and the name-diff no-op is now a real diff (`{added, removed, unverified, drifted}`). No trustworthy definition identity at all ⇒ **the assembly does not publish** (`R2c`), because "could not read it" must never be recorded as "nothing changed" (`R2b`) |
+| **F3** a partial assembly published anyway | `× R3 a missing ctx.on is an assembly failure that leaves nothing armed` · `× R3b a pre-execute registration that throws is an assembly failure, not a degraded Guard` · `× R3c a required seam that cannot be armed fails the install` · `× R3d the armed-seam count is asserted, not assumed` | five **required** seams; `publish()` refuses below the expected count and a registration that throws unwinds everything already armed (`unarmAll` + listener disposers + `failAssembly`) and returns a typed failure with `residue: 'none'`. The expected count is a number the install asserts (`requiredSeams`, default 5), and `seamsArmed() === 0` is a failure, never a `RELEASED` |
+| **F4** the lease ended at a seam that cannot prove the Body returned | `× R4 the settled edge ends a lease; post-execute alone proves nothing about the body` · `× R4c a late settled callback after TOMBSTONED never lifts the mask and never revives the scope` · `× R4d the caller may declare the drain given up` | `tools/post-execute` only RECORDS that a result is in hand; the lease ends at `tools/result` (the registry's final emit edge, `finishScheduledExecution → notifyResult`, success and error path alike) **while the dispatcher is still ACTIVE**. A settled callback crossing the drain boundary is recorded (`dispatcher-late-settled-after-teardown`) and refused. Once the caller declares the drain given up, `release()` refuses forever with `EXECUTION_TERMINATION_UNCONFIRMED` and the mask stays down: the half-state never disarms. A refusal we authored ends its own lease in ANY state, because "this call's Body never ran" is our own act |
+| **F5** the failure path's cleanup was unproven | — (no unit RED: this is a run-path proof) | `a5p1-kit.mjs --inject-fatal-after-boot` forces a FATAL with a booted Host and a populated `DSH_HOME`; trace [`../alpha5-pr1-host/fatal-f5/`](../alpha5-pr1-host/fatal-f5/) and [`runs/F5-forced-fatal.log`](runs/F5-forced-fatal.log): `FATAL cleanup: host=… world=removed residue=verified absent (re-checked 500 ms after the sweep)`, exit 1, no `tests/homes/a5p1-*` left |
+
+### The measurement that turned out to be wrong, corrected on the record
+
+`NEG1-SEAM` and a comment in `install.ts` claimed `tools/post-execute` fires
+*before* a parked Body returns, and used that as the reason to release the lease
+there. Re-measuring (the point F2/F4 forced) showed the arm's park did not hold
+the Body open at all: at the park point the obs tail read
+`wrapper-enter → body → wrapper-return`, `inFlight=0`, and the criterion had
+asserted only `postExecutedBeforeRelease`, which a completed call satisfies
+trivially. With the park moved into the Definition's own `execute` wrapper the
+pinned registry says the **opposite**: both result-side edges fire after the Body
+returned, while the lease is still held (`inFlightAtTeardown=1`,
+`bodyReturnedAtTeardown=false`, `bodyReturnedAtSettled=true`). The criterion is
+now written against that measurement, and the arm gained `NEG1-R4` on top of it —
+so the order leg is 9 criteria where it was 8, and the whole kit 22 where it was
+21. Nothing was weakened to reach green: `NEG1-CONTROL` still reports
+`native=1 bodies=NATIVE.grep` with PR1 out of the loop.
+
+Two expectation re-casts are strengthenings and are stated as such: the
+install-level I9 leg no longer lets a Body that settles after the drain began
+re-open `release()`, and I11 asserts the refusal at the Guard door with the state
+still `DRAINING` (previously it accepted a later, vaguer refusal).
+
+### PUBLIC-seam gap (PoC-1 format), unchanged and now load-bearing
+
+```
+seam asked for        : tools.get(name, scope) → the live ToolDefinition
+what it gives         : the definition object, so `definition.execute` is a
+                        function identity this process can pin
+what it does NOT give : any provenance field — no owner, no contributing package,
+                        no "is native" bit (`schemas()` whitelists
+                        name/description/parameters; `register()` records no
+                        public owner; no BUILTIN/NATIVE name list is exported)
+consequence           : native-vs-third-party ATTRIBUTION is not derivable at a
+                        public seam. The assembly therefore carries an explicit
+                        trusted native list (the public GLOBAL view) and pins
+                        every inherited definition by identity; anything it
+                        cannot pin is refused, never assumed
+residual case         : a native name ALREADY shadowed by a scope-local
+                        definition at publish time is pinned from that scope's
+                        own resolution and so enters governance as verified.
+                        Mitigations, in order: the pin is checked against the
+                        same resolution on every call (drift ⇒ refusal); a
+                        preset row cannot register a tool on this Host (measured);
+                        Team assembly mounts after presets
+```
+
+If a future Host exposes per-definition provenance at a public seam, the trusted
+list becomes derivable and this disclosure retires. Until then the assembly
+prefers to refuse: the definition seam is one of the five **required** seams, so
+its absence stops the publish instead of degrading to name-only verification.

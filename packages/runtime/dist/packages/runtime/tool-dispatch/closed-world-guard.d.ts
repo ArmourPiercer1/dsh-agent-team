@@ -105,6 +105,13 @@ export declare const GUARD_DENIAL_REASONS: {
     readonly IDENTITY_ABSENT: "agent-identity-absent";
     readonly NOT_ACTIVE: "dispatcher-not-active";
     readonly REVISION_DRIFT: "binding-revision-drift";
+    /** The name resolved to a DIFFERENT definition than the Binding pinned (the
+     *  same Scope and name, a new body). R2: verification is of a definition,
+     *  never of a name. */
+    readonly DEFINITION_DRIFT: "definition-drift";
+    /** The current definition could not be read at the public seam. Assuming
+     *  "nothing changed" is exactly the failure this reason exists to refuse. */
+    readonly DEFINITION_UNREADABLE: "definition-unreadable";
 };
 export type GuardDenialReason = (typeof GUARD_DENIAL_REASONS)[keyof typeof GUARD_DENIAL_REASONS];
 /** The stable, model-visible reason text of each §5 code (never a stack). */
@@ -156,7 +163,8 @@ export interface GovernedSurface {
         readonly binding: ToolBinding;
         readonly verified: boolean;
     }) => GovernanceResult<GovernedEntry>;
-    /** Mark an already-bound name un-verifiable (a failed revalidation). */
+    /** Mark an already-bound name un-verifiable: a failed revalidation, or a
+     *  definition that drifted away from the one its Binding pinned. */
     readonly markUnverified: (name: string, bindingId: string) => GovernanceResult<GovernedEntry>;
     /**
      * Bind the whole inherited surface observed at setup (the Coverage Gate's
@@ -165,11 +173,43 @@ export interface GovernedSurface {
      * it. Names the Team did not review are bound UNVERIFIED — visible to the
      * Coverage diff, refused at dispatch, and loud (never silently allowed).
      */
-    readonly bindInheritedSurface: (names: readonly string[]) => number;
+    /**
+     * Take the publish-surface observation (the Coverage Gate's FINAL name list)
+     * and give every name in it a defined verdict. Two things must BOTH hold for
+     * a name to be inherited as a verified native: it is on the assembly's
+     * explicit trusted native list (built from the Host's public GLOBAL view, see
+     * `nativeNames`), AND its current definition is pinnable through `identities`
+     * (the public `tools.get(name, scope)` seam read at bind time).
+     *
+     * Everything else — a scope-local contribution, an undeclared Team tool, an
+     * MCP registration, or a native whose definition could not be pinned — is
+     * bound UNVERIFIED: governed, visible to the Coverage diff, refused at
+     * dispatch, loud. An observed name NEVER earns a native Binding or a
+     * `verified: true` by being observed (PR1 Gate R1).
+     */
+    readonly bindInheritedSurface: (names: readonly string[], identities?: Readonly<Record<string, string>>) => InheritedSurfaceBinding;
     readonly snapshot: () => readonly GovernedEntry[];
+}
+/** What {@link GovernedSurface.bindInheritedSurface} did, as one honest record. */
+export interface InheritedSurfaceBinding {
+    /** Names that became VERIFIED inherited-native bindings. */
+    readonly verifiedBound: number;
+    /** Names bound but held UNVERIFIED (governed, refused at dispatch). */
+    readonly unverifiedBound: number;
+    /** Those unverified names, sorted — the Coverage diff's input. */
+    readonly unverified: readonly string[];
 }
 /** Options of {@link createGovernedSurface}. */
 export interface GovernedSurfaceOptions {
+    /**
+     * The assembly's EXPLICIT trusted native list. Membership is the only
+     * permission a name has to be bound as `dsh-native` without a real Team
+     * Binding, and the assembly derives it from the Host's public GLOBAL tool
+     * view (`tools.schemas()` with no scope) — never from the agent-scoped
+     * surface it is about to govern, because a scope-local contribution is not
+     * native merely by being visible. An empty list inherits nothing.
+     */
+    readonly nativeNames?: readonly string[];
     /** The Agent/Scope key the Bindings are scoped to (PR0 `agentScopeKey`). */
     readonly agentScopeKey: string;
     /** The provider id stamped on inherited native bindings (the pinned host). */
@@ -194,6 +234,25 @@ export interface GuardDecisionInput {
      */
     readonly policyGeneration: number;
     readonly authorityGeneration: number;
+    /**
+     * What the name resolves to RIGHT NOW, read at the public
+     * `tools.get(name, scope)` seam by the caller. The Guard cannot read the
+     * registry itself (it is pure and has no ctx); the install wrapper performs
+     * the read and passes it through, so the check is per call and cannot be
+     * cached into staleness.
+     *
+     * `{ ok: false }` is a REFUSAL, not a shrug: an unreadable definition means
+     * the Binding cannot be re-verified, and PR1 Gate R2 forbids the
+     * "could not read it, so assume nothing changed" reasoning that let the old
+     * verification outlive the body it described.
+     */
+    readonly definition: {
+        readonly ok: true;
+        readonly fingerprint: string;
+    } | {
+        readonly ok: false;
+        readonly detail: string;
+    };
 }
 /**
  * The per-call decision. PURE and total: it never throws, never allows, and

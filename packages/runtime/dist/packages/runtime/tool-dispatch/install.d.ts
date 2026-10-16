@@ -59,6 +59,14 @@ export interface ScopedGuardAgentCtx {
     readonly tools: {
         readonly guard?: (guard: GuardFn) => () => void;
         readonly schemas?: (scope?: unknown) => readonly unknown[];
+        /**
+         * The Host's public definition accessor (`get(name, scope)`): the ONE
+         * publicly reachable seam that says WHICH Body a name resolves to right
+         * now. Without it the closed world has no way to notice that a verified
+         * name started pointing at somebody else's Body, so it is a REQUIRED
+         * dependency of the assembly, not an optional extra.
+         */
+        readonly get?: (name: string, scope?: unknown) => unknown;
     };
     readonly on?: (event: string, listener: (...args: never[]) => unknown) => () => void;
 }
@@ -74,6 +82,13 @@ export interface SurfaceRevalidation {
     readonly removed: readonly string[];
     /** The names that appeared after assembly and are therefore DENIED. */
     readonly denied: readonly string[];
+    /**
+     * The governed names whose CURRENT definition no longer matches the one their
+     * Binding pinned. Each has already been revised DOWN to unverified, so its
+     * next call is refused; only an explicit re-bind by the trusted assembly
+     * restores it (PR1 Gate R2's refuse-and-rebind flow).
+     */
+    readonly drifted?: readonly string[];
 }
 /** The handle the assembly holds until the Agent is released. */
 export interface ScopedGuardHandle {
@@ -114,6 +129,21 @@ export interface InstallScopedGuardInput extends ScopedDispatcherOptions {
      * fact the ordered teardown has to be able to state.
      */
     readonly maskedNames?: readonly string[];
+    /**
+     * The assembly's EXPLICIT trusted native list — the only names that may be
+     * inherited as `dsh-native` without a real Team Binding. The caller derives
+     * it from the Host's public GLOBAL view (`tools.schemas()` with no scope);
+     * it is never derived from the agent-scoped surface being governed, because
+     * a name that is merely visible to this Agent is not a native one.
+     */
+    readonly nativeNames?: readonly string[];
+    /**
+     * Names this assembly (or the Team glue it belongs to) registered itself.
+     * They are subtracted from {@link nativeNames} defensively: even if a Team
+     * tool lands in the global layer, it can never inherit a native Binding,
+     * because the assembly knows its own contributions.
+     */
+    readonly assemblyOwnedNames?: readonly string[];
     /**
      * The restriction this assembly installed (design §4.1 step 2). The Handle
      * owns its lifetime: an armed Guard means the mask is NEVER lifted by the

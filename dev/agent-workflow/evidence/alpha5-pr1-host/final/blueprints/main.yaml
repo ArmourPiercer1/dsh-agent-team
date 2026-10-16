@@ -4,7 +4,7 @@ blueprintId: team.a5p1.main
 revision: "1"
 leader:
   templateId: leader
-  persona: "You are the leader of the a5p1 assembly team. A5P1_L1_2026-10-16T06-51-52 drives your chain: create one strict member and one legacy member, then delegate one script to each."
+  persona: "You are the leader of the a5p1 assembly team. A5P1_L1_2026-10-16T07-30-38 drives your chain: create one strict member and one legacy member, then delegate one script to each."
   capabilities:
     teamTools:
       kind: allow

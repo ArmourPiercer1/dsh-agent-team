@@ -3,62 +3,72 @@
 Universe: `git diff --name-only cd13f781...HEAD` + `git diff --name-only HEAD` (working-tree edits) + `git ls-files --others --exclude-standard`,
 minus `.tmp-a5p1/`, the gitignored test trees, and this manifest itself (it cannot hash itself). Each file is hashed as committed.
 
-## 1. lane source, tests and tsconfig — what a reviewer reads — 16 file(s)
+## 1. lane source, tests and tsconfig — what a reviewer reads — 17 file(s)
 
 25f8ad9b54a00f395cb6118a4e6d65326bc86e1f0c1ba4f6e2d154be22c21a55  packages/domain/test/a5p0-layer-audit.test.ts
-cefb507bfd46705a828386586ecbe6b459940db37a4b4f94168af1a5efdb12f4  packages/runtime/src/plugin/live/agent-bindings.mjs
+935baf16e1b3588e354bcef4224319d4887a9fa0adca18401dd85a8ff4c36a9f  packages/runtime/src/plugin/live/agent-bindings.mjs
 d6e7b8aa1ddb0bed53af655f6e4211fe4c54c4e184c362ec60b2c70361c790d5  packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
-080ba7d5a2ce13a612399dc05cc10999acae156238df2efe886414976cf28fba  packages/runtime/test/a5p1-closed-world-guard.test.ts
-2aaf41b020d6a12911a531df664d17c6f09a467faf6dbb523f7a96a0c307e398  packages/runtime/test/a5p1-guard-install.test.ts
-b2ead103fb5805cec4493b5178362fd7873c1e6f3f9e9cdd274bc73fb70a652f  packages/runtime/test/a5p1-scoped-dispatcher.test.ts
-4609827d0f4581360a98d4a65a55cf45f9b567581e88927dbd5c7ba59fa8fe29  packages/runtime/test/a6a-production-wiring.test.ts
+756041e9b39f67f9765f955369ccd7e23fd2c53483c77ed0e1a2dfdc723ff743  packages/runtime/test/a5p1-closed-world-guard.test.ts
+28e37f40936a0d003d8debbf418f08ce96aa31439fc5c6eb1429269798acd37c  packages/runtime/test/a5p1-guard-install.test.ts
+21df9e9b1cee2ca70d093ee8170dbef90510f32117264a50bf4bea2542358477  packages/runtime/test/a5p1-scoped-dispatcher.test.ts
+667685eca99671bf86f88da84b3be4cef87d9b49a123d61266cdf46a9e472b49  packages/runtime/test/a6a-production-wiring.test.ts
 ce31334ee1d6b28d1d527dd0da1a0af019ac60d17cbbae64005ea27f5e779a96  packages/runtime/test/alpha2-explicit-agent-setup.test.ts
 076942db5c90299eae84e2052a1be80951847b35b7f8adf61fde585c71f0f6fb  packages/runtime/test/rc2a1-fs-containment.test.ts
-ae8921b0cde375af62ff00e787d91c9c052c4092155d85dbbe709cfc662ca7ad  packages/runtime/tool-dispatch/closed-world-guard.ts
+7b1c8a703342d8aba02fff24027b2892642aaf6bcb821e7264e7f1cd5d5c7077  packages/runtime/test/t12a-live-bridge.mjs
+b91912bf970d2cb35f265116f7f2562b93dc3261bd7e7067b43b37a27c633947  packages/runtime/tool-dispatch/closed-world-guard.ts
 7bad2a0a8a5eb947511156c23b37ce2dc8e30574aae815e5ed688425670d5928  packages/runtime/tool-dispatch/index.ts
-bcd0ae46de9be9ebbb7ff45da056fe4b40f3ff419768becd53b6968e01ca5d19  packages/runtime/tool-dispatch/install.ts
-8f6469d96e75e7cf3a57fcb7b46420b836177bf6ccf79541073154f1e42d5cfa  packages/runtime/tool-dispatch/scoped-dispatcher.ts
+611f7a19d8128c3f426b82bedb882f0e3c7131ea764a9f1fe775ef0a31486d48  packages/runtime/tool-dispatch/install.ts
+858596962b2cc0c98b46b93a86d682e32ee9b46d8ccd489d4df56dc4194e537d  packages/runtime/tool-dispatch/scoped-dispatcher.ts
 ccdb1d57111ffdcc397e740bb8cfa8fc6336cbe65c810090c78a05b76a265c10  packages/runtime/tsconfig.build.json
 edcf6ede283ce38bb4ab22b55929aa056b0bb9a520b01065178613aa543caff7  packages/runtime/tsconfig.json
 5a075b5e8a1d64f6af0fcaa80db868169dead9de59103b65e762b37a9cdc93bc  packages/testkit/test/p4t6-session-event-scan.test.ts
 
-## 2. kits and runner-side tooling — 6 file(s)
+## 2. kits and runner-side tooling — 7 file(s)
 
-8a01d349995fc3f23dd2be0a6899c81e4a37b22f1ffe0aa0fc9438656b517602  scripts/audit-a5-tool-governance-imports.mjs
-efab130307f3c6a9f9336d7c2d315dd8ef6236dc3155eec6ac866a58b2cf7e51  tests/kits/a5-pr1-guard-dispatch/README.md
-5c69bf501e089cd3cb742b6102d1e01403721cf8dcdfdf4bcbff108dae95b14e  tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs
-b868129c82a33af244efa011af5156d0d4b7f78e3bdb984cc6cf74c362a7bbd3  tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs
+be13c0a9c9e919a4f4fbbeea6ae283ab800f004d1299d54cdbb614101458794c  tests/.tmp-testuse-build.log
+dc88766ebfb6920a025d15c45f0e16de50da9bf40bcbdb395217e061f58a7413  tests/.tmp-testuse-install.log
+af3c1e0079840ec4938e5129fc59810711ad44648c1d58403e3ae3b67b2c0a22  tests/kits/a5-pr1-guard-dispatch/README.md
+566fe64b23b582e033680f3103925978b9ceaaef610f353a0e73997707e84a7f  tests/kits/a5-pr1-guard-dispatch/a5p1-kit.mjs
+64c84bb5cb63a0c7b0253a46c4fb20fc62bbd996779e447283611e4e701d013d  tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs
 578906b248c62e19259bf357c7750eec407d28d01ff39333866d79067e2a3b63  tests/kits/a5-pr1-guard-dispatch/a5p1-probe-plugin.mjs
 c40d202fcfa9ed791b92315085b8d25797d528008ff4b9356214e0f2d2591a5a  tests/kits/a5-pr1-guard-dispatch/sweep-worlds.mjs
 
 ## 3. orchestration log — 1 file(s)
 
-bc97d80b818ac5742c85d5daee26538532866b84266ed6bc3fdc5abc31bc5765  dev/agent-workflow/SESSION_ROUTER_LOG.md
+1157b8d042b544a8da70d2cf2103f7182a60f739467239b9ce44fd1958d5f635  dev/agent-workflow/SESSION_ROUTER_LOG.md
 
-## 4. evidence artifacts (the runs themselves) — 266 file(s)
+## 4. evidence artifacts (the runs themselves) — 302 file(s)
 
-323077517e6aeb307ba99d3d769b918a4522eef5be8dd8899d37006c8008b61b  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/anchor.yaml
-92bdabd637f6aa8f632709257d3b29e3e3c70f5e924ccd8e8b702d3e005e4310  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/main.yaml
-ca1b033521c4995496e30026a641f09bdfc2e6ae1ea5bd3228f6b78ef8a219a4  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-prompt-response.json
+2b2ca410e88a830c3fd0c26acd6fc8b6c92ece4a85537dacd3a819a01307af7c  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/blueprints/anchor.yaml
+5021f8d4ac3b8f460b395447ecb7e590afa3c21178c3e303b93a2b810f47aebc  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/instance.log
+910f1060aeee17bb62eb2a23c6557a3a4194234c981f05417d5b768735eb4193  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/kit.log
+e45c29a72a73f990c310a57d2f7abeaff17e0467de71d14cce7335d10ae1f757  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/order-hazard.json
+e644ca9a87ec992c4ba780c93eba0ba0f53f22045f5fee02cc7d7fc3e061e734  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/probe-ledger.jsonl
+28933d329967c9cc1aaaa376ab17873f643d85129c79ad81a0a5d1277bd96a83  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/row-state.json
+d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/stable-instance-before.json
+fa48e558d253d065541eb9fd2be4cc64118d67b27863787127cdc1d17a3bcafd  dev/agent-workflow/evidence/alpha5-pr1-host/fatal-f5/summary.json
+05b05ba1adc5a61a9c28af9d217b02c1b9284b3c585139f802e4ea700dee5233  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/anchor.yaml
+b3c76e50ee84ceeea25941740c0a19b67b53dfeffddb005d6bc4c2abf6d34afd  dev/agent-workflow/evidence/alpha5-pr1-host/final/blueprints/main.yaml
+1fa8d1ac243ed30bd01b81fe7952d261ad9b09dfddaac5267acf26092d8bc7ad  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-prompt-response.json
 fbf0d7d1e9e6354a49c87c9d10a736d5b708815af5762935bfd5515c2a30390a  dev/agent-workflow/evidence/alpha5-pr1-host/final/discovery-surface.json
-a64e100cfe6b804901726186895decb5cbf6a483c88712771582cda031a136f3  dev/agent-workflow/evidence/alpha5-pr1-host/final/guard-observations.txt
+1d8318d267bf6f268d41ee42225566cb1c9f6ebe0826b37e9c979a4bd61bec3f  dev/agent-workflow/evidence/alpha5-pr1-host/final/guard-observations.txt
 b64b4d3dfbd0688051e3857baff6c48e38abf3d4d0ba3a9d3c2b415c606b48ca  dev/agent-workflow/evidence/alpha5-pr1-host/final/inherited-native-observation.json
-6532f3bb60687fdee98292518166f96bb1dfe629b5abb814e2a7860d78df691d  dev/agent-workflow/evidence/alpha5-pr1-host/final/instance.log
-8905bff36c7cdbd9698b2826397dcba90f9e617432250a17e1933b3f8d3a059d  dev/agent-workflow/evidence/alpha5-pr1-host/final/kit.log
-084d652b7255a7e1b41783113733abb5f122565aa49c562a6d2aabbb84904813  dev/agent-workflow/evidence/alpha5-pr1-host/final/leader-tool-results.json
+07b3a5867ad9b07a17daa92a33aadbe28d2e3f35deebdf87647c78b582f69486  dev/agent-workflow/evidence/alpha5-pr1-host/final/instance.log
+97a8d9bf0c3e76cd04edffde5d20e5ffc3b7d9ed1a92258173eeee27639a9a3a  dev/agent-workflow/evidence/alpha5-pr1-host/final/kit.log
+b8e548e971042d13eb5de13c62f16636b02b9fa3fbb76cc8d03890b65bd473d7  dev/agent-workflow/evidence/alpha5-pr1-host/final/leader-tool-results.json
 1ac4758527a2743e6bd522c945b51b2521ef5c885fee888d4e47e8412d42f823  dev/agent-workflow/evidence/alpha5-pr1-host/final/marker-dir.json
-5428282a4dd3b678d2325d97b4b4512420e0f75cb3b9851e1fafbcdc421c0ff1  dev/agent-workflow/evidence/alpha5-pr1-host/final/member-model-views.json
-d68b05af50c7ded62116030e375fda9c349363a7c25aedfc0f60d75a795ab90d  dev/agent-workflow/evidence/alpha5-pr1-host/final/order-hazard.json
-e04593a7a991e463940777119d7962cc4fc92fb1ba22c23863a4479f56f5d08a  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.json
-1de50721b17c174a1f96d38744f51225a408d1ff95c3667cfbd0f4ce87659de7  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.jsonl
-bb33f69f9ade43c4d2163b47fd995d992bfb0389954ff8350cd647aff532c029  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state-final.json
-c106deead45a45378d71519024edc1c81f9bbaa0673a9c847976acbbce872944  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state.json
-e21b58900bddb889c2f557550dfa88e8256c15171c1af8dd202a13a65e0548c2  dev/agent-workflow/evidence/alpha5-pr1-host/final/run-receipt.md
+4ec331c90e13804997a0d0065d3c9bb604500ec2669990d2008fca7828587b24  dev/agent-workflow/evidence/alpha5-pr1-host/final/member-model-views.json
+2daf536096a567c0b96c4092213c5338a189af85e06df924076e681551438740  dev/agent-workflow/evidence/alpha5-pr1-host/final/order-hazard.json
+1efc1148cbb2f68da89317138ebef9ac42eb247d4a44df7a4ac2f3ecf8714673  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.json
+1fb20f3ef5110944e01869c74f4bd30a79968fc77cca34c5827b2c293fc7d3e3  dev/agent-workflow/evidence/alpha5-pr1-host/final/probe-ledger.jsonl
+355945f0fa1036bdca6a137bbd10a96ca6928e012eb579a2bc3eee67fba47bf6  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state-final.json
+da4aad2aee32d67fd11938b590a3c5f1581f28de7b4e7575397aa564ba145219  dev/agent-workflow/evidence/alpha5-pr1-host/final/row-state.json
+29ccd030c7f8c7e9db29e5a54b88c11314fcbe1fa11b0202b7f30e49a290d58b  dev/agent-workflow/evidence/alpha5-pr1-host/final/run-receipt.md
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/final/stable-instance-after.json
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/final/stable-instance-before.json
-a29de0e236faae61f718da309dfb6d365d2eab1d51831fdfdc8fcbdb5064e25b  dev/agent-workflow/evidence/alpha5-pr1-host/final/summary.json
-3a408eae510eabe0d52a9b8baadb91201045b8ffac4c3ff793d2c427711f87fd  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-name-evidence.json
-15f4b048851af85b10b37d9ef3e558c2b7e617aad07d33c5fbd45847bf31cb71  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-team-tool-evidence.json
+be198a6cf991a77f573fb2350f9861a380ac9da687d8a1cfceeb3379e58f39fa  dev/agent-workflow/evidence/alpha5-pr1-host/final/summary.json
+25a14cc4cc047f81c3c728a6977000d0c00c8480d55722bd78a4cbdd40e55630  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-name-evidence.json
+9694e8b5250a4b7d74e8a8f69b77a22e9b54ecbbb6b5cc6760c25b723956bfd3  dev/agent-workflow/evidence/alpha5-pr1-host/final/undeclared-team-tool-evidence.json
 3d11979baadedc9cb2babf81f8e7a6b76eb392ace00df910813fd2edbd19099b  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/blueprints/anchor.yaml
 6b58175a4665d3c16a99db3ccf29f7d1c4c0bf57df4954a4840ec1476e768c24  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/blueprints/main.yaml
 e5f470955809060f3a78e2558a16c963fdc353c911ab16fab23e3350afa0d790  dev/agent-workflow/evidence/alpha5-pr1-host/run-10/discovery-prompt-response.json
@@ -193,6 +203,28 @@ d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-work
 b6613a07b03d02f71d6b4e4c435ab7b2c5e03d19e4a81b1c538520ae8e115e6c  dev/agent-workflow/evidence/alpha5-pr1-host/run-16/summary.json
 fea01b3a8518f943a8a710a5f79f167d0e59872bda8432335d9d5763ee2e524f  dev/agent-workflow/evidence/alpha5-pr1-host/run-16/undeclared-name-evidence.json
 44cbe70377b085cb8ac43c1382a55d10759e711d087562bee61c3a54e744f347  dev/agent-workflow/evidence/alpha5-pr1-host/run-16/undeclared-team-tool-evidence.json
+514570604362f784d489ae43521019004f0922af2e11e2e9fa43a3f864b17552  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/blueprints/anchor.yaml
+bf3671191df09fe37aa12dec45e024f7c3729403634d9b1226539ce0a0f7641f  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/blueprints/main.yaml
+a86fc51933c0d17e9c58cec59b6ff349de5ad9d610e34938a745ce9ab458a197  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/discovery-prompt-response.json
+fbf0d7d1e9e6354a49c87c9d10a736d5b708815af5762935bfd5515c2a30390a  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/discovery-surface.json
+13e43274a944e09233cc54b51cc724ad24f80c93e32a27647353bfc71740db45  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/guard-observations.txt
+b64b4d3dfbd0688051e3857baff6c48e38abf3d4d0ba3a9d3c2b415c606b48ca  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/inherited-native-observation.json
+50816026df561e3d10cf83cfd3c74598ca322923f07a7f9c302d8a0d94b77421  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/instance.log
+8759e4ea77c223baaf5214b0e44b3eed2e5d1676eb608019f3edd18016f3aec2  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/kit.log
+657916f7e8fcb5b1e28f8eb8a21879cf72e34b2ba648a534281a735cd2f800de  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/leader-tool-results.json
+1ac4758527a2743e6bd522c945b51b2521ef5c885fee888d4e47e8412d42f823  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/marker-dir.json
+0c019939190f9ef24f62ff69a8d16829d4806e867b211842742185b5572579d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/member-model-views.json
+5412aa1561b6fde054029eaa467e1e67b97a5cd07a4f1c80ae54cffdd9b798a2  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/order-hazard.json
+2f4e3935b22b62bdc7a380fbc3f0509a5ff0bcf8578f8099a303fa1f3a7e45d8  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/probe-ledger.json
+a8fb910d0592acd1bc2581685cb8619ccd24391334bd8763c455c4e023964dcc  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/probe-ledger.jsonl
+956654f91d4cd21588c2ceff2af6f7d43621a88f213a0e82cb1e21bea1c99053  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/row-state-final.json
+a8b79eda1351021643dbb647c85d071fa6c1739606e99073a3ee379cefe329f9  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/row-state.json
+bf63fa0ade1957cdf1dc42f129699c1cb51d901769c46674eb573bc65eef94a6  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/run-receipt.md
+d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/stable-instance-after.json
+d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/stable-instance-before.json
+6121357438363182807fff3002ea9e5cf083026feb0fdd649358028851ba389c  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/summary.json
+4f45b70d56c7521169638e17dac1f650b64a31102c9200a5d938c947726d27d1  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/undeclared-name-evidence.json
+a8e87b8370823d992ad937de4e116f0b98627bab27dc754ffcf8f9eed893e471  dev/agent-workflow/evidence/alpha5-pr1-host/run-17/undeclared-team-tool-evidence.json
 d97b7e7d37570263b9de389966e26b520a75486febcff48e3cae7ab80d26ef06  dev/agent-workflow/evidence/alpha5-pr1-host/run-2/blueprints/anchor.yaml
 36827ff6897d70e3e973246153aa2df62414bc97d92f98115f5a59db7b107521  dev/agent-workflow/evidence/alpha5-pr1-host/run-2/blueprints/main.yaml
 a5dfd3ac96e86998fd75deccf4592400afa4e8e15ddda4f0a93719663c0fa433  dev/agent-workflow/evidence/alpha5-pr1-host/run-2/discovery-prompt-response.json
@@ -303,10 +335,81 @@ f9253efeee407b7b745263f3d1b5dab8b0c526c4b4439963896979c054da014e  dev/agent-work
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/stable-instance-after.json
 d40ca6b8899ead315cbc4fcf7f1812208d0a2050425f9d5886f9d6ea2b94b5d2  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/stable-instance-before.json
 9e4a1e102988dc3102a3469e9f87e3732af5aa6db729d5353b8296a3861acb18  dev/agent-workflow/evidence/alpha5-pr1-host/run-9/summary.json
+6add8edcdaaed2497aaaea3071e2fdfe8103c3d9d0a6d3d250ba602e0a781970  dev/agent-workflow/evidence/alpha5-pr1-implementation/baseline-identity-diff.json
+96abe3474a3547bdc019af98e0b164161f83c993b3d253f69381a775248e5f46  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F2-guard-RED.log
+f291622de20fc91429c97d21e4c3026342d145c41030b808a75d9b4d9ba8256a  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-install-RED.log
+2a554353d62734819a4b55c61937af5f8d141fd695531362a7fa3ac1f8e48ed3  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F1-F4-lane-GREEN.log
+910f1060aeee17bb62eb2a23c6557a3a4194234c981f05417d5b768735eb4193  dev/agent-workflow/evidence/alpha5-pr1-implementation/runs/F5-forced-fatal.log
+917c9c1f712bf039a69b40b1cec600444c81ff34ca8e79432c7168a3f0cb3b5e  dev/agent-workflow/evidence/alpha5-pr1-implementation/s12-evidence.md
 
 ## 5. generated build output — 65 file(s) under packages/runtime/dist/
 
-Tracked in git (the Host loads `dist`), produced by `pnpm build` + `node scripts/place-dist-glue.mjs`, pinned fresh by `pnpm check:artifacts`
-(and `check:artifacts:head` reports HEAD carries its own build: 1572 compared files). Folded into one digest rather than listed per file:
+ac491f22b8d9196b3e7351caf6dedbd6f353811f941d9e6c30fef0cdae08b0d9  packages/runtime/dist/packages/domain/tool-governance/src/assurance.d.ts
+9136ff3d415d590ede277b8a38c01207ec1723e7fee0765e35511ec791b67938  packages/runtime/dist/packages/domain/tool-governance/src/assurance.d.ts.map
+c3f65a1806d4d34fe3a9072b6d6f3a83f9ef9fc7853e6ef05b74144aa88d24b0  packages/runtime/dist/packages/domain/tool-governance/src/assurance.js
+5253913320c86ea8fb8d969b9bbe7e94bfe962e78ff2306a92814a8100d9652e  packages/runtime/dist/packages/domain/tool-governance/src/assurance.js.map
+ba2c37c8da8e7f071d64fb6cb5ce7261c18d4587800428ffd6af66f4c582e4a5  packages/runtime/dist/packages/domain/tool-governance/src/binding.d.ts
+162efc80bf22c639b4f30699d5a66974abccb158db16d8142fd46cad812481d8  packages/runtime/dist/packages/domain/tool-governance/src/binding.d.ts.map
+9e38e02292c9a347e6a2f0c6e124ef91a376c1cd891b68361a147dcb4207d62b  packages/runtime/dist/packages/domain/tool-governance/src/binding.js
+193373c829be2a1872950798814dd4704a564fd0c6d3a09c07f4c1486c683265  packages/runtime/dist/packages/domain/tool-governance/src/binding.js.map
+34d3a822558a45dd7a426d51791218f011157241e07735fd90d1cfe6c18ba1c6  packages/runtime/dist/packages/domain/tool-governance/src/canonical-json.d.ts
+7666b9bc946fe72a1a910f6506c432fbca66fc074faf457ee7ad13b1608b2272  packages/runtime/dist/packages/domain/tool-governance/src/canonical-json.d.ts.map
+8347c9e038d5926345bf6dfc842fb46c2ade01b374b60d225f842e176beee7a9  packages/runtime/dist/packages/domain/tool-governance/src/canonical-json.js
+0f9e77ea6978d73a95dc9915d42b407226444ec71698933d0b54d48a345354da  packages/runtime/dist/packages/domain/tool-governance/src/canonical-json.js.map
+0631d1c7a625b44aaa8f53473ff053c16d4310dd31ced51b8b6c903940592af2  packages/runtime/dist/packages/domain/tool-governance/src/effects.d.ts
+1c6abcb464a7ffce3a53f3712bc57c01a3333e2b3a878de012612293a41cc003  packages/runtime/dist/packages/domain/tool-governance/src/effects.d.ts.map
+c81dc14158a43016551008b8bb2ff0e7ecd75992c5d4a6ddf46811835d50e5bd  packages/runtime/dist/packages/domain/tool-governance/src/effects.js
+d233877b35d1077070a19acdc8794db521c9b2df1f7c68a7342af54b16b9645d  packages/runtime/dist/packages/domain/tool-governance/src/effects.js.map
+12ecd8676254e5f10535bf70cc35c12606431cdbaf1cdcdc4a95a9fbd9b362a2  packages/runtime/dist/packages/domain/tool-governance/src/errors.d.ts
+5d8f8ae04d683f76be43f07b4d7f5f12ca88346dfce6a40843a73ddf31108fd8  packages/runtime/dist/packages/domain/tool-governance/src/errors.d.ts.map
+30bc11173f6984764597e0a8c8098ea461051121fd34a927ed13559d4723c98f  packages/runtime/dist/packages/domain/tool-governance/src/errors.js
+3b24d4edb2fa0bc0bc5c417a00192f92a16eca5cf23e4b09511edb2f3da6c892  packages/runtime/dist/packages/domain/tool-governance/src/errors.js.map
+d78f87c05e49e19327a41f070b0394c28b813722c03dbab84dd544cdf696f1b2  packages/runtime/dist/packages/domain/tool-governance/src/grant.d.ts
+9f209cd10faaa2357858adb4b8405577c521454fc870883c215a72fa11e5cf5d  packages/runtime/dist/packages/domain/tool-governance/src/grant.d.ts.map
+e814afe1e12e2e8e9c83bdeaa1825b69408799ecfab1374d5504376350892efd  packages/runtime/dist/packages/domain/tool-governance/src/grant.js
+746b6885c6792aa27f41a8229efbbeef93e7d6129c4eda27aabfb0dfb12ef64e  packages/runtime/dist/packages/domain/tool-governance/src/grant.js.map
+24f043658f62a10563c6d56e5b562fc682e30730f19dc3b3dc60ec9ace474f77  packages/runtime/dist/packages/domain/tool-governance/src/index.d.ts
+f05d8c7bc64eaf1db679c19cef8092d394fc2dae7f47c50fadfdf801119c67bd  packages/runtime/dist/packages/domain/tool-governance/src/index.d.ts.map
+92ce65e375f97ca5d517869c316a4906ac28bc241d501787e21a361f020606a3  packages/runtime/dist/packages/domain/tool-governance/src/index.js
+f07573b61ebe1097801e0e2d416d715f5585e8adaf7d814d3c32662930c2b5a0  packages/runtime/dist/packages/domain/tool-governance/src/index.js.map
+de61649f67446f4910ad479923a2c36f7a01723dd55a823ff07627382c5ea202  packages/runtime/dist/packages/domain/tool-governance/src/interfaces.d.ts
+2bc3416611672900bca09c005cda3ccf784301966b74d39d7520b24e8efbbe6d  packages/runtime/dist/packages/domain/tool-governance/src/interfaces.d.ts.map
+8d5d7daa2d2f5cfbfbf5ee7377703d0ac3c53a38eef30a7f9b9c257365f2e051  packages/runtime/dist/packages/domain/tool-governance/src/interfaces.js
+dad68e24ba3368aa7b0b579d2221cc9f74356a94e7a3237ae3d0543dc68d472e  packages/runtime/dist/packages/domain/tool-governance/src/interfaces.js.map
+b51380b7e12f54996d7cf4d41a38c2b0e7c49b4f5665cf7bb26ca2781a70e617  packages/runtime/dist/packages/domain/tool-governance/src/lease.d.ts
+7519d1c308d0da41da358f40ae13cc8ea33a7ea57f18224b1a865dea86e147da  packages/runtime/dist/packages/domain/tool-governance/src/lease.d.ts.map
+c441c7a7f0851a912fb1b42e185630f4465990a4effb15642de6eee9c7b4c742  packages/runtime/dist/packages/domain/tool-governance/src/lease.js
+3d1c4e991e966d8d8a96df283bbba968d338d7100328c60fef8a7b4c8cfd111e  packages/runtime/dist/packages/domain/tool-governance/src/lease.js.map
+cf754790d7ef74d4fd219cbb3d2592e34d68e64b2d0f18162d0aecafdc1d2041  packages/runtime/dist/packages/domain/tool-governance/src/parse-util.d.ts
+89d6b5e0d52016f1d21b1b7966e6258e1f02fd32121ebad7ffa43961975e66e9  packages/runtime/dist/packages/domain/tool-governance/src/parse-util.d.ts.map
+00ba99d0638cdc69d512d70d5c83f1c9e0990386b11234bd990efdb6bd5a4324  packages/runtime/dist/packages/domain/tool-governance/src/parse-util.js
+8d8a0c02d9374b979dc90b0f869bde7ed8cba33921097501880af5f4d41106ed  packages/runtime/dist/packages/domain/tool-governance/src/parse-util.js.map
+fd94530e569926c637e5c53ed5876231dd123eec93f837650ecc86cceb7fdb3f  packages/runtime/dist/packages/domain/tool-governance/src/planes.d.ts
+5ec31c791ee429cda07bf4959160da6d48cadcdd83c6110235b629d2aae80242  packages/runtime/dist/packages/domain/tool-governance/src/planes.d.ts.map
+f2c60e3c77cac2d9eb9a4ba1d22958230998fd3fd2fda3ea1667cf144c6624fe  packages/runtime/dist/packages/domain/tool-governance/src/planes.js
+6525cf1ed000a5e6ca3b0306ed9052b382520555e9fd919785bb3b9965693b9a  packages/runtime/dist/packages/domain/tool-governance/src/planes.js.map
+630e32b20d1c41ad6aa8f7043edc824af30cd243738cec212b4f055620387183  packages/runtime/dist/packages/domain/tool-governance/src/resource.d.ts
+92a8dfe70eeb7c0abfc2e4ea071035156f03575b4270a74d0b8a0f7eb7985def  packages/runtime/dist/packages/domain/tool-governance/src/resource.d.ts.map
+1aa5da86593d91f6b3ff601a49e239c997a5180ae38c046386a153ee28e70c61  packages/runtime/dist/packages/domain/tool-governance/src/resource.js
+f096eaf589ef6650bbb905c59d274160d82b311228a5b83bff0a9d3b55187ba5  packages/runtime/dist/packages/domain/tool-governance/src/resource.js.map
+935baf16e1b3588e354bcef4224319d4887a9fa0adca18401dd85a8ff4c36a9f  packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+75c3a1ab21398b60026ae16b21b6fd350d9b2e0037c4c00bce036a5c58784415  packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.d.ts
+a031170ad291f033b698511f94330fcdb95413680f865f63d514f032cd86d054  packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.d.ts.map
+dc51bf5e90ea1010eaa24d8b5bd4cbc570045cd79d628ad998efb27dd1d22ec4  packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.js
+be0edb03375f3f5158638f1acbf10508be25310e97ab973c516fcc030b7fe636  packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.js.map
+102a426a8ab6315acee1a5c6b7cd6443935ffb2ad2d68de7129231f5e89d93d0  packages/runtime/dist/packages/runtime/tool-dispatch/index.d.ts
+b62a4e0fa6359b4a9055b2c32548d8e62ae742c1ac7fdc3ef651832392810946  packages/runtime/dist/packages/runtime/tool-dispatch/index.d.ts.map
+6ec427c1b9159fef5b517704d3be9f62cfd7dce07f4193c0b0c05f5456ad0b74  packages/runtime/dist/packages/runtime/tool-dispatch/index.js
+43adb5e43e5a87162a34714de17c0ede22d2e60ae9b9ebf50d63d93b08fedef2  packages/runtime/dist/packages/runtime/tool-dispatch/index.js.map
+dfb75c2dd3096ebf391ca7fa3fde9621f4d7bc46f7895d563471312ab334de02  packages/runtime/dist/packages/runtime/tool-dispatch/install.d.ts
+d77e29e84f0176f0eccb0fce5f9d59115c9723614ead829af61eee1e7c3f818f  packages/runtime/dist/packages/runtime/tool-dispatch/install.d.ts.map
+f55c77e1415ce37802def79455a0de6c1a6b5bd271c3a08be55d6be8d9450e78  packages/runtime/dist/packages/runtime/tool-dispatch/install.js
+8ac4b0db6db3c3657f8f21157f78d49bfd22e2ccfb3592ef53ac10f9268c3662  packages/runtime/dist/packages/runtime/tool-dispatch/install.js.map
+1708dc02766b75301ddba85fd6b2d76c63e9129d39a320d2e91db0a5ee660f4e  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.d.ts
+74335bcf849977b7db1206bb420dc7baf38a531bde45143b8147af766054e0da  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.d.ts.map
+7f41bfa0463831be396a85728c692006dae5f9dbda6c51a42e0c9d79e6ee53c6  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js
+73fa87665c50629933e24e2b4cf047d2f1b57d42bf7c8af7982ab157a642d64d  packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js.map
 
-aggregate sha256 over the sorted per-file sha256 lines: `627dff685a0c4f24f6fe1a467c6fbd4887cd9dc77492c0a48f540972cdba0604`
+## 6. other — 1 file(s)
+
+8a01d349995fc3f23dd2be0a6899c81e4a37b22f1ffe0aa0fc9438656b517602  scripts/audit-a5-tool-governance-imports.mjs

@@ -43,6 +43,13 @@
  * recorded pid, and only on the recorded port.
  *
  * Usage: node a5p1-kit.mjs [--keep] [--evidence-dir <p>] [--skip-order-leg]
+ *                          [--inject-fatal-after-boot]
+ *
+ * `--inject-fatal-after-boot` is the F5 proof leg: it forces a FATAL at the
+ * strongest possible point — the world exists and the Host is live, past the
+ * boot gate — so the run exercises the FAILURE path's cleanup (stop the Host,
+ * sweep the world, verify it is gone) and leaves the trace behind. It is a kit
+ * switch, not a production code path.
  * EXIT: 0 = every criterion passed; 2 = a criterion failed; 1 = fatal.
  */
 import { createHash } from 'node:crypto'
@@ -180,11 +187,68 @@ function sweepWorld() {
   }
 }
 
+/** The Host child the failure path has to stop before it can sweep (set by the
+ *  run body right after spawn; a live Host re-creates whatever is deleted). */
+let CURRENT_HOST = undefined
+/** Is a process still there? ESRCH means no, anything else means yes. */
+function signalProbe(pid) {
+  try {
+    process.kill(pid, 0)
+    return 'alive'
+  } catch (error) {
+    return String(error?.code ?? error) === 'ESRCH' ? 'gone' : `probe error ${String(error?.code ?? error)}`
+  }
+}
+
+/** A synchronous wait the failure path can use (no timers survive exit). */
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
+}
+
 function dieFatal(msg, code = 1) {
   log(`FATAL ${redact(msg)}`)
-  sealHostLog()
+  // THE FAILURE PATH CLEANS UP TOO (a deleted world that the run left RUNNING
+  // behind it is not cleanup). Stop the Host, wait for it to actually go, then
+  // sweep — and VERIFY the absence, because "rmSync did not throw" is not the
+  // same fact as "the world is gone".
+  // Liveness is probed with `process.kill(pid, 0)`, NOT with the child's
+  // `exited` flag: this path has no event loop left to run the `close` handler,
+  // so the flag would say "alive" for a process that is already gone (measured
+  // on the first F5 leg). A direct child can also sit unreaped, which is a
+  // resource question, not a safety one — the safety question is whether
+  // anything is still writing into the world, and that is answered by the
+  // re-check below.
+  let stopped = 'no host was started'
+  if (CURRENT_HOST !== undefined && CURRENT_HOST.pid !== undefined) {
+    const pid = CURRENT_HOST.pid
+    stopHost(CURRENT_HOST)
+    stopped = signalProbe(pid) === 'gone' ? 'stopped (SIGTERM)' : 'SIGTERM sent; process still answering signals'
+    if (stopped !== 'stopped (SIGTERM)') {
+      try {
+        process.kill(pid, 'SIGKILL')
+      } catch {
+        /* already gone */
+      }
+      sleepSync(250)
+      stopped = signalProbe(pid) === 'gone' ? 'stopped (SIGTERM escalated to SIGKILL)' : 'SIGKILL sent; process still answering signals (unreaped direct child; no event loop left to reap it)'
+    }
+  }
   const world = sweepWorld()
-  writeEvidence('summary.json', { runStamp: RUN_STAMP, fatal: redact(String(msg)), world, criteria })
+  // The claim that matters is the one a live writer could break: sweep, wait
+  // past any in-flight flush, and look again.
+  sleepSync(500)
+  const verified = existsSync(HOME)
+    ? 'FAIL: world STILL PRESENT after the sweep (something re-created it)'
+    : 'verified absent (re-checked 500 ms after the sweep)'
+  log(`FATAL cleanup: host=${stopped} world=${world} residue=${verified}`)
+  sealHostLog()
+  writeEvidence('summary.json', {
+    runStamp: RUN_STAMP,
+    fatal: redact(String(msg)),
+    world,
+    cleanup: { host: stopped, world, residue: verified, home: HOME },
+    criteria,
+  })
   process.exit(code)
 }
 
@@ -632,10 +696,13 @@ async function main() {
 
   const mock = await startMockModel({ port: 0, decide: makeDecide(), log: () => {} })
   let host = undefined
+  CURRENT_HOST = undefined
   let origin = ''
   let cookie = ''
   try {
     host = spawnHost({ port: HOST_PORT, home: HOME, logPath: INSTANCE_LOG, mockPort: mock.port })
+    // Known to the failure path from the moment the world has a Host writing to it.
+    CURRENT_HOST = host
     const boot = await waitForLogLine(INSTANCE_RAW, BOOT_MARKER, 180_000, host.alive)
     if (boot === null) dieFatal(`no boot marker within 180s; log tail: ${redact(readFileSync(INSTANCE_RAW, 'utf8')).slice(-1200)}`)
     origin = `http://127.0.0.1:${boot.m[1]}`
@@ -679,6 +746,13 @@ async function main() {
     check('C1a', 'host booted on the recorded port with the production Team row mounted and the token gate live',
       Number(boot.m[1]) === HOST_PORT && health.body?.ok === true && stateBody?.teamSession !== null && noTok?.status === 401,
       `port=${String(boot.m[1])} healthOk=${String(health.body?.ok)} toolCount=${String(health.body?.toolCount)} teamSession=${String(stateBody?.teamSession !== null)} noToken=${String(noTok?.status)}`)
+
+    // F5 PROOF LEG: the failure path must clean up a world it created. Forced
+    // here, after C1a, because that is where the residue actually exists: a
+    // booted Host, a populated DSH_HOME, a token in the raw log.
+    if (args.includes('--inject-fatal-after-boot')) {
+      dieFatal('INJECTED FATAL (F5 proof leg: failure-path world cleanup); no criterion was evaluated past this point', 1)
+    }
 
     // Discovery: compute `builtinToolDeny` from the LIVE leader surface, the
     // same convention as every a4/a5 real-host world, so the Coverage

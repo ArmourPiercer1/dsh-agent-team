@@ -54,6 +54,23 @@ export interface CallToken {
 export type DispatcherObservation = Readonly<Record<string, unknown>> & {
     readonly event: string;
 };
+/**
+ * What the name resolves to AT THE MOMENT OF THE CALL, as read through the
+ * Host's public `tools.get(name, scope)` seam.
+ *
+ * The Resolver is an assembly-supplied function, held by the Dispatcher, so
+ * the definition check sits on the decision path itself and no caller can
+ * forget to perform it. An assembly that cannot supply one gets
+ * `{ ok: false }` for every call, which is a REFUSAL: PR1 Gate R2 forbids
+ * "could not read the definition, so assume the Body did not change".
+ */
+export type DefinitionProbe = {
+    readonly ok: true;
+    readonly fingerprint: string;
+} | {
+    readonly ok: false;
+    readonly detail: string;
+};
 /** Options of {@link createScopedDispatcher}. */
 export interface ScopedDispatcherOptions {
     readonly agentScopeKey: string;
@@ -62,6 +79,18 @@ export interface ScopedDispatcherOptions {
     policyGeneration?: number;
     authorityGeneration?: number;
     readonly nativeProviderId?: string;
+    /** The assembly's explicit trusted native list (see `GovernedSurfaceOptions`). */
+    readonly nativeNames?: readonly string[];
+    /** Read the CURRENT definition of one name at the public seam (F2). */
+    readonly resolveDefinition?: (name: string) => DefinitionProbe;
+    /**
+     * How many public seams a correct assembly must have armed before it may
+     * publish (the Guard plus its waterfall edges). The install declares each as
+     * it arms it; a shortfall is an assembly failure, never a degraded Guard
+     * (PR1 Gate R3). Default 5 = guard + pre-execute + execute + post-execute +
+     * result.
+     */
+    readonly requiredSeams?: number;
     readonly onObserve?: (observation: DispatcherObservation) => void;
 }
 /** The handle the assembly installs and later drains. */
@@ -73,6 +102,17 @@ export interface ScopedDispatcher {
     readonly guard: (exec: GuardExecView) => string | undefined;
     /** The per-call verdict (exposed for tests and the dispatcher body path). */
     readonly decide: (exec: GuardExecView) => GuardVerdict;
+    /**
+     * Seam bookkeeping (PR1 Gate R3). `armSeam` is called by the install for each
+     * public seam it successfully registers; `publish` refuses while the count is
+     * short, so a Guard that silently lost an edge cannot present itself as an
+     * assembled one — and a permanently short count is a failure the caller sees,
+     * not a `RELEASED` that quietly happens anyway.
+     */
+    readonly armSeam: (seam: string) => void;
+    readonly disarmSeam: (seam: string) => void;
+    readonly seamsArmed: () => readonly string[];
+    readonly requiredSeams: () => number;
     readonly beginAssembly: () => GovernanceResult<void>;
     readonly failAssembly: (reason: string) => GovernanceResult<void>;
     readonly publish: () => GovernanceResult<void>;
@@ -90,7 +130,38 @@ export interface ScopedDispatcher {
      * result edge also fires for calls that never reached dispatch (a Guard
      * denial, for instance), and those never took a lease.
      */
-    readonly endCallById: (callId: string) => void;
+    /**
+     * End one lease by its callId, with the REASON that authorises it:
+     *  - `'refused'` — a Gate of ours turned this call away, so its Body
+     *    provably never ran. This ends the lease in ANY state: it is not evidence
+     *    we are accepting from the host, it is a fact we created, and a call we
+     *    refused must not be the reason a teardown can never finish.
+     *  - `'settled'` (default) — the host says the call settled. Accepted ONLY
+     *    while ACTIVE: after the drain began, a callback crossing that boundary
+     *    cannot be authenticated as "the Body returned before the state changed"
+     *    (PR1 Gate R4), so it is recorded and refused, and the half-state stands.
+     */
+    readonly endCallById: (callId: string, reason?: 'refused' | 'settled') => {
+        readonly ended: boolean;
+        readonly state: BindingState;
+    };
+    /**
+     * A result exists for this call (the `tools/post-execute` edge). This is
+     * DIAGNOSTIC ONLY and never ends a lease: on the pinned registry a result can
+     * be in hand while the Body is still alive, so treating it as termination is
+     * the NEG-1 hazard again. The lease ends at `tools/result`, the edge the
+     * registry dispatches after the Body settled.
+     */
+    readonly noteResultObserved: (callId: string) => void;
+    /**
+     * The caller (the assembly, which owns the clock) says it stopped waiting for
+     * a drain to settle. The lane reads no timer, so the decision is handed in:
+     * from here `release()` refuses permanently and the mask and Guard stay
+     * armed — the half-state is `EXECUTION_TERMINATION_UNCONFIRMED` FOREVER,
+     * which is the safe side of "never disarms on an unproven termination".
+     */
+    readonly noteDrainGiveUp: (reason: string) => GovernanceResult<void>;
+    readonly drainGiveUpReason: () => string | null;
     readonly requestCancellation: () => void;
     readonly inFlight: () => number;
     readonly outstandingCallIds: () => readonly string[];
@@ -99,7 +170,11 @@ export interface ScopedDispatcher {
     readonly hostDisposeReturned: () => boolean;
     /** The ONLY state in which lifting the inherited-name mask is legal. */
     readonly maskMayLift: () => boolean;
-    readonly bindInheritedSurface: (names: readonly string[]) => number;
+    readonly bindInheritedSurface: (names: readonly string[], identities?: Readonly<Record<string, string>>) => {
+        readonly verifiedBound: number;
+        readonly unverifiedBound: number;
+        readonly unverified: readonly string[];
+    };
     readonly bind: (input: {
         readonly name: string;
         readonly origin: GovernedOrigin;
@@ -113,11 +188,19 @@ export interface ScopedDispatcher {
         readonly assurance?: ToolBinding['assurance'];
         readonly verified?: boolean;
     }) => GovernanceResult<void>;
-    /** Re-validation after a `tools/change` event (diagnostic, never a grant). */
-    readonly revalidateSurface: (observedNames: readonly string[]) => {
+    /**
+     * Re-validation after a `tools/change` event: a diagnosis plus a
+     * DOWNGRADE, never a grant. Names that appeared are reported (and stay
+     * outside the closed world); names whose CURRENT definition no longer matches
+     * what their Binding pinned are REVISED DOWN to unverified, which is the
+     * "refuse + re-bind" half of PR1 Gate R2 and the only way a drifted name gets
+     * verified again — an explicit re-bind by the trusted assembly.
+     */
+    readonly revalidateSurface: (observedNames: readonly string[], identities?: Readonly<Record<string, string>>) => {
         readonly added: readonly string[];
         readonly removed: readonly string[];
         readonly unverified: readonly string[];
+        readonly drifted: readonly string[];
     };
     readonly policyGeneration: () => number;
     readonly authorityGeneration: () => number;
