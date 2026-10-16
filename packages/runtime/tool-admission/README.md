@@ -161,9 +161,12 @@ retry).
   document / undeterminable containment) → `TOOL_BINDING_UNVERIFIED` with
   `details.refusal = 'deny-source-unattributed'` — ③: accurate diagnosis, never
   presented as a settled Team deny.
-* policy plane moved to deny after the case opened → `APPROVAL_STALE` with
-  `details.refusal = 'policy-deny-at-issue'` (the case is stale, the request is
-  not; re-admission plans the escalated rung).
+* policy plane moved to deny after the case opened → the presentation is
+  refused on the lane's existing stale legs, never minted: an
+  envelope-projected deny surfaces as "required rung rose", a generation
+  bump (spec §8.2's mutation discipline) as "authority generation moved",
+  an unanswerable walk as "undetermined at execution" — stale is a refusal,
+  not a retry; re-admission plans the escalated rung.
 * `effect-outside-grant` keeps PR0's frozen mapping → `TOOL_BINDING_UNVERIFIED`
   (the call exceeds the grant it carries = a call/binding mismatch, the same
   fact class PR1's Guard surfaces under this code; 可裁).

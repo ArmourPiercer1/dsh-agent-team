@@ -25,10 +25,16 @@
  *  3. H2 assurance runtime verification (assurance-runtime.ts) — BEFORE any
  *     hard-profile consumption: the level never redeems alone; the record
  *     must be real and probe-matched. A denied assurance never reaches mint.
- *  4. The expansion plane (PR0 planes, realm-filtered): decided `deny` or
- *     `undetermined` poisons the WHOLE set (plan §5: 禁止批准包含确定 deny /
- *     undetermined Effect 的请求); every effect `allow` → mint and admit;
- *     anything else → the ONE logical ApprovalCase (approval-case.ts).
+ *  4. The expansion plane (PR0 planes, realm-filtered), per the 2026-10-16
+ *     ruling (问题2): `undetermined` poisons the WHOLE set (fail-closed,
+ *     plan §5 unchanged); a decided policy `deny` is ROUTED, not refused —
+ *     it enters the ONE ApprovalCase, whose rung is answered by the envelope
+ *     WALK (the deny's owning authority), never by an invented short-circuit
+ *     and never by a trusted assembler tag. Human Admin — the top rung
+ *     inside envelope support — may approve once with no policy mutation;
+ *     a deny whose walk cannot answer refuses as UNATTRIBUTED (ruling ③).
+ *     externalHard capability facts and Domain answers are not policy rules:
+ *     no approval changes facts (leg 3 gates them; ruling ②).
  *  5. Mint is LAST and only for a decided call: the ledger registers the
  *     grant; consumption stays a SEPARATE edge (`consumeForExecution`), so
  *     "admitted but never executed" cannot fake a spent approval, and

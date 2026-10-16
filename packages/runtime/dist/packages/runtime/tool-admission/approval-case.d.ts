@@ -68,6 +68,10 @@ export interface UnapprovableReason {
     readonly effectIndex: number;
     readonly plane: 'expansion' | 'approval';
     readonly detail: string;
+    /** Ruling ③: the effect is DENIED and the bound documents cannot answer
+     *  WHICH rung owns that deny — an unattributed source, never to be
+     *  presented as a settled Team deny. */
+    readonly sourceUnattributed?: boolean;
 }
 /** Per-effect expansion verdicts (the plan §5 "完整 Effect Set" view). */
 export interface EffectSetExpansion {
@@ -75,15 +79,24 @@ export interface EffectSetExpansion {
     readonly allowed: readonly number[];
     /** Effects needing an Ask (`ask` or `no-authority`). */
     readonly needsApproval: readonly number[];
+    /** Effects the policy DECIDED-DENIES (ruling ①): upgradable ordinary Team
+     *  denys ride the Ask too — this list is the provenance tag the plan and
+     *  the caller carry forward, not a poison list. */
+    readonly policyDenied: readonly number[];
     /** The first effect that made the whole set unapprovable, if any. */
     readonly unapprovable: UnapprovableReason | null;
 }
 /**
  * The EXPANSION-plane pass over the whole set: does the policy authorize the
- * call as it stands? A decided `deny` or an `undetermined` effect poisons the
- * WHOLE set (approval must never contain one), and reports which leg poisoned
- * it. `no-authority` is NOT a deny — it is the absence of authority, which an
- * Ask exists to answer (A1-4's expansion arm).
+ * call as it stands? `undetermined` poisons the WHOLE set (approval must
+ * never contain one). A decided `deny` is ROUTED, not poison (user ruling
+ * 2026-10-16, 问题2): an upgradable ordinary Team deny enters the existing
+ * ApprovalCase/rung ladder, tagged in `policyDenied` so the plan can prove
+ * WHO owns it — a walk that cannot answer over a denied effect refuses as
+ * UNATTRIBUTED (ruling ③), never as "settled". The blanket "Team deny is
+ * final" arm this file used to carry was this implementation tightening
+ * beyond its original authority; it is gone. `no-authority` is NOT a deny —
+ * it is the absence of authority, which an Ask exists to answer (A1-4).
  */
 export declare function evaluateEffectSetExpansion(effects: RequestedEffectSet, realmId: string, policy: ToolPolicyDocument, subtreeContains?: SubtreeContains): EffectSetExpansion;
 /** Outcome of planning the ONE case: the plan, or WHY no case may open. */
@@ -121,6 +134,9 @@ export declare function toolAskApprovalCaseId(input: {
 export declare function planEffectSetApproval(input: {
     readonly effects: RequestedEffectSet;
     readonly needApproval: readonly number[];
+    /** Indices the policy DECIDED-DENIED (from evaluateEffectSetExpansion):
+     *  a walk that cannot answer at one of THESE becomes a ③ diagnosis. */
+    readonly policyDenied?: ReadonlySet<number>;
     readonly realmId: string;
     readonly beneficiaryAuthority: RuntimeAuthority;
     readonly documents: AuthorityEnvelopeDocuments;

@@ -97,6 +97,10 @@ export interface UnapprovableReason {
   readonly effectIndex: number
   readonly plane: 'expansion' | 'approval'
   readonly detail: string
+  /** Ruling ③: the effect is DENIED and the bound documents cannot answer
+   *  WHICH rung owns that deny — an unattributed source, never to be
+   *  presented as a settled Team deny. */
+  readonly sourceUnattributed?: boolean
 }
 
 /** Per-effect expansion verdicts (the plan §5 "完整 Effect Set" view). */
@@ -105,16 +109,25 @@ export interface EffectSetExpansion {
   readonly allowed: readonly number[]
   /** Effects needing an Ask (`ask` or `no-authority`). */
   readonly needsApproval: readonly number[]
+  /** Effects the policy DECIDED-DENIES (ruling ①): upgradable ordinary Team
+   *  denys ride the Ask too — this list is the provenance tag the plan and
+   *  the caller carry forward, not a poison list. */
+  readonly policyDenied: readonly number[]
   /** The first effect that made the whole set unapprovable, if any. */
   readonly unapprovable: UnapprovableReason | null
 }
 
 /**
  * The EXPANSION-plane pass over the whole set: does the policy authorize the
- * call as it stands? A decided `deny` or an `undetermined` effect poisons the
- * WHOLE set (approval must never contain one), and reports which leg poisoned
- * it. `no-authority` is NOT a deny — it is the absence of authority, which an
- * Ask exists to answer (A1-4's expansion arm).
+ * call as it stands? `undetermined` poisons the WHOLE set (approval must
+ * never contain one). A decided `deny` is ROUTED, not poison (user ruling
+ * 2026-10-16, 问题2): an upgradable ordinary Team deny enters the existing
+ * ApprovalCase/rung ladder, tagged in `policyDenied` so the plan can prove
+ * WHO owns it — a walk that cannot answer over a denied effect refuses as
+ * UNATTRIBUTED (ruling ③), never as "settled". The blanket "Team deny is
+ * final" arm this file used to carry was this implementation tightening
+ * beyond its original authority; it is gone. `no-authority` is NOT a deny —
+ * it is the absence of authority, which an Ask exists to answer (A1-4).
  */
 export function evaluateEffectSetExpansion(
   effects: RequestedEffectSet,
@@ -124,6 +137,7 @@ export function evaluateEffectSetExpansion(
 ): EffectSetExpansion {
   const allowed: number[] = []
   const needsApproval: number[] = []
+  const policyDenied: number[] = []
   let unapprovable: UnapprovableReason | null = null
   for (let index = 0; index < effects.effects.length; index += 1) {
     if (unapprovable !== null) break
@@ -132,14 +146,16 @@ export function evaluateEffectSetExpansion(
     if (ceiling.status === 'undetermined') {
       unapprovable = { effectIndex: index, plane: 'expansion', detail: `effect ${index} (${effect.kind}) is undetermined on the expansion plane — a request containing an undetermined effect must not be approved (plan §5)` }
     } else if (ceiling.status === 'decided' && ceiling.effect === 'deny') {
-      unapprovable = { effectIndex: index, plane: 'expansion', detail: `effect ${index} (${effect.kind}) is decided DENY by the policy — Team deny is final; no approval exists for it` }
+      // Ruling ①: route the deny into the Ask, keep the provenance tag.
+      needsApproval.push(index)
+      policyDenied.push(index)
     } else if (ceiling.status === 'decided' && ceilingReaches(ceiling, DESIRED_EFFECT)) {
       allowed.push(index)
     } else {
       needsApproval.push(index)
     }
   }
-  return { allowed, needsApproval, unapprovable }
+  return { allowed, needsApproval, policyDenied, unapprovable }
 }
 
 /** Outcome of planning the ONE case: the plan, or WHY no case may open. */
@@ -178,6 +194,9 @@ export function toolAskApprovalCaseId(input: {
 export function planEffectSetApproval(input: {
   readonly effects: RequestedEffectSet
   readonly needApproval: readonly number[]
+  /** Indices the policy DECIDED-DENIED (from evaluateEffectSetExpansion):
+   *  a walk that cannot answer at one of THESE becomes a ③ diagnosis. */
+  readonly policyDenied?: ReadonlySet<number>
   readonly realmId: string
   readonly beneficiaryAuthority: RuntimeAuthority
   readonly documents: AuthorityEnvelopeDocuments
@@ -192,6 +211,18 @@ export function planEffectSetApproval(input: {
     const effect = input.effects.effects[index] as Effect
     const scope = effectApprovalScope(effect, input.realmId)
     let evaluation
+    const owned = (detail: string): { ok: false; unapprovable: UnapprovableReason } =>
+      input.policyDenied?.has(index) === true
+        ? {
+            ok: false,
+            unapprovable: {
+              effectIndex: index,
+              plane: 'approval',
+              sourceUnattributed: true,
+              detail: `effect ${index} (${effect.kind}) is DENIED and its owning authority cannot be established — the deny source is UNATTRIBUTED (${detail}); the assembly must project the deny into the bound documents (spec §3.2/§8.2); an unattributed deny is never presented as a settled Team deny (ruling ③)`,
+            },
+          }
+        : { ok: false, unapprovable: { effectIndex: index, plane: 'approval', detail } }
     try {
       evaluation = evaluateAuthorityCeiling({
         beneficiaryAuthority: input.beneficiaryAuthority,
@@ -208,16 +239,16 @@ export function planEffectSetApproval(input: {
     } catch (error) {
       if (error instanceof AuthorityBindingError) {
         if (error.code === AUTHORITY_CEILING_ERROR_CODES.DOCUMENT_UNAVAILABLE) {
-          return { ok: false, unapprovable: { effectIndex: index, plane: 'approval', detail: `a bound authority document was unreadable while planning effect ${index} (authority-unavailable is not an outcome a case may open on)` } }
+          return owned(`a bound authority document was unreadable while planning effect ${index} (authority-unavailable is not an outcome a case may open on)`)
         }
         if (error.code === AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT) {
-          return { ok: false, unapprovable: { effectIndex: index, plane: 'approval', detail: `the ladder/document binding is defective while planning effect ${index}: ${error.message}` } }
+          return owned(`the ladder/document binding is defective while planning effect ${index}: ${error.message}`)
         }
       }
       throw error
     }
     if (evaluation.outcome === 'undetermined' || evaluation.requiredAuthority === undefined) {
-      return { ok: false, unapprovable: { effectIndex: index, plane: 'approval', detail: `effect ${index} (${effect.kind}) is undetermined on the approval plane — a request containing an undetermined effect must not be approved (plan §5); no case is minted without a requiredAuthority` } }
+      return owned(`effect ${index} (${effect.kind}) is undetermined on the approval plane — a request containing an undetermined effect must not be approved (plan §5); no case is minted without a requiredAuthority`)
     }
     perEffectRequired[index] = evaluation.requiredAuthority
     // Highest rung by ladder rank, derived through the SAME rank table the

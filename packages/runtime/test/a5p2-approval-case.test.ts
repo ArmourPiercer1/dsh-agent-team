@@ -45,13 +45,41 @@ describe('expansion plane over the WHOLE effect set', () => {
     expect(r.allowed).toEqual([])
   })
 
-  it('a decided-DENY effect poisons the whole set (a case never opens for a Team deny)', () => {
+  it('a decided-DENY effect is ROUTED, not poison: it joins the Ask, tagged by source (ruling ①)', () => {
+    // user ruling 2026-10-16 (问题2): an upgradable ordinary Team deny enters
+    // the existing ApprovalCase/rung ladder — the OLD blanket "Team deny is
+    // final" arm was the implementation tightening beyond its authority.
     const doc = policyDoc([{ effectKind: 'write', resource: scopeResource(B), maximumEffect: 'deny' }])
     const r = evaluateEffectSetExpansion(effects(A, B), REALM, doc)
-    expect(r.unapprovable).not.toBeNull()
-    expect(r.unapprovable?.plane).toBe('expansion')
-    expect(r.unapprovable?.effectIndex).toBe(1)
-    expect(r.unapprovable?.detail).toContain('DENY')
+    expect(r.unapprovable).toBeNull()
+    expect(r.allowed).toEqual([])
+    expect(r.needsApproval).toEqual([0, 1])
+    expect(r.policyDenied).toEqual([1]) // the provenance tag the plan carries forward
+  })
+
+  it('a DENIED effect whose bound documents cannot answer WHO owns the deny refuses the plan — unattributed, never "settled" (ruling ③)', () => {
+    const doc = policyDoc([{ effectKind: 'write', resource: scopeResource(B), maximumEffect: 'deny' }])
+    const r = evaluateEffectSetExpansion(effects(A, B), REALM, doc)
+    const planned = planEffectSetApproval({
+      effects: effects(A, B),
+      needApproval: r.needsApproval,
+      policyDenied: new Set(r.policyDenied),
+      realmId: REALM,
+      beneficiaryAuthority: 'member',
+      documents: {
+        teamHardEnvelope: { rules: [{ operationClass: 'write', matcher: { kind: 'subtree', resource: 'realm-a|data' }, maximumEffect: 'deny' }] },
+        permissionMutationEnvelope: { status: 'absent' },
+      },
+      authorityGeneration: 1,
+      teamSessionId: 'ts-1',
+      instanceId: 'inst-2',
+    }) // no subtreeContains seam: containment (and with it, WHICH rung owns the deny) is undeterminable
+    expect(planned.ok).toBe(false)
+    if (!planned.ok) {
+      expect(planned.unapprovable.effectIndex).toBe(1)
+      expect(planned.unapprovable.sourceUnattributed).toBe(true)
+      expect(planned.unapprovable.detail).toContain('unattributed')
+    }
   })
 
   it('an allow rule makes THAT effect directly authorized; mixed sets split cleanly', () => {
