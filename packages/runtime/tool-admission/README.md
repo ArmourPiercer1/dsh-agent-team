@@ -102,3 +102,27 @@ a refused re-register, no replay surface). `ledger.consume` validates
 (PR0 precedence) then marks in ONE synchronous step — JS run-to-completion is
 the atomicity; tests interleave async consumers to pin exactly one winner.
 The ledger stores only the consumption fact: no second authorization ledger.
+
+## NOT FROZEN — the PR1r residual-boundaries dependency (coordination 2026-10-16 08:2xZ)
+
+This lane consumes the FACT of trusted provenance, never its derivation: an
+`AdmissionRequest` carries a parsed `ToolBinding` and a `parametersFingerprint`,
+and "which Body the tool name will resolve to at execution" is established
+UPSTREAM by PR1's Guard. That upstream law is exactly what
+`alpha5-pr1r-residual-boundaries` (based on master `db5cb5f7`) is closing:
+
+* **R-a** — the global `tools.schemas()` view is NOT a trusted source: a
+  same-name-different-Body call requires a `tools.get` identity comparison, and
+  without an explicit bind the answer is refuse / "declaration unsupported";
+* **R-b** — the window between validation and late resolution gets its
+  deterministic negative control and seam record.
+
+Until that closure lands, the runtime-release semantics of `approval-case.ts`
+and `grant-mint.ts` are **not frozen**: what exactly enters
+`parametersFingerprint` / call identity (a definition-identity leg joins or
+tightens it), and which seam record proves the resolution window, may take
+their final shape there. The algebra in this lane (dual-plane expansion, the
+per-effect A3-2 equation, the one-shot edge, the clock gate) is
+provenance-agnostic and stands; the PR2 delivery is pure preparation
+(contracts + tests + docs) until PR1r closes. The §5 erratum items above
+stay 可裁 untouched, awaiting the user.

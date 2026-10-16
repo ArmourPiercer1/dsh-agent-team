@@ -6182,3 +6182,8 @@ RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.l
 **基线与门**：base 普查（pristine `45425a30`）22 红 / 6651 绿；head 全量 21 红 / **6725 绿**；fail-set identity diff `only_in_after=∅`，唯一 FIXED 是 a4p7 merge-gate 的 scratch-lint 腿（别的仪器的构建状态腿，base 时无 dist、lint universe 1159≠1158；本轮重建了 committed dist 后自绿，原文在 base 普查 JSON）。lint identity diff（base worktree vs head）：universe 1158→1172=+14 恰为本 PR 文件数，**new 0 / resolved 0**。全仓 typecheck 干净。CORE=0；:3080 未触碰（本轮零 spawn 零端口）；test-use 未实例化未运行；证据零 token（扫描 0 命中）。real-Host Receipt 本轮 N/A（无 live wiring、无 OS 能力声称，lane DORMANT，wiring 随 PR3/PR4）——理由写进 §12(d)。
 
 **观察上报**：#255 于 2026-10-16T08:06:56Z 被合入 master（merge `db5cb5f7`）——本分支仍内容堆叠在其精确树 `45425a30` 上、base 仍按指令指向 `alpha5-pr1-onto-master`，是否改指 master 归协调者裁决。§12(a)-(h) 见 `dev/agent-workflow/evidence/alpha5/pr2/s12-delivery-map.md`。
+
+
+## 2026-10-16 Alpha.5 PR2 协调补充轮（08:2xZ 指令；branch `alpha5-pr2-admission-grant`，PR #256，仍 DO-NOT-MERGE）
+
+用户裁决经协调转发：① PR2 转入**纯准备**状态（契约/测试/文档可评审），但 admission 接口的"运行时放行"语义冻结挂起，待 `alpha5-pr1r-residual-boundaries`（代理 4d990c89，base master `db5cb5f7`）收口——R-a 全局 `schemas()` 非可信来源（同名异体须 `tools.get` 身份比较，无显式 bind = 拒/声明不支持）与 R-b 校验→晚解析窗口的确定性负控/seam 记录可能改形本 lane 只作为事实消费的"来源可信"假设（`parametersFingerprint`/调用身份将纳入哪条 definition-identity 腿、`consumeForExecution` 须引用哪条 seam 记录均未冻结）。与来源无关的代数（dual-plane 扩张、逐 effect A3-2 等式、一次性 validate-then-mark、H1/H2 门）不受影响、立即可评审。落点：lane README 新增 "NOT FROZEN" 节（代码旁可见，不只在 PR 正文）、PR 正文新增 dependency 节（"依赖 PR1r 收口结果"）、s12 (c)/(g) 同步。② CI 表述纪律：census-runtime 未终态，全 PR 与证据不作"全部 CI 绿"表述——所有数字均为本地 run 并列明（正文 Gates 节已加声明；原文 CI=NOT_RUN 不变）。③ §5 erratum 可裁项原样保留等用户，未动。

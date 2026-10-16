@@ -1,6 +1,7 @@
 # alpha5-pr2 identity/hash manifest
 
-captured: 2026-10-16T08:2xZ · base 45425a303a0170d194b8ecb78751145ebff282e4 · head 4f2dfd0823673e6463d194e4d7ecbf8d8b2b4785
+captured: 2026-10-16T08:2xZ · base 45425a303a0170d194b8ecb78751145ebff282e4 · head 4f2dfd0823673e6463d194e4d7ecbf8d8b2b4785 (evidence commit 7ab7599d)
+addendum: PR1r freeze-hold notes (README NOT-FROZEN section, PR body dependency section, s12 (c)/(g)); manifest re-hashed at the addendum commit.
 
 ```
 c2f8f37a190081c15dc38574ca526f15e41036c2c19299f99f5b98be4df7320b  packages/runtime/tool-admission/admission-kernel.ts

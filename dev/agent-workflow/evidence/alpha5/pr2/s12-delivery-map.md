@@ -47,6 +47,9 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   MEASURED) → tie added → 10/10 green.
 - Full suites: `runs/base-suite.log` (base 45425a30, EXIT=1: 22 known failures / 6651 passed),
   `runs/after-suite.log` (head: 21 failed / **6725 passed**, 528 files), JSON censuses beside them.
+- CI: NOT_RUN (stacked). Session discipline (coordination 08:2xZ): the census-runtime is not
+  terminal, so NO claim of "all CI green" is made anywhere in this PR or its evidence —
+  every number above is a local run.
 
 ## (d) real-Host Run Receipt — N/A with reason
 
@@ -89,6 +92,16 @@ repo's own amendment mechanisms and each carries its reviewed-amendment comment.
    if ever needed, is a PR6 ledger question.
 5. The two red composition-smoke legs in the base fail set (client dist not built in this worktree) remain
    red — pre-existing, named by PR1's `cbc98c1e`, untouched here.
+6. **FREEZE-HOLD (coordination 2026-10-16 08:2xZ):** runtime-release semantics of the admission
+   interface (`approval-case.ts` / `grant-mint.ts` provenance legs: what enters
+   `parametersFingerprint` / call identity; which seam record proves the validate→late-resolution
+   window) are NOT frozen pending the `alpha5-pr1r-residual-boundaries` closure (R-a trusted
+   provenance — `schemas()` is not a trusted source, `tools.get` identity comparison, no explicit
+   bind ⇒ refuse; R-b deterministic negative control / seam record for the window), based on master
+   `db5cb5f7`. PR2 is pure preparation (contracts + tests + docs) until that close; the
+   provenance-agnostic algebra (dual-plane expansion, per-effect A3-2, one-shot edge, H1/H2 gates)
+   stands and is reviewable now. Pinned at the code in the lane README "NOT FROZEN" section and in
+   the PR body. The §5 erratum items stay 可裁 untouched, awaiting the user.
 
 ## (h) token scrub
 
