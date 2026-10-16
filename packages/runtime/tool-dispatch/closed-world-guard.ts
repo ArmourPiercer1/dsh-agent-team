@@ -136,6 +136,13 @@ export const GUARD_DENIAL_REASONS = {
   IDENTITY_ABSENT: 'agent-identity-absent',
   NOT_ACTIVE: 'dispatcher-not-active',
   REVISION_DRIFT: 'binding-revision-drift',
+  /** The name resolved to a DIFFERENT definition than the Binding pinned (the
+   *  same Scope and name, a new body). R2: verification is of a definition,
+   *  never of a name. */
+  DEFINITION_DRIFT: 'definition-drift',
+  /** The current definition could not be read at the public seam. Assuming
+   *  "nothing changed" is exactly the failure this reason exists to refuse. */
+  DEFINITION_UNREADABLE: 'definition-unreadable',
 } as const
 
 export type GuardDenialReason = (typeof GUARD_DENIAL_REASONS)[keyof typeof GUARD_DENIAL_REASONS]
@@ -155,6 +162,10 @@ export function guardDenialMessage(name: string, reason: GuardDenialReason): str
       return `team tool guard: "${name}" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the mask stays)`
     case GUARD_DENIAL_REASONS.REVISION_DRIFT:
       return `team tool guard: the Tool Binding for "${name}" changed generation after this Dispatcher validated it (stale binding: re-assembly required)`
+    case GUARD_DENIAL_REASONS.DEFINITION_DRIFT:
+      return `team tool guard: "${name}" now resolves to a different ToolDefinition than the one its Binding pinned (definition drift: an old verification never transfers to a new body; re-bind required)`
+    case GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE:
+      return `team tool guard: the current definition of "${name}" is unreadable at the public seam, so its Binding cannot be re-verified at dispatch (unreadable definition: refusing rather than assuming nothing changed)`
   }
 }
 
@@ -203,7 +214,8 @@ export interface GovernedSurface {
     readonly binding: ToolBinding
     readonly verified: boolean
   }) => GovernanceResult<GovernedEntry>
-  /** Mark an already-bound name un-verifiable (a failed revalidation). */
+  /** Mark an already-bound name un-verifiable: a failed revalidation, or a
+   *  definition that drifted away from the one its Binding pinned. */
   readonly markUnverified: (name: string, bindingId: string) => GovernanceResult<GovernedEntry>
   /**
    * Bind the whole inherited surface observed at setup (the Coverage Gate's
@@ -212,12 +224,48 @@ export interface GovernedSurface {
    * it. Names the Team did not review are bound UNVERIFIED — visible to the
    * Coverage diff, refused at dispatch, and loud (never silently allowed).
    */
-  readonly bindInheritedSurface: (names: readonly string[]) => number
+  /**
+   * Take the publish-surface observation (the Coverage Gate's FINAL name list)
+   * and give every name in it a defined verdict. Two things must BOTH hold for
+   * a name to be inherited as a verified native: it is on the assembly's
+   * explicit trusted native list (built from the Host's public GLOBAL view, see
+   * `nativeNames`), AND its current definition is pinnable through `identities`
+   * (the public `tools.get(name, scope)` seam read at bind time).
+   *
+   * Everything else — a scope-local contribution, an undeclared Team tool, an
+   * MCP registration, or a native whose definition could not be pinned — is
+   * bound UNVERIFIED: governed, visible to the Coverage diff, refused at
+   * dispatch, loud. An observed name NEVER earns a native Binding or a
+   * `verified: true` by being observed (PR1 Gate R1).
+   */
+  readonly bindInheritedSurface: (
+    names: readonly string[],
+    identities?: Readonly<Record<string, string>>,
+  ) => InheritedSurfaceBinding
   readonly snapshot: () => readonly GovernedEntry[]
+}
+
+/** What {@link GovernedSurface.bindInheritedSurface} did, as one honest record. */
+export interface InheritedSurfaceBinding {
+  /** Names that became VERIFIED inherited-native bindings. */
+  readonly verifiedBound: number
+  /** Names bound but held UNVERIFIED (governed, refused at dispatch). */
+  readonly unverifiedBound: number
+  /** Those unverified names, sorted — the Coverage diff's input. */
+  readonly unverified: readonly string[]
 }
 
 /** Options of {@link createGovernedSurface}. */
 export interface GovernedSurfaceOptions {
+  /**
+   * The assembly's EXPLICIT trusted native list. Membership is the only
+   * permission a name has to be bound as `dsh-native` without a real Team
+   * Binding, and the assembly derives it from the Host's public GLOBAL tool
+   * view (`tools.schemas()` with no scope) — never from the agent-scoped
+   * surface it is about to govern, because a scope-local contribution is not
+   * native merely by being visible. An empty list inherits nothing.
+   */
+  readonly nativeNames?: readonly string[]
   /** The Agent/Scope key the Bindings are scoped to (PR0 `agentScopeKey`). */
   readonly agentScopeKey: string
   /** The provider id stamped on inherited native bindings (the pinned host). */
@@ -236,6 +284,7 @@ export function createGovernedSurface(options: GovernedSurfaceOptions): Governed
   const agentScopeKey = options.agentScopeKey
   const policyGeneration = options.policyGeneration ?? 0
   const authorityGeneration = options.authorityGeneration ?? 0
+  const nativeNames = new Set(options.nativeNames ?? [])
 
   const bind: GovernedSurface['bind'] = ({ name, origin, binding, verified }) => {
     const previous = entries.get(name)
@@ -297,28 +346,63 @@ export function createGovernedSurface(options: GovernedSurfaceOptions): Governed
       entries.set(name, entry)
       return { ok: true, value: entry }
     },
-    bindInheritedSurface: (names) => {
-      let bound = 0
+    bindInheritedSurface: (names, identities) => {
+      let verifiedBound = 0
+      const unverified: string[] = []
       for (const name of names) {
         if (entries.has(name)) continue
-        const binding: ToolBinding = {
-          bindingId: `native:${name}`,
-          agentScopeKey,
-          toolName: name,
-          definitionIdentity: `native:${name}`,
-          providerId,
-          implementationOrigin: 'dsh-native',
-          executionBoundary: 'trusted-host',
-          assurance: untestedAssurance('dsh-native', 'trusted-host'),
-          policyGeneration,
-          authorityGeneration,
-          revision: 1,
-          status: 'ACTIVE',
-        }
-        const outcome = bind({ name, origin: 'inherited-native', binding, verified: true })
-        if (outcome.ok) bound += 1
+        const pinned = identities?.[name]
+        const hasPinnedIdentity = typeof pinned === 'string' && pinned.length > 0
+        // Two independent facts, both required (PR1 Gate R1): an explicit
+        // trusted-native declaration AND a definition identity read at the
+        // public seam. Observation alone never earns a native Binding.
+        const isNative = nativeNames.has(name) && hasPinnedIdentity
+        const binding: ToolBinding = isNative
+          ? {
+              bindingId: `native:${name}`,
+              agentScopeKey,
+              toolName: name,
+              // The identity read from `tools.get(name, scope)` — the body the
+              // assembly actually saw, not a name-shaped guess.
+              definitionIdentity: String(pinned),
+              providerId,
+              implementationOrigin: 'dsh-native',
+              executionBoundary: 'trusted-host',
+              assurance: untestedAssurance('dsh-native', 'trusted-host'),
+              policyGeneration,
+              authorityGeneration,
+              revision: 1,
+              status: 'ACTIVE',
+            }
+          : {
+              // Observed, not attributed. The closed assurance vocabulary has no
+              // "unattributed" member, so the honest claim lives in the
+              // bindingId family, the UNVERIFIED flag and the untested
+              // assurance — and in the dispatch-time refusal this entry always
+              // produces until the trusted assembly binds it for real.
+              bindingId: `unbound-observed:${agentScopeKey}:${name}`,
+              agentScopeKey,
+              toolName: name,
+              definitionIdentity: hasPinnedIdentity ? String(pinned) : `unpinned:${name}`,
+              providerId: 'unattributed',
+              implementationOrigin: 'team-trusted-extension',
+              executionBoundary: 'trusted-host',
+              assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
+              policyGeneration,
+              authorityGeneration,
+              revision: 1,
+              status: 'ACTIVE',
+            }
+        const outcome = bind({ name, origin: 'inherited-native', binding, verified: isNative })
+        if (!outcome.ok) continue
+        if (isNative) verifiedBound += 1
+        else unverified.push(name)
       }
-      return bound
+      return Object.freeze({
+        verifiedBound,
+        unverifiedBound: unverified.length,
+        unverified: Object.freeze(unverified.slice().sort()),
+      })
     },
     snapshot: () => [...entries.values()],
   }
@@ -338,6 +422,19 @@ export interface GuardDecisionInput {
    */
   readonly policyGeneration: number
   readonly authorityGeneration: number
+  /**
+   * What the name resolves to RIGHT NOW, read at the public
+   * `tools.get(name, scope)` seam by the caller. The Guard cannot read the
+   * registry itself (it is pure and has no ctx); the install wrapper performs
+   * the read and passes it through, so the check is per call and cannot be
+   * cached into staleness.
+   *
+   * `{ ok: false }` is a REFUSAL, not a shrug: an unreadable definition means
+   * the Binding cannot be re-verified, and PR1 Gate R2 forbids the
+   * "could not read it, so assume nothing changed" reasoning that let the old
+   * verification outlive the body it described.
+   */
+  readonly definition: { readonly ok: true; readonly fingerprint: string } | { readonly ok: false; readonly detail: string }
 }
 
 /**
@@ -378,6 +475,15 @@ export function guardDecision(input: GuardDecisionInput): GuardVerdict {
   }
   if (entry.revision !== entry.binding.revision) {
     return deny('TOOL_BINDING_UNVERIFIED', GUARD_DENIAL_REASONS.REVISION_DRIFT)
+  }
+  // THE DEFINITION, NOT THE NAME (PR1 Gate R2): a verified Binding attests to
+  // the body it pinned, so a same-Scope, same-name resolution to a different
+  // ToolDefinition is a new body and the old verification does not reach it.
+  if (!input.definition.ok) {
+    return deny('TOOL_BINDING_UNVERIFIED', GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE)
+  }
+  if (input.definition.fingerprint !== entry.binding.definitionIdentity) {
+    return deny('TOOL_BINDING_UNVERIFIED', GUARD_DENIAL_REASONS.DEFINITION_DRIFT)
   }
   return { kind: 'abstain', reason: 'governed-and-verified' }
 }

@@ -67,12 +67,17 @@ that hazard or its green PR1 arms mean nothing.
 | --- | --- | --- | --- |
 | `hazard` | no | pre-execute fence | **native body runs (count 1)** — the protection control |
 | `safe` | no | — | native count 0 (the reverse order) |
-| `pr1-parked` | yes | pre-execute fence | native 0, adapter 0, teardown refused `EXECUTION_TERMINATION_UNCONFIRMED`, mask kept |
-| `pr1-body` | yes | inside the Team Body | native 0, the Team Body completes, mask lifted exactly once |
+| `pr1-parked` | yes | pre-execute fence | native 0, adapter 0, teardown refused `EXECUTION_TERMINATION_UNCONFIRMED`, mask kept, and the mask lifts EXACTLY ONCE when the refused call's own lease is ended by that refusal |
+| `pr1-body` | yes | inside the Team Body (a wrapper parks the Body before its own `return`) | native 0, the Team Body completes, the lease is still held across the whole drain window, a second teardown is refused with the half-state armed |
 
 Criteria: `NEG1-CONTROL`, `NEG1-SAFE`, `NEG1-PARKED`, `NEG1-BODY`, `NEG1-MASK`,
-`NEG1-STABLE`, `NEG1-LEAK`, `NEG1-SEAM`. Counters from body invocations are the
-evidence — never the returned prose.
+`NEG1-SEAM`, `NEG1-R4`, `NEG1-STABLE`, `NEG1-LEAK`. Counters from body
+invocations are the evidence — never the returned prose.
+
+`NEG1-MASK` and `NEG1-R4` are the R3/R4 laws on the real registry: an
+unproven termination never lifts the mask; a lease that is still outstanding
+when the drain gives up leaves `release()` refusing forever (the run does not
+"look clean" a second time).
 
 ## Host legs (`a5p1-kit.mjs`)
 
@@ -94,22 +99,33 @@ evidence — never the returned prose.
 | --- | --- | --- |
 | **inherited native names run on BOTH lanes** — `write` created its file for the governed member and for the legacy member alike | `inherited-native-observation.json` | PR1 binds names that already existed when the Agent published (`bindingId native:<name>`) and abstains on them; whether an inherited tool may run is the **permission lane's** decision and PR1 changes nothing there. The two lanes behaving identically for this class IS the non-interference statement; PR1 owns the unbound / post-publish class, which is `C2` |
 | which layer refused an unbound name | `undeclared-team-tool-evidence.json` | the text is recorded verbatim instead of assumed: the PR1 closed-world text and the pre-existing Team-tool lane are different protections and this kit must not book the second as the first |
+| the **failure path cleans up too** (`--inject-fatal-after-boot`, run `fatal-f5`) | `fatal-f5/summary.json` (`cleanup`) | a forced FATAL after the boot gate, with a booted Host and a populated `DSH_HOME`: the handler stops the Host, sweeps the world and RE-CHECKS 500 ms later (`verified absent`), and the run trace stays. Liveness is probed with `kill(pid, 0)`, not with the child's `exited` flag — that flag needs an event loop this path no longer has, and it reported a dead process as alive |
 | a **preset row cannot register a tool** on this Host | `probe-ledger.json` (`register ... ok: false`, `cannot get property "tools" without inject`) | measured, not argued. That scope also accepts `agent/created` / `tools/pre-execute` subscriptions that are **never delivered**; an earlier revision of this kit built the H6 hazard on exactly that and returned a run of silence — green criteria on a hazard that never appeared. The hazard therefore uses a name the Host contributes after publish (`C2`), and the probe row stays only as an observer that reports its own liveness |
 
 ## Disclosed boundaries (asserted, not glossed)
 
-* **`NEG1-SEAM`** — measured, on every run: neither `tools/pre-execute` nor
-  `tools/execute` resolves its `next()` after a Body returns, and
-  `tools/post-execute` fires once a result exists (which precedes a parked
-  Body). So the Dispatcher's self-count bounds *"outer door → result event"*,
-  strictly weaker than *"no Body is running"*. The lease is therefore taken at
-  the outermost door (that is what holds the state below `RELEASED` while a
-  call is parked at the fence) and released at the result edge; a Guard denial
-  skips `tools/execute` but still fires `tools/post-execute`, which keeps the
-  count balanced. What protects the native-body hazard is the **state gates at
-  both doors plus the mask never lifting before `RELEASED`** — never the mask
-  alone. A lease that cannot end fails CLOSED (`release()` refuses, the mask
-  and Guard stay armed).
+* **`NEG1-SEAM` — the seam order, measured (and a correction on the record).**
+  Neither `tools/pre-execute` nor `tools/execute` resolves its `next()` after a
+  Body returns. An earlier revision of this kit also recorded
+  `tools/post-execute` as firing *before* a parked Body returned, and released
+  the lease there as the best available approximation. **That measurement was
+  vacuous**: the arm's park did not hold the Body open (the obs tail read
+  `wrapper-enter → body → wrapper-return` before the teardown ran), so the call
+  had already completed and any order it reported was meaningless. With the park
+  made real, the pinned registry says the opposite — `tools/post-execute` and
+  `tools/result` both fire only AFTER the Body returned, while the Dispatcher's
+  lease is still held across the whole window. The law follows: `post-execute`
+  only RECORDS that a result is in hand; the lease ends at `tools/result`, the
+  registry's final emit edge (`finishScheduledExecution → notifyResult`, on the
+  success AND the error path). A call that never reaches a Body — a refusal at
+  the Guard or at either state gate — ends its own lease at the refusal, because
+  "this call's Body never ran" is our own act, not host evidence.
+* So the self-count bounds *"outer door → the call's own settled or refused
+  edge"*, strictly weaker than *"no Body is running"*. What protects the
+  native-body hazard is the **state gates at both doors plus the mask never
+  lifting before `RELEASED`** — never the mask alone. A lease that cannot end
+  fails CLOSED (`release()` refuses, the mask and Guard stay armed;
+  `TERMINATION_UNCONFIRMED`).
 * This lane reads **no clock** (pinned by test `S7`); the finite-clock law
   (NaN / ±Infinity typed fail-closed, `body = 0`) is Admission's in PR2.
 * Coverage Gate stays FATAL as a diagnostic; the Guard is the safety line

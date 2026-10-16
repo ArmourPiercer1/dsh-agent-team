@@ -17,14 +17,23 @@ import { describe, expect, it } from 'vitest'
 import { BINDING_STATES } from '../../domain/tool-governance/src/index.js'
 import { createScopedDispatcher, type DispatcherObservation } from '../tool-dispatch/index.js'
 
+const NATIVES = ['read', 'bash']
+/** The machine under test here is the STATE MACHINE, with no Host ctx in the
+ *  room: no public seams exist to arm, so it asks for none (`requiredSeams: 0`),
+ *  and the two facts an inherited native needs — the trusted native list and
+ *  the definition pinned at the public seam — are supplied by hand.
+ *  `a5p1-guard-install.test.ts` covers the same machine with the seams armed. */
 function makeDispatcher() {
   const observations: DispatcherObservation[] = []
   const dispatcher = createScopedDispatcher({
     agentScopeKey: 'session-m1',
     trustedIdentities: ['session-m1'],
+    nativeNames: NATIVES,
+    resolveDefinition: (name) => ({ ok: true, fingerprint: `def:${name}` }),
+    requiredSeams: 0,
     onObserve: (row) => observations.push(row),
   })
-  dispatcher.bindInheritedSurface(['read', 'bash'])
+  dispatcher.bindInheritedSurface(NATIVES, Object.fromEntries(NATIVES.map((n) => [n, `def:${n}`])))
   return { dispatcher, observations }
 }
 
@@ -220,5 +229,81 @@ describe('a stable shape with immutable revisions, and a change channel that gra
     toActive(dispatcher)
     expect(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' })).toBeUndefined()
     expect(typeof dispatcher.guard({ name: 'ghost', agentIdentity: 'session-m1' })).toBe('string')
+  })
+})
+
+
+describe('the change channel has live callers (PR1 Gate R2: revise() was dead code)', () => {
+  it('D15 a definition drift revises the Binding down through the public change channel', () => {
+    let fingerprint = 'def:read'
+    const observations: DispatcherObservation[] = []
+    const dispatcher = createScopedDispatcher({
+      agentScopeKey: 'session-m1',
+      trustedIdentities: ['session-m1'],
+      nativeNames: ['read'],
+      resolveDefinition: (name) => ({ ok: true, fingerprint: name === 'read' ? fingerprint : `def:${name}` }),
+      requiredSeams: 0,
+      onObserve: (row) => observations.push(row),
+    })
+    dispatcher.bindInheritedSurface(['read'], { read: 'def:read' })
+    expect(dispatcher.beginAssembly().ok).toBe(true)
+    expect(dispatcher.publish().ok).toBe(true)
+    expect(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' })).toBeUndefined()
+    expect(dispatcher.surface.entryOf('read')).toMatchObject({ verified: true, revision: 1 })
+
+    // Same Scope, same name, a DIFFERENT body.
+    fingerprint = 'def:read:swapped'
+    const denial = dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' })
+    expect(String(denial)).toContain('definition')
+    // The withdrawal travelled the public change channel: revision 2, same
+    // bindingId family, verification gone.
+    expect(dispatcher.surface.entryOf('read')).toMatchObject({ verified: false, revision: 2 })
+    expect(dispatcher.surface.entryOf('read')?.binding.bindingId).toBe('native:read')
+    expect(observations.some((o) => o.event === 'dispatcher-binding-revised')).toBe(true)
+
+    // Refused ever after, until the trusted assembly re-binds it for real — and
+    // "for real" means pinning the Body it actually inspected this time, not
+    // re-stamping `verified: true` onto the stale pin.
+    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('cannot be verified')
+    const staleRetry = dispatcher.bind({
+      name: 'read',
+      origin: 'inherited-native',
+      binding: { ...dispatcher.surface.entryOf('read')!.binding, revision: 3 },
+      verified: true,
+    })
+    expect(staleRetry.ok).toBe(true)
+    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('definition')
+    // Each drifting call is its own immutable revision (a refusal that also
+    // withdraws is still a state change the machine records), so the re-bind
+    // takes the revision actually in force and re-pins the inspected body.
+    const inForce = dispatcher.surface.entryOf('read')!
+    expect(inForce.revision).toBeGreaterThan(3)
+    const rebound = dispatcher.bind({
+      name: 'read',
+      origin: 'inherited-native',
+      binding: { ...inForce.binding, revision: inForce.revision + 1, definitionIdentity: 'def:read:swapped' },
+      verified: true,
+    })
+    expect(rebound.ok).toBe(true)
+    expect(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' })).toBeUndefined()
+  })
+
+  it('D16 revalidation with identities revises drifted names; without them it stays a name diff', () => {
+    const { dispatcher } = makeDispatcher()
+    expect(dispatcher.beginAssembly().ok).toBe(true)
+    expect(dispatcher.publish().ok).toBe(true)
+
+    // No identities supplied: diagnosis only (the pre-R2 shape, still honest).
+    const nameOnly = dispatcher.revalidateSurface(['read', 'bash'])
+    expect(nameOnly.drifted).toEqual([])
+
+    // Identities supplied and one of them is a different body: that name is
+    // revised down, reported, and refused from now on.
+    const swapped = dispatcher.revalidateSurface(['read', 'bash'], { read: 'def:read:other', bash: 'def:bash' })
+    expect(swapped.drifted).toEqual(['read'])
+    expect(swapped.unverified).toEqual(['read'])
+    expect(dispatcher.surface.entryOf('read')?.verified).toBe(false)
+    expect(String(dispatcher.guard({ name: 'read', agentIdentity: 'session-m1' }))).toContain('cannot be verified')
+    expect(dispatcher.guard({ name: 'bash', agentIdentity: 'session-m1' })).toBeUndefined()
   })
 })

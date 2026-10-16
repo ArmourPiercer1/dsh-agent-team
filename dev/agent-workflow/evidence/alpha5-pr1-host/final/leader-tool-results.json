@@ -12,59 +12,59 @@
   "leaderResults": [
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-a2afa32fa1811fec1d30a0f1bcdfba5c\",\"operationId\":\"op-1yt8utk015ebeb1uk7yiu0hs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-cf1db3e02103c1ca5fa0702b9a7ddda5\",\"operationId\":\"op-0jw21gw12qkw6v10c5nom1fk\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-a2afa32fa1811fec1d30a0f1bcdfba5c\",\"operationId\":\"op-1yt8utk015ebeb1uk7yiu0hs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-cf1db3e02103c1ca5fa0702b9a7ddda5\",\"operationId\":\"op-0jw21gw12qkw6v10c5nom1fk\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-a2afa32fa1811fec1d30a0f1bcdfba5c\",\"operationId\":\"op-1yt8utk015ebeb1uk7yiu0hs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-cf1db3e02103c1ca5fa0702b9a7ddda5\",\"operationId\":\"op-0jw21gw12qkw6v10c5nom1fk\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-a2afa32fa1811fec1d30a0f1bcdfba5c\",\"operationId\":\"op-1yt8utk015ebeb1uk7yiu0hs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-cf1db3e02103c1ca5fa0702b9a7ddda5\",\"operationId\":\"op-0jw21gw12qkw6v10c5nom1fk\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": true,
@@ -72,19 +72,19 @@
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-06jd2nb10w5w\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-00df7d1846f35425360ca6be2262518e\",\"operationId\":\"op-0sg48xk0g1pjtv07fzj26151\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0fbqh7r1joc2\",\"templateId\":\"strict\",\"childSessionId\":\"session-team-child-e0a76183f2a6d29b985a61061c9c9ca6\",\"operationId\":\"op-0g1xijd1urwdf6098amcv1je\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-a2afa32fa1811fec1d30a0f1bcdfba5c\",\"operationId\":\"op-1yt8utk015ebeb1uk7yiu0hs\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"templateId\":\"ctl\",\"childSessionId\":\"session-team-child-cf1db3e02103c1ca5fa0702b9a7ddda5\",\"operationId\":\"op-0jw21gw12qkw6v10c5nom1fk\",\"replayed\":false,\"ledgerSequence\":3,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5p1-c2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":4,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d1-2026-10-16T07-30-38\"}"
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":6,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d2-2026-10-16T07-30-38\"}"
     },
     {
       "isError": true,
@@ -92,7 +92,7 @@
     },
     {
       "isError": false,
-      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1yv37nu0rsxv\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":8,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d3-2026-10-16T06-51-52\"}"
+      "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1ibn9rq06g7x\",\"fromLifecycle\":\"RUNNING\",\"lifecycleCommitted\":false,\"sequence\":8,\"settled\":false,\"workStatus\":\"admitted\"},\"requestToken\":\"a5p1-d3-2026-10-16T07-30-38\"}"
     }
   ]
 }

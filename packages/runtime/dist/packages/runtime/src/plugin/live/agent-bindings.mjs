@@ -2228,11 +2228,42 @@ export function createAgentBindings(deps) {
           const candidate = readCandidate(label, read)
           if (typeof candidate === 'string' && candidate.length > 0) trusted.add(candidate)
         }
+        // THE TRUSTED NATIVE LIST (alpha.5 PR1 Gate R1). A name earns the
+        // `dsh-native` inheritance ONLY from an explicit source, and the one
+        // source the Host makes publicly available is its GLOBAL tool view:
+        // `tools.get(name)` / `tools.schemas()` with NO scope resolve through
+        // the registry's global layer, so a name that is visible there is a
+        // tool the Host itself mounted, while a contribution scoped to THIS
+        // agent (a Team tool, an MCP tool, anything a row registered for this
+        // one Agent) is not. What this seam does NOT provide is per-definition
+        // provenance — no owner, no contributing package, no "is native" bit
+        // (`schemas()` whitelists name/description/parameters only, and
+        // `register()` records no public owner) — so the residual gap is
+        // recorded, and the Guard closes the practical half of it by pinning
+        // every inherited definition through `tools.get` and refusing any call
+        // whose Body no longer matches the one its Binding pinned.
+        // An unreadable global list is the fail-closed direction: an EMPTY
+        // list binds nothing as native, so every inherited name is governed,
+        // unverified and refused rather than waved through.
+        let nativeNames = []
+        try {
+          const globalSchemas = typeof agentCtx.tools?.schemas === 'function' ? agentCtx.tools.schemas() : undefined
+          if (Array.isArray(globalSchemas)) {
+            nativeNames = globalSchemas
+              .map((row) => row?.name)
+              .filter((name) => typeof name === 'string' && name.length > 0)
+          } else {
+            observations.push(`a5p1-guard: native-list-unavailable for ${sessionId} (tools.schemas() with no scope returned no array) — no name is inherited as native; every inherited tool is bound UNVERIFIED and refused at dispatch`)
+          }
+        } catch (error) {
+          observations.push(`a5p1-guard: native-list-unavailable for ${sessionId} (${String(error?.message ?? error).slice(0, 140)}) — failing closed with an empty trusted native list`)
+        }
         const outcome = installScopedToolGuard({
           agentCtx,
           runtimeAgent,
           agentScopeKey: String(sessionId),
           trustedIdentities: [...trusted],
+          nativeNames,
           // Generation 0 until PR2 (Operation Admission) feeds the overlay /
           // authority generations into the Binding; the Guard validates every
           // call against the generations it PUBLISHED with, so a change made

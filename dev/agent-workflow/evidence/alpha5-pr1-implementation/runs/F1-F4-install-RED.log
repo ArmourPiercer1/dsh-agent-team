@@ -1,0 +1,213 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts (23 tests | 11 failed) 18ms
+     ✓ I1 the Guard is armed before the mask exists, on the public tools.guard seam 2ms
+     ✓ I2 a missing tools.guard seam refuses the install (no half-armed agent) 1ms
+     ✓ I3 requireService turns an absent dependency into a typed refusal 0ms
+     ✓ I4 publish reads the AGENT-scoped surface and nothing dispatches before it 1ms
+     ✓ I5 a surface that cannot be read fails the assembly (no partial publish) 0ms
+     ✓ I6 a name registered AFTER setup is denied until the Team binds it 1ms
+     ✓ I7 foreign and identity-less calls are refused on a governed name 0ms
+     ✓ I8 with no in-flight work the mask lifts first and the Guard goes last 0ms
+     ✓ I9 an in-flight body stops RELEASED: the mask AND the Guard stay armed 0ms
+     ✓ I10 a body that throws still settles its lease (no phantom in-flight) 1ms
+     ✓ I11 a call racing in WHILE draining never runs its body 0ms
+     × R3 a missing ctx.on is an assembly failure that leaves nothing armed 4ms
+     × R3b a pre-execute registration that throws is an assembly failure, not a degraded Guard 0ms
+     × R3c a required seam that cannot be armed fails the install (a missing door is never a silent RELEASED) 0ms
+     × R3d the armed-seam count is asserted, not assumed 0ms
+     × R4 the settled edge ends a lease; post-execute alone proves nothing about the body 0ms
+     ✓ R4b a call whose body has not returned keeps the mask and the Guard armed through the teardown 0ms
+     × R4c a late settled callback after TOMBSTONED never lifts the mask and never revives the scope 1ms
+     × R4d the caller may declare the drain given up: the half-state stays armed (the lane reads no clock) 0ms
+     × R2 the same name resolving to a different body is refused at the seam 1ms
+     × R2b an unreadable definition seam refuses instead of assuming nothing changed 0ms
+     × R2c a definition seam absent at install time is a PUBLIC-seam gap that stops the publish 2ms
+     × R1 a scope-local name present at publish is NOT bound as a verified native 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R3 a missing ctx.on is an assembly failure that leaves nothing armed
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:431:24
+    429|     const host = fakeCtx({ surface: ['read'], without: 'on' })
+    430|     const outcome = install(host)
+    431|     expect(outcome.ok).toBe(false)
+       |                        ^
+    432|     if (outcome.ok) return
+    433|     expect(outcome.error.code).toBe('IO_POLICY_UNSUPPORTED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R3b a pre-execute registration that throws is an assembly failure, not a degraded Guard
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:443:24
+    441|     const host = fakeCtx({ surface: ['read'], throwOn: 'tools/pre-exec…
+    442|     const outcome = install(host)
+    443|     expect(outcome.ok).toBe(false)
+       |                        ^
+    444|     if (outcome.ok) return
+    445|     expect(outcome.error.message).toContain('tools/pre-execute')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R3c a required seam that cannot be armed fails the install (a missing door is never a silent RELEASED)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:453:24
+    451|     const host = fakeCtx({ surface: ['read'], drop: 'tools/result' })
+    452|     const outcome = install(host)
+    453|     expect(outcome.ok).toBe(false)
+       |                        ^
+    454|     if (outcome.ok) return
+    455|     expect(outcome.error.message).toContain('tools/result')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R3d the armed-seam count is asserted, not assumed
+TypeError: outcome.value.dispatcher.requiredSeams is not a function
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:463:37
+    461|     const outcome = install(host)
+    462|     if (!outcome.ok) throw new Error(outcome.error.message)
+    463|     expect(outcome.value.dispatcher.requiredSeams()).toBe(5)
+       |                                     ^
+    464|     expect(outcome.value.dispatcher.seamsArmed()).toBe(5)
+    465|     expect(outcome.value.publish().ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R4 the settled edge ends a lease; post-execute alone proves nothing about the body
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:486:42
+    484|     // allowed to conclude that nothing is running.
+    485|     await host.firePostExecuteOnly({ callId: 'c1', name: 'read' }, { t…
+    486|     expect(handle.dispatcher.inFlight()).toBe(1)
+       |                                          ^
+    487|
+    488|     settleBody('RAN')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R4c a late settled callback after TOMBSTONED never lifts the mask and never revives the scope
+AssertionError: expected 'TOMBSTONED' to be 'DRAINING' // Object.is equality
+
+Expected: "DRAINING"
+Received: "TOMBSTONED"
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:543:39
+    541|     // refused and recorded, never treated as proof that the drain may…
+    542|     await host.fireResultSettled({ callId: 'c3', name: 'read' }, { tex…
+    543|     expect(handle.dispatcher.state()).toBe('DRAINING')
+       |                                       ^
+    544|     expect(lifted).toBe(0)
+    545|     expect(handle.observations.some((o) => String(o.event).includes('l…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R4d the caller may declare the drain given up: the half-state stays armed (the lane reads no clock)
+TypeError: handle.dispatcher.noteDrainGiveUp is not a function
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:560:30
+    558|     expect(handle.dispatcher.beginCall('c4', 'read').ok).toBe(true)
+    559|     expect(handle.dispatcher.beginDrain().ok).toBe(true)
+    560|     expect(handle.dispatcher.noteDrainGiveUp('teardown wait exhausted'…
+       |                              ^
+    561|     const released = handle.dispatcher.release()
+    562|     expect(released.ok).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R2 the same name resolving to a different body is refused at the seam
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:578:20
+    576|     host.swapDefinition('read', 'def:read:attacker')
+    577|     const denial = host.runGuards({ name: 'read', agent: { id: 'agent-…
+    578|     expect(denial).toContain('definition')
+       |                    ^
+    579|     expect(await host.runExecute({ callId: 'r2-b', name: 'read' }, asy…
+    580|       .toContain('definition')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R2b an unreadable definition seam refuses instead of assuming nothing changed
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:590:20
+    588|     host.breakDefinitionSeam()
+    589|     const denial = host.runGuards({ name: 'read', agent: { id: 'agent-…
+    590|     expect(denial).toContain('definition')
+       |                    ^
+    591|     expect(denial).toContain('unreadable')
+    592|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R2c a definition seam absent at install time is a PUBLIC-seam gap that stops the publish
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:597:24
+    595|     const host = fakeCtx({ surface: ['read'], without: 'get' })
+    596|     const outcome = install(host)
+    597|     expect(outcome.ok).toBe(false)
+       |                        ^
+    598|     if (outcome.ok) return
+    599|     expect(outcome.error.message).toContain('tools.get')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  packages/runtime/test/a5p1-guard-install.test.ts > PR1 Gate R3 / R4 — install atomicity and the body-return-proven edge > R1 a scope-local name present at publish is NOT bound as a verified native
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ ❯ packages/runtime/test/a5p1-guard-install.test.ts:610:20
+    608|     expect(host.runGuards({ name: 'read', agent: { id: 'agent-m1' } })…
+    609|     const denial = host.runGuards({ name: 'evil_own_tool', agent: { id…
+    610|     expect(denial).toContain('team tool guard')
+       |                    ^
+    611|     expect(host.runGuards({ name: 'evil_own_tool', agent: { id: 'agent…
+    612|     expect(outcome.value.dispatcher.surface.entryOf('evil_own_tool')?.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  11 failed | 12 passed (23)
+   Start at  07:13:13
+   Duration  303ms (transform 151ms, setup 0ms, import 189ms, tests 18ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

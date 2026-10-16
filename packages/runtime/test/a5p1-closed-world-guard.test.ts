@@ -68,6 +68,14 @@ function surfaceWith(...names: string[]) {
   return surface
 }
 
+/**
+ * The verdict for one call. `definition` is what the public
+ * `tools.get(name, scope)` seam resolves AT THE MOMENT OF THE CALL: the Guard
+ * must compare it with what the Binding pinned, and a read that fails is a
+ * refusal — never "no change, carry on". The default below says "the definition
+ * still matches the one the Binding pinned", which is what the pre-R2 tests
+ * assumed implicitly; R2 makes it an input the Guard actually checks.
+ */
 function decide(
   exec: GuardExecView,
   opts: {
@@ -75,6 +83,7 @@ function decide(
     active?: boolean
     policyGeneration?: number
     authorityGeneration?: number
+    definition?: { ok: true; fingerprint: string } | { ok: false; detail: string }
   } = {},
 ) {
   return guardDecision({
@@ -84,6 +93,7 @@ function decide(
     active: opts.active ?? true,
     policyGeneration: opts.policyGeneration ?? 0,
     authorityGeneration: opts.authorityGeneration ?? 0,
+    definition: opts.definition ?? { ok: true, fingerprint: `team-own:${exec.name}` },
   })
 }
 
@@ -233,11 +243,14 @@ describe('the governed surface only grows through the trusted assembly', () => {
   })
 
   it('S3 the setup surface is bound as one closed world, idempotently', () => {
-    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
-    expect(surface.bindInheritedSurface(['bash', 'read', 'write', 'read'])).toBe(3)
+    // The trusted native list plus the definitions pinned at the public seam:
+    // the two facts an inherited name needs before it counts as native.
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['bash', 'read', 'write', 'grep'] })
+    const pin = (names: readonly string[]) => Object.fromEntries(names.map((n) => [n, `def:${n}`]))
+    expect(surface.bindInheritedSurface(['bash', 'read', 'write', 'read'], pin(['bash', 'read', 'write'])).verifiedBound).toBe(3)
     expect(surface.names()).toEqual(['bash', 'read', 'write'])
     // A second pass never re-binds over an existing (possibly richer) entry.
-    expect(surface.bindInheritedSurface(['bash', 'grep'])).toBe(1)
+    expect(surface.bindInheritedSurface(['bash', 'grep'], pin(['bash', 'grep'])).verifiedBound).toBe(1)
     expect(surface.names()).toEqual(['bash', 'grep', 'read', 'write'])
     expect(surface.entryOf('bash')?.origin).toBe('inherited-native')
   })
@@ -254,8 +267,8 @@ describe('the governed surface only grows through the trusted assembly', () => {
   })
 
   it('S5 the inherited assurance record is honestly untested, never empty', () => {
-    const surface = createGovernedSurface({ agentScopeKey: 'session-m1' })
-    surface.bindInheritedSurface(['read'])
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
+    surface.bindInheritedSurface(['read'], { read: 'def:read' })
     const assurance = surface.entryOf('read')?.binding.assurance
     expect(assurance?.implementationOrigin).toBe('dsh-native')
     const dimensions = Object.values(assurance?.assurance ?? {})
@@ -313,5 +326,85 @@ describe('the governed surface only grows through the trusted assembly', () => {
       const hits = banned.filter((token) => body.includes(token))
       expect(hits, `${file} reads a clock: ${hits.join(', ')}`).toEqual([])
     }
+  })
+})
+
+
+describe('PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to', () => {
+  it('R1 an observed name becomes a native Binding only if it is on the trusted native list', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
+    const result = surface.bindInheritedSurface(['read', 'evil_own_tool'], { read: 'def:read' })
+    expect(result.verifiedBound).toBe(1)
+    expect(result.unverified).toEqual(['evil_own_tool'])
+    const evil = surface.entryOf('evil_own_tool')
+    expect(evil?.verified).toBe(false)
+    expect(evil?.binding.bindingId).not.toBe('native:evil_own_tool')
+    expect(evil?.binding.implementationOrigin).not.toBe('dsh-native')
+    expect(evil?.binding.definitionIdentity).not.toBe('native:evil_own_tool')
+    const verdict = decide({ name: 'evil_own_tool', agentIdentity: 'session-m1' }, {
+      surface,
+      definition: { ok: true, fingerprint: String(evil?.binding.definitionIdentity) },
+    })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+  })
+
+  it('R1b an allowlisted name whose definition cannot be pinned is bound UNVERIFIED', () => {
+    const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['read'] })
+    const result = surface.bindInheritedSurface(['read'], {})
+    expect(result.verifiedBound).toBe(0)
+    expect(result.unverified).toEqual(['read'])
+    expect(surface.entryOf('read')?.verified).toBe(false)
+  })
+
+  it('R2 a same-scope name resolving to a DIFFERENT definition never runs on the old verification', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide(
+      { name: 'read', agentIdentity: 'session-m1' },
+      { surface, definition: { ok: true, fingerprint: 'def:read:attacker-body' } },
+    )
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(verdict.reason).toContain('definition')
+    expect(guardDenialMessage('read', verdict.reason)).toContain('definition')
+  })
+
+  it('R2b an unreadable current definition is a refusal, never an assumption of no change', () => {
+    const surface = surfaceWith('read')
+    const verdict = decide(
+      { name: 'read', agentIdentity: 'session-m1' },
+      { surface, definition: { ok: false, detail: 'tools.get threw' } },
+    )
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(verdict.reason).toContain('unreadable')
+  })
+
+  it('R2c the state and identity gates still answer before the definition check', () => {
+    const surface = surfaceWith('read')
+    const notActive = decide({ name: 'read', agentIdentity: 'session-m1' }, { surface, active: false })
+    expect(notActive.kind).toBe('deny')
+    if (notActive.kind !== 'deny') return
+    expect(notActive.reason).toBe(GUARD_DENIAL_REASONS.NOT_ACTIVE)
+    const foreign = decide(
+      { name: 'read', agentIdentity: 'agent-somebody-else' },
+      { surface, definition: { ok: false, detail: 'irrelevant' } },
+    )
+    if (foreign.kind !== 'deny') throw new Error('expected a refusal')
+    expect(foreign.reason).toBe(GUARD_DENIAL_REASONS.IDENTITY_FOREIGN)
+  })
+
+  it('R2d an unbound name is refused before the definition seam is ever consulted', () => {
+    // The refusal order is stable and every arm denies: a name nothing bound
+    // never reaches the definition check, so an unreadable seam cannot make it
+    // look more permissible, and the code it gets is the earlier fact.
+    const verdict = decide({ name: 'never_bound', agentIdentity: 'session-m1' }, { definition: { ok: false, detail: 'no seam' } })
+    expect(verdict.kind).toBe('deny')
+    if (verdict.kind !== 'deny') return
+    expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.UNGOVERNED)
+    expect(verdict.error.code).toBe('TEAM_TOOL_UNGOVERNED')
   })
 })

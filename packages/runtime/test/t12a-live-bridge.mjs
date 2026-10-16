@@ -298,6 +298,10 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
   // RECORDS it so a test can pin WHICH identity the Permission Coverage
   // Gate enumerated the surface through).
   const schemaScopeArgs = []
+  /** A5-PR1: the no-scope (global view) reads, kept off the A2C-2 identity pin. */
+  const globalSchemaReads = []
+  /** A5-PR1: every `tools.get(name, scope)` read, so a test can see the Guard re-reading the definition it pinned. */
+  const definitionReads = []
   const systemPrompt = {
     globals: globalSections,
     section(spec) {
@@ -346,6 +350,8 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
     opLog,
     registeredSkills,
     schemaScopeArgs,
+    globalSchemaReads,
+    definitionReads,
     fs,
     // alpha.2 (A6): the agent back-reference — the handle factory sets it
     // to the live agent (the `ctx.agent` DX accessor basis; undefined
@@ -604,8 +610,32 @@ function makeAgentCtx(globalSections, mcpFailures, mcpToolNames) {
       // `{ name, description }` shape (the gate consumes names; the real
       // upstream returns ToolSchema[] deep clones — description mirrors
       // the registered def's or '').
+      // A5-PR1 (Gate R2): the public DEFINITION accessor (`tools.get(name,
+      // scope?)`). The closed-world Guard's Binding pins the Body it saw at
+      // assembly and re-reads this seam on every call, so the double must hand
+      // back the SAME definition object for repeated reads of one registration
+      // (as the registry's layer lookup does) and `undefined` for a name the
+      // scope cannot see. `omitted scope` = the global view: this double has ONE
+      // flat layer, so both views resolve the same registrations — which is why
+      // the production glue binds its own Team tools BEFORE inheriting the
+      // surface, so a Team tool can never be inherited as a native by accident.
+      get(name, scope) {
+        definitionReads.push({ name: String(name), scope })
+        const denied = new Set()
+        for (const opts of toolRestrictions) {
+          for (const name2 of opts?.deny ?? []) denied.add(String(name2))
+        }
+        if (denied.has(String(name))) return undefined
+        return registeredTools.find((def) => def !== null && typeof def === 'object' && def.name === name)
+      },
       schemas(scope) {
-        schemaScopeArgs.push(scope)
+        // A5-PR1: the assembly also reads the GLOBAL view (`schemas()` with no
+        // scope) to build its trusted native list. That call carries no identity
+        // to pin, so it is recorded on its own channel and the A2C-2 pin below
+        // keeps its exact meaning: `schemaScopeArgs` = the scoped identity (or
+        // identities) the Coverage Gate enumerated through, in order.
+        if (scope === undefined) globalSchemaReads.push(scope)
+        else schemaScopeArgs.push(scope)
         const denied = new Set()
         for (const opts of toolRestrictions) {
           for (const name of opts?.deny ?? []) denied.add(String(name))

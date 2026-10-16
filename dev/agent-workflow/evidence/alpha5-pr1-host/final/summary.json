@@ -1,5 +1,5 @@
 {
-  "runStamp": "2026-10-16T06-51-52",
+  "runStamp": "2026-10-16T07-30-38",
   "hostBaseline": {
     "version": "0.2.0-rc.2",
     "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
@@ -7,7 +7,7 @@
   },
   "port": 3185,
   "world": {
-    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38",
     "disposition": "removed"
   },
   "criteria": [
@@ -37,15 +37,21 @@
     },
     {
       "id": "NEG1-MASK",
-      "name": "order-leg — PR1: the mask survives a refused teardown and lifts exactly once per Agent, never before RELEASED",
+      "name": "order-leg — PR1: the mask survives a refused teardown, lifts exactly once when the drain legitimately finishes, and never on an unproven termination",
       "ok": true,
-      "detail": "parkedLifts=1 parkedFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED bodyLifts=1 nativeBeforeRelease=0 (exit=0)"
+      "detail": "parkedLifts=1 parkedFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED bodyLifts=0 bodyFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED nativeBeforeRelease=0 (exit=0)"
     },
     {
       "id": "NEG1-SEAM",
-      "name": "order-leg — measured seam limit: the result edge precedes the Body return, so the self-count is dispatch->result (disclosed)",
+      "name": "order-leg — measured seam order: the Body is still alive across the whole drain window (lease = 1) and BOTH result-side edges fire only after it returned",
       "ok": true,
-      "detail": "postExecuteBeforeRelease=true bodyTeardownOk=null (exit=0)"
+      "detail": "postExecutedFired=true postExecutedAfterBodyReturn=true inFlightAtTeardown=1 bodyReturnedAtTeardown=false bodyReturnedAtSettled=true (exit=0)"
+    },
+    {
+      "id": "NEG1-R4",
+      "name": "order-leg — PR1: a Body returning after the drain began leaves the half-state armed — refused release, mask kept, late callback recorded",
+      "ok": true,
+      "detail": "secondTeardown=EXECUTION_TERMINATION_UNCONFIRMED finalState=TOMBSTONED lateSettledRecorded=true lifts=0 native=0 adapter=1 (exit=0)"
     },
     {
       "id": "NEG1-STABLE",
@@ -69,7 +75,7 @@
       "id": "C1b",
       "name": "team.create (remote HTTP) starts the governed team session",
       "ok": true,
-      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-qi2c5ibn3c\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-51-52\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:1bc50549f5"
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-k973swisce\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T07-30-38\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:d290752fa9"
     },
     {
       "id": "C1c",
@@ -81,25 +87,25 @@
       "id": "C2a",
       "name": "the governed Leader is refused with a typed, readable reason when it asks for a Team tool nothing bound",
       "ok": true,
-      "detail": "asked=1 results=[{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"}]"
+      "detail": "asked=1 results=[{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"},{\"err\":true,\"text\":\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes;\"}]"
     },
     {
       "id": "C2b",
       "name": "the undeclared Team tool BODY produced no effect on the governed lane (PoC H6 recorded its equivalent running: dynRan=true)",
       "ok": true,
-      "detail": "results=[\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\"]"
+      "detail": "results=[\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\",\"Error: team tool guard: \\\"team_follow_up\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare i\"]"
     },
     {
       "id": "C3",
       "name": "a governed allowed call still runs (the closed world closes a world, it does not shut the Agent down)",
       "ok": true,
-      "detail": "read=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-se"
+      "detail": "read=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-se"
     },
     {
       "id": "C4",
       "name": "the SAME tool still runs on the permissions-less legacy lane (zero interference)",
       "ok": true,
-      "detail": "legacyLaneSaw=[{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-seed.txt</pa\"},{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-51-52/workspace/a5p1-ctl.sideeffe\"}] sideEffect=A5P1_RAN_ctl_2026-10-16T06-51-52"
+      "detail": "legacyLaneSaw=[{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-seed.txt</pa\"},{\"err\":false,\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T07-30-38/workspace/a5p1-ctl.sideeffe\"}] sideEffect=A5P1_RAN_ctl_2026-10-16T07-30-38"
     },
     {
       "id": "C4b",
@@ -167,15 +173,21 @@
       },
       {
         "id": "NEG1-MASK",
-        "name": "PR1: the mask survives a refused teardown and lifts exactly once per Agent, never before RELEASED",
+        "name": "PR1: the mask survives a refused teardown, lifts exactly once when the drain legitimately finishes, and never on an unproven termination",
         "ok": true,
-        "detail": "parkedLifts=1 parkedFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED bodyLifts=1 nativeBeforeRelease=0 (exit=0)"
+        "detail": "parkedLifts=1 parkedFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED bodyLifts=0 bodyFirstTeardown=EXECUTION_TERMINATION_UNCONFIRMED nativeBeforeRelease=0 (exit=0)"
       },
       {
         "id": "NEG1-SEAM",
-        "name": "measured seam limit: the result edge precedes the Body return, so the self-count is dispatch->result (disclosed)",
+        "name": "measured seam order: the Body is still alive across the whole drain window (lease = 1) and BOTH result-side edges fire only after it returned",
         "ok": true,
-        "detail": "postExecuteBeforeRelease=true bodyTeardownOk=null (exit=0)"
+        "detail": "postExecutedFired=true postExecutedAfterBodyReturn=true inFlightAtTeardown=1 bodyReturnedAtTeardown=false bodyReturnedAtSettled=true (exit=0)"
+      },
+      {
+        "id": "NEG1-R4",
+        "name": "PR1: a Body returning after the drain began leaves the half-state armed — refused release, mask kept, late callback recorded",
+        "ok": true,
+        "detail": "secondTeardown=EXECUTION_TERMINATION_UNCONFIRMED finalState=TOMBSTONED lateSettledRecorded=true lifts=0 native=0 adapter=1 (exit=0)"
       },
       {
         "id": "NEG1-STABLE",
@@ -199,10 +211,23 @@
         "nativeBeforeRelease": 0,
         "maskLifts": 1,
         "edgeOrder": {
-          "postExecutedBeforeRelease": false,
+          "postExecutedFired": false,
+          "postExecutedAfterBodyReturn": null,
+          "postExecutedWhileBodyParked": null,
           "released": true
         },
         "inFlightAtTeardown": null,
+        "parkProbe": null,
+        "leaseProbe": null,
+        "settledProbe": {
+          "fired": false,
+          "bodyReturnedAtSettled": null,
+          "inFlightAtSettled": null
+        },
+        "bodyReturned": false,
+        "secondTeardownCode": null,
+        "lateSettledObserved": null,
+        "finalState": null,
         "teardownRefusalCode": null,
         "refusedWhileDraining": null,
         "text": "ran:grep@NATIVE.grep",
@@ -218,10 +243,23 @@
         "nativeBeforeRelease": 0,
         "maskLifts": 0,
         "edgeOrder": {
-          "postExecutedBeforeRelease": false,
+          "postExecutedFired": false,
+          "postExecutedAfterBodyReturn": null,
+          "postExecutedWhileBodyParked": null,
           "released": true
         },
         "inFlightAtTeardown": null,
+        "parkProbe": null,
+        "leaseProbe": null,
+        "settledProbe": {
+          "fired": false,
+          "bodyReturnedAtSettled": null,
+          "inFlightAtSettled": null
+        },
+        "bodyReturned": false,
+        "secondTeardownCode": null,
+        "lateSettledObserved": null,
+        "finalState": null,
         "teardownRefusalCode": null,
         "refusedWhileDraining": null,
         "text": "Error: unknown tool \"grep\"",
@@ -235,10 +273,30 @@
         "nativeBeforeRelease": 0,
         "maskLifts": 1,
         "edgeOrder": {
-          "postExecutedBeforeRelease": false,
+          "postExecutedFired": false,
+          "postExecutedAfterBodyReturn": null,
+          "postExecutedWhileBodyParked": null,
           "released": true
         },
         "inFlightAtTeardown": false,
+        "parkProbe": null,
+        "leaseProbe": {
+          "bodyReturnedAlready": false,
+          "inFlight": 1,
+          "outstanding": [
+            "p00-c1"
+          ],
+          "stateBefore": "ACTIVE"
+        },
+        "settledProbe": {
+          "fired": false,
+          "bodyReturnedAtSettled": null,
+          "inFlightAtSettled": null
+        },
+        "bodyReturned": false,
+        "secondTeardownCode": "OK",
+        "lateSettledObserved": false,
+        "finalState": "RELEASED",
         "teardownRefusalCode": "EXECUTION_TERMINATION_UNCONFIRMED",
         "refusedWhileDraining": "team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the ",
         "text": "Error: team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the mask stays)",
@@ -250,13 +308,42 @@
         "native": 0,
         "adapter": 1,
         "nativeBeforeRelease": 0,
-        "maskLifts": 1,
+        "maskLifts": 0,
         "edgeOrder": {
-          "postExecutedBeforeRelease": true,
+          "postExecutedFired": true,
+          "postExecutedAfterBodyReturn": true,
+          "postExecutedWhileBodyParked": false,
           "released": true
         },
-        "inFlightAtTeardown": true,
-        "teardownRefusalCode": null,
+        "inFlightAtTeardown": false,
+        "parkProbe": {
+          "bodyReturnedAlready": false,
+          "wrapperCalls": 1,
+          "inFlight": 1,
+          "counters": 1,
+          "obsTail": [
+            "wrapper-enter",
+            "body"
+          ]
+        },
+        "leaseProbe": {
+          "bodyReturnedAlready": false,
+          "inFlight": 1,
+          "outstanding": [
+            "p00-c1"
+          ],
+          "stateBefore": "ACTIVE"
+        },
+        "settledProbe": {
+          "fired": true,
+          "bodyReturnedAtSettled": true,
+          "inFlightAtSettled": 1
+        },
+        "bodyReturned": true,
+        "secondTeardownCode": "EXECUTION_TERMINATION_UNCONFIRMED",
+        "lateSettledObserved": true,
+        "finalState": "TOMBSTONED",
+        "teardownRefusalCode": "EXECUTION_TERMINATION_UNCONFIRMED",
         "refusedWhileDraining": "team tool guard: \"grep\" is refused because this Agent's Tool Dispatcher is not ACTIVE (assembly-in-progress, draining or tombstoned: new calls are refused; the ",
         "text": "ran:grep@ADAPTER.grep",
         "bodies": [

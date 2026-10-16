@@ -52,6 +52,30 @@
 import { untestedAssurance } from './closed-world-guard.js';
 import { createScopedDispatcher, } from './scoped-dispatcher.js';
 /**
+ * A stable, content-free identity for one live definition Body.
+ *
+ * The Guard may not compare function SOURCE (that leaks implementation into
+ * evidence and is spoofable by re-stringifying), and it may not read a clock.
+ * What it CAN do — and what the pinned Host makes possible — is hold a
+ * WeakMap from the function object itself to an id this process minted: two
+ * reads of the same registered Body return the same id, and a re-registration
+ * hands back a different function object, therefore a different id. Nothing
+ * observable about the Body is retained, and the entry dies with the function.
+ */
+const definitionIds = new WeakMap();
+let definitionIdCounter = 0;
+function definitionFingerprint(target) {
+    if (target === null || (typeof target !== 'object' && typeof target !== 'function'))
+        return null;
+    const existing = definitionIds.get(target);
+    if (existing !== undefined)
+        return existing;
+    definitionIdCounter += 1;
+    const id = `def#${definitionIdCounter}`;
+    definitionIds.set(target, id);
+    return id;
+}
+/**
  * Map one host `ToolExecution` (the pinned `ToolGuard` parameter) to the
  * host-neutral {@link GuardExecView}. The identity facts the Guard verifies
  * are exactly what the public execution object exposes: the calling `Agent`
@@ -132,9 +156,70 @@ export function installScopedToolGuard(input) {
         observe({ event: 'guard-install-refused', code: guardSeam.error.code });
         return guardSeam;
     }
+    // THE DEFINITION SEAM IS REQUIRED (PR1 Gate R2). A Guard that can only see
+    // NAMES verifies names, and a name is not a Body: the same Scope and the same
+    // name can be re-registered over a different implementation, and the old
+    // verified Binding would keep waving it through. `tools.get` is the one public
+    // seam that answers "which Body does this name resolve to right now", so its
+    // absence is recorded as a PUBLIC-seam gap and the assembly REFUSES rather
+    // than publishing a Guard that cannot re-verify anything.
+    //
+    // PUBLIC-SEAM GAP (PoC-1 format), recorded rather than papered over:
+    //   seam asked for        : tools.get(name, scope) → the live ToolDefinition
+    //   what it gives         : the definition object, so `definition.execute`
+    //                           is a function identity this process can pin
+    //   what it does NOT give : any provenance field — no owner, no contributing
+    //                           package, no "is native" bit (schemas() whitelists
+    //                           name/description/parameters only, and register()
+    //                           records no public owner)
+    //   consequence           : native-vs-third-party attribution is NOT
+    //                           derivable at a public seam, so the assembly
+    //                           carries an explicit trusted native list
+    //                           (`nativeNames`, from the public GLOBAL view) and
+    //                           pins every inherited definition by identity;
+    //                           anything not pinned is refused, never assumed.
+    const definitionSeam = requireService(input.agentCtx.tools.get, 'tools.get', (fn) => typeof fn === 'function');
+    if (!definitionSeam.ok) {
+        observe({
+            event: 'public-seam-gap',
+            seam: 'tools.get',
+            fatal: true,
+            detail: 'no public seam resolves which ToolDefinition a name currently executes, so a verified Binding could not be re-verified at dispatch; the assembly refuses instead of assuming no change',
+        });
+        return fail('IO_POLICY_UNSUPPORTED', `assembly requires the public seam "tools.get" and it is absent: without it the closed world cannot tell a re-bound Body from the one its Binding pinned (a Guard that cannot re-verify is not a closed world)`);
+    }
+    /**
+     * The tools service, captured HERE — inside the assembly's own context.
+     * A Cordis agent-scope ctx is a proxy: reading an injected service from it
+     * outside an inject context throws (`cannot get property "tools" without
+     * inject`), and this read happens on EVERY guarded call. So the service
+     * object is resolved once, while the assembly still may, and the captured
+     * reference is what the per-call reads use.
+     */
+    const toolsService = input.agentCtx.tools;
+    /** Read what one name resolves to RIGHT NOW, as a content-free identity. */
+    const readDefinition = (name) => {
+        let definition;
+        try {
+            definition = definitionSeam.value.call(toolsService, name, input.runtimeAgent);
+        }
+        catch (error) {
+            return { ok: false, detail: `tools.get("${name}") threw: ${String(error?.message ?? error)}` };
+        }
+        if (definition === undefined || definition === null) {
+            return { ok: false, detail: `tools.get("${name}") resolved to no definition on this scope` };
+        }
+        const body = definition.execute;
+        const id = definitionFingerprint(typeof body === 'function' ? body : definition);
+        return id === null
+            ? { ok: false, detail: `tools.get("${name}") returned a definition with no pinnable Body` }
+            : { ok: true, fingerprint: id };
+    };
     const dispatcher = createScopedDispatcher({
         agentScopeKey: input.agentScopeKey,
         trustedIdentities: input.trustedIdentities,
+        resolveDefinition: readDefinition,
+        ...(input.nativeNames === undefined ? {} : { nativeNames: input.nativeNames }),
         ...(input.policyGeneration === undefined ? {} : { policyGeneration: input.policyGeneration }),
         ...(input.authorityGeneration === undefined ? {} : { authorityGeneration: input.authorityGeneration }),
         ...(input.nativeProviderId === undefined ? {} : { nativeProviderId: input.nativeProviderId }),
@@ -145,9 +230,31 @@ export function installScopedToolGuard(input) {
         return begin;
     // STEP 1 — the Guard goes in FIRST, before any mask and before any
     // own-layer registration. Its disposer is captured, never discarded.
+    /**
+     * The identity a lease is held under. `ToolExecution.callId` is the registry's
+     * own per-call identity; a call that somehow arrives without one gets a
+     * name-scoped synthetic id rather than a shared empty key, so a missing id can
+     * never make two calls share (or erase) one lease.
+     */
+    const callIdOf = (exec) => {
+        const view = exec;
+        return typeof view?.callId === 'string' && view.callId.length > 0 ? view.callId : `anonymous:${String(view?.name)}`;
+    };
     let guardDispose;
     try {
-        guardDispose = guardSeam.value.call(input.agentCtx.tools, (exec) => dispatcher.guard(hostExecToView(exec)));
+        guardDispose = guardSeam.value.call(input.agentCtx.tools, (exec) => {
+            const denial = dispatcher.guard(hostExecToView(exec));
+            if (denial !== undefined) {
+                // MEASURED on the pinned registry: the Guard stage can also be met
+                // MID-DISPATCH (a call parked at `pre-execute` re-meets it when it
+                // resumes), so a refusal here is the same provable fact as a refusal at
+                // either gate — this call's Body never ran. Ending its lease is our act,
+                // not host evidence, and without it a refused call would be the reason
+                // a teardown could never finish.
+                dispatcher.endCallById(callIdOf(exec), 'refused');
+            }
+            return denial;
+        });
     }
     catch (error) {
         dispatcher.failAssembly(`tools.guard threw: ${String(error?.message ?? error)}`);
@@ -155,8 +262,42 @@ export function installScopedToolGuard(input) {
     }
     observe({ event: 'guard-installed', scope: input.agentScopeKey, maskedNames: input.maskedNames ?? [] });
     // Everything this install registers beyond the Guard (the diagnostics
-    // listener and the in-flight counter). They go with the Guard, at the end.
+    // listener and the gates). They go with the Guard, at the end — and on a
+    // failed assembly, IMMEDIATELY, so nothing stays armed on a surface the
+    // assembly is not going to publish (PR1 Gate R3).
     const extraDisposers = [];
+    /** Undo EVERYTHING this install put on the ctx: no half-armed residue. */
+    const unarmAll = () => {
+        for (const off of extraDisposers.splice(0)) {
+            try {
+                off();
+            }
+            catch {
+                /* an already-off listener is not a safety change */
+            }
+        }
+        if (typeof guardDispose === 'function') {
+            try {
+                guardDispose();
+            }
+            catch {
+                /* an already-disposed scope is not a safety change */
+            }
+        }
+        for (const seam of dispatcher.seamsArmed())
+            dispatcher.disarmSeam(seam);
+    };
+    /**
+     * A failed assembly is a REFUSAL with the ctx left clean, not a degraded
+     * Guard. `PREPARING → UNBOUND` is the only back-edge (PR0's table) and the
+     * caller must not publish on this handle.
+     */
+    const assemblyFailed = (code, message) => {
+        unarmAll();
+        dispatcher.failAssembly(message);
+        observe({ event: 'assembly-failed', code, detail: message, published: false, residue: 'none' });
+        return fail(code, message);
+    };
     // `tools/change` — DIAGNOSTICS ONLY. The host fires it for every register /
     // unregister / restriction change (and a scoped listener sees changes
     // beyond its own scope), so it is the right place to re-read and re-report
@@ -167,26 +308,22 @@ export function installScopedToolGuard(input) {
         const current = readSurface(input.agentCtx, input.runtimeAgent);
         if (!current.ok) {
             observe({ event: 'surface-revalidate-unavailable', detail: current.error.message });
-            return { added: [], removed: [], denied: [] };
+            return { added: [], removed: [], denied: [], drifted: [] };
         }
-        const diff = dispatcher.revalidateSurface(current.value);
-        return { added: diff.added, removed: diff.removed, denied: diff.added };
+        // The revalidation is not a name diff. Names that are still there may have
+        // had their DEFINITION swapped under us, and a name-only comparison cannot
+        // see that (PR1 Gate R2: the old code's diff was a no-op for exactly the
+        // hazard it claimed to watch). So the current fingerprints go in, and any
+        // mismatch is revised down to unverified.
+        const identities = {};
+        for (const name of current.value) {
+            const probe = readDefinition(name);
+            if (probe.ok)
+                identities[name] = probe.fingerprint;
+        }
+        const diff = dispatcher.revalidateSurface(current.value, identities);
+        return { added: diff.added, removed: diff.removed, denied: [...diff.added, ...diff.drifted], drifted: diff.drifted };
     };
-    if (typeof input.agentCtx.on === 'function') {
-        try {
-            extraDisposers.push(input.agentCtx.on('tools/change', () => {
-                const result = revalidate();
-                if (result.denied.length > 0) {
-                    observe({ event: 'tools-change-unbound-names', denied: result.denied, note: 'tools/change is a diagnostic; these names are refused at dispatch by the Guard' });
-                }
-            }));
-        }
-        catch (error) {
-            // A missing `tools/change` listener costs diagnostics, never safety:
-            // the Guard's verdict does not read this channel.
-            observe({ event: 'tools-change-listener-unavailable', detail: String(error?.message ?? error) });
-        }
-    }
     /**
      * Register a listener under a STABLE FUNCTION NAME. Three lanes now sit on
      * the same waterfalls (the alpha.2 permission adapter, the alpha.5 Guard),
@@ -195,108 +332,154 @@ export function installScopedToolGuard(input) {
      * arrow. The wrapper costs nothing and changes no behaviour.
      */
     const named = (name, fn) => Object.defineProperty(fn, 'name', { value: name, configurable: true });
-    // THREE EDGES, doing two different jobs — and the split is FORCED by a
-    // measured host fact, not by taste.
+    // THE FIVE SEAMS, doing three different jobs — and the split is FORCED by
+    // measured host facts, not by taste.
     //
-    // MEASURED on the pinned 0.2.0-rc.2 registry (re-measured by this PR's
-    // `tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs`): NEITHER
-    // waterfall's `next()` resolves after the Body RETURNS —
-    // `tools/pre-execute`'s `next()` resolves before the Body is entered, and
-    // `tools/execute`'s resolves after the Body is entered but while it is still
-    // running. An around-`next()` counter would therefore call a live Body idle
-    // and lift the mask on it, which is the NEG-1 hazard in a new costume.
+    // MEASURED on the pinned 0.2.0-rc.2 registry, with a park that provably holds
+    // the Body open (`tests/kits/a5-pr1-guard-dispatch/a5p1-order-hazard.mjs`,
+    // NEG1-SEAM / NEG1-R4):
     //
-    // So the SELF-COUNT is taken at the OUTERMOST edge and released at the edge
-    // that only exists once a result exists:
+    //   begin   ── `tools/pre-execute`  `next()` resolves BEFORE the Body is entered
+    //   —       ── `tools/execute`      `next()` resolves after the Body is ENTERED,
+    //                                   while it is still running
+    //   result  ── `tools/post-execute` fires with the projected result in hand,
+    //                                   AFTER the Body returned — and it is the
+    //                                   result a POST-EXECUTE policy may still
+    //                                   reshape, so it is not the final outcome
+    //   settled ── `tools/result`       the registry's final EMIT edge: dispatched
+    //                                   from `finishScheduledExecution` →
+    //                                   `notifyResult` after materialization and
+    //                                   content finalization, on the success AND
+    //                                   the error path (`packages/core/tools/src/
+    //                                   index.ts`)
     //
-    //     begin ── `tools/pre-execute`   (the first door EVERY call passes)
-    //     end   ── `tools/post-execute`  (fires for every call that got a door)
-    //
-    // The pair is balanced by measurement, not by hope: a Guard denial skips
-    // `tools/execute` but still fires `tools/post-execute`, and this Guard ends
-    // the lease itself whenever IT turns a call away (a call it refused
-    // provably never runs a Body). What is left is the honest limit of the
-    // public seams: `post-execute` fires when a RESULT exists, which on this
-    // host is not provably after the Body returns. So the count means "no call
-    // stands between its outer door and its result event" — a strictly weaker
-    // claim than "no Body is running", and the PR records it as such. Every
-    // unresolved lease fails CLOSED: the drain refuses with
-    // `EXECUTION_TERMINATION_UNCONFIRMED` and the mask and Guard stay armed,
-    // which is why the weaker claim is safe and a false zero would not be.
+    // A correction is on the record: an earlier revision of this file (and of the
+    // kit) claimed `post-execute` was NOT provably after the Body returned, and
+    // released the lease there as the best available approximation. That claim
+    // came from a measurement whose park did not hold the Body open, so it proved
+    // nothing; PR1 Gate R4 required it re-measured. The measured order is above.
+    // The law is therefore: a lease is taken at the OUTERMOST door
+    // (`pre-execute`, the first door every call passes, including one the Guard
+    // turns away) and ENDED at `tools/result` — the last edge, the one the
+    // registry guarantees after the outcome is final. `tools/post-execute` only
+    // RECORDS that a result exists, because "a result exists" is a fact about the
+    // pipeline, not a promise that the Body is finished or that the outcome can no
+    // longer be rewritten by a later listener.
     //
     // Why the lease must start at the OUTERMOST door: the NEG-1 window is a call
     // parked at `pre-execute` while the teardown runs. Leased there, the drain
     // sees it and cannot reach RELEASED — so the mask is still down and the
     // Guard is still armed when the call resumes, and it meets a refusal instead
     // of a re-resolved native Definition.
-    if (typeof input.agentCtx.on === 'function') {
-        const onEvent = input.agentCtx.on;
-        const refuse = (edge, exec) => {
-            const view = exec;
-            throw new Error(`team tool guard: "${String(view?.name)}" reached the ${edge} stage while this Agent's Tool Dispatcher is ${dispatcher.state()} (not ACTIVE); the body is not reachable`);
-        };
-        const callIdOf = (exec) => {
-            const view = exec;
-            return typeof view?.callId === 'string' && view.callId.length > 0 ? view.callId : `anonymous:${String(view?.name)}`;
-        };
+    //
+    // And every seam here is REQUIRED: a registration that throws, or an ctx with
+    // no event-registration function at all, is an ASSEMBLY FAILURE. The Guard is
+    // un-armed again and the caller is handed a typed refusal, because a Guard
+    // missing one door is not a smaller closed world — it is an open one that
+    // says "closed".
+    const onSeam = requireService(input.agentCtx.on, 'the agent event registration seam (ctx.on)', (fn) => typeof fn === 'function');
+    if (!onSeam.ok) {
+        return assemblyFailed('IO_POLICY_UNSUPPORTED', `cannot arm the required public seam "tools/pre-execute": ${onSeam.error.message} — without the outer door a call parked there could resume into a re-resolved Definition (the NEG-1 hazard itself)`);
+    }
+    const onEvent = onSeam.value;
+    const refuse = (edge, exec) => {
+        const view = exec;
+        throw new Error(`team tool guard: "${String(view?.name)}" reached the ${edge} stage while this Agent's Tool Dispatcher is ${dispatcher.state()} (not ACTIVE); the body is not reachable`);
+    };
+    /** Arm one required seam, or fail the whole assembly with nothing left on the ctx. */
+    const armRequiredSeam = (seam, event, listener, why) => {
         try {
-            // The outer door: refuse while not ACTIVE, otherwise take the lease.
-            extraDisposers.push(onEvent('tools/pre-execute', named('a5p1GuardPreExecuteGate', ((exec, next) => {
-                if (!dispatcher.active()) {
-                    dispatcher.endCallById(callIdOf(exec));
-                    refuse('pre-execute', exec);
-                }
-                const begun = dispatcher.beginCall(callIdOf(exec), String(exec?.name));
-                if (!begun.ok)
-                    throw new Error(begun.error.message);
-                return next();
-            }))));
+            extraDisposers.push(onEvent(event, named(seam, listener)));
+            dispatcher.armSeam(event);
+            return { ok: true, value: undefined };
         }
         catch (error) {
-            // Without the outer door a parked call could resume into a re-resolved
-            // Definition — the NEG-1 hazard itself.
-            observe({ event: 'pre-execute-gate-unavailable', fatal: true, detail: String(error?.message ?? error) });
+            return assemblyFailed('IO_POLICY_UNSUPPORTED', `cannot arm the required public seam "${event}" (${why}): ${String(error?.message ?? error)}`);
         }
-        try {
-            // The result edge: this is where a lease legitimately ends — it is the
-            // first public moment at which the Body has returned.
-            extraDisposers.push(onEvent('tools/post-execute', named('a5p1GuardResultEdge', ((exec, _result, next) => {
-                dispatcher.endCallById(callIdOf(exec));
-                return next();
-            }))));
+    };
+    // 1/5 — the outer door: refuse while not ACTIVE, otherwise take the lease.
+    const armedPreExecute = armRequiredSeam('a5p1GuardPreExecuteGate', 'tools/pre-execute', ((exec, next) => {
+        if (!dispatcher.active()) {
+            // We are refusing this call ourselves: its Body provably never ran, so
+            // its lease ends here in any state — a call we turned away must never
+            // be the reason a teardown cannot finish.
+            dispatcher.endCallById(callIdOf(exec), 'refused');
+            refuse('pre-execute', exec);
         }
-        catch (error) {
-            // No result edge means no lease can ever end, so the drain will refuse
-            // and the mask/Guard stay armed. Loud, fail closed, never a false zero.
-            observe({ event: 'result-edge-unavailable', fatal: true, detail: String(error?.message ?? error) });
+        const begun = dispatcher.beginCall(callIdOf(exec), String(exec?.name));
+        if (!begun.ok)
+            throw new Error(begun.error.message);
+        return next();
+    }), 'without the outer door a parked call could resume into a re-resolved Definition');
+    if (!armedPreExecute.ok)
+        return armedPreExecute;
+    // 2/5 — the result edge: a result EXISTS, which is recorded and is not proof.
+    // The lease deliberately survives this edge (PR1 Gate R4).
+    const armedPostExecute = armRequiredSeam('a5p1GuardResultEdge', 'tools/post-execute', ((exec, _result, next) => {
+        dispatcher.noteResultObserved(callIdOf(exec));
+        return next();
+    }), 'without it the assembly cannot even tell that a call produced a result');
+    if (!armedPostExecute.ok)
+        return armedPostExecute;
+    // 3/5 — the settled edge: the Body returned. This is where a lease ends.
+    const armedResultSettled = armRequiredSeam('a5p1GuardResultSettledEdge', 'tools/result', ((exec) => {
+        // A call this Dispatcher never leased (a Guard refusal, a call from
+        // before assembly) has nothing to end, and that is not an anomaly.
+        // A call it DID lease, arriving after the drain began, is refused as
+        // evidence and recorded by the Dispatcher itself.
+        dispatcher.endCallById(callIdOf(exec));
+    }), 'without the settled edge no lease can ever end, so no teardown could ever be confirmed');
+    if (!armedResultSettled.ok)
+        return armedResultSettled;
+    // 4/5 — the dispatch gate: a call that reaches the inner waterfall while the
+    // Dispatcher is not ACTIVE is turned away before its Body.
+    const armedExecute = armRequiredSeam('a5p1GuardDispatchGate', 'tools/execute', ((exec, next) => {
+        if (!dispatcher.active()) {
+            // This call is turned away before its Body: its lease ends here, by us,
+            // because we know it will never run.
+            dispatcher.endCallById(callIdOf(exec), 'refused');
+            refuse('execute', exec);
         }
-        try {
-            extraDisposers.push(onEvent('tools/execute', named('a5p1GuardDispatchGate', ((exec, next) => {
-                if (!dispatcher.active()) {
-                    // This call is turned away before its Body: its lease (taken at
-                    // the outer door) ends here, by us, because we know it will never
-                    // run. `post-execute` also ends leases, and ending twice is a
-                    // no-op by construction.
-                    dispatcher.endCallById(callIdOf(exec));
-                    refuse('execute', exec);
-                }
-                return next();
-            }))));
-        }
-        catch (error) {
-            // Without the counter the drain cannot prove zero in-flight, so
-            // `release()` will refuse and the mask/Guard stay armed — fail closed,
-            // never a false "released".
-            observe({ event: 'inflight-counter-unavailable', detail: String(error?.message ?? error) });
-        }
+        return next();
+    }), 'without it a call racing the teardown could reach a Body');
+    if (!armedExecute.ok)
+        return armedExecute;
+    // 5/5 — the Guard itself (already armed above; counted as a seam only now, so
+    // that publishing waits until the whole set is provably in place).
+    dispatcher.armSeam('tools.guard');
+    // `tools/change` — DIAGNOSTICS ONLY, and NOT one of the required seams: a
+    // missing change listener costs re-validation reports, never safety, because
+    // the Guard's verdict re-reads the definition on every call.
+    try {
+        extraDisposers.push(onEvent('tools/change', () => {
+            const result = revalidate();
+            if (result.denied.length > 0) {
+                observe({ event: 'tools-change-unbound-names', denied: result.denied, note: 'tools/change is a diagnostic; these names are refused at dispatch by the Guard' });
+            }
+            if ((result.drifted?.length ?? 0) > 0) {
+                observe({ event: 'tools-change-definition-drift', drifted: result.drifted, note: 'their Bindings were revised down; only an explicit re-bind restores them' });
+            }
+        }));
+    }
+    catch (error) {
+        observe({ event: 'tools-change-listener-unavailable', detail: String(error?.message ?? error) });
     }
     const bindAll = (names, origin) => {
         for (const name of names) {
+            // A real Binding pins the real Body. `origin:name` would be a
+            // name-shaped guess, and a guess cannot be re-verified at dispatch, so
+            // the assembly reads the definition seam here and refuses to bind
+            // anything it cannot pin (PR1 Gate R2).
+            const probe = readDefinition(name);
+            if (!probe.ok) {
+                observe({ event: 'bind-refused-unreadable-definition', tool: name, origin, detail: probe.detail });
+                return fail('TOOL_BINDING_UNVERIFIED', `cannot bind "${name}" as ${origin}: its current definition is unreadable at the public seam (${probe.detail}), and a Binding that cannot be re-verified is not a verification`);
+            }
             const binding = {
                 bindingId: `${origin}:${input.agentScopeKey}:${name}`,
                 agentScopeKey: input.agentScopeKey,
                 toolName: name,
-                definitionIdentity: `${origin}:${name}`,
+                definitionIdentity: probe.fingerprint,
                 providerId: origin === 'team-mcp' ? 'mcp' : 'dsh-agent-team',
                 implementationOrigin: 'team-trusted-extension',
                 executionBoundary: 'trusted-host',
@@ -327,10 +510,45 @@ export function installScopedToolGuard(input) {
                 dispatcher.failAssembly(surface.error.message);
                 return surface;
             }
-            dispatcher.bindInheritedSurface(surface.value);
+            // The publish-surface observation is a LIST OF NAMES, and a name on a
+            // surface proves only visibility. Pin each one through the public
+            // definition seam, then let the surface decide: only a name on the
+            // assembly's explicit trusted native list AND pinnable right now is
+            // inherited as a verified native; every other observed name is bound
+            // UNVERIFIED (governed, loud, refused at dispatch). Registering an
+            // undeclared own tool before publish therefore produces a refusal after
+            // publish, not a `native:` Binding it earned by showing up.
+            const identities = {};
+            for (const name of surface.value) {
+                const probe = readDefinition(name);
+                if (probe.ok)
+                    identities[name] = probe.fingerprint;
+            }
+            const owned = new Set(input.assemblyOwnedNames ?? []);
+            const nativeNames = (input.nativeNames ?? []).filter((n) => surface.value.includes(n) && !owned.has(n));
+            const inherited = dispatcher.bindInheritedSurface(surface.value, identities);
+            if (inherited.unverified.length > 0) {
+                observe({
+                    event: 'published-surface-unverified',
+                    names: inherited.unverified,
+                    note: 'observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch',
+                });
+            }
+            observe({
+                event: 'surface-inherited',
+                nativeTrusted: nativeNames.length,
+                verified: inherited.verifiedBound,
+                unverified: inherited.unverifiedBound,
+            });
             const outcome = dispatcher.publish();
             if (outcome.ok) {
-                observe({ event: 'agent-published', scope: input.agentScopeKey, surface: surface.value.length, masked: input.maskedNames?.length ?? 0 });
+                observe({ event: 'agent-published', scope: input.agentScopeKey, surface: surface.value.length, masked: input.maskedNames?.length ?? 0, seams: dispatcher.seamsArmed() });
+            }
+            else {
+                // The Guard is not published, so it must not remain on the ctx either:
+                // an unarmed-but-armed Guard would refuse calls nobody can explain.
+                unarmAll();
+                dispatcher.failAssembly(outcome.error.message);
             }
             return outcome;
         },

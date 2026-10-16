@@ -1,0 +1,129 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts (24 tests | 5 failed) 16ms
+     ✓ G1 denies an exec.name that was never bound (TEAM_TOOL_UNGOVERNED) 1ms
+     ✓ G2 abstains for a bound, verified, in-generation name called by this Agent 1ms
+     ✓ G3 (the dynRan flip) a name that appears AFTER setup is still un-governed 0ms
+     ✓ G4 an unverified Binding is governed but never allowed (no native fallback) 0ms
+     ✓ G5 a foreign Agent identity on a governed name is refused, not inherited 0ms
+     ✓ G6 (NEG-2) a Team-scope exec with NO Agent identity is refused, never laundered global 0ms
+     ✓ G7 every non-ACTIVE state refuses before the name lookup 0ms
+     ✓ G8 a stale-generation Binding is a typed refusal, not a stale allow 0ms
+     ✓ G9 the verdict vocabulary is exactly three frozen §5 codes 0ms
+     ✓ G10 the Guard has no allow result to be traded for 0ms
+     ✓ G11 every reason maps to a stable, named message (no stack-trace prose) 0ms
+     ✓ S1 a name keeps ONE stable Definition identity (no unload-then-fall-back) 0ms
+     ✓ S2 a change is a strictly higher immutable revision 0ms
+     ✓ S3 the setup surface is bound as one closed world, idempotently 0ms
+     ✓ S4 markUnverified needs the bindingId in force (no identity confusion) 0ms
+     ✓ S5 the inherited assurance record is honestly untested, never empty 0ms
+     ✓ S6 every PR1 Binding is parseable by the frozen PR0 contract parser 0ms
+     ✓ S7 the lane reads no clock (the finite-clock law belongs to Admission, PR2) 1ms
+     × R1 an observed name becomes a native Binding only if it is on the trusted native list 3ms
+     × R1b an allowlisted name whose definition cannot be pinned is bound UNVERIFIED 0ms
+     × R2 a same-scope name resolving to a DIFFERENT definition never runs on the old verification 1ms
+     × R2b an unreadable current definition is a refusal, never an assumption of no change 1ms
+     ✓ R2c the state and identity gates still answer before the definition check 0ms
+     × R2d the state gate outranks an unbound name even when the definition is unreadable 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p1-closed-world-guard.test.ts > PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to > R1 an observed name becomes a native Binding only if it is on the trusted native list
+AssertionError: expected undefined to be 1 // Object.is equality
+
+- Expected:
+1
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts:334:34
+    332|     const surface = createGovernedSurface({ agentScopeKey: 'session-m1…
+    333|     const result = surface.bindInheritedSurface(['read', 'evil_own_too…
+    334|     expect(result.verifiedBound).toBe(1)
+       |                                  ^
+    335|     expect(result.unverified).toEqual(['evil_own_tool'])
+    336|     const evil = surface.entryOf('evil_own_tool')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  packages/runtime/test/a5p1-closed-world-guard.test.ts > PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to > R1b an allowlisted name whose definition cannot be pinned is bound UNVERIFIED
+AssertionError: expected undefined to be +0 // Object.is equality
+
+- Expected:
+0
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts:353:34
+    351|     const surface = createGovernedSurface({ agentScopeKey: 'session-m1…
+    352|     const result = surface.bindInheritedSurface(['read'], {})
+    353|     expect(result.verifiedBound).toBe(0)
+       |                                  ^
+    354|     expect(result.unverified).toEqual(['read'])
+    355|     expect(surface.entryOf('read')?.verified).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  packages/runtime/test/a5p1-closed-world-guard.test.ts > PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to > R2 a same-scope name resolving to a DIFFERENT definition never runs on the old verification
+AssertionError: expected 'abstain' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "abstain"
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts:364:26
+    362|       { surface, definition: { ok: true, fingerprint: 'def:read:attack…
+    363|     )
+    364|     expect(verdict.kind).toBe('deny')
+       |                          ^
+    365|     if (verdict.kind !== 'deny') return
+    366|     expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  packages/runtime/test/a5p1-closed-world-guard.test.ts > PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to > R2b an unreadable current definition is a refusal, never an assumption of no change
+AssertionError: expected 'abstain' to be 'deny' // Object.is equality
+
+Expected: "deny"
+Received: "abstain"
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts:377:26
+    375|       { surface, definition: { ok: false, detail: 'tools.get threw' } …
+    376|     )
+    377|     expect(verdict.kind).toBe('deny')
+       |                          ^
+    378|     if (verdict.kind !== 'deny') return
+    379|     expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  packages/runtime/test/a5p1-closed-world-guard.test.ts > PR1 Gate R1 / R2 — inherited bindings and the definition a call actually resolves to > R2d the state gate outranks an unbound name even when the definition is unreadable
+AssertionError: expected 'TEAM_TOOL_UNGOVERNED' to be 'TOOL_BINDING_UNVERIFIED' // Object.is equality
+
+Expected: "TOOL_BINDING_UNVERIFIED"
+Received: "TEAM_TOOL_UNGOVERNED"
+
+ ❯ packages/runtime/test/a5p1-closed-world-guard.test.ts:401:32
+    399|     expect(verdict.kind).toBe('deny')
+    400|     if (verdict.kind !== 'deny') return
+    401|     expect(verdict.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+       |                                ^
+    402|     expect(verdict.reason).toBe(GUARD_DENIAL_REASONS.IDENTITY_ABSENT =…
+    403|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 19 passed (24)
+   Start at  07:13:29
+   Duration  289ms (transform 143ms, setup 0ms, import 180ms, tests 16ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
