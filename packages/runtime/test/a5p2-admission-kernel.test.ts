@@ -599,6 +599,63 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     }
   })
 
+  it('F-1 (final-head review): coexisting deny sources over ONE scope are AMBIGUOUS in every array order — first-wins let order decide the outcome', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    const memberOwned = denySource({ ownerAuthority: 'member', sourceRef: 'overlay:entry-low' })
+    const adminOwned = denySource({ ownerAuthority: 'human-admin', sourceRef: 'blueprint:admin-rule-1' })
+    for (const order of [[memberOwned, adminOwned], [adminOwned, memberOwned]]) {
+      const ports = recordPorts()
+      const { kernel } = makeHarness({
+        policy: () => denyWrite,
+        documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+        denySources: () => order,
+        ports,
+      })
+      const planned = await kernel.planApproval(request)
+      expect(planned.ok).toBe(false) // pre-fix, the member-first order OPENS (first-wins floor)
+      if (!planned.ok) expect(planned.error.details?.refusal).toBe('deny-source-ambiguous') // pre-fix: admin-first says owner-above-ladder instead
+      const issued = await kernel.issueApprovedGrant(request, approvalFor(request))
+      expect(issued.ok).toBe(false)
+      expect(ports.registrations).toBe(0)
+    }
+  })
+
+  it('F-2 (final-head review): a SECOND deny arriving after the approval cannot mint on the unchanged MAX rung — per-effect provenance IS part of the case', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect(), readEffect()) })
+    let second = false // the read deny ARRIVES between approval and issue
+    const ports = recordPorts()
+    const { kernel } = makeHarness({
+      policy: () => second
+        ? policyDoc([
+            { effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' },
+            { effectKind: 'read', resource: scopeResource(readEffect()), maximumEffect: 'deny' },
+          ])
+        : denyWrite,
+      documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      // The late read-deny's floor (member-owned => leader) sits BELOW the approved
+      // max rung — the MAX comparison cannot see it. The generation is deliberately
+      // NOT bumped: the lane may not trust the assembly's discipline.
+      denySources: () => second
+        ? [denySource(), denySource({ effectKind: 'read', matcher: { kind: 'exact', resource: scopeResource(readEffect()) }, ownerAuthority: 'member', sourceRef: 'overlay:entry-late' })]
+        : [denySource()],
+      ports,
+    })
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(`plan: ${JSON.stringify(planned)}`)
+    expect(planned.value.deniedEffects).toEqual([{ effectIndex: 0, requiredAuthority: 'human-user' }])
+    second = true
+    const issued = await kernel.issueApprovedGrant(
+      request,
+      approvalFor(request, {
+        reviewerAuthority: 'human-user',
+        requiredAuthorityAtCreation: 'human-user',
+        deniedEffectsAtCreation: [{ effectIndex: 0, requiredAuthority: 'human-user' }],
+      }),
+    )
+    expect(issued.ok).toBe(false) // pre-fix: the MAX rung is unchanged, so this MINTS over the late deny
+    expect(ports.registrations).toBe(0) // pre-fix: 1
+  })
+
   it('R-1a: a deny the envelope never projects is NOT a leader-leg mint — unattributed, zero mints (ruling ③, review R-1a)', async () => {
     // The walk's DEFAULT rung (leader on an empty ladder) is not an owning
     // authority for a deny: before the fix this MINTED — fail-open, costumed
