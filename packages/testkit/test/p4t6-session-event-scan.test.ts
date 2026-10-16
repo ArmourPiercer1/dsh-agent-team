@@ -2371,6 +2371,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/controlled-fs/src/admission-binding.ts',
       'packages/runtime/test/a5w-integration-wiring.test.ts',
     ]
+    // Merge-history correction, entry four (same class as PR3/PR5/PR7 above):
+    // PR #265 (`G-g support probes G-1..G-5`, master @ `ced9254c`, review
+    // @ `bbaf45de`) merged with its two scannable test files present and
+    // this set unpaid — the merge tree of ANY later branch inherits the drift
+    // (CI census on this branch's merge-ref measured it: coverage leg red,
+    // `expected 1157 to be 1155`). The probes are reviewed material and the
+    // wording-lint script they ship lives under `scripts/` (outside the
+    // scan); the files' own suite legs are GREEN — the only debt is this
+    // ledger line, booked here by the integration owner on coordinator
+    // order, attributed per-merge exactly like the three entries above.
+    const SCANNED_PATHS_GGPROBES: readonly string[] = [
+      'packages/runtime/test/a5p1r-gg-probes.test.ts',
+      'packages/runtime/test/a5p1r-gg-wording-lint.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2404,7 +2418,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5P3FS.length +
         SCANNED_PATHS_A5P5TOOLS.length +
         SCANNED_PATHS_A5P7JOBS.length +
-        SCANNED_PATHS_A5WIRING.length,
+        SCANNED_PATHS_A5WIRING.length +
+        SCANNED_PATHS_GGPROBES.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2439,7 +2454,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5P3FS.length +
         SCANNED_PATHS_A5P5TOOLS.length +
         SCANNED_PATHS_A5P7JOBS.length +
-        SCANNED_PATHS_A5WIRING.length,
+        SCANNED_PATHS_A5WIRING.length +
+        SCANNED_PATHS_GGPROBES.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2498,6 +2514,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5P5TOOLS,
       ...SCANNED_PATHS_A5P7JOBS,
       ...SCANNED_PATHS_A5WIRING,
+      ...SCANNED_PATHS_GGPROBES,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2723,6 +2740,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     expect(SCANNED_PATHS_A5P5TOOLS.length).toBe(1139 - 1120)
     expect(SCANNED_PATHS_A5P7JOBS.length).toBe(1153 - 1139)
     expect(SCANNED_PATHS_A5WIRING.length).toBe(1155 - 1153)
+    // PR #265 merge tie (probes joined at master @ `ced9254c`; measured on
+    // the merge tree, CI census run at `42c83a1b` and the solo RED captured
+    // locally): the chain ends at the scanner total of the MERGED tree.
+    expect(SCANNED_PATHS_GGPROBES.length).toBe(1157 - 1155)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
