@@ -51,7 +51,7 @@ describe('C-FS error closed set', () => {
 
   it('hidden-read is typed AND diagnostic — an empty/absent diagnostic cannot be constructed', () => {
     for (const reason of CF_HIDDEN_REASONS) {
-      const err = cfsHidden(reason, 'test', '  ').error
+      const err = cfsHidden(reason, 'test', 'path withheld from member ts-1/member-b @ probe').error
       expect(err.details?.['cfClass']).toBe('hidden')
       expect(typeof err.details?.['cfDiagnostic']).toBe('string')
       expect((err.details?.['cfDiagnostic'] as string).trim().length).toBeGreaterThan(0)

@@ -23,6 +23,7 @@ import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
+  createPoc3World,
   destroyPoc3World,
   dirRef,
   fileRef,
@@ -44,7 +45,8 @@ const FULL = { offset: 0, limit: null } as const
 
 function visibility(member: { instanceId: string }, desc: FsResourceDescriptor): 'visible' | 'hidden' {
   if (member.instanceId !== 'member-b') return 'visible'
-  return desc.path.startsWith('private/') || desc.path.startsWith('mine/') ? 'hidden' : 'visible'
+  return desc.path === 'private' || desc.path.startsWith('private/')
+    || desc.path === 'mine' || desc.path.startsWith('mine/') ? 'hidden' : 'visible'
 }
 
 function lane(hooks?: Parameters<typeof createControlledFsLane>[0]['hooks']): ControlledFsLane {
@@ -62,6 +64,7 @@ const countOpens = (l: ControlledFsLane, locator: string): number =>
 
 function resetStage(w: Poc3World): void {
   rmSync(join(w.ctrl, 'stage'), { recursive: true, force: true })
+  rmSync(join(w.ctrl, 'stage.bak'), { recursive: true, force: true })
   mkdirSync(join(w.ctrl, 'stage'), { recursive: true })
   writeFileSync(join(w.ctrl, 'stage', 'in.txt'), 'STAGE-IN\n')
 }

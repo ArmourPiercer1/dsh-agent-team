@@ -67,7 +67,9 @@ export function sha256(text: string): string {
 }
 
 function stamp(): string {
-  return `${new Date().toISOString().slice(0, 19).replace(/[:]/g, '-')}Z-${process.pid}`
+  // One world per CREATE (threads pool shares the pid — entropy, not pid).
+  const iso = new Date().toISOString().slice(0, 19).replace(/[:]/g, '-')
+  return `${iso}Z-${createHash('sha256').update(`${Date.now()}:${Math.random()}`).digest('hex').slice(0, 6)}`
 }
 
 /** Create the real fixture world under tests/homes/a5p3-<UTC>. */

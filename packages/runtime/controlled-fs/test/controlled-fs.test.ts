@@ -10,6 +10,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
+  createPoc3World,
   dirRef,
   destroyPoc3World,
   fileRef,
@@ -34,7 +35,8 @@ const FULL = { offset: 0, limit: null } as const
 /** Visibility law for the fixture: member-b never observes private/ or mine/. */
 function visibility(member: { instanceId: string }, desc: FsResourceDescriptor): 'visible' | 'hidden' {
   if (member.instanceId !== 'member-b') return 'visible'
-  return desc.path.startsWith('private/') || desc.path.startsWith('mine/') ? 'hidden' : 'visible'
+  return desc.path === 'private' || desc.path.startsWith('private/')
+    || desc.path === 'mine' || desc.path.startsWith('mine/') ? 'hidden' : 'visible'
 }
 
 beforeAll(() => {
