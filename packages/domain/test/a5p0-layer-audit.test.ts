@@ -35,8 +35,8 @@ describe('the tool-governance lane audit', () => {
   // consumer is a design change that has to appear here, and a disappeared
   // one is a broken wire.
   //
-  // PR3 (controlled-fs/src ×4, review #259@23dc3bd1) and PR5 (a5p5-tools/src
-  // ×6, review #260@5ccc5839) merged WITH their lane imports already present
+  // PR3 (controlled-fs/src ×4, review #259@23dc3bd1) and PR5 (the tools lane
+  // src ×6, review #260@5ccc5839) merged WITH their lane imports already present
   // but WITHOUT paying this set — a real ledger debt that carried this audit
   // red on master since those merges. The integration round books the debt
   // against the PR3/PR5 review provenance, file-by-file; the subtree prefixes
