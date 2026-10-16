@@ -66,16 +66,84 @@ export type AssuranceDimension = (typeof ASSURANCE_DIMENSIONS)[number]
 /** How much a consumer demands of one dimension. */
 export type AssuranceRequirement = 'hard' | 'authoritative'
 
+/**
+ * The per-dimension record of design §2.1 (verbatim): "逐项记录机制、作用
+ * Realm、可信根、证据与 enforced | author-trusted | partial | unsupported |
+ * untested". EVERY field is stated on EVERY dimension — a bare level with no
+ * mechanism, no realm, no trust root and no evidence is exactly the
+ * overclaim §1.4 refuses. `mechanism`/`trustRoot`/`evidence` are REQUIRED
+ * keys whose VALUE may be `null`: the honest way to state "none exists"
+ * (an `untested` dimension has no evidence — it must SAY so, not omit the
+ * field, and never fabricate a non-null). `realmId` is a required non-empty
+ * string: an assurance claim holds in a NAMED Realm and travels to no other
+ * (Realm 不可混淆). M-2 of the PR0 review; PR3/PR4 evidence rows land IN
+ * these fields, they do not redefine them.
+ */
+export interface AssuranceDimensionRecord {
+  readonly level: AssuranceLevel
+  readonly mechanism: string | null
+  readonly realmId: string
+  readonly trustRoot: string | null
+  readonly evidence: string | null
+}
+
 /** The three-dimension contract of one bound tool/provider. */
 export interface AssuranceContract {
   readonly implementationOrigin: ImplementationOrigin
   readonly executionBoundary: ExecutionBoundary
-  readonly assurance: Readonly<Record<AssuranceDimension, AssuranceLevel>>
+  readonly assurance: Readonly<Record<AssuranceDimension, AssuranceDimensionRecord>>
+}
+
+function parseNullableString(raw: unknown, path: string, problems: ProblemSink): string | null | undefined {
+  if (raw === null) return null
+  if (typeof raw !== 'string') {
+    problems.push({ code: 'field-type', path, detail: 'must be a non-empty string or an explicit null ("none", stated)' })
+    return undefined
+  }
+  if (raw.trim().length === 0) {
+    problems.push({ code: 'empty-string', path, detail: 'state null for "none" — a blank string claims nothing and proves nothing' })
+    return undefined
+  }
+  return raw
+}
+
+function parseDimensionRecord(raw: unknown, dimension: AssuranceDimension, problems: ProblemSink): AssuranceDimensionRecord | undefined {
+  const path = `$.assurance.${dimension}`
+  if (!isRecord(raw)) {
+    problems.push({ code: 'not-a-record', path, detail: 'each dimension records level + mechanism + realmId + trustRoot + evidence (design §2.1)' })
+    return undefined
+  }
+  closeRecordKeys(raw, ['level', 'mechanism', 'realmId', 'trustRoot', 'evidence'], path, problems)
+  const levelRaw = raw['level']
+  let level: AssuranceLevel | undefined
+  if (levelRaw === undefined) {
+    problems.push({ code: 'missing-field', path: `${path}.level`, detail: 'the dimension must state its level' })
+  } else if (typeof levelRaw !== 'string' || !(ASSURANCE_LEVELS as readonly string[]).includes(levelRaw)) {
+    problems.push({ code: 'value-outside-closed-set', path: `${path}.level`, detail: `assurance level must be one of ${ASSURANCE_LEVELS.join(' | ')}` })
+  } else {
+    level = levelRaw as AssuranceLevel
+  }
+  const mechanism = parseNullableString(raw['mechanism'], `${path}.mechanism`, problems)
+  const realmIdRaw = raw['realmId']
+  let realmId: string | undefined
+  if (realmIdRaw === undefined || realmIdRaw === null) {
+    problems.push({ code: 'missing-field', path: `${path}.realmId`, detail: 'an assurance claim names the Realm it holds in (作用 Realm) — it holds in no other' })
+  } else if (typeof realmIdRaw !== 'string' || realmIdRaw.trim().length === 0) {
+    problems.push({ code: 'field-type', path: `${path}.realmId`, detail: '`realmId` must be a non-empty string' })
+  } else {
+    realmId = realmIdRaw
+  }
+  const trustRoot = parseNullableString(raw['trustRoot'], `${path}.trustRoot`, problems)
+  const evidence = parseNullableString(raw['evidence'], `${path}.evidence`, problems)
+  if (level === undefined || mechanism === undefined || realmId === undefined || trustRoot === undefined || evidence === undefined) {
+    return undefined
+  }
+  return { level, mechanism, realmId, trustRoot, evidence }
 }
 
 /**
  * Strict parse: the record must state EVERY dimension (a missing one is a
- * refusal, never an implicit `untested`), each from the closed five, and the
+ * refusal, never an implicit `untested`), each as a full §2.1 record, and the
  * two origin/boundary fields from their closed sets.
  */
 export function parseAssuranceContract(raw: unknown): ParseResult<AssuranceContract> {
@@ -93,39 +161,42 @@ export function parseAssuranceContract(raw: unknown): ParseResult<AssuranceContr
     problems.push({ code: 'value-outside-closed-set', path: '$.executionBoundary', detail: `executionBoundary must be one of ${EXECUTION_BOUNDARIES.join(' | ')}` })
   }
   const assuranceRaw = raw['assurance']
-  let assurance: Record<AssuranceDimension, AssuranceLevel> | undefined
+  let assurance: Record<AssuranceDimension, AssuranceDimensionRecord> | undefined
   if (!isRecord(assuranceRaw)) {
     problems.push({ code: 'field-type', path: '$.assurance', detail: '`assurance` must be a record over every dimension' })
   } else {
     closeRecordKeys(assuranceRaw, ASSURANCE_DIMENSIONS, '$.assurance', problems)
-    const built = {} as Record<AssuranceDimension, AssuranceLevel>
+    const built = {} as Record<AssuranceDimension, AssuranceDimensionRecord>
     let complete = true
     for (const dimension of ASSURANCE_DIMENSIONS) {
-      const level = assuranceRaw[dimension]
-      if (level === undefined) {
+      const entry = assuranceRaw[dimension]
+      if (entry === undefined) {
         problems.push({ code: 'missing-field', path: `$.assurance.${dimension}`, detail: `the Provider must state dimension '${dimension}' (design §1.4: 完整兑现其声称支持的维度)` })
         complete = false
         continue
       }
-      if (typeof level !== 'string' || !(ASSURANCE_LEVELS as readonly string[]).includes(level)) {
-        problems.push({ code: 'value-outside-closed-set', path: `$.assurance.${dimension}`, detail: `assurance level must be one of ${ASSURANCE_LEVELS.join(' | ')}` })
+      const record = parseDimensionRecord(entry, dimension, problems)
+      if (record === undefined) {
         complete = false
         continue
       }
-      built[dimension] = level as AssuranceLevel
+      built[dimension] = record
     }
     if (complete) assurance = built
   }
   return finish(problems, () => ({
     implementationOrigin: originRaw as ImplementationOrigin,
     executionBoundary: boundaryRaw as ExecutionBoundary,
-    assurance: assurance as Record<AssuranceDimension, AssuranceLevel>,
+    assurance: assurance as Record<AssuranceDimension, AssuranceDimensionRecord>,
   }))
 }
 
 /**
  * Does the contract actually carry the demanded capability per dimension?
- * Reports every failing dimension (collected, never the first).
+ * Reports every failing dimension (collected, never the first). Reads the
+ * LEVEL only — the mechanism/trustRoot/evidence fields are what a reviewer
+ * (or PR3/PR4's evidence gate) checks the level claim against; the
+ * derivation law keeps this a capability question, never a grant.
  */
 export function assuranceSatisfies(
   contract: AssuranceContract,
@@ -135,7 +206,7 @@ export function assuranceSatisfies(
   for (const dimension of ASSURANCE_DIMENSIONS) {
     const demand = required[dimension]
     if (demand === undefined) continue
-    const level = contract.assurance[dimension]
+    const level = contract.assurance[dimension].level
     const satisfied = demand === 'hard' ? level === 'enforced' : level === 'enforced' || level === 'author-trusted'
     if (!satisfied) failing.push(dimension)
   }

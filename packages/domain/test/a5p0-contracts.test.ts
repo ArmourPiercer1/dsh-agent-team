@@ -79,16 +79,29 @@ const netDest: ResourceRef = ok(
   parseResourceRef({ realmId: realm, kind: 'network-destination', canonicalLocator: 'https://example.com:443', rights: ['connect'] }),
 )
 
+// A design §2.1 dimension record: level + mechanism + 作用 Realm + 可信根 +
+// 证据, every field stated. `null` is the honest "none exists" (M-2).
+const dim = (level: string, over: Record<string, unknown> = {}) => ({
+  level,
+  mechanism: 'landlock-abi-v4+selfbind',
+  realmId: realm,
+  trustRoot: 'host-kernel',
+  evidence: 'evidence/alpha5-adapter-p0/10-landlock-lanes/notes.md',
+  ...over,
+})
+
 const assuranceRaw = {
   implementationOrigin: 'team-trusted-extension',
   executionBoundary: 'confined-subprocess',
   assurance: {
-    'content-read': 'enforced',
-    'directory-metadata': 'partial',
-    write: 'enforced',
-    alias: 'partial',
-    'network-destination': 'unsupported',
-    'inherit-cancel': 'enforced',
+    'content-read': dim('enforced'),
+    'directory-metadata': dim('partial', { evidence: null }),
+    write: dim('enforced'),
+    alias: dim('partial', { trustRoot: null, evidence: null }),
+    // Unsupported carries NO mechanism/trust root/evidence — stated as null,
+    // never as an absent field (no-overclaim, design §1.4).
+    'network-destination': dim('unsupported', { mechanism: null, trustRoot: null, evidence: null }),
+    'inherit-cancel': dim('enforced', { mechanism: 'process-group-kill+reap' }),
   },
 }
 
@@ -234,7 +247,7 @@ describe('AssuranceContract is derived-capability vocabulary, not a second permi
   })
 
   it('refuses a missing dimension (the Provider must state EVERY dimension it claims)', () => {
-    const partial = { ...assuranceRaw.assurance } as Record<string, string>
+    const partial = { ...assuranceRaw.assurance } as Record<string, unknown>
     delete partial['alias']
     expect(parseAssuranceContract({ ...assuranceRaw, assurance: partial }).ok).toBe(false)
   })
@@ -394,7 +407,7 @@ describe('interface freeze points typecheck as closed contracts', () => {
 
     // Negative: the Assurance map must cover ALL six dimensions.
     // @ts-expect-error — missing dimensions are not assignable
-    const partialContract: AssuranceContract = { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host', assurance: { 'content-read': 'enforced' } }
+    const partialContract: AssuranceContract = { implementationOrigin: 'dsh-native', executionBoundary: 'trusted-host', assurance: { 'content-read': dim('enforced') } }
     expect(partialContract).toBeTruthy()
 
     // Negative: a binding status outside the closed state machine is not assignable.
