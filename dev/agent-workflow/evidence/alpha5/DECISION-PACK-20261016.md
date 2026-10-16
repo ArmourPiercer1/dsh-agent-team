@@ -9,6 +9,7 @@
 - **选项 (iii=W)** 提上游最小 seam 请求：W-1（execute waterfall 最内步之后、resolve 之后 execute 之前的可拒点）或 W-2（把已解析 definition 钉进 execution）。
 - **选项 (iv=退)** 该拓扑（第三方 listener 挂我方门后+并发重注册）严格档禁用（fail-closed 声明）。
 可组合（如 ii 即时缓解 + W-1 长期解）。受影响支持矩阵行：M-12、M-06、M-01/02/03/14 记 partial（选定后写入矩阵）。
+**副作用矩阵（实测，供判断）**：(i)=绕过门后 listener 链+接管取消归类，结果身份三重分离（实测 "V2RENDER:ran:grep@V1"）；(ii)=链全保留但治理拒与真取消逐字段同形+筛选失败把已副作用的无关在飞改写 ABORTED（自我 DoS 最高）；W-1=当前树六面零副作用（风险全在上游接受度）；W-2=结果身份统一但"在飞跟随热替换"全局变形；(v)=运行期零自伤、M-12 不可满足+M-01/02/03/14 退 unsupported。全文=b3-options-side-effect-matrix.md（含探针原文）。
 
 ## 决策 2（已缩窄，2026-10-16 复核后）—— 仅余 R-1 一条
 **映射澄清（前版 C1/C2/C3 撤回）**：externalHard ≠ teamHardEnvelope（不同对象；Alpha.4 阶梯对 externalHard 无对应物系有意分工 ADR-a4:111）。**P1**（外部事实不在 ceiling 平面，由事实/执行面另层承担）成立且属规定性；**P2**（最终执行可被 admin 穿透外部边界）**不成立**——external-hard 形状经 ToolPolicyDocument 终局拒（"Team deny is final; no approval exists for it"）、live 三道外部闸 G1/G2/G3 17/17 含 "HUMAN allow cannot beat the external hard at the last mile"、注入 kernel 多余槽位不被读、G8 闸今日挡整个 admin leg。完整无省略探针+输出原文=hard-ceiling-object-mapping-reaudit.md 附录 A/B/C 与 pr2/probes/。
