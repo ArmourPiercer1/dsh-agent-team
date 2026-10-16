@@ -52,3 +52,5 @@ PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDIN
 ## census 失败身份落文（G-f，20:3xZ，诊断 91bd0381）
 夜间 4 个 census-runtime FAILURE 身份一致且确定性复现（a5p0-layer-audit×2 + p4t6×1，宿主 pin 639ed01539 实测跑通、refused=0）：alpha.5 PR3/PR5 未登记 tool-governance 消费者与可扫文件台账，#262/#265 为 master 已入库红的继承，非环境抖动、非 flake；修复=alpha5-int-wiring 台账轮（消费者登记+census baseline 重录）。
 **合并纪律（自本条生效）**：census-runtime=failure 时即使 required pr-gate=success 也须先诊断身份再合并——本分支新增红=阻断；继承红=登记随台账 PR 收口。
+
+- 事件缺口注记（G-f）：20:25–22:06Z 本仓库 pull_request 类事件未产生任何 run（只读核对：workflow active、非 draft、base/paths 无限制、actions 权限正常、触发/未触发 head 的作者与 verified 形态相同——原因未定位，不称全局停摆）；受影响 #258/#267 恢复后各做一次常规重试（267 close/reopen、258 常规文档推送），run 出现在最终 head 前不合。
