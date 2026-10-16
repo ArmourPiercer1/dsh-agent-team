@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr4prov/packages/testkit
+
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  16:57:03
+   Duration  393ms (transform 58ms, setup 0ms, import 297ms, tests 6ms, environment 0ms)
+
