@@ -97,6 +97,9 @@ async function main () {
     'guarded-after-mcp-resync',
     'guarded-after-hooks',
     'guarded-after-change-inert',
+    // G-g support contract §3 (G-4): the SWALLOW injection — a second, distinct way
+    // to make a live subscription silent (the inert arm disposes; this one never does).
+    'guarded-after-change-swallow',
   ]
 
   /** @param {typeof MODES[number]} mode */
@@ -320,7 +323,23 @@ async function main () {
     // be the one that says so.
     let cutChange = false
     const changeDisposers = []
+    // G-4 (G-g support contract §3): the SWALLOW injection. The `on` the lane gets is
+    // wrapped: the `tools/change` subscription is ACCEPTED, its disposer is real and
+    // never called — the subscription entry stays in the Host's listener table for the
+    // whole run — but what sits at that entry is a proxy that forwards nothing to the
+    // lane's handler. From the lane's view this is indistinguishable from the inert
+    // injection (subscription succeeded, nothing arrives, the channel stays 'armed');
+    // the injections differ on the Host side: nothing here is ever disposed. The kit's
+    // OWN control subscription (after the install) proves the registry really does emit
+    // `tools/change` during the run, so the arm cannot silently degrade into the
+    // never-emits-anywhere configuration: emission happens, delivery to THIS
+    // subscription is swallowed.
+    const swallow = { proxyEmissions: 0, controlEvents: 0 }
     const onEvent = (event, listener) => {
+      if (event === 'tools/change' && mode === 'guarded-after-change-swallow') {
+        const proxy = () => { swallow.proxyEmissions += 1 }
+        return inner.on(event, proxy)
+      }
       const dispose = inner.on(event, listener)
       if (event === 'tools/change' && mode === 'guarded-after-change-inert') changeDisposers.push(dispose)
       return dispose
@@ -349,6 +368,10 @@ async function main () {
     if (!bound.ok) throw new Error(`${mode}: bindOwnTools refused: ${bound.error.code} ${bound.error.message}`)
     const published = handle.publish()
     if (!published.ok) throw new Error(`${mode}: publish refused: ${published.error.code} ${published.error.message}`)
+    // G-4 control: the kit's own genuine subscription on the same Host — if the
+    // registry emits at all, this counter moves. The swallow arm's loud predicate
+    // requires it to have moved while the lane stayed 'armed'.
+    if (mode === 'guarded-after-change-swallow') inner.on('tools/change', () => { swallow.controlEvents += 1 })
 
     // Result edges, observed from outside the lane: a cancelled call must still
     // be a call that the rest of the system can see.
@@ -422,6 +445,12 @@ async function main () {
     })
 
     const verifiedBefore = handle.dispatcher.surface.entryOf('grep')?.verified ?? null
+    // G-1a (P1): the read BEFORE any injection is the whole externally observable
+    // fact about the channel at assembly time. 'armed' here is the exact same shape
+    // a healthy delivering arm reads at the same instant — the silent configuration
+    // is indistinguishable at assembly, and that is now a named criterion, not a
+    // records field.
+    const channelBeforeInjection = typeof handle.changeChannelStatus === 'function' ? handle.changeChannelStatus() : 'unknown'
     if (mode === 'guarded-after-change-inert') for (const dispose of changeDisposers) dispose()
     const calls = []
     if (mode === 'guarded-after-multi-call') {
@@ -440,17 +469,43 @@ async function main () {
     holdGate.release()
     const settled = await Promise.all(calls)
     const first = settled[0] ?? null
-    const second = mode === 'guarded-after-body-zero' ? await f.run('grep', A.key) : null
+    // The CALL-EDGE settled read: the verified state at the moment the moved call
+    // settled, before any later probe or re-bind touched the run. This is the value
+    // the LOUD criteria have always meant ("the verification is withdrawn at THIS
+    // call"); G-2 adds a re-bind later in the same run, so it keeps its own field.
+    const verifiedAtCallEdge = handle.dispatcher.surface.entryOf('grep')?.verified ?? null
+    // The exposure the P2/P3 predicates name is the one the FIRST call made; the
+    // G-2/G-4 probes below run later in the same arm, so the V2 counter is read
+    // here, before they can move it.
+    const v2AfterFirstCall = f.counters('V2')
+    // (the residual arm asks a SECOND question after the first call settles — and
+    // since the G-g probes, so do both SILENT arms: the posture is only honest if
+    // the next call is placed and seen refused, then re-bound, then seen run.)
+    const second = (mode === 'guarded-after-body-zero' || mode === 'guarded-after-change-inert' || mode === 'guarded-after-change-swallow')
+      ? await f.run('grep', A.key)
+      : null
+    const secondCallBodies = second === null ? null : second.bodies.filter((o) => o.event === 'body').length
+    const secondCallRefused = second !== null && secondCallBodies === 0
+      && (second.isError === true || second.threw !== undefined)
+      && /definition drift/.test(String(second.text ?? second.threw ?? ''))
+    const v2AfterSecond = second === null ? null : f.counters('V2')
 
     // A re-bind is the documented way back; measure that it still is one.
     let verifiedBeforeRebind = null
     let rebind = null
     let third = null
-    if (mode === 'guarded-after-mcp-resync') {
+    if (mode === 'guarded-after-mcp-resync' || mode === 'guarded-after-change-inert' || mode === 'guarded-after-change-swallow') {
+      // G-2 (P4): the recovery path — refused next call, explicit re-bind, executed
+      // third call — is measured INSIDE the silent arms themselves, never
+      // extrapolated from a delivered configuration.
       verifiedBeforeRebind = handle.dispatcher.surface.entryOf('grep')?.verified ?? null
       rebind = handle.bindOwnTools([...names])
       third = rebind.ok === true ? await f.run('grep', A.key) : null
     }
+    const verifiedAfterRebind = rebind === null ? null : (handle.dispatcher.surface.entryOf('grep')?.verified ?? null)
+    const thirdCallBodies = third === null ? null : third.bodies.filter((o) => o.event === 'body').length
+    const thirdCallExecuted = third !== null && thirdCallBodies >= 1
+      && third.bodies.some((o) => o.event === 'body' && String(o.identity ?? '') === 'V2')
     let teardown = null
     let teardownState = null
     if (mode === 'guarded-after-body-zero') {
@@ -489,9 +544,28 @@ async function main () {
       pendingAfter: watches.map((row) => String(row.callId)),
       changeChannel: channelStatus,
       verifiedAfter: handle.dispatcher.surface.entryOf('grep')?.verified ?? null,
-      secondCallV2: second === null ? null : f.counters('V2'),
+      secondCallV2: v2AfterSecond,
       secondCallText: second === null ? null : String(second?.text ?? second?.threw ?? '').slice(0, 160),
+      // G-g support-contract probes (G-1a/G-2/G-4): assembly-time install facts the
+      // arm implied by throwing but never recorded, the pre-injection channel read,
+      // the call-edge verified state, the per-probe V2 counter moves, and the
+      // filtered event-stream counts the contract's predicate group names.
+      installOk: true,
+      publishedOk: true,
+      channelBeforeInjection,
+      verifiedAtCallEdge,
+      v2AfterFirstCall,
+      secondCallBodies,
+      secondCallRefused,
       verifiedBeforeRebind,
+      verifiedAfterRebind,
+      thirdCallBodies,
+      thirdCallExecuted,
+      swallowProxyEmissions: mode === 'guarded-after-change-swallow' ? swallow.proxyEmissions : null,
+      swallowControlEvents: mode === 'guarded-after-change-swallow' ? swallow.controlEvents : null,
+      callEdgeDrift: laneObs.filter((o) => String(o.event) === 'dispatcher-definition-change-at-call-edge' && String(o.reason) === 'definition-drift').length,
+      bindingRevisedUnverified: laneObs.filter((o) => String(o.event) === 'dispatcher-binding-revised' && o.verified === false).length,
+      executedUnvalidatedAlarms: laneObs.filter((o) => String(o.event) === 'dispatcher-call-executed-unvalidated' && o.severity === 'alarm').length,
       rebindOk: rebind === null ? null : rebind.ok === true,
       rebindError: rebind === null || rebind.ok ? null : `${String(rebind.error?.code)} ${String(rebind.error?.message)}`.slice(0, 200),
       thirdCallV2: third === null ? null : f.counters('V2'),
@@ -556,10 +630,13 @@ async function main () {
     zero.pendingAfter.length === 0 && zero.teardownState !== null && (zero.teardown.ok === true || zero.teardownState === 'TOMBSTONED'),
     `pendingAfter=${JSON.stringify(zero.pendingAfter)} teardown=${JSON.stringify(zero.teardown)} state=${String(zero.teardownState)}`)
   const still = results['guarded-after-no-change']
-  check('RW-AFTER-NO-CHANGE', 'positive control: with nothing moving the signal wrapper is inert — the Body runs, no cancellation event is raised, verification stands',
-    still.v1 === 1 && still.v2 === 0 && still.changeAbortIssued === 0 && still.cancelledBeforeBody === 0 && still.verifiedAfter === true
+  // G-1b (P7): the false-positive guard was a RECORDS field (`executedUnvalidated: 0`
+  // in runs/kit-r1r-fix1/rereg-window.json) but not a PREDICATE. It is one now: a
+  // call whose definition did not move must produce zero EXECUTED-UNVALIDATED alarms.
+  check('RW-AFTER-NO-CHANGE', 'positive control (P7): with nothing moving the signal wrapper is inert — the Body runs, no cancellation event is raised, no un-validated alarm is raised, verification stands',
+    still.v1 === 1 && still.v2 === 0 && still.changeAbortIssued === 0 && still.cancelledBeforeBody === 0 && still.executedUnvalidated === 0 && still.verifiedAfter === true
       && still.text.startsWith('ran:grep@V1'),
-    `v1=${String(still.v1)} v2=${String(still.v2)} text=${still.text.slice(0, 40)} issued=${String(still.changeAbortIssued)} verifiedAfter=${String(still.verifiedAfter)}`)
+    `v1=${String(still.v1)} v2=${String(still.v2)} text=${still.text.slice(0, 40)} issued=${String(still.changeAbortIssued)} unvalidated=${String(still.executedUnvalidated)} verifiedAfter=${String(still.verifiedAfter)}`)
   const cancel = results['guarded-after-abort-inside-body']
   check('RW-ABORT-INSIDE-BODY-IS-TERMINATION', '④ a cancellation that arrives while the Body is running is TERMINATION, not a cancellation: the Body ran (side effect real, its value still carried) and is never re-labelled as un-executed',
     cancel.v1 === 1 && cancel.code === 'ABORTED' && cancel.terminatedAfterBodyStart >= 1 && cancel.terminatedSideEffectPossible >= 1
@@ -579,9 +656,54 @@ async function main () {
     mcp.v1 === 0 && mcp.cancelledBeforeBody >= 1 && mcp.verifiedBeforeRebind === false && mcp.rebindOk === true && mcp.thirdCallV2 === 1 && mcp.verifiedAfter === true,
     `v1=${String(mcp.v1)} cancelled=${String(mcp.cancelledBeforeBody)} withdrawnThenRestored=${String(mcp.verifiedBeforeRebind)}->${String(mcp.verifiedAfter)} rebindOk=${String(mcp.rebindOk)} thirdCallV2=${String(mcp.thirdCallV2)} rebindErr=${String(mcp.rebindError)}`)
   const inert = results['guarded-after-change-inert']
-  check('RW-CHANGE-INERT-LOUD', '②⑦ a subscribed-but-silent channel is reported, not covered up: the moved Body does run (nothing can cancel it), and the call edge calls it EXECUTED UNVERIFIED with the channel still unproven',
-    inert.v2 === 1 && inert.executedUnvalidated >= 1 && inert.changeAbortIssued === 0 && inert.changeChannel === 'armed' && inert.verifiedAfter === false,
-    `v2=${String(inert.v2)} unvalidated=${String(inert.executedUnvalidated)} issued=${String(inert.changeAbortIssued)} channel=${String(inert.changeChannel)} verifiedAfter=${String(inert.verifiedAfter)}`)
+  // P2's full conjunct set per the G-g support contract §4.1: the moved Body runs
+  // (nothing could cancel it), the alarm says so with the channel still unproven,
+  // NOTHING was cancelled, and the verification is withdrawn at that call edge.
+  // (`v2AfterFirstCall`/`verifiedAtCallEdge` are the reads at that instant; the arm
+  // now runs the G-2 recovery probes afterwards, so the end-of-run fields moved on.)
+  check('RW-CHANGE-INERT-LOUD', '②⑦ a subscribed-but-silent channel is reported, not covered up: the moved Body does run (nothing can cancel it), and the call edge calls it EXECUTED UNVERIFIED with the channel still unproven, zero cancellation events, and the verification withdrawn at that edge',
+    inert.v2AfterFirstCall === 1 && inert.executedUnvalidated >= 1 && inert.changeAbortIssued === 0 && inert.cancelledBeforeBody === 0 && inert.changeChannel === 'armed' && inert.verifiedAtCallEdge === false,
+    `v2(first)=${String(inert.v2AfterFirstCall)} unvalidated=${String(inert.executedUnvalidated)} issued=${String(inert.changeAbortIssued)} cancelled=${String(inert.cancelledBeforeBody)} channel=${String(inert.changeChannel)} verifiedAtCallEdge=${String(inert.verifiedAtCallEdge)}`)
+  // G-1a (P1): the silent configuration's INDIFFERENTIABILITY at assembly time, named.
+  // install.ok && publish.ok && the pre-injection changeChannelStatus is 'armed' — the
+  // same externally observable shape the delivering arm shows at the same instant.
+  check('RW-INERT-ASSEMBLY-INDISTINGUISHABLE', 'P1/G-1a: the silent configuration is indistinguishable at assembly: install.ok, publish.ok, and the pre-injection changeChannelStatus read is "armed" — exactly the shape the delivering arm shows there',
+    inert.installOk === true && inert.publishedOk === true && inert.channelBeforeInjection === 'armed',
+    `installOk=${String(inert.installOk)} publishedOk=${String(inert.publishedOk)} channelBeforeInjection=${String(inert.channelBeforeInjection)}`)
+  // G-3 (P6, task-commissioned): "delivered ⇒ proven" is ASSERTED, not merely recorded.
+  // The body-zero arm injects one real registry change with the subscription live — the
+  // delivery flips the status to 'proven'; the reverse half (never-delivered arms stay
+  // 'armed' to the end of the run) is the paired conjunct, so both halves of P6 stand
+  // here and in the unit legs.
+  const swallowArm = results['guarded-after-change-swallow']
+  check('RW-CHANNEL-PROVEN-ON-FIRST-DELIVERY', 'P6/G-3: one real registry change delivered on a live subscription flips changeChannelStatus to "proven", while every never-delivered arm still reads "armed" at the end of its run',
+    zero.changeChannel === 'proven' && inert.changeChannel === 'armed' && swallowArm.changeChannel === 'armed',
+    `delivered=${String(zero.changeChannel)} inert=${String(inert.changeChannel)} swallow=${String(swallowArm.changeChannel)}`)
+  // G-2 (P4, the hard precondition for closure): the full recovery path inside the
+  // SAME silent arm — the drifted name's next call is REFUSED with no new Body, the
+  // documented explicit re-bind restores it, and the third call EXECUTES with the
+  // verification restored. Never extrapolatable from a delivered configuration.
+  check('RW-CHANGE-INERT-PINNED-UNTIL-REBIND', 'P4/G-2: inside the silent arm itself the drifted name stays pinned until an explicit re-bind — the next call is refused with no new Body (v2 count unmoved), bindOwnTools restores execution and verification',
+    inert.secondCallRefused === true && inert.secondCallV2 === inert.v2AfterFirstCall && inert.rebindOk === true
+      && inert.thirdCallExecuted === true && inert.verifiedAfter === true && inert.verifiedAtCallEdge === false,
+    `secondRefused=${String(inert.secondCallRefused)} secondV2=${String(inert.secondCallV2)} v2(first)=${String(inert.v2AfterFirstCall)} rebindOk=${String(inert.rebindOk)} thirdExec=${String(inert.thirdCallExecuted)} edge=${String(inert.verifiedAtCallEdge)} afterRebind=${String(inert.verifiedAfter)} rebindErr=${String(inert.rebindError)}`)
+  // G-4: the swallow injection — subscription accepted, never disposed, emission not
+  // forwarded — must produce the SAME loud evidence as the inert injection, plus the
+  // event-stream counts the contract pins: the call edge records the definition-drift
+  // downgrade, the Binding revision says verified=false, zero cancellation events, the
+  // alarm severity, and the control subscription proves the registry really emitted
+  // while this lane stayed 'armed'.
+  check('RW-CHANGE-SWALLOWED-LOUD', 'P1-P3/G-4: a live-but-swallowed subscription behaves exactly like the silent channel — the moved Body runs and is loudly reported EXECUTED UNVERIFIED; the call edge records definition-drift and a Binding revised to unverified; zero cancellation events; the channel stays "armed" while the registry demonstrably emits',
+    swallowArm.v2AfterFirstCall === 1 && swallowArm.executedUnvalidated >= 1 && swallowArm.executedUnvalidatedAlarms >= 1
+      && swallowArm.changeAbortIssued === 0 && swallowArm.cancelledBeforeBody === 0
+      && swallowArm.callEdgeDrift >= 1 && swallowArm.bindingRevisedUnverified >= 1
+      && swallowArm.changeChannel === 'armed' && swallowArm.verifiedAtCallEdge === false
+      && swallowArm.swallowControlEvents >= 1 && swallowArm.swallowProxyEmissions >= 1,
+    `v2(first)=${String(swallowArm.v2AfterFirstCall)} unvalidated=${String(swallowArm.executedUnvalidated)} alarms=${String(swallowArm.executedUnvalidatedAlarms)} issued=${String(swallowArm.changeAbortIssued)} cancelled=${String(swallowArm.cancelledBeforeBody)} callEdgeDrift=${String(swallowArm.callEdgeDrift)} bindingRevised=${String(swallowArm.bindingRevisedUnverified)} control=${String(swallowArm.swallowControlEvents)} proxy=${String(swallowArm.swallowProxyEmissions)} channel=${String(swallowArm.changeChannel)}`)
+  check('RW-CHANGE-SWALLOWED-PINNED-UNTIL-REBIND', 'G-4×G-2: the swallow arm measures the same full recovery path inside itself — next call refused with no new Body, explicit re-bind restores execution and verification — no extrapolation from any delivered configuration',
+    swallowArm.secondCallRefused === true && swallowArm.secondCallV2 === swallowArm.v2AfterFirstCall && swallowArm.rebindOk === true
+      && swallowArm.thirdCallExecuted === true && swallowArm.verifiedAfter === true,
+    `secondRefused=${String(swallowArm.secondCallRefused)} secondV2=${String(swallowArm.secondCallV2)} v2(first)=${String(swallowArm.v2AfterFirstCall)} rebindOk=${String(swallowArm.rebindOk)} thirdExec=${String(swallowArm.thirdCallExecuted)}`)
   const hooks = results['guarded-after-hooks']
   check('RW-HOOKS-RESULT-IDENTITY', 'the cancelled call still reaches both result edges under its own callId with the Host\'s own code (hooks, telemetry and the durable session log see a call, not a hole)',
     hooks.cancelledBeforeBody >= 1 && hooks.edges.post.length >= 1 && hooks.edges.result.length >= 1
