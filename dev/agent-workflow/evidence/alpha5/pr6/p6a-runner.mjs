@@ -110,6 +110,7 @@ const policyCalls = []  // what the production channel handed resolveSandboxPoli
 const runRecords = []   // what the TEAM wrapper PtcRuntime saw per outer run
 const rootSeen = []     // root 'tools/execute' listener arrivals (dispatch truth map)
 const scopedASeen = []  // member-A-scope 'tools/execute' listener arrivals
+const lastProgramValues = [] // program-observed completion values (engine settle point, disclosed)
 const sessionEvents = { 'member-A': [], 'member-B': [], 'member-C': [] }
 
 // ---------- TEST DOUBLE sandboxPolicy (mirrors real resolve() session handling) ----------
@@ -127,8 +128,8 @@ class StubSandboxPolicy extends Service {
   }
 }
 
-// ---------- in-process real-role PTC runtime double ----------
-class InProcessPtcRuntime extends PtcRuntime {
+// ---------- in-process real-role PTC engine (plain object: NOT a second Service) ----------
+class InProcessPtcEngine {
   language = 'typescript'
   isolation = 'p6a-in-process-test-double'
   sandboxMode = 'workspace-write' // forces the production resolveSandboxPolicy(exec) path
@@ -142,6 +143,7 @@ class InProcessPtcRuntime extends PtcRuntime {
     try {
       const fn = new Function('tools', `"use strict"; return (async () => { ${spec.program} })();`)
       const value = await fn(tools)
+      lastProgramValues.push(value) // captured at the double's settle point: the caller-cancel path replaces the OUTER result, so the program-observed forms are read here (disclosed channel)
       return { logs, value }
     } catch (error) {
       return { logs, error: { kind: spec.signal?.aborted ? 'abort' : 'exception', message: String(error?.message ?? error) } }
@@ -154,7 +156,7 @@ class InProcessPtcRuntime extends PtcRuntime {
 const als = new AsyncLocalStorage()
 class TeamWrapperPtcRuntime extends PtcRuntime {
   inner
-  constructor(ctx) { super(ctx, 'ptcRuntime'); this.inner = new InProcessPtcRuntime(ctx) }
+  constructor(ctx) { super(ctx, 'ptcRuntime'); this.inner = new InProcessPtcEngine() }
   get language() { return this.inner.language }
   get isolation() { return 'p6a-team-wrapper(inner=' + this.inner.isolation + ')' }
   get sandboxMode() { return this.inner.sandboxMode }
@@ -170,18 +172,23 @@ class TeamWrapperPtcRuntime extends PtcRuntime {
       binding_als: [],
     }
     runRecords.push(record)
-    // wrap the binding closures: the per-run driver lane (binding()/drive() live in the
-    // execute() closure, ptc.ts:415-686) must still carry THIS run's ALS store.
-    for (const ns of spec.bindings) {
+    // wrap the binding closures WITHOUT mutating the frozen spec (the bridge freezes
+    // them; a Team wrapper rebuilds the namespace objects — the public seam allows the
+    // runtime to transform its own spec before execution). The per-run driver lane
+    // (binding()/drive() live in the execute() closure, ptc.ts:415-686) must still
+    // carry THIS run's ALS store.
+    const wrappedBindings = spec.bindings.map(ns => {
+      const fns = {}
       for (const [name, fn] of Object.entries(ns.functions)) {
-        ns.functions[name] = async (args) => {
+        fns[name] = async (args) => {
           const id2 = als.getStore()
           record.binding_als.push({ name, als: id2 === undefined ? null : { member: id2.member, callId: id2.callId } })
           return fn(args)
         }
       }
-    }
-    return this.inner.run(spec)
+      return { ...ns, functions: fns }
+    })
+    return this.inner.run({ ...spec, bindings: wrappedBindings })
   }
 }
 
@@ -214,7 +221,7 @@ try {
   await ctx.plugin({
     inject: ['tools'],
     apply: (inner) => {
-      for (const m of [A, B, C]) scopes[m.id] = createScope(inner, m)
+      for (const m of [A, B, C]) scopes[m.id] = createScope(inner, m).ctx
       // scope-filtered listener candidate: registered on member A's SCOPE context
       scopes['member-A'].on('tools/execute', (exec, next) => {
         scopedASeen.push({ member: exec.agent?.id ?? null, callId: String(exec.callId), name: exec.name })
@@ -291,6 +298,7 @@ const rc = (code) => ({ code, description: 'p6a' })
   leg('P6A-1.standing-policy-per-member', ok ? 'SUPPORT(session-grained)' : 'FAIL', {
     per_call_resolver_handoff: 'ptc.ts:391 options.resolveSandboxPolicy(exec) -> index.ts:948-952 policy.resolve({ session: exec.agent.session }) — production channel observed per call',
     received: policyCalls.map(p => p.received),
+    runs: [a, b, c].map(r => r.threw ?? String(r.text).slice(0, 200)),
     spec_sessionIds: runs3.map(r => r.spec_sessionId),
     spec_workspaceRoots: runs3.map(r => r.spec_workspaceRoot),
     granularity_note: 'below session granularity (per-call OperationGrant, per-member-instance ≠ per-session) this channel cannot express anything — see P6A-3',
@@ -430,7 +438,7 @@ const rc = (code) => ({ code, description: 'p6a' })
   const bSettled = await pB
   gateHold = false
   const enters = bodyObs.filter(o => o.phase === 'enter').length
-  const v = aSettled.value ?? {}
+  const v = lastProgramValues.at(-1) ?? {}
   const startedForm = String(v.first ?? '').includes('ERR:')
   const notStartedForm = String(v.second ?? '').includes('run_code run is over') && String(v.second ?? '').includes('not dispatched')
   const ok = startedForm && notStartedForm && enters === 1 && bSettled.isError !== true
