@@ -34,6 +34,9 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   during this implementation round — this branch remains content-stacked on that exact tree; retargeting
   is the coordinator's call, this PR's base stays `alpha5-pr1-onto-master` as instructed.
 - head = `4f2dfd0823673e6463d194e4d7ecbf8d8b2b4785` (commits `81c060f7` lane+tests, `4f2dfd08` p4t6 tie).
+  F-6 口径 note: this is the **code head** as of this manifest's first capture — the branch head legitimately
+  moves with evidence/docs/review-fix commits (router-log + evidence `7ab7599d`, PR1r freeze-hold `7a2998bb`,
+  review round 1 below); the authoritative current head is `gh pr view 256`'s `headRefOid`, not this line.
 - `git diff --stat 45425a30..HEAD` → 45 files, +4634 / −16 (lane 6 sources + README, 8 test artifacts,
   2 tsconfigs, audit script, layer-audit + hygiene + p4t6 pins, rebuilt `packages/runtime/dist` for the lane).
 - CORE patch budget consumed: **0** (no upstream file touched; public seams only).
@@ -47,6 +50,17 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
   MEASURED) → tie added → 10/10 green.
 - Full suites: `runs/base-suite.log` (base 45425a30, EXIT=1: 22 known failures / 6651 passed),
   `runs/after-suite.log` (head: 21 failed / **6725 passed**, 528 files), JSON censuses beside them.
+- Review round 1 (coordinator relay, F-1/F-2): F-1 foreign-member ApprovalCase presentation — RED
+  `runs/red-F1-foreign-member.log` (2 failed: A's presentation issued for B, and a forged caseId, both minted
+  before the fix) → kernel recomputes the case identity from the request's own member/fingerprint at the
+  claimed generation → 23/23 GREEN. F-2 envelope-coverage isolation: a one-shot ~1080-input probe (script
+  deliberately not kept in the repo) showed the DECIDED-not-allow coverage arm unreachable while one
+  `documents` input feeds both half-legs (positional binding ⇒ rung leg implies coverage); the honest
+  isolation point is subtree containment — new test pins refusal on the envelope arm with the rung arms
+  explicitly excluded, and the SAME presentation legalizing once the containment seam answers.
+- Fail-set table primary source: `runs/fail-set-diff.txt` (terminal, post-tie). The pre-tie `fail-set-diff.json`
+  draft (it still carried NEW=1 from before the p4t6 tie landed) was removed to keep one master — the .txt
+  is authoritative, any future .json is a derived convenience copy.
 - CI: NOT_RUN (stacked). Session discipline (coordination 08:2xZ): the census-runtime is not
   terminal, so NO claim of "all CI green" is made anywhere in this PR or its evidence —
   every number above is a local run.

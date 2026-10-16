@@ -1,0 +1,82 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr2
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts (23 tests | 2 failed) 20ms
+     ✓ carries a single-use grant that re-parses, and registers exactly once 4ms
+     ✓ carries the WHOLE effect set and the case identity; mints nothing 1ms
+     ✓ two calls asking the same legal question share the case identity; the plan names the highest rung 1ms
+     ✓ a policy DENY on one effect is a whole-set typed denial, unapprovable (no case opens) 1ms
+     ✓ the model cannot route around the ladder: a Human Admin ask is refused, not minted 0ms
+     ✓ a cross-Realm effect inside the set is a forged scope 2ms
+     ✓ a DRAINING binding admits nothing (ADAPTER_DRAINING, PR1 state machine stands) 0ms
+     ✓ a stale binding generation is a refusal (re-assembly, not admission) 0ms
+     ✓ an enforced CLAIM with no probe observation never reaches mint (probe answers first) 0ms
+     ✓ a probe-MATCHED enforced record admits, and the ORDER is probe-then-mint 1ms
+     ✓ happy ride: requires-approval → leader leg → issue → consume ONCE 1ms
+     ✓ the leader leg does NOT cover an effect the hard envelope raised (per-effect, whole-set refusal) 1ms
+     ✓ a deny that arrives while the Ask is open kills the issue (stale is a refusal, not a retry) 0ms
+     ✓ a moved authority generation between approval and execution is APPROVAL_STALE (resume with an old token) 0ms
+     ✓ a stale BINDING generation at issue time is refused even with a fresh approval 0ms
+     ✓ an approval carrying a DIFFERENT effect-set fingerprint never issues this call 0ms
+     × a presentation made for ANOTHER member never issues here — the case identity binds the member (F-1) 3ms
+     × a case identity forged around the fingerprint is refused on the same leg, before any mint 1ms
+     ✓ cross-Member Grant theft: the leader-leg grant spent by ANOTHER member refuses 0ms
+     ✓ before the edge: refused with the grant UNspent 0ms
+     ✓ during: request ≠ terminated; settlement decides; the spent grant stays spent 1ms
+     ✓ after: a terminated lease never reopens; a spent grant never re-consumes 0ms
+     ✓ a broken expiry policy fails the mint CLOSED (never an expiry at zero or ∞) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > the approval → issue → consume ride (and everything that poisons it) > a presentation made for ANOTHER member never issues here — the case identity binds the member (F-1)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:286:23
+    284|     const { kernel } = makeHarness()
+    285|     const issued = await kernel.issueApprovedGrant(victim, presentatio…
+    286|     expect(issued.ok).toBe(false)
+       |                       ^
+    287|     if (!issued.ok) {
+    288|       expect(issued.error.code).toBe('APPROVAL_STALE')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a5p2-admission-kernel.test.ts > the approval → issue → consume ride (and everything that poisons it) > a case identity forged around the fingerprint is refused on the same leg, before any mint
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ packages/runtime/test/a5p2-admission-kernel.test.ts:299:23
+    297|     const { kernel, ports } = makeHarness()
+    298|     const issued = await kernel.issueApprovedGrant(request, forged)
+    299|     expect(issued.ok).toBe(false)
+       |                       ^
+    300|     if (!issued.ok) expect(issued.error.details?.refusal).toBe('approv…
+    301|     expect(ports.registrations).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 21 passed (23)
+   Start at  08:31:09
+   Duration  296ms (transform 152ms, setup 0ms, import 190ms, tests 20ms, environment 0ms)
+
+      Tests  2 failed | 21 passed (23)
+   Start at  08:31:16
+   Duration  312ms (transform 161ms, setup 0ms, import 205ms, tests 21ms, environment 0ms)
+
+      Tests  23 passed (23)
+   Start at  08:31:32
+   Duration  338ms (transform 177ms, setup 0ms, import 227ms, tests 17ms, environment 0ms)
+

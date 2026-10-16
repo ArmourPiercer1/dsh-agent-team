@@ -50,7 +50,7 @@ import { canonicalJsonFingerprint, } from '../../domain/tool-governance/src/inde
 import { openExecutionLease, requestLeaseCancellation, settleLeaseTermination, } from '../../domain/tool-governance/src/index.js';
 import { requireFiniteClock } from './clock.js';
 import { verifyAssuranceForHardProfile } from './assurance-runtime.js';
-import { evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval, } from './approval-case.js';
+import { evaluateEffectSetExpansion, planEffectSetApproval, toolAskApprovalCaseId, verifyEffectSetApproval, } from './approval-case.js';
 import { mintOperationGrant } from './grant-mint.js';
 /** The deterministic grantId: the same call identity mints the same id, so a
  *  double mint registers against the SAME id (refused) — no replay surface. */
@@ -260,6 +260,31 @@ export function createAdmissionKernel(options) {
         const assurance = assuranceGate(request);
         if (!assurance.ok)
             return { ok: false, error: assurance.error };
+        // F-1 (PR2 review round 1): the ApprovalCase identity binds the MEMBER —
+        // recompute the case THIS request opens from the request's own member and
+        // effect set, at the generation the presentation claims, and compare with
+        // the presented id. A case computed for another member (or another set)
+        // is a foreign object: typed refusal, before any legality algebra runs.
+        // (The fingerprint/generation legs inside verify stay for the
+        // presentation's OWN claim-set; this leg closes the member leg, which
+        // verify could not see — the case identity is minted per member.)
+        const expectedCaseId = toolAskApprovalCaseId({
+            teamSessionId: request.member.teamSessionId,
+            instanceId: request.member.instanceId,
+            effectSetFingerprint: request.requestedEffects.fingerprint,
+            authorityGeneration: approval.authorityGenerationAtCreation,
+        });
+        if (approval.approvalCaseId !== expectedCaseId) {
+            observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: 'foreign case identity' });
+            return {
+                ok: false,
+                error: {
+                    code: 'APPROVAL_STALE',
+                    message: `admission refused: the presented case ${approval.approvalCaseId} is not the case THIS request opens (${expectedCaseId}) — an ApprovalCase binds its member and its effect set`,
+                    details: { refusal: 'approval-case-identity-mismatch', presented: approval.approvalCaseId, expected: expectedCaseId },
+                },
+            };
+        }
         const verified = verifyEffectSetApproval({
             effects: request.requestedEffects,
             realmId: request.realmId,

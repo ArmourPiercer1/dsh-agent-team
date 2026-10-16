@@ -14,6 +14,7 @@ import {
   planEffectSetApproval,
   toolAskApprovalCaseId,
   verifyEffectSetApproval,
+  type PresentedApproval,
 } from '../tool-admission/approval-case.js'
 import { effects, MEMBER, policyDoc, readEffect, scopeResource, writeEffect, REALM } from './a5p2-fixtures.js'
 import { emptyHardDocs, hardRulesDocs, mutationRulesDocs } from './a5p2-kernel-harness.js'
@@ -281,5 +282,52 @@ describe('execution-boundary legality: per effect, all-or-nothing', () => {
     })
     expect(r.ok).toBe(false)
     if (!r.ok) expect(r.error.code).toBe('APPROVAL_STALE')
+  })
+})
+
+describe('the A3-2 coverage half-leg IN ISOLATION from the rung half-leg (review F-2)', () => {
+  // A one-shot probe of the whole input space (beneficiary x reviewer x
+  // claimed creation rung x 10 document families x seam on/off, ~1080
+  // inputs, script not kept in the repo) showed the DECIDED-not-allow
+  // coverage arm is UNREACHABLE while one `documents` input feeds both
+  // half-legs: positional binding means a higher rung is bound by FEWER
+  // documents, so passing the rung leg already implies the reviewer's
+  // ceiling reaches. That implication is defense-in-depth, and the honest
+  // isolation point is where coverage is genuinely undecided: subtree
+  // containment. SAME approval, SAME documents — only the containment seam
+  // differs. The refusal rides the envelope half-leg; the rung half-leg is
+  // then either irrelevant (never evaluated) or, on the seam-true leg,
+  // demonstrably passed (verify returns ok only if BOTH half-legs passed).
+  it('an unanswerable containment at execution refuses on the envelope leg; the seam alone legalizes the same presentation', () => {
+    const set = effects(A)
+    const docs = {
+      teamHardEnvelope: { rules: [{ operationClass: 'read', matcher: { kind: 'subtree' as const, resource: 'realm-a|data' }, maximumEffect: 'allow' as const }] },
+      permissionMutationEnvelope: { status: 'absent' as const },
+    }
+    const approval: PresentedApproval = {
+      approvalCaseId: toolAskApprovalCaseId({ ...MEMBER, effectSetFingerprint: set.fingerprint, authorityGeneration: 1 }),
+      reviewerAuthority: 'leader',
+      beneficiaryAuthority: 'member',
+      requiredAuthorityAtCreation: 'leader',
+      effectSetFingerprint: set.fingerprint,
+      authorityGenerationAtCreation: 1,
+    }
+    const blind = verifyEffectSetApproval({ effects: set, realmId: REALM, approval, currentAuthorityGeneration: 1, documents: docs })
+    expect(blind.ok).toBe(false)
+    if (!blind.ok) {
+      const detail = String(blind.error.details?.detail ?? '')
+      expect(detail).toContain('undetermined at execution') // the envelope-coverage arm
+      expect(detail).not.toContain('may not review') // NOT the rung arm…
+      expect(detail).not.toContain('required rung rose') // …and NOT the escalation arm
+    }
+    const seen = verifyEffectSetApproval({
+      effects: set,
+      realmId: REALM,
+      approval,
+      currentAuthorityGeneration: 1,
+      documents: docs,
+      subtreeContains: (root, child) => child.startsWith(root),
+    })
+    expect(seen.ok).toBe(true) // rung unchanged, documents unchanged: containment answered ⇒ both half-legs pass
   })
 })
