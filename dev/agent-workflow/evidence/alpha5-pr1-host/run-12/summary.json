@@ -1,0 +1,93 @@
+{
+  "runStamp": "2026-10-16T06-38-52",
+  "hostBaseline": {
+    "version": "0.2.0-rc.2",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "port": 3185,
+  "world": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-38-52 (removed at teardown)",
+  "criteria": [
+    {
+      "id": "C1a",
+      "name": "host booted on the recorded port with the production Team row mounted and the token gate live",
+      "ok": true,
+      "detail": "port=3185 healthOk=true toolCount=15 teamSession=true noToken=401"
+    },
+    {
+      "id": "C1b",
+      "name": "team.create (remote HTTP) starts the governed team session",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5p1-d5nbrhxo9k\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5p1-team-2026-10-16T06-38-52\",\"blueprint\":{\"blueprintId\":\"team.a5p1.main\",\"revision\":\"1\",\"contentHash\":\"sha256:a53d6e7421"
+    },
+    {
+      "id": "C1c",
+      "name": "the leader created one governed member and one legacy member and delegated to both (plus the C5 re-drive)",
+      "ok": true,
+      "detail": "created=2 delegated=3 executed=2 rejected=0 firstRejection="
+    },
+    {
+      "id": "C2a",
+      "name": "the post-publish registration is REFUSED on the governed lane with the typed closed-world text",
+      "ok": false,
+      "detail": "registered=false governedLaneSaw=[\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-38-52/workspa\",\"Error: unknown tool \\\"a5p1_setup_probe\\\"\",\"Error: unknown tool \\\"a5p1_dyn_probe\\\"\"]"
+    },
+    {
+      "id": "C2b",
+      "name": "the undeclared probe BODY never ran on the governed lane (the dynRan FLIP: PoC recorded true)",
+      "ok": true,
+      "detail": "dynMarkers=[] all=[]"
+    },
+    {
+      "id": "C3",
+      "name": "a governed allowed call still runs (the Guard closes a world, it does not shut the Agent down)",
+      "ok": false,
+      "detail": "read=<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10 setup=Error: unknown tool \"a5p1_setup_probe\""
+    },
+    {
+      "id": "C4",
+      "name": "the SAME registration still runs on the permissions-less legacy lane (zero interference)",
+      "ok": false,
+      "detail": "ctlLaneSaw=[\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-38-52/workspa\",\"Error: unknown tool \\\"a5p1_setup_probe\\\"\",\"Error: unknown tool \\\"a5p1_dyn_probe\\\"\"] dynMarkers=[]"
+    },
+    {
+      "id": "C4b",
+      "name": "no Guard ever spoke for the permissions-less lane",
+      "ok": true,
+      "detail": "unexpected=[]"
+    },
+    {
+      "id": "C5",
+      "name": "the re-driven governed member still refuses the unbound name and still serves the governed one",
+      "ok": false,
+      "detail": "seen=true results=[\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-38-\",\"Error: unknown tool \\\"a5p1_setup_probe\\\"\",\"Error: unknown tool \\\"a5p1_dyn_probe\\\"\"]"
+    },
+    {
+      "id": "C1d",
+      "name": "the production assembly armed and published the closed world per permissions-carrying Agent (leader + governed member)",
+      "ok": true,
+      "detail": "publishes=4 refused=0"
+    },
+    {
+      "id": "C6",
+      "name": "the ordered teardown reached its end state at row close (nothing in flight ⇒ no STOPPED line)",
+      "ok": true,
+      "detail": "stopped=[]"
+    },
+    {
+      "id": "C7a",
+      "name": "the stable development instance (:3080) reads the same before/after and was never operated",
+      "ok": true,
+      "detail": "before=401 after=401"
+    },
+    {
+      "id": "C7b",
+      "name": "the pinned test-use tree is still porcelain-clean (no Team write ever touched it)",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "orderLeg": {
+    "skipped": true
+  }
+}

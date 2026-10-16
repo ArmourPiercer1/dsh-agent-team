@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5p1.anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5p1 assembly team. A5P1_DISC_2026-10-16T07-35-26 is the discovery marker."
+members:
+  - templateId: strict
+    persona: "You are a worker of the a5p1 assembly team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

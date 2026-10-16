@@ -169,8 +169,22 @@ function makeAllowSpy() {
 }
 
 // ── assertion helpers ───────────────────────────────────────────────────────
+/**
+ * A5-PR1 registers a SECOND `tools/pre-execute` listener on a permissions Agent:
+ * the closed-world Guard's outer door (`a5p1GuardPreExecuteGate`), which is
+ * installed OUTSIDE the alpha.2 adapter by design. This file's claim is about
+ * the permission adapter — exactly one per Agent, never two — so the Guard is
+ * classified out BY LISTENER IDENTITY (the same rule `a6a-production-wiring`
+ * uses), not by loosening the count. A blind count here would fail for a reason
+ * that has nothing to do with what this file pins; and the Guard's own presence
+ * is asserted where it is owned (a5p1-guard-install, a6a), never traded away here.
+ */
+const GUARD_LISTENER_NAMES: readonly string[] = ['a5p1GuardPreExecuteGate', 'a5p1GuardDispatchGate', 'a5p1GuardResultEdge']
+function isGuardListener(fn: unknown): boolean {
+  return typeof fn === 'function' && GUARD_LISTENER_NAMES.includes((fn as { name?: string }).name ?? '')
+}
 function activePreExecute(ctx: AgentCtxDouble): number {
-  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && l.active).length
+  return ctx.listeners.filter((l) => l.event === 'tools/pre-execute' && l.active && !isGuardListener(l.listener)).length
 }
 /** The allow decision the driven `next` continuation returns. */
 const NEXT_ALLOW = { kind: 'allow' } as const
@@ -186,9 +200,11 @@ async function drivePreExecute(
   name: string,
   args: unknown,
 ): Promise<{ decision: { kind: string; reason?: string }; nextCalls: number }> {
-  const entry = ctx.listeners.find((l) => l.event === 'tools/pre-execute' && l.active)
+  // The PERMISSION adapter's leg — see `isGuardListener` above. Driving the
+  // Guard's outer door instead would answer for a different layer.
+  const entry = ctx.listeners.find((l) => l.event === 'tools/pre-execute' && l.active && !isGuardListener(l.listener))
   if (entry === undefined) {
-    throw new Error('drivePreExecute: no active tools/pre-execute listener on the ctx')
+    throw new Error('drivePreExecute: no active alpha.2 tools/pre-execute listener on the ctx')
   }
   let nextCalls = 0
   const decision = (await entry.listener(

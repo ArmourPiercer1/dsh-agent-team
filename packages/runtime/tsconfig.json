@@ -6,6 +6,11 @@
   },
   "include": [
     "src",
+    // A5-PR1: the tool-dispatch lane (closed-world Guard + Scoped Dispatcher).
+    // Same rationale as `domain`'s `tool-governance/src` entry: the live glue
+    // that consumes it is plain .mjs, so without this entry the lane would be
+    // typechecked by nothing at all.
+    "tool-dispatch",
     "test",
     "vitest.config.ts"
   ]

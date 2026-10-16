@@ -1,0 +1,21 @@
+{
+  "note": "DISCLOSED OBSERVATION, not a criterion. The setup probe is contributed by the mounted preset at row apply, i.e. before any Agent publishes, so the closed world binds it as an inherited name and it runs on BOTH lanes (declared PR1 behaviour, not a gap): the claim about post-publish names is C2. observerLiveness records what the row scope actually receives, which is why no criterion depends on it.",
+  "markers": [],
+  "registerRows": [],
+  "observerLiveness": [
+    {
+      "at": "2026-10-16T06:39:56.231Z",
+      "leg": "listen",
+      "event": "agent/created",
+      "scope": "row-scope",
+      "ok": true
+    },
+    {
+      "at": "2026-10-16T06:39:56.231Z",
+      "leg": "listen",
+      "event": "tools/pre-execute",
+      "scope": "row-scope",
+      "ok": true
+    }
+  ]
+}

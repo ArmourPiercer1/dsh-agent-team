@@ -1,0 +1,83 @@
+[
+  {
+    "at": "2026-10-16T06:34:05.498Z",
+    "leg": "plugin-apply",
+    "pid": 24,
+    "hasOn": true,
+    "hasEffect": true
+  },
+  {
+    "at": "2026-10-16T06:34:07.453Z",
+    "leg": "ctx-agent-created",
+    "keys": [
+      "agent",
+      "source",
+      "signal"
+    ],
+    "agent": "session-team-child-ba1842dd5592d5f18add88fdb453a326"
+  },
+  {
+    "at": "2026-10-16T06:34:07.499Z",
+    "leg": "ctx-agent-created",
+    "keys": [
+      "agent",
+      "source",
+      "signal"
+    ],
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.655Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "read",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.678Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_dyn_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.689Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_early_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.879Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "read",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.891Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_dyn_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:07.902Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_early_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:08.088Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "read",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:08.101Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_dyn_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  },
+  {
+    "at": "2026-10-16T06:34:08.110Z",
+    "leg": "ctx-pre-execute-seen",
+    "name": "a5p1_early_probe",
+    "agent": "session-team-child-448f52b76d91932cd101d62acd084e43"
+  }
+]

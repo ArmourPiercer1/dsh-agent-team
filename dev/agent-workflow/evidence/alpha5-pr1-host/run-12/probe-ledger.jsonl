@@ -1,0 +1,6 @@
+{"at":"2026-10-16T06:38:52.811Z","leg":"plugin-apply","pid":34,"hasOn":true,"hasEffect":true}
+{"at":"2026-10-16T06:38:52.811Z","leg":"register","kind":"setup","trigger":"apply","ok":false,"error":"cannot get property \"tools\" without inject"}
+{"at":"2026-10-16T06:38:52.811Z","leg":"listen","event":"agent/created","ok":true}
+{"at":"2026-10-16T06:38:52.812Z","leg":"listen","event":"tools/pre-execute","ok":true}
+{"at":"2026-10-16T06:38:52.812Z","leg":"listen","event":"tools/post-execute","ok":true}
+{"at":"2026-10-16T06:38:52.812Z","leg":"apply-done"}

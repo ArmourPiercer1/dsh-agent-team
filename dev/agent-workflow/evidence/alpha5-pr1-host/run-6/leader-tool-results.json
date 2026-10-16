@@ -1,0 +1,8 @@
+{
+  "issuedToolCalls": [
+    "team_create_member",
+    "team_create_member",
+    "team_delegate"
+  ],
+  "teamActionResults": []
+}

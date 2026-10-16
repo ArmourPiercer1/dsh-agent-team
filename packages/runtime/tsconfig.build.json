@@ -27,6 +27,7 @@
     "projection",
     "requirements",
     "root-binding",
+    "tool-dispatch",
     "work-completion-notification",
     "policy-adapter.ts"
   ]
