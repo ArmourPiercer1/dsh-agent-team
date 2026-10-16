@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a5p1-qdskag1pjj",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  }
+}

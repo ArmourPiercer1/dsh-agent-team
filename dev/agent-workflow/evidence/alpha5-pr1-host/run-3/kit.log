@@ -1,0 +1,8 @@
+[2026-10-16T05:58:01.472Z] a5p1 kit 2026-10-16T05-58-01: host 0.2.0-rc.2 @ 639ed01539; port 3185; world /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T05-58-01
+[2026-10-16T05:58:03.770Z] PASS C1a: host booted on the recorded port with the production Team row mounted and the token gate live — port=3185 healthOk=true toolCount=15 teamSession=true noToken=401
+[2026-10-16T05:58:04.485Z] PASS C1b: team.create (remote HTTP) starts the governed team session — status=200 body={"type":"server-response","rpcId":"a5p1-fhom3cuzrr","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5p1-team-2026-10-16T05-58-01","blueprint":{"blueprintId":"team.a5p1.main","revision":"1","contentHash":"sha256:13329b3698
+[2026-10-16T06:01:04.794Z] mock wait timed out (<=180s): leader chain (requests=5)
+[2026-10-16T06:01:04.795Z] FAIL C1c: the leader created one governed member and one legacy member and delegated to both — results=0 seen=timeout
+[2026-10-16T06:04:05.120Z] mock wait timed out (<=180s): strict member script (requests=5)
+[2026-10-16T06:07:05.423Z] mock wait timed out (<=180s): ctl member script (requests=5)
+[2026-10-16T06:07:05.424Z] FATAL member scripts did not finish (strict=false ctl=false); see mock-tail.json

@@ -1,0 +1,70 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-a5p1-root-2026-10-16T06-41-57",
+  "teamSession": {
+    "rootSessionId": "session-a5p1-root-2026-10-16T06-41-57",
+    "blueprintId": "team.a5p1.anchor",
+    "revision": "1",
+    "contentHash": "sha256:d438d2f5673b0822d982c7cf92755accb737a5c2f55128c972096f7da97d086f",
+    "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pr1/tests/homes/a5p1-2026-10-16T06-41-57/workspace",
+    "createdAt": "2026-10-16T06:41:58.442Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-a5p1-root-2026-10-16T06-41-57": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "a5p1-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "a5p1-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": []
+}
