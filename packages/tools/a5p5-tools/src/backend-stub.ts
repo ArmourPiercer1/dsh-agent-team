@@ -16,7 +16,6 @@
  */
 
 import type { BackendCall, BackendResult, BackendRunIo, BackendStage, ScenarioTable, ToolEffectBackend } from './backend-contract.js'
-import { UNREADABLE_SETTLEMENT } from './backend-contract.js'
 
 export function createContractStubBackend(table: ScenarioTable): ToolEffectBackend {
   let executed = 0

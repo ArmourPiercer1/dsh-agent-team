@@ -217,7 +217,6 @@ export function openSpillStore(deps: { worldRoot: string; rootDir: string; fs: S
   if (!strictDescendant) {
     return refuse('spill-root-outside-world', 'the spill root must be a STRICT descendant of the world root — the controlled path lives inside the World')
   }
-  const rootDir = root.join('/')
   const rootFull = `/${root.join('/')}`
   const registry = new Map<string, SpillAttribution>()
 

@@ -127,7 +127,7 @@ function parseTarget(record: Record<string, unknown>, key: string, path: string,
   if (raw.trim().length === 0) return reject('a target locator must not be blank')
   if (raw.includes('://')) return reject('a filesystem locator never wears a URI scheme')
   if (raw.split(/[\\/]/).includes('..')) return reject('relative `..` segments are refused')
-  if (raw.startsWith('\\')) return reject('UNC/leading-`\` targets are refused (use an explicit absolute-path grant)')
+  if (raw.startsWith('\\')) return reject('UNC/leading-` targets are refused (use an explicit absolute-path grant)')
   if (raw.startsWith('~/')) return Object.freeze({ placement: 'realm-home', locator: raw })
   if (raw.startsWith('/') || /^[A-Za-z]:[\\/]/.test(raw)) return Object.freeze({ placement: 'absolute-path', locator: raw })
   return Object.freeze({ placement: 'workspace', locator: raw })
