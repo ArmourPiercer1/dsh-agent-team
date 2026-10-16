@@ -1,0 +1,51 @@
+{
+  "mode": "s1s2",
+  "assemblies": {
+    "session-71ad3c8f-6f05-4902-81b7-4f3a8425b416": {
+      "assembly": {
+        "unbound": {
+          "ok": false,
+          "refusal": {
+            "code": "TOOL_BINDING_UNVERIFIED",
+            "cfClass": "denied",
+            "cfReason": "effect-outside-grant",
+            "message": "exec-time admission recheck refused (admission-unbound)"
+          },
+          "laneLedgerStage": "refused:denied:effect-outside-grant",
+          "readRawWouldSucceed": true
+        },
+        "bound": {
+          "stage": "flow-complete",
+          "admittedGrantId": "grant:4b1e9545302b7b3af27a5d4bc7f3583e",
+          "firstOk": true,
+          "firstTextMatches": true,
+          "firstTextSha": "sha256:a1f0599bf51b1d9645a1802c763a60d7e1ed5a5e2640190c66cbd4db60af0579",
+          "secondOk": false,
+          "secondRefusal": {
+            "code": "TOOL_BINDING_UNVERIFIED",
+            "cfClass": "denied",
+            "cfReason": "effect-outside-grant"
+          },
+          "portCallCount": 2,
+          "portPresentedFingerprint": "sha256:ebf2b1a1dc117121c0c87ea622146fa89b5320d76d9988987c554a90183b054f",
+          "presentedFingerprintIsBound": true,
+          "ledgerConsumedCount": 1
+        }
+      },
+      "guard": null,
+      "toolResults": [
+        {
+          "kind": "e2e-unbound",
+          "ok": false,
+          "cfReason": "effect-outside-grant",
+          "code": "TOOL_BINDING_UNVERIFIED"
+        },
+        {
+          "kind": "e2e-bound",
+          "ok": true,
+          "stage": "flow-complete"
+        }
+      ]
+    }
+  }
+}
