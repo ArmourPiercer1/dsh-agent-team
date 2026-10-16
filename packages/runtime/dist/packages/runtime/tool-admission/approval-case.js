@@ -47,7 +47,7 @@
 import { AUTHORITY_EFFECT_PRECEDENCE, } from '../../domain/authority-envelope/src/index.js';
 import { evaluateToolPolicyExpansionAuthority, } from '../../domain/tool-governance/src/index.js';
 import { AuthorityBindingError, AUTHORITY_CEILING_ERROR_CODES, authorityRank, grantCeiling, mayReview, } from '../governance/authority-ceiling.js';
-import { evaluateAuthorityCeiling } from '../governance/runtime-authority.js';
+import { evaluateAuthorityCeiling, rungAbove } from '../governance/runtime-authority.js';
 /** The effect each arm asks approval FOR: executing it ⇒ 'allow'. */
 const DESIRED_EFFECT = 'allow';
 /**
@@ -68,6 +68,16 @@ function policyScope(effect, realmId) {
 }
 function ceilingReaches(ceiling, desired) {
     return ceiling.status === 'decided' && AUTHORITY_EFFECT_PRECEDENCE[ceiling.effect] >= AUTHORITY_EFFECT_PRECEDENCE[desired];
+}
+/** Does a projection entry's matcher cover the denied effect's scope? Subtree
+ *  coverage needs the seam; without it, coverage — like ownership — is
+ *  unanswerable, which fails closed to unattributed. */
+function sourceCovers(entry, matcher, subtreeContains) {
+    if (entry.matcher.kind === 'exact' && matcher.kind === 'exact')
+        return entry.matcher.resource === matcher.resource;
+    if (entry.matcher.kind === 'subtree' && subtreeContains !== undefined)
+        return subtreeContains(entry.matcher.resource, matcher.resource);
+    return false;
 }
 /**
  * The EXPANSION-plane pass over the whole set: does the policy authorize the
@@ -123,6 +133,8 @@ export function toolAskApprovalCaseId(input) {
  */
 export function planEffectSetApproval(input) {
     const perEffectRequired = [];
+    const deniedCarried = [];
+    const denyOwnerFloor = {};
     let required;
     for (const index of input.needApproval) {
         const effect = input.effects.effects[index];
@@ -139,6 +151,42 @@ export function planEffectSetApproval(input) {
                 },
             }
             : { ok: false, unapprovable: { effectIndex: index, plane: 'approval', detail } };
+        // ---- R-1a: deny-source proof, BEFORE any rung is computed. The walk
+        // answers who may approve; only the PROJECTION answers whose deny this
+        // is — and only when its version still matches the call's generation.
+        if (input.policyDenied?.has(index) === true) {
+            if (input.denySources === undefined) {
+                return owned('the assembly wires NO deny-source projection: this DENY cannot be traced to an owning authority. The state is live and stated — unwired means precise refusal (③), not dormant grace');
+            }
+            const entry = input.denySources.find((source) => source.realmId === input.realmId && source.effectKind === scope.operationClass && sourceCovers(source, scope.matcher, input.subtreeContains));
+            if (entry === undefined) {
+                return owned('no authority-state entry projects this deny — an unrelated Envelope rule is NOT backing (the Envelope answers WHO MAY APPROVE WHAT RANGE, never WHO WROTE the deny); forging the source by copying the deny into Envelope documents is forbidden (spec §3.2/§8.2)');
+            }
+            if (entry.sourceVersion !== input.authorityGeneration) {
+                return {
+                    ok: false,
+                    unapprovable: {
+                        effectIndex: index,
+                        plane: 'approval',
+                        sourceDiagnosis: 'version-drift',
+                        detail: `the deny's source reference ${entry.sourceRef} was projected at authority generation g${String(entry.sourceVersion)}, but this call runs at g${String(input.authorityGeneration)} — a stale projection carries no trust, and an expired source reference is a precise refusal, not a silent pass`,
+                    },
+                };
+            }
+            const ownerFloor = rungAbove(entry.ownerAuthority);
+            if (ownerFloor === undefined) {
+                return {
+                    ok: false,
+                    unapprovable: {
+                        effectIndex: index,
+                        plane: 'approval',
+                        sourceDiagnosis: 'owner-above-ladder',
+                        detail: `this deny belongs to the top authority (${entry.ownerAuthority}, source ${entry.sourceRef}); no rung sits above it, so no one-shot approval exists — only spec §8.2's permanent mutation path can change what the top authority denied`,
+                    },
+                };
+            }
+            denyOwnerFloor[index] = ownerFloor;
+        }
         try {
             evaluation = evaluateAuthorityCeiling({
                 beneficiaryAuthority: input.beneficiaryAuthority,
@@ -159,6 +207,19 @@ export function planEffectSetApproval(input) {
                     return owned(`a bound authority document was unreadable while planning effect ${index} (authority-unavailable is not an outcome a case may open on)`);
                 }
                 if (error.code === AUTHORITY_CEILING_ERROR_CODES.BINDING_DEFECT) {
+                    // R-2a: over a DENIED effect, no-upper-rung is its OWN diagnosis —
+                    // the authority is known, nobody above the beneficiary may ask.
+                    if (error.problem === 'ask-has-no-upper-rung' && input.policyDenied?.has(index) === true) {
+                        return {
+                            ok: false,
+                            unapprovable: {
+                                effectIndex: index,
+                                plane: 'approval',
+                                noUpperRung: true,
+                                detail: 'a Human Admin ask has no rung above it: the deny\'s owning authority is KNOWN, but no position may approve its own elevation — a permanent change must walk spec §8.2\'s mutation path instead (R-2a: this is not an unattributed source)',
+                            },
+                        };
+                    }
                     return owned(`the ladder/document binding is defective while planning effect ${index}: ${error.message}`);
                 }
             }
@@ -167,11 +228,19 @@ export function planEffectSetApproval(input) {
         if (evaluation.outcome === 'undetermined' || evaluation.requiredAuthority === undefined) {
             return owned(`effect ${index} (${effect.kind}) is undetermined on the approval plane — a request containing an undetermined effect must not be approved (plan §5); no case is minted without a requiredAuthority`);
         }
-        perEffectRequired[index] = evaluation.requiredAuthority;
+        // R-1a's floor: the case must sit at least one rung ABOVE the authority
+        // that owns the deny — a rung may never lift a deny belonging to itself
+        // or above it. Max by THE rank table, never a second ordering.
+        const floor = denyOwnerFloor[index];
+        const rung = floor !== undefined && authorityRank(floor) > authorityRank(evaluation.requiredAuthority) ? floor : evaluation.requiredAuthority;
+        perEffectRequired[index] = rung;
+        if (input.policyDenied?.has(index) === true) {
+            deniedCarried.push({ effectIndex: index, requiredAuthority: rung });
+        }
         // Highest rung by ladder rank, derived through the SAME rank table the
         // governance lane owns (never a second ordering).
-        if (required === undefined || authorityRank(evaluation.requiredAuthority) > authorityRank(required)) {
-            required = evaluation.requiredAuthority;
+        if (required === undefined || authorityRank(rung) > authorityRank(required)) {
+            required = rung;
         }
     }
     if (required === undefined) {
@@ -188,6 +257,7 @@ export function planEffectSetApproval(input) {
             }),
             requiredAuthority: required,
             perEffectRequired,
+            deniedEffects: deniedCarried,
             effectSetFingerprint: input.effects.fingerprint,
             authorityGeneration: input.authorityGeneration,
         },

@@ -190,6 +190,7 @@ export function createAdmissionKernel(options) {
             effects: request.requestedEffects,
             needApproval: expansion.needsApproval,
             ...(expansion.policyDenied.length === 0 ? {} : { policyDenied: new Set(expansion.policyDenied) }),
+            ...(options.denySources === undefined ? {} : { denySources: options.denySources() }),
             realmId: request.realmId,
             beneficiaryAuthority: options.beneficiaryAuthority,
             documents: options.documents(),
@@ -210,6 +211,38 @@ export function createAdmissionKernel(options) {
                         code: 'TOOL_BINDING_UNVERIFIED',
                         message: `admission refused: a DENIED effect's owning authority could not be established — deny-source-unattributed (${reason.detail})`,
                         details: { refusal: 'deny-source-unattributed', effectIndex: reason.effectIndex },
+                    },
+                };
+            }
+            if (reason.noUpperRung === true) {
+                // R-2a: authority known, ladder exhausted — its own leg, with the
+                // honest suggestion (the permanent path), never a retry hook.
+                return {
+                    ok: false,
+                    error: {
+                        code: 'APPROVAL_STALE',
+                        message: `admission refused: ${reason.detail}`,
+                        details: { refusal: 'ask-has-no-upper-rung', effectIndex: reason.effectIndex },
+                    },
+                };
+            }
+            if (reason.sourceDiagnosis === 'version-drift') {
+                return {
+                    ok: false,
+                    error: {
+                        code: 'APPROVAL_STALE',
+                        message: `admission refused: ${reason.detail}`,
+                        details: { refusal: 'deny-source-version-drift', effectIndex: reason.effectIndex },
+                    },
+                };
+            }
+            if (reason.sourceDiagnosis === 'owner-above-ladder') {
+                return {
+                    ok: false,
+                    error: {
+                        code: 'APPROVAL_STALE',
+                        message: `admission refused: ${reason.detail}`,
+                        details: { refusal: 'deny-owner-above-ladder', effectIndex: reason.effectIndex },
                     },
                 };
             }
@@ -253,7 +286,7 @@ export function createAdmissionKernel(options) {
             const planned = plan(request);
             if (!planned.ok)
                 return denied(planned.error);
-            observe({ event: 'admission-requires-approval', callId: request.callId, approvalCaseId: planned.value.approvalCaseId, requiredAuthority: planned.value.requiredAuthority });
+            observe({ event: 'admission-requires-approval', callId: request.callId, approvalCaseId: planned.value.approvalCaseId, requiredAuthority: planned.value.requiredAuthority, deniedEffects: planned.value.deniedEffects });
             return {
                 ok: true,
                 value: {
@@ -331,6 +364,28 @@ export function createAdmissionKernel(options) {
                     details: { refusal: 'effect-set-undetermined-at-issue', effectIndex: expansion.unapprovable.effectIndex },
                 },
             };
+        }
+        if (expansion.policyDenied.length > 0) {
+            // R-1a AT ISSUE: a deny in the set must re-prove its source NOW —
+            // the plan-time proof is re-run, never trusted from memory. A grant
+            // never mints over a deny whose owning authority cannot be shown
+            // (unwired/drift/top-owned presentations all land here).
+            const reproof = plan(request);
+            if (!reproof.ok) {
+                observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: reproof.error.message });
+                return { ok: false, error: reproof.error };
+            }
+            if (reproof.value.requiredAuthority !== approval.requiredAuthorityAtCreation) {
+                observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: 'deny provenance moved the rung' });
+                return {
+                    ok: false,
+                    error: {
+                        code: 'APPROVAL_STALE',
+                        message: `admission refused: the deny's provenance now puts this case at rung ${reproof.value.requiredAuthority}, not the rung ${approval.requiredAuthorityAtCreation} the approval was granted at — the presentation is stale`,
+                        details: { refusal: 'approval-case-stale', effectSetFingerprint: request.requestedEffects.fingerprint },
+                    },
+                };
+            }
         }
         const minted = mintFor(request, identity.value.authorityGeneration, clock.value);
         if (!minted.ok)

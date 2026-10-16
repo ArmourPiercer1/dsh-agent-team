@@ -81,6 +81,7 @@ import { verifyAssuranceForHardProfile, type AssuranceProbe } from './assurance-
 import {
   evaluateEffectSetExpansion,
   planEffectSetApproval,
+  type PolicyDenySource,
   toolAskApprovalCaseId,
   verifyEffectSetApproval,
   type EffectSetApprovalPlan,
@@ -100,6 +101,15 @@ export interface AdmissionKernelOptions {
   readonly clock: () => number
   readonly authorityGeneration: () => number
   readonly documents: () => AuthorityEnvelopeDocuments
+  /** R-1a (user ruling 2026-10-16 + review 520a250d): the deny-source
+   *  projection — derived read-time from the REAL authority state (blueprint
+   *  §3.2 lanes / GovernanceMutationService overlay §8.2 entries), carrying
+   *  (owning rung, sourceRef, sourceVersion); trusted only when its version
+   *  matches the call's authority generation. ABSENT is the stated unwired
+   *  state: every DENIED effect then meets a precise refusal — a live gap,
+   *  deliberately NOT deferred behind DORMANT. Copying policy denies into
+   *  the Envelope as their "source" is forgery, refused by design. */
+  readonly denySources?: () => readonly PolicyDenySource[]
   readonly policyDocument: () => ToolPolicyDocument
   /** The rung whose ask this is — derived server-side (the Member ask). */
   readonly beneficiaryAuthority: RuntimeAuthority
@@ -288,6 +298,7 @@ export function createAdmissionKernel(options: AdmissionKernelOptions): Admissio
       effects: request.requestedEffects,
       needApproval: expansion.needsApproval,
       ...(expansion.policyDenied.length === 0 ? {} : { policyDenied: new Set(expansion.policyDenied) }),
+      ...(options.denySources === undefined ? {} : { denySources: options.denySources() }),
       realmId: request.realmId,
       beneficiaryAuthority: options.beneficiaryAuthority,
       documents: options.documents(),
@@ -308,6 +319,38 @@ export function createAdmissionKernel(options: AdmissionKernelOptions): Admissio
             code: 'TOOL_BINDING_UNVERIFIED',
             message: `admission refused: a DENIED effect's owning authority could not be established — deny-source-unattributed (${reason.detail})`,
             details: { refusal: 'deny-source-unattributed', effectIndex: reason.effectIndex },
+          },
+        }
+      }
+      if (reason.noUpperRung === true) {
+        // R-2a: authority known, ladder exhausted — its own leg, with the
+        // honest suggestion (the permanent path), never a retry hook.
+        return {
+          ok: false,
+          error: {
+            code: 'APPROVAL_STALE',
+            message: `admission refused: ${reason.detail}`,
+            details: { refusal: 'ask-has-no-upper-rung', effectIndex: reason.effectIndex },
+          },
+        }
+      }
+      if (reason.sourceDiagnosis === 'version-drift') {
+        return {
+          ok: false,
+          error: {
+            code: 'APPROVAL_STALE',
+            message: `admission refused: ${reason.detail}`,
+            details: { refusal: 'deny-source-version-drift', effectIndex: reason.effectIndex },
+          },
+        }
+      }
+      if (reason.sourceDiagnosis === 'owner-above-ladder') {
+        return {
+          ok: false,
+          error: {
+            code: 'APPROVAL_STALE',
+            message: `admission refused: ${reason.detail}`,
+            details: { refusal: 'deny-owner-above-ladder', effectIndex: reason.effectIndex },
           },
         }
       }
@@ -354,7 +397,7 @@ export function createAdmissionKernel(options: AdmissionKernelOptions): Admissio
     if (expansion.needsApproval.length > 0) {
       const planned = plan(request)
       if (!planned.ok) return denied(planned.error)
-      observe({ event: 'admission-requires-approval', callId: request.callId, approvalCaseId: planned.value.approvalCaseId, requiredAuthority: planned.value.requiredAuthority })
+      observe({ event: 'admission-requires-approval', callId: request.callId, approvalCaseId: planned.value.approvalCaseId, requiredAuthority: planned.value.requiredAuthority, deniedEffects: planned.value.deniedEffects })
       return {
         ok: true,
         value: {
@@ -433,6 +476,28 @@ export function createAdmissionKernel(options: AdmissionKernelOptions): Admissio
           message: `admission refused: between approval and issue, effect ${String(expansion.unapprovable.effectIndex)} became non-executable (${expansion.unapprovable.detail}) — stale is a refusal, never a retry`,
           details: { refusal: 'effect-set-undetermined-at-issue', effectIndex: expansion.unapprovable.effectIndex },
         },
+      }
+    }
+    if (expansion.policyDenied.length > 0) {
+      // R-1a AT ISSUE: a deny in the set must re-prove its source NOW —
+      // the plan-time proof is re-run, never trusted from memory. A grant
+      // never mints over a deny whose owning authority cannot be shown
+      // (unwired/drift/top-owned presentations all land here).
+      const reproof = plan(request)
+      if (!reproof.ok) {
+        observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: reproof.error.message })
+        return { ok: false, error: reproof.error }
+      }
+      if (reproof.value.requiredAuthority !== approval.requiredAuthorityAtCreation) {
+        observe({ event: 'admission-approval-stale', callId: request.callId, caseId: approval.approvalCaseId, detail: 'deny provenance moved the rung' })
+        return {
+          ok: false,
+          error: {
+            code: 'APPROVAL_STALE',
+            message: `admission refused: the deny's provenance now puts this case at rung ${reproof.value.requiredAuthority}, not the rung ${approval.requiredAuthorityAtCreation} the approval was granted at — the presentation is stale`,
+            details: { refusal: 'approval-case-stale', effectSetFingerprint: request.requestedEffects.fingerprint },
+          },
+        }
       }
     }
     const minted = mintFor(request, identity.value.authorityGeneration, clock.value)

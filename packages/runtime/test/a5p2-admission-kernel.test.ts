@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest'
 import { parseOperationGrant, type AdmissionRequest, type OperationGrant } from '../../domain/tool-governance/src/index.js'
-import { toolAskApprovalCaseId, type AssuranceProbe, type PresentedApproval } from '../tool-admission/index.js'
+import { toolAskApprovalCaseId, type AssuranceProbe, type PolicyDenySource, type PresentedApproval } from '../tool-admission/index.js'
 import {
   assuranceContract,
   binding,
@@ -29,6 +29,16 @@ import { policyDoc } from './a5p2-fixtures.js'
 import type { ToolPolicyDocument } from '../../domain/tool-governance/src/index.js'
 
 const FP = 'sha256:' + 'd'.repeat(64)
+
+const denySource = (over: Partial<PolicyDenySource> = {}): PolicyDenySource => ({
+  realmId: REALM,
+  effectKind: 'write',
+  matcher: { kind: 'exact', resource: scopeResource(writeEffect()) },
+  ownerAuthority: 'leader', // the overlay lane writes Team denies at Leader reach (spec §8.2)
+  sourceRef: 'overlay:entry-7',
+  sourceVersion: 1,
+  ...over,
+})
 
 function requestOf(over: Partial<AdmissionRequest> = {}): AdmissionRequest {
   return {
@@ -126,11 +136,8 @@ describe('arm 2 — `requires-approval` (the ONE logical ApprovalCase)', () => {
     const ports = recordPorts()
     const { kernel } = makeHarness({
       policy: () => denyPolicy,
-      // R-1a: the deny must be PROJECTED into the bound documents for the walk
-      // to answer at all — a silent envelope makes it unattributed, not a
-      // free leader leg. This arm keeps the no-short-circuit pin; R-1a's own
-      // control below pins the silent case.
       documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      denySources: () => [denySource()],
       ports,
     })
     const decision = await kernel.admit(request)
@@ -412,6 +419,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     const { kernel } = makeHarness({
       policy: () => denyWrite,
       documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      denySources: () => [denySource()],
       ports,
     }) // ADR A5-1: the mutation envelope binds the LEADER only — the walk must climb past it
     const decision = await kernel.admit(request)
@@ -430,7 +438,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     const request = requestOf({ requestedEffects: effects(writeEffect()) })
     const docs = hardRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
     const ports = recordPorts()
-    const { kernel } = makeHarness({ policy: () => denyWrite, documents: () => docs, ports })
+    const { kernel } = makeHarness({ policy: () => denyWrite, documents: () => docs, denySources: () => [denySource({ ownerAuthority: 'human-user', sourceRef: 'blueprint:hard-ceiling-3' })], ports })
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(JSON.stringify(planned))
     expect(planned.value.requiredAuthority).toBe('human-admin') // admin: the top rung INSIDE envelope support
@@ -455,6 +463,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     const { kernel } = makeHarness({
       policy: () => mixed,
       documents: () => hardRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      denySources: () => [denySource({ ownerAuthority: 'human-user', sourceRef: 'blueprint:hard-ceiling-3' })],
     })
     const decision = await kernel.admit(request)
     if (!decision.ok || decision.value.kind !== 'requires-approval') throw new Error(JSON.stringify(decision)) // no partial admit for the allowed half
@@ -513,6 +522,83 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     expect(ports.consumptions).toBe(0)
   })
 
+  it('对照表 (user review 520a250d): SAME policy deny, SAME envelope coverage, six source states — distinguishable and rung-capped', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    const envelope = () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
+    // (a) source = Leader authority, version matches ⇒ case opens at human-user;
+    //     the Leader's OWN leg is refused (a rung never lifts its own authority's
+    //     deny), the Human User's leg issues.
+    {
+      const ports = recordPorts()
+      const { kernel } = makeHarness({ policy: () => denyWrite, documents: envelope, denySources: () => [denySource()], ports })
+      const planned = await kernel.planApproval(request)
+      if (!planned.ok) throw new Error(`(a) plan: ${JSON.stringify(planned)}`)
+      expect(planned.value.requiredAuthority).toBe('human-user')
+      const leaderLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { requiredAuthorityAtCreation: 'human-user' }))
+      expect(leaderLeg.ok).toBe(false) // 'may not review' — its own authority's deny
+      expect(ports.registrations).toBe(0)
+      const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+      if (!issued.ok) throw new Error(`(a) issue: ${JSON.stringify(issued)}`)
+      expect(ports.registrations).toBe(1)
+    }
+    // (b) source UNKNOWN (projection unwired) ⇒ precise refusal — same envelope,
+    //     which is exactly what makes (a)/(b) distinguishable.
+    {
+      const ports = recordPorts()
+      const { kernel } = makeHarness({ policy: () => denyWrite, documents: envelope, ports })
+      const planned = await kernel.planApproval(request)
+      expect(planned.ok).toBe(false)
+      if (!planned.ok) expect(planned.error.details?.refusal).toBe('deny-source-unattributed')
+      expect(ports.registrations).toBe(0)
+    }
+    // (c) source = a DIFFERENT Team authority (Human User's hard ceiling), same
+    //     coverage ⇒ the case RISES to human-admin (floor from the source, not
+    //     the envelope); Human User's own leg is refused, Admin's issues.
+    {
+      const ports = recordPorts()
+      const { kernel } = makeHarness({
+        policy: () => denyWrite,
+        documents: envelope, // byte-identical coverage to (a) — ONLY the source differs
+        denySources: () => [denySource({ ownerAuthority: 'human-user', sourceRef: 'blueprint:hard-ceiling-3' })],
+        ports,
+      })
+      const planned = await kernel.planApproval(request)
+      if (!planned.ok) throw new Error(`(c) plan: ${JSON.stringify(planned)}`)
+      expect(planned.value.requiredAuthority).toBe('human-admin')
+      const userLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-admin' }))
+      expect(userLeg.ok).toBe(false) // not its deny to lift
+      const adminLeg = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin' }))
+      if (!adminLeg.ok) throw new Error(`(c) admin: ${JSON.stringify(adminLeg)}`)
+      expect(ports.registrations).toBe(1)
+    }
+    // (d) source version DRIFT (projected at g2, call runs at g1) ⇒ precise refusal.
+    {
+      const { kernel } = makeHarness({ policy: () => denyWrite, documents: envelope, denySources: () => [denySource({ sourceVersion: 2 })] })
+      const planned = await kernel.planApproval(request)
+      expect(planned.ok).toBe(false)
+      if (!planned.ok) expect(planned.error.details?.refusal).toBe('deny-source-version-drift')
+    }
+    // (e) source = the TOP authority (Admin wrote the deny) ⇒ no rung above it
+    //     exists ⇒ there is no one-shot at all; only spec §8.2's permanent path.
+    {
+      const { kernel } = makeHarness({ policy: () => denyWrite, documents: envelope, denySources: () => [denySource({ ownerAuthority: 'human-admin', sourceRef: 'blueprint:admin-rule-1' })] })
+      const planned = await kernel.planApproval(request)
+      expect(planned.ok).toBe(false)
+      if (!planned.ok) expect(planned.error.details?.refusal).toBe('deny-owner-above-ladder')
+    }
+    // (f) an UNRELATED envelope rule (an ASK at the same scope) + no source ⇒
+    //     nothing launders: matching an unrelated rule was never source proof.
+    {
+      const { kernel } = makeHarness({
+        policy: () => denyWrite,
+        documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'ask' }]),
+      })
+      const planned = await kernel.planApproval(request)
+      expect(planned.ok).toBe(false)
+      if (!planned.ok) expect(planned.error.details?.refusal).toBe('deny-source-unattributed')
+    }
+  })
+
   it('R-1a: a deny the envelope never projects is NOT a leader-leg mint — unattributed, zero mints (ruling ③, review R-1a)', async () => {
     // The walk's DEFAULT rung (leader on an empty ladder) is not an owning
     // authority for a deny: before the fix this MINTED — fail-open, costumed
@@ -537,6 +623,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
       beneficiary: 'human-admin',
       policy: () => denyWrite,
       documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      denySources: () => [denySource()], // source PROVEN (leader-owned) — so the refusal is genuinely about the exhausted ladder
     })
     const decision = await kernel.admit(requestOf({ requestedEffects: effects(writeEffect()) }))
     if (!decision.ok || decision.value.kind !== 'denied') throw new Error(JSON.stringify(decision))
@@ -547,7 +634,7 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
 
   it('R-1b: the plan states WHICH deny rides at WHICH rung (plan value + observe) — PR3 presents exactly this', async () => {
     const request = requestOf({ requestedEffects: effects(readEffect(), writeEffect()) })
-    const observed: ReadonlyArray<Record<string, unknown>>[] = [[]]
+    const observed: Record<string, unknown>[] = []
     const { kernel } = makeHarness({
       policy: () => policyDoc([
         { effectKind: 'read', resource: scopeResource(readEffect()), maximumEffect: 'ask' }, // ordinary ask — no projection needed for absence/ask
@@ -556,13 +643,16 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
       documents: () => mutationRulesDocs([
         { operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' },
       ]),
-      onObserve: (event) => observed[0].push(event),
+      denySources: () => [denySource()],
+      onObserve: (event) => {
+        observed.push(event)
+      },
     })
     const planned = await kernel.planApproval(request)
     if (!planned.ok) throw new Error(JSON.stringify(planned))
     expect(planned.value.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
     await kernel.admit(request)
-    const evt = observed[0].find((e) => e.event === 'admission-requires-approval')
+    const evt = observed.find((e) => e.event === 'admission-requires-approval')
     expect(evt?.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
   })
 })

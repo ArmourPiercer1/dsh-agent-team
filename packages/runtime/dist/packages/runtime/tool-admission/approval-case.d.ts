@@ -45,7 +45,7 @@
  * @module @dsh-agent-team/runtime/tool-admission/approval-case
  */
 import { type SubtreeContains } from '../../domain/authority-envelope/src/index.js';
-import { type ToolPolicyDocument } from '../../domain/tool-governance/src/index.js';
+import { type ToolPolicyDocument, type ToolPolicyMatcher, type ToolPolicyScope } from '../../domain/tool-governance/src/index.js';
 import type { Effect, RequestedEffectSet } from '../../domain/tool-governance/src/index.js';
 import type { GovernanceResult } from '../../domain/tool-governance/src/index.js';
 import { type AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js';
@@ -72,6 +72,42 @@ export interface UnapprovableReason {
      *  WHICH rung owns that deny — an unattributed source, never to be
      *  presented as a settled Team deny. */
     readonly sourceUnattributed?: boolean;
+    /** R-2a: the walk answered `ask-has-no-upper-rung` over a DENIED effect —
+     *  the owning authority IS known; the ladder simply has nobody above the
+     *  beneficiary. A defective ask, NOT an unattributed source (③). */
+    readonly noUpperRung?: boolean;
+    /** R-1a (user review 520a250d): the source projection exists but fails its
+     *  trust test — 'version-drift': the entry's authority version ≠ the call's
+     *  generation; 'owner-above-ladder': the deny belongs to the top authority
+     *  and no rung may lift it (only spec §8.2's permanent path can). */
+    readonly sourceDiagnosis?: 'version-drift' | 'owner-above-ladder';
+}
+/**
+ * R-1a (user ruling 2026-10-16 + review 520a250d): ONE DENY, ONE SOURCE PROOF.
+ * The Envelope answers WHO MAY APPROVE WHAT RANGE — it never records WHO WROTE
+ * a policy deny, and an unrelated rule matching the scope is a laundering
+ * channel, not evidence of ownership. The proof of a deny's source is THIS
+ * entry: internal DERIVED data projected at read time from the REAL authority
+ * state (blueprint permission lanes, spec §3.2; GovernanceMutationService
+ * overlay entries, spec §8.2), carrying the owning rung, a stable source
+ * reference, and the authority version at projection time — trusted ONLY when
+ * that version matches the call's authority generation. This is NOT a second
+ * authorization database: the single source of truth stays blueprint +
+ * overlay, and the projection stores nothing. Copying a policy deny INTO the
+ * Envelope documents as its "source" is forgery — the two planes' no-match
+ * laws are untouched. An unwired projection is a precise refusal (③), never
+ * a dormant grace.
+ */
+export interface PolicyDenySource {
+    readonly realmId: string;
+    readonly effectKind: ToolPolicyScope['effectKind'];
+    readonly matcher: ToolPolicyMatcher;
+    /** The rung of the Team authority that OWNS (wrote) this deny. */
+    readonly ownerAuthority: RuntimeAuthority;
+    /** Stable reference into the real authority state (lane / overlay entry). */
+    readonly sourceRef: string;
+    /** Authority generation the entry was projected at; trust requires match. */
+    readonly sourceVersion: number;
 }
 /** Per-effect expansion verdicts (the plan §5 "完整 Effect Set" view). */
 export interface EffectSetExpansion {
@@ -112,6 +148,13 @@ export interface EffectSetApprovalPlan {
     readonly approvalCaseId: string;
     readonly requiredAuthority: ProposalAuthorityPosition;
     readonly perEffectRequired: readonly ProposalAuthorityPosition[];
+    /** R-1b (PR3 presenter contract, INTERFACES-v1 C-ADM): WHICH denied effects
+     *  ride this case at WHICH rung — the plan states the provenance it opened
+     *  over; the assembly presents exactly this. */
+    readonly deniedEffects: readonly {
+        readonly effectIndex: number;
+        readonly requiredAuthority: ProposalAuthorityPosition;
+    }[];
     readonly effectSetFingerprint: string;
     readonly authorityGeneration: number;
 }
@@ -137,6 +180,10 @@ export declare function planEffectSetApproval(input: {
     /** Indices the policy DECIDED-DENIED (from evaluateEffectSetExpansion):
      *  a walk that cannot answer at one of THESE becomes a ③ diagnosis. */
     readonly policyDenied?: ReadonlySet<number>;
+    /** R-1a: the deny-source projection (see PolicyDenySource). UNDEFINED is
+     *  the unwired state: every denied effect then refuses precisely — a
+     *  KNOWN, stated gap, not a DORMANT deferral. */
+    readonly denySources?: readonly PolicyDenySource[];
     readonly realmId: string;
     readonly beneficiaryAuthority: RuntimeAuthority;
     readonly documents: AuthorityEnvelopeDocuments;
