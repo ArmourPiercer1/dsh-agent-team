@@ -68,3 +68,37 @@ as denied, and the ceiling walk itself is byte-identical behavior.
 > call's authority generation; the case sits strictly above the owning
 > rung; unwired, drifted, or top-owned denys are precise refusals, and
 > Envelope content is never source evidence.
+
+## PR3 presenter 映射表（rebase 轮 reviewer NIT：三码一表）
+
+PR3's presenter wires presentations from plan output. These three names are
+the lane↔PR3 contract surface — the presenter MUST map them exactly:
+
+| name | where it appears | presenter MUST do |
+|---|---|---|
+| `deny-source-ambiguous` | `details.refusal` on `TOOL_BINDING_UNVERIFIED` (plan + issue reproof) | surface "the projection itself is contested: N sources over one deny (names listed in the message)"; NEVER retry — fix is upstream at the projection, not at the case |
+| `deny-provenance-moved` | `details.refusal` on `APPROVAL_STALE` (issue leg) | the approved case's per-effect deny pairs changed after approval (late/moved deny): present as STALE-NO-RETRY (a fresh case must be planned, approved, and pinned afresh) |
+| `deniedEffectsAtCreation` | `PresentedApproval` field the presenter fills | copy `planApproval().value.deniedEffects` VERBATIM at approval time (pairs `{effectIndex, requiredAuthority}`, in order); an omitted/empty field asserts "no denies were in the approved case" — issue reproof treats any mismatch as moved |
+
+## G-d 台账（两条具名义务，随本 PR 正文）
+
+1. **F-3 named obligations → PR3**: the projection's `ownerAuthority` must
+   come from the MUTATION AUTHOR's rung (overlay entries record their author
+   tier) and `sourceRef` must be RESOLVABLE against the authority state;
+   both are PR3 wiring duties on the G-d ledger — this lane proves shape,
+   version-consistency, and refusal behavior, not author-tier provenance.
+2. **`PresentedApproval.deniedEffectsAtCreation` is presentation-class
+   trust**: it pins what the presenter SAW at approval time; binding it to
+   the case cryptographically (receipt digest) needs a PR3 receipt — the
+   case-id grammar is frozen and CANNOT absorb it (no field may be added to
+   `tadm:<ts>:<inst>:<fp>:g<gen>`). Until then the lane's staleness legs are
+   the backstop, and the boundary is stated, not hidden.
+
+## C-ADM 律句（README 已同步；INTERFACES-v1.md 落档时原样移入）
+
+> A policy DENY may enter the ApprovalCase ladder only with a source
+> projection entry (owning authority + sourceRef + version) trusted at the
+> call's authority generation; the case sits strictly above the owning rung;
+> unwired, drifted, top-owned, or AMBIGUOUS-ownership denys are precise
+> refusals, Envelope content is never source evidence, and the approved
+> per-effect deny pairs are part of the case (moved ⇒ stale, never mint).

@@ -28,7 +28,10 @@ function assembly(opts: { allow: boolean }) {
     resolveDefinition: (name) => ({ ok: true, fingerprint: `def:${name}` }),
     requiredSeams: 0,
   })
-  dispatcher.bindInheritedSurface(['read'], { read: 'def:read' })
+  // PR1r (R-a) signature: the trusted side is the GLOBAL-VIEW read — for a
+  // genuinely native name it equals the resolved read; a shadow would differ
+  // and bind UNVERIFIED. This composition uses the honest native case.
+  dispatcher.bindInheritedSurface(['read'], { read: 'def:read' }, { read: 'def:read' })
   dispatcher.beginAssembly()
   dispatcher.publish()
 

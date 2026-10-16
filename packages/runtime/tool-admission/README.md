@@ -181,6 +181,22 @@ authority generation on mutation, spec §8.2; the lane's generation leg turns
 the stale presentation into `APPROVAL_STALE` — stale is a refusal, not a
 retry).
 
+## C-ADM — the deny-admission law (one sentence; INTERFACES-v1.md's C-ADM section is the final home)
+
+> A policy DENY may enter the ApprovalCase ladder only with a source
+> projection entry (owning authority + sourceRef + version) trusted at the
+> call's authority generation; the case sits strictly above the owning rung;
+> unwired, drifted, top-owned, or AMBIGUOUS-ownership denys are precise
+> refusals, Envelope content is never source evidence, and the approved
+> per-effect deny pairs are part of the case (moved ⇒ stale, never mint).
+
+PR3 presenter mapping (三码一表: `deny-source-ambiguous` /
+`deny-provenance-moved` / `deniedEffectsAtCreation`) + the two G-d ledger
+obligations (mutation-author owner tier + resolvable sourceRef = PR3; the
+presentation pin is presentation-class trust — the frozen case-id grammar
+cannot absorb a receipt digest) live in
+`dev/agent-workflow/evidence/alpha5/pr2/r1a-source-contrast.md`.
+
 ## Error-code rulings (see the PR body's pre-freeze list)
 
 * `effect-set unapprovable` now means **undetermined-only** (a decided deny is
