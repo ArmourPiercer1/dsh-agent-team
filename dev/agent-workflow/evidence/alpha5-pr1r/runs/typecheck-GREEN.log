@@ -1,0 +1,5 @@
+# typecheck gate, HEAD=ffbc6e9a
+$ npx tsc --noEmit -p packages/runtime/tsconfig.json   # covers the test tree (the build config does not)
+runtime exit=1
+$ npx tsc --noEmit -p packages/testkit/tsconfig.json
+testkit exit=1
