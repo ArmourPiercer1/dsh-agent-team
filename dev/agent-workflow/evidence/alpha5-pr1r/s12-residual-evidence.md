@@ -41,7 +41,7 @@ filing them under the excluded "attacker rewrites Host memory" class.
 | R-a — a native name already shadowed at publish time entered governance as `verified` | [`closed-world-guard.ts`](../../../../packages/runtime/tool-dispatch/closed-world-guard.ts) `bindInheritedSurface(names, resolved, trusted)` (three facts, four cases) + `GovernedEntry.unverifiedReason`; [`install.ts`](../../../../packages/runtime/tool-dispatch/install.ts) `readTrustedDefinition` (the scope-less read) and the `published-surface-shadowed` / `published-surface-native-unreadable` observations | `a5p1r-shadow-attribution.test.ts` (RED-first), R1R / R1R-b / R1R-c in `a5p1-closed-world-guard.test.ts`, kit `R1R-SHADOW` (real registry, both halves) |
 | R-a — explicit Team bind must still be the way a Team's own same-name Definition is admitted | unchanged entry points (`bindOwnTools` / `bindMcpTools`), plus decision 5's revision rule | `a5p1r-shadow-attribution.test.ts` "AN EXPLICIT Team Binding admits…", kit `R1R-SHADOW` second half, `NEG1-*` legs |
 | R-b — validation→resolution window under a legal concurrent re-registration | `install.ts` inner door (re-`guard` at `tools/execute`), `scoped-dispatcher.ts` `noteCallEdgeDefinition` | `a5p1r-validate-resolve.test.ts` (5 tests), `a5p1r-rereg-window.mjs` (5 arms on the pinned registry), kit `RW-*` |
-| Seam gap that no public seam can close | **closed by the ruled route (ii)** and still recorded (PoC-1 format, with the retraction inline): [`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) | `RW-AFTER-DOOR-BODY-ZERO` asserts body count 0 every run; `RW-CHANGE-INERT-LOUD` asserts the one configuration that cannot be proven is reported, never covered over |
+| Seam gap that no public seam can close | **机制已按裁决记录（route (ii)）；运行接线与安全验收挂 G-a 冻结，解除须用户裁决** — recorded in PoC-1 format, retraction inline (the file says neither closed nor compliant): [`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) | `RW-AFTER-DOOR-BODY-ZERO` asserts body count 0 every run; `RW-CHANGE-INERT-LOUD` asserts the one configuration that cannot be proven is reported, never covered over |
 | Registry fidelity of the test doubles | [`a5p1r-scoped-registry-double.ts`](../../../../packages/runtime/test/a5p1r-scoped-registry-double.ts) (global layer + own layer, `get(name, scope?)` mirroring `view()`, measured stage order, Body resolved in the innermost step); the PR1 install double now answers the scope-less read (`globalDefinitions`) instead of feigning `undefined` | both doubles are the substrate of the 79-test lane |
 
 ## (c) RED-first record (verbatim first failures)
@@ -184,8 +184,8 @@ here rather than in §(e)'s scan inventory.)
   now the rule, so the sentence "a native name ALREADY shadowed at publish time … enters
   governance as verified" no longer describes this lane.
 * R-b's Guard→inner-door half: refused at the door nearest the Body (`RW-INNER-DOOR`).
-* R-b's post-door half is **closed by the ruled mechanism — conditionally, and with its run wiring
-  accepted only at G-a**: the moved Definition
+* R-b's post-door half: **机制已按裁决记录（(ii)）；运行接线与安全验收挂 G-a 冻结，解除须用户裁决**。
+  本节不写 closed/compliant；下列句子是"实现了什么/量到了什么"，不是验收结论。The moved Definition
   cancels the un-executed call and the Host refuses it before dispatch — `RW-AFTER-DOOR-BODY-ZERO`,
   `v1=0 v2=0 secondCallV2=0`, RED pair `runs/B3-after-door-RED.json` (`v2=1`) →
   `runs/B3-after-door-GREEN.json` (`v2=0`). The previous sentence in this file — "bounded rather
@@ -204,11 +204,14 @@ here rather than in §(e)'s scan inventory.)
   (`ABORTED_BEFORE_DISPATCH` vs `ABORTED`), and does not claim a cancellation it cannot observe.
 * The `bindAll` revision defect that made the documented re-bind path unusable after a drift.
 
-**Open, with the seam recorded:** the interval between the last `tools/execute` listener and
-`resolveExecution` at `:1578` — see
-[`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) (PoC-1 format:
-the seam asked for, where resolution actually happens, what the existing seams do and do not
-give, what upstream would have to provide, and the fail-closed posture taken meanwhile).
+**Recorded, with the mechanism pending acceptance:** the interval between the last
+`tools/execute` listener and `resolveExecution` at `:1578` — mechanism recorded per ruling (ii);
+**运行接线与安全验收挂 G-a 冻结，解除须用户裁决**; and the silent-subscription configuration as its
+own open item **G-g** ((j) below, 支持矩阵定位未收口). See
+[`seam-record-post-door-resolution.md`](seam-record-post-door-resolution.md) (PoC-1 format: the
+seam asked for, where resolution actually happens, what the existing seams do and do not give,
+the seam demands registered inside this project, and the status wording — which is deliberately
+not "closed" and not "compliant").
 
 **Disclosed consequences of choosing fail-closed over crediting:**
 
@@ -241,10 +244,12 @@ the runner-side repair.
 | R2 — R-b posture: is "one call, then withdrawn" the honest claim, and is the seam record complete? | _(empty)_ | _(empty)_ | _(empty)_ |
 | R3 — kit honesty: 22 → 23 legs, and whether the explicit-bind change weakened anything | _(empty)_ | _(empty)_ | _(empty)_ |
 
-## (i) 增补（后续修复轮，文档 only）— 三事实 / 三候选修法 / 两处口径限定
+## (i) 增补（后续修复轮，文档 only）— 三事实 / 三个项目内登记的 seam 需求 / 两处口径收窄
 
-**G-d 纪律：本节与 seam-record 增补所述 (ii) 机制，其运行接线验收挂 G-a（(ii) 语义待用户裁）；
-本节不验收接线、不改实现，只把文档口径与机制实际所依赖之物对齐。**
+**G-d 纪律（并按用户裁决收紧）：本节与 seam-record 增补所述 (ii) 机制 = "机制已按裁决记录"；
+其运行接线与安全验收**挂 G-a 冻结，解除须用户裁决**。本节不写 "closed"/"合规"，不验收接线、不改实现，
+只把口径与机制实际所依赖之物对齐。三个候选修法一律以**项目内登记的 seam 需求**记：本轮**不向任何外部
+（含 Host upstream）发起请求**；对外提交属将来须用户另行授权的动作，本仓库文档不得声称"已提交/将提交"。**
 
 1. **`raise` 无 body 门槛** — `packages/runtime/tool-dispatch/pending-calls.ts:148-157`：
    `onRegistryChange` 对每个 `watched` 记录（身份移动或不可读）**统一 abort**，没有也不可能有
@@ -258,17 +263,49 @@ the runner-side repair.
    Body 已开始。lane 的取消/终止区分因此是**结果形状**（settled edge 读两个规范码），不是事件形状；
    `dispatcher-call-outcome-unreadable` 正是为"码读不到时不把推断当事实"而存在。
 
-**三个候选修法**：① 上游 pre-body 事件（可拒绝、可观察 body 前缘）⇒ 需 Core ⇒ CORE_SEAM_BLOCKER 类；
-② 上游 resolution-pinned（钉住已解析 Definition，窗口整体消失，且不再依赖 F2 复读）⇒ 需 Core，对本威胁模型
-严格优于 ①；③ 裁决语义（把"定义已移动且 Body 可能已开始"上升为治理裁决：turn 级中止/重投或结果标记不可信）
-⇒ 不需 Core，但把取消语义上移至 Session 层，且需 G-a 所候的用户裁决。
+**三个候选修法（= 项目内登记的 seam 需求/候选路线，非对外请求）**：
+① **seam 需求（项目内登记，`CORE_SEAM_BLOCKER` 类）**：公开 pre-body 步骤（可拒绝、body 前缘可观察）；
+需 Core 侧改动，本仓库仅登记入册，不外部提交，亦不绕行。
+② **seam 需求（项目内登记，同类）**：resolution-pinned 执行（把已解析 Definition 钉进 execution，窗口整体
+消失，并解除对 F2 复读的依赖）；需 Core 侧改动；对本威胁模型严格优于 ①（消除重解析而非在其前设门）。
+③ **候选路线（本侧，不需 Core）**：裁决语义——把"定义已移动且 Body 可能已开始"上升为治理裁决（turn 级
+中止/重投，或结果标记不可信后裁决）；代价是取消语义上移至 Session 层，且需 G-a 所候的用户裁决。
 
-**"closed by ruled mechanism" 的限定读法**：= 对"机制能作用的那一类"（调用尚未被 dispatch 时定义移动）闭合，
-且其正确性依赖上述三条实现事实；**不等于**对静默通道闭合、**不等于**对与已开始 Body 竞争的移动闭合（后者按
-设计是终止、按已执行上报）、**不等于**由公开 seam 闭合。可检查的形式即 kit 的 `RW-AFTER-DOOR-BODY-ZERO` 与
-`RW-CHANGE-INERT-LOUD` 两条判据。
+**口径（本记录不写 "closed"/"合规"）**：本节所载为"机制已按裁决记录"。就已量到的部分说：机制只作用于
+"调用尚未被 dispatch 时定义移动"这一类，且其正确性依赖上述三条实现事实；它**不覆盖**静默通道（见 (j)：
+独立开放项 **G-g**，不随 G-a 默认关闭），也**不覆盖**与已开始 Body 竞争的移动（后者按设计是终止、按已执行
+上报）。`RW-AFTER-DOOR-BODY-ZERO` / `RW-CHANGE-INERT-LOUD` 是**测量**，不是验收——两者分开正是 G-a 的作用。
 
 **静默通道降级=名字级（精确表述）**：`tools/change` 已订阅但未投递时，实测（`RW-CHANGE-INERT-LOUD`：`v2=1` +
 `dispatcher-call-executed-unvalidated` + alarm）在飞调用**未被取消**（没有任何东西能取消它）；lane 做的是在该
 调用 settled edge **撤回该名字的 Binding**，于是该名字**后续**调用被拒，直到显式 re-bind。故可主张："被漂移的
 名字在其下一次调用前被钉住"；**不可**主张："被漂移名字的进行中调用被取消"（后者仅在通道确实投递时成立）。
+**该配置的支持矩阵定位未收口，作为独立开放项 G-g 记于 (j)，不随 G-a 默认关闭。**
+
+## (j) G-g — 静默已订阅通道：独立开放项，**支持矩阵定位未收口**（不随 G-a 默认关闭）
+
+**配置**：`tools/change` 的 `on` 存在且订阅成功，但该事件**永不投递**（订阅被接受而通道不发声）。
+这与"订阅抛错/`on` 不存在"（→ 装配期 `IO_POLICY_UNSUPPORTED`，点名 `tools/change`）**不是同一配置**：
+后者当场拒绝装配，前者在装配期**不可区分**。
+
+**当前事实（本构建、本 Host 实现）**：该配置下机制**降级为名字级**，且仅带响亮 alarm——
+在飞调用不被取消（无任何手段可取消它）；lane 在该调用 settled edge 撤回**该名字**的 Binding，
+于是该名字后续调用被拒直到显式 re-bind；同时每调用发 `dispatcher-call-executed-unvalidated`
+（severity `alarm`，`changeChannel:'armed'`）。
+
+**证据原文位置**（可复核，非转述）：
+- `runs/kit-r1r-fix1/rereg-window.json` 判据 `RW-CHANGE-INERT-LOUD` 原文
+  `v2=1 unvalidated=1 issued=0 channel=armed verifiedAfter=false`；
+- `runs/kit-r1r-fix1.log` 第 23 行同判据的 PASS 行（`the moved Body does run (nothing can cancel it)`）；
+- 对照腿（通道确实发声时）：`runs/kit-r1r-fix1/rereg-window.json` 的 `RW-AFTER-DOOR-BODY-ZERO`
+  原文 `v1=0 v2=0 code=ABORTED_BEFORE_DISPATCH issued=["grep:p00-c1"]`，及
+  `runs/B3-after-door-GREEN.json` / `runs/B3-after-door-RED.json`（RED→GREEN 对）；
+- lane 腿：`packages/runtime/test/a5p1r-change-abort.test.ts`（inert-channel 双腿）与
+  `runs/B3-lane-GREEN.log`。
+
+**支持矩阵定位：未收口（not settled）。** 上列是**事实**，不是"支持姿态"：该配置的验收状态按
+**UNSUPPORTED / 待证**处理，且**不因 G-a 解除而自动关闭**——G-g 需自己的契约收口动作（后续），
+收口前不得在任何矩阵/文档中把它记为 supported、closed 或 compliant。
+
+**该配置下允许的说法**："被漂移的名字在其下一次调用前被钉住（并响亮上报）"。
+**不允许的说法**："被漂移名字的进行中调用被取消"（仅在通道确实投递时成立）。

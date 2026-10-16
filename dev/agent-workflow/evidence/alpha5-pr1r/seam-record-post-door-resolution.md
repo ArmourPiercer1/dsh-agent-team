@@ -52,8 +52,11 @@ measured, not argued    : `tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.m
                           cover (our door refuses: v1=0 v2=0), and arm
                           `guarded-pre-execute-no-change` isolates F2's per-call read with the
                           `tools/change` channel unavailable (deny / `definition-drift`, no body).
-what upstream would     : ANY of these closes it, in rough order of preference; the lane needs
-have to provide for     : one, not all:
+what a Core-side        : ANY of these closes it, in rough order of preference; the lane needs
+change would have       : one, not all. They are REGISTERED IN THIS PROJECT as seam demands:
+                        : nothing is filed outside this repository by this round, and any
+                        : external submission would itself require the user's separate
+                        : authorisation.
   this lane to close it   1. a `tools/pre-dispatch` (or `tools/resolve`) waterfall step invoked
                             with the resolved `ToolDefinition` between `resolveExecution` (:1578)
                             and `tool.execute` — the refusal shape already exists (`deny` ⇒
@@ -66,7 +69,11 @@ have to provide for     : one, not all:
                             listener receives, so the door nearest the Body can compare
                             `exec.resolvedDefinition` against the Binding it validated — without
                             a refusal point this only makes the gap visible, not closable.
-how the gap is closed   : by user ruling (option (ii)) in the B3 fix round. The lane does NOT
+status of the gap       : **机制已按裁决记录；运行接线与安全验收挂 G-a 冻结，解除须用户裁决。**
+  (mechanism recorded   This entry describes what was built and what it leans on — not what has
+   per ruling (ii),       been accepted. Until G-a is lifted by a user ruling, neither this file
+   acceptance frozen)     nor any other document in this repository may be read as calling it
+                         closed or compliant. The lane does NOT
   in this round          refuse from inside the door — the rejected design (a door that never
   (was: "fail-closed     calls `next()`) is not used anywhere. It uses the seam the Host already
   posture")              advertises to a wrapper: "wrappers may change only `exec.signal`, while
@@ -108,8 +115,9 @@ what is still open      : the channel is a capability, and one configuration can
                          THROWS, or an `on` that does not exist, is a typed
                          `IO_POLICY_UNSUPPORTED` refusal naming `tools/change`
                          (`RW-NO-CHANGE-CHANNEL-UNSUPPORTED`): unsupported, not silently weaker.
-retirement condition    : the mechanism retires when upstream offers option (1) or (2) above: a
-                         pre-dispatch seam, or a resolution-stable call. Then the watch ledger and
+retirement condition    : the record retires when seam demand (1) or (2) is MET by a future Host
+                         release (a pre-dispatch seam, or a resolution-stable call) — an event
+                         this project waits on and does not request externally. Then the watch ledger and
                          the signal wrapper both degrade to assertions and this record retires.
                          Until then `RW-AFTER-DOOR-BODY-ZERO` asserts the body count is zero, so
                          the boundary cannot silently be re-labelled a pass OR a residual.
@@ -149,35 +157,51 @@ fact 3 — body start is    : packages/core/tools/src/index.ts:1580, `state.body
                           event-shaped — which is exactly why `dispatcher-call-outcome-unreadable`
                           exists: when the codes cannot be read, the lane declines both claims
                           instead of promoting an inference into a fact.
-qualification of          : "closed by ruled mechanism" means: closed FOR THE CLASS THE MECHANISM
-  "closed by ruled          CAN ACT ON (a Definition that moved while the call has not been
-  mechanism"                dispatched), BY A MECHANISM whose correctness rests on the three
-                          implementation facts above. It does NOT mean: closed against a silent
-                          notification channel (nothing can cancel then — see the precision note),
-                          nor against a move that races an already-started Body (that one is
-                          TERMINATION, reported as executed, by design), nor closed by a public
-                          seam. Until one of the candidate routes below exists, the honest form of
-                          the claim is "closed, conditionally, by a wrapper contract plus three
-                          implementation facts" — and the kit criteria named BODY-ZERO / INERT-LOUD
-                          are what keep that form checkable rather than aspirational.
-candidate route 1         : a public pre-body step — a `tools/pre-body` (or making `:1572`'s
-  (upstream)                decision point a waterfall step) invoked after resolution and before
+status wording, not     : this record says neither "closed" nor "compliant". It says: MECHANISM
+  a claim of closure      RECORDED PER RULING (ii); its run wiring and its safety acceptance are
+                          FROZEN AT G-a, and only a user ruling lifts that. What was measured
+                          (`RW-AFTER-DOOR-BODY-ZERO`, `RW-CHANGE-INERT-LOUD`) is a property of
+                          THIS build on THIS Host implementation, resting on the three facts
+                          above — a measurement is not an acceptance, and keeping the two apart is
+                          exactly what G-a is for. Two sub-cases are outside the mechanism and are
+                          not smuggled in by any wording here: (a) a Definition move that races an
+                          already-started Body — by design a TERMINATION, reported as executed;
+                          (b) a subscribed-but-silent notification channel — its own open item,
+                          recorded immediately below, which does NOT close together with G-a.
+g-g — independent open  : the configuration "subscribing to `tools/change` SUCCEEDS but the
+  item, not covered by    notification is never delivered" is recorded as its own open item, not a
+  G-a by default          footnote of the G-a question. Its support-matrix position is
+                          **未收口 / not settled**: what this build does in that configuration
+                          (name-level withdrawal + a loud per-call alarm; in-flight calls
+                          unaffected) is a MEASURED FACT with filed evidence, not a supported
+                          posture. Acceptance is handled as UNSUPPORTED / 待证; closing it is a
+                          contract action of its own, later and separate. Position statement and
+                          evidence pointers: `s12-residual-evidence.md` §(j).
+candidate seam demand 1 : a public pre-body step — a `tools/pre-body` (or making `:1572`'s
+  (registered in this     decision point a waterfall step) invoked after resolution and before
                           invocation. Then refusal is a first-class act, the lane needs no signal
                           proxy, and "did the Body start" becomes observable rather than inferred.
-                          Needs Core ⇒ CORE_SEAM_BLOCKER class; this lane will not route around it.
-candidate route 2         : resolution-pinned execution — `createExecution` pins the resolved
-  (upstream)                Definition into the execution and `dispatchToolBody` runs THAT instead
+                          Needs a Core-side change, so it is
+                          REGISTERED IN THIS PROJECT as a seam demand of the `CORE_SEAM_BLOCKER`
+                          class — an inventory entry, nothing more: this round files nothing
+                          anywhere outside this repository, and any submission to the Host's
+                          upstream would itself be a future action requiring the user's separate
+                          authorisation. This lane does not route around the gap.
+candidate seam demand 2 : resolution-pinned execution — `createExecution` pins the resolved
+  (registered in this     Definition into the execution and `dispatchToolBody` runs THAT instead
                           of `resolveExecution(exec.name, …)`. The whole window disappears (and the
-                          pre-execute window stops depending on F2's re-read). Needs Core; same
-                          blocker class; strictly better than route 1 for the threat model because
+                          pre-execute window stops depending on F2's re-read). Needs a Core-side change; same
+                          registered-class note as demand 1 (nothing is filed externally by this
+                          round). It is strictly better than demand 1 for the threat model because
                           it removes the re-resolution rather than gating it.
-candidate route 3         : adjudication semantics — treat "the Definition moved and this call's
-  (this side, not          Body may already have started" as a governance decision rather than a
-  upstream)               dispatch one: e.g. an in-flight move forces a turn-level abort/re-drive of
+candidate route 3       : adjudication semantics — treat "the Definition moved and this call's
+  (this side, no Core)     Body may already have started" as a governance decision rather than a
+                          dispatch one: e.g. an in-flight move forces a turn-level abort/re-drive of
                           the affected member, or the result is marked untrusted and adjudicated.
                           Reachable without Core (it lives in runtime/team semantics), at the cost
                           of moving cancellation semantics up to the Session layer — and it needs
-                          the user ruling that G-a is holding.
+                          the user ruling that G-a is holding. It is recorded here as a candidate
+                          route, not as an action this branch takes.
 precision note on the     : when `tools/change` is subscribed but delivers nothing, what the lane
   silent channel           degrades to is NAME-LEVEL, not call-level. Measured (`RW-CHANGE-INERT-
                            LOUD`: `v2=1` + `dispatcher-call-executed-unvalidated` + alarm): the
