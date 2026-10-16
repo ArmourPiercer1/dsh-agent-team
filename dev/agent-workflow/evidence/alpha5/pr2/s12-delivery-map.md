@@ -45,7 +45,7 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
 
 - RED-first: `runs/red-first-a5p2.log` — the six specs + harness with the lane sources REMOVED:
   `Test Files 6 failed (6) / Tests no tests` (module-absent collection failures; before any implementation existed in the room).
-- GREEN (targeted): `runs/a5p2-green-targeted.log` — 6 files / **76 passed** (73 + the review-round F-1 pair and F-2 isolation test).
+- GREEN (targeted): `runs/a5p2-green-targeted.log` — 6 files / **83 passed** (76 + the 2026-10-16 ruling round: F-1 pair + F-2 + the seven policy-deny-routing controls; RED first: `runs/red-deny-routing-round.log` 2+5 red).
 - p4t6 scanner: PRE-EXTEND RED `runs/p4t6-PRE-EXTEND-RED.log` (`expected 1087 to be 1073`, both endpoints
   MEASURED) → tie added → 10/10 green.
 - Full suites: `runs/base-suite.log` (base 45425a30, EXIT=1: 22 known failures / 6651 passed),
@@ -71,6 +71,18 @@ rows), and `a5p0-layer-audit` pins the exact consumer set (now 9 files).
 - Fail-set table primary source: `runs/fail-set-diff.txt` (terminal, post-tie). The pre-tie `fail-set-diff.json`
   draft (it still carried NEW=1 from before the p4t6 tie landed) was removed to keep one master — the .txt
   is authoritative, any future .json is a derived convenience copy.
+- 2026-10-16 ruling round (问题2 policy-deny routing): contract commit `477bbdcb` FIRST (README section + PR-body section),
+  then RED (`red-deny-routing-round.log`) then implementation — denies are routed by source through the envelope walk
+  (no trusted assembler tag, no second authorization store: policyDocument() stays a read-time projection of blueprint
+  §3.2 lanes + GovernanceMutationService overlay §8.2). Controls: 低阶 deny 升阶 (mutation-bound -> Human User),
+  Envelope deny 升阶 + admin 单次批准 (hard-bound -> Human Admin, one-shot mint, deny still on the books, zero forced
+  policy mutation), whole-effect joint authority (MAX rung, all-or-none), 未知来源 -> TOOL_BINDING_UNVERIFIED /
+  'deny-source-unattributed' zero mint, 环境不支持 flip-before-issue -> zero mint/zero consume, generation-bumped deny
+  -> 'authority generation moved', replay/cross-member unchanged (F-1 strength kept). §5 TEAM_POLICY_DENY erratum 已裁
+  withdrawn. Reviewer's read-only diagnostic scratch (`runs/a5-hard-reaudit/**`, pinned to af3e046b, belonging to the
+  parallel hard-envelope re-audit) was removed from this worktree's untracked runs/ dir because untracked scratch
+  polluted the lint universe (+3 phantom errors); its evidence lives in that effort's own tree — noted, not destroyed
+  elsewhere.
 - Commit-message 口径更正记录 (delta review D-1, `review-PR2-delta.md` §2): commit `af3e046b`'s message claimed
   it applied the F-3 reword and recorded the Alpha.4 observation; `git show --stat af3e046b` shows one file,
   README +8 — the claimed edits were NOT in that commit. History is not rewritten (no force, per the repo's
