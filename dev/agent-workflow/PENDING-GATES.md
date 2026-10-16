@@ -47,3 +47,8 @@ PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDIN
   `.agents/skills/team-blueprint-authoring/SKILL.md`）。
 - **时点**：本阶段完成后的收尾轮；提出本轮（#258）**不触碰**该文件。
 - **验收**：见 `s12-residual-evidence.md` §(l)（三分类一致；不得残留两种旧口径；由 review 逐条比对）。
+
+
+## census 失败身份落文（G-f，20:3xZ，诊断 91bd0381）
+夜间 4 个 census-runtime FAILURE 身份一致且确定性复现（a5p0-layer-audit×2 + p4t6×1，宿主 pin 639ed01539 实测跑通、refused=0）：alpha.5 PR3/PR5 未登记 tool-governance 消费者与可扫文件台账，#262/#265 为 master 已入库红的继承，非环境抖动、非 flake；修复=alpha5-int-wiring 台账轮（消费者登记+census baseline 重录）。
+**合并纪律（自本条生效）**：census-runtime=failure 时即使 required pr-gate=success 也须先诊断身份再合并——本分支新增红=阻断；继承红=登记随台账 PR 收口。
