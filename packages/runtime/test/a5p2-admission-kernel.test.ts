@@ -24,7 +24,7 @@ import {
   OTHER_REALM,
   writeEffect,
 } from './a5p2-fixtures.js'
-import { allowPolicy, emptyPolicy, hardRulesDocs, makeHarness, recordPorts } from './a5p2-kernel-harness.js'
+import { allowPolicy, emptyHardDocs, emptyPolicy, hardRulesDocs, makeHarness, mutationRulesDocs, recordPorts } from './a5p2-kernel-harness.js'
 import { policyDoc } from './a5p2-fixtures.js'
 import type { ToolPolicyDocument } from '../../domain/tool-governance/src/index.js'
 
@@ -114,18 +114,23 @@ describe('arm 2 — `requires-approval` (the ONE logical ApprovalCase)', () => {
     expect(r1.value.requiredAuthority).toBe('leader')
   })
 
-  it('a policy DENY on one effect is a whole-set typed denial, unapprovable (no case opens)', async () => {
+  it('a policy DENY no longer short-circuits the door: it rides the ONE case at its rung (ruling ①)', async () => {
+    // The blanket "decided DENY ⇒ whole-set unapprovable" arm was this
+    // implementation tightening beyond its original authority; the user
+    // ruling (2026-10-16) replaces it with SOURCE ROUTING. An envelope that
+    // stays silent (the projection law's degenerate case) lands wherever the
+    // ladder proves — the ladder, not an invented short-circuit, decides.
     const poisoned = effects(readEffect(), writeEffect())
     const request = requestOf({ requestedEffects: poisoned })
     const denyPolicy = policyDoc([{ effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
     const ports = recordPorts()
     const { kernel } = makeHarness({ policy: () => denyPolicy, ports })
     const decision = await kernel.admit(request)
-    if (!decision.ok || decision.value.kind !== 'denied') throw new Error(JSON.stringify(decision))
-    expect(decision.value.error.code).toBe('IO_POLICY_UNSUPPORTED')
-    expect(decision.value.error.details?.refusal).toBe('effect-set-unapprovable')
-    expect(decision.value.error.details?.effectIndex).toBe(1)
-    expect(ports.registrations).toBe(0)
+    if (!decision.ok || decision.value.kind !== 'requires-approval') throw new Error(JSON.stringify(decision))
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(JSON.stringify(planned))
+    expect(planned.value.requiredAuthority).toBe('leader')
+    expect(ports.registrations).toBe(0) // routed, not minted — the door still never grants alone
   })
 
   it('the model cannot route around the ladder: a Human Admin ask is refused, not minted', async () => {
@@ -231,15 +236,17 @@ describe('the approval → issue → consume ride (and everything that poisons i
     if (!refused.ok) expect(refused.error.code).toBe('APPROVAL_STALE')
   })
 
-  it('a deny that arrives while the Ask is open kills the issue (stale is a refusal, not a retry)', async () => {
-    const request = requestOf({ requestedEffects: effects(readEffect()) })
-    let poisoned: ToolPolicyDocument = emptyPolicy()
-    const { kernel } = makeHarness({ policy: () => poisoned })
-    expect((await kernel.admit(request)).ok).toBe(true)
-    poisoned = policyDoc([{ effectKind: 'read', resource: scopeResource(readEffect()), maximumEffect: 'deny' }])
+  it('a deny PROJECTED into the envelope while the Ask is open kills the issue (stale is a refusal, not a retry)', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    let docs = emptyHardDocs()
+    const ports = recordPorts()
+    const { kernel } = makeHarness({ documents: () => docs, ports })
+    expect((await kernel.admit(request)).ok).toBe(true) // requires-approval at leader while the envelope is silent
+    docs = hardRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
     const issued = await kernel.issueApprovedGrant(request, approvalFor(request))
     expect(issued.ok).toBe(false)
-    if (!issued.ok) expect(issued.error.details?.refusal).toBe('effect-set-unapprovable-at-issue')
+    if (!issued.ok) expect(issued.error.message).toContain('required rung rose') // the ladder now answers HIGHER than the case was opened at
+    expect(ports.registrations).toBe(0)
   })
 
   it('a moved authority generation between approval and execution is APPROVAL_STALE (resume with an old token)', async () => {
@@ -387,3 +394,112 @@ function createProbe(contract: ReturnType<typeof assuranceContract>): AssuranceP
     return { ok: true, ...observed({ mechanism: record.mechanism, realmId: record.realmId, trustRoot: record.trustRoot, evidence: record.evidence }) }
   }
 }
+
+describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2)', () => {
+  const denyWrite = policyDoc([{ effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
+
+  it('control 低阶 deny 升阶: an overlay-bound deny escalates to Human User — the Leader cannot lift it, Human User can', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    const ports = recordPorts()
+    const { kernel } = makeHarness({
+      policy: () => denyWrite,
+      documents: () => mutationRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+      ports,
+    }) // ADR A5-1: the mutation envelope binds the LEADER only — the walk must climb past it
+    const decision = await kernel.admit(request)
+    if (!decision.ok || decision.value.kind !== 'requires-approval') throw new Error(JSON.stringify(decision))
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(JSON.stringify(planned))
+    expect(planned.value.requiredAuthority).toBe('human-user') // 升阶 IS the owning-authority answer
+    const asLeader = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'leader', requiredAuthorityAtCreation: 'human-user' }))
+    expect(asLeader.ok).toBe(false) // the rung the deny is bound at cannot sign over its own deny
+    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+    expect(asUser.ok).toBe(true)
+    expect(ports.registrations).toBe(1)
+  })
+
+  it('control Envelope deny 升阶 + admin 单次批准: a hard-envelope deny lands at Human Admin; the one-shot approval is legal and mutates nothing', async () => {
+    const request = requestOf({ requestedEffects: effects(writeEffect()) })
+    const docs = hardRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }])
+    const ports = recordPorts()
+    const { kernel } = makeHarness({ policy: () => denyWrite, documents: () => docs, ports })
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(JSON.stringify(planned))
+    expect(planned.value.requiredAuthority).toBe('human-admin') // admin: the top rung INSIDE envelope support
+    const issued = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-admin', requiredAuthorityAtCreation: 'human-admin' }))
+    if (!issued.ok) throw new Error(JSON.stringify(issued))
+    expect(issued.ok).toBe(true) // a SINGLE-USE grant — no policy document was, or had to be, changed
+    expect(kernel.consumeForExecution(issued.value, consumeFields(request, issued.value)).ok).toBe(true)
+    expect(kernel.consumeForExecution(issued.value, consumeFields(request, issued.value)).ok).toBe(false) // spent once — not a standing exception
+    const again = await kernel.admit(request)
+    if (!again.ok || again.value.kind !== 'requires-approval') throw new Error(JSON.stringify(again)) // the deny is still on the books: 不强迫先永久修改策略
+    expect(ports.registrations).toBe(1) // exactly one mint for one approval
+  })
+
+  it('control whole-effect joint authority: an allowed effect may not slip through beside a denied one', async () => {
+    const request = requestOf({ requestedEffects: effects(readEffect(), writeEffect()) })
+    const mixed = policyDoc([
+      { effectKind: 'read', resource: scopeResource(readEffect()), maximumEffect: 'allow' },
+      { effectKind: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' },
+    ])
+    const { kernel } = makeHarness({
+      policy: () => mixed,
+      documents: () => hardRulesDocs([{ operationClass: 'write', resource: scopeResource(writeEffect()), maximumEffect: 'deny' }]),
+    })
+    const decision = await kernel.admit(request)
+    if (!decision.ok || decision.value.kind !== 'requires-approval') throw new Error(JSON.stringify(decision)) // no partial admit for the allowed half
+    const planned = await kernel.planApproval(request)
+    if (!planned.ok) throw new Error(JSON.stringify(planned))
+    expect(planned.value.requiredAuthority).toBe('human-admin') // ONE case at the set MAX
+    const asUser = await kernel.issueApprovedGrant(request, approvalFor(request, { reviewerAuthority: 'human-user', requiredAuthorityAtCreation: 'human-user' }))
+    expect(asUser.ok).toBe(false) // covering the read is covering nothing: ALL effects or none
+  })
+
+  it('control 未知来源: a deny whose owning authority cannot be established refuses with an accurate diagnosis, zero mints (ruling ③)', async () => {
+    const ports = recordPorts()
+    const { kernel } = makeHarness({
+      policy: () => denyWrite,
+      documents: () => ({
+        teamHardEnvelope: { rules: [{ operationClass: 'write', matcher: { kind: 'subtree' as const, resource: 'realm-a|data' }, maximumEffect: 'deny' as const }] },
+        permissionMutationEnvelope: { status: 'absent' as const },
+      }), // no subtreeContains seam: WHICH rung owns the deny is undeterminable — the lane must say so, not costume it
+      ports,
+    })
+    const decision = await kernel.admit(requestOf({ requestedEffects: effects(writeEffect()) }))
+    if (!decision.ok || decision.value.kind !== 'denied') throw new Error(JSON.stringify(decision))
+    expect(decision.value.error.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(decision.value.error.details?.refusal).toBe('deny-source-unattributed')
+    expect(decision.value.error.message).toContain('unattributed')
+    expect(ports.registrations).toBe(0)
+  })
+
+  it('control 来源/世代变化: a deny landing as a mutation (generation bumped) turns the open Ask stale — stale is a refusal', async () => {
+    let gen = 1
+    let poisoned: ToolPolicyDocument = emptyPolicy()
+    const { kernel } = makeHarness({ authorityGeneration: () => gen, policy: () => poisoned })
+    const request = requestOf()
+    expect((await kernel.admit(request)).ok).toBe(true) // requires-approval at generation 1
+    poisoned = denyWrite // the deny arrives…
+    gen = 2 // …and the assembly bumps the generation, as spec §8.2's mutation discipline requires
+    const stale = await kernel.issueApprovedGrant(requestOf({ binding: binding({ authorityGeneration: 2 }) }), approvalFor(request))
+    expect(stale.ok).toBe(false)
+    if (!stale.ok) expect(stale.error.message).toContain('authority generation moved')
+  })
+
+  it('control 环境不支持: a capability fact that turns off between approval and issue kills the mint with zero side effects (ruling ②)', async () => {
+    let enforced = false
+    const ports = recordPorts()
+    const { kernel } = makeHarness({
+      requiredAssurance: () => (enforced ? { 'content-read': 'hard' as const } : {}),
+      probe: () => ({ ok: false, detail: 'environment does not support the mechanism' }),
+      ports,
+    })
+    const request = requestOf({ requestedEffects: effects(readEffect()) })
+    expect((await kernel.admit(request)).ok).toBe(true) // no demand yet: requires-approval
+    enforced = true // the policy now DEMANDS a hard dimension the environment cannot show
+    const issued = await kernel.issueApprovedGrant(request, approvalFor(request))
+    expect(issued.ok).toBe(false) // Team approval changes no facts
+    expect(ports.registrations).toBe(0)
+    expect(ports.consumptions).toBe(0)
+  })
+})

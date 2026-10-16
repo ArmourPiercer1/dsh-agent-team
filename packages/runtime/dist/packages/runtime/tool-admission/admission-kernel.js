@@ -25,10 +25,16 @@
  *  3. H2 assurance runtime verification (assurance-runtime.ts) — BEFORE any
  *     hard-profile consumption: the level never redeems alone; the record
  *     must be real and probe-matched. A denied assurance never reaches mint.
- *  4. The expansion plane (PR0 planes, realm-filtered): decided `deny` or
- *     `undetermined` poisons the WHOLE set (plan §5: 禁止批准包含确定 deny /
- *     undetermined Effect 的请求); every effect `allow` → mint and admit;
- *     anything else → the ONE logical ApprovalCase (approval-case.ts).
+ *  4. The expansion plane (PR0 planes, realm-filtered), per the 2026-10-16
+ *     ruling (问题2): `undetermined` poisons the WHOLE set (fail-closed,
+ *     plan §5 unchanged); a decided policy `deny` is ROUTED, not refused —
+ *     it enters the ONE ApprovalCase, whose rung is answered by the envelope
+ *     WALK (the deny's owning authority), never by an invented short-circuit
+ *     and never by a trusted assembler tag. Human Admin — the top rung
+ *     inside envelope support — may approve once with no policy mutation;
+ *     a deny whose walk cannot answer refuses as UNATTRIBUTED (ruling ③).
+ *     externalHard capability facts and Domain answers are not policy rules:
+ *     no approval changes facts (leg 3 gates them; ruling ②).
  *  5. Mint is LAST and only for a decided call: the ledger registers the
  *     grant; consumption stays a SEPARATE edge (`consumeForExecution`), so
  *     "admitted but never executed" cannot fake a spent approval, and
@@ -170,7 +176,7 @@ export function createAdmissionKernel(options) {
                 error: {
                     code: reason.plane === 'expansion' ? 'IO_POLICY_UNSUPPORTED' : 'APPROVAL_STALE',
                     message: `admission refused: the request is not approvable as a whole (${reason.detail})`,
-                    details: { refusal: reason.plane === 'expansion' ? 'effect-policy-denied' : 'approval-unapprovable', effectIndex: reason.effectIndex },
+                    details: { refusal: reason.plane === 'expansion' ? 'effect-set-undetermined' : 'approval-unapprovable', effectIndex: reason.effectIndex },
                 },
             };
         }
@@ -183,6 +189,7 @@ export function createAdmissionKernel(options) {
         const planned = planEffectSetApproval({
             effects: request.requestedEffects,
             needApproval: expansion.needsApproval,
+            ...(expansion.policyDenied.length === 0 ? {} : { policyDenied: new Set(expansion.policyDenied) }),
             realmId: request.realmId,
             beneficiaryAuthority: options.beneficiaryAuthority,
             documents: options.documents(),
@@ -192,12 +199,26 @@ export function createAdmissionKernel(options) {
             ...(options.subtreeContains === undefined ? {} : { subtreeContains: options.subtreeContains }),
         });
         if (!planned.ok) {
+            const reason = planned.unapprovable;
+            // Ruling ③: over a DENIED effect an unanswerable walk is an
+            // UNATTRIBUTED deny source — an unproven authority, so §5's unverified
+            // code fits, and the message says exactly that instead of costumes.
+            if (reason.sourceUnattributed === true) {
+                return {
+                    ok: false,
+                    error: {
+                        code: 'TOOL_BINDING_UNVERIFIED',
+                        message: `admission refused: a DENIED effect's owning authority could not be established — deny-source-unattributed (${reason.detail})`,
+                        details: { refusal: 'deny-source-unattributed', effectIndex: reason.effectIndex },
+                    },
+                };
+            }
             return {
                 ok: false,
                 error: {
                     code: 'APPROVAL_STALE',
-                    message: `admission refused: no ApprovalCase may open for this effect set (${planned.unapprovable.detail})`,
-                    details: { refusal: 'approval-unapprovable', effectIndex: planned.unapprovable.effectIndex },
+                    message: `admission refused: no ApprovalCase may open for this effect set (${reason.detail})`,
+                    details: { refusal: 'approval-unapprovable', effectIndex: reason.effectIndex },
                 },
             };
         }
@@ -225,7 +246,7 @@ export function createAdmissionKernel(options) {
             return denied({
                 code: 'IO_POLICY_UNSUPPORTED',
                 message: `admission refused: the effect set is not executable as a whole (${reason.detail})`,
-                details: { refusal: 'effect-set-unapprovable', effectIndex: reason.effectIndex, plane: reason.plane },
+                details: { refusal: 'effect-set-undetermined', effectIndex: reason.effectIndex, plane: reason.plane },
             });
         }
         if (expansion.needsApproval.length > 0) {
@@ -307,7 +328,7 @@ export function createAdmissionKernel(options) {
                 error: {
                     code: 'IO_POLICY_UNSUPPORTED',
                     message: `admission refused: between approval and issue, effect ${String(expansion.unapprovable.effectIndex)} became non-executable (${expansion.unapprovable.detail}) — stale is a refusal, never a retry`,
-                    details: { refusal: 'effect-set-unapprovable-at-issue', effectIndex: expansion.unapprovable.effectIndex },
+                    details: { refusal: 'effect-set-undetermined-at-issue', effectIndex: expansion.unapprovable.effectIndex },
                 },
             };
         }
