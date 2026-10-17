@@ -42,21 +42,26 @@
  *      and the fallback could re-parent into a different DSH version
  *      than the install was pinned against (drift). Normal-first
  *      resolution makes the dead candidate harmless.
- *   2. the tests/deepseek-harness-test-use checkout two levels above
- *      this file's worktree (the test DSH source, TEST_METHODS.md;
- *      canonical location since test-infra-standardization 2026-09-12);
- *   3. the same checkout under the MAIN repository (the worktree's parent).
- *      NOTE (task/plugin-bundle-form): the resolver-file candidates were
- *      ORIGINALLY dead — four dirname()s from
- *      packages/runtime/src/plugin/ land on <root>/packages, not the repo
+ *   2. EVERY ancestor of this file's own location that is a repository root
+ *      (marker: `<root>/tests/paths.mjs`), each contributing the canonical
+ *      `tests/deepseek-harness-test-use` candidate plus the legacy
+ *      `references/deepseek-harness-test-use` fallback. NOTE
+ *      (task/plugin-bundle-form): the resolver-file candidates were ORIGINALLY
+ *      dead — four dirname()s from
+ *      `packages/runtime/src/plugin/` land on <root>/packages, not the repo
  *      root — so the re-parent path never fired in any world (the verified
- *      verticals ran on plain passthrough). The count is fixed here (five
- *      dirname()s) because the fallback IS the documented rescue path for
- *      a scope without the pinned dependencies; after the fix it is
- *      discoverable ONLY on this machine's test world (the test-use
- *      checkout is gitignored, so a user's clone/git-install profile never
- *      exposes a candidate), which is exactly the no-drift property the
- *      normal-first order relies on. The legacy
+ *      verticals ran on plain passthrough). GLUE-6 (install-surface
+ *      self-sufficiency) replaced that single fixed count with the two
+ *      LAYOUT-matched roots, because the shipped entry now registers the
+ *      byte-identical DIST-MIRROR copy of this file
+ *      (`packages/runtime/dist/packages/runtime/src/plugin/`), which sits at a
+ *      DIFFERENT depth than the source copy — one fixed count silently deadens
+ *      the fallback for one of the two shipped layouts. The recognition is
+ *      name-based (a closed suffix pair), never a directory scan, so the
+ *      no-drift property holds: the fallback stays discoverable ONLY on this
+ *      machine's test world (the test-use checkout is gitignored, so a user's
+ *      clone/git-install profile never exposes a candidate), which is exactly
+ *      what the normal-first order relies on. The legacy
  *      references/deepseek-harness-test-use layout stays a fallback
  *      candidate for machines that predate the 2026-09-12 move.
  *
@@ -76,17 +81,61 @@ function candidateFromArgv() {
   return dirname(dirname(dirname(abs)))
 }
 
-/** The worktree-based candidates (this file lives in the worktree source tree). */
+/**
+ * The repository-root candidates, derived from this file's OWN location.
+ *
+ * GLUE-6 (install-surface self-sufficiency): the shipped entry registers the
+ * byte-identical DIST-MIRROR copy of this file
+ * (`packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs`),
+ * while the source entry registers the source copy
+ * (`packages/runtime/src/plugin/upstream-resolver.mjs`). The two layouts sit
+ * at DIFFERENT depths, so a single fixed dirname count silently deadens the
+ * fallback for one of them (measured pre-fix: the mirror copy would have
+ * derived `<repo>/packages/runtime/dist` as its "worktree"). Both layouts are
+ * therefore matched by their own closed suffix, and ONLY those two paths are
+ * recognized: this stays a NAME-based derivation, never a directory scan, so
+ * no candidate can ever re-parent into a different DSH checkout than the one
+ * this repository pins (the no-drift property the normal-first order relies
+ * on; an arbitrary ancestor walk would break it).
+ *
+ * @returns {string[]} candidate repository roots — the located repository,
+ *   then the same shape's parent-of-worktree main repository (a
+ *   `<main>/.worktrees/<task>` checkout maps to `<main>`).
+ */
+const LAYOUT_SUFFIXES = Object.freeze([
+  // .../<root>/packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs
+  'packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs',
+  // .../<root>/packages/runtime/src/plugin/upstream-resolver.mjs
+  'packages/runtime/src/plugin/upstream-resolver.mjs',
+])
+
+function repositoryRootsFromResolverFile() {
+  const roots = []
+  const push = (root) => {
+    if (root.length > 0 && !roots.includes(root)) roots.push(root)
+  }
+  for (const suffix of LAYOUT_SUFFIXES) {
+    // Compare on the separator-normalized tail so a Windows file URL and a
+    // POSIX one derive the SAME roots; the root itself is cut out of the
+    // platform-native path, never re-joined from the normalized copy.
+    const normalized = RESOLVER_FILE.split(/[\\/]/).join('/')
+    if (!normalized.endsWith(`/${suffix}`)) continue
+    const cut = RESOLVER_FILE.length - suffix.length - 1
+    if (cut <= 0) continue
+    const root = RESOLVER_FILE.slice(0, cut).replace(/[\\/]$/, '')
+    push(root)
+    // The worktree's MAIN repository (a `.worktrees/<task>` checkout is two
+    // levels below it — the mapping the pre-GLUE-6 fixed count computed).
+    push(dirname(dirname(root)))
+  }
+  return roots
+}
+
 function candidatesFromResolverFile() {
-  // .../<worktree>/packages/runtime/src/plugin/upstream-resolver.mjs
-  // five dirname()s strip the file + plugin + src + runtime + packages
-  // and land on the repo root (worktree or main checkout).
-  const worktree = dirname(dirname(dirname(dirname(dirname(RESOLVER_FILE)))))
-  const mainRepo = dirname(dirname(worktree))
   // Canonical test layout first (tests/deepseek-harness-test-use —
   // tests/paths.mjs, test-infra-standardization 2026-09-12); the legacy
   // references/ layout stays as a fallback for pre-move machines.
-  return [worktree, mainRepo].flatMap((base) => [
+  return repositoryRootsFromResolverFile().flatMap((base) => [
     join(base, 'tests', 'deepseek-harness-test-use'),
     join(base, 'references', 'deepseek-harness-test-use'),
   ])

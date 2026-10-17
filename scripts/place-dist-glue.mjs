@@ -14,9 +14,22 @@
  *   packages/runtime/src/plugin/live/agent-bindings.mjs
  *     -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs
  *
- * NOT placed (deliberate): packages/runtime/src/plugin/upstream-resolver.mjs —
- * the emitted host.js registers its resolve hook through a layout-candidate
- * list (dist OR source path), so the source-tree file already satisfies it.
+ * GLUE-6 (install-surface self-sufficiency, RED-A): the two files the shipped
+ * entry loads at RUNTIME through a relative specifier are runtime
+ * dependencies of the installed package, so they ride this list too. The
+ * pre-GLUE-6 stance — "upstream-resolver.mjs is deliberately NOT placed, the
+ * emitted host.js registers its resolve hook through a layout-candidate list,
+ * so the source-tree file already satisfies it" — assumed a source checkout
+ * is always present. It is not: the published face of the runtime package is
+ * `files: ["dist"]`, and a strict unfolding of that face booted RED with
+ * `ERR_MODULE_NOT_FOUND … packages/runtime/src/plugin/upstream-resolver.mjs`
+ * (evidence: alpha5/install-entry run 2026-10-17T17-06-56Z, RED-A). Both
+ * files now ship INSIDE the mirror and host.ts prefers the in-mirror
+ * specifier, so the strict install face is self-contained:
+ *   packages/runtime/src/plugin/upstream-resolver.mjs
+ *     -> packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs
+ *   packages/runtime/root-binding/harness/seam.mjs
+ *     -> packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs
  *
  * Usage: node place-dist-glue.mjs [repo-root]   (default: cwd)
  */
@@ -43,6 +56,21 @@ export const PLACEMENTS = [
   {
     src: 'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
+  },
+  // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
+  // resolve hook is registered by `module.register` at apply time and the
+  // storage seam is imported by the boot row — both from a relative
+  // specifier, so on the strict `files: ["dist"]` install face they must sit
+  // INSIDE the mirror or the bootstrap dies with ERR_MODULE_NOT_FOUND.
+  // Byte-identical like every other placement; the drift gate (check D)
+  // compares src vs dist for each entry of this list.
+  {
+    src: 'packages/runtime/src/plugin/upstream-resolver.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs',
+  },
+  {
+    src: 'packages/runtime/root-binding/harness/seam.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs',
   },
 ]
 

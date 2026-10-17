@@ -82,8 +82,33 @@ export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'tea
 /**
  * The host registration law (measured at the pinned host: core tools
  * `register()` throws `must declare output { schema, render }` without it)
- * applied to the lane's closed execute envelope `{ text }`. render takes
- * (args, validated-value) per the host dispatch and projects ONLY the text.
+ * applied to the lane's closed execute envelope `{ text }`.
+ *
+ * THE RENDER CONTRACT (GLUE-6): the host declares
+ * `render(args, value): ContentBlock[]`
+ * (`packages/core/tools/src/index.ts:217` at the pinned 0.2.0-rc.2 host) and
+ * CONSUMES the return value AS the tool result's model-facing content:
+ * `createSuccessResult` snapshots it (`…index.ts:1839-1843`) and the result
+ * travels onward as `content`, which every downstream consumer walks as an
+ * ARRAY (`packages/llm/llm/src/content.ts:126-127` `contentHasImage` →
+ * `content.some(…)`). Returning a bare `String` — the pre-GLUE-6 shape — is
+ * therefore not a presentation choice but a contract violation: the host
+ * threw `content.some is not a function` while assembling the result, so
+ * EVERY live trio dispatch died in the host's result assembly and neither a
+ * computed refusal nor a future effect body could ever reach the model
+ * (measured LIVE: alpha5/install-entry run 2026-10-17T17-06-56Z, world
+ * `team`, member tool_results [1]/[2] = `Error: content.some is not a
+ * function`; synth cannot see this — the value only becomes `content` inside
+ * the host scheduler).
+ *
+ * The contract shape, one block per outcome the lane can produce: the lane's
+ * `execute` returns `{ text }` for BOTH lanes (register.ts: a presented
+ * result carries the renderer's text, a refusal carries
+ * `REFUSAL_PREFIX kind=… code=… detail=…`), so both become exactly one
+ * `{ type: 'text', text }` block — the same shape the host's own `bash` tool
+ * renders (`packages/shell/tool-bash/src/index.ts:471`). Text stays verbatim:
+ * the lane's control-byte law already escaped anything structural, and the
+ * block carries no markup, so nothing is re-interpreted on the way out.
  */
 const PLANE_PRESENTATION_FACE = Object.freeze({
   schema: Object.freeze({
@@ -92,7 +117,16 @@ const PLANE_PRESENTATION_FACE = Object.freeze({
     required: Object.freeze(['text']),
     additionalProperties: false,
   }),
-  render: (_args, value) => String(value?.text ?? ''),
+  /**
+   * Project the closed envelope onto typed model content.
+   * @param _args - the validated call arguments (unused: the envelope is self-describing).
+   * @param value - the lane's `{ text }` envelope (refusal or result).
+   * @returns {Array<{ type: 'text', text: string }>} one legal text block.
+   */
+  render: (_args, value) => [{
+    type: 'text',
+    text: typeof value?.text === 'string' ? value.text : '',
+  }],
 })
 
 /**

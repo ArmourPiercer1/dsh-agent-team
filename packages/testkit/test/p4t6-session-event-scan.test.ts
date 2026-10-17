@@ -2433,6 +2433,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/src/plugin/live/team-tool-plane.mjs',
       'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
     ]
+    // GLUE-6 (alpha5-glue6-fix): the unit leg for the two shipped-artifact
+    // fixes. The fixes add NO new scannable source — the dist-mirror copies
+    // of `upstream-resolver.mjs` and `root-binding/harness/seam.mjs` live
+    // under a `dist` segment, which the scanner excludes by rule (the shipped
+    // face is not a source tree), and every other edit is in a file this
+    // ledger already books. So the chain moves by exactly this one file.
+    const SCANNED_PATHS_A5GLUE6: readonly string[] = [
+      'packages/runtime/test/a5g6-install-face-render.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2470,7 +2479,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_GGPROBES.length +
         SCANNED_PATHS_A5PB.length +
         SCANNED_PATHS_A5LSP.length +
-        SCANNED_PATHS_A5GLUE5.length,
+        SCANNED_PATHS_A5GLUE5.length +
+        SCANNED_PATHS_A5GLUE6.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2509,7 +2519,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_GGPROBES.length +
         SCANNED_PATHS_A5PB.length +
         SCANNED_PATHS_A5LSP.length +
-        SCANNED_PATHS_A5GLUE5.length,
+        SCANNED_PATHS_A5GLUE5.length +
+        SCANNED_PATHS_A5GLUE6.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2572,6 +2583,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5PB,
       ...SCANNED_PATHS_A5LSP,
       ...SCANNED_PATHS_A5GLUE5,
+      ...SCANNED_PATHS_A5GLUE6,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2816,6 +2828,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // clause; the final-rebase dedup re-ties the endpoints here, and the
     // prep captures in evidence/alpha5/glue5/ stay as HISTORY lines.)
     expect(SCANNED_PATHS_A5GLUE5.length).toBe(1168 - 1166)
+    // The GLUE-6 tie, same form, measured on this tree (base master
+    // `23002259`, chain at 1168): solo RED `expected 1169 to be 1168` before
+    // this booking. One file — the shipped-face unit leg; the two
+    // dist-mirror placements the same round adds are excluded by the
+    // `dist`-segment rule, which is why the chain moves by one and not three.
+    expect(SCANNED_PATHS_A5GLUE6.length).toBe(1169 - 1168)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

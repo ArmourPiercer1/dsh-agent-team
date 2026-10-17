@@ -1,0 +1,25 @@
+{
+  "provenance": "READ-ONLY historical capture of the SAME defect (RED-A) and of RED-2 (the content.some crash inside the wire digests), recorded by the INSTALL-ENTRY requirement-input kit on branch feat/alpha5-install-entry-evidence (worktree a5ie-install-entry), run 2026-10-17T17-06-56Z, base 6a0f8e19. Copied byte-for-byte into this round as HISTORY (not re-produced evidence of this round); this round re-measures both gaps in runs/.",
+  "files": [
+    {
+      "file": "criteria.json",
+      "bytes": 13072,
+      "sha256": "374fc9abc28212e737ecdc2874f581a863698b4c97476c1a82b6bfc2c5d5ecf0"
+    },
+    {
+      "file": "install-manifest-red-evidence.log",
+      "bytes": 1170,
+      "sha256": "f90c3875f7b907cc35e42ee0b207c899ff07edd00cbc25a13c5e591e14070536"
+    },
+    {
+      "file": "red-a-facts.json",
+      "bytes": 870,
+      "sha256": "85448f586c81b79b8436b333b7debb7be96cb072c724f98f85bab0b1571883ed"
+    },
+    {
+      "file": "wire-digests-team.jsonl",
+      "bytes": 18557,
+      "sha256": "fcd1395adc18980d3bae5e2f23a1a68bc3f7df587b8673cc51ee49d6c4f719ef"
+    }
+  ]
+}

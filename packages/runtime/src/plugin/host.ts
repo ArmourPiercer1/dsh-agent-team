@@ -535,54 +535,56 @@ const REMOTE_MOUNT_POLL_MS = 100
  * Register the upstream resolution hook exactly once per process (a second
  * `module.register` would stack a duplicate hook in the resolution chain).
  *
- * Layout-agnostic candidate search, production layout FIRST:
+ * GLUE-6 (install-surface self-sufficiency, RED-A): the hook is a RUNTIME
+ * dependency of the shipped entry, so it ships INSIDE the package face.
+ * `scripts/place-dist-glue.mjs` PLACEMENTS byte-copies
+ * `src/plugin/upstream-resolver.mjs` to
+ * `dist/packages/runtime/src/plugin/upstream-resolver.mjs` (the drift gate
+ * `check-artifacts-committed` compares both), and candidate 0 below is the
+ * ONE relative specifier that hits the shipped file in BOTH layouts:
  *
- *   1. the DIST mirror depth (the production world) — five up from
- *      `dist/packages/runtime/src/plugin/host.js` is
- *      `<worktree>/packages/runtime`, so the hook resolves to the
- *      source-tree `<worktree>/packages/runtime/src/plugin/upstream-resolver.mjs`
- *      — the EXACT file the pre-candidate code computed (tsc never copies
- *      the .mjs into the mirror). Production behavior is bit-identical.
- *   2. the SOURCE depth (reachable only under the unit-test runner) —
- *      four up from `src/plugin/host.ts` is the worktree root, so the SAME
- *      file as `<worktree>/packages/runtime/src/plugin/upstream-resolver.mjs`.
+ *   1. `./upstream-resolver.mjs` — the dist entry sits next to its placed
+ *      copy; the source entry sits next to the tracked source file. Either
+ *      way the hook is inside the surface the install manifest publishes
+ *      (`packages/runtime/package.json` `files: ["dist"]`), which is what a
+ *      strict `git archive`/npm unfolding actually contains.
+ *   2/3. the pre-GLUE-6 repo-layout candidates (five up from the dist entry =
+ *      the runtime package root outside the mirror; four up from
+ *      `src/plugin/host.ts` = the worktree root). Kept as fallbacks for a
+ *      source checkout that never ran `build:composition`; they are DEAD in
+ *      an installed package, which is exactly the hole RED-A pinned.
  *
  * The hook file is itself world-agnostic: upstream-resolver.mjs derives its
- * checkout candidates from its OWN path, which is identical for both
- * candidates — registering it from either layout is the same registration.
+ * checkout candidates from its OWN path and knows both layouts, so the
+ * mirror copy and the source copy are interchangeable registrations.
  *
- * Fail closed: if NO candidate resolves, the SAME error surface as the
- * pre-candidate single `register()` call — Node's ERR_MODULE_NOT_FOUND for
- * the missing hook (the first candidate's error is rethrown). No new stable
- * code, no silent fallback to a wrong file. The once-per-process flag is set
- * only AFTER a successful registration, so a failed registration cannot
- * poison later apply attempts.
+ * Selection is by EXISTENCE, not by "first call that did not throw":
+ * `module.register` is LAZY — it never touches the disk, so a throw-driven
+ * loop registers a MISSING hook and the failure only surfaces at the first
+ * import, deep inside the host bootstrap (measured RED-A: `bootstrap FAILED:
+ * Error [ERR_MODULE_NOT_FOUND] … upstream-resolver.mjs imported from data:`
+ * with the row already mounted). Fail closed stays fail closed: when NO
+ * candidate exists, the FIRST (in-face) candidate is registered anyway, so
+ * the surface is Node's ERR_MODULE_NOT_FOUND naming the file the install
+ * manifest is supposed to ship — no silent fallback to a wrong file. The
+ * once-per-process flag is set only AFTER a successful registration.
  */
 function registerUpstreamResolverOnce(): void {
   const g = globalThis as typeof globalThis & {
     __dshAgentTeamUpstreamResolverRegistered?: boolean
   }
   if (g.__dshAgentTeamUpstreamResolverRegistered === true) return
+  const faceHook = new URL('./upstream-resolver.mjs', import.meta.url).href
   const hookCandidates: readonly string[] = [
+    faceHook,
     // dist/.../src/plugin/host.js → five up = <worktree>/packages/runtime.
-    '../../../../../src/plugin/upstream-resolver.mjs',
+    new URL('../../../../../src/plugin/upstream-resolver.mjs', import.meta.url).href,
     // src/plugin/host.ts → four up = the worktree root.
-    '../../../../packages/runtime/src/plugin/upstream-resolver.mjs',
+    new URL('../../../../packages/runtime/src/plugin/upstream-resolver.mjs', import.meta.url).href,
   ]
-  const errors: Array<unknown> = []
-  for (const candidate of hookCandidates) {
-    try {
-      register(new URL(candidate, import.meta.url).href)
-      g.__dshAgentTeamUpstreamResolverRegistered = true
-      return
-    } catch (error) {
-      errors.push(error)
-    }
-  }
-  // Fall-through is only reachable when EVERY candidate threw, so `errors`
-  // is non-empty; rethrow the FIRST candidate's error — the exact error
-  // surface of the pre-candidate single register() call.
-  throw errors[0]
+  const found = hookCandidates.find((candidate) => existsSync(fileURLToPath(candidate)))
+  register(found ?? faceHook)
+  g.__dshAgentTeamUpstreamResolverRegistered = true
 }
 
 /**
@@ -768,18 +770,29 @@ export function withDefaultWorkspace(config: TeamPluginConfig, launchCwd: string
 }
 
 /**
- * The default storage-seam URL candidates, per module layout (the dist
- * entry sits five directory levels below the runtime package root —
- * `dist/packages/runtime/src/plugin` — the source entry two — the same
- * layout-agnostic candidate pattern as `loadLegacyInspect`). An explicit
- * `config.seamUrl` always wins.
+ * The default storage-seam URL candidates, package face first (the same
+ * layout-agnostic candidate pattern as `loadLegacyInspect`).
+ *
+ * GLUE-6 (install-surface self-sufficiency, RED-A): the seam is a RUNTIME
+ * dependency of the shipped entry, so it ships INSIDE the package face —
+ * `scripts/place-dist-glue.mjs` PLACEMENTS byte-copies
+ * `packages/runtime/root-binding/harness/seam.mjs` to
+ * `dist/packages/runtime/root-binding/harness/seam.mjs` (the committed-surface
+ * drift gate compares both). Candidate 0 is the ONE relative specifier that
+ * hits the shipped file in BOTH layouts: two up from the dist entry
+ * `dist/packages/runtime/src/plugin` is `dist/packages/runtime`, two up from
+ * the source entry `src/plugin` is the runtime package root. Candidate 1
+ * stays the pre-GLUE-6 repo-layout path (five up from the dist entry = the
+ * runtime package root OUTSIDE the mirror) — dead in an installed package,
+ * which is exactly the hole RED-A pinned. An explicit `config.seamUrl`
+ * always wins.
  * @param hostModuleUrl - this entry's `import.meta.url`.
- * @returns the candidate file URLs, dist layout first.
+ * @returns the candidate file URLs, package face first.
  */
 export function defaultSeamUrlCandidates(hostModuleUrl: string): readonly string[] {
   return [
-    new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,
     new URL('../../root-binding/harness/seam.mjs', hostModuleUrl).href,
+    new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,
   ]
 }
 
