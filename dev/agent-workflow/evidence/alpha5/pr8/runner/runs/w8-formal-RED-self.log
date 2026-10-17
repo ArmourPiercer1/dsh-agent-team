@@ -1,0 +1,187 @@
+✔ lint: machine matrix ↔ doc matrix 逐行 1:1 对应（同 id 集合、无重无缺、负例可 lint） (5.124474ms)
+✔ lint: 32 行齐（M-01..M-14 + SUP-01..SUP-18），doc 矩阵自身 32 行 (0.820293ms)
+✔ lint: 词汇封闭 + 携带状态一致 + automatable=false 必带 LIVE-GATED 依据且无 hooks (0.92905ms)
+✔ lint: 6 个 partial 行 = M-01/M-02/M-03/M-06/M-12/M-14（DECISION-PACK 决策 1 点名行） (0.541384ms)
+✔ lint: G-a 判据引用 17:52Z 裁决原文要点，且不得出现 17:02 回填句式 (0.759609ms)
+✔ lint: G-g 相关行必须引 g-g-support-contract.md 分级，且禁 "fail-closed 已证/proven" 类措辞 (2.235555ms)
+✔ tri-state: fixture-surface 锚点齐 ⇒ PASS；缺锚点 ⇒ FAIL；文件缺 ⇒ NOT_RUN(声明环境缺) 或 FAIL(未声明) (0.574659ms)
+✔ tri-state: recorded-evidence 计数与 verdict 词表判定；记录缺 ⇒ NOT_RUN（附他处登记引注） (0.42347ms)
+✔ tri-state: kit-rerun 前置不齐 ⇒ NOT_RUN（列出缺失前置，绝不伪造 PASS） (0.872357ms)
+✔ tri-state: kit-rerun 全 criteria PASS ⇒ PASS；有 FAIL ⇒ FAIL（真 spawn，临时世界即删） (99.041292ms)
+✔ tri-state: automatable=false ⇒ REQUIRES-LIVE-WIRING（含 LIVE-GATED 依据）；不得计入 PASS/FAIL (0.396225ms)
+✔ tri-state: p4t6 只读查询在真实树可跑且零新词（quarantine 之外零命中） (286.025469ms)
+✔ final_declaration: 台账缺文件 ⇒ 视为 OPEN ⇒ 恒 null（fail-closed 语义） (0.301941ms)
+✔ final_declaration: 台账有开放行 ⇒ null；全关 ⇒ 仍 null（本轮无任何行允许非空；非空尝试=throw） (0.144901ms)
+✔ final_declaration: 机检矩阵中任何非空 final_declaration ⇒ assertMachineFinalDeclarations 判红 (0.680242ms)
+✔ distribution: 计数只含四类，且 fixture/NOT_RUN/RLW 永不产出 SUPPORTED/已验收措辞 (0.254711ms)
+✔ N1: 机检矩阵行缺 final_declaration 键 ⇒ 显式判红（undefined 不放行） (0.078889ms)
+✔ N1: 真实机检矩阵 32 行均显式携带 final_declaration 键且为 null (0.49636ms)
+✔ N1: doc 矩阵 final_declaration 键已补齐 ⇒ 缺键点名清单清零（0 条）；机制不变——人工剥键仍逐行显式点名（SUP-01..18） (1.060915ms)
+✔ N2: 矩阵内 registry 套件引用必须用 registry.mjs 真实 id（M-13 须 60-web-jobs-mcp-domain） (1.097867ms)
+✔ G-g post-probes: 三行判据同步引 review-G-g-probes.md@bbaf45de（P4/P6 达 D、G-6/G-7 仍 LIVE-GATED），并保持禁则 (0.667947ms)
+✔ G-g post-probes 反空转: 只引旧 98ddbaa9 快照无 probes 引注 ⇒ 判红 (0.144803ms)
+✔ prep: 机检矩阵恰 5 行挂 pending_probe（=RLW 行集），schema 合规，lintCorrespondence 保持全绿 (2.866885ms)
+✔ prep: pending_probe 违例形态逐个咬红（automatable=true / 挂 hooks / 词表缺 PROBE-GATED / 不声明禁 PASS / doc 未同步 / 未知 lane） (1.634325ms)
+✖ prep: probe 脚本在场可执行；W8 轮装配面（合并 kit）在场 ⇒ 运行不得再报 NOT-RUN-READY（exit∉{3}），receipt 缺=PROBE-GATED exit 4；假想无装配根仍 NOT-RUN-READY exit 3（fail-closed 保留） (59.247758ms)
+✖ prep: deriveProbeTransition 运行期代码位——PASS 尝试=VIOLATION；LIVE 无证据/假证据=降级 PROBE-GATED；NOT-RUN-READY/FAIL=PROBE-GATED+最小复现 (1.631443ms)
+✖ F-1: LIVE 的 evidence_refs 逐项核验存在性（repo_root 内）——不存在/逃逸 repo_root 的 ref ⇒ 降级 PROBE-GATED，不再 LIVE (0.535964ms)
+✖ F-1: receipt/结果自证的 assembly_anchors_verified 布尔买不到 LIVE——runner 亲验锚点不在场即降级（假布尔咬住） (0.279638ms)
+✖ F-2: 装配锚点=行形匹配——注释/裸子串不过，绑定级代码形才在场（grep 装配面） (0.860881ms)
+✖ F-2: W8 正式轮装配面在 master 现势在场（W4/W5/W7 合并 kit；锚点契约=面+行形，非 agent-bindings 子串） (0.185745ms)
+✔ F-2/F-1: probe 假装配+伪造 receipt 在全新假根下不得出 LIVE（注释锚+假布尔+缺 refs 全咬） (303.828359ms)
+✖ F-1/F-4: 机检矩阵 anchor_contract/status_now/transition_record 与 probe-lib 装配面表一致（防漂移） (0.818032ms)
+✖ prep: evaluateRow 对 pending_probe 行永不输出 PASS（PASS 尝试→FAIL+违例注记；LIVE 有 runner 亲验证据→LIVE 非 PASS） (0.629601ms)
+✖ prep(提交时位): TRANSITIONED 行的假 evidence_refs / doc 状态漂移被 assertProbeRegistrations 咬红 (0.586846ms)
+✔ prep: 分布把 LIVE/PROBE-GATED 与 PASS 分桶（行级 LIVE 永不计入 PASS 计数） (0.17639ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 26
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 868.852198
+
+✖ failing tests:
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:372:1
+✖ prep: probe 脚本在场可执行；W8 轮装配面（合并 kit）在场 ⇒ 运行不得再报 NOT-RUN-READY（exit∉{3}），receipt 缺=PROBE-GATED exit 4；假想无装配根仍 NOT-RUN-READY exit 3（fail-closed 保留） (59.247758ms)
+  AssertionError [ERR_ASSERTION]: dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs 在装配在场的 master 上期望 exit∈{0,2,4}（LIVE/FAIL/PROBE-GATED），实得 3；stdout=# probe-M-04 (str_replace_editor) run-utc=2026-10-17T03:06:37.811Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck
+  DEPEND W5 surface="admission 门控工具面注册进测试会话（IF-1）——editor 子命令 I/O 映射观测面宿主" if=[IF-1]
+  DEPEND W4 surface="受支持 profile 真实 spawn+执行观测——编辑器执行落盘腿" if=[IF-1]
+  CHECK w5-tool-face-registered lane=W5 missing
+  MISSING-ASSEMBLY W5 admission 门控工具面注册（IF-1 plugin row/ctx.age
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:381:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:393:1
+✖ prep: deriveProbeTransition 运行期代码位——PASS 尝试=VIOLATION；LIVE 无证据/假证据=降级 PROBE-GATED；NOT-RUN-READY/FAIL=PROBE-GATED+最小复现 (1.631443ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'PROBE-GATED'
+  - 'LIVE'
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:406:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'PROBE-GATED',
+    expected: 'LIVE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:417:1
+✖ F-1: LIVE 的 evidence_refs 逐项核验存在性（repo_root 内）——不存在/逃逸 repo_root 的 ref ⇒ 降级 PROBE-GATED，不再 LIVE (0.535964ms)
+  AssertionError [ERR_ASSERTION]: 指向不存在文件的 ref 必须降级（F-1）
+  + actual - expected
+  
+  + 'LIVE'
+  - 'PROBE-GATED'
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:426:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'LIVE',
+    expected: 'PROBE-GATED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:438:1
+✖ F-1: receipt/结果自证的 assembly_anchors_verified 布尔买不到 LIVE——runner 亲验锚点不在场即降级（假布尔咬住） (0.279638ms)
+  AssertionError [ERR_ASSERTION]: 假布尔+无亲验锚点必须降级（F-1 自证布尔封死）
+  + actual - expected
+  
+  + 'LIVE'
+  - 'PROBE-GATED'
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:446:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'LIVE',
+    expected: 'PROBE-GATED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:453:1
+✖ F-2: 装配锚点=行形匹配——注释/裸子串不过，绑定级代码形才在场（grep 装配面） (0.860881ms)
+  AssertionError [ERR_ASSERTION]: probe-lib.grepAssemblyAnchors 必须存在（runner 亲验位）
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:455:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:479:1
+✖ F-2: W8 正式轮装配面在 master 现势在场（W4/W5/W7 合并 kit；锚点契约=面+行形，非 agent-bindings 子串） (0.185745ms)
+  TypeError: Cannot read properties of undefined (reading 'W4')
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:482:29)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:531:1
+✖ F-1/F-4: 机检矩阵 anchor_contract/status_now/transition_record 与 probe-lib 装配面表一致（防漂移） (0.818032ms)
+  TypeError: Cannot read properties of undefined (reading 'W5')
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:541:37)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:562:1
+✖ prep: evaluateRow 对 pending_probe 行永不输出 PASS（PASS 尝试→FAIL+违例注记；LIVE 有 runner 亲验证据→LIVE 非 PASS） (0.629601ms)
+  TypeError: Cannot read properties of undefined (reading 'W5')
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:577:35)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:592:1
+✖ prep(提交时位): TRANSITIONED 行的假 evidence_refs / doc 状态漂移被 assertProbeRegistrations 咬红 (0.586846ms)
+  AssertionError [ERR_ASSERTION]: 假 refs 转态应咬红: ["M-04: 准备轮 pending_probe.status_now 必须为 PREPARED-NOT-RUN-READY","pending_probe 缺行: M-05,M-08,M-09,M-13（5 个 RLW 行必须全挂）"]
+      at TestContext.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w8-redcheck/dev/agent-workflow/evidence/alpha5/pr8/runner/pr8-runner-self.test.mjs:600:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
