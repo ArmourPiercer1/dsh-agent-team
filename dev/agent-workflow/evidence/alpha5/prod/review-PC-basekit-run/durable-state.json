@@ -1,0 +1,56 @@
+{
+  "generation": 1,
+  "windowState": "ACTIVE",
+  "outstandingCallIds": [],
+  "jobs": [],
+  "roster": [
+    "team_list_members",
+    "team_list_templates",
+    "team_inspect_config",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_collect",
+    "team_send_message",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_list_pending_control",
+    "team_archive_member",
+    "team_grant_permission",
+    "team_revoke_permission"
+  ],
+  "rosterHasJobStart": false,
+  "durableMembers": {
+    "session-a5w7-root-2026-10-17T08-06-30": [
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ],
+    "session-a5w7-team-2026-10-17T08-06-30": [
+      {
+        "instanceId": "inst-0auotb602p8w",
+        "templateId": "wb",
+        "childSessionId": "session-team-child-f2686e7892ce97643ffe1b58f06a56a5",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-1a78ly71g9fe",
+        "templateId": "wa",
+        "childSessionId": "session-team-child-f24c6bf3e6ed18be1994e04f04850203",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ]
+  },
+  "definitionStore": {},
+  "observations": []
+}

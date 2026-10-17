@@ -1,0 +1,21 @@
+{
+  "roster": [
+    "team_list_members",
+    "team_list_templates",
+    "team_inspect_config",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_collect",
+    "team_send_message",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_list_pending_control",
+    "team_archive_member",
+    "team_grant_permission",
+    "team_revoke_permission"
+  ],
+  "rosterHasJobStart": false,
+  "jobStartShaped": []
+}

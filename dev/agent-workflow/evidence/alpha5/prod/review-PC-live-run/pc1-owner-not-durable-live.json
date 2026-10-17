@@ -1,0 +1,56 @@
+{
+  "before": {
+    "jobIds": [],
+    "outstanding": [],
+    "windowState": "ACTIVE",
+    "observationCount": 0,
+    "tailEvents": [],
+    "assemblyOwnsWindow": true
+  },
+  "refusals": [
+    {
+      "label": "forged-instanceId",
+      "refusal": {
+        "ok": false,
+        "code": "owner-not-durable",
+        "detail": "the claimed member scope is not confirmed by the injected identity source"
+      }
+    },
+    {
+      "label": "forged-rootSessionId",
+      "refusal": {
+        "ok": false,
+        "code": "owner-not-durable",
+        "detail": "the claimed member scope is not confirmed by the injected identity source"
+      }
+    },
+    {
+      "label": "swapped-pair",
+      "refusal": {
+        "ok": false,
+        "code": "owner-not-durable",
+        "detail": "the claimed member scope is not confirmed by the injected identity source"
+      }
+    }
+  ],
+  "after": {
+    "jobIds": [],
+    "outstanding": [],
+    "windowState": "ACTIVE",
+    "observationCount": 3,
+    "tailEvents": [
+      "gateway-admit-identity-unconfirmed",
+      "gateway-admit-identity-unconfirmed",
+      "gateway-admit-identity-unconfirmed"
+    ],
+    "assemblyOwnsWindow": true
+  },
+  "delta": {
+    "jobs": 0,
+    "tokens": 0,
+    "windowState": "unchanged",
+    "alarmEvents": 3,
+    "admittedEvents": 0,
+    "observationDelta": 3
+  }
+}
