@@ -59,8 +59,9 @@
  * against `dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` as the
  * authority and the exit code as evidence only. The same discipline governs the census: the
  * root suite has 22 disclosed failing identities, so its exit code says nothing and the
- * **identity set** against `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md`
- * is the verdict. Neither leg may "fix" a standing condition: this script never writes a
+ * **identity set** against `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-319a60d7.md`
+ * is the verdict (pointer restated 2026-10-17 at 319a60d7, MERGE-TREE caliber — the CI grades the
+ * merge-ref; the 067225df and 2162f6a7 documents stay unedited as history). Neither leg may "fix" a standing condition: this script never writes a
  * baseline, and a lane that wants one re-recorded has to do it in the open (the coordinator
  * duty in the plan's Baseline Verification Discipline), not from inside a gate.
  *
@@ -100,7 +101,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
 const BASELINES = {
   lint: 'dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt',
-  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2162f6a7.md',
+  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-319a60d7.md',
   fence: 'dev/agent-workflow/evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt',
 }
 
@@ -305,7 +306,8 @@ function readLineBaseline(path) {
 }
 
 /**
- * Parse the published nine-root baseline (`…/population-baseline/nine-root-2162f6a7.md`) into
+ * Parse the published nine-root baseline (`…/population-baseline/nine-root-319a60d7.md`, the
+  * merge-tree restatement; tolerance section verified byte-identical to the 2162f6a7 predecessor) into
  * `scripts/fail-set.mjs` identity grammar. It parses the COMMITTED document rather than reading
  * a second machine copy because a second copy is a second source of truth, and this file's own
  * subject is what happens to gates whose sources of truth drift.
@@ -1367,10 +1369,10 @@ function selfTest() {
     const live = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8'))
     ok(
       live.declaredTotals !== null
-        && live.declaredTotals.files === 508 && live.declaredTotals.legs === 6373
+        && live.declaredTotals.files === 551 && live.declaredTotals.legs === 6941
         && live.ids.length === 9 && live.titledCount === 9 && live.collectionCount === 0
         && live.loadFamilies.length === 2,
-      'the COMMITTED baseline parses to the corpus and tolerance it declares: 508/6373, 9 tolerated ids, 0 collection files, 2 disclosed load families (restated at b9cc0a2d: the D3-4 must-not-stay-exempt was repaired and its line removed, and the +1 leg is GREEN so it is not a tolerance)',
+      'the COMMITTED baseline parses to the corpus and tolerance it declares: 551/6941, 9 tolerated ids, 0 collection files, 2 disclosed load families (pointer restated at 319a60d7 — MERGE-TREE caliber, the tree the CI census grades: alpha5-int-wiring merged onto origin/master @ ced9254c; the nine ids stay byte-identical to the b9cc0a2d set across both restatements, so the tolerance has not moved at all; 551/6941 were MEASURED on the merged tree by two consecutive two-capture runs, four captures, identical sets, verdict pass)',
     )
   }
 

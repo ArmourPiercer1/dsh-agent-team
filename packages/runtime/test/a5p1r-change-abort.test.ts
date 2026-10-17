@@ -164,6 +164,10 @@ describe('a5p1r B3 — the after-door move cancels the call, not the world', () 
     // there — as opaque definition fingerprints, never as labels it cannot read.
     const issued = rowsFor(handle, 'dispatcher-change-abort-issued')
     expect(issued).toHaveLength(1)
+    // P6 forward half (G-g probe G-3): the one real registry-change injected above
+    // WAS delivered to the live subscription — and the observable channel status
+    // flipped because of it. "delivered ⇒ proven" is asserted here, not recorded.
+    expect(handle.changeChannelStatus()).toBe('proven')
     const calls = issued[0]!.calls as readonly { callId: string; tool: string; pinned: string; current: string }[]
     expect(calls).toHaveLength(1)
     expect(calls[0]!.callId).toBe('c1')
@@ -263,6 +267,12 @@ describe('a5p1r B3 — the after-door move cancels the call, not the world', () 
     expect(alarms).toHaveLength(1)
     expect(alarms[0]!.severity).toBe('alarm')
     expect(alarms[0]!.changeChannel).toBe('armed')
+    // G-g probe G-1c: the inert leg must assert its OWN zero-abort half. Until now
+    // `issued === 0` existed only in the kit predicate (RW-CHANGE-INERT-LOUD) and in
+    // the positive-control legs above; the assertion net itself now fails if a
+    // silent-channel configuration ever starts emitting cancellation events.
+    expect(events(handle)).not.toContain('dispatcher-change-abort-issued')
+    expect(events(handle)).not.toContain('dispatcher-call-cancelled-before-body')
     // The old wording filed this as "fail-closed, exposure = one call". That
     // claim is retracted; what is left is a refusal to call it closed.
     expect(handle.dispatcher.surface.entryOf('grep')?.verified).toBe(false)

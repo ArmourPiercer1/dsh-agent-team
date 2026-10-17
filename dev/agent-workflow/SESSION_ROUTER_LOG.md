@@ -6167,19 +6167,62 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 
 **卫生**：`:3185` 无监听、`tests/homes/a5p1-*` 为 0、`:3080` 只读探测未操作、pinned 树 porcelain 干净；lint identity diff `new 0, resolved 0`（本轮自己引入的 2 条已修，未新增基线）；kit 最终 run `22/22` exit=0，Receipt `alpha5-pr1-host/final/run-receipt.md`。
 
-## 2026-10-16 Alpha.5 PR1 残余边界收口轮（R-a native 归因 + R-b 校验→解析窗口；branch `alpha5-pr1r-residual-boundaries`，base `db5cb5f7`=已合并 PR1，DO-NOT-MERGE）
 
-**本轮只收两条已记录的残余边界，不改威胁模型口径。** 两条场景（普通第三方同名注册、普通并发重注册）都属于**支持范围内的普通行为**，本轮把它们从"被归到被排除的 Host 内存改写类"改回**实测对象**。全部 RED-first，全部在 pinned registry / 真 Host 上量。
 
-* **R-a（残余来源 `alpha5-pr1-implementation/s12-evidence.md:253`，delta review `INFO-1`）**：合并版 PR1 用"名字在公开全局视图 `tools.schemas()` 里"当原生可信来源，于是**装配前就已被 scope-local 同名定义遮蔽的原生名**会以 `verified native` 进入治理。修法=用同一个公开 seam 做两次读：`tools.get(name)`（无 scope=全局可信视图）与 `tools.get(name, scope)`（本 Agent 实际解析到的定义）。**不一致 ⇒ 该条 entry 以 `native-shadowed` 绑成 UNVERIFIED 并在 dispatch 处拒绝；可信侧读不到 ⇒ `native-unreadable`，同样拒绝而非计入**；publish 侧发 `published-surface-shadowed` 观测（带两侧 definition 指纹）。显式 Team bind（`bindOwnTools`/`bindMcpTools`）仍是 Team 自有同名定义的正门。RED 原文：`expected true to be false`（确实 verified=true）与 `expected [ 'THIRD_PARTY.read' ] to deeply equal []`（第三方 Body 真的跑了）。
-* **R-b（原 PoC-1 分叉风格）**：新增确定性 park 负控 runner `tests/kits/a5-pr1-guard-dispatch/a5p1r-rereg-window.mjs`（5 arm，复用 NEG1-SEAM 的真 park 方法学），在真 registry 上量"合法重注册落在校验之后、解析之前"。实测：pre-execute 窗口由 F2 每调用重读覆盖（**并把 `tools/change` 通道做成不可用来隔离证明 F2 单独就够了**：`deny/definition-drift`，v1=0 v2=0）；`tools/execute` 门新增"重新问一遍闭合世界问题"⇒ 落在 Guard 与本部门之间的重注册现在被门拒掉（RED 时 `v2=1 text=ran:grep@V2`）。**门之后再重注册则公开面无法在 Body 前拒**：pinned registry 在 `dispatchToolBody`→`resolveExecution`（`packages/core/tools/src/index.ts:1564/1578`）最内层才解析定义。该 seam gap 以 **PoC-1 固定格式**记录在 `dev/agent-workflow/evidence/alpha5-pr1r/seam-record-post-door-resolution.md`（要什么 seam／解析真正发生在哪／现有 seam 给到什么／上游需补什么三选一），失败关闭姿态=**该次调用自己的 settled 边撤回 verification**（`noteCallEdgeDefinition`），`RW-RESIDUAL-RECORDED` 断言的是老实事实：`v2=1`（恰好跑了一个未校验 Body）+ 第二次调用 `v2=1`（不再跑）⇒ 暴露被钉在"一次调用"，不是常态状态。
-* **顺带修掉一个真缺陷**：`bindAll` 永远写 `revision: 1`，而 PR1 自己的规矩是"变更=严格更高的不透明 revision"，导致漂移后文档承诺的"拒绝+重新 bind"根本 bind 不回去。现在 `revision = (in force ?? 0) + 1`。
-* **kit 22 ⇒ 23 条 criteria（只加 1 条 `R1R-SHADOW`，一条未删未弱）**：`pr1-*` 四条 arm 改走显式 `bindOwnTools(['grep'])`——它们本来正是靠 R-a 这个洞才被当成 verified native 的（同名的 Team adapter），显式 bind 后 9 条 `NEG1-*` 全部原义通过；新 leg 在同一世界跑两遍（不 bind ⇒ `verified=false reason=native-shadowed` 且**两个 Body 都不跑**+拒词含 `shadows`；显式 bind ⇒ `team-own:A:grep` 且跑）。整 kit 真 Host **23/23**，`C1d publishes=4 refused=0`，且全程没有一条 `published-surface-shadowed`/`dispatcher-native-unreadable`——收紧 R-a 没有把任何真实治理名变成拒绝。
-* **门**：lane 63⇒79 tests（+16，无删除）；`a5p1r-rereg-window.mjs` 5/5；全套 vitest 与基线 diff **`only_in_after=[]`**（首轮出现的两条都按规矩真修：`p4t6` 扫描清单登记 3 个新文件；`a4p7` install-surface fresh 要求 dist 与源码同 commit）；9 包 typecheck 干净；`eslint` 129 errors/32 warnings 与基线逐字相同（本轮改动文件 0 problem）；`lint-identities` 161 lines / 76 distinct 不变（扫描面 +3 文件）；`check:artifacts` ok 1572 files；token scan 0（Host 腿抓取时已脱敏，`instance.log` 留 `REDACTED-` 痕迹）；pinned 树 porcelain 干净；`:3080` 只读未操作（`C7a before=401 after=401`），世界 `tests/homes/a5p1-2026-10-16T08-40-31` 已 removed。
-* **披露（选择 fail-closed 的代价）**：可信侧读不到的治理名现在会被拒（合并版会计入），真实 Team lane 未出现该情形但原则上可达；未验证原因从 1 条消息变成 5 条可诊断消息（`R1R-c` 钉住不许再糊成一团）；kit 的 `pr1-*` arm 现在依赖 `bindOwnTools`，读者不得"顺手简化"掉——去掉后那四条腿会变成空测。
+## 2026-10-16 Alpha.5 PR2 实现轮（Operation Admission + 多 Effect ApprovalCase + 一次性 Grant；branch `alpha5-pr2-admission-grant`，stacked-on-#255 base `45425a30`，DO-NOT-MERGE）
 
-## 2026-10-16 — alpha5-pr1r **B3 修复轮**（PR #257 修复轮，用户裁决 = 方案 (ii)）
+RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.log` 记录 lane 源缺席时 6 files / no tests；随后实现全绿 73/73（`runs/a5p2-green-targeted.log`）。p4t6 扫描仪按本仓 tie 约定先测 PRE-EXTEND RED `expected 1087 to be 1073`（`runs/p4t6-PRE-EXTEND-RED.log`），再补 A5-PR2 行（6 源 + 8 测试工件，both endpoints MEASURED）。
 
+<!-- merge-conflict resolution (append-only log): master-side appends (earlier rounds) preserved BEFORE branch-side appends (PR1r follow-up rounds, chronological); zero deletions -->
+* **H1（时钟有限性归 Admission 拥有）**：`tool-admission/clock.ts` 的 `requireFiniteClock` 是 `admit`/`issueApprovedGrant`/`consumeForExecution` 三条路径的**第一条腿**，NaN/±∞/非 number = 类型化 `APPROVAL_STALE`（`refusal='clock-not-finite'`）且 **body=0**（probe/register/consume 计数全零，`sequence:[]` 钉住）；消耗边再设一道——非有限 now 拒绝且**不消费** grant；PR0 严格 `>` 过期语义原样复用并再钉（`now===expiresAt` 未过期）。
+* **H2（assurance 运行时验证在 hard-profile 之前）**：`assurance-runtime.ts` 规定 level 永不单独兑换能力——每个被要求维度必须有真实 mechanism/trustRoot/evidence/realmId 且与 probe 记录逐字段相等，`enforced`+null = `TOOL_BINDING_UNVERIFIED`；level 不足 = `IO_POLICY_UNSUPPORTED`；probe 是注入端口，stub 语义三条钉在 lane README（PR4 换真探针）；顺序探针先于 mint 用 `sequence=['probe:content-read','register']` 钉住。
+* **一个逻辑 ApprovalCase、多 Effect**：case 身份 = member + effect-set fingerprint + authority generation（**无 callId**）；开 case 取各 effect 梯级最高（Alpha.4 all-or-nothing），但执行期 legality **逐 effect** 走 A3-2 等式（`mayReview` ∧ reviewer 的 `grantCeiling` 覆盖该 effect 的 realm 限定 scope）——max-rung 捷径不可表示；policy-deny/undetermined 毒化整集（`IO_POLICY_UNSUPPORTED`，§5-erratum 提议 `TEAM_POLICY_DENY` 可裁）；部分覆盖拒绝整次执行；梯子升级使旧 reviewer 失效；自批拒绝。梯级/ceiling 全部复用 Alpha.4 冻结 walk，hygiene SURFACE 行按符号逐名扩名（reviewed amendment），layer-audit 消费者集钉到 9 文件，audit 脚本放行 `runtime/tool-admission/`。
+* **一次性 ExecutionGrant**：mint 必须过冻结 `parseOperationGrant`（`singleUse:true`）；validate-then-mark 一个同步步（交错异步双消费者恰好一个赢家）；grantId 确定性（双 mint=register 拒绝）；ledger 只存消费事实，无第二授权事实；所有拒绝 reason→code 复用 PR0 `grantRefusalErrorCode`。Cancel 前/中/后走 PR0 lease 代数，取消永不退还一次性消费，consume 后 lease 失败如实 `sideEffectUnknown:true`。
+* **PR1 组合**：Guard 仍是外门（deny 不触 Admission）；kernel 拒绝以 `refused` 结束 Dispatcher 调用且 drain 照常归零；一 call 不能花别 call 的 grant。
+
+**基线与门**：base 普查（pristine `45425a30`）22 红 / 6651 绿；head 全量 21 红 / **6725 绿**；fail-set identity diff `only_in_after=∅`，唯一 FIXED 是 a4p7 merge-gate 的 scratch-lint 腿（别的仪器的构建状态腿，base 时无 dist、lint universe 1159≠1158；本轮重建了 committed dist 后自绿，原文在 base 普查 JSON）。lint identity diff（base worktree vs head）：universe 1158→1172=+14 恰为本 PR 文件数，**new 0 / resolved 0**。全仓 typecheck 干净。CORE=0；:3080 未触碰（本轮零 spawn 零端口）；test-use 未实例化未运行；证据零 token（扫描 0 命中）。real-Host Receipt 本轮 N/A（无 live wiring、无 OS 能力声称，lane DORMANT，wiring 随 PR3/PR4）——理由写进 §12(d)。
+
+**观察上报**：#255 于 2026-10-16T08:06:56Z 被合入 master（merge `db5cb5f7`）——本分支仍内容堆叠在其精确树 `45425a30` 上、base 仍按指令指向 `alpha5-pr1-onto-master`，是否改指 master 归协调者裁决。§12(a)-(h) 见 `dev/agent-workflow/evidence/alpha5/pr2/s12-delivery-map.md`。
+
+
+## 2026-10-16 Alpha.5 PR2 协调补充轮（08:2xZ 指令；branch `alpha5-pr2-admission-grant`，PR #256，仍 DO-NOT-MERGE）
+
+用户裁决经协调转发：① PR2 转入**纯准备**状态（契约/测试/文档可评审），但 admission 接口的"运行时放行"语义冻结挂起，待 `alpha5-pr1r-residual-boundaries`（代理 4d990c89，base master `db5cb5f7`）收口——R-a 全局 `schemas()` 非可信来源（同名异体须 `tools.get` 身份比较，无显式 bind = 拒/声明不支持）与 R-b 校验→晚解析窗口的确定性负控/seam 记录可能改形本 lane 只作为事实消费的"来源可信"假设（`parametersFingerprint`/调用身份将纳入哪条 definition-identity 腿、`consumeForExecution` 须引用哪条 seam 记录均未冻结）。与来源无关的代数（dual-plane 扩张、逐 effect A3-2 等式、一次性 validate-then-mark、H1/H2 门）不受影响、立即可评审。落点：lane README 新增 "NOT FROZEN" 节（代码旁可见，不只在 PR 正文）、PR 正文新增 dependency 节（"依赖 PR1r 收口结果"）、s12 (c)/(g) 同步。② CI 表述纪律：census-runtime 未终态，全 PR 与证据不作"全部 CI 绿"表述——所有数字均为本地 run 并列明（正文 Gates 节已加声明；原文 CI=NOT_RUN 不变）。③ §5 erratum 可裁项原样保留等用户，未动。
+
+
+## 2026-10-16 Alpha.5 PR2 复核修复轮（review round 1：F-1/F-2/F-4/F-5/F-6；branch `alpha5-pr2-admission-grant`，PR #256，仍 DO-NOT-MERGE）
+
+复核六项 PASS，本回合只动裁决指定的五项，F-1 严格 RED-first（`runs/red-F1-foreign-member.log`：修复前 A 的呈报给 B 的 request 会 mint 成功 + 伪造 caseId 也会 mint，2 红）。
+
+* **F-1**：`issueApprovedGrant` 在 clock/identity/assurance 之后、任何 legality 代数之前，用 request 自己的 member + effect-set fingerprint 在**呈报声称的 generation** 上重算 `toolAskApprovalCaseId` 与呈报 `approvalCaseId` 比对；不等 = `APPROVAL_STALE`（`refusal='approval-case-identity-mismatch'`，details 带 presented/expected），先于 mint。generation 移动的诊断仍由 verify 的既有腿给出（expected 用 creation-gen 计算，不吞掉 'authority generation moved'）。测试侧 `approvalFor` 改为计算真实 caseId（常量 caseId 会让这条腿不可测）；foreign-member + 伪造 caseId 两条新测试；kernel 套件 23/23。
+* **F-2**：A3-2 覆盖半腿隔离测试。一次性探针脚本（约 1080 输入全空间，按裁决不入库）实测：单一 `documents` 输入喂两条半腿时，DECIDED-not-allow 的覆盖臂在位置绑定下**不可达**（更高 rung 绑更少文档 ⇒ rung 腿蕴含覆盖腿）——该蕴含是 defense-in-depth；真正的隔离点在 containment：subtree 规则下同一呈报同一文档，仅 seam 缺席时拒绝落在 envelope 臂（断言 detail 含 'undetermined at execution' 且不含两条 rung 臂文案），seam 补上即合法。rung 半腿经 seam-true 腿（verify 仅在两半腿都过时 ok）证其通过。
+* **F-4**：删除 pre-tie 草稿 `fail-set-diff.json`（仍带 NEW=1 的旧口径），终版 `.txt` 为主，主从关系写入 s12(c)。
+* **F-5**：README 记账：harness 默认 `requiredAssurance` reader 返回零维度 ⇒ 不配 reader 的测试会空转通过 assurance 门（这是 harness 属性不是律）；PR3 装配必须自钉 reader 推导律测试，空 reader 不得未经测试进入装配。不改 domain 律。
+* **F-6**：s12(b) 的 head 行标注 **code head 口径**（branch head 随证据/文档/复核 commit 正常前进，权威 head 以 `gh pr view 256` 为准）。
+
+不动：H1/H2 实现、§5 erratum 可裁项、NOT FROZEN（PR1r）标注。目标套件 8 files 101/101；dist 重建随源同 commit（artifacts 门 C-drift 清零后复验）；全量普查与 identity diff 见下条更新。
+
+
+## 2026-10-16 Alpha.5 PR2 尾差收口轮（delta 复核 D-1…D-4，docs-only；PR #256，DO-NOT-MERGE）
+
+Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合，但揭穿一处更糟的东西：commit `af3e046b` 的**信息声称**改了 F-3 归因并记录 Alpha.4 观察，而 `git show --stat` 显示该 commit 只含 README +8 行——编辑从未入库，log 行却在替它背书。收口方式（红线：不改写历史、不 force）：s12(c) 增加 commit-message 口径更正记录（引 delta D-1 指向）；本轮用带 `assert` 的编辑真正落盘并逐一验证：s12(e) 行与 PR 正文 fail-set 行改为 "green again at head, cause not established"（原 dist-rebuild 归因撤回：eslint ignore `**/dist/**`，14,544 输入复扫与 lint universe 1172=1158+14 皆证 dist 贡献为 0）；Alpha.4 hard-deny-cap+human-admin 观察真正写入 s12(g)。D-2/D-4：F-2 测试与 s12(c) 的正名——发臂点是 documents 导出的 ceiling-walk 臂（'undetermined at execution time'），`grantCeiling` 覆盖臂为 monotonicity 不可达的 defense-in-depth，可引出处 = `review-PR2-delta.md` §4（14,544 输入：creation 5859/ACCEPTED 5651/rung-escalated 1882/walk-undetermined 1152/grantCeiling 0）。D-3：README 增 PR3/PR4 接线注——canonical case id 只能取自 `planApproval()`/observe 事件，禁止自拼；F-1 后任何其它呈报一律闭死并在 details 给 expected。复跑 9 套件全绿后才 commit，且 commit 后 `git show --stat` 逐项核对信息=内容。
+
+
+## 2026-10-16 Alpha.5 PR2 权限语义修复轮（用户裁决 问题2：deny 来源分流；branch `alpha5-pr2-admission-grant`，PR #256，DO-NOT-MERGE，基线=固定 SHA origin/master=db5cb5f7）
+
+第一步=契约先行（commit `477bbdcb`：lane README「Policy-deny routing」节 + PR 正文同名节），之后 RED（`runs/red-deny-routing-round.log`：expansion 2 红 + kernel 5 红）再实现。分流规则一句话：**拒绝不再一律终局——policy deny 带着 provenance 标签进既有单一 ApprovalCase， rung 由 envelope walk 对"被拒效果自己的 scope"当场证明（拒绝 trusted 装配标签、拒绝第二授权库：policyDocument() 只是 blueprint §3.2 权限面 + GovernanceMutationService overlay §8.2 的读时投影）；walk 答不出谁拥有这个 deny ⇒ TOOL_BINDING_UNVERIFIED / deny-source-unattributed（③，绝不伪装终局）；undetermined 仍整集毒化（不变）**。admin=环境支持内最高 rung：hard-envelope deny 升阶至 human-admin，单次批准合法且**不**强迫先改策略（mint 一次、deny 仍在册）；mutation-envelope（ADR A5-1 只绑 leader）升阶至 human-user。正负控全落：低阶 deny 升阶 / admin 单次批准（consume 一次 + replay 拒 + 再 admit 仍 requires-approval）/ Envelope deny 升阶 / 未知来源零 mint / 环境不支持 flip-before-issue 零 mint 零 consume（②事实不可投票）/ whole-effect 共同权威（MAX rung，全有或全无）/ 来源世代化 stale（'authority generation moved'）/ 重放与跨成员（F-1 强度未回退，29/29）。§5 erratum：TEAM_POLICY_DENY 提案**已裁撤回**（deny 现在是 requires-approval，不是错误码）。杂务：清理了不属于本工作流的未跟踪 reviewer 探针 scratch（`runs/a5-hard-reaudit/**`，钉在 af3e046b，属并行 hard-envelope 复核；其证据链在彼方树中）——untracked scratch 曾把 lint universe 污染 +3，清后 new 0/resolved 0。门：目标 83/83、9 套件 118/118、全量 committed-tree 普查 21 failed/6735 passed（6756 测试），fail-set NEW=0（FIXED=1 已知），typecheck 干净，dist 与源同 commit，token diff 扫描 0，porcelain 空（runs/ 为未跟踪 scratch 区）。
+
+## 2026-10-16 — alpha5-pr2 评审尾轮：R-1a 来源投影（RED `e701d274` → GREEN `b1dcc262`）
+
+- 用户抽读 `520a250d` 后升级 R-1a：envelope"命中"不是来源证明（Envelope 只答"谁能批多大范围"，不记"谁写的 deny"；无关规则可洗白）。实现改为 `PolicyDenySource` 投影：真实权威态的读时派生数据（ownerAuthority/sourceRef/sourceVersion），版本与 authority generation 一致才可信；case 层级 = max(walk, rungAbove(owner))——rung 只能批准低于其权威的拒绝；`rungAbove` 由 governance 导出（AUTHORITY_RANK 唯一序，hygiene 一行，无第二后继表）；issue 侧重跑证明（关闭残余 mint fail-open）。未接线 = 精确拒绝并明记（不 DORMANT 后移）；把 deny 复制进 Envelope 当来源 = 伪造，被对照 b/f 行拒绝；两平面 no-match 律未动。
+- 对照表（同 deny 同 envelope，六种来源态，全部分歧精确）落 `evidence/alpha5/pr2/r1a-source-contrast.md`；R-2a 独立腿 `ask-has-no-upper-rung`（点名 §8.2）；R-1b `deniedEffects`（plan 值 + observe 行，PR3 呈报契约）；NIT 断言 admin 单次批准前后 policy 字节不变。
+- 门：targeted 9 套 131/131；census 6739p/21f NEW=0 FIXED=1（FIXED=a4p7 dist-freshness 腿，dist 随源提交转正）；lint-identities NEW=0；token 0；push 前 rebase 过审阅者新提交 `520a250d`（零 force）。INTERFACES-v1.md 不在本树——C-ADM 律句由对照文档代持，交并行 lane 落档。磁盘满事故续：半程脚本只落了 RED 测试（源文件经 grep 证实未动），RED 先独立 commit+push 防再丢。
+
+## 2026-10-16 — alpha5-pr2 最终 head 复核尾件：F-1 歧义精确拒 + F-2 per-effect provenance 入案（RED `03bc0b05` → GREEN 本轮）
+
+- 复核确认升级项闭合（六态全对、issue 复证真、三小项核销、131/131 复现）后合并前三件：F-1 `find()` 首个覆盖条目 ⇒ 数组顺序决定结局，修为收集全部覆盖条目 + 完全重复折叠 + 并存不同来源 ⇒ `deny-source-ambiguous`（TOOL_BINDING_UNVERIFIED 族，双序同拒）；F-2 issue 复证只比 MAX rung ⇒ 第二效果 deny 晚到且 floor 低于已批 rung 照样 mint，修为 `PresentedApproval.deniedEffectsAtCreation`（presentation 钉住 planApproval.deniedEffects 对）同腿比对 ⇒ `deny-provenance-moved`/APPROVAL_STALE、regs=0（RED 不 bump generation：不信任装配层）。NIT：tail-截断日志换完整 RED/GREEN 捕获（命令行+per-test 行）。
+- 口径更正（承接 D-1 教训）：上一轮 s12 把 FIXED 腿归因"dist 随源提交转正"为未证因果，已撤回为 cause not established；历史未改写。
+- 门：targeted 9 套 133/133；census/fail-set/lint/token 见证据提交。未触 H1/H2/身份腿/one-shot/两平面律/F-3（owner 作者阶+sourceRef 可解析 = PR3 义务，G-d 台账）。push 前 rebase 过审阅者 `4f334d43`，零 force。
 - **裁决**：用户裁定 B3 = 方案 (ii)（定义变化时**取消未执行调用**，signal-wrapper + change-abort 路线）；
   明确否决"门内自执行／不调 `next()`"；CORE PATCH BUDGET 仍为 0，不改 Core、不偷加上游补丁、不缩威胁模型。
 - **撤回口径（本轮的诚实义务）**：上一轮与 kit 共同主张的"after-door 未验证 Body **恰好执行一次**、

@@ -27,7 +27,10 @@
     "projection",
     "requirements",
     "root-binding",
+    "tool-admission",
     "tool-dispatch",
+    "controlled-fs/src",
+    "sandbox-provider",
     "work-completion-notification",
     "policy-adapter.ts"
   ]
