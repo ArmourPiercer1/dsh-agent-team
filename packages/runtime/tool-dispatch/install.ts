@@ -104,6 +104,42 @@ function definitionFingerprint(target: unknown): string | null {
   return id
 }
 
+/**
+ * THE PROVIDER SIDE OF THE SAME IDENTITY LAW (pb §6 binding feed). An
+ * assembly that PLACES a Definition holds the very object it registered;
+ * this is how it records that placement's identity in the SAME algebra the
+ * Guard compares against at every call. It is the only way a provider can
+ * say "the Body I reviewed and placed is THIS Body" without stringifying
+ * the Body (which leaks and is spoofable by re-stringifying) and without
+ * reading a clock (which this lane never does).
+ */
+export function definitionIdentityOf(target: unknown): string | null {
+  if (target === null || (typeof target !== 'object' && typeof target !== 'function')) return null
+  const body = (target as { execute?: unknown }).execute
+  return definitionFingerprint(typeof body === 'function' ? body : target)
+}
+
+/**
+ * One pb §6 binding-feed entry: the identity the PROVIDER — the trusted Team
+ * assembly, the side that PLACES the reviewed Definitions — recorded at
+ * placement time for one name, plus the realm that placement lives in.
+ *
+ * This is the "verified Definition identity → per-call comparison input"
+ * channel: the provider's own placement record, never a registry guess. The
+ * Guard's per-call side stays exactly what PR1 froze — the scoped public
+ * read must still resolve to THIS identity on every call, or the call is
+ * refused and the verification withdrawn.
+ */
+export interface BindingFeedEntry {
+  /** Identity of the Definition this assembly placed (see {@link definitionIdentityOf}). */
+  readonly definitionIdentity: string
+  /** The realm the placement lives in; must equal the assembly's `realmId`. */
+  readonly realmId: string
+}
+
+/** The provider-side feed: the placement record for one name, or none. */
+export type BindingFeed = (name: string) => BindingFeedEntry | undefined
+
 /** The mask the assembly owns (design §4.1 step 2), handed over for the drain. */
 export interface MaskPort {
   /** Lift the inherited-name restriction. Called ONLY at RELEASED. */
@@ -201,6 +237,30 @@ export interface InstallScopedGuardInput extends ScopedDispatcherOptions {
    * because the assembly knows its own contributions.
    */
   readonly assemblyOwnedNames?: readonly string[]
+  /**
+   * THE REALM THIS ASSEMBLY PLACES IN (pb §6 binding feed). A placement
+   * identity is only ever evidence inside the realm that made it; an entry
+   * naming any other realm is refused, never compared across the boundary
+   * (design §2.1: Realm 不可混淆 — a same name in another realm is a
+   * different world, and NC-1 measured what trusting it would cost).
+   */
+  readonly realmId?: string
+  /**
+   * THE pb §6 BINDING FEED — the provider side of the per-call comparison.
+   * The trusted assembly hands, per name, the identity it RECORDED when it
+   * PLACED that Definition; `bindOwnTools` then verifies the LIVE scoped
+   * resolution against the provider's record instead of silently pinning
+   * whatever the seam happens to answer today. ABSENT (or no entry for a
+   * name) = the pre-feed path byte-for-byte — this seam only ever tightens:
+   *  - placement attribution: an entry is honoured ONLY for a name the
+   *    assembly declared it placed (`assemblyOwnedNames`); a feed entry for
+   *    any other name is a laundering attempt and REFUSES the bind;
+   *  - realm pairing: `entry.realmId` must equal this assembly's `realmId`;
+   *  - placement integrity: the current scoped read must resolve to the
+   *    recorded identity — a Body that moved between placement and bind is
+   *    a refusal, never a re-pin of the shadow.
+   */
+  readonly bindingFeed?: BindingFeed
   /**
    * The restriction this assembly installed (design §4.1 step 2). The Handle
    * owns its lifetime: an armed Guard means the mask is NEVER lifted by the
@@ -985,6 +1045,11 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
   }
 
   const bindAll = (names: readonly string[], origin: 'team-own' | 'team-mcp'): GovernanceResult<void> => {
+    // The pb §6 feed is gated on PLACEMENT: an entry only ever counts for a
+    // name this assembly declared it placed. A feed entry for any other name
+    // would credit a Body the assembly never registered — that is the
+    // discovery-style self-pin (R5), and it is a refusal, never a binding.
+    const placedNames = new Set(input.assemblyOwnedNames ?? [])
     for (const name of names) {
       // A real Binding pins the real Body. `origin:name` would be a
       // name-shaped guess, and a guess cannot be re-verified at dispatch, so
@@ -997,6 +1062,64 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
           'TOOL_BINDING_UNVERIFIED',
           `cannot bind "${name}" as ${origin}: its current definition is unreadable at the public seam (${probe.detail}), and a Binding that cannot be re-verified is not a verification`,
         )
+      }
+      // THE pb §6 BINDING FEED (provider side): when the assembly supplies a
+      // placement record for this name, the pin is the PROVIDER'S recorded
+      // identity, and the live scoped read only proves CONTINUITY with it.
+      // No feed entry = the pre-feed path, byte-for-byte (this seam only
+      // tightens). A feed never produces an allow anywhere the per-call
+      // Guard is not already the law: the Binding it yields is re-checked
+      // against the same scoped read on every call.
+      const feed = origin === 'team-own' && input.bindingFeed !== undefined ? input.bindingFeed(name) : undefined
+      if (feed !== undefined) {
+        if (typeof input.realmId !== 'string' || input.realmId.length === 0 || feed.realmId !== input.realmId) {
+          observe({
+            event: 'bind-refused-feed-realm-mismatch',
+            tool: name,
+            origin,
+            entryRealm: feed.realmId,
+            assemblyRealm: input.realmId ?? null,
+            note: 'a placement identity is evidence only inside the realm that made it; a feed entry from another realm is a cross-realm same-name attempt and is refused, never compared',
+          })
+          return fail(
+            'TOOL_BINDING_UNVERIFIED',
+            `cannot bind "${name}" from the binding feed: the entry names realm "${feed.realmId}" but this assembly places in realm "${String(input.realmId ?? '(unset)')}" — a same name in another realm is a different world (design §2.1: Realm 不可混淆), and its identity never verifies here`,
+          )
+        }
+        if (!placedNames.has(name)) {
+          observe({
+            event: 'bind-refused-feed-unplaced-name',
+            tool: name,
+            origin,
+            note: 'the feed carried an identity for a name this assembly never placed (not in assemblyOwnedNames): crediting a Body nobody placed is the R5 self-pin shape, refused',
+          })
+          return fail(
+            'TOOL_BINDING_UNVERIFIED',
+            `cannot bind "${name}" from the binding feed: the feed carries an identity for a name this assembly never placed (placement attribution is the only feed authority; a discovery-style comparison-side pin verifies the shadowing Body and is the R5-falsified shape)`,
+          )
+        }
+        if (feed.definitionIdentity !== probe.fingerprint) {
+          observe({
+            event: 'bind-refused-feed-placement-drift',
+            tool: name,
+            origin,
+            placed: feed.definitionIdentity,
+            current: probe.fingerprint,
+            note: 'the name no longer resolves to the Definition the provider placed; pinning the current Body would verify whatever moved in afterwards, so the bind is refused and the assembly stands or falls on it',
+          })
+          return fail(
+            'TOOL_BINDING_UNVERIFIED',
+            `cannot bind "${name}" from the binding feed: the provider placed ${feed.definitionIdentity} but the public seam now resolves ${probe.fingerprint} — the Body moved between placement and bind; refusing rather than verifying a shadow this assembly never placed`,
+          )
+        }
+        observe({
+          event: 'binding-feed-verified',
+          tool: name,
+          origin,
+          realm: feed.realmId,
+          identity: feed.definitionIdentity,
+          note: 'the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against',
+        })
       }
       // An explicit re-bind by the trusted assembly is the ONLY documented way
       // back from a withdrawal (definition drift, an unreadable definition, or a
