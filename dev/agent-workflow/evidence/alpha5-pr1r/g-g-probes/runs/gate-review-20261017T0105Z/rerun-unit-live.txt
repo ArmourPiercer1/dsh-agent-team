@@ -1,0 +1,32 @@
+## unit assertion net (root vitest, --maxWorkers=1)
+ ✓ packages/runtime/test/a5p1r-change-abort.test.ts (18 tests) 13ms
+ ✓ packages/runtime/test/a5p1r-gg-probes.test.ts (2 tests) 7ms
+
+ Test Files  3 passed (3)
+      Tests  23 passed (23)
+   Start at  01:04:21
+   Duration  698ms (transform 199ms, setup 0ms, import 277ms, tests 184ms, environment 0ms)
+
+VITEST_EXIT=0
+
+## committed live criteria (spot check)
+g6-2026-10-16T22-06-50Z 19/19 ALL_GREEN=true
+g7-2026-10-16T22-06-58Z 18/18 ALL_GREEN=true
+g6-2026-10-16T22-38-51Z 19/19 ALL_GREEN=true
+
+## G-7 live key readings (live-state.json raw)
+"bindingRevisedUnverified": 1
+"callEdgeDrift": 1
+"cancelledBeforeBody": 0
+"changeChannelStatus": "armed"
+controlEvents":
+"executedUnvalidated": 1
+proxyEmissions":
+
+## G-6 live key readings
+"cancelledBeforeBody": 1
+"changeChannelStatus": "proven"
+"executedUnvalidated": 0
+
+## token scan (this review's new files only, at commit time)
+(see commit-time note in GATE-VERDICT.md)
