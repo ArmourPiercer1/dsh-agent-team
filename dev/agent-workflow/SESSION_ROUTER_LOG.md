@@ -6173,6 +6173,7 @@ Run 37897691322 判 master 顶端 `760e7774`：479 s，**fail**，恰好一个�
 
 RED-first：先落 6 个测试文件 + harness/fixtures，`runs/red-first-a5p2.log` 记录 lane 源缺席时 6 files / no tests；随后实现全绿 73/73（`runs/a5p2-green-targeted.log`）。p4t6 扫描仪按本仓 tie 约定先测 PRE-EXTEND RED `expected 1087 to be 1073`（`runs/p4t6-PRE-EXTEND-RED.log`），再补 A5-PR2 行（6 源 + 8 测试工件，both endpoints MEASURED）。
 
+<!-- merge-conflict resolution (append-only log): master-side appends (earlier rounds) preserved BEFORE branch-side appends (PR1r follow-up rounds, chronological); zero deletions -->
 * **H1（时钟有限性归 Admission 拥有）**：`tool-admission/clock.ts` 的 `requireFiniteClock` 是 `admit`/`issueApprovedGrant`/`consumeForExecution` 三条路径的**第一条腿**，NaN/±∞/非 number = 类型化 `APPROVAL_STALE`（`refusal='clock-not-finite'`）且 **body=0**（probe/register/consume 计数全零，`sequence:[]` 钉住）；消耗边再设一道——非有限 now 拒绝且**不消费** grant；PR0 严格 `>` 过期语义原样复用并再钉（`now===expiresAt` 未过期）。
 * **H2（assurance 运行时验证在 hard-profile 之前）**：`assurance-runtime.ts` 规定 level 永不单独兑换能力——每个被要求维度必须有真实 mechanism/trustRoot/evidence/realmId 且与 probe 记录逐字段相等，`enforced`+null = `TOOL_BINDING_UNVERIFIED`；level 不足 = `IO_POLICY_UNSUPPORTED`；probe 是注入端口，stub 语义三条钉在 lane README（PR4 换真探针）；顺序探针先于 mint 用 `sequence=['probe:content-read','register']` 钉住。
 * **一个逻辑 ApprovalCase、多 Effect**：case 身份 = member + effect-set fingerprint + authority generation（**无 callId**）；开 case 取各 effect 梯级最高（Alpha.4 all-or-nothing），但执行期 legality **逐 effect** 走 A3-2 等式（`mayReview` ∧ reviewer 的 `grantCeiling` 覆盖该 effect 的 realm 限定 scope）——max-rung 捷径不可表示；policy-deny/undetermined 毒化整集（`IO_POLICY_UNSUPPORTED`，§5-erratum 提议 `TEAM_POLICY_DENY` 可裁）；部分覆盖拒绝整次执行；梯子升级使旧 reviewer 失效；自批拒绝。梯级/ceiling 全部复用 Alpha.4 冻结 walk，hygiene SURFACE 行按符号逐名扩名（reviewed amendment），layer-audit 消费者集钉到 9 文件，audit 脚本放行 `runtime/tool-admission/`。
@@ -6222,3 +6223,52 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - 复核确认升级项闭合（六态全对、issue 复证真、三小项核销、131/131 复现）后合并前三件：F-1 `find()` 首个覆盖条目 ⇒ 数组顺序决定结局，修为收集全部覆盖条目 + 完全重复折叠 + 并存不同来源 ⇒ `deny-source-ambiguous`（TOOL_BINDING_UNVERIFIED 族，双序同拒）；F-2 issue 复证只比 MAX rung ⇒ 第二效果 deny 晚到且 floor 低于已批 rung 照样 mint，修为 `PresentedApproval.deniedEffectsAtCreation`（presentation 钉住 planApproval.deniedEffects 对）同腿比对 ⇒ `deny-provenance-moved`/APPROVAL_STALE、regs=0（RED 不 bump generation：不信任装配层）。NIT：tail-截断日志换完整 RED/GREEN 捕获（命令行+per-test 行）。
 - 口径更正（承接 D-1 教训）：上一轮 s12 把 FIXED 腿归因"dist 随源提交转正"为未证因果，已撤回为 cause not established；历史未改写。
 - 门：targeted 9 套 133/133；census/fail-set/lint/token 见证据提交。未触 H1/H2/身份腿/one-shot/两平面律/F-3（owner 作者阶+sourceRef 可解析 = PR3 义务，G-d 台账）。push 前 rebase 过审阅者 `4f334d43`，零 force。
+- **裁决**：用户裁定 B3 = 方案 (ii)（定义变化时**取消未执行调用**，signal-wrapper + change-abort 路线）；
+  明确否决"门内自执行／不调 `next()`"；CORE PATCH BUDGET 仍为 0，不改 Core、不偷加上游补丁、不缩威胁模型。
+- **撤回口径（本轮的诚实义务）**：上一轮与 kit 共同主张的"after-door 未验证 Body **恰好执行一次**、
+  随后在自身 settled edge 撤销验证 ⇒ 暴露 = 一次调用、fail-closed"**予以撤回**。撤回依据是同一 arm 原始
+  json：`callEdgeWithdrawal = 0`（撤销实际来自 `tools/change` 通道，不是调用边），且 `secondCallV2`
+  为**累计**计数器（`secondCallV2===1` 不能证明"下一次调用什么都没跑"）。kit 判据
+  `RW-RESIDUAL-RECORDED`（条件 `v2===1`）删除，改为 `RW-AFTER-DOOR-BODY-ZERO`（要求 body=0）。
+  本文件与 s12/seam-record 中的历史 RED 摘录作为**当时的测量**保留，不再作为口径引用。
+- **机制**：`packages/runtime/tool-dispatch/pending-calls.ts`（watch 台账：门内登记已验证身份；
+  `(scope,name)` 定义移动或不可读 ⇒ 取消；`tools/result` 结算）+ `install.ts` `armWrapperSignal`
+  （Host 自述契约 `index.ts:155-159`；`:1572` 在 `:1578` resolve **之前**拒绝已抬起的融合信号 ⇒
+  `bodyInvoked` 保持 false）。**台账不参与 drain**：取消不得用于把已开始 Body 判为未执行。
+- **②/⑧ 通道是能力而非诊断**：`tools/change` 订阅抛错或 `on` 缺失 ⇒ 装配期 typed
+  `IO_POLICY_UNSUPPORTED`（点名通道，已装四缝回滚）；订阅成功但**永不投递**无法在装配期证明 ⇒
+  `changeChannel:'armed'|'proven'` + 每调用 `dispatcher-call-executed-unvalidated`（alarm）。
+- **④ 取消 vs 终止**：读 Host 两个规范码区分（`ABORTED_BEFORE_DISPATCH`=未执行；`ABORTED`=Body 已开始、
+  值仍携带、`sideEffectPossible:true`，绝不标未执行）；abort 抢跑失败 ⇒ `dispatcher-call-completed-after-abort`
+  （按已执行上报）；已取消但结果码读不到 ⇒ `dispatcher-call-outcome-unreadable`（alarm，两个方向都不宣称）。
+- **实测披露（不改口径，只加事实）**：本 Host 上**调用方**在 Body 运行中 abort，对直接
+  `ctx.tools.execute()` 调用的结果面**不可见**（无 lane 对照：`runs/probe-cancel.mjs` ⇒ 成功形状、无 code）。
+  故真 Host 的"终止"腿改用 lane 自身 in-flight abort（`RW-ABORT-INSIDE-BODY-IS-TERMINATION`），
+  调用方路径只披露不宣称。lane 级另有 caller-signal 双腿（模型 `:1583`）。
+- **证据**：lane `a5p1* + a5p1r*` **97/97**（`runs/B3-lane-GREEN.log`；RED `runs/B3-lane-RED.log` 16 失败）；
+  真 registry RED→GREEN：`runs/B3-after-door-RED.json`（`v1=0 v2=1 secondCallV2=1`，8/13 判据失败）→
+  `runs/B3-after-door-GREEN.json`（`v1=0 v2=0 secondCallV2=0`，13/13）；kit **36/36**
+  （13 Host + 10 order + 13 rereg；`runs/kit-r1r-fix1/`，C7a `:3080` 前后同 401 未被操作，C7b test-use porcelain 净）。
+- **git**：首个修复提交 `83a0b994`；本地 rebase 到远端 head `dd70ef3c`（reviewer 的评审提交落在
+  `2b16de64` 之上）后 fast-forward push 至 `alpha5-pr1r-residual-boundaries`；无 force-push。
+
+
+## 2026-10-16 — 取消语义用户裁决（**2026-10-16 17:52Z**）落档于 PR #258 文档线
+
+- **裁决原文口径**：定义变化/撤回 ⇒ 取消关联**未执行**调用 + 向关联**已开始**调用**传播 abort 请求**；
+  不保证立即终止；不回滚已发生副作用；结果三分类 = 未执行 / 已执行可能有副作用（原值保留）/ 终止未确认。
+  **边界三句原样入文**：不扩大为 provider 卸载自动杀全团队；G-g（静默通道）不随之关闭；
+  **本裁决为事后裁决，不回填 17:02 合并时点**。
+- **G-a**：就此结束"解除待裁"。此前文档中的"验收挂 G-a 冻结"改注为"验收依据=用户裁决（17:52Z）"；
+  **测量腿原文一律不动**（s12 §(k) 表列原文）。
+- **D-1 登记（新建 `dev/agent-workflow/PENDING-GATES.md`）**：严格『只取消未执行』属性**延期**（非放弃）。
+  上游最小条件=公开可信 body-start/pre-body 检查，候选三件（per-call pre-body 事件 / `bodyInvoked` 公开读点 /
+  resolution-pinned Definition），**本轮不选型**；恢复须 a5p1r change-abort 的『已开始不取消』硬门腿 +
+  隔离反例 + kit 判据翻转。**仅项目内登记，不对外发请求**。owner=集成 owner 提名后用户确认。
+- **D-2 登记**：skills 收尾必做 —— 路径 `.agents/skills/team-leader-operations/SKILL.md`
+  （如涉及再含 `team-blueprint-authoring`），阶段完成后收尾轮执行 + review 核验；本轮**只钉路径/owner/验收，
+  不动文件**。
+- **G-g 状态不变**：静默已订阅通道（订阅成功而永不投递）支持矩阵定位**未收口**，按 UNSUPPORTED/待证处理，
+  **不因本裁决关闭**；证据原文见 s12 §(j)。
+- **文件面**：仅文档（`seam-record-post-door-resolution.md`、`s12-residual-evidence.md`、新建
+  `PENDING-GATES.md`、本日志）；实现/测试/kit 零改动。模型：qwen3.8-flash-next。
