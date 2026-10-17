@@ -76,7 +76,7 @@ const DEPS_CANDIDATES = [
   '/srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/node_modules',
 ].filter((p) => p !== '' && existsSync(p))
 const DEPS_SRC = DEPS_CANDIDATES[0] ?? ''
-const DEPS_STORE = resolve(argValue('deps-store', join(DEPS_SRC, '..', '..', 'node_modules', '.pnpm')))
+const DEPS_STORE = resolve(argValue('deps-store', join(DEPS_SRC, '..', '..', '..', 'node_modules', '.pnpm')))
 const EXP = resolve(argValue('expansion', join(WORKTREE, '..', '.a5g7-expansion', RUN_STAMP)))
 const DIST_REL = join('packages', 'runtime', 'dist', 'packages', 'runtime')
 const PRODUCTION_ROW_NAME = pathToFileURL(join(EXP, DIST_REL, 'src', 'plugin', 'host.js')).href
