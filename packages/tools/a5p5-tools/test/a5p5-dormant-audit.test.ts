@@ -70,7 +70,31 @@ function* walk(dir: string): Generator<string> {
  * `dist` — a derived mirror of files this walk already reads — stays
  * outside the walk by the header's own rule.
  */
-const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json']
+/**
+ * Fourth entry (GLUE-5 production-assembly round, alpha5-glue5-entry):
+ * `packages/runtime/tsconfig.build.json` carries the same bare include
+ * shape as the tools entry, aimed at the COMMITTED install-surface mirror —
+ * the production emit face for the live row's dist import edge. Same law:
+ * a compile-face name is not an import; the leg below pins the one-line
+ * form. The live row's REAL edge is NOT here — it is the REVIEWED_EDGE
+ * exception below, separately pinned and separately disclosed.
+ */
+const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json']
+
+/**
+ * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly
+ * round — THE header moment, and bigger than the three names above: this is
+ * the first outside file that IMPORTS the lane). `team-tool-plane.mjs` is the
+ * governed Team tool plane's placement row: a per-scope live row that mounts
+ * ONLY behind a permissions-carrying template with a host-configured plane
+ * row (a non-team session never executes it), placed on the Q4/R1 placement
+ * route. The dormancy law it retires is exactly "the lane is shipped dark";
+ * what it must NOT retire — the closed barrel, the zero global mount, the
+ * per-scope judgement — the legs below keep pinning, and the edge itself is
+ * form-pinned: ONE line, the barrel import, no deep import, no second edge,
+ * no other file.
+ */
+const REVIEWED_EDGE_EXCEPTIONS: readonly string[] = ['runtime/src/plugin/live/team-tool-plane.mjs']
 
 describe('a5p5-dormant-audit', () => {
   it('no shipped source outside the lane references a5p5-tools', () => {
@@ -80,10 +104,26 @@ describe('a5p5-dormant-audit', () => {
       const insideLane = file === laneRoot || file.startsWith(laneRoot + sep)
       if (insideLane) continue
       if (NAMES_ONLY_LEDGER_EXCEPTIONS.includes(relativePath)) continue
+      if (REVIEWED_EDGE_EXCEPTIONS.includes(relativePath)) continue
       const text = readFileSync(file, 'utf8')
       if (text.includes('a5p5-tools')) offenders.push(relativePath)
     }
     expect(offenders).toEqual([])
+  })
+
+  it('the one reviewed edge is exactly the live row barrel import, and nothing else', () => {
+    // GLUE-5 (see the edge-exception list above): the form IS the contract.
+    // The live row names the lane in EXACTLY one line — the barrel import of
+    // the single registration-face symbol — never a deep import into the
+    // lane's internals, never a second lane string anywhere in the file.
+    const row = readFileSync(join(packagesRoot, 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
+    let namedLines = 0
+    for (const line of row.split('\n')) {
+      if (!line.includes('a5p5-tools')) continue
+      namedLines += 1
+      expect(line.trim(), line.trim()).toBe(`import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
+    }
+    expect(namedLines).toBe(1)
   })
 
   it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {
@@ -125,6 +165,23 @@ describe('a5p5-dormant-audit', () => {
       expect(line.trim(), line.trim()).toMatch(/^"a5p5-tools\/src",?$/)
     }
     expect(namedLines).toBe(1) // exactly the one compile-face include entry
+  })
+
+  it('the runtime build tsconfig names the lane ONLY as the bare install-surface include, never as an edge', () => {
+    // GLUE-5 (alpha5-glue5-entry): the runtime build project gained the
+    // same-shape entry so the lane's emit rides the COMMITTED install-surface
+    // mirror (the live row reaches the lane through dist, and dist is what
+    // production runs — pb-CONTRACT §3). Form is the contract exactly like
+    // the tools entry above: one quoted directory include, EXACTLY one line
+    // naming the lane in the whole file.
+    const tsc = readFileSync(join(packagesRoot, 'runtime', 'tsconfig.build.json'), 'utf8')
+    let namedLines = 0
+    for (const line of tsc.split('\n')) {
+      if (!line.includes('a5p5-tools')) continue
+      namedLines += 1
+      expect(line.trim(), line.trim()).toMatch(/^"\.\.\/tools\/a5p5-tools\/src",?$/)
+    }
+    expect(namedLines).toBe(1)
   })
 
   it('the shared tools barrel still does not know the lane (explicit leg)', () => {

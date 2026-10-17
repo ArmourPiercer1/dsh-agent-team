@@ -1,0 +1,24 @@
+# p4t6 coverage — PRE-EXTEND RED captures (alpha5-glue5-entry, GLUE-5 round)
+
+Both runs taken on the alpha5-glue5-entry pre-merge tree
+(HEAD b669a108 = origin/master 01df26ca + P-A c616cd58 + P-B 5e7daf5f + P-C b669a108),
+with the two GLUE-5 live rows already WRITTEN but not yet booked, npx vitest run
+packages/testkit/test/p4t6-session-event-scan.test.ts -t 'coverage':
+
+RUN 1 (no booking at all — shared scanner saw 5 unbooked files):
+
+    AssertionError: expected 1162 to be 1157 // Object.is equality
+
+    (the five: the two GLUE-5 live rows + the three P-B lane files the merge
+     brought in without a scanner stroke — register.ts, a5p5-barrel-emit.test.ts,
+     a5p4-assembly-config.test.ts)
+
+RUN 2 (SCANNED_PATHS_A5GLUE5 booked, lane files still unbooked):
+
+    AssertionError: expected 1162 to be 1159 // Object.is equality
+
+The booking stroke then added SCANNED_PATHS_A5PBMERGE (the three lane files,
+per-merge attributed) and the tie lines
+`expect(SCANNED_PATHS_A5GLUE5.length).toBe(1159 - 1157)` /
+`expect(SCANNED_PATHS_A5PBMERGE.length).toBe(1162 - 1159)` — both endpoints
+above are MEASURED, not inferred. Post-extension run: see p4t6-POST-GREEN.txt.

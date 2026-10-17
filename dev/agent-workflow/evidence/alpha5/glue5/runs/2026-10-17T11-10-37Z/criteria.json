@@ -1,0 +1,132 @@
+{
+  "runStamp": "2026-10-17T11-10-37Z",
+  "port": 3183,
+  "criteria": [
+    {
+      "id": "S1a",
+      "claim": "SYNTH: the PRODUCTION plane mount() places exactly the three reviewed Definitions under the team_* aliases (real createGovernedToolDefinitions, real mount code)",
+      "pass": true,
+      "observed": "built=true placed=true own=[team_bash,team_glob,team_grep]"
+    },
+    {
+      "id": "S1b",
+      "claim": "SYNTH: every placed alias BINDS team-own verified:true and the per-call compare ABSTAINS governed-and-verified on the object the placement put there",
+      "pass": true,
+      "observed": "{\"team_grep\":\"abstain/governed-and-verified\",\"team_glob\":\"abstain/governed-and-verified\",\"team_bash\":\"abstain/governed-and-verified\"}"
+    },
+    {
+      "id": "S1c",
+      "claim": "SYNTH: the trusted GLOBAL face stays EMPTY and a non-team scope face is byte-identical across the placement",
+      "pass": true,
+      "observed": "global=[] minimal=[]"
+    },
+    {
+      "id": "S2",
+      "claim": "SYNTH NC: a foreign same-layer name blocks the plane placement (typed PLANE_PLACEMENT_CONFLICT) and the mount ROLLS BACK what it already placed — unknown attribution fails closed",
+      "pass": true,
+      "observed": "code=PLANE_PLACEMENT_CONFLICT ownLayer=[team_grep]"
+    },
+    {
+      "id": "S3",
+      "claim": "SYNTH: trust pairing — absent OK, exact pair OK, HALF-PAIR refused (CONFINE_CONFIG_INCOMPLETE), mismatch refused typed at ASSEMBLY CONSTRUCTION (TRUST_ROOT_SHA_MISMATCH, never a throw)",
+      "pass": true,
+      "observed": "absent=true good=true half=CONFINE_CONFIG_INCOMPLETE mismatch=TRUST_ROOT_SHA_MISMATCH"
+    },
+    {
+      "id": "S4",
+      "claim": "SYNTH NC: revocation ⇒ per-call DEFINITION_UNREADABLE; a regenerated same-name object ⇒ DEFINITION_DRIFT — verification never transfers",
+      "pass": true,
+      "observed": "revoke=deny/definition-unreadable regen=deny/definition-drift"
+    },
+    {
+      "id": "S5",
+      "claim": "SYNTH: the lane re-check denies a deny-lane class match and a default-deny-uncovered plane effect, and an allowed read class COVERS the file-facing alias (class mapping, tighten-only)",
+      "pass": true,
+      "observed": "denyLane=template-deny-lane defaultDeny=template-default-deny covered=allow"
+    },
+    {
+      "id": "S6",
+      "claim": "SYNTH: the live jobs row refuses an unbacked owner claim (owner-not-durable) and a CROSS-ROOT claim, both with zero registrations; the assembly-owned lease drains and releases honestly",
+      "pass": true,
+      "observed": "ghost={\"ok\":false,\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not confirmed by the injected identity sour cross={\"ok\":false,\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not release={\"ok\":true}"
+    },
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (porcelain 0 before)",
+      "pass": true,
+      "observed": "head=639ed01539"
+    },
+    {
+      "id": "H2",
+      "claim": "host port 3183 free (self-proved) and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3491"
+    },
+    {
+      "id": "H3",
+      "claim": ":3080 stable instance untouched (read-only probe before/after) and the test-use host porcelain 0 after",
+      "pass": true,
+      "observed": "401 → 401; porcelain=0"
+    },
+    {
+      "id": "W1",
+      "claim": "all four worlds booted, discovery ran, the governed team was driven, observer facts captured (worlds swept)",
+      "pass": true,
+      "observed": "baseline:ok/swept plane:ok/swept gatered:ok/swept refuse:ok/swept"
+    },
+    {
+      "id": "N1a",
+      "claim": "POSITIVE: the governed leader of the plane world carries the three aliases in its OWN layer (scoped yes, GLOBAL no) and the assembly logged the placement",
+      "pass": true,
+      "observed": "scoped=[team_bash,team_glob,team_grep] global=[]"
+    },
+    {
+      "id": "N1b",
+      "claim": "POSITIVE: the placement reached the model-facing WIRE catalog of the governed leader AND its turn completed (guard→mount→coverage→bind→publish all green)",
+      "pass": true,
+      "observed": "wire team_*=[team_bash,team_glob,team_grep]"
+    },
+    {
+      "id": "N1c",
+      "claim": "POSITIVE: the PR7 live row is open for the owning root through the production entry (gateway + assembly-owned lease present; NON-authority witness)",
+      "pass": true,
+      "observed": "{\"present\":true,\"hasGateway\":true,\"hasLease\":true}"
+    },
+    {
+      "id": "N1d",
+      "claim": "POSITIVE control-of-controls: the BASELINE governed leader (no row config) shows zero plane aliases, zero plane observations and NO jobs gateway — the mount is config-scoped, not ambient",
+      "pass": true,
+      "observed": "aliases=[] obs=[]"
+    },
+    {
+      "id": "N2-standard",
+      "claim": "NEGATIVE ZERO: the standard NON-team session model-facing catalog is set-IDENTICAL baseline→plane on BOTH the registry face and the wire face",
+      "pass": true,
+      "observed": "registryΔ=[] wireΔ=[]"
+    },
+    {
+      "id": "N2-minimal",
+      "claim": "NEGATIVE ZERO: the minimal NON-team session model-facing catalog is set-IDENTICAL baseline→plane on BOTH the registry face and the wire face",
+      "pass": true,
+      "observed": "registryΔ=[] wireΔ=[]"
+    },
+    {
+      "id": "N3",
+      "claim": "NEGATIVE: with the plane mounted AND an unattributed team_-namespace MASQUERADER surviving the mask onto the governed surface, the setup still dies on alpha2-permission-coverage-unmanaged-tools (body or console) — the plane did not whiten the gate — while the NON-team sessions are untouched (they still boot turns)",
+      "pass": true,
+      "observed": "seen=true inBody=true log=null nonTeam=true"
+    },
+    {
+      "id": "N4",
+      "claim": "NEGATIVE: a half-paired trustRoot row refuses the governed setup with the typed TRUST_ROOT_SHA_MISMATCH (body or console; no degraded unverified fallback, no partial mount survives)",
+      "pass": true,
+      "observed": "seen=true inBody=true err= {\"type\":\"server-response\",\"rpcId\":\"a5g5-refuse-tc\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: sta"
+    },
+    {
+      "id": "N4b",
+      "claim": "NEGATIVE: the refused world shows NO plane alias anywhere (the refusal unwound everything it touched)",
+      "pass": true,
+      "observed": "aliases=[]"
+    }
+  ]
+}
