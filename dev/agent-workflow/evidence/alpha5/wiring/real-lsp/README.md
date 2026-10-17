@@ -15,7 +15,7 @@ stub**, driven through the *emitted production artifacts* on the confined Landlo
   `SESSION_ROUTER_LOG.md`, where only THIS lane's entry was kept (the other lanes'
   un-merged lines were deliberately not carried over — GLUE takes them with their own lanes).
 
-### Baseline / prerequisite — read before re-running anything here
+### Baseline / prerequisite (as authored ~11:0xZ) — RESOLVED below, kept as history
 
 The measured surface (R-1 `spawnStreaming` + R-2 `createLspRealmAssembly` + their committed
 `dist` emit) lives on P-LSP **#304** (`alpha5-prod-lsp`), which at the time of this rebasing
@@ -32,10 +32,16 @@ touched that branch). Consequences, stated plainly:
   measurement baseline and carries a GLUE dedup note (the #304 branch adds the same face as
   `PENDING-ACCEPTANCE`; after both land, keep ONE line and repoint its baseline).
 
+**Status of this section: resolved.** #304 merged as `77ffb187`, the dedup landed as
+`1d0d03d0`, and the owed re-test was measured — see the next section. Nothing above is
+deleted: it is the history of what was owed and why the older run dirs sit on a lane branch.
+
 ## Verdict
 
-**REAL-LSP = GREEN** — 30/30 checks, twice on this host (`runs/2026-10-17T10-48-19-580Z` and
-the reproducibility rerun `runs/2026-10-17T10-50-20-653Z`, both exit 0). Real servers used:
+**REAL-LSP = GREEN** — 30/30 checks, **four times** on this host: the original pair
+(`runs/2026-10-17T10-48-19-580Z` + rerun `10-50-20-653Z`, baseline `7962022e`) and the re-test on
+the **merged** production face (`runs/2026-10-17T11-30-28-891Z` + `11-31-16-782Z`, baseline
+`master@77ffb187` / head `1d0d03d0`), all exit 0. Real servers used:
 
 | server | version | face | carries |
 |---|---|---|---|
@@ -99,6 +105,39 @@ requests, and an intermediate run proved the header-include path had to be relat
 generation root (otherwise the deny-leg would have proven nothing but a typo). Kept, not
 hidden.
 
+## Re-test on the merged production face (root 11:22Z: no extrapolation from the old baseline)
+
+The owed re-test was run **on this branch's head `1d0d03d0`**, whose production face comes from
+merged master (`77ffb187` = P-LSP **#304**, merged into the branch through `b5c06f09` on top of
+`eb56f805` = #307) — i.e. the kit imported `packages/runtime/dist/.../sandbox-provider/index.js`
+from the **merged artifacts**, not from a lane branch.
+
+| run | dir | result |
+|---|---|---|
+| re-test 1 | `runs/2026-10-17T11-30-28-891Z` | **30/30 PASS**, EXIT=0 |
+| re-test 2 | `runs/2026-10-17T11-31-16-782Z` | **30/30 PASS**, EXIT=0 |
+
+Full suite, same criteria as before — clangd carries ①(real `initialize` → 31 capability keys +
+`serverInfo` + `executeCommandProvider`) ②(real `definition` `{line:3,char:4-18}` + `documentSymbol`
+`[compute_answer, main]`) ③LSP `shutdown`→`result:null` + `exit`→self-exit `code:0`→`/proc` pid gone→
+lease `terminated` ④`policyChange` new pid + real handshake on the NEW instance, and the tsserver
+cross-member leg ⑤plus the EACCES bonus leg (clangd's own `Cannot open file '…/hidden.h':
+Permission denied` under the strict grant, resolving into `hidden.h` after the grant).
+Journal sequences and per-leg values are in each run's `transcript.txt` / `verdict.json`;
+`runs/retest-merged-face.json` is the machine-readable record of this re-test (heads, face hashes,
+both run dirs).
+
+**What the re-test does and does not prove** (stated so nobody over-reads it): the files it ran
+against are **byte-identical** to the ones measured on `7962022e` —
+`lsp-assembly.ts` `8f396feb…`, `provider.ts` `cdadeed5…`, launcher `e66a8cf7…`, and both emitted
+`lsp-assembly.js` `5705c33b…` / `provider.js` `34ca58b3…` all hash the SAME at `7962022e` and at
+`1d0d03d0`. So the re-test proves **the merged master artifact really runs the real-server
+interaction**, closing the "measured only on a lane branch" gap; it is not evidence about a
+changed artifact. The two original runs stay in `runs/` untouched as the historical measurement.
+
+Baseline now on record: **`master@77ffb187` (#304 merged) / branch head `1d0d03d0`** for the runs
+above; `7962022e` remains recorded as the baseline of the original pair.
+
 ## Reproduce
 
 ```
@@ -143,8 +182,9 @@ this HEAD), so it exercises the shipped artifacts, not the TS sources.
 ## 收口三件套
 
 1. **Worlds: 0 residue** — the kit `rmSync`s its own `tests/homes/a5reallsp-kit-*`; the three
-   probe worlds were removed too; `ls tests/homes` shows no `a5reallsp-*` left, and the kit's
-   own `/proc` scan for any cmdline containing the world path returned `[]` (L7.3).
+   probe worlds were removed too; `ls tests/homes` shows nothing left after the original pair
+   **and** after the 11:3xZ re-test, and the kit's own `/proc` scan for any cmdline containing
+   the world path returned `[]` (L7.3, both re-test runs).
 2. **Ports: released** — this lane never bound a socket; 3182 was connect-probed IDLE before
-   and after (`census.json.ports`), 3183 (another lane) untouched.
+   and after (`census.json.ports` in every run dir), 3183 (another lane) untouched.
 3. **:3080** — read-only probe only (HTTP 401), no write/restart/config touch.

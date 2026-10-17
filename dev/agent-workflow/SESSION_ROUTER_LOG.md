@@ -6447,3 +6447,12 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **dist=同笔再生+HEAD 实证**：rebase 后 rebuild 全仓，dist 与提交内容 **0 漂移**；`check:artifacts-at-head` rev=HEAD verdict=ok **compared=1684 drift=0**。
 - **门（rebased head 全复跑）**=lane 165/165（161+fd-3/ledger 3 新腿+master 侧 1 腿）、a5p0 4/4、p4t6 10/10、dormant 5/5、typecheck EXIT=0+lint 净、a4p7 merge-gate 35/35（carries-build 腿 13.0s）、**本地 census 两抓对照 2b1099d7 基线=PASS**（562f/7083l，identity set=基线 9 红；poc3 负载 race 本轮未命中，累计率 2/10 维持披露）。
 - **红线**=非 ff 属 rebase 预期（lease 锁 55bd5e78，本地无推送凭证，代推归父）；CORE 0；基线/披露未动；:3080/:3180 零触碰；模型：qwen3.8-flash-next。
+
+## 2026-10-17 11:3xZ — REAL-LSP 复测（根 11:22Z：不以 `7962022e` 旧结果外推 → 在合并后生产面亲跑）+ 台账基线改钉
+
+- **复测落点**=本支现 head `1d0d03d0`（其树含 **#304 `77ffb187`** 已合 master、经 `b5c06f09` 并入本支、其上含 #307 `eb56f805`）；kit 导入的是**已合 master 的 `packages/runtime/dist/.../sandbox-provider`**，非 lane 分支产物。全程未触 `alpha5-prod-lsp`（644633ea 在途）。
+- **计数**=全套两跑 **30/30 PASS ×2**、EXIT=0：`runs/2026-10-17T11-30-28-891Z` 与 `runs/2026-10-17T11-31-16-782Z`。判据全量：clangd 18.1.3 承载 ①真 `initialize`（31 capability keys+`serverInfo`+`executeCommandProvider`）③LSP `shutdown`→`result:null`+`exit`→自发退出 `code:0`→`/proc` pid 消失→租约 `terminated` ④`policyChange` 新 pid 真握手（且新代次能答旧代次答不出的请求）；tsserver 6.0.3 承载 ⑤跨 member 双真服务器双 pid 隔离腿；加分 EACCES 腿复现（strict 代 clangd 自报 `Cannot open file '…/hidden.h': Permission denied`，授权代解析进 `hidden.h`）。机读记录=`runs/retest-merged-face.json`。
+- **复测证明什么/不证明什么（防过度解读）**=复测面与旧基线**逐字节同**：`lsp-assembly.ts 8f396feb…`/`provider.ts cdadeed5…`/launcher `e66a8cf7…`/dist `lsp-assembly.js 5705c33b…`/`provider.js 34ca58b3…` 在 `7962022e` 与 `1d0d03d0` sha **全 SAME** ⇒ 关闭的是「只在支上测过」这一缺口（已合 master 产物确实跑得起真服务器交互），**不**声称「改动后仍跑」。旧两跑目录原文不动，作历史测量保留。
+- **基线改钉**=README 新增「Re-test on the merged production face」节（新基线 `master@77ffb187` / head `1d0d03d0`），原「Baseline / prerequisite」节标题加 **RESOLVED（保留为历史）**并补状态行，不删原文；`ALPHA5-ACCEPTANCE-STATUS` §1 该行测量基线改钉现行=`master@77ffb187` 经 `b5c06f09`／head `1d0d03d0`＋复测两目录，旧基线以**历史基线行**原文保留；GLUE 去重记为**已完成**（`1d0d03d0`）。族级 GO 仍不宣称。
+- **顺带修共享台账两处机械缺陷（零测量改动）**=①§1 行数标题 `共 22 行`→实测 `共 23 行`；②§4 出现**两条重复分布段**（一条含已失实的「PENDING-ACCEPTANCE=1（真实语言服务器最小交互未做）」、另一条含已失实的「R-1/R-2 在 master 仍未合」）→ 合为一条现行分布段（ACCEPTED-VERIFIED=1 不折进四类 + DEDUPLICATED=1），两条原文以「**历史注**」逐字保留在同段尾，未删除任何历史表述。
+- **收口**=`tests/homes` 世界 0 残留（两跑各自 rm 自世界 + `/proc` 世界路径扫描 `[]`）；本 lane 零 bind，3182-3186 收尾全 IDLE；`:3080` 仅只读探测（401）。本轮**不推**（root 代推/盯 CI），提交在本支。模型：qwen3.8-flash-next。
