@@ -36,7 +36,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const REPO = fileURLToPath(new URL('../../../', import.meta.url))
+const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
 const WORLD = join(REPO, 'tests/homes', `a5g7-unit-${Date.now().toString(36)}`)
@@ -48,8 +48,13 @@ interface PlaneValue {
   definitions: ReadonlyArray<{ name: string; execute: Exec }>
   ownNames: readonly string[]
   decide: (effectSet: unknown) => { kind: 'allow' } | { kind: 'deny'; code: string }
-  backends: Record<string, { backendId: string; execCount(): number }>
-  placementFeed?: (name: string) => { definitionIdentity: string; realmId: string } | undefined
+  backends: {
+    search: { backendId: string; execCount(): number }
+    glob: { backendId: string; execCount(): number }
+    shell: { backendId: string; execCount(): number }
+    read?: { execCount(): number }
+  }
+  placementFeed?: (name: string) => { binding: { definitionIdentity: string }; realmId: string } | undefined
   realmId: string
 }
 interface PlaneRow {
@@ -122,6 +127,7 @@ describe('GLUE-7 plane backends assembly', () => {
   it('R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim', async () => {
     const { built } = buildPlane()
     expect(built.ok, JSON.stringify(built)).toBe(true)
+    if (!built.ok) return
     for (const name of ['team_grep', 'team_bash']) {
       const res = await def(built.value, name).execute(
         name === 'team_bash' ? { command: 'echo nope' } : { pattern: 'A5G7', path: '.', output_mode: 'content' },

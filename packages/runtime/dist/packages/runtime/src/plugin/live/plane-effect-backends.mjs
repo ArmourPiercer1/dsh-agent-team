@@ -50,7 +50,8 @@
 
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { join, resolve, sep } from 'node:path'
+import { resolve } from 'node:path'
+import { setTimeout as sleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { isBeneath } from '../../../controlled-fs/src/index.js'
 
@@ -285,7 +286,7 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
       const timeoutMs = typeof parsed.timeoutMs === 'number' && parsed.timeoutMs > 0 ? parsed.timeoutMs : 60_000
       const exit = await Promise.race([
         h.exited,
-        new Promise((r) => setTimeout(() => r({ timedOut: true }), timeoutMs)),
+        new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs)),
       ])
       if (exit.timedOut === true) {
         timedOut = true
