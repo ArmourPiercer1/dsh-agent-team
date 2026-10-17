@@ -2,6 +2,15 @@
 
 日期 2026-10-18 · 作者 GLUE-7 writer · 性质 = 证据文档
 
+## 集成状态（协调令 2026-10-18 收口轮，晚于下方实现笔）
+
+本笔实现（`e58ebcb2` 的 plane `glob:` 行）降级标 **CANDIDATE-A**：主候选 =
+`093aaded` 独立件（`alpha5-glob-backend`，独立文件契约），最终集成由胶水单
+writer 择优替换。**glob 面本 writer 停笔续改**（行保留不删）。六项判定缺项
+指针：① rg 逐类对照表（计划 :132 原生 vs Team 结构化回归）；② 结果侧逐条
+锚定校验（presented 每条路径出面前再过 isBeneath）；③ 竞态 ≥5000 iter +
+中间段 swap 形态（本笔 C4 为 200 iter + final-segment，`../toctou-fix/`）。
+
 ## 裁决状态（parent 2026-10-18 裁决，逐字落档）
 
 **glob 属 PR5 原计划承诺范围，公开包根 `@deepseek-ai/dsh-tool-fs-search` 即计划 :128
