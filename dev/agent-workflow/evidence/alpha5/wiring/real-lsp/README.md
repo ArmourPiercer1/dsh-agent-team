@@ -1,19 +1,36 @@
 # alpha5 / wiring / real-lsp — REAL language servers over the P-LSP production surface (最小交互验收)
 
 Tasking (root agent, 2026-10-17): the `prod-lsp` lane shipped R-1 `spawnStreaming` +
-R-2 `createLspRealmAssembly` with a **fixture** payload, so
-`dev/agent-workflow/evidence/alpha5/ALPHA5-ACCEPTANCE-STATUS.md` carries the row
-「LSP 生产装配 = PENDING-ACCEPTANCE（真实语言服务器最小交互未做…行未闭合前 LSP 面禁族级 GO 宣称）」.
+R-2 `createLspRealmAssembly` with a **fixture** payload, so its acceptance ledger
+(`dev/agent-workflow/evidence/alpha5/ALPHA5-ACCEPTANCE-STATUS.md` §1) registered the row
+「LSP 生产装配 = PENDING-ACCEPTANCE（真实语言服务器最小交互未做…行未闭合前 LSP 面禁族级 GO 宣称）」
+(that row was added ON #304 and is therefore not on master yet — see the baseline note below).
 This lane answers exactly that: **real language servers, no fixture, no self-written
 stub**, driven through the *emitted production artifacts* on the confined Landlock plane.
 
-- Branch `alpha5-real-lsp` @ `.worktrees/a5-real-lsp`, base = `alpha5-prod-lsp`
-  `7962022e` (ff-able, evidence-only diff — **no source, no dist, no shared file touched**;
-  CORE PATCH BUDGET 0 respected, the lane needs zero product change).
-- Worlds `tests/homes/a5reallsp-*` (self-removed; the kit deletes its own world unless `--keep`).
-- Port **3182** declared for this lane: connect-probed **IDLE**, and **never bound** by
-  anything here (this kit binds nothing at all). 3183 belongs to another lane (untouched).
-- **:3080**: read-only HTTP probe only (`401`), never written, never restarted.
+- Branch `alpha5-real-lsp` @ `.worktrees/a5-real-lsp`. Evidence commit was authored on
+  base = `alpha5-prod-lsp` `7962022e` (the tree that CARRIES the measured surface) and was
+  **rebased onto `origin/master` `79f82441`** on root's instruction (2026-10-17, after the
+  GREEN report); the rebase is evidence-only and conflict-free except the append-only
+  `SESSION_ROUTER_LOG.md`, where only THIS lane's entry was kept (the other lanes'
+  un-merged lines were deliberately not carried over — GLUE takes them with their own lanes).
+
+### Baseline / prerequisite — read before re-running anything here
+
+The measured surface (R-1 `spawnStreaming` + R-2 `createLspRealmAssembly` + their committed
+`dist` emit) lives on P-LSP **#304** (`alpha5-prod-lsp`), which at the time of this rebasing
+is **NOT merged into master** (it is itself being rebased, owner `644633ea` — this lane never
+touched that branch). Consequences, stated plainly:
+
+- the measurement below is **valid on `7962022e`**, where those artifacts exist, and both
+  GREEN runs were made there (they are recorded unmodified);
+- on the rebased head (master + this evidence commit) `packages/runtime/sandbox-provider/lsp-assembly.ts`
+  and `packages/runtime/dist/.../lsp-assembly.js` are **absent**, so `real-lsp-kit.mjs`
+  cannot run there — it would fail at import, and nobody should read that as a regression;
+- re-measurement on the merged head is **owed after #304 lands** (one command, ~45 s);
+- the `ALPHA5-ACCEPTANCE-STATUS` §1 row this branch adds therefore names `7962022e` as the
+  measurement baseline and carries a GLUE dedup note (the #304 branch adds the same face as
+  `PENDING-ACCEPTANCE`; after both land, keep ONE line and repoint its baseline).
 
 ## Verdict
 
