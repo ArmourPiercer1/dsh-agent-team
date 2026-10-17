@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "boot": 1,
+  "gateway": "assembled",
+  "generation": 1,
+  "publicExports": [
+    "createJobsGateway",
+    "createLeaseWindow",
+    "classifyDispatchEvent",
+    "jobOwnerKey",
+    "projectJobForViewer",
+    "redactCredentials",
+    "gatewayRefusal",
+    "REDACTION_MARKER"
+  ],
+  "runStamp": "2026-10-17T02-17-55"
+}
