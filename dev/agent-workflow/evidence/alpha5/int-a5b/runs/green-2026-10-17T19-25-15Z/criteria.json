@@ -1,0 +1,110 @@
+{
+  "posture": "green",
+  "surface": "strict",
+  "runStamp": "2026-10-17T19-25-15Z",
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b",
+  "worktreeHead": "762a86f8b8b0530c423873c4cb99ce165c458019",
+  "hostRuntime": {
+    "path": "tests/deepseek-harness-test-use",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "ports": {
+    "host": 3183,
+    "mock": 3491
+  },
+  "passCount": 15,
+  "failCount": 0,
+  "criteria": [
+    {
+      "id": "H3a",
+      "description": "rig: :3080 probed READ-ONLY before the run (stable instance never signalled) and the test-use host tree is porcelain 0 before",
+      "pass": true,
+      "evidence": ":3080=401 porcelain=0"
+    },
+    {
+      "id": "E1",
+      "description": "EXPANSION: strict `git archive HEAD` of the runtime package's PUBLIC face (packages/runtime/dist + packages/runtime/package.json) unfolded byte-exactly; per-file sha256 manifest written",
+      "pass": true,
+      "evidence": "head=762a86f8b8 files=1730 entry=true inFace={\"resolver\":true,\"seam\":true} outOfFace={\"resolver\":false,\"seam\":false}"
+    },
+    {
+      "id": "E2",
+      "description": "the expansion carries its OWN node_modules: the runtime package's installed dependency tree copied dereferenced from the pinned 0.2.0-rc.2 install, BFS-verified over declared deps + peers + optionals (store-filled where absent; foreign-platform optional natives skipped and recorded)",
+      "pass": true,
+      "evidence": "bfs=54 fromStore=38 nmTop=22 skippedForeign=[\"node-addon-require-builtin-darwin-arm64\",\"node-addon-require-builtin-darwin-x64\",\"node-addon-require-builtin-linux-arm64-gnu\",\"node-addon-require-builtin-win3"
+    },
+    {
+      "id": "E3",
+      "description": "install face SELF-SUFFICIENCY (the fix under test / the gap under reproduction): the entry's two runtime .mjs — the module.register resolve hook and the default storage seam — sit INSIDE the unfolded face, at the package-internal paths the entry derives from its own module URL",
+      "pass": true,
+      "evidence": "posture=green inFace={\"resolver\":true,\"seam\":true} outOfFace={\"resolver\":false,\"seam\":false} (a RED posture REQUIRES inFace=false: on pre-fix bytes the face carries neither file — that is the gap)"
+    },
+    {
+      "id": "E4",
+      "description": "load graph MEASURED through a module.resolve hook: the seven production loads (entry, three live rows, a5p5 register face, resolve-hook file, seam candidate) import from the expansion with FOREIGN file: modules = 0 — and on pre-fix bytes the ONLY failures are the two in-face runtime files",
+      "pass": true,
+      "evidence": "rows=7 loaded=1636 foreign=0 errors=[]"
+    },
+    {
+      "id": "A0",
+      "description": "RIG: the pinned host (0.2.0-rc.2 @ 639ed01539) started its web server and answered the token gate in this posture (the boot marker line was written) — so every ERR_MODULE_NOT_FOUND below belongs to the PLUGIN bootstrap, not to the harness",
+      "pass": true,
+      "evidence": "bootLine=\"dsh web: http://127.0.0.1:3183/?token=<REDACTED>\" bootError=\"\" bootstrapFailedBeforeMarker=false"
+    },
+    {
+      "id": "A1",
+      "description": "BOOT ON THE STRICT FACE (the same unfolding RED-A booted RED): the shipped entry APPLIES — zero ERR_MODULE_NOT_FOUND / bootstrap-FAILED lines — the resolve hook and the storage seam load from INSIDE the install face, and the observer row answers /__a5g6/health applied:true",
+      "pass": true,
+      "evidence": "observerHealth={\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"applied\\\":true}\"} moduleNotFound=[] bootError=\"\""
+    },
+    {
+      "id": "L0",
+      "description": "the plane mounted on this governed world and the placement reached the MODEL-FACING WIRE of the governed member (own-layer trio in the member tool catalog; the assembly logged its placement rows)",
+      "pass": true,
+      "evidence": "planeObservations=[\"a5p2prod: production-admission-constructed\",\"a5-plane: placed [team_grep,team_glob,team_bash]\",\"a5p2prod: production-admission-note\"] memberWire team_*=[\"team_bash\",\"team_glob\",\"team_grep\"] globalAliases=[]"
+    },
+    {
+      "id": "L1",
+      "description": "RENDER CONTRACT HOLDS LIVE: both own-layer trio calls produced tool results whose model-facing content is a LEGAL ContentBlock[] (one typed text block each) and NO content.some crash appears anywhere in the instance log",
+      "pass": true,
+      "evidence": "blocksLegal=true crash=false results=[{\"toolUseId\":\"call-a5int-g6-bash-xk1ql8ul\",\"wireType\":\"array\",\"blockTypes\":[\"text\"],\"content\":\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\\\"}]\"},{\"toolUseId\":\"call-a5int-g6-grep-dyg4g0gc\",\"wireType\":\"array\",\"blockTypes\":[\"text\"],\"content\":\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter  crashLines=[]"
+    },
+    {
+      "id": "L2",
+      "description": "THE LANE VERDICT IS WHAT THE MODEL RECEIVES: each own-layer trio call came back as an `a5p5-refused kind=… code=…` lane verdict delivered as refusal TEXT inside a legal block — the verdict reaches the model instead of crashing the assembly (which stage produced it is recorded by G1, not assumed here)",
+      "pass": true,
+      "evidence": "bash=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\\\"}]\" grep=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\\\"}]\""
+    },
+    {
+      "id": "L3",
+      "description": "the chain is intact end-to-end: the leader scripted team_delegate + team_collect, the delegated directive ran on the member, and the member final — quoting the verdict codes it received — came back into the leader transcript",
+      "pass": true,
+      "evidence": "leaderToolCalls=[\"team_delegate\",\"team_collect\"] memberReqs=3 backToLeader=true verdictCount=2 final={\"kind\":\"text\",\"content\":\"A5G6_MEMBER_RESULT verdicts=template-deny-lane,IO_POLICY_UNSUPPORTED crash=n/a\"}"
+    },
+    {
+      "id": "G1",
+      "description": "GAP PROBE — recorded, NOT fixed here: the member template DENIES the bash class and gives no grep/glob coverage, so the deny lane (code=template-deny-lane) is where these calls should be answered. The MEASURED stage is recorded: any code other than template-deny-lane means createLaneDecide (team-tool-plane.mjs:205-226 — bashNames/fileNames hold the mounted ALIASES) never matches the effect the lane declares (a5p5 effects-schema.ts:77 `toolName = parsed.tool`, the NATIVE class), i.e. the deny-lane fast path is inert for the plane tools. Reported to the parent; outside GLUE-6 scope",
+      "pass": true,
+      "evidence": "bashCode=template-deny-lane grepCode=IO_POLICY_UNSUPPORTED denyLaneExpected=template-deny-lane denyLaneSeen=true"
+    },
+    {
+      "id": "H3b",
+      "description": "rig: :3080 unchanged (identical read-only probe before/after; never POSTed) and the test-use host tree porcelain 0 after",
+      "pass": true,
+      "evidence": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "C1",
+      "description": "cleanup: the DSH_HOME world swept (TEST_METHODS §7)",
+      "pass": true,
+      "evidence": "home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5int-g6-green-202610171925 swept=true"
+    },
+    {
+      "id": "C2",
+      "description": "evidence hygiene: every written file passes the token/cookie leak scan (redactions applied at write time)",
+      "pass": true,
+      "evidence": "leaks=[] dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/dev/agent-workflow/evidence/alpha5/int-a5b/runs/green-2026-10-17T19-25-15Z"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "a5int-ie-evidence-rows",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Identity sentinel for the INSTALL-ENTRY evidence rows (observer/stray). Same two jobs as the GLUE-5 sentinel: (1) the client-modules loader maps plugin rows to the NEAREST package.json — without this file both rows resolve to the repo-root dsh-agent-team client package and boot refuses; (2) the plugin-package-inventory REQUEST EXTENSION reads that nearest package.json for EVERY model request and throws unless name AND version are non-empty. No dsh.client here: zero client surface."
+}

@@ -1,0 +1,22 @@
+{
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b",
+  "head": "762a86f8b8b0530c423873c4cb99ce165c458019",
+  "surface": "aux",
+  "surfaces": [
+    "packages/runtime/dist",
+    "packages/runtime/package.json",
+    "packages/runtime/src/plugin/upstream-resolver.mjs",
+    "packages/runtime/root-binding/harness/seam.mjs",
+    ".agents/skills"
+  ],
+  "expandedFileCount": 1734,
+  "entryPresent": true,
+  "inFace": {
+    "resolver": true,
+    "seam": true
+  },
+  "outOfFaceSiblings": {
+    "resolver": true,
+    "seam": true
+  }
+}

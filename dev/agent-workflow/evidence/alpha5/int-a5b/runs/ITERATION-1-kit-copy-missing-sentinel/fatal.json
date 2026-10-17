@@ -1,0 +1,71 @@
+{
+  "error": "FATAL: timeout waiting for gatered boot marker",
+  "criteriaSoFar": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (porcelain 0 before)",
+      "pass": true,
+      "observed": "head=639ed01539"
+    },
+    {
+      "id": "H2",
+      "claim": "host port 3183 free (self-proved) and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3491"
+    },
+    {
+      "id": "E1",
+      "claim": "unfolded (AUX surface, NON-PURE — the purity claim lives in RED-A): git archive HEAD = dist mirror (1727) + package.json + the TWO tracked sibling files the entry loads at runtime OUTSIDE the mirror (upstream-resolver.mjs hook, harness seam.mjs) + bundled skills. The public manifest (package.json files:[\"dist\"]) does NOT cover the siblings; they are added here ONLY so governance legs ②③④ can run — per the root ruling a backfilled surface is never called a pure install pass; the gap itself is pinned by RED-A. Face: 44-file a5p5, 3 glue placements, entry rows; per-file sha256 in expansion-manifest.json",
+      "pass": false,
+      "observed": "files=1734 a5p5=44 glue=[true,true,true] siblings=[true,true] skills=2"
+    },
+    {
+      "id": "E2",
+      "claim": "the repo drift gate (check-artifacts-committed) grades the committed dist at HEAD: exit 0 and drift=0",
+      "pass": true,
+      "observed": "status=0 tail=[\"DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1732 glue=5\",\"[check-artifacts-committed] OK: 1732 files — working tree equals the git INDEX for both install surfaces (incl. 5 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.\"]"
+    },
+    {
+      "id": "E3",
+      "claim": "import probe FROM THE EXPANSION ONLY: six production loads (host.js + the two live rows + the glue-edited bindings + the boot-time harness seam + the a5p5 register face) import clean with the TRANSITIVE dependency closure (declared deps BFS-complete) landed at EXP/node_modules — zero repo-source path in the load graph",
+      "pass": true,
+      "observed": "attempts=8 bfs=29 nmTop=[\"@deepseek-ai\",\"@modelcontextprotocol\",\"@standard-schema\",\"cross-spawn\",\"eventsource\",\"eventsource-parser\",\"isexe\",\"jose\",\"path-key\",\"pkce-challenge\",\"shebang-command\",\"shebang-regex\",\"which\",\"yaml\","
+    },
+    {
+      "id": "E4",
+      "claim": "purity MEASURED: a module.resolve hook over the probe run enumerates the ENTIRE load graph — every file: module the five production rows load resolves INSIDE the expansion (foreign modules: 0); the ancestor node_modules census is recorded as context",
+      "pass": true,
+      "observed": "loaded=1635 foreign=0 sample=[]"
+    },
+    {
+      "id": "RED-A",
+      "claim": "STRICT public-manifest install face (files:[\"dist\"] + declared deps, NOTHING backfilled from the source tree): the production entry FAILS to boot — the entry's runtime reference to <pkg-root>/src/plugin/upstream-resolver.mjs (and the harness seam behind it) is a REAL install-manifest gap; the reference name + verbatim resolution failure are pinned here; packaging/path fix = GLUE formal round, single writer (this kit changes no packaging)",
+      "pass": false,
+      "observed": "pureFiles=1730 failLine=NONE(sees bootstrap)"
+    },
+    {
+      "id": "S1",
+      "claim": "SYNTH(EXP): createTeamToolPlaneAssembly mounts the own-layer trio (team_grep/team_glob/team_bash) scoped-only (never global) on a governed scope, straight off the expansion module",
+      "pass": true,
+      "observed": "own=[\"team_bash\",\"team_glob\",\"team_grep\"] placed=true"
+    },
+    {
+      "id": "S1b",
+      "claim": "SYNTH(EXP): the lane re-check denies the shell alias on the deny lane (template-deny-lane) and allows the read-class alias (tighten-only class mapping)",
+      "pass": true,
+      "observed": "bash=template-deny-lane grep=allow"
+    },
+    {
+      "id": "S2",
+      "claim": "SYNTH(EXP): the installed PR7 row refuses unbacked + cross-root owner claims (owner-not-durable) with zero registrations, and its assembly-owned lease walks ACTIVE→DRAINING→RELEASED honestly (the transition close() takes at teardown)",
+      "pass": true,
+      "observed": "refuse=owner-not-durable states=ACTIVE->DRAINING->RELEASED rel=true"
+    },
+    {
+      "id": "S3",
+      "claim": "GAP PROBE (recorded, not faked, not patched here): the installed plane DEFINITIONs carry the host-required output/render face BUT its render returns a STRING where the host law requires ContentBlock[] — through the LIVE host scheduler this crashes the result assembly (\"content.some is not a function\"), so neither a computed refusal NOR a future effect body can REACH the model from the trio on this artifact; capability line = PLANE_PRESENTATION_FACE.render (team-tool-plane.mjs:95) returning String(value?.text); fix owner = GLUE formal round single writer",
+      "pass": false,
+      "observed": "renderReturn=array site=packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs:88-96 PLANE_PRESENTATION_FACE"
+    }
+  ]
+}

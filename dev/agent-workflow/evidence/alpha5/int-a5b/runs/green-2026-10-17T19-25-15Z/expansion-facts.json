@@ -1,0 +1,19 @@
+{
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b",
+  "head": "762a86f8b8b0530c423873c4cb99ce165c458019",
+  "surface": "strict",
+  "surfaces": [
+    "packages/runtime/dist",
+    "packages/runtime/package.json"
+  ],
+  "expandedFileCount": 1730,
+  "entryPresent": true,
+  "inFace": {
+    "resolver": true,
+    "seam": true
+  },
+  "outOfFaceSiblings": {
+    "resolver": false,
+    "seam": false
+  }
+}

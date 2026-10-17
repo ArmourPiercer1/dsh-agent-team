@@ -1,0 +1,177 @@
+{
+  "mode": "baseline",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5int-ie-baseline-2026-10-17T19-36-06Z",
+  "ok": true,
+  "surface": "non-pure-aux (install-manifest gap patched from tracked set; see RED-A)",
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED-f77edddd>",
+  "discPrompt": {
+    "attempts": 1,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true,
+    "getStatus": 200,
+    "getErr": null
+  },
+  "catalogPreflightOk": true,
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5int-ie-baseline-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5int-ie-team-2026-10-17T19-36-06Z\",\"blueprint\":{\"blueprintId\":\"team.a5ie.main\",\"revision\":\"1\",\"contentHash\":\"sha256:6506ff6c4f1ca2752434209e9b94e3d24578c348667cf6df5a9ffad5cf7dc132\"},\"createdAt\":\"2026-10-17T19:38:21.875Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5int-ie-baseline-2026-10-17T19-36-06Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5int-ie-team-2026-10-17T19-36-06Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5int-ie-team-2026-10-17T19-36-06Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-17T19:38:21.881Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5int-ie-team-2026-10-17T19-36-06Z\",\"rootSessionId\":\"session-a5int-ie-team-2026-10-17T19-36-06Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"persona\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"model\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"capability\"},{\"name\":\"agent-setup/admission-decided\""
+  },
+  "leaderWireSeq": 18,
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_collect",
+    "team_delegate",
+    "write"
+  ],
+  "standard": {
+    "sessionId": "session-77a51dce-9b0c-4eba-80e9-b48e9f895896",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "minimal": {
+    "sessionId": "session-acca5b3f-148a-4c5e-99d0-149d79ebcc50",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "bash"
+    ],
+    "scopedNames": [
+      "bash"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [],
+  "liveJobsGateway": {
+    "session-a5int-ie-team-2026-10-17T19-36-06Z": {
+      "present": false,
+      "hasGateway": false,
+      "hasLease": false,
+      "leaseState": "no-lease-accessor"
+    }
+  },
+  "ownLayerCarrierCount": 0,
+  "leader": {
+    "session": "session-a5int-ie-team-2026-10-17T19-36-06Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_collect",
+      "team_delegate",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_stray": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      }
+    }
+  },
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "swept": true
+}

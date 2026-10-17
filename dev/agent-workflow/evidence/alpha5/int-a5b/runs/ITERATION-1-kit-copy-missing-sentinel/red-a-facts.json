@@ -1,0 +1,11 @@
+{
+  "pure": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z-pure",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-red-a-2026-10-17T19-29-58Z",
+  "pureFileCount": 1730,
+  "failLine": null,
+  "failureBlock": [],
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}

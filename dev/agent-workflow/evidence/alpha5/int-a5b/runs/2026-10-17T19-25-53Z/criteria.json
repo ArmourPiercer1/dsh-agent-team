@@ -1,0 +1,154 @@
+{
+  "status": "DONE",
+  "criteria": [
+    {
+      "id": "C-PIN",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539, porcelain clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "C-PORTS",
+      "claim": "host port 3184 self-proved free + a mock port from the 349x family free",
+      "pass": true,
+      "observed": "hostFree=true mock=3496"
+    },
+    {
+      "id": "C-3080-BEFORE",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "C-BOOT",
+      "claim": "the test Host booted on port 3184 with the token gate live (303 + set-cookie)",
+      "pass": true,
+      "observed": "status=303"
+    },
+    {
+      "id": "C-ROW",
+      "claim": "the kit row applied inside the live host and imported the COMMITTED dist tool-dispatch barrel (feed face present)",
+      "pass": true
+    },
+    {
+      "id": "C-SESSIONS",
+      "claim": "three real sessions created and driven (an Agent exists behind each)",
+      "pass": true,
+      "observed": "[\"red\",\"green\",\"realm\"]"
+    },
+    {
+      "id": "C-RED-ASSEMBLY",
+      "claim": "red world assembled: guard installed, published, `read` observed UNBOUND (no feed, measured empty global face)",
+      "pass": true,
+      "observed": "\"team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\""
+    },
+    {
+      "id": "C-GREEN-ASSEMBLY",
+      "claim": "green world assembled: placement + realm-paired install + FEED-verified bind + publish",
+      "pass": true,
+      "observed": "verified=true origin=team-trusted-extension"
+    },
+    {
+      "id": "C-REALM-REFUSAL",
+      "claim": "realm world: cross-realm feed entry typed bind REFUSAL (Realm 不可混淆), nothing published",
+      "pass": true,
+      "observed": "cannot bind \"read\" from the binding feed: the entry names realm \"a5int-pb-OTHER-realm\" but this assembly places in realm \"a5int-pb-realm\" — "
+    },
+    {
+      "id": "C-RED-WIRE",
+      "claim": "live RED, on the wire: un-fed `read` meets the VERBATIM refusal",
+      "pass": true,
+      "observed": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "id": "C-RED-ZERO-FALLBACK",
+      "claim": "the un-fed double Body NEVER executed (no-fallback witness on the live host)",
+      "pass": true,
+      "observed": "double=0"
+    },
+    {
+      "id": "C-GREEN-POSITIVE",
+      "claim": "live POSITIVE (§6 reachability): the PLACED, FEED-BOUND read RAN for real — fixture bytes + TOKEN rode the wire back",
+      "pass": true,
+      "observed": "A5PBR2-READ-OK bytes=64 marker=TOKEN-SEEN a5pbr2 governed-read fixture line2 A5PBR2TOK-d9882d8a3fac line3"
+    },
+    {
+      "id": "C-GREEN-BODY-1",
+      "claim": "the placed Body executed exactly once (dispatcher abstained on the feed-verified Binding)",
+      "pass": true,
+      "observed": "placed=1"
+    },
+    {
+      "id": "C-DRIFT-REFUSAL",
+      "claim": "live §6 semantics 1: after the placement moved, `read` meets the DRIFT refusal",
+      "pass": true,
+      "observed": "Error: team tool guard: \"read\" now resolves to a different ToolDefinition than the one its Binding pinned (definition drift: an old verification never transfers"
+    },
+    {
+      "id": "C-DRIFT-V2-ZERO",
+      "claim": "the mutated Body never ran",
+      "pass": true,
+      "observed": "v2=0"
+    },
+    {
+      "id": "C-MOVED-BACK-REFUSAL",
+      "claim": "revocation is permanent: the moved-back identity does NOT re-admit (still refused; only an explicit re-bind restores)",
+      "pass": true,
+      "observed": "Error: team tool guard: \"read\" now resolves to a different ToolDefinition than the one its Binding pinned (definition drift: an old verification never transfers"
+    },
+    {
+      "id": "C-REBIND-RUNS",
+      "claim": "the explicit re-bind by the owning assembly is the documented way back: the placed Body runs again, bytes on the wire",
+      "pass": true,
+      "observed": "A5PBR2-READ-OK bytes=64 marker=TOKEN-SEEN a5pbr2 governed-read fixture line2 A5PBR2TOK-d9882d8a3fac line3"
+    },
+    {
+      "id": "C-REBIND-BODY-2",
+      "claim": "the placed Body count advanced to 2 (exactly the two allowed legs)",
+      "pass": true,
+      "observed": "placed=2"
+    },
+    {
+      "id": "C-GLUE6-BOUNDED",
+      "claim": "GLUE-6 bounding leg: the String-render PLANE-shape def DISPATCHED and its Body RAN (dispatcher layer green); the host result-assembly answer is recorded VERBATIM below — the crash belongs to GLUE-6 (#308), cited not patched",
+      "pass": true,
+      "observed": "probeBound=true result=Error: content.some is not a function"
+    },
+    {
+      "id": "C-REALM-WIRE",
+      "claim": "realm world on the wire: with the bind refused, `read` is refused too and the placed Body never ran",
+      "pass": true,
+      "observed": "Error: team tool guard: \"read\" reached the pre-execute stage while this Agent's Tool Dispatcher is PREPARING (not ACTIVE); the body is not reachable"
+    },
+    {
+      "id": "C-REALM-ZERO-BODY",
+      "claim": "the realm-world placement Body never executed",
+      "pass": true,
+      "observed": "placed=0"
+    },
+    {
+      "id": "C-GLOBAL-FACE",
+      "claim": "the MEASURED unscoped global face carries nothing governable (the bind-diag law, re-measured live)",
+      "pass": true,
+      "observed": "[]"
+    },
+    {
+      "id": "C-3080-AFTER",
+      "claim": "the stable :3080 instance answers exactly as before (401), untouched",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "C-PIN-AFTER",
+      "claim": "the pinned test-use runtime is still porcelain-clean",
+      "pass": true,
+      "observed": ""
+    },
+    {
+      "id": "C-PORT-AFTER",
+      "claim": "port 3184 is free again (host torn down)",
+      "pass": true,
+      "observed": "free=true"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'schema_meta' operation 'put' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at SchemaMetaRepository.putRaw (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/packages/runtime/dist/packages/storage/repositories/base.js:127:19)
+    at async SchemaMetaRepository.stampStore (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/packages/runtime/dist/packages/storage/repositories/schema-meta.js:66:9)
+    at async createTeamDomain (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/packages/runtime/dist/packages/storage/repositories/team-domain.js:205:13)
+    at async bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5int-ie-expansion/2026-10-17T19-29-58Z/packages/runtime/dist/packages/runtime/src/plugin/host.js:1155:22)
+dsh: startup failed: 1 required plugin did not activate
+
+Failed plugins (1):
+  modules (required)
+    Package: @deepseek-ai/dsh-client-modules
+    AggregateError: client-modules: 1 client package failed to compose:
+      other failures:
+        - client-modules: package dsh-agent-team resolves from multiple active Loader sources: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/dev/agent-workflow/evidence/alpha5/int-a5b/a5int-ie-observer-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/, "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/dev/agent-workflow/evidence/alpha5/int-a5b/a5int-ie-stray-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/; remove one entry
+        at new ClientModuleRegistry (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:544:34)
+        at Fiber.execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/#modules
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/#include
+    Error: client-modules: package dsh-agent-team resolves from multiple active Loader sources: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/dev/agent-workflow/evidence/alpha5/int-a5b/a5int-ie-observer-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/, "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/dev/agent-workflow/evidence/alpha5/int-a5b/a5int-ie-stray-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/profiles/web/; remove one entry
+        at ClientModuleRegistry.reconcilePackage (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:876:10)
+        at ClientModuleRegistry.processOne (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:852:13)
+        at ClientModuleRegistry.flush (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:898:14)
+        at new ClientModuleRegistry (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:543:8)
+        at Fiber.execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at composeError (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+        at Fiber._execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1137:10)
+        at Fiber._reload (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:16)
+
+Plugins waiting for services (1):
+  Plugin      Missing services
+  client-hmr  clientModules
+
+Full diagnostics: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-int-a5b/tests/homes/a5ie-gatered-2026-10-17T19-29-58Z/logs/startup-2026-10-17T19-32-55.493Z-d3c21aea-e249-4783-8142-7ad2d848399f.log
