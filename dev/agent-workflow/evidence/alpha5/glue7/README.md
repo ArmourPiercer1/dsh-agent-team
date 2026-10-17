@@ -145,4 +145,11 @@ canonicalizer failed CLOSED on real integration, each refusal recorded:
 
 Runs 1-9 are retained under `live-kit-run-N.log` + `runs/<stamp>/` (failed
 runs keep their `fatal.json` + partial world); the GREEN recorded run is
-named in `criteria.json` of the final run directory.
+`runs/2026-10-17T21-05-44Z/` — **VERDICT GREEN (23/23)** (`criteria.json`
+is the machine record; `live-kit-run-11-GREEN.log` the console capture).
+Kit iteration disclosure: 11 launches to GREEN (10 debugged rounds — the
+install-entry kit's precedent was 10; every round's raw failure is on disk,
+none rewritten). The GREEN round also re-proved, same boot: H0/H3 (:3080
+401→401 read-only probe, test-use porcelain 0), H2 (3183/3184 free→used→
+free), W1 (three worlds booted from the STRICT face, swept), C1/C2 (worlds
++ expansion swept, launch tokens redacted).
