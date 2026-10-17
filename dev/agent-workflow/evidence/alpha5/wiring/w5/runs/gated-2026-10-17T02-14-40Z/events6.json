@@ -1,0 +1,70 @@
+{
+  "settlement_constants": [
+    "dispatcher-call-cancelled-before-body",
+    "dispatcher-call-terminated-after-body-start",
+    "dispatcher-call-completed-after-abort",
+    "dispatcher-call-outcome-unreadable",
+    "dispatcher-call-cancelled-by-others",
+    "dispatcher-call-executed-unvalidated"
+  ],
+  "live_settle": {
+    "rows": [
+      {
+        "event": "dispatcher-call-cancelled-before-body",
+        "accepted": true,
+        "fullPrefix": true
+      },
+      {
+        "event": "dispatcher-call-terminated-after-body-start",
+        "accepted": true,
+        "fullPrefix": true
+      },
+      {
+        "event": "dispatcher-call-completed-after-abort",
+        "accepted": true,
+        "fullPrefix": true
+      },
+      {
+        "event": "dispatcher-call-outcome-unreadable",
+        "accepted": true,
+        "fullPrefix": true
+      },
+      {
+        "event": "dispatcher-call-cancelled-by-others",
+        "accepted": true,
+        "fullPrefix": true
+      },
+      {
+        "event": "dispatcher-call-executed-unvalidated",
+        "accepted": true,
+        "fullPrefix": true
+      }
+    ],
+    "offSet": {
+      "event": "call-cancelled-before-body",
+      "refused": true,
+      "refusal": {
+        "code": "spill-settlement-event-unknown",
+        "detail": "the cancellation event must be one of the six dispatcher-call-* names verbatim (v1.1 勘正: emission-face full names)",
+        "class": "denied"
+      }
+    }
+  },
+  "live_stream_census": {
+    "dispatcher-preparing": 1,
+    "guard-installed": 1,
+    "dispatcher-seam-armed": 5,
+    "dispatcher-bind-inherited": 1,
+    "published-surface-unverified": 1,
+    "surface-inherited": 1,
+    "dispatcher-active": 1,
+    "agent-published": 1,
+    "dispatcher-surface-revalidated": 1,
+    "tools-change-unbound-names": 1,
+    "dispatcher-call-begin": 7,
+    "dispatcher-result-observed": 5,
+    "dispatcher-call-end": 5,
+    "guard-denial": 2,
+    "dispatcher-call-refused": 2
+  }
+}

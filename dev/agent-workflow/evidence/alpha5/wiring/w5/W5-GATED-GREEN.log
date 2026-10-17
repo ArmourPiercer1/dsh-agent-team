@@ -1,0 +1,48 @@
+a5w5 runner mode=gated stamp=2026-10-17T02-15-32Z port=3183
+PASS L-W5-PIN — the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 [head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use]
+PASS L-W5-IF5 — IF-5 shared surface (packages/, scripts/, root vitest.config) is byte-untouched by this lane [porcelain empty]
+PASS L-W5-LANE — the lane ESM build + runtime dist are present [lane=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/tests/homes/.a5w5-build]
+PASS L-W5-PORTS — host port 3183 (IF-2: W5) free and a mock port from the 349x family free [hostFree=true mock=3493]
+mock: listening on 127.0.0.1:3493
+PASS L-W5-BOOT — the test Host booted on port 3183 with the token gate live (303 + set-cookie) [status=303]
+PASS L-W5-CREATE — the host public session/create entry returned a real sessionId [status=200 sid=session-09eb7bc1-89dd-45]
+PASS L-W5-TURN1 — the real session ran a setup turn to a model reply (an Agent now exists behind the session) [status=200]
+PASS L-W5-AGENT — the session Agent is reachable through the PUBLIC ctx.agents seam (core-plugin pattern) [agent={"id":"session-09eb7bc1-89dd-45e1-8ce3-34fca68bce4a","session":"session-09eb7bc1-89dd-45e1-8ce3-34fca68bce4a","hasCtx":t]
+PASS L-W5-ASSEMBLE — the live assembly started on the real Agent [{"ok":true,"started":true,"label":"session-09eb7bc1-89dd-45e1-8ce3-34fca68bce4a"}]
+PASS L-W5-PROMPT — the real session accepted the scripted turn [status=200]
+mock: 1 [messages] text reply (34 chars): "A5W5_GATED_20261017T021532Z_SET_OK"
+mock: 2 [messages] text reply (34 chars): "A5W5_GATED_20261017T021532Z_SET_OK"
+mock: 3 [messages] tool-call reply: a5w5_search
+mock: 4 [messages] tool-call reply: a5w5_bash
+mock: 5 [messages] tool-call reply: a5w5_bash
+mock: 6 [messages] tool-call reply: a5w5_bash
+mock: 7 [messages] tool-call reply: a5w5_search
+mock: 8 [messages] tool-call reply: a5w5_unbound_probe
+mock: 9 [messages] tool-call reply: a5w5_unbound_probe
+mock: 10 [messages] text reply (288 chars): "A5W5_GATED_20261017T021532Z_DONE search · content · 2 matches > /srv/work | bash"
+PASS L-W5-TURN — the scripted six-call tool chain ran to its terminal reply [mockRequests=10]
+PASS L-W5-ASSEMBLED — the row observed a REAL session Agent and ran the live assembly on it [agents=session-09eb7bc1-89dd-45e1-8ce3-34fca68bce4a]
+PASS L-W5-GUARD — the PR1 guard installed, bound its two tool names and PUBLISHED armed on the real Agent scope; the live change-channel later reads proven (the post-assembly registration DELIVERED on the live subscription) [{"installOk":true,"installError":null,"bindOwnOk":true,"publishedOk":true,"channel":"proven","channelAtPublish":"armed","probeRegisteredAfterPublish":true,"pendingCalls":[]}]
+PASS L-W5-REG — the aliased tool names a5w5_search + a5w5_bash (+ the post-assembly probe) are on the live scoped registry [["a5w5_search","a5w5_bash","a5w5_unbound_probe"]]
+PASS L-W5-E2E-SEARCH — a REAL model-driven search ran the FULL PR2 flow in the dispatch path: bind→grant (grantId minted) → admitted → exec=1 → presented with the lane footer [grant=grant:95e6539de6586682860e99d4c3146a4d execDelta=1 kind=presented]
+PASS L-W5-E2E-BASH — a REAL model-driven shell call ran bind→grant→exec and presented bash · exit=0 [kind=presented]
+PASS L-W5-TRANSCRIPT — both presentations rode the REAL dispatch path into the model transcript (tool_result bytes seen by the model) [transcriptRows=6]
+PASS L-W5-SPILL-POINTER — the big shell output presented a spill pointer whose file exists on disk with matching bytes (world-bound controlled path) [pointer={"spillId":"bash-w5-bash-4","bytes":18893} disk=18893]
+PASS L-W5-ONESHOT — every admitted call consumed its grant at the exec edge EXACTLY ONCE (first consume ok, deliberate replay typed-refused, ledger consumed=1) [search={"ok":true,"replay":false}|{"ok":false,"replay":true,"code":"APPROVAL_STALE","message":"grant \"grant:95e6539de6586682860e99d4c3146a4d\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)"} bash={"ok":true,"replay":false}|{"ok":false,"replay":true,"code":"APPROVAL_STALE","message":"grant \"grant:5200d9c525ce0a3ffb9658b6af61b122\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)"} consumed=1/1]
+PASS L-W5-LIFE-OPENWRITE — spill lifecycle LIVE: openSink + ACTIVE writes (all port facts live) [{"open":{"ok":true},"written":{"ok":true,"bytes":1856}}]
+PASS L-W5-LIFE-READ — spill read (authorized) returned byte-identical payload with attribution [{"ok":true,"matches":true,"attribution":{"realmId":"a5w5-realm","tool":"w5-lifecycle","callId":"life-1"}}]
+PASS L-W5-LIFE-RECHECK — authorization RE-CHECK at read time: deny → typed spill-read-denied with ZERO payload reads [{"refused":true,"refusal":{"code":"spill-read-denied","detail":"authorization at read time refused spill w5-life-1: w5 re-check refused","class":"denied"},"payloadReadDelta":0,"totalPortDelta":{"ensureDir":0,"writeFile":0,"appendFile":0,"readText":0,"sizeBytes":0,"list":0,"remove":0,"exists":0}}]
+PASS L-W5-LIFE-CLOSE — settle→finalize→close ran across the settled edge; a write after close is typed spill-write-after-close [{"settledOk":true,"finalizedOk":true,"closedOk":true,"state":"closed","writeAfterClose":{"code":"spill-write-after-close","detail":"spill w5-life-1: the lease is closed","class":"denied"}}]
+PASS L-W5-LIFE-IDINUSE — id-in-use REPLAY: re-opening the settled spillId is typed spill-id-in-use BEFORE any write-port call; payload + meta byte-identical (terminal fact preserved) [{"refused":true,"refusal":{"code":"spill-id-in-use","detail":"spill w5-life-1 already exists on disk — a settled record is read through readSpill, never re-opened for append","class":"denied"},"writePortDelta":0,"payloadUnchanged":true,"metaUnchanged":true}]
+PASS L-W5-LIFE-FRESH — a FRESH store handle enumerates the residue with attribution + settlement (law 3, disk-not-memory) [[{"spillId":"w5-life-1","bytes":1856,"attribution":{"realmId":"a5w5-realm","tool":"w5-lifecycle","callId":"life-1"},"settlement":{"kind":"completed"}}]]
+PASS L-W5-EVENTS6-SETTLE — all six master full-prefix settlement names settle a live lease (verbatim), the retired short form is refused spill-settlement-event-unknown [{"accepted":6,"off":"spill-settlement-event-unknown"}]
+PASS L-W5-EVENTS6-STREAM — every dispatcher-call-* name on the LIVE observation stream is a master-emitted full-prefix name (six settlement names + begin/end/refused); NO retired short form appears; settlement-six stream counts recorded [settlementSix={"dispatcher-call-cancelled-before-body":0,"dispatcher-call-terminated-after-body-start":0,"dispatcher-call-completed-after-abort":0,"dispatcher-call-outcome-unreadable":0,"dispatcher-call-cancelled-by-others":0,"dispatcher-call-executed-unvalidated":0} streamCallNames={"dispatcher-call-begin":7,"dispatcher-call-end":5,"dispatcher-call-refused":2} guardDenial=2 callRefused=2]
+PASS L-W5-OVERPRIV — ungranted call (policy-outside read): the PR2 kernel refused with its OWN typed vocabulary, verbatim, and NOTHING executed (grant null, presented null, backend exec delta 0) [stage=requires-approval code={"kind":"requires-approval","requestedEffects":{"effects":[{"kind":"list","resource":{"realmId":"a5w5-realm","kind":"directory","canonicalLocator":"/srv/workspa]
+PASS L-W5-DENY-ZERO — denied presentation is ZERO-BYTES payload with ZERO spill residue (live re-test of the parity-suite law) [payloadBytes=0 spillDelta=0]
+PASS L-W5-UNBOUND — the post-assembly probe name is refused at the call edge by the live guard (TOOL_BINDING_UNVERIFIED face in the transcript) and its BODY never ran [probeBodyCount=0 transcriptHit=true]
+PASS L-W5-PARITY-SHELL — shell parity (governed vs RAW, same inputs): stdout/stderr sha + exit IDENTICAL for printf / stderr+exit3 / big-seq [[{"l":"printf","eq":true},{"l":"stderr-exit3","eq":true},{"l":"big-seq","eq":true}]]
+PASS L-W5-PARITY-SEARCH — search parity byte-leg: the governed spill payload is BYTE-IDENTICAL to the raw grep leg stdout (same argv), presentation is the renderer layer over the same bytes [{"spillBytes":297,"rawBytes":297}]
+PASS L-W5-STABLE — the stable :3080 instance was only probed, never operated, status unchanged [before=401 after=401]
+PASS L-W5-PRISTINE — the test-use runtime stayed pristine (porcelain empty, HEAD unmoved) [porcelain=0]
+
+GREEN — 34/34 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/dev/agent-workflow/evidence/alpha5/wiring/w5/runs/gated-2026-10-17T02-15-32Z

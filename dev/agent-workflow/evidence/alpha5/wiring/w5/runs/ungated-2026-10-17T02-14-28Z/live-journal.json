@@ -1,0 +1,58 @@
+{
+  "rows": [
+    {
+      "at": "2026-10-17T02:14:30.948Z",
+      "leg": "plugin-apply",
+      "pid": 58,
+      "mode": "ungated",
+      "hasWebServer": true,
+      "dist": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/packages/runtime/dist/packages",
+      "lane": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/tests/homes/.a5w5-build"
+    },
+    {
+      "at": "2026-10-17T02:14:30.983Z",
+      "leg": "lanes-imported",
+      "ok": true,
+      "settlement0": "dispatcher-call-cancelled-before-body"
+    },
+    {
+      "at": "2026-10-17T02:14:31.160Z",
+      "leg": "register",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1",
+      "names": [
+        "a5w5_search",
+        "a5w5_bash"
+      ],
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T02:14:31.160Z",
+      "leg": "register",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1",
+      "name": "a5w5_unbound_probe",
+      "afterAssembly": false,
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T02:14:31.162Z",
+      "leg": "lifecycle-complete",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1",
+      "legsOk": true
+    },
+    {
+      "at": "2026-10-17T02:14:31.162Z",
+      "leg": "assembly-complete",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1"
+    },
+    {
+      "at": "2026-10-17T02:14:31.423Z",
+      "leg": "probe-body-ran",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1"
+    },
+    {
+      "at": "2026-10-17T02:14:31.437Z",
+      "leg": "probe-body-ran",
+      "label": "session-e5e00ae3-e8ca-46d2-84dc-8630a2ee92e1"
+    }
+  ]
+}
