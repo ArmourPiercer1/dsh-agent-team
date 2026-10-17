@@ -1,0 +1,9 @@
+{"at":"2026-10-17T04:40:18.539Z","leg":"plugin-apply","pid":58,"mode":"ungated","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/packages/runtime/dist/packages"}
+{"at":"2026-10-17T04:40:18.562Z","leg":"lanes-imported","ok":true,"cf_arb_tree":false,"cf_exports":"function"}
+{"at":"2026-10-17T04:40:18.918Z","leg":"world-built","repo":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-ungated-2026-10-17T04-40-17Z/workspace/repo","png_sha":"sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77","png_bytes":70}
+{"at":"2026-10-17T04:40:18.919Z","leg":"register","label":"session-41d8dfdf-f615-4d26-ae63-6ec326d41d8f","names":["a5c08_image_read","a5c08_thumb_probe","a5c08_unbound_read","a5c08_binary_probe"],"ok":true}
+{"at":"2026-10-17T04:40:18.919Z","leg":"assembly-complete","label":"session-41d8dfdf-f615-4d26-ae63-6ec326d41d8f","native_read_image":true}
+{"at":"2026-10-17T04:40:19.065Z","leg":"image-read-ungated","callId":"c08-img-1"}
+{"at":"2026-10-17T04:40:19.090Z","leg":"thumb-ungated-read","callId":"c08-thumb-2","sha":"sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6"}
+{"at":"2026-10-17T04:40:19.120Z","leg":"unbound-ungated-read","callId":"c08-unbound-3","bytes":96}
+{"at":"2026-10-17T04:40:21.678Z","leg":"read_image","new_observations":0}

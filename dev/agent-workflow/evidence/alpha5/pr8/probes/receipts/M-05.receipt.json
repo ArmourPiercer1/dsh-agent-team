@@ -1,14 +1,45 @@
 {
-  "round": "W-E2 (alpha5-wire-tools2) — read_image 面测量回合（真会话真跑；附件链判据腿仍 NOT-EXECUTED，A4 经 runtime 读回闭环）",
-  "run_utc": "2026-10-17T04:01Z",
-  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
-  "port": 3183,
-  "world_prefix": "a5e2-*（跑毕删除）",
-  "caliber": "LIVE-kit 观测 only。read_image 在 Team 任何包无实现（名字仅存于 contracts 封闭字段集，C-05 census 复验）⇒ 两面实测：真实 PNG 读图往返只在宿主原生面成立且治理观测=0；gated 面原生名调用边拒。附件→解码→渲染经 admission-gated ControlledFs 的链无装配面 ⇒ A1/A2/A3 保持 NOT-EXECUTED，不冒充 book。",
-  "row": "M-05 read_image",
-  "arbitrary_tree_profile_published": false,
+  "_merge_union_note": {
+    "added": [],
+    "mirrored": [
+      "round",
+      "run_utc",
+      "port",
+      "world_prefix",
+      "caliber",
+      "evidence_refs",
+      "observed_on_assembly_face",
+      "not_observed",
+      "plan_vs_repo_lines"
+    ],
+    "rule": "C-08 LIVE receipt canonical (reviewer-verified ce1085ed/d82ca288); master-side prior keys preserved (added or mirrored), none dropped"
+  },
   "arbitrary_tree_observation": "runtime 读回：装配 row 装载 controlled-fs dist barrel 时实测 ARBITRARY_TREE_PROFILE_PUBLISHED=false（gated run 装配 journal『lanes-imported』cf_arb_tree=false；live-journal.json 在册）——OpenAtPort 前任意树未发布，receipt 不主张。",
+  "arbitrary_tree_profile_published": false,
+  "caliber": "LIVE-kit 观测 only。判据腿以 C-08 kit 装配 row 真跑闭环：附件读取工具 = row-local fixture 工具（公开 seam 下唯一可治理装配形态；宿主原生 read_image 两面单独实测、不冒充替换——gated 面 guard 调用边逐字拒，ungated 面真实解码往返且治理观测 delta=0）。读取链经真 PR1 guard + 真 PR2 kernel（read 资源效应，冻结解析器）+ 真 PR3 admission-gated ControlledFs lane（逐调用绑定 C1 指纹）；kernel 信任输入 fixture 级（同 W5/W7/W8/W-E2 口径），参数指纹=装配声明的 canonical digest。不作 ENFORCE/整链/SUPPORTED 宣称（acceptance_scope=criterion-level-fixture）。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "caliber_prevmaster": "LIVE-kit 观测 only。read_image 在 Team 任何包无实现（名字仅存于 contracts 封闭字段集，C-05 census 复验）⇒ 两面实测：真实 PNG 读图往返只在宿主原生面成立且治理观测=0；gated 面原生名调用边拒。附件→解码→渲染经 admission-gated ControlledFs 的链无装配面 ⇒ A1/A2/A3 保持 NOT-EXECUTED，不冒充 book。",
+  "disclosures": [
+    "row 工具（a5c08_image_read/thumb_probe/unbound_read/binary_probe）为 row-local fixture 工具（装配观测面），非生产 read_image 实现宣称；世界 tests/homes/a5c08-* 跑毕即删；launch token 捕获即脱敏",
+    "kernel 信任输入 fixture 级（同 W5/W7/W8/W-E2）；policyArms 是 row 构造的授权事实，证明门的行为而非生产 policy 的存在",
+    "行级 LIVE=转态提案值（transition_rule 原文），终裁归 PR8 正式轮 + 独立 reviewer；acceptance_scope=criterion-level-fixture，不构成行验收/整链/SUPPORTED"
+  ],
   "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/c08-post-M-05.log",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/C08-GATED-GREEN.log",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/C08-RED-UNGATED.log",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/chain-table.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/live-journal.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/native-legs.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/world-files.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/run-receipt.md",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/native-legs.json"
+  ],
+  "evidence_refs_prevmaster": [
     "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w5-gated/criteria.json",
     "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json",
     "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/live-journal.json",
@@ -17,18 +48,97 @@
     "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/transcript-union.json",
     "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-e2-pre-M-05.log"
   ],
-  "observed_on_assembly_face": [
-    "真实读图往返（ungated 对照面）：真实 1×1 PNG（70B，sha c414cd0e…）经宿主原生 read_image 解码呈报（『image/png image, 1x1 px, 70 bytes』进真实 transcript，normalized copy 路径在录）；治理观测增量=0 ⇒ 附件字节完全在 Team 治理面之外",
-    "gated 面：模型驱动 read_image 在调用边被活 guard typed 拒（逐字 unreadable-at-public-seam，transcript-union 在册），治理流 dispatcher-call-* 事件 delta=3 可见、字节 0",
-    "W4 deny-before-open 同型观测属 confined-exec 文件域腿（EACCES rc=1），非 read_image 附件链（W8 口径保持）"
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "image_read": {
+    "attachment_form_note": "附件传输形态=base64 文本（C-FS 读面为 TEXT：同 run 二进制保真度实测 leg 记录 utf8-fidelity=false、lane_bytes=94 vs disk_bytes=70——base64 是经该文本面字节精确存活的附件形态；该事实如实入册，不据原始二进制冒充）",
+    "chain": "admission-gated-controlled-fs",
+    "decode": {
+      "height": 1,
+      "ok": true,
+      "width": 1
+    },
+    "decoded_bytes": 70,
+    "decoded_sha_matches_disk": "sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77",
+    "exec_edge_first": {
+      "ok": true,
+      "replay": false
+    },
+    "exec_edge_replay_same_call": {
+      "code": "grant-consumed",
+      "ok": false
+    },
+    "fingerprint": "sha256:3810a96e0e3ed01c568edbd39de9e3adddc638b64b5c491d005db28097bc5c08",
+    "grant_id": "grant:06b25fb75240d77d57b7567c285a6355",
+    "lane_content_fingerprint": "sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6",
+    "lane_ok": true,
+    "lane_op": "readText",
+    "ledger_consumed": 1,
+    "render": "真实 transcript 逐字呈报『A5C08-IMG ok chain=gated-fs attachment=attach/shot.png.b64 bytes=70 px=1x1 decoded_sha=sha256:c414cd0e204… grant=grant:06b25fb7… edge_consumed=1 second_read=grant-consumed』（transcript-union.json 在册）"
+  },
+  "negative_controls": [
+    {
+      "attempt": "thumbnail-read-bypass",
+      "bytes_leaked": 0,
+      "cf_reason": "effect-outside-grant",
+      "deny_stage": "before-open (readViaRef/admit: effectCovers)",
+      "diagnostic": "admission refused at FS: no grant effect covers a read on this resource",
+      "ledger_refused_line": true,
+      "note": "缩略图旁路负控在 C-FS 层观测（非 guard 层名）：模型驱动 a5c08_thumb_probe 携同一已授权效应臂（attach 目录 read）指向 thumb/ 目标 ⇒ lane 于 open 前类型拒，lane 台账 refused:denied:effect-outside-grant 行在册，缩略图文件 sha 未动；ungated 对照面同一路径 96 字节直读成功且治理观测=0（红承载实证）",
+      "outcome": "typed-deny"
+    },
+    {
+      "attempt": "unbound-image-read",
+      "bytes_leaked": 0,
+      "cf_reason": "effect-outside-grant",
+      "diagnostic": "exec-time admission recheck refused (admission-unbound)",
+      "error": "admission-unbound",
+      "ledger_refused_line": true,
+      "note": "ControlledFs admission 词汇的未绑定负控（W8/W-E2 轮该 reason 未观测、类别不冒充的缺口由此闭环）：未绑定门控 lane 面（law 1：缺 admission ⇒ UNBOUND_ADMISSION_RECHECK 拒并具名）拒原文进真实 transcript；frozen cfReason 承载位=effect-outside-grant、IF-6 原名 admission-unbound 于 recheck reason 与诊断逐字在册（口径如实二分，不声称 frozen 码=该名）",
+      "outcome": "typed-deny",
+      "recheck_reason": "admission-unbound"
+    },
+    {
+      "attempt": "same-call-second-read",
+      "note": "同一绑定调用内第二次 readText 走同一 lane ⇒ 经 consumed ledger 于 open 前类型拒（exec-edge ONE-SHOT 在 FS 路径成立；该调用 lane 台账 fd-closed 行=1）",
+      "outcome": "typed-deny",
+      "reason": "grant-consumed"
+    }
   ],
   "not_observed": [
+    "宿主原生 read_image 实现被钉进治理 bind = 公开 seam 不可达（两面逐字实测：gated 调用边 unreadable-at-public-seam 拒；ungated 治理 delta=0）——生产 read_image 治理实现=0（C-05 差距行在册，归生产/GLUE 队列，不由本 kit 行隐藏）",
+    "原始二进制经 C-FS 文本读面的字节精确往返 = 实测不成立（utf8-fidelity=false，94 vs 70）——附件链的字节精确形态=base64 传输（在册事实，非缺腿冒充）"
+  ],
+  "not_observed_prevmaster": [
     "image_read.chain=admission-gated-controlled-fs：无装配面——Team 树无 read_image 实现（读链不存在），且公开 seam 不能把宿主原生实现钉进治理 bind（W-E2 gated 面逐字实测）；计划出处=S0-SELECTION-MATRIX.md:52（M-05 行，03-fs 未测清单全链）+ post-poc-technical-design.md:78（附件/渲染存储保持授权身份）+ architecture.md:232 ⇒ 判据腿保持 NOT-EXECUTED",
     "thumbnail-read-bypass 负控：缩略图/预览旁路面在计划出处与仓库双侧均无面（宿主 normalized-copy 行为已如实记录为宿主侧事实，非 Team 治理旁路观测）",
     "admission-unbound（ControlledFs 词汇，bytes_leaked=0）：受控 fs 附件链无面 ⇒ 无从观测该 reason（W5/W-E2 unbound 负控=guard 层名，类别不冒充）"
   ],
+  "observed_on_assembly_face": [
+    "真实模型驱动附件链（gated）：PR2 grant（read 资源效应 over 政策覆盖的 attach 目录，冻结解析器）→ 逐调用 admission-bound lane readText（exec-time recheck 回问 kernel=exec-edge ONE-SHOT，consumed=1，C1 指纹绑定）→ base64 解码 → PNG 头解码 1×1 → 解码字节 sha==磁盘附件（c414cd0e…）→ 呈报进真实 transcript；链=admission-gated-controlled-fs（chain-table.json + transcript-union.json）",
+    "缩略图旁路负控=C-FS 层 open 前类型拒（effect-outside-grant，bytes=0，台账拒行在册）；未绑定面负控=law-1 具名拒（admission-unbound 于 recheck reason+诊断逐字，bytes=0）；同调用二读=grant-consumed 拒——三条负控全部进入真实 transcript 且文件字节全程未动（world-files.json 前后 sha 等值）",
+    "宿主原生 read_image 两面（不替换、不冒充）：gated=guard 调用边逐字拒（『the trusted global definition of \"read_image\" is unreadable at the public seam …』，治理流 delta=3、字节 0）；ungated=真实 70B PNG 解码往返进 transcript（『image/png image, 1x1 px, 70 bytes』）、治理观测 delta=0——宿主原生实现的字节完全在 Team 治理面之外流动（W-E2 事实复验）",
+    "census 全名=master 全前缀发射面（dispatcher-*/guard-*/agent-published 等 15 名，无退役短名）"
+  ],
+  "observed_on_assembly_face_prevmaster": [
+    "真实读图往返（ungated 对照面）：真实 1×1 PNG（70B，sha c414cd0e…）经宿主原生 read_image 解码呈报（『image/png image, 1x1 px, 70 bytes』进真实 transcript，normalized copy 路径在录）；治理观测增量=0 ⇒ 附件字节完全在 Team 治理面之外",
+    "gated 面：模型驱动 read_image 在调用边被活 guard typed 拒（逐字 unreadable-at-public-seam，transcript-union 在册），治理流 dispatcher-call-* 事件 delta=3 可见、字节 0",
+    "W4 deny-before-open 同型观测属 confined-exec 文件域腿（EACCES rc=1），非 read_image 附件链（W8 口径保持）"
+  ],
   "plan_vs_repo_lines": {
+    "plan": "S0-SELECTION-MATRIX.md:52（03-fs 未测清单全链）；post-poc-technical-design.md:63/78（A 类可信 FS API + 附件/渲染授权身份条款）；architecture.md:232",
+    "repo": "read_image 名字仅存在于 contracts 封闭字段集；治理消费实现 0（C-05 在册）——本回合闭的是 03-fs 全链的【观测面】（装配 row + 判据 + 负控），不是生产 read_image"
+  },
+  "plan_vs_repo_lines_prevmaster": {
     "plan": "S0-SELECTION-MATRIX.md:52；post-poc-technical-design.md:63/78（A 类可信 FS API + 附件授权身份条款）",
     "repo": "read_image 名字仅存在于 contracts 封闭字段集（packages/domain/blueprint/src/schema.ts:408、authority-envelope/src/authority-envelope.ts:92 等）；治理消费实现 0（W-E2 轮 grep 复验，aece4f21）"
-  }
+  },
+  "port": 3186,
+  "port_prevmaster": 3183,
+  "round": "C-08 gap-writer (alpha5-gap-c08) — M-05 缺腿装配回合：kit-local 装配 row 建成并真跑（真实模型驱动链 + C-FS 层负控；RED-first ungated 18/23 红且仅红门控腿 → gated 23/23）",
+  "round_prevmaster": "W-E2 (alpha5-wire-tools2) — read_image 面测量回合（真会话真跑；附件链判据腿仍 NOT-EXECUTED，A4 经 runtime 读回闭环）",
+  "row": "M-05 read_image",
+  "run_utc": "2026-10-17T04:40Z",
+  "run_utc_prevmaster": "2026-10-17T04:01Z",
+  "world_prefix": "a5c08-*（跑毕删除）",
+  "world_prefix_prevmaster": "a5e2-*（跑毕删除）"
 }
