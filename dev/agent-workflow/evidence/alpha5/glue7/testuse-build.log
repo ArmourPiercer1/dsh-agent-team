@@ -1,0 +1,5 @@
+$ tsx scripts/build.ts
+$ tsx native/system/scripts/build.ts --host-addon-only
+build: built linux-x64/bin/glibc/system.node
+$ pnpm run build:lib:host && pnpm run build:lib:client
+$ node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc -b tsconfig.host.json && tsdown --env.DSH_BUILD_FACE host && pnpm --filter @deepseek-ai/dsh-desktop run bundle
