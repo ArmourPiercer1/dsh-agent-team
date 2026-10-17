@@ -12,7 +12,7 @@ keep every fail-closed law untouched, prove it LIVE on this host.
 | `team_bash` | shell | `createConfinedShellBackend` (`plane-effect-backends.mjs:204`) | confined Process provider `sandbox-provider/provider.ts:228` + P-LSP streaming arm `provider.ts:661`, Landlock pre-launcher `sandbox-provider/launcher/landlock-prelauncher.py`, launcher byte-pin double gate (pb-CONTRACT §1 `ProviderAssemblyConfig`) | REAL Landlock ABI v4 on this host: echo token + `exit=0` on the wire, write inside the governed root lands on disk, outside-root read refused by the KERNEL (`Permission denied`, secret never on the wire) — unit legs G3/G4 + live L3/L4 |
 | `team_grep` | fs (read-only search) | `createAnchoredSearchBackend` (`plane-effect-backends.mjs:132`) | the W5 wiring round's REAL grep search ported verbatim: argv `dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs:287` + outcome/shaping `:308`; governed anchor = controlled-fs instance root `controlled-fs/src/controlled-fs.ts:73` (`ControlledFsInstance`) with the lane's own containment law `isBeneath` `controlled-fs/src/open-at-exec.ts:53` | live L2: anchored grep hits the token line over the wire; unit G1/G2 (+ `..` refused at parse, symlink escape refused at realpath) |
 | `read` (takeover placement) | fs | `createGovernedReadExecutor` (`plane-effect-backends.mjs:324`) | same controlled-fs instance root; deny-lane re-check BEFORE any byte (G1 law), template-default-deny honored (an effect the policy never names never runs); placement identity → pb §6 feed (`tool-dispatch/install.ts:116` `definitionIdentityOf`, feed gates `:1073`+) | live L1: real file bytes ride the wire, int-a5b T5 refusal gone on the assembled row; unit G7 (feed row realm pairing + identity equality) |
-| `team_glob` | fs | **TYPED-SHUT — honestly unconnected** | NO glob implementation exists anywhere in this repo (measured: no backend, no module, no lane — the a5p5 fallback `globBackend ?? searchBackend` at `tools/a5p5-tools/src/register.ts:118` is EXPLICITLY overridden with the shut row for production). Inventing one here would be a new executor — forbidden by the task | unit G6 pins the shut landing verbatim even with the real rows configured |
+| `team_glob` | fs | **REAL — confined rg (scope-probe `fd9d4454` closed the PR5 commitment; TOCTOU-hardened)** | `createAnchoredGlobBackend` (`plane-effect-backends.mjs`): host public-root `buildGlobCommand`/`GLOB_MAX_RESULTS`/`resolveRgPath` (the plan :128 named face) + `resolveAnchored` + verified directory pre-open + the SAME confined Landlock provider — the rg walk runs INSIDE the sandbox (`glob/README.md` ruling + disclosure; live legs L6-L9) |
 
 Assembly rows (the delivery gap int-a5b named — "seam 精确到挂载行缺 backends 入参"):
 
@@ -74,7 +74,12 @@ is accretion; a vanished one is a broken wire):
 
 ## 4. Disclosed limits (honest marks, not gaps hidden by wording)
 
-* **glob**: no implementation exists → typed-shut row, pinned (G6). Not wired.
+* **glob**: REAL since the scope probe + ruling (`glob/README.md`: 在其原授权语义内，
+  无需新裁决). Disclosed residuals of that row: the streaming arm can read rg's
+  hard exit as 0 on this host (walker-error detection rides rg's own stderr —
+  `rg-walker-error`, probes in `glob/`); provider scratch defaults INSIDE the
+  governed root on the shell row (the glob row defaults its own scratch outside;
+  the shell-row default is left for #321 review, disclosed not touched).
 * **Per-call C-FS grant gating for the read row**: the production plane has NO
   `admitCall` consumer (measured: zero), so the read row is anchored + lane-gated
   (deny-before-read, default-deny) but NOT gated per-call through the admission
@@ -93,6 +98,51 @@ is accretion; a vanished one is a broken wire):
   reinterpreted as a foreground run.
 * Host scratch: the provider's scratchRoot must sit inside the workspace
   (sandbox constraint); the plane row defaults it to the governed root.
+
+### 4b. TOCTOU class (independent review ①(c)) — audit line, kept even after the fix
+
+The independent security review (`a5g7rev` VERDICT, ①(c) FAIL) measured a
+check-vs-open decoupling leak on the read and grep rows: an EXTERNAL process
+renaming the anchored path to a symlink in the µs window between
+`realpathSync` and the consumer's own open. Reviewer evidence: read leaked
+1/20000 (iter 23), grep-file-arg 1/400 (iter 1), grep-dir-arg 0/400.
+
+FIX (this branch, same law reused, no new architecture, no new permission):
+
+* **read row**: the lane's own safe-open law — `open(O_RDONLY|O_NOFOLLOW)` +
+  `verifyOpenedHandle` (`controlled-fs/src/open-at-exec.ts`, the exec-time
+  re-read shipped since PoC3-B: `/proc/self/fd` containment + fstat-vs-snapshot
+  drift) + bytes read from the VERIFIED handle only; the size cap now enforces
+  on the verified identity.
+* **grep row, file target**: same pre-open + exec-time verify, and the child
+  receives ONLY the inherited descriptor (`/proc/self/fd/3` — spawn stdio slot,
+  child-side numbering measured) — no path string ever reaches grep; the
+  presented output remaps the fd view back to the anchored spelling
+  byte-identically (S3 pins it).
+* **grep row, dir target**: keeps the string (`grep -r` neither descends a
+  command-line symlinked dir nor follows in-tree symlinks — asymmetric follow
+  law, measured 0/400 TWICE: reviewer and this re-run). NOT exempted: an
+  external mutator could in principle swap a mid-component before grep's own
+  resolve; no public interface closes a recursive walk without `OpenAtPort`
+  (declared seam, no native helper — the trichotomy's evidence of interface
+  absence). Disclosed as residual.
+* **glob row (ships now, same bar from birth)**: walk root pre-open
+  O_DIRECTORY|O_NOFOLLOW + verify (rg DOES follow command-line symlinked dirs
+  — measured, so the pre-refusal layer is load-bearing here); the walk root
+  reaches rg only as `.` through the launcher cwd, and any swap that slips the
+  window lands the child on a target the Landlock rule set (root-only
+  read_dir/read_file) kernel-refuses — zero bytes. The rg child's own in-tree
+  walk never follows symlinks (measured). Inside-root redirect integrity
+  residual disclosed, boundary escape refused by two layers.
+
+ADVERSARIAL RE-RUN (reviewer-shaped external rename→symlink attacker, same
+templates, driven against the compiled DIST MIRROR — the production face):
+`toctou-fix/re-run-toctou.mjs`, RED-FIRST recorded (pre-fix mirror leaked
+C1@iter18, C2@iter0 — reproduces the reviewer's class) and post-fix
+**GREEN 8/8: read 0/20000, grep-file 0/400, grep-dir 0/400, glob-walk 0/200
+swaps leaked, while every positive control really ran** (read real bytes,
+grep real hits, glob real walk, final-symlink still typed-refused).
+Output: `toctou-fix/re-run-output.txt`.
 
 ## 5. Live kit
 

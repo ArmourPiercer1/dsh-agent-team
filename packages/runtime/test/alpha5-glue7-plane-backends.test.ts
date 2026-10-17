@@ -32,7 +32,7 @@
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -196,12 +196,40 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(existsSync(sentinel)).toBe(false)
   })
 
-  it('G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider configured', async () => {
+  it('G6 glob REAL (scope probe closed the PR5 commitment — evidence/alpha5/glue7/glob/): the configured row runs the REAL confined rg walk; the unconfigured shut row is R1\'s, kept byte-identical', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
-    expect(res.text).toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).toContain('needle.txt')
+    expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    expect(built.value.backends.glob.execCount()).toBe(1)
+  })
+
+  it('G6b glob bounded face + typed walker error + symlink-final refusal: the anchor law holds before any spawn, the cap is honest', async () => {
+    const manyDir = join(ROOT_DIR, 'many')
+    mkdirSync(manyDir, { recursive: true })
+    for (let i = 0; i < 105; i++) writeFileSync(join(manyDir, `f${String(i)}.gen`), 'x\n')
+    symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link'))
+    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
+    if (!built.ok) return
+    const glob = (raw: unknown) => def(built.value, 'team_glob').execute(raw)
+    const capped = await glob({ pattern: 'many/*.gen' })
+    expect(capped.text).toContain('f0.gen')
+    // GLOB_MAX_RESULTS (host public root) = 100: 105 hits never fit — the
+    // lane renderer's own truncation marker carries the bound honestly.
+    expect(capped.text).toContain('truncated')
+    const bad = await glob({ pattern: '[unclosed' })
+    expect(bad.text).toMatch(/rg-walker-error|rg-exit-\d/) // typed walker failure, never a crash, never a fake-empty
+    // (live-measured: the streaming arm can read rg's hard-error exit back as
+    // 0 — the walker's stderr word carries the failure, probe-rg-exit.mjs)
+    expect(bad.text).not.toContain('needle')
+    const esc = await glob({ pattern: '*', path: 'escape-link' })
+    expect(esc.text).toContain('symlink-alias') // resolveAnchored's own realpath-escape code
+    expect(esc.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
+    // capped walk + bad-pattern both spawned; the symlink refusal is decided
+    // BEFORE any spawn (anchor law precedes the provider) — execCount says so.
+    expect(built.value.backends.glob.execCount()).toBe(2)
   })
 
   it('G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed', async () => {

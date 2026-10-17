@@ -43,7 +43,7 @@
  */
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, writeFileSync, symlinkSync } from 'node:fs'
 import { createServer as netServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -500,6 +500,14 @@ async function runWorld({ mode, mock, MK, blueprintBaseDir, markers, stormLimit 
     mkdirSync(join(HOME, 'workspace', 'outside'), { recursive: true })
     writeFileSync(join(world.governedRoot, 'notes.txt'), `line one\nA5G7-READ-TOKEN-77\nline three\nA5G7-GREP-TOK lives here\n`)
     writeFileSync(world.outsideSecret, `A5G7-OUTSIDE-SECRET-42\n`)
+    if (mode === 'assembled') {
+      // glob live legs (scope probe -> PR5 commitment): one clean hit, an
+      // over-cap population (GLOB_MAX_RESULTS=100), and a symlink whose
+      // FINAL target is the outside secret dir (anchor-adversarial).
+      writeFileSync(join(world.governedRoot, 'g7-hit.g7glob'), 'g7 glob hit\n')
+      for (let i = 0; i < 105; i++) writeFileSync(join(world.governedRoot, `cap-${String(i).padStart(3, '0')}.g7cap`), 'c\n')
+      try { symlinkSync(join(HOME, 'workspace', 'outside'), join(world.governedRoot, 'escape-link')) } catch { /* the leg self-grades */ }
+    }
     const MK_DISC = `${MK}_${mode.toUpperCase()}_DISC`
     const MK_L0 = `${MK}_${mode.toUpperCase()}_L0`
     const MK_A = `${MK}_${mode.toUpperCase()}_TASK_A`
@@ -786,6 +794,10 @@ async function main() {
           if (calls.length === 1) return toolCall(`call-g7-grep-${rnd()}`, 'team_grep', { pattern: mode === 'assembled' ? 'A5G7-GREP-TOK' : 'A5G7', path: '.', output_mode: 'content' })
           if (calls.length === 2) return toolCall(`call-g7-bash-${rnd()}`, 'team_bash', { command: mode === 'assembled' ? 'echo A5G7-BASH-TOK; echo A5G7-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt' : 'echo a5g7' })
           if (calls.length === 3 && mode === 'assembled') return toolCall(`call-g7-cat-${rnd()}`, 'team_bash', { command: 'cat ../outside/secret.txt' })
+          if (calls.length === 4 && mode === 'assembled') return toolCall(`call-g7-glob-${rnd()}`, 'team_glob', { pattern: '*.g7glob' })
+          if (calls.length === 5 && mode === 'assembled') return toolCall(`call-g7-globcap-${rnd()}`, 'team_glob', { pattern: '*.g7cap' })
+          if (calls.length === 6 && mode === 'assembled') return toolCall(`call-g7-globbad-${rnd()}`, 'team_glob', { pattern: '[unclosed' })
+          if (calls.length === 7 && mode === 'assembled') return toolCall(`call-g7-globlink-${rnd()}`, 'team_glob', { path: 'escape-link', pattern: '*' })
           const results = digest.toolResults
           const quote = results.map((r, i) => `r${i}=${r.slice(0, 140).replace(/\s+/g, ' ')}`).join(' | ')
           return { kind: 'text', content: `A5G7_MEMBER_RESULT ${quote}` }
@@ -841,11 +853,20 @@ async function main() {
   check('L4', 'CONFINEMENT WITNESS: the confined child reading a file OUTSIDE every allowPath answers the kernel refusal (Permission denied) and the secret bytes NEVER appear on the wire',
     aResults[3] !== undefined && aResults[3].includes('Permission denied') === true && !aResults[3].includes('A5G7-OUTSIDE-SECRET-42'),
     `r3=${JSON.stringify(aResults[3] ?? 'LEG-MISSING').slice(0, 220)}`)
+  check('L6', 'POSITIVE 4 (glob, REAL rg INSIDE the confined sandbox): the assembled team_glob hit rides the wire (g7-hit.g7glob from the rg --files walk under Landlock), no IO_POLICY near it',
+    aResults[4]?.includes('g7-hit.g7glob') === true && !(aResults[4] ?? '').includes(IO_TEXT), `r4=${JSON.stringify(aResults[4] ?? 'LEG-MISSING').slice(0, 220)}`)
+  check('L7', 'OUTPUT BOUND on the wire: 105 seeded *.g7cap files over the host public-root cap GLOB_MAX_RESULTS=100 — the truncation marker is honest, the walk was never silently cut',
+    aResults[5]?.includes('cap-000.g7cap') === true && aResults[5]?.includes('truncated') === true, `r5=${JSON.stringify(aResults[5] ?? 'LEG-MISSING').slice(0, 260)}`)
+  check('L8', 'INVALID-GLOB SHAPE: the typed walker failure surfaces on the wire (rg-walker-error: the streaming arm read rg\'s hard exit as 0 on this host and the walker\'s stderr carried it — disclosed in glue7/glob/probes), never a crash, never a fake-empty',
+    aResults[6]?.includes('rg-walker-error') === true && !(aResults[6] ?? '').includes('g7-hit'), `r6=${JSON.stringify(aResults[6] ?? 'LEG-MISSING').slice(0, 220)}`)
+  check('L9', 'ANCHOR ADVERSARIAL (symlink-final): team_glob at path=escape-link — a symlink inside the governed root whose FINAL target is the outside secret dir — is refused symlink-alias before any spawn and the secret bytes NEVER ride the wire',
+    aResults[7]?.includes('symlink-alias') === true && !(aResults[7] ?? '').includes('A5G7-OUTSIDE-SECRET-42'), `r7=${JSON.stringify(aResults[7] ?? 'LEG-MISSING').slice(0, 220)}`)
   check('L5', 'the assembled world logged the assembly rows in the host log: the placement feed row list (team_grep,team_glob,team_bash,read), the confined capability OK probe, ≥1 confined-shell RAN line and a governed-read RAN line',
     (a.logObservations ?? []).some((l) => l.includes('placement-feed rows=[team_grep,team_glob,team_bash,read]'))
       && (a.logObservations ?? []).some((l) => l.includes('confined-shell capability OK'))
       && (a.logObservations ?? []).some((l) => l.includes('confined-shell ran'))
-      && (a.logObservations ?? []).some((l) => l.includes('governed-read RAN')),
+      && (a.logObservations ?? []).some((l) => l.includes('governed-read RAN'))
+      && (a.logObservations ?? []).some((l) => l.includes('anchored-glob ran')),
     `rows=${JSON.stringify((a.logObservations ?? []).filter((l) => l.includes('placement-feed') || l.includes('confined-shell ran') || l.includes('governed-read RAN')).slice(0, 4))}`)
 
   // ③ deny negative, same round, production backends:

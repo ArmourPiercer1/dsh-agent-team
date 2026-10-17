@@ -1,6 +1,27 @@
-# GLUE-7 · glob 范围考证 + 普通实现预研（只读考证笔，不改 #321 面）
+# GLUE-7 · glob 范围考证 + 普通实现预研（考证笔 `fd9d4454` + 实现笔合流）
 
-日期 2026-10-18 · 作者 GLUE-7 writer · 性质 = 证据文档（本目录唯一产物；生产面零改动）
+日期 2026-10-18 · 作者 GLUE-7 writer · 性质 = 证据文档
+
+## 裁决状态（parent 2026-10-18 裁决，逐字落档）
+
+**glob 属 PR5 原计划承诺范围，公开包根 `@deepseek-ai/dsh-tool-fs-search` 即计划 :128
+指名物——在其原授权语义内，无需新裁决。**（引本考证件 §① 承诺原句表 + §② 盘点：
+计划 `alpha5-s0-pr0-pr8-implementation-plan.md:33/:128/:132`、`architecture.md:234`、
+`S0-SELECTION-MATRIX.md:53/:128`。）
+
+实现笔已按 §③ 草图落地：`createAnchoredGlobBackend`（`plane-effect-backends.mjs`，
+backendId `a5g7-confined-rg-glob`）+ plane `glob:` 行接通 + G6 语义重钉（RED 前态
+R1 腿原文保留）+ 单元 G6b（cap/typed walker error/symlink-final）+ kit live 腿
+L6-L9。TOCTOU 安全审 ①(c) 修复完成后本行以修复后锚语义交付（open+verify 前置拒 +
+Landlock allowPaths 内核兜底；对抗复跑见 `../toctou-fix/`，含 glob dir-swap 腿）。
+
+## 实现落地与草图的差异（如实申报）
+
+1. **outcome 形** = SearchOutcome `files_with_matches`（lane 无 GlobOutcome 类型，渲染器单主为 lane；宿主 `formatGlobOutput` 绑宿主 spill/sampling 上下文 → 不借用，cap 用 `GLOB_MAX_RESULTS`）。
+2. **exit-code 面**：live 实测（`probe-rg-exit.mjs`/`probe-cwd.mjs`）provider streaming 腿在本机可把 rg 硬错误 exit=2 读回 0 → 本行在 code∈{0,1} 且 stderr 非空时以 walker 自己的话落 typed failure `rg-walker-error`（硬错误必写 stderr、必无文件输出；成功腿 stderr 空，实测钉死）。native `rg-exit-N` 映射保留（code≥2 时仍生效）。streaming exit 传播属 provider 面（reviewed lane），不越权改，披露于此。
+3. **scratch 面**：provider 的 scratch 会 materialise 在 sandbox 可见 cwd 内（`probe-cwd.mjs` 实测）→ 本行 scratchRoot 默认落在治理根**外**（`${rootDir}.a5g7-glob-scratch`），否则 walk 会把 sandbox 自身布局当命中。shell 行的同默认（scratch 落根内）留待 #321 审裁，不擅动。
+4. **TOCTOU（安全审 ①(c) 同型腿）**：walk 根 open O_DIRECTORY|O_NOFOLLOW + `verifyOpenedHandle` 前置拒（rg **跟随**命令行 symlink 目录参数——`rg --files -- <swapped>` 实测列出外部；grep -r 不跟，故 grep dir 腿 0/400、glob 腿必须有此层）；窗内漏网者由 Landlock allowPaths（仅治理根）内核拒——复用既有句柄验证 + 内核隔离双层，无新机制。`magic-link cwd` 形态在 provider/launcher 链不可用（父 fd 不跨 launcher，实测空走），不强行。
+5. walk 子树呈现 root-relative（`walkRel/` 前缀恢复），rg 只走 `.`（argv 零路径字符串）。
 
 ## ① 支持承诺原句（docs 树 · 文件:行）
 
