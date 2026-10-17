@@ -434,8 +434,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       description: 'Read one governed text file inside this member\'s admitted file root. Paths resolve against that root; escaping targets are refused.',
       parameters: {
         type: 'object',
-        properties: { path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' } },
-        required: ['path'],
+        // The native spelling, on purpose: the frozen operation-permission
+        // canonicalizer keys `read` to its `file_path` extractor (live run-8
+        // measured 'canonicalization failed for tool "read":
+        // file-path-missing' on a {path} schema — the takeover row must
+        // satisfy the same canonical law the native name carries).
+        properties: { file_path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' } },
+        required: ['file_path'],
       },
       execute: async (raw) => ({ text: await readExecutor(raw) }),
       output: PLANE_PRESENTATION_FACE,

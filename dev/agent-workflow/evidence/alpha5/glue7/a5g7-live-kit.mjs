@@ -769,7 +769,7 @@ async function main() {
         }
         if (mode !== 'baseline' && text.includes(`${MK}_${MU}_TASK_A`)) {
           const calls = digest.assistantToolNames
-          if (calls.length === 0) return toolCall(`call-g7-read-${rnd()}`, 'read', mode === 'assembled' ? { path: 'notes.txt' } : { file_path: 'notes.txt' })
+          if (calls.length === 0) return toolCall(`call-g7-read-${rnd()}`, 'read', { file_path: 'notes.txt' })
           if (calls.length === 1) return toolCall(`call-g7-grep-${rnd()}`, 'team_grep', { pattern: mode === 'assembled' ? 'A5G7-GREP-TOK' : 'A5G7', path: '.', output_mode: 'content' })
           if (calls.length === 2) return toolCall(`call-g7-bash-${rnd()}`, 'team_bash', { command: mode === 'assembled' ? 'echo A5G7-BASH-TOK; echo A5G7-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt' : 'echo a5g7' })
           if (calls.length === 3 && mode === 'assembled') return toolCall(`call-g7-cat-${rnd()}`, 'team_bash', { command: 'cat ../outside/secret.txt' })

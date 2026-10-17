@@ -2447,6 +2447,7 @@ export function createAgentBindings(deps) {
         a5PlaneValue = built.value
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
+        console.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         toolDisposers.push(placed.dispose)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue

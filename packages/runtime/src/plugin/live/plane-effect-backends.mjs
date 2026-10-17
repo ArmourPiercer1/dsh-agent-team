@@ -340,7 +340,10 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
   })
   const executor = async (raw) => {
     const record = (raw !== null && typeof raw === 'object') ? raw : {}
-    const rawPath = record.path
+    // file_path = the canonical spelling the frozen operation-permission
+    // layer resolves for `read`; `path` stays accepted for placement-direct
+    // callers (unit legs).
+    const rawPath = record.file_path ?? record.path
     const parsed = resolveAnchoredPath(rootDir, typeof rawPath === 'string' ? rawPath.trim() : rawPath)
     if (!parsed.ok) {
       return `refused-schema ${String(parsed.code)} — ${parsed.detail}`

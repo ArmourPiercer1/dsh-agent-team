@@ -1,0 +1,235 @@
+{
+  "mode": "preassembly",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-preassembly-2026-10-17T21-01-48Z",
+  "ok": true,
+  "face": "strict (files:[\"dist\"] + declared deps)",
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED-ea4ba885>",
+  "discPrompt": {
+    "attempts": 1,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true,
+    "getStatus": 200
+  },
+  "catalogPreflightOk": true,
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5g7-preassembly-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-01-48Z\",\"blueprint\":{\"blueprintId\":\"a5g7-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:332f07df4b8a3feecf322604a1faefe3445f6c0993b99fb3b553319262ad20c8\"},\"createdAt\":\"2026-10-17T21:02:25.678Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-preassembly-2026-10-17T21-01-48Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5g7-team-2026-10-17T21-01-48Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-01-48Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-17T21:02:25.687Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5g7-team-2026-10-17T21-01-48Z\",\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-01-48Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"d"
+  },
+  "leaderToolCalls": [
+    "team_delegate",
+    "team_collect",
+    "team_delegate",
+    "team_collect"
+  ],
+  "memberResultsBackToLeader": true,
+  "leaderFinalSeen": true,
+  "memberARequestCount": 4,
+  "memberDRequestCount": 2,
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_collect",
+    "team_delegate",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberAToolResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]"
+  ],
+  "memberAFinal": {
+    "kind": "text",
+    "content": "A5G7_MEMBER_RESULT r0=[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native | r1=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backe | r2=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backe"
+  },
+  "memberDToolResults": [
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  ],
+  "memberDFinal": {
+    "kind": "text",
+    "content": "A5G7_DENY_RESULT [{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  },
+  "sentinelExists": false,
+  "bashWroteExists": false,
+  "standard": {
+    "sessionId": "session-10626528-b065-463f-8cb0-64791b9e33e0",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]"
+  ],
+  "ownLayerCarrierCount": 3,
+  "leader": {
+    "session": "session-a5g7-team-2026-10-17T21-01-48Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_bash",
+      "team_collect",
+      "team_delegate",
+      "team_glob",
+      "team_grep",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "read": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      }
+    }
+  },
+  "sessions": [
+    {
+      "s": "0-64791b9e33e0",
+      "run": false
+    },
+    {
+      "s": "34dc40cf4bb342",
+      "run": false
+    },
+    {
+      "s": "41d8d850116069",
+      "run": false
+    },
+    {
+      "s": "0-17T21-01-48Z",
+      "run": false
+    },
+    {
+      "s": "a5g7-root",
+      "run": false
+    }
+  ],
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "logObservations": [
+    "[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T21-01-48Z/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)"
+  ],
+  "hostErrors": [],
+  "swept": true
+}
