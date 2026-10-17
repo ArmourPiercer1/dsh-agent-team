@@ -141,7 +141,9 @@ FIX (this branch, same law reused, no new architecture, no new permission):
   narrowing) + the standalone glob face — deliberately NOT patched here
   under CANDIDATE-A. The plane row ships TYPED-SHUT (G6 verbatim); the
   factory is archived unwired (G6b factory-direct pins); kit L6 now pins
-  the shut landing live.
+  the shut landing live. Post-4c-fix re-run:
+`runs/2026-10-17T22-39-44Z/` — **VERDICT GREEN (24/24)** again (grep presentation change is
+wire-invisible to L2's hit leg; double capture 9==9==published after it).
 
 ### 4c. AUDIT — grep fd-view remap display integrity (CLOSED same round: path-field-only rewrite, RED-pinned G1b)
 
