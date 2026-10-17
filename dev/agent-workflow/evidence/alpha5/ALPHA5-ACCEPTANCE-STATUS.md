@@ -82,6 +82,23 @@
 
 ## 4. 判定分布（本清单 §1 共 23 行）
 
-DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。另 **ACCEPTED-VERIFIED=1**（行「LSP 生产装配（真实语言服务器最小交互）」，root 2026-10-17 指示按事实另立口径，**不折进上述四类计数**：其宣称面只覆盖"真实语言服务器最小交互"这一维度，任何 WIRED/DONE 语义都不由本行取得，族级 GO 亦不宣称）· **DEDUPLICATED=1**（行「LSP 生产装配（prod-lsp 轮，R-1/R-2）」=原 PENDING 缺项行，#304 合并后由 `1d0d03d0` 去重指向上行）。**历史注（原两条分布段，逐字保留不删义）**：①"…另 ACCEPTED-VERIFIED=1…所依赖的 R-1/R-2 装配面在 master 仍未合（#304 正 rebase）…"（写于 #304 未合时，其"未合"条件现由 `77ffb187` 关闭，测量本身不变）；②"…· PENDING-ACCEPTANCE=1（LSP 生产装配轮：真实语言服务器最小交互未做，现 fixture 仅证 seam）…"（#304 分支原段，其缺项条件已由真服务器测量满足并去重，原测量记录仍在其证据目录）。
+DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。另 **ACCEPTED-VERIFIED=1**（行「LSP 生产装配（真实语言服务器最小交互）」，root 2026-10-17 指示按事实另立口径，**不折进上述四类计数**：其宣称面只覆盖"真实语言服务器最小交互"这一维度，任何 WIRED/DONE 语义都不由本行取得，族级 GO 亦不宣称）· **DEDUPLICATED=1**（行「LSP 生产装配（prod-lsp 轮，R-1/R-2）」=原 PENDING 缺项行，#304 合并后由 `1d0d03d0` 去重指向上行）。
+
+本段之前那版在此处写的「历史注」是**节引**却自称逐字（＝声称失真，独立复测审 ⑤ 判 FAIL）；两条原始分布段的**逐字全文**现列于下块，出处与核法=`git show 1d0d03d0:dev/agent-workflow/evidence/alpha5/ALPHA5-ACCEPTANCE-STATUS.md`。
+
+**历史原文（逐字全文，来源 = `git show 1d0d03d0:dev/agent-workflow/evidence/alpha5/ALPHA5-ACCEPTANCE-STATUS.md` §4 的两条原始分布段；本节上一版把二者写成节引却自称「逐字保留」＝**声称失真**，本轮以全文替换（独立复测审 ⑤ FAIL 的修复），见 `SESSION_ROUTER_LOG.md` 2026-10-17 11:5xZ 条与本轮 commit message。两条原文一字未改；其时效性各由上方注记说明，不构成对本行判据或任何测量的改动。）**
+
+原段①（写于 #304 尚未合入 master 之时；其「仍**未合**」条件现由 `77ffb187` 关闭，其所记测量本身不变）：
+
+```text
+DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。另 **ACCEPTED-VERIFIED=1**（新增行「LSP 生产装配（真实语言服务器最小交互）」，root 2026-10-17 指示按事实另立口径，**不折进上述四类计数**：其宣称面只覆盖"真实语言服务器最小交互"这一维度，所依赖的 R-1/R-2 装配面在 master 仍**未合**（#304 正 rebase），故任何 WIRED/DONE 语义都不由本行取得，族级 GO 亦不宣称）。
+```
+
+原段②（#304 分支原段；其「真实语言服务器最小交互未做，现 fixture 仅证 seam」缺项条件已由真实语言服务器测量满足并由 `1d0d03d0` 去重，其原测量记录仍在其证据目录不变）：
+
+```text
+DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）· PENDING-ACCEPTANCE=1（LSP 生产装配轮：真实语言服务器最小交互未做，现 fixture 仅证 seam）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。
+```
+
 
 — writer=qwen3.8-flash-next（只读+本文件新增；机检复跑仅读+已清除自产 capture；零端口、零世界、:3080 未触碰）

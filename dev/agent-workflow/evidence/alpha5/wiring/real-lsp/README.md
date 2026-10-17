@@ -138,6 +138,26 @@ changed artifact. The two original runs stay in `runs/` untouched as the histori
 Baseline now on record: **`master@77ffb187` (#304 merged) / branch head `1d0d03d0`** for the runs
 above; `7962022e` remains recorded as the baseline of the original pair.
 
+## Independent reviewer re-run (and the one thing it caught)
+
+The independent reviewer re-ran the suite on this branch rather than trusting the lane's runs:
+
+- their kit copy: `real-lsp-kit-rev-reviewer.mjs` — a copy of `real-lsp-kit.mjs` whose ONLY
+  differences are the isolation/identification lines (`world` prefix `a5reallsp-rev-`, run
+  directory `runs-review-rev/`, and the `clientInfo` / `hostInfo` names). No criterion, leg,
+  assertion or timeout differs. Sha256: lane kit `b4eddc24…`, reviewer copy `2f43a2d9…`.
+- their run: `runs-review-rev/2026-10-17T11-45-11-242Z/` — **30/30 PASS**, all legs, plus a
+  three-way sha cross-check of the production face. That run is committed here unmodified.
+- what it caught: **criterion ⑤ FAIL** — in `ALPHA5-ACCEPTANCE-STATUS` §4 I had collapsed the
+  two pre-existing distribution paragraphs into one and presented the two originals as a
+  "history note", quoting them in TRUNCATED form (ellipses, dropped words 「新增行」/「，故」,
+  lost bold on 仍**未合**) while the file note, the router-log entry and the commit message all
+  claimed they were preserved 逐字/verbatim. Truncation is not verbatim: the claim was
+  overclaimed. Fixed in the following commit — §4 now contains both originals as
+  **byte-exact fenced text** (verified by substring containment against
+  `git show 1d0d03d0:…`), and the overclaim is acknowledged rather than quietly edited away.
+  No measurement, no criterion and no verdict changed; this is a wording-integrity fix.
+
 ## Reproduce
 
 ```
