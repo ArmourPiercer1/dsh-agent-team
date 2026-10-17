@@ -68,6 +68,10 @@ const PERMITTED_OUTSIDE = [
 const PR1_CONSUMERS = Object.freeze([
   'runtime/tool-dispatch/',
   'runtime/src/plugin/live/agent-bindings.mjs',
+  // GLUE-7 (alpha5-glue7-backend): the plane row consumes the §6 feed face
+  // (`definitionIdentityOf` from tool-dispatch) to mint placement-binding
+  // rows for the Guard — the #313 入参面's first production caller.
+  'runtime/src/plugin/live/team-tool-plane.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.

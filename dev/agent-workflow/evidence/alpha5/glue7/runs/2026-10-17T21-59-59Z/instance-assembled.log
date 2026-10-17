@@ -1,0 +1,15 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T21-59-59Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-bfb83cda>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=64 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-assembled-2026-10-17T21-59-59Z/workspace/governed/notes.txt
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-12uk21l18gqe-bash-2 pid=222 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-12uk21l18gqe-bash-3 pid=225 exit=0 timedOut=false
+[dsh-agent-team] a5g7-glob: anchored-glob capability OK realm=a5g7-realm rows=6 rg=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T21-59-59Z/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+[dsh-agent-team] a5g7-glob: anchored-glob ran realm=a5g7-realm call=team-inst-12uk21l18gqe-glob-4 pid=236 files=1 capped=false
+[dsh-agent-team] a5g7-glob: anchored-glob ran realm=a5g7-realm call=team-inst-12uk21l18gqe-glob-5 pid=238 files=105 capped=true
+[dsh-agent-team] a5g7-glob: anchored-glob walker-error realm=a5g7-realm call=team-inst-12uk21l18gqe-glob-6 (exit read as 0; stderr carried it)
+[dsh-agent-team] a5g7-glob: anchored-glob refused symlink-alias call=team-inst-12uk21l18gqe-glob-7 realm=a5g7-realm
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
