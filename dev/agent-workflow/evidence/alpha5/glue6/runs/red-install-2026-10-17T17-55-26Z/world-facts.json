@@ -1,0 +1,19 @@
+{
+  "posture": "red-install",
+  "surface": "strict",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g6-red-base/tests/homes/a5g6-red-install-202610171755",
+  "expansion": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z",
+  "ok": true,
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED>",
+  "bootstrapFailed": true,
+  "moduleNotFoundLines": [
+    "[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z/packages/runtime/src/plugin/upstream-resolver.mjs' imported from data:"
+  ],
+  "assemblyCrashLines": [],
+  "observerHealthReached": 200,
+  "swept": true,
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}

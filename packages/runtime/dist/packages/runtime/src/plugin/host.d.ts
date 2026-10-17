@@ -86,13 +86,24 @@ export declare function defaultGlueUrl(hostModuleUrl: string): string;
  */
 export declare function withDefaultWorkspace(config: TeamPluginConfig, launchCwd: string): TeamPluginConfig;
 /**
- * The default storage-seam URL candidates, per module layout (the dist
- * entry sits five directory levels below the runtime package root —
- * `dist/packages/runtime/src/plugin` — the source entry two — the same
- * layout-agnostic candidate pattern as `loadLegacyInspect`). An explicit
- * `config.seamUrl` always wins.
+ * The default storage-seam URL candidates, package face first (the same
+ * layout-agnostic candidate pattern as `loadLegacyInspect`).
+ *
+ * GLUE-6 (install-surface self-sufficiency, RED-A): the seam is a RUNTIME
+ * dependency of the shipped entry, so it ships INSIDE the package face —
+ * `scripts/place-dist-glue.mjs` PLACEMENTS byte-copies
+ * `packages/runtime/root-binding/harness/seam.mjs` to
+ * `dist/packages/runtime/root-binding/harness/seam.mjs` (the committed-surface
+ * drift gate compares both). Candidate 0 is the ONE relative specifier that
+ * hits the shipped file in BOTH layouts: two up from the dist entry
+ * `dist/packages/runtime/src/plugin` is `dist/packages/runtime`, two up from
+ * the source entry `src/plugin` is the runtime package root. Candidate 1
+ * stays the pre-GLUE-6 repo-layout path (five up from the dist entry = the
+ * runtime package root OUTSIDE the mirror) — dead in an installed package,
+ * which is exactly the hole RED-A pinned. An explicit `config.seamUrl`
+ * always wins.
  * @param hostModuleUrl - this entry's `import.meta.url`.
- * @returns the candidate file URLs, dist layout first.
+ * @returns the candidate file URLs, package face first.
  */
 export declare function defaultSeamUrlCandidates(hostModuleUrl: string): readonly string[];
 /**
