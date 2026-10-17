@@ -56,7 +56,7 @@
 
 ## 2. 非事项（本路线明确**不做**，均有在册出处）
 
-1. **不删旧字段、不裁历史 trim**：根 17:54Z『自动删除旧字段/退役 v3 禁止』（COORDINATION.md:97）+ ADR §6.0 硬约束『**不得借 v4 迁移擅自裁历史 trim**——任何 v3 时代字段面/能力面的缩减……确需缩减必须单独成项送裁，并在迁移报告中显式记 rejected』（`VNEXT-SCHEMA-ADR.md:141`，P-D2 行）。①②③ 全程 additive only。
+1. **不删旧字段、不裁历史 trim**：根 17:54Z『自动删除旧字段/退役 v3 禁止』（COORDINATION.md:97）+ ADR §6.0 硬约束『**不得借 v4 迁移擅自裁历史 trim**——任何 v3 时代字段面/能力面的缩减……确需缩减必须单独成项送裁，并在迁移报告中显式记 rejected』（`VNEXT-SCHEMA-ADR.md:140`，P-D2 行）。①②③ 全程 additive only。
 2. **不宣布退役**：flip-PREP『Retirement of v3 … is a SEPARATE later ruling；翻档 ≠ 退役』+『this round declares neither』；README 门禁行『翻档备笔（FLIP=NOT-APPLIED；未宣布退役；RETIRED 未翻）』。本路线任何阶段文本均不构成退役宣布。
 3. **A-4 时长未裁不阻前三阶段**：README `:4-5`『A-4 窗口时长未定只阻退役决策』；根 17:54Z『v4 接线、coverage/kernel 原子镜像（M-3）、M-7 等不得一概冻在翻档待裁下』；#312 独审『最小真裁决点仍仅 T-1；M-3/M-7=排程非新裁』（COORDINATION.md:98）。
 
