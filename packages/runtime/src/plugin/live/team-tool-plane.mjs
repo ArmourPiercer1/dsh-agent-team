@@ -75,6 +75,8 @@
 import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
 import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
+import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
+import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -353,6 +355,43 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // The reviewed Definitions (pb §2: decide REQUIRED).
   const decide = createLaneDecide(permissionPolicy, names, input.fs?.subtreeContains)
   const shut = createShutBackend('a5-effect-face-pending')
+  // GLUE-7 PRODUCTION BACKEND ASSEMBLY (glue only — `plane-effect-backends`
+  // rides the implementations this repo already ships: the confined Process
+  // provider for the shell class, the W5-round REAL read-only search for the
+  // grep class, the governed anchored read for the fs class; GLOB has no
+  // existing implementation and stays the typed shut row — never smuggled
+  // onto the search backend). A real backend appears ONLY where the row
+  // configured its governed anchor: no `fsInstance` = no fs-class backend,
+  // no `confinedProvider` = no shell backend — the closed world invents
+  // nothing, and unconfigured rows keep the shut landing byte-for-byte.
+  // An explicit `backends` row (the wiring-kit seam) still wins outright.
+  const fsInstance = input.plane?.fsInstance ?? null
+  const confinedCfg = input.plane?.confinedProvider ?? null
+  const realSearch = fsInstance !== null && typeof fsInstance.rootDir === 'string'
+    ? createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: (row) => observe(`a5g7-search: ${String(row)}`) })
+    : null
+  const realShell = confinedCfg !== null
+    ? createConfinedShellBackend({
+      realmId,
+      templateId: String(templateId),
+      instanceId: String(input.instanceId ?? templateId),
+      cwdRoot: typeof fsInstance?.rootDir === 'string' ? fsInstance.rootDir : input.plane?.workingDir,
+      confined: confinedCfg,
+      observe: (row) => observe(`a5g7-shell: ${String(row)}`),
+    })
+    : null
+  const productionBackends = Object.freeze({
+    search: realSearch ?? shut,
+    glob: shut,
+    shell: realShell ?? shut,
+  })
+  const hostedSearch = input.backends?.search ?? productionBackends.search
+  // Kit-compat law (a5p5 register.ts:118 — globBackend ABSENT reuses the
+  // search backend): an injected fixture search keeps carrying glob exactly
+  // as before. PRODUCTION search never does — the glob row has no existing
+  // implementation and lands on the honest typed shut face.
+  const hostedGlob = input.backends?.glob ?? input.backends?.search ?? productionBackends.glob
+  const hostedShell = input.backends?.shell ?? productionBackends.shell
   // The host REGISTRATION law (packages/core/tools: every registerable tool
   // must declare output { schema, render }) is an INSTALLER face: the a5p5
   // lane deliberately ships name/description/parameters/execute ONLY (its
@@ -362,22 +401,75 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const defs = Object.freeze(createGovernedToolDefinitions({
     realmId,
     decide,
-    searchBackend: input.backends?.search ?? shut,
-    shellBackend: input.backends?.shell ?? shut,
-    ...(input.backends?.glob === undefined ? {} : { globBackend: input.backends.glob }),
+    searchBackend: hostedSearch,
+    globBackend: hostedGlob,
+    shellBackend: hostedShell,
     names,
     callIdPrefix: `team-${String(input.instanceId ?? templateId)}`,
   }).map((def) => Object.freeze({ ...def, output: PLANE_PRESENTATION_FACE })))
+
+  // GLUE-7 fs-class row: the governed `read` over the SAME controlled-fs
+  // instance root (no second fs algebra). PLACED ONLY when the row declares
+  // an fsInstance — the native `read` spelling is takeover-mounted exactly
+  // like the G1 takeover vector the lane rules already speak, so dispatch
+  // resolves to THIS placement and the §6 binding feed below can hand the
+  // Guard the placement identity (int-a5b T5: `BINDING_UNVERIFIED` was the
+  // gap; a feed entry names the placement, it never bypasses the Guard).
+  // Deny-lane and template-default-deny re-check BEFORE any byte is read.
+  const readName = input.plane?.readName ?? 'read'
+  const readExecutor = fsInstance !== null && typeof fsInstance.rootDir === 'string'
+    ? createGovernedReadExecutor({
+      realmId,
+      rootDir: fsInstance.rootDir,
+      policy: permissionPolicy,
+      decide,
+      ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
+      observe: (row) => observe(`a5g7-read: ${String(row)}`),
+    })
+    : null
+  const allDefs = readExecutor === null ? defs : Object.freeze([
+    ...defs,
+    Object.freeze({
+      name: readName,
+      description: 'Read one governed text file inside this member\'s admitted file root. Paths resolve against that root; escaping targets are refused.',
+      parameters: {
+        type: 'object',
+        properties: { path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' } },
+        required: ['path'],
+      },
+      execute: async (raw) => ({ text: await readExecutor(raw) }),
+      output: PLANE_PRESENTATION_FACE,
+    }),
+  ])
+
+  // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
+  // name, minted HERE at placement time from the same definition objects
+  // that mount below — the Guard's `bindingFeed` reads exactly this map.
+  const placementRecord = new Map()
+  for (const d of allDefs) {
+    const identity = definitionIdentityOf(d)
+    if (identity !== null) placementRecord.set(d.name, Object.freeze({ binding: Object.freeze({ definitionIdentity: identity }), realmId }))
+  }
 
   return {
     ok: true,
     value: {
       assembly,
       fsProvider,
-      definitions: defs,
+      definitions: allDefs,
       /** The mounted model-facing names — the own-layer bind list. */
-      ownNames: Object.freeze(defs.map((d) => d.name)),
+      ownNames: Object.freeze(allDefs.map((d) => d.name)),
       decide,
+      /** GLUE-7: the plane's realm (the feed's pairing key) and the real
+       *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
+      realmId,
+      backends: Object.freeze({
+        search: hostedSearch, glob: hostedGlob, shell: hostedShell,
+        ...(readExecutor === null ? {} : { read: readExecutor }),
+      }),
+      /** pb §6 provider-side feed: (name) -> {binding:{definitionIdentity}, realmId}. */
+      placementFeed: (name) => placementRecord.get(name),
+      placementNames: Object.freeze([...placementRecord.keys()]),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
@@ -385,7 +477,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
        */
       mount: (agentCtx) => {
         const disposers = []
-        for (const def of defs) {
+        for (const def of allDefs) {
           try {
             const disposer = agentCtx.tools.register(def)
             disposers.push(disposer)
@@ -402,7 +494,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
             return { ok: false, code: 'PLANE_PLACEMENT_CONFLICT', name: def.name, message: String(error?.message ?? error) }
           }
         }
-        observe(`a5-plane: placed [${defs.map((d) => d.name).join(',')}]`)
+        observe(`a5-plane: placed [${allDefs.map((d) => d.name).join(',')}]`)
         return {
           ok: true,
           dispose: () => {

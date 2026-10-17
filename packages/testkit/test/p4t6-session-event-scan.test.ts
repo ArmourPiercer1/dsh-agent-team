@@ -2463,6 +2463,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A5PBR2: readonly string[] = [
       'packages/runtime/test/a5pbr2-binding-feed.test.ts',
     ]
+    // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
+    // scannable files of the round — the live-row .mjs that ASSEMBLES the
+    // real effect backends onto the plane (confined Process provider for
+    // shell, the W5-round REAL read-only search anchored at the controlled-
+    // fs instance root, the governed anchored read; glob honestly stays the
+    // typed shut row) and its unit suite (three live positives on REAL
+    // Landlock + the deny-before-backend law with production backends +
+    // the feed rows; zero denylist vocabulary). The live kit rows under
+    // dev/agent-workflow/evidence/** are outside the packages/** scan, as
+    // every prior wiring round.
+    const SCANNED_PATHS_A5GLUE7: readonly string[] = [
+      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+      'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2503,7 +2517,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5GLUE5.length +
         SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5GLUE6.length +
-        SCANNED_PATHS_A5PBR2.length,
+        SCANNED_PATHS_A5PBR2.length +
+        SCANNED_PATHS_A5GLUE7.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2545,7 +2560,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5GLUE5.length +
         SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5GLUE6.length +
-        SCANNED_PATHS_A5PBR2.length,
+        SCANNED_PATHS_A5PBR2.length +
+        SCANNED_PATHS_A5GLUE7.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2611,6 +2627,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5GLUE6,
       ...SCANNED_PATHS_A5PBR2,
+      ...SCANNED_PATHS_A5GLUE7,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2877,6 +2894,18 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // `evidence/alpha5/glue7/p4t6-PBR2-RETIE-RED.txt`), booking the one
     // named file ends the chain at 1171 — the scanner total of this tree.
     expect(SCANNED_PATHS_A5PBR2.length).toBe(1171 - 1170)
+    // The GLUE-7 tie (this round joins the chain AFTER the stacked feed
+    // leg, so the feed holds `1171 - 1170` and GLUE-7 ties `1173 - 1171`):
+    // with the two files on disk and this clause absent the solo run reads
+    // `expected 1173 to be 1171` (capture
+    // `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`); booking the two
+    // named files ends the chain at 1173 — the scanner total of this tree.
+    // PRE-ANNOUNCEMENT for the integration re-tie: a later merge that lands
+    // the stacked GLUE-6 (3b1b515f) or feed (94abdd90) commits from master
+    // de-duplicates to the SAME files (cherry-pick -x disclosures) — the
+    // chain total stays 1173 for this set, and the three GLUE-6/PBR2/GLUE-7
+    // ties re-tie around the merge order, never re-counting a file.
+    expect(SCANNED_PATHS_A5GLUE7.length).toBe(1173 - 1171)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

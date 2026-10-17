@@ -2217,6 +2217,18 @@ export function createAgentBindings(deps) {
       // 1062-1063: owned names never ride the inherited-native lane, so a
       // global-face same-name can never credit this placement).
       const a5PlaneOwnedNames = []
+      // GLUE-7 (pb §6 provider side): the placement feed map for the plane's
+      // placed Definitions. The Guard gets a CLOSURE over this map at install
+      // and the plane assembly fills it at placement time — BEFORE
+      // bindOwnTools runs (the ordering below guarantees it; the same
+      // shared-mutable discipline as a5PlaneOwnedNames above). A row exists
+      // ONLY for a name the plane assembly actually placed: rows without one
+      // keep the pre-feed path byte-identical, and non-plane names never
+      // ride the feed.
+      const a5PlanePlacementFeed = new Map()
+      // ONE realm for the plane assembly AND the Guard's feed pairing —
+      // computed once, so the pairing can never drift between the two rows.
+      const a5PlaneRealmId = String(config?.teamToolPlane?.realmId ?? `a5-realm-${String(teamRoot)}`)
       /** The mask this assembly installs (design §4.1 step 2). The Guard
        *  handle OWNS its teardown: an armed Guard never lets the ordinary
        *  disposer drain lift it (NEG-1: "restrict first, adapter last" is
@@ -2289,6 +2301,13 @@ export function createAgentBindings(deps) {
           // GLUE-5: filled by the plane placement BEFORE publish (the
           // ordering below guarantees it) — see a5PlaneOwnedNames.
           assemblyOwnedNames: a5PlaneOwnedNames,
+          // GLUE-7: the pb §6 binding-feed face. realmId is the pairing key
+          // for feed entries ONLY (an install without feed rows behaves
+          // byte-identically); bindingFeed reads the placement map filled by
+          // the plane assembly below — a name with no row stays on the
+          // pre-feed path (never a weaker verification, just the same one).
+          realmId: a5PlaneRealmId,
+          bindingFeed: (name) => a5PlanePlacementFeed.get(name),
           // Generation 0 until PR2 (Operation Admission) feeds the overlay /
           // authority generations into the Binding; the Guard validates every
           // call against the generations it PUBLISHED with, so a change made
@@ -2387,7 +2406,7 @@ export function createAgentBindings(deps) {
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
         const built = createTeamToolPlaneAssembly({
           permissionPolicy,
-          realmId: String(planeCfg.realmId ?? `a5-realm-${String(teamRoot)}`),
+          realmId: a5PlaneRealmId,
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
@@ -2413,6 +2432,14 @@ export function createAgentBindings(deps) {
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
+        // GLUE-7: hand the placement identities to the Guard's feed —
+        // provider-side records minted at placement time (pb §6), read back
+        // by bindOwnTools below. No plane placement = no rows = pre-feed path.
+        for (const name of built.value.placementNames) {
+          const entry = built.value.placementFeed(name)
+          if (entry !== undefined) a5PlanePlacementFeed.set(name, entry)
+        }
+        observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         toolDisposers.push(placed.dispose)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue

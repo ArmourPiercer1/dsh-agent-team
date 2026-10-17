@@ -207,9 +207,9 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(res.text).toContain('A5G7-INSIDE-TOK')
     const feed = built.value.placementFeed?.('read')
     expect(feed?.realmId).toBe(REALM)
-    expect(feed?.definitionIdentity).toMatch(/^def#\d+$/)
+    expect(feed?.binding?.definitionIdentity).toMatch(/^def#\d+$/)
     const placed = built.value.definitions.find((d) => d.name === 'read')
-    expect(td.definitionIdentityOf(placed)).toBe(feed?.definitionIdentity)
+    expect(td.definitionIdentityOf(placed)).toBe(feed?.binding?.definitionIdentity)
     // confinement + deny-first on the read row
     const escape = await def(built.value, 'read').execute({ path: '../outside/secret.txt' })
     expect(escape.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
