@@ -458,7 +458,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     const d = placedByName.get(name)
     if (d === undefined) return undefined
     const identity = definitionIdentityOf(d)
-    return identity === null ? undefined : Object.freeze({ binding: Object.freeze({ definitionIdentity: identity }), realmId })
+    return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
   }
 
   return {
@@ -477,7 +477,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         search: hostedSearch, glob: hostedGlob, shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
       }),
-      /** pb §6 provider-side feed: (name) -> {binding:{definitionIdentity}, realmId}. */
+      /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
       placementNames: Object.freeze(allDefs.map((d) => d.name)),
       /**
