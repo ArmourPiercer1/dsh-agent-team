@@ -53,6 +53,7 @@
  */
 
 import type { TeamContractErrorCode } from '../../../contracts/src/index.js'
+import { DEFINED_BLUEPRINT_DOCUMENT_VERSIONS } from '../src/schema.js'
 
 // ---------------------------------------------------------------------------
 // minimal valid documents
@@ -389,7 +390,12 @@ export const NEG_SCHEMA_VERSION_UNSUPPORTED: NegativeFixture = {
  * If the defined set ever widens to include this number, the witness moves; the
  * intent does not.
  */
-const SCHEMA_VERSION_NEVER_DEFINED = 4
+// DERIVED, never a hand-carried digit: the witness is one past every version
+// this product has defined. Before the v4 flip this read `4` as a literal; the
+// flip's own rule ("if the defined set ever widens to include this number, the
+// witness moves; the intent does not") is what the derivation now enforces.
+// Same derivation the A4-PR7 cutover acceptance suite re-anchors on.
+const SCHEMA_VERSION_NEVER_DEFINED = Math.max(...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS) + 1
 
 export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   // Pre-§E.2 this pinned `schemaVersion: 2` (then unsupported). §E.2 makes
@@ -408,7 +414,7 @@ export const NEG_SCHEMA_VERSION_MISMATCH: NegativeFixture = {
   // equals the constant for this very fixture, which is what stops a widening
   // (or PR7's collapse to `[3]`) from stranding an old list inside a message an
   // operator reads. This fixture pins the witness value and the code.
-  name: 'schemaVersion 4 is an integer but unsupported',
+  name: `schemaVersion ${String(SCHEMA_VERSION_NEVER_DEFINED)} is an integer but unsupported`,
   code: 'SCHEMA_VERSION_MISMATCH',
   source: [
     '---',
