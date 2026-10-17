@@ -6620,3 +6620,25 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **门**=vitest 全量双捕获恒等 **563 files/7097 legs**（=基线 562/7086 +1 文件/+11 legs 全绿），红 **9=已发布 9-red 基线逐条相同、零新增**（基线窗口期的 a4p7 smoke=未构建 gitignored client dist、构建后绿；a3p3/rc2=负载窗 flake、静默转绿；一次被中断捕获泄漏 `.tmp-fault` scratch 的污染对弃置重抓——三条披露于 `runs/CENSUS.md`）；`check:artifacts:head` drift=0；`pnpm -r run typecheck` EXIT=0；eslint 全仓指纹 base==head（161=161，触碰文件单文件 0 findings）；p4t6 链 1169 实测。
 - **环境披露（base 与预期 rebase）**=①本 base 不含 #313（render ContentBlock[]）/#314 面：live 模型侧看不到判决码（落 backend 的结果在宿主组装崩），故排序/零副作用在 AXIS-A 判、live 只判 mount+落点，README §4 如实；②两 posture 均 **aux 面**启动（#311 strict 面自足缺口属 GLUE-6/#313 lane）；③#313/#314 先行合并后本支预期 **rebase**（lane 文件与其无文本冲突面：改的是 `createLaneDecide` 内部，render/打包面在别处；rebase 后重跑本 kit 两 posture 即可，套件与 kit 字节不改）；成功臂的 ContentBlock[] 宿主投影 pin 归 #313/#314 侧，本支 `dcf71bdb` 已把该事实**测量+披露**而未断言。
 - **红线**=CORE 0（全部本仓自有文件 + committed 镜像 + 公开 seam）；`:3080` 仅只读探针（401→401）；世界 `a5g1-*` 全扫净（C1 双绿）；证据零 token 泄漏（C2 双绿，写点红action）；`IO_POLICY_UNSUPPORTED` 全程只作落点证据；push 凭据缺 → 未推送（如实，parent 代推）。
+
+## 2026-10-17 17:4xZ — VNEXT-SCHEMA 可逆半笔（alpha5-schema-rev，@23002259 基；A-4 窗未裁只阻退役，可逆半笔照推）
+
+- **落子（全可逆，缺省=不可达）**：①`tool-governance/src/placement.ts`=R1 放置语义类型面（`parsePlacedTeamDefinition`+`createPlacementComparator` 逐调用比对钩子 `definition-not-placed`/`placement-identity-drift`+`mintToolBindingFromPlacement` **委托冻结 parseToolBinding**，无平行系统；生产 plane 不重接线=行为零动）；②`blueprint/src/blueprint-v4.ts`=dormant v4 授权语法（SUPPORTED 仍 `[3]`，生产入口对 v4 文档仍 MISMATCH 钉死；核心面**委托冻结 v3 校验器本体**零 fork；封闭表+collect-all 问题面）；③`vnext-field-mapping/src/v4-authoring-map.ts`=M-2 映射表（四律红→绿各一腿=a5sr3；ResourceRef 声明候选经冻结 parseResourceRef 复解析）；④`blueprint/src/migration-report.ts`=M-4 只读报告（E2 拒宽权：绑定 envelope 逐字节不变腿、compat-default→wide=REJECT、静默删减=loud requires-decision）；⑤M-5 NEG 33/33 全接+逐案 CANDIDATE→SHIPPED 映射行（含 D-03 适配披露）=a5sr5。
+- **不可逆半笔=只备笔**：`scripts/prepare-blueprint-v4-flip.mjs` 干跑→`evidence/alpha5/schema-rev/runs/v4-flip-PREP.md`（真值表+零差普查=翻档单点编辑证明；FLIP=NOT-APPLIED；**未宣布任何退役、RETIRED 未翻**）；M-3 envelope 作用域=**显式缓落**（须与 coverage/kernel 镜像原子落，半落造 parse-accept/runtime-unmap 裂缝，归 flip PR）；M-7 归发布轮。
+- **RED-first 与回归**：RED=`runs/a5sr-RED.log`（实现前 49/56 红，7 绿=行为不变钉腿）；domain lane 改前 680P/1F vs 改后 736P/1F=**回归 diff 空**（唯一红恒等=已发布 9 之首 t2-hash）；`schema.ts`/`validate.ts` 两文件零改动，barrel 纯加法。
+- **门禁**：`audit-a5-tool-governance-imports` OK（13 lane files/20 consumers **零新增消费者**——blueprint 层不 import 该 lane，词汇同一性由测试钉）；`pnpm -r typecheck` EXIT=0；lint 新身份 2 已修（disable 注释按 validate.ts:157 先例 + unused import 删）；版本洁净 fence OFFENDING/UNKNOWN 与基线 diff=空；**root vitest=已发布 9 恒等零增减**（新红两处=台账笔 p4t6 Δ9 条款 1168→1177 + a5p7 hygiene 记档（v4-authoring-map 入 lane 记录集 14→15 + a5sr3 测试边形式钉例外），均已按台账机制记清）；dist 镜像 20 文件同笔、`check:artifacts` drift=0（提交后跑，结果见尾注）。
+- **环境备料（零语义）**：新 worktree 缺 `tests/deepseek-harness-test-use`→按 TEST_METHODS 从共享 baseline `clone --local --no-hardlinks` @639ed01539（porcelain 空），再自 a5-glue5-entry 同代次已建树 `rsync --link-dest` 克隆构建面（5s，porcelain 仍空）；rc2 三面 11 红随之环境性归零。
+- **红线**=CORE 0；`:3080`/`:3180` 零触碰；A-1..A-7 零代裁（v4 字段族可选=可逆临时立场，absence=未声明非扩张）；未借 v4 裁历史 trim（additive only）；推送归父（本地无凭证时代推）。模型：qwen3.8-flash-next。
+- **尾注（提交后实证）**=`check:artifacts:head` verdict=ok **drift=0 compared=1742（HEAD carries its own build）**；`check:artifacts`(index) ok 1742；版本洁净 fence 在文件入 tracked 后 OFFENDING/UNKNOWN 与基线 **diff=空**（a5sr 三面=advisory 类不门）；root 终抓 `root-vitest-FINAL2.log`=**已发布 9 恒等逐行零增减**（首抓的 a3p3 超时=负载 flake，单跑与二抓均绿）；无推送凭证（https 无交互认证），代推与 CI 归父。
+
+## 2026-10-17 19:2xZ — VNEXT-SCHEMA 可逆半笔 × master@68deccaa 合并（同支 alpha5-schema-rev 续笔）
+
+- **形状**=merge master@68deccaa（含 G1 #315 链 1169、P-B-R2 #317 链 1170、INSTALL-ENTRY #311、A234 文档 #310）入 `alpha5-schema-rev`（原 head 2731e72d，base 23002259）。语义冲突=零（G1=runtime src、P-B-R2=install 面，与本支 dormant domain 面零交集）。
+- **p4t6 链 re-tie**=父方与我同轮独立撞到同一冲突并按同规则解：链在 master 侧、迟到者重钉——Δ9 条款 1168→1177 改 **1170→1179**（合并树实测：coverage 精确断言，p4t6+a5sr 五套件 66/66 绿）；G1/P-B-R2 两钉与 master 原文逐字保留，历史钉 1177-1168 以注释留痕。
+- **router-log 并集**=master 三条按其追加顺序在前，本支 17:4xZ 条整体原文在后；两侧零删改（并集非改写）。
+- **门**=`pnpm -r typecheck` EXIT=0；dist 镜像 9 文件再生同笔；`check:artifacts:head` drift=0（见 commit 后尾注）。红线不变：CORE 0、:3080 零触碰、RETIRED 未翻、A-1..A-7 未代裁。模型：qwen3.8-flash-next。
+
+## 2026-10-17 19:5xZ — VNEXT-SCHEMA × master@35bff836 二次合并（同支续笔；GLUE-6 进链 1171）
+
+- **链 re-tie**=Δ9 自 1171 起钉至 **1180**（scanner 实测非照抄；父单数字与实测一致）；钉链史 1177-1168 → 1179-1170 → 1180-1171 全留注；GLUE-6 条款/tie 逐字保留，其标题面未动（list-is-record 系其规则，未越权补写）。
+- **门**=p4t6+a5sr1..5=66/66；`pnpm -r typecheck` EXIT=0；dist 同笔再生；router-log git 自动并集零冲突。红线不变（CORE 0/:3080 零触/RETIRED 未翻）。模型：qwen3.8-flash-next。

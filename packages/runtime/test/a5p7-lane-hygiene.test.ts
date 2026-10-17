@@ -84,6 +84,12 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
       [
         'domain/test/a5p7-vnext-field-mapping.test.ts',
         'domain/vnext-field-mapping/src/field-mapping.ts',
+        // alpha5-schema-rev (VNEXT-SCHEMA reversible half, ADR M-2): the
+        // SHIPPING v4 authoring tables, composed from the frozen engine —
+        // still DORMANT (SUPPORTED stays [3]; the only importer outside the
+        // lane is the a5sr3 contract suite, see the reviewed test-edge
+        // exception below).
+        'domain/vnext-field-mapping/src/v4-authoring-map.ts',
         'domain/vnext-field-mapping/src/index.ts',
         'runtime/jobs-gateway/cancellation-boundary.ts',
         'runtime/jobs-gateway/index.ts',
@@ -98,7 +104,7 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         'runtime/test/a5p7-mcp-rebind-chain.test.ts',
       ].sort(),
     )
-    expect(LANE_SOURCE_FILES.length).toBe(14)
+    expect(LANE_SOURCE_FILES.length).toBe(15)
   })
 
   // Reviewed NAMES-ONLY exception — the G-d integration wiring round paid
@@ -108,6 +114,18 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
   // with it — the leg below pins every lane-naming census line to exactly
   // one quoted path). Path-exact on purpose: a second census file, or any
   // import edge, is still an offender.
+  // REVIEWED TEST-EDGE exception (alpha5-schema-rev, VNEXT-SCHEMA reversible
+  // half): the domain contract suite a5sr3-default-deny-mapping.test.ts is a
+  // TEST importer of the lane — it machine-checks the four mapping laws
+  // against the shipped v4 tables (that is the round's M-2 deliverable).
+  // A test edge is not a production consumer; the distinction this leg
+  // guards is unchanged: zero PRODUCTION importers outside the lanes.
+  // Form-pinned below: the exception only ever matches a path under a
+  // `test/` directory.
+  const REVIEWED_TEST_EDGE_EXCEPTIONS: readonly string[] = [
+    'domain/test/a5sr3-default-deny-mapping.test.ts',
+  ]
+
   const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = [
     'testkit/test/p4t6-session-event-scan.test.ts',
     // GLUE-5: the A4 artifacts ledger now DERIVES its fixture world from
@@ -153,6 +171,11 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         rel.startsWith('domain/vnext-field-mapping/') ||
         /\/a5p7-/.test(rel)
       if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel) || REVIEWED_EDGE_EXCEPTIONS.includes(rel)) continue
+      if (REVIEWED_TEST_EDGE_EXCEPTIONS.includes(rel)) {
+        // form pin: a reviewed test edge must stay a test file, never a source edge
+        if (!rel.includes('/test/')) throw new Error(`reviewed test edge ${rel} is not under a test/ directory`)
+        continue
+      }
       let text: string
       try {
         text = readFileSync(file, 'utf8')

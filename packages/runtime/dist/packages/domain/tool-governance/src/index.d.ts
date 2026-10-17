@@ -22,6 +22,8 @@
 export { canonicalJsonFingerprint, canonicalJsonStringify, } from './canonical-json.js';
 export { TOOL_CONTRACT_PROBLEM_CODES, closeRecordKeys, isRecord, problemCodesOf, } from './parse-util.js';
 export type { ParseResult, ToolContractProblem, ToolContractProblemCode } from './parse-util.js';
+export { PLACED_TEAM_DEFINITION_FIELDS, createPlacementComparator, mintToolBindingFromPlacement, parsePlacedTeamDefinition, } from './placement.js';
+export type { AdmittedBindingFacts, PlacementBindingFacts, PlacementComparator, PlacementVerdict, } from './placement.js';
 export { RESOURCE_KINDS, RESOURCE_RIGHTS, RESOURCE_RIGHT_MATRIX, parseResourceRef, resourceEquals, resourceIdentityKey, } from './resource.js';
 export type { ResourceKind, ResourceRef, ResourceRight } from './resource.js';
 export { EFFECT_KINDS, EFFECT_REQUIRED_RIGHT, effectIdentityKey, effectsAreSubset, parseRequestedEffectSet, } from './effects.js';

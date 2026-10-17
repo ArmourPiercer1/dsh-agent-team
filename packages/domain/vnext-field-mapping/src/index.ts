@@ -9,3 +9,8 @@
  */
 export { declareFieldMapping, projectThroughMap } from './field-mapping.js'
 export type { FieldMap, MappingResult, MappingRejection } from './field-mapping.js'
+// VNEXT-SCHEMA reversible half (ADR M-2): the SHIPPING v4 authoring→internal
+// tables, composed from the frozen engine above — still DORMANT (SUPPORTED
+// stays [3]); the four mapping laws are machine-checked by domain test a5sr3.
+export { declareV4AuthoringMaps, projectV4ToolBindingAuthoring } from './v4-authoring-map.js'
+export type { V4AuthoringMaps, V4ResourceDeclaration } from './v4-authoring-map.js'

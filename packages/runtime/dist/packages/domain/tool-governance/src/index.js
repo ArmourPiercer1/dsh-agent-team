@@ -21,6 +21,11 @@
  */
 export { canonicalJsonFingerprint, canonicalJsonStringify, } from './canonical-json.js';
 export { TOOL_CONTRACT_PROBLEM_CODES, closeRecordKeys, isRecord, problemCodesOf, } from './parse-util.js';
+// VNEXT-SCHEMA reversible half: the R1 PLACEMENT typed face (ADR §1 B1/B2;
+// the GLUE-5 #308 mechanism's object level). Additive — the frozen parsers
+// above are untouched, and mintToolBindingFromPlacement delegates every law
+// to parseToolBinding (no parallel binding system).
+export { PLACED_TEAM_DEFINITION_FIELDS, createPlacementComparator, mintToolBindingFromPlacement, parsePlacedTeamDefinition, } from './placement.js';
 export { RESOURCE_KINDS, RESOURCE_RIGHTS, RESOURCE_RIGHT_MATRIX, parseResourceRef, resourceEquals, resourceIdentityKey, } from './resource.js';
 export { EFFECT_KINDS, EFFECT_REQUIRED_RIGHT, effectIdentityKey, effectsAreSubset, parseRequestedEffectSet, } from './effects.js';
 export { ASSURANCE_DIMENSIONS, ASSURANCE_LEVELS, EXECUTION_BOUNDARIES, IMPLEMENTATION_ORIGINS, assuranceSatisfies, parseAssuranceContract, } from './assurance.js';
