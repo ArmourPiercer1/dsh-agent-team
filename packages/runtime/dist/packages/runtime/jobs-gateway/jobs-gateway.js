@@ -28,6 +28,26 @@
  *    (the job's `pinnedIdentity`). A later re-registration under the same
  *    name never claims the earlier job's result, and never absorbs its lease.
  *
+ * THE INJECTION SURFACE (production assembly contract, pc-CONTRACT.md):
+ * the legs proved the laws with the ROW holding the identity read and the
+ * definition store next to the gateway. The production module takes them as
+ * INJECTED sources instead of row-local constants:
+ *  - `identity` (a {@link GatewayIdentitySource}): durable host state, not
+ *    the caller's claim, is the admission authority. Absent (fixture mode)
+ *    the caller's owner object is taken at face value, exactly as the
+ *    a5p7 fixtures and the legs ran at base.
+ *  - `lease` (a {@link LeaseWindow}, e.g. one built by `createLeaseWindow`
+ *    with the assembly's own observation sink): the job-side lease mirror
+ *    belongs to the ASSEMBLY — teardown drains the window the assembly
+ *    owns, and generation rebuilds keep ONE window if the assembly says so.
+ *    Absent, the gateway creates its own window (base behavior).
+ *  - `resolveDefinition` doubles as the admit-time identity reader: an
+ *    admission may OMIT `pinnedIdentity` and the gateway pins whatever the
+ *    reader says NOW (execution-time validation at the admit edge); an
+ *    unreadable read REFUSES the admission (`mapping-rejected`, closed
+ *    world). An explicit `pinnedIdentity` stays the caller-pinned fixture
+ *    shape (the legs' verbatim 'def-v1'/'def-v2' attributions).
+ *
  * @module runtime/jobs-gateway/jobs-gateway
  */
 import { classifyDispatchEvent } from './cancellation-boundary.js';
@@ -40,33 +60,84 @@ export function createJobsGateway(options = {}) {
         observations.push(observation);
         options.onObserve?.(observation);
     };
-    const lease = createLeaseWindow(emit);
+    const lease = options.lease ?? createLeaseWindow(emit);
     const jobs = new Map();
     const admitJob = (input) => {
+        // GATE 1 — the identity authority (only when one is injected). The
+        // claim is checked against durable host state FIRST, so a veto here is
+        // the zero-registration shape the W7M-2 legs measured: no lease token,
+        // no job record, no observation other than the alarm itself.
+        let confirmed = null;
+        if (options.identity !== undefined) {
+            confirmed = options.identity.resolve({
+                rootSessionId: input.owner.rootSessionId,
+                instanceId: input.owner.instanceId,
+            });
+            if (confirmed === null) {
+                emit({
+                    event: 'gateway-admit-identity-unconfirmed',
+                    jobId: input.jobId,
+                    severity: 'alarm',
+                    // The refusal detail stays static: an unconfirmed claim carries
+                    // no identity worth echoing.
+                    detail: 'the injected identity source does not confirm this member scope from durable host state',
+                });
+                return gatewayRefusal('owner-not-durable', 'the claimed member scope is not confirmed by the injected identity source');
+            }
+        }
+        const claimKey = jobOwnerKey(confirmed ?? input.owner);
         const existing = jobs.get(input.jobId);
         if (existing !== undefined) {
             // Same jobId re-admitted must not silently swap the owner.
-            if (existing.ownerKey !== jobOwnerKey(input.owner)) {
+            if (existing.ownerKey !== claimKey) {
                 emit({ event: 'gateway-admit-owner-claim-conflict', jobId: input.jobId, severity: 'alarm' });
                 return gatewayRefusal('owner-mismatch', 'this jobId is already owned by another member scope');
             }
             return gatewayRefusal('duplicate-job', `job ${input.jobId} already admitted`);
         }
-        const took = lease.acquire({ callId: input.jobId, jobKey: jobOwnerKey(input.owner) });
+        // GATE 2 — the admit-time definition pin. An omitted `pinnedIdentity`
+        // is resolved through the injected reader AT THIS INSTANT (execution-
+        // time validation at the admit edge); an unreadable read refuses the
+        // admission BEFORE any lease exists (closed world: the gateway admits
+        // no call whose Definition it cannot read). An explicit pin is the
+        // fixture shape and passes through verbatim.
+        let pinnedIdentity;
+        if (typeof input.pinnedIdentity === 'string' && input.pinnedIdentity !== '') {
+            pinnedIdentity = input.pinnedIdentity;
+        }
+        else {
+            const reader = options.resolveDefinition;
+            const read = reader
+                ? reader(input.scopeKey, input.toolName)
+                : { ok: false, identity: 'no-reader' };
+            if (!read.ok) {
+                emit({
+                    event: 'gateway-admit-definition-unreadable',
+                    jobId: input.jobId,
+                    scopeKey: input.scopeKey,
+                    toolName: input.toolName,
+                    severity: 'alarm',
+                });
+                return gatewayRefusal('mapping-rejected', `no execution-time definition identity to pin for ${input.scopeKey}/${input.toolName} (${read.identity})`);
+            }
+            pinnedIdentity = read.identity;
+        }
+        const took = lease.acquire({ callId: input.jobId, jobKey: claimKey });
         if (!took.ok)
             return took;
-        // The owner binding is frozen at admission: the caller's object cannot be
-        // mutated later to re-attribute the job.
+        // The owner binding is frozen at admission from the AUTHORITY COPY (the
+        // injected source's confirmed owner when one exists): the caller's
+        // object cannot be mutated later to re-attribute the job.
         const ownerKey = jobOwnerKey({
-            rootSessionId: input.owner.rootSessionId,
-            instanceId: input.owner.instanceId,
+            rootSessionId: (confirmed ?? input.owner).rootSessionId,
+            instanceId: (confirmed ?? input.owner).instanceId,
         });
         const record = {
             jobId: input.jobId,
             ownerKey,
             scopeKey: input.scopeKey,
             toolName: input.toolName,
-            pinnedIdentity: input.pinnedIdentity,
+            pinnedIdentity,
             state: 'leased',
             outcome: null,
             cancelRequested: false,
