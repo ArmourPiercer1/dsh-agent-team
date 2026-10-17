@@ -17,11 +17,30 @@ const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
 export function assertMachineFinalDeclarations (machine) {
   const issues = [];
   for (const row of machine.rows ?? []) {
-    if (row.final_declaration !== null && row.final_declaration !== undefined) {
+    if (!Object.prototype.hasOwnProperty.call(row, 'final_declaration')) {
+      issues.push(`${row.row_id}: 缺 final_declaration 键——缺键按红处理（undefined 不等于 null 声明，N1）`);
+      continue;
+    }
+    if (row.final_declaration !== null) {
       issues.push(`${row.row_id}: final_declaration 必须为 null（PENDING-GATES 全关之前由代码位强制，任何非空声明=红）`);
     }
   }
   return issues;
+}
+
+// N1：doc 矩阵缺 final_declaration 键 ⇒ 不按 undefined 静默放行：显式点名清单（不判红——补齐属上游/集成
+// owner 动作，转交项见 pr8/README.md）；显式非 null 声明仍走 lintCorrespondence 判红。
+export function lintDocFinalDeclaration (machine, doc) {
+  const missing_key = [];
+  const declared_non_null = [];
+  for (const row of doc.rows ?? []) {
+    if (!Object.prototype.hasOwnProperty.call(row, 'final_declaration')) {
+      missing_key.push({ row_id: row.row_id, note: 'doc 候选矩阵该行无 final_declaration 键；机检矩阵侧该行显式 null。补齐键=集成 owner 转交项（N1）' });
+    } else if (row.final_declaration !== null) {
+      declared_non_null.push({ row_id: row.row_id, value: row.final_declaration });
+    }
+  }
+  return { missing_key, declared_non_null };
 }
 
 export function lintCorrespondence (machine, doc) {
@@ -120,6 +139,9 @@ export function runFixtureSurface (repoRoot, hook) {
     const text = readFileSync(abs, 'utf8');
     for (const a of f.anchors ?? []) {
       if (!text.includes(a)) missingAnchors.push(`${f.path} :: ${a}`);
+    }
+    for (const a of f.absent_anchors ?? []) {
+      if (text.includes(a)) missingAnchors.push(`${f.path} :: 不应出现而实存 [${a}]`);
     }
   }
   if (missingAnchors.length) return res(RESULTS.FAIL, { reason: `锚点缺失: ${missingAnchors.join(' | ')}` });

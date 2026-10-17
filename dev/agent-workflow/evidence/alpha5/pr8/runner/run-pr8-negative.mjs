@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lintCorrespondence, assertMachineFinalDeclarations, evaluateRow, computeDistribution, readGatesLedger, deriveFinalDeclaration, runFixtureSurface, RESULTS } from './lib.mjs';
+import { lintCorrespondence, assertMachineFinalDeclarations, lintDocFinalDeclaration, evaluateRow, computeDistribution, readGatesLedger, deriveFinalDeclaration, runFixtureSurface, RESULTS } from './lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -29,6 +29,12 @@ say(`# repo-root=${repoRoot}`);
 const lintIssues = lintCorrespondence(machine, doc);
 say(`\n## 结构 lint: ${lintIssues.length === 0 ? 'OK' : `${lintIssues.length} 项违规`}`);
 for (const i of lintIssues) say(`  LINT-FAIL ${i}`);
+
+// N1：doc 矩阵 final_declaration 缺键 ⇒ 显式点名（不按 undefined 静默放行；补齐=集成 owner 转交项，见 README）
+const docFd = lintDocFinalDeclaration(machine, doc);
+say(`\n## doc final_declaration 显式点名: 缺键=${docFd.missing_key.length} 行 / 非 null 声明=${docFd.declared_non_null.length} 行`);
+for (const f of docFd.missing_key) say(`  DOC-MISSING-KEY ${f.row_id} — ${f.note}`);
+for (const f of docFd.declared_non_null) say(`  DOC-DECLARED-NON-NULL ${f.row_id} = ${JSON.stringify(f.value)}（应经 pending_update_template 且属红）`);
 
 // 2) PENDING-GATES 台账状态（fail-closed）
 const gates = readGatesLedger(repoRoot, gatesPath);
