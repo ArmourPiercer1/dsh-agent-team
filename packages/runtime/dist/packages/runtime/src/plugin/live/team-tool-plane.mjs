@@ -172,11 +172,37 @@ function classifyEffectSet(effectSet) {
  * Build the synchronous lane re-check (see header for its exact semantics).
  * `permissionPolicy` is the A1-normalized template policy; `planeNames`
  * maps the plane tools to their mounted names.
+ *
+ * THE JUDGEMENT SPEAKS ONE NAMESPACE (GAP PROBE G1 repair): lane rules are
+ * keyed by the NATIVE tool class (PERMISSION_TOOL_NAMES) and the derived
+ * effect set is keyed by the NATIVE class too (a5p5 effects-schema:
+ * `toolName = parsed.tool`); the mounted alias (`team_*`, the GLUE-5 alias
+ * ruling) is a mount spelling. All three fast paths resolve BOTH spellings
+ * through the single `nativeOf` mapping below — never inside a compare — so
+ * a rule and the effect it governs always meet in the same namespace.
  */
 export function createLaneDecide(permissionPolicy, planeNames, subtreeContains) {
   const shellTools = new Set(['bash', 'pwsh'])
-  const bashNames = new Set([planeNames.bash])
-  const fileNames = new Set([planeNames.grep, planeNames.glob])
+  // THE single mount-alias <-> native-class mapping point. The native
+  // spelling is reserved first: an alias that ever shadowed another class's
+  // native name is a config anomaly, and the effect-declaration namespace
+  // (native) wins the compare by construction. Before this point existed
+  // the fast-path sets below held the MOUNTED aliases while the effect
+  // declaration spoke the native class — both fast paths were inert for
+  // every plane tool, and a template DENY of the shell class answered
+  // nothing: the call landed on the backend face (GAP PROBE G1; the shut
+  // face's IO_POLICY_UNSUPPORTED is a LANDING, never deny evidence).
+  const nativeClassOf = new Map()
+  for (const nativeClass of Object.keys(planeNames ?? {})) nativeClassOf.set(nativeClass, nativeClass)
+  for (const [nativeClass, mounted] of Object.entries(planeNames ?? {})) {
+    if (typeof mounted === 'string' && mounted !== '' && !nativeClassOf.has(mounted)) nativeClassOf.set(mounted, nativeClass)
+  }
+  const nativeOf = (name) => {
+    const spelling = String(name ?? '')
+    return nativeClassOf.get(spelling) ?? spelling
+  }
+  const bashNames = new Set([nativeOf(planeNames.bash)])
+  const fileNames = new Set([nativeOf(planeNames.grep), nativeOf(planeNames.glob)])
   const ruleMatchesResource = (rule, effect) => {
     const res = rule?.resource
     if (res === undefined || res === null || res.kind === 'any') return true
@@ -204,7 +230,7 @@ export function createLaneDecide(permissionPolicy, planeNames, subtreeContains) 
     // (a) deny-lane fast path, per effect.
     for (const effect of effects) {
       if (effect?.kind === 'tool-invoke') {
-        const name = String(effect.toolName ?? '')
+        const name = nativeOf(effect.toolName)
         const toolClass = bashNames.has(name) ? 'bash' : null
         if (toolClass !== null && laneDenies('deny', toolClass, effect)) {
           return { kind: 'deny', code: 'template-deny-lane' }
@@ -219,7 +245,8 @@ export function createLaneDecide(permissionPolicy, planeNames, subtreeContains) 
     // (b) default-deny gate: an invoked plane tool with NO rule coverage at
     // all (neither allow nor ask lane) is unauthorized under a deny-default.
     if (permissionPolicy?.default === 'deny') {
-      for (const name of invokes) {
+      for (const invoked of invokes) {
+        const name = nativeOf(invoked)
         if (bashNames.has(name) && !covered('allow', 'bash') && !covered('ask', 'bash') && !shellToolsDenyOnly()) {
           return { kind: 'deny', code: 'template-default-deny' }
         }

@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5g1.anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5g1 GLUE-6 team."
+members:
+  - templateId: wa
+    persona: "You are a worker of the a5g1 GLUE-6 team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---
