@@ -1,0 +1,24 @@
+{
+  "round": "W8 formal (alpha5-wire-pr8)",
+  "run_utc": "2026-10-17T03:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3186,
+  "world_prefix": "a5w8-*",
+  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-05 read_image",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w5-gated/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json"
+  ],
+  "observed_on_assembly_face": [
+    "W4 deny-before-open 同型观测存在但属 confined-exec 文件域腿（EACCES rc=1），非 read_image 附件链"
+  ],
+  "not_observed": [
+    "image_read.chain（admission-gated-controlled-fs）：read_image 附件→解码→渲染链无装配 row ⇒ 全链未测项（03-fs）未闭环",
+    "thumbnail-read-bypass 负控：缩略图/预览旁路面未装配，typed-deny 负控无从观测",
+    "admission-unbound 负控（bytes_leaked=0）：本回合 live 面上未观测该 reason（W5 unbound 负控=guard 层 \"no Team Tool Binding\"，非 ControlledFs admission-unbound；类别不冒充）"
+  ],
+  "disclosed_constant_citations": [
+    "packages/domain/controlled-fs/src/admission-binding.ts ARBITRARY_TREE_PROFILE_PUBLISHED=false（源码常量在册；非 live 观测，不据此 book arbitrary_tree_profile_published）"
+  ]
+}

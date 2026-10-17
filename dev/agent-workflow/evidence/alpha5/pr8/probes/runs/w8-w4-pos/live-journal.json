@@ -1,0 +1,343 @@
+{
+  "rows": [
+    {
+      "at": "2026-10-17T03:07:12.553Z",
+      "leg": "plugin-apply",
+      "pid": 64,
+      "dist": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/dist/packages",
+      "launcher": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "realm": "a5w4-realm-2026-10-17T03-07-11Z"
+    },
+    {
+      "at": "2026-10-17T03:07:12.559Z",
+      "leg": "barrel-import",
+      "ok": true,
+      "names": "createConfinedProcessProvider:function,createLauncherDeps:function,runAvailabilityPreflight:function,runAbiProbe:function,runEnforcementLeg:function,ENFORCEMENT_LEGS:object"
+    },
+    {
+      "at": "2026-10-17T03:07:12.559Z",
+      "leg": "apply-done"
+    },
+    {
+      "at": "2026-10-17T03:07:12.868Z",
+      "leg": "register",
+      "label": "session-d2f3b667-87f2-4512-b32c-3c8acb9591f3",
+      "name": "a5w4_confined_exec",
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T03:07:12.901Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "abi-probe",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:12.921Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "abi-probe",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:12.921Z",
+      "leg": "abi-answer",
+      "instance": "main",
+      "abiVersion": 4,
+      "eaccesInRaw": false
+    },
+    {
+      "at": "2026-10-17T03:07:12.921Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "enforce-leg:selective",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:12.947Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "enforce-leg:selective",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:12.947Z",
+      "leg": "leg-verdict",
+      "instance": "main",
+      "kind": "enforce-leg:selective",
+      "verdict": "ENFORCE-CONFIRMED"
+    },
+    {
+      "at": "2026-10-17T03:07:12.948Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "enforce-leg:denyall",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:12.969Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "enforce-leg:denyall",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:12.970Z",
+      "leg": "leg-verdict",
+      "instance": "main",
+      "kind": "enforce-leg:denyall",
+      "verdict": "ENFORCE-CONFIRMED"
+    },
+    {
+      "at": "2026-10-17T03:07:12.970Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "enforce-leg:badhandled",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:12.990Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "enforce-leg:badhandled",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:12.991Z",
+      "leg": "leg-verdict",
+      "instance": "main",
+      "kind": "enforce-leg:badhandled",
+      "verdict": "DEMO-CONFIRMED"
+    },
+    {
+      "at": "2026-10-17T03:07:13.054Z",
+      "leg": "run-spy",
+      "instance": "revoked",
+      "kind": "abi-probe",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.088Z",
+      "leg": "run-answer",
+      "instance": "revoked",
+      "kind": "abi-probe",
+      "rc": 2,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.088Z",
+      "leg": "abi-answer",
+      "instance": "revoked",
+      "abiVersion": null,
+      "eaccesInRaw": true
+    },
+    {
+      "at": "2026-10-17T03:07:13.088Z",
+      "leg": "run-spy",
+      "instance": "revoked",
+      "kind": "enforce-leg:selective",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.121Z",
+      "leg": "run-answer",
+      "instance": "revoked",
+      "kind": "enforce-leg:selective",
+      "rc": 2,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.121Z",
+      "leg": "leg-verdict",
+      "instance": "revoked",
+      "kind": "enforce-leg:selective",
+      "verdict": "ABI-UNAVAILABLE"
+    },
+    {
+      "at": "2026-10-17T03:07:13.121Z",
+      "leg": "run-spy",
+      "instance": "revoked",
+      "kind": "enforce-leg:denyall",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.153Z",
+      "leg": "run-answer",
+      "instance": "revoked",
+      "kind": "enforce-leg:denyall",
+      "rc": 2,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.153Z",
+      "leg": "leg-verdict",
+      "instance": "revoked",
+      "kind": "enforce-leg:denyall",
+      "verdict": "ABI-UNAVAILABLE"
+    },
+    {
+      "at": "2026-10-17T03:07:13.153Z",
+      "leg": "run-spy",
+      "instance": "revoked",
+      "kind": "enforce-leg:badhandled",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.188Z",
+      "leg": "run-answer",
+      "instance": "revoked",
+      "kind": "enforce-leg:badhandled",
+      "rc": 2,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.188Z",
+      "leg": "leg-verdict",
+      "instance": "revoked",
+      "kind": "enforce-leg:badhandled",
+      "verdict": "ABI-UNAVAILABLE"
+    },
+    {
+      "at": "2026-10-17T03:07:13.370Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "confined-exec",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": true
+    },
+    {
+      "at": "2026-10-17T03:07:13.395Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "confined-exec",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.395Z",
+      "leg": "exec-answer",
+      "instance": "main",
+      "rc": 0,
+      "pid": 144,
+      "launcherRc": 0,
+      "abiUnavailable": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.396Z",
+      "leg": "tool-result",
+      "mode": "supported",
+      "tag": "A5W4W20261017T030711Z_RUN-pos-0-supported",
+      "ok": true,
+      "code": null,
+      "stage": "provider-executed",
+      "rc": 0,
+      "pid": 144,
+      "launcherRc": 0,
+      "lease": "terminated",
+      "receiptPid": "pid:144:plan-mvbtfqe2-quci73",
+      "outRefExists": true,
+      "errRefExists": true,
+      "stdoutHead": "A5W4-OK-CONTROL 2026-10-17T03-07-11Z\n",
+      "stderrHead": "",
+      "stdoutMatch": true,
+      "stderrEACCES": false,
+      "secretLeaked": false,
+      "spyDelta": 1,
+      "ceDelta": 1,
+      "spawnEvidencePaths": [
+        "main/out/plan-mvbtfqe2-quci73/err|0",
+        "main/out/plan-mvbtfqe2-quci73/out|37",
+        "main/plans/plan-mvbtfqe2-quci73.json|669"
+      ],
+      "newPathsCount": 3
+    },
+    {
+      "at": "2026-10-17T03:07:13.415Z",
+      "leg": "run-spy",
+      "instance": "main",
+      "kind": "confined-exec",
+      "offered": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "rewritten": true
+    },
+    {
+      "at": "2026-10-17T03:07:13.444Z",
+      "leg": "run-answer",
+      "instance": "main",
+      "kind": "confined-exec",
+      "rc": 0,
+      "stderrTail": ""
+    },
+    {
+      "at": "2026-10-17T03:07:13.444Z",
+      "leg": "exec-answer",
+      "instance": "main",
+      "rc": 1,
+      "pid": 146,
+      "launcherRc": 0,
+      "abiUnavailable": false
+    },
+    {
+      "at": "2026-10-17T03:07:13.445Z",
+      "leg": "tool-result",
+      "mode": "supported-deny",
+      "tag": "A5W4W20261017T030711Z_RUN-pos-1-supported-deny",
+      "ok": true,
+      "code": null,
+      "stage": "provider-executed",
+      "rc": 1,
+      "pid": 146,
+      "launcherRc": 0,
+      "lease": "terminated",
+      "receiptPid": "pid:146:plan-mvbtfqfb-douodm",
+      "outRefExists": true,
+      "errRefExists": true,
+      "stdoutHead": "",
+      "stderrHead": "/usr/bin/cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-pos-2026-10-17T03-07-11Z/a5w4-fixtures/private/secret.txt: Permission denied\n",
+      "stderrEACCES": true,
+      "secretLeaked": false,
+      "spyDelta": 1,
+      "ceDelta": 1,
+      "spawnEvidencePaths": [
+        "main/out/plan-mvbtfqfb-douodm/err|167",
+        "main/out/plan-mvbtfqfb-douodm/out|0",
+        "main/plans/plan-mvbtfqfb-douodm.json|675"
+      ],
+      "newPathsCount": 3
+    },
+    {
+      "at": "2026-10-17T03:07:13.463Z",
+      "leg": "chan-move",
+      "before": 1,
+      "controlEventsAfter": 3,
+      "move": "disposed-reregistered"
+    },
+    {
+      "at": "2026-10-17T03:07:13.463Z",
+      "leg": "tool-result",
+      "mode": "chan",
+      "tag": "A5W4W20261017T030711Z_RUN-pos-2-chan",
+      "ok": true,
+      "code": null,
+      "rc": null,
+      "pid": null,
+      "lease": null,
+      "stage": "observation-only",
+      "controlEventsBefore": 1,
+      "controlEventsAfter": 3,
+      "move": "disposed-reregistered",
+      "gGnote": "observation only: provider seam emits no §5 events; no channel-closure claim either way (G-g posture unchanged)"
+    }
+  ]
+}

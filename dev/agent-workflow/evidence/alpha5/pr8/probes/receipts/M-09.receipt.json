@@ -1,0 +1,20 @@
+{
+  "round": "W8 formal (alpha5-wire-pr8)",
+  "run_utc": "2026-10-17T03:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3186,
+  "world_prefix": "a5w8-*",
+  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-09 lsp",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json"
+  ],
+  "observed_on_assembly_face": [
+    "W4 provider spawn 面 LIVE（持久服务进程装配的宿主机制在场）"
+  ],
+  "not_observed": [
+    "pool.per_member_pids_distinct：lsp 服务进程/per-Member 池无装配 row",
+    "pool.policy_change_old_pid_terminated_recreated：公开面无策略输入通道（pr6/SEAM-VERDICTS.md:59；矩阵 note 预设此腿恒 PROBE-GATED）",
+    "server_os_reads_mediated / pool.cross_policy_pid_reuse：lsp 服务器未装配，无从观测\"全部走中介\"或跨策略复用"
+  ]
+}

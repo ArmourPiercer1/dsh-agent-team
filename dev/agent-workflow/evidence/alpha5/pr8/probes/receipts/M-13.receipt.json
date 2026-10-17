@@ -1,0 +1,26 @@
+{
+  "round": "W8 formal (alpha5-wire-pr8)",
+  "run_utc": "2026-10-17T03:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3186,
+  "world_prefix": "a5w8-*",
+  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-13 Domain 工具（HPC/RPC/研究状态/设备）",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w7-green/anchor-host-grep-pre.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w7-green/anchor-host-grep-post.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w7-green/summary.json"
+  ],
+  "pinned_host": {
+    "job_start_present": false
+  },
+  "pinned_host_observation": "w8-w7-green anchor grep pre/post hits=0（宿主树 @639ed01539；live roster 无 job-start 形名；absent 仍如实=本行不制造该面）",
+  "observed_on_assembly_face": [
+    "W7 隔离三件 LIVE 22/22（互不可见 list-comparison / lease 互斥 owner-mismatch+alarm / revocation 邻域安全+身份钉住）——身份/lease 公开面在场"
+  ],
+  "not_observed": [
+    "veto_matrix（TeamPermit×DomainPermit 双向不覆盖）：Domain 工具/许可面无装配 row；Domain mock（CAS/联锁）未建",
+    "veto_side_effects=0 观测记录：无 veto 腿 ⇒ 无从计数",
+    "unresolved-domain-reference fail-closed 负控：同上"
+  ]
+}

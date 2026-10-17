@@ -1,0 +1,310 @@
+{
+  "realm": "a5w4-realm-2026-10-17T03-07-18Z",
+  "trustRoot": "sha256:cee10ed55f12123f#packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+  "scratchManifest": [
+    "main/probe-w4run/badhandled/allowed/ok.txt|20",
+    "main/probe-w4run/badhandled/other/outside.txt|25",
+    "main/probe-w4run/badhandled/private/secret.txt|51",
+    "main/probe-w4run/denyall/allowed/ok.txt|20",
+    "main/probe-w4run/denyall/other/outside.txt|25",
+    "main/probe-w4run/denyall/private/secret.txt|51",
+    "main/probe-w4run/selective/allowed/exec-leg.out|214",
+    "main/probe-w4run/selective/allowed/new.txt|0",
+    "main/probe-w4run/selective/allowed/ok.txt|20",
+    "main/probe-w4run/selective/other/outside.txt|25",
+    "main/probe-w4run/selective/private/secret.txt|51"
+  ],
+  "assemblies": {
+    "session-1b41ed37-ad6f-4680-855e-5ce0a0d33f40": {
+      "registration": {
+        "ok": true,
+        "name": "a5w4_confined_exec",
+        "via": "agent-ctx-tools-register"
+      },
+      "toolResults": [
+        {
+          "mode": "net-deny",
+          "tag": "A5W4W20261017T030718Z_RUN-nega-0-net-deny",
+          "ok": false,
+          "code": "IO_POLICY_UNSUPPORTED",
+          "rc": null,
+          "pid": null,
+          "lease": null,
+          "message": "network profile 'deny' is not offered in realm 'a5w4-realm-2026-10-17T03-07-18Z': no provider in this lane demonstrates full network deny (PoC-4b); Landlock TCP bits do not count",
+          "stage": "provider-refused",
+          "spyDelta": 0,
+          "ceDelta": 0,
+          "spawnEvidencePaths": [],
+          "abiAnswer": {
+            "abiVersion": 4,
+            "eaccesInRaw": false,
+            "rawHead": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}\n"
+          }
+        },
+        {
+          "mode": "net-restricted",
+          "tag": "A5W4W20261017T030718Z_RUN-nega-1-net-restricted",
+          "ok": false,
+          "code": "IO_POLICY_UNSUPPORTED",
+          "rc": null,
+          "pid": null,
+          "lease": null,
+          "message": "network profile 'restricted' is not offered in realm 'a5w4-realm-2026-10-17T03-07-18Z': the destination-filter / DNS / redirect Provider has not landed (plan §7)",
+          "stage": "provider-refused",
+          "spyDelta": 0,
+          "ceDelta": 0,
+          "spawnEvidencePaths": [],
+          "abiAnswer": {
+            "abiVersion": 4,
+            "eaccesInRaw": false,
+            "rawHead": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}\n"
+          }
+        },
+        {
+          "mode": "net-forged",
+          "tag": "A5W4W20261017T030718Z_RUN-nega-2-net-forged",
+          "ok": false,
+          "code": "IO_POLICY_UNSUPPORTED",
+          "rc": null,
+          "pid": null,
+          "lease": null,
+          "message": "network profile 'unconfined' is outside the closed set (deny | restricted)",
+          "stage": "provider-refused",
+          "spyDelta": 0,
+          "ceDelta": 0,
+          "spawnEvidencePaths": [],
+          "abiAnswer": {
+            "abiVersion": 4,
+            "eaccesInRaw": false,
+            "rawHead": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}\n"
+          }
+        },
+        {
+          "mode": "pty",
+          "tag": "A5W4W20261017T030718Z_RUN-nega-3-pty",
+          "ok": false,
+          "code": "IO_POLICY_UNSUPPORTED",
+          "message": "PTY dimension is outside the frozen C-PROC SpawnRequest (no PTY arm exists on this seam; plan §7 keeps PTY full-fidelity unclaimed). A request the seam cannot express is refused typed at the wiring boundary instead of being silently downgraded to a spawn whose real shape differs from the asked one.",
+          "stage": "wiring-boundary-before-provider",
+          "spyDelta": 0,
+          "ceDelta": 0,
+          "providerTouched": false
+        },
+        {
+          "mode": "missing-pieces",
+          "tag": "A5W4W20261017T030718Z_RUN-nega-4-missing-pieces",
+          "ok": false,
+          "code": "SANDBOX_UNAVAILABLE",
+          "rc": null,
+          "pid": null,
+          "lease": null,
+          "message": "confined spawn unavailable: precondition check: launcher script '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-nega-2026-10-17T03-07-18Z/a5w4-no-such-launcher.py' not found (presence only — this report states nothing else)",
+          "stage": "provider-refused",
+          "spyDelta": 0,
+          "ceDelta": 0,
+          "spawnEvidencePaths": [],
+          "abiAnswer": null
+        }
+      ],
+      "channel": {
+        "controlEvents": 1
+      },
+      "instances": {
+        "main": {
+          "rows": [
+            {
+              "dimension": "content-read",
+              "level": "enforced",
+              "mechanism": "landlock ABI v4 entry self-lock (bare syscalls 444/445/446), selective+denyall double evidence",
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": "sha256:cee10ed55f12123f#packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+              "evidence": "evidence://a5p4/probe/a5w4-realm-2026-10-17T03-07-18Z/mvbtfvte",
+              "note": "GET_VERSION answered and selective+denyall both ENFORCE-CONFIRMED with raw errno words; badhandled discriminator proves the negative control can detect missing enforcement"
+            },
+            {
+              "dimension": "write",
+              "level": "enforced",
+              "mechanism": "landlock ABI v4 entry self-lock (bare syscalls 444/445/446), selective+denyall double evidence",
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": "sha256:cee10ed55f12123f#packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+              "evidence": "evidence://a5p4/probe/a5w4-realm-2026-10-17T03-07-18Z/mvbtfvte",
+              "note": "create-NEG legs confirmed EACCES inside the domain (clean landlock write refusal, not a mount artifact)"
+            },
+            {
+              "dimension": "directory-metadata",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "landlock read enforcement does not hide metadata; READ_DIR grants directory-name enumeration by design (PoC-4a posture — strict metadata isolation is a mount-namespace capability this lane has not dem"
+            },
+            {
+              "dimension": "alias",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "symlink/hardlink/alias safety requires the openat2-by-FD discipline (PR3 territory); this lane states no alias guarantee"
+            },
+            {
+              "dimension": "network-destination",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "landlock ABI v4: Landlock ABI v4 mediates only TCP port bind/connect inside the domain; UDP, IPv6 raw paths, AF_UNIX sockets, inherited socket FDs and out-of-band routes are NOT covered — this is not "
+            },
+            {
+              "dimension": "inherit-cancel",
+              "level": "author-trusted",
+              "mechanism": "trusted launcher closes all undeclared inherited FDs + lane lease mediation separates cancel-request from termination settlement",
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": "sha256:cee10ed55f12123f#packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+              "evidence": "evidence://a5p4/probe/a5w4-realm-2026-10-17T03-07-18Z/mvbtfvte",
+              "note": "the FD-closure leg carries its own recorded evidence row when run; cancel is a REQUEST on the lease and only settleTermination decides (C-GW boundary)"
+            }
+          ],
+          "abiAnswers": [
+            {
+              "abiVersion": 4,
+              "eaccesInRaw": false,
+              "rawHead": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}\n"
+            }
+          ],
+          "legVerdicts": {
+            "selective": "ENFORCE-CONFIRMED",
+            "denyall": "ENFORCE-CONFIRMED",
+            "badhandled": "DEMO-CONFIRMED"
+          },
+          "counters": {
+            "runs": 4,
+            "confinedExec": 0,
+            "byKind": {
+              "abi-probe": 1,
+              "enforce-leg:selective": 1,
+              "enforce-leg:denyall": 1,
+              "enforce-leg:badhandled": 1
+            }
+          },
+          "offeredLauncherPaths": [],
+          "hardDimensionsConfigured": [
+            "content-read",
+            "write"
+          ]
+        },
+        "missing": {
+          "rows": {
+            "refused": {
+              "code": "SANDBOX_UNAVAILABLE",
+              "message": "confined spawn unavailable: precondition check: launcher script '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-nega-2026-10-17T03-07-18Z/a5w4-no-such-launcher.py' not found (presence only — this report states nothing else)"
+            }
+          },
+          "abiAnswers": [],
+          "legVerdicts": {},
+          "counters": {
+            "runs": 0,
+            "confinedExec": 0,
+            "byKind": {}
+          },
+          "offeredLauncherPaths": [],
+          "hardDimensionsConfigured": [
+            "content-read",
+            "write"
+          ]
+        },
+        "revoked": {
+          "rows": [
+            {
+              "dimension": "content-read",
+              "level": "untested",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "no double enforcement evidence on this host — content-read is UNTESTED, not \"absent\", not \"denied\""
+            },
+            {
+              "dimension": "write",
+              "level": "untested",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "no double enforcement evidence on this host"
+            },
+            {
+              "dimension": "directory-metadata",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "landlock read enforcement does not hide metadata; READ_DIR grants directory-name enumeration by design (PoC-4a posture — strict metadata isolation is a mount-namespace capability this lane has not dem"
+            },
+            {
+              "dimension": "alias",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "symlink/hardlink/alias safety requires the openat2-by-FD discipline (PR3 territory); this lane states no alias guarantee"
+            },
+            {
+              "dimension": "network-destination",
+              "level": "unsupported",
+              "mechanism": null,
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": null,
+              "evidence": null,
+              "note": "no landlock ABI measured: Landlock ABI v4 mediates only TCP port bind/connect inside the domain; UDP, IPv6 raw paths, AF_UNIX sockets, inherited socket FDs and out-of-band routes are NOT covered — thi"
+            },
+            {
+              "dimension": "inherit-cancel",
+              "level": "author-trusted",
+              "mechanism": "trusted launcher closes all undeclared inherited FDs + lane lease mediation separates cancel-request from termination settlement",
+              "realmId": "a5w4-realm-2026-10-17T03-07-18Z",
+              "trustRoot": "sha256:cee10ed55f12123f#packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+              "evidence": "evidence://a5p4/probe/a5w4-realm-2026-10-17T03-07-18Z/mvbtfvyo",
+              "note": "the FD-closure leg carries its own recorded evidence row when run; cancel is a REQUEST on the lease and only settleTermination decides (C-GW boundary)"
+            }
+          ],
+          "abiAnswers": [
+            {
+              "abiVersion": null,
+              "eaccesInRaw": true,
+              "rawHead": "{\"kind\":\"abi-unavailable\",\"abi_version\":null,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=-1 errno=EACCES strerror='Permission denied'\"]}\n"
+            }
+          ],
+          "legVerdicts": {
+            "selective": "ABI-UNAVAILABLE",
+            "denyall": "ABI-UNAVAILABLE",
+            "badhandled": "ABI-UNAVAILABLE"
+          },
+          "counters": {
+            "runs": 4,
+            "confinedExec": 0,
+            "byKind": {
+              "abi-probe": 1,
+              "enforce-leg:selective": 1,
+              "enforce-leg:denyall": 1,
+              "enforce-leg:badhandled": 1
+            }
+          },
+          "offeredLauncherPaths": [],
+          "hardDimensionsConfigured": [
+            "content-read",
+            "write"
+          ]
+        }
+      },
+      "fixturesManifest": [
+        "allow/ok.txt|37",
+        "private/secret.txt|74"
+      ]
+    }
+  }
+}

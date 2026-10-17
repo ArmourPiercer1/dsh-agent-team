@@ -1,0 +1,11 @@
+# probe-M-08 (run_code (PTC)) run-utc=2026-10-17T03:09:05.086Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8
+DEPEND W4 surface="provider 工厂→会话装配 + Landlock 在场/撤销对照（OS 强制面，ENFORCE 证据分级如实）" if=[IF-1,IF-6]
+CHECK face:W4 lane=W4 present (binding-shape grep)
+ANCHORS runner-grep=PRESENT (binding shapes on non-comment lines; receipt claim ignored)
+ASSERT A1-outer-real-process-inner-pipeline NOT-EXECUTED :: receipt 缺字段 execution.inner_reentry_same_pipeline（内层复入同一管线逐次 Guard）
+ASSERT A2-per-call-os-enforced-denial SATISFIED :: per_call_policy_denials 含 {"os_level_observed":true}（D3/D5 型 OS 拒绝负控在册）
+ASSERT A3-unsupported-profile-pre-spawn-refusal SATISFIED :: negative_controls 含 {"error":"IO_POLICY_UNSUPPORTED","spawn_count":0}（启动前拒+零 spawn 证据）
+ASSERT A4-transport-override-both-sides-throw NOT-EXECUTED :: receipt 缺字段 transport_same_name_both_sides_throw（双侧 throw 观测在册）
+PROBE-GATED M-08：断言未闭环：[A1-outer-real-process-inner-pipeline, A4-transport-override-both-sides-throw] 无观测数据（receipt 字段缺=该观测腿在装配面上不存在，精确缺项见上 ASSERT 行）；保持门禁不猜。
+MINIMAL-REPRO dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs --receipt dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json
+# VERDICT PROBE-GATED exit=4
