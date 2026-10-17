@@ -443,12 +443,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
   ])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
-  // name, minted HERE at placement time from the same definition objects
-  // that mount below — the Guard's `bindingFeed` reads exactly this map.
-  const placementRecord = new Map()
-  for (const d of allDefs) {
+  // name, resolved LAZILY from the same definition objects that mount
+  // below — the Guard's `bindingFeed` reads exactly this map. Resolution is
+  // deliberately at LOOKUP time, not build time: the `def#N` identity is
+  // minted by the public seam's fingerprint pass (install.ts), which runs
+  // AFTER plane construction and per session — an eager snapshot was
+  // measured (live kit run-5, TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED)
+  // handing the Guard `undefined` and failing a legitimate team.create.
+  // A name whose definition the seam has not minted (never installed
+  // through it) has NO feed row — the Guard then lands its verbatim
+  // no-feed refusal: fail closed, never a guessed identity.
+  const placedByName = new Map(allDefs.map((d) => [d.name, d]))
+  const placementFeed = (name) => {
+    const d = placedByName.get(name)
+    if (d === undefined) return undefined
     const identity = definitionIdentityOf(d)
-    if (identity !== null) placementRecord.set(d.name, Object.freeze({ binding: Object.freeze({ definitionIdentity: identity }), realmId }))
+    return identity === null ? undefined : Object.freeze({ binding: Object.freeze({ definitionIdentity: identity }), realmId })
   }
 
   return {
@@ -468,8 +478,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
         ...(readExecutor === null ? {} : { read: readExecutor }),
       }),
       /** pb §6 provider-side feed: (name) -> {binding:{definitionIdentity}, realmId}. */
-      placementFeed: (name) => placementRecord.get(name),
-      placementNames: Object.freeze([...placementRecord.keys()]),
+      placementFeed,
+      placementNames: Object.freeze(allDefs.map((d) => d.name)),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
