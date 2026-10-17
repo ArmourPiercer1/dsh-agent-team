@@ -29,7 +29,24 @@ Assembly rows (the delivery gap int-a5b named — "seam 精确到挂载行缺 ba
 * Kit-compat: the public `backends` override seam still wins outright (unit G9);
   an injected fixture search keeps carrying glob exactly as a5p5's fallback did.
 
-## 2. Stacked commits (disclosed, drop out when the PRs land)
+## 1b. The DORMANT ledgers this round legitimately ends (booked, law kept)
+
+The provider/search lanes were frozen DORMANT ("zero production consumers")
+by PR0 — three ledger tests pin that form. GLUE-7 is the instruction-backed
+end of that state, so the BOOKINGS keep the named-set law (a second importer
+is accretion; a vanished one is a broken wire):
+
+* `packages/runtime/test/a5p4-lane-hygiene.test.ts` — DORMANT leg →
+  `WIRED (GLUE-7)`, offenders pinned to exactly
+  `runtime/src/plugin/live/plane-effect-backends.mjs`;
+* `packages/runtime/test/a5w-integration-wiring.test.ts` — provider-dormancy
+  leg → exactly-one-live-glue-importer, same named file;
+* `scripts/audit-a5-tool-governance-imports.mjs` `PR1_CONSUMERS` +
+  `packages/domain/test/a5p0-layer-audit.test.ts` — the plane row joins the
+  governance-consumer set (its §6 feed import `definitionIdentityOf` is the
+  #313 入参面's first production caller). 26/26 green, non-accretion bites.
+
+## 2. Stacked commits — the merge LANDED (disclosed dedup fired as pre-announced)
 
 * `6c550080` = `cherry-pick -x 3b1b515f` (GLUE-6 shipped-face + ContentBlock[] render) —
   required: without the render fix EVERY successful dispatch dies in host result
