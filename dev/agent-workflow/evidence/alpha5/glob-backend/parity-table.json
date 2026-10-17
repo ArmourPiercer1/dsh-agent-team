@@ -241,6 +241,45 @@
       "note": "child fds=0,1,2,3 (0/1/2 streaming pipes + the launcher's own reserved descriptor); a DECLARED caller fd never crosses, so handle semantics must live on the presenting (caller) side"
     },
     {
+      "leg": "X1 post-stream refusal spills nothing",
+      "pattern": "docs/**",
+      "target": ".",
+      "nativeExit": null,
+      "nativeCount": 0,
+      "teamCount": 0,
+      "teamTotal": 0,
+      "teamTruncated": false,
+      "teamFailure": "walk-unverifiable",
+      "orderMatch": true,
+      "note": "child ran and streamed, verdict refused, channel bytes = 0, answer echoes no rows"
+    },
+    {
+      "leg": "X3 timeout spills nothing",
+      "pattern": "many/*.ts",
+      "target": "<cap world>",
+      "nativeExit": null,
+      "nativeCount": 0,
+      "teamCount": 0,
+      "teamTotal": 0,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "orderMatch": true,
+      "note": "cancelled settlement, empty outcome, empty sink"
+    },
+    {
+      "leg": "X4 capped spill window",
+      "pattern": "many/*.ts",
+      "target": "<cap world>",
+      "nativeExit": 0,
+      "nativeCount": 105,
+      "teamCount": 100,
+      "teamTotal": 105,
+      "teamTruncated": true,
+      "teamFailure": null,
+      "orderMatch": true,
+      "note": "spill carries the admitted rows only, NUL-framed like the walker"
+    },
+    {
       "leg": "S1 escaping symlink",
       "pattern": "**/*.ts",
       "target": ".",
@@ -255,7 +294,7 @@
     }
   ],
   "legs": {
-    "total": 19,
-    "matched": 18
+    "total": 22,
+    "matched": 21
   }
 }

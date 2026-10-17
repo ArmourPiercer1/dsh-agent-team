@@ -62,6 +62,34 @@
  *         handle-based end to end: each entry was opened under the pinned
  *         anchor fd (`/proc/self/fd/<n>`, an inode-bound view) before its
  *         string was allowed into that array.
+ *     A7. NO UNVERIFIED BYTE REACHES ANY CHANNEL. A walk touches five channels
+ *         and each is closed BEFORE the verdict, not after:
+ *           C-STREAM  the child's stdout is BUFFERED here (bounded by the
+ *                     assembly's narrowed buffer, ceiling GLOB_MAX_WALK_BYTES);
+ *                     the data handler holds no channel object at all — no
+ *                     sink, no `io`, no log call carrying rows.
+ *           C-SPILL   `io.sink` is written EXACTLY ONCE per call, after the
+ *                     verdict, from the admitted array only (`files.join(NUL)`
+ *                     plus a terminator). A refused walk writes zero bytes; an
+ *                     admitted one writes precisely what it presents, in the
+ *                     walker's own framing. The pre-fix shape — writing the
+ *                     stream as it arrived — let a walk refused a moment later
+ *                     leak its raw rows into spill, which is what this law is
+ *                     for (the refusal class is leg X1: a listed object that
+ *                     cannot be opened at verification time, i.e. AFTER the
+ *                     child has already streamed everything).
+ *           C-RESULT  the returned outcome is built from `verdict.entries`
+ *                     only (A6); the refusal arms return code + detail and
+ *                     echo no rows.
+ *           C-STDERR  stderr is a DIAGNOSTIC and never a channel: bounded by
+ *                     GLOB_MAX_STDERR_BYTES, carried only as `failure.detail`
+ *                     on an error arm, never to the sink, never inside an
+ *                     `ok:true` result.
+ *           C-TIMEOUT the cancelled arm settles `settlement:'cancelled'` with
+ *                     an empty outcome and writes nothing.
+ *         Legs X1-X6 are the behavioural per-channel evidence, leg X5 the
+ *         mechanical static one (one write site, after the verdict; the stream
+ *         handler mentions no channel; stderr never reaches a channel).
  *   The kernel confine is the layer under that, and its measured shape is
  *   asymmetric: inside the confined child, reading a file outside the root is
  *   EACCES while LISTING a directory outside the root SUCCEEDS (leg L3). So the
@@ -119,6 +147,8 @@ export const GLOB_MAX_RESULTS_CEILING = 10_000
 
 /** A walk may not stream more than this many bytes of path list into the parent. */
 export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
+/** The diagnostic channel is bounded too (A7): an error arm carries a snippet. */
+export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
 const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true, readDir: true } })
@@ -506,6 +536,10 @@ export function createAnchoredGlobBackend(options) {
     instanceId = 'member',
     maxResults = GLOB_MAX_RESULTS,
     timeoutMs = GLOB_WALK_TIMEOUT_MS,
+    // NARROWING ONLY: an assembly may shrink the walk buffer (it can never
+    // enlarge GLOB_MAX_WALK_BYTES), which also makes the overflow arm of the
+    // channel audit reachable by a test instead of only by 8 MB of filenames.
+    maxWalkBytes = GLOB_MAX_WALK_BYTES,
     observe = () => {},
   } = options ?? {}
   if (typeof realmId !== 'string' || realmId.length === 0) throw new TypeError('glob backend: realmId is required')
@@ -513,6 +547,11 @@ export function createAnchoredGlobBackend(options) {
   if (!Number.isInteger(maxResults) || maxResults <= 0 || maxResults > GLOB_MAX_RESULTS_CEILING) {
     throw new TypeError(`glob backend: maxResults must be a positive integer <= ${String(GLOB_MAX_RESULTS_CEILING)}`)
   }
+  // NARROWING ONLY, like the result ceiling: an assembly may shrink the walk
+  // buffer, never grow it past GLOB_MAX_WALK_BYTES.
+  const walkBufferBytes = Number.isInteger(maxWalkBytes) && maxWalkBytes > 0 && maxWalkBytes < GLOB_MAX_WALK_BYTES
+    ? maxWalkBytes
+    : GLOB_MAX_WALK_BYTES
   const provider = createConfinedProcessProvider({
     realmId,
     trustRoot: confined?.trustRoot ?? null,
@@ -615,15 +654,26 @@ export function createAnchoredGlobBackend(options) {
         let stderr = ''
         let overflow = false
         child.stdout.on('data', (chunk) => {
+          // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
+          // UNVERIFIED until the verdict below admits them, and the spill
+          // channel is a channel like any other: writing it as it arrives (the
+          // shape this row had) means a walk that is refused a moment later has
+          // already leaked its raw bytes into spill. So the stream is buffered
+          // (bounded by GLOB_MAX_WALK_BYTES, whose refusal is unchanged) and the
+          // ONLY sink write in this module happens after the verdict, from the
+          // admitted array. See the channel audit in the header.
           const text = String(chunk)
-          if (stdout.length + text.length <= GLOB_MAX_WALK_BYTES) {
+          if (stdout.length + text.length <= walkBufferBytes) {
             stdout += text
-            if (io?.sink) io.sink.write(text)
           } else {
             overflow = true
           }
         })
-        child.stderr.on('data', (chunk) => { stderr += String(chunk) })
+        child.stderr.on('data', (chunk) => {
+          // Bounded, like every other buffer: the diagnostic channel cannot be
+          // turned into a memory channel by a chatty walker.
+          if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
+        })
         const exit = await Promise.race([
           child.exited,
           new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
@@ -639,9 +689,9 @@ export function createAnchoredGlobBackend(options) {
           }
         }
         const code = typeof exit?.code === 'number' ? exit.code : null
-        const stderrText = stderr.trim()
+        const stderrText = stderr.trim().slice(0, GLOB_MAX_STDERR_BYTES)
         if (overflow) {
-          return failure('undetermined', 'walk-too-large', `the walk streamed more than ${String(GLOB_MAX_WALK_BYTES)} bytes; it was not parsed`)
+          return failure('undetermined', 'walk-too-large', `the walk streamed more than ${String(walkBufferBytes)} bytes; it was not parsed, and nothing was written to any channel`)
         }
         if (code !== 0 && code !== 1) {
           observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code)}`)
@@ -682,6 +732,11 @@ export function createAnchoredGlobBackend(options) {
         // verification and presentation. The ONLY thing done to it here is the
         // inline cap, an array window that preserves order (pinned by leg P10).
         const files = verdict.entries.slice(0, maxResults)
+        // THE ONE SINK WRITE IN THIS MODULE (channel audit, header A7): after the
+        // verdict, from the admitted array only. Spill therefore carries exactly
+        // what is presented, in the walker's own NUL framing — never more, never
+        // less, and never a byte of a refused walk.
+        if (io?.sink && files.length > 0) io.sink.write(`${files.join('\0')}\0`)
         lastRuns.push({ callId: call?.callId, pid: child.pid, exit: code, total: verdict.entries.length, capped: verdict.entries.length > files.length })
         observe(`anchored-glob ran realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)} files=${String(verdict.entries.length)} capped=${String(verdict.entries.length > files.length)}`)
         return {

@@ -1,6 +1,6 @@
 {
   "raceIterations": 5000,
-  "realRaceWalks": 120,
+  "realRaceWalks": 6600,
   "statesSwapped": [
     "real",
     "link"
@@ -10,7 +10,7 @@
   "hostileEntriesAccepted": 0,
   "leaks": 0,
   "realRaceRefusals": {
-    "symlink-alias": 60
+    "symlink-alias": 3300
   },
   "verdictCodes": [
     "inside",
@@ -19,12 +19,22 @@
   ],
   "finalAttackerState": "real",
   "liveWitness": {
-    "real": 2561,
-    "link": 2560,
+    "real": 5801,
+    "link": 5800,
     "contended": 0,
-    "okWhileReal": 60,
+    "okWhileReal": 3300,
     "okWhileLink": 0,
-    "refusedWhileLink": 60,
+    "refusedWhileLink": 3300,
     "refusedWhileReal": 0
-  }
+  },
+  "spillProbe": {
+    "walks": 6600,
+    "admittedWithBytes": 3300,
+    "refusedWithBytes": 0,
+    "attributionMismatch": 0,
+    "canaryInChannel": 0,
+    "bytesTotal": 49500,
+    "walksPerBackendRun": 1
+  },
+  "sinkWriteSitesAudited": "one, after the verdict (see row test X5)"
 }

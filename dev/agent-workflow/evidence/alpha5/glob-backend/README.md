@@ -14,8 +14,17 @@ this lane needs no server, and `:3080` was never contacted.
 Closes the glob gap the plan names (`docs/plans/memo/alpha5-tool-io-governance/
 alpha5-s0-pr0-pr8-implementation-plan.md` `:33` glob row, `:128` named dependency物,
 `:132` native-vs-Team parity 判据, `:136` typed-shape law) **inside my own new files
-only** — no plane / agent-bindings / install.ts / p4t6 / `plane-effect-backends.mjs`
-edit. Integration is the glue writer's call; the mount contract is in §6 below.
+only** — no plane / agent-bindings / install.ts / `plane-effect-backends.mjs` edit.
+ONE exception, by the root's explicit 23:3xZ order: the **p4t6 census ledger**
+(`packages/testkit/test/p4t6-session-event-scan.test.ts`) had to *name* this lane's four
+scannable files, because a lane that adds scannable files without booking them turns the
+census red (`expected 1184 to be 1180`). The edit is booking-only: a named
+`SCANNED_PATHS_A5GLB` list (the four paths, nothing else), its term in both sums, its entry
+in the "every name is a file on disk" union, and the measured tie
+`expect(SCANNED_PATHS_A5GLB.length).toBe(1184 - 1180)` — chain re-tied from the scanner run
+on this tree (base master `382e5fb6` at 1180 after alpha5-schema-rev → 1184 with this lane),
+not copied from anyone else's number. Suite is green (10/10). Integration is the glue
+writer's call; the mount contract is in §6 below.
 
 ## 1. Files this lane owns (the whole diff)
 
@@ -23,8 +32,8 @@ edit. Integration is the glue writer's call; the mount contract is in §6 below.
 | --- | --- |
 | `packages/runtime/src/plugin/live/glob-backend.mjs` | NEW — `createAnchoredGlobBackend` + the anchor/verify law |
 | `packages/runtime/test/alpha5-glob-harness.ts` | NEW — fixture tree, hand-written native oracle, TS faces |
-| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + FRAMING law + LIVE + typed-shape + fixture hygiene (38 legs) |
-| `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | NEW — anchoring under attack, ≥5000-iter race (8 legs) |
+| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + FRAMING law + LIVE + typed-shape + fixture hygiene (44 legs) |
+| `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | NEW — anchoring under attack: 5000 anchor-law iterations + **6600 real confined rg walks**, every real walk spill-probed (8 legs) |
 | `packages/runtime/package.json` + `pnpm-lock.yaml` | `@deepseek-ai/dsh-tool-fs-search@0.2.0-rc.2` registered **in the same stroke** (`:128`) |
 | `dev/agent-workflow/evidence/alpha5/glob-backend/` | this README + `parity-table.json` + `adversarial-counters.json` + `red-capture.txt` |
 
@@ -73,6 +82,20 @@ the walk the tree can move. The row's law, in the order it runs:
   final component) before its string is allowed into that array. Leg **N3** is the
   mechanical static argument, **N4** pins the window and the anchor-owned prefix, **S1**
   keeps the teeth on a hostile entry list.
+
+- **A7 the channel law** (23:05Z 修复单 ①+②). A walk touches **five** channels and each is
+  closed *before* the verdict, not after: **C-STREAM** (stdout is buffered, bounded; the data
+  handler holds no channel object at all — no `io`, no sink, no log call carrying rows);
+  **C-SPILL** (`io.sink` is written **exactly once per call, after the verdict**, from the
+  admitted array only — a refused walk writes **zero bytes**, an admitted one writes precisely
+  what it presents, in the walker's own NUL framing); **C-RESULT** (the outcome is built from
+  `verdict.entries` only; refusal arms echo no rows); **C-STDERR** (a bounded diagnostic —
+  `GLOB_MAX_STDERR_BYTES` — never a channel, never in an `ok:true` result); **C-TIMEOUT**
+  (`settlement:'cancelled'`, empty outcome, no write). The defect this law closes was real in
+  this row: the stream used to be written to the sink *as it arrived*, so a walk refused a
+  moment later had already leaked its raw rows into spill. The refusal class that exposes it
+  is not hypothetical and is not a race — leg **X1** induces it deterministically (a listed
+  regular file that cannot be opened at verification time, i.e. after the child streamed).
 
 **Disclosed residua (no overclaim).**
 1. `/proc/self/fd/<n>` re-resolves **by path**, not by inode pin, so an attacker who swaps
@@ -130,7 +153,7 @@ The native side is invoked with the **hand-written** argv in the harness, and le
 pins that spelling to the host's public `buildGlobCommand` — so a parity match cannot be
 true by construction. Fixed fixture tree (17 files, frozen mtimes; VCS stores;
 `.gitignore`d subtree; a hidden dotdir; a `node_modules` copy). Full numbers:
-[`parity-table.json`](parity-table.json) — **19 rows, 18 exact order-matches, 1 disclosed
+[`parity-table.json`](parity-table.json) — **22 rows, 21 exact order-matches, 1 disclosed
 divergence** (`L3b`, which is a measurement of an alternative design, not a walk).
 
 | class (leg) | native | Team | verdict |
@@ -148,6 +171,10 @@ divergence** (`L3b`, which is a measurement of an alternative design, not a walk
 | over-cap (P10) | 105 | **100 inline (`GLOB_MAX_RESULTS`) with `totalMatches = 105`, `truncated: true`** | the full 105 match native when the assembly raises the ceiling to 105 |
 | sink bytes (P11) | — | — | `io.sink` received **byte-identical** native stdout |
 | newline forgery (N1) | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing matches native exactly, no duplicate |
+| **X1 post-stream refusal → spill** | n/a | 0 bytes | child ran, streamed real rows, verdict refused: sink bytes **0**, answer echoes no rows, execCount still moved |
+| **X4 capped spill window** | 105 | 100 | spill carries the **admitted** rows only (NUL-framed), not the whole walk; `totalMatches` still the native 105 |
+| X3 timeout arm | n/a | 0 bytes | `settlement:'cancelled'`, empty outcome, sink empty |
+| X6 overflow arm | n/a | 0 bytes | narrowing-only buffer (4 KiB) trips `walk-too-large`: unparsed, nothing written |
 | **newline forgery (N1)** | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing equals the native NUL walk exactly, no duplicate |
 | escaping symlink (S1) | 8 | 8 | rg neither follows nor lists it (so parity holds); A4's teeth are proven separately against a hostile entry list (`../outside/secret.txt`, absolute, an in-tree escaping symlink) |
 
@@ -159,6 +186,19 @@ divergence** (`L3b`, which is a measurement of an alternative design, not a walk
 | ② 归属与 cwd 竞态 | 采纳为 law **A6**（单生产者）：presented 数组由验证器产生、前缀取自 anchor（`walkRel`），此后调用方只做**数组窗口**（上限）；每条记录的字符串进入该数组前都已在 pinned anchor fd 的 `/proc/self/fd/<n>` 下以 `O_NOFOLLOW` 打开过。**子进程侧同 fd 不可能**：公开 fd 面只是声明、streaming 臂 stdio 固定四管道、fd 3 launcher-owned 被 `compileFdPlan` 拒——实测声明 fd 7 后子进程内不存在该 fd（L5）。故句柄语义落在**呈现侧**。 | N3（静态论证）/ N4（窗口与前缀）/ S1（敌意条目）/ L3b + L5（接口边界实测） |
 | ③ live attacker witness | 竞态腿的 witness 变为**可计数**：每次 swap 按状态记账，并把每次真 rg 走的答案/拒答与当时状态对齐。120 次真 rg 竞态维持并随 ② 修后重跑：`real=2561 link=2560`，`okWhileReal=60 refusedWhileLink=60 okWhileLink=0 refusedWhileReal=0 contended=0`（**link 态从不作答**即是要害）。 | `adversarial-counters.json → liveWitness` |
 | ④⑤⑥ 表/套件/门重出 | parity 表 19 行 / 18 顺序全等（1 行为替代设计测量）；对抗 8 腿；门全套（typecheck exit 0 / 4 新文件 eslint 净 / 46 腿 / 世界 0 残留 / 证据两次运行逐字节同）。 | 本目录 |
+
+## 4c. 根 23:05Z 硬门修复单（spill = 安全 FAIL 轮，逐项对应）
+
+Reviewer 判定成立：修前 `run()` 在 `stdout.on('data')` 里**边到边写 `io.sink`**，于是"稍后被
+拒的 walk"已经把原始行写进了 spill —— 那是**未验字节先到通道**，与 verdict 无关。本轮把它变成
+law **A7**（见 §2），并按 ①–④ 逐项给证据：
+
+| 单 | 处置 | 证据（静态 + 行为） |
+| --- | --- | --- |
+| ① sink 写门控 | 流处理器改为**只缓冲**（已有上限；本轮再加：assembly 只能**收窄**该缓冲 `maxWalkBytes`，永不放宽）；全模块**唯一**一处 `sink.write` 位于 verdict 之后、来源只能是 admitted 数组（`files.join(NUL)` + 终结符）。被拒 walk 写入 **0 字节**。 | X1（决定性诱发：被列出的普通文件在**验证时**打不开 ⇒ 子进程已流完才拒；sink 字节 == `''`，答案不复述任何行，execCount 仍 +1）/ X5(a)(b)(e) |
+| ② 全通道审计 | §2 A7 的五通道表；逐通道给"verdict 前是否有未验字节可达"的静态与行为论证：C-STREAM 无通道对象 / C-SPILL 单点写在 verdict 后 / C-RESULT 只由 `verdict.entries` 构造 / C-STDERR 只作 diagnostic 且有上限（新 `GLOB_MAX_STDERR_BYTES`）/ C-TIMEOUT 空结果零写。 | 静态 X5（写点计数=1、位置晚于 verdict 与窗口、stream 处理器不含 `sink`/`io`/`observe`、成功臂不含 `stderr`、写点之后不再有拒绝分支）；行为 X1（后验拒）/ X2（walker-error、缺 target、越界 target、target 是文件四臂 sink 皆空）/ X3（超时臂）/ X4（上限窗只写 admitted）/ X6（溢出臂不解析不写） |
+| ③ 活攻击全套重跑 | 真 confined-rg 竞态由 120 提到 **6600**，且**每一次**都挂 spill 探针：拒答 ⇒ 通道 0 字节；作答 ⇒ 通道字节 == 呈现行的 NUL 拼接；任何通道字节含 canary 即记泄露。link 态**零作答**继续作为断言。 | `adversarial-counters.json → liveWitness` + `spillProbe`（A5 腿内逐条断言） |
+| ④ parity/门随修重出 | P11 字节律在门控后**仍然成立**（root 锚定走：sink 字节 == 同 argv 原生 stdout 逐字节），新增 X4 表明有上限时通道只承载 admitted；全套门重跑见 §7。 | 本目录两份 JSON（两次运行逐字节同） |
 
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
@@ -261,7 +301,19 @@ wrong and swept a live sibling's world, so both halves are now pinned, not just 
 lands). The suites need this host's Landlock (probe enforces it); on a host without it
 the live/adversarial-real legs fail loudly — the row refuses, it never fakes.
 
-Last recorded run on this host: **46/46 legs green** (38 row + 8 adversarial),
+**Fixture hygiene, corrected this round.** A single `destroyWorld` + `existsSync` check
+used to pass while the world was left on disk: the confined provider can land a scratch
+write (`<world>/scratch/probe-*`) *after* teardown, re-creating the directory a beat after
+the check. Both suites now clean through `destroyWorldVerified` (destroy → settle → re-look,
+repeating until the tree stays gone) and fail if it is still there; the repeat count is
+printed rather than hidden. Two worlds found leaking this way were removed by hand and are
+named here rather than quietly deleted.
+
+**p4t6 census booking (root order, 23:3xZ).** The four scannable files of this lane are
+booked by name in the p4t6 ledger with a scanner-measured tie `1180 → 1184`; the suite is
+green (10/10). See §1 for the scope of that one-file exception.
+
+Last recorded run on this host: **52/52 legs green** (44 row + 8 adversarial, the adversarial file alone ~168 s at 6600 walks),
 `pnpm -r run typecheck` exit 0 across all 9 packages, `eslint` clean on all four new
 files, `parity-table.json` + `adversarial-counters.json` byte-identical across two
 consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.

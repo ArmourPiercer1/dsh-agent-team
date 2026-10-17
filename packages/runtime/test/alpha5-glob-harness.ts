@@ -18,7 +18,7 @@
  */
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -92,6 +92,27 @@ export function destroyWorld(dir: string): void {
   } catch {
     /* best effort — a world is scratch, never state */
   }
+}
+
+/**
+ * TEST_METHODS §7 cleanup that cannot lie. A single `destroyWorld` + `existsSync`
+ * check is NOT enough, measured on this host: the confined provider may land a
+ * scratch write (`<world>/scratch/probe-*`) after teardown begins, which
+ * re-creates the directory a beat AFTER the check passes — the assertion goes
+ * green and the world is left behind (two such worlds were found this way).
+ * So: destroy, settle, look again, and only report success when the tree is
+ * gone AND stays gone across the settle window. Returns how many times the
+ * directory reappeared, so a caller can publish the number instead of hiding it.
+ */
+export async function destroyWorldVerified(dir: string, attempts = 6, settleMs = 120): Promise<number> {
+  let reappeared = 0
+  for (let i = 0; i < attempts; i++) {
+    destroyWorld(dir)
+    await new Promise((r) => setTimeout(r, settleMs))
+    if (!existsSync(dir)) return reappeared
+    reappeared += 1
+  }
+  return reappeared
 }
 
 /** The confined-provider entries the row needs (production launcher, byte-pinned). */

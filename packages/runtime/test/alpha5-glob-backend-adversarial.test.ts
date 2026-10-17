@@ -29,7 +29,7 @@ import { join } from 'node:path'
 import { resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import {
   confinedConf,
-  destroyWorld,
+  destroyWorldVerified,
   globCall,
   loadGlobBackendRow,
   newWorld,
@@ -44,7 +44,12 @@ const ROOT_DIR = join(WORLD, 'root')
 const OUT = join(WORLD, 'outside')
 const SECRET = 'A5GLB-ADV-CANARY-7f31b0-DO-NOT-LEAK'
 const RACE_ITERATIONS = 5_000
-const REAL_RACE_WALKS = 120
+/**
+ * The live-attack scale: 6600 REAL confined rg walks against the swap race
+ * (fix-list ③). Measured on this host a confined walk is ~25 ms, so the leg is
+ * minutes rather than hours — and every one of them carries a spill probe.
+ */
+const REAL_RACE_WALKS = 6600
 
 let row: GlobBackendRow
 let backend: GlobBackend
@@ -82,6 +87,9 @@ function attackerSetup(): void {
  * counters in `adversarial-counters.json` would show it immediately.
  */
 const witness = { real: 0, link: 0, contended: 0, okWhileReal: 0, okWhileLink: 0, refusedWhileLink: 0, refusedWhileReal: 0 }
+
+/** Per-walk spill-probe tallies, exported into `adversarial-counters.json`. */
+const spill = { walks: 0, admittedWithBytes: 0, refusedWithBytes: 0, attributionMismatch: 0, canaryInChannel: 0, bytesTotal: 0 }
 
 /** One atomic swap of the contested path (rename(2) on one filesystem). */
 function swapTo(state: State): void {
@@ -134,13 +142,62 @@ beforeAll(async () => {
   })
 }, 180_000)
 
-afterAll(() => {
-  destroyWorld(WORLD)
+afterAll(async () => {
+  // Idempotent + re-verified teardown (see `destroyWorldVerified`): the confined
+  // provider can write its scratch dir AFTER the first removal, which used to
+  // leave a world behind while the single-shot assertion still read green.
+  const reappeared = await destroyWorldVerified(WORLD)
   expect(existsSync(WORLD), `world leaked: ${WORLD}`).toBe(false) // TEST_METHODS §7 hygiene
+  if (reappeared > 0) {
+    (globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(`a5glb teardown: the provider re-created the world ${String(reappeared)}x after removal; cleanup repeated\n`)
+  }
 })
 
 async function runWalk(pattern: string, locator: string = '.'): Promise<GlobBackendResult> {
   return await backend.run(globCall(`adv-${pattern}-${locator}`, pattern, locator) as never, { sink: null })
+}
+
+/** A walk WITH a spill probe attached: what the channel actually received. */
+interface Probed {
+  result: GlobBackendResult
+  bytes(): string
+}
+
+async function runWalkProbed(pattern: string, locator: string = '.'): Promise<Probed> {
+  const chunks: string[] = []
+  const result = await backend.run(globCall(`advp-${pattern}-${locator}`, pattern, locator) as never, {
+    sink: { write: (v: string) => { chunks.push(String(v)) } },
+  })
+  return { result, bytes: () => chunks.join('') }
+}
+
+/**
+ * SPILL ATTRIBUTION LAW (fix-list ①+②): the channel receives bytes if and only
+ * if the walk was ADMITTED, and then exactly the admitted rows in the walker's
+ * own NUL framing — never a byte of a refused walk, never a row that was not
+ * presented, never a canary.
+ */
+function auditSpill(probe: Probed, where: string): void {
+  const bytes = probe.bytes()
+  if (probe.result.ok !== true) {
+    if (bytes.length > 0) leaks.push(`${where}: a REFUSED walk wrote ${String(bytes.length)} bytes to the channel`)
+    spill.refusedWithBytes += bytes.length > 0 ? 1 : 0
+    return
+  }
+  const files = probe.result.outcome.files
+  // the byte law, stated for both arms: admitted rows in the walker's framing,
+  // and NOTHING when nothing was admitted (the row writes only when it admits)
+  const expected = files.length === 0 ? '' : `${files.join('\0')}\0`
+  if (bytes !== expected) {
+    leaks.push(`${where}: channel bytes are not the admitted rows (${String(bytes.length)} vs ${String(expected.length)})`)
+    spill.attributionMismatch += 1
+  }
+  if (bytes.includes(SECRET) || bytes.includes('leak.ts')) {
+    leaks.push(`${where}: the channel carries outside material`)
+    spill.canaryInChannel += 1
+  }
+  spill.admittedWithBytes += 1
+  spill.bytesTotal += bytes.length
 }
 
 /** Every path a result presents must exist under the governed root and must NOT be the canary. */
@@ -251,8 +308,11 @@ describe('A5-GLOB A — anchoring under attack', () => {
       const stateAtCall: State = i % 2 === 0 ? 'real' : 'link'
       swapTo(stateAtCall)
       tally.states.add(stateAtCall)
-      const result = await runWalk('**/*.txt', 'live')
+      const probe = await runWalkProbed('**/*.txt', 'live')
+      const result = probe.result
       walks += 1
+      spill.walks += 1
+      auditSpill(probe, `A5 spill it=${String(i)}`)
       // the witness is still in the state we put it in? if the attacker (here:
       // the loop itself) is the only mover, this is always true — `contended`
       // stays 0 and says so; a future multi-process attacker drives it up.
@@ -290,7 +350,16 @@ describe('A5-GLOB A — anchoring under attack', () => {
     expect(witness.contended).toBe(0)
     expect(leaks, `leaks: ${leaks.slice(0, 3).join(' | ')}`).toEqual([])
     expect([...refusals.keys()].some((c) => c === 'symlink-alias')).toBe(true) // the swap was hit, not dodged
-  }, 900_000)
+    // the spill probe: 6600 walks, zero byte of a refused walk in the channel,
+    // zero mis-attribution, zero canary — and it DID carry bytes on the walks
+    // that answered (a probe that saw nothing at all proves nothing)
+    expect(spill.walks).toBe(REAL_RACE_WALKS)
+    expect(spill.refusedWithBytes).toBe(0)
+    expect(spill.attributionMismatch).toBe(0)
+    expect(spill.canaryInChannel).toBe(0)
+    expect(spill.admittedWithBytes).toBe(witness.okWhileReal)
+    expect(spill.bytesTotal).toBeGreaterThan(0)
+  }, 1_800_000)
 
   it('A6 an anchor EXILED out of the governed root mid-flight never answers', async () => {
     swapTo('real')
@@ -357,6 +426,8 @@ describe('A5-GLOB A — anchoring under attack', () => {
         verdictCodes: [...tally.codes],
         finalAttackerState: attackerState,
         liveWitness: { ...witness },
+        spillProbe: { ...spill, walksPerBackendRun: 1 },
+        sinkWriteSitesAudited: 'one, after the verdict (see row test X5)',
       }, null, 2)}\n`)
     }
   })

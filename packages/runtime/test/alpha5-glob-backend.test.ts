@@ -22,7 +22,7 @@
  * Worlds: `tests/homes/a5glb-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -31,7 +31,7 @@ import {
   buildGlobFixture,
   buildTiePair,
   confinedConf,
-  destroyWorld,
+  destroyWorldVerified,
   globCall,
   LAUNCHER,
   LAUNCHER_SHA,
@@ -180,7 +180,7 @@ beforeAll(async () => {
   backend = makeBackend()
 }, 180_000)
 
-afterAll(() => {
+afterAll(async () => {
   // The evidence write must NEVER cost a world: fixture hygiene runs in the
   // finally, and the worlds being GONE is asserted (a leaked world is a defect
   // this lane polices itself — TEST_METHODS §7).
@@ -200,10 +200,16 @@ afterAll(() => {
       writeFileSync(join(EVIDENCE_DIR, 'parity-table.json'), `${JSON.stringify(body, null, 2)}\n`)
     }
   } finally {
-    destroyWorld(WORLD)
-    destroyWorld(CAP_WORLD)
+    // Idempotent + re-verified (see `destroyWorldVerified`): a late provider
+    // scratch write re-creates the world right after removal, which used to make
+    // the single-shot check pass while leaving the tree behind.
+    let reappeared = await destroyWorldVerified(WORLD)
+    reappeared += await destroyWorldVerified(CAP_WORLD)
     expect(existsSync(WORLD), `world leaked: ${WORLD}`).toBe(false)
     expect(existsSync(CAP_WORLD), `world leaked: ${CAP_WORLD}`).toBe(false)
+    if (reappeared > 0) {
+      (globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(`a5glb teardown: the provider re-created a world ${String(reappeared)}x after removal; cleanup repeated\n`)
+    }
   }
 })
 
@@ -418,6 +424,9 @@ describe('A5-GLOB P — rg PARITY (native oracle vs the confined Team walk)', ()
     const result = await call('**/*.md', '.', 'workspace', { write: (s: string) => chunks.push(s) })
     expect(result.ok).toBe(true)
     const native = nativeRg(rgPath, ROOT_DIR, nativeGlobArgv('**/*.md'))
+    // Under the NUL framing law the byte law is stated exactly as before: the
+    // spill channel carries the walker's OWN bytes for an admitted walk. What
+    // changed (fix-list ①) is WHEN they may be written: after the verdict.
     expect(chunks.join('')).toBe(native.stdout)
     parityRows.push({
       leg: 'P11 sink bytes', pattern: '**/*.md', target: '.', nativeExit: native.code, nativeCount: nativePaths(native).length,
@@ -732,6 +741,177 @@ describe('A5-GLOB H — fixture hygiene (a lane that litters worlds poisons the 
     expect(existsSync(live), 'a fresh world — possibly a sibling suite\'s — must survive the sweep').toBe(true)
     rmSync(live, { recursive: true, force: true })
     expect(sweepStrayWorlds('a5glb-nothing-here-')).toEqual([])
+  })
+})
+
+function spySinkFor(): { write(v: string): void; bytes(): string } {
+  const chunks: string[] = []
+  return { write: (v: string) => { chunks.push(String(v)) }, bytes: () => chunks.join('') }
+}
+
+describe('A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel before the verdict', () => {
+  // Fix-list ②. The defect this group exists for: the row used to write the
+  // child's stdout into io.sink AS IT ARRIVED, so a walk refused a moment later
+  // had already put its raw bytes into the spill channel. Every channel a walk
+  // can touch is pinned below, statically and behaviourally.
+  const SPILL_CANARY = 'A5GLB-UNVERIFIED-BYTES-DO-NOT-SPILL'
+
+  function spySink(): { write(v: string): void; bytes(): string } {
+    const chunks: string[] = []
+    return { write: (v: string) => { chunks.push(String(v)) }, bytes: () => chunks.join('') }
+  }
+
+  async function callWithSink(pattern: string, locator = '.'): Promise<{ result: GlobBackendResult; sink: ReturnType<typeof spySink> }> {
+    const sink = spySink()
+    const result = await backend.run(globCall(`x-${pattern}-${locator}`, pattern, locator) as never, { sink } as never)
+    return { result, sink }
+  }
+
+  it('X1 a walk refused AFTER the child streamed spills NOTHING — not one byte, not one name', async () => {
+    // The shape of the defect: the child runs, enumerates and streams real
+    // rows, and the walk is refused only at verification — the moment where the
+    // pre-fix row had ALREADY written those rows into the spill channel.
+    // The refusal here is deterministic, not a race: a listed regular file whose
+    // contents cannot be opened at verification time (mode 000, and we run as
+    // uid != 0, so the open genuinely fails) trips A4 after the stream closed.
+    const planted: string[] = []
+    for (const name of [`${SPILL_CANARY}-a.ts`, `${SPILL_CANARY}-b.ts`, `${SPILL_CANARY}-c.ts`]) {
+      writeFileSync(join(ROOT_DIR, 'docs', name), 'x\n')
+      utimesSync(join(ROOT_DIR, 'docs', name), 1_660_000_000, 1_660_000_000)
+      planted.push(join(ROOT_DIR, 'docs', name))
+    }
+    const blocked = join(ROOT_DIR, 'docs', 'zz-unreadable.ts')
+    writeFileSync(blocked, 'x\n')
+    utimesSync(blocked, 1_660_000_100, 1_660_000_100)
+    chmodSync(blocked, 0o000)
+    const before = backend.execCount()
+    const { result, sink } = await callWithSink('docs/**')
+    chmodSync(blocked, 0o644) // the world goes back the way we found it
+    expect(result.ok, `expected the post-stream refusal, got ${JSON.stringify(result).slice(0, 240)}`).toBe(false)
+    expect(backend.execCount()).toBe(before + 1) // the child DID run and stream
+    if (result.ok !== false) return
+    expect(['walk-unverifiable', 'walk-contaminated']).toContain(result.failure.code)
+    expect(sink.bytes(), 'a refused walk must not write a single byte to the channel').toBe('')
+    expect(JSON.stringify(result)).not.toContain(SPILL_CANARY) // the answer echoes no rows
+    expect(JSON.stringify(result)).not.toContain(OUTSIDE_TOKEN)
+    rmSync(blocked, { force: true })
+    for (const p2 of planted) rmSync(p2, { force: true })
+    const clean = await callWithSink('docs/**')
+    expect(clean.result.ok).toBe(true) // with the object readable again, the same walk answers
+    expect(clean.sink.bytes().length).toBeGreaterThan(0)
+    parityRows.push({
+      leg: 'X1 post-stream refusal spills nothing', pattern: 'docs/**', target: '.', nativeExit: null, nativeCount: 0, teamCount: 0,
+      teamTotal: 0, teamTruncated: false, teamFailure: result.failure.code, orderMatch: true,
+      note: 'child ran and streamed, verdict refused, channel bytes = 0, answer echoes no rows',
+    })
+  })
+
+  it('X2 every other refusal arm also leaves the sink empty', async () => {
+    const arms: [string, string, string][] = [
+      ['walker error (invalid glob)', '**/[a-', '.'],
+      ['no such target', '**/*', 'no-such-dir'],
+      ['escaping target (pre-spawn)', '**/*', '../outside'],
+      ['target is a file', '**/*', 'src/a.ts'],
+    ]
+    for (const [label, pattern, locator] of arms) {
+      const { result, sink } = await callWithSink(pattern, locator)
+      expect(result.ok, `${label}: expected refusal`).toBe(false)
+      expect(sink.bytes(), `${label}: the sink must stay empty`).toBe('')
+    }
+  })
+
+  it('X3 the timeout arm settles cancelled and spills nothing', async () => {
+    const patient = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-timeout', rootDir: CAP_ROOT, confined: confinedConf(CAP_WORLD), timeoutMs: 1,
+    })
+    const sink = spySink()
+    const result = await patient.run(globCall('x-timeout', 'many/*.ts') as never, { sink } as never)
+    expect(result.ok, JSON.stringify(result)).toBe(true)
+    if (result.ok !== true) return
+    expect(result.settlement.kind).toBe('cancelled')
+    expect(result.outcome.files).toEqual([])
+    expect(sink.bytes()).toBe('')
+    parityRows.push({
+      leg: 'X3 timeout spills nothing', pattern: 'many/*.ts', target: '<cap world>', nativeExit: null, nativeCount: 0,
+      teamCount: 0, teamTotal: 0, teamTruncated: false, teamFailure: null, orderMatch: true,
+      note: 'cancelled settlement, empty outcome, empty sink',
+    })
+  }, 180_000)
+
+  it('X4 the capped window: spill carries the ADMITTED rows, never the whole walk', async () => {
+    const capBackend = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-cap-x4', rootDir: CAP_ROOT, confined: confinedConf(CAP_WORLD),
+    })
+    const sink = spySink()
+    const result = await capBackend.run(globCall('x-cap', 'many/*.ts') as never, { sink } as never)
+    expect(result.ok).toBe(true)
+    if (result.ok !== true) return
+    const native = nativeRg(rgPath, CAP_ROOT, nativeGlobArgv('many/*.ts'))
+    const nativeList = nativePaths(native)
+    expect(result.outcome.files.length).toBe(GLOB_MAX_RESULTS)
+    expect(result.outcome.totalMatches).toBe(nativeList.length)
+    // spill == the admitted set, in the walker's own NUL framing
+    expect(sink.bytes()).toBe(`${result.outcome.files.join('\0')}\0`)
+    expect(sink.bytes()).not.toBe(native.stdout) // NOT the whole walk
+    expect(sink.bytes().split('\0').filter((r) => r.length > 0)).toHaveLength(GLOB_MAX_RESULTS)
+    parityRows.push({
+      leg: 'X4 capped spill window', pattern: 'many/*.ts', target: '<cap world>', nativeExit: native.code, nativeCount: nativeList.length,
+      teamCount: result.outcome.files.length, teamTotal: result.outcome.totalMatches, teamTruncated: true, teamFailure: null,
+      orderMatch: true, note: 'spill carries the admitted rows only, NUL-framed like the walker',
+    })
+  }, 180_000)
+
+
+  it('X6 the overflow arm refuses, parses nothing, and writes nothing (buffer narrowed by the assembly)', async () => {
+    // The overflow channel, reached honestly: the buffer knob NARROWS only (it
+    // can never exceed GLOB_MAX_WALK_BYTES), so a 4 KiB budget over the 105-file
+    // tree walks the same code path 8 MB of filenames would.
+    const tight = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-overflow', rootDir: CAP_ROOT, confined: confinedConf(CAP_WORLD), maxWalkBytes: 256,
+    })
+    const sink = spySinkFor()
+    const result = await tight.run(globCall('x-overflow', 'many/*.ts') as never, { sink } as never)
+    expect(result.ok).toBe(false)
+    if (result.ok !== false) return
+    expect(result.failure.code).toBe('walk-too-large')
+    expect(sink.bytes()).toBe('')
+    expect(JSON.stringify(result)).not.toContain('f0000.ts') // the refusal echoes no rows
+  }, 180_000)
+
+  it('X5 STATIC AUDIT: exactly one channel write, after the verdict, and stderr never reaches it', () => {
+    const source = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+    // Comments are stripped first: this audit is about CODE paths. (The prose in
+    // that module talks about the sink a lot — on purpose — and prose is not a
+    // channel.) Behavioural proof is legs X1-X4; this leg pins the SHAPE.
+    const code = source
+      .split('\n')
+      .map((line) => (line.trimStart().startsWith('//') || line.trimStart().startsWith('*') || line.trimStart().startsWith('/*') ? '' : line.split('//')[0] ?? ''))
+      .join('\n')
+    const lines = code.split('\n')
+    // (a) ONE sink write in the whole module, sitting AFTER the verdict:
+    const writeSites = lines.map((l, i) => ({ l, i })).filter(({ l }) => l.includes('sink.write'))
+    expect(writeSites.map(({ l }) => l.trim())).toEqual([expect.any(String)])
+    const verdictLine = lines.findIndex((l) => l.includes('await verifyGlobResultsBeneath('))
+    const windowLine = lines.findIndex((l) => l.includes('verdict.entries.slice(0, maxResults)'))
+    expect(verdictLine).toBeGreaterThan(-1)
+    expect(windowLine).toBeGreaterThan(verdictLine)
+    expect(writeSites).toHaveLength(1)
+    expect(writeSites[0]?.i).toBeGreaterThan(windowLine)
+    // (b) the stream handler holds no channel and logs no rows:
+    const handler = code.slice(code.indexOf("stdout.on('data'"), code.indexOf("child.stderr.on('data'"))
+    expect(handler.includes('sink')).toBe(false)
+    expect(handler.includes('observe(')).toBe(false)
+    expect(handler.includes('io')).toBe(false)
+    // (c) stderr is only ever a typed diagnostic: never a channel, never an answer:
+    expect(lines.filter((l) => l.includes('stderrText')).every((l) => !l.includes('sink'))).toBe(true)
+    const successArm = code.slice(code.lastIndexOf('settlement: { kind:'), code.lastIndexOf('settlement: { kind:') + 900)
+    expect(successArm.includes('stderr')).toBe(false)
+    // (d) buffering is bounded, so it cannot itself become a channel:
+    expect(code.includes('GLOB_MAX_WALK_BYTES')).toBe(true)
+    expect(code.includes("'walk-too-large'")).toBe(true)
+    // (e) nothing refuses AFTER the write site — the write is the last thing an
+    //     admitted walk does before returning it:
+    expect(lines.map((l, i) => ({ l, i })).filter(({ l, i }) => i > (writeSites[0]?.i ?? 0) && (l.includes('return failure(') || l.includes('return verdict')))).toEqual([])
   })
 })
 
