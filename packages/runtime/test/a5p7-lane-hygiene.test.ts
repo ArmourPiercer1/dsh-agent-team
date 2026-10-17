@@ -115,6 +115,16 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
     for (const file of ALL_PACKAGE_FILES) {
       if (!/\.(ts|mjs)$/.test(file)) continue
       const rel = relative(REPO_PACKAGES, file).split(sep).join('/')
+      // Derived build output is skipped. A `.d.ts` under `…/dist/…` is tsc's
+      // compiled mirror of a source file, and dist is a pure function of the
+      // source graph: any production consumer that could appear in dist must
+      // first exist as a SOURCE importer, and every source file is still
+      // scanned below. Since the lanes joined the build plane (tsconfig.build
+      // include), the scanner would otherwise flag the lane's OWN emitted
+      // declarations (runtime/dist/packages/runtime/jobs-gateway/*.d.ts) as
+      // consumers — a mirror, not an edge. Skipping derived output therefore
+      // weakens the source-import invariant by nothing.
+      if (/(^|\/)dist\//.test(rel)) continue
       const isLaneOwn =
         rel.startsWith('runtime/jobs-gateway/') ||
         rel.startsWith('domain/vnext-field-mapping/') ||
