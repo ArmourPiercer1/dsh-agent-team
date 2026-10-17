@@ -1,0 +1,61 @@
+a5ie install-entry runner stamp=2026-10-17T17-06-56Z port=3183 exp=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T17-06-56Z
+PASS H1 — the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (porcelain 0 before) [head=639ed01539]
+PASS H2 — host port 3183 free (self-proved) and a mock port from the 349x family free [mock=3491]
+PASS E1 — unfolded (AUX surface, NON-PURE — the purity claim lives in RED-A): git archive HEAD = dist mirror (1727) + package.json + the TWO tracked sibling files the entry loads at runtime OUTSIDE the mirror (upstream-resolver.mjs hook, harness seam.mjs) + bundled skills. The public manifest (package.json files:["dist"]) does NOT cover the siblings; they are added here ONLY so governance legs ②③④ can run — per the root ruling a backfilled surface is never called a pure install pass; the gap itself is pinned by RED-A. Face: 44-file a5p5, 3 glue placements, entry rows; per-file sha256 in expansion-manifest.json [files=1732 a5p5=44 glue=[true,true,true] siblings=[true,true] skills=2]
+PASS E2 — the repo drift gate (check-artifacts-committed) grades the committed dist at HEAD: exit 0 and drift=0 [status=0 tail=["DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1730 glue=3","[check-artifacts-committed] OK: 1730 files — working tree equals the git INDEX for both install surfaces (incl. 3 glue placement(s)). This script does not build, so this says the tre]
+PASS E3 — import probe FROM THE EXPANSION ONLY: six production loads (host.js + the two live rows + the glue-edited bindings + the boot-time harness seam + the a5p5 register face) import clean with the TRANSITIVE dependency closure (declared deps BFS-complete) landed at EXP/node_modules — zero repo-source path in the load graph [attempts=8 bfs=29 nmTop=["@deepseek-ai","@modelcontextprotocol","@standard-schema","cross-spawn","eventsource","eventsource-parser","isexe","jose","path-key","pkce-challenge","shebang-command","shebang-regex","which","yaml",]
+PASS E4 — purity MEASURED: a module.resolve hook over the probe run enumerates the ENTIRE load graph — every file: module the five production rows load resolves INSIDE the expansion (foreign modules: 0); the ancestor node_modules census is recorded as context [loaded=1635 foreign=0 sample=[]]
+[hb] rss=100MB heap=12MB mockReqs=0
+PASS RED-A — STRICT public-manifest install face (files:["dist"] + declared deps, NOTHING backfilled from the source tree): the production entry FAILS to boot — the entry's runtime reference to <pkg-root>/src/plugin/upstream-resolver.mjs (and the harness seam behind it) is a REAL install-manifest gap; the reference name + verbatim resolution failure are pinned here; packaging/path fix = GLUE formal round, single writer (this kit changes no packaging) [pureFiles=1728 failLine=[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T17-06-56Z-pure/packages/runtime/src]
+PASS S1 — SYNTH(EXP): createTeamToolPlaneAssembly mounts the own-layer trio (team_grep/team_glob/team_bash) scoped-only (never global) on a governed scope, straight off the expansion module [own=["team_bash","team_glob","team_grep"] placed=true]
+PASS S1b — SYNTH(EXP): the lane re-check denies the shell alias on the deny lane (template-deny-lane) and allows the read-class alias (tighten-only class mapping) [bash=template-deny-lane grep=allow]
+PASS S2 — SYNTH(EXP): the installed PR7 row refuses unbacked + cross-root owner claims (owner-not-durable) with zero registrations, and its assembly-owned lease walks ACTIVE→DRAINING→RELEASED honestly (the transition close() takes at teardown) [refuse=owner-not-durable states=ACTIVE->DRAINING->RELEASED rel=true]
+PASS S3 — GAP PROBE (recorded, not faked, not patched here): the installed plane DEFINITIONs carry the host-required output/render face BUT its render returns a STRING where the host law requires ContentBlock[] — through the LIVE host scheduler this crashes the result assembly ("content.some is not a function"), so neither a computed refusal NOR a future effect body can REACH the model from the trio on this artifact; capability line = PLANE_PRESENTATION_FACE.render (team-tool-plane.mjs:95) returning String(value?.text); fix owner = GLUE formal round single writer [renderReturn=string site=packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs:88-96 PLANE_PRESENTATION_FACE]
+[hb] rss=103MB heap=13MB mockReqs=0
+[team] host exited code=0 signal=null
+[hb] rss=128MB heap=15MB mockReqs=15
+[hb] rss=128MB heap=16MB mockReqs=15
+[baseline] host exited code=0 signal=null
+[hb] rss=129MB heap=16MB mockReqs=23
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[hb] rss=129MB heap=17MB mockReqs=25
+[gatered] host exited code=0 signal=null
+[hb] rss=118MB heap=15MB mockReqs=29
+[hb] rss=118MB heap=15MB mockReqs=29
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[hb] rss=118MB heap=15MB mockReqs=31
+[refuse] host exited code=0 signal=null
+PASS H3 — :3080 stable instance untouched (read-only probe before/after) and the test-use host porcelain 0 after [401 -> 401; porcelain=0]
+PASS W1 — all worlds booted from the EXPANSION row name, driven, observer facts captured (worlds swept) [team:ok/swept baseline:ok/swept gatered:ok/swept refuse:ok/swept]
+PASS T1 — LIVE PRE-FLIGHT (skill §7): the saved blueprint lists in catalog.list AND resolves (strong parse) in catalog.get on the EXPANSION-powered host [{"listStatus":200,"listed":true,"getStatus":200,"getErr":null}]
+PASS T2 — R1 PLACEMENT live on the installed surface: the governed leader carries the own-layer trio (scoped yes, global NO), BOTH governed agents are own-layer carriers, and the assembly logged its placement rows [leaderScoped=["team_bash","team_collect","team_delegate","team_glob","team_grep"] placedRows=2 carriers=2]
+PASS T3 — the placement reached the model-facing WIRE of BOTH governed agents: leader wire carries team_delegate+team_collect+aliases; the member wire carries the aliases [leader team_*=["team_bash","team_collect","team_delegate","team_glob","team_grep"] member team_*=["team_bash","team_glob","team_grep"]]
+PASS T4 — REAL delegation: the leader scripted team_delegate(sync)+team_collect over template wa; the member-bound session received the delegated task prompt AT THE WIRE with a multi-request transcript [leaderToolCalls=["team_delegate","team_collect"] memberReqs=4]
+FAIL T5 — ① POSITIVE CONTROL (root ruling): the GOVERNED read tool really EXECUTED on the member — the governed lane allowed read-class, the host core backend ran the file read, and the tool result carries the target file content (A5IE_GREP_TARGET line) — a small task completed for real [readSucceeded=false result="[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]"]
+FAIL T6 — REFUSAL-CHAIN leg 1 (never counted as the positive control): the own-layer trio call team_bash through the R1 placement was DENIED by the lane (template-deny-lane) BEFORE any backend ran [bashDenied=false results=["[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]","[{\"type\":\"text\",\"text\":\"Err]
+FAIL T7 — REFUSAL-CHAIN leg 2 + LOCALIZED GAP (never counted as the positive control): the own-layer trio call team_grep reached the INSTALLED effect face and got the typed IO_POLICY_UNSUPPORTED — the CHAIN (wire→guard→lane→pipeline→backend edge) runs on the installed surface, but the trio effect bodies are typed-shut: capability = createTeamToolPlaneAssembly default effect backends (team_grep/team_glob/team_bash) in live/team-tool-plane.mjs; provider assembly = GLUE formal round, NOT delivered by this artifact [grepIoRefused=false gap=trio-effect-backends/team-tool-plane.mjs memberFinal={"kind":"text","content":"A5IE_MEMBER_RESULT read=n/a bash=n/a grep=n/a"}]
+FAIL T8 — RESULT BACK TO LEADER: the member final line (A5IE_MEMBER_RESULT quoting read-success + both refusal codes) is present in the LEADER wire transcript inside the delegate/collect chain, and the leader completed its final turn [backToLeader=true final={"kind":"text","content":"A5IE_MEMBER_RESULT read=n/a bash=n/a grep=n/a"}]
+PASS T9 — LEDGER: every driven turn COMPLETED (all sessions quiet), the PR7 live row is open for the owning root through the production entry (gateway+lease witness, lease ACTIVE pre-close), and the host took the graceful SIGTERM close (exit 0 = close() ran to the end, where the lease drains/releases — the S2-measured lifecycle) [sessions=[{"s":"2a88ded76ff966","run":false},{"s":"0-17T17-06-56Z","run":false},{"s":"0-17T17-06-56Z","run":false}] gw={"present":true,"hasGateway":true,"hasLease":true,"leaseState":"ACTIVE"} exit={"code":0,"signal":null}]
+PASS T10 — control-of-controls: the BASELINE governed leader (same expanded artifact, NO row config) shows zero plane aliases, zero plane observations and NO jobs gateway — the mount is config-scoped, not ambient [aliases=[] obs=[]]
+PASS Z-standard — ZERO EXPANSION (same round): the standard NON-team session registry-vs-baseline = [] AND wire-vs-baseline = [] AND zero team_ alias names on either face — while the SAME boot carries a live mounted plane [regΔ=[] wireΔ=[]]
+PASS Z-minimal — ZERO EXPANSION (same round): the minimal NON-team session registry-vs-baseline = [] AND wire-vs-baseline = [] AND zero team_ alias names on either face — while the SAME boot carries a live mounted plane [regΔ=[] wireΔ=[]]
+PASS N3 — COVERAGE GATE STILL RED on the expanded surface: plane mounted AND a team_-namespace masquerader on the governed surface → setup dies on alpha2-permission-coverage-unmanaged-tools (body or console) — the plane did not whiten the gate — while NON-team sessions are untouched [seen=true inBody=true nonTeam=true]
+PASS N4 — BOOT/PAIRING NEGATIVE STILL RED: a half-paired trustRoot row refuses the governed setup with the typed TRUST_ROOT_SHA_MISMATCH (body or console; no degraded fallback, no partial mount) [seen=true inBody=true err= {"type":"server-response","rpcId":"a5ie-refuse-tc","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: sta]
+PASS N4b — the refused world shows NO plane alias anywhere (the refusal unwound everything it touched) [aliases=[]]
+PASS C1 — world cleanup: no a5ie-* DSH_HOME remains under tests/homes and both expansions (aux + RED-A pure) are swept (their per-file sha256 manifests are the retained evidence) [exp=true pure=true homes=[]]
+PASS C2 — launch-token hygiene: raw instance logs deleted after redaction at capture (only redacted *.log retained) [rawLeft=[]]
+VERDICT RED (T5,T6,T7,T8) (26/30)

@@ -2433,6 +2433,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/src/plugin/live/team-tool-plane.mjs',
       'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
     ]
+    // alpha5-g1-denyfix (GAP PROBE G1 repair round): the ONE new scannable
+    // file is the lane-decide regression suite (the production fix is an
+    // IN-PLACE edit of the booked GLUE-5 row above; the kit + evidence live
+    // under dev/agent-workflow/evidence/, outside the packages/ scan
+    // universe).
+    const SCANNED_PATHS_A5G1: readonly string[] = [
+      'packages/runtime/test/alpha5-g1-deny-lane.test.ts',
     // alpha5-pb-binding-feed (P-B §6 binding-feed round): the lane's ONE
     // scannable file — the binding-feed semantics spec (positive control +
     // the three §6 semantics: revoked-drift refusal, cross-realm refusal,
@@ -2480,6 +2487,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PB.length +
         SCANNED_PATHS_A5LSP.length +
         SCANNED_PATHS_A5GLUE5.length +
+        SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5PBR2.length,
     )
     expect(scanResult.files.length).toBe(
@@ -2520,6 +2528,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PB.length +
         SCANNED_PATHS_A5LSP.length +
         SCANNED_PATHS_A5GLUE5.length +
+        SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5PBR2.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -2584,6 +2593,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5LSP,
       ...SCANNED_PATHS_A5GLUE5,
       ...SCANNED_PATHS_A5PBR2,
+      ...SCANNED_PATHS_A5G1,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2828,11 +2838,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // clause; the final-rebase dedup re-ties the endpoints here, and the
     // prep captures in evidence/alpha5/glue5/ stay as HISTORY lines.)
     expect(SCANNED_PATHS_A5GLUE5.length).toBe(1168 - 1166)
+    // The G1 deny-lane repair tie, same form, measured on this tree (base
+    // master `fe829038`, chain at 1168): with the regression suite on disk
+    // and absent from the list the run reads `expected 1169 to be 1168`;
+    // booking the one lane-decide test file ends the chain at 1169.
+    expect(SCANNED_PATHS_A5G1.length).toBe(1169 - 1168)
     // The P-B §6 binding-feed tie, same form, measured on THIS branch (base
-    // master `23002259`, chain at 1168): with the lane spec on disk and this
+    // master `23002259`, chain at 1169 after G1 (#315)): with the lane spec on disk and this
     // clause absent the run reads `expected 1169 to be 1168`; booking the
     // one named file ends the chain at 1169 — the scanner total of this tree.
-    expect(SCANNED_PATHS_A5PBR2.length).toBe(1169 - 1168)
+    expect(SCANNED_PATHS_A5PBR2.length).toBe(1170 - 1169)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
