@@ -1,0 +1,123 @@
+{
+  "mode": "refuse",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue5-entry/tests/homes/a5g5-refuse-2026-10-17T11-44-58Z",
+  "ok": true,
+  "discPrompt": {
+    "attempts": 2,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5g5-refuse-tc\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5g5-team-2026-10-17T11-44-58Z' failed: agent-bindings: alpha.5 Team tool plane refused the mount for 'session-a5g5-team-2026-10-17T11-44-58Z': trustRoot must be \\\"sha256:<launcherSha256[0..16]>#<trusted path>\\\" — got \\\"sha256:1111111111111111#vendor/launcher.bin\\\" against pin \\\"aaaaaaaaaaaaaaaa\\\" (code: TRUST_ROOT_SHA_MISMATCH)\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED\",\"message\":\"team.create: starting the root (leader) agent for 'session-a5g5-team-2026-10-17T11-44-58Z' failed: agent-bindings: alpha.5 Team tool plane refused the mount for 'session-a5g5-team-2026-10-17T11-44-58Z': trustRoot must be \\\"sha256:<launcherSha256[0..16]>#<trusted path>\\\" — got \\\"sha256:1111111111111111#vendor/launcher.bin\\\" against pin \\\"aaaaaaaaaaaaaaaa\\\" (code: TRUST_ROOT_SHA_MISMATCH)\"}}}}}"
+  },
+  "errorInBody": true,
+  "expectedErrorLine": null,
+  "errorSeen": true,
+  "standard": {
+    "sessionId": "session-c392f06d-b544-4c3c-9a48-2594624c5496",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "minimal": {
+    "sessionId": "session-9c2979ef-fc03-4dc6-8953-ab5ea7921897",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "bash"
+    ],
+    "scopedNames": [
+      "bash"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [
+    "a5-plane: mount-REFUSED for session-a5g5-team-2026-10-17T11-44-58Z (TRUST_ROOT_SHA_MISMATCH)"
+  ],
+  "liveJobsGateway": {
+    "session-a5g5-team-2026-10-17T11-44-58Z": {
+      "present": false,
+      "hasGateway": false,
+      "hasLease": false
+    }
+  },
+  "leader": null
+}
