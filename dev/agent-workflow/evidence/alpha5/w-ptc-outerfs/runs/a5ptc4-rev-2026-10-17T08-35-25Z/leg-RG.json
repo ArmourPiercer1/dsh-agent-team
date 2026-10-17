@@ -1,0 +1,49 @@
+{
+  "journal": [],
+  "approvals": [],
+  "askedLines": {
+    "__held": "approval/asked for RG"
+  },
+  "probeA": [],
+  "probeB": [],
+  "midHooks": {
+    "count": 7,
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 3,
+        "global": true,
+        "prepend": false
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 6,
+        "global": true,
+        "prepend": false
+      }
+    ]
+  }
+}

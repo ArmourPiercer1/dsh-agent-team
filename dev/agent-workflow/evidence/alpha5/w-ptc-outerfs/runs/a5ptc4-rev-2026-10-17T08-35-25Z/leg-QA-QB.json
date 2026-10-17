@@ -1,0 +1,75 @@
+{
+  "qa": {
+    "at": 1792226278930,
+    "startedAt": 1792226278870,
+    "text": "{\n  \"pid\": 483,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-qa-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}",
+    "raw": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"pid\": 483,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-qa-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+        }
+      ],
+      "value": {
+        "logs": [],
+        "sandbox": {
+          "mode": "danger-full-access",
+          "denied": false
+        },
+        "result": {
+          "pid": 483,
+          "ppid": 38,
+          "echo": "A5PTC4-ECHO:rev-qa-body",
+          "writeCode": "wrote",
+          "canary": "A5PTC4-REV-BODY-RAN"
+        }
+      }
+    }
+  },
+  "qb": {
+    "at": 1792226278894,
+    "startedAt": 1792226278894,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "rowQA": [
+    {
+      "seq": 5,
+      "at": "2026-10-17T08:37:58.870Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T083525Z-QA",
+      "toolName": "run_code",
+      "agent": "session-210319c3-bf69-4449-a4b2-83c39a8954e6",
+      "token": "tA",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:tA reviewer-leg-QA session-A own grant allow in a parallel pair",
+      "decision": "allow",
+      "outcome": "allowed-once"
+    }
+  ],
+  "rowQB": [
+    {
+      "seq": 6,
+      "at": "2026-10-17T08:37:58.894Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T083525Z-QB",
+      "toolName": "run_code",
+      "agent": "session-f93ba520-3e27-4563-a5a2-f9b1830821fb",
+      "token": "tB",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:tB reviewer-leg-QB session-B own grant reject in a parallel pair",
+      "decision": "reject",
+      "outcome": "rejected"
+    }
+  ]
+}

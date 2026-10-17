@@ -1,0 +1,57 @@
+stable-instance :3080 probe (pre) = 401
+PASS P-PIN — host tree pinned @639ed01539 porcelain=0
+     observed: head=639ed0153972 porcelain=true
+PASS P-OS-PREFLIGHT — Landlock launcher present (--probe exit 0)
+     observed: landlock: partially enforced (older ABI)
+PASS L-BOOT — host booted on 3184 (port self-proven free) with token gate
+     observed: cookie=true
+PASS L-CREATE — five sessions created through the public entry (A/B answered, F1/F2/F3 dedicated foreign)
+     observed: A=session-210319c3-b B=session-f93ba520-3
+PASS L-ASSEMBLY — both session assemblies completed (witness tools + guard + per-agent resolver face)
+     observed: labels=["session-210319c3-bf69-4449-a4b2-83c39a8954e6","session-f93ba520-3e27-4563-a5a2-f9b1830821fb"]
+FAIL R1-DELEGATION-ZERO-ANSWER-VERBATIM-DOWNSTREAM — R1 foreign no-token ask: reviewed resolver answered ZERO (journal decision=foreign outcome=pass-through, no outcome row) AND the ask reached the downstream ask-lane VERBATIM (session-log approval/asked carries the same callId+reason; tool call stays PENDING on the human bridge lane — not swallowed, not pre-empted), zero writes
+     observed: journal=[] approvals_N=0 askedLines={"__held":"approval/asked for RF"} probeA_saw=0 (0 = the attached lane holds ahead of a later probe)
+FAIL R2-NEG-WRONG-CALLID-REFUSED-NEVER-GRANTED — R2 negative-control wrong/unknown grant token: resolver answered NOTHING beyond pass-through (decision=unknown outcome=pass-through → host fail-closed semantics; never granted), ask visible downstream verbatim, zero writes
+     observed: journal=[] approvals_N=0 asked=undefined targetWritten=false
+PASS R3-ALLOWED-ONCE-WIDENS-THIS-CALL — R3 positive anchor: grant allow → allowed-once → forbidden target really written this one call (sandbox.mode=danger-full-access for the ONE call)
+     observed: target="A5PTC4-REV-BODY-RAN-227" appRA={"seq":1,"at":"2026-10-17T08:37:57.767Z","face":"plugin-ctx-global-outer","callId":"call-A5PTC4REV20261017T083525Z-RA","toolName":"run_code","agent":"session-210319c3-bf69-4449-a4b2-83c39a8954e6","token":"t-r","reasonHead":"escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-r reviewer-leg-RA first use of an allowed-once grant (session A)","decision":"allow","outcome":"allowed-once"} sandbox={"mode":"danger-full-access","denied":false}
+FAIL R4-NEG-REPLAY-MUST-BE-REFUSED — R4 negative-control replay of an already-consumed allowed-once grant (same token, new callId): REQUIRED refused (grant is one-shot) and zero new writes
+     observed: replayTargetWritten=true journalRP=[{"decision":"duplicate","outcome":"allowed-once","callId":"Z-RP"}] runText={
+  "pid": 285,
+  "ppid": 38,
+  "echo": "A5PTC4-ECHO:rev-replay-body",
+  "writeCode": "wrote",
+  "canary": "A5PTC4-REV-BODY-RAN"
+}
+FAIL R5-NEG-REVOKED-STALE-MUST-BE-REFUSED — R5 negative-control after REVOCATION (grant flipped to reject; expiry stand-in — no TTL exists): a stale re-presentation MUST be refused with zero new writes
+     observed: policyTargetWritten=true journalRC=[{"decision":"duplicate","outcome":"allowed-once"}] runText={
+  "pid": 343,
+  "ppid": 38,
+  "echo": "A5PTC4-ECHO:rev-policy-body",
+  "writeCode": "wrote",
+  "canary": "A5PTC4-REV-BODY-RAN"
+}
+FAIL R6-NEG-FOREIGN-SESSION-MUST-BE-REFUSED — R6 negative-control token granted for session A presented by SESSION B (foreign-team stand-in): REQUIRED refused — the resolver must only adjudicate asks VERIFIABLY owned by its Team/member (host fields agent/callId bound to a Grant), not token-shaped strings in model text
+     observed: xTargetWritten=true widened={"mode":"danger-full-access","denied":false} runText={
+  "pid": 401,
+  "ppid": 38,
+  "echo": "A5PTC4-ECHO:rev-x-body",
+  "writeCode": "wrote",
+  "canary": "A5PTC4-REV-BODY-RAN"
+} t-x-ledger=[{"seq":4,"agent":"session-f93ba520-3e27-45","outcome":"allowed-once"}]
+PASS R7-CONCURRENCY-ISOLATION — R7 two sessions in parallel: tA (A, allow) allowed+wrote, tB (B, reject) refused verbatim+zero writes; distinct callIds; each ask decided only by its own grant; agents match
+     observed: qaWritten=true qbWritten=false rowQA=[{"outcome":"allowed-once","agent":"session-210319c3-bf6","callId":"25Z-QA"}] rowQB=[{"outcome":"rejected","agent":"session-f93ba520-3e2","callId":"25Z-QB"}]
+FAIL R8-GUI-BRIDGE-POSTURE-NO-PREEMPT — R8 foreign ask with late probe + attached approval lane in place: reviewed side answered ZERO; ask PENDING verbatim at the lane (or answered downstream if a human lane were live); zero grants, zero writes, zero answers from our side
+     observed: asked=undefined probeB_saw=0 (0 = attached lane holds ahead of later probe; ask pending, ours silent)
+PASS R9-UNINSTALL-ASYMMETRY-DOCUMENTED — R9 install/uninstall symmetry: probe shows the symmetric shape (count -1 on dispose); reviewed resolver retains NO disposer (its {global,prepend} listener still in census after all legs) — asymmetry recorded as a finding
+     observed: probeB count 7->6; global listeners still present=2; total=6
+PASS R10-ORIGINAL-PERMS-NOT-LOWERED — R10 root acceptance: per-session mode AND approval policy are constant before/after (workspace-write; policy value unchanged — host session-init value, never written by this kit); secret byte-identical; forbidden dir holds ONLY review-controlled target files (each = a recorded decision), nothing uncontrolled
+     observed: A workspace-write/ask->workspace-write/ask B workspace-write/ask->workspace-write/ask secretUnchanged=true forbDir=["rev-a-target.txt","rev-policy-target.txt","rev-qa-target.txt","rev-replay-target.txt","rev-x-target.txt","secret.txt"]
+PASS P-STABLE-UNTOUCHED — :3080 stable untouched (pre=401 post=401); bound only 3184
+     observed: pre=401 post=401
+PASS P-PRISTINE-POST — pinned host tree byte-clean after the run
+     observed: head=639ed0153972
+
+[REVIEW] criteria: 11/17 pass, 6 fail (failures = security findings against the root brief)
+host exited code=0 signal=null
+EXIT=2

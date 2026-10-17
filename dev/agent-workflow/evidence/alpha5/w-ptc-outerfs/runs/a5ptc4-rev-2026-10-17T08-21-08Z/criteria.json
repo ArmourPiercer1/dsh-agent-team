@@ -1,0 +1,20 @@
+{
+  "run": "a5ptc4-rev-2026-10-17T08-21-08Z",
+  "mode": "REVIEW",
+  "launcherSha": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+  "status": "FATAL",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host tree pinned @639ed01539 porcelain=0",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true"
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "Landlock launcher present (--probe exit 0)",
+      "pass": true,
+      "observed": "landlock: partially enforced (older ABI)"
+    }
+  ]
+}
