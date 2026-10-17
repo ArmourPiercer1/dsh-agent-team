@@ -1,0 +1,57 @@
+== L0 environment / candidate census
+PASS L0.1 authoritative probe answers (Landlock ABI) — rows=6
+  · Landlock ABI measured v4 · launcher sha256 e66a8cf77fb74701… (pinned by the assembly double gate)
+  · real server #1: Ubuntu clangd version 18.1.3 (1ubuntu1)
+  · real server #2: typescript tsserver 6.0.3 (/srv/workspace/dsh-plugins/dsh-agent-team/node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/lib/tsserver.js) on node v24.21.0
+  · 3182-family connect-probe (no bind by this lane): 3182=IDLE 3183=IDLE 3184=IDLE 3185=IDLE 3186=IDLE
+PASS L0.2 lane port 3182 idle (nothing bound by this lane) — 3183=IDLE belongs to another lane and was not touched
+== L1 clangd real initialize handshake (confined streaming, production assembly)
+  · journal realm-assembled clangd-member strict pid=41
+PASS L1.1 ensure(strict) assembled a real clangd realm — pid=41
+  · serverInfo: {"name":"clangd","version":"Ubuntu clangd version 18.1.3 (1ubuntu1) linux+grpc x86_64-pc-linux-gnu"}
+  · capability keys (31): astProvider,callHierarchyProvider,clangdInlayHintsProvider,codeActionProvider,compilationDatabase,completionProvider,declarationProvider,definitionProvider,documentFormattingProvider,documentHighlightProvider,documentLinkProvider,documentOnTypeFormattingProvider…
+PASS L1.2 REAL capabilities JSON from the real server (not a stub) — definitionProvider=true executeCommand=["clangd.applyFix","clangd.applyTweak"]
+PASS L1.3 hot re-ensure returns the SAME real instance (no second process) — pid=41
+== L2 clangd real semantic requests
+PASS L2.1 clangd definition on a project symbol returns its REAL location — {"end":{"character":18,"line":3},"start":{"character":4,"line":3}}
+PASS L2.2 clangd completion returns REAL items (non-empty result list) — 0:5=>0 10:16=>1
+PASS L2.3 the completion list contains a symbol of the project under analysis — [" the_result"]
+== L3 policy effect measured through the real server (strict generation)
+FAIL L3.1 strict generation: the header outside the grant stays UNRESOLVED to the real server — {"via":"textDocument/definition","range":{"end":{"character":33,"line":9},"start":{"character":20,"line":9}},"uri":"file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-real-lsp/tests/homes/a5reallsp-kit-2026-10-17T10-44-53-159Z/ws/clangd-member-strict/main.c"}
+PASS L3.2 the real server itself reports the unreadable include (diagnostic) — clangd publishDiagnostics mentions hidden.h
+PASS L3.3 same instance still answers the GRANTED file (confined, not broken)
+== L4 policyChange strict -> open (destroy + rebuild, real handshake again)
+  · journal policy-change-begin clangd-member
+  · journal realm-disposed clangd-member strict lastPid=41
+  · journal realm-assembled clangd-member open pid=67
+  · journal policy-change-complete clangd-member
+PASS L4.1 policyChange rebuilt a NEW instance — pid=67
+PASS L4.2 NEW pid differs — old=41 new=67
+PASS L4.3 OLD pid OS-gone (bounded, /proc-probed)
+PASS L4.4 NEW instance completed a REAL handshake — {"name":"clangd","version":"Ubuntu clangd version 18.1.3 (1ubuntu1) linux+grpc x86_64-pc-linux-gnu"}
+FAIL L4.5 after the policy change the SAME request resolves (REAL effect) — {"via":"textDocument/definition","range":{"end":{"character":33,"line":9},"start":{"character":20,"line":9}},"uri":"file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-real-lsp/tests/homes/a5reallsp-kit-2026-10-17T10-44-53-159Z/ws/clangd-member-open/main.c"}
+== L5 cross-member dual real servers (clangd + tsserver)
+  · journal realm-assembled ts-member strict pid=82
+PASS L5.1 tsserver realm assembled (same production assembly) — pid=82
+PASS L5.2 tsserver handshake REAL (its own stdio JSON face answers) — version=6.0.3 config=tsconfig found
+PASS L5.3 two live servers, two DISTINCT pids — clangd=67 tsserver=82
+PASS L5.4 tsserver REAL semantic answers (definition + completion) — def@line=1 completions=1042
+  · journal policy-change-begin clangd-member
+  · journal realm-disposed clangd-member open lastPid=67
+  · journal realm-assembled clangd-member strict2 pid=111
+  · journal policy-change-complete clangd-member
+PASS L5.5 rebuilding the clangd member never touches the tsserver member — ts pid stayed 82
+PASS L5.6 the untouched member still answers afterwards
+== L6 real LSP shutdown/exit + OS-side confirmation
+PASS L6.1 clangd answered `shutdown` — null
+PASS L6.2 the process exited on its own after the LSP `exit` notification — {"code":0,"signal":""}
+PASS L6.3 OS-side: the pid is gone — pid=111
+  · journal realm-disposed clangd-member strict2 lastPid=111
+FAIL L6.4 the lease still settles through the provider (terminated)
+== L7 teardown
+  · journal realm-disposed ts-member strict lastPid=82
+PASS L7.1 disposeAll ok and registry empty — [{"memberId":"ts-member","generation":"strict","lastPid":82}]
+PASS L7.2 the tsserver pid is OS-gone too
+PASS L7.3 zero-residue /proc scan (no clangd / tsserver / world path left) — []
+
+REAL-LSP KIT: 26/29 PASS

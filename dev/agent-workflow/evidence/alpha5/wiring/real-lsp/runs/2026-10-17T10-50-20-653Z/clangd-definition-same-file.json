@@ -1,0 +1,19 @@
+{
+  "request": {
+    "line": 8,
+    "character": 21
+  },
+  "result": {
+    "range": {
+      "end": {
+        "character": 18,
+        "line": 3
+      },
+      "start": {
+        "character": 4,
+        "line": 3
+      }
+    },
+    "uri": "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-real-lsp/tests/homes/a5reallsp-kit-2026-10-17T10-50-20-653Z/ws/clangd-member-strict/main.c"
+  }
+}
