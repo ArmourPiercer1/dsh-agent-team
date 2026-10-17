@@ -35,3 +35,13 @@
 **结论（准备轮原文保留 + W8 正式轮更新）**：准备轮五行曾全停 `PREPARED-NOT-RUN-READY`（锚点=0）。W8 正式轮：装配面已随 W4/W5/W7 kit 合并 master 在场（锚点契约改 ASSEMBLY_FACES 装配面表 + 行形匹配，F-2），五行经真跑 kit（端口 3186、世界 a5w8-* 即删、宿主 @639ed01539）+ 如实 receipt 全部转 **TRANSITIONED-PROBE-GATED**——IF-7 达成（无行停 REQUIRES-LIVE/NOT-RUN-READY），**0 行 LIVE 是断言集对照装配面的如实结果**（缺的是 editor/read_image/PTC-pipeline/lsp-pool/Domain-mock 工具族行，非装配面本身）。转 LIVE 通道=补齐各行 missing_legs 所列腿的装配 row + receipt 闭环；`PASS` 仍在转态词表外（双代码位封死 + F-1/F-2 亲验位）。C-06 的 OS 真实拒绝负控腿与 C-09 的 absent-anchor 复测已由本轮闭合；C-04/C-05/C-07/C-08 其余缺口继续在册。
 
 — writer=alpha5-wire-pr8prep（准备轮）+ alpha5-wire-pr8 W8 正式轮（均 qwen3.8-flash-next；模型/harness 分列）；本表只读对照+本目录新增，零共用文件触碰（kit 的 --world-prefix/--port 附加旗标为默认不变的行为兼容项，已在 README 披露）。
+
+## 3. W-E2 回合附录（alpha5-wire-tools2 @master aece4f21，2026-10-17；append-only，不改上文 W8 实录）
+
+| 差距行 | W-E2 后状态 | 证据 |
+|---|---|---|
+| C-08（M-13 Domain） | **mock 联锁三腿闭合**：Domain mock（CAS/模拟设备联锁，矩阵在册『待建』口径）由 W-E2 kit 建成（row-local MOCK）并真跑——veto_matrix 双向不覆盖 / veto_side_effects=0（字节级：动作台账恰 1 行+被拒设备 version 不动）/ unresolved-domain-reference fail-closed 负控 + ungated 红对照（红且仅红 Team 门控腿 22/28）⇒ 矩阵 M-13 行级转态提案值=**TRANSITIONED-LIVE**（终裁归 PR8 正式轮+独立 reviewer）。余项=生产 compile-plane（不变） | wiring/we2/（README+WE2-RED-UNGATED/WE2-GATED-GREEN+runs/）；probes/runs/w-e2-post-M-13.log（exit=0 LIVE）；receipts/M-13.receipt.json；runner runs/matrix-run-2026-10-17T04-04-52-880Z.log（PASS=27 FAIL=0 LIVE=1 PROBE-GATED=4） |
+| C-04（M-04 editor） | 判据腿仍缺（行保持 PROBE-GATED），差距事实改**实测式**：真实会话两面量得——gated 面宿主原生 read/edit 在调用边被活 guard typed 拒（『definition unreadable at the public seam』逐字，=W7 披露 Definition-seam 缺口的 editor 侧现测）；ungated 面对照 read→edit 真实文件编辑往返成功且治理观测增量=0（真实编辑字节在 Team 面外） | wiring/we2/runs/gated-2026-10-17T04-01-07Z/native-legs.json + transcript-union.json；runs/ungated-2026-10-17T04-01-00Z/ 同型；receipts/M-04.receipt.json（W-E2 版）；probes/runs/w-e2-post-M-04.log（仍 PROBE-GATED） |
+| C-05（M-05 read_image） | 同上（行保持 PROBE-GATED）；**A4 经 runtime 读回闭环**（装配 journal 实读 ARBITRARY_TREE_PROFILE_PUBLISHED=false）；真实读图往返（70B PNG 解码呈报进 transcript）只在宿主原生面成立且治理观测=0，gated 面调用边拒逐字在册 | receipts/M-05.receipt.json（W-E2 版）；wiring/we2/runs/gated-…/live-journal.json；probes/runs/w-e2-post-M-05.log（A4 SATISFIED，A1-A3 NOT-EXECUTED） |
+
+W-E2 任务书口径披露：任务书 ② 写作『M-05 mock 腿』，实际 mock CAS/联锁腿在册于 **M-13** 行（M-05 为 read_image）；W-E2 按矩阵在册行执行（mock 腿计入 M-13），M-05 侧只如实 book runtime 读回与 native 面测量，不改册不挪用。editor/read_image 在 Team 任何包无实现 ⇒ 按任务书不发明生产代码路线=差距事实+最小复现（probe 脚本+we2 kit）在册。

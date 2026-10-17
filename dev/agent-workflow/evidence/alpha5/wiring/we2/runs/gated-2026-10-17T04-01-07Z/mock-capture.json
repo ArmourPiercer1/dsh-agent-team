@@ -1,0 +1,206 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-9rtu9aio",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/main",
+            "op": "spin",
+            "expected_version": 0
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-o9te5dcz",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/main",
+            "op": "spin",
+            "expected_version": 0
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-eh3smjqr",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/aux",
+            "op": "spin",
+            "expected_version": 0
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-71wibxc2",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/belt",
+            "op": "spin",
+            "expected_version": 0
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-a63ajr1d",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/main",
+            "op": "spin",
+            "expected_version": 999
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-9lbzfj9r",
+          "name": "a5e2_domain_act",
+          "arguments": {
+            "device": "a5e2.device/ghost",
+            "op": "spin",
+            "expected_version": 0
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-yjk3c7t3",
+          "name": "a5e2_unbound_probe",
+          "arguments": {}
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "text",
+      "content": "A5E2_GATED_20261017T040107Z_CHAIN_DONE"
+    },
+    "status": 200
+  },
+  {
+    "seq": 9,
+    "reply": {
+      "kind": "text",
+      "content": "a5e2-mock: unscripted request, completing quietly."
+    },
+    "status": 200
+  },
+  {
+    "seq": 10,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-re0pfj5r",
+          "name": "read",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T04-01-07Z/workspace/repo/doc.txt"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 11,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-7pz2n0ud",
+          "name": "edit",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T04-01-07Z/workspace/repo/doc.txt",
+            "old_string": "before-edit-line",
+            "new_string": "after-edit-line-2026-10-17T04-01-07Z"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 12,
+    "reply": {
+      "kind": "text",
+      "content": "A5E2_GATED_20261017T040107Z_EDIT_DONE"
+    },
+    "status": 200
+  },
+  {
+    "seq": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-t64vzmry",
+          "name": "read_image",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T04-01-07Z/workspace/repo/shot.png"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 14,
+    "reply": {
+      "kind": "text",
+      "content": "A5E2_GATED_20261017T040107Z_IMG_DONE"
+    },
+    "status": 200
+  }
+]

@@ -14,13 +14,17 @@ export default defineConfig({
     // G-d integration wiring round (branch `alpha5-int-wiring`): the two
     // Alpha.5 lane suites with shared-surface stakes join the CI-collectable
     // set (INTEGRATION-PLAN default ruling "加 include 以进 CI 门").
-    // controlled-fs runs its own lane suite here too; the a5p5-tools lane
-    // stays on its own runner this round (its dormant-audit walks the SHARED
-    // config set and must not see its lane named in root glue until the
-    // PR5-assembly round wires it — registered in WIRING-SURFACE.md §line-7).
+    // controlled-fs runs its own lane suite here too. The a5p5-tools lane
+    // joined in the GLUE-2 round (gap C-11, coordinator queue; SAME round as
+    // its tsconfig.build compile face and the dormant-audit release — the
+    // three moves were disclosed as must-be-together in WIRING-SURFACE.md,
+    // and this file is outside the packages/ scan universe of that audit, so
+    // THIS comment is the disclosure): root CI now collects its six suites;
+    // the lane's own runner stays valid for lane-local work.
     include: [
       'packages/*/test/**/*.test.ts',
       'packages/runtime/controlled-fs/test/**/*.test.ts',
+      'packages/tools/a5p5-tools/test/**/*.test.ts',
     ],
     // EVIDENCE-ONLY file (PR #31 supplemental S3, evidence-only commit
     // 833c699): the s3-client-generation-spike drives the pristine

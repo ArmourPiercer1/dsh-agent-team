@@ -55,7 +55,22 @@ function* walk(dir: string): Generator<string> {
  * pins every lane-naming line to the bare quoted-path form, so an edge cannot
  * hide in it), and dormancy of the SHIPPED face is unchanged.
  */
-const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts']
+/**
+ * Third entry (GLUE-2 round, gap C-11, coordinator queue — THIS is the
+ * header's "enters review as its own change" moment, and the reviewed
+ * integration it names is REAL and SAME-ROUND: root vitest collection and
+ * the compile face landed together, per the WIRING-SURFACE disclosure that
+ * the moves may not be split). `packages/tools/tsconfig.build.json` now
+ * carries one bare include entry naming the lane's src directory — the
+ * production COMPILE FACE (emit), not an import and not a barrel entry;
+ * the leg below pins that form: every lane-naming line in that file is
+ * the quoted include string and nothing else. The SHIPPED face this audit
+ * guards is UNCHANGED: the barrel still does not know the lane (its own
+ * leg, untouched), no outside file imports the lane, and the emitted
+ * `dist` — a derived mirror of files this walk already reads — stays
+ * outside the walk by the header's own rule.
+ */
+const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json']
 
 describe('a5p5-dormant-audit', () => {
   it('no shipped source outside the lane references a5p5-tools', () => {
@@ -92,6 +107,24 @@ describe('a5p5-dormant-audit', () => {
       expect(line.trim(), line.trim()).toMatch(/^'tools\/a5p5-tools\/[^']+',$/)
     }
     expect(namedLines).toBe(6) // exactly the six registered src consumers — if the pin drifts, this trips
+  })
+
+  it('the tools build tsconfig names the lane ONLY as the bare compile-face include, never as an edge', () => {
+    // GLUE-2 release leg (see the exception list above for the moment):
+    // the form IS the contract — one quoted directory include inside the
+    // build `include` array, and EXACTLY one such line. A second entry, a
+    // file-level include, or any prose wearing a path trips this pin; so
+    // does any attempt to smuggle an import-shaped string into a JSONC
+    // comment line that names the lane beyond the pinned entry (comments
+    // may say "a5p5" but never carry the `a5p5-tools` path shape twice).
+    const tsc = readFileSync(join(packagesRoot, 'tools', 'tsconfig.build.json'), 'utf8')
+    let namedLines = 0
+    for (const line of tsc.split('\n')) {
+      if (!line.includes('a5p5-tools')) continue
+      namedLines += 1
+      expect(line.trim(), line.trim()).toMatch(/^"a5p5-tools\/src",?$/)
+    }
+    expect(namedLines).toBe(1) // exactly the one compile-face include entry
   })
 
   it('the shared tools barrel still does not know the lane (explicit leg)', () => {

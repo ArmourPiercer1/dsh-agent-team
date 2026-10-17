@@ -5,6 +5,15 @@
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    // GLUE-2 (gap C-11, coordinator queue): the a5p5 Search/Shell lane joins
+    // the PRODUCTION COMPILE FACE. Emit only — this line creates no import
+    // edge and no barrel entry (the shared `src/index.ts` still does not
+    // know the lane; the dormant-audit pins that leg unchanged, and its
+    // walk skips `dist`, so the emitted declarations never count as naming).
+    // The lane src is import-self-contained (only `.` and `node:` — verified
+    // this round). The kit switches from its lane-local ESM build to this
+    // dist as the lane's own follow-up (queue note).
+    "a5p5-tools/src"
   ]
 }

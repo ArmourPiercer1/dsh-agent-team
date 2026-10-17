@@ -1,0 +1,25 @@
+{
+  "pids": {
+    "A": {
+      "pid": 128,
+      "opens": 1
+    },
+    "B": {
+      "pid": 187,
+      "opens": 1
+    }
+  },
+  "hotPid": "128",
+  "labels": {
+    "A": "session-797d5643-afe8-460c-b6bc-84000a80acf0",
+    "B": "session-90dc5458-7512-4a55-a7a3-e62318c82c66"
+  },
+  "dispose": {
+    "ok": true,
+    "disposeMs": 6
+  },
+  "after": {
+    "ok": true,
+    "text": "{\"kind\":\"hover\",\"hover\":{\"contents\":\"A5PTCAUDIT pid=187 opens=2\"}}"
+  }
+}

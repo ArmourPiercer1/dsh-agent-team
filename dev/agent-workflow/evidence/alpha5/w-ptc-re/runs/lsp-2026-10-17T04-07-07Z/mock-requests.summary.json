@@ -1,0 +1,484 @@
+[
+  {
+    "seq": 1,
+    "markers": [
+      "SET"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  },
+  {
+    "seq": 2,
+    "markers": [
+      "SET"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  },
+  {
+    "seq": 3,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  },
+  {
+    "seq": 4,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  },
+  {
+    "seq": 5,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  },
+  {
+    "seq": 6,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 7,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 8,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 9,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 10,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 11,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 12,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 13,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 14,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 15,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 16,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 17,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 18,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 19,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 20,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 21,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 22,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 23,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 24,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 25,
+    "markers": [
+      "SET",
+      "A5PTCRUNA_",
+      "tool_result"
+    ],
+    "toolNames": [],
+    "toolResultErrors": [
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t",
+      "Error: source \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck/tests/homes/a5ptc-lsp-2026-10-17T04-07-07Z/ws/a.a5ptc\" resolves outside t"
+    ]
+  },
+  {
+    "seq": 26,
+    "markers": [
+      "SET",
+      "A5PTCRUNB_"
+    ],
+    "toolNames": [],
+    "toolResultErrors": []
+  }
+]

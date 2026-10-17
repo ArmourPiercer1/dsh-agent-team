@@ -1,0 +1,29 @@
+{
+  "round": "W-PTC-RE（continuable-腿纯装配真跑，branch alpha5-ptc-recheck，one-off worktree）",
+  "run_utc": "2026-10-17T04:12Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3184,
+  "world_prefix": "a5ptc-ptc-*（tests/homes 下，teardown 删除；:3080 稳定实例全程未动）",
+  "row": "M-08 run_code (PTC)",
+  "caliber": "LIVE-kit 观测；本 receipt 只 book 我的真跑观测（NOT-EXECUTED ⇒ 不 book，缺项如实点名）。fixture 语义不升格：装配行 = 证据层（a5ptc-row.mjs，profile-patch 公开缝装载），零生产行装载。",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/ptc-2026-10-17T04-12-17Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/ptc-2026-10-17T04-12-17Z/ptc-state.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/ptc-2026-10-17T04-29-42Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/ptc-2026-10-17T04-29-42Z/mode-scope-evidence.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/a5ptc-row.mjs"
+  ],
+  "execution": {
+    "outer_real_process": true,
+    "inner_reentry_same_pipeline": true
+  },
+  "execution_note": "外层=host 自带 NodePtcRuntime（row 只装配 presentAs('ptc') + scoped defineTool 见证工具 + guard，不造运行时；runtimeCensus hasPtcRuntime=true）真跑 run_code：程序自报 OS pid=101 ≠ host pid=38，且两个内层调用经 stdio 控制管道往返复入同一调度管线（guard 见证 exec.parent!==undefined、inner callId 形如 <root>:ptc:N、rootCallId==外层 callId、seq 有序）；A5PTC-ECHO:inner-1 程序侧回读。/proc 观察面局限如实：kit 的 /proc 采样最终轮为空数组（观察面受限，不作依据）。策略口径披露=测试世界经公开 setSandboxMode 切 danger-full-access（本环境无可用 bwrap/Landlock 后端，host typed 错误自述该开关为处方）；作用域核验节=README.md §5（写面仅 session.append(\"sandbox/mode\") 事件、世界内 zstd 会话日志、pre/post resolve 亲读 workspace-write→danger-full-access、部署默认 7 轮全新启动恒 workspace-write、~/.dsh sandbox/mode 命中=0、teardown 删世界）；OS 强制面不在本腿（=A2/W4 域，另行在册）。",
+  "transport_same_name_both_sides_throw": true,
+  "transport_note": "保留传输双侧 throw 在装配面复现（4 侧普查全 throw + reservedName）：root ctx.tools.register / agent-scope tools.register ⇒ 'tool name \"run_code\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed'；agent-scope tools.restrict deny-list 与 allow-list 两侧 ⇒ 'tools.restrict() cannot name reserved PTC mode presentation transport \"run_code\"; restrict end-capability tools instead'。",
+  "guard_typed_denial_note": "装配级负控（非 A2 OS 面）：guard 命中 ⇒ 程序侧捕获类型化拒绝消息（含 kit run 标记），工具体未执行（A5PTC-PROBE-BODY-RAN 缺席）。",
+  "not_observed": [
+    "per_call_policy_denials[os_level_observed=true] —— 本 kit 不装 OS 强制面（A2 = W4 kit 域，W8 正式轮已在册：probes/runs/w8-w4-*）",
+    "negative_controls[IO_POLICY_UNSUPPORTED, spawn_count=0] —— 同上（A3 = W4 kit 域，W8 已在册）"
+  ],
+  "merge_note_for_coordinator": "本 receipt（A1+A4）与 W8 正式轮 M-08 receipt（A2+A3）合并 ⇒ A1–A4 全 SATISFIED，行级转态提案值=LIVE（终裁归 PR8 正式轮 + 独立 reviewer；probe 词表由协调者走）。"
+}

@@ -1,0 +1,141 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_UNGATED_20261017T044817Z_SET_OK"
+    },
+    "status": 200
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_UNGATED_20261017T044817Z_SET_OK"
+    },
+    "status": 200
+  },
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-xwztrhhx",
+          "name": "a5w5_search",
+          "arguments": {
+            "pattern": "A5W5TOK-17971d053988",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5w5-ungated-2026-10-17T04-48-17Z/repo",
+            "output_mode": "content"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-aer0of9f",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "printf 'alpha\\nbeta\\n'",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5w5-ungated-2026-10-17T04-48-17Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-lbf3ldhu",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "echo out; echo err >&2; exit 3",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5w5-ungated-2026-10-17T04-48-17Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-fuhofrzo",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "seq 1 4000",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5w5-ungated-2026-10-17T04-48-17Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-od2ian0i",
+          "name": "a5w5_search",
+          "arguments": {
+            "pattern": "OUTSIDE",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5w5-ungated-2026-10-17T04-48-17Z/outside",
+            "output_mode": "content"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-ptfbg7w4",
+          "name": "a5w5_unbound_probe",
+          "arguments": {}
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 9,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-s8flihub",
+          "name": "a5w5_unbound_probe",
+          "arguments": {}
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 10,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_UNGATED_20261017T044817Z_DONE search · content · 2 matches > /srv/work | bash · exit=0 > alpha > beta > a5p5-meta | bash · exit=3 > out > stderr: > err > a5 | bash · exit=0 > 1 > 2 > 3 > 4 > 5 > 6 >  | search · content · 1 matches > /srv/work | A5W5-PROBE-BODY-RAN"
+    },
+    "status": 200
+  }
+]
