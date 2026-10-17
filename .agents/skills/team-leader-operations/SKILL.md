@@ -247,6 +247,59 @@ unexpected errors surface as tool errors.
   best-effort liveness for NEW requests; the durable request + the pending
   list are the recovery path (notifications are not replayed after a
   restart).
+- Reading a definition-change cancellation as a guaranteed stop or a rollback: cancellation of
+  unexecuted calls, an abort REQUEST for started calls, and the three-way outcome classification
+  are different facts — see §8 (and do not read §8's guarantees into the G-g silent-subscription
+  configuration or the D-1 deferred strict property).
+
+## 8. Cancellation semantics when a tool definition changes or is withdrawn
+
+User ruling 2026-10-16 17:52Z (PENDING-GATES G-a; recorded after the fact — it is NOT to be read
+back into the 17:02 merge). As Leader you need exactly four facts to reason about an in-flight
+delegation whose underlying tool definition drifts or is withdrawn:
+
+1. **Trigger and affected set (exact scope).** A definition change/withdrawal for a governed
+   `(scope, name)` cancels the *unexecuted* calls associated with THAT name and propagates an
+   abort REQUEST to the *already-started* calls associated with the same name. Nothing else is
+   touched: neighbouring tools keep executing (measured: only the drifted name is named —
+   `RW-ISOLATION-NEIGHBOUR-TOOL`). A whole-generation MCP withdrawal + re-bind follows the same
+   rule: in-flight unexecuted calls are cancelled, the name is withdrawn until re-bind
+   (`RW-MCP-RESYNC-CANCELS-AND-REBIND-RESTORES`).
+
+2. **Cancellation is not termination.** Unexecuted calls are cancelled at the dispatch door
+   (canonical code `ABORTED_BEFORE_DISPATCH`). Calls whose Body has already started receive an
+   abort REQUEST — if it lands, that is a TERMINATION (`ABORTED`, `terminated=1`;
+   `RW-ABORT-INSIDE-BODY-IS-TERMINATION`), and the ruling does NOT promise immediate termination.
+   On the pinned Host a caller-side cancellation raised while a Body is in flight is not visible
+   at the result edge of a direct execute() call (measured without any lane); the implementation
+   distinguishes the two canonical codes the Host does emit and does not claim a cancellation it
+   cannot observe.
+
+3. **No rollback.** Side effects of already-started calls are NEVER rolled back. Every affected
+   call reports in the closed three-way outcome classification — **not executed** / **executed,
+   possibly with side effects (original value preserved)** / **termination unconfirmed**
+   (`EXECUTION_TERMINATION_UNCONFIRMED` stays its own class: never folded into "not executed"
+   nor into "executed"). Treat an unconfirmed-termination result as an open question about the
+   external world, not as a clean cancel.
+
+4. **Plugin/provider unload is a different operation — three distinctions.**
+   (a) Provider unload does NOT auto-kill the whole team — that is an explicit boundary of the
+   ruling; team work continues under the remaining governed definitions.
+   (b) Unload/teardown is ORDERED and ledger-clean: in-flight calls are drained via ordered
+   teardown to `RELEASED` with an empty ledger (`RW-TEARDOWN-NO-LEAK`), not by mass abort.
+   (c) When the change-notification channel cannot be subscribed at all (missing `on` / subscribe
+   throws), assembly itself is refused pre-spawn with a typed refusal (`IO_POLICY_UNSUPPORTED`) —
+   the system refuses to mount a weak configuration rather than pretending drift is inert.
+
+Do not read these guarantees into the silent-subscription configuration (channel subscribed but
+never delivering): that configuration's support-matrix position is NOT closed (gate G-g; alarm +
+name-level withdrawal only, in-flight calls unaffected — `RW-CHANGE-INERT-LOUD`). And do not
+claim the strict "cancel only un-executed calls" property: `NO-ABORT-AFTER-BODY-START` is
+DEFERRED (gate D-1) — today an abort request IS propagated to started calls (see point 2), and
+restoring the strict property requires a publicly trustworthy body-start check plus its own
+regression legs first. This deferral is a project-internal registration only: no request has
+been filed with the Host upstream or anyone outside this repo, and filing one is a separate
+future action requiring explicit user authorization.
 
 ---
 
