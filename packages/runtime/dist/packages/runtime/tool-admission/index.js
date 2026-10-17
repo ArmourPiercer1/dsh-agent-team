@@ -37,5 +37,9 @@ export { classifyClock, requireFiniteClock } from './clock.js';
 export { createStubAssuranceProbe, verifyAssuranceForHardProfile, } from './assurance-runtime.js';
 export { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, toolAskApprovalCaseId, verifyEffectSetApproval, } from './approval-case.js';
 export { createGrantLedger, mintOperationGrant, } from './grant-mint.js';
-export { createAdmissionKernel, grantIdForCall, } from './admission-kernel.js';
+export { createAdmissionKernel, 
+// PR2/PR3 production-assembly round: the production entry class + the
+// template-policy → PR0 projection it derives from (contract: evidence
+// `alpha5/prod/pa-CONTRACT.md`).
+createProductionAdmissionAssembly, deriveTeamPolicyAuthority, grantIdForCall, } from './admission-kernel.js';
 //# sourceMappingURL=index.js.map

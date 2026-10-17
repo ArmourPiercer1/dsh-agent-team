@@ -1,0 +1,41 @@
+{
+  "round": "W-PTC-C2 composed-chain (alpha5-ptc-chain)",
+  "run_utc": "2026-10-17T05:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, shared built tree read-only reuse, porcelain 0 pre/post)",
+  "port": 3184,
+  "world": "tests/homes/a5ptc2-compose-2026-10-17T05-07-10Z (deleted at teardown)",
+  "chain": "COMPOSED-LIVE (06:53Z 口径收窄：仅内层 per-call 载荷执行边 LIVE-observed；外层直接 fs/net 边不在本 receipt 观测面内，见 post_adjudication_0653z) — ONE chain, ONE session, ONE run_code turn: outer run_code = REAL separate OS process (host's own NodePtcRuntime; /proc-sampled ptc-runtime-node child pid=110) → inner tool calls re-enter the SAME ToolRuntime pipeline guarded with rootCallId=outer.callId → the INNER EXECUTION EDGE spawns through the Lane C confined provider (dist public barrel → createConfinedProcessProvider → counting-spy deps → TRACKED landlock pre-launcher, sha256 cee10ed55f12123f… pinned by the runner; real Landlock ABI v4). The four inner-edge probe clauses below (A1–A4) are booked from THIS same chain — not merged from separate receipts (04:57Z root caliber honored: the W-PTC-RE danger-full-access pipeline legs and the W4 kit provider legs are NOT glued; the composed chain replaces the merge claim). The outer-edge clause A5 (外层直接 fs/net OS 级拒绝负控, added 06:53Z per plan caliber) is NOT booked here.",
+  "caliber": "LIVE composed-chain observations only, and after the 06:53Z root caliber these LIVE observations cover ONLY the inner per-call payload execution edge (内层 per-call 载荷执行边) — never the outer program's direct fs/net plane; every clause cites the same run's evidence. PTC-runtime's own sandbox mode was switched per-session via the public setSandboxMode to danger-full-access (test-world parameter, host-typed-error-prescribed; asserts NO OS caliber) — the OS-enforcement plane of THIS chain is the provider's Landlock launcher, evidenced independently by the ABI v4 probe + ENFORCE-CONFIRMED legs INSIDE the same run.",
+  "row": "M-08 run_code (PTC)",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/composed-state.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/assembly-ledger.jsonl",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/GREEN-console.log"
+  ],
+  "execution": {
+    "outer_real_process": true,
+    "inner_reentry_same_pipeline": true
+  },
+  "execution_note": "outer: /proc sampling during the run saw the ptc-runtime-node bootstrap child (pid=110, ppid=host 39). inner: guard rows seq 2..5 = 3×a5ptc2_confined_exec + 1×a5ptc2_probe_spawn, all exec.parent present, all rootCallId == outer run_code callId (call-yy0ajd9q), dispatched in order. THE COMPOSED POINT: the inner tools' real process spawns ran through the Lane C provider — spy byKind={confined-exec:2}; per-call receipts pid:118:plan-mvbxq0p6-megxht (rc=0) / pid:120… (rc=1) flew back through the PTC control pipe into the program result (C2-CHAIN-POS-RECEIPT-FLIGHT).",
+  "per_call_policy_denials": [
+    {
+      "os_level_observed": true,
+      "observation": "COMPOSED: INSIDE the PTC pipeline (inner call seq=3, rootCallId=outer), mode 'deny' ran the SAME confined policy over the private fixture: real confined spawn (ceDelta=1, pid=120), OS plane refused the payload itself rc=1 'Permission denied' (EACCES), secretLeaked=false. Provider legs in the same run: abiVersion=4, selective/denyall=ENFORCE-CONFIRMED, badhandled=DEMO-CONFIRMED (false-negative discriminator present); hardDimensions ['content-read','write'] enforced via verifyHardProfileEvidence on every accepted spawn; capability rows content-read:enforced, write:enforced."
+    }
+  ],
+  "negative_controls": [
+    {
+      "error": "IO_POLICY_UNSUPPORTED",
+      "spawn_count": 0,
+      "observation": "COMPOSED: INSIDE the PTC pipeline (inner call seq=4), mode 'net-deny' was refused BEFORE launch: code IO_POLICY_UNSUPPORTED stage=provider-refused message-verbatim-in-composed-state; per-call counting-spy delta EXACTLY 0 (runs +0, confined-exec +0); zero new plans/out paths in the call window. Guard-denial canary on the SAME chain (inner seq=5, a5ptc2_probe_spawn): guard returned the typed deny reason before the body, the program caught '<run>-C2-GUARD-DENY…', the body marker C2-PROBE-SPAWN-RAN is absent from state/tool-results/transcript/ledger, and the WHOLE-turn confined-exec total stayed 2 (pos+deny only; guard-side ceSnapshot at the probe = 2)."
+    }
+  ],
+  "transport_same_name_both_sides_throw": true,
+  "transport_note": "root tools.register AND agent-scope tools.register AND scope restrict{deny} AND scope restrict{allow} all threw the reserved-transport typed errors naming run_code (4-side census verbatim in composed-state.json throwCensus).",
+  "not_observed": [
+    "outer_direct_io_os_denial — 外层程序直接 fs/net（不经任何注册工具）的 OS 级拒绝负控：字段缺位=如实登记该观测腿在本装配面不存在。W-PTC-OUTER 轮（runs/outer-2026-10-17T06-34-21Z，27/27+8INFO exit=0，独立 reviewer PASS 06c3b502）实测：真 Landlock 域（ABI v4）下 fs 写禁区=真阻止 EACCES+不创建、spawn 子进程继承域亦拒；net.connect 真域腿直通（1 conn/62B 实收）=无任何 OS 机制覆盖，登记为缺口绝不记为防护；公开 seam 无法注入 per-call Grant 到外层 bootstrap（四处 typed throw + ctx.set 拒，legA-state.json throwCensus 逐字）。"
+  ],
+  "post_adjudication_0653z": "行级 current_status=PROBE-GATED（W-PTC-ROWFIX #290，06:53Z root 口径）。精确局部阻塞（逐字）：外层进程的可信文件域只能整程序级（mode 粒度）给定，公开 seam 无法把 per-call Grant 注入外层 bootstrap；网络效果无任何 OS 机制覆盖。本 receipt 的内层证据（execution/per_call_policy_denials/negative_controls/transport_*）原样保留且在其收窄口径内成立=仅内层 per-call 载荷执行边 LIVE-observed；不构成外层防护证据（S0-SELECTION-MATRIX.md:55 禁止路径『以「内层 guard 通过」替代外层防护』）。整行保留 LIVE 默认姿态 typed 拒（workspace-write fail-closed，typed sandbox-unavailable 逐字）证据：w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/legA-state.json + pr290-comment.md §1。",
+  "prior_rounds_note": "Supersedes-for-THIS-ROW the two-legs-merged proposal: the W8-W4 receipt (A2/A3 booked beside the PTC pipeline) is preserved at receipts/M-08.receipt.w8-w4-legacy.json; the W-PTC-RE receipt booked A1/A4 on the danger-full-access pipeline WITHOUT OS enforcement. Neither pairing alone evidenced the matrix criterion (per-call policy injection OS-rejection negative control for run_code) — THIS composed-chain receipt does, for the INNER per-call payload execution edge only (06:53Z narrowing); the plan-caliber criterion additionally includes the outer direct fs/net leg (S0:55), which no receipt in-tree books — hence row status PROBE-GATED with precise local blocker, not LIVE."
+}

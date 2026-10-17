@@ -1,0 +1,42 @@
+{
+  "when": "pre",
+  "collectedAt": "2026-10-17T06:34:21.721Z",
+  "covers": "TESTUSE-WINDOW-AUDIT retest item for the ptc-chain canonical round @05:08:09 (same build identity, re-measured inside this run)",
+  "testUsePath": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use",
+  "testUseHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "testUseBranch": "HEAD",
+  "testUsePorcelainLines": 0,
+  "testUsePorcelainRaw": "",
+  "pinFromTestsPaths": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pinMatchesHead": true,
+  "clientCommitHashEnv": "639ed01539",
+  "launcher": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "sha256": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+    "bytes": 17587
+  },
+  "childEntry": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+    "sha256": "1a5631d2a92980bfc86966921c16ff1ad345f4dc1d22328753dc60c281f58cfe"
+  },
+  "hostBin": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+    "sha256": "1a03dee18683483ff6a1b27b2a1e650230da6bcca9a0f55f7d81b3308c3f307f"
+  },
+  "ptcRuntimeLibDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib",
+  "node": {
+    "version": "v24.21.0",
+    "execPath": "/home/user/.nvm/versions/node/v24.21.0/bin/node"
+  },
+  "kernel": "6.8.0-142-generic",
+  "abiProbe": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "runnerBranchHead": "c0333d8f6e5acfd8acf2a0709dff72bca9a2e6d5",
+  "runnerBranch": "alpha5-ptc-outer",
+  "run": "a5ptc3-outer-2026-10-17T06-34-21Z"
+}
