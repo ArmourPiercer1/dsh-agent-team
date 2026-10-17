@@ -10,6 +10,12 @@ import { pathToFileURL } from 'node:url';
 
 export const RESULTS = Object.freeze({ PASS: 'PASS', FAIL: 'FAIL', NOT_RUN: 'NOT_RUN', RLW: 'REQUIRES-LIVE-WIRING' });
 
+// IF-7 转态词表（W8 准备轮 alpha5-wire-pr8prep）：pending_probe 行的行级转态只允许这两个值。
+// 它们是"行转态"而非三态观测值——与 RESULTS 分列，永不混入 PASS 计数。
+export const PROBE_TRANSITIONS = Object.freeze({ LIVE: 'LIVE', PROBE_GATED: 'PROBE-GATED' });
+export const RLW_PROBE_ROWS = Object.freeze(['M-04', 'M-05', 'M-08', 'M-09', 'M-13']);
+export const PROBE_LANES = Object.freeze(['W4', 'W5', 'W7']);
+
 const readJson = (p) => JSON.parse(readFileSync(p, 'utf8'));
 
 // ---------------------------------------------------------------- 结构 lint
@@ -46,6 +52,7 @@ export function lintDocFinalDeclaration (machine, doc) {
 export function lintCorrespondence (machine, doc) {
   const issues = [];
   issues.push(...assertMachineFinalDeclarations(machine));
+  issues.push(...assertProbeRegistrations(machine, doc));
   for (const row of doc.rows ?? []) {
     if (row.final_declaration !== null && row.final_declaration !== undefined) {
       issues.push(`doc ${row.row_id}: final_declaration 非空（doc 矩阵同样必须全 null）`);
@@ -92,6 +99,77 @@ export function lintCorrespondence (machine, doc) {
     }
   }
   return issues;
+}
+
+// ---------------------------------------------------------------- pending_probe 转态自锁（IF-7，W8 准备轮）
+// 代码位一（提交时）：assertProbeRegistrations —— 5 个 RLW 行必须全挂 pending_probe，且其形态
+//   自身不得留出 PASS 通道（automatable=false、无 hooks、词表=LIVE/PROBE-GATED、显式声明禁 PASS、
+//   依赖面 lane 封闭集、doc 行同步）。违例=结构 lint 直接红。
+// 代码位二（运行期）：deriveProbeTransition + evaluateRow —— probe 结论里 attempt PASS / 越词表
+//   终态 = VIOLATION ⇒ 行结果 FAIL（转态违例），LIVE 必须有 receipt 证据（evidence_refs +
+//   assembly_anchors_verified），否则降级 PROBE-GATED；NOT-RUN-READY/FAIL/PROBE-GATED ⇒
+//   PROBE-GATED + 最小复现引注。非 pending_probe 行不受此位管辖（返回 null）。
+
+export function assertProbeRegistrations (machine, doc) {
+  const issues = [];
+  const seen = [];
+  for (const row of machine?.rows ?? []) {
+    const pp = row.pending_probe;
+    if (!pp) continue;
+    seen.push(row.row_id);
+    if (row.automatable !== false) issues.push(`${row.row_id}: pending_probe 行必须 automatable=false（fixture PASS 通道对转态行封闭）`);
+    if ((row.hooks ?? []).length) issues.push(`${row.row_id}: pending_probe 行禁挂 hooks——行级 PASS 证据通道不得存在（IF-7）`);
+    if (!Array.isArray(pp.allowed_transitions) || !pp.allowed_transitions.includes(PROBE_TRANSITIONS.LIVE) || !pp.allowed_transitions.includes(PROBE_TRANSITIONS.PROBE_GATED)) {
+      issues.push(`${row.row_id}: allowed_transitions 必须同时含 LIVE 与 PROBE-GATED（且仅此二值）`);
+    } else if (pp.allowed_transitions.some((t) => t !== PROBE_TRANSITIONS.LIVE && t !== PROBE_TRANSITIONS.PROBE_GATED)) {
+      issues.push(`${row.row_id}: allowed_transitions 越词表: ${pp.allowed_transitions.filter((t) => t !== 'LIVE' && t !== 'PROBE-GATED').join(',')}`);
+    }
+    if (!(pp.forbidden_outcomes ?? []).includes('PASS')) issues.push(`${row.row_id}: forbidden_outcomes 必须显式声明禁 PASS（无证据 PASS 路径封死声明）`);
+    if (!String(pp.probe_script ?? '').startsWith('dev/agent-workflow/evidence/alpha5/pr8/probes/')) issues.push(`${row.row_id}: probe_script 必须指向 pr8/probes/ 内脚本`);
+    if (pp.status_now !== 'PREPARED-NOT-RUN-READY') issues.push(`${row.row_id}: 准备轮 pending_probe.status_now 必须为 PREPARED-NOT-RUN-READY`);
+    const deps = pp.depends_on ?? [];
+    if (!deps.length) issues.push(`${row.row_id}: depends_on 必须声明至少一个 lane 的观测面`);
+    for (const d of deps) {
+      if (!PROBE_LANES.includes(d.lane) || !d.surface) issues.push(`${row.row_id}: depends_on 项须 lane∈{W4,W5,W7} 且有 surface（依赖声明=哪个 lane 的哪个观测面）`);
+    }
+  }
+  const missing = RLW_PROBE_ROWS.filter((id) => !seen.includes(id));
+  if (missing.length) issues.push(`pending_probe 缺行: ${missing.join(',')}（5 个 RLW 行必须全挂）`);
+  const extra = seen.filter((id) => !RLW_PROBE_ROWS.includes(id));
+  if (extra.length) issues.push(`pending_probe 越表行（只准挂 5 个 RLW 行）: ${extra.join(',')}`);
+  if (doc?.rows) {
+    for (const row of machine?.rows ?? []) {
+      if (!row.pending_probe) continue;
+      const d = doc.rows.find((x) => x.row_id === row.row_id);
+      if (!d?.pending_probe || d.pending_probe.probe_script !== row.pending_probe.probe_script) {
+        issues.push(`${row.row_id}: doc 矩阵 pending_probe 未同步（probe_script 须同指针）`);
+      }
+    }
+  }
+  return issues;
+}
+
+export function deriveProbeTransition (row, outcome) {
+  const pp = row?.pending_probe;
+  if (!pp) return null;
+  if (!outcome) {
+    return { probe_transition: 'PREPARED-NOT-RUN-READY', basis: 'probe 未运行（准备层挂接态）；本行不产任何通过性结论' };
+  }
+  const v = outcome.verdict;
+  if (v === 'PASS') {
+    return { probe_transition: 'VIOLATION', violation: `转态违例：pending_probe 行 ${row.row_id} 试图取 PASS——行级 PASS 非转态词表成员（allowed_transitions=[LIVE, PROBE-GATED]，forbidden_outcomes 含 PASS）；无证据路径不存在` };
+  }
+  if (v === 'LIVE') {
+    const refs = Array.isArray(outcome.evidence_refs) ? outcome.evidence_refs : [];
+    if (refs.length && outcome.assembly_anchors_verified === true) {
+      return { probe_transition: PROBE_TRANSITIONS.LIVE, evidence_refs: refs, basis: '装配锚点核验 + 证据引注在册（行级转态提案值，终裁归 PR8 正式轮+独立 reviewer）' };
+    }
+    return { probe_transition: PROBE_TRANSITIONS.PROBE_GATED, repro_ref: outcome.repro_ref ?? pp.probe_script, basis: 'probe 主张 LIVE 但缺 evidence_refs/assembly_anchors_verified ⇒ 无证据不 LIVE，降级 PROBE-GATED（封死无证据路径）' };
+  }
+  if (v === 'PROBE-GATED' || v === 'NOT-RUN-READY' || v === 'FAIL') {
+    return { probe_transition: PROBE_TRANSITIONS.PROBE_GATED, repro_ref: outcome.repro_ref ?? pp.probe_script, basis: `probe verdict=${v} ⇒ 按 IF-7 落 PROBE-GATED+最小复现（probe 脚本自身可复跑）` };
+  }
+  return { probe_transition: 'VIOLATION', violation: `转态违例：probe verdict "${String(v)}" 越出封闭词表 [LIVE, PROBE-GATED, NOT-RUN-READY, FAIL]` };
 }
 
 // ---------------------------------------------------------------- 措辞 lint（G-5 风格，本 lane 自用子集）
@@ -284,13 +362,33 @@ export function deriveFinalDeclaration (row, gates) {
 
 export async function evaluateRow (row, ctx = {}) {
   if (row.automatable !== true) {
-    return {
+    const out = {
       row_id: row.row_id,
       result: RESULTS.RLW,
       evidence_level: row.evidence_level,
       basis: row.live_gate_basis ?? [],
       note: 'REQUIRES-LIVE-WIRING：本行为 live 必需/未接线，未产任何通过性结论；不得计入 PASS/FAIL。',
     };
+    if (row.pending_probe) {
+      // 代码位二（运行期）：转态只可能 LIVE / PROBE-GATED；PASS 尝试 ⇒ FAIL+违例注记。
+      const t = deriveProbeTransition(row, ctx.probe_outcomes?.[row.row_id]);
+      out.probe_transition = t.probe_transition;
+      if (t.basis) out.probe_basis = t.basis;
+      if (t.repro_ref) out.repro_ref = t.repro_ref;
+      if (t.evidence_refs) out.evidence_refs = t.evidence_refs;
+      if (t.probe_transition === PROBE_TRANSITIONS.LIVE) {
+        out.result = PROBE_TRANSITIONS.LIVE;
+        out.note = '行级转态提案=LIVE（receipt 证据在册）；终裁归 PR8 正式轮 + 独立 reviewer，本行永不落 PASS 桶。';
+      } else if (t.probe_transition === PROBE_TRANSITIONS.PROBE_GATED) {
+        out.result = PROBE_TRANSITIONS.PROBE_GATED;
+        out.note = 'IF-7：REQUIRES-LIVE 非终态 ⇒ 落 PROBE-GATED+最小复现（repro_ref 在册）。';
+      } else if (t.probe_transition === 'VIOLATION') {
+        out.result = RESULTS.FAIL;
+        out.violation = t.violation;
+        out.note = `转态违例判红：${t.violation}`;
+      }
+    }
+    return out;
   }
   const hookResults = [];
   for (const hook of row.hooks ?? []) {
@@ -308,7 +406,17 @@ export async function evaluateRow (row, ctx = {}) {
   }
   const anyFail = hookResults.some((h) => h.status === RESULTS.FAIL);
   const anyNR = hookResults.some((h) => h.status === RESULTS.NOT_RUN);
-  const result = anyFail ? RESULTS.FAIL : anyNR ? RESULTS.NOT_RUN : RESULTS.PASS;
+  let result = anyFail ? RESULTS.FAIL : anyNR ? RESULTS.NOT_RUN : RESULTS.PASS;
+  if (row.pending_probe && result === RESULTS.PASS) {
+    // 运行期兜底第二道（提交时 lint 已封）：pending_probe 行即便被塞进 hooks，也永不落 PASS。
+    return {
+      row_id: row.row_id,
+      result: RESULTS.FAIL,
+      evidence_level: row.evidence_level,
+      violation: '转态违例：pending_probe 行经 hooks 得到 PASS——fixture 通道不得为行级转态供证（IF-7）',
+      hooks: hookResults,
+    };
+  }
   return {
     row_id: row.row_id,
     result,
@@ -319,13 +427,16 @@ export async function evaluateRow (row, ctx = {}) {
 }
 
 export function computeDistribution (rows) {
-  const d = { PASS: 0, FAIL: 0, NOT_RUN: 0, REQUIRES_LIVE_WIRING: 0, TOTAL: rows.length, by_level: {} };
+  const d = { PASS: 0, FAIL: 0, NOT_RUN: 0, REQUIRES_LIVE_WIRING: 0, LIVE: 0, PROBE_GATED: 0, TOTAL: rows.length, by_level: {} };
   for (const r of rows) {
     if (r.result === RESULTS.PASS) d.PASS += 1;
     else if (r.result === RESULTS.FAIL) d.FAIL += 1;
     else if (r.result === RESULTS.NOT_RUN) d.NOT_RUN += 1;
     else if (r.result === RESULTS.RLW) d.REQUIRES_LIVE_WIRING += 1;
-    const key = `${r.evidence_level}|${r.result === RESULTS.RLW ? 'not-automatable' : 'automatable'}`;
+    // 行级转态与三态观测分桶（IF-7）：LIVE/PROBE-GATED 永不计入 PASS。
+    else if (r.result === PROBE_TRANSITIONS.LIVE) d.LIVE += 1;
+    else if (r.result === PROBE_TRANSITIONS.PROBE_GATED) d.PROBE_GATED += 1;
+    const key = `${r.evidence_level}|${r.result === RESULTS.RLW || r.result === PROBE_TRANSITIONS.LIVE || r.result === PROBE_TRANSITIONS.PROBE_GATED ? 'not-automatable' : 'automatable'}`;
     d.by_level[key] = (d.by_level[key] ?? 0) + 1;
   }
   return d;

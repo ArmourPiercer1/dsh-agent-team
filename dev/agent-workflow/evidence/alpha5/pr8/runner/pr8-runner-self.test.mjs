@@ -5,7 +5,8 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -301,4 +302,131 @@ test('G-g post-probes 反空转: 只引旧 98ddbaa9 快照无 probes 引注 ⇒ 
   const t = JSON.stringify(fakeRow);
   const missingProbe = !t.includes('review-G-g-probes.md');
   assert.ok(missingProbe, '对照：无 probes 引注应被上一测抓住（本断言证对照臂非空转）');
+});
+
+// ================== W8 准备轮（alpha5-wire-pr8prep）：pending_probe 挂接 + IF-7 转态自锁 ==================
+// RED-first：本节判据先于 lib/matrix/runner 实现入档（红=转态自锁不存在时的如实状态）。
+// 自锁语义（IF-7）：5 个 RLW 行（M-04/M-05/M-08/M-09/M-13）各挂 pending_probe；
+// 正式轮 runner 输出这些行只能取 LIVE 或 PROBE-GATED——PASS 无证据路径被 lint 代码位
+// （assertProbeRegistrations）与运行期代码位（deriveProbeTransition/evaluateRow）双位封死。
+
+const RLW_ROWS = ['M-04', 'M-05', 'M-08', 'M-09', 'M-13'];
+const PROBE_DIR = 'dev/agent-workflow/evidence/alpha5/pr8/probes';
+
+function fakeProbeRow (over = {}) {
+  return {
+    row_id: 'M-04',
+    automatable: false,
+    hooks: [],
+    evidence_level: 'U',
+    live_gate_basis: ['fixture：G-d 未开始（自锁测试用合成行）'],
+    pending_probe: {
+      probe_id: 'M-04-probe',
+      probe_script: `${PROBE_DIR}/probe-M-04.mjs`,
+      status_now: 'PREPARED-NOT-RUN-READY',
+      allowed_transitions: ['LIVE', 'PROBE-GATED'],
+      forbidden_outcomes: ['PASS'],
+      depends_on: [{ lane: 'W5', surface: 'admission 门控工具面注册', if_refs: ['IF-1'] }],
+    },
+    ...over,
+  };
+}
+
+test('prep: 机检矩阵恰 5 行挂 pending_probe（=RLW 行集），schema 合规，lintCorrespondence 保持全绿', async () => {
+  const lib = await import('./lib.mjs');
+  assert.equal(typeof lib.assertProbeRegistrations, 'function', 'lib.assertProbeRegistrations 必须存在（lint 代码位）');
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  const doc = JSON.parse(requireText(DOC_PATH));
+  const withProbe = machine.rows.filter((r) => r.pending_probe).map((r) => r.row_id).sort();
+  assert.deepEqual(withProbe, RLW_ROWS, 'pending_probe 只准挂在 5 个 RLW 行');
+  assert.deepEqual(lib.assertProbeRegistrations(machine, doc), []);
+  assert.deepEqual(lib.lintCorrespondence(machine, doc), [], '加入 probe lint 后 correspondence 必须仍绿');
+});
+
+test('prep: pending_probe 违例形态逐个咬红（automatable=true / 挂 hooks / 词表缺 PROBE-GATED / 不声明禁 PASS / doc 未同步 / 未知 lane）', async () => {
+  const lib = await import('./lib.mjs');
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  const doc = JSON.parse(requireText(DOC_PATH));
+  const mutate = (rowId, fn) => {
+    const m = JSON.parse(JSON.stringify(machine));
+    const row = m.rows.find((r) => r.row_id === rowId);
+    fn(row);
+    return m;
+  };
+  const hits = [];
+  const probe = (name, m, re) => {
+    const issues = lib.assertProbeRegistrations(m, doc);
+    if (!issues.some((i) => re.test(i))) hits.push(`${name}: 违例未被咬住 issues=${JSON.stringify(issues.slice(0, 3))}`);
+  };
+  probe('automatable=true', mutate('M-04', (r) => { r.automatable = true; r.hooks = [{ kind: 'fixture-surface', files: [] }]; }), /M-04/);
+  probe('挂 hooks', mutate('M-05', (r) => { r.hooks = [{ kind: 'recorded-evidence', path: 'x' }]; }), /M-05/);
+  probe('词表缺 PROBE-GATED', mutate('M-08', (r) => { r.pending_probe.allowed_transitions = ['LIVE']; }), /M-08/);
+  probe('未声明禁 PASS', mutate('M-09', (r) => { r.pending_probe.forbidden_outcomes = []; }), /M-09/);
+  probe('未知 lane', mutate('M-13', (r) => { r.pending_probe.depends_on = [{ lane: 'W9', surface: 'x' }]; }), /M-13/);
+  const unsyncedDoc = { rows: doc.rows.map((r) => (r.row_id === 'M-04' ? { ...r, pending_probe: undefined } : r)) };
+  const issues = lib.assertProbeRegistrations(machine, unsyncedDoc);
+  if (!issues.some((i) => i.includes('M-04') && /doc/.test(i))) hits.push(`doc 未同步未被咬住 issues=${JSON.stringify(issues.slice(0, 3))}`);
+  assert.deepEqual(hits, []);
+});
+
+test('prep: probe 脚本在场可执行，当前无装配运行即 NOT-RUN-READY exit 3（缺装配原因逐条打印；禁假 PASS）', () => {
+  for (const row of RLW_ROWS) {
+    const rel = `${PROBE_DIR}/probe-${row}.mjs`;
+    const abs = join(REPO_ROOT, rel);
+    assert.ok(existsSync(abs), `${rel} 不在树内`);
+    const text = readFileSync(abs, 'utf8');
+    assert.match(text, /NOT-RUN-READY/, `${rel} 缺 NOT-RUN-READY 失败即真相路径`);
+    const run = spawnSync(process.execPath, [abs, '--repo-root', REPO_ROOT], { encoding: 'utf8', timeout: 60000 });
+    assert.equal(run.status, 3, `${rel} 期望 exit 3（NOT-RUN-READY），实得 ${run.status}；stdout=${String(run.stdout).slice(0, 300)}`);
+    assert.match(String(run.stdout), /# VERDICT NOT-RUN-READY/, `${rel} 首报 VERDICT 必须是 NOT-RUN-READY`);
+    assert.match(String(run.stdout), /MISSING-ASSEMBLY/, `${rel} 必须逐条打印缺装配原因`);
+    assert.match(String(run.stdout), /^DEPEND (W4|W5|W7) /m, `${rel} 必须打印依赖声明（哪个 lane 的哪个观测面）`);
+    assert.doesNotMatch(String(run.stdout), /VERDICT (PASS|LIVE)\b/, `${rel} 禁假 PASS/假 LIVE`);
+  }
+});
+
+test('prep: deriveProbeTransition 运行期代码位——PASS 尝试=VIOLATION；LIVE 无证据=降级 PROBE-GATED；NOT-RUN-READY/FAIL=PROBE-GATED+最小复现', async () => {
+  const lib = await import('./lib.mjs');
+  assert.equal(typeof lib.deriveProbeTransition, 'function', 'lib.deriveProbeTransition 必须存在（运行期代码位）');
+  const row = fakeProbeRow();
+  assert.equal(lib.deriveProbeTransition(row, { verdict: 'PASS' }).probe_transition, 'VIOLATION', 'PASS 无证据路径必须封死');
+  assert.equal(lib.deriveProbeTransition(row, { verdict: 'SUPPORTED' }).probe_transition, 'VIOLATION', '越词表终态必须封死');
+  assert.equal(lib.deriveProbeTransition(row, { verdict: 'LIVE' }).probe_transition, 'PROBE-GATED', 'LIVE 缺 evidence_refs/anchors_verified 必须降级');
+  const live = lib.deriveProbeTransition(row, { verdict: 'LIVE', evidence_refs: ['runs/x.log'], assembly_anchors_verified: true });
+  assert.equal(live.probe_transition, 'LIVE');
+  assert.deepEqual(live.evidence_refs, ['runs/x.log']);
+  const nr = lib.deriveProbeTransition(row, { verdict: 'NOT-RUN-READY' });
+  assert.equal(nr.probe_transition, 'PROBE-GATED');
+  assert.ok(String(nr.repro_ref).includes('probe-M-04.mjs'), 'PROBE-GATED 必须带最小复现引注（probe 自身可复跑）');
+  assert.equal(lib.deriveProbeTransition(row, undefined).probe_transition, 'PREPARED-NOT-RUN-READY', '未运行=准备态，不产任何结论');
+  assert.equal(lib.deriveProbeTransition({ row_id: 'M-01' }, { verdict: 'PASS' }), null, '非 pending_probe 行不受此位管辖');
+});
+
+test('prep: evaluateRow 对 pending_probe 行永不输出 PASS（PASS 尝试→FAIL+违例注记；LIVE 有证据→LIVE 非 PASS）', async () => {
+  const lib = await import('./lib.mjs');
+  const base = { repo_root: tmp() };
+  const r0 = await lib.evaluateRow(fakeProbeRow(), { ...base, probe_outcomes: {} });
+  assert.equal(r0.result, 'REQUIRES-LIVE-WIRING');
+  assert.equal(r0.probe_transition, 'PREPARED-NOT-RUN-READY');
+  const r1 = await lib.evaluateRow(fakeProbeRow(), { ...base, probe_outcomes: { 'M-04': { verdict: 'PASS' } } });
+  assert.equal(r1.result, 'FAIL', 'pending_probe 行 attempt PASS ⇒ 违例判红，绝不落 PASS');
+  assert.match(JSON.stringify(r1), /转态违例|VIOLATION/);
+  const r2 = await lib.evaluateRow(fakeProbeRow(), { ...base, probe_outcomes: { 'M-04': { verdict: 'LIVE', evidence_refs: ['runs/live.log'], assembly_anchors_verified: true } } });
+  assert.equal(r2.result, 'LIVE');
+  assert.notEqual(r2.result, 'PASS');
+  const r3 = await lib.evaluateRow(fakeProbeRow(), { ...base, probe_outcomes: { 'M-04': { verdict: 'NOT-RUN-READY' } } });
+  assert.equal(r3.result, 'PROBE-GATED');
+});
+
+test('prep: 分布把 LIVE/PROBE-GATED 与 PASS 分桶（行级 LIVE 永不计入 PASS 计数）', async () => {
+  const lib = await import('./lib.mjs');
+  const d = lib.computeDistribution([
+    { result: 'LIVE', evidence_level: 'U' },
+    { result: 'PROBE-GATED', evidence_level: 'U' },
+    { result: 'PASS', evidence_level: 'D' },
+  ]);
+  assert.equal(d.PASS, 1);
+  assert.equal(d.LIVE, 1);
+  assert.equal(d.PROBE_GATED, 1);
+  assert.doesNotMatch(JSON.stringify(d), /SUPPORTED|已验收|整链/);
 });

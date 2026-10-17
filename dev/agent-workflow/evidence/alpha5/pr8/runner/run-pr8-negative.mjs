@@ -6,7 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lintCorrespondence, assertMachineFinalDeclarations, lintDocFinalDeclaration, evaluateRow, computeDistribution, readGatesLedger, deriveFinalDeclaration, runFixtureSurface, RESULTS } from './lib.mjs';
+import { lintCorrespondence, assertMachineFinalDeclarations, lintDocFinalDeclaration, evaluateRow, computeDistribution, readGatesLedger, deriveFinalDeclaration, runFixtureSurface, RESULTS, RLW_PROBE_ROWS } from './lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -15,7 +15,13 @@ const repoRoot = resolve(argVal('--repo-root', resolve(HERE, '..', '..', '..', '
 const machinePath = join(repoRoot, 'dev/agent-workflow/evidence/alpha5/pr8/matrix-machine.json');
 const docPath = join(repoRoot, 'docs/plans/memo/alpha5-tool-io-governance/pr8-accept/acceptance-matrix.json');
 const gatesPath = argVal('--gates', null);
+const probeOutcomesPath = argVal('--probe-outcomes', null);
 const outDir = join(HERE, 'runs');
+
+let probeOutcomes = {};
+if (probeOutcomesPath) {
+  probeOutcomes = JSON.parse(readFileSync(resolve(repoRoot, probeOutcomesPath), 'utf8'));
+}
 
 const machine = JSON.parse(readFileSync(machinePath, 'utf8'));
 const doc = JSON.parse(readFileSync(docPath, 'utf8'));
@@ -49,23 +55,26 @@ say(`\n## 对照臂（观测面非盲证明）: ghost-anchor probe = ${ctrl.stat
 
 // 4) 逐行三态
 say('\n## 逐行三态（criterion-level-fixture；NOT_RUN/RLW 不构成任何通过性结论）');
+say(`## pending_probe 转态自锁（IF-7）: 5 行 = ${RLW_PROBE_ROWS.join('/')} 只能取 LIVE/PROBE-GATED；PASS 被 lint 代码位 assertProbeRegistrations + 运行期 deriveProbeTransition 双位封死；probe-outcomes=${probeOutcomesPath ?? '（未提供 ⇒ 全行 PREPARED-NOT-RUN-READY）'}`);
 const results = [];
 for (const row of machine.rows) {
-  const r = await evaluateRow(row, { repo_root: repoRoot });
+  const r = await evaluateRow(row, { repo_root: repoRoot, probe_outcomes: probeOutcomes });
   r.final_declaration = deriveFinalDeclaration(row, gates);
   r.ga_semantics_row = row.ga_semantics === true;
   r.g_g_related_row = row.g_g_related === true;
   results.push(r);
-  const marks = `${r.ga_semantics_row ? '[G-a]' : ''}${r.g_g_related_row ? '[G-g]' : ''}`;
+  const marks = `${r.ga_semantics_row ? '[G-a]' : ''}${r.g_g_related_row ? '[G-g]' : ''}${row.pending_probe ? '[probe]' : ''}`;
   say(`  ${r.result.padEnd(21)} ${r.row_id.padEnd(7)} lvl=${r.evidence_level} auto=${row.automatable ? 'yes' : 'no '}${marks}`);
   if (r.result === RESULTS.RLW) for (const b of r.basis) say(`      LIVE-GATED: ${b}`);
+  if (r.probe_transition) say(`      probe-transition: ${r.probe_transition}${r.repro_ref ? ` repro=${r.repro_ref}` : ''}${r.evidence_refs ? ` evidence=${r.evidence_refs.join(',')}` : ''}`);
+  if (r.violation) say(`      TRANSITION-VIOLATION: ${r.violation}`);
   if (r.hooks) for (const h of r.hooks) if (h.status !== RESULTS.PASS) say(`      ${h.status.padEnd(7)} ${h.label}: ${h.reason ?? ''}`);
 }
 
 // 5) 分布 + final_declaration 汇总
 const dist = computeDistribution(results);
 say('\n## 分布');
-say(`  PASS=${dist.PASS} FAIL=${dist.FAIL} NOT_RUN=${dist.NOT_RUN} REQUIRES-LIVE-WIRING=${dist.REQUIRES_LIVE_WIRING} TOTAL=${dist.TOTAL}`);
+say(`  PASS=${dist.PASS} FAIL=${dist.FAIL} NOT_RUN=${dist.NOT_RUN} REQUIRES-LIVE-WIRING=${dist.REQUIRES_LIVE_WIRING} LIVE=${dist.LIVE} PROBE-GATED=${dist.PROBE_GATED} TOTAL=${dist.TOTAL}`);
 for (const [k, v] of Object.entries(dist.by_level).sort()) say(`  level×auto: ${k} = ${v}`);
 const fdAll = results.every((r) => r.final_declaration === null);
 say(`\n## final_declaration: ${fdAll ? '全 null（PENDING-GATES 未全关，代码位强制）' : '!!! 存在非空声明 — 违规'}`);
@@ -74,7 +83,7 @@ say('## 反升格声明: 本运行全部为 fixture/记录级观测；不产出 
 mkdirSync(outDir, { recursive: true });
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const jsonOut = join(outDir, `matrix-run-${stamp}.json`);
-writeFileSync(jsonOut, JSON.stringify({ run_utc: new Date().toISOString(), repo_root: repoRoot, gates_status: gates.status, distribution: dist, lint_issues: lintIssues, control_arm: { ghost_anchor: ctrl.status, ok: ctrlCaught }, rows: results }, null, 2));
+writeFileSync(jsonOut, JSON.stringify({ run_utc: new Date().toISOString(), repo_root: repoRoot, gates_status: gates.status, probe_outcomes_supplied: probeOutcomesPath ?? null, distribution: dist, lint_issues: lintIssues, control_arm: { ghost_anchor: ctrl.status, ok: ctrlCaught }, rows: results }, null, 2));
 const logOut = join(outDir, `matrix-run-${stamp}.log`);
 writeFileSync(logOut, lines.join('\n') + '\n');
 say(`\n# written: ${jsonOut}`);

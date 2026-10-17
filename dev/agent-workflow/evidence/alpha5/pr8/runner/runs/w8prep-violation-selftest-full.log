@@ -1,0 +1,75 @@
+# PR8 负例 runner — matrix-machine @ base d69bfc4b  run-utc=2026-10-17T02:09:48.240Z
+# repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8prep
+
+## 结构 lint: OK
+
+## doc final_declaration 显式点名: 缺键=0 行 / 非 null 声明=0 行
+
+## PENDING-GATES 台账: OPEN
+  open=[G-a,G-b,G-c,G-d,G-e,G-f,D-1,D-2] closed=[G-g]
+  
+
+## 对照臂（观测面非盲证明）: ghost-anchor probe = FAIL ⇒ OK（FAIL 被如实捕获）
+
+## 逐行三态（criterion-level-fixture；NOT_RUN/RLW 不构成任何通过性结论）
+## pending_probe 转态自锁（IF-7）: 5 行 = M-04/M-05/M-08/M-09/M-13 只能取 LIVE/PROBE-GATED；PASS 被 lint 代码位 assertProbeRegistrations + 运行期 deriveProbeTransition 双位封死；probe-outcomes=dev/agent-workflow/evidence/alpha5/pr8/runner/runs/w8prep-violation-selftest-fixture.json
+  PASS                  M-01    lvl=D auto=yes
+  PASS                  M-02    lvl=D auto=yes
+  PASS                  M-03    lvl=D auto=yes
+  FAIL                  M-04    lvl=U auto=no [probe]
+      probe-transition: VIOLATION
+      TRANSITION-VIOLATION: 转态违例：pending_probe 行 M-04 试图取 PASS——行级 PASS 非转态词表成员（allowed_transitions=[LIVE, PROBE-GATED]，forbidden_outcomes 含 PASS）；无证据路径不存在
+  PROBE-GATED           M-05    lvl=U auto=no [probe]
+      probe-transition: PROBE-GATED repro=dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs
+  NOT_RUN               M-06    lvl=D auto=yes[G-a][G-g]
+      NOT_RUN kit a5p1r 重跑（in-process 钉定 registry，无端口）: kit 前置不齐（拒绝伪造 PASS）: tests/deepseek-harness-test-use/vendor/cordis — 本机已按 TEST_METHODS §2 链构建 0.2.0-rc.2（porcelain 0）；重跑原文=runner/runs/kit-rerun-built/{rereg-window.json,kit-stdout.log}；全新 worktree 缺运行时 ⇒ 本钩 NOT_RUN（拒伪造 PASS）
+  PASS                  M-07    lvl=D auto=yes
+  LIVE                  M-08    lvl=U auto=no [probe]
+      probe-transition: LIVE evidence=runs/w8prep-violation-selftest-LIVE-with-evidence.log
+  REQUIRES-LIVE-WIRING  M-09    lvl=U auto=no [probe]
+      LIVE-GATED: S0-SELECTION-MATRIX M-09：Strict deny（UNSUPPORTED/BOUNDED-DEFER）；池键 ⊇ Member+Realm+Provider+Workspace+PolicyGeneration 路线未证
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      LIVE-GATED: g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）
+      probe-transition: PREPARED-NOT-RUN-READY
+  PASS                  M-10    lvl=D auto=yes
+  NOT_RUN               M-11    lvl=D auto=yes
+      NOT_RUN pinned Job 面 grep（三族在册）: 观测面文件缺 (tests/deepseek-harness-test-use/packages/shell/tool-bash/lib/index.js, tests/deepseek-harness-test-use/packages/api/job-controller/lib/typert.host.js)：pristine test-use 检出为 gitignored 运行时（TEST_METHODS §2 链构建，跨设备用 --no-hardlinks）；本 worktree 已于本 Scope-3a 轮按该链构建 ⇒ 本环境可观测；全新 worktree 缺运行时 ⇒ NOT_RUN
+  PASS                  M-12    lvl=D auto=yes[G-a][G-g]
+  REQUIRES-LIVE-WIRING  M-13    lvl=U auto=no [probe]
+      LIVE-GATED: doc M-13 current_status=s0-not-run-structural（明示 NOT_RUN）
+      LIVE-GATED: registry suite 60-web-jobs-mcp-domain run=null；Domain mock 待建
+      LIVE-GATED: PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported
+      probe-transition: PREPARED-NOT-RUN-READY
+  PASS                  M-14    lvl=D auto=yes[G-a][G-g]
+  PASS                  SUP-01  lvl=D auto=yes
+  PASS                  SUP-02  lvl=D auto=yes
+  PASS                  SUP-03  lvl=D auto=yes
+  PASS                  SUP-04  lvl=D auto=yes
+  PASS                  SUP-05  lvl=D auto=yes
+  PASS                  SUP-06  lvl=D auto=yes
+  PASS                  SUP-07  lvl=D auto=yes
+  NOT_RUN               SUP-08  lvl=D auto=yes
+      NOT_RUN pinned 面 grep 位: 观测面文件缺 (tests/deepseek-harness-test-use/packages/shell/tool-bash/lib/index.js, tests/deepseek-harness-test-use/packages/api/job-controller/lib/typert.host.js)：pristine test-use 检出为 gitignored 运行时（TEST_METHODS §2 链构建，跨设备用 --no-hardlinks）；本 worktree 已于本 Scope-3a 轮按该链构建 ⇒ 本环境可观测；全新 worktree 缺运行时 ⇒ NOT_RUN
+  PASS                  SUP-09  lvl=D auto=yes
+  PASS                  SUP-10  lvl=D auto=yes
+  PASS                  SUP-11  lvl=D auto=yes[G-a]
+  PASS                  SUP-12  lvl=D auto=yes
+  PASS                  SUP-13  lvl=D auto=yes
+  PASS                  SUP-14  lvl=D auto=yes
+  PASS                  SUP-15  lvl=D auto=yes
+  PASS                  SUP-16  lvl=D auto=yes
+  PASS                  SUP-17  lvl=D auto=yes
+  PASS                  SUP-18  lvl=D auto=yes
+
+## 分布
+  PASS=24 FAIL=1 NOT_RUN=3 REQUIRES-LIVE-WIRING=2 LIVE=1 PROBE-GATED=1 TOTAL=32
+  level×auto: D|automatable = 27
+  level×auto: U|automatable = 1
+  level×auto: U|not-automatable = 4
+
+## final_declaration: 全 null（PENDING-GATES 未全关，代码位强制）
+## 反升格声明: 本运行全部为 fixture/记录级观测；不产出 SUPPORTED/已验收/整链已验证（INTERFACES-v1；review-LaneG 条件①）
+
+# written: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8prep/dev/agent-workflow/evidence/alpha5/pr8/runner/runs/matrix-run-2026-10-17T02-09-48-481Z.json
+# written: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8prep/dev/agent-workflow/evidence/alpha5/pr8/runner/runs/matrix-run-2026-10-17T02-09-48-481Z.log
+# exit: 2 (1 项实质违规)

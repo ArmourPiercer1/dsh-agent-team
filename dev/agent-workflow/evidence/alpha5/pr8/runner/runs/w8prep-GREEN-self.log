@@ -1,0 +1,36 @@
+✔ lint: machine matrix ↔ doc matrix 逐行 1:1 对应（同 id 集合、无重无缺、负例可 lint） (3.142111ms)
+✔ lint: 32 行齐（M-01..M-14 + SUP-01..SUP-18），doc 矩阵自身 32 行 (0.678019ms)
+✔ lint: 词汇封闭 + 携带状态一致 + automatable=false 必带 LIVE-GATED 依据且无 hooks (0.765367ms)
+✔ lint: 6 个 partial 行 = M-01/M-02/M-03/M-06/M-12/M-14（DECISION-PACK 决策 1 点名行） (0.554934ms)
+✔ lint: G-a 判据引用 17:52Z 裁决原文要点，且不得出现 17:02 回填句式 (0.63225ms)
+✔ lint: G-g 相关行必须引 g-g-support-contract.md 分级，且禁 "fail-closed 已证/proven" 类措辞 (1.407028ms)
+✔ tri-state: fixture-surface 锚点齐 ⇒ PASS；缺锚点 ⇒ FAIL；文件缺 ⇒ NOT_RUN(声明环境缺) 或 FAIL(未声明) (0.397314ms)
+✔ tri-state: recorded-evidence 计数与 verdict 词表判定；记录缺 ⇒ NOT_RUN（附他处登记引注） (0.346803ms)
+✔ tri-state: kit-rerun 前置不齐 ⇒ NOT_RUN（列出缺失前置，绝不伪造 PASS） (0.253819ms)
+✔ tri-state: kit-rerun 全 criteria PASS ⇒ PASS；有 FAIL ⇒ FAIL（真 spawn，临时世界即删） (70.436331ms)
+✔ tri-state: automatable=false ⇒ REQUIRES-LIVE-WIRING（含 LIVE-GATED 依据）；不得计入 PASS/FAIL (0.520713ms)
+✔ tri-state: p4t6 只读查询在真实树可跑且零新词（quarantine 之外零命中） (230.139217ms)
+✔ final_declaration: 台账缺文件 ⇒ 视为 OPEN ⇒ 恒 null（fail-closed 语义） (0.255005ms)
+✔ final_declaration: 台账有开放行 ⇒ null；全关 ⇒ 仍 null（本轮无任何行允许非空；非空尝试=throw） (0.100769ms)
+✔ final_declaration: 机检矩阵中任何非空 final_declaration ⇒ assertMachineFinalDeclarations 判红 (0.062774ms)
+✔ distribution: 计数只含四类，且 fixture/NOT_RUN/RLW 永不产出 SUPPORTED/已验收措辞 (0.174994ms)
+✔ N1: 机检矩阵行缺 final_declaration 键 ⇒ 显式判红（undefined 不放行） (0.060904ms)
+✔ N1: 真实机检矩阵 32 行均显式携带 final_declaration 键且为 null (0.474193ms)
+✔ N1: doc 矩阵 final_declaration 键已补齐 ⇒ 缺键点名清单清零（0 条）；机制不变——人工剥键仍逐行显式点名（SUP-01..18） (0.985087ms)
+✔ N2: 矩阵内 registry 套件引用必须用 registry.mjs 真实 id（M-13 须 60-web-jobs-mcp-domain） (1.027912ms)
+✔ G-g post-probes: 三行判据同步引 review-G-g-probes.md@bbaf45de（P4/P6 达 D、G-6/G-7 仍 LIVE-GATED），并保持禁则 (0.498685ms)
+✔ G-g post-probes 反空转: 只引旧 98ddbaa9 快照无 probes 引注 ⇒ 判红 (0.08884ms)
+✔ prep: 机检矩阵恰 5 行挂 pending_probe（=RLW 行集），schema 合规，lintCorrespondence 保持全绿 (0.730783ms)
+✔ prep: pending_probe 违例形态逐个咬红（automatable=true / 挂 hooks / 词表缺 PROBE-GATED / 不声明禁 PASS / doc 未同步 / 未知 lane） (1.629868ms)
+✔ prep: probe 脚本在场可执行，当前无装配运行即 NOT-RUN-READY exit 3（缺装配原因逐条打印；禁假 PASS） (197.458957ms)
+✔ prep: deriveProbeTransition 运行期代码位——PASS 尝试=VIOLATION；LIVE 无证据=降级 PROBE-GATED；NOT-RUN-READY/FAIL=PROBE-GATED+最小复现 (0.385517ms)
+✔ prep: evaluateRow 对 pending_probe 行永不输出 PASS（PASS 尝试→FAIL+违例注记；LIVE 有证据→LIVE 非 PASS） (0.267989ms)
+✔ prep: 分布把 LIVE/PROBE-GATED 与 PASS 分桶（行级 LIVE 永不计入 PASS 计数） (0.232076ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 578.899947
