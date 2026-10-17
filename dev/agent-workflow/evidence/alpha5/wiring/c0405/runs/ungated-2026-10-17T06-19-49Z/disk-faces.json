@@ -1,0 +1,12 @@
+{
+  "doc_sha": "sha256:dc123a7d5c67b07d76eb00b8332a949fdde38a317f911a9158534bf4fd748ac2",
+  "doc_contains_new": true,
+  "doc_contains_insert": false,
+  "memo_sha": "sha256:aa36cd582ed29ffcc7882651d41fcc9994898c887f513eccf5ae1d234b8d79ae",
+  "memo_matches": true,
+  "thumb_sha": "sha256:b384e725c2f31b503d2fc850820f321389dc91ad21f7b44069dd8a2678bdbe11",
+  "thumb_intact": true,
+  "history_lines": 2,
+  "spill_files": [],
+  "spill_disk": {}
+}
