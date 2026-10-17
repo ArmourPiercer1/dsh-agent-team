@@ -37,9 +37,17 @@
 
 **口径精度（必须随结论携带，不是缺陷）**：`零应答` 在 in-domain 形态下的实现姿态 = **挂到 lane 期限后拒**（永不 hang、永不默认放）；**真正的"沉默"**（我方完全不出任何结果、ask 留在宿主 lane）只出现在 **②域外委托** 与 **③卸载之后** 两形（§2/§3 各自实测）。NC-3 的"零应答"取前者（Grant 零应答），与 L1 轮 F-1 的"跨会话直接放大"对照成立。
 
-**reviewer 驱动自身的前两轮 FAIL 留痕（不是被审件发现，勿误读）**：`runs/a5ptc4b-rev-own-2026-10-17T10-15-54Z/`、`…T10-18-59Z/` 两轮中 7 条 FAIL 全部源自**审查驱动自己的三个缺陷**——(i) lane 提示词文本取自 `content` 数组时用了 `JSON.stringify` ⇒ lane 工具腿从未触发（故 Grant 全缺、`lane-timeout` 满盘）；(ii) FX 未登记 ⇒ 该会话**没有 `run_code`**（答 `unknown tool "run_code"`，L1 轮的 `L-FX-RUNCODE-PRESENT` 判据因此存在）；(iii) reviewer 自己的结果捕获按 `callId+text` 去重 ⇒ 复用同一 callId 的第二次拒原文被吞。三点均在本件修复（`rev-l2-ownprobe.mjs` 现版），且**修复未触碰被审件一个字节**。
+**reviewer 驱动自身早期轮次的 FAIL 留痕（不是被审件发现，勿误读）**：
+- `runs/a5ptc4b-rev-own-2026-10-17T10-15-54Z/`（7 条 FAIL）＝审查驱动自己的两个缺陷：**(i)** lane 提示词文本按 `JSON.stringify(content)` 取，`/^OWN_LANE\b/` 永不命中 ⇒ lane 工具腿从未触发（ledger `grant-minted` 计数 = 0，所有 ask 一律 `lane-timeout`，于是依赖 Grant 的 A2/B/C/D/E 与依赖 lane 卸载的 H 一起挂）；**(ii)** FX 完全未登记 ⇒ 该会话面上**没有 `run_code`**（实测答 `Error: unknown tool "run_code"` ⇒ ask 根本没进管线；被审 runner 的 `L-FX-RUNCODE-PRESENT` 判据正是为此存在）。
+- `runs/a5ptc4b-rev-own-2026-10-17T10-18-59Z/`（2 条 FAIL）＝**(iii)** reviewer 自己的捕获按 `callId+text` 去重 ⇒ 复用同一 callId 的**第二次**拒原文被吞（NC-1 的"下游可见"半边）；**(iv)** 网络探针腿在窗口内未回。
+- 权威轮 `…T10-20-46Z/`（1 条 FAIL = `REV-J`）＝**腿饿死**而非判据失败：`mock-decide-log.jsonl` 最后一条模型请求就是 H 腿（卸载后的 ask），其后 M1 会话再无任何请求——该 ask 按设计**永留在宿主 lane**，同会话后续腿被宿主序列化饿死（与 L1 轮登记的同一 seam 教训一致）。⇒ `REV-J` 改由下面的无模型腿 HTTP 直证闭合。
+三处驱动缺陷均已在 `rev-l2-ownprobe.mjs` 现版修复，且**修复未触碰被审件一个字节**（reviewer 自有件一律 `rev-l2-*` 命名）。
 
-**§1-附 确定性微探**（`rev-l2-faceauth.mjs` → `runs/a5ptc4b-rev-face-2026-10-17T10-23-13Z/face-authority.json`）：`REV-J`（在册 member 能否经装配面把自己升格为 lane）在模型腿里受宿主序列化影响，改用无模型腿的 HTTP 直证：`Q1` 已在册者再 `POST provision role=lane` ⇒ `{ok:true, already:true, role:"member"}`（**无自升级**）；`Q2` 未在册会话 ⇒ `{ok:true, role:"lane"}`（**无凭据即可登记铸权者** ⇒ F-L2-1）；`Q3` census 面无凭据 200 可读。
+**§1-附 装配面权限边界（确定性直证）**：`rev-l2-faceauth.mjs` → `runs/a5ptc4b-rev-face-2026-10-17T10-23-13Z/face-authority.json`（无模型腿，纯 HTTP，避免上一条的饿死干扰）：
+- **Q1 无自升级**：对**已在册** member 的 sessionId 再 `POST /__a5ptc4b/provision {role:'lane'}` ⇒ `{ok:true, already:true, role:"member"}`，花名册角色不变 ⇒ 被裁决成员**买不到**铸权身份。
+- **Q2 无凭据可登记铸权者**：对**未在册** sessionId 同样请求（不带任何宿主凭据）⇒ `{ok:true, role:"lane"}`，花名册 lane 数 1→2 ⇒ **F-L2-1**。
+- **Q3** census（`/grants`、`/roster`）无 cookie 即 200 可读（含各角色 label/sessionId）。
+- **in-world 可达性**（`runs/a5ptc4b-rev-own-2026-10-17T10-15-54Z/own-I.json`）：被裁决成员自己的受限外层程序（`workspace-write`，无加宽）经 loopback `fetch` 打到该面，收到应用层应答 `{"ok":false,"error":"no agent for session"}`（status 404）⇒ **网络路径开放**（404 是对未知会话的正确答复，但证明面可达）。
 
 ## 2. 任务② 委托完整性 —— **PASS**
 
