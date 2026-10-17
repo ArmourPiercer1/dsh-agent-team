@@ -125,6 +125,8 @@ GLUE 落地时的检查单（本契约的验收面）：
 | W7M kit | 不 import gateway（公开 jobs 面 + veto 台账） | 零改动 |
 | 生产装配 | 零 import 边 | 不变——hygiene spec 依旧绿；live row 归 GLUE-5 |
 
+> 记录项（N-1/N-2，review-PC 记录项，无代码变更）：上表"显式 pin"限定为**显式非空 pin 形状**——缺省/空 pinnedIdentity 的默认面为 typed refusal，系有意的封闭世界收紧，不作"逐字不变"子句（N-2）；gateway 不为 identity/definition 源兜异常（fail-loud，源抛时注册面 delta 仍 =0），兜异常是装配行自己的职责（N-1）。
+
 ## 5. 残余（不随本 PR 变，逐项指主）
 
 - **live row 一行** = GLUE-5（本契约 §3 草案）；G-d 集成确认未闭（在册）。
