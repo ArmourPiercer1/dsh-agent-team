@@ -1,0 +1,184 @@
+{
+  "caliber": "offline re-evaluation of this round’s recorded data; nothing re-ran, no port bound",
+  "runDir": "evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z",
+  "rows": [
+    {
+      "claim": "direct fs WRITE into the forbidden zone is refused and creates no file",
+      "guarding": "R-CONFINED-WRITE-OSDENIED",
+      "confined": {
+        "classified": "OS-DENIED",
+        "fileCreated": false
+      },
+      "keys": [
+        "classified",
+        "fileCreated"
+      ],
+      "violatingPosture": "realm unconfined arm (same child, same program, no OS domain)",
+      "violating": {
+        "classified": "PASS-THROUGH",
+        "fileCreated": true
+      },
+      "comparedConfined": {
+        "classified": "OS-DENIED",
+        "fileCreated": false
+      },
+      "comparedViolating": {
+        "classified": "PASS-THROUGH",
+        "fileCreated": true
+      },
+      "discriminates": true
+    },
+    {
+      "claim": "the effect reaches the forbidden zone THROUGH a spawned child too (domain inherited across fork/execve)",
+      "guarding": "R-CONFINED-SPAWN-WRITE-OSDENIED",
+      "keys": [
+        "classified",
+        "fileCreated"
+      ],
+      "confined": {
+        "classified": "CHILD-REFUSED",
+        "fileCreated": false
+      },
+      "violatingPosture": "realm unconfined arm",
+      "violating": {
+        "classified": "PASS-THROUGH",
+        "fileCreated": true
+      },
+      "comparedConfined": {
+        "classified": "CHILD-REFUSED",
+        "fileCreated": false
+      },
+      "comparedViolating": {
+        "classified": "PASS-THROUGH",
+        "fileCreated": true
+      },
+      "discriminates": true
+    },
+    {
+      "claim": "the confined domain is selective, not a blanket failure (in-workspace write still works)",
+      "guarding": "R-CONFINED-CONTROL-RUNS",
+      "expectDiscriminating": false,
+      "confined": {
+        "controlWrite": true,
+        "marker": true
+      },
+      "violatingPosture": "a broken/over-broad grant would show controlWrite=false here — recorded, not inverted",
+      "violating": {
+        "controlWrite": true,
+        "marker": true
+      },
+      "comparedConfined": {
+        "controlWrite": true,
+        "marker": true
+      },
+      "comparedViolating": {
+        "controlWrite": true,
+        "marker": true
+      },
+      "discriminates": false
+    },
+    {
+      "claim": "in the default posture nothing at all is written, so the refusal is whole-program",
+      "guarding": "A-ZERO-SIDE-EFFECTS",
+      "keys": [
+        "writeTarget",
+        "childTarget",
+        "marker",
+        "connections"
+      ],
+      "confined": {
+        "writeTarget": false,
+        "childTarget": false,
+        "marker": false,
+        "connections": 0
+      },
+      "violatingPosture": "live LEG C (disclosed per-session switch, same program on its own -legc paths)",
+      "violating": {
+        "writeTarget": true,
+        "childTarget": true,
+        "marker": true,
+        "connections": 1
+      },
+      "comparedConfined": {
+        "writeTarget": false,
+        "childTarget": false,
+        "marker": false,
+        "connections": 0
+      },
+      "comparedViolating": {
+        "writeTarget": true,
+        "childTarget": true,
+        "marker": true,
+        "connections": 1
+      },
+      "discriminates": true
+    },
+    {
+      "claim": "no outer OS process ever existed in the default posture",
+      "guarding": "A-NO-OUTER-OS-CHILD",
+      "keys": [
+        "outerChildren"
+      ],
+      "confined": {
+        "outerChildren": []
+      },
+      "violatingPosture": "live LEG C",
+      "violating": {
+        "outerChildren": [
+          {
+            "pid": 224,
+            "ppid": 109,
+            "cmd": "/home/user/.nvm/versions/node/v24.21.0/bin/node --max-old-space-size=512 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js 134217728"
+          }
+        ]
+      },
+      "comparedConfined": {
+        "outerChildren": []
+      },
+      "comparedViolating": {
+        "outerChildren": [
+          {
+            "pid": 224,
+            "ppid": 109,
+            "cmd": "/home/user/.nvm/versions/node/v24.21.0/bin/node --max-old-space-size=512 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js 134217728"
+          }
+        ]
+      },
+      "discriminates": true
+    },
+    {
+      "claim": "direct net.connect reaches a listener outside the realm",
+      "guarding": "R-CONFINED-NET (informational)",
+      "keys": [
+        "classified"
+      ],
+      "countsAsProtection": false,
+      "confined": {
+        "classified": "PASS-THROUGH",
+        "connections": 1,
+        "bytes": 62
+      },
+      "violatingPosture": "realm unconfined arm",
+      "violating": {
+        "classified": "PASS-THROUGH",
+        "connections": 1,
+        "bytes": 64
+      },
+      "comparedConfined": {
+        "classified": "PASS-THROUGH"
+      },
+      "comparedViolating": {
+        "classified": "PASS-THROUGH"
+      },
+      "discriminates": false
+    }
+  ],
+  "nonDiscriminating": [
+    "direct net.connect reaches a listener outside the realm"
+  ],
+  "asDesignedSame": [
+    "the confined domain is selective, not a blanket failure (in-workspace write still works)"
+  ],
+  "overClaims": [],
+  "reading": "a claim that changes value between the confined/default posture and the posture that should violate it is measuring the confinement; the network row is expected NOT to discriminate (Landlock ABI 4 grants no network right) and is therefore booked as the gap, never as protection"
+}
