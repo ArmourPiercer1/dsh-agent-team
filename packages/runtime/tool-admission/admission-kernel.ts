@@ -50,14 +50,28 @@
  * Purity: no `node:*`, no I/O, no timers. The `async` shape is the frozen
  * `OperationAdmission` seam, nothing more.
  *
+ * PRODUCTION ASSEMBLY ENTRY (PR2/PR3 production-assembly round, P-A writer):
+ * THE FILE ALSO CARRIES `deriveTeamPolicyAuthority` (template
+ * `capabilities.permissions` → the PR0 policy document + R-1a deny sources —
+ * the production replacement for the evidence kits' fixture-constant policy
+ * arms) and `createProductionAdmissionAssembly` (the kernel admission
+ * production entry class: derivation + kernel wiring + the default-deny gate
+ * + the PR3 FS-admission port adapter). The kernel law above this marker is
+ * byte-unchanged; the additions REUSE it, never restate it. The assembly
+ * contract for the host (GLUE-5) lives at
+ * `dev/agent-workflow/evidence/alpha5/prod/pa-CONTRACT.md`.
+ *
  * @module @dsh-agent-team/runtime/tool-admission/admission-kernel
  */
 
 import {
   canonicalJsonFingerprint,
+  parseToolPolicyDocument,
   type AdmissionRequest,
   type ExecutionLease,
   type ExecutionLeaseKind,
+  type EffectKind,
+  type Effect,
   type GovernanceError,
   type GovernanceResult,
   type OperationAdmission,
@@ -67,6 +81,7 @@ import {
   type AssuranceRequirement,
   type GrantCallContext,
   type ToolPolicyDocument,
+  type ToolPolicyRule,
 } from '../../domain/tool-governance/src/index.js'
 import {
   openExecutionLease,
@@ -76,8 +91,31 @@ import {
 import type { SubtreeContains } from '../../domain/authority-envelope/src/index.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
+// THE PRODUCTION AUTHORITY INPUT (PR2/PR3 production-assembly round): the
+// blueprint domain's static template permission policy — the object the live
+// glue reads off the bound template (`boundTemplate.capabilities?.permissions`).
+// Imported from the blueprint LEAF modules: `schema.js` carries the closed
+// value sets (no re-spelled membership lists), `types.js` the shapes; the
+// blueprint BARREL would drag the YAML parser into this lane's installed-form
+// graph, so it is deliberately not imported.
+import {
+  PERMISSION_PATH_MAX_LENGTH,
+  PERMISSION_RESOURCE_KINDS,
+  PERMISSION_RULE_FIELDS,
+  PERMISSION_TOOL_NAMES,
+} from '../../domain/blueprint/src/schema.js'
+import type {
+  PermissionTool,
+  TemplatePermissionPolicy,
+} from '../../domain/blueprint/src/types.js'
+// The Alpha.2 file/shell tool classification — the runtime's single source
+// (`operation-permission/types.ts`), never a second membership list. (The
+// shell-class membership decides the grammar branches below; the file class
+// is carried by the effect-kind map `RESOURCE_EFFECT_KINDS` + the lsp arm,
+// so only the shell list is cited here.)
+import { SHELL_PERMISSION_TOOL_VALUES } from '../operation-permission/types.js'
 import { requireFiniteClock } from './clock.js'
-import { verifyAssuranceForHardProfile, type AssuranceProbe } from './assurance-runtime.js'
+import { createStubAssuranceProbe, verifyAssuranceForHardProfile, type AssuranceProbe } from './assurance-runtime.js'
 import {
   evaluateEffectSetExpansion,
   planEffectSetApproval,
@@ -87,7 +125,7 @@ import {
   type EffectSetApprovalPlan,
   type PresentedApproval,
 } from './approval-case.js'
-import { mintOperationGrant, type GrantLedger, type ConsumeOutcome } from './grant-mint.js'
+import { createGrantLedger, mintOperationGrant, type GrantLedger, type ConsumeOutcome } from './grant-mint.js'
 
 /** Which assurance demand the call derives from Policy, per dimension. */
 export type RequiredAssuranceReader = (
@@ -600,5 +638,495 @@ export function createAdmissionKernel(options: AdmissionKernelOptions): Admissio
       const advanced = settleLeaseTermination(lease, confirmed)
       return advanced.ok ? { ok: true, value: advanced.lease } : { ok: false, error: { code: 'EXECUTION_TERMINATION_UNCONFIRMED', message: advanced.problems.map((p) => p.detail).join('; '), sideEffectUnknown: true } }
     },
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE PRODUCTION ASSEMBLY ENTRY (PR2/PR3 production-assembly round)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// WHAT IS SOLIDIFIED HERE (the sequence the accepted W5 / C-04/05 / C-08 /
+// live-round evidence kits demonstrated, promoted from fixture builders to a
+// production class — the kits' fixture-constant `policyArms` are REPLACED by
+// the REAL authority input):
+//
+//   1. THE INPUT IS THE TEMPLATE'S OWN POLICY OBJECT. `permissionPolicy` is
+//      the A1-normalized `TemplatePermissionPolicy` the glue reads off the
+//      bound template (`agent-bindings.mjs`: `boundTemplate.capabilities?.
+//      permissions`) — default + allow/ask/deny lanes of `{tool, resource}`
+//      rules. The blueprint validator already ran at document parse; this
+//      entry RE-VERIFIES the shape defensively and refuses (typed, fail
+//      closed) anything outside the closed grammar.
+//   2. THE PROJECTION (deriveTeamPolicyAuthority) maps each lane rule into
+//      the PR0 closed document family (exact/subtree matchers only — there
+//      is no `any` matcher, ever): every rule projects its `tool-invoke` arm
+//      (`<realm>|tool:<name>`, the lane the kit's scopeKey law pins), and a
+//      file-class resource rule projects the effect-kind companions
+//      (read/read_image ⇒ read + meta, write/edit ⇒ write + meta — the meta
+//      companion is the C-FS resolve/stat leg: without it, an ALLOWED read
+//      would Ask at every stat, a documented functional break). A shape the
+//      closed family CANNOT carry is never dropped in the loose direction:
+//      an unprojectable DENY (whole-tool file deny, lsp resource deny) and
+//      an uncanonicalizable ask/deny rule FAIL THE CONSTRUCTION; a skipped
+//      allow only tightens (no-authority ⇒ Ask, never an invented allow) and
+//      is recorded as a note.
+//   3. R-1a DENY SOURCES come from the deny lane READ-TIME: owner = the
+//      definition-owner rung the host declares, `sourceRef =
+//      <templateId>#deny[<lane index>]`, `sourceVersion = authorityGeneration()`
+//      at every read (so the kernel's version trust always matches the call's
+//      generation, and ruling ①'s upgradable-Ask routing needs no invention).
+//   4. `default: 'deny'` has no catch-all matcher to project — the assembly
+//      gates it BEFORE the kernel: an effect no projection rule covers is
+//      denied typed, with ZERO kernel side effects (same posture as H1).
+//      `default: 'ask'` needs nothing: PR0's no-authority arm IS the Ask.
+//   5. THE FS PORT is the kernel's own execution edge (`consumeForExecution`
+//      — the one-shot law), shaped structurally to the C-FS lane's
+//      `FsAdmissionPort`; the lane binds it to the PR1 canonical fingerprint
+//      (`bindAdmissionRecheck` law, unchanged).
+
+/** Effect-kind companions each file tool's resource rule projects (absent ⇒
+ *  the tool carries no PR0 resource-effect mapping — its rules project the
+ *  tool-invoke arm only; a DENY needing an absent mapping fails closed). */
+const RESOURCE_EFFECT_KINDS: Readonly<Partial<Record<PermissionTool, readonly EffectKind[]>>> = Object.freeze({
+  read: Object.freeze(['read', 'meta'] as const),
+  read_image: Object.freeze(['read', 'meta'] as const),
+  write: Object.freeze(['write', 'meta'] as const),
+  edit: Object.freeze(['write', 'meta'] as const),
+})
+
+const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+function projectionRefusal(
+  code: GovernanceError['code'],
+  refusalTag: string,
+  message: string,
+): { readonly ok: false; readonly error: GovernanceError } {
+  return { ok: false, error: { code, message, details: { refusal: refusalTag } } }
+}
+
+/** Input of {@link deriveTeamPolicyAuthority} — the trusted projection arms. */
+export interface TemplatePolicyProjectionInput {
+  /** REAL authority input: `boundTemplate.capabilities.permissions` (A1-normalized). */
+  readonly permissionPolicy: TemplatePermissionPolicy
+  readonly realmId: string
+  /** deny-source provenance prefix: `<templateId>#deny[<i>]`. */
+  readonly templateId: string
+  /** The rung that OWNS the static template lane (who wrote the policy). */
+  readonly definitionOwnerAuthority: RuntimeAuthority
+  /** The role of THIS install — the template grammar's shell-allow role gate. */
+  readonly role: 'leader' | 'member'
+  /** Declared path → the effect's canonical locator. Absent ⇒ only paths
+   *  already absolute (`/…`) are accepted (identity mapping, the C-FS
+   *  absolute-path instance law); anything else fails closed. */
+  readonly canonicalizeResource?: (declaredPath: string) => string | null
+  /** The planes' containment law — REQUIRED whenever a subtree rule exists. */
+  readonly subtreeContains?: SubtreeContains
+  /** Read-time version stamp for the deny sources (the assembly wires the
+   *  SAME reader as `authorityGeneration`, so trust always tracks the call). */
+  readonly sourceVersion: () => number
+  /** The Alpha.4 exec dual-gate readout for the leader's whole-tool shell
+   *  ALLOW rule. Absent/false ⇒ the rule projects as `ask` + a note — an
+   *  allow is never invented here. */
+  readonly leaderExecTokenPresent?: () => boolean
+}
+
+/** Result of {@link deriveTeamPolicyAuthority} — the read-time arms. */
+export interface TemplatePolicyProjection {
+  readonly templateDefault: 'ask' | 'deny'
+  /** Read-time document build (the leader exec dual gate answers per read). */
+  readonly buildDocument: () => ToolPolicyDocument
+  /** Read-time R-1a deny-source projection (deny lane, declaration order). */
+  readonly denySources: () => readonly PolicyDenySource[]
+  /** Everything the closed family could not carry — stated, never silent. */
+  readonly notes: readonly string[]
+  /** Does ANY projected rule (any lane) cover this effect? (default-deny gate) */
+  readonly coversEffect: (effect: Effect) => boolean
+}
+
+interface ProjectionEntry {
+  readonly ceiling: 'allow' | 'ask' | 'deny' | 'leader-exec-gate'
+  readonly effectKinds: readonly EffectKind[]
+  readonly matcher: { readonly kind: 'exact' | 'subtree'; readonly resource: string }
+}
+
+function matcherCovers(
+  matcher: ProjectionEntry['matcher'],
+  resource: string,
+  subtreeContains?: SubtreeContains,
+): boolean {
+  if (matcher.kind === 'exact') return matcher.resource === resource
+  // A subtree matcher without the seam answers only for its own root — the
+  // containment question stays unanswerable, which the default-deny gate
+  // reads as NOT covered (denied): the fail-closed direction.
+  return subtreeContains !== undefined ? subtreeContains(matcher.resource, resource) : matcher.resource === resource
+}
+
+/**
+ * PROJECT the template's static permission policy into the PR0 authority
+ * arms — the production replacement for the kits' `allowPolicy(tg, arms)`
+ * fixture constants. Deterministic: lane order allow → ask → deny, rules in
+ * declaration order, duplicates kept (mirrors the A1 normalization law).
+ * Refusals are typed and name the exact rule (path `lane[i]`), because the
+ * consumer is a host assembly, not a model.
+ */
+export function deriveTeamPolicyAuthority(
+  input: TemplatePolicyProjectionInput,
+): GovernanceResult<TemplatePolicyProjection> {
+  if (typeof input.realmId !== 'string' || input.realmId.length === 0) {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: realmId must be a non-empty string')
+  }
+  if (typeof input.templateId !== 'string' || input.templateId.length === 0) {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: templateId must be a non-empty string (deny sources name their origin)')
+  }
+  if (input.role !== 'leader' && input.role !== 'member') {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: role must be the closed template role (leader | member)')
+  }
+  const policy: unknown = input.permissionPolicy
+  if (!isPlainRecord(policy)) {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: the template permission policy must be a record { default, allow, ask, deny }')
+  }
+  const templateDefault = policy['default']
+  if (templateDefault !== 'ask' && templateDefault !== 'deny') {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', 'projection refused: policy.default must be ask | deny (default allow is rejected by the blueprint grammar — no silent privilege expansion)')
+  }
+  const lanes = { allow: policy['allow'], ask: policy['ask'], deny: policy['deny'] } as const
+  for (const lane of ['allow', 'ask', 'deny'] as const) {
+    if (!Array.isArray(lanes[lane])) {
+      return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-input-malformed', `projection refused: policy.${lane} must be an array (possibly empty)`)
+    }
+  }
+
+  const entries: ProjectionEntry[] = []
+  const denySources: Array<{ effectKind: EffectKind; matcher: ProjectionEntry['matcher']; ruleIndex: number }> = []
+  const notes: string[] = []
+  let hasSubtree = false
+
+  for (const lane of ['allow', 'ask', 'deny'] as const) {
+    const rules = lanes[lane] as readonly unknown[]
+    for (let index = 0; index < rules.length; index += 1) {
+      const path = `${lane}[${String(index)}]`
+      const rule: unknown = rules[index]
+      if (!isPlainRecord(rule) || !Object.keys(rule).every((key) => PERMISSION_RULE_FIELDS.includes(key))) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path} must be a record with fields from {${PERMISSION_RULE_FIELDS.join(', ')}}`)
+      }
+      const tool: unknown = rule['tool']
+      if (typeof tool !== 'string' || !PERMISSION_TOOL_NAMES.includes(tool)) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.tool must be one of ${PERMISSION_TOOL_NAMES.join(' | ')}`)
+      }
+      const permissionTool = tool as PermissionTool
+      const resource: unknown = rule['resource']
+      if (!isPlainRecord(resource)) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource must be a record { kind, path? }`)
+      }
+      const kind: unknown = resource['kind']
+      if (typeof kind !== 'string' || !PERMISSION_RESOURCE_KINDS.includes(kind)) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource.kind must be one of ${PERMISSION_RESOURCE_KINDS.join(' | ')}`)
+      }
+      const isShell = SHELL_PERMISSION_TOOL_VALUES.includes(permissionTool as (typeof SHELL_PERMISSION_TOOL_VALUES)[number])
+      const invokeMatcher = { kind: 'exact' as const, resource: `${input.realmId}|tool:${permissionTool}` }
+
+      if (kind === 'any') {
+        if (Object.keys(resource).some((key) => key !== 'kind')) {
+          return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource (kind 'any') must carry no field other than 'kind' (blueprint grammar)`)
+        }
+        if (lane === 'deny' && !isShell) {
+          // A whole-tool file deny would need a resource-scope catch-all the
+          // PR0 closed family does not have. Dropping it would LOOSEN the
+          // deny — the one direction a projection may never take. Refuse.
+          return projectionRefusal('IO_POLICY_UNSUPPORTED', 'projection-deny-unprojectable', `projection refused: a deny-lane whole-tool ('any') rule for the file-class tool '${permissionTool}' cannot be projected — the PR0 document family has no resource catch-all matcher, and a partial projection would silently weaken the deny (assembly refuses; move the rule to exact/subtree resources)`)
+        }
+        if (lane === 'allow' && isShell) {
+          if (input.role !== 'leader') {
+            return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-shell-allow-non-leader', `projection refused: rule ${path} is a shell-class ALLOW — the member grammar rejects it (A2C-1: no parameter-level allow for shell commands); a policy that reached here is not the policy this role owns`)
+          }
+          if (input.leaderExecTokenPresent === undefined) {
+            notes.push(`rule ${path} (${permissionTool} whole-tool allow): exec dual-gate reader not wired — projected as ASK, never as allow`)
+            entries.push({ ceiling: 'ask', effectKinds: Object.freeze(['tool-invoke'] as const), matcher: invokeMatcher })
+          } else {
+            entries.push({ ceiling: 'leader-exec-gate', effectKinds: Object.freeze(['tool-invoke'] as const), matcher: invokeMatcher })
+          }
+          continue
+        }
+        entries.push({ ceiling: lane, effectKinds: Object.freeze(['tool-invoke'] as const), matcher: invokeMatcher })
+        if (lane === 'deny') denySources.push({ effectKind: 'tool-invoke', matcher: invokeMatcher, ruleIndex: index })
+        if (!isShell) notes.push(`rule ${path} (${permissionTool} whole-tool allow over ALL resources): only the tool-invoke arm projects — resource-scoped effects fall to no-authority ⇒ Ask (TIGHTER than declared, disclosed never silent)`)
+        continue
+      }
+
+      // exact | subtree — the file dimension. The shell class rejects these
+      // at the blueprint grammar (A2C-1); re-verified here, fail closed.
+      if (isShell) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path} gives the shell tool '${permissionTool}' a '${kind}' resource — the shell class keeps only the whole-tool 'any' resource (A2C-1)`)
+      }
+      const declaredPath: unknown = resource['path']
+      const controlChar = typeof declaredPath === 'string' && [...declaredPath].some((ch) => (ch.codePointAt(0) ?? 0x20) < 0x20)
+      if (typeof declaredPath !== 'string' || declaredPath.trim().length === 0 || declaredPath.trim().length > PERMISSION_PATH_MAX_LENGTH || controlChar) {
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource.path must be a non-empty printable string of at most ${String(PERMISSION_PATH_MAX_LENGTH)} characters`)
+      }
+      const trimmed = declaredPath.trim()
+      const canonical: string | null = input.canonicalizeResource !== undefined
+        ? input.canonicalizeResource(trimmed)
+        : trimmed.startsWith('/') ? trimmed : null
+      if (typeof canonical !== 'string' || canonical.length === 0) {
+        if (lane === 'allow') {
+          notes.push(`rule ${path} (${permissionTool}@${trimmed}): resource uncanonicalizable — allow SKIPPED (no-authority ⇒ Ask; an unlocatable path is never an invented allow)`)
+          continue
+        }
+        return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-uncanonicalizable', `projection refused: rule ${path} (${permissionTool}@${trimmed}) is an ${lane} rule whose resource cannot be canonicalized — dropping it would LOOSEN authority (a deny/ask that cannot locate is a broken authority, not an absent one; the assembly refuses)`)
+      }
+      if (kind === 'subtree') hasSubtree = true
+      const matcher: ProjectionEntry['matcher'] = { kind: kind === 'subtree' ? 'subtree' : 'exact', resource: `${input.realmId}|${canonical}` }
+      entries.push({ ceiling: lane, effectKinds: Object.freeze(['tool-invoke'] as const), matcher: invokeMatcher })
+      if (lane === 'deny') denySources.push({ effectKind: 'tool-invoke', matcher: invokeMatcher, ruleIndex: index })
+      const effectKinds = RESOURCE_EFFECT_KINDS[permissionTool]
+      if (effectKinds === undefined) {
+        // Only the file-class tools can carry exact/subtree resources and the
+        // only such tool without a PR0 resource-effect mapping is `lsp`.
+        if (lane === 'deny') {
+          return projectionRefusal('IO_POLICY_UNSUPPORTED', 'projection-deny-unprojectable', `projection refused: rule ${path} denies '${permissionTool}@${trimmed}' — '${permissionTool}' has no PR0 resource-effect mapping, so a resource-scoped deny cannot be projected without weakening it`)
+        }
+        notes.push(`rule ${path} (${permissionTool}@${trimmed}): '${permissionTool}' has no PR0 resource-effect mapping — the tool-invoke arm projects, resource effects fall to the lane default (disclosed)`)
+      } else {
+        for (const effectKind of effectKinds) {
+          entries.push({ ceiling: lane, effectKinds: Object.freeze([effectKind] as const), matcher })
+          if (lane === 'deny') denySources.push({ effectKind, matcher, ruleIndex: index })
+        }
+      }
+    }
+  }
+
+  if (hasSubtree && input.subtreeContains === undefined) {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-subtree-seam-missing', 'projection refused: the policy carries a subtree rule but no SubtreeContains seam was injected — subtree coverage is unanswerable without the planes containment law and is never guessed (same law as the C-FS wiring face)')
+  }
+
+  const buildDocument = (): ToolPolicyDocument => {
+    const rules: ToolPolicyRule[] = []
+    for (const entry of entries) {
+      const ceiling = entry.ceiling === 'leader-exec-gate'
+        ? (input.leaderExecTokenPresent !== undefined && input.leaderExecTokenPresent() ? 'allow' as const : 'ask' as const)
+        : entry.ceiling
+      for (const effectKind of entry.effectKinds) {
+        rules.push({ realmId: input.realmId, effectKind, matcher: entry.matcher, maximumEffect: ceiling })
+      }
+    }
+    const parsed = parseToolPolicyDocument({ rules })
+    if (!parsed.ok) {
+      // Construction validated the same shape; a failure here is a bug state,
+      // never a silent fallback.
+      throw new Error(`team-admission projection: the derived document failed the frozen parser (${parsed.problems.map((p) => `${p.path}: ${p.code}`).join('; ')})`)
+    }
+    return parsed.value
+  }
+  try {
+    buildDocument()
+  } catch (error) {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-document-rejected', `projection refused: ${String((error as Error).message)}`)
+  }
+
+  return {
+    ok: true,
+    value: Object.freeze({
+      templateDefault,
+      buildDocument,
+      denySources: (): readonly PolicyDenySource[] => denySources.map((arm) => Object.freeze({
+        realmId: input.realmId,
+        effectKind: arm.effectKind,
+        matcher: arm.matcher,
+        ownerAuthority: input.definitionOwnerAuthority,
+        sourceRef: `${input.templateId}#deny[${String(arm.ruleIndex)}]`,
+        sourceVersion: input.sourceVersion(),
+      })),
+      notes: Object.freeze([...notes]),
+      coversEffect: (effect: Effect): boolean => {
+        const scoped = effect.kind === 'tool-invoke'
+          ? { kind: 'tool-invoke' as const, resource: `${input.realmId}|tool:${effect.toolName}` }
+          : effect.kind === 'domain-ref'
+            ? { kind: 'domain-ref' as const, resource: `${input.realmId}|domain:${effect.domainAuthorityId}` }
+            : { kind: effect.kind, resource: `${effect.resource.realmId}|${effect.resource.canonicalLocator}` }
+        return entries.some((entry) => entry.effectKinds.includes(scoped.kind) && matcherCovers(entry.matcher, scoped.resource, input.subtreeContains))
+      },
+    }),
+  }
+}
+
+/** The trusted wiring of {@link createProductionAdmissionAssembly}. */
+export interface ProductionAdmissionConfig {
+  // ── REAL AUTHORITY INPUT (not fixture constants) ──
+  /** = `boundTemplate.capabilities.permissions` (the A1-normalized policy). */
+  readonly permissionPolicy: TemplatePermissionPolicy
+  readonly realmId: string
+  readonly templateId: string
+  readonly definitionOwnerAuthority: RuntimeAuthority
+  readonly role: 'leader' | 'member'
+  // ── TRUSTED RUNTIME INPUT (assembly-supplied, never model-visible) ──
+  /** The host wall clock (H1 gates it per call; no lane-owned clock). */
+  readonly clock: () => number
+  /** Same reader the guard publishes with; deny-source versions read it too. */
+  readonly authorityGeneration: () => number
+  readonly beneficiaryAuthority: RuntimeAuthority
+  /** Absent ⇒ the documented no-narrowing state (exists, empty; mutation
+   *  absent) — the same fact the Alpha.4 plane states for an unmoved team. */
+  readonly documents?: () => AuthorityEnvelopeDocuments
+  readonly canonicalizeResource?: (declaredPath: string) => string | null
+  readonly subtreeContains?: SubtreeContains
+  readonly leaderExecTokenPresent?: () => boolean
+  /** Absent ⇒ the lane's honest stub probe (every dimension 'untested' — a
+   *  hard profile is NEVER redeemed by it). Hosts wire the real probe when
+   *  the OS enforcement (PR4) lands. */
+  readonly assuranceProbe?: AssuranceProbe
+  readonly requiredAssurance?: RequiredAssuranceReader
+  readonly grantExpiry?: (issuedAt: number) => number | null
+  readonly ledger?: GrantLedger
+  /** The host's cancellation view at the execution edge (port reads it). */
+  readonly cancelRequested?: (callId: string) => boolean
+  readonly onObserve?: (event: Readonly<Record<string, unknown>> & { readonly event: string }) => void
+}
+
+/** Structurally the C-FS lane's `FsAdmissionPort` (the lanes stay decoupled:
+ *  this is the kernel's OWN execution edge, shaped to the port the C-FS
+ *  binding consumes — no second authorization fact, no lane-to-lane import). */
+export interface ProductionFsAdmissionPort {
+  readonly recheckCall: (intent: {
+    readonly op: string
+    readonly canonicalLocator: string
+    readonly parametersFingerprint: string
+  }) => Promise<{ readonly ok: true } | { readonly ok: false; readonly reason: string }>
+}
+
+export interface ProductionAdmissionAssembly {
+  /** The wired kernel (approval loop: planApproval / issueApprovedGrant ride
+   *  it — the Alpha.4 ApprovalCase stays the ONE case, GLUE-5 owns the loop). */
+  readonly kernel: AdmissionKernel
+  readonly realmId: string
+  /** Read-time projection (dual gate answers per read). */
+  readonly policyDocument: () => ToolPolicyDocument
+  readonly denySources: () => readonly PolicyDenySource[]
+  readonly projectionNotes: readonly string[]
+  /** The consumption view to hand the C-FS provider (`consumed:` config arm). */
+  readonly consumed: (grantId: string) => boolean
+  /** default-deny gate + `kernel.admit` (zero kernel touch on a gate denial). */
+  readonly admitCall: (request: AdmissionRequest) => Promise<GovernanceResult<OperationAdmissionDecision>>
+  readonly planApproval: AdmissionKernel['planApproval']
+  readonly issueApprovedGrant: AdmissionKernel['issueApprovedGrant']
+  readonly consumeForExecution: AdmissionKernel['consumeForExecution']
+  /** ONE gated C-FS operation per admitted call (the lane's one-shot recheck
+   *  law): this port IS the execution edge the C-04/05 kits drove by hand. */
+  readonly createFsAdmissionPort: (request: AdmissionRequest, grant: OperationGrant) => ProductionFsAdmissionPort
+}
+
+/** The documented documents default: BOTH slots stated (never `undefined`),
+ *  the hard envelope exists and narrows nothing, no mutation envelope —
+ *  exactly the fact an unmoved Alpha.4 team carries. Hosts with real ceiling
+ *  documents MUST inject `documents`. */
+const EMPTY_NARROWING_DOCS: AuthorityEnvelopeDocuments = Object.freeze({
+  teamHardEnvelope: Object.freeze({ rules: [] }),
+  permissionMutationEnvelope: Object.freeze({ status: 'absent' as const }),
+})
+
+/**
+ * THE KERNEL ADMISSION PRODUCTION ENTRY CLASS: derivation → kernel wiring →
+ * default-deny gate → FS port, from the template's real policy object. A
+ * construction failure is typed and complete (the host fails the AgentSetup
+ * the same way a Guard install failure fails it — a permissions agent never
+ * runs on a broken authority).
+ */
+export function createProductionAdmissionAssembly(
+  config: ProductionAdmissionConfig,
+): GovernanceResult<ProductionAdmissionAssembly> {
+  if (typeof config.clock !== 'function' || typeof config.authorityGeneration !== 'function') {
+    return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'assembly-input-malformed', 'assembly refused: clock and authorityGeneration are required trusted readers (the lane owns no clock, no generation)')
+  }
+  const projection = deriveTeamPolicyAuthority({
+    permissionPolicy: config.permissionPolicy,
+    realmId: config.realmId,
+    templateId: config.templateId,
+    definitionOwnerAuthority: config.definitionOwnerAuthority,
+    role: config.role,
+    ...(config.canonicalizeResource === undefined ? {} : { canonicalizeResource: config.canonicalizeResource }),
+    ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
+    ...(config.leaderExecTokenPresent === undefined ? {} : { leaderExecTokenPresent: config.leaderExecTokenPresent }),
+    sourceVersion: config.authorityGeneration,
+  })
+  if (!projection.ok) return projection
+
+  const observe = config.onObserve ?? ((): void => {})
+  const ledger = config.ledger ?? createGrantLedger()
+  const kernel = createAdmissionKernel({
+    clock: config.clock,
+    authorityGeneration: config.authorityGeneration,
+    documents: config.documents ?? (() => EMPTY_NARROWING_DOCS),
+    policyDocument: projection.value.buildDocument,
+    denySources: projection.value.denySources,
+    beneficiaryAuthority: config.beneficiaryAuthority,
+    assuranceProbe: config.assuranceProbe ?? createStubAssuranceProbe({}),
+    requiredAssurance: config.requiredAssurance ?? (() => ({})),
+    ledger,
+    ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
+    ...(config.grantExpiry === undefined ? {} : { grantExpiry: config.grantExpiry }),
+    ...(config.onObserve === undefined ? {} : { onObserve: config.onObserve }),
+  })
+  for (const note of projection.value.notes) observe({ event: 'production-admission-note', note })
+  observe({ event: 'production-admission-constructed', realmId: config.realmId, templateId: config.templateId, templateDefault: projection.value.templateDefault, notes: projection.value.notes.length })
+
+  const admitCall: ProductionAdmissionAssembly['admitCall'] = async (request) => {
+    if (projection.value.templateDefault === 'deny') {
+      const effects = request.requestedEffects.effects
+      for (let index = 0; index < effects.length; index += 1) {
+        const effect: Effect | undefined = effects[index]
+        if (effect !== undefined && !projection.value.coversEffect(effect)) {
+          observe({ event: 'production-admission-default-deny', effectIndex: index, effectKind: effect.kind })
+          return {
+            ok: true,
+            value: {
+              kind: 'denied',
+              error: {
+                code: 'IO_POLICY_UNSUPPORTED',
+                message: `admission refused: the template policy defaults to DENY and no rule covers this effect (${effect.kind}) — an effect the policy never names is not an effect the policy allows (the Ask lane belongs to named rules)`,
+                details: { refusal: 'template-default-deny', effectIndex: index },
+              },
+            },
+          }
+        }
+      }
+    }
+    return kernel.admit(request)
+  }
+
+  return {
+    ok: true,
+    value: Object.freeze({
+      kernel,
+      realmId: config.realmId,
+      policyDocument: projection.value.buildDocument,
+      denySources: projection.value.denySources,
+      projectionNotes: projection.value.notes,
+      consumed: (grantId: string) => ledger.view.isConsumed(grantId),
+      admitCall,
+      planApproval: kernel.planApproval,
+      issueApprovedGrant: kernel.issueApprovedGrant,
+      consumeForExecution: kernel.consumeForExecution,
+      createFsAdmissionPort: (request: AdmissionRequest, grant: OperationGrant): ProductionFsAdmissionPort => Object.freeze({
+        recheckCall: async (intent: {
+          readonly op: string
+          readonly canonicalLocator: string
+          readonly parametersFingerprint: string
+        }) => {
+          if (ledger.view.isConsumed(grant.grantId)) return { ok: false as const, reason: 'grant-consumed' }
+          const outcome = kernel.consumeForExecution(grant, {
+            currentAuthorityGeneration: config.authorityGeneration(),
+            member: request.member,
+            callId: request.callId,
+            realmId: request.realmId,
+            bindingId: grant.bindingId,
+            bindingRevision: grant.bindingRevision,
+            parametersFingerprint: intent.parametersFingerprint,
+            requestedEffects: request.requestedEffects,
+            cancelRequested: config.cancelRequested?.(request.callId) ?? false,
+          })
+          return outcome.ok ? { ok: true as const } : { ok: false as const, reason: 'grant-invalid' }
+        },
+      }),
+    }),
   }
 }

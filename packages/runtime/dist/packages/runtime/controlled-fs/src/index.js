@@ -16,5 +16,8 @@ export { createControlledFsLane, } from './controlled-fs.js';
 // G-d integration wiring (Scope-2): the PR2-admission GATED consumption face
 // (README §4). This is the ONLY sanctioned wiring entry — the raw factory's
 // pre-freeze NO_RECHECK default must never be the wiring default.
-export { ARBITRARY_TREE_PROFILE_PUBLISHED, bindAdmissionRecheck, createAdmissionGatedControlledFs, UNBOUND_ADMISSION_RECHECK, } from './admission-binding.js';
+export { ARBITRARY_TREE_PROFILE_PUBLISHED, bindAdmissionRecheck, createAdmissionGatedControlledFs, 
+// PR2/PR3 production-assembly round: the production provider (per-call
+// gated lane from reader arms; contract: evidence `alpha5/prod/pa-CONTRACT.md`).
+createProductionControlledFsProvider, UNBOUND_ADMISSION_RECHECK, } from './admission-binding.js';
 //# sourceMappingURL=index.js.map

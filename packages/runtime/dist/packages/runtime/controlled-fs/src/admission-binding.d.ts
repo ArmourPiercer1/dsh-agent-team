@@ -109,4 +109,50 @@ export declare function createAdmissionGatedControlledFs(config: AdmissionGatedC
  * is a code convenience in this wiring slice.
  */
 export declare const ARBITRARY_TREE_PROFILE_PUBLISHED = false;
+/** Construction arms of {@link createProductionControlledFsProvider}. */
+export interface ProductionControlledFsProviderConfig {
+    /** The ONE Realm the provider's instances belong to (every gated lane is
+     *  realm-checked by the lane itself; the provider refuses construction on
+     *  an instance naming another realm instead of publishing a lane that
+     *  would refuse at first use). */
+    readonly realmId: string;
+    /** The host-registered instance roots (the lane's `ControlledFsInstance`
+     *  shape — derived from the lane config type, never a second spelling). */
+    readonly instances: ControlledFsLaneConfig['instances'];
+    /** The host wall clock (the lane gates its own reads for finiteness). */
+    readonly clock: () => number;
+    /** The SAME generation reader the admission assembly/Guard publish with;
+     *  read PER `gateCall` (a lane carries one call's generation, law of the
+     *  frozen `ControlledFsLaneConfig`). */
+    readonly authorityGeneration: () => number;
+    /** The grant-consumption view — wire `assembly.consumed` (the one-shot
+     *  law's read side; there is no second ledger). */
+    readonly consumed: NonNullable<ControlledFsLaneConfig['consumed']>;
+    /** C1 subtree law injection (law 3 — same reader the admission assembly
+     *  projects through, so the two faces never disagree on containment). */
+    readonly subtreeContains?: SubtreeContains;
+    /** The observation policy seam (withheld-is-not-absent). */
+    readonly visibility?: NonNullable<ControlledFsLaneConfig['visibility']>;
+}
+export interface ProductionControlledFsProvider {
+    readonly realmId: string;
+    /** The registered instance ids (assembly-time self-check for the host). */
+    readonly instanceIds: readonly string[];
+    /**
+     * THE per-call seam: one admitted call hands its `AdmissionBoundFsCall`
+     * (the PR2 `createFsAdmissionPort` + the grant's canonical fingerprint)
+     * and gets the gated lane for exactly that call. One gated C-FS operation
+     * consumes the one-shot grant (the lane's revalidate+recheck law) — the
+     * next controlled operation is the next admitted call.
+     */
+    readonly gateCall: (bound: AdmissionBoundFsCall) => ControlledFsLane;
+}
+/**
+ * The C-FS production provider class: assembly-time registration + per-call
+ * gated-lane construction. Construction violations are `TypeError`s (the
+ * same constructor-invariant style as `bindAdmissionRecheck`: a provider
+ * built on a foreign realm or an empty root set can only mislead, so it is
+ * never built).
+ */
+export declare function createProductionControlledFsProvider(config: ProductionControlledFsProviderConfig): ProductionControlledFsProvider;
 //# sourceMappingURL=admission-binding.d.ts.map
