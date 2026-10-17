@@ -1,0 +1,23 @@
+{
+  "//": [
+    "a5-w7 kit-local compile of the PR7 jobs-gateway lane. This is NOT the repo",
+    "compile plane: packages/runtime/tsconfig*.json are shared files (WIRING-PHASE",
+    "IF-5, sole writer GLUE) and the lane is not in them at base — the Lane F",
+    "README checklist #1 states the integration owner lands the include. Until",
+    "that lands, this project compiles the UNMODIFIED lane sources read-only so",
+    "the wiring row can import the public barrel through the host's plain-Node",
+    "load path, and it doubles as the lane's FIRST tsc run (review-LaneF",
+    "condition 2: 'tsconfig include 落地后必须补跑 tsc — lane 从未进过 tsc').",
+    "Emit goes to node_modules/.a5w7-jobs-build (gitignored); zero source edits,",
+    "zero shared-file edits. Removal path: when GLUE lands the build include,",
+    "the kit switches to packages/runtime/dist and this file retires."
+  ],
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/runtime/jobs-gateway",
+    "outDir": "../../../node_modules/.a5w7-jobs-build",
+    "noEmit": false,
+    "types": []
+  },
+  "include": ["../../../packages/runtime/jobs-gateway/**/*.ts"]
+}
