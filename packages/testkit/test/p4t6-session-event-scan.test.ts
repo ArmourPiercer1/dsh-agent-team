@@ -2489,6 +2489,17 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
       'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
     ]
+    // alpha5-runtime-base-narrow (the '/' READ_DIR bug fix): the ONE scannable
+    // file is the narrowing lane suite (byte pin + policy-surface pin + REAL
+    // Landlock enumeration negatives and base/anchor positives). The fix
+    // itself edits ALREADY-COUNTED files only (the launcher .py is outside
+    // the packages source scan by extension rule, provider.ts and
+    // plane-effect-backends.mjs were booked by their owner rounds), and the
+    // witness kit + runs live under dev/agent-workflow/evidence/** like every
+    // prior kit round.
+    const SCANNED_PATHS_A5RBN: readonly string[] = [
+      'packages/runtime/test/a5rbn-runtime-base-narrow.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2531,7 +2542,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5SCHEMAREV.length +
-        SCANNED_PATHS_A5GLUE7.length,
+        SCANNED_PATHS_A5GLUE7.length +
+        SCANNED_PATHS_A5RBN.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2575,7 +2587,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5SCHEMAREV.length +
-        SCANNED_PATHS_A5GLUE7.length,
+        SCANNED_PATHS_A5GLUE7.length +
+        SCANNED_PATHS_A5RBN.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2643,6 +2656,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5SCHEMAREV,
       ...SCANNED_PATHS_A5GLUE7,
+      ...SCANNED_PATHS_A5RBN,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2915,6 +2929,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // stays at `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the
     // two named files ends the chain at 1182 — the scanner total of this tree.
     expect(SCANNED_PATHS_A5GLUE7.length).toBe(1182 - 1180)
+    // The runtime-base-narrow tie, measured on THIS merged tree (the GLUE-7
+    // re-tie above landed at 1182): solo RED read `expected 1183 to be 1182`
+    // (`evidence/alpha5/runtime-base-narrow/p4t6-A5RBN-RETIE-RED.txt`);
+    // booking the one named lane suite ends the chain at 1183 — the scanner
+    // total of this tree. The fix's own edits touch ALREADY-COUNTED files
+    // (provider.ts, plane-effect-backends.mjs) or files outside the scan
+    // (the launcher `.py`, evidence kits under dev/**) — the chain moves by
+    // exactly the one new spec.
+    expect(SCANNED_PATHS_A5RBN.length).toBe(1183 - 1182)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

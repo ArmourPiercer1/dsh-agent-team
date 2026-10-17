@@ -563,6 +563,17 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
         observe(`confined-shell capability OK realm=${realmId} rows=${probed.value.length}`)
       }
       trace = ['probe', 'prepare', 'execute']
+      // runtime-base-narrow DYNAMIC GRANT: the per-call anchored workspace
+      // root enters the plan EXPLICITLY — the provider base no longer shadows
+      // it with a '/' READ_DIR (bug fix, glue7 §4b name-class leak). Default
+      // face: the SAME entry bits this row has always carried for its anchor
+      // (read/rw inside, nothing outside). Assembly-declared `allowPaths`
+      // face: a READ_DIR grant on the anchored root only — strict parity
+      // with what the removed '/' READ_DIR incidentally provided there
+      // (that rule never granted READ_FILE), zero new write lanes.
+      const anchorGrant = confined.allowPaths === undefined
+        ? { path: cwd, accessBits: { readFile: true, readDir: true, writeFile: true, makeReg: true, truncate: true, removeFile: true } }
+        : { path: cwd, accessBits: { readDir: true } }
       const request = {
         grantFingerprint: `glue7:${realmId}:${templateId}:${call.callId}`,
         realmId,
@@ -571,10 +582,12 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
         argv: ['/bin/sh', '-c', parsed.command],
         cwd,
         env: [['PATH', '/usr/bin:/bin']],
-        allowPaths: confined.allowPaths ?? [
-          SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
-          ...(existsSync('/lib64') ? [SYSTEM_RX('/lib64')] : []),
-          { path: cwd, accessBits: { readFile: true, readDir: true, writeFile: true, makeReg: true, truncate: true, removeFile: true } },
+        allowPaths: [
+          ...(confined.allowPaths ?? [
+            SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
+            ...(existsSync('/lib64') ? [SYSTEM_RX('/lib64')] : []),
+          ]),
+          anchorGrant,
         ],
       }
       const handle = await provider.spawnStreaming(request)

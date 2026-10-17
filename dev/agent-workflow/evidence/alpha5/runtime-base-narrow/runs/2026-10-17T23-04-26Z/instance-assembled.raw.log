@@ -1,0 +1,11 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T23-04-26Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=_KEnsrsTxuCRkHVF1a4Ck2f1hNpokfNH8kFBNZuxINY
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=64 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-runtime-base-narrow/tests/homes/a5rbn-assembled-2026-10-17T23-04-26Z/workspace/governed/notes.txt
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-1dr7jtj0nhgy-bash-2 pid=218 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-1dr7jtj0nhgy-bash-3 pid=221 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-1dr7jtj0nhgy-bash-4 pid=224 exit=0 timedOut=false
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm
