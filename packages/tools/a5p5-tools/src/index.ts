@@ -79,3 +79,9 @@ export {
 export { createDirectBackend } from './backend-direct.js'
 export { createContractStubBackend } from './backend-stub.js'
 export { runToolCall, type AdmissionVerdict, type RunToolCallDeps, type SpillPointerFact, type ToolCallRequest, type ToolCallResult } from './pipeline.js'
+
+// PR4/5 install round — THE REGISTRATION FACE (pb-CONTRACT.md §2): tool
+// DEFINITIONS over the one pipeline. The mount (which scope, which names,
+// which order) stays with the assembler — GLUE-4 owns the scoped-mount
+// ruling; this lane only produces the definitions and never registers.
+export { createGovernedToolDefinitions, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js'

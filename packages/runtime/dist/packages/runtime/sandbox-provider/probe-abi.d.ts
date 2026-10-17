@@ -77,6 +77,22 @@ export interface FdCloseVerdict {
 }
 /** Run the real FD-closure leg: ruleset compiled parent-side, fork (no exec), child closes undeclared + self-locks. */
 export declare function runFdCloseProbe(deps: LauncherDeps, scratchDir: string, plan?: FdPlan): FdCloseVerdict;
+/** Inputs (the `read` seam is injectable for tests; production reads the file). */
+export interface LauncherIntegrityInput {
+    readonly launcherPath: string;
+    readonly launcherSha256: string;
+    readonly read?: (path: string) => Uint8Array;
+}
+export type LauncherIntegrityKind = 'PINNED-MATCH' | 'PIN-MISMATCH' | 'UNREADABLE' | 'INVALID-PIN';
+/** One integrity verdict. `observed`/`pinned` are full sha256 hex (public bytes-hash facts). */
+export interface LauncherIntegrityVerdict {
+    readonly kind: LauncherIntegrityKind;
+    readonly pinned: string;
+    readonly observed: string | null;
+    readonly detail: string;
+}
+/** Verify the launcher bytes against the assembly pin. Never throws. */
+export declare function verifyLauncherIntegrity(input: LauncherIntegrityInput): LauncherIntegrityVerdict;
 /** The vocabulary an availability note must NEVER contain (ruling: 文案禁内核断言). */
 export declare const KERNEL_ASSERTION_FORBIDDEN: readonly ["kernel", "landlock", "enforc", "abi", "syscall"];
 /** One precondition row. */

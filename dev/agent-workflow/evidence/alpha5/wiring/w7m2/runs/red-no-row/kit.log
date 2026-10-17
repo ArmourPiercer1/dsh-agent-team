@@ -1,0 +1,7 @@
+[2026-10-17T05:36:29.787Z] a5cvg kit 2026-10-17T05-36-29 (mode=green RED-control): host 0.2.0-rc.2 @ 639ed01539; port 3184; world /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-36-29
+[2026-10-17T05:36:29.901Z] PASS C0a: jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile) — exit=0 sha=694852ff90185022
+[2026-10-17T05:36:30.996Z] PASS C0b: absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations) — hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]
+[2026-10-17T05:36:32.222Z] PASS C-red: RED control: without the a5cvg row the assembly face is ABSENT (404) — the registration legs are not vacuous — status=404
+[2026-10-17T05:36:32.223Z] PASS C-red2: RED control world is a live HTTP/auth plane (launch-token auth succeeded; the row face returns a REAL HTTP response, not a dead socket) — the 404 absence is the row, not the server; boot observations recorded verbatim — p6t6=404 a5cvg=404 boot_failures=0
+[2026-10-17T05:36:34.126Z] PASS C-red3: RED control: world removed and dist barrel byte-identical — world=removed barrelStable=true
+[2026-10-17T05:36:34.126Z] criteria: 5/5 pass

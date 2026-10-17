@@ -23,4 +23,5 @@ export * from './network.js';
 export * from './probe-abi.js';
 export * from './realm-evidence.js';
 export * from './provider.js';
+export * from './lsp-assembly.js';
 //# sourceMappingURL=index.d.ts.map

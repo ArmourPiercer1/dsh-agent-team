@@ -1,0 +1,36 @@
+{
+  "round": "W8 formal (alpha5-wire-pr8)",
+  "run_utc": "2026-10-17T03:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3186,
+  "world_prefix": "a5w8-*",
+  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-08 run_code (PTC)",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-nega/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-negb/criteria.json"
+  ],
+  "execution": {
+    "outer_real_process": true
+  },
+  "execution_note": "outer=W4 真 spawn（W4-POS-SPAWN rc=0 pid=144 lease=terminated spyDelta=1；rc/pid 走公开 deps 计账 spy=披露的 seam 观察1）。inner_reentry_same_pipeline=PTC 管线复入腿：合并 kit 无 PTC 装配 ⇒ 不 book。",
+  "per_call_policy_denials": [
+    {
+      "os_level_observed": true,
+      "observation": "W4-DOMAIN-DENY rc=1 eacces=true leaked=false（域内 cat 私有 fixture，真 Landlock ABI v4）；W4-ENFORCE-LIVE legs selective/denyall=ENFORCE-CONFIRMED，badhandled=DEMO-CONFIRMED（假阴性判别器在场）"
+    }
+  ],
+  "negative_controls": [
+    {
+      "error": "IO_POLICY_UNSUPPORTED",
+      "spawn_count": 0,
+      "observation": "W4-NEG-NET net-deny/net-restricted/net-forged 三类 spyDelta=0（启动前拒）；W4-NEG-ZEROSPAWN execAnswerRows=0 ceSpyRows=0 scratchSpawnPaths=0；W4-NEG-PTY wiring-boundary-before-provider"
+    }
+  ],
+  "not_observed": [
+    "execution.inner_reentry_same_pipeline（内层复入同一管线逐次 Guard）——PTC run_code 管线无装配 row",
+    "transport_same_name_both_sides_throw——保留传输双侧 throw 属 PR8/PTC 面，W4 kit 不含"
+  ],
+  "kernel_revocation_contrast": "W4 negb 18/18（seccomp-BPF per-process 撤销 ⇒ typed SANDBOX_UNAVAILABLE，零 confined-exec）——ENFORCE 分级如实：fixture/subprocess 级 OS 强制，非整链"
+}

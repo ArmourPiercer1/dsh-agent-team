@@ -8,8 +8,8 @@
 //     （工厂调用 / dist 公开 barrel 动态 import / lane 编译产物模块路径）在**非注释行**上出现。
 //     注释提及、字符串裸子串一律不过（prep 轮的 agent-bindings 裸子串预检可被一行注释骗过，已废弃）。
 //     装配面 = W4 `evidence/alpha5/w4/a5w4-provider-row.mjs`、W5 `evidence/alpha5/wiring/w5/a5w5-{assembly-row,fixtures}.mjs`、
-//     W7 `tests/kits/a5-w7-jobs-wiring/{a5w7-jobs-plugin.mjs,tsconfig.lane.json}`（IF-1 公开 seam 装配 row，
-//     均在 master 现势在册）。旧表把 registry 套件 run≠null / jobs-gateway tsconfig include 当装配信号——
+//     W7 `tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs` + `packages/runtime/tsconfig.build.json` lane include row（IF-1 公开 seam 装配 row，
+//     均在 master 现势在册；kit-local tsconfig.lane.json 已随 PR7 P-C 退役 ⇒ review-PC §3.2 F-1 词汇表对齐）。旧表把 registry 套件 run≠null / jobs-gateway tsconfig include 当装配信号——
 //     二者实为 GLUE/PR8-build 后续工作项（F-6 已披露），不再是本 probe 的门；相应缺口如实登在
 //     vnext-migration-gap-checklist.md 与矩阵 disclosed_gaps，不由锚点表隐藏。
 //  F-1 证据真实性：LIVE 只能由 runner/probe **亲验**得出——(a) 装配锚点由本文件 grepAssemblyAnchors
@@ -80,9 +80,9 @@ export const ASSEMBLY_FACES = Object.freeze({
         ],
       },
       {
-        path: 'tests/kits/a5-w7-jobs-wiring/tsconfig.lane.json',
+        path: 'packages/runtime/tsconfig.build.json',
         shapes: [
-          { re: String.raw`packages/runtime/jobs-gateway`, why: 'kit-local 编译面覆盖 lane 源（编译在场；runtime tsconfig include 归 GLUE 队列，缺口在差距检查表在册）' },
+          { re: String.raw`^\s*"jobs-gateway",?\s*$`, why: '生产编译面覆盖 lane 源（lane include row 在场；kit-local tsconfig.lane.json 已随 PR7 P-C 退役 ⇒ review-PC §3.2 F-1 (ii) 编译面锚）' },
         ],
       },
     ],

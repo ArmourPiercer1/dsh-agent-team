@@ -1,0 +1,156 @@
+{
+  "mode": "baseline",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue5-entry/tests/homes/a5g5-baseline-2026-10-17T11-44-58Z",
+  "ok": true,
+  "discPrompt": {
+    "attempts": 2,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5g5-baseline-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5g5-team-2026-10-17T11-44-58Z\",\"blueprint\":{\"blueprintId\":\"team.a5g5.main\",\"revision\":\"1\",\"contentHash\":\"sha256:190dd69eac1da6ac29dd2c167d9e9f11e21da3f24be77d2ed3b9d81622c992de\"},\"createdAt\":\"2026-10-17T11:45:20.550Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue5-entry/tests/homes/a5g5-baseline-2026-10-17T11-44-58Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5g5-team-2026-10-17T11-44-58Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5g5-team-2026-10-17T11-44-58Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-17T11:45:20.554Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5g5-team-2026-10-17T11-44-58Z\",\"rootSessionId\":\"session-a5g5-team-2026-10-17T11-44-58Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"persona\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"model\"},{\"name\":\"agent-setup/overlay-installed\",\"detail\":\"capability\"},{\"name\":\"agent-setup/admission-decided\",\"detail\":\"ADMISSION_OPE"
+  },
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ],
+  "standard": {
+    "sessionId": "session-f718c166-462a-48f6-b760-e285414f6be6",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "minimal": {
+    "sessionId": "session-3b6c7bb1-98bc-421d-9be5-f08ecea06e18",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "bash"
+    ],
+    "scopedNames": [
+      "bash"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [],
+  "liveJobsGateway": {
+    "session-a5g5-team-2026-10-17T11-44-58Z": {
+      "present": false,
+      "hasGateway": false,
+      "hasLease": false
+    }
+  },
+  "leader": {
+    "session": "session-a5g5-team-2026-10-17T11-44-58Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_stray": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      }
+    }
+  }
+}

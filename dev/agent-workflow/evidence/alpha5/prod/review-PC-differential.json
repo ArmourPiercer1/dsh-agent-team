@@ -1,0 +1,130 @@
+{
+  "at": "2026-10-17T08:01:52.325Z",
+  "base": "d714a941 committed dist",
+  "head": "ce44fd4e committed dist",
+  "results": [
+    {
+      "id": "C1-W3-identity-pin",
+      "claim": "identity binding + value pin against caller mutation + duplicate/owner-mismatch faces — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "1162 canonical bytes equal; 2 observation events on both sides"
+    },
+    {
+      "id": "C2-W4-isolation",
+      "claim": "two-member mutual invisibility + static cross-scope detail + swapped-root viewer — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "1492 canonical bytes equal; 2 observation events on both sides"
+    },
+    {
+      "id": "C3-W5-revocation-attribution",
+      "claim": "cancel-only-what-moved + neighbour safety + execution-time attribution — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "1972 canonical bytes equal; 6 observation events on both sides"
+    },
+    {
+      "id": "C4-W6-settle-release",
+      "claim": "settle while ACTIVE + drain at self-counted zero reaches RELEASED — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "1485 canonical bytes equal; 5 observation events on both sides"
+    },
+    {
+      "id": "C5-W7-boundary-giveup",
+      "claim": "A holds ⇒ B refused + drain refuses new admits from the first instant + cross-boundary settle refused with token outstanding + release refuses forever after giveUp — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "2971 canonical bytes equal; 11 observation events on both sides"
+    },
+    {
+      "id": "C6-redaction-unknown",
+      "claim": "unknown callId is noted not invented + credential-shaped values redacted AT COLLECTION — head transcript byte-equal to base",
+      "ok": true,
+      "detail": "1847 canonical bytes equal; 4 observation events on both sides"
+    },
+    {
+      "id": "BND-empty-string pin",
+      "claim": "base vs head shape on record (degenerate input, no injection)",
+      "ok": true,
+      "info": true,
+      "detail": "base={\"events\":[\"gateway-job-admitted\"],\"jobs\":1,\"lease\":\"ACTIVE\",\"outstanding\":1,\"r\":{\"job\":{\"cancelRequested\":false,\"evidence\":[],\"jobId\":\"jD\",\"outcome\":null,\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-A\\\",\\\"rootSessionId\\\":\\\"root-A\\\"}\",\"pinnedIdentity\":\"\",\"scopeKey\":\"scope-A\",\"state\":\"leased\",\"toolName\":\"bash\"},\"ok\":true}}\n  head={\"events\":[\"gateway-admit-definition-unreadable\"],\"jobs\":0,\"lease\":\"ACTIVE\",\"outstanding\":0,\"r\":{\"code\":\"mapping-rejected\",\"detail\":\"no execution-time definition identity to pin for scope-A/bash (no-reader)\",\"ok\":false}}"
+    },
+    {
+      "id": "BND-undefined pin, no reader",
+      "claim": "base vs head shape on record (degenerate input, no injection)",
+      "ok": true,
+      "info": true,
+      "detail": "base={\"events\":[\"gateway-job-admitted\"],\"jobs\":1,\"lease\":\"ACTIVE\",\"outstanding\":1,\"r\":{\"job\":{\"cancelRequested\":false,\"evidence\":[],\"jobId\":\"jD\",\"outcome\":null,\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-A\\\",\\\"rootSessionId\\\":\\\"root-A\\\"}\",\"scopeKey\":\"scope-A\",\"state\":\"leased\",\"toolName\":\"bash\"},\"ok\":true}}\n  head={\"events\":[\"gateway-admit-definition-unreadable\"],\"jobs\":0,\"lease\":\"ACTIVE\",\"outstanding\":0,\"r\":{\"code\":\"mapping-rejected\",\"detail\":\"no execution-time definition identity to pin for scope-A/bash (no-reader)\",\"ok\":false}}"
+    },
+    {
+      "id": "T1-zero-registration (private window)",
+      "claim": "owner-not-durable refusal leaves ZERO state delta (no job record, no lease token, window state untouched) and exactly one alarm event",
+      "ok": true,
+      "detail": "{\"delta\":{\"jobs\":0,\"newEvents\":[{\"detail\":\"the injected identity source does not confirm this member scope from durable host state\",\"event\":\"gateway-admit-identity-unconfirmed\",\"jobId\":\"jNo\",\"severity\":\"alarm\"}],\"outstanding\":0,\"state\":\"unchanged\"},\"refusal\":{\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not confirmed by the injected identity source\",\"ok\":false},\"windowEvents\":[]}"
+    },
+    {
+      "id": "T1-zero-registration (assembly-owned window)",
+      "claim": "owner-not-durable refusal leaves ZERO state delta (no job record, no lease token, window state untouched) and exactly one alarm event",
+      "ok": true,
+      "detail": "{\"delta\":{\"jobs\":0,\"newEvents\":[{\"detail\":\"the injected identity source does not confirm this member scope from durable host state\",\"event\":\"gateway-admit-identity-unconfirmed\",\"jobId\":\"jNo\",\"severity\":\"alarm\"}],\"outstanding\":0,\"state\":\"unchanged\"},\"refusal\":{\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not confirmed by the injected identity source\",\"ok\":false},\"windowEvents\":[]}"
+    },
+    {
+      "id": "T1b-gate-order",
+      "claim": "GATE 1 (identity) runs BEFORE GATE 2 (definition read): a veto at GATE 1 never consults the reader",
+      "ok": true,
+      "detail": "{\"events\":[\"gateway-admit-identity-unconfirmed\"],\"r\":{\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not confirmed by the injected identity source\",\"ok\":false},\"readerCalls\":0}"
+    },
+    {
+      "id": "T1c-authority-copy",
+      "claim": "owner binding frozen from the AUTHORITY COPY (injected source), not the caller claim",
+      "ok": true,
+      "detail": "{\"authoritySees\":{\"ok\":true,\"view\":{\"jobId\":\"jAuth\",\"outcome\":null,\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-authority\\\",\\\"rootSessionId\\\":\\\"host-root-A\\\"}\",\"pinnedIdentity\":\"def-v1\",\"state\":\"leased\",\"toolName\":\"bash\"}},\"claimSees\":{\"code\":\"owner-mismatch\",\"detail\":\"this viewer is not the owning member scope of the job\",\"ok\":false},\"keyOfAuthority\":\"{\\\"instanceId\\\":\\\"inst-authority\\\",\\\"rootSessionId\\\":\\\"host-root-A\\\"}\",\"keyOfClaim\":\"{\\\"instanceId\\\":\\\"inst-A\\\",\\\"rootSessionId\\\":\\\"root-A\\\"}\",\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-authority\\\",\\\"rootSessionId\\\":\\\"host-root-A\\\"}\"}"
+    },
+    {
+      "id": "T1d-throwing-source-shape",
+      "claim": "a THROWING identity source propagates fail-loud and still registers nothing (contract puts the try/catch on the implementation)",
+      "ok": true,
+      "detail": "{\"jobs\":0,\"outstanding\":0,\"threw\":\"repository unreadable\"}"
+    },
+    {
+      "id": "T2-admit-edge-live-read",
+      "claim": "pin omitted ⇒ the reader is consulted AT the admit edge (one read per admission) and each job pins what it read THEN (no caching, no first-read-wins)",
+      "ok": true,
+      "detail": "{\"callsAfterUnreadableAttempt\":3,\"callsAtPinning\":[\"scope-A/bash\",\"scope-A/bash\"],\"pinnedNow\":{\"p1\":\"def-live-1\",\"p2\":\"def-live-2\"}}"
+    },
+    {
+      "id": "T2-neg-unreadable-mapping-rejected",
+      "claim": "NEGATIVE CONTROL: unreadable read ⇒ mapping-rejected with ZERO state delta (closed world: the two live leases and the job set are untouched, only an alarm)",
+      "ok": true,
+      "detail": "{\"afterUnreadable\":{\"jobs\":2,\"outstanding\":2,\"state\":\"ACTIVE\"},\"before\":{\"jobs\":2,\"outstanding\":2,\"state\":\"ACTIVE\"},\"events\":[\"gateway-job-admitted\",\"gateway-job-admitted\",\"gateway-admit-definition-unreadable\"],\"refusal\":{\"code\":\"mapping-rejected\",\"detail\":\"no execution-time definition identity to pin for scope-A/bash (unavailable)\",\"ok\":false}}"
+    },
+    {
+      "id": "T2b-neg-no-reader",
+      "claim": "NEGATIVE CONTROL: no reader + pin omitted ⇒ mapping-rejected with ZERO state delta",
+      "ok": true,
+      "detail": "{\"events\":[\"gateway-admit-definition-unreadable\"],\"jobs\":0,\"refusal\":{\"code\":\"mapping-rejected\",\"detail\":\"no execution-time definition identity to pin for scope-A/bash (no-reader)\",\"ok\":false}}"
+    },
+    {
+      "id": "T2c-explicit-pin-no-reader-call",
+      "claim": "explicit pin (fixture shape) passes through verbatim and never consults the reader",
+      "ok": true,
+      "detail": "{\"calls\":0,\"r\":{\"job\":{\"cancelRequested\":false,\"evidence\":[],\"jobId\":\"n2\",\"outcome\":null,\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-A\\\",\\\"rootSessionId\\\":\\\"root-A\\\"}\",\"pinnedIdentity\":\"def-v1\",\"scopeKey\":\"scope-A\",\"state\":\"leased\",\"toolName\":\"bash\"},\"ok\":true}}"
+    },
+    {
+      "id": "T3-assembly-owns-window",
+      "claim": "gateway.lease === injected window; the assembly object drives settle/drain/release; no private shadow window; drain refuses new admits and release reaches RELEASED at self-counted zero",
+      "ok": true,
+      "detail": "{\"admitAfterDrain\":{\"code\":\"gateway-not-active\",\"detail\":\"cannot acquire a lease while DRAINING: new work is refused from the first instant of the drain\",\"ok\":false},\"drained\":{\"ok\":true},\"rel1\":{\"ok\":true},\"sameObject\":true,\"settle\":{\"ok\":true},\"shared\":true,\"state\":\"RELEASED\",\"tokenOnAssemblyObject\":[\"l1\"],\"windowEvents\":[\"gateway-lease-ended-settled\",\"gateway-drain-inflight\",\"gateway-lease-acquire-refused\",\"gateway-released\"],\"zeroed\":[]}"
+    },
+    {
+      "id": "T3-giveup-on-assembly-object",
+      "claim": "giveUp on the injected object is terminal for the gateway too (cross-boundary settle refused, token outstanding, state GIVEN_UP)",
+      "ok": true,
+      "detail": "{\"cross\":{\"ok\":true},\"outstanding\":[\"l3\"],\"recordState\":\"settled\",\"state\":\"GIVEN_UP\"}"
+    },
+    {
+      "id": "T4-production-shape-chain",
+      "claim": "pc-CONTRACT §1.1 ⑤ chain: durable-confirmed owner + live pin admits; unconfirmed owner and unreadable definition both refuse with ZERO registration; a later move cancels exactly the one live job",
+      "ok": true,
+      "detail": "{\"jobs\":[\"q1\"],\"ledger\":[{\"event\":\"gateway-job-admitted\",\"from\":\"gateway\"},{\"event\":\"gateway-admit-identity-unconfirmed\",\"from\":\"gateway\"},{\"event\":\"gateway-admit-definition-unreadable\",\"from\":\"gateway\"},{\"event\":\"gateway-cancel-requested\",\"from\":\"gateway\"}],\"moved\":[{\"currentIdentity\":\"def-moved\",\"jobId\":\"q1\",\"pinnedIdentity\":\"def-live\"}],\"okA\":{\"ok\":true,\"pinned\":\"def-live\"},\"outstanding\":[\"q1\"],\"vetoB\":{\"code\":\"owner-not-durable\",\"detail\":\"the claimed member scope is not confirmed by the injected identity source\",\"ok\":false},\"vetoTool\":{\"code\":\"mapping-rejected\",\"detail\":\"no execution-time definition identity to pin for scope-A/read_image (not-registered)\",\"ok\":false}}"
+    }
+  ],
+  "failures": 0
+}

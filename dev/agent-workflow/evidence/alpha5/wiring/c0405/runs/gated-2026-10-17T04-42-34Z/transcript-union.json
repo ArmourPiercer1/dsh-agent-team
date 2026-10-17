@@ -1,0 +1,15 @@
+[
+  "A5C45-ED view file=doc.txt bytes=29 sha=sha256:d98a5f736b086689ab216b3edb44d0179fdccff8d17711474f12297653dc49f9 head=\"before-edit-line\\nsecond line\\n\"",
+  "A5C45-ED str_replace file=doc.txt applied ops=4 grants=4 sha_after=sha256:25dd4bb4d057d2bb46ef0b9b9302328ac3e2d2ea0dc314111906076a38b8c4df",
+  "A5C45-ED insert file=doc.txt applied ops=4 grants=4 sha_after=sha256:157e1c698d8704e2ee7cf9a989828e0a9d7430a354f16084617927a602659db0",
+  "A5C45-ED undo file=doc.txt applied ops=3 grants=3 sha_after=sha256:25dd4bb4d057d2bb46ef0b9b9302328ac3e2d2ea0dc314111906076a38b8c4df",
+  "A5C45-REFUSED kind=subcommand-io code=IO_POLICY_UNSUPPORTED payloadBytes=0 detail=subcommand \"undo_all\" has no precise I/O effect mapping (multi-step restore with undefined target state — no precise I/O effect set exists) — refused before admit, zero effects (IF-6 registered name)",
+  "A5C45-REFUSED kind=subcommand-io code=IO_POLICY_UNSUPPORTED payloadBytes=0 detail=subcommand \"delete\" has no precise I/O effect mapping (no unlink primitive on the governed lane — real-source/target side effects would escape the mapped effect set) — refused before admit, zero effects (IF-6 registered name)",
+  "A5C45-ED create file=memo.txt applied ops=1 grants=1 sha_after=sha256:5984d24789532a37a8b9f0d63641c39938bfec95809e4ce6a20dadaa9f4b7743",
+  "A5C45-SPILL id=c45-view-8 bytes=252000 sha=sha256:cc4ed6d59bb867210109fed39d39369352694862fff71c87b7f7a190a892a85e disk=252000B settle=true pointer=team-governed",
+  "A5C45-IMG {\"ok\":true,\"format\":\"image/png\",\"width\":1,\"height\":1,\"bitDepth\":1,\"bytes\":70} chain=admission-gated-controlled-fs grant=grant:b3a920b1fa6b…",
+  "A5C45-REFUSED kind=thumbnail-bypass code=requires-approval payloadBytes=0 detail=read authorization refused the thumbnail effect; no bytes returned",
+  "A5C45-REFUSED kind=thumbnail-bypass-grant code=effect-outside-grant payloadBytes=0 detail=gated lane refused the off-grant locator; 0 bytes",
+  "A5C45-CFPROBE reason=admission-unbound bytes_leaked=0 code=TOOL_BINDING_UNVERIFIED cfClass=denied cf_reason_code=effect-outside-grant raw_readable=true",
+  "Error: team tool guard: \"a5c45_unbound_probe\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)"
+]

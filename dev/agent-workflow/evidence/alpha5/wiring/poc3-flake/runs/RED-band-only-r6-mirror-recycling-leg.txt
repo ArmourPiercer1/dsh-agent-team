@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-poc3-flake/packages/runtime/controlled-fs
+
+ ✓ test/cf-descriptor.test.ts (8 tests) 12ms
+ ✓ test/cf-errors.test.ts (5 tests) 29ms
+ ❯ test/poc3-probes.test.ts (13 tests | 1 failed) 80ms
+     ✓ NAIVE control: the raw OS follows the alias OUT of the anchor (this is the hole) 5ms
+     ✓ GUARDED: alias read is a typed denied BEFORE any open — open-issued(alias)=0, zero disclosure 16ms
+     ✓ NAIVE control: realpath-check-then-open LEAKS when the dir is swapped in between 2ms
+     ✓ GUARDED: exec-time re-read catches the escape — typed refusal, zero disclosure 12ms
+     ✓ GUARDED B2: in-tree inode swap after the snapshot ⇒ undetermined (identity drift), zero disclosure 3ms
+     ✓ NAIVE control: the OS hides nothing — hiding is the mediator's law, not an fs accident 0ms
+     ✓ GUARDED: even with a VALID grant, a hidden read is typed hidden + diagnostic line; nothing opens 1ms
+     ✓ GUARDED: stat of a hidden file answers withheld:true — never exists:false, never silent absence 1ms
+     ✓ POSITIVE control: the file is fully readable for the member it belongs to 2ms
+     ✓ NAIVE control: raw cross-member read succeeds (the hole the lane closes) 0ms
+     ✓ GUARDED: member-b list omits the private tree; stat=withheld; read=hidden+diagnostic; open=0 1ms
+     ✓ GUARDED: the lane holds no standing fd — a presented fd of a closed call is refused 8ms
+     × GUARDED: fd-number RECYCLING — raw fd trust silently misreads (naive); the lane refuses (guarded) 18ms
+ ✓ test/controlled-fs.test.ts (16 tests) 82ms
+ ✓ test/zz-rig-fdchurn.test.ts (1 test) 4003ms
+   ✓ rig: keeps the shared fd table busy while sibling files run  4001ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/poc3-probes.test.ts > PoC3-E fd continued-use after close > GUARDED: fd-number RECYCLING — raw fd trust silently misreads (naive); the lane refuses (guarded)
+AssertionError: expected -1 to be 37 // Object.is equality
+
+- Expected
++ Received
+
+- 37
++ -1
+
+ ❯ test/poc3-probes.test.ts:334:22
+    332|       closeSync(probe)
+    333|     }
+    334|     expect(recycled).toBe(captured) // recycling OBSERVED, not assumed
+       |                      ^
+    335|     try {
+    336|       // NAIVE hazard: raw continued use of the old number reads the N…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 42 passed (43)
+   Start at  10:44:11
+   Duration  4.44s (transform 999ms, setup 0ms, import 1.78s, tests 4.21s, environment 0ms)
+

@@ -1,0 +1,28 @@
+{
+  "runStamp": "2026-10-17T05-23-17",
+  "mode": "repro-standard",
+  "world": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-23-17",
+    "disposition": "removed"
+  },
+  "criteria": [
+    {
+      "id": "C0a",
+      "name": "jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile)",
+      "ok": true,
+      "detail": "exit=0 sha=694852ff90185022"
+    },
+    {
+      "id": "C0b",
+      "name": "absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations)",
+      "ok": true,
+      "detail": "hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]"
+    },
+    {
+      "id": "R1",
+      "name": "shipped-standard repro: a governed (strict) team on the shipped standard preset boots FATAL with the typed coverage error containing the trio AND the unknown-unmanaged set",
+      "ok": true,
+      "detail": "fatal=true trio=[{\"name\":\"job_list\",\"present\":true},{\"name\":\"job_output\",\"present\":true},{\"name\":\"job_kill\",\"present\":true}] unknown=[{\"name\":\"web_search\",\"present\":true},{\"name\":\"ask_user_question\",\"present\":true}]"
+    }
+  ]
+}

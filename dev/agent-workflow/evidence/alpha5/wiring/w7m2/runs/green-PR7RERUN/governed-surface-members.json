@@ -1,0 +1,16 @@
+{
+  "wa": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ],
+  "wb": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ]
+}

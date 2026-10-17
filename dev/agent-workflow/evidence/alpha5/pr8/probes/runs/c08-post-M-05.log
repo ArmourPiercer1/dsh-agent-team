@@ -1,0 +1,13 @@
+# probe-M-05 (read_image) run-utc=2026-10-17T04:42:37.674Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08
+DEPEND W5 surface="admission 门控工具面注册进测试会话（IF-1）——附件读取工具腿" if=[IF-1]
+DEPEND W4 surface="受控文件读经装配面真实执行（deny-before-open 观测腿）" if=[IF-1,IF-6]
+CHECK face:W5 lane=W5 present (binding-shape grep)
+CHECK face:W4 lane=W4 present (binding-shape grep)
+ANCHORS runner-grep=PRESENT (binding shapes on non-comment lines; receipt claim ignored)
+ASSERT A1-full-chain-via-gated-fs SATISFIED :: image_read.chain="admission-gated-controlled-fs"（receipt 须记录读取链=gated fs 而非 host 直读）
+ASSERT A2-no-thumbnail-bypass SATISFIED :: negative_controls 含 {"attempt":"thumbnail-read-bypass","outcome":"typed-deny"}（缩略图绕过负控=typed 拒且有诊断行）
+ASSERT A3-unbound-typed-refuse SATISFIED :: negative_controls 含 {"error":"admission-unbound","bytes_leaked":0}（未绑定调用负控在册）
+ASSERT A4-arbitrary-tree-never-asserted SATISFIED :: arbitrary_tree_profile_published=false（receipt 不得主张任意树已发布（发布=OpenAtPort 落地后另行转态））
+EVIDENCE dev/agent-workflow/evidence/alpha5/pr8/probes/runs/c08-post-M-05.log dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json dev/agent-workflow/evidence/alpha5/wiring/c08/C08-GATED-GREEN.log dev/agent-workflow/evidence/alpha5/wiring/c08/C08-RED-UNGATED.log dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/criteria.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/chain-table.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/transcript-union.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/live-journal.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/native-legs.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/world-files.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/run-receipt.md dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/criteria.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/transcript-union.json dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/native-legs.json
+LIVE M-05：装配锚点 runner 亲验在场 + receipt 全断言 SATISFIED + evidence_refs 逐项存在性亲验过（行级转态提案值=LIVE，终裁归 PR8 正式轮 + 独立 reviewer）。
+# VERDICT LIVE exit=0

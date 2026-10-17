@@ -17,10 +17,11 @@
  * @module test/a5p7-mcp-rebind-chain
  */
 import { describe, expect, it } from 'vitest'
-import { createJobsGateway, jobOwnerKey } from '../jobs-gateway/index.js'
+import { createJobsGateway, createLeaseWindow, jobOwnerKey } from '../jobs-gateway/index.js'
 import type { DefinitionIdentityProbe } from '../jobs-gateway/index.js'
 
 const OWNER_A = { rootSessionId: 'session-a', instanceId: 'inst-1' }
+const OWNER_B = { rootSessionId: 'session-a', instanceId: 'inst-2' }
 
 interface McpDouble {
   register(scope: string, name: string, identity: string): void
@@ -177,5 +178,45 @@ describe('a5p7 C-BIND chain — withdraw → re-register → change → attribut
     mcp.register('agent:1', 'fs_read', 'v2')
     expect(gw.onRegistryChange(mcp.probe)).toHaveLength(0)
     expect(gw.job('j1')[0]!.outcome?.kind).toBe('executed-despite-cancel')
+  })
+
+  it('PRODUCTION SHAPE (pc-CONTRACT §3): identity + lease + reader all injected, one flow', () => {
+    // The assembly contract end-to-end at fixture grade: durable identity is
+    // the authority, the assembly owns the window, and the definition pin
+    // comes from the injected reader at the admit edge.
+    const durable = new Set([jobOwnerKey(OWNER_A)])
+    const mcp = createMcpDouble(() => {})
+    mcp.register('agent:1', 'fs_read', 'v1')
+    const window = createLeaseWindow()
+    const gw = createJobsGateway({
+      identity: { resolve: (claim) => (durable.has(jobOwnerKey(claim)) ? { ...claim } : null) },
+      lease: window,
+      resolveDefinition: mcp.probe,
+    })
+    // A ghost owner never reaches the window (the W7M-2 zero-registration).
+    const ghost = gw.admitJob({ jobId: 'j-g', owner: OWNER_B, scopeKey: 'agent:1', toolName: 'fs_read' })
+    expect(!ghost.ok && ghost.code === 'owner-not-durable').toBe(true)
+    expect(window.outstanding()).toHaveLength(0)
+    // The durable owner admits with the pin READ, not passed.
+    const took = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:1', toolName: 'fs_read' })
+    expect(took.ok).toBe(true)
+    if (took.ok) expect(took.job.pinnedIdentity).toBe('v1')
+    expect(window.outstanding().map((t) => t.callId)).toEqual(['j1'])
+    // The definition moves; only this job learns it moved.
+    mcp.withdraw('agent:1', 'fs_read')
+    mcp.register('agent:1', 'fs_read', 'v2')
+    expect(gw.onRegistryChange().map((c) => c.jobId)).toEqual(['j1'])
+    // A re-admission pins the NEW identity through the same reader; the old
+    // job keeps its execution-time anchor.
+    gw.observeDispatchEvent({ event: 'dispatcher-call-cancelled-before-body', callId: 'j1' })
+    const again = gw.admitJob({ jobId: 'j2', owner: OWNER_A, scopeKey: 'agent:1', toolName: 'fs_read' })
+    expect(again.ok).toBe(true)
+    if (again.ok) expect(again.job.pinnedIdentity).toBe('v2')
+    expect(gw.job('j1')[0]!.pinnedIdentity).toBe('v1')
+    // Teardown acts on the ASSEMBLY's window and the gateway agrees.
+    gw.observeDispatchEvent({ event: 'dispatcher-call-cancelled-before-body', callId: 'j2' })
+    window.drain()
+    expect(window.release()).toEqual({ ok: true })
+    expect(gw.lease.state()).toBe('RELEASED')
   })
 })

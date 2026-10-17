@@ -11,35 +11,48 @@
  *   server and the production Team row's `teamRoot` facade both exist, and
  *   the row registers its own exact-path routes through the public
  *   `webServer.register` seam. It imports the jobs-gateway through the
- *   lane's PUBLIC BARREL only — compiled from unmodified TS sources by the
- *   kit's local project (see tsconfig.lane.json for why the emit is not
- *   repo-dist at base: the shared tsconfig include is GLUE's job, IF-5).
+ *   lane's PUBLIC BARREL — the COMMITTED repo dist
+ *   (`packages/runtime/dist/packages/runtime/jobs-gateway/index.js`, the
+ *   install-surface artifact; GLUE-1 landed the build include, so the
+ *   kit-local compile retired with PR7-production-wiring).
  *
- *   Inside the row lives ONE gateway object per assembly generation, fed by
- *   host-derived member identities the driver READS BACK from the durable
- *   state (`teamRoot.domain.repositories.memberInstances.list`) — the same
- *   public read p6t6 uses. The row is the Web/Jobs consumption face, so per
- *   review-LaneF condition 3 the LEASE HANDLE IS NOT PART OF ANY RESPONSE:
- *   routes expose owner-scoped views, typed refusals, and the window's
- *   STATE + outstanding call ids — never `lease` itself, never an `end` or
- *   `acquire` a consumer can call. Lease lifecycle moves only through the
- *   assembly's own teardown action (drain / release / giveUp), which reports
- *   the typed outcome, nothing else.
+ *   Inside the row lives ONE gateway object per assembly generation, built
+ *   with the pc-CONTRACT.md injection surface exercised for real:
+ *   - `identity` — a durable-member authority backed by the production
+ *     assembly's own repositories (`memberInstances.list` through
+ *     `teamRoot`): the GATEWAY (not the row) refuses admissions whose
+ *     claimed owner no durable MemberInstance confirms;
+ *   - `lease` — the assembly-OWNED lease window: the row creates it, hands
+ *     it in, and the teardown routes act on that same object (the gateway
+ *     drives the window it was given, `gateway.lease === assembly.lease`);
+ *   - `resolveDefinition` — the C-BIND re-read target and the admit-time
+ *     pinner (see the disclosed boundary below).
+ *
+ *   The row is the Web/Jobs consumption face, so per review-LaneF condition
+ *   3 the LEASE HANDLE IS NOT PART OF ANY RESPONSE: routes expose
+ *   owner-scoped views, typed refusals, and the window's STATE + outstanding
+ *   call ids — never `lease` itself, never an `end` or `acquire` a consumer
+ *   can call. Lease lifecycle moves only through the assembly's own
+ *   teardown action (drain / release / giveUp), which reports the typed
+ *   outcome, nothing else.
  *
  * DISCLOSED IDENTITY-SOURCE BOUNDARY (the honest line this row draws):
  *
  *   - member/owner facts: HOST facts (durable MemberInstance rows, read
- *     through the production assembly's domain repositories);
- *   - tool-Definition identities (the C-BIND re-read target): a ROW-LOCAL
+ *     through the production assembly's domain repositories) — and since
+ *     PR7-production-wiring they are enforced INSIDE the gateway through
+ *     the injected identity source, not by row-side discipline;
+ *   - tool-Definition identities (the C-BIND re-read target and the
+ *     admit-time pin source for omitted pins): a ROW-LOCAL
  *     definition store, explicitly labelled. The pinned Host offers a
  *     third-party row no public seam to move another scope's Definition
  *     mid-session, and no host Jobs face at all — the `job_start` anchor
  *     stays absent in the whole host tree (re-measured by the kit, never
  *     argued). So the host-registry-shaped rebind chain stays FIXTURE-LEVEL
- *     (a5p7-mcp-rebind-chain, 6/6) and the live leg here proves the
- *     gateway's law (cancel-only-what-moved, attribution pinned to the
- *     execution-time definition) against a live gateway in the live process,
- *     NOT against a host registry.
+ *     (a5p7-mcp-rebind-chain, 6/6 → 7/7 with the production-shape leg) and
+ *     the live leg here proves the gateway's law (cancel-only-what-moved,
+ *     attribution pinned to the execution-time definition) against a live
+ *     gateway in the live process, NOT against a host registry.
  *
  * G-g is cited OPEN only (PENDING-GATES); abort propagation is COOPERATIVE —
  * the plane decides what happened, this face mirrors it with no termination
@@ -123,19 +136,48 @@ function resolveDefinition(scopeKey, name) {
   return identity === null ? { ok: false, identity: 'withdrawn' } : { ok: true, identity }
 }
 
-/** Build one assembly generation from the lane's PUBLIC BARREL. */
-async function buildAssembly(mod) {
+/**
+ * The injected identity authority (pc-CONTRACT §2): durable MemberInstance
+ * rows through the production assembly's own repositories — the same public
+ * read the state route reports. A claim with no exactly-matching durable row
+ * (and an unreadable repository, which confirms nothing) resolves to null:
+ * the GATEWAY then refuses `owner-not-durable` before any lease exists.
+ */
+function durableIdentitySource(root) {
+  return {
+    resolve: (claimed) => {
+      try {
+        const rows = root.domain.repositories.memberInstances.list(String(claimed.rootSessionId))
+        const hit = rows.find((m) => String(m.instanceId) === String(claimed.instanceId))
+        return hit === undefined
+          ? null
+          : { rootSessionId: String(claimed.rootSessionId), instanceId: String(hit.instanceId) }
+      } catch {
+        return null // unreadable durable state confirms nothing (closed world)
+      }
+    },
+  }
+}
+
+/** Build one assembly generation from the lane's PUBLIC BARREL (repo dist). */
+async function buildAssembly(mod, root) {
   generation += 1
   const observations = []
+  const sink = (o) => {
+    if (observations.length < 4000) observations.push({ ...o, at: new Date().toISOString() })
+    record({ leg: 'gateway-observation', generation, ...o })
+  }
+  // The ASSEMBLY owns the lease window (pc-CONTRACT §2) and hands it in;
+  // the gateway drives this exact object, and teardown acts on it too.
+  const lease = mod.createLeaseWindow(sink)
   const gateway = mod.createJobsGateway({
     resolveDefinition,
-    onObserve: (o) => {
-      if (observations.length < 4000) observations.push({ ...o, at: new Date().toISOString() })
-      record({ leg: 'gateway-observation', generation, ...o })
-    },
+    lease,
+    identity: durableIdentitySource(root),
+    onObserve: sink,
   })
-  assembly = { gateway, observations, builtAt: new Date().toISOString() }
-  record({ leg: 'assembly-built', generation, gatewayUrl: directive.gatewayUrl })
+  assembly = { gateway, lease, observations, builtAt: new Date().toISOString() }
+  record({ leg: 'assembly-built', generation, gatewayUrl: directive.gatewayUrl, injected: { identity: 'host-durable-memberInstances', lease: 'assembly-owned-window', definitionStore: 'row-local (disclosed)' } })
   return assembly
 }
 
@@ -206,7 +248,7 @@ export async function apply(ctx) {
     const missing = REQUIRED_EXPORTS.filter((n) => mod[n] === undefined)
     if (missing.length > 0) throw new Error(`public barrel misses ${missing.join(', ')}`)
     await teamRoot.ready
-    await buildAssembly(mod)
+    await buildAssembly(mod, teamRoot)
     record({ leg: 'row-ready', generation })
   } catch (error) {
     setupError = error instanceof Error ? error.message : String(error)
@@ -226,6 +268,8 @@ export async function apply(ctx) {
       gateway: 'assembled',
       generation,
       publicExports: REQUIRED_EXPORTS,
+      // What the assembly injected (pc-CONTRACT §2, exercised for real):
+      injected: { identity: 'host-durable-memberInstances', lease: 'assembly-owned-window', definitionStore: 'row-local (disclosed)' },
       runStamp: directive.runStamp,
     })
   }, 'health')
@@ -241,8 +285,13 @@ export async function apply(ctx) {
     sendJson(res, 200, {
       generation,
       // Window facts WITHOUT the handle: state + outstanding call ids only
-      // (review-LaneF condition 3 — the lease object never crosses this face).
+      // (review-LaneF condition 3 — the lease object never crosses this
+      // face). The injected pair is reported by SHAPE, never as a handle:
+      // the gateway drives the assembly's own window (identity check on the
+      // objects, never the object itself).
       windowState: g.lease.state(),
+      assemblyOwnsWindow: g.lease === assembly.lease,
+      identitySourceInjected: true,
       outstandingCallIds: g.lease.outstanding().map((t) => t.callId),
       jobs: g.job('*').map((r) => ({
         jobId: r.jobId,
@@ -280,7 +329,12 @@ export async function apply(ctx) {
           owner: { rootSessionId: String(args.owner?.rootSessionId), instanceId: String(args.owner?.instanceId) },
           scopeKey: String(args.scopeKey ?? 'kit'),
           toolName: String(args.toolName ?? 'a5w7-tool'),
-          pinnedIdentity: String(args.pinnedIdentity ?? 'def-v1'),
+          // No row-side default pin: an OMITTED pin goes through the
+          // production admit edge — the gateway pins from the injected
+          // reader at admission (unreadable ⇒ typed refusal).
+          ...(args.pinnedIdentity === undefined || args.pinnedIdentity === null
+            ? {}
+            : { pinnedIdentity: String(args.pinnedIdentity) }),
         })
         break
       case 'observe':
@@ -325,7 +379,7 @@ export async function apply(ctx) {
         out = { ok: true, key: (await import(directive.gatewayUrl)).jobOwnerKey({ rootSessionId: String(args.owner?.rootSessionId), instanceId: String(args.owner?.instanceId) }) }
         break
       case 'reassemble':
-        await buildAssembly(await import(directive.gatewayUrl))
+        await buildAssembly(await import(directive.gatewayUrl), teamRoot)
         out = { ok: true, generation }
         break
       default:

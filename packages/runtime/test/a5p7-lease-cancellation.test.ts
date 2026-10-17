@@ -189,3 +189,86 @@ describe('a5p7 cancellation boundary — the two forms never collapse', () => {
     expect(gw.job('never-admitted')).toHaveLength(0)
   })
 })
+
+// The W7 kit drove lease lifecycle through the row's own teardown routes and
+// the W7M-2 row kept the lease hygiene ledger beside its gateway. The
+// production contract inverts that: the ASSEMBLY owns the window and hands
+// it in. These specs pin that the gateway drives the INJECTED window and
+// that the two laws (self-count, boundary-is-the-settled-edge) hold on it.
+describe('a5p7 injected lease window — the assembly owns the window', () => {
+  it('the gateway acquires/ends on the injected window, and teardown on it is authoritative', () => {
+    const windowObservations: string[] = []
+    const window = createLeaseWindow((o) => windowObservations.push(String(o.event)))
+    const gw = createJobsGateway({ lease: window })
+    expect(gw.lease).toBe(window) // THE window, not a look-alike
+    admit(gw, 'j1')
+    expect(window.outstanding().map((t) => t.callId)).toEqual(['j1'])
+    gw.observeDispatchEvent({ event: 'dispatcher-call-cancelled-before-body', callId: 'j1' })
+    expect(window.outstanding()).toHaveLength(0)
+    expect(windowObservations).toContain('gateway-lease-ended-settled')
+    // The assembly drains/releases ITS window; the gateway reports the same.
+    expect(window.drain().ok).toBe(true)
+    expect(gw.lease.state()).toBe('DRAINING')
+    expect(window.release().ok).toBe(true)
+    expect(gw.lease.state()).toBe('RELEASED')
+  })
+
+  it('an injected window already draining refuses admissions from the gateway too', () => {
+    const window = createLeaseWindow()
+    expect(window.drain().ok).toBe(true)
+    const gw = createJobsGateway({ lease: window })
+    const refused = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(!refused.ok && refused.code === 'gateway-not-active').toBe(true)
+    expect(gw.job('j1')).toHaveLength(0)
+  })
+
+  it('a cross-boundary settle on the injected window keeps the token outstanding (same law, assembly-owned count)', () => {
+    const gw = createJobsGateway({ lease: createLeaseWindow() })
+    admit(gw, 'j1')
+    gw.lease.drain()
+    const crossed = gw.observeDispatchEvent({
+      event: 'dispatcher-call-terminated-after-body-start',
+      callId: 'j1',
+      abortIssuedBy: 'lane-definition-move',
+    })
+    expect(crossed.ok).toBe(true) // the plane's fact stands…
+    expect(gw.job('j1')[0]!.outcome?.kind).toBe('terminated-after-start')
+    expect(gw.lease.outstanding().map((t) => t.callId)).toEqual(['j1']) // …the settle was refused
+    const rel = gw.lease.release()
+    expect(!rel.ok && rel.code === 'release-with-outstanding').toBe(true)
+  })
+})
+
+describe('a5p7 admit-time definition pin — execution-time identity read at the admit edge', () => {
+  it('an omitted pinnedIdentity is read from the injected reader AT ADMISSION', () => {
+    let current = 'def-v1'
+    const gw = createJobsGateway({
+      resolveDefinition: (scope, name) => ({ ok: true, identity: `${name}@${current}` }),
+    })
+    const took = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x' })
+    expect(took.ok).toBe(true)
+    if (took.ok) expect(took.job.pinnedIdentity).toBe('tool-x@def-v1')
+    // The pin is a SNAPSHOT at admission: a later move never rewrites it.
+    current = 'def-v2'
+    expect(gw.job('j1')[0]!.pinnedIdentity).toBe('tool-x@def-v1')
+  })
+
+  it('an unreadable definition refuses the admission typed, with zero lease (closed world)', () => {
+    const events: string[] = []
+    const gw = createJobsGateway({
+      resolveDefinition: () => ({ ok: false, identity: 'withdrawn' }),
+      onObserve: (o) => events.push(o.event),
+    })
+    const refused = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x' })
+    expect(!refused.ok && refused.code === 'mapping-rejected').toBe(true)
+    expect(gw.lease.outstanding()).toHaveLength(0)
+    expect(gw.job('j1')).toHaveLength(0)
+    expect(events).toContain('gateway-admit-definition-unreadable')
+  })
+
+  it('no reader at all + omitted pin = the same typed refusal (the closed world credits no read it cannot make)', () => {
+    const gw = createJobsGateway()
+    const refused = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x' })
+    expect(!refused.ok && refused.code === 'mapping-rejected').toBe(true)
+  })
+})

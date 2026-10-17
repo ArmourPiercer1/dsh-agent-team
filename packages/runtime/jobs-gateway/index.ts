@@ -20,6 +20,7 @@ export {
 } from './types.js'
 export type {
   JobOwner,
+  GatewayIdentitySource,
   DispatchEvent,
   DispatchEventName,
   JobOutcome,
@@ -33,6 +34,7 @@ export { classifyDispatchEvent } from './cancellation-boundary.js'
 export { createJobsGateway } from './jobs-gateway.js'
 export type {
   JobsGateway,
+  CreateJobsGatewayOptions,
   GatewayJobRecord,
   DefinitionIdentityProbe,
   GatewayObservation,

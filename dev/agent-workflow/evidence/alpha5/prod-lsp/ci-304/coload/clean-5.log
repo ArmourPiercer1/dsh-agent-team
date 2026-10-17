@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-prod-lsp
+
+ ✓ packages/runtime/controlled-fs/test/poc3-probes.test.ts (13 tests) 24ms
+ ✓ packages/runtime/test/a5lsp2-assembly.test.ts (7 tests) 1417ms
+     ✓ failure cleanup (b): a mid-change failure (readiness never comes) leaves ZERO residual pids/handles  306ms
+ ✓ packages/runtime/test/a5lsp2-streaming.test.ts (15 tests) 3210ms
+     ✓ a consumed plan never streams twice — the second executeStreaming is the second-spawn-without-a-grant refusal  2025ms
+     ✓ a handshake that never answers times out BOUNDED and kills the launcher  300ms
+     ✓ a child that cannot be confirmed settles termination-unconfirmed, never silently terminated  305ms
+
+ Test Files  3 passed (3)
+      Tests  35 passed (35)
+   Start at  09:38:28
+   Duration  3.43s (transform 335ms, setup 0ms, import 490ms, tests 4.65s, environment 0ms)
+

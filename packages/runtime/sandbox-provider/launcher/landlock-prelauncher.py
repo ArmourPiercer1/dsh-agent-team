@@ -20,6 +20,18 @@ Modes:
   --confined-exec --policy FILE --out-dir DIR     (P1: self-lock, then execve
                                                   the untrusted argv; NEVER
                                                   runs unconfined)
+  --confined-exec-stream --policy FILE --out-dir DIR
+      (R-1 streaming arm: the SAME ruleset build and the SAME P1 self-lock,
+      but the payload keeps this launcher's inherited 0/1/2 as LIVE PIPES
+      (the provider's end-to-end pipes; no out-file redirection), and the
+      single-line JSON handshake goes on FD 3 — a launcher-owned channel
+      that NEVER crosses the untrusted boundary (the child closes it before
+      execve, whatever the policy declares). Handshake:
+      {"stream":true,"pid":<payload pid>} or {"abi_unavailable":true}.
+      After fork THIS process closes 0/1/2/3 (zero hot handles on the
+      payload pipes), waits, and records {"pid":…,"rc":…} in
+      <out-dir>/exit.json. The exit record is bookkeeping; the streaming
+      provider observes the exit through the process itself.)
 
 One single-line JSON verdict on stdout; diagnostics on stderr.
 Exit codes: 0 usable answer; 2 ABI unavailable; 4 config/self-lock failure;
@@ -309,20 +321,12 @@ def bits_from_names(bits, abi):
     return m & fs_mask(abi)
 
 
-def mode_confined_exec(policy_path, out_dir):
-    with open(policy_path) as f:
-        pol = json.load(f)
-    abi = get_abi()
-    if abi < 0:
-        # FAIL-CLOSED: this launcher has no unconfined arm.
-        emit({"abi_unavailable": True, "raw": list(RAW)}, 2)
-    os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "out")
-    err_path = os.path.join(out_dir, "err")
+def build_ruleset(pol, abi, label):
+    """THE confined ruleset — one builder for BOTH exec arms (one-shot + stream)."""
     attr = ctypes.create_string_buffer(struct.pack("@QQ", fs_mask(abi), 0), 16)
-    rs, _ = sc("create_ruleset(confined-exec)", SYS_CR, ctypes.c_void_p(ctypes.addressof(attr)), 16, 0)
+    rs, _ = sc(f"create_ruleset({label})", SYS_CR, ctypes.c_void_p(ctypes.addressof(attr)), 16, 0)
     if rs < 0:
-        emit({"abi_unavailable": True, "raw": list(RAW)}, 2)
+        return -1
     if pol.get("runtime_base", True):
         add_rule(rs, odir("/"), FS['READ_DIR'], abi)
         add_rule(rs, odir("/usr"), FS['READ_DIR'] | FS['READ_FILE'] | FS['EXECUTE'], abi)
@@ -330,6 +334,30 @@ def mode_confined_exec(policy_path, out_dir):
         add_rule(rs, odir("/proc"), FS['READ_DIR'] | FS['READ_FILE'], abi)
     for a in pol.get("allow", []):
         add_rule(rs, odir(a["path"]), bits_from_names(a.get("bits", {}), abi), abi)
+    return rs
+
+
+def mode_confined_exec(policy_path, out_dir):
+    with open(policy_path) as f:
+        pol = json.load(f)
+    # The fd-3 reservation is computed BEFORE any fd is allocated here: a later
+    # ruleset/policy fd could otherwise masquerade as an inherited channel and
+    # the child would close the very ruleset it is about to restrict with.
+    try:
+        os.fstat(HANDSHAKE_FD)
+        reserve = {HANDSHAKE_FD}  # the stream channel never crosses into the payload, even on the one-shot arm
+    except OSError:
+        reserve = set()
+    abi = get_abi()
+    if abi < 0:
+        # FAIL-CLOSED: this launcher has no unconfined arm.
+        emit({"abi_unavailable": True, "raw": list(RAW)}, 2)
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, "out")
+    err_path = os.path.join(out_dir, "err")
+    rs = build_ruleset(pol, abi, "confined-exec")
+    if rs < 0:
+        emit({"abi_unavailable": True, "raw": list(RAW)}, 2)
     keep = {1, 2}
     for entry in pol.get("fd_plan", {}).get("declared", []):
         if isinstance(entry.get("fd"), int):
@@ -344,6 +372,11 @@ def mode_confined_exec(policy_path, out_dir):
             keep2 = keep | {out_fd, err_fd}
             if pol.get("close_extra_fds", True):
                 close_all_except(keep2 | {rs})
+            for leaky in reserve:  # unconditional: launcher-owned channels never reach the payload
+                try:
+                    os.close(leaky)
+                except OSError:
+                    pass
             if restrict(rs) != 0:
                 os._exit(127)
             os.chdir(pol["cwd"])
@@ -355,6 +388,94 @@ def mode_confined_exec(policy_path, out_dir):
     _, st = os.waitpid(pid, 0)
     rc = os.waitstatus_to_exitcode(st)
     emit({"executed": True, "rc": rc, "pid": pid, "out_ref": out_path, "err_ref": err_path}, 0)
+
+
+# ---------------------------------------------------------------------------
+# R-1 STREAM ARM — same confined-exec policy, live pipes instead of out-files.
+# The handshake travels on HANDSHAKE_FD (fd 3), a launcher-owned channel:
+# the payload never inherits it and the parent never keeps a payload pipe fd.
+# ---------------------------------------------------------------------------
+
+HANDSHAKE_FD = 3
+
+
+def hs_write(obj):
+    try:
+        os.write(HANDSHAKE_FD, (json.dumps(obj, separators=(",", ":")) + "\n").encode())
+    except OSError:
+        pass
+
+
+def hs_close():
+    try:
+        os.close(HANDSHAKE_FD)
+    except OSError:
+        pass
+
+
+def hs_close_quiet(*fds):
+    for fd in fds:
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+
+def mode_confined_exec_stream(policy_path, out_dir):
+    try:
+        os.fstat(HANDSHAKE_FD)
+    except OSError:
+        hs_write({"launcher_error": "the stream arm requires the fd-3 handshake channel"})
+        sys.exit(4)
+    try:
+        with open(policy_path) as f:
+            pol = json.load(f)
+    except OSError as ex:
+        hs_write({"launcher_error": f"policy unreadable: {ex.strerror or ex}"})
+        sys.exit(4)
+    abi = get_abi()
+    if abi < 0:
+        # FAIL-CLOSED: no ABI ⇒ no payload, no handshake pid — same law as the one-shot arm.
+        hs_write({"abi_unavailable": True})
+        sys.exit(2)
+    rs = build_ruleset(pol, abi, "confined-exec-stream")
+    if rs < 0:
+        hs_write({"abi_unavailable": True})
+        sys.exit(2)
+    os.makedirs(out_dir, exist_ok=True)
+    keep = set()
+    for entry in pol.get("fd_plan", {}).get("declared", []):
+        if isinstance(entry.get("fd"), int):
+            keep.add(entry["fd"])
+    pid = os.fork()
+    if pid == 0:
+        try:
+            hs_close()  # the handshake channel is launcher-owned — never crosses the boundary
+            if pol.get("close_extra_fds", True):
+                # pipes 0/1/2 always survive (they ARE the streaming interface); everything
+                # above 2 that the policy did not declare is closed, exactly as on the
+                # one-shot arm (close_all_except only ever touches fds > 2).
+                close_all_except(keep | {rs})
+            if restrict(rs) != 0:
+                os._exit(127)
+            os.chdir(pol["cwd"])
+            env = {k: v for k, v in pol.get("env", [])}
+            argv = pol["argv"]
+            os.execve(argv[0], argv, env)
+        except OSError:
+            os._exit(126)
+    # parent: handshake, then ZERO hot handles on the payload pipes (0/1/2), then supervise.
+    hs_write({"stream": True, "pid": pid})
+    hs_close()
+    hs_close_quiet(0, 1, 2)
+    _, st = os.waitpid(pid, 0)
+    rc = os.waitstatus_to_exitcode(st)
+    try:
+        with open(os.path.join(out_dir, "exit.json"), "w") as f:
+            json.dump({"pid": pid, "rc": rc}, f)
+    except OSError:
+        pass
+    sys.exit(0)
 
 
 def main():
@@ -371,6 +492,8 @@ def main():
         mode_fd_close(flag("--scratch"), flag("--fd-plan-json"))
     elif a[0] == "--confined-exec":
         mode_confined_exec(flag("--policy"), flag("--out-dir"))
+    elif a[0] == "--confined-exec-stream":
+        mode_confined_exec_stream(flag("--policy"), flag("--out-dir"))
     else:
         emit({"verdict": "MIXED/FAILED", "raw": [f"unknown mode {a[0]}"]}, 4)
 

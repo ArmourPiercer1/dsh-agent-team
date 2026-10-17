@@ -1,0 +1,44 @@
+{
+  "keyA": {
+    "ok": true,
+    "key": "{\"instanceId\":\"inst-14ila5j1c2yd\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T07-48-16\"}"
+  },
+  "expectedKeyA": "{\"instanceId\":\"inst-14ila5j1c2yd\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T07-48-16\"}",
+  "admitA1": {
+    "ok": true,
+    "job": {
+      "jobId": "w7-a-1",
+      "ownerKey": "{\"instanceId\":\"inst-14ila5j1c2yd\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T07-48-16\"}",
+      "scopeKey": "a5w7-scope-a",
+      "toolName": "a5w7_def_tool",
+      "pinnedIdentity": "def-v1",
+      "state": "leased",
+      "outcome": null,
+      "cancelRequested": false,
+      "evidence": []
+    }
+  },
+  "admitB1dup": {
+    "ok": false,
+    "code": "owner-mismatch",
+    "detail": "this jobId is already owned by another member scope"
+  },
+  "admitAdup": {
+    "ok": false,
+    "code": "duplicate-job",
+    "detail": "job w7-a-1 already admitted"
+  },
+  "pinProbe": {
+    "ok": true,
+    "keyAtAdmission": "{\"instanceId\":\"inst-014kskq0utb7\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T07-48-16\"}",
+    "keyAfterMutation": "{\"instanceId\":\"inst-014kskq0utb7\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T07-48-16\"}"
+  },
+  "alarm": [
+    {
+      "event": "gateway-admit-owner-claim-conflict",
+      "jobId": "w7-a-1",
+      "severity": "alarm",
+      "at": "2026-10-17T07:48:29.168Z"
+    }
+  ]
+}

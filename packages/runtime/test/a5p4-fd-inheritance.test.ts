@@ -21,6 +21,7 @@ import {
   fdPlanToPayload,
   FD_INHERIT_DEFAULT,
   INHERIT_PURPOSES,
+  LAUNCHER_OWNED_FD,
   type DeclaredInheritedFd,
 } from '../sandbox-provider/fd-inheritance.js'
 import { runFdCloseProbe, type LauncherDeps } from '../sandbox-provider/probe-abi.js'
@@ -45,6 +46,21 @@ describe('a5p4 FD inheritance declaration set (pure)', () => {
     ])
     expect(plan.ok).toBe(true)
     if (plan.ok) expect(plan.plan.declared.map((d) => d.fd)).toEqual([0, 7])
+  })
+
+  it('fd 3 is launcher-owned: a DECLARED fd 3 is refused as fd-launcher-owned (review L3d — the refusal lives on the declaration face, never a silent exec-time override)', () => {
+    expect(LAUNCHER_OWNED_FD).toBe(3)
+    const r = compileFdPlan([{ fd: 3, purpose: 'delivery', resourceFingerprint: 'sha256:marker' }])
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      expect(r.problems.some((p) => p.code === 'fd-launcher-owned'), 'the named refusal code').toBe(true)
+      expect(r.problems.some((p) => p.path === '$.declared[0].fd'), 'the refusal points at the declaring entry').toBe(true)
+    }
+    // declaring is not using, but the LAW only reserves the one slot: legal
+    // plans above/below it are unperturbed (fd 0-2 stdio, fd 4+ inheritable)
+    expect(compileFdPlan([{ fd: 2, purpose: 'stderr', resourceFingerprint: 'sha256:e' }]).ok).toBe(true)
+    expect(compileFdPlan([{ fd: 4, purpose: 'delivery', resourceFingerprint: 'sha256:d' }]).ok).toBe(true)
+    expect(compileFdPlan([{ fd: 4, purpose: 'delivery', resourceFingerprint: 'sha256:d' }, { fd: 3, purpose: 'stdin', resourceFingerprint: 'sha256:x' }]).ok).toBe(false)
   })
 
   it('refuses: negative / non-integer / duplicate fds, off-closed-set purpose, empty fingerprint', () => {

@@ -3,6 +3,7 @@
 - 轮次 = `alpha5-lsp-rulings`；writer = qwen3.8-flash-next（liveness 首报）；基 = `origin/master @ 8eb93ddd`（fetch 亲验）。纪律 = 只读 + 本文件新增；**零代码/矩阵/gates 行改动**；零端口、零 world、`:3080` 未触碰。
 - 议题来源 = 根 04:57Z（"如确实改变冻结接口→整理最小裁决说明"）；事实源 = `w-ptc-re/README.md` M-09 三态行 + 其探针 `probe-gap-lsp-policy.result.json`（gap1/gap2）+ `pr6/SEAM-VERDICTS.md` B1–B5。
 - 记：GAP = `w-ptc-re/probe-gap-lsp-policy.result.json`；SV = `pr6/SEAM-VERDICTS.md`；RD = `w-ptc-re/README.md`；ROW = `w-ptc-re/a5ptc-row.mjs`；PROV = `packages/runtime/sandbox-provider/provider.ts`。
+- **状态同步（P-D3b，2026-10-17，@根 14:29Z 口径同轮 = `prod/VNEXT-SCHEMA-ADR.md` P-D3；父会话授权，markdown-only）**：**R-1/R-2 = 用户 07:53Z 已批准，已实施并合入（#304=`77ffb187`**，见证 = `ALPHA5-ACCEPTANCE-STATUS.md` §1「LSP 生产装配」行测量基线『master@77ffb187（#304 R-1/R-2 已合）』）。本简报 = 提案时点历史原文：§0 问句式、§1/§2『裁开/若坚持…』与 §3『裁决前允许表述』均为提案原文照录保留，不代表现行状态；其他文件旧把本议题写作『已正式向用户提出未裁（待答）』者，属裁决前历史口径（已在 `PRODUCTION-READINESS-CHECKLIST.md` P-D3b 更正）。
 
 ## 0. 裁决问题（各一句）
 
@@ -25,7 +26,7 @@
 
 ## 3. 裁决前允许表述（各一句）
 
-- R-1：C-PROC confined 覆盖面 = one-shot confined spawn；LSP 服务器进程不在其内；相关宣称裁决前按"未覆盖"读，选项与后果见 §1。
+- R-1：C-PROC confined 覆盖面 = one-shot confined spawn；LSP 服务器进程不在其内；相关宣称裁决前按"未覆盖"读，选项与后果见 §1。〔P-D3b：R-1/R-2 已批已合（用户 07:53Z 批准 + #304=`77ffb187`）；本行 = 裁决前时点历史口径照录。〕
 - R-2：仅许两分表述"realm 粒度隔离为实（SV B2 / RD:21 LIVE），policy 粒度逐出未宣称"；任何主张行须标粒度并同引本简报。
 
 ---

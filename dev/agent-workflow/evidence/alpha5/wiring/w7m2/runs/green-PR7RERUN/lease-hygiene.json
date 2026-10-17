@@ -1,0 +1,30 @@
+{
+  "settleOutcomes": [
+    {
+      "jobId": "a5cvg-held-2026-10-17T07-49-17",
+      "res": {
+        "ok": true
+      }
+    },
+    {
+      "jobId": "a5cvg-tt-2026-10-17T07-49-17",
+      "res": {
+        "ok": true
+      }
+    },
+    {
+      "jobId": "a5cvg-tf-2026-10-17T07-49-17",
+      "res": {
+        "ok": true
+      }
+    }
+  ],
+  "drain": {
+    "ok": true,
+    "windowState": "DRAINING"
+  },
+  "release": {
+    "ok": true,
+    "windowState": "RELEASED"
+  }
+}

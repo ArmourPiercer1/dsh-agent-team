@@ -23,7 +23,9 @@ import {
 } from './poc3-harness.js'
 import {
   createControlledFsLane,
+  createProductionControlledFsProvider,
   type ControlledFsLane,
+  type FsAdmissionPort,
   type FsResourceDescriptor,
 } from '../src/index.js'
 
@@ -177,5 +179,100 @@ describe('stat / list observation surface', () => {
       expect(locators.some((l) => l.includes('/mine'))).toBe(false)
       expect(locators.some((l) => l.includes('/public'))).toBe(true)
     }
+  })
+})
+
+// ── PR2/PR3 production-assembly round: the production provider ─────────────
+// The provider is the kit-sequence (`gatedLane(flow)`) promoted to a class:
+// assembly-time registration of realm/instances/READERS, per-call gated lane
+// from an `AdmissionBoundFsCall`. These legs pin the provider semantics with
+// a spy port (the full production chain with the real kernel + a real world
+// runs in `packages/runtime/test/a5p2-composition.test.ts`, where BOTH
+// production classes meet); the four binding laws themselves stay pinned by
+// `a5w-integration-wiring.test.ts`.
+
+describe('production controlled-fs provider', () => {
+  const okPort: FsAdmissionPort = { recheckCall: async () => ({ ok: true as const }) }
+  const providerCfg = () => ({
+    realmId: 'realm-1',
+    instances: [{ fs: 'ctl', rootDir: world.ctrl, realmId: 'realm-1', kind: 'absolute-path' as const }],
+    clock: () => 1000,
+    authorityGeneration: () => 1,
+    consumed: () => false,
+  })
+
+  it('construction refuses (TypeError): no instances, foreign realm, duplicate fs id, missing readers', () => {
+    expect(() => createProductionControlledFsProvider({ ...providerCfg(), instances: [] })).toThrow(TypeError)
+    expect(() => createProductionControlledFsProvider({
+      ...providerCfg(),
+      instances: [{ fs: 'ctl', rootDir: world.ctrl, realmId: 'realm-2', kind: 'absolute-path' }],
+    })).toThrow(/realm/)
+    expect(() => createProductionControlledFsProvider({
+      ...providerCfg(),
+      instances: [
+        { fs: 'ctl', rootDir: world.ctrl, realmId: 'realm-1', kind: 'absolute-path' },
+        { fs: 'ctl', rootDir: world.outside, realmId: 'realm-1', kind: 'absolute-path' },
+      ],
+    })).toThrow(/twice/)
+    expect(() => createProductionControlledFsProvider({
+      ...providerCfg(),
+      consumed: undefined as unknown as (grantId: string) => boolean,
+    })).toThrow(/readers/)
+  })
+
+  it('gateCall gates a real read through the bound port (the provider path IS createAdmissionGatedControlledFs)', async () => {
+    const provider = createProductionControlledFsProvider(providerCfg())
+    expect(provider.realmId).toBe('realm-1')
+    expect(provider.instanceIds).toEqual(['ctl'])
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }] })
+    const portCalls: Array<{ op: string; fingerprint: string }> = []
+    const spy: FsAdmissionPort = {
+      recheckCall: async (intent) => {
+        portCalls.push({ op: intent.op, fingerprint: intent.parametersFingerprint })
+        return { ok: true as const }
+      },
+    }
+    const laneG = provider.gateCall({ admission: spy, parametersFingerprint: grant.parametersFingerprint })
+    const res = await laneG.fs.readText(grant, ref, FULL)
+    expect(res.ok && res.value.text).toBe('A-CONTENT\n')
+    expect(portCalls.length).toBe(1)
+    expect(portCalls[0]?.fingerprint).toBe(grant.parametersFingerprint) // C1: the BOUND fingerprint reached the port
+  })
+
+  it('a port refusal stops the op with zero disclosure (the provider never softens the port)', async () => {
+    const provider = createProductionControlledFsProvider(providerCfg())
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }] })
+    const laneG = provider.gateCall({
+      admission: { recheckCall: async () => ({ ok: false as const, reason: 'grant-consumed' }) },
+      parametersFingerprint: grant.parametersFingerprint,
+    })
+    const res = await laneG.fs.readText(grant, ref, FULL)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error.details?.['cfReason']).toBe('effect-outside-grant')
+  })
+
+  it('the generation reader is read PER gateCall: a lane built after a generation bump carries the NEW generation', async () => {
+    let generation = 1
+    const provider = createProductionControlledFsProvider({ ...providerCfg(), authorityGeneration: () => generation })
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }], authorityGeneration: 1 })
+    generation = 2
+    const laneG = provider.gateCall({ admission: okPort, parametersFingerprint: grant.parametersFingerprint })
+    const res = await laneG.fs.readText(grant, ref, FULL)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error.details?.['cfReason']).toBe('authority-generation-stale')
+  })
+
+  it('the consumed view is the provider arm the host wires (assembly.consumed): a consumed grant never re-opens', async () => {
+    const consumed = new Set<string>(['already-spent'])
+    const provider = createProductionControlledFsProvider({ ...providerCfg(), consumed: (id) => consumed.has(id) })
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }], grantId: 'already-spent' })
+    const laneG = provider.gateCall({ admission: okPort, parametersFingerprint: grant.parametersFingerprint })
+    const res = await laneG.fs.readText(grant, ref, FULL)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error.details?.['cfReason']).toBe('grant-consumed')
   })
 })

@@ -1,0 +1,11 @@
+# pa-dist-mirror.log — committed dist 镜像同提交刷新轮（CI pr-gate #303 红因定位后补交）
+
+- 红因 = 本 lane 源码提交（e25e7c35）未同笔携带 dist 镜像（check-artifacts-committed drift）。修法 = 父任务指令 + 先例 P-C `ce44fd4e`（dist 镜像同提交刷新）。
+- 动作：`cd packages/runtime && npx tsc -p tsconfig.build.json`（= 包 `build` 脚本本体）→ `git add packages/runtime/dist` → **amend 同一笔**。
+- 镜像变更 = 16 文件（4 模块 × .js/.d.ts/.js.map/.d.ts.map）：controlled-fs/src/{admission-binding,index} + tool-admission/{admission-kernel,index}；依赖镜像 `dist/packages/domain/blueprint/src/schema.js`、`dist/packages/runtime/operation-permission/types.js` 已在树（未新增文件）。无关 dist 文件零扰动。
+- 提交后 dist 上复跑安装包态自测：`node dev/agent-workflow/evidence/alpha5/prod/pa-smoke-installed.mjs packages/runtime/dist` → **CRITERIA 12/12 PASS**（提交态 dist 即 kit 可消费形态）。
+- 门复跑：`npm run check:artifacts:head` →
+  `DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=1680 drift=0`
+  `HEAD carries its own build: the committed surface IS a fresh build of itself (1680 compared file(s)).`
+- 新 head = 本 amend 后 `alpha5-prod-pr23` 分支 tip（40-位 SHA 随 send_message 回报父任务；self-reference 不可入自身提交，如实如此记）。
+- 纪律注记：本笔为 writer 分支内镜像刷新（父任务明确指令 + P-C 先例）；GLUE 单 writer 汇后再生成 dist 的原约束对该 writer 不变。

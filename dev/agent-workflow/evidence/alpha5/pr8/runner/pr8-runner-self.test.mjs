@@ -492,7 +492,7 @@ test('F-2/F-1: probe 假装配+伪造 receipt 在全新假根下不得出 LIVE�
   const w5a = 'dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs';
   const w5f = 'dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs';
   const w7rel = 'tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs';
-  const w7ts = 'tests/kits/a5-w7-jobs-wiring/tsconfig.lane.json';
+  const w7ts = 'packages/runtime/tsconfig.build.json'; // W7 编译面锚（kit-local tsconfig.lane.json 已退役 ⇒ review-PC §3.2 F-1）
   for (const rel of [w4rel, w5a, w5f, w7rel, w7ts]) {
     mkdirSync(join(root, dirname(rel)), { recursive: true });
     writeFileSync(join(root, rel), `// ConfinedProcessProvider a5p5 jobs-gateway createConfinedProcessProvider createJobsGateway packages/tools/a5p5-tools/src\nconst s = 'jobs-gateway';\n`);

@@ -1,0 +1,46 @@
+# a5c45 ungated run 2026-10-17T04-41-49Z
+
+- host: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/deepseek-harness-test-use @ 639ed01539 (pinned 0.2.0-rc.2, read-only reuse)
+- port 3183 · mock 3491 · world deleted at teardown
+- kit-local a5p5 lane build: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405/tests/homes/.a5c45-build · dist: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405/packages/runtime/dist/packages
+- criteria: 25/37 pass (RED: L-C45-GUARD, L-C45-GOVERN-EDIT, L-C45-UNDO-IO, L-C45-SPILL, L-C45-IMG-CHAIN, L-C45-THUMB-KERNEL, L-C45-THUMB-LANE, L-C45-THUMB-LEAK-ZERO, L-C45-ONESHOT, L-C45-LEDGER, L-C45-EVENTS, L-C45-UNBOUND)
+
+- [x] L-C45-PIN: the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (read-only reuse) — head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/deepseek-harness-test-use
+- [x] L-C45-IF5: IF-5 shared surface (packages/, scripts/, root vitest.config) is byte-untouched by this lane — porcelain empty
+- [x] L-C45-LANE: the runtime dist barrels + the kit-local a5p5 lane build (spill face) are present — dist=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405/packages/runtime/dist/packages lane=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c0405/tests/homes/.a5c45-build
+- [x] L-C45-PORTS: host port 3183 free (self-proved) and a mock port from the 349x family free — hostFree=true mock=3491
+- [x] L-C45-BOOT: the test Host booted on port 3183 with the token gate live (303 + set-cookie) — status=303
+- [x] L-C45-CREATE: the host public session/create entry returned a real sessionId — A=session-f4369aab-2f6
+- [x] L-C45-SETUP: the real session ran a setup turn to a model reply (an Agent now exists behind the session) — status=200
+- [x] L-C45-AGENT: the session Agent is reachable through the PUBLIC ctx.agents seam — agent={"id":"session-f4369aab-2f68-4ac3-86f4-c1b581f7d894","session":"session-f4369aab-2f68-4ac3-86f4-c1b581f7d894","hasCtx":t
+- [x] L-C45-ASSEMBLE-REQ: the live assembly started on the real Agent — {"ok":true,"started":true,"label":"session-f4369aab-2f68-4ac3-86f4-c1b581f7d894"}
+- [x] L-C45-ASSEMBLE: the assembly completed through the accepted shape (defs → guard install → bindOwnTools → publish → post-publish probe) — term=true
+- [x] L-C45-GATE-MODE: the run executed in mode=ungated (honest mode face) — mode=ungated
+- [ ] L-C45-GUARD: the PR1 guard installed, bound the three Team Definitions and PUBLISHED (channel armed/proven) — the editor/read_image Team Definitions publish/bind path on the PUBLIC seam — {"installOk":false,"installError":null,"bindOwnOk":false,"publishedOk":false,"channel":null,"channelAtPublish":null,"probeRegisteredAfterPublish":true}
+- [x] L-C45-REG: the row names are on the live scoped registry (defs materialized at the public seam) — ["a5c45_editor","a5c45_read_image","a5c45_cf_probe","a5c45_unbound_probe"]
+- [x] L-C45-NATIVE-FACE: the host-native roster was captured (edit/read_image stay HOST builtins — this row binds Team Definitions, NOT native pins; the native-pin face stays the W-E2 gap fact) — edit=true read_image=true sre=false
+- [x] L-C45-ARB: the governed face reports ARBITRARY_TREE_PROFILE_PUBLISHED=false (runtime read-back; no arbitrary-tree claim in this round) — arb=false
+- [x] L-C45-VIEW: the model-driven editor VIEW leg read real bytes through the tool face (content matches the file on disk; governed lane in gated mode) — {"stage":"ungated-raw","presented":"A5C45-ED-UNGATED view file=doc.txt bytes=29 sha=sha256:d98a5f736b086689ab216b3ed"}
+- [x] L-C45-EDIT-RT: the REAL edit round-trip ran: str_replace read the old bytes and wrote the new ones (file sha changed on disk, new line present) — bytes are real in BOTH modes — sha sha256:d98a5f736b0…->sha256:faaf45a0e35…
+- [ ] L-C45-GOVERN-EDIT: the str_replace leg is governance-carried in the gated mode: every lane op ran under its own one-shot grant (≥4 grants: read+write target + history read+write), the history ledger line carries the BEFORE bytes, the exec-edge REPLAY on the last grant is refused, and the grant ledger counts the consumption — {"grants":0,"replay":null,"ledger":null,"hist":2}
+- [x] L-C45-INSERT: the insert leg applied (stage ok; the inserted line rode into the file and the UNDO leg later removed it — undo criterion pins both ends) — insertStage=ungated-raw histLines=2
+- [x] L-C45-UNDO: the UNDO leg restored the pre-insert bytes byte-for-byte (sha after undo == sha after str_replace; the inserted line is gone) — undoAfter=sha256:faaf45a0e35… srAfter=sha256:faaf45a0e35…
+- [ ] L-C45-UNDO-IO: the undo history I/O rode the SAME governed face in the gated mode: ops read:history + write:target + write:history all ok, each under its own grant, and the history ledger carries the undo marker line — {"ops":[],"grants":0,"marker":"false"}
+- [x] L-C45-IO-UNSUPPORTED: THE M-04 LAW: undo_all and delete (no precise I/O mapping) got the TYPED default refusal IO_POLICY_UNSUPPORTED before any admit — zero side effects (file intact, no grants minted) and both refusals are registered negative controls (row law carries this refusal in BOTH modes; the gated mode additionally proves zero admits) — {"undoAll":"io-policy-unsupported","del":"io-policy-unsupported","neg":["subcommand-undo_all","subcommand-delete"]}
+- [x] L-C45-CREATE-NEW: the create leg wrote a NEW file through the governed face (memo.txt bytes on disk == the created content) — memo=a5c45-created-2026-10-17T04-41
+- [ ] L-C45-SPILL: the large-output leg rode the TEAM SPILL lifecycle: sink open→write→settle→finalize→close, read-back matches, the on-disk spill file is byte-equal, and the pointer (bytes/sha) was presented — {"present":"A5C45-ED-UNGATED view file=big.txt bytes=252000 sha=sha256:c"}
+- [ ] L-C45-IMG-CHAIN: THE M-05 CHAIN: attachment → admitted one-shot read through the gated ControlledFs → base64 decode → real PNG header decode (image/png 1x1, 70 bytes) — chain face reads admission-gated-controlled-fs, not a host direct read — {"stage":"ungated-raw"}
+- [ ] L-C45-THUMB-KERNEL: thumbnail bypass #1 (open effect request): the real PR2 kernel refused the un-armed thumbnail read BEFORE any open (its own vocabulary), 0 bytes returned — registered negative control — {"stage":"ungated-raw","neg":false}
+- [ ] L-C45-THUMB-LANE: thumbnail bypass #2 (attachment grant pointed at the thumb file): the gated lane scope law refused (effect-outside-grant), 0 bytes returned — {"stage":"ungated-raw"}
+- [ ] L-C45-THUMB-LEAK-ZERO: no thumbnail byte ever traveled: the thumb file is byte-untouched on disk and its marker content is absent from the whole transcript — thumbIntact=true leakInTranscript=true
+- [x] L-C45-UNBOUND-CFS: THE admission-unbound leg (C-FS layer, not the guard layer): a gated ControlledFs face WITHOUT an admission binding answered the live read with the typed refusal carrying admission-unbound — bytes_leaked=0 while the raw file is verifiably readable (lane law carries it in BOTH modes) — {"error":"admission-unbound","bytes_leaked":0,"refusal_verbatim":{"code":"TOOL_BINDING_UNVERIFIED","cfClass":"denied","cf_reason_code":"effect-outside-grant","message":"exec-time admission recheck refused (admission-unbo
+- [ ] L-C45-ONESHOT: grant ONE-SHOT consumption held on every admitted leg that ran bytes: the recorded exec-edge replay on the last op of the str_replace / undo / image legs is a typed refusal (grant already consumed) — {"sr":null,"code":""}
+- [ ] L-C45-LEDGER: the grant ledger face: consumedCount > 0 and equals the grants minted across the whole chain (the ledger is where the one-shot consumption adds up) — ledger=null grantsMinted=0 legsWithGrants=0
+- [ ] L-C45-EVENTS: the live event stream carried the governed calls: dispatcher-call-begin/end counts cover the 12 governed calls, every census name is a master full-prefix name (IF-6), no retired short form appears — {}
+- [ ] L-C45-UNBOUND: the post-assembly probe name is refused at the call edge by the live guard (guard-denial/dispatcher-call-refused census agrees) and its BODY never ran — probeBodyCount=1 refused-census=0/0
+- [x] L-C45-TRANSCRIPT: the presented faces entered the REAL transcript (model saw and reported them): an editor face, the image face and a refusal face — len=1916
+- [x] L-C45-STABLE: the stable :3080 instance was only probed, never operated, status unchanged — before=401 after=401
+- [x] L-C45-PRISTINE: the test-use runtime stayed pristine (porcelain empty, HEAD unmoved) — porcelain=0
+- [x] L-C45-IF5-POST: IF-5 shared surface still byte-untouched at closure — porcelain empty
+
+token: launch token redacted at capture (REDACTED-<sha8>); raw instance log deleted after redaction.

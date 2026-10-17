@@ -1,0 +1,137 @@
+{
+  "run": "2026-10-17T08-23-42Z",
+  "criteria": [
+    {
+      "id": "R1",
+      "claim": "CURRENT fact-3 refuses the preset-realm native (native-unreadable) — the GLUE-4 stop re-pinned synthetically",
+      "pass": true,
+      "observed": "deny/native-unreadable"
+    },
+    {
+      "id": "R2",
+      "claim": "REVISED reading: team-placed body VERIFIES scoped-aware (governed-and-verified) with an EMPTY trusted global face",
+      "pass": true,
+      "observed": "abstain/governed-and-verified"
+    },
+    {
+      "id": "R3",
+      "claim": "minimal non-team zero change: its face and the global face are byte-identical before/after the team assembly",
+      "pass": true,
+      "observed": "global=[] minimal=[]"
+    },
+    {
+      "id": "R4",
+      "claim": "NC-1 same-name cross-realm: foreign placement blocks team placement (L3) and the foreign body stays REFUSED",
+      "pass": true,
+      "observed": "placementFailed=true deny/native-unreadable"
+    },
+    {
+      "id": "R5",
+      "claim": "falsification control PASSES (by design): a discovery-style scoped pin verifies the foreign body — the revision must be placement-based, discovery-based scoped fact-3′ is UNSOUND",
+      "pass": true,
+      "observed": "abstain/governed-and-verified on the FOREIGN body — exactly the R-a attack"
+    },
+    {
+      "id": "R6a",
+      "claim": "NC-2 revocation with nothing beneath: per-call probe unreadable ⇒ DEFINITION_UNREADABLE refusal",
+      "pass": true,
+      "observed": "deny/definition-unreadable"
+    },
+    {
+      "id": "R6b",
+      "claim": "NC-2 re-registration race: a regenerated Body never inherits the old verification ⇒ DEFINITION_DRIFT refusal",
+      "pass": true,
+      "observed": "deny/definition-drift"
+    },
+    {
+      "id": "R6c",
+      "claim": "NC-2 fall-through race: after revocation the ANCESTOR (global) body does not inherit the verification ⇒ DEFINITION_DRIFT refusal",
+      "pass": true,
+      "observed": "deny/definition-drift"
+    },
+    {
+      "id": "R7a",
+      "claim": "NC-3 forged scope key cannot reach the team placement (unowned key ⇒ global view only); the revision adds no forgeable scope label to dispatch",
+      "pass": true,
+      "observed": "get(\"read\", forged) ⇒ undefined (global view only)"
+    },
+    {
+      "id": "R7b",
+      "claim": "NC-3 forged/absent exec identity ⇒ IDENTITY_FOREIGN / IDENTITY_ABSENT refusals (identity is exec-scoped, not a claimable label)",
+      "pass": true,
+      "observed": "agent-identity-foreign / agent-identity-absent"
+    },
+    {
+      "id": "R8",
+      "claim": "the public scoped seam returns the SAME object the executor resolves (identity IS readable); the Definition carries NO public id/version/generation field — object identity + per-call drift is the only generation proxy",
+      "pass": true,
+      "observed": "stable=true executes=true idFields=[]"
+    }
+  ],
+  "facts": {
+    "run": "2026-10-17T08-23-42Z",
+    "guard": "packages/runtime/dist (tracked, @01df26ca)",
+    "S1": {
+      "inherited": {
+        "verifiedBound": 0,
+        "unverifiedBound": 1,
+        "unverified": [
+          "read"
+        ],
+        "shadowed": [],
+        "nativeUnreadable": [
+          "read"
+        ]
+      },
+      "verdictKind": "deny",
+      "verdictReason": "native-unreadable"
+    },
+    "S2": {
+      "boundOk": true,
+      "inheritedVerified": 0,
+      "verdictKind": "abstain",
+      "verdictReason": "governed-and-verified",
+      "before": {
+        "minimalFace": [],
+        "globalFace": []
+      },
+      "after": {
+        "minimalFace": [],
+        "globalFace": []
+      }
+    },
+    "S3": {
+      "placementFailed": true,
+      "verdictKind": "deny",
+      "verdictReason": "native-unreadable"
+    },
+    "S3_naiveControl": {
+      "naiveVerdictKind": "abstain",
+      "naiveVerdictReason": "governed-and-verified",
+      "pinnedTag": "foreign-same-layer"
+    },
+    "S4a": {
+      "kind": "deny",
+      "reason": "definition-unreadable"
+    },
+    "S4b": {
+      "kind": "deny",
+      "reason": "definition-drift"
+    },
+    "S4c": {
+      "kind": "deny",
+      "reason": "definition-drift"
+    },
+    "S5": {
+      "seenThroughForged": "undefined",
+      "foreignId": "agent-identity-foreign",
+      "absentId": "agent-identity-absent"
+    },
+    "identityRead": {
+      "stableAcrossReads": true,
+      "sameObjectThatExecutes": true,
+      "publicIdFieldsOnDefinition": [],
+      "fingerprintProxy": "def#7"
+    }
+  }
+}

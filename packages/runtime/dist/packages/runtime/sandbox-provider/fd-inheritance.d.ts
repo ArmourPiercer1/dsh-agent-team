@@ -10,6 +10,18 @@
  * constant `close-all-undeclared` and the payload carries no field that
  * could relax it.
  *
+ * FD CONTRACT — "3 = launcher-owned; declaring is not using".
+ * FD 3 is the launcher's own reserved channel: the one-shot arm computes
+ * its fd-3 reservation BEFORE any fd allocation and closes the slot itself
+ * (`close_extra_fds` leaky-closure), and the stream arm's line-JSON
+ * handshake rides fd 3 and the child closes it BEFORE restrict→execve. A
+ * policy that merely DECLARED fd 3 used to compile cleanly and then be
+ * silently overridden at exec (review L3d: declared-fd-3-survived=false) —
+ * that tension between declaration face and execution face is resolved on
+ * the REFUSAL side: `compileFdPlan` refuses `fd === 3` as `fd-launcher-owned`
+ * at prepare, before any plan or process exists, under the same law for the
+ * one-shot and the streaming arm (both share prepare()).
+ *
  * Purity: no `node:*`, no I/O.
  *
  * @module @dsh-agent-team/runtime/sandbox-provider/fd-inheritance
@@ -41,6 +53,9 @@ export interface FdPlanPayload {
 }
 /** The fixed inherit default — exported so tests and docs cite ONE site. */
 export declare const FD_INHERIT_DEFAULT: "close-all-undeclared";
+/** FD 3 is launcher-owned (handshake / ruleset-reservation channel) and can
+ *  NEVER be an inherited payload FD — see the module header's fd contract. */
+export declare const LAUNCHER_OWNED_FD = 3;
 /** The CLOEXEC-is-mechanism law, stated verbatim where the plan is compiled. */
 export declare const FD_CLOSE_LAW_NOTE = "CLOEXEC marks a closure; it is the mechanism, not the guarantee \u2014 the launcher closes every undeclared inherited FD itself, because Landlock never retroactively closes already-open FDs (TOCTOU_A)";
 /** A compile outcome. */

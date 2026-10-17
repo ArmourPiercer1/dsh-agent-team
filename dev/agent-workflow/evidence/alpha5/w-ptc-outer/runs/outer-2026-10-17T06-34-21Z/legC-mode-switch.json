@@ -1,0 +1,12 @@
+{
+  "switchRoute": {
+    "ok": true,
+    "calls": 1
+  },
+  "modeAfter": {
+    "post": "danger-full-access",
+    "deploymentDefault": "workspace-write",
+    "writeCallsByThisRow": 1
+  },
+  "disclosure": "test-world per-session public write path (session.append(\"sandbox/mode\")); the host’s own typed refusal prescribes exactly this switch. NO OS-enforcement caliber is claimed for it: in that mode the host wraps NOTHING around the outer process (index.ts confines only when mode !== danger-full-access)."
+}

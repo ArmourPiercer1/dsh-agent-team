@@ -1,0 +1,128 @@
+{
+  "runStamp": "2026-10-17T05-37-12",
+  "mode": "green",
+  "redControl": false,
+  "hostBaseline": {
+    "version": "0.2.0-rc.2",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "port": 3184,
+  "world": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-37-12",
+    "disposition": "removed"
+  },
+  "anchor": {
+    "pre": {
+      "hits": 0,
+      "sample": [],
+      "treeHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "treePorcelainLines": 0
+    },
+    "post": {
+      "hits": 0,
+      "sample": [],
+      "treeHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "treePorcelainLines": 0
+    }
+  },
+  "barrelSha": "694852ff90185022263eaa2509cc63eb5ea06f2ddb305e4a817a3883a8bb1d69",
+  "criteria": [
+    {
+      "id": "C0a",
+      "name": "jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile)",
+      "ok": true,
+      "detail": "exit=0 sha=694852ff90185022"
+    },
+    {
+      "id": "C0b",
+      "name": "absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations)",
+      "ok": true,
+      "detail": "hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]"
+    },
+    {
+      "id": "C1",
+      "name": "green boot: production governed team booted WITH the coverage gate armed and PASSED (anchor declares capabilities.permissions + denies the job trio via builtinToolDeny = the gate's own remediation (a)); row health shows the barrel assembly + ctx.jobs injection",
+      "ok": true,
+      "detail": "{\"ok\":true,\"boot\":1,\"gateway\":\"assembled\",\"barrel\":\"repo-dist-public-barrel\",\"jobsPlane\":\"ctx.jobs injected (public @deepseek-ai/dsh-jobs seam)\",\"generation\":1,\"publicExports\":[\"createJobsGateway\",\"createLeaseWindow\",\"classifyDispatchEvent\",\"jobOwnerKey\",\"projectJobForViewer\",\"redactCredentials\",\"ga"
+    },
+    {
+      "id": "C2",
+      "name": "governed leader live surface: job_* ABSENT (removed at the capability layer), remainder beyond managed/team/safe = ZERO (deny list is complete)",
+      "ok": true,
+      "detail": "surface=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] remainder=[]"
+    },
+    {
+      "id": "C3a",
+      "name": "team.create (public /team-remote) starts the governed main team (all templates declare capabilities.permissions)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5cvg-rxngv3pft9\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5cvg-team-2026-10-17T05-37-12\",\"blueprint\":{\"blueprintId\":\"team.a5cvg.main\",\"revision\":\"1\",\"contentHash\":\"sha256:69cb2f7"
+    },
+    {
+      "id": "C3b",
+      "name": "two durable governed members with distinct instance ids and distinct child sessions",
+      "ok": true,
+      "detail": "A={\"instanceId\":\"inst-02gaqun1yy83\",\"templateId\":\"wa\",\"childSessionId\":\"session-team-child-d9de440e5cbee1bcfcc476ee697cbd62\",\"lifecycle\":\"CREATED\"} B={\"instanceId\":\"inst-1m7177i1e2tk\",\"templateId\":\"wb\",\"childSessionId\":\"session-team-child-54b4a93a65bc6b61435a281bb3007a59\",\"lifecycle\":\"CREATED\"}"
+    },
+    {
+      "id": "C5",
+      "name": "both member live model-facing surfaces are governed-clean: no job_*, bash present (A2C-1 posture: ask-lane only — members can NOT carry a positive bash allow, blueprint validation rejects one: repo-citation-anchors validator.member_shell_no_allow)",
+      "ok": true,
+      "detail": "{\"wa\":[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"],\"wb\":[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"]}"
+    },
+    {
+      "id": "C6",
+      "name": "gate re-derivation on this tree's own classifier: live governed surface PASSES; the same surface + the job trio yields FATAL entries that are EXACTLY the trio, classified known-sensitive-unmanaged with the file's own reason+remediation",
+      "ok": true,
+      "detail": "{\"liveOk\":true,\"withTrioOk\":false,\"withTrioFatal\":[{\"name\":\"job_kill\",\"classification\":\"known-sensitive-unmanaged\",\"reason\":\"background job process control is outside the static permission coverage (no alpha.2 operation adapter)\",\"remediation\":\"remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)\"},{\"name\":\"job_list\",\"classification\":\"known-sensitive-unmanaged\",\"reason\":\"background job process control is outside the s"
+    },
+    {
+      "id": "T-allow",
+      "name": "allow registration, model-driven leg (governed team, non-plain session): PASS = the leader chain really registered AND the caller-fenced registry face lists + collects it; or MEASURED-REFUSAL (recorded verbatim, booked as the second missing item) = the closed-world Guard refuses the preset bash at dispatch on every governed face of this host build (boot anchor AND created team), while the lane actuator leg (T-allow-row) keeps the registration trio complete on the governed members",
+      "ok": true,
+      "detail": "guard-blocked (verbatim): Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to the native body)"
+    },
+    {
+      "id": "C7",
+      "name": "TeamPermit-leg anchor: a real gateway admission against HOST member A identity is accepted (the held jobId is what the team-refused cells collide with)",
+      "ok": true,
+      "detail": "{\"ok\":true,\"job\":{\"jobId\":\"a5cvg-held-2026-10-17T05-37-12\",\"ownerKey\":\"{\\\"instanceId\\\":\\\"inst-02gaqun1yy83\\\",\\\"rootSessionId\\\":\\\"session-a5cvg-team-2026-10-17T05-37-12\\\"}\",\"scopeKey\":\"a5cvg-scope\",\"to"
+    },
+    {
+      "id": "T-allow-row",
+      "name": "lane-assembly allow registration on the governed MEMBER: TeamPermit(gateway)+DomainPermit+ref+CAS granted -> the host ctx.jobs really registered a REAL spawned producer owned by member A's child session; settled completed; readAt(caller=wa-child) collected the marker verbatim (a registry refusal here would be booked verbatim as a measured gap)",
+      "ok": true,
+      "detail": "{\"cellId\":\"cell-TT\",\"team_permit\":true,\"domain_permit\":true,\"team_refusal_code\":null,\"ref\":\"a5cvg_tool\",\"device_version_before\":0,\"at\":\"2026-10-17T05:37:21.775Z\",\"actuator_invoked\":true,\"outcome\":\"granted\",\"effect_committed\":true,\"registry_job_id\":\"a5cvg-1\",\"device_version_after\":1,\"team_admission\":"
+    },
+    {
+      "id": "T-deny",
+      "name": "deny zero-registration (veto face): the three veto cells (team-refused owner-mismatch; domain-refused; both+stale-CAS) all refused with actuator_invoked=false, and the host registry gained ZERO entries from them (every post-run delta id traces to the two allow registrations only)",
+      "ok": true,
+      "detail": "veto=[{\"cell\":\"cell-FT\",\"outcome\":\"denied\",\"code\":\"owner-mismatch\"},{\"cell\":\"cell-TF\",\"outcome\":\"denied\",\"code\":\"DOMAIN_DENIED\"},{\"cell\":\"cell-FF\",\"outcome\":\"denied\",\"code\":\"DOMAIN_DENIED\"}] newIds=[]"
+    },
+    {
+      "id": "T-iso",
+      "name": "two-member isolation on the host registry face (caller-fenced list): member A sees its own registration and NOT the leader's; member B sees neither A's nor the leader's; the registry's OWN fence refuses get(A-job, caller=B) verbatim; the lane gateway independently refuses B admitting A's gateway job (leader-side bash presence follows the model leg: present when it ran, absent-both-ways-verified when guard-blocked)",
+      "ok": true,
+      "detail": "A=[\"a5cvg-1\"] B=[] L=[] crossGet={\"ok\":false,\"refusal\":\"job a5cvg-1 belongs to another session\"} crossAdmit={\"ok\":false,\"code\":\"owner-mismatch\",\"detail\":\"this jobId is already owned by another member scope\"}"
+    },
+    {
+      "id": "C8",
+      "name": "lease hygiene: every admitted gateway job settles while ACTIVE; drain at self-counted zero releases RELEASED (lane law re-observed, no new claims)",
+      "ok": true,
+      "detail": "leased=3 release={\"ok\":true,\"windowState\":\"RELEASED\"}"
+    },
+    {
+      "id": "C9",
+      "name": "absent-anchor POST unchanged (job_start = 0, tree at pin, porcelain-clean) and the dist barrel is byte-identical (zero lane-source edits)",
+      "ok": true,
+      "detail": "hits=0 porcelain=0 barrelStable=true"
+    },
+    {
+      "id": "C10",
+      "name": "world /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-37-12 removed and verified",
+      "ok": true,
+      "detail": "world=removed"
+    }
+  ]
+}

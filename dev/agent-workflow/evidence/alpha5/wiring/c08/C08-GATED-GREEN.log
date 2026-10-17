@@ -1,0 +1,36 @@
+a5c08 runner mode=gated stamp=2026-10-17T04-40-50Z port=3186
+PASS L-C08-PIN — the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (read-only reuse) [head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/deepseek-harness-test-use]
+PASS L-C08-IF5 — IF-5 shared surface (packages/, scripts/, root vitest.config) is byte-untouched by this lane [porcelain empty]
+PASS L-C08-ARTS — the runtime dist barrels (tool-governance/tool-admission/tool-dispatch/controlled-fs) are present [dist=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/packages/runtime/dist/packages]
+PASS L-C08-PORTS — host port 3186 free (self-proved) and a mock port from the 349x family free [hostFree=true mock=3491]
+mock: listening on 127.0.0.1:3491
+PASS L-C08-BOOT — the test Host booted on port 3186 with the token gate live (303 + set-cookie) [status=303]
+PASS L-C08-CREATE — the host public session/create entry returned a real sessionId (attachment-read tool host) [A=session-cc8b060e-60a]
+PASS L-C08-TURN1 — the real session ran a setup turn to a model reply (an Agent now exists behind the session) [status=200]
+PASS L-C08-AGENT — the session Agent is reachable through the PUBLIC ctx.agents seam [agent={"id":"session-cc8b060e-60a1-4686-8aaa-60fb68c8a175","session":"session-cc8b060e-60a1-4686-8aaa-60fb68c8a175","hasCtx":t]
+PASS L-C08-ASSEMBLE-REQ — the live assembly started on the real Agent [{"ok":true,"started":true,"label":"session-cc8b060e-60a1-4686-8aaa-60fb68c8a175"}]
+PASS L-C08-ASSEMBLED — the row assembly completed on the live Agent (world built + tools registered; guard published in gated mode) [wait=true]
+mock: 1 [messages] tool-call reply: a5c08_image_read
+mock: 2 [messages] tool-call reply: a5c08_image_read
+mock: 3 [messages] tool-call reply: a5c08_thumb_probe
+mock: 4 [messages] tool-call reply: a5c08_unbound_read
+mock: 5 [messages] tool-call reply: a5c08_binary_probe
+mock: 6 [messages] text reply (39 chars): "A5C08_GATED_20261017T044050Z_CHAIN_DONE"
+mock: 7 [messages] text reply (51 chars): "a5c08-mock: unscripted request, completing quietly."
+mock: 8 [messages] tool-call reply: read_image
+mock: 9 [messages] text reply (37 chars): "A5C08_GATED_20261017T044050Z_IMG_DONE"
+PASS L-C08-GUARD — the PR1 guard installed, bound the four a5c08 tools and PUBLISHED (channel armed/proven on the live subscription) [{"installOk":true,"installError":null,"bindOwnOk":true,"publishedOk":true,"channel":"armed","channelAtPublish":"armed"}]
+PASS L-C08-REG — the four row tools are on the live scoped registry [["a5c08_image_read","a5c08_thumb_probe","a5c08_unbound_read","a5c08_binary_probe"]]
+PASS L-C08-CHAIN — a REAL model-driven attachment read ran the FULL gated chain: PR2 grant minted (read resource effect) → per-call admission-bound ControlledFs lane readText (exec-edge ONE-SHOT consumed, lane ledger fd-closed) → base64/PNG decode (1×1, decoded sha == attachment on disk) → render into the real transcript; chain=admission-gated-controlled-fs [grant=grant:06b25fb75240d77d57b7567c285a6355 lane=true edge={"ok":true,"replay":false} consumed=1 decode={"ok":true,"width":1,"height":1}]
+PASS L-C08-ONESHOT — ONE-SHOT discipline on the FS path: the same-call SECOND readText on the SAME bound lane is refused through the consumed ledger (grant-consumed, deny-before-open); exactly one fd-closed line for the acted read [{"replay":{"ok":false,"code":"grant-consumed"},"fdClosedLines":1}]
+PASS L-C08-THUMB-DENY — the thumbnail/preview bypass attempt (armed effect set, OUTSIDE target) is refused by the C-FS lane BEFORE any open: typed effect-outside-grant, bytes_leaked=0, refused line in the lane ledger, thumbnail bytes unchanged on disk [{"attempt":"thumbnail-read-bypass","outcome":"typed-deny","cf_reason":"effect-outside-grant","deny_stage":"before-open (readViaRef/admit: effectCovers)","bytes_leaked":0,"diagnostic":"admission refused at FS: no grant effect covers a read on this resource","ledger_refused_line":true}]
+PASS L-C08-UNBOUND-DENY — the UNBOUND gated lane refuses every operation by name (law 1): recheck reason admission-unbound verbatim in the diagnostic, bytes_leaked=0, refused line in the lane ledger (the refusal is the lane wiring, not prose) [{"attempt":"unbound-image-read","outcome":"typed-deny","error":"admission-unbound","recheck_reason":"admission-unbound","cf_reason":"effect-outside-grant","bytes_leaked":0,"diagnostic":"exec-time admission recheck refused (admission-unbound)","ledger_refused_line":true}]
+PASS L-C08-BINARY-FACT — the raw-binary leg MEASURED and BOOKED the C-FS text-read byte fidelity (lane-carried bytes vs bytes on disk compared as a fact; the base64 attachment form is the byte-exact transport recorded by the chain leg) [{"callId":"c08-bin-4","tool":"binary-probe","stage":"team-admitted","outcome":"measured","code":null,"grantId":"grant:640c731d96b9d8a3e93049dc8966641d","targetLocator":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-gated]
+PASS L-C08-BYTES-INTACT — the chain is READ-ONLY end to end: attachment and thumbnail files carry the SAME sha after the run as the fixtures written at world build (PNG bytes; base64 attachment form) [{"attach/shot.png":{"sha":"sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77"},"attach/shot.png.b64":{"sha":"sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6"},"thumb/shot.png.b64":{"sha":"sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6"}}]
+PASS L-C08-NATIVE-IMG — the host-native read_image round-trip leg was measured end-to-end with its governance-observation delta bracketed around it (the Team chain does NOT substitute for the native face) [skipped=false term=done govDelta={"leg":"read_image","new_observations":3}]
+PASS L-C08-CENSUS — every name on the live guard-observation stream is a master full-prefix name (no retired short form appears); census recorded verbatim [{"dispatcher-preparing":1,"guard-installed":1,"dispatcher-seam-armed":5,"dispatcher-bind-inherited":1,"dispatcher-native-unreadable":1,"published-surface-native-unreadable":1,"published-surface-unverified":1,"surface-inherited":1,"dispatcher-active":1,"agent-published":1,"dispatcher-call-begin":5,"dispatcher-result-observed":4,"dispatcher-call-end":4,"guard-denial":1,"dispatcher-call-refused":1}]
+PASS L-C08-STABLE — the stable :3080 instance was only probed, never operated, status unchanged [before=401 after=401]
+PASS L-C08-PRISTINE — the test-use runtime stayed pristine (porcelain empty, HEAD unmoved) [porcelain=0]
+PASS L-C08-IF5-POST — IF-5 shared surface still byte-untouched at closure [porcelain empty]
+
+GREEN — 23/23 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z

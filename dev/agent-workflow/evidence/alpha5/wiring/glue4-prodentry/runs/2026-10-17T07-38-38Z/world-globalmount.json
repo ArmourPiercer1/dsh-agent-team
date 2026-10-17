@@ -1,0 +1,265 @@
+{
+  "mode": "globalmount",
+  "home": "tests/homes/a5g4-globalmount-2026-10-17T07-38-38Z",
+  "ok": true,
+  "standard": {
+    "sessionId": "session-1be64d4b-4920-4093-b224-8e6ab537eed7",
+    "echoedPreset": "standard",
+    "setupStatus": 200,
+    "setupBody": "{\"type\":\"server-response\",\"rpcId\":\"a5g4-standard-p-y5w34bbp\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "perName": {
+      "bash": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "edit": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "read": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "read_image": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "write": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      }
+    }
+  },
+  "minimal": {
+    "sessionId": "session-c927ad84-8ee6-42d7-a4f1-2605cc641242",
+    "echoedPreset": "minimal",
+    "setupStatus": 200,
+    "setupBody": "{\"type\":\"server-response\",\"rpcId\":\"a5g4-minimal-p-gs6cxwpv\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "write"
+    ],
+    "perName": {
+      "bash": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "edit": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": true
+      },
+      "read": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": true
+      },
+      "read_image": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": true
+      },
+      "write": {
+        "globalPresent": true,
+        "scopedPresent": true,
+        "sameDefinition": true
+      }
+    }
+  },
+  "globalNames": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ],
+  "globalPresent": {
+    "bash": true,
+    "edit": true,
+    "read": true,
+    "read_image": true,
+    "write": true
+  },
+  "observations": [],
+  "captureDump": [
+    {
+      "seq": 1,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": true,
+      "toolsCount": 1,
+      "markers": [
+        "A5G4_20261017T073838Z_BASELINE_MINIMAL"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"A5G4_20261017T073838Z_BASELINE_MINIMAL_SETUP This is a s"
+      ]
+    },
+    {
+      "seq": 2,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": false,
+      "toolsCount": null,
+      "markers": [
+        "A5G4_20261017T073838Z_BASELINE_MINIMAL"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human"
+      ]
+    },
+    {
+      "seq": 3,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": true,
+      "toolsCount": 26,
+      "markers": [
+        "A5G4_20261017T073838Z_BASELINE_STANDARD"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"A5G4_20261017T073838Z_BASELINE_STANDARD_SETUP This is a "
+      ]
+    },
+    {
+      "seq": 4,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": false,
+      "toolsCount": null,
+      "markers": [
+        "A5G4_20261017T073838Z_BASELINE_STANDARD"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human"
+      ]
+    },
+    {
+      "seq": 5,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": true,
+      "toolsCount": 5,
+      "markers": [
+        "A5G4_20261017T073838Z_GLOBALMOUNT_MINIMAL"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"A5G4_20261017T073838Z_GLOBALMOUNT_MINIMAL_SETUP This is "
+      ]
+    },
+    {
+      "seq": 6,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": false,
+      "toolsCount": null,
+      "markers": [
+        "A5G4_20261017T073838Z_GLOBALMOUNT_MINIMAL"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human"
+      ]
+    },
+    {
+      "seq": 7,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": true,
+      "toolsCount": 26,
+      "markers": [
+        "A5G4_20261017T073838Z_GLOBALMOUNT_STANDARD"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"A5G4_20261017T073838Z_GLOBALMOUNT_STANDARD_SETUP This is"
+      ]
+    },
+    {
+      "seq": 8,
+      "path": "/v1/messages",
+      "status": 200,
+      "hasTools": false,
+      "toolsCount": null,
+      "markers": [
+        "A5G4_20261017T073838Z_GLOBALMOUNT_STANDARD"
+      ],
+      "userTexts": [
+        "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human"
+      ]
+    }
+  ],
+  "wireCatalogs": {
+    "minimal": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "write"
+    ],
+    "standard": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "swept": true
+}
