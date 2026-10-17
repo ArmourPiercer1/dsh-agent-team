@@ -11,10 +11,10 @@ PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDIN
 ## G 门行（自 evidence 正本合并，G-b..G-g 完整）
 | # | 项 | 状态 | 放行前动作 |
 |---|---|---|---|
-| G-a | PR257 取消语义 | **用户裁决 2026-10-16 17:52Z：接受扩大取消范围**（限定=工具 definition 变化/撤回→取消关联未执行调用+向关联已开始调用传播 abort 请求；不保证立即终止、不回滚已发生副作用；结果三分类：未执行/已执行可能有副作用/终止未确认）。**边界：不扩大为 provider 卸载自动杀全团队；G-g 不随之关闭；不回填为 17:02 合并时已批准**。运行接线验收自本裁决起可按门推进 | 文档落实=#258 分支更新中（裁决 UTC 引本行） | 支持契约 @98ddbaa9+补测 G-1..G-5 **已合 master @ced9254c**（review bbaf45de/3ee77729，pr-gate=success）：P4/P6 达 D、G-6/G-7 已 LIVE-CONFIRMED（live 轮 runs+review ACCEPT，ENFORCE-PARTIAL 缺项如实）；G-g 保持开放至 live 项+落文双闭环 |
+| G-a | PR257 取消语义 | **用户裁决 2026-10-16 17:52Z：接受扩大取消范围**（限定=工具 definition 变化/撤回→取消关联未执行调用+向关联已开始调用传播 abort 请求；不保证立即终止、不回滚已发生副作用；结果三分类：未执行/已执行可能有副作用/终止未确认）。**边界：不扩大为 provider 卸载自动杀全团队；G-g 不随之关闭；不回填为 17:02 合并时已批准**。运行接线验收自本裁决起可按门推进 | 文档落实=**#258 已合 18f53c99**（裁决 UTC 引本行） | 支持契约 @98ddbaa9+补测 G-1..G-5 **已合 master @ced9254c**（review bbaf45de/3ee77729，pr-gate=success）：P4/P6 达 D、G-6/G-7 已 LIVE-CONFIRMED（live 轮 runs+review ACCEPT，ENFORCE-PARTIAL 缺项如实）；G-g 保持开放至 live 项+落文双闭环 |
 | G-b | PR257 seam-record/s12 必改点1（三事实+候选修法**仅项目内**+限定措辞） | follow-up 修复中（4d990c89） | 文档可先行；禁"已合规"措辞 |
-| G-c | PR256 F-1 数组顺序决定结局⇒deny-source-ambiguous；F-2 issue 复证只比 MAX rung⇒扩展 provenance 对；日志明细 NIT | 修复中 | 修复+新 head 独立复核+CI 后才谈 #256 合并 |
-| G-d | 各 lane（B/C/D/E/F/G）对契约 v1.1 的**集成确认**（含 p4t6 pin +14、tsconfig include、接线注、F-3 PR3 义务、OpenAtPort 前禁宣称任意树 Supported） | 未开始 | PR3/PR7/PR8 集成会话逐 lane 确认后其交付方可计入验收 |
+| G-c | PR256 F-1 数组顺序决定结局⇒deny-source-ambiguous；F-2 issue 复证只比 MAX rung⇒扩展 provenance 对；日志明细 NIT | 修复中 | 修复+新 head 独立复核+CI **已完成**：#256 合 ae3dcf54；后继 D/E 修复轮 #260 d69bfc4b、#261 6ce62c25 各独立复核+CI 绿后合。状并 |
+| G-d | 各 lane（B/C/D/E/F/G）对契约 v1.1 的**集成确认**（含 p4t6 pin +14、tsconfig include、接线注、F-3 PR3 义务、OpenAtPort 前禁宣称任意树 Supported） | 未开始 | **集成轮已执行**：wiring #268 9e75ee83（Lane-D 三门真修+条件 A/B/C 收口，review 3f0a3f15/4a560ba7）+live #269 0e0b605a（LIVE-CONFIRMED）+G-6 计分项入账。各 lane 交付方可计入验收 |
 | G-e | 原 G1/G3/G7/YAML 待裁项 | 未裁 | 不默认旧提案 |
 | **G-g** | **静默已订阅通道的排除门（用户：不得随取消范围裁决默认关闭）**。证据门**已收口**（GATE-VERDICT @alpha5-g-g-gate，master@46a406b9 基）：支持契约 §3 G-1..G-5 已合 master（ced9254c，独立 review bbaf45de）⇒ 分级 P1=D · P2=E · P3=E · P4=E+D（同配置恢复路径已测，"钉到 re-bind"允许口径自此成立）· P5=D+E（对照）· P6=E（armed⇒proven 已成断言）· P7=D · P8=E（措辞 lint 挂 root suite 常跑）· P9=UR；live 轮 G-6/G-7 已合（0e0b605a，review ACCEPT b90abc10 + 独立复跑 ead3f155）= **LIVE-CONFIRMED**（G-6 19/19×2 · G-7 18/18，G-6 计分项挂 G-d 不随本行） | 收口（证据级；**等级上限 LIVE-CONFIRMED/ENFORCE-PARTIAL**：缺 OS 强制面 · trusted 输入 fixture-grade · 取消协作式，三项原样在册 README:60-67，增强=独立后续项非本门）；静默失效**非 fail-closed**（G-7 实测被移 Body 实跑，证伪在案） | 无剩余证据动作；措辞禁则由 lint-g-g-wording 常跑执行；双维度（proven 可达 vs 静默响亮告警）禁合并措辞；引用带 GATE-VERDICT §3-§5 |
 | G-f | census 非终态时禁称"全部 CI 绿" | 纪律 | 每次合并回报附 census 状态原文 |
