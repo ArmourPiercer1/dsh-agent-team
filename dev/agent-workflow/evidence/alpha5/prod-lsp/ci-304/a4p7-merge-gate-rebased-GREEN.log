@@ -1,0 +1,25 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-prod-lsp
+
+lint-visibility: eslint read 1253 of 2818 OFFERED tracked lintable file(s); 1565 are hidden by an ignore pattern (dev/ 589, docs/ 2, packages/client/composition-shim/ 2, packages/runtime/dist/ 841, tests/ 131); 1253 + 1565 = 2818 offered, + 0 skipped = 2818 tracked lintable path(s); nothing skipped
+ ✓ packages/testkit/test/a4p7-merge-gate.test.ts (35 tests) 96249ms
+       ✓ is green, asserted by arm name and by absence of a skip — never by the exit code  1801ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  537ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  412ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1308ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1231ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  905ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  372ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  10797ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  10663ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  12980ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  32235ms
+       ✓ every workspace package that declares a typecheck script typechecks  10736ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  11320ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  506ms
+
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+   Start at  10:55:02
+   Duration  96.46s (transform 102ms, setup 0ms, import 125ms, tests 96.25s, environment 0ms)
+

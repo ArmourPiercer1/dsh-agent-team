@@ -16,8 +16,15 @@
  * through the lease law (`settleTermination` is the only path to
  * `terminated`; an unconfirmed settlement keeps its `sideEffectUnknown`).
  *
+ * R-1 STREAMING ARM (user ruling 07:53Z, PARALLEL-ADDITIVE): `spawnStreaming`
+ * reuses the SAME prepare ladder, byte-pin double gate, one-shot plan law and
+ * lease/termination vocabulary, and hands back a LIVE handle (stdin Writable,
+ * stdout/stderr Readers, lease, terminate). `spawn`/`RunOutput` and every old
+ * call site keep their exact historical behavior.
+ *
  * @module @dsh-agent-team/runtime/sandbox-provider/provider
  */
+import { type Readable, type Writable } from 'node:stream';
 import { type AssuranceDimension, type ProcessCapabilityRow, type ProviderResult } from './contract-stub.js';
 import { type FdPlan } from './fd-inheritance.js';
 import { type AvailabilityRow, type LegName, type LegVerdict, type RunResult } from './probe-abi.js';
@@ -45,6 +52,10 @@ export interface SpawnRequest {
     readonly env: readonly (readonly [string, string])[];
     readonly networkProfile?: 'deny' | 'restricted';
     readonly allowPaths?: readonly AllowPathEntry[];
+    /** FD inheritance declarations (fd-inheritance.ts is the law). FD CONTRACT:
+     *  fd 3 is launcher-owned (handshake / ruleset reservation) — declaring it
+     *  is NOT using it; `prepare()` refuses such a plan as `fd-launcher-owned`
+     *  before any plan or process exists, one-shot and streaming arms alike. */
     readonly declaredFds?: readonly {
         fd: number;
         purpose: 'stdin' | 'stdout' | 'stderr' | 'delivery';
@@ -81,6 +92,47 @@ export interface SpawnReceipt {
     readonly lease: ProviderLease;
     readonly processIdentity: string;
 }
+/** The streaming launcher process as the injected seam exposes it. */
+export interface LauncherStreamProcess {
+    /** The LAUNCHER's pid; the confined payload's pid arrives on the fd-3 handshake. */
+    readonly pid: number;
+    readonly stdin: Writable;
+    readonly stdout: Readable;
+    readonly stderr: Readable;
+    /** fd-3 handshake channel: launcher-owned, never crosses the payload boundary. */
+    readonly handshake: Readable;
+    kill(signal?: string | number): boolean;
+    readonly exit: Promise<{
+        code: number | null;
+        signal: string | null;
+    }>;
+}
+/** Per-call streaming windows (tests script them per leg). */
+export interface StreamingOptions {
+    /** Bounded wait for the launcher's fd-3 handshake line (default 15000). */
+    readonly handshakeTimeoutMs?: number;
+    /** SIGTERM → SIGKILL escalation point inside the terminate window (default 1500). */
+    readonly graceMs?: number;
+    /** Bounded confirmation window; past it the lease settles `termination-unconfirmed` (default 8000). */
+    readonly deadlineMs?: number;
+}
+/** The live handle the streaming arm returns (receipt + pipes + lease + terminate). */
+export interface StreamingSpawnHandle {
+    readonly lease: ProviderLease;
+    readonly processIdentity: string;
+    /** The confined payload's OS pid (handshake-reported; the identity inside `processIdentity`). */
+    readonly pid: number;
+    readonly stdin: Writable;
+    readonly stdout: Readable;
+    readonly stderr: Readable;
+    /** Resolves when the process is OBSERVED to exit — observation never settles the lease. */
+    readonly exited: Promise<{
+        code: number | null;
+        signal: string | null;
+    }>;
+    /** The handle's termination arm: signal (SIGTERM→SIGKILL escalation), await, settle. */
+    terminate(options?: StreamingOptions): Promise<ProviderResult<ProviderLease>>;
+}
 /** The injected world (tests inject a counting fake to watch ZERO calls). */
 export interface ProviderDeps {
     readonly availability: () => {
@@ -91,6 +143,16 @@ export interface ProviderDeps {
         readonly abiVersion: number | null;
         readonly legs: Partial<Record<LegName, LegVerdict>>;
     };
+    /**
+     * Streaming arm (R-1): spawn the launcher in stream mode with the fd-3
+     * handshake channel. OPTIONAL — absent, the production arm (node:child_process
+     * spawn) runs; injected, the leg watches ZERO/signal facts through the fake.
+     */
+    readonly spawnStream?: (argv: readonly string[]) => ProviderResult<LauncherStreamProcess>;
+    /** Signal the PAYLOAD pid (terminate arm). Absent: `process.kill` (false = already gone). */
+    readonly signalProcess?: (pid: number, signal: 'SIGTERM' | 'SIGKILL') => boolean;
+    /** OS liveness of a payload pid. Absent: `/proc/<pid>` existence. */
+    readonly pidAlive?: (pid: number) => boolean;
 }
 /**
  * THE ASSEMBLY CONFIG FACE (PR4/5 install round, pb-CONTRACT.md §1): the
@@ -126,6 +188,10 @@ export interface ProviderOptions {
     readonly runnerCommand?: string | null;
     /** The assembler's entry parameters (see `ProviderAssemblyConfig`). */
     readonly assembly?: ProviderAssemblyConfig;
+    /** Bound of the settled-lease audit ledger (see the ledger block in the
+     *  implementation): terminal leases are audited FIFO up to this many
+     *  entries, older ones are forgotten. Default 1024. */
+    readonly settledLedgerCap?: number;
 }
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export declare function createConfinedProcessProvider(opts: ProviderOptions): Readonly<{
@@ -141,7 +207,15 @@ export declare function createConfinedProcessProvider(opts: ProviderOptions): Re
         output: RunOutput;
         lease: ProviderLease;
     }>>;
+    spawnStreaming: (request: SpawnRequest, streaming?: StreamingOptions) => Promise<ProviderResult<StreamingSpawnHandle>>;
+    executeStreaming: (plan: SpawnPlan, streaming?: StreamingOptions) => Promise<ProviderResult<StreamingSpawnHandle>>;
     requestCancellation: (lease: ProviderLease) => Promise<ProviderResult<ProviderLease>>;
     settleTermination: (lease: ProviderLease, confirmed?: boolean) => Promise<ProviderResult<ProviderLease>>;
+    bookkeeping: () => {
+        readonly liveLeases: number;
+        readonly streamRuns: number;
+        readonly settledLedger: number;
+        readonly settledLedgerCap: number;
+    };
 }>;
 //# sourceMappingURL=provider.d.ts.map

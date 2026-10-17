@@ -18,7 +18,7 @@
  *
  * @module packages/runtime/controlled-fs/test/poc3-probes
  */
-import { closeSync, mkdirSync, openSync, readSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readlinkSync, readSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
@@ -239,26 +239,96 @@ describe('PoC3-D cross-member invisibility', () => {
 
 // ---------------------------------------------------------------------------
 // LEG E — continued use of a closed fd (and fd-number recycling)
+//
+// FD NUMBERS ARE PROCESS-GLOBAL STATE. The runner keeps everything in-process
+// (`pool: 'threads'`, no child spawn — see the root vitest.config.ts), so a
+// sibling test FILE executes in another worker thread of THIS process against
+// the SAME fd table, and the kernel answers every open() with the LOWEST free
+// number. The lane holds no standing fd across calls, so the number a leg
+// captured is back in the allocator's hands while the leg still carries the
+// descriptor: a foreign open can claim exactly that number before the lane
+// reads `/proc/self/fd/<n>`, and the refusal then truthfully answers
+// `fd-recycled` instead of `fd-closed`. Both labels refuse (`denied` /
+// TOOL_BINDING_UNVERIFIED, never a byte served) — what drifted was the label,
+// and the union-of-captures census grades one leg out of hundreds of openers.
+// Measured on this host: 3/96 suite rounds drifted under a same-process open/
+// close hammer, 0/96 with the lifecycle rules below; the lane's label was never
+// inconsistent with the /proc view it itself observed (0 in 2200 recorded
+// replays),
+// so the precondition the leg was missing is documented in
+// `dev/agent-workflow/evidence/alpha5/wiring/poc3-flake/README.md`.
+//
+// Neither rule touches the guard, the tolerance list, the baseline or the
+// meaning of an assertion; each only stops the leg from ASSUMING a fact about
+// the process that the leg does not own.
 // ---------------------------------------------------------------------------
 describe('PoC3-E fd continued-use after close', () => {
+  /** Slots the closed-fd leg reserves below its own number (see rule 1). */
+  const FD_RESERVE_SLOTS = 64
+  /** Presentations the closed-fd leg will make before it calls the law unseen. */
+  const FD_CLOSED_SIGHTINGS = 12
+  /** Cap on fds the recycling leg may hold at once (EMFILE politeness). */
+  const FD_HOLD_CAP = 128
+
+  /** Who owns this fd NUMBER in this process, right now. */
+  const fdOwner = (fd: number): string => {
+    try {
+      return readlinkSync(`/proc/self/fd/${fd}`)
+    } catch {
+      return 'no such fd'
+    }
+  }
+
   it('GUARDED: the lane holds no standing fd — a presented fd of a closed call is refused', async () => {
-    let captured = -1
-    const l = lane({
-      onFdOpened: (info) => {
-        if (info.locator.endsWith('/public/a.txt')) captured = info.fd
-      },
-    })
     const ref = fileRef(world, 'public/a.txt', ['read'])
     const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }] })
-    const first = await l.fs.readText(grant, ref, FULL)
-    expect(first.ok && first.value.text).toBe('A-CONTENT\n')
-    expect(captured).toBeGreaterThanOrEqual(0)
-    const stale: FsResourceDescriptor = { fs: 'ctl', path: 'public/a.txt', fd: captured }
-    const res = await l.fs.readDescriptor(grant, stale, FULL)
-    expect(res.ok).toBe(false)
-    if (res.ok) throw new Error('a closed fd must never serve reads')
-    expect(res.error.details?.['cfClass']).toBe('denied')
-    expect(res.error.details?.['cfReason']).toBe('fd-closed')
+    const decoy = join(world.world, 'fd-reserve')
+    writeFileSync(decoy, 'FD-RESERVE\n')
+    const unseen: string[] = []
+    let lastReason = '(no answer)'
+    try {
+      // RULE 1 — RESERVE, THEN RELEASE: hold FD_RESERVE_SLOTS numbers while the
+      // lane opens (so the lane lands ABOVE them), then free them. The freed
+      // band sits strictly below the leg's number, and lowest-free-number
+      // allocation sends every later foreign opener into the band.
+      // RULE 2 — OBSERVE, NEVER ASSUME: the refusal is re-presented until the
+      // lane answers `fd-closed` for a number this leg knows it just closed.
+      // A drift is not tolerated: the leg stays RED if no presentation sees
+      // its own closed number, and the recorded windows say who took it.
+      for (let attempt = 0; attempt < FD_CLOSED_SIGHTINGS; attempt += 1) {
+        let captured = -1
+        const l = lane({
+          onFdOpened: (info) => {
+            if (info.locator.endsWith('/public/a.txt')) captured = info.fd
+          },
+        })
+        const wall: number[] = []
+        try {
+          for (let i = 0; i < FD_RESERVE_SLOTS; i++) wall.push(openSync(decoy, 'r'))
+          const first = await l.fs.readText(grant, ref, FULL)
+          expect(first.ok && first.value.text).toBe('A-CONTENT\n')
+          expect(captured).toBeGreaterThanOrEqual(0)
+          for (const fd of wall) closeSync(fd)
+          wall.length = 0
+          const stale: FsResourceDescriptor = { fs: 'ctl', path: 'public/a.txt', fd: captured }
+          const res = await l.fs.readDescriptor(grant, stale, FULL)
+          expect(res.ok).toBe(false)
+          if (res.ok) throw new Error('a closed fd must never serve reads')
+          expect(res.error.details?.['cfClass']).toBe('denied')
+          lastReason = String(res.error.details?.['cfReason'])
+          if (lastReason === 'fd-closed') return // the law, SEEN
+          unseen.push(`#${attempt} fd=${captured} answered=${lastReason} owner-after-refusal=${fdOwner(captured)}`)
+        } finally {
+          for (const fd of wall) closeSync(fd) // only on a path that is already RED
+        }
+      }
+      throw new Error(
+        `fd-closed never OBSERVED in ${FD_CLOSED_SIGHTINGS} presentations of a just-closed fd `
+        + `(last answer: ${lastReason}); race windows seen:\n${unseen.join('\n')}`,
+      )
+    } finally {
+      rmSync(decoy, { force: true })
+    }
   })
 
   it('GUARDED: fd-number RECYCLING — raw fd trust silently misreads (naive); the lane refuses (guarded)', async () => {
@@ -275,18 +345,30 @@ describe('PoC3-E fd continued-use after close', () => {
     // nine-root census runs this file's process alongside other files' tests
     // (worker threads share the fd table), so the number may be momentarily
     // held elsewhere — a single open could then miss the recycling and report
-    // a false race. Retry the open until recycling is OBSERVED (closing each
-    // miss first, so each attempt is a clean lowest-free-number probe). This
-    // keeps the leg's claim exact: the law was seen to happen, never assumed;
-    // if no attempt observes it within the bound, the leg stays RED.
+    // a false race. Retry the open until recycling is OBSERVED. This keeps the
+    // leg's claim exact: the law was seen to happen, never assumed; if no
+    // attempt observes it within the bound, the leg stays RED.
+    // RULE 3 — A MISS IS HELD OPEN, NOT CLOSED. Each held miss removes one free
+    // slot below the leg's number, so the free set below it shrinks
+    // monotonically and an open must land on `captured`. Closing each miss
+    // (the previous shape) handed the same slot back every iteration, so a
+    // thread that momentarily owns the number could starve the probe for all
+    // 500 attempts — measured 6/96 suite rounds under the same-process hammer,
+    // 0/96 held open. FD_HOLD_CAP keeps the leg inside the fd limit.
     let recycled = -1
-    for (let attempt = 0; attempt < 500 && recycled !== captured; attempt += 1) {
-      const probe = openSync(join(world.outside, 'recycled-victim.txt'), 'r')
-      if (probe === captured) {
-        recycled = probe
-        break
+    const heldMisses: number[] = []
+    try {
+      for (let attempt = 0; attempt < 500 && recycled !== captured; attempt += 1) {
+        const probe = openSync(join(world.outside, 'recycled-victim.txt'), 'r')
+        if (probe === captured) {
+          recycled = probe
+          break
+        }
+        heldMisses.push(probe)
+        if (heldMisses.length >= FD_HOLD_CAP) closeSync(heldMisses.shift() as number)
       }
-      closeSync(probe)
+    } finally {
+      for (const fd of heldMisses) closeSync(fd)
     }
     expect(recycled).toBe(captured) // recycling OBSERVED, not assumed
     try {

@@ -1,0 +1,30 @@
+// DEPLOY-ONLY RIG — deliberately NOT a *.test.ts file, so no runner collects
+// it. To reproduce the census habitat, copy it INTO the lane test dir:
+//
+//   cp rigs/a5p3f-hammer.rig-test.txt \
+//      packages/runtime/controlled-fs/test/zz-rig-fdchurn.test.ts
+//
+// then run rigs/a5p3f-loop.sh (it drives the lane suite and classifies hits by
+// assertion), and DELETE the copy afterwards.
+//
+// What it does: while poc3-probes runs, this sibling FILE keeps calling
+// open()/close() as fast as it can. vitest's threads pool runs test FILES as
+// worker threads of one process and worker threads share the fd table, so this
+// file reproduces — inside a single lane run — what the nine-root census does
+// across hundreds of tests: foreign openers competing for freed fd numbers.
+// It is a measurement instrument, not a test: it asserts nothing.
+import { closeSync, openSync } from 'node:fs'
+import { it } from 'vitest'
+
+const target = new URL('../vitest.config.ts', import.meta.url)
+
+it('rig: keeps the shared fd table busy while sibling files run', async () => {
+  const stopAt = Date.now() + 4000
+  let spins = 0
+  while (Date.now() < stopAt) {
+    const fd = openSync(target, 'r')
+    closeSync(fd)
+    spins += 1
+    if ((spins & 0x3ff) === 0) await new Promise((r) => setImmediate(r))
+  }
+}, 30_000)

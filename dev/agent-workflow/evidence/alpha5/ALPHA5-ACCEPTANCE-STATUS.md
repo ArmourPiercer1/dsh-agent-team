@@ -29,6 +29,7 @@
 | D-2 skills 对齐 | **DONE**（执行+独立终验 9/9） | `d6b57e55`(#270)+终验 `420ed3ee`(#271)；PG:27 |
 | PR#274 行文刷新轮 | **OPEN**（分支 `alpha5-g-g-landing` @`76b08372` 未合） | 内容=G-a/G-c/G-d 行刷新至 merge ground truth；lint 716md/0；本清单不代关 |
 | LSP 生产装配（真实语言服务器最小交互） | **ACCEPTED-VERIFIED**（真实语言服务器最小交互维度=**真服务器经 P-LSP 生产面跑通**：clangd **18.1.3**（真 LSP：`initialize`→31 capability keys+`serverInfo`+clangd 专有 `executeCommandProvider`；真 `definition`/`documentSymbol`；LSP `shutdown`+`exit`→自发退出 code 0→`/proc` pid 消失→租约 `terminated`）+ typescript **6.0.3 tsserver**（官方 stdio JSON 面：真 `definition`+`completionInfo` 1042 项，跨 member 双服务器双 pid 隔离腿）；**限定 realm 粒度**（per member×策略代际 own realm+own confined OS process），`wiring/real-lsp/README.md` 披露项**全量保留**（clangd 本环境 hover 10s 无应答/completion 空列表→原文记录不计判据；tsserver 无 LSP 模式故不承载 initialize/shutdown 判据；无网络零安装）。**非族级 GO、非 Strict-LSP 产品支持、非本清单四类口径词表项**——其四类映射见右列装配依赖 | 证据 `wiring/real-lsp/`（README 判据台账 + `runs/2026-10-17T10-48-19-580Z` 与复现 `runs/2026-10-17T10-50-20-653Z`，30/30×2 EXIT=0，跑在**已提交 emit** 上）；**测量基线 = #304 分支 `alpha5-prod-lsp` @ `7962022e`**（R-1 `spawnStreaming` + R-2 `createLspRealmAssembly` + dist 存在处）；**#304 合并状态=未合 master、正 rebase 中（owner 644633ea，本 lane 未触其分支）**⇒ 本 master 树上 `packages/runtime/sandbox-provider/lsp-assembly.ts` 缺，本 kit 在 master 暂不可复跑，**复测挂 #304 落地后**；本行与 #304 分支同面行「PENDING-ACCEPTANCE」= **GLUE 去重项**（两笔各加一行，落地后保留本行并把测量基线改指落地 head） |
+| LSP 生产装配（prod-lsp 轮，R-1/R-2） | **PENDING-ACCEPTANCE**（受版本控制的验收缺项行：真实语言服务器最小交互） | 现证据=REAL-Landlock 下 provider/assembly seam 全绿 + 独立 review PASS（`prod-lsp/README.md` 12 判据表；reviewer kit 53/53 @`1e76cd2c`）——**payload 是 fixture，只证 seam，不证任何真实语言服务器交互/编辑器产品行为**（措辞红线在册）；真实语言服务器最小交互（真 LSP server 进程 over 同一 confined stream seam：initialize→didOpen→语义请求→policyChange 存续）= **未做，待人工/后续轮验收**；本行未闭合前 LSP 面禁族级 GO 宣称 |
 
 ## 2. 用户点名覆盖
 
@@ -82,5 +83,6 @@
 ## 4. 判定分布（本清单 §1 共 22 行）
 
 DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。另 **ACCEPTED-VERIFIED=1**（新增行「LSP 生产装配（真实语言服务器最小交互）」，root 2026-10-17 指示按事实另立口径，**不折进上述四类计数**：其宣称面只覆盖"真实语言服务器最小交互"这一维度，所依赖的 R-1/R-2 装配面在 master 仍**未合**（#304 正 rebase），故任何 WIRED/DONE 语义都不由本行取得，族级 GO 亦不宣称）。
+DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）· PENDING-ACCEPTANCE=1（LSP 生产装配轮：真实语言服务器最小交互未做，现 fixture 仅证 seam）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。
 
 — writer=qwen3.8-flash-next（只读+本文件新增；机检复跑仅读+已清除自产 capture；零端口、零世界、:3080 未触碰）
