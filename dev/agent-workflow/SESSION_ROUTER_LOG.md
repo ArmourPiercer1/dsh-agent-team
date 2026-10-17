@@ -6390,3 +6390,11 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **腿②b p4t6 计数**=新增 `SCANNED_PATHS_A5PBLSP` **P-B∥P-C 合并入账一条**（P-B 45436f0f 三件：register.ts/barrel-emit/a5p4-assembly-config + 本 lane 六件：lsp-assembly/a5lsp2×2/harness/fixture×2），两条求和式与逐名 present 循环同时挂入；实测 `expected 1166 to be 1157` Δ=9 与本条款逐名吻合，stack 合并防双计。套件 10/10 绿。
 - **腿②c a4p7 dist-carry**=`packages/testkit/test/a4p7-merge-gate.test.ts` 整文件在 dist 再生后复跑 **35/35 EXIT=0**；commit-carries-build 腿（判据=同器 `scripts/check-artifacts-at-head.mjs` 于 HEAD 的 `verdict=ok … drift=0` token）verdict=passed=**关闭**。同器双测归因：旧 HEAD 报 drift=红 → 本笔（install 面唯一变更=补交其自身构建物）→ `compared=1684 drift=0`（`ci-304/check-artifacts-at-head-62897567-drift0.log`、`ci-304/a4p7-merge-gate-RERUN-GREEN.log`）。
 - **红线**=CORE 0；零生产源文件改动（本轮=dist 镜像+两条测试账+证据/日志）；:3080/:3180 零触碰；ff push 尝试结果如实回报。模型：qwen3.8-flash-next。
+
+## 2026-10-17 10:0xZ — P-LSP #304 census 复跑：两条负载 race 归因 + dormant-audit 抗 ENOENT 加固（零检查移动）
+
+- **census 口径**=与 census-runtime.yml 同令 `ci-pr-gate --full --only census --census-captures 2 --census-test-timeout 90000`；基线 `nine-root-2b1099d7.md`（558 files corpus / 9 titled reds）。
+- **pair-1**=c1 带新红 `poc3-probes::PoC3-E GUARDED … expected 'fd-recycled' to be 'fd-closed'`，c2=9。归因=进程级 fd 表 race：该文件自己的 sibling leg（RECYCLING）以 500-attempt 重试写明同一 race（"worker threads share the fd table … momentarily held elsewhere"），GUARD 在失败捕获里**仍然拒绝**（`res.ok===false` 过了，动的是分类标签）。poc3 属 C-FS(PR3) lane，本分支未触（`git diff base..HEAD` 对 controlled-fs 空）；solo 3/3 绿、与两条 REAL-Landlock 套件同进程 co-load 8/8 绿。不改它（不许移检查），named finding 移交 owner；证据 `ci-304/poc3-race-attribution.md`。
+- **pair-2**=c1=9 干净，c2 带 `a5p5-dormant-audit` leg1 崩 `ENOENT scandir packages/testkit/test/.tmp-fault/po-proj-isolation`=**仪器崩溃不是裁决**（fault-injection 套件在 census 期间于 packages/ 下建删瞬态世界，与 walk 的 readdir→scandir 竞态）。修=walk+read 仅吞 ENOENT（消失路径不可能是 committed 内容，offender 判据不变；其它错误照抛）；`grep a5p5-tools` 全树+合并树双扫=零 violator。dormant 5/5 绿、lint OK。
+- **pair-3（修复后）=PASS**：2 captures identity set IDENTICAL（`census-run-3-HEAD-walkfix-PASS.txt`）；base 对照 d714a941 独立 worktree 2 captures=PASS 558f/7010l（corpus 差=本分支 4 文件/36 腿，context 非裁决）。census 残余风险=poc3 单采样（1/4 全量捕获），按纪律披露不掩盖，不扩 family 披露。
+- **红线**=零检查移动/零基线改动/零 poc3 改动；:3080/:3180 零触碰；模型：qwen3.8-flash-next。
