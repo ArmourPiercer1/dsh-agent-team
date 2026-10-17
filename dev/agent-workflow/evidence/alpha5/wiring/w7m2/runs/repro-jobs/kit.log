@@ -1,0 +1,5 @@
+[2026-10-17T05:23:03.261Z] a5cvg kit 2026-10-17T05-23-03 (mode=repro-jobs): host 0.2.0-rc.2 @ 639ed01539; port 3184; world /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-23-03
+[2026-10-17T05:23:03.424Z] PASS C0a: jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile) — exit=0 sha=694852ff90185022
+[2026-10-17T05:23:08.375Z] PASS C0b: absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations) — hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]
+[2026-10-17T05:23:09.913Z] PASS R1: minimal repro: a governed (strict) team on a preset that MOUNTS the job trio boots FATAL with the typed coverage error naming EXACTLY the trio (known-sensitive-unmanaged); NO unknown-unmanaged entries — fatal=true trio=[{"name":"job_list","present":true},{"name":"job_output","present":true},{"name":"job_kill","present":true}] unknown=[{"name":"web_search","present":false},{"name":"ask_user_question","present":false}]
+[2026-10-17T05:23:10.317Z] criteria: 3/3 pass
