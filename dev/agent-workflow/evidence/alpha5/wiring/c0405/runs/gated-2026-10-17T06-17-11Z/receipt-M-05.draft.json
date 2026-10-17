@@ -1,0 +1,118 @@
+{
+  "round": "C-04/05 gap round (alpha5-gap-c0405) — editor/read_image Team Definition 发布/绑定路径公开面补齐（W5 工具面模式：definition 材料化→bind→grant→exec 真跑）",
+  "run_utc": "2026-10-17T06:17Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post, HEAD unmoved)",
+  "port": 3185,
+  "world_prefix": "a5c45-rev-*（跑毕删除）",
+  "assembly": {
+    "row": "dev/agent-workflow/evidence/alpha5/wiring/c0405/a5c45-editor-image-row.mjs",
+    "fixtures": "dev/agent-workflow/evidence/alpha5/wiring/c0405/a5c45-fixtures.mjs",
+    "lane_compile": "dev/agent-workflow/evidence/alpha5/wiring/w5/build-lane-esm.mjs（accepted W5 驱动，未改 lane 源码；产物 tests/homes/.a5c45-build）",
+    "driver": "dev/agent-workflow/evidence/alpha5/wiring/c0405/run-a5c45-live.mjs"
+  },
+  "row_line": "M-05 read_image（附件→解码→渲染链 + 缩略图旁路 typed-deny + admission-unbound live 面）",
+  "caliber": "LIVE-kit 观测：Team Definition（read_image）在公开 seam 材料化→bind→grant→exec；图像字节唯一来源=gated ControlledFs（decode 输入即 lane 读出文本的 base64 解码）；链面 chain=admission-gated-controlled-fs。kernel 信任输入 fixture 级；无 ENFORCE 宣称。receipt 不含 assembly_anchors_verified（F-1）。",
+  "image_read": {
+    "chain": "admission-gated-controlled-fs",
+    "grant": "grant:8d45d2760c523244a746660577b51221",
+    "decode": {
+      "ok": true,
+      "format": "image/png",
+      "width": 1,
+      "height": 1,
+      "bitDepth": 1,
+      "bytes": 70
+    },
+    "attach_file_sha256_b64": "sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6",
+    "detail": "附件 shot.png.b64 → one-shot admitted readText（gated lane）→ base64 解码 → PNG signature+IHDR 真解码（image/png 1x1 70B）→ render 呈报进真实 transcript。字节路径无 host 直读。"
+  },
+  "negative_controls": [
+    {
+      "attempt": "subcommand-undo_all",
+      "error": "IO_POLICY_UNSUPPORTED",
+      "side_effects": 0,
+      "grants_minted_delta": 0,
+      "file_unchanged": true,
+      "detail": "multi-step restore with undefined target state — no precise I/O effect set exists"
+    },
+    {
+      "attempt": "subcommand-delete",
+      "error": "IO_POLICY_UNSUPPORTED",
+      "side_effects": 0,
+      "grants_minted_delta": 0,
+      "file_unchanged": true,
+      "detail": "no unlink primitive on the governed lane — real-source/target side effects would escape the mapped effect set"
+    },
+    {
+      "attempt": "thumbnail-read-bypass",
+      "outcome": "typed-deny",
+      "layer": "kernel-admission",
+      "stage": "requires-approval",
+      "bytes_returned": 0,
+      "detail": "the bypass requests a second read effect on the thumbnail file; no policy arm exists for it — the real PR2 kernel refuses with its own vocabulary before any open"
+    },
+    {
+      "attempt": "thumbnail-bypass-via-attachment-grant",
+      "outcome": "typed-deny",
+      "layer": "controlled-fs-lane",
+      "cf_reason": "effect-outside-grant",
+      "bytes_returned": 0,
+      "detail": "the admitted attachment grant must not read the thumbnail file through the gated lane"
+    },
+    {
+      "attempt": "controlled-fs-without-admission-binding",
+      "error": "admission-unbound",
+      "bytes_leaked": 0,
+      "cf_reason_code": "effect-outside-grant",
+      "detail": "a gated ControlledFs face with NO admission binding refuses every op by lane law (admission-binding.ts law 1) — observed live on the assembly process; the raw reason admission-unbound rides the refusal message verbatim (frozen §5 closed cfReason code face)"
+    }
+  ],
+  "arbitrary_tree_profile_published": false,
+  "governance_increments": {
+    "event_stream": {
+      "dispatcher-preparing": 1,
+      "guard-installed": 1,
+      "dispatcher-seam-armed": 5,
+      "dispatcher-bind-inherited": 1,
+      "dispatcher-native-unreadable": 1,
+      "published-surface-native-unreadable": 1,
+      "published-surface-unverified": 1,
+      "surface-inherited": 1,
+      "dispatcher-active": 1,
+      "agent-published": 1,
+      "dispatcher-surface-revalidated": 1,
+      "tools-change-unbound-names": 1,
+      "dispatcher-call-begin": 13,
+      "dispatcher-result-observed": 12,
+      "dispatcher-call-end": 12,
+      "guard-denial": 1,
+      "dispatcher-call-refused": 1
+    },
+    "ledger_consumed": 15,
+    "grants_minted": 16,
+    "exec_edge_replay_image": {
+      "ok": false,
+      "error": {
+        "code": "APPROVAL_STALE",
+        "message": "grant \"grant:8d45d2760c523244a746660577b51221\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)",
+        "details": {
+          "refusal": "grant-consumed"
+        }
+      }
+    }
+  },
+  "ungated_red_contrast": "ungated 面：真实 70B PNG 直读照常解码（A5C45-IMG-UNGATED 进 transcript）但缩略图旁路 LEAK 字节、无 kernel/无 lane/无事件=红且仅红 Team 门控腿；admission-unbound 腿由 lane law 独立照拒（双模绿，门独立承载）。",
+  "not_observed": [
+    "host-native read_image 定义 pin 进 bind 的面（W-E2 实测差距保持在册）",
+    "真实渲染管线/附件存储（本链以字节解码+呈报为观测面；渲染授权身份=治理链上的 grant 身份）"
+  ],
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/live-state.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/live-journal.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/disk-faces.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T06-17-11Z/run-receipt.md",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-pre-M-05.log"
+  ]
+}
