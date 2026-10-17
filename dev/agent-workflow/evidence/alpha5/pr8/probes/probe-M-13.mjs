@@ -6,9 +6,9 @@
 //   IF-6 名称面 = 未确定 Domain reference fail-closed；DOMAIN_DENIED（doc M-13 reject_error_candidates 登记名）。
 // 判据（矩阵 M-13 note）：TeamPermit ∧ DomainPermit 任一方拒不可被另一方覆盖；veto ⇒ 0 side effects 观测。
 // pinned absent-anchor（job_start）不因本 probe 改变——absent 仍如实（ALPHA5-ACCEPTANCE-STATUS §2-③）。
-// 当前无装配（jobs-gateway tsconfig/live 未落）⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS）。
+// 装配面缺位 ⇒ NOT-RUN-READY exit 3（W8 正式轮：jobs-gateway 装配面=w7 kit；runtime tsconfig include 归 GLUE 队列在册差距）。
 // 零端口零世界，纯只读。writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
-import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains, ASSEMBLY_ANCHORS, GLUE_PATH } from './probe-lib.mjs';
+import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains } from './probe-lib.mjs';
 
 await runProbe({
   rowId: 'M-13',
@@ -19,9 +19,7 @@ await runProbe({
     { lane: 'W7', surface: 'jobs-gateway 公开面装配（身份/lease/隔离）之上的 Domain 许可/引用观测面 + Domain mock 联锁数据源', if_refs: ['IF-1', 'IF-6'] },
   ],
   preflight: [
-    { id: 'w7-jobs-gateway-registered', lane: 'W7', surface: 'jobs-gateway live 装配（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W7.glue_anchor] },
-    { id: 'w7-jobs-gateway-in-build-plane', lane: 'W7', surface: 'jobs-gateway 进编译/emit 面（tsconfig include 落地，WIRING-SURFACE:34 缺项的关闭信号）', kind: 'anchor', files: ['packages/runtime/tsconfig.build.json'], anchors: ['jobs-gateway'] },
-    { id: 'registry-60-run-mounted', lane: 'W7', surface: 'registry 套件 60-web-jobs-mcp-domain 断言实现挂载（run≠null，含 Domain mock）', kind: 'registry-run', suite: '60-web-jobs-mcp-domain' },
+    { id: 'w7-jobs-gateway-assembly', lane: 'W7', surface: 'w7 kit 装配面（jobs-gateway 公开 barrel + kit-local 编译面；runtime tsconfig include 归 GLUE 队列，缺项在差距检查表在册）', kind: 'face' },
   ],
   assertions: [
     {

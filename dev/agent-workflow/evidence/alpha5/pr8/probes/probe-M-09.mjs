@@ -7,9 +7,9 @@
 // 判据（矩阵 M-09 note）：恢复判据=per-Member 池 PoC 成功 + 策略变更→旧 PID 终止重建断言；
 // 已知公开面缺策略输入通道（pr6/SEAM-VERDICTS.md:59）——该腿无观测数据 ⇒ PROBE-GATED（门禁不猜，
 // 差距行同步登在 vnext-migration-gap-checklist.md），不因此 FAIL 也不因此 LIVE。
-// 当前无装配 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS）。零端口零世界，纯只读。
+// 装配面缺位 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS；W8 正式轮：kit 装配面已合并）。零端口零世界，纯只读。
 // writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
-import { runProbe, probeRelPath, receiptRelPath, clauseField, ASSEMBLY_ANCHORS, GLUE_PATH } from './probe-lib.mjs';
+import { runProbe, probeRelPath, receiptRelPath, clauseField } from './probe-lib.mjs';
 
 await runProbe({
   rowId: 'M-09',
@@ -20,8 +20,7 @@ await runProbe({
     { lane: 'W4', surface: '持久服务进程经 provider 装配（服务器 OS 读中介 + per-Member pid + 池策略代际腿）', if_refs: ['IF-1', 'IF-6'] },
   ],
   preflight: [
-    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'ConfinedProcessProvider 会话装配（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W4.glue_anchor] },
-    { id: 'registry-50-run-mounted', lane: 'W4', surface: 'registry 套件 50-ptc-lsp 断言实现挂载（run≠null）', kind: 'registry-run', suite: '50-ptc-lsp' },
+    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'w4 kit 装配面（持久服务进程经 provider 装配的宿主面；IF-1/IF-6）', kind: 'face' },
   ],
   assertions: [
     {

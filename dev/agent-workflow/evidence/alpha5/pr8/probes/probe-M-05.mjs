@@ -6,9 +6,9 @@
 //   IF-6 名称面 = 未绑定调用 typed 拒 admission-unbound；越权读 typed deny（禁缩略图绕过 read 授权）。
 // 判据（矩阵 M-05 criterion）：03-fs 未测清单全链携带 = 附件→渲染授权身份全链可观测；
 // 禁以缩略图绕过 read 授权；OpenAtPort 前 arbitrary-tree 不发布（探针不主张任意树，receipt 若主张 ⇒ VIOLATED）。
-// 当前无装配 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS）。零端口零世界，纯只读。
+// 装配面缺位 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS；W8 正式轮：kit 装配面已合并）。零端口零世界，纯只读。
 // writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
-import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains, ASSEMBLY_ANCHORS, GLUE_PATH } from './probe-lib.mjs';
+import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains } from './probe-lib.mjs';
 
 await runProbe({
   rowId: 'M-05',
@@ -20,9 +20,8 @@ await runProbe({
     { lane: 'W4', surface: '受控文件读经装配面真实执行（deny-before-open 观测腿）', if_refs: ['IF-1', 'IF-6'] },
   ],
   preflight: [
-    { id: 'w5-tool-face-registered', lane: 'W5', surface: 'admission 门控工具面注册（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W5.glue_anchor] },
-    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'ConfinedProcessProvider 会话装配（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W4.glue_anchor] },
-    { id: 'registry-20-run-mounted', lane: 'W5', surface: 'registry 套件 20-controlled-fs 断言实现挂载（run≠null）', kind: 'registry-run', suite: '20-controlled-fs' },
+    { id: 'w5-tool-face-assembly', lane: 'W5', surface: 'w5 kit 装配面（admission 门控工具面，IF-1）', kind: 'face' },
+    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'w4 kit 装配面（受控读经 provider 装配，IF-1/IF-6）', kind: 'face' },
   ],
   assertions: [
     {
