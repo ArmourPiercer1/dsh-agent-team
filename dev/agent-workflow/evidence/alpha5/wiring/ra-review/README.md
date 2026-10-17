@@ -156,6 +156,8 @@ node dev/agent-workflow/evidence/alpha5/wiring/ra-review/a5rr-host-kit.mjs --por
    > （host 原生体复用另立 fork-debt 登记）——从而使受治理 team 工具面 verified 且非 team 零 delta？
    > （若是：Q2『guard 语义改读法』建议按 R5 反证**否决**；Q1 降级为"dsh-native 标签 + 零扩权"的可选
    > upstream 诉求；Q3 可废。）
+   >
+   > **裁决结果（2026-10-17 记录；与 glue4-prodentry README 裁决段同型措辞）**：**Q4=root 在原授权语义（接线阶段既定授权）内的实现补全批准，非用户新增裁决**；Q2 依 R5 否决、Q1 降级、Q3 拒绝维持。
 
 ---
 
