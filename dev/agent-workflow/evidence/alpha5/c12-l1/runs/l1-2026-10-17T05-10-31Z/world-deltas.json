@@ -1,0 +1,19 @@
+{
+  "controlWindowMs": 5000,
+  "operationWindowMs": 5000,
+  "controlDelta": {
+    "added": [],
+    "removed": [],
+    "changed": [
+      "storages/session_projcache/sessions/session-4fae72f4-34bb-4852-8020-7191e4c9b305.json"
+    ],
+    "touchedOnly": []
+  },
+  "opDelta": {
+    "added": [],
+    "removed": [],
+    "changed": [],
+    "touchedOnly": []
+  },
+  "note": "control window = identical elapsed time, no operation; noise baseline disclosure"
+}
