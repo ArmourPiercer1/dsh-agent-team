@@ -1,0 +1,218 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5LIVE_G6_20261016T220619Z_SET_DONE"
+    },
+    "status": 200
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "text",
+      "content": "A5LIVE_G6_20261016T220619Z_SET_DONE"
+    },
+    "status": 200
+  },
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c0zu73v7",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-y4dnkfqr",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-1cyjauvu",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-jps4eez4",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-k9wt5da8",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-53ofbyda",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 9,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-jewjgfje",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 10,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-gn606rme",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 11,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-jiasgpub",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 12,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-cnv2h7xk",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 13,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-kqhl0l3o",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 14,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-25b1r8j0",
+          "name": "a5live_drift",
+          "arguments": {
+            "v": 1
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 15,
+    "reply": {
+      "kind": "text",
+      "content": "A5LIVE_G6_20261016T220619Z_FUSED chain fuse: 13 scripted requests."
+    },
+    "status": 200
+  }
+]
