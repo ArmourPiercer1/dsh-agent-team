@@ -106,7 +106,11 @@ describe('a5p5-dormant-audit', () => {
       namedLines += 1
       expect(line.trim(), line.trim()).toMatch(/^'tools\/a5p5-tools\/[^']+',$/)
     }
-    expect(namedLines).toBe(6) // exactly the six registered src consumers — if the pin drifts, this trips
+    expect(namedLines).toBe(7) // exactly the seven registered src consumers — if the pin drifts, this trips
+    // (7th = src/register.ts, the PR4/5 registration face booked with review
+    // #299@3668da59 in the a5p0 expected set, coordinator-authorized; the
+    // form leg above keeps biting — the entry rides the same quoted-path line
+    // shape, never an edge.)
   })
 
   it('the tools build tsconfig names the lane ONLY as the bare compile-face include, never as an edge', () => {
