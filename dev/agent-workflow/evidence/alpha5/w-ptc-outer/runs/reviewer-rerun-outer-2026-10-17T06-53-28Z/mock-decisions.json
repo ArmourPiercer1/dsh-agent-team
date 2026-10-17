@@ -1,0 +1,194 @@
+[
+  {
+    "seq": 1,
+    "userTextHead": "[object Object],[object Object],[object Object],[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_SET_OK"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 2,
+    "userTextHead": "[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_SET_OK"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 3,
+    "userTextHead": "[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [
+      "run_code"
+    ],
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-gjkxfc61",
+          "name": "run_code",
+          "arguments": {
+            "code": "const P = {\"secretRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/secret.txt\",\"writeTarget\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/write-target.txt\",\"writeTargetChild\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/child-target.txt\",\"controlWrite\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-write.txt\",\"controlRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-read.txt\",\"marker\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/body-marker.txt\",\"outsideReadable\":\"/etc/hostname\",\"listenPort\":\"41005\",\"controlPort\":\"0\"};\nconst TAG = \"a5ptc3-outer-2026-10-17T06-53-28Z-legA\";\nconst out = { tag: TAG, bodyStarted: true, api: {}, realm: {} };\nconst err = (e) => ({ ok: false, code: String((e && e.code) ?? \"\"), name: String((e && e.name) ?? \"\"), msg: String((e && e.message) ?? e).slice(0, 220) });\ntry { out.realm.pid = process.pid; out.realm.ppid = process.ppid; out.realm.execPath = process.execPath; } catch (e) { out.realm.processError = err(e); }\nout.realm.typeof = {};\nfor (const n of ['process','console','tools','require','module','exports','Buffer','fetch','WebAssembly','Worker']) { out.realm.typeof[n] = typeof globalThis[n]; }\nout.realm.hasOwn = {};\nfor (const n of ['process','tools','require','module']) { out.realm.hasOwn[n] = Object.prototype.hasOwnProperty.call(globalThis, n); }\nout.realm.globalCount = Object.getOwnPropertyNames(globalThis).length;\nout.realm.globals = Object.getOwnPropertyNames(globalThis).sort();\ntry { out.realm.envKeys = Object.keys(process.env).sort(); } catch (e) { out.realm.envKeys = err(e); }\ntry { out.realm.cwd = process.cwd(); } catch (e) { out.realm.cwd = err(e); }\nout.realm.imports = {};\nfor (const spec of ['node:fs','node:child_process','node:net','node:worker_threads','node:module','node:http']) {\n  try { const m = await import(spec); out.realm.imports[spec] = { ok: true, exportCount: Object.keys(m).length }; }\n  catch (e) { out.realm.imports[spec] = err(e); }\n}\nlet fs; try { fs = await import('node:fs'); } catch (e) { out.api.import_fs = err(e); }\nif (fs) {\n  try { const txt = fs.readFileSync(P.secretRead, \"utf8\"); out.api.read_forbidden = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_forbidden = err(e); }\n  try { fs.writeFileSync(P.writeTarget, \"A5PTC3-OUTER-WRITE \" + TAG); out.api.write_forbidden = { ok: true }; }\n  catch (e) { out.api.write_forbidden = err(e); }\n  try { fs.writeFileSync(P.controlWrite, \"A5PTC3-CONTROL \" + TAG); out.api.write_control = { ok: true, readBack: fs.readFileSync(P.controlWrite, \"utf8\").includes(TAG) }; }\n  catch (e) { out.api.write_control = err(e); }\n  try { fs.writeFileSync(P.marker, \"A5PTC3-BODY-RAN \" + TAG); out.api.marker_write = { ok: true }; }\n  catch (e) { out.api.marker_write = err(e); }\n}\nlet cp; try { cp = await import('node:child_process'); } catch (e) { out.api.import_child_process = err(e); }\nif (cp) {\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"echo A5PTC3-SPAWN-RAN; id -u\"], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_direct = { ok: r.error === undefined, status: r.status, signal: r.signal, stdoutHead: String(r.stdout ?? \"\").trim().slice(0, 40), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_direct = err(e); }\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"printf A5PTC3-CHILD-WROTE > \" + P.writeTargetChild], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_write_forbidden = { status: r.status, signal: r.signal, stderrHead: String(r.stderr ?? \"\").trim().slice(0, 260), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_write_forbidden = err(e); }\n}\nif (fs) {\n  try { const txt = fs.readFileSync(P.outsideReadable, \"utf8\"); out.api.read_outside_readable = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_outside_readable = err(e); }\n}\nlet net; try { net = await import('node:net'); } catch (e) { out.api.import_net = err(e); }\nif (net) {\n  out.api.net_connect = await new Promise((resolve) => {\n    let done = false;\n    const finish = (v) => { if (!done) { done = true; resolve(v); } };\n    const timer = setTimeout(() => finish({ ok: false, code: \"TIMEOUT\", msg: \"no connect within 6000ms\" }), 6000);\n    try {\n      const s = net.connect({ host: \"127.0.0.1\", port: Number(P.listenPort) });\n      s.once(\"connect\", () => { clearTimeout(timer); try { s.write(\"A5PTC3-OUTER-HELLO \" + TAG + \"\\n\"); } catch (e) {} setTimeout(() => { try { s.destroy(); } catch (e) {} finish({ ok: true }); }, 200); });\n      s.once(\"error\", (e) => { clearTimeout(timer); finish(err(e)); });\n      s.once(\"timeout\", () => { clearTimeout(timer); finish({ ok: false, code: \"SOCKET_TIMEOUT\" }); });\n    } catch (e) { clearTimeout(timer); finish(err(e)); }\n  });\n}\nconsole.log(\"A5PTC3-BYPASS \" + JSON.stringify(out));\nreturn out;",
+            "description": "a5ptc3 legA: direct outer bypass attempts, no tool calls"
+          }
+        }
+      ]
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 4,
+    "userTextHead": "[object Object]",
+    "toolResults": 1,
+    "toolNamesOffered": [
+      "run_code"
+    ],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_DONE received 0 fresh tool result(s)"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 5,
+    "userTextHead": "[object Object],[object Object]",
+    "toolResults": 1,
+    "toolNamesOffered": [
+      "run_code"
+    ],
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-wkai8og8",
+          "name": "run_code",
+          "arguments": {
+            "code": "const P = {\"secretRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/secret.txt\",\"writeTarget\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/write-target-legc.txt\",\"writeTargetChild\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/child-target-legc.txt\",\"controlWrite\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-write-legc.txt\",\"controlRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-read.txt\",\"marker\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/body-marker-legc.txt\",\"outsideReadable\":\"/etc/hostname\",\"listenPort\":\"41005\",\"controlPort\":\"0\"};\nconst TAG = \"a5ptc3-outer-2026-10-17T06-53-28Z-legC\";\nconst out = { tag: TAG, bodyStarted: true, api: {}, realm: {} };\nconst err = (e) => ({ ok: false, code: String((e && e.code) ?? \"\"), name: String((e && e.name) ?? \"\"), msg: String((e && e.message) ?? e).slice(0, 220) });\ntry { out.realm.pid = process.pid; out.realm.ppid = process.ppid; out.realm.execPath = process.execPath; } catch (e) { out.realm.processError = err(e); }\nout.realm.typeof = {};\nfor (const n of ['process','console','tools','require','module','exports','Buffer','fetch','WebAssembly','Worker']) { out.realm.typeof[n] = typeof globalThis[n]; }\nout.realm.hasOwn = {};\nfor (const n of ['process','tools','require','module']) { out.realm.hasOwn[n] = Object.prototype.hasOwnProperty.call(globalThis, n); }\nout.realm.globalCount = Object.getOwnPropertyNames(globalThis).length;\nout.realm.globals = Object.getOwnPropertyNames(globalThis).sort();\ntry { out.realm.envKeys = Object.keys(process.env).sort(); } catch (e) { out.realm.envKeys = err(e); }\ntry { out.realm.cwd = process.cwd(); } catch (e) { out.realm.cwd = err(e); }\nout.realm.imports = {};\nfor (const spec of ['node:fs','node:child_process','node:net','node:worker_threads','node:module','node:http']) {\n  try { const m = await import(spec); out.realm.imports[spec] = { ok: true, exportCount: Object.keys(m).length }; }\n  catch (e) { out.realm.imports[spec] = err(e); }\n}\nlet fs; try { fs = await import('node:fs'); } catch (e) { out.api.import_fs = err(e); }\nif (fs) {\n  try { const txt = fs.readFileSync(P.secretRead, \"utf8\"); out.api.read_forbidden = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_forbidden = err(e); }\n  try { fs.writeFileSync(P.writeTarget, \"A5PTC3-OUTER-WRITE \" + TAG); out.api.write_forbidden = { ok: true }; }\n  catch (e) { out.api.write_forbidden = err(e); }\n  try { fs.writeFileSync(P.controlWrite, \"A5PTC3-CONTROL \" + TAG); out.api.write_control = { ok: true, readBack: fs.readFileSync(P.controlWrite, \"utf8\").includes(TAG) }; }\n  catch (e) { out.api.write_control = err(e); }\n  try { fs.writeFileSync(P.marker, \"A5PTC3-BODY-RAN \" + TAG); out.api.marker_write = { ok: true }; }\n  catch (e) { out.api.marker_write = err(e); }\n}\nlet cp; try { cp = await import('node:child_process'); } catch (e) { out.api.import_child_process = err(e); }\nif (cp) {\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"echo A5PTC3-SPAWN-RAN; id -u\"], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_direct = { ok: r.error === undefined, status: r.status, signal: r.signal, stdoutHead: String(r.stdout ?? \"\").trim().slice(0, 40), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_direct = err(e); }\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"printf A5PTC3-CHILD-WROTE > \" + P.writeTargetChild], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_write_forbidden = { status: r.status, signal: r.signal, stderrHead: String(r.stderr ?? \"\").trim().slice(0, 260), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_write_forbidden = err(e); }\n}\nif (fs) {\n  try { const txt = fs.readFileSync(P.outsideReadable, \"utf8\"); out.api.read_outside_readable = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_outside_readable = err(e); }\n}\nlet net; try { net = await import('node:net'); } catch (e) { out.api.import_net = err(e); }\nif (net) {\n  out.api.net_connect = await new Promise((resolve) => {\n    let done = false;\n    const finish = (v) => { if (!done) { done = true; resolve(v); } };\n    const timer = setTimeout(() => finish({ ok: false, code: \"TIMEOUT\", msg: \"no connect within 6000ms\" }), 6000);\n    try {\n      const s = net.connect({ host: \"127.0.0.1\", port: Number(P.listenPort) });\n      s.once(\"connect\", () => { clearTimeout(timer); try { s.write(\"A5PTC3-OUTER-HELLO \" + TAG + \"\\n\"); } catch (e) {} setTimeout(() => { try { s.destroy(); } catch (e) {} finish({ ok: true }); }, 200); });\n      s.once(\"error\", (e) => { clearTimeout(timer); finish(err(e)); });\n      s.once(\"timeout\", () => { clearTimeout(timer); finish({ ok: false, code: \"SOCKET_TIMEOUT\" }); });\n    } catch (e) { clearTimeout(timer); finish(err(e)); }\n  });\n}\nconsole.log(\"A5PTC3-BYPASS \" + JSON.stringify(out));\nreturn out;",
+            "description": "a5ptc3 legC: disclosed control arm after the per-session public mode switch"
+          }
+        }
+      ]
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 6,
+    "userTextHead": "[object Object]",
+    "toolResults": 2,
+    "toolNamesOffered": [
+      "run_code"
+    ],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_DONE received 0 fresh tool result(s)"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 7,
+    "userTextHead": "[object Object],[object Object],[object Object],[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_SET_OK"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 8,
+    "userTextHead": "[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [],
+    "reply": {
+      "kind": "text",
+      "content": "A5PTC3OUTER20261017T065328Z_SET_OK"
+    },
+    "blobHasRunCode": true
+  },
+  {
+    "seq": 9,
+    "userTextHead": "[object Object]",
+    "toolResults": 0,
+    "toolNamesOffered": [
+      "run_code"
+    ],
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-gdj74hxh",
+          "name": "run_code",
+          "arguments": {
+            "code": "const P = {\"secretRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/secret.txt\",\"writeTarget\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/write-target.txt\",\"writeTargetChild\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/live-forbidden/child-target.txt\",\"controlWrite\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-write.txt\",\"controlRead\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/control-read.txt\",\"marker\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z/ws/body-marker.txt\",\"outsideReadable\":\"/etc/hostname\",\"listenPort\":\"41005\",\"controlPort\":\"0\"};\nconst TAG = \"a5ptc3-outer-2026-10-17T06-53-28Z-legB\";\nconst out = { tag: TAG, bodyStarted: true, api: {}, realm: {} };\nconst err = (e) => ({ ok: false, code: String((e && e.code) ?? \"\"), name: String((e && e.name) ?? \"\"), msg: String((e && e.message) ?? e).slice(0, 220) });\ntry { out.realm.pid = process.pid; out.realm.ppid = process.ppid; out.realm.execPath = process.execPath; } catch (e) { out.realm.processError = err(e); }\nout.realm.typeof = {};\nfor (const n of ['process','console','tools','require','module','exports','Buffer','fetch','WebAssembly','Worker']) { out.realm.typeof[n] = typeof globalThis[n]; }\nout.realm.hasOwn = {};\nfor (const n of ['process','tools','require','module']) { out.realm.hasOwn[n] = Object.prototype.hasOwnProperty.call(globalThis, n); }\nout.realm.globalCount = Object.getOwnPropertyNames(globalThis).length;\nout.realm.globals = Object.getOwnPropertyNames(globalThis).sort();\ntry { out.realm.envKeys = Object.keys(process.env).sort(); } catch (e) { out.realm.envKeys = err(e); }\ntry { out.realm.cwd = process.cwd(); } catch (e) { out.realm.cwd = err(e); }\nout.realm.imports = {};\nfor (const spec of ['node:fs','node:child_process','node:net','node:worker_threads','node:module','node:http']) {\n  try { const m = await import(spec); out.realm.imports[spec] = { ok: true, exportCount: Object.keys(m).length }; }\n  catch (e) { out.realm.imports[spec] = err(e); }\n}\nlet fs; try { fs = await import('node:fs'); } catch (e) { out.api.import_fs = err(e); }\nif (fs) {\n  try { const txt = fs.readFileSync(P.secretRead, \"utf8\"); out.api.read_forbidden = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_forbidden = err(e); }\n  try { fs.writeFileSync(P.writeTarget, \"A5PTC3-OUTER-WRITE \" + TAG); out.api.write_forbidden = { ok: true }; }\n  catch (e) { out.api.write_forbidden = err(e); }\n  try { fs.writeFileSync(P.controlWrite, \"A5PTC3-CONTROL \" + TAG); out.api.write_control = { ok: true, readBack: fs.readFileSync(P.controlWrite, \"utf8\").includes(TAG) }; }\n  catch (e) { out.api.write_control = err(e); }\n  try { fs.writeFileSync(P.marker, \"A5PTC3-BODY-RAN \" + TAG); out.api.marker_write = { ok: true }; }\n  catch (e) { out.api.marker_write = err(e); }\n}\nlet cp; try { cp = await import('node:child_process'); } catch (e) { out.api.import_child_process = err(e); }\nif (cp) {\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"echo A5PTC3-SPAWN-RAN; id -u\"], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_direct = { ok: r.error === undefined, status: r.status, signal: r.signal, stdoutHead: String(r.stdout ?? \"\").trim().slice(0, 40), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_direct = err(e); }\n  try { const r = cp.spawnSync(\"/bin/sh\", [\"-c\", \"printf A5PTC3-CHILD-WROTE > \" + P.writeTargetChild], { encoding: \"utf8\", timeout: 10000 }); out.api.spawn_write_forbidden = { status: r.status, signal: r.signal, stderrHead: String(r.stderr ?? \"\").trim().slice(0, 260), errorCode: String((r.error && r.error.code) ?? \"\") }; }\n  catch (e) { out.api.spawn_write_forbidden = err(e); }\n}\nif (fs) {\n  try { const txt = fs.readFileSync(P.outsideReadable, \"utf8\"); out.api.read_outside_readable = { ok: true, head: txt.slice(0, 24) }; }\n  catch (e) { out.api.read_outside_readable = err(e); }\n}\nlet net; try { net = await import('node:net'); } catch (e) { out.api.import_net = err(e); }\nif (net) {\n  out.api.net_connect = await new Promise((resolve) => {\n    let done = false;\n    const finish = (v) => { if (!done) { done = true; resolve(v); } };\n    const timer = setTimeout(() => finish({ ok: false, code: \"TIMEOUT\", msg: \"no connect within 6000ms\" }), 6000);\n    try {\n      const s = net.connect({ host: \"127.0.0.1\", port: Number(P.listenPort) });\n      s.once(\"connect\", () => { clearTimeout(timer); try { s.write(\"A5PTC3-OUTER-HELLO \" + TAG + \"\\n\"); } catch (e) {} setTimeout(() => { try { s.destroy(); } catch (e) {} finish({ ok: true }); }, 200); });\n      s.once(\"error\", (e) => { clearTimeout(timer); finish(err(e)); });\n      s.once(\"timeout\", () => { clearTimeout(timer); finish({ ok: false, code: \"SOCKET_TIMEOUT\" }); });\n    } catch (e) { clearTimeout(timer); finish(err(e)); }\n  });\n}\nconsole.log(\"A5PTC3-BYPASS \" + JSON.stringify(out));\nreturn out;",
+            "description": "a5ptc3 legB: the same attempts with the public per-call widening face requested",
+            "sandbox_permissions": "danger-full-access",
+            "justification": "a5ptc3 negative control: does the public widening face let the outer program through unattended?"
+          }
+        }
+      ]
+    },
+    "blobHasRunCode": true
+  }
+]
