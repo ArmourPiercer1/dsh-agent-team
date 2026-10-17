@@ -16,9 +16,17 @@
  * through the lease law (`settleTermination` is the only path to
  * `terminated`; an unconfirmed settlement keeps its `sideEffectUnknown`).
  *
+ * R-1 STREAMING ARM (user ruling 07:53Z, PARALLEL-ADDITIVE): `spawnStreaming`
+ * reuses the SAME prepare ladder, byte-pin double gate, one-shot plan law and
+ * lease/termination vocabulary, and hands back a LIVE handle (stdin Writable,
+ * stdout/stderr Readers, lease, terminate). `spawn`/`RunOutput` and every old
+ * call site keep their exact historical behavior.
+ *
  * @module @dsh-agent-team/runtime/sandbox-provider/provider
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { spawn as spawnChildProcess } from 'node:child_process';
+import {} from 'node:stream';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { refuse } from './contract-stub.js';
@@ -62,6 +70,127 @@ export function createConfinedProcessProvider(opts) {
     const consumedPlans = new Set();
     const leases = new Map();
     let captured = null;
+    const streamRuns = new Map();
+    const osProcess = globalThis.process;
+    const defaultSpawnStream = (argv) => {
+        try {
+            const child = spawnChildProcess(launcher.pythonPath, [...argv], { stdio: ['pipe', 'pipe', 'pipe', 'pipe'] });
+            const handshake = child.stdio[3];
+            if (child.pid === undefined || handshake === undefined) {
+                try {
+                    child.kill('SIGKILL');
+                }
+                catch { /* already gone */ }
+                return refuse('SANDBOX_UNAVAILABLE', 'streaming launcher spawn produced no pid/fd-3 channel');
+            }
+            const guard = (s) => { s?.on('error', () => { }); };
+            guard(child.stdin);
+            guard(child.stdout);
+            guard(child.stderr);
+            const exit = new Promise((resolve) => {
+                child.once('exit', (code, signal) => resolve({ code: typeof code === 'number' ? code : null, signal: typeof signal === 'string' ? signal : '' }));
+                child.once('error', () => resolve({ code: null, signal: 'spawn-error' }));
+            });
+            return {
+                ok: true,
+                value: Object.freeze({
+                    pid: child.pid,
+                    stdin: child.stdin,
+                    stdout: child.stdout,
+                    stderr: child.stderr,
+                    handshake,
+                    kill: (signal) => { try {
+                        return child.kill(signal);
+                    }
+                    catch {
+                        return false;
+                    } },
+                    exit,
+                }),
+            };
+        }
+        catch (error) {
+            return refuse('SANDBOX_UNAVAILABLE', `streaming launcher spawn failed: ${String(error?.message ?? error).slice(0, 160)}`);
+        }
+    };
+    const streamSpawn = deps.spawnStream ?? defaultSpawnStream;
+    const signalProcess = deps.signalProcess
+        ?? ((pid, signal) => { try {
+            osProcess?.kill?.(pid, signal);
+            return true;
+        }
+        catch {
+            return false;
+        } });
+    const pidAlive = deps.pidAlive ?? ((pid) => existsSync(`/proc/${pid}`));
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    /** Read the launcher's single-line fd-3 handshake, bounded; null = missing/unparsable/timed out. */
+    function readHandshake(stream, timeoutMs) {
+        return new Promise((resolve) => {
+            let buffer = '';
+            let done = false;
+            const onData = (chunk) => {
+                buffer += String(chunk);
+                const nl = buffer.indexOf('\n');
+                if (nl < 0)
+                    return;
+                const line = buffer.slice(0, nl).trim();
+                if (line.length === 0)
+                    return;
+                try {
+                    const parsed = JSON.parse(line);
+                    finish(typeof parsed === 'object' && parsed !== null ? parsed : null);
+                }
+                catch {
+                    finish(null);
+                }
+            };
+            const onEnd = () => { finish(null); };
+            const onError = () => { finish(null); };
+            const finish = (value) => {
+                if (done)
+                    return;
+                done = true;
+                clearTimeout(timer);
+                stream.off('data', onData);
+                stream.off('end', onEnd);
+                stream.off('error', onError);
+                resolve(value);
+            };
+            const timer = setTimeout(() => { finish(null); }, timeoutMs);
+            stream.on('data', onData);
+            stream.on('end', onEnd);
+            stream.on('error', onError);
+        });
+    }
+    /** Own the SIGNAL sequence for one streaming run (single flight; never settles a lease). */
+    function beginKillSequence(run, graceMs, deadlineMs) {
+        if (run.killStarted)
+            return;
+        run.killStarted = true;
+        const t0 = Date.now();
+        let termSent = false;
+        let killSent = false;
+        const tick = () => {
+            if (run.exited && !pidAlive(run.payloadPid))
+                return; // gone; settling is the lease law's job
+            if (!run.exited && pidAlive(run.payloadPid)) {
+                if (!termSent) {
+                    signalProcess(run.payloadPid, 'SIGTERM');
+                    termSent = true;
+                }
+                else if (!killSent && Date.now() - t0 >= graceMs) {
+                    signalProcess(run.payloadPid, 'SIGKILL');
+                    run.process.kill('SIGKILL'); // the launcher supervisor too — never leave a supervisor behind
+                    killSent = true;
+                }
+            }
+            if (Date.now() - t0 >= deadlineMs + 1_000)
+                return; // signal loop is bounded too
+            setTimeout(tick, 25);
+        };
+        tick();
+    }
     /**
      * The byte-pin gate (assembly.launcherSha256). UNPINNED passes — that is
      * the historical lane face. When pinned, the bytes at the configured
@@ -232,11 +361,136 @@ export function createConfinedProcessProvider(opts) {
             return prepared;
         return execute(prepared.value);
     }
+    /**
+     * executeStreaming(): the R-1 arm over a PREPARED plan — same one-shot plan
+     * law and same byte-pin re-gate (refusal BEFORE consumption never burns the
+     * grant), then the launcher's stream mode with live pipes. The handle's
+     * lease starts `active`; only `settleTermination` ever makes it terminal.
+     */
+    async function executeStreaming(plan, streaming) {
+        if (!plans.has(plan.planId) || consumedPlans.has(plan.planId)) {
+            return refuse('IO_POLICY_UNSUPPORTED', `plan '${plan.planId}' was already consumed — re-executing a plan is a second spawn without a second grant`);
+        }
+        const moved = advancePhase('prepare', 'execute');
+        if (!moved.ok)
+            return refuse('IO_POLICY_UNSUPPORTED', 'phase machine refused prepare → execute (impossible on this lane; kept defensive)');
+        const integrity = launcherIntegrityGate();
+        if (!integrity.ok)
+            return integrity; // BEFORE consumption: the grant survives a gate refusal (same law as execute)
+        consumedPlans.add(plan.planId);
+        const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir]);
+        if (!spawned.ok)
+            return spawned;
+        const proc = spawned.value;
+        const handshakeTimeoutMs = streaming?.handshakeTimeoutMs ?? 15_000;
+        const handshake = await readHandshake(proc.handshake, handshakeTimeoutMs);
+        if (handshake === null || handshake['stream'] !== true || typeof handshake['pid'] !== 'number') {
+            // no half-lived handles: the launcher is killed, and its reap is awaited BOUNDED
+            proc.kill('SIGKILL');
+            await Promise.race([proc.exit.catch(() => undefined), sleep(2_000)]);
+            if (handshake?.['abi_unavailable'] === true) {
+                return refuse('SANDBOX_UNAVAILABLE', 'the confined launcher measured no landlock ABI at stream-exec time and refused to run the payload unconfined');
+            }
+            return refuse('SANDBOX_UNAVAILABLE', `streaming launcher handshake missing, unparsable or timed out (${String(handshakeTimeoutMs)}ms) — no streaming handle is issued`);
+        }
+        const payloadPid = handshake['pid'];
+        const leaseId = `lease-${plan.planId}`;
+        const lease = Object.freeze({
+            leaseId,
+            grantFingerprint: plan.request.grantFingerprint,
+            realmId: plan.request.realmId,
+            bindingId: plan.request.bindingId,
+            memberScope: plan.request.memberScope,
+            executionKind: 'process',
+            status: 'active',
+        });
+        const run = { leaseId, process: proc, payloadPid, exited: false, exitInfo: null, exitWaiters: [], killStarted: false, terminating: null };
+        void proc.exit.then((info) => {
+            run.exited = true;
+            run.exitInfo = info;
+            for (const w of run.exitWaiters.splice(0))
+                w(info);
+        }, () => {
+            run.exited = true;
+            run.exitInfo = { code: null, signal: 'exit-error' };
+            for (const w of run.exitWaiters.splice(0))
+                w(run.exitInfo);
+        });
+        leases.set(leaseId, lease);
+        streamRuns.set(leaseId, run);
+        const exited = new Promise((resolve) => {
+            if (run.exited && run.exitInfo !== null)
+                resolve(run.exitInfo);
+            else
+                run.exitWaiters.push(resolve);
+        });
+        const terminate = (options) => {
+            if (run.terminating !== null)
+                return run.terminating;
+            run.terminating = (async () => {
+                const held0 = leases.get(leaseId);
+                if (held0 === undefined)
+                    return refuse('IO_POLICY_UNSUPPORTED', `lease '${leaseId}' is not one of this provider's leases`);
+                if (held0.status === 'terminated')
+                    return { ok: true, value: held0 };
+                const held = held0.status === 'active'
+                    ? (() => { const m = Object.freeze({ ...held0, status: 'cancelling' }); leases.set(leaseId, m); return m; })()
+                    : held0;
+                const graceMs = options?.graceMs ?? 1_500;
+                const deadlineMs = options?.deadlineMs ?? 8_000;
+                beginKillSequence(run, graceMs, deadlineMs);
+                const t0 = Date.now();
+                let confirmed = false;
+                for (;;) {
+                    if (run.exited && !pidAlive(payloadPid)) {
+                        confirmed = true;
+                        break;
+                    }
+                    if (Date.now() - t0 >= deadlineMs)
+                        break;
+                    await sleep(25);
+                }
+                return settleTermination(held, confirmed);
+            })();
+            return run.terminating;
+        };
+        const handle = Object.freeze({
+            lease,
+            processIdentity: `pid:${payloadPid}:${plan.planId}`,
+            pid: payloadPid,
+            stdin: proc.stdin,
+            stdout: proc.stdout,
+            stderr: proc.stderr,
+            exited,
+            terminate,
+        });
+        return { ok: true, value: handle };
+    }
+    /** spawnStreaming(): prepare + executeStreaming as ONE call (the R-1 parallel entry). */
+    async function spawnStreaming(request, streaming) {
+        const prepared = await prepare(request);
+        if (!prepared.ok)
+            return prepared;
+        return executeStreaming(prepared.value, streaming);
+    }
     /** requestCancellation(): the REQUEST leg — moves the lease, settles via the sync reap. */
     async function requestCancellation(lease) {
         const held = leases.get(lease.leaseId);
         if (held === undefined) {
             return refuse('IO_POLICY_UNSUPPORTED', `lease '${lease.leaseId}' is not one of this provider's leases`);
+        }
+        const run = streamRuns.get(lease.leaseId);
+        if (run !== undefined) {
+            // Async streaming semantics (R-1): the REQUEST moves the lease to
+            // 'cancelling' and starts the signal sequence — it NEVER settles the
+            // lease itself; only settleTermination does (the frozen law).
+            if (held.status === 'active') {
+                const moved = Object.freeze({ ...held, status: 'cancelling' });
+                leases.set(lease.leaseId, moved);
+                beginKillSequence(run, 1_500, 8_000);
+                return { ok: true, value: moved };
+            }
+            return { ok: true, value: held };
         }
         if (held.status === 'terminated')
             return { ok: true, value: held };
@@ -261,6 +515,6 @@ export function createConfinedProcessProvider(opts) {
         leases.set(held.leaseId, next);
         return { ok: true, value: next };
     }
-    return Object.freeze({ probe, prepare, execute, spawn, requestCancellation, settleTermination });
+    return Object.freeze({ probe, prepare, execute, spawn, spawnStreaming, executeStreaming, requestCancellation, settleTermination });
 }
 //# sourceMappingURL=provider.js.map
