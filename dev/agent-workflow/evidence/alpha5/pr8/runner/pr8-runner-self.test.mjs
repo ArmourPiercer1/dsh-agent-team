@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import {
   lintCorrespondence,
   assertMachineFinalDeclarations,
+  lintDocFinalDeclaration,
   runFixtureSurface,
   runRecordedEvidence,
   runKitRerun,
@@ -214,4 +215,77 @@ test('distribution: 计数只含四类，且 fixture/NOT_RUN/RLW 永不产出 SU
   assert.deepEqual({ P: d.PASS, F: d.FAIL, NR: d.NOT_RUN, RLW: d.REQUIRES_LIVE_WIRING, T: d.TOTAL }, { P: 1, F: 1, NR: 2, RLW: 1, T: 5 });
   const text = JSON.stringify(d);
   assert.doesNotMatch(text, /SUPPORTED|已验收|整链/);
+});
+
+// ======================= 正式轮（Scope-3a）新增判据：N1 / N2 / G-g post-probes =======================
+
+test('N1: 机检矩阵行缺 final_declaration 键 ⇒ 显式判红（undefined 不放行）', () => {
+  const missingKey = { rows: [{ row_id: 'SUP-99' }] };
+  const issues = assertMachineFinalDeclarations(missingKey);
+  assert.ok(issues.some((i) => i.includes('SUP-99') && /缺键|缺失/.test(i)), `期望缺键判红，实得: ${JSON.stringify(issues)}`);
+});
+
+test('N1: 真实机检矩阵 32 行均显式携带 final_declaration 键且为 null', () => {
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  for (const row of machine.rows) {
+    assert.ok(Object.prototype.hasOwnProperty.call(row, 'final_declaration'), `${row.row_id}: 缺 final_declaration 键`);
+    assert.equal(row.final_declaration, null, `${row.row_id}: final_declaration 非 null`);
+  }
+});
+
+test('N1: doc 矩阵缺 final_declaration 键 ⇒ 显式点名清单（不按 undefined 静默放行；SUP-01..18 恰 18 条）', () => {
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  const doc = JSON.parse(requireText(DOC_PATH));
+  const flags = lintDocFinalDeclaration(machine, doc);
+  const missingIds = flags.missing_key.map((f) => f.row_id).sort();
+  const expectIds = Array.from({ length: 18 }, (_, i) => `SUP-${String(i + 1).padStart(2, '0')}`).sort();
+  assert.deepEqual(missingIds, expectIds, `缺键点名集漂移: ${JSON.stringify(missingIds)}`);
+  // 显式非 null 声明仍是红（走 lintCorrespondence）
+  const badDoc = { rows: doc.rows.map((r) => (r.row_id === 'M-01' ? { ...r, final_declaration: 'SUPPORTED' } : { ...r })) };
+  const issues = lintCorrespondence(machine, badDoc);
+  assert.ok(issues.some((i) => i.includes('M-01') && i.includes('final_declaration')), 'doc 显式非 null 声明必须判红');
+});
+
+test('N2: 矩阵内 registry 套件引用必须用 registry.mjs 真实 id（M-13 须 60-web-jobs-mcp-domain）', async () => {
+  const { SUITES } = await import(join(REPO_ROOT, 'docs/plans/memo/alpha5-tool-io-governance/pr8-accept/e2e-skeleton/suites/registry.mjs'));
+  const ids = new Set(SUITES.map((s) => s.id));
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  const bad = [];
+  for (const row of machine.rows) {
+    const texts = [row.criterion, ...(row.live_gate_basis ?? []), row.note].filter((t) => typeof t === 'string');
+    for (const t of texts) {
+      for (const m of t.matchAll(/suite\s+(\d\d-[a-z0-9-]+)/g)) {
+        const ref = m[1];
+        // 允许带 run=null 等后缀的整体 id；要求前缀唯一命中真实 id（防 60-web-jobs-mcp 截断引用）
+        const hit = [...ids].filter((id) => ref === id || ref.startsWith(id));
+        if (hit.length !== 1 || hit[0] !== ref) bad.push(`${row.row_id}: registry suite 引用 "${ref}" 非真实 id`);
+      }
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+test('G-g post-probes: 三行判据同步引 review-G-g-probes.md@bbaf45de（P4/P6 达 D、G-6/G-7 仍 LIVE-GATED），并保持禁则', () => {
+  const machine = JSON.parse(requireText(MACHINE_PATH));
+  const gg = machine.rows.filter((r) => r.g_g_related === true);
+  assert.ok(gg.length >= 3);
+  const issues = [];
+  for (const row of gg) {
+    const t = JSON.stringify(row);
+    if (!t.includes('review-G-g-probes.md') || !t.includes('bbaf45de')) issues.push(`${row.row_id}: 未引 review-G-g-probes.md@bbaf45de`);
+    if (!/P4[^]{0,30}D/.test(t) || !/P6[^]{0,30}D/.test(t)) issues.push(`${row.row_id}: 未反映 P4/P6 达 D（post-probes）`);
+    if (!t.includes('LIVE-GATED')) issues.push(`${row.row_id}: G-6/G-7 仍须标 LIVE-GATED`);
+    issues.push(...phraseLint(t, { context: 'g_g' }));
+  }
+  assert.deepEqual(issues, []);
+  const meta = JSON.stringify(machine._meta.g_g_contract);
+  assert.ok(meta.includes('review-G-g-probes.md'), '_meta.g_g_contract 缺 post-probes 引注');
+  assert.ok(meta.includes('开放'), '_meta.g_g_contract 必须保持 G-g 行开放（收口=落文 owner）');
+});
+
+test('G-g post-probes 反空转: 只引旧 98ddbaa9 快照无 probes 引注 ⇒ 判红', () => {
+  const fakeRow = { row_id: 'M-99', g_g_related: true, criterion: '分级按 g-g-support-contract.md §2.2 分级：P1=D、P4=U、P6=U' };
+  const t = JSON.stringify(fakeRow);
+  const missingProbe = !t.includes('review-G-g-probes.md');
+  assert.ok(missingProbe, '对照：无 probes 引注应被上一测抓住（本断言证对照臂非空转）');
 });
