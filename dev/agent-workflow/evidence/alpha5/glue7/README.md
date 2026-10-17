@@ -115,3 +115,34 @@ at the LLM position. Three worlds, one run:
 
 Recorded run + criteria verdict: see `runs/<stamp>/` (this README names the
 criteria; `criteria.json` is the machine record).
+
+## 6. What the live round caught that 31 unit legs did not (the point of live assembly)
+
+The unit layer stayed green across ALL of this — the §6 guard and the frozen
+canonicalizer failed CLOSED on real integration, each refusal recorded:
+
+1. **eager feed identity** (run-5): the placement record snapshotted
+   `definitionIdentityOf(def)` at plane-build time; the seam mints `def#N`
+   later, in the session install flow → the guard read
+   `provider placed undefined but the seam resolves def#8` and refused a
+   legitimate `team.create` (`TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED`).
+   Fixed by resolving the identity LAZILY at guard-lookup time — in BOTH
+   layers (the plane row AND the agent-bindings closure that re-snapshotted
+   it one level up, run-7).
+2. **nested feed-entry shape** (run-7): the seam's `BindingFeedEntry` is
+   FLAT `{definitionIdentity, realmId}` (install.ts:133, the shape #317's
+   own live world ships); my entries nested under `binding` → same verbatim
+   refusal. Shape fixed, unit G7 now pins the flat shape + `def#N` form.
+3. **canonical spelling for the takeover `read`** (run-8): the frozen
+   operation-permission canonicalizer keys `read` to its `file_path`
+   extractor — a `{path}` schema died with `canonicalization failed for
+   tool "read": file-path-missing` BEFORE reaching the backend. The row now
+   declares the native `file_path` (executor keeps `path` as a
+   placement-direct alias).
+4. kit-side (disclosed): DEPS_STORE level miscount (run-1/2), peer-dependency
+   BFS gap (`dsh-storage-domain` imports its peer at runtime, run-3),
+   CREATE_ROOT must be its own session id (a5ie-proven, run-4).
+
+Runs 1-9 are retained under `live-kit-run-N.log` + `runs/<stamp>/` (failed
+runs keep their `fatal.json` + partial world); the GREEN recorded run is
+named in `criteria.json` of the final run directory.

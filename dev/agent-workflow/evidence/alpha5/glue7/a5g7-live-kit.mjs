@@ -706,6 +706,19 @@ const IO_TEXT = 'IO_POLICY_UNSUPPORTED'
 const BIND_TEXT = 'cannot be verified at dispatch time (no fallback to the native body)'
 
 async function main() {
+  // START SWEEP (disclosed): a previous invocation killed mid-run leaves its
+  // own-name world/expansion behind; C1 grades the FINAL state, so leftovers
+  // from OUR OWN earlier runs (never anything else's) are swept before the
+  // round starts, with the list logged into the run evidence.
+  {
+    const homesRootS = join(WORKTREE, 'tests', 'homes')
+    const stale = existsSync(homesRootS) ? readdirSync(homesRootS).filter((d) => d.startsWith('a5g7-')) : []
+    for (const d of stale) { try { rmSync(join(homesRootS, d), { recursive: true, force: true }) } catch { /* best effort */ } }
+    const expParent = join(WORKTREE, '..', '.a5g7-expansion')
+    const staleExp = existsSync(expParent) ? readdirSync(expParent) : []
+    for (const d of staleExp) { try { rmSync(join(expParent, d), { recursive: true, force: true }) } catch { /* best effort */ } }
+    writeEvidence('start-sweep.json', { staleHomes: stale, staleExpansions: staleExp })
+  }
   console.log(`a5g7 live runner stamp=${RUN_STAMP} ports=${HOST_PORT}/${BASELINE_PORT} exp=${EXP}`)
   const head = gitAt(TESTUSE, 'rev-parse', 'HEAD')
   const porcelainBefore = gitAt(TESTUSE, 'status', '--porcelain')
