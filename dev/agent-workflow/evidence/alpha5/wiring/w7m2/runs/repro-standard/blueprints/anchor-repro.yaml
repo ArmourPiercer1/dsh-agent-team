@@ -1,0 +1,38 @@
+---
+schemaVersion: 3
+blueprintId: team.a5cvg.anchor-repro
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5cvg governed team. Unless a user turn explicitly instructs otherwise, answer A5CVG_NOOP_DONE and use no tools."
+  capabilities:
+    teamTools:
+      kind: allow
+      items: []
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - send-message
+    - report-progress
+  deny: []
+members: []
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

@@ -1,0 +1,28 @@
+{
+  "runStamp": "2026-10-17T05-23-03",
+  "mode": "repro-jobs",
+  "world": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m2-covgate/tests/homes/a5cvg-2026-10-17T05-23-03",
+    "disposition": "removed"
+  },
+  "criteria": [
+    {
+      "id": "C0a",
+      "name": "jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile)",
+      "ok": true,
+      "detail": "exit=0 sha=694852ff90185022"
+    },
+    {
+      "id": "C0b",
+      "name": "absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations)",
+      "ok": true,
+      "detail": "hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]"
+    },
+    {
+      "id": "R1",
+      "name": "minimal repro: a governed (strict) team on a preset that MOUNTS the job trio boots FATAL with the typed coverage error naming EXACTLY the trio (known-sensitive-unmanaged); NO unknown-unmanaged entries",
+      "ok": true,
+      "detail": "fatal=true trio=[{\"name\":\"job_list\",\"present\":true},{\"name\":\"job_output\",\"present\":true},{\"name\":\"job_kill\",\"present\":true}] unknown=[{\"name\":\"web_search\",\"present\":false},{\"name\":\"ask_user_question\",\"present\":false}]"
+    }
+  ]
+}

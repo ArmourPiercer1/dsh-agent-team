@@ -1,0 +1,37 @@
+{
+  "runStamp": "2026-10-17T05-36-29",
+  "mode": "green",
+  "redControl": true,
+  "criteria": [
+    {
+      "id": "C0a",
+      "name": "jobs-gateway barrel (8 exports) + operation-permission gate barrel load from repo dist (no kit-local compile)",
+      "ok": true,
+      "detail": "exit=0 sha=694852ff90185022"
+    },
+    {
+      "id": "C0b",
+      "name": "absent-anchor PRE: job_start = 0 on the pinned host tree (at pin, porcelain-clean) and every host/repo citation needle matches THIS tree (no stale line citations)",
+      "ok": true,
+      "detail": "hits=0 head=639ed01539 porcelain=0 hostAnchors=[] repoAnchors=[]"
+    },
+    {
+      "id": "C-red",
+      "name": "RED control: without the a5cvg row the assembly face is ABSENT (404) — the registration legs are not vacuous",
+      "ok": true,
+      "detail": "status=404"
+    },
+    {
+      "id": "C-red2",
+      "name": "RED control world is a live HTTP/auth plane (launch-token auth succeeded; the row face returns a REAL HTTP response, not a dead socket) — the 404 absence is the row, not the server; boot observations recorded verbatim",
+      "ok": true,
+      "detail": "p6t6=404 a5cvg=404 boot_failures=0"
+    },
+    {
+      "id": "C-red3",
+      "name": "RED control: world removed and dist barrel byte-identical",
+      "ok": true,
+      "detail": "world=removed barrelStable=true"
+    }
+  ]
+}
