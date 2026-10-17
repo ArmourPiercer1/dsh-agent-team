@@ -1,0 +1,16 @@
+PASS P-PIN — pinned host tree @639ed01539 with porcelain=0
+     observed: head=639ed0153972
+PASS DEVKIT-LIVE-WHEN-EXPLICIT — explicit dev shape (row mounted AND A5PTC4C_DEVKIT=1): the devkit face answers (health says devkit=true, canRegisterLane=false) and its queued member registration really provisions (202 → roster entry)
+     observed: health={"ok":true,"devkit":true,"enabled":true,"canRegisterLane":false} q=202 roster={"label":"session-cb3637ff-fd60-4b43-babd-7a4e17aecd7c","role":"member","sessionId":"session-cb3637ff-fd60-4b43-babd-7a4e17aecd7c","witness":{"echo":true,"guard
+PASS DEVKIT-SINGLE-SINK — the devkit face is a PURE INGRESS: the queued registration travelled through the SAME assembler-private lifecycle channel (roster registeredVia=trusted-lifecycle-channel; the closure ledger shows the lifecycle-register row) — there is no second registration path inside the host
+     observed: registeredVia=trusted-lifecycle-channel
+PASS DEVKIT-LANE-REFUSED — even in the dev shape, role:lane is refused with 403 and changes NOTHING: roster delta zero, no lifecycle-register record for the lane attempt (minting authority remains assembler-only); the devkit ledger records the refusal
+     observed: lanePost=403 rosterDelta=1 lanesOnRoster=0
+PASS DEVKIT-OFF-WITHOUT-ENV — devkit row mounted but A5PTC4C_DEVKIT unset (the DEFAULT): NO face is registered (health and provision both non-2xx) and the row's own ledger records on:false — mounted-by-mistake still equals disabled
+     observed: health=404 provision=405 ownLedgerRecorded=(devkit ledger env also unset — face absent regardless)
+PASS P-STABLE-UNTOUCHED — :3080 untouched (pre=401 post=401)
+     observed: pre=401 post=401
+PASS P-PRISTINE-POST — pinned host tree byte-clean after the run
+     observed: 
+
+[DEVKIT] criteria: 7/7 pass; verdict DEV-SHAPE-PROVEN

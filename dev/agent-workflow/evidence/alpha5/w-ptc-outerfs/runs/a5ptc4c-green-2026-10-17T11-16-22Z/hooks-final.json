@@ -1,0 +1,66 @@
+{
+  "count": 7,
+  "uninstalled": false,
+  "mineTags": [
+    "plugin-ctx",
+    "plugin-ctx-global-outer"
+  ],
+  "rows": [
+    {
+      "idx": 0,
+      "global": true,
+      "prepend": true,
+      "tag": "plugin-ctx-global-outer",
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 1,
+      "global": false,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 2,
+      "global": true,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 3,
+      "global": false,
+      "prepend": false,
+      "tag": "plugin-ctx",
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 4,
+      "global": false,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 5,
+      "global": false,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 6,
+      "global": false,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    }
+  ]
+}

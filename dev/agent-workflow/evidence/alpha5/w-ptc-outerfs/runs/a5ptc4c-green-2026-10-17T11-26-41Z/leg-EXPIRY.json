@@ -1,0 +1,21 @@
+{
+  "grantId": "g2",
+  "ttlMs": 1200,
+  "stateBeforePresent": "issued",
+  "row": {
+    "seq": 4,
+    "at": "2026-10-17T11:28:58.590Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-4cb367c9-4ac8-4d5d-a15d-04cc6d4b55a0",
+    "callId": "call-A5PTC4CGREEN20261017T112641Z-EXPIRY",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c EXPIRY: justification carries model text only",
+    "decision": "expired",
+    "outcome": "rejected",
+    "grantId": "g2",
+    "ttlMs": 1200,
+    "expiredAt": "2026-10-17T11:28:57.858Z"
+  },
+  "written": false
+}

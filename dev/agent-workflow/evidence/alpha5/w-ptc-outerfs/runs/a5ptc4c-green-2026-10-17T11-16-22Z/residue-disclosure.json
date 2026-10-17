@@ -1,0 +1,244 @@
+{
+  "lifecycleCensus": {
+    "assemble": true,
+    "uninstalled": true,
+    "facesInstalled": 2,
+    "tierAdjudication": [
+      {
+        "what": "plugin-ctx",
+        "done": true
+      },
+      {
+        "what": "plugin-ctx-global-outer",
+        "done": true
+      },
+      {
+        "what": "session-event-mirror",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      },
+      {
+        "what": "plugin-ctx",
+        "done": true
+      },
+      {
+        "what": "plugin-ctx-global-outer",
+        "done": true
+      },
+      {
+        "what": "session-event-mirror",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      },
+      {
+        "what": "member-approval-ctx",
+        "done": true
+      }
+    ],
+    "tierLife": [
+      {
+        "what": "lane-grant-tool",
+        "done": true
+      },
+      {
+        "what": "lane-revoke-tool",
+        "done": true
+      },
+      {
+        "what": "lane-unload-tool",
+        "done": true
+      },
+      {
+        "what": "member-echo-tool",
+        "done": true
+      },
+      {
+        "what": "member-guard",
+        "done": true
+      },
+      {
+        "what": "member-presentAs",
+        "done": true
+      },
+      {
+        "what": "member-echo-tool",
+        "done": true
+      },
+      {
+        "what": "member-guard",
+        "done": true
+      },
+      {
+        "what": "member-presentAs",
+        "done": true
+      },
+      {
+        "what": "member-echo-tool",
+        "done": true
+      },
+      {
+        "what": "member-guard",
+        "done": true
+      },
+      {
+        "what": "member-presentAs",
+        "done": true
+      },
+      {
+        "what": "member-echo-tool",
+        "done": true
+      },
+      {
+        "what": "member-guard",
+        "done": true
+      },
+      {
+        "what": "member-presentAs",
+        "done": true
+      },
+      {
+        "what": "member-around-seam",
+        "done": true
+      },
+      {
+        "what": "member-around-seam",
+        "done": true
+      },
+      {
+        "what": "member-around-seam",
+        "done": true
+      },
+      {
+        "what": "member-around-seam",
+        "done": true
+      }
+    ],
+    "channel": {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4c-l2fix/tests/homes/a5ptc4c-green-2026-10-17T11-16-22Z/.a5ptc4c/lane-channel.jsonl",
+      "sealed": true,
+      "consumedNonces": 6,
+      "refused": [
+        {
+          "leg": "lifecycle-register",
+          "nonce": "d996451c-e9e6-4807-bd8e-eb85effeb16b",
+          "role": "lane",
+          "sessionId": "session-e4206661-e54f-43f2-b936-7b4a474b395d",
+          "reason": "nonce missing or already consumed (one-time)"
+        },
+        {
+          "leg": "lifecycle-register",
+          "nonce": "286c5bd8-cd6b-4314-9409-d228e4e92dab",
+          "role": "lane",
+          "sessionId": "session-67641f3e-8bda-4792-9c75-f09e4a48d358",
+          "reason": "already rostered",
+          "label": "session-67641f3e-8bda-4792-9c75-f09e4a48d358"
+        },
+        {
+          "leg": "lifecycle-register",
+          "nonce": "304fe180-ed5f-42cb-bf62-9ecc4057c668",
+          "role": "lane",
+          "sessionId": "session-e4206661-e54f-43f2-b936-7b4a474b395d",
+          "reason": "channel sealed — registration is one-time per spawn"
+        }
+      ],
+      "mode": "600"
+    },
+    "residueAfterUninstall": [
+      "read-only census HTTP faces (cannot mint/register/answer; verified by POST probes)",
+      "assembler-private lifecycle-channel listener (registration sealed; lifecycle ops only)",
+      "in-memory audit ledger (journal/approvals/grants census; read-only)"
+    ]
+  },
+  "routesAfterUninstall": [
+    {
+      "path": "/__a5ptc4c/health",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/journal",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/approvals",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/grants",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/pending",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/roster",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/state",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/ask-events",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/sandbox",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/hooks",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/routes",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/lifecycle",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/registration",
+      "disposed": false
+    },
+    {
+      "path": "/__a5ptc4c/mode",
+      "disposed": false
+    }
+  ],
+  "postProbeStatuses": {
+    "/__a5ptc4c/health": 200,
+    "/__a5ptc4c/roster": 200,
+    "/__a5ptc4c/grants": 200,
+    "/__a5ptc4c/approvals": 200,
+    "/__a5ptc4c/hooks": 200,
+    "/__a5ptc4c/pending": 200,
+    "/__a5ptc4c/registration": 200,
+    "/__a5ptc4c/lifecycle": 200
+  },
+  "grantsDeltaAfterPostProbes": 7,
+  "rosterDeltaAfterPostProbes": 0,
+  "ghost": {
+    "rows": [],
+    "written": false
+  }
+}

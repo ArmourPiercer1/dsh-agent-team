@@ -1,0 +1,52 @@
+{
+  "rosterBefore": 1,
+  "rosterAfter": [
+    {
+      "label": "session-2a7f5098-9fc4-45e3-a42d-73afc4e89cc8",
+      "role": "member",
+      "sessionId": "session-2a7f5098-9fc4-45e3-a42d-73afc4e89cc8",
+      "witness": {
+        "echo": true,
+        "guard": true,
+        "presentAs": "ptc",
+        "aroundSeam": true
+      },
+      "laneTools": null,
+      "error": null
+    },
+    {
+      "label": "session-dbeb9203-fe9f-4cca-9f05-c80d6586f3ef",
+      "role": "lane",
+      "sessionId": "session-dbeb9203-fe9f-4cca-9f05-c80d6586f3ef",
+      "witness": null,
+      "laneTools": [
+        "a5ptc4b_grant",
+        "a5ptc4b_revoke",
+        "a5ptc4b_unload"
+      ],
+      "error": null
+    }
+  ],
+  "reg": {
+    "pid": 180,
+    "regStatus": 200,
+    "regBody": "{\"ok\":true,\"label\":\"session-dbeb9203-fe9f-4cca-9f05-c80d6586f3ef\",\"role\":\"lane\",\"error\":null}",
+    "rosterStatus": 200,
+    "lanes": [
+      {
+        "label": "6586f3ef",
+        "laneTools": [
+          "a5ptc4b_grant",
+          "a5ptc4b_revoke",
+          "a5ptc4b_unload"
+        ]
+      }
+    ]
+  },
+  "regLedgerRow": {
+    "at": "2026-10-17T11:09:44.169Z",
+    "leg": "provision-complete",
+    "label": "session-dbeb9203-fe9f-4cca-9f05-c80d6586f3ef",
+    "role": "lane"
+  }
+}

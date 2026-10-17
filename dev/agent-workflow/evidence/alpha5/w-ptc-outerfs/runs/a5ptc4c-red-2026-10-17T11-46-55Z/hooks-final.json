@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "uninstalled": false,
+  "mineTags": [],
+  "rows": [
+    {
+      "idx": 0,
+      "global": false,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 1,
+      "global": true,
+      "prepend": false,
+      "tag": null,
+      "mineBySource": false,
+      "fnHead": "function () { [native code] }"
+    }
+  ]
+}

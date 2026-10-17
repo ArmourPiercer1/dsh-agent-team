@@ -37,7 +37,7 @@ R1/R2/R8 的 FAIL 与审查同因 = **kit 运行时 session-log flush 时延**�
 | **T-2 单次消费** | `consume()` 同步 check-and-set（`issued→consumed` + `consumedByAskSeq`）；已消费记录只能**拒**，永不放 | `ANCHOR-TEAM-GRANT-ALLOWED-ONCE`（锚点即记 `state=consumed`）+ `NEG1` 重放拒 + `NEG3` 后半（owner 消费成功、`state=consumed`） |
 | **T-3 撤销优先于缓存** | 判定序 `revoked → consumed(未过期) → expired → live`，`GRANTS` 先查 | `NEG4` |
 | **T-4 TTL** | 每条 Grant 带 `expiresAt`（`ttl_ms`）；过期=拒且下游逐字可见 | `NEG2` |
-| **T-5 卸载对称** | 两条 `approval/request` 面 + 只读 `session/event` 镜像的 disposer 全保留，挂在 ctx 生命周期；另有 lane 自家 `a5ptc4b_unload` | `T5-UNLOAD-SYMMETRIC-AND-DEAD` |
+| **T-5 卸载对称** | **两条插件级** `approval/request` 面 + 只读 `session/event` 镜像的 disposer 保留，挂在 ctx 生命周期；另有 lane 自家 `a5ptc4b_unload`。**实情收窄（收口轮）**：本 L2 件里 member 自家 agent-ctx 审批面只靠 `uninstalled` 旗标静音、**无真 disposer**（审查 F-L2-2，Low）——该缺口由收口件 `a5ptc4c-grantrow.mjs` 以真实 disposer 分层（ADJ/LIFE）+ 重装回归闭合，见 `README-L2CLOSE.md` | `T5-UNLOAD-SYMMETRIC-AND-DEAD`（插件面 2→0；成员面残留见 `review-SECURITY-L2.md` F-L2-2，未改写） |
 
 ## 委托完整性 / 并发 / 原权限（root 验收面）
 
@@ -49,7 +49,7 @@ R1/R2/R8 的 FAIL 与审查同因 = **kit 运行时 session-log flush 时延**�
 
 ## 装配与信任模型（披露，非推测）
 
-- **Grant 唯一来源 = Team lane actor 自家的工具调用**：`a5ptc4b_grant` / `a5ptc4b_revoke` / `a5ptc4b_unload` 只注册在该 agent 的 ctx 上；`issuer` 取自宿主交给 guard/execute 的**执行 agent 对象**，不是模型自述字符串。插件 HTTP 面全部只读（census）或仅装配期 provisioning，**无铸权面**。
+- **Grant 唯一来源 = Team lane actor 自家的工具调用**：`a5ptc4b_grant` / `a5ptc4b_revoke` / `a5ptc4b_unload` 只注册在该 agent 的 ctx 上；`issuer` 取自宿主交给 guard/execute 的**执行 agent 对象**，不是模型自述字符串。插件 HTTP 面本身**无铸权面**（census 只读）。**实情收窄（收口轮）**：本 L2 件的装配期 `POST /__a5ptc4b/provision` 虽不直接铸权，但**未鉴权的 loopback 登记可把任意会话升成铸权 lane**（审查 F-L2-1，Medium；收口轮 `run-a5ptc4c-chainred.mjs` 已把该攻击链完整打通实证）——收口件已把登记面整体移入装配器私有生命周期通道，见 `README-L2CLOSE.md`。
 - **ask-bound Grant 的绑定不能由模型挑**：`pending_seq` 命中挂起中的 ask 时，绑定字段从宿主 ask 记录整份拷贝（模型只能给 `decision`/`ttl_ms`）。
 - **角色是装配期登记的**（lane / member / outsider）；登记本身不授权任何事。**lane actor 的"决策"由 kit mock 按 runner 脚本回答** = 人类/leader 决策人的替身。⇒ **未被证明的：人类判断本身**（审查 §7 L4 口径）；**被证明的**：通道 / 身份 / 四元组绑定 / 单次消费 / 撤销 / 过期 / 卸载对称这套治理结构在真实宿主管线上成立。
 - 被裁决成员的模型**没有任何路径**触达 lane 工具；它唯一能影响裁决的是 `justification` 文本，而该文本按 T-1 不参与裁决（重放腿故意塞入 L1 旧 token 原文以证伪）。
@@ -73,7 +73,7 @@ R1/R2/R8 的 FAIL 与审查同因 = **kit 运行时 session-log flush 时延**�
 
 | 文件 | 作用 |
 | --- | --- |
-| `a5ptc4b-grantrow.mjs` | L2 装配件：花名册/GRANTS/挂起队列/裁决器（四元组绑定 + 判定序 + TTL + 单次消费）+ lane 自家三工具 + 只读 census 面 + 全 disposer 保留 |
+| `a5ptc4b-grantrow.mjs` | L2 装配件：花名册/GRANTS/挂起队列/裁决器（四元组绑定 + 判定序 + TTL + 单次消费）+ lane 自家三工具 + 只读 census 面 + **插件级** disposer 保留（member agent-ctx 面当时仅旗标静音 = F-L2-2，由 `a5ptc4c-grantrow.mjs` 收口，见 `README-L2CLOSE.md`） |
 | `a5ptc4b-probe-pkg/`（+ `package.json`） | 下游 GUI/桥接替身探针（独立包；只观察、答 `rejected`） |
 | `run-a5ptc4b-l2.mjs` | L2 runner（世界装配、lane 驱动、22 条判据、RED 判别会计、证据落盘、收口清理） |
 | `a5ptc4-row.mjs` / `run-a5ptc4-outerfs.mjs` | 被评审的 L1 件（**逐字节未改**，对照） |

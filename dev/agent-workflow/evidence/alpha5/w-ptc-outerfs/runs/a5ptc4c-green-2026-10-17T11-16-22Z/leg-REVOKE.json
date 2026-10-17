@@ -1,0 +1,44 @@
+{
+  "grantId": "g2",
+  "revoked": {
+    "at": "2026-10-17T11:19:59.528Z",
+    "leg": "grant-minted",
+    "grantId": "g2",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "issued",
+    "bind": {
+      "agent": "session-67641f3e-8bda-4792-9c75-f09e4a48d358",
+      "callId": "call-A5PTC4CGREEN20261017T111622Z-REVOKE",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-f9d44635-a7f4-405b-9f64-52b4f2739335",
+      "sessionId": "session-f9d44635-a7f4-405b-9f64-52b4f2739335",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T11:19:59.528Z",
+    "expiresAt": "2026-10-17T11:20:59.528Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T11:19:59.528Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      }
+    ],
+    "pendingSeq": null
+  },
+  "stateAfterRevoke": "issued",
+  "row": {
+    "__held": "REVOKE decision row"
+  },
+  "written": true
+}

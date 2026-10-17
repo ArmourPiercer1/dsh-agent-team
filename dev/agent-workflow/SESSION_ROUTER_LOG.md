@@ -6393,3 +6393,37 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
   + `a5ptc4b-probe-pkg/` + `run-a5ptc4b-l2.mjs` + 三轮 `runs/`）。**git**：一次性 worktree
   `.worktrees/a5ptc4b-l2`（本地分支 `alpha5-ptc-outerfs-l2`），收口时 ff 回 `alpha5-ptc-outerfs` 并尝试
   ff push（无凭证则记录）。模型：qwen3.8-flash-next。
+
+## 2026-10-17 — W-PTC-OUTERFS-L2 收口（F-L2-1 登记/铸权入口**关死** + F-L2-2 disposer 生命周期；RED-first 攻击链**修复前完整打通实证**；branch `alpha5-ptc-outerfs`，base=303e1195，端口 3184 自证空闲，世界 a5ptc4c-*）
+
+- **前置硬条件（root 原话）验证**：「已有 member 不可升格」≠「无法借新 session 铸权」——RED-first 轮
+  `runs/a5ptc4c-chainred-2026-10-17T11-09-32Z/`（被评审 L2 件**原样**，SHA 对齐 `e80ca6eb` blob）**10/10 = RED-CHAIN-COMPLETE**：
+  零 lane 基线拒（写不可能来自诚实路径）→ member **自家 confined workspace-write 子进程**（无凭据、无升级、纯 loopback）
+  `POST /__a5ptc4b/provision` 把未登记会话注册成**铸权 lane**（200+三工具上册）→ 攻击者驱动**自己会话**的 lane 工具以
+  declared 形态**铸出绑定受害者四元组的 Grant** → 受害者呈现即 `allowed-once`、**禁区文件真实落盘**（真 confined-OS 越权，
+  Team 从未批准；全链无诚实 lane、无被盗凭据）。危险 = 端到端实证，不是纸面推断。
+- **收口落法（收口件 `a5ptc4c-grantrow.mjs`，被评审件逐字节未改保留对照）**：Grant 签发权威**只从可信 Team 生命周期来**——
+  装配器（=世界 runner，Team 宿主替身）spawn 前建 **0600 append-only 通道文件**，插件只读轮询；登记一次性 nonce、
+  `seal` 关档、refuse 重放/升格/已册；kit provision 面若保留 = 独立 devkit 行（显式 mount **且** env 双门默认关、纯 ingress 汇入
+  同一通道、lane 恒拒 403），生产 patch 不引用、源码零 import（install-manifest 清单级证明）。member 任何路径不可注册/铸权 =
+  无 HTTP 登记面（八路径 POST 全 405 + 路由 census mutating=0）+ confined 子进程对通道文件 OS 级 EACCES（与禁区同地板实测）+
+  未登记会话上铸权工具不存在（宿主 `ToolNotFoundError` 模型边界一手证据）。
+- **GREEN 权威轮** `runs/a5ptc4c-green-2026-10-17T12-05-32Z/` = **32/32，治理 15/15**：攻击链每步拒且可观测（登记拒落账、
+  消费腿 lane-timeout 零写、RED 落盘过的 `l-chain.txt` 此轮不存在）、委托路径不受扰（诚实 ask-bound `allowed-once` 照常落地）、
+  L2 原十治理 id 全过（五负控/委托/并发/GOV 无回归）、F2 三条（unload 烧**成员自家真 disposer** memberFaces≥3、
+  uninstall-all 双层清零 + 残留只披露只读 census 集、install→uninstall→reinstall 面数不翻倍 + 恰一条判定行无幽灵）。
+- **RED 判别轮** `runs/a5ptc4c-red-2026-10-17T11-46-55Z/`（`A5PTC4C_ASSEMBLE=0`）= 治理 **0/15 全 FAIL、其余 17 全 PASS**
+  `verdict=EXPECTED`；dev 形态 `runs/a5ptc4c-devkit-2026-10-17T12-07-07Z/` = 7/7 `DEV-SHAPE-PROVEN`。
+- **缝事实新增**（真跑第一手）：queue 模式 `prompt` RPC 在**入队即返回**（先于该腿工具执行）⇒ 等 lane 动作必须轮询**账本行**而非
+  回合计数；`ctx.webServer` 须行内 `export const inject=['webServer']` 声明方可见；宿主对回调做 `bind` ⇒ census 辨认自家监听器
+  只能靠函数自属性 tag（`toString` 恒 `[native code]`）；TTL 过期为**裁决时惰性判定**（呈前读 state=issued 属正常）；
+  `landlock-run` 旗标必须在首个 `--` 之前；profile 行 `package.json` 必须是纯 JSON（`#` 注释 ⇒ 整行被宿主禁用，报错清晰）；
+  未注册工具的模型边界 = `tool/result isError + ToolNotFoundError/UNKNOWN_TOOL` 行（session 日志 flush 有时延，取证要宽窗轮询）。
+- **中间失败轮全保留**（三轮 green、一轮 red 的每个偏差都归因到具体 runner/判据缺陷并留档，见 `README-L2CLOSE.md`
+  「轮次记录」节）；`review-SECURITY-L2.md` 未改写；`README-L2.md` 两处措辞按实情收窄（T-5「全 disposer 保留」→ 插件面实情 +
+  F-L2-2 指向；「HTTP 面无铸权」→ provision 面升格权威风险如实披露）；矩阵行/graph.yaml 零改动。
+- **收口三件套**：CORE PATCH BUDGET=0（pin 树 @`639ed01539` porcelain 前后=0）；:3080 前后 **401** 未动；世界/禁区
+  （`tests/homes/a5ptc4c-*`）跑毕删除、3184 释放。**证据** `dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/`
+  （`README-L2CLOSE.md` 台账 + `a5ptc4c-grantrow.mjs` + `a5ptc4c-devprovision-pkg/` + `run-a5ptc4c-{chainred,l2close,devkit}.mjs` +
+  八轮 `runs/`）。**git**：一次性 worktree `.worktrees/a5ptc4c-l2fix`（本地分支 `alpha5-ptc-outerfs-l2fix`），收口 ff 回
+  `alpha5-ptc-outerfs` 并尝试 ff push（无凭证则记录）。模型：qwen3.8-flash-next。

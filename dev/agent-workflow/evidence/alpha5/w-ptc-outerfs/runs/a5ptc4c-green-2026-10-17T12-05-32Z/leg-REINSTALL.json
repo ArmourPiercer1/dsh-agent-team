@@ -1,0 +1,140 @@
+{
+  "install1": {
+    "at": "2026-10-17T12:06:33.008Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 6,
+    "liveFaces": 6,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "install2": {
+    "at": "2026-10-17T12:06:36.519Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 9,
+    "liveFaces": 6,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "hooks": {
+    "count": 7,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:ba12e265",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:ecf2613f",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:a6c9e883",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "mineRe": 5,
+  "pending": {
+    "seq": 13,
+    "bind": {
+      "seq": 13,
+      "at": "2026-10-17T12:06:36.714Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-2237a678-e2a5-41be-ae8b-3e8fa6c9e883",
+      "callId": "call-A5PTC4CGREEN20261017T120532Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only"
+    },
+    "askedAt": "2026-10-17T12:06:36.714Z",
+    "deadlineMsLeft": 9888
+  },
+  "row": {
+    "seq": 13,
+    "at": "2026-10-17T12:06:36.714Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-2237a678-e2a5-41be-ae8b-3e8fa6c9e883",
+    "callId": "call-A5PTC4CGREEN20261017T120532Z-Q3",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 227,
+    "grantId": "g9",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-6ff6b3c2-2b16-43fd-acf7-6134ec3123f2",
+    "ttlMs": 60000
+  },
+  "written": true,
+  "allRows": [
+    {
+      "seq": 13,
+      "at": "2026-10-17T12:06:36.714Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-2237a678-e2a5-41be-ae8b-3e8fa6c9e883",
+      "callId": "call-A5PTC4CGREEN20261017T120532Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+      "decision": "lane-allow@pending",
+      "outcome": "allowed-once",
+      "heldMs": 227,
+      "grantId": "g9",
+      "grantSource": "ask-bound",
+      "issuerLane": "session-6ff6b3c2-2b16-43fd-acf7-6134ec3123f2",
+      "ttlMs": 60000
+    }
+  ],
+  "alreadyRows": []
+}

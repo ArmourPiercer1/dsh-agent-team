@@ -1,0 +1,12 @@
+{
+  "boundary": {
+    "sessionLogHits": [
+      {
+        "file": "sessions/--srv-workspace-dsh-plugins-dsh-agent-team-.worktrees-a5ptc4c-l2fix-tests-homes-a5ptc4c-green-2026-10-17T11-26-41Z-ws--/session-56a96b1b-3f76-4e77-af7a-90b031b231be/session.v4.jsonl.zstd",
+        "line": "{\"type\":\"tool/result\",\"seq\":30,\"time\":1792236404225,\"data\":{\"turn\":2,\"step\":1,\"message\":{\"role\":\"tool\",\"source\":{\"kind\":\"tool\",\"callId\":\"atk-A5PTC4CGREEN20261017T112641Z-mint\"},\"toolCallId\":\"atk-A5PTC4CGREEN20261017T112641Z-mint\",\"content\":[{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"a5ptc4c_grant\\\"\"}],\"isError\":true,\"id\":\"65c56671-3ade-4479-b867-e8490a1c006c\"},\"error\":{\"name\":\"ToolNotFoundError\",\"code\":\"UNKNOWN_TOOL\"}},\"sourceEventSeqs\":[29],\"surfaceOp\":\"append\"}"
+      }
+    ]
+  },
+  "grantsDelta": 0,
+  "anyChainGrant": false
+}

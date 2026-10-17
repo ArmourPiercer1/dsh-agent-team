@@ -1,0 +1,10 @@
+{
+  "grantId": "g1",
+  "ttlMs": 1200,
+  "stateBeforePresent": "issued",
+  "stateAfterPresent": "issued",
+  "row": {
+    "__held": "EXPIRY decision row"
+  },
+  "written": false
+}

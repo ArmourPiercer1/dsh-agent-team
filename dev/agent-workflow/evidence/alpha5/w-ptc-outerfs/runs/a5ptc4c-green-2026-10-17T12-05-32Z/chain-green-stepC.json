@@ -1,0 +1,18 @@
+{
+  "row": {
+    "seq": 1,
+    "at": "2026-10-17T12:05:35.226Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-f9fbeaf7-af40-47a5-bc48-a395ba12e265",
+    "callId": "call-A5PTC4CGREEN20261017T120532Z-CHAIN",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c CHAIN: justification carries model text only",
+    "decision": "lane-timeout",
+    "outcome": "rejected",
+    "heldMs": 9999,
+    "laneDeadlineMs": 10000
+  },
+  "written": false,
+  "target": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4c-l2fix/tests/homes/a5ptc4c-green-2026-10-17T12-05-32Z-forb/l-chain.txt"
+}
