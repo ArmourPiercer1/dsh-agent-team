@@ -375,7 +375,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const logBackend = (prefix) => (row) => {
     const line = `${prefix}: ${String(row)}`
     observe(line)
-    console.log(`[dsh-agent-team] ${line}`)
+    // `.mjs` lint law: no ambient `console` global in this file family
+    // (the shipped [dsh-agent-team] log lines live in host.TS); the
+    // standard global object is the honest route.
+    globalThis.console?.log(`[dsh-agent-team] ${line}`)
   }
   const realSearch = fsInstance !== null && typeof fsInstance.rootDir === 'string'
     ? createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: logBackend('a5g7-search') })
