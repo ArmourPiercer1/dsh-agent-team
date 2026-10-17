@@ -1,0 +1,42 @@
+{
+  "edit": {
+    "legs": [
+      {
+        "name": "read",
+        "args": {
+          "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T03-59-45Z/repo/doc.txt"
+        }
+      },
+      {
+        "name": "edit",
+        "args": {
+          "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T03-59-45Z/repo/doc.txt",
+          "old_string": "before-edit-line",
+          "new_string": "after-edit-line-2026-10-17T03-59-45Z"
+        }
+      }
+    ],
+    "term": "done",
+    "governance_delta": {
+      "leg": "edit",
+      "new_observations": 6
+    }
+  },
+  "edit_file_sha_before": "sha256:d98a5f736b086689ab216b3edb44d0179fdccff8d17711474f12297653dc49f9",
+  "edit_file_sha_after": "sha256:d98a5f736b086689ab216b3edb44d0179fdccff8d17711474f12297653dc49f9",
+  "read_image": {
+    "legs": [
+      {
+        "name": "read_image",
+        "args": {
+          "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/homes/a5e2-gated-2026-10-17T03-59-45Z/repo/shot.png"
+        }
+      }
+    ],
+    "term": "done",
+    "governance_delta": {
+      "leg": "read_image",
+      "new_observations": 3
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "main": {
+    "domainAuthorityId": "a5e2.device/main",
+    "version": 1,
+    "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}",
+    "log": [
+      {
+        "seq": 1,
+        "op": "spin",
+        "at": "2026-10-17T04:01:02.045Z",
+        "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}"
+      }
+    ]
+  },
+  "aux": {
+    "domainAuthorityId": "a5e2.device/aux",
+    "version": 1,
+    "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}",
+    "log": [
+      {
+        "seq": 1,
+        "op": "spin",
+        "at": "2026-10-17T04:01:02.071Z",
+        "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}"
+      }
+    ]
+  },
+  "belt": {
+    "domainAuthorityId": "a5e2.device/belt",
+    "version": 1,
+    "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}",
+    "log": [
+      {
+        "seq": 1,
+        "op": "owner-spin",
+        "at": "2026-10-17T04:01:05.958Z",
+        "actor": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}"
+      }
+    ]
+  },
+  "ledger": [
+    "{\"at\":\"2026-10-17T04:01:02.045Z\",\"leg\":\"e2-act-1\",\"op\":\"spin\",\"domainAuthorityId\":\"a5e2.device/main\",\"memberKey\":\"{\\\"instanceId\\\":\\\"a5e2-inst-a\\\",\\\"rootSessionId\\\":\\\"session-fa287c18-ee40-4147-824a-3821e7867211\\\"}\",\"version_before\":0,\"version_after\":1}",
+    "{\"at\":\"2026-10-17T04:01:02.071Z\",\"leg\":\"e2-act-2\",\"op\":\"spin\",\"domainAuthorityId\":\"a5e2.device/aux\",\"memberKey\":\"{\\\"instanceId\\\":\\\"a5e2-inst-a\\\",\\\"rootSessionId\\\":\\\"session-fa287c18-ee40-4147-824a-3821e7867211\\\"}\",\"version_before\":0,\"version_after\":1}",
+    "{\"at\":\"2026-10-17T04:01:05.959Z\",\"leg\":\"interlock-owner-b\",\"op\":\"owner-spin\",\"domainAuthorityId\":\"a5e2.device/belt\",\"memberKey\":\"{\\\"instanceId\\\":\\\"a5e2-inst-b\\\",\\\"rootSessionId\\\":\\\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\\\"}\",\"version_before\":0,\"version_after\":1}"
+  ]
+}

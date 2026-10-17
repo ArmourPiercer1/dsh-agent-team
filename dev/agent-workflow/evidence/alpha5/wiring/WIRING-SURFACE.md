@@ -34,3 +34,12 @@
 - jobs-gateway tsconfig（Lane F 条件 2）、p4t6 F/README 979→993 陈旧数：F 不在本轮接线清单（按协调队列顺序另轮）。
 - 未新增 §5 code、未新增 C-FS reason 闭集成员（unbound 拒走既有 `effect-outside-grant` + 诊断串；spill-id-in-use 属 Lane-D 自有拒绝闭集扩展）。
 - G-g：接线代码**不得**作出通道闭合类宣称（"静默通道安全/fail-closed 已证"属 UNTESTED，本闸未证——G-5 wording lint 同形校验本行）；涉事件通道消费处仅引 PENDING-GATES **G-g OPEN**（evidence/alpha5/PENDING-GATES.md 指针桩 + #258 分支正本）。
+
+## GLUE-2（gap C-11+C-01，协调者队列）——a5p5 入 root + registry run≠null + 审计同轮放行
+
+本轮是上表 line 7 所预告的 **PR5-装配轮**（"root 收集与审计放行同属该轮"）落地，三件同轮、缺一即红：
+
+- **root vitest**（line 7 状态变更）：`vitest.config.ts` include += `packages/tools/a5p5-tools/test/**`。root CI 现收该 lane 六套件（+dormant-audit 自身）；lane 自有 runner 仍有效。**生产 import 仍为零**（dormant-audit barrel leg 未动、仍绿）。
+- **tsconfig emit**（line 34 的 Lane-F 类比条件已满足）：`packages/tools/tsconfig.build.json` include += `a5p5-tools/src` = 生产编译面（emit-only，非 import 边，非 barrel）。lane src 实测自洽（仅 `.`/`node:` import）。`tools/dist` 按仓库规则 gitignored（唯 `runtime/dist` unignore），emit 落忽略面→无 drift；build tsc=0。
+- **dormant-audit 同轮放行**：tsconfig.build.json 现以裸 include 串点名 lane（在 packages/ 扫描宇宙内）→ 触发原 DORMANT 断言，此即 header 自述"enters review as its own change"时刻。放行=第三 path-exact 例外 + 新 form-pin leg（该行必为 `^"a5p5-tools/src",?$`、恰 1 行，边无处藏身）。SHIPPED 面语义未变：barrel 仍不识 lane、无外部 import、emitted dist 是镜像非新边。
+- **registry run≠null**（C-01+C-11）：`00-guard-dispatch`/`40-search-shell` 的 run 指向 `tests/kits/alpha5-pr8-e2e/kit.mjs`（骨架 README §1 正式位，pin 从 `tests/paths.mjs`）。**不新订法律**：00=编排 a5-pr1-guard-dispatch 三件套真机复跑（41 判据含 C2a/C2b dynRan→typed deny）+ 自身新腿 S00-VOCAB-FACE（真机 LOADED 的 team_* 面 == 编译面 team_* 字面量，即 facade 装载自证）；40=编排 W5 live runner gated GREEN + ungated RED 对照（钉 9-id gate-carrier 集）。三态 IF-7：前置缺失=NOT_RUN，拒伪造 PASS。真机 receipts 落 `glue-registry/runs/`。

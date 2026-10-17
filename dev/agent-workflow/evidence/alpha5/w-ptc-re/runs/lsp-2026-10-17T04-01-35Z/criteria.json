@@ -1,0 +1,36 @@
+{
+  "mode": "lsp",
+  "run": "a5ptc-lsp-2026-10-17T04-01-35Z",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine 0.2.0-rc.2 @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE-A",
+      "claim": "session A created",
+      "pass": true,
+      "observed": "sid=session-f5c7ab3f-f0a9-44"
+    },
+    {
+      "id": "L-CREATE-B",
+      "claim": "session B created",
+      "pass": true,
+      "observed": "sid=session-5a68e532-458e-4c"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=true"
+    }
+  ]
+}

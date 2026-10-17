@@ -1,0 +1,56 @@
+{
+  "note": "The undeclared name here is `write`: a real native Definition whose body creates a file, present on every lane. That matters because an \"unknown tool\" refusal proves nothing about the Guard — a name with no definition cannot run anywhere. What this file MEASURES is the inherited-native class: the SAME definition runs on BOTH lanes (sideEffectFiles.strict and .ctl are both present), and that equality is the zero-interference statement (decision delta (a)(3) in the §12 evidence set). The class PR1 refuses is the UNBOUND one — a real Team Definition that appears after publish and is bound by nothing — recorded in undeclared-team-tool-evidence.json (C2a/C2b), where the typed refusal and the absence of that body's effect are both asserted. Earlier revisions of this note claimed the governed lane \"leaves no file behind\" for `write`; that contradicted the data in this same file and is withdrawn (independent review MINOR-2).",
+  "governedLaneView": [
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5p1-2026-10-17T04-42-29/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-17T04-42-29\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5p1-2026-10-17T04-42-29/workspace/a5p1-strict.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    }
+  ],
+  "legacyLaneView": [
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5p1-2026-10-17T04-42-29/workspace/a5p1-seed.txt</path>\n<type>file</type>\n<content>\n1: A5P1_SEED_2026-10-17T04-42-29\n\n(End of file - total 1 lines)\n</content>"
+    },
+    {
+      "isError": false,
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/tests/homes/a5p1-2026-10-17T04-42-29/workspace/a5p1-ctl.sideeffect</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+    }
+  ],
+  "sideEffectFiles": {
+    "strict": "A5P1_RAN_strict_2026-10-17T04-42-29",
+    "ctl": "A5P1_RAN_ctl_2026-10-17T04-42-29"
+  },
+  "probeRowLedger": [
+    {
+      "at": "2026-10-17T04:42:30.574Z",
+      "leg": "plugin-apply",
+      "pid": 38,
+      "hasOn": true,
+      "hasEffect": true
+    },
+    {
+      "at": "2026-10-17T04:42:30.574Z",
+      "leg": "listen",
+      "event": "agent/created",
+      "scope": "row-scope",
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T04:42:30.574Z",
+      "leg": "listen",
+      "event": "tools/pre-execute",
+      "scope": "row-scope",
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T04:42:30.574Z",
+      "leg": "apply-done",
+      "agents": []
+    }
+  ],
+  "probeRowMarkers": []
+}

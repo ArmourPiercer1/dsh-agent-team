@@ -1,22 +1,36 @@
 {
-  "round": "W8 formal (alpha5-wire-pr8)",
-  "run_utc": "2026-10-17T03:07Z",
+  "round": "W-E2 (alpha5-wire-tools2) — editor 面测量回合（真会话真跑；判据腿仍 NOT-EXECUTED，差距事实改为实测式）",
+  "run_utc": "2026-10-17T04:01Z",
   "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
-  "port": 3186,
-  "world_prefix": "a5w8-*",
-  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "port": 3183,
+  "world_prefix": "a5e2-*（跑毕删除）",
+  "caliber": "LIVE-kit 观测 only。editor 工具族在 Team 任何包无实现（census 在册）⇒ 本轮按『不发明新生产代码』路线执行：真实会话上两面实测（gated=装配 guard 后原生名调用边拒；ungated=真实编辑往返），判据腿（子命令 I/O 映射/gated 落盘观测/undo）仍 NOT-EXECUTED，不冒充 book。",
   "row": "M-04 str_replace_editor",
   "evidence_refs": [
     "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w5-gated/criteria.json",
-    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json"
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/native-face.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/native-legs.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/native-legs.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-e2-pre-M-04.log"
   ],
   "observed_on_assembly_face": [
-    "W5 门控工具面 LIVE（34/34：a5w5_search/a5w5_bash bind→grant→exec→spill；unbound 探针 guard 拒、body exec=0）",
-    "W4 governed 执行腿 LIVE（22/22：真 spawn rc=0 pid 真；域内 deny EACCES rc=1 零泄漏）"
+    "真实会话 NATIVE 工具面（公开 tools.schemas() 读回）：26 名，edit/read_image/write/read 在册，str_replace_editor=absent（has_str_replace_editor=false，native-face.json 逐字）",
+    "gated 面（W5 同型 guard 装配后）：模型驱动调用宿主原生 read/edit 在调用边被活 guard typed 拒，逐字『the trusted global definition of \"edit\" is unreadable at the public seam … refusing rather than crediting a name nobody could pin』；被拒调用文件字节不变、治理流观测到 dispatcher-call-* 事件（edit 腿 delta=6）⇒ 现行公开 seam 无法把宿主原生编辑器钉进治理 bind（=W7 已披露的 Definition 公共 seam 缺口的 editor 侧现测）",
+    "ungated 对照面（无 guard 裸会话）：read→edit 真实文件编辑往返成功（文件 sha 变化在册 native-legs.json），治理观测增量=0 ⇒ 真实编辑字节完全在 Team 治理面之外流动——两面合并给出精确差距：Team lane 无 editor 实现 + 原生面不可治理 bind"
   ],
   "not_observed": [
-    "editor_subcommand_map_complete：str_replace_editor 工具族无任何装配 row（W5 kit 只 alias lane grep/bash；editor 不在闭集装配面）⇒ 子命令 I/O 映射无观测面",
-    "undo_history_io：undo 谱无装配腿",
-    "editor 子命令级 IO_POLICY_UNSUPPORTED 负控：W4 nega 的 typed 拒发生在 confined-exec spawn 请求形状（profile 类），不是 editor 子命令映射面；按类别不冒充 book"
+    "editor_subcommand_map_complete：str_replace_editor 子命令面（view/insert/delete/undo）在 Team 任何包 0 实现（grep 非 dist=0 命中，gap-checklist C-04 census 复验）；计划出处=docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md:51（行 M-04）+ post-poc-technical-design.md:83-84（设计 §3.1 子命令表）+ architecture.md:233；仓库现状=无实现、无装配、无子命令 I/O 映射可挂钩 ⇒ 判据腿保持 NOT-EXECUTED",
+    "undo_history_io：undo 谱在计划出处与仓库双侧均无面（计划=同上；仓库=0 实现）",
+    "editor 子命令级 IO_POLICY_UNSUPPORTED 负控：本轮无 editor 面可触发；W4 nega 的 typed 拒属 confined-exec profile 形状，按类别不冒充（W8 口径保持）"
+  ],
+  "plan_vs_repo_lines": {
+    "plan": "S0-SELECTION-MATRIX.md:51（M-04 行：子命令级 I/O 映射设计条款+默认拒口径）；post-poc-technical-design.md:83（view=read/list/stat）/:84（create/insert/str_replace=create/write+read old）",
+    "repo": "packages/tools/a5p5-tools barrel 闭集=A5P5_TOOL_NAMES（grep/bash/glob）；packages/**/src 非 dist 无 str_replace_editor/editor 实现（W-E2 轮 grep 复验，aece4f21）"
+  },
+  "disclosed_constant_citations": [
+    "packages/domain/controlled-fs/src/admission-binding.ts ARBITRARY_TREE_PROFILE_PUBLISHED=false（OpenAtPort 前禁宣称任意树；本行不据此 book 任何 editor 腿）"
   ]
 }

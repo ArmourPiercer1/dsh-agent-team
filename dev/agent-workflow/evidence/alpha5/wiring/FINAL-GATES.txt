@@ -88,3 +88,26 @@ p4t6 入账 SCANNED_PATHS_GGPROBES（#265@ced9254c 两文件，PR3/5/7 合并纠
 （merge-ref 口径），tolerance 两度重录零漂移。旧 067225df 留史。
 门禁（合并树 head）：p4t6+wording 13/13；census 2 对 pass；self-test 59/59；
 其余见下行复跑记录。
+
+── GLUE-2 (queue C-11+C-01；a5p5 入 root+编译面；registry 00/40 run≠null+真机 receipts) ──
+三件同轮（WIRING-SURFACE line 7 预告的 PR5-装配轮，缺一即红）：root vitest include +=
+lane 测试目录（CI 收 7 文件 69 腿，全绿）；tools tsconfig.build include += lane src
+（编译面 emit-only；tools/dist 按仓库规则 gitignored=无 drift 面；build tsc=0）；
+dormant-audit 同轮放行=第三 path-exact 例外 + form-pin 腿（恰 1 行裸 include 串，
+边无处藏身；barrel 腿原样绿——SHIPPED 面零变化）。
+registry run≠null（锚点表在册的 GLUE 后续项）：00/40 → tests/kits/alpha5-pr8-e2e/kit.mjs
+（骨架 README 正式位，pin 从 paths.mjs；懒加载，pr8-runner-self 35/35 绿）。**不新订
+法律**——00 编排 a5-pr1 三件套真机复跑（41 判据全绿含 C2a/C2b dynRan→typed deny）+
+新腿 S00-VOCAB-FACE（真机 LOADED 的 team_* == 编译面字面量，15=15，phantom/unloaded/
+denied∩loaded 皆空）；40 编排 W5 gated 34/34 GREEN + ungated RED 对照（gate-carrier
+9-id 集 set-match）+ root-config unit 腿 69/69。IF-7 三态：前置缺失=NOT_RUN，拒伪造。
+receipts（含首跑 FAIL 的 kit 解析 bug 与 dirty-tree FATAL 各原件保留，不删不选）：
+glue-registry/runs/{00-guard-dispatch-2026-10-17T04-40-14(FAIL raw),00-…-04-42-29(PASS),
+40-…-04-40-14(FATAL raw),40-…-04-48-13(PASS)}。
+census 2×@2b1099d7（master 未动=分支树即 merge-ref 口径，等式成立非论证）：558f/7010l
+恒等×2 capture，identical set，new 0；poc3 fd 腿两 capture 皆绿（G-f 台账率记录归
+协调者）。正本 nine-root-2b1099d7.md 重录：ids 字节复制 cmp+正文 reds 段与前任正本
+diff 为空（双机器校验；"nine-line typo"教训的闸门这次在我自己的过滤脚本上又演一遍——
+拿错表示格式当场 False，改对了校验才过）。self-test 59/59；--census-json 用存储捕获
+对新指针重评 pass。门禁全量：lane 69/69、dormant-audit 5/5、p4t6+a5p7 14/14、wording
+3/3、lint-identities new 0（universe 1244）、build tsc 双 0、artifacts drift=0。

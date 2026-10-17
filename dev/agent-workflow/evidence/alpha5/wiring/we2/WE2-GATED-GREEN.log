@@ -1,0 +1,47 @@
+a5e2 runner mode=gated stamp=2026-10-17T04-01-07Z port=3183
+PASS L-E2-PIN — the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (read-only reuse) [head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/tests/deepseek-harness-test-use]
+PASS L-E2-IF5 — IF-5 shared surface (packages/, scripts/, root vitest.config) is byte-untouched by this lane [porcelain empty]
+PASS L-E2-ARTS — the runtime dist barrels + the kit-local jobs-gateway build are present [dist=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/packages/runtime/dist/packages jobs=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/node_modules/.a5e2-jobs-build]
+PASS L-E2-PORTS — host port 3183 free (self-proved) and a mock port from the 349x family free [hostFree=true mock=3491]
+mock: listening on 127.0.0.1:3491
+PASS L-E2-BOOT — the test Host booted on port 3183 with the token gate live (303 + set-cookie) [status=303]
+PASS L-E2-CREATE — the host public session/create entry returned TWO real sessionIds (member A tool host + member B identity) [A=session-aedfc87a-e58 B=session-3cbea96a-801]
+PASS L-E2-TURN1 — the real session ran a setup turn to a model reply (an Agent now exists behind the session) [status=200]
+PASS L-E2-AGENT — the session Agent is reachable through the PUBLIC ctx.agents seam [agent={"id":"session-aedfc87a-e582-425f-b48b-ce6108de757d","session":"session-aedfc87a-e582-425f-b48b-ce6108de757d","hasCtx":t]
+PASS L-E2-ASSEMBLE-REQ — the live assembly started on the real Agent [{"ok":true,"started":true,"label":"session-aedfc87a-e582-425f-b48b-ce6108de757d"}]
+mock: 1 [messages] tool-call reply: a5e2_domain_act
+mock: 2 [messages] tool-call reply: a5e2_domain_act
+mock: 3 [messages] tool-call reply: a5e2_domain_act
+mock: 4 [messages] tool-call reply: a5e2_domain_act
+mock: 5 [messages] tool-call reply: a5e2_domain_act
+mock: 6 [messages] tool-call reply: a5e2_domain_act
+mock: 7 [messages] tool-call reply: a5e2_unbound_probe
+mock: 8 [messages] text reply (38 chars): "A5E2_GATED_20261017T040107Z_CHAIN_DONE"
+mock: 9 [messages] text reply (50 chars): "a5e2-mock: unscripted request, completing quietly."
+mock: 10 [messages] tool-call reply: read
+mock: 11 [messages] tool-call reply: edit
+mock: 12 [messages] text reply (37 chars): "A5E2_GATED_20261017T040107Z_EDIT_DONE"
+mock: 13 [messages] tool-call reply: read_image
+mock: 14 [messages] text reply (36 chars): "A5E2_GATED_20261017T040107Z_IMG_DONE"
+PASS L-E2-GUARD — the PR1 guard installed, bound a5e2_domain_act and PUBLISHED (channel armed/proven on the live subscription) [{"installOk":true,"installError":null,"bindOwnOk":true,"publishedOk":true,"channel":"proven","channelAtPublish":"armed","probeRegisteredAfterPublish":true}]
+PASS L-E2-REG — a5e2_domain_act + the post-publish probe are on the live scoped registry [["a5e2_domain_act","a5e2_unbound_probe"]]
+PASS L-E2-IDENTITY — the jobs-gateway PUBLIC BARREL admitted both member jobs; canonical owner keys are distinct (rootSessionIds are host session facts; instanceIds disclosed as row-local) [{"a":{"rootSessionId":"session-aedfc87a-e582-425f-b48b-ce6108de757d","instanceId":"a5e2-inst-a","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-aedfc87a-e582-425f-b48b-ce6108de757d\"}"},"b":{"rootSessionId":"session-3cbea96a-8019-4634-8e25-2810d6ea71a6","instanceId":"a5e2-inst-b","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"}"},"lease":"ACTIVE"}]
+PASS L-E2-ACTED — a REAL model-driven device act ran the FULL dual-permit flow: PR2 grant minted → domain interlock+CAS allow → exec-edge ONE-SHOT consume → the single side effect (CAS 0→1) → presented [grant=grant:f9ab61fb27c764ddb5cc0fe16f345598 edge={"ok":true,"replay":false}|{"ok":false,"replay":true,"code":"APPROVAL_STALE","message":"grant \"grant:f9ab61fb27c764ddb5cc0fe16f345598\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)"} ledger=1]
+PASS L-E2-TEAM-DENY — TeamPermit veto (aux unarmed in policy; Domain side would allow): the REAL PR2 kernel refused with its own vocabulary, device delta 0, aux CAS untouched at 0 [{"callId":"e2-act-2","tool":"domain-act","stage":"requires-approval","grantId":null,"fingerprint":"sha256:720d9193aaac13bf6400feba8394c234eedc91528161e825cfbf553b4fad643f","device":"a5e2.device/aux","team_permit":false,"domain_permit":"not-asked","outcome":"denied","code":"requires-approval","detail]
+PASS L-E2-DOMAIN-DENY — DomainPermit veto (lease holder is member B; kernel ADMITTED): typed DOMAIN_DENIED verbatim, device delta 0, belt CAS untouched [{"callId":"e2-act-3","tool":"domain-act","stage":"team-admitted","grantId":"grant:6994ff2c4a9e001eedfcb8e55b7cea0a","fingerprint":"sha256:87f87b631e6d5ec4a7fd4533f36175b07acacac5477ad8c572c867c9995d4ded","device":"a5e2.device/belt","team_permit":true,"domain_permit":false,"outcome":"denied","code":"]
+PASS L-E2-DOMAIN-CAS — the CAS half of the mock interlock refuses a stale expected_version even for the lease holder (main v999): typed DOMAIN_DENIED, delta 0 [{"callId":"e2-act-4","tool":"domain-act","stage":"team-admitted","grantId":"grant:287bad83202d87f3ad270030e678571e","fingerprint":"sha256:7605839f6b7c07ff1767935fa3f6a8231c9824afc2f633d8512d61d863962e0c","device":"a5e2.device/main","team_pe]
+PASS L-E2-UNRESOLVED — unresolved domain reference fails CLOSED before any grant is minted (no binding guessed), device delta 0 [{"callId":"e2-act-5","tool":"domain-act","stage":"domain-reference-unresolved","grantId":null,"fingerprint":null,"device":"a5e2.device/ghost","team_permit":null,"domain_permit":"not-asked","outcome":"denied","code":"DOMAIN_DENIED","detail":]
+PASS L-E2-VETO-ZERO — veto ⇒ 0 side effects, BYTE-LEVEL: after the model chain the action ledger carries EXACTLY the one acted line and the vetoed devices sit at version 0 [ledger=1 aux=0 belt=0]
+PASS L-E2-UNBOUND — the post-assembly probe name is refused at the call edge by the live guard and its BODY never ran [probeBodyCount=0]
+PASS L-E2-INTERLOCK — the mock device IS actable by its lease holder (B, gateway owner key): refusal was attribution-based, not a dead device; the foreign act stays refused [{"b":{"ok":true,"version_before":0,"version_after":1,"lease_owner":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"}","side_effects":1},"a":{"ok":false,"code":"DOMAIN_DENIED","detail":"device-lease-owner={\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"} (actor is not the lease holder)","observed_version":1,"side_effects":0},"delta":1}]
+PASS L-E2-ANCHOR — the pinned absent-anchor job_start stays absent: ZERO hits across the host tree AND no job-start-shaped name on the live roster [grepHits=0 roster=false]
+PASS L-E2-NATIVE-FACE — the real Agent NATIVE tool face was captured through the public tools.schemas() view (names + the edit/write/read_image parameter schemas) [total=26 edit=true read_image=true str_replace_editor=false]
+PASS L-E2-NATIVE-EDIT-LEG — the host-native edit leg was measured end-to-end with its governance-observation delta (file-byte delta recorded verbatim; NO Team editor is assembled) [skipped=false term=done govDelta={"leg":"edit","new_observations":6} fileDelta=false]
+PASS L-E2-NATIVE-IMG-LEG — the host-native read_image round-trip leg was measured end-to-end with its governance-observation delta (real PNG on disk; NO Team image tool is assembled) [skipped=false term=done govDelta={"leg":"read_image","new_observations":3}]
+PASS L-E2-CENSUS — every name on the live guard-observation stream is a master full-prefix name (no retired short form appears); census recorded verbatim [{"dispatcher-preparing":1,"guard-installed":1,"dispatcher-seam-armed":5,"dispatcher-bind-inherited":1,"dispatcher-native-unreadable":1,"published-surface-native-unreadable":1,"published-surface-unverified":1,"surface-inherited":1,"dispatcher-active":1,"agent-published":1,"dispatcher-surface-revalidated":1,"tools-change-unbound-names":1,"dispatcher-call-begin":9,"dispatcher-result-observed":5,"dispatcher-call-end":5,"guard-denial":4,"dispatcher-call-refused":4}]
+PASS L-E2-STABLE — the stable :3080 instance was only probed, never operated, status unchanged [before=401 after=401]
+PASS L-E2-PRISTINE — the test-use runtime stayed pristine (porcelain empty, HEAD unmoved) [porcelain=0]
+PASS L-E2-IF5-POST — IF-5 shared surface still byte-untouched at closure [porcelain empty]
+
+GREEN — 28/28 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z
+GATED exit=0

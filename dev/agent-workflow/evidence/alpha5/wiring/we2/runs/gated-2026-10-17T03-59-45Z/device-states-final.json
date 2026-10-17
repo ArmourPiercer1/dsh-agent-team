@@ -1,0 +1,38 @@
+{
+  "main": {
+    "domainAuthorityId": "a5e2.device/main",
+    "version": 1,
+    "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}",
+    "log": [
+      {
+        "seq": 1,
+        "op": "spin",
+        "at": "2026-10-17T03:59:46.424Z",
+        "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}"
+      }
+    ]
+  },
+  "aux": {
+    "domainAuthorityId": "a5e2.device/aux",
+    "version": 0,
+    "lease_owner": null,
+    "log": []
+  },
+  "belt": {
+    "domainAuthorityId": "a5e2.device/belt",
+    "version": 1,
+    "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}",
+    "log": [
+      {
+        "seq": 1,
+        "op": "owner-spin",
+        "at": "2026-10-17T03:59:54.174Z",
+        "actor": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}"
+      }
+    ]
+  },
+  "ledger": [
+    "{\"at\":\"2026-10-17T03:59:46.424Z\",\"leg\":\"e2-act-1\",\"op\":\"spin\",\"domainAuthorityId\":\"a5e2.device/main\",\"memberKey\":\"{\\\"instanceId\\\":\\\"a5e2-inst-a\\\",\\\"rootSessionId\\\":\\\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\\\"}\",\"version_before\":0,\"version_after\":1}",
+    "{\"at\":\"2026-10-17T03:59:54.174Z\",\"leg\":\"interlock-owner-b\",\"op\":\"owner-spin\",\"domainAuthorityId\":\"a5e2.device/belt\",\"memberKey\":\"{\\\"instanceId\\\":\\\"a5e2-inst-b\\\",\\\"rootSessionId\\\":\\\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\\\"}\",\"version_before\":0,\"version_after\":1}"
+  ]
+}

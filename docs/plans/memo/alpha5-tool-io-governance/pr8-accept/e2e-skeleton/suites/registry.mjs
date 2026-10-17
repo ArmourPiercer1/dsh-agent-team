@@ -1,6 +1,24 @@
-// PR8 E2E 套件登记（候选桩）—— Lane G / alpha5-pr8-accept。
-// 只登记"套件↔矩阵行↔负例↔证据类型"的关系形状；`run: null` = 断言实现归 PR8 正式轮。
+// PR8 E2E 套件登记 —— Lane G / alpha5-pr8-accept。
+// 登记"套件↔矩阵行↔负例↔证据类型"的关系形状；`run: null` = 断言实现归 PR8 正式轮。
 // matrixRows 引用 ../acceptance-matrix.json 的 row_id；negativeCases 引用 ../migration-negative-cases.json 的 case id。
+//
+// GLUE 队列轮（C-01+C-11，协调者指令）落地两件的 run≠null：
+//   00-guard-dispatch / 40-search-shell → tests/kits/alpha5-pr8-e2e/kit.mjs
+//   （骨架 README §1 预留的 kit 正式位，基线 pin 从 tests/paths.mjs 读）。
+// 实现不新订法律：run 编排既有权威 runner（00=a5-pr1-guard-dispatch 三件套
+// 真机复跑；40=W5 live runner gated GREEN + ungated RED 对照）并各加自身新腿
+// （00 词表面腿：真机 LOADED 的 team_* 面 == 编译面字面量 = facade 装载自证）。
+// 三态 IF-7：PASS/FAIL/NOT_RUN（前置缺失=NOT_RUN，拒绝伪造 PASS）。
+// run 经下列懒加载入口进入：import 本登记文件不触发任何 runner（N2 自检可安全 import）。
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const PR8_KIT = pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..', '..', '..', '..', 'tests', 'kits', 'alpha5-pr8-e2e', 'kit.mjs')).href
+const suiteRun = (name) => async (ctx) => {
+  const kit = await import(PR8_KIT)
+  if (typeof kit[name] !== 'function') throw new Error(`alpha5-pr8-e2e kit exposes no ${name}`)
+  return kit[name](ctx ?? {})
+}
 
 export const SUITES = [
   {
@@ -10,7 +28,7 @@ export const SUITES = [
     derivesFrom: ["stage2b", "h6 H-A/H-D", "NEG-1 hazard 对照"],
     matrixRows: ["M-14", "SUP-09", "SUP-11"],
     evidenceTypes: ["real-host-receipt", "independent-reviewer-rerun", "baseline-diff-matrix"],
-    run: null,
+    run: suiteRun("runSuite00GuardDispatch"),
   },
   {
     id: "10-admission-grant",
@@ -46,7 +64,7 @@ export const SUITES = [
     derivesFrom: ["02-search p02 (12/12)+spill", "h6 H-B/HD-ask"],
     matrixRows: ["M-06", "M-07", "SUP-12", "SUP-13"],
     evidenceTypes: ["fixture", "real-host-receipt", "perf-measurement"],
-    run: null,
+    run: suiteRun("runSuite40SearchShell"),
   },
   {
     id: "50-ptc-lsp",

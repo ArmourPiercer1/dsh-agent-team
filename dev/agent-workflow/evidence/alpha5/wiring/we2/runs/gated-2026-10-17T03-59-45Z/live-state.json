@@ -1,0 +1,493 @@
+{
+  "mode": "gated",
+  "assemblies": {
+    "session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b": {
+      "mode": "gated",
+      "guard": {
+        "installOk": true,
+        "installError": null,
+        "bindOwnOk": true,
+        "publishedOk": true,
+        "channel": "proven",
+        "channelAtPublish": "armed",
+        "probeRegisteredAfterPublish": true
+      },
+      "eventCensus": {
+        "dispatcher-preparing": 1,
+        "guard-installed": 1,
+        "dispatcher-seam-armed": 5,
+        "dispatcher-bind-inherited": 1,
+        "dispatcher-native-unreadable": 1,
+        "published-surface-native-unreadable": 1,
+        "published-surface-unverified": 1,
+        "surface-inherited": 1,
+        "dispatcher-active": 1,
+        "agent-published": 1,
+        "dispatcher-surface-revalidated": 1,
+        "tools-change-unbound-names": 1,
+        "dispatcher-call-begin": 9,
+        "dispatcher-result-observed": 5,
+        "dispatcher-call-end": 5,
+        "guard-denial": 4,
+        "dispatcher-call-refused": 4
+      },
+      "observationsCount": 43,
+      "registryNames": [
+        "a5e2_domain_act",
+        "a5e2_unbound_probe"
+      ],
+      "toolCalls": [
+        {
+          "callId": "e2-act-1",
+          "tool": "domain-act",
+          "stage": "admitted-acted",
+          "grantId": "grant:f9ab61fb27c764ddb5cc0fe16f345598",
+          "fingerprint": "sha256:583b638cc165e47d5d00ab6b06ca8161fdb13f25a1ae626927219dbc10346532",
+          "device": "a5e2.device/main",
+          "team_permit": true,
+          "domain_permit": true,
+          "outcome": "acted",
+          "code": null,
+          "detail": null,
+          "deviceDelta": 1,
+          "actionsBefore": 0,
+          "actionsAfter": 1,
+          "execEdgeFirst": {
+            "ok": true,
+            "replay": false
+          },
+          "execEdgeReplay": {
+            "ok": false,
+            "replay": true,
+            "code": "APPROVAL_STALE",
+            "message": "grant \"grant:f9ab61fb27c764ddb5cc0fe16f345598\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)"
+          },
+          "ledgerConsumed": 1,
+          "presented": "A5E2-ACTED device=a5e2.device/main op=spin version=0->1 lease={\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}",
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-2",
+          "tool": "domain-act",
+          "stage": "requires-approval",
+          "grantId": null,
+          "fingerprint": "sha256:720d9193aaac13bf6400feba8394c234eedc91528161e825cfbf553b4fad643f",
+          "device": "a5e2.device/aux",
+          "team_permit": false,
+          "domain_permit": "not-asked",
+          "outcome": "denied",
+          "code": "requires-approval",
+          "detail": "admission returned requires-approval",
+          "deviceDelta": 0,
+          "actionsBefore": 1,
+          "actionsAfter": 1,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": {
+            "kind": "requires-approval",
+            "requestedEffects": {
+              "effects": [
+                {
+                  "kind": "domain-ref",
+                  "domainAuthorityId": "a5e2.device/aux",
+                  "resource": null
+                },
+                {
+                  "kind": "tool-invoke",
+                  "toolName": "a5e2_domain_act",
+                  "resource": null
+                }
+              ],
+              "fingerprint": "sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8"
+            },
+            "reason": "one Alpha.4 ApprovalCase (tadm:a5e2-ts:a5e2-member:sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8:g1) at rung leader must legally cover ALL 2 effects; per-effect rungs: 0:leader"
+          }
+        },
+        {
+          "callId": "e2-act-3",
+          "tool": "domain-act",
+          "stage": "team-admitted",
+          "grantId": "grant:6994ff2c4a9e001eedfcb8e55b7cea0a",
+          "fingerprint": "sha256:87f87b631e6d5ec4a7fd4533f36175b07acacac5477ad8c572c867c9995d4ded",
+          "device": "a5e2.device/belt",
+          "team_permit": true,
+          "domain_permit": false,
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "device-lease-owner={\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"} (actor is not the lease holder)",
+          "deviceDelta": 0,
+          "actionsBefore": 1,
+          "actionsAfter": 1,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-4",
+          "tool": "domain-act",
+          "stage": "team-admitted",
+          "grantId": "grant:287bad83202d87f3ad270030e678571e",
+          "fingerprint": "sha256:7605839f6b7c07ff1767935fa3f6a8231c9824afc2f633d8512d61d863962e0c",
+          "device": "a5e2.device/main",
+          "team_permit": true,
+          "domain_permit": false,
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "cas-version-stale expected=999 actual=1",
+          "deviceDelta": 0,
+          "actionsBefore": 1,
+          "actionsAfter": 1,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-5",
+          "tool": "domain-act",
+          "stage": "domain-reference-unresolved",
+          "grantId": null,
+          "fingerprint": null,
+          "device": "a5e2.device/ghost",
+          "team_permit": null,
+          "domain_permit": "not-asked",
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "unresolved-domain-reference a5e2.device/ghost",
+          "deviceDelta": 0,
+          "actionsBefore": 1,
+          "actionsAfter": 1,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        }
+      ],
+      "vetoMatrix": [
+        {
+          "team_permit": true,
+          "domain_permit": true,
+          "outcome": "acted",
+          "leg": "e2-act-1",
+          "device": "a5e2.device/main",
+          "version_after": 1
+        },
+        {
+          "team_permit": false,
+          "domain_permit": true,
+          "outcome": "denied",
+          "leg": "kernel-requires-approval",
+          "device": "a5e2.device/aux",
+          "kernel_decision": {
+            "kind": "requires-approval",
+            "requestedEffects": {
+              "effects": [
+                {
+                  "kind": "domain-ref",
+                  "domainAuthorityId": "a5e2.device/aux",
+                  "resource": null
+                },
+                {
+                  "kind": "tool-invoke",
+                  "toolName": "a5e2_domain_act",
+                  "resource": null
+                }
+              ],
+              "fingerprint": "sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8"
+            },
+            "reason": "one Alpha.4 ApprovalCase (tadm:a5e2-ts:a5e2-member:sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8:g1) at rung leader must legally cover ALL 2 effects; per-effect rungs: 0:leader"
+          },
+          "side_effects": 0
+        },
+        {
+          "team_permit": true,
+          "domain_permit": false,
+          "outcome": "denied",
+          "error": "DOMAIN_DENIED",
+          "leg": "mock-device-lease-owner={\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}",
+          "device": "a5e2.device/belt",
+          "side_effects": 0
+        },
+        {
+          "team_permit": true,
+          "domain_permit": false,
+          "outcome": "denied",
+          "error": "DOMAIN_DENIED",
+          "leg": "mock-cas-version-stale",
+          "device": "a5e2.device/main",
+          "side_effects": 0
+        }
+      ],
+      "vetoSideEffects": 0,
+      "negativeControls": [
+        {
+          "attempt": "unresolved-domain-reference",
+          "outcome": "typed-deny",
+          "code": "DOMAIN_DENIED",
+          "device": "a5e2.device/ghost",
+          "grants_minted_delta": 3
+        }
+      ],
+      "probeBodyCount": 0,
+      "grantMintedCount": 3,
+      "mockSnapshot": {
+        "a5e2.device/main": {
+          "domainAuthorityId": "a5e2.device/main",
+          "version": 1,
+          "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}",
+          "log": [
+            {
+              "seq": 1,
+              "op": "spin",
+              "at": "2026-10-17T03:59:46.424Z",
+              "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}"
+            }
+          ]
+        },
+        "a5e2.device/aux": {
+          "domainAuthorityId": "a5e2.device/aux",
+          "version": 0,
+          "lease_owner": null,
+          "log": []
+        },
+        "a5e2.device/belt": {
+          "domainAuthorityId": "a5e2.device/belt",
+          "version": 1,
+          "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}",
+          "log": [
+            {
+              "seq": 1,
+              "op": "owner-spin",
+              "at": "2026-10-17T03:59:54.174Z",
+              "actor": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}"
+            }
+          ]
+        }
+      },
+      "mockActionLines": 2,
+      "gateway": {
+        "leaseState": "ACTIVE",
+        "jobs": [
+          {
+            "jobId": "e2-job-a",
+            "ownerKey": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}",
+            "state": "leased",
+            "pinnedIdentity": "def-v1"
+          },
+          {
+            "jobId": "e2-job-b",
+            "ownerKey": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}",
+            "state": "leased",
+            "pinnedIdentity": "def-v1"
+          }
+        ],
+        "ownerA": {
+          "rootSessionId": "session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b",
+          "instanceId": "a5e2-inst-a",
+          "admitted": true,
+          "key": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}"
+        },
+        "ownerB": {
+          "rootSessionId": "session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f",
+          "instanceId": "a5e2-inst-b",
+          "admitted": true,
+          "key": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}"
+        },
+        "identity_disclosure": "rootSessionIds are HOST facts (sessions the host created); instanceIds are row-local fixture labels (no durable MemberInstance rows in this world — the durable-members leg is on record in the W7 kit)."
+      },
+      "rosterNames": [
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "web_search",
+        "web_fetch",
+        "present",
+        "bash",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "workflow",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "ask_user_question",
+        "exit_plan_mode",
+        "subagent_fork",
+        "subagent"
+      ],
+      "rosterHasJobStart": false,
+      "nativeFace": {
+        "total": 26,
+        "names": [
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "job_output",
+          "job_list",
+          "job_kill",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "present",
+          "bash",
+          "read_image",
+          "send_message",
+          "interrupt_agent",
+          "list_agents",
+          "todo_write",
+          "workflow",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "exit_plan_mode",
+          "subagent_fork",
+          "subagent"
+        ],
+        "has_edit": true,
+        "has_read_image": true,
+        "has_write": true,
+        "has_str_replace_editor": false,
+        "schemas": [
+          {
+            "name": "read",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to read, resolved by the filesystem backend."
+                },
+                "offset": {
+                  "type": "number",
+                  "description": "1-based first line to return. Defaults to 1."
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of lines to return. Defaults to 2000."
+                }
+              },
+              "required": [
+                "file_path"
+              ]
+            }
+          },
+          {
+            "name": "write",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to write, resolved by the filesystem backend."
+                },
+                "content": {
+                  "type": "string",
+                  "description": "Full UTF-8 text content to write."
+                },
+                "sandbox_permissions": {
+                  "type": "string",
+                  "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+                  "enum": [
+                    "workspace-write",
+                    "danger-full-access"
+                  ]
+                },
+                "justification": {
+                  "type": "string",
+                  "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+                }
+              },
+              "required": [
+                "file_path",
+                "content"
+              ]
+            }
+          },
+          {
+            "name": "edit",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to edit, resolved by the filesystem backend."
+                },
+                "old_string": {
+                  "type": "string",
+                  "description": "Literal text to replace."
+                },
+                "new_string": {
+                  "type": "string",
+                  "description": "Literal replacement text. Use an empty string to delete the match."
+                },
+                "replace_all": {
+                  "type": "boolean",
+                  "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+                },
+                "sandbox_permissions": {
+                  "type": "string",
+                  "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+                  "enum": [
+                    "workspace-write",
+                    "danger-full-access"
+                  ]
+                },
+                "justification": {
+                  "type": "string",
+                  "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+                }
+              },
+              "required": [
+                "file_path",
+                "old_string",
+                "new_string"
+              ]
+            }
+          },
+          {
+            "name": "read_image",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to the image file, resolved by the filesystem backend."
+                }
+              },
+              "required": [
+                "file_path"
+              ]
+            }
+          }
+        ]
+      },
+      "nativeCensusDeltas": [
+        {
+          "leg": "edit",
+          "new_observations": 6
+        },
+        {
+          "leg": "read_image",
+          "new_observations": 3
+        }
+      ]
+    }
+  }
+}

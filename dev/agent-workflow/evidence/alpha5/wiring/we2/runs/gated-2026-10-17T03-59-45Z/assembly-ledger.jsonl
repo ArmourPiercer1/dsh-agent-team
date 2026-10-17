@@ -1,0 +1,16 @@
+{"at":"2026-10-17T03:59:46.156Z","leg":"plugin-apply","pid":349,"mode":"gated","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/packages/runtime/dist/packages","jobs":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/node_modules/.a5e2-jobs-build"}
+{"at":"2026-10-17T03:59:46.181Z","leg":"lanes-imported","ok":true,"gw_exports":"function","cf_arb_tree":false}
+{"at":"2026-10-17T03:59:46.319Z","leg":"gateway-observation","event":"gateway-job-admitted","jobId":"e2-job-a","ownerKey":"{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}","tool":"a5e2_domain_act"}
+{"at":"2026-10-17T03:59:46.319Z","leg":"gateway-observation","event":"gateway-job-admitted","jobId":"e2-job-b","ownerKey":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}","tool":"a5e2_domain_act"}
+{"at":"2026-10-17T03:59:46.320Z","leg":"gateway-identity","ownerA":{"rootSessionId":"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b","instanceId":"a5e2-inst-a","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b\"}"},"ownerB":{"rootSessionId":"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f","instanceId":"a5e2-inst-b","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-8bb9f4d8-cfeb-4daf-aaf1-38921aec393f\"}"}}
+{"at":"2026-10-17T03:59:46.324Z","leg":"register","label":"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b","names":["a5e2_domain_act"],"ok":true}
+{"at":"2026-10-17T03:59:46.330Z","leg":"guard-assembled","label":"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b","installOk":true,"bindOwnOk":true,"publishedOk":true,"channelAtPublish":"armed"}
+{"at":"2026-10-17T03:59:46.331Z","leg":"register","label":"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b","name":"a5e2_unbound_probe","afterAssembly":true,"ok":true}
+{"at":"2026-10-17T03:59:46.332Z","leg":"assembly-complete","label":"session-cee7b5de-1c2a-4c89-8b50-06dc41985d2b","native_edit":true,"native_read_image":true}
+{"at":"2026-10-17T03:59:46.425Z","leg":"acted","callId":"e2-act-1","device":"a5e2.device/main","grant":"grant:f9ab61fb27c764ddb5cc0fe16f345598","version":1}
+{"at":"2026-10-17T03:59:46.448Z","leg":"team-denied","callId":"e2-act-2","device":"a5e2.device/aux","stage":"requires-approval"}
+{"at":"2026-10-17T03:59:46.462Z","leg":"domain-denied","callId":"e2-act-3","device":"a5e2.device/belt","code":"DOMAIN_DENIED"}
+{"at":"2026-10-17T03:59:46.476Z","leg":"domain-denied","callId":"e2-act-4","device":"a5e2.device/main","code":"DOMAIN_DENIED"}
+{"at":"2026-10-17T03:59:46.491Z","leg":"domain-ref-fail-closed","callId":"e2-act-5","device":"a5e2.device/ghost","grants":3}
+{"at":"2026-10-17T03:59:52.899Z","leg":"edit","new_observations":6}
+{"at":"2026-10-17T03:59:54.172Z","leg":"read_image","new_observations":3}
