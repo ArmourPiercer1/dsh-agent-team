@@ -6408,3 +6408,11 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **门**=lane 164/164（161+3 新腿）、a5p0 4/4、p4t6 10/10、hygiene/lint、`pnpm -r typecheck` 净、`pnpm -r build` EXIT=0 且 dist 漂移 8 文件与 src 改动面同 commit；census 两抓对照与 check:artifacts:head、a4p7 复跑结果见本条尾注（新 head 上跑）。上轮 census 两条负载红：walk ENOENT 已修（c6ee85b0），poc3 fd 标签 race 不改文件移交归因（`ci-304/poc3-race-attribution.md`）。
 - **红线**=CORE 0；无基线/pin 移动；:3080/:3180 零触碰；模型：qwen3.8-flash-next。
 - **新 head census 尾注（c1fe4bdd）**=两抓对照 558f 基线：c1=9 干净；c2 唯一新红=**已归因外部 race 第二次命中**（`poc3-probes:261` cfReason 标签 fd-recycled≠fd-closed，GUARD 仍拒；字节同前、本分支对 controlled-fs 零 diff、累计 2/8 captures；归因文档已更新率数）。census verdict=fail 系 seen-once 设计所致，**非本 stack 行为红**；修复选择权在 C-FS lane owner/协调者（leg-2 同型 retry-bound 系其文件既有模式），本 lane 不越权不硬凑。check:artifacts:head=drift=0（compared=1684）；a4p7 merge-gate 35/35（commit-carries-build 腿 12.4s 绿）。
+
+## 2026-10-17 11:5xZ — P-LSP #304 语义 rebase（master@2957809e 基上；去重不 text-union）
+
+- **形状**=8 件落 `master@2957809e` 之上：RED 6c8958ab+GREEN 515dfaec / docs 2fdb9675 / ci-304 cde62b84 / review 940622c5 / walk 626d92dd / 四件 ace58026 / evidence 062956fa + 审查件（父 55bd5e78 以 -x 重放在位；本轮 rebase 证据笔为末笔）。**drop**=stacked P-B 两件 `45436f0f`+`3668da59`（=真身 83c591fc/87f465dd 的 -x 副本，#299 已进 master；自检=sandbox-provider 面 rebase 前后 **diff 空**，provider.ts 双 gate 面+fd-3+ledger+lsp-assembly 全共存零丢失）。备份笔 `backup/pre-rebase-55bd5e78`。
+- **记账去重**（父裁决形）：① a5p0 register.ts 行**保 master 形**（master 注释+单条目；我的改写回退）；② p4t6 我的 Δ9 合并条款退役为 **SCANNED_PATHS_A5LSP Δ6 六件**（lsp-assembly+两 a5lsp2 套件+harness+两 fixture .mjs；P-B 三件由 master A5PB 条款在册，master tie 1160-1157 保留，我加 tie `1166-1160`；master 条款自带的交接注释兑现，finding-F 零双计）；③ dormant-audit 按 master 新基 **7** 核对=LSP 增量 0，master 记账形+我的 walk ENOENT 加固并存；④ `ac773974`（挪文笔，专修我已退役的注释）整体冗余 → skip。
+- **dist=同笔再生+HEAD 实证**：rebase 后 rebuild 全仓，dist 与提交内容 **0 漂移**；`check:artifacts-at-head` rev=HEAD verdict=ok **compared=1684 drift=0**。
+- **门（rebased head 全复跑）**=lane 165/165（161+fd-3/ledger 3 新腿+master 侧 1 腿）、a5p0 4/4、p4t6 10/10、dormant 5/5、typecheck EXIT=0+lint 净、a4p7 merge-gate 35/35（carries-build 腿 13.0s）、**本地 census 两抓对照 2b1099d7 基线=PASS**（562f/7083l，identity set=基线 9 红；poc3 负载 race 本轮未命中，累计率 2/10 维持披露）。
+- **红线**=非 ff 属 rebase 预期（lease 锁 55bd5e78，本地无推送凭证，代推归父）；CORE 0；基线/披露未动；:3080/:3180 零触碰；模型：qwen3.8-flash-next。
