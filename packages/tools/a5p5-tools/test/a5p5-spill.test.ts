@@ -74,11 +74,11 @@ describe('a5p5-spill: world-bound controlled root (越界 typed 拒)', () => {
     expect(SPILL_LEASE_STATES).toEqual(['active', 'draining', 'closed'])
     expect(SETTLEMENT_EVENTS).toEqual([
       'dispatcher-call-cancelled-before-body',
-      'terminated-after-body-start',
-      'completed-after-abort',
-      'outcome-unreadable',
-      'cancelled-by-others',
-      'executed-unvalidated',
+      'dispatcher-call-terminated-after-body-start',
+      'dispatcher-call-completed-after-abort',
+      'dispatcher-call-outcome-unreadable',
+      'dispatcher-call-cancelled-by-others',
+      'dispatcher-call-executed-unvalidated',
     ])
   })
 
@@ -120,7 +120,7 @@ describe('a5p5-spill: lease-shaped lifecycle (DRAINING 起拒新写)', () => {
     expect(lease.state()).toBe('active')
     expect(opened.sink.write('chunk-1\n').ok).toBe(true)
 
-    const settled = lease.settle({ kind: 'cancelled', event: 'terminated-after-body-start' })
+    const settled = lease.settle({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
     expect(settled.ok).toBe(true)
     expect(lease.state()).toBe('draining')
     const sizeAtDrain = port.port.sizeBytes(join(spillsRoot, 'bash-life-1.spill'))
@@ -131,7 +131,7 @@ describe('a5p5-spill: lease-shaped lifecycle (DRAINING 起拒新写)', () => {
     expect(late.refusal.class).toBe('denied')
     expect(port.port.sizeBytes(join(spillsRoot, 'bash-life-1.spill'))).toBe(sizeAtDrain)
 
-    opened.sink.finalize({ kind: 'cancelled', event: 'terminated-after-body-start' })
+    opened.sink.finalize({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
     expect(lease.close().ok).toBe(true)
     expect(lease.state()).toBe('closed')
     const afterClose = opened.sink.write('after-close\n')
@@ -144,10 +144,49 @@ describe('a5p5-spill: lease-shaped lifecycle (DRAINING 起拒新写)', () => {
   it('the settled edge is single: settling twice is a typed refusal (one settled boundary, C-GW)', () => {
     const lease = createSpillLease()
     expect(lease.settle({ kind: 'completed' }).ok).toBe(true)
-    const twice = lease.settle({ kind: 'cancelled', event: 'cancelled-by-others' })
+    const twice = lease.settle({ kind: 'cancelled', event: 'dispatcher-call-cancelled-by-others' })
     expect(twice.ok).toBe(false)
     if (twice.ok) return
     expect(twice.refusal.code).toBe('spill-settled-twice')
+  })
+
+  it('an off-set cancellation event carries its OWN typed code (code matches meaning)', () => {
+    const lease = createSpillLease()
+    const forged = lease.settle({ kind: 'cancelled', event: 'terminated-after-body-start' as never })
+    expect(forged.ok).toBe(false)
+    if (forged.ok) return
+    // Lane D review 附注 (接线门顺手): the pre-fix run reused `spill-settled-twice`
+    // for this leg — a code that does not match its meaning. The closed set now
+    // names it: short (pre-勘正) names are OUTSIDE the emission-face set.
+    expect(forged.refusal.code).toBe('spill-settlement-event-unknown')
+  })
+
+  it('a finalized spillId cannot be re-opened: no append-penetration, no settlement overwrite (Lane D ②)', () => {
+    const store = openedStore()
+    const lease = createSpillLease()
+    const opened = store.openSink({ spillId: 'bash-reopen-1', lease, attribution: attribution('reopen-1') })
+    expect(opened.ok).toBe(true)
+    if (!opened.ok) return
+    opened.sink.write('original-bytes\n')
+    lease.settle({ kind: 'completed' })
+    opened.sink.finalize({ kind: 'completed' })
+
+    // The penetration attempt: a FRESH store handle, a live lease, the SAME
+    // spillId. Pre-fix, openSink rewrote the meta with settlement:null (a
+    // finalized record's terminal fact erased) and the sink appended onto the
+    // existing payload. Post-fix: typed refusal before any port call.
+    const fresh = openedStore()
+    const intruder = createSpillLease()
+    const again = fresh.openSink({ spillId: 'bash-reopen-1', lease: intruder, attribution: attribution('reopen-2') })
+    expect(again.ok).toBe(false)
+    if (again.ok) return
+    expect(again.refusal.code).toBe('spill-id-in-use')
+    expect(again.refusal.class).toBe('denied')
+
+    // The finalized record is byte-intact: original bytes only, settlement intact.
+    const residue = fresh.listResidue().find((entry) => entry.spillId === 'bash-reopen-1')
+    expect(residue?.settlement).toEqual({ kind: 'completed' })
+    expect(port.port.sizeBytes(join(spillsRoot, 'bash-reopen-1.spill'))).toBe('original-bytes\n'.length)
   })
 })
 
@@ -160,8 +199,8 @@ describe('a5p5-spill: residue after cancel is enumerable, then cleanable (不静
     if (!opened.ok) return
     opened.sink.write('partial-1\n')
     opened.sink.write('partial-2\n')
-    lease.settle({ kind: 'cancelled', event: 'terminated-after-body-start' })
-    opened.sink.finalize({ kind: 'cancelled', event: 'terminated-after-body-start' })
+    lease.settle({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
+    opened.sink.finalize({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
     lease.close()
 
     // The cancel path must NOT silently drop the bytes: an independent handle
@@ -172,7 +211,7 @@ describe('a5p5-spill: residue after cancel is enumerable, then cleanable (不静
     expect(entry).toBeDefined()
     expect(entry?.bytes).toBe('partial-1\npartial-2\n'.length)
     expect(entry?.attribution).toEqual(attribution('cancel-1'))
-    expect(entry?.settlement).toEqual({ kind: 'cancelled', event: 'terminated-after-body-start' })
+    expect(entry?.settlement).toEqual({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
     const read = fresh.readSpill('bash-cancel-1', () => ({ allow: true }))
     expect(read.ok).toBe(true)
     if (read.ok) expect(read.text).toBe('partial-1\npartial-2\n')

@@ -156,7 +156,7 @@ const ROWS: readonly Row[] = [
     fixture: {
       outcome: shell({ exitCode: null, stdout: 'tick\n', timedOut: true }),
       chunks: ['tick\n'],
-      settlement: { kind: 'cancelled', event: 'terminated-after-body-start' },
+      settlement: { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' },
     },
     expect: (result) => {
       if (result.kind !== 'presented') return
@@ -169,7 +169,7 @@ const ROWS: readonly Row[] = [
     fixture: {
       outcome: shell({ exitCode: null, stdout: 'partial\n', cancelled: true }),
       chunks: ['partial\n'],
-      settlement: { kind: 'cancelled', event: 'terminated-after-body-start' },
+      settlement: { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' },
     },
     expect: (result, stores) => {
       expect(result.kind).toBe('presented')
@@ -180,7 +180,7 @@ const ROWS: readonly Row[] = [
         expect(entry, 'cancel residue must be enumerable, never silently gone').toBeDefined()
         expect(entry?.bytes).toBe('partial\n'.length)
         expect(entry?.attribution?.callId).toBe('bash-cancel-midstream')
-        expect(entry?.settlement).toEqual({ kind: 'cancelled', event: 'terminated-after-body-start' })
+        expect(entry?.settlement).toEqual({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
       }
     },
   },
@@ -206,7 +206,7 @@ const ROWS: readonly Row[] = [
     fixture: {
       failAt: 'prepare',
       failure: { class: 'denied', code: 'fs-open-denied', detail: 'C-FS: open-at-exec denied for unbound subtree' } as BackendFailure,
-      settlement: { kind: 'cancelled', event: 'outcome-unreadable' },
+      settlement: { kind: 'cancelled', event: 'dispatcher-call-outcome-unreadable' },
     },
     expect: (result) => {
       expect(result.kind).toBe('backend-failed')
@@ -307,19 +307,32 @@ describe('a5p5-parity: direct implementation vs contract-stub backend', () => {
 
   it('the C-PROC stage trace stays a diagnostic plane: stub walks probe→prepare→execute→terminate (C-PROC closed set)', async () => {
     const row = ROWS.find((r) => r.id === 'bash-exit7')!
+    // DEDICATED stores (Lane D ② law): the parity loop already FINALIZED this
+    // row's spillId (`bash-bash-exit7`) in the suite-level stores, and an
+    // existing on-disk spillId is no longer re-openable — the re-run identity
+    // would be a typed `spill-id-in-use` refusal that never reaches a backend
+    // (which is exactly the settlement-overwrite hole closed). Diagnostic
+    // legs therefore run against their own fresh world directories.
     const stub = createContractStubBackend(table)
-    await runToolCall({ request: { realmId: 'realm-a', callId: row.id, parsedArgs: row.parsed }, decide: () => ({ kind: 'allow' }), backend: stub, spill: { store: stubStore } })
+    await runToolCall({ request: { realmId: 'realm-a', callId: row.id, parsedArgs: row.parsed }, decide: () => ({ kind: 'allow' }), backend: stub, spill: { store: storeAt(join(worldRoot, 'trace-stub', 'spills')) } })
     expect(stub.lastStageTrace).toEqual(['probe', 'prepare', 'execute', 'terminate'])
     const direct = createDirectBackend(table)
-    await runToolCall({ request: { realmId: 'realm-a', callId: row.id, parsedArgs: row.parsed }, decide: () => ({ kind: 'allow' }), backend: direct, spill: { store: directStore } })
+    await runToolCall({ request: { realmId: 'realm-a', callId: row.id, parsedArgs: row.parsed }, decide: () => ({ kind: 'allow' }), backend: direct, spill: { store: storeAt(join(worldRoot, 'trace-direct', 'spills')) } })
     expect(direct.lastStageTrace).toEqual([]) // registered difference: the direct path reports no contract stages
   })
 
   it('render injection through the BACKEND path is as inert as the direct path (两条路都不透传)', async () => {
     const row = ROWS.find((r) => r.id === 'inject-hostile-shell')!
-    const stub = await runOn('stub', row)
-    if (stub.result.kind !== 'presented') throw new Error('expected presented')
-    const text = stub.result.rendered.text
+    // Fresh store, same Lane D ② reason as the trace leg above.
+    const backend = createContractStubBackend(table)
+    const injectionRun = await runToolCall({
+      request: { realmId: 'realm-a', callId: row.id, parsedArgs: row.parsed },
+      decide: row.decide ?? (() => ({ kind: 'allow' })),
+      backend,
+      spill: { store: storeAt(join(worldRoot, 'inject-stub', 'spills')) },
+    })
+    if (injectionRun.kind !== 'presented') throw new Error('expected presented')
+    const text = injectionRun.rendered.text
     // every unindented line is renderer-owned structure; the forgery survives only indented
     for (const line of text.split('\n')) {
       if (line.startsWith('> ') || line === '') continue

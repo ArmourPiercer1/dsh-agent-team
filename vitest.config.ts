@@ -11,7 +11,17 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   test: {
-    include: ['packages/*/test/**/*.test.ts'],
+    // G-d integration wiring round (branch `alpha5-int-wiring`): the two
+    // Alpha.5 lane suites with shared-surface stakes join the CI-collectable
+    // set (INTEGRATION-PLAN default ruling "加 include 以进 CI 门").
+    // controlled-fs runs its own lane suite here too; the a5p5-tools lane
+    // stays on its own runner this round (its dormant-audit walks the SHARED
+    // config set and must not see its lane named in root glue until the
+    // PR5-assembly round wires it — registered in WIRING-SURFACE.md §line-7).
+    include: [
+      'packages/*/test/**/*.test.ts',
+      'packages/runtime/controlled-fs/test/**/*.test.ts',
+    ],
     // EVIDENCE-ONLY file (PR #31 supplemental S3, evidence-only commit
     // 833c699): the s3-client-generation-spike drives the pristine
     // upstream 0.1.7 client services, which touch `window` at import

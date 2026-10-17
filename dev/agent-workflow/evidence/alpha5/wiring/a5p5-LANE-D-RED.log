@@ -1,0 +1,92 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire/packages/tools/a5p5-tools
+
+ ❯ test/a5p5-spill.test.ts (11 tests | 1 failed) 11ms
+     ✓ closed sets are closed and verbatim (C-GW states; C-BIND v1.1 event names) 1ms
+     ✓ a root that is not a strict descendant of the world root is refused at construction 1ms
+     ✓ a forged spillId is a typed refusal counted ZERO fs calls — nothing is touched, nothing appears 1ms
+     ✓ writes append while ACTIVE; DRAINING and CLOSED refuse new writes with the size frozen 1ms
+     ✓ the settled edge is single: settling twice is a typed refusal (one settled boundary, C-GW) 0ms
+     ✓ an off-set cancellation event carries its OWN typed code (code matches meaning) 0ms
+     × a finalized spillId cannot be re-opened: no append-penetration, no settlement overwrite (Lane D ②) 4ms
+     ✓ a cancelled spill stays on disk, is listed by a FRESH store handle, and keeps attribution + settlement 1ms
+     ✓ an orphan file in the controlled path is STILL enumerated (enumeration reads the disk, not memory) 0ms
+     ✓ cleanup is explicit, listed, and afterwards a read is a typed refusal — never silence 1ms
+     ✓ an authorizer deny is typed, and it counts ZERO fs read/exists calls 0ms
+ ❯ test/a5p5-render-injection.test.ts (8 tests | 2 failed) 9ms
+     ✓ NEGATIVE CONTROL (mandated): a fake footer/header in stdout stays an indented inert quote 1ms
+     ✓ a fake "exit=0" cannot replace an unobserved timeout exit 0ms
+     ✓ ANSI control sequences never survive raw 0ms
+     ✓ CR line-overwrite is defused (a carriage return cannot rewrite a presentation line) 0ms
+     × a forged outputMode THROWS at the render boundary — it never reaches the header line 3ms
+     × the pipeline maps a forged-outcome backend to a typed denied failure, presenting NOTHING 3ms
+     ✓ a path with embedded newlines renders on ONE escaped line — no orphan structural line 0ms
+     ✓ matched TEXT cannot mint a footer either (content is inline-escaped too) 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5p5-render-injection.test.ts > a5p5-render-injection: closed-set values cannot ride the header (Lane D ③ / B3) > a forged outputMode THROWS at the render boundary — it never reaches the header line
+AssertionError: expected [Function call] to throw an error
+
+- Expected:
+null
+
++ Received:
+undefined
+
+ ❯ test/a5p5-render-injection.test.ts:110:18
+    108|     const call = (): unknown =>
+    109|       renderSearchResult({ outputMode: forged as never, matches: [], c…
+    110|     expect(call).toThrow(/outputMode/)
+       |                  ^
+    111|     // The export name is part of the pin (the pipeline maps THIS clas…
+    112|     expect(typeof RenderClosedValueViolation).toBe('function')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a5p5-render-injection.test.ts > a5p5-render-injection: closed-set values cannot ride the header (Lane D ③ / B3) > the pipeline maps a forged-outcome backend to a typed denied failure, presenting NOTHING
+AssertionError: expected 'presented' to be 'backend-failed' // Object.is equality
+
+Expected: "backend-failed"
+Received: "presented"
+
+ ❯ test/a5p5-render-injection.test.ts:149:25
+    147|       backend: forgedBackend as unknown as Parameters<typeof runToolCa…
+    148|     })
+    149|     expect(result.kind).toBe('backend-failed')
+       |                         ^
+    150|     if (result.kind !== 'backend-failed') return
+    151|     expect(result.failure.class).toBe('denied')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a5p5-spill.test.ts > a5p5-spill: lease-shaped lifecycle (DRAINING 起拒新写) > a finalized spillId cannot be re-opened: no append-penetration, no settlement overwrite (Lane D ②)
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ test/a5p5-spill.test.ts:181:22
+    179|     const intruder = createSpillLease()
+    180|     const again = fresh.openSink({ spillId: 'bash-reopen-1', lease: in…
+    181|     expect(again.ok).toBe(false)
+       |                      ^
+    182|     if (again.ok) return
+    183|     expect(again.refusal.code).toBe('spill-id-in-use')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 16 passed (19)
+   Start at  20:27:02
+   Duration  409ms (transform 157ms, setup 0ms, import 204ms, tests 20ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

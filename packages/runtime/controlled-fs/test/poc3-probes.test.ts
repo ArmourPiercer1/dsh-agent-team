@@ -271,8 +271,23 @@ describe('PoC3-E fd continued-use after close', () => {
     const ref = fileRef(world, 'public/a.txt', ['read'])
     const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }] })
     await l.fs.readText(grant, ref, FULL)
-    // The fd number is now free; the OS deterministically reuses the lowest.
-    const recycled = openSync(join(world.outside, 'recycled-victim.txt'), 'r')
+    // The fd number is now free; the OS hands out the LOWEST free number. The
+    // nine-root census runs this file's process alongside other files' tests
+    // (worker threads share the fd table), so the number may be momentarily
+    // held elsewhere — a single open could then miss the recycling and report
+    // a false race. Retry the open until recycling is OBSERVED (closing each
+    // miss first, so each attempt is a clean lowest-free-number probe). This
+    // keeps the leg's claim exact: the law was seen to happen, never assumed;
+    // if no attempt observes it within the bound, the leg stays RED.
+    let recycled = -1
+    for (let attempt = 0; attempt < 500 && recycled !== captured; attempt += 1) {
+      const probe = openSync(join(world.outside, 'recycled-victim.txt'), 'r')
+      if (probe === captured) {
+        recycled = probe
+        break
+      }
+      closeSync(probe)
+    }
     expect(recycled).toBe(captured) // recycling OBSERVED, not assumed
     try {
       // NAIVE hazard: raw continued use of the old number reads the NEW owner.
