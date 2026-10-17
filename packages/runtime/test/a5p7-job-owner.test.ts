@@ -89,3 +89,74 @@ describe('a5p7 Web projection — owner-scoped reads and collect-time redaction'
     expect(evidenceText).toContain('value survived')
   })
 })
+
+// The W7 / W7M-2 legs proved the owner-fence law with the ROW holding the
+// durable identity read next to the gateway. These specs pin the SAME law
+// into the production class: the identity source is INJECTED, and the
+// gateway — not the row's discipline — is what vetoes an unconfirmed claim.
+describe('a5p7 injected identity source — durable state is the admission authority', () => {
+  /** A fixture standing in for `memberInstances.list` in the live row. */
+  function durableStore(members: readonly { rootSessionId: string; instanceId: string }[]) {
+    const rows = new Set(members.map((m) => jobOwnerKey(m)))
+    return {
+      resolve: (claimed: { rootSessionId: string; instanceId: string }) =>
+        rows.has(jobOwnerKey(claimed))
+          ? { rootSessionId: claimed.rootSessionId, instanceId: claimed.instanceId }
+          : null,
+    }
+  }
+
+  it('a claim the source cannot confirm is refused owner-not-durable with ZERO state delta', () => {
+    const events: { event: string; severity?: string }[] = []
+    const gw = createJobsGateway({
+      identity: durableStore([OWNER_A]),
+      onObserve: (o) => events.push(o),
+    })
+    const ghost = gw.admitJob({
+      jobId: 'j1',
+      owner: OWNER_B, // not a durable member: same host, no such row
+      scopeKey: 'agent:x',
+      toolName: 'tool-x',
+      pinnedIdentity: 'id-1',
+    })
+    expect(ghost.ok).toBe(false)
+    if (!ghost.ok) expect(ghost.code).toBe('owner-not-durable')
+    // VETO-SIDE ZERO-REGISTRATION: no job record, no lease token anywhere —
+    // only the loud alarm. (The W7M-2 law: the registry is the zero meter.)
+    expect(gw.job('j1')).toHaveLength(0)
+    expect(gw.lease.outstanding()).toHaveLength(0)
+    expect(events.filter((e) => e.event === 'gateway-admit-identity-unconfirmed')).toHaveLength(1)
+    expect(events.some((e) => e.event === 'gateway-job-admitted')).toBe(false)
+    // A durable claim sails through and the owner key is the SOURCE's copy.
+    const ok = gw.admitJob({ jobId: 'j2', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(ok.ok).toBe(true)
+    if (ok.ok) expect(ok.job.ownerKey).toBe(jobOwnerKey(OWNER_A))
+  })
+
+  it('the identity gate runs BEFORE the lease: a drained window never sees the vetoed claim', () => {
+    // Same refusal either way, but the ORDER is the claim: an unconfirmed
+    // owner must not even reach the lease door (zero registration).
+    const gw = createJobsGateway({ identity: durableStore([]) })
+    const refused = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(!refused.ok && refused.code === 'owner-not-durable').toBe(true)
+    expect(gw.lease.state()).toBe('ACTIVE') // no lease side effect happened
+  })
+
+  it('without an injected source the lane keeps the fixture shape: caller claims pass verbatim', () => {
+    // Backward-compatibility pin: the a5p7 fixtures and both live kits built
+    // on this behavior at base; absence of the option must not change it.
+    const gw = createJobsGateway()
+    const took = gw.admitJob({ jobId: 'j1', owner: OWNER_B, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(took.ok).toBe(true)
+    expect(gw.lease.outstanding()).toHaveLength(1)
+  })
+
+  it('owner-mismatch and duplicate-job keep their exact codes when a source is injected', () => {
+    const gw = createJobsGateway({ identity: durableStore([OWNER_A, OWNER_B]) })
+    gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    const clash = gw.admitJob({ jobId: 'j1', owner: OWNER_B, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(!clash.ok && clash.code === 'owner-mismatch').toBe(true)
+    const dup = gw.admitJob({ jobId: 'j1', owner: OWNER_A, scopeKey: 'agent:x', toolName: 'tool-x', pinnedIdentity: 'id-1' })
+    expect(!dup.ok && dup.code === 'duplicate-job').toBe(true)
+  })
+})
