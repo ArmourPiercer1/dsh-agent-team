@@ -22,7 +22,7 @@
  * Worlds: `tests/homes/a5glb-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -41,6 +41,8 @@ import {
   nativeRg,
   newWorld,
   REPO,
+  START_SWEEP,
+  sweepStrayWorlds,
   type GlobBackend,
   type GlobBackendRow,
   type GlobBackendResult,
@@ -179,21 +181,30 @@ beforeAll(async () => {
 }, 180_000)
 
 afterAll(() => {
-  if (EVIDENCE_DIR !== undefined && EVIDENCE_DIR.length > 0) {
-    mkdirSync(EVIDENCE_DIR, { recursive: true })
-    const body = {
-      rgBinaryVersion: nativeRg(rgPath, ROOT_DIR, ['--version']).stdout.split('\n')[0] ?? 'unknown',
-      rgBinaryPackage: '@vscode/ripgrep (packaged by @deepseek-ai/dsh-tool-fs-search)',
-      globMaxResults: GLOB_MAX_RESULTS,
-      backendId: row.GLOB_BACKEND_ID,
-      launcherSha256: LAUNCHER_SHA,
-      rows: parityRows,
-      legs: { total: parityRows.length, matched: parityRows.filter((r) => r.orderMatch).length },
+  // The evidence write must NEVER cost a world: fixture hygiene runs in the
+  // finally, and the worlds being GONE is asserted (a leaked world is a defect
+  // this lane polices itself — TEST_METHODS §7).
+  try {
+    if (EVIDENCE_DIR !== undefined && EVIDENCE_DIR.length > 0) {
+      mkdirSync(EVIDENCE_DIR, { recursive: true })
+      const body = {
+        rgBinaryVersion: nativeRg(rgPath, ROOT_DIR, ['--version']).stdout.split('\n')[0] ?? 'unknown',
+        rgBinaryPackage: '@vscode/ripgrep (packaged by @deepseek-ai/dsh-tool-fs-search)',
+        globMaxResults: GLOB_MAX_RESULTS,
+        backendId: row.GLOB_BACKEND_ID,
+        launcherSha256: LAUNCHER_SHA,
+        startSweepOfStaleWorlds: [...START_SWEEP],
+        rows: parityRows,
+        legs: { total: parityRows.length, matched: parityRows.filter((r) => r.orderMatch).length },
+      }
+      writeFileSync(join(EVIDENCE_DIR, 'parity-table.json'), `${JSON.stringify(body, null, 2)}\n`)
     }
-    writeFileSync(join(EVIDENCE_DIR, 'parity-table.json'), `${JSON.stringify(body, null, 2)}\n`)
+  } finally {
+    destroyWorld(WORLD)
+    destroyWorld(CAP_WORLD)
+    expect(existsSync(WORLD), `world leaked: ${WORLD}`).toBe(false)
+    expect(existsSync(CAP_WORLD), `world leaked: ${CAP_WORLD}`).toBe(false)
   }
-  destroyWorld(WORLD)
-  destroyWorld(CAP_WORLD)
 })
 
 describe('A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays green forever)', () => {
@@ -455,7 +466,7 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
     const outsideListing = await confinedRun('a5glb-listing', ['/bin/ls', OUTSIDE_DIR])
     expect(outsideListing.stdout).toContain('secret.txt') // measured: the sandbox does not gate directory enumeration
     parityRows.push({
-      leg: 'L3 confine scope (measured)', pattern: '-', target: OUTSIDE_DIR, nativeExit: null, nativeCount: 1, teamCount: 1,
+      leg: 'L3 confine scope (measured)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 1, teamCount: 1,
       teamTotal: 2, teamTruncated: false, teamFailure: null, orderMatch: true,
       note: 'content=EACCES (enforced); directory listing=succeeds (not enforced) -> result-side anchor law is load-bearing',
     })
@@ -516,6 +527,26 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
     expect(res?.text).toContain('src/a.ts')
     expect(res?.text).not.toContain('IO_POLICY_UNSUPPORTED')
   }, 180_000)
+})
+
+describe('A5-GLOB H — fixture hygiene (a lane that litters worlds poisons the next round)', () => {
+  it('H1 the start sweep removes THIS lane\'s stale worlds and never a live one', () => {
+    // A first draft of the sweep judged age by the wrong name segment and swept
+    // a LIVE sibling's world; that is now a pinned law, not a lesson.
+    const staleName = `a5glb-swept-${(Date.now() - 60 * 60 * 1000).toString(36)}-dead00`
+    const liveName = `a5glb-swept-${Date.now().toString(36)}-live00`
+    const homesRoot = join(REPO, 'tests/homes')
+    const stale = join(homesRoot, staleName)
+    const live = join(homesRoot, liveName)
+    mkdirSync(stale, { recursive: true })
+    mkdirSync(live, { recursive: true })
+    const swept = sweepStrayWorlds('a5glb-swept-')
+    expect(swept).toContain(staleName)
+    expect(existsSync(stale)).toBe(false)
+    expect(existsSync(live), 'a fresh world — possibly a sibling suite\'s — must survive the sweep').toBe(true)
+    rmSync(live, { recursive: true, force: true })
+    expect(sweepStrayWorlds('a5glb-nothing-here-')).toEqual([])
+  })
 })
 
 describe('A5-GLOB C — typed refusals BEFORE the child exists (execCount never moves)', () => {

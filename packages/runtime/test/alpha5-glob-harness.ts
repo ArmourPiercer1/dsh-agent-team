@@ -18,13 +18,66 @@
  */
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 export const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 export const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
+
+/**
+ * START SWEEP of THIS lane's own name-matched leftovers (house precedent: the
+ * `alpha5-glue7-backend` kit's own sweep @ 07580728 — a cancelled run's worlds
+ * poison the next round's fixture hygiene). Age-guarded at 20 minutes ON
+ * PURPOSE: two of this lane's suites run in one vitest pool, and a world
+ * another file created seconds ago must never be swept out from under it.
+ * Whatever was swept is returned, so the evidence names it instead of hiding it.
+ */
+/** How old a `<line>-<stamp>-<rand>` world name claims to be (null = unreadable). */
+function worldAgeMs(name: string): number | null {
+  const yearMs = 365 * 24 * 60 * 60 * 1000
+  for (const segment of name.split('-')) {
+    const at = Number.parseInt(segment, 36)
+    if (!Number.isFinite(at)) continue
+    const age = Date.now() - at
+    if (age > -60_000 && age < yearMs) return age
+  }
+  return null
+}
+
+export function sweepStrayWorlds(prefix = 'a5glb-'): string[] {
+  const swept: string[] = []
+  const homes = join(REPO, 'tests/homes')
+  let entries: string[] = []
+  try {
+    entries = readdirSync(homes).filter((name) => name.startsWith(prefix))
+  } catch {
+    return swept
+  }
+  for (const name of entries) {
+    const dir = join(homes, name)
+    // Age from the name's own base-36 timestamp (`<line>-<stamp>-<rand>`, the
+    // §7 convention newWorld writes) rather than an mtime read: no extra
+    // syscall, and it is the moment the world was created, not the last touch.
+    // The stamp is found by PLAUSIBILITY, not position — `<line>` is
+    // dash-bearing (`a5glb-adv-…`) and a line label parses as base 36 just
+    // fine, which is exactly how a first draft of this swept a LIVE sibling's
+    // world out from under it. Unrecognisable names are treated as LIVE.
+    const ageMs = worldAgeMs(name)
+    if (ageMs === null || ageMs < 20 * 60 * 1000) continue // live, or not ours to judge
+    try {
+      rmSync(dir, { recursive: true, force: true })
+      swept.push(name)
+    } catch {
+      swept.push(`${name} (retained: removal failed)`) // reported, never silently ignored
+    }
+  }
+  return swept
+}
+
+/** What this process swept at import time (evidence-facing; empty on a clean tree). */
+export const START_SWEEP: readonly string[] = sweepStrayWorlds()
 
 /** One fresh scratch world (TEST_METHODS §7 naming: `<line>-<stamp>`). */
 export function newWorld(line: string): string {

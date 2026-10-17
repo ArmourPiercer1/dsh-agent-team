@@ -127,6 +127,7 @@ beforeAll(async () => {
 
 afterAll(() => {
   destroyWorld(WORLD)
+  expect(existsSync(WORLD), `world leaked: ${WORLD}`).toBe(false) // TEST_METHODS §7 hygiene
 })
 
 async function runWalk(pattern: string, locator: string = '.'): Promise<GlobBackendResult> {

@@ -3,8 +3,13 @@
 Writer lane: **`alpha5-glob-backend`** (disposable worktree `.worktrees/a5glb-backend`),
 base = master **`382e5fb6f872e75937d389e96c5059f2945af8e5`** (fetch-verified at branch
 creation). Worlds: `tests/homes/a5glb-*` (TEST_METHODS §5/§7), all self-removed by the
-suites (`afterAll` → `destroyWorld`); **no retained world** on this lane. Port family
-untouched — this lane needs no server, and `:3080` was never contacted.
+suites (`afterAll` → `destroyWorld`, and the `afterAll` *asserts* the worlds are gone — a
+leaked world fails the run); **no retained world** on this lane. The harness also runs an
+age-guarded **start sweep** of this lane's own `a5glb-*` leftovers (>20 min old, so a
+sibling suite's fresh world is never touched — house precedent
+`alpha5-glue7-backend` `07580728`); what it swept is published in
+`parity-table.json → startSweepOfStaleWorlds` rather than hidden. Port family untouched —
+this lane needs no server, and `:3080` was never contacted.
 
 Closes the glob gap the plan names (`docs/plans/memo/alpha5-tool-io-governance/
 alpha5-s0-pr0-pr8-implementation-plan.md` `:33` glob row, `:128` named dependency物,
@@ -18,7 +23,7 @@ edit. Integration is the glue writer's call; the mount contract is in §6 below.
 | --- | --- |
 | `packages/runtime/src/plugin/live/glob-backend.mjs` | NEW — `createAnchoredGlobBackend` + the anchor/verify law |
 | `packages/runtime/test/alpha5-glob-harness.ts` | NEW — fixture tree, hand-written native oracle, TS faces |
-| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + LIVE + typed-shape (32 legs) |
+| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + LIVE + typed-shape + fixture hygiene (33 legs) |
 | `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | NEW — anchoring under attack, ≥5000-iter race (8 legs) |
 | `packages/runtime/package.json` + `pnpm-lock.yaml` | `@deepseek-ai/dsh-tool-fs-search@0.2.0-rc.2` registered **in the same stroke** (`:128`) |
 | `dev/agent-workflow/evidence/alpha5/glob-backend/` | this README + `parity-table.json` + `adversarial-counters.json` + `red-capture.txt` |
@@ -198,17 +203,27 @@ cd .worktrees/a5glb-backend
 pnpm install --offline --ignore-scripts --store-dir ../../.pnpm-store-a5g7   # or the shared store
 npx vitest run packages/runtime/test/alpha5-glob-backend.test.ts \
                packages/runtime/test/alpha5-glob-backend-adversarial.test.ts
-# regenerate the evidence artifacts (byte-stable, no timestamps, no absolute paths):
+# regenerate the evidence artifacts (proven byte-stable: identical across two runs,
+# no timestamps, no per-run world paths — the only `a5glb` string in them is the backend id):
 A5GLB_EVIDENCE_DIR=$PWD/dev/agent-workflow/evidence/alpha5/glob-backend \
   npx vitest run packages/runtime/test/alpha5-glob-backend.test.ts \
                  packages/runtime/test/alpha5-glob-backend-adversarial.test.ts
 pnpm -r run typecheck && npx eslint packages/runtime/src/plugin/live/glob-backend.mjs packages/runtime/test/alpha5-glob-*.ts
 ```
 
+Leg **H1** is the fixture-hygiene law itself (a stale `a5glb-*` world is swept, a world
+created microseconds earlier survives — a first draft of the sweep got the age parsing
+wrong and swept a live sibling's world, so both halves are now pinned, not just noted).
+
 `red-capture.txt` is the pre-row state, captured verbatim off the shipped plane (the
 `R1` leg keeps that text pinned forever, so the RED face stays checkable after the row
 lands). The suites need this host's Landlock (probe enforces it); on a host without it
 the live/adversarial-real legs fail loudly — the row refuses, it never fakes.
+
+Last recorded run on this host: **41/41 legs green** (33 row + 8 adversarial),
+`pnpm -r run typecheck` exit 0 across all 9 packages, `eslint` clean on all four new
+files, `parity-table.json` + `adversarial-counters.json` byte-identical across two
+consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.
 
 ## 8. Dependency registration (`:128`, same stroke)
 

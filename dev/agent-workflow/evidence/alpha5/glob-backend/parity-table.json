@@ -4,6 +4,7 @@
   "globMaxResults": 100,
   "backendId": "a5glb-anchored-confined-rg-glob",
   "launcherSha256": "e66a8cf77fb74701399ad770e4daa81e63ac1ff1e2ebd2463e591179a1c9825f",
+  "startSweepOfStaleWorlds": [],
   "rows": [
     {
       "leg": "P1 basic",
@@ -190,7 +191,7 @@
     {
       "leg": "L3 confine scope (measured)",
       "pattern": "-",
-      "target": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glb-backend/tests/homes/a5glb-unit-mvcy7418-lf16/outside",
+      "target": "<world>/outside",
       "nativeExit": null,
       "nativeCount": 1,
       "teamCount": 1,
