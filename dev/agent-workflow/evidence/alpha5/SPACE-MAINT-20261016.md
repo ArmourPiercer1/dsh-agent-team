@@ -2,7 +2,15 @@
 
 **边界回执（首行）**：numerical-streak-camera 全程**完全跳过**——未打开/续接/唤醒其任何会话或 worker，未检查/修改其目录、软链接、挂载，未重建其工作树（本轮对其唯一的观测 = 工作区根 `ls` 的不可避免目录名条目，未作任何 du/status/git 操作）。同样未触碰：dsh-external-compute（含 gpt-simulation 子仓与 /mnt/dsh-compute vmhgfs 共享挂载）、DSH 宿主运行树（runner 实证宿主在 `/home/user/deepseek-harness`，非本工作区）、Alpha.5 全部在用依赖（a5-* worktrees、.pnpm-store-wt 2.3G、.pnpm-cache 327M、tests/homes 活跃世界、tests/deepseek-harness-test-use pin @46a7f68b09、playwright-browsers）、凭据与会话历史。
 
-## 0. 执行环境与约束（关键结论）
+## 0. 最终结果（唯一权威口径；取代下文 §0-old/§3/§4/§5/§7 中的旧行动表述）
+
+- **已落地动作（终态）**：research-control `.worktrees/g0` 实际删除成功 ≈14M（含其注册元数据）；`baseline/g1/g2/g3/g5/maint-0.2.0-rc.2` 六项**仅注册元数据被 prune**，目录内容仍在。
+- **≈1.4G 孤儿目录内容 → 最终保留**（均为已推送 origin 分支的干净检出，无唯一数据；恢复=`git worktree add <path> <branch>`，权威链接见 §8/§9）。**不再升级权限重试、不改挂载、不执行宿主侧删除**（用户指令，§9 收尾）。
+- **受保护保留**：`.worktrees/g4`（202M，dirty+实验笔记，未入可删判据）；fp32-pic-redesign 整仓 366M 唯一证据（**原地保留**——协调方保守保全，尚无用户裁决条目，见 §9）；deepseek-harness 宿主树（维持保护：node_modules 不清、lock 改动不代决）。
+- **47G avail(55%) 的正确解读**：历史混合空闲观测——reviewer 一次性 worktree 回收 ≈29G + 用户清理 + lane 回收等多方叠加（见 §7），**不是本次清理的释放量，也不是当前容量承诺**。
+- 清理任务已在安全边界内**收尾**：无剩余可动作、无待执行清理项、不再重试（§9）。
+
+### 0-old. 执行环境与约束（历史计划，已被 §8/§9 取代，勿执行）
 
 - 本 worker 的 bash 运行于 `bwrap --ro-bind / / --bind /srv/workspace/dsh-plugins/dsh-agent-team …`：**除本会话工作区外整个文件系统只读**；PID namespace 隔离（宿主进程不可见）。
 - **实证尝试**（非推测）：`git worktree prune`（仅针对确凿失联的 `/tmp/main-baseline`，tmpfs 路径已消失）、`git worktree remove .worktrees/baseline`（干净+已推送 worktree）、定点 `rm -rf`（单一路径）三者均返回 `Read-only file system`（prune exit=0 但元数据未删、remove exit=255、rm exit=1）。
@@ -32,7 +40,7 @@
 | dsh-plugins/dsh-agent-team（活跃仓） | 工作区内 | 55 个登记 worktree：a5-* 全部活跃 Alpha.5 lane；20261016 当日轮次（audit-alpha4 / pending-decisions / fix-postalpha4 / exp-alpha5-poc 1.4G）在用；其余为 pre-alpha3/alpha3/alpha4 已交付证据链（pr2–pr5 各≈930M、dsh-020rc2-upgrade 3.0G、a5p1r-fixrev 3.8G 为 detached 证据） | **零改动**——非"暂缓项目"，活跃仓内大项仅列待确认 |
 | wsl-init / test.txt / windows-test.txt | 32K / 极小 | — | 保留（无意义量） |
 
-## 3. 可清理清单（判据全满足项；命令供有写权限方复跑）
+## 3. 可清理清单（判据全满足项；命令供有写权限方复跑）（历史计划，已被 §8/§9 取代，勿执行）
 
 ### 3-A. dsh-research-control（潜在回收 ≈ 3.4G + prune）
 
@@ -57,7 +65,7 @@ git worktree remove .worktrees/maint-0.2.0-rc.2  # 2.0G clean, == origin/mainten
 ### 3-B. 本轮未列清理项
 其余项目均存在不满足判据的项（见 §4），不执行任何删除。
 
-## 4. 保留项 + 原因 / 待确认清单（9 条）
+## 4. 保留项 + 原因 / 待确认清单（9 条）（历史计划，已被 §8/§9 取代，勿执行）
 
 1. **fp32-pic-redesign 全部（366M）**——无 remote、脏树、deliverables/evidence/manifests 未跟踪唯一研究产物；需用户决定备份/远端化后另议。
 2. **deepseek-harness（2.5G）**——pnpm-lock 未提交改动使 node_modules 再生路径不确定；待确认：改动去留（还原 lock 后 node_modules 即可再生、回收 ≈2.0G）。
@@ -69,7 +77,7 @@ git worktree remove .worktrees/maint-0.2.0-rc.2  # 2.0G clean, == origin/mainten
 8. **dsh-agent-team 非当日证据 worktrees（合计 ~12G+，如 dsh-020rc2-upgrade 3.0G、pr2–pr5 各 ~930M、browser-carrier-*、rev-*、base-* 等）**——属活跃仓已交付证据链/detached 证据 HEAD，不在"暂缓项目"授权范围，且 detached commit 唯一可达性需先做 `git fsck --connectivity-only` 类核证；列此供主 Agent 裁决。
 9. **research-control 日志簇（.g0/.g2/.g3-logs、.baseline-logs、g5-logs 等，~6M）**——实验日志，量小一律保留。
 
-## 5. 恢复步骤（若 §3-A 执行后需复原）
+## 5. 恢复步骤（若 §3-A 执行后需复原）（历史计划，已被 §8/§9 取代，勿执行）
 
 ```bash
 cd /srv/workspace/dsh-plugins/dsh-research-control
@@ -88,12 +96,15 @@ git worktree add .worktrees/maint-0.2.0-rc.2 maintenance/dsh-0.2.0-rc.2
 ---
 末行 df 全局对比：**68G used / 35G avail (67%) → 62G used / 41G avail (60%)**（−6G 为外部同窗口活动所致，本 worker 净删除 0；候选项目 du 逐项未变）。
 
-## §7 主 Agent 复跑结果（2026-10-16 17:1xZ，用户授权升级执行）
+## §7 主 Agent 复跑结果（2026-10-16 17:1xZ，用户授权升级执行）（历史计划，已被 §8/§9 取代，勿执行）
 - research-control：`worktree remove` g0 **成功**（~14M+注册元数据，实际磁盘回收有限）；baseline/g1/g2/g3/g5/maint git 元数据已 prune，但目录内容在**只读文件系统**上，沙箱（含 danger-full-access 复跑）无法删除 ≈1.4G 孤儿目录——**需宿主侧删除**（路径 .worktrees/{baseline,g1,g2,g3,g5,maint-0.2.0-rc.2}，内容=已推送分支干净检出，无唯一数据）。g4 保留=dirty(2)+202M，未入可删判据。
 - 本窗口磁盘净变化来自多方叠加（reviewer 一次性 worktree 回收 ≈29G + 用户清理 + lane 回收），非单因子归因；现 47G avail(55%)。
 - fp32/deepseek-harness 两项维持"待用户决策"，未动。
 
 ## §8 孤儿清单（保留；其"待用户决策"表述已由 §9 更正替代）（用户指令：不再升级权限重试、不改挂载；宿主侧删除路径）
+
+> 口径注：本条题中"宿主侧删除路径"为当时指令时的历史选项描述，**非待执行动作**——孤儿内容终态=保留（见 §0），本节与 §9 为最终处置记录。
+
 - **孤儿 worktree 目录（元数据已 prune；内容=下列分支的干净检出，均已推送 origin，恢复=`git worktree add <path> <branch>`）**：
   - /srv/workspace/dsh-plugins/dsh-research-control/.worktrees/baseline → branch baseline/stage0-docs-gates @a8d5cb6
   - .../g1 → feat/g1-trusted-boundary-lifecycle @45de4f8；g2 → feat/g2-readonly-tools @8245cfc；g3 → feat/g3-semantic-write-tools @f164aca；g5 → feat/g5-real-registry-acceptance @b80245f；maint-0.2.0-rc.2 → maintenance/dsh-0.2.0-rc.2 @0dc9911（合计≈1.4G）
