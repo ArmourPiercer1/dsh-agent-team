@@ -1,0 +1,14 @@
+{
+  "perAgent": {
+    "session-1015d4f8-ff41-4b9c-b715-07d56a2b9af7": {
+      "hasDef": true,
+      "identity": "lsp"
+    },
+    "session-4682c883-0c07-4c1c-92db-2eb304cf5fb7": {
+      "hasDef": true,
+      "identity": "lsp"
+    }
+  },
+  "allDefined": true,
+  "distinctDefinitions": true
+}

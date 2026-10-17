@@ -1,0 +1,66 @@
+{
+  "mode": "lsp",
+  "run": "a5ptc-lsp-2026-10-17T04-07-07Z",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine 0.2.0-rc.2 @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE-A",
+      "claim": "session A created",
+      "pass": true,
+      "observed": "sid=session-caa1b54c-baaa-45"
+    },
+    {
+      "id": "L-CREATE-B",
+      "claim": "session B created",
+      "pass": true,
+      "observed": "sid=session-24efba74-0329-4b"
+    },
+    {
+      "id": "LSP-SCOPE-ROUTE",
+      "claim": "the scoped route resolves DISTINCT per-agent `lsp` definitions (scope tag survives isolate)",
+      "pass": true,
+      "observed": "{\"perAgent\":{\"session-caa1b54c-baaa-45b7-a908-5dbf526cd94b\":{\"hasDef\":true,\"identity\":\"lsp\"},\"session-24efba74-0329-4b50-aa00-b434dd51b3a9\":{\"hasDef\":true,\"identity\":\"lsp\"}},\"allDefined\":true,\"distinctDefinitions\":true}"
+    },
+    {
+      "id": "LSP-MODEL-ROUTE-A",
+      "claim": "member A reached a resident server via the REAL model route execute(\"lsp\") (captured on the public around-seam face)",
+      "pass": false,
+      "observed": "{\"status\":200,\"captured\":null}"
+    },
+    {
+      "id": "LSP-MODEL-ROUTE-B",
+      "claim": "member B reached a resident server via the REAL model route execute(\"lsp\") (captured on the public around-seam face)",
+      "pass": false,
+      "observed": "{\"status\":200,\"captured\":null}"
+    },
+    {
+      "id": "LSP-PER-MEMBER-PIDS-DISTINCT",
+      "claim": "per-Member resident pids are DISTINCT for the SAME workspaceRoot (pool privacy per realm; fixture-server caliber disclosed)",
+      "pass": false,
+      "observed": "{\"A\":null,\"B\":null}"
+    },
+    {
+      "id": "LSP-DISPOSE-FACTS",
+      "claim": "realm-scoped dispose facts (requires both model-route pids)",
+      "pass": false,
+      "observed": "pids={\"A\":null,\"B\":null}"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=true"
+    }
+  ]
+}

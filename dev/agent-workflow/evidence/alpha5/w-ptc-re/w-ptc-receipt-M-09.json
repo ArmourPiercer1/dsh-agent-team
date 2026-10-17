@@ -1,0 +1,24 @@
+{
+  "round": "W-PTC-RE（continuable-腿纯装配真跑，branch alpha5-ptc-recheck，one-off worktree）",
+  "run_utc": "2026-10-17T04:12Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3184,
+  "world_prefix": "a5ptc-lsp-*（tests/homes 下，teardown 删除；:3080 稳定实例全程未动）",
+  "row": "M-09 lsp",
+  "caliber": "LIVE-kit 观测；只 book 真跑观测。fixture 口径披露：服务器=虚构可全审 stdio fixture（fake-lang-server-a5ptc.mjs，自报 OS pid + open 计数），非真实语言服务器；装配=每 agent ctx.isolate('lsp') 重装 host 自家 lsp/lsp-stdio/tool-lsp 公开 barrel 构建物（同一 realpath=同一模块实例），零生产行装载。模型真路由=mock 脚本 execute('lsp') hover（公开 around-seam 捕获）。",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/lsp-2026-10-17T04-12-12Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/runs/lsp-2026-10-17T04-12-12Z/lsp-facts.json",
+    "dev/agent-workflow/evidence/alpha5/w-ptc-re/probe-gap-lsp-policy.result.json"
+  ],
+  "pool": {
+    "per_member_pids_distinct": true
+  },
+  "pool_note": "两 member（两会话、同一 workspaceRoot）各经自己的 isolate('lsp') realm 起独立 resident 服务器：pid 128 vs 187（各 opens=1）；realm 内热复用同 pid（hot=128 opens=2）；realm dispose 仅终止本 realm 服务器（A pid 消失、B 存活 6ms dispose）；兄弟 realm 不受扰（after=187）。scope 路由=ctx.tools.get('lsp', agent) 解析出互不相同的 per-agent 定义。",
+  "not_observed": [
+    "pool.policy_change_old_pid_terminated_recreated —— 真缺腿（上游 SEAM-GAP）：LspQueryRequest/stdio Config 无任何策略输入字段、公开 barrel 无逐出/代际钩子、池键=workspaceRoot canonical targetKey（普查=probe-gap-lsp-policy.result.json gap1；运行时观测复指 pr6/SEAM-VERDICTS.md B4：realm 内两策略标签共享同一直驻 pid = HAZARD）",
+    "server_os_reads_mediated —— 裁决项（非上游）：spawn 中介面存在（lsp-stdio 经公开 ctx.subprocess.spawn，可 per-realm 重装=装配可及），但 Team 冻结 C-PROC 形态的 confined provider 无长驻双向管道臂（RunOutput one-shot / SpawnReceipt 无 stdin Writable），LSP 协议流需要 stdin pipe ⇒ 需对 C-PROC 是否开 streaming-pipe arm 裁决（普查=probe-gap-lsp-policy.result.json gap2）",
+    "pool.cross_policy_pid_reuse=false —— 不在册：realm 粒度下跨 realm 零 pid 复用已观测（LSP-SIBLING-UNTOUCHED），但『跨策略』主张需 策略⇒realm 映射=Team 裁决（公开面无策略输入，同 A2 根因）；如实留空 ⇒ NOT-EXECUTED"
+  ],
+  "merge_note_for_coordinator": "可转腿=A1（pool.per_member_pids_distinct）单条入账；A2/A3/A4 为真缺腿/裁决腿（各一行业务描述+复现路径见本 receipt not_observed 与 README.md）。"
+}

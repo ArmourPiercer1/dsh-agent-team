@@ -1,0 +1,65 @@
+{
+  "probe": "W-PTC-RE probe-gap-lsp-policy — M-09 A2/A3 public-face census (my own probe)",
+  "writer": "W-PTC-RE writer (qwen3.8-flash-next)",
+  "recorded_at_utc": "2026-10-17T03:58:38.960Z",
+  "dormant": true,
+  "ports_used": [],
+  "homes_used": [],
+  "pin": {
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelain": true
+  },
+  "gap1_policy_generation": {
+    "row_leg": "M-09 A2 pool.policy_change_old_pid_terminated_recreated",
+    "lsp_barrel_exports": [
+      "Lsp",
+      "LspError",
+      "LspProviderId",
+      "default",
+      "finalExtension"
+    ],
+    "lsp_stdio_barrel_exports": [
+      "Config",
+      "LspConnection",
+      "LspInstance",
+      "MessageDecoder",
+      "apply",
+      "canonicalizeWorkspace",
+      "encodeMessage",
+      "inject",
+      "name",
+      "negotiatePositionEncoding",
+      "normalizeHover",
+      "normalizeLocations",
+      "readHostSource",
+      "requestMethod",
+      "supportsOperation",
+      "supportsTransientOpen"
+    ],
+    "lsp_query_request_fields": "interface LspQueryRequest { /** Which semantic query to run. */ readonly operation: LspOperation; /** The source file to query (relative to `workspaceRoot` or absolute; the provider canonicalizes). */ readonly filePath: string; /** The zero-based UTF-16 cursor position to query at. */ readonly position: LspPosition; /** The workspace root the provider resolves against and indexes; required, never defaulted. */ readonly workspaceRoot: string;",
+    "query_request_has_policy_input": false,
+    "stdio_config_has_policy_input": false,
+    "evict_hooks_in_public_barrels": false,
+    "pool_key_evidence": [
+      "canonicalizeWorkspace(fs, workspaceRoot, signal) {",
+      "canonicalizeWorkspace(this.fs, request.workspaceRoot, querySignal);",
+      "canonicalizeWorkspace, encodeMessage, inject, name, negotiatePositionEncoding, normalizeHover, normalizeLocations, readHostSource, requestMethod, supportsOperation, supportsTransientOpen };"
+    ],
+    "verdict": "SEAM-GAP(上游): 池键无策略输入、无逐出/代际钩子 ⇒ 此腿非纯装配可跑；须上游策略输入通道/逐出扩展点（PR6 B4 运行时观测的静态面复指：pr6/SEAM-VERDICTS.md:58-60）"
+  },
+  "gap2_server_reads_mediated": {
+    "row_leg": "M-09 A3 server_os_reads_mediated",
+    "lsp_stdio_spawn_face": [
+      "ctx.subprocess.spawn`).",
+      "ctx.subprocess.spawn(spec));"
+    ],
+    "subprocess_handle_stdin": [
+      "stdin: Writable | undefined;"
+    ],
+    "lsp_connection_requires_pipes": true,
+    "team_confined_spawn_receipt": "interface SpawnReceipt { readonly lease: ProviderLease readonly processIdentity: string }",
+    "team_confined_has_stdin_stream_arm": false,
+    "team_confined_run_output": "interface RunOutput { readonly stdout: string readonly stderr: string readonly combined: string }",
+    "verdict": "裁决项(非上游): spawn 中介面存在(ctx.subprocess 可 per-realm 重装=装配可及)，但 Team 冻结 C-PROC 形态的 confined provider 无长驻双向管道臂(RunOutput one-shot / SpawnReceipt 无 stdin Writable) ⇒ 需对 C-PROC SpawnRequest 是否开 streaming-pipe arm 作裁决；裁决前此腿不可纯装配真跑"
+  }
+}
