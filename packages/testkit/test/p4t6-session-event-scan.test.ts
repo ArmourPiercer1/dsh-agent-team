@@ -2475,6 +2475,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a5sr4-migration-report.test.ts',
       'packages/domain/test/a5sr5-migration-negative-cases.test.ts',
     ]
+    // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
+    // scannable files of the round — the live-row .mjs that ASSEMBLES the
+    // real effect backends onto the plane (confined Process provider for
+    // shell, the W5-round REAL read-only search anchored at the controlled-
+    // fs instance root, the governed anchored read; glob honestly stays the
+    // typed shut row) and its unit suite (three live positives on REAL
+    // Landlock + the deny-before-backend law with production backends +
+    // the feed rows; zero denylist vocabulary). The live kit rows under
+    // dev/agent-workflow/evidence/** are outside the packages/** scan, as
+    // every prior wiring round.
+    const SCANNED_PATHS_A5GLUE7: readonly string[] = [
+      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+      'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2516,7 +2530,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
-        SCANNED_PATHS_A5SCHEMAREV.length,
+        SCANNED_PATHS_A5SCHEMAREV.length +
+        SCANNED_PATHS_A5GLUE7.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2559,7 +2574,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5G1.length +
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
-        SCANNED_PATHS_A5SCHEMAREV.length,
+        SCANNED_PATHS_A5SCHEMAREV.length +
+        SCANNED_PATHS_A5GLUE7.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2626,6 +2642,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5PBR2,
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5SCHEMAREV,
+      ...SCANNED_PATHS_A5GLUE7,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2890,6 +2907,14 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // nine scannable files, 1171 -> 1180 on the merged tree (scanner-measured, not copied).
     // History: 1177 - 1168 on base 23002259; 1179 - 1170 after master@68deccaa.
     expect(SCANNED_PATHS_A5SCHEMAREV.length).toBe(1180 - 1171)
+    // The GLUE-7 tie, re-tied on THIS merged tree (base master `382e5fb6`,
+    // schema-rev landed #316 first: chain at 1180). On the glue7 branch the
+    // tie read `1173 - 1171` because that base lacked #316; here the two
+    // named files ride after the nine schema-rev files, so the same delta
+    // (two files) re-ties `1182 - 1180`. The solo-RED capture for this leg
+    // stays at `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the
+    // two named files ends the chain at 1182 — the scanner total of this tree.
+    expect(SCANNED_PATHS_A5GLUE7.length).toBe(1182 - 1180)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

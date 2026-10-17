@@ -1,0 +1,129 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend
+
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts (10 tests | 7 failed) 484ms
+     ✓ R1 CURRENT-FORM PIN (stays green forever): a row with NO plane.fsInstance / NO confinedProvider keeps the typed shut face verbatim 6ms
+     × G1 search positive: with plane.fsInstance the team_grep call runs the REAL read-only search over the governed root 7ms
+     × G2 search confinement: a target escaping the governed root is a typed refusal and the backend body never runs 1ms
+     × G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host 1ms
+     × G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child 1ms
+     × G5 deny-before-backend with the PRODUCTION shell backend: template-deny answers first, backend execCount 0, zero side effects 1ms
+     ✓ G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider configured 0ms
+     × G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed 1ms
+     × G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented) 1ms
+     ✓ G9 KIT-COMPAT PIN (stays green): the public backends override seam still wins over the production construction 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1 search positive: with plane.fsInstance the team_grep call runs the REAL read-only search over the governed root
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'A5G7-INSIDE-TOK'
+
+Expected: "A5G7-INSIDE-TOK"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:142:22
+    140|       output_mode: 'content',
+    141|     })
+    142|     expect(res.text).toContain('A5G7-INSIDE-TOK')
+       |                      ^
+    143|     expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    144|     expect(built.value.backends.search.execCount()).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G2 search confinement: a target escaping the governed root is a typed refusal and the backend body never runs
+TypeError: Cannot read properties of undefined (reading 'search')
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:151:41
+    149|     expect(built.ok, JSON.stringify(built)).toBe(true)
+    150|     if (!built.ok) return
+    151|     const before = built.value.backends.search.execCount()
+       |                                         ^
+    152|     const res = await def(built.value, 'team_grep').execute({
+    153|       pattern: 'A5G7-OUTSIDE-SECRET',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'A5G7-SHELL-TOK'
+
+Expected: "A5G7-SHELL-TOK"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:167:22
+    165|     if (!built.ok) return
+    166|     const res = await def(built.value, 'team_bash').execute({ command:…
+    167|     expect(res.text).toContain('A5G7-SHELL-TOK')
+       |                      ^
+    168|     expect(res.text).toContain('exit=0')
+    169|     expect(built.value.backends.shell.execCount()).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'Permission denied'
+
+Expected: "Permission denied"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:178:22
+    176|     const res = await def(built.value, 'team_bash').execute({ command:…
+    177|     expect(res.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
+    178|     expect(res.text).toContain('Permission denied')
+       |                      ^
+    179|   })
+    180|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G5 deny-before-backend with the PRODUCTION shell backend: template-deny answers first, backend execCount 0, zero side effects
+TypeError: Cannot read properties of undefined (reading 'shell')
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:189:33
+    187|     expect(res.text).toContain('template-deny-lane')
+    188|     expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    189|     expect(built.value.backends.shell.execCount()).toBe(0)
+       |                                 ^
+    190|     expect(existsSync(sentinel)).toBe(false)
+    191|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+AssertionError: expected [ 'team_grep', 'team_glob', …(1) ] to include 'read'
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:205:34
+    203|     expect(built.ok, JSON.stringify(built)).toBe(true)
+    204|     if (!built.ok) return
+    205|     expect(built.value.ownNames).toContain('read')
+       |                                  ^
+    206|     const res = await def(built.value, 'read').execute({ path: 'data/n…
+    207|     expect(res.text).toContain('A5G7-INSIDE-TOK')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'A5G7-SHELL-ONLY'
+
+Expected: "A5G7-SHELL-ONLY"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-glue7-plane-backends.test.ts:225:24
+    223|     expect(built.value.ownNames).not.toContain('read')
+    224|     const shell = await def(built.value, 'team_bash').execute({ comman…
+    225|     expect(shell.text).toContain('A5G7-SHELL-ONLY')
+       |                        ^
+    226|     const search = await def(built.value, 'team_grep').execute({ patte…
+    227|     expect(search.text).toContain('IO_POLICY_UNSUPPORTED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 failed | 3 passed (10)
+   Start at  20:15:12
+   Duration  657ms (transform 410ms, setup 0ms, import 33ms, tests 484ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

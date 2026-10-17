@@ -132,10 +132,15 @@ describe('a5w compile surface', () => {
     expect(raw).toContain('"sandbox-provider"')
   })
 
-  it('the provider factory is exported for EXPLICIT calls but wired into no live glue', async () => {
+  it('the provider factory is wired into EXACTLY ONE live-glue file — the GLUE-7 assembly row (no accretion)', async () => {
     const { createConfinedProcessProvider } = await import('../sandbox-provider/index.js')
     expect(typeof createConfinedProcessProvider).toBe('function')
-    // DORMANT stays: nothing under runtime/src (the live-glue tree) imports it.
+    // DORMANT ENDED by GLUE-7 (alpha5-glue7-backend, instruction-backed:
+    // assemble the existing real executors, no new executor architecture):
+    // the law keeps its form — the live-glue importer set is a NAMED SET.
+    // Exactly the production backend-assembly row may import the lane;
+    // anything else under runtime/src is accretion (or a broken wire when
+    // this one disappears).
     const { readdirSync, statSync } = await import('node:fs')
     const offenders: string[] = []
     const walk = (dir: string): void => {
@@ -150,7 +155,7 @@ describe('a5w compile surface', () => {
       }
     }
     walk(join(RUNTIME, 'src'))
-    expect(offenders).toEqual([])
+    expect(offenders).toEqual([join(RUNTIME, 'src/plugin/live/plane-effect-backends.mjs')])
   })
 })
 
