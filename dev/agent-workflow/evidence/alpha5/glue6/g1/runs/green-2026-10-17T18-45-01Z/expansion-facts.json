@@ -1,0 +1,22 @@
+{
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g1-denyfix",
+  "head": "dcf71bdb30958e2be059a071060191a7cab43e4a",
+  "surface": "aux",
+  "surfaces": [
+    "packages/runtime/dist",
+    "packages/runtime/package.json",
+    "packages/runtime/src/plugin/upstream-resolver.mjs",
+    "packages/runtime/root-binding/harness/seam.mjs",
+    ".agents/skills"
+  ],
+  "expandedFileCount": 1732,
+  "entryPresent": true,
+  "inFace": {
+    "resolver": false,
+    "seam": false
+  },
+  "outOfFaceSiblings": {
+    "resolver": true,
+    "seam": true
+  }
+}
