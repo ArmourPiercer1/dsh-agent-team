@@ -197,6 +197,15 @@ Runs 1-9 are retained under `live-kit-run-N.log` + `runs/<stamp>/` (failed
 runs keep their `fatal.json` + partial world); the GREEN recorded run is
 `runs/2026-10-17T21-05-44Z/` — **VERDICT GREEN (23/23)** (`criteria.json`
 is the machine record; `live-kit-run-11-GREEN.log` the console capture).
+TOCTOU+glob round (2026-10-18): the GREEN recorded run is
+`runs/2026-10-17T22-04-41Z/` — **VERDICT GREEN (27/27)** — on head
+`e58ebcb2`+this evidence: three preassembly RED-posture legs verbatim,
+four glob live legs (L6 real rg hit on the wire / L7 GLOB_MAX_RESULTS bound
+with the honest `truncated` marker over 105 seeds / L8 typed `rg-walker-error`
+shape / L9 symlink-final refused with ZERO secret bytes), L5 extended to also
+require the `anchored-glob ran` line, and the pre-GREEN L7-red round retained
+at `runs/2026-10-17T22-02-32Z/` (capture-window fix in `a5g7-live-kit.mjs`:
+the 400B tool-result slice hid the marker tail — widened to 2400B).
 Kit iteration disclosure: 11 launches to GREEN (10 debugged rounds — the
 install-entry kit's precedent was 10; every round's raw failure is on disk,
 none rewritten). The GREEN round also re-proved, same boot: H0/H3 (:3080
