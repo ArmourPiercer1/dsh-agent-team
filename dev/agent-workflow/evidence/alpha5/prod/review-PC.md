@@ -165,7 +165,7 @@ in-process 同族（`T2-*`）：无 reader + pin 省略 ⇒ `mapping-rejected`�
 - `review-PC-basekit/`（base kit 三件 + 构建脚本 `review-PC-build-basekit.mjs`）、`review-PC-basekit-run/` — **零注入** 22/22。
 - `review-PC-w7-run/` — head kit（注入三源）22/22，含 `lane-tsc-output.txt`（`exit=0`）。
 - `review-PC-build-liveprobe.mjs` + `pc-legs-block.txt` + `review-PC-liveprobe.mjs` + `review-PC-live-run/` — PC1 零注册 veto、PC2 admit 边现读+双负控、PC3 装配自有窗口、PC4 durable 金通道（15/15）。
-- `build`/`ctl` 对照 worktree：`.worktrees/a5p7-rev-pc`（head）、`.worktrees/a5p7-rev-pc-base-ctl`（base）。
+- `build`/`ctl` 对照 worktree：`.worktrees/a5p7-rev-pc`（head，保留）、`.worktrees/a5p7-rev-pc-base-ctl`（base 差分归因用，**归因完成后已 `git worktree remove` 回收**；两条对照命令与结果在本文件 §5/R9/R10 留痕，re-run 方式：`git worktree add --detach .worktrees/<x> d714a941` + 复制同版本 `node_modules`）。
 
 ---
 
