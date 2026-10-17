@@ -8,8 +8,9 @@
  * @module test/a5p2-admission-kernel
  */
 import { describe, expect, it } from 'vitest'
-import { parseOperationGrant, type AdmissionRequest, type OperationGrant } from '../../domain/tool-governance/src/index.js'
-import { toolAskApprovalCaseId, type AssuranceProbe, type PolicyDenySource, type PresentedApproval } from '../tool-admission/index.js'
+import { parseOperationGrant, type AdmissionRequest, type Effect, type OperationGrant } from '../../domain/tool-governance/src/index.js'
+import { deriveTeamPolicyAuthority, toolAskApprovalCaseId, type AssuranceProbe, type PolicyDenySource, type PresentedApproval } from '../tool-admission/index.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/types.js'
 import {
   assuranceContract,
   binding,
@@ -711,5 +712,186 @@ describe('policy-deny routing — the controls of the 2026-10-16 ruling (问题2
     await kernel.admit(request)
     const evt = observed.find((e) => e.event === 'admission-requires-approval')
     expect(evt?.deniedEffects).toEqual([{ effectIndex: 1, requiredAuthority: 'human-user' }])
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRODUCTION PROJECTION (PR2/PR3 production-assembly round) — the REAL
+// authority input path: `deriveTeamPolicyAuthority` turns the template's
+// `capabilities.permissions` object (what `boundTemplate.capabilities?.
+// permissions` yields on the live glue) into the PR0 document + R-1a deny
+// sources. Every projection-law row of the assembly contract
+// (`dev/agent-workflow/evidence/alpha5/prod/pa-CONTRACT.md` §5) is pinned
+// here; the end-to-end class run (assembly + provider + real file) lives in
+// `a5p2-composition.test.ts`.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const A_ABS = '/data/a.txt'
+const metaEffectOn = (locator: string): Effect => ({
+  kind: 'meta',
+  resource: { realmId: REALM, kind: 'workspace', canonicalLocator: locator, rights: ['meta'] },
+})
+const listEffectOn = (locator: string): Effect => ({
+  kind: 'list',
+  resource: { realmId: REALM, kind: 'directory', canonicalLocator: locator, rights: ['list'] },
+})
+
+function projOf(policy: TemplatePermissionPolicy, over: Partial<Parameters<typeof deriveTeamPolicyAuthority>[0]> = {}) {
+  return deriveTeamPolicyAuthority({
+    permissionPolicy: policy,
+    realmId: REALM,
+    templateId: 'tpl-1',
+    definitionOwnerAuthority: 'human-user',
+    role: 'member',
+    sourceVersion: () => 1,
+    ...over,
+  })
+}
+
+describe('production projection: template capabilities.permissions → PR0 authority (pa-CONTRACT §5)', () => {
+  it('an allow-lane read rule projects read + meta + tool-invoke arms on the realm-qualified scope', () => {
+    const r = projOf({ default: 'ask', allow: [{ tool: 'read', resource: { kind: 'exact', path: A_ABS } }], ask: [], deny: [] })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.templateDefault).toBe('ask')
+    expect(r.value.notes).toEqual([])
+    const rules = r.value.buildDocument().rules
+    const spell = new Set(rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`))
+    expect(spell.has(`read@${REALM}|${A_ABS}:allow`)).toBe(true)
+    expect(spell.has(`meta@${REALM}|${A_ABS}:allow`)).toBe(true) // companion meta arm — the C-FS resolve/stat leg must not Ask under an allowed read
+    expect(spell.has(`tool-invoke@${REALM}|tool:read:allow`)).toBe(true)
+    expect(r.value.coversEffect(readEffect(A_ABS))).toBe(true)
+    expect(r.value.coversEffect(metaEffectOn(A_ABS))).toBe(true)
+    expect(r.value.coversEffect(writeEffect(A_ABS))).toBe(false) // no drift into write
+    expect(r.value.denySources()).toEqual([])
+  })
+
+  it('a deny-lane write rule yields R-1a deny sources with version stamped at READ time', () => {
+    let generation = 1
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'write', resource: { kind: 'exact', path: A_ABS } }] }, { sourceVersion: () => generation })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const first = r.value.denySources()
+    expect(first.map((s) => s.effectKind).sort()).toEqual(['meta', 'tool-invoke', 'write'])
+    for (const source of first) {
+      expect(source.realmId).toBe(REALM)
+      expect(source.ownerAuthority).toBe('human-user')
+      expect(source.sourceRef).toBe('tpl-1#deny[0]') // lane + declaration index = the named origin
+      expect(source.sourceVersion).toBe(1)
+    }
+    generation = 7
+    expect(r.value.denySources()[0]?.sourceVersion).toBe(7) // read-time, so the kernel version-trust never lags
+  })
+
+  it('a subtree rule REQUIRES the containment seam; with it, coverage answers per the injected law', () => {
+    const policy: TemplatePermissionPolicy = { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'subtree', path: '/data' } }], ask: [], deny: [] }
+    const bare = projOf(policy)
+    expect(bare.ok).toBe(false)
+    if (bare.ok) return
+    expect(bare.error.details?.['refusal']).toBe('projection-subtree-seam-missing')
+    const seeded = projOf(policy, { subtreeContains: (root, child) => child.startsWith(`${root}/`) })
+    expect(seeded.ok).toBe(true)
+    if (!seeded.ok) return
+    expect(seeded.value.coversEffect(readEffect('/data/x/y.txt'))).toBe(true)
+    expect(seeded.value.coversEffect(readEffect('/other/z.txt'))).toBe(false)
+  })
+
+  it('unprojectable DENIES refuse the construction (no silent weakening): file any-deny and lsp resource-deny', () => {
+    const anyDeny = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] })
+    expect(anyDeny.ok).toBe(false)
+    if (anyDeny.ok) return
+    expect(anyDeny.error.code).toBe('IO_POLICY_UNSUPPORTED')
+    expect(anyDeny.error.details?.['refusal']).toBe('projection-deny-unprojectable')
+    const lspDeny = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'lsp', resource: { kind: 'exact', path: A_ABS } }] })
+    expect(lspDeny.ok).toBe(false)
+    if (lspDeny.ok) return
+    expect(lspDeny.error.details?.['refusal']).toBe('projection-deny-unprojectable')
+    // ask/deny lanes for lsp on the TOOL dimension are fine (tool-invoke expresses them fully):
+    const lspAsk = projOf({ default: 'ask', allow: [], ask: [{ tool: 'lsp', resource: { kind: 'any' } }], deny: [] })
+    expect(lspAsk.ok).toBe(true)
+  })
+
+  it('the shell class keeps only whole-tool rules; allow-any is leader-only and dual-gated', () => {
+    const memberAllow = projOf({ default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'member' })
+    expect(memberAllow.ok).toBe(false)
+    if (memberAllow.ok) return
+    expect(memberAllow.error.details?.['refusal']).toBe('projection-shell-allow-non-leader')
+
+    const shellExact = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'exact', path: '/x' } }] })
+    expect(shellExact.ok).toBe(false)
+    if (shellExact.ok) return
+    expect(shellExact.error.details?.['refusal']).toBe('projection-rule-malformed')
+
+    const noGate = projOf(
+      { default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] },
+      { role: 'leader' },
+    )
+    expect(noGate.ok).toBe(true)
+    if (!noGate.ok) return
+    const gatedRules = noGate.value.buildDocument().rules
+    expect(gatedRules.some((rule) => rule.effectKind === 'tool-invoke' && rule.maximumEffect === 'allow')).toBe(false) // never an invented allow
+    expect(gatedRules.every((rule) => rule.maximumEffect === 'ask')).toBe(true)
+    expect(noGate.value.notes.some((n) => /dual-gate reader not wired/.test(n))).toBe(true)
+
+    let execToken = false
+    const gated = projOf(
+      { default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] },
+      { role: 'leader', leaderExecTokenPresent: () => execToken },
+    )
+    expect(gated.ok).toBe(true)
+    if (!gated.ok) return
+    expect(gated.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'ask')).toBe(true)
+    execToken = true // the overlay token arrives — the READ-time build answers the NEW state
+    expect(gated.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'allow')).toBe(true)
+  })
+
+  it('uncanonicalizable resources: allow SKIPS (tightens, noted); ask/deny REFUSE (a dropped rule loosens)', () => {
+    const never = { canonicalizeResource: () => null }
+    const allowSkipped = projOf({ default: 'ask', allow: [{ tool: 'read', resource: { kind: 'exact', path: 'relative/x.txt' } }], ask: [], deny: [] }, never)
+    expect(allowSkipped.ok).toBe(true)
+    if (!allowSkipped.ok) return
+    expect(allowSkipped.value.buildDocument().rules).toEqual([])
+    expect(allowSkipped.value.notes.some((n) => /SKIPPED/.test(n))).toBe(true)
+    const denyRefused = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'exact', path: 'relative/x.txt' } }] }, never)
+    expect(denyRefused.ok).toBe(false)
+    if (denyRefused.ok) return
+    expect(denyRefused.error.details?.['refusal']).toBe('projection-rule-uncanonicalizable')
+    // without the injector, non-absolute paths are exactly the uncanonicalizable case:
+    const noCanonicalizer = projOf({ default: 'ask', allow: [], ask: [{ tool: 'write', resource: { kind: 'exact', path: 'rel.txt' } }], deny: [] })
+    expect(noCanonicalizer.ok).toBe(false)
+  })
+
+  it('default deny: the covers table answers per effect kind (the assembly gate rides it)', () => {
+    const r = projOf({ default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: A_ABS } }], ask: [], deny: [] })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.value.templateDefault).toBe('deny')
+    expect(r.value.coversEffect(readEffect(A_ABS))).toBe(true)
+    expect(r.value.coversEffect(metaEffectOn(A_ABS))).toBe(true)
+    expect(r.value.coversEffect(toolInvokeEffect('read'))).toBe(true)
+    expect(r.value.coversEffect(writeEffect(A_ABS))).toBe(false)
+    expect(r.value.coversEffect(listEffectOn('/data'))).toBe(false)
+    expect(r.value.coversEffect(toolInvokeEffect('bash'))).toBe(false)
+  })
+
+  it('file any-ALLOW projects only the tool-invoke arm and DISCLOSES the resource-dimension gap', () => {
+    const r = projOf({ default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const kinds = r.value.buildDocument().rules.map((rule) => rule.effectKind)
+    expect(kinds).toEqual(['tool-invoke'])
+    expect(r.value.notes.some((n) => /TIGHTER than declared/.test(n))).toBe(true)
+    expect(r.value.coversEffect(readEffect(A_ABS))).toBe(false) // resource effect stays no-authority ⇒ Ask
+  })
+
+  it('shape violations refuse before anything is derived (defence, the blueprint already validated)', () => {
+    const badDefault = projOf({ default: 'allow', allow: [], ask: [], deny: [] } as unknown as TemplatePermissionPolicy)
+    expect(badDefault.ok).toBe(false)
+    if (badDefault.ok) return
+    expect(badDefault.error.details?.['refusal']).toBe('projection-input-malformed')
+    const badTool = projOf({ default: 'ask', allow: [{ tool: 'teleport', resource: { kind: 'any' } } as unknown as TemplatePermissionPolicy['allow'][number]], ask: [], deny: [] })
+    expect(badTool.ok).toBe(false)
+    const anyExtras = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any', path: '/x' } as unknown as TemplatePermissionPolicy['deny'][number]['resource'] }] })
+    expect(anyExtras.ok).toBe(false)
   })
 })

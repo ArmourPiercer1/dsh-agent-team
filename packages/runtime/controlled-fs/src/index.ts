@@ -64,10 +64,15 @@ export {
   ARBITRARY_TREE_PROFILE_PUBLISHED,
   bindAdmissionRecheck,
   createAdmissionGatedControlledFs,
+  // PR2/PR3 production-assembly round: the production provider (per-call
+  // gated lane from reader arms; contract: evidence `alpha5/prod/pa-CONTRACT.md`).
+  createProductionControlledFsProvider,
   UNBOUND_ADMISSION_RECHECK,
   type AdmissionBoundFsCall,
   type AdmissionGatedControlledFsConfig,
   type FsAdmissionPort,
+  type ProductionControlledFsProvider,
+  type ProductionControlledFsProviderConfig,
 } from './admission-binding.js'
 
 // The frozen PR0 types the lane implements (read-through re-export only).
