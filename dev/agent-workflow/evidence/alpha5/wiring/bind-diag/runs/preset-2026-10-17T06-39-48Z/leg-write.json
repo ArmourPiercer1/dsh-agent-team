@@ -1,0 +1,9 @@
+{
+  "done": true,
+  "results": [
+    {
+      "text": "Error: team tool guard: the Tool Binding for \"write\" cannot be verified at dispatch time (no fallback to the native body)",
+      "isError": true
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "boot": 1,
+  "rootSessionId": "session-a5bd-root-2026-10-17T06-46-28",
+  "setupError": "permission coverage gate failed for instance 'inst-leader': 2 unmanaged tool(s) on the final model-facing surface: glob (known-sensitive-unmanaged), grep (known-sensitive-unmanaged) (code: alpha2-permission-coverage-unmanaged-tools)"
+}

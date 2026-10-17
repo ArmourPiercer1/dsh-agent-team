@@ -1,0 +1,6 @@
+{
+  "ok": false,
+  "boot": 1,
+  "rootSessionId": "session-a5bd-root-2026-10-17T06-45-17",
+  "setupError": "tools.restrict() names unknown global tools \"job_kill\", \"job_list\", \"job_output\"; known global tools: bash, edit, glob, grep, read, read_image, write"
+}

@@ -1,0 +1,9 @@
+{
+  "done": true,
+  "results": [
+    {
+      "text": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-bind-diag/tests/homes/a5bd-hostplane-2026-10-17T06-42-42/workspace/a5bd-seed.txt</path>\n<type>file</type>\n<content>\n1: A5BD_SEED_2026-10-17T06-42-42\n\n(End of file - total 1 lines)\n</content>",
+      "isError": false
+    }
+  ]
+}
