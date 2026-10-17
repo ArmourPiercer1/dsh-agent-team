@@ -1,0 +1,49 @@
+stable-instance :3080 probe (pre) = 401
+PASS P-PIN — pinned host tree @639ed01539 with porcelain=0
+     observed: head=639ed0153972 porcelain=true
+PASS T1-NO-TOKEN-CHANNEL-IN-ARTIFACT — static: the L2 row contains no grant-token channel (no A5PTC4-TOKEN matcher, no /grant minting route) and calls neither setSandboxMode nor setApprovalPolicy
+     observed: tokenMatcher=false grantRoute=false modeWrites=false
+PASS P-OS-PREFLIGHT — OS floor (assembly-independent): the same launcher the host chain execs allows the ws write and refuses forbidden create/append at open (EACCES), zero bytes, secret unchanged
+     observed: probe="landlock: partially enforced (older ABI)" direct={"c":"EACCES","a":"EACCES"}
+PASS L-BOOT — host booted on 3184 (port self-proven free) with the token gate live
+     observed: cookie=true
+PASS T1-GRANT-HTTP-CHANNEL-DELETED — the L1 unauthenticated grant feed is gone and nothing replaces it: POSTing a grant-shaped body to /__a5ptc4/grant or /__a5ptc4b/grant is not accepted and mints ZERO ledger records (Grants exist only as the Team-lane actor's own tool call)
+     observed: l1Face=405 l2Face=405 grantsBefore=0 grantsAfter=0
+PASS L-CREATE — five sessions created through the public entry (Team lane actor + members M1/M2 + other-team stand-in M3 + never-adjudicated outsider FX)
+     observed: {"LANE":"session-1a45720a","M1":"session-f2b19210","M2":"session-6a46f2db","M3":"session-bb4cd955","FX":"session-43b1bda3"}
+PASS L-PROVISION — roster provisioned: the lane actor carries a5ptc4b_grant/_revoke/_unload on its OWN agent ctx; M1/M2/M3 are adjudicated members with witnesses; FX is provisioned only as an OUTSIDER (witnesses, never on the adjudication roster)
+     observed: lane={"ok":true,"label":"session-1a45720a-8336-43a3-99f1-b6416db0e3d4","role":"lane","error":null} members=member:true,member:true,member:true,outsider:true laneTools=["a5ptc4b_grant","a5ptc4b_revoke","a5ptc4b_unload"]
+PASS L-FX-RUNCODE-PRESENT — the never-adjudicated FX (outsider) session can really run the outer program (canary written by the child) — so its later delegation leg is a real escalation ask, not a missing tool
+     observed: canary="FX-BODY-218"
+FAIL ANCHOR-TEAM-GRANT-ALLOWED-ONCE — positive anchor: a real Team-plane one-time Grant (minted as the lane actor's own tool call, bindings copied from the HOST ask record) answers exactly this ask allowed-once → forbidden target really written by the real OS child, and the Grant record is SPENT (state=consumed, consumedByAskSeq set)
+     observed: askRow=null grant=null target=null sandbox=null
+PASS L-LAUNCHER-DEPLOY — the OS backend rides the host's own public provider test-hook: after the first real run the host's own chain walk reports selectedRunner=landlock — in BOTH modes, because the RED control world differs from GREEN only by the absent adjudication faces (a red round with no sandbox backend would prove nothing about governance)
+     observed: {"selectedRunner":"landlock","enforcement":"partial","landlockLauncher":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run","deploy":{"attempted":true,"ok":true,"note":"public `internals.landlockLauncher` test-hook property se
+FAIL NEG1-REPLAY-REFUSED — NEG-1 replay of the spent authorization (same agent/callId/toolName/mode re-presented, model justification carrying the old L1 grant-token text verbatim): REFUSED (replay-of-consumed), the model token text is only logged, zero writes — L1 answered this with a stale allowed-once and the write landed (review F-2)
+     observed: askRow=null written=false runText=(held)
+FAIL NEG2-EXPIRED-REFUSED-DOWNSTREAM-VISIBLE — NEG-2 expired Grant (declared allow, TTL 1200 ms, presented after it lapsed): REFUSED with decision=expired and the refusal is DOWNSTREAM-VISIBLE (the caller receives the host verbatim fail-closed text), zero writes — L1 had no TTL at all (review F-4)
+     observed: askRow=null grant={"grantId":"g1","via":"team-lane-tool","source":"declared","decision":"allow","state":"issued","bind":{"agent":"session-f2b19210-d2e0-4cf6-a0b9-f737932d6545","callId":"call-A5PTC4BRED20261017T094223Z-EXPIRY","toolName":"run_code","mode":"danger-full-access"},"issuerLane":{"label":"session-1a45720a-8 written=false runText=(held)
+FAIL NEG4-REVOKED-BEFORE-USE-REFUSED — NEG-4 revocation outranks the cache: a live Grant revoked by the lane before use is REFUSED (decision=revoked, verbatim fail-closed text downstream), zero writes — L1 answered the same shape with the cached allow and the write landed (review F-3)
+     observed: askRow=null grant={"grantId":"g2","via":"team-lane-tool","source":"declared","decision":"allow","state":"revoked","bind":{"agent":"session-f2b19210-d2e0-4cf6-a0b9-f737932d6545","callId":"call-A5PTC4BRED20261017T094223Z-REVOKE","toolName":"run_code","mode":"danger-full-access"}, written=false runText=(held)
+FAIL NEG3-AGENT-BIND-GRANT-UNSPENT-AND-OWNER-ONLY — NEG-3 attribution: the other-team stand-in M3 presents the exact callId a live Grant is bound to M1 for → our ledger answers it ZERO times with that Grant (decision=lane-timeout, no grantId), M3 writes nothing, and the Grant is still state=issued/unconsumed; when M1 presents his own bound quadruple it is allowed-once and the write lands → the Grant really belongs to its bound agent (review F-1)
+     observed: foreignRows=[] afterForeign={"state":"issued","consumedAt":null,"bind":"37932d6545"} ownerRow={"__held":"owner-side ledger row on the bound callId"} ownerTarget=null spent=issued
+FAIL NEG5-MODE-BIND-MISMATCH-REFUSED — NEG-5 the fourth binding is real: a Grant declared for the same agent+callId+toolName but mode=workspace-write cannot answer an ask requesting danger-full-access → we answer nothing from it (decision=lane-timeout at the lane deadline) and zero writes; the mismatched Grant stays unspent
+     observed: askRow=null grants=[{"mode":"workspace-write","state":"issued"}] written=false
+FAIL DELEG-ZERO-ANSWER-VERBATIM-DOWNSTREAM — delegation integrity: an ask from an agent outside this Team roster is passed through untouched (ledger decision=foreign, outcome=pass-through, NO outcome from us) and lands in the HOST ask lane byte-verbatim — the host's own approval/asked audit event carries the same callId/toolName and the host-composed reason untouched — and stays PENDING there (no approval/decided), so we neither swallow it nor pre-empt the human lane; zero writes, zero Grants
+     observed: ourRows=[] asked=null decided=0 grants=0 written=false
+FAIL CONCURRENCY-ISOLATION — two members in flight at once: each pending ask is answered only by its OWN ask-bound Grant (M1 allow → target really written; M2 reject → verbatim refusal, zero writes), distinct callIds, distinct grants, each ledger row carries its own agent
+     observed: rowQ1=null rowQ2=null q1Written=false q2Written=false
+FAIL T5-UNLOAD-SYMMETRIC-AND-DEAD — T-5 unload symmetry: the lane actor's own tool call runs the retained disposers (resolver-unloaded journal row), the hook census loses exactly our approval/request faces (present before, ZERO after), and the NEXT in-domain ask is answered by us ZERO times — no ledger row, and no tool result of any kind (neither an allow nor a refusal of ours: the ask simply remains open in the host's own ask lane) — with zero writes: no permanent pre-empting global listener survives us (review F-5)
+     observed: mineBefore=0 mineAfter=0 hooks=2->2 disposersRun=0 ourRowsAfterUnload=0 runAfterUnload=null mirrorRowsAfterUnload=0(0=mirror gone with the faces) written=false
+FAIL GOV-ADJUDICATION-INPUT-IS-TEAM-GRANT-ONLY — root governance claim, machine-checked: every Grant in the ledger was minted via the Team-lane actor tool call by the provisioned lane identity (via=team-lane-tool, issuerLane.label=lane agent), every answer traces to a grantId or to an explicit no-answer/no-grant posture, no decision was ever taken on model text, and no HTTP face could mint one
+     observed: grants=4 via=["team-lane-tool"] issuer=["session-1a45720a-8336-43a3-99f1-b6416db0e3d4"] answeredRows=0 fromGrant=0 unexplained=[]
+PASS PERM-ORIGINAL-NOT-LOWERED-NOT-WIDENED — root acceptance: every session's sandbox mode AND approval policy are byte-identical before/after (host session-init values, never written by this kit); the ONLY forbidden-zone files that exist are the three legs a Team Grant allowed (anchor, owner-use, Q1); the secret is byte-identical; the never-policy gate is host-side and runs before dispatch (user-approval decide(): effectivePolicy==="never" returns before the waterfall), so this resolver cannot open a hole for a never session
+     observed: pre={"LANE":"workspace-write/ask","M1":"workspace-write/ask","M2":"workspace-write/ask","M3":"workspace-write/ask","FX":"workspace-write/ask"} post={"LANE":"workspace-write/ask","M1":"workspace-write/ask","M2":"workspace-write/ask","M3":"workspace-write/ask","FX":"workspace-write/ask"} forb=["secret.txt"] unexpected=[] secretUnchanged=true
+PASS P-STABLE-UNTOUCHED — :3080 stable instance untouched (pre=401 post=401); this kit bound only 3184
+     observed: pre=401 post=401
+PASS P-PRISTINE-POST — pinned host tree byte-clean after the run (HEAD unchanged, porcelain empty)
+     observed: head=639ed0153972
+
+[RED] criteria: 12/22 pass; governance set 0/10
+[RED] verdict: EXPECTED (nonGovernanceFail=0 governanceFail=10/10)
+host exited code=0 signal=null

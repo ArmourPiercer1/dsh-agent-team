@@ -1,0 +1,72 @@
+{
+  "run": {
+    "at": 1792230929243,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "askRow": {
+    "seq": 4,
+    "at": "2026-10-17T09:55:29.242Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+    "callId": "call-A5PTC4BGREEN20261017T095523Z-REVOKE",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4b REVOKE: outer direct fs program under Team per-call governance",
+    "decision": "revoked",
+    "outcome": "rejected",
+    "grantId": "g3",
+    "ttlMs": 60000
+  },
+  "grant": {
+    "grantId": "g3",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "revoked",
+    "bind": {
+      "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+      "callId": "call-A5PTC4BGREEN20261017T095523Z-REVOKE",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "sessionId": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T09:55:28.806Z",
+    "expiresAt": "2026-10-17T09:56:28.806Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": "2026-10-17T09:55:29.021Z",
+    "transitions": [
+      {
+        "at": "2026-10-17T09:55:28.806Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T09:55:29.021Z",
+        "to": "revoked",
+        "from": "issued",
+        "by": "session-84c56509-88d7-4833-b9a2-9cac9077d323"
+      }
+    ]
+  },
+  "written": false
+}

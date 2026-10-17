@@ -1,0 +1,72 @@
+{
+  "run": {
+    "at": 1792230928587,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "askRow": {
+    "seq": 3,
+    "at": "2026-10-17T09:55:28.587Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+    "callId": "call-A5PTC4BGREEN20261017T095523Z-EXPIRY",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4b EXPIRY: outer direct fs program under Team per-call governance",
+    "decision": "expired",
+    "outcome": "rejected",
+    "grantId": "g2",
+    "ttlMs": 1200,
+    "expiredAt": "2026-10-17T09:55:27.466Z"
+  },
+  "grant": {
+    "grantId": "g2",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "expired",
+    "bind": {
+      "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+      "callId": "call-A5PTC4BGREEN20261017T095523Z-EXPIRY",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "sessionId": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "role": "lane"
+    },
+    "ttlMs": 1200,
+    "issuedAt": "2026-10-17T09:55:26.266Z",
+    "expiresAt": "2026-10-17T09:55:27.466Z",
+    "expired": true,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T09:55:26.266Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 1200
+      },
+      {
+        "at": "2026-10-17T09:55:28.587Z",
+        "to": "expired",
+        "from": "issued"
+      }
+    ]
+  },
+  "written": false
+}

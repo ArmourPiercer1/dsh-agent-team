@@ -6347,3 +6347,49 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
   `dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/`（README 台账 + row/kit + RED/GREEN runs/）。
   **git**：分支 `alpha5-ptc-outerfs` @ base `9c72769f`，本轮提交后尝试 ff push（无凭证则记录）。
   模型：qwen3.8-flash-next。
+
+
+## 2026-10-17 — W-PTC-OUTERFS-L2：resolver 接**真实一次性 Grant**（fs 半臂 **L1→L2 治理语义**；branch `alpha5-ptc-outerfs`，base=0848aa66，端口 3184 自证空闲，世界 a5ptc4b-*）
+
+- **RED-first 复现**：先用**未改动**的审查 runner 在 :3184 原样重跑被评审件 `903c062f`
+  （`runs/a5ptc4-rev-2026-10-17T09-07-25Z/` = **11/17**，与 review-SECURITY.md §8 权威轮逐条同分布：
+  R4 重放 / R5 撤销后陈旧 / R6 跨会话 **FAIL** = F-2/F-3/F-1；R3 正锚、R7 并发、R9 卸载不对称登记、
+  R10 原权限不降 PASS；R1/R2/R8 FAIL = kit 运行时 session-log flush 时延，与审查同因，不据此改口）。
+- **L2 实况**（GREEN 权威轮 `runs/a5ptc4b-green-2026-10-17T09-55-23Z/` = **22/22，治理判据 10/10**；
+  RED 判别轮 `runs/a5ptc4b-red-2026-10-17T09-42-23Z/` = 12/22 且**十条治理判据全 FAIL、其余全 PASS**
+  ⇒ 判别力成立）：裁决输入 = Team 面一次性 Grant 四元组绑定 `agent|callId|toolName|mode`（绑定取自
+  **宿主 ask 记录**，mode 由宿主自拼 reason 前缀解析并对照宿主导出的 `ESCALATION_TARGETS`）；
+  **模型 justification 通道删除**（L1 的 `A5PTC4-TOKEN` 匹配器与 `/grant` HTTP 铸权面一并移除，只作
+  截断日志；对两处旧/新路径 POST 授权形 body ⇒ 非 200 且账本零新增）；单次消费同步 check-and-set；
+  判定序 `revoked → consumed(未过期) → expired → live`（撤销先于缓存）；TTL 过期=拒且下游逐字可见；
+  卸载对称（lane 自家工具跑保留 disposer，`approval/request` 面上我方 **2→0**，其后本域 ask 我方
+  **零应答且无任何工具结果返回** = ask 仍挂在宿主自家 ask-lane，零写入）。
+- **委托完整性 / 并发 / 原权限**：outsider 的 ask ⇒ 我方账本仅 `foreign/pass-through`（零应答），宿主
+  自身 `approval/asked` 带同 callId + **未被改写的 reason** 且无 `approval/decided`（仍挂真人通道，
+  不吞不抢先）；M1/M2 并发各由各自 Grant 决定；五会话 `sandbox.mode`/`approvalPolicy` 前后逐字节
+  `workspace-write/ask`，禁区只存在被 Grant 明确放行的三条腿，secret 字节不变；`never` 门在宿主
+  `decide()` 中**先于** dispatch ⇒ 结构上无法为 never 会话开口。
+- **信任模型披露（不得略）**：Grant 唯一签发方 = 已登记 lane actor 会话的**自家工具调用**（issuer 取宿主
+  执行上下文而非模型自述；ask-bound Grant 的绑定整份拷自宿主 ask 记录，模型只能给 decision/ttl；
+  被裁决成员的模型无路径触达 lane 工具；插件 HTTP 面全为只读 census/provisioning）；lane 的"决策"由
+  kit mock 按 runner 脚本回答 = 人类/leader 决策人替身 ⇒ **人类判断本身未被证明**（审查 §7 列为 L4），
+  被证明的是通道/身份/绑定/单次消费/撤销/过期/卸载这套治理结构在真实宿主管线上成立。
+- **缝事实新增**（真跑第一手）：`session/event` 公开总线可只读镜像 `approval/asked{id,toolName,callId,
+  reason}` / `approval/decided{id,outcome}`（=「下游逐字可见」的机检面）；boot 期非 global 非 prepend 外部
+  监听**先吊住** ask ⇒ 后装下游探针看不见该 ask（审查 R8 同形，故逐字下游以宿主自身 `approval/asked` 为准）；
+  LLM 线层 duplicate tool_use id 校验作用域=单条 assistant 消息 ⇒ 跨轮重复 callId 真实可达管线（重放腿成立）；
+  `defineTool` 参数 `required` 只允许为 `true`（可选须省略）；同包目录挂两行触发 client-modules
+  "multiple active Loader sources" 拒装（探针须独立 package.json）；**RED 轮必须保留 OS 地板**（否则
+  `run_code` 直接 `sandbox-unavailable`，判别力被环境噪声污染）⇒ 本件 RED 与 GREEN 只差裁决面。
+- **矩阵提案（本件零矩阵改，M-08 归 ROWFIX lane）**：fs 半臂注脚建议由「装配已证，治理语义 L1」升为
+  「**治理语义 L2（归属/单次消费/撤销/过期/卸载对称）真跑在册**」，receipt 词
+  `per_call_policy_denials.os_level_observed=true` + 新增 `per_call_grant_governance.l2_assembly_observed=true`；
+  **必带限定**：证据行装载（零生产行、零 Core 改）、lane=决策人替身（L4 未证）、L3（路径粒度/串行化次序/
+  多 Team 并发套件）未做 ⇒ 不得写 L3/L4；**net 半臂不由 fs 推导**（维持独立单列的局部阻塞）。
+  完整文案见 `w-ptc-outerfs/README-L2.md` 末节。
+- **收口三件套**：CORE PATCH BUDGET=0（宿主运行树 pin @`639ed01539` porcelain 前后=0，零写入）；
+  :3080 稳定实例前后 **401** 未动；世界/禁区目录（`tests/homes/a5ptc4b-*`）跑毕删除、3184 释放。
+  **证据** `dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/`（`README-L2.md` 台账 + `a5ptc4b-grantrow.mjs`
+  + `a5ptc4b-probe-pkg/` + `run-a5ptc4b-l2.mjs` + 三轮 `runs/`）。**git**：一次性 worktree
+  `.worktrees/a5ptc4b-l2`（本地分支 `alpha5-ptc-outerfs-l2`），收口时 ff 回 `alpha5-ptc-outerfs` 并尝试
+  ff push（无凭证则记录）。模型：qwen3.8-flash-next。

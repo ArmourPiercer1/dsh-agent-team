@@ -1,0 +1,18 @@
+{
+  "launcher": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
+  "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+  "probe": {
+    "exit": 0,
+    "stdout": "landlock: partially enforced (older ABI)",
+    "stderr": ""
+  },
+  "direct": {
+    "exit": 0,
+    "observed": {
+      "c": "EACCES",
+      "a": "EACCES"
+    },
+    "hackExists": false,
+    "secretUnchanged": true
+  }
+}
