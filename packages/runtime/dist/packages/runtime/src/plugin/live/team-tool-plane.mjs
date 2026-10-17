@@ -76,7 +76,7 @@ import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/
 import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
-import { createAnchoredGlobBackend, createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
+import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -358,11 +358,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // GLUE-7 PRODUCTION BACKEND ASSEMBLY (glue only — `plane-effect-backends`
   // rides the implementations this repo already ships: the confined Process
   // provider for the shell class, the W5-round REAL read-only search for the
-  // grep class, the governed anchored read for the fs class, and — since
-  // the scope probe closed the PR5 commitment (evidence/alpha5/glue7/glob/)
-  // — the REAL confined-rg walk for the glob class: same anchored law, the
-  // host public package root's own argv vocabulary, never smuggled onto the
-  // search backend). A real backend appears ONLY where the row
+  // grep class, the governed anchored read for the fs class; GLOB has no
+  // production-wired implementation and stays the typed shut row — never
+  // smuggled onto the search backend. The confined-rg glob candidate of the
+  // scope-probe round (createAnchoredGlobBackend, still exported for the
+  // integration round) was assessed CANDIDATE-A and FAILED the security
+  // re-review for a name-class leak (verify->launcher string-chdir window
+  // + the provider runtime_base '/' READ_DIR grant: outside NAMES can
+  // surface, bytes never — re-review measured 3/10700). It ships NOTHING:
+  // wiring removed, factory archived (glue7/glob/, marked 未入产); the glob
+  // integration rides the standalone 093aaded face + a runtime_base
+  // narrowing layer in its own round. A real backend appears ONLY where the row
   // configured its governed anchor: no `fsInstance` = no fs-class backend,
   // no `confinedProvider` = no shell backend — the closed world invents
   // nothing, and unconfigured rows keep the shut landing byte-for-byte.
@@ -395,27 +401,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
       observe: logBackend('a5g7-shell'),
     })
     : null
-  const realGlob = fsInstance !== null && confinedCfg !== null
-    ? createAnchoredGlobBackend({
-      realmId,
-      rootDir: fsInstance.rootDir,
-      templateId: String(templateId),
-      instanceId: String(input.instanceId ?? templateId),
-      confined: confinedCfg,
-      observe: logBackend('a5g7-glob'),
-    })
-    : null
   const productionBackends = Object.freeze({
     search: realSearch ?? shut,
-    glob: realGlob ?? shut,
+    glob: shut,
     shell: realShell ?? shut,
   })
   const hostedSearch = input.backends?.search ?? productionBackends.search
   // Kit-compat law (a5p5 register.ts:118 — globBackend ABSENT reuses the
   // search backend): an injected fixture search keeps carrying glob exactly
-  // as before. PRODUCTION search never does — the glob row rides its OWN
-  // confined-rg backend (GLUE-7 scope probe), or, unconfigured, the honest
-  // typed shut face; production search is never smuggled onto glob either.
+  // as before. PRODUCTION search never does — the glob row has no existing
+  // implementation and lands on the honest typed shut face.
   const hostedGlob = input.backends?.glob ?? input.backends?.search ?? productionBackends.glob
   const hostedShell = input.backends?.shell ?? productionBackends.shell
   // The host REGISTRATION law (packages/core/tools: every registerable tool

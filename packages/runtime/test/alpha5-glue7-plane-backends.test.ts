@@ -196,40 +196,49 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(existsSync(sentinel)).toBe(false)
   })
 
-  it('G6 glob REAL (scope probe closed the PR5 commitment — evidence/alpha5/glue7/glob/): the configured row runs the REAL confined rg walk; the unconfigured shut row is R1\'s, kept byte-identical', async () => {
+  it('G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
-    expect(res.text).toContain('needle.txt')
-    expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
-    expect(built.value.backends.glob.execCount()).toBe(1)
+    expect(res.text).toContain('IO_POLICY_UNSUPPORTED')
   })
 
-  it('G6b glob bounded face + typed walker error + symlink-final refusal: the anchor law holds before any spawn, the cap is honest', async () => {
+  // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18: the confined-rg
+  // glob row FAILED for a NAME-class leak — the verify->launcher STRING-chdir
+  // window plus the provider runtime_base '/' READ_DIR grant lets outside
+  // NAMES surface (bytes never; measured 3/10700). The plane row is UN-WIRED
+  // back to typed-shut (G6 above). The FACTORY stays exported and this leg
+  // pins its honest face for the integration round that pairs it with a
+  // runtime_base narrowing layer — driving the factory DIRECTLY, through no
+  // plane. The row it once wired shipped NOTHING. See glue7/glob/ + §4b.
+  it('G6b CANDIDATE-A archive: the glob FACTORY (unwired) keeps its bounded face + typed walker error + symlink-final refusal', async () => {
     const manyDir = join(ROOT_DIR, 'many')
     mkdirSync(manyDir, { recursive: true })
     for (let i = 0; i < 105; i++) writeFileSync(join(manyDir, `f${String(i)}.gen`), 'x\n')
     symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link'))
-    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
-    if (!built.ok) return
-    const glob = (raw: unknown) => def(built.value, 'team_glob').execute(raw)
-    const capped = await glob({ pattern: 'many/*.gen' })
-    expect(capped.text).toContain('f0.gen')
-    // GLOB_MAX_RESULTS (host public root) = 100: 105 hits never fit — the
-    // lane renderer's own truncation marker carries the bound honestly.
-    expect(capped.text).toContain('truncated')
-    const bad = await glob({ pattern: '[unclosed' })
-    expect(bad.text).toMatch(/rg-walker-error|rg-exit-\d/) // typed walker failure, never a crash, never a fake-empty
-    // (live-measured: the streaming arm can read rg's hard-error exit back as
-    // 0 — the walker's stderr word carries the failure, probe-rg-exit.mjs)
-    expect(bad.text).not.toContain('needle')
-    const esc = await glob({ pattern: '*', path: 'escape-link' })
-    expect(esc.text).toContain('symlink-alias') // resolveAnchored's own realpath-escape code
-    expect(esc.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
-    // capped walk + bad-pattern both spawned; the symlink refusal is decided
-    // BEFORE any spawn (anchor law precedes the provider) — execCount says so.
-    expect(built.value.backends.glob.execCount()).toBe(2)
+    const beMod = (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as {
+      createAnchoredGlobBackend: (cfg: Record<string, unknown>) => {
+        run: (call: unknown, io: unknown) => Promise<{ ok: boolean; failure?: { code?: string }; outcome?: { files?: string[]; truncated?: boolean } }>
+        execCount: () => number
+      }
+    }
+    const factory = beMod.createAnchoredGlobBackend({
+      realmId: 'a5g7-glob-archive', rootDir: ROOT_DIR,
+      confined: confinedProvider(), observe: () => {},
+    })
+    const sink = { sink: { write: () => {} } }
+    const capped = await factory.run({ callId: 'c1', parsedArgs: { tool: 'glob', pattern: 'many/*.gen', target: { placement: 'workspace', locator: '.' } } }, sink)
+    expect(capped.ok).toBe(true)
+    expect((capped.outcome?.files ?? []).length).toBe(100) // GLOB_MAX_RESULTS honest cap
+    expect(capped.outcome?.truncated).toBe(true)
+    const bad = await factory.run({ callId: 'c2', parsedArgs: { tool: 'glob', pattern: '[unclosed', target: { placement: 'workspace', locator: '.' } } }, sink)
+    expect(bad.ok).toBe(false)
+    expect(String(bad.failure?.code)).toMatch(/rg-walker-error|rg-exit-\d/) // typed, never a crash, never fake-empty
+    const esc = await factory.run({ callId: 'c3', parsedArgs: { tool: 'glob', pattern: '*', target: { placement: 'relative', locator: 'escape-link' } } }, sink)
+    expect(esc.ok).toBe(false)
+    expect(String(esc.failure?.code)).toBe('symlink-alias') // refused BEFORE any spawn
+    expect(factory.execCount()).toBe(2) // two refusals (bad spawned once; symlink added ZERO spawn)
   })
 
   it('G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed', async () => {
