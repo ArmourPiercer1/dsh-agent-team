@@ -28,6 +28,7 @@
 | D-1 NO-ABORT-AFTER-BODY-START | **DEFERRED（有主，非放弃）** | PG:24 owner=d9da2f74；PG:29-42（延期原因=Host `bodyInvoked` 私有 @`packages/core/tools/src/index.ts:1580`；恢复条件+回归三件套在册） |
 | D-2 skills 对齐 | **DONE**（执行+独立终验 9/9） | `d6b57e55`(#270)+终验 `420ed3ee`(#271)；PG:27 |
 | PR#274 行文刷新轮 | **OPEN**（分支 `alpha5-g-g-landing` @`76b08372` 未合） | 内容=G-a/G-c/G-d 行刷新至 merge ground truth；lint 716md/0；本清单不代关 |
+| LSP 生产装配（prod-lsp 轮，R-1/R-2） | **PENDING-ACCEPTANCE**（受版本控制的验收缺项行：真实语言服务器最小交互） | 现证据=REAL-Landlock 下 provider/assembly seam 全绿 + 独立 review PASS（`prod-lsp/README.md` 12 判据表；reviewer kit 53/53 @`1e76cd2c`）——**payload 是 fixture，只证 seam，不证任何真实语言服务器交互/编辑器产品行为**（措辞红线在册）；真实语言服务器最小交互（真 LSP server 进程 over 同一 confined stream seam：initialize→didOpen→语义请求→policyChange 存续）= **未做，待人工/后续轮验收**；本行未闭合前 LSP 面禁族级 GO 宣称 |
 
 ## 2. 用户点名覆盖
 
@@ -78,8 +79,8 @@
 
 **结论：final_declaration MUST REMAIN NULL。** 缺项（最小集）：G-d 逐 lane 集成确认与 live 装配轮（含 PR4 spawn/PR5 tools/PR7 jobs-gateway 的 tsconfig+registry 接线）→ 5 个 RLW 行各自上表缺项 → PR3 OpenAtPort（或永久窄 Profile 裁定）→ PR6 Strict 启用两缺口 → D-1 恢复三条件之一公开 → PR#274 行文刷新合并 → G-e 用户裁决 → 人工阶段验收/产品 Gate。以上任一未闭合，任何行 `final_declaration` 非 null 即为 runner 判红+违规升格。
 
-## 4. 判定分布（本清单 §1 共 21 行）
+## 4. 判定分布（本清单 §1 共 22 行）
 
-DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。
+DONE=8（S0/PR0/PR1r/PR8设施/接线轮/live轮/G-a/D-2）· MERGED-NOT-WIRED(DORMANT)=5（PR2/PR3/PR4/PR5/PR7）· WIRED-NOT-PRODUCTION-ACCEPTED=1（PR1）· DEFERRED/UNSUPPORTED=2（PR6、G-g 配置边界）· OPEN=5（G-b/G-c、G-d、G-e、PR#274）· PENDING-ACCEPTANCE=1（LSP 生产装配轮：真实语言服务器最小交互未做，现 fixture 仅证 seam）——其中 G-g 同时受"证据门 CLOSED≠产品支持"条款约束，不随 #273 计入族级 GO。
 
 — writer=qwen3.8-flash-next（只读+本文件新增；机检复跑仅读+已清除自产 capture；零端口、零世界、:3080 未触碰）

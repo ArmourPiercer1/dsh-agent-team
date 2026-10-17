@@ -24,7 +24,27 @@ const laneRoot = join(here, '..') // packages/tools/a5p5-tools
 const SOURCE_EXTENSIONS = ['.ts', '.mts', '.mjs', '.js', '.json']
 
 function* walk(dir: string): Generator<string> {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  // Census-race hardening (measured 2026-10-17, census capture on the
+  // nine-root run): other suites CREATE AND DELETE volatile worlds under
+  // packages/ WHILE this walk runs (e.g. packages/testkit/test/.tmp-fault/…,
+  // cleared by the census runner before the run but recreated mid-run by the
+  // fault-injection suite), and a plain readdirSync then crashes with ENOENT
+  // on a directory that vanished between readdir and scandir. A crashed walk
+  // is an instrument failure, not a verdict — this gate's own vocabulary
+  // keeps those apart ("an instrument that is killed before reporting is a
+  // refusal"). Skipping a path that vanished mid-scan cannot soften the law:
+  // the offenders this audit grades are COMMITTED files, and a committed
+  // file never disappears under a census. Every present path is still
+  // scanned, and every still-ENOENT-unreadable present file is read again
+  // with the throw intact below.
+  let entries
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return
+    throw err
+  }
+  for (const entry of entries) {
     if (entry.name === 'node_modules' || entry.name === 'dist') continue
     const full = join(dir, entry.name)
     if (entry.isDirectory()) {
@@ -80,7 +100,16 @@ describe('a5p5-dormant-audit', () => {
       const insideLane = file === laneRoot || file.startsWith(laneRoot + sep)
       if (insideLane) continue
       if (NAMES_ONLY_LEDGER_EXCEPTIONS.includes(relativePath)) continue
-      const text = readFileSync(file, 'utf8')
+      let text: string
+      try {
+        text = readFileSync(file, 'utf8')
+      } catch (err) {
+        // Same mid-scan census race as the walk's: a transient file that
+        // vanished after being listed is not committed content — skip it;
+        // any other I/O error keeps throwing.
+        if ((err as NodeJS.ErrnoException).code === 'ENOENT') continue
+        throw err
+      }
       if (text.includes('a5p5-tools')) offenders.push(relativePath)
     }
     expect(offenders).toEqual([])

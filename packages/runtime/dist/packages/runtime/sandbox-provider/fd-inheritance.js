@@ -10,6 +10,18 @@
  * constant `close-all-undeclared` and the payload carries no field that
  * could relax it.
  *
+ * FD CONTRACT — "3 = launcher-owned; declaring is not using".
+ * FD 3 is the launcher's own reserved channel: the one-shot arm computes
+ * its fd-3 reservation BEFORE any fd allocation and closes the slot itself
+ * (`close_extra_fds` leaky-closure), and the stream arm's line-JSON
+ * handshake rides fd 3 and the child closes it BEFORE restrict→execve. A
+ * policy that merely DECLARED fd 3 used to compile cleanly and then be
+ * silently overridden at exec (review L3d: declared-fd-3-survived=false) —
+ * that tension between declaration face and execution face is resolved on
+ * the REFUSAL side: `compileFdPlan` refuses `fd === 3` as `fd-launcher-owned`
+ * at prepare, before any plan or process exists, under the same law for the
+ * one-shot and the streaming arm (both share prepare()).
+ *
  * Purity: no `node:*`, no I/O.
  *
  * @module @dsh-agent-team/runtime/sandbox-provider/fd-inheritance
@@ -18,6 +30,9 @@
 export const INHERIT_PURPOSES = ['stdin', 'stdout', 'stderr', 'delivery'];
 /** The fixed inherit default — exported so tests and docs cite ONE site. */
 export const FD_INHERIT_DEFAULT = 'close-all-undeclared';
+/** FD 3 is launcher-owned (handshake / ruleset-reservation channel) and can
+ *  NEVER be an inherited payload FD — see the module header's fd contract. */
+export const LAUNCHER_OWNED_FD = 3;
 /** The CLOEXEC-is-mechanism law, stated verbatim where the plan is compiled. */
 export const FD_CLOSE_LAW_NOTE = 'CLOEXEC marks a closure; it is the mechanism, not the guarantee — the launcher closes every undeclared inherited FD itself, because Landlock never retroactively closes already-open FDs (TOCTOU_A)';
 /** Compile (and law-check) a declaration set. No declaration = close everything above 2. */
@@ -28,6 +43,9 @@ export function compileFdPlan(declared) {
         const path = `$.declared[${i}]`;
         if (!Number.isInteger(d.fd) || d.fd < 0) {
             problems.push({ code: 'field-type', path: `${path}.fd`, detail: 'fd must be a non-negative integer' });
+        }
+        else if (d.fd === LAUNCHER_OWNED_FD) {
+            problems.push({ code: 'fd-launcher-owned', path: `${path}.fd`, detail: `fd ${LAUNCHER_OWNED_FD} is launcher-owned (handshake/ruleset reservation, closed before exec on both arms) — declaring it is not using it; the refusal lives on the declaration face, the execution face never silently overrides (review L3d)` });
         }
         else if (seen.has(d.fd)) {
             problems.push({ code: 'duplicate-fd', path: `${path}.fd`, detail: `fd ${d.fd} declared twice — inheritance has one statement per FD` });

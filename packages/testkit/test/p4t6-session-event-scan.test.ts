@@ -2401,6 +2401,22 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/tools/a5p5-tools/src/register.ts',
       'packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts',
     ]
+    // alpha5 prod-lsp (P-C R-1/R-2) booking, deduped on the rebased tree: the
+    // SIX scannable files the LSP lane adds (RED 7c8a90b8 + GREEN ab9ee76f) —
+    // the lsp-assembly source + the two a5lsp2 suites + the shared harness +
+    // the two fixture .mjs language servers. The three P-B install files this
+    // clause once carried WITH those six are booked by SCANNED_PATHS_A5PB
+    // above since #299 landed; the merged P-B||P-C clause of 93b728a3 is
+    // retired to the LSP six here so the three can never double-count (the
+    // finding-F no-double-count precedent, parent-ruled semantic merge).
+    const SCANNED_PATHS_A5LSP: readonly string[] = [
+      'packages/runtime/sandbox-provider/lsp-assembly.ts',
+      'packages/runtime/test/a5lsp2-assembly.test.ts',
+      'packages/runtime/test/a5lsp2-fixture-lang-server.mjs',
+      'packages/runtime/test/a5lsp2-fixture-ping.mjs',
+      'packages/runtime/test/a5lsp2-harness.ts',
+      'packages/runtime/test/a5lsp2-streaming.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2436,7 +2452,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5P7JOBS.length +
         SCANNED_PATHS_A5WIRING.length +
         SCANNED_PATHS_GGPROBES.length +
-        SCANNED_PATHS_A5PB.length,
+        SCANNED_PATHS_A5PB.length +
+        SCANNED_PATHS_A5LSP.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2473,7 +2490,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5P7JOBS.length +
         SCANNED_PATHS_A5WIRING.length +
         SCANNED_PATHS_GGPROBES.length +
-        SCANNED_PATHS_A5PB.length,
+        SCANNED_PATHS_A5PB.length +
+        SCANNED_PATHS_A5LSP.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2534,6 +2552,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5WIRING,
       ...SCANNED_PATHS_GGPROBES,
       ...SCANNED_PATHS_A5PB,
+      ...SCANNED_PATHS_A5LSP,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2766,6 +2785,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // The P-B PR4/5 tie, same form: measured solo on this tree, RED
     // `expected 1160 to be 1157` before this clause, GREEN after it.
     expect(SCANNED_PATHS_A5PB.length).toBe(1160 - 1157)
+    // The P-C prod-lsp tie, same form, measured on the REBASED tree (base
+    // master `2957809e`, P-B already merged): solo RED `expected 1166 to be
+    // 1160` before this clause — six, matching the clause name-for-name.
+    expect(SCANNED_PATHS_A5LSP.length).toBe(1166 - 1160)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
