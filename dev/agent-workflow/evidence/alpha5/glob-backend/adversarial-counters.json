@@ -1,0 +1,21 @@
+{
+  "raceIterations": 5000,
+  "realRaceWalks": 120,
+  "statesSwapped": [
+    "real",
+    "link"
+  ],
+  "anchorAccepted": 2500,
+  "anchorRefused": 2500,
+  "hostileEntriesAccepted": 0,
+  "leaks": 0,
+  "realRaceRefusals": {
+    "symlink-alias": 60
+  },
+  "verdictCodes": [
+    "inside",
+    "symlink-alias",
+    "A6:anchor-drift"
+  ],
+  "finalAttackerState": "real"
+}
