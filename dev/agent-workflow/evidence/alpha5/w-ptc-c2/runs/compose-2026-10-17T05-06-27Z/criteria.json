@@ -1,0 +1,138 @@
+{
+  "run": "a5ptc2-compose-2026-10-17T05-06-27Z",
+  "launcherSha": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine tree @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "P-LAUNCHER",
+      "claim": "the trusted pre-launcher is the TRACKED file (sha recorded)",
+      "pass": true,
+      "observed": "sha256=cee10ed55f12123f… at packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-BARREL",
+      "claim": "the sandbox-provider dist PUBLIC BARREL imported in-process (binding censused)",
+      "pass": true,
+      "observed": "barrel=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "session created through the public entry",
+      "pass": true,
+      "observed": "sid=session-242668d0-a8c0-48"
+    },
+    {
+      "id": "L-PROMPT",
+      "claim": "the scripted run_code turn completed",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "C2-HOST-RUNTIME",
+      "claim": "the host itself mounts a PTC runtime (the row assembles none; census)",
+      "pass": true,
+      "observed": "{\"hasPtcRuntime\":true,\"language\":\"typescript\",\"sandboxMode\":\"workspace-write\"}"
+    },
+    {
+      "id": "C2-PROVIDER-PROBE",
+      "claim": "the Lane C provider instance probed ENFORCE-class capability rows on THIS world (real launcher; hard realm configured)",
+      "pass": false,
+      "observed": "legs={\"selective\":\"ENFORCE-CONFIRMED\",\"denyall\":\"ENFORCE-CONFIRMED\",\"badhandled\":\"DEMO-CONFIRMED\"} levels=[\"content-read:enforced\",\"write:enforced\",\"directory-metadata:unsupported\",\"alias:unsupported\",\"network-destination:unsupported\",\"inherit-cancel:author-trusted\"]"
+    },
+    {
+      "id": "C2-MODE-SCOPED",
+      "claim": "PTC-mode danger-full-access = per-session test-world switch (pre→post via public sandboxPolicy.resolve; deployment default untouched); OS caliber carried ONLY by the provider plane below",
+      "pass": true,
+      "observed": "pre=workspace-write post=danger-full-access default=workspace-write"
+    },
+    {
+      "id": "C2-CHAIN-OUTER-REAL",
+      "claim": "outer run_code executed in a REAL separate OS process (/proc sampling saw the ptc-runtime-node child during the run)",
+      "pass": true,
+      "observed": "outerChildren=[{\"pid\":111,\"ppid\":40,\"cmd\":\"/home/user/.nvm/versions/node/v24.21.0/bin/node --max-old-space-size=512 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js 134217728\"}] hostPid=40"
+    },
+    {
+      "id": "C2-CHAIN-INNER-GUARD",
+      "claim": "four INNER calls re-entered the SAME pipeline, guarded in order with the outer call as rootCallId (3 confined_exec + 1 probe_spawn)",
+      "pass": true,
+      "observed": "outer=call-66qrdijh seqs=[\"2:a5ptc2_confined_exec\",\"3:a5ptc2_confined_exec\",\"4:a5ptc2_confined_exec\",\"5:a5ptc2_probe_spawn\"]"
+    },
+    {
+      "id": "C2-CHAIN-POS-REAL-SPAWN",
+      "claim": "(a) supported: REAL confined spawn on the PTC inner edge — rc=0, launcher pid>0, lease=terminated, spill content match, per-call spy delta ≥1",
+      "pass": true,
+      "observed": "{\"ok\":true,\"rc\":0,\"pid\":119,\"lease\":\"terminated\",\"stdoutMatch\":true,\"spyDelta\":1,\"ceDelta\":1}"
+    },
+    {
+      "id": "C2-CHAIN-POS-RECEIPT-FLIGHT",
+      "claim": "(a) the per-call receipt (processIdentity pid + terminated lease) flew back through the PTC control pipe into the program result",
+      "pass": true,
+      "observed": "receipt=pid:119:plan-mvbxp3nm-169o3s inRunResult=true"
+    },
+    {
+      "id": "C2-CHAIN-DENY-OS",
+      "claim": "(a2) deny: SAME confined policy, private fixture — the OS plane refused the payload itself on the PTC inner edge (rc!=0, EACCES, zero leak; real spawn attempted: ceDelta=1)",
+      "pass": true,
+      "observed": "{\"ok\":true,\"rc\":1,\"eacces\":true,\"leaked\":false,\"ceDelta\":1,\"stderrHead\":\"/usr/bin/cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-chain/tests/homes/a5ptc2-compose-2026-10-1\"}"
+    },
+    {
+      "id": "C2-CHAIN-UNSUPPORTED-ZEROSPAWN",
+      "claim": "(b) net-deny: typed IO_POLICY_UNSUPPORTED BEFORE launch — per-call spy delta EXACTLY 0, confined-exec delta 0, zero plan/out paths in this call window",
+      "pass": true,
+      "observed": "{\"ok\":false,\"code\":\"IO_POLICY_UNSUPPORTED\",\"stage\":\"provider-refused\",\"spyDelta\":0,\"ceDelta\":0,\"paths\":[],\"message\":\"network profile 'deny' is not offered in realm 'a5ptc2-realm-2026-10-17T05-06-27Z': no provider in this lane demonstrates full network deny (PoC-4b); Landlock T\"}"
+    },
+    {
+      "id": "C2-CHAIN-GUARD-DENY",
+      "claim": "(c) probe_spawn: guard returned the typed deny reason; program caught it; body marker C2-PROBE-SPAWN-RAN absent EVERYWHERE (run result, tool results, transcript, ledger)",
+      "pass": true,
+      "observed": "sawDeny=true caught=true markerAbsent=true"
+    },
+    {
+      "id": "C2-CHAIN-GUARD-ZERO-SPAWN",
+      "claim": "(c) the confined-exec counter stayed flat across the denied call: total confined-exec for the WHOLE turn = 2 (pos + deny only); guard-side ceSnapshot at the probe = 2",
+      "pass": true,
+      "observed": "confinedExecTotal=2 probeCeSnapshot=2 byKind={\"abi-probe\":1,\"enforce-leg:selective\":1,\"enforce-leg:denyall\":1,\"enforce-leg:badhandled\":1,\"confined-exec\":2}"
+    },
+    {
+      "id": "C2-RESERVED-TRANSPORT-THROW",
+      "claim": "reserved run_code transport: register AND restrict throw reserved-name errors at both faces (双侧) — on THIS chain",
+      "pass": true,
+      "observed": "{\"root_register\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\"},\"scope_register\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\"},\"scope_restrict_deny\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\"},\"scope_restrict_allow\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\"}}"
+    },
+    {
+      "id": "C2-WORLD-CONFINED",
+      "claim": "mode event + all state confined to this world (<HOME> session logs; teardown removes everything)",
+      "pass": true,
+      "observed": "sessionLogs=[\"<HOME>/sessions/--srv-workspace-dsh-plugins-dsh-agent-team-.worktrees-alpha5-ptc-chain-tests-homes-a5ptc2-compose-2026-10-17T05-06-27Z-ws--/session-242668d0-a8c0-4820-9750-2e01d022c619/session.v4.jsonl.zstd\"] persistedEventFiles=0"
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": "the :3080 stable dev instance was never touched (probe status equal pre/post; kit binds only port 3184)",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=true"
+    },
+    {
+      "id": "P-PORT-RELEASED",
+      "claim": "port 3184 released after teardown",
+      "pass": true,
+      "observed": "free=true"
+    }
+  ]
+}

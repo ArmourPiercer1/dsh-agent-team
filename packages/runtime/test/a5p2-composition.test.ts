@@ -14,11 +14,17 @@
  *
  * @module test/a5p2-composition
  */
-import { describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { join } from 'node:path'
 import { createScopedDispatcher } from '../tool-dispatch/index.js'
-import { binding, effects, MEMBER, readEffect, REALM } from './a5p2-fixtures.js'
-import { allowPolicy, makeHarness } from './a5p2-kernel-harness.js'
+import { binding, effects, MEMBER, readEffect, toolInvokeEffect, REALM } from './a5p2-fixtures.js'
+import { FIXED_NOW, allowPolicy, makeHarness } from './a5p2-kernel-harness.js'
+import { createGrantLedger, createProductionAdmissionAssembly } from '../tool-admission/index.js'
+import { createProductionControlledFsProvider } from '../controlled-fs/src/index.js'
+import { createPoc3World, destroyPoc3World, fileRef, type Poc3World } from '../controlled-fs/test/poc3-harness.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/types.js'
 import type { AdmissionRequest } from '../../domain/tool-governance/src/index.js'
+import { parseRequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 
 function assembly(opts: { allow: boolean }) {
   const dispatcher = createScopedDispatcher({
@@ -137,5 +143,267 @@ describe('Guard outside, Admission inside — nobody gets to run twice or for fr
     expect(a.dispatcher.beginDrain().ok).toBe(true)
     expect(a.dispatcher.tombstone().ok).toBe(true)
     expect(a.dispatcher.release().ok).toBe(true)
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRODUCTION ASSEMBLY × PRODUCTION PROVIDER (PR2/PR3 production-assembly
+// round) — the sequence the W5/C-04/05/C-08 evidence kits demonstrated with
+// fixture builders, run here as CLASSES over a REAL fixture world: the REAL
+// authority input (a template `capabilities.permissions` object, not fixture
+// policy arms) → `createProductionAdmissionAssembly` → `admitCall` → the
+// assembly's FS port → `createProductionControlledFsProvider.gateCall` →
+// real bytes through the C-FS law chain, ending at the one-shot execution
+// edge. Host contract: `dev/agent-workflow/evidence/alpha5/prod/pa-CONTRACT.md`.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PROD_REALM = 'realm-1' // the C-FS fixture world's realm (poc3-harness)
+const PROD_FP = 'sha256:' + 'c'.repeat(64)
+const WINDOW = { offset: 0, limit: null } as const
+
+/** Effects over the C-FS fixture world: the `absolute-path` resource kind is
+ *  the world's spelling (poc3-harness), built through the frozen parser. */
+function absEffects(tool: string, kind: 'read' | 'write', locator: string) {
+  const parsed = parseRequestedEffectSet([
+    { kind: 'tool-invoke', toolName: tool, resource: null },
+    { kind, resource: { realmId: PROD_REALM, kind: 'absolute-path', canonicalLocator: locator, rights: kind === 'read' ? ['read'] : ['write'] } },
+  ])
+  if (!parsed.ok) throw new Error(`prod fixture effect set rejected: ${JSON.stringify(parsed.problems)}`)
+  return parsed.value
+}
+
+describe('production admission assembly (createProductionAdmissionAssembly, real template policy)', () => {
+  let world: Poc3World
+  const aFile = () => join(world.ctrl, 'public', 'a.txt')
+  const bFile = () => join(world.ctrl, 'private', 'secret.txt')
+
+  beforeAll(() => {
+    world = createPoc3World()
+  })
+  afterAll(() => {
+    if (world) destroyPoc3World(world.world)
+  })
+
+  function prodAssembly(config: {
+    permissionPolicy: TemplatePermissionPolicy
+    ledger?: ReturnType<typeof createGrantLedger>
+    role?: 'leader' | 'member'
+    leaderExecTokenPresent?: () => boolean
+    authorityGeneration?: () => number
+  }) {
+    return createProductionAdmissionAssembly({
+      permissionPolicy: config.permissionPolicy,
+      realmId: PROD_REALM,
+      templateId: 'tpl-prod',
+      definitionOwnerAuthority: 'human-user',
+      role: config.role ?? 'member',
+      clock: () => FIXED_NOW,
+      authorityGeneration: config.authorityGeneration ?? (() => 1),
+      beneficiaryAuthority: (config.role ?? 'member') === 'leader' ? 'leader' : 'member',
+      ...(config.ledger === undefined ? {} : { ledger: config.ledger }),
+      ...(config.leaderExecTokenPresent === undefined ? {} : { leaderExecTokenPresent: config.leaderExecTokenPresent }),
+    })
+  }
+
+  function provider() {
+    return createProductionControlledFsProvider({
+      realmId: PROD_REALM,
+      instances: [{ fs: 'ctl', rootDir: world.ctrl, realmId: PROD_REALM, kind: 'absolute-path' }],
+      clock: () => FIXED_NOW,
+      authorityGeneration: () => 1,
+      consumed: () => false,
+    })
+  }
+
+  function readRequest(callId: string, locator: string, tool = 'read'): AdmissionRequest {
+    return {
+      binding: binding({ toolName: tool }),
+      member: MEMBER,
+      callId,
+      realmId: PROD_REALM,
+      parametersFingerprint: PROD_FP,
+      requestedEffects: absEffects(tool, 'read', locator),
+    }
+  }
+
+  it('happy chain: template allow rule → admitCall → gated lane READS REAL BYTES; one-shot spend is visible to the provider arm', async () => {
+    const built = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'exact', path: aFile() } }], ask: [], deny: [] },
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const asm = built.value
+    const request = readRequest('prod-call-1', aFile())
+    const decision = await asm.admitCall(request)
+    expect(decision.ok && decision.value.kind).toBe('admitted')
+    if (!decision.ok || decision.value.kind !== 'admitted') return
+    const grant = decision.value.grant
+    expect(asm.consumed(grant.grantId)).toBe(false)
+
+    const prov = createProductionControlledFsProvider({
+      realmId: PROD_REALM,
+      instances: [{ fs: 'ctl', rootDir: world.ctrl, realmId: PROD_REALM, kind: 'absolute-path' }],
+      clock: () => FIXED_NOW,
+      authorityGeneration: () => 1,
+      consumed: asm.consumed, // THE provider arm wired to the assembly — one ledger, two faces
+    })
+    const lane = prov.gateCall({ admission: asm.createFsAdmissionPort(request, grant), parametersFingerprint: grant.parametersFingerprint })
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const res = await lane.fs.readText(grant, ref, WINDOW)
+    expect(res.ok && res.value.text).toBe('A-CONTENT\n')
+    expect(asm.consumed(grant.grantId)).toBe(true) // the FS op's exec edge WAS the kernel consume
+
+    // one-shot law through the whole chain: a second gated op on the SAME grant dies at the lane's revalidate with zero IO.
+    const again = await lane.fs.readText(grant, ref, WINDOW)
+    expect(again.ok).toBe(false)
+    if (!again.ok) expect(again.error.details?.['cfReason']).toBe('grant-consumed')
+  })
+
+  it('a path the template never named under default:ask takes the Ask arm (no-authority), body/grant never minted', async () => {
+    const built = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'exact', path: aFile() } }], ask: [], deny: [] },
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const decision = await built.value.admitCall(readRequest('prod-call-ask', bFile()))
+    expect(decision.ok && decision.value.kind).toBe('requires-approval')
+  })
+
+  it('default:deny gates at the ASSEMBLY door: an unnamed effect is denied with zero kernel side effects', async () => {
+    const ledger = createGrantLedger()
+    const built = prodAssembly({
+      permissionPolicy: { default: 'deny', allow: [{ tool: 'read', resource: { kind: 'exact', path: aFile() } }], ask: [], deny: [] },
+      ledger,
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    // covered effect passes the gate (deny-default is deny-UNTIL-NAMED, not deny-everything)
+    const okDecision = await built.value.admitCall(readRequest('prod-dd-1', aFile()))
+    expect(okDecision.ok && okDecision.value.kind).toBe('admitted')
+    // an unnamed WRITE effect: typed denial BEFORE the kernel (nothing minted, nothing consumed)
+    const writeRequest: AdmissionRequest = {
+      binding: binding({ toolName: 'write' }),
+      member: MEMBER,
+      callId: 'prod-dd-2',
+      realmId: PROD_REALM,
+      parametersFingerprint: PROD_FP,
+      requestedEffects: absEffects('write', 'write', bFile()),
+    }
+    const deniedDecision = await built.value.admitCall(writeRequest)
+    expect(deniedDecision.ok && deniedDecision.value.kind).toBe('denied')
+    if (!deniedDecision.ok || deniedDecision.value.kind !== 'denied') return
+    expect(deniedDecision.value.error.code).toBe('IO_POLICY_UNSUPPORTED')
+    expect(deniedDecision.value.error.details?.['refusal']).toBe('template-default-deny')
+    expect(ledger.consumedCount()).toBe(0)
+  })
+
+  it('template DENY lane + R-1a sources: the denied effect walks the case at the rung ABOVE the definition owner (ruling ①)', async () => {
+    const built = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'write', resource: { kind: 'exact', path: bFile() } }] },
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const sources = built.value.denySources()
+    expect(sources.length).toBeGreaterThan(0)
+    expect(sources.every((s) => s.sourceRef.startsWith('tpl-prod#deny['))).toBe(true)
+    const writeRequest: AdmissionRequest = {
+      binding: binding({ toolName: 'write' }),
+      member: MEMBER,
+      callId: 'prod-deny-1',
+      realmId: PROD_REALM,
+      parametersFingerprint: PROD_FP,
+      requestedEffects: absEffects('write', 'write', bFile()),
+    }
+    const decision = await built.value.admitCall(writeRequest)
+    // ONE DENY ONE SOURCE PROOF: an attributed deny becomes an upgradable Ask
+    // at the rung above the owner — never silence, never an unattributed deny.
+    expect(decision.ok && decision.value.kind).toBe('requires-approval')
+    if (!decision.ok || decision.value.kind !== 'requires-approval') return
+    const planned = built.value.planApproval(writeRequest)
+    expect(planned.ok).toBe(true)
+    if (!planned.ok) return
+    const deniedArms = planned.value.deniedEffects.filter((d) => d.requiredAuthority === 'human-admin')
+    expect(deniedArms.length).toBeGreaterThan(0)
+  })
+
+  it('leader shell allow-any obeys the exec dual gate READ-TIME: closed ⇒ Ask, opened ⇒ admitted, no restart', async () => {
+    let execToken = false
+    const built = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] },
+      role: 'leader',
+      leaderExecTokenPresent: () => execToken,
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const bashRequest: AdmissionRequest = {
+      binding: binding(), // fixture binding is the bash tool
+      member: MEMBER,
+      callId: 'prod-shell-1',
+      realmId: PROD_REALM,
+      parametersFingerprint: PROD_FP,
+      requestedEffects: effects(toolInvokeEffect('bash')),
+    }
+    const closed = await built.value.admitCall(bashRequest)
+    expect(closed.ok && closed.value.kind).toBe('requires-approval')
+    execToken = true
+    const opened = await built.value.admitCall({ ...bashRequest, callId: 'prod-shell-2' })
+    expect(opened.ok && opened.value.kind).toBe('admitted')
+  })
+
+  it('construction failures type out (the host fails the AgentSetup, never a half-wired authority)', () => {
+    const anyDeny = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] },
+    })
+    expect(anyDeny.ok).toBe(false)
+    if (anyDeny.ok) return
+    expect(anyDeny.error.details?.['refusal']).toBe('projection-deny-unprojectable')
+    const noClock = createProductionAdmissionAssembly({
+      permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [] },
+      realmId: PROD_REALM,
+      templateId: 'tpl-x',
+      definitionOwnerAuthority: 'human-user',
+      role: 'member',
+      clock: undefined as unknown as () => number,
+      authorityGeneration: () => 1,
+      beneficiaryAuthority: 'member',
+    })
+    expect(noClock.ok).toBe(false)
+    if (noClock.ok) return
+    expect(noClock.error.details?.['refusal']).toBe('assembly-input-malformed')
+  })
+
+  it('the provider on a stale generation view stops the chain BEFORE the port (the lane revalidates, the kernel stays clean)', async () => {
+    const built = prodAssembly({
+      permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'exact', path: aFile() } }], ask: [], deny: [] },
+    })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const asm = built.value
+    const request = readRequest('prod-gen-1', aFile())
+    const decision = await asm.admitCall(request)
+    expect(decision.ok && decision.value.kind).toBe('admitted')
+    if (!decision.ok || decision.value.kind !== 'admitted') return
+    // the provider reads its generation PER gateCall — a bump between admit and gate is the stale-between-legs law:
+    const prov = createProductionControlledFsProvider({
+      realmId: PROD_REALM,
+      instances: [{ fs: 'ctl', rootDir: world.ctrl, realmId: PROD_REALM, kind: 'absolute-path' }],
+      clock: () => FIXED_NOW,
+      authorityGeneration: () => 2,
+      consumed: asm.consumed,
+    })
+    const lane = prov.gateCall({ admission: asm.createFsAdmissionPort(request, decision.value.grant), parametersFingerprint: decision.value.grant.parametersFingerprint })
+    const ref = fileRef(world, 'public/a.txt', ['read'])
+    const res = await lane.fs.readText(decision.value.grant, ref, WINDOW)
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.error.details?.['cfReason']).toBe('authority-generation-stale')
+    expect(asm.consumed(decision.value.grant.grantId)).toBe(false) // refusal happened at revalidate — the one-shot grant is NOT spent
+  })
+
+  it('an empty bound fingerprint dies at the provider door (law 2 via bindAdmissionRecheck — a lane that cannot bind cannot gate)', () => {
+    const prov = provider()
+    expect(() => prov.gateCall({
+      admission: { recheckCall: async () => ({ ok: true as const }) },
+      parametersFingerprint: '',
+    })).toThrow(TypeError)
   })
 })
