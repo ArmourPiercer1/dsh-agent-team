@@ -68,3 +68,20 @@
 1. **效应面整体未换血**：受治理 team 的文件/进程/搜索/shell/jobs 效应仍全部经 host 原生执行——PR2 one-shot Grant、PR3 C-FS（deny-before-open）、PR4 OS 强制 provider、PR5 governed tools、PR7 owner-fence 五条线零生产 import 边（guard 只是分发层完整性，不中介 effect）。
 2. **a5p5 连安装面都不在**：committed 安装面只有 `packages/runtime/dist`，a5p5 emit 不落该镜像且无 barrel/注册边——即便接受 kit 装配现状，git 安装的用户产物里根本没有 governed search/shell 代码。
 3. **装配收尾全在队列**：G-d 集成确认未闭、C-10 provider glue/GLUE-3 未落、jobs kit 未切 committed dist、#290/ROWFIX/#296/outer/outerfs 未合、LSP 两裁决+PTC net 半臂待用户/上游、Blueprint vNext 未实施、`final_declaration` 全 null——**当前不可对外作 Alpha.5 生产就绪宣称**。
+
+---
+
+## 5. 更正节（2026-10-17，P-D vnext-adr 轮；append-only，上方审计正文其余不改）
+
+- 轮次 = `alpha5-prod-vnext-adr`；writer = qwen3.8-flash-next；基 = `origin/master @ d714a941`（fetch 亲验）。**载体说明**：本文件正本原在未合分支 `alpha5-prod-checklist @ 5bea01c6`（基 a2473203），本分支按原路径携带其**字节相同**副本（上方 §0–§4 审计正文与 5bea01c6 diff=空，亲验）+ 本节更正；两分支合并时以本文件为收敛版。
+- **更正对象 = LSP 口径**（主表 PR6-LSP 行、§2 C-07 行、§4 缺口三"LSP 两裁决"行的混合表述）。原文 C-07 行『**唯一 C 类=上游 SEAM-GAP**（策略输入通道）+用户待答』把两件不同层级的事统称一个上游缺口，按在册证据更正为两分：
+
+| 缺口 | 层级 | 事实源 | 状态 |
+|---|---|---|---|
+| **R-1 = C-PROC streaming-pipe 臂**（长驻双向管道/spawnStreaming 启动方法） | **本仓冻结接口缺**——差异全在 Team 自持 C-PROC 冻结形状侧（`RunOutput`/`SpawnReceipt` 无活进程句柄、无 stdin 流臂），**与上游无关**（host 公开面句柄已有 `stdin: Writable`） | `LSP-rulings-brief.md` §1（GAP gap2 verdict 原文『裁决项(非上游)』；PROV:99-109/:243/:292） | 已正式向用户提出**待答**；冻结面零触碰。其**装配等价物已验** = W-LSP-DR **20/20**（权威绿跑 `w-lsp-dr/runs/2026-10-17T05-41-03Z/`，#295 已合：公开面 `ctx.isolate`+`realm.plugin`+`dispose()` 下策略变化→销毁重建全链 20 判据 + 连续两轮四次转换零泄漏；注：该轮验证的语义面 = 拟裁 R-2 口径，对 R-1 自身臂 README §4 明示未验证——R-1 的增量仅在 C-PROC 覆盖面扩展裁决，不阻塞公开面装配） |
+| **sub-realm 全键池**（池键 ⊇ …+PolicyGeneration、代际强制逐出钩子、spawn spec per-policy 参数） | **上游公开面真缺（唯一上游缺口）**：公开面无策略输入通道、无逐出钩子；realm = 公开面可表达**最细**隔离粒度 | `pr6/SEAM-VERDICTS.md` **B4:58-60**（SEAM-GAP·上游）；`w-ptc-re/probe-gap-lsp-policy.result.json` gap1 | BLOCKED 在册（`gap-classification-ABC.md` C-07=C 类所指**仅此腿**）；处置=不派工、不 patch upstream |
+
+- **口径规则**：①『唯一上游缺口/唯一 C 类（上游）』表述**只许**指 sub-realm 全键池（B4）；②R-1/R-2 两项待答裁决 = 本仓冻结面用户裁决项，不得包装成上游阻塞；③M-09 恒 PROBE-GATED 的机检预设针对**全键粒度**腿；realm 粒度装配等价（含"策略变化→旧 PID 终止重建"形状）已由 W-LSP-DR 转 LIVE 在册，主张仍须标粒度并引 `LSP-rulings-brief.md` §3 两分表述。
+- 同型澄清（防再次统称）：PTC **net 半臂**（外层网络 OS 强制）= 零公开 arm、出路=**上游词表需求**（#296 在册），与上述两腿各自独立，三者不得互为"唯一"。
+
+— 更正节 writer = alpha5-prod-vnext-adr（qwen3.8-flash-next；只读+本文件追加；所引行号 @d714a941 树亲验）。
