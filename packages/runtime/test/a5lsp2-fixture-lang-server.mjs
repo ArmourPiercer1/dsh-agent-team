@@ -18,6 +18,7 @@
  * @module packages/runtime/test/a5lsp2-fixture-lang-server
  */
 
+import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import fs from 'node:fs'
 
