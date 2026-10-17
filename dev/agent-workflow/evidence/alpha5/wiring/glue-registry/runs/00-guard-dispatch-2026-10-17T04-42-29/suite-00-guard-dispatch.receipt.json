@@ -1,0 +1,44 @@
+{
+  "suite": "00-guard-dispatch",
+  "status": "PASS",
+  "legs": [
+    {
+      "id": "S00-KIT-HOST",
+      "claim": "a5p1-kit receipt fully green, host legs (C1 assembly … C7 discipline; the Guard on the real Host) among them",
+      "pass": true,
+      "observed": "all ok=41/41; host legs 13/13"
+    },
+    {
+      "id": "S00-ORDER-ARMS",
+      "claim": "ordered-teardown arms incl. the NEG-1 hazard contrast all ok",
+      "pass": true,
+      "observed": "ok=10/10 arms=[hazard,safe,parked,inBody,shadowUnbound,shadowBound]"
+    },
+    {
+      "id": "S00-REREG-WINDOW",
+      "claim": "the 14 re-registration-window arms all ok (late re-resolution NEG-1 leg included)",
+      "pass": true,
+      "observed": "ok=18/18"
+    },
+    {
+      "id": "S00-DYNRAN-TYPED-DENY",
+      "claim": "SUP-09 obligation: the dynRan flip re-ran green on the real Host (C2a typed readable refusal ∧ C2b body produced no effect)",
+      "pass": true,
+      "observed": "C2a=true C2b=true"
+    },
+    {
+      "id": "S00-VOCAB-FACE",
+      "claim": "loaded team_* face == compiled tools face team_* literals; no denied name loaded",
+      "pass": true,
+      "observed": "loaded=15 compiled=15 phantom=[] unloaded=[] denied∩loaded=[]"
+    }
+  ],
+  "evidenceDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/dev/agent-workflow/evidence/alpha5/wiring/glue-registry/runs/00-guard-dispatch-2026-10-17T04-42-29",
+  "pins": {
+    "source": "tests/paths.mjs",
+    "version": "0.2.0-rc.2",
+    "testUseSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "kitExit": 0
+}

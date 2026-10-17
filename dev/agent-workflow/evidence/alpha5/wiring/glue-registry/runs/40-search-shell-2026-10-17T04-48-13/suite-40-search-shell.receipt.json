@@ -1,0 +1,31 @@
+{
+  "suite": "40-search-shell",
+  "status": "PASS",
+  "legs": [
+    {
+      "id": "S40-GATED",
+      "claim": "W5 gated: every live criterion GREEN (parity vs system grep/rg, deny-before-spawn, Spill attribution, one-shot, unbound negative control)",
+      "pass": true,
+      "observed": "status=GREEN legs=34 red=[]"
+    },
+    {
+      "id": "S40-UNGATED-RED",
+      "claim": "W5 ungated RED control: the gate carries the refusals — exactly the pinned gate-carrier set is red",
+      "pass": true,
+      "observed": "status=RED red=9 set-match=true red=[L-W5-DENY-ZERO,L-W5-E2E-BASH,L-W5-E2E-SEARCH,L-W5-GUARD,L-W5-ONESHOT,L-W5-OVERPRIV,L-W5-PARITY-SEARCH,L-W5-SPILL-POINTER,L-W5-UNBOUND]"
+    },
+    {
+      "id": "S40-UNIT-FACE",
+      "claim": "a5p5 lane suites pass under the ROOT vitest config (collection wired by GLUE-2)",
+      "pass": true,
+      "observed": "exit=0 passed=69"
+    }
+  ],
+  "evidenceDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue/dev/agent-workflow/evidence/alpha5/wiring/glue-registry/runs/40-search-shell-2026-10-17T04-48-13",
+  "pins": {
+    "source": "tests/paths.mjs",
+    "version": "0.2.0-rc.2",
+    "testUseSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  }
+}
