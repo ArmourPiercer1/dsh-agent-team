@@ -1,0 +1,19 @@
+{
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g6-red-base",
+  "head": "230022598dc96a377e25039bb55a27776a682552",
+  "surface": "strict",
+  "surfaces": [
+    "packages/runtime/dist",
+    "packages/runtime/package.json"
+  ],
+  "expandedFileCount": 1728,
+  "entryPresent": true,
+  "inFace": {
+    "resolver": false,
+    "seam": false
+  },
+  "outOfFaceSiblings": {
+    "resolver": false,
+    "seam": false
+  }
+}

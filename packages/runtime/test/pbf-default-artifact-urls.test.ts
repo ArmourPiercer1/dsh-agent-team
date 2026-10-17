@@ -69,23 +69,28 @@ describe('plugin-bundle-form: location-derived artifact URLs', () => {
     )
   })
 
-  it('defaultSeamUrlCandidates is dist-first with two layout candidates', () => {
-    // The bootstrap passes its OWN module URL: from the dist layout
-    // (dist/packages/runtime/src/plugin) five up = the runtime package
-    // root — candidate 0 hits; from the source layout (src/plugin) two
-    // up = the same package root — candidate 1 hits. The other candidate
-    // is dead weight per layout (root-binding is never compiled; the seam
-    // is ONE file at the package root).
+  it('defaultSeamUrlCandidates is PACKAGE-FACE first in both layouts (GLUE-6)', () => {
+    // GLUE-6 (RED-A): the seam is a runtime dependency of the shipped entry,
+    // so the placed mirror copy is candidate 0 — the strict
+    // `files: ["dist"]` install face carries it. From the dist layout
+    // (dist/packages/runtime/src/plugin) TWO up = dist/packages/runtime, the
+    // mirror root the placement writes into; the pre-GLUE-6 sibling (five up =
+    // the runtime package root OUTSIDE the mirror, dead in an installed
+    // package) stays as candidate 1 for a source checkout that never ran
+    // `build:composition`.
     expect(host.defaultSeamUrlCandidates(DIST_HOST_URL)).toEqual([
-      'file:///install/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs',
       'file:///install/dsh-agent-team/packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs',
+      'file:///install/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs',
     ])
   })
 
-  it('defaultSeamUrlCandidates source layout: the second candidate is the package seam', () => {
+  it('defaultSeamUrlCandidates source layout: candidate 0 is the package seam', () => {
+    // The same specifier hits the tracked source file from this layout (two up
+    // from src/plugin = the runtime package root), so the unit-test runner and
+    // the installed entry resolve the ONE file their own layout ships.
     const candidates = host.defaultSeamUrlCandidates(SRC_HOST_URL)
     expect(candidates).toHaveLength(2)
-    expect(candidates[1]).toBe(
+    expect(candidates[0]).toBe(
       'file:///install/dsh-agent-team/packages/runtime/root-binding/harness/seam.mjs',
     )
   })

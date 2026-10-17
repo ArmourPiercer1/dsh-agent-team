@@ -74,3 +74,8 @@ ToolBinding 放置语义（R1，#308 GLUE-5 在产机制的**类型面**）：`t
 - **历史钉保留**：原笔 `1177 - 1168`（base 23002259 上的本轮首落）不删除——本文与 commit message 均保留该历史值；merge 后的现行钉以 p4t6 测试体内注释为准（"Pre-merge this clause tied 1177 - 1168"）。
 - router-log 并集：master 三条按 master 追加顺序在前，本支 17:4xZ 条整体保持原文在后；两侧均无删改（并集非改写）。
 - 语义冲突：无（G1=runtime src 面、P-B-R2=install 面，与本支 dormant domain 面零交集）；a5sr 五套件、typecheck、dist 镜像（9 文件再生）均在合并树亲验。
+
+### Rebase-integration 注 2（2026-10-17 merge master@35bff836，GLUE-6）
+
+- master 进 GLUE-6（#318 面，p4t6 新占 1171）。Δ9 链再 re-tie **1171→1180**（合并树 scanner 实测：p4t6 coverage 精确断言 + a5sr 五套件 66/66 绿）。钉链史：1177-1168（base 23002259）→ 1179-1170（master@68deccaa）→ 1180-1171（master@35bff836，现行）。
+- GLUE-6 之 tie/注释/master 侧条款逐字保留；标题面 master 本笔未动（其 list-is-record 规则自便，非我改写对象）。router-log 本次 git 自动并集无冲突；typecheck EXIT=0；dist 镜像同笔再生；未动他支。
