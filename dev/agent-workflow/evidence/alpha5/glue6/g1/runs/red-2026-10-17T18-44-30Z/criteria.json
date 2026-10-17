@@ -1,0 +1,122 @@
+{
+  "posture": "red",
+  "surface": "aux",
+  "runStamp": "2026-10-17T18-44-30Z",
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g1-redcap",
+  "worktreeHead": "fe8290381d1518ff437b60fb72972e5742f0e40d",
+  "hostRuntime": {
+    "path": "../a5g1-denyfix/tests/deepseek-harness-test-use",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "ports": {
+    "host": 3185,
+    "mock": 3495
+  },
+  "passCount": 17,
+  "failCount": 0,
+  "criteria": [
+    {
+      "id": "H3a",
+      "description": "rig: :3080 probed READ-ONLY before the run (stable instance never signalled) and the test-use host tree is porcelain 0 before",
+      "pass": true,
+      "evidence": ":3080=401 porcelain=0"
+    },
+    {
+      "id": "K1",
+      "description": "RED AXIS-A — THE DENY MISS WITH A REACHABLE SUCCESS PATH: the member policy DENIES the shell class (deny bash any), the denied team_bash call still returned the FIXTURE BACKEND'S SUCCESS (marker in the presented text), backend execCount 1 and its fs sentinel WRITTEN — the call reached the effect face and had real side effects; the template deny answered nothing (IO_POLICY_UNSUPPORTED can never show this — it is a landing without a backend)",
+      "pass": true,
+      "evidence": "{\"text\":\"bash · exit=0\\n> A5G1_BACKEND_RAN\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\",\"shellExec\":1,\"shellSentinelWritten\":true}"
+    },
+    {
+      "id": "K2",
+      "description": "ALLOW LANE OF THE SAME CONFIGURATION (over-tightening guard, asserted in BOTH postures): the read-covered team_grep call reaches the fixture backend with its SUCCESS PATH INTACT (marker + execCount 1 + sentinel) — the deny lane tightens shell, it never swallows the allow lane",
+      "pass": true,
+      "evidence": "{\"text\":\"search · content · 1 matches\\n> /a5g1/target.txt:2: A5G1_GREP_HIT\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\",\"searchExec\":1,\"searchSentinelWritten\":true}"
+    },
+    {
+      "id": "K3",
+      "description": "RED AXIS-A — LANDING EVIDENCE on the production (shut) face: the DENIED team_bash call carries the shut backend's code=IO_POLICY_UNSUPPORTED and NO lane code — the call landed on the backend face past the deny (this string is LANDING evidence, never deny evidence); the allow-lane grep lands on the same face (the disclosed GLUE-4 follow-up)",
+      "pass": true,
+      "evidence": "{\"bash\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\",\"grep\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}"
+    },
+    {
+      "id": "K4",
+      "description": "RED AXIS-A — the default-deny gate is INERT too: an uncovered team_grep under a bare deny default lands on the backend face (IO_POLICY_UNSUPPORTED), not on code=template-default-deny",
+      "pass": true,
+      "evidence": "{\"grep\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\",\"bash\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}"
+    },
+    {
+      "id": "K5",
+      "description": "DECIDE-VECTOR TABLE (both postures write it; the README pairs the files): every vector decides EXACTLY as this posture's pinned expectation — the 4 aliased-mount plane-namespace vectors flip red→green, the 7 others — alias spellings, the NATIVE-TAKEOVER mount (pre-fix-identical because mounted name == native class there), the allow lane, non-plane names, file-class rules, the ask default — are the SAME pinned verdict in both tables: Δ=[] outside the mapping point",
+      "pass": true,
+      "evidence": "posture=red vectors=11 failures=[] flipped=[\"native-bash-deny-under-deny-default\",\"native-bash-deny-under-ask-default\",\"uncovered-grep-arms-bare-deny-default\",\"uncovered-glob-arms-bare-deny-default\"] invariant=[\"takeover-mount-native-spelling\",\"alias-spelling-team-bash-deny\",\"alias-spelling-team-grep-uncovered\",\"allow-lane-grep-covered\",\"non-plane-invoke-outside-namespace\",\"file-class-deny-exact-locator\",\"ask-default-gate-off\"]"
+    },
+    {
+      "id": "E1",
+      "description": "EXPANSION: strict `git archive HEAD` of the runtime package's PUBLIC face (packages/runtime/dist + packages/runtime/package.json + packages/runtime/src/plugin/upstream-resolver.mjs + packages/runtime/root-binding/harness/seam.mjs + .agents/skills) unfolded byte-exactly; per-file sha256 manifest written",
+      "pass": true,
+      "evidence": "head=fe8290381d files=1732 entry=true inFace={\"resolver\":false,\"seam\":false} outOfFace={\"resolver\":true,\"seam\":true}"
+    },
+    {
+      "id": "E2",
+      "description": "the expansion carries its OWN node_modules: the runtime package's installed dependency tree copied dereferenced from the pinned 0.2.0-rc.2 install, BFS-verified over declared deps + peers + optionals (store-filled where absent; foreign-platform optional natives skipped and recorded)",
+      "pass": true,
+      "evidence": "bfs=54 fromStore=38 nmTop=22 skippedForeign=[\"node-addon-require-builtin-darwin-arm64\",\"node-addon-require-builtin-darwin-x64\",\"node-addon-require-builtin-linux-arm64-gnu\",\"node-addon-require-builtin-win3"
+    },
+    {
+      "id": "E3",
+      "description": "load graph of the BOOT FACE (aux, both postures) MEASURED through a module.resolve hook: the five EAGER production loads (entry, three live rows, a5p5 register face) import from the expansion with zero errors and FOREIGN file: modules = 0 — the rig is self-sufficient, so the red/green delta is the bytes under test and nothing else (the two LAZY entry siblings sit outside the strict face on both postures — the #311 gap the unmerged GLUE-6/#313 closes; the aux patch + the live boot A1 carry them, recorded in expansion-facts.json)",
+      "pass": true,
+      "evidence": "rows=5 loaded=1628 foreign=0 errors=[]"
+    },
+    {
+      "id": "A0",
+      "description": "RIG: the pinned host (0.2.0-rc.2 @ 639ed01539) started its web server and answered the token gate in this posture (the boot marker line was written) — so every ERR_MODULE_NOT_FOUND below belongs to the PLUGIN bootstrap, not to the harness",
+      "pass": true,
+      "evidence": "bootLine=\"dsh web: http://127.0.0.1:3185/?token=<REDACTED>\" bootError=\"\" bootstrapFailedBeforeMarker=false"
+    },
+    {
+      "id": "A1",
+      "description": "BOOT FACE (aux — identical shape in both postures, so the red/green delta is ONLY the lane bytes): the shipped entry APPLIES on red bytes — zero ERR_MODULE_NOT_FOUND / bootstrap-FAILED lines — and the observer row answers /__a5g1/health applied:true",
+      "pass": true,
+      "evidence": "observerHealth={\"status\":200,\"body\":\"{\\\"ok\\\":true,\\\"applied\\\":true}\"} moduleNotFound=[] bootError=\"\""
+    },
+    {
+      "id": "L0",
+      "description": "the plane mounted on this governed world and the placement reached the MODEL-FACING WIRE of the governed member (own-layer trio in the member tool catalog; the assembly logged its placement rows)",
+      "pass": true,
+      "evidence": "planeObservations=[\"a5p2prod: production-admission-constructed\",\"a5-plane: placed [team_grep,team_glob,team_bash]\",\"a5p2prod: production-admission-note\"] memberWire team_*=[\"team_bash\",\"team_glob\",\"team_grep\"] globalAliases=[]"
+    },
+    {
+      "id": "L1",
+      "description": "RED LIVE — deny-miss: the member template DENIES the shell class and gives grep NO coverage, yet no lane verdict appears anywhere on the real chain (instance log, wire, member final) — the deny lane answered nothing (GAP PROBE G1 reproduced on the live host)",
+      "pass": true,
+      "evidence": "denyLaneLines=[] sawDenyLane=false finalQuoted=false memberReqs=3"
+    },
+    {
+      "id": "L2",
+      "description": "RED LIVE — landing: the denied calls reached the backend face and came back as RESULTS — the model-side tool results carry the host result-assembly crash text (the unmerged GLUE-6 render face turning the landed result into an error text delivered as the tool result). Reaching result-assembly is only possible for a call the lane answered with a BACKEND RESULT, so the crash text IN THE TOOL RESULT is the landing witness (a lane refusal never assembles content)",
+      "pass": true,
+      "evidence": "crash=true crashLinesInLog=[] results=[{\"toolUseId\":\"call-a5g1-bash-k93uwinq\",\"wireType\":\"array\",\"blockTypes\":[\"text\"],\"content\":\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: content.some is not a function\\\"}]\"},{\"toolUseId\":\"call-a5g1-grep-ehtjk7wc\",\"wireType\":\"array\",\"blockTypes\":[\"text\"],\"content\":\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: content.some is not a function\\\"}]\"}]"
+    },
+    {
+      "id": "H3b",
+      "description": "rig: :3080 unchanged (identical read-only probe before/after; never POSTed) and the test-use host tree porcelain 0 after",
+      "pass": true,
+      "evidence": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "C1",
+      "description": "cleanup: the DSH_HOME world swept (TEST_METHODS §7)",
+      "pass": true,
+      "evidence": "home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g1-redcap/tests/homes/a5g1-red-202610171844 swept=true"
+    },
+    {
+      "id": "C2",
+      "description": "evidence hygiene: every written file passes the token/cookie leak scan (redactions applied at write time)",
+      "pass": true,
+      "evidence": "leaks=[] dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g1-denyfix/dev/agent-workflow/evidence/alpha5/glue6/g1/runs/red-2026-10-17T18-44-30Z"
+    }
+  ]
+}
