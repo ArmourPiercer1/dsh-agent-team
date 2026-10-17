@@ -132,7 +132,7 @@
           "a_log_foreign_roots": 0,
           "b_log_foreign_roots": 0
         },
-        "subcall_home": "input = { callId: `${parentCallId}:ptc:n`, rootCallId: exec.rootCallId, agent: exec.agent, parent: exec.token } (ptc.ts:525-536); durable append per owning session (ptc.ts:611-618)"
+        "subcall_home": "input = { callId: `${parentCallId}:ptc:n`, rootCallId: exec.rootCallId, agent: exec.agent, parent: exec.token } (ptc.ts:545-553); durable append per owning session (ptc.ts:611-618)"
       }
     },
     {
