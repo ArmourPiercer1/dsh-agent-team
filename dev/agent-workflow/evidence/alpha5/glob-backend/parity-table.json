@@ -176,6 +176,19 @@
       "note": "sink bytes == native stdout (spill attribution is the plane's)"
     },
     {
+      "leg": "N1 newline forgery",
+      "pattern": "*.ts",
+      "target": ".",
+      "nativeExit": 0,
+      "nativeCount": 11,
+      "teamCount": 11,
+      "teamTotal": 11,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "orderMatch": true,
+      "note": "NUL framing: one object one record; newline framing on the SAME bytes emits 12 records and loses the true name"
+    },
+    {
       "leg": "L1 confine probe",
       "pattern": "-",
       "target": "-",
@@ -215,6 +228,19 @@
       "note": "fd-magic-link cwd walks EMPTY through the confined spawn — the row uses the anchored path + A4 instead"
     },
     {
+      "leg": "L5 fd face (measured)",
+      "pattern": "-",
+      "target": "/proc/self/fd",
+      "nativeExit": 0,
+      "nativeCount": 4,
+      "teamCount": 4,
+      "teamTotal": 4,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "orderMatch": true,
+      "note": "child fds=0,1,2,3 (0/1/2 streaming pipes + the launcher's own reserved descriptor); a DECLARED caller fd never crosses, so handle semantics must live on the presenting (caller) side"
+    },
+    {
       "leg": "S1 escaping symlink",
       "pattern": "**/*.ts",
       "target": ".",
@@ -229,7 +255,7 @@
     }
   ],
   "legs": {
-    "total": 17,
-    "matched": 16
+    "total": 19,
+    "matched": 18
   }
 }

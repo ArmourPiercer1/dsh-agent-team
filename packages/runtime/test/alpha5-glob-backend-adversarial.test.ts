@@ -75,6 +75,14 @@ function attackerSetup(): void {
   swapTo('real')
 }
 
+/**
+ * ③ THE LIVE WITNESS: every swap is tallied by STATE, so the race legs report
+ * what the attacker actually did rather than asserting it happened. A leg whose
+ * witness never flipped to `link` would be a leg that tested nothing, and the
+ * counters in `adversarial-counters.json` would show it immediately.
+ */
+const witness = { real: 0, link: 0, contended: 0, okWhileReal: 0, okWhileLink: 0, refusedWhileLink: 0, refusedWhileReal: 0 }
+
 /** One atomic swap of the contested path (rename(2) on one filesystem). */
 function swapTo(state: State): void {
   const contested = join(ROOT_DIR, 'live')
@@ -94,6 +102,7 @@ function swapTo(state: State): void {
     renameSync(staged, contested)
   }
   attackerState = state
+  witness[state] += 1
 }
 
 function isRealDir(p: string): boolean {
@@ -239,10 +248,20 @@ describe('A5-GLOB A — anchoring under attack', () => {
     const refusals = new Map<string, number>()
     let walks = 0
     for (let i = 0; i < REAL_RACE_WALKS; i++) {
-      swapTo(i % 2 === 0 ? 'real' : 'link')
-      tally.states.add(i % 2 === 0 ? 'real' : 'link')
+      const stateAtCall: State = i % 2 === 0 ? 'real' : 'link'
+      swapTo(stateAtCall)
+      tally.states.add(stateAtCall)
       const result = await runWalk('**/*.txt', 'live')
       walks += 1
+      // the witness is still in the state we put it in? if the attacker (here:
+      // the loop itself) is the only mover, this is always true — `contended`
+      // stays 0 and says so; a future multi-process attacker drives it up.
+      if (attackerState !== stateAtCall) witness.contended += 1
+      if (result.ok === true) {
+        if (stateAtCall === 'real') witness.okWhileReal += 1
+        else witness.okWhileLink += 1
+      } else if (stateAtCall === 'link') witness.refusedWhileLink += 1
+      else witness.refusedWhileReal += 1
       if (result.ok !== true) {
         refusals.set(result.failure.code, (refusals.get(result.failure.code) ?? 0) + 1)
         refusalsSeen.set(result.failure.code, refusals.get(result.failure.code) ?? 0)
@@ -260,6 +279,15 @@ describe('A5-GLOB A — anchoring under attack', () => {
       auditResult(result, `A5 it=${String(i)}`)
     }
     expect(walks).toBe(REAL_RACE_WALKS)
+    // the witness flipped in BOTH directions and the refusals landed on the
+    // link side: the race was met, not dodged (a row that only refused on the
+    // real side, or never on the link side, would fail here)
+    expect(witness.link).toBeGreaterThanOrEqual(REAL_RACE_WALKS / 2)
+    expect(witness.real).toBeGreaterThanOrEqual(REAL_RACE_WALKS / 2)
+    expect(witness.refusedWhileLink).toBeGreaterThan(0)
+    expect(witness.okWhileReal).toBeGreaterThan(0)
+    expect(witness.okWhileLink).toBe(0) // a walk that ANSWERED while the path was a symlink would be the bug
+    expect(witness.contended).toBe(0)
     expect(leaks, `leaks: ${leaks.slice(0, 3).join(' | ')}`).toEqual([])
     expect([...refusals.keys()].some((c) => c === 'symlink-alias')).toBe(true) // the swap was hit, not dodged
   }, 900_000)
@@ -328,6 +356,7 @@ describe('A5-GLOB A — anchoring under attack', () => {
         realRaceRefusals: Object.fromEntries(refusalsSeen),
         verdictCodes: [...tally.codes],
         finalAttackerState: attackerState,
+        liveWitness: { ...witness },
       }, null, 2)}\n`)
     }
   })

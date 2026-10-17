@@ -43,9 +43,30 @@
  *         a bind/mount alias outside the root, or an entry that cannot be
  *         opened at all refuses the WHOLE walk — typed, never a silent drop:
  *         the C-FS law says a hidden leg is still typed).
- *   The kernel confine is the layer under that: the confined rg only ever
- *   receives `readFile + readDir` on the governed root, so an escaped walk
- *   could not READ outside it even if the verifier were removed.
+ *     A5. OUTPUT FRAMING IS NUL, NOT NEWLINE. The row appends exactly one
+ *         token to the host's argv (`--null`, `GLOB_OUTPUT_PROTOCOL_ARGV`): it
+ *         changes how records are DELIMITED, never what the walk selects
+ *         (measured on one fixture: identical set, identical mtime order). The
+ *         reason is a forgery class: a file named `README.md\ndocs/guide.md`
+ *         is ONE object but TWO newline records, and both halves can be real
+ *         files — so A4 would wave through paths the governed tree does not
+ *         contain. A NUL byte cannot exist in a filename, so NUL framing is
+ *         injective: one record, one object. See `parseWalkOutput`.
+ *     A6. SINGLE PRODUCER OF PRESENTED PATHS. `verifyGlobResultsBeneath`
+ *         returns the array that the outcome presents; the only string
+ *         operation between verification and presentation happens inside it,
+ *         from `anchor.walkRel` (fixed when the anchor was taken, never from
+ *         the walker's bytes). After that return the caller takes an array
+ *         WINDOW for the inline cap and does nothing else — no second parse,
+ *         no re-split, no re-join, no re-resolution. Attribution is therefore
+ *         handle-based end to end: each entry was opened under the pinned
+ *         anchor fd (`/proc/self/fd/<n>`, an inode-bound view) before its
+ *         string was allowed into that array.
+ *   The kernel confine is the layer under that, and its measured shape is
+ *   asymmetric: inside the confined child, reading a file outside the root is
+ *   EACCES while LISTING a directory outside the root SUCCEEDS (leg L3). So the
+ *   confine protects BYTES and cannot be cited as protection against path-NAME
+ *   disclosure — A4/A6 are what make the row's ANSWER safe, not the sandbox.
  *
  * HONEST RESIDUA (disclosed, not hidden):
  *   - A `/proc/self/fd/<n>` view is re-resolved BY PATH at each open (it is a
@@ -60,11 +81,12 @@
  *     This backend proves containment of what it RETURNS; the read of those
  *     bytes is the controlled-fs read lane's own commit (same open-at-exec law
  *     at open time). No claim is made past the returned list.
- *   - `rg --files` speaks a newline-delimited protocol, so a filename carrying
- *     a newline cannot be parsed unambiguously. Such a walk ends in a TYPED
- *     refusal (`walk-unverifiable`), never in fabricated paths: the halves fail
- *     A4 verification. `--null` would fix the protocol but would fork the argv
- *     away from the public helper the plan names, so the argv stays verbatim.
+ *   - The newline-protocol hole that used to end such a walk TYPED is CLOSED
+ *     by A5 (NUL framing): a filename carrying a newline is now walked,
+ *     verified and returned under its true name. The remaining disclosure is
+ *     downstream of this row: the presented name still CONTAINS a newline, so
+ *     whoever renders it must not re-frame it by line (the row's own outcome is
+ *     a string array and needs no framing at all).
  *   - rg lists a symlink as a file entry. An entry whose own target lands
  *     INSIDE the pinned anchor is kept (it is genuinely in scope); a target
  *     outside refuses the whole walk (A4).
@@ -394,7 +416,18 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
       }
     }
   }
-  return { ok: true, verified: checked.length }
+  // A6 THE SINGLE-PRODUCER LAW: the array below is the SAME array the outcome
+  // presents. The one and only string operation between verification and
+  // presentation happens HERE, from data the ANCHOR owns (`walkRel`, fixed when
+  // the anchor was taken — never derived from the walker's bytes), applied to
+  // entries that were each just opened under the pinned anchor fd. There is no
+  // second parse, no re-split, no re-join and no path re-resolution anywhere
+  // after this return: the caller slices this array for the inline cap and
+  // nothing else (an array window is not a string operation, and leg P10 pins
+  // that slicing preserves order).
+  const prefix = typeof anchor.walkRel === 'string' && anchor.walkRel.length > 0 ? `${anchor.walkRel}/` : ''
+  const presented = prefix.length === 0 ? checked : checked.map((entry) => `${prefix}${entry}`)
+  return { ok: true, verified: checked.length, entries: presented }
 }
 
 // ---------------------------------------------------------------------------
@@ -406,17 +439,49 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
  * `buildGlobCommand` (plan :128 names it verbatim), with the search root
  * deliberately ABSENT — the walk rides the confined child's cwd, which is the
  * anchored directory, so no swappable path string ever reaches rg.
+ *
+ * The row's only addition to the host's argv is the framing token below,
+ * appended at the spawn site (`GLOB_OUTPUT_PROTOCOL_ARGV`), so `globArgv()`
+ * stays byte-comparable with the native oracle leg for leg.
  */
 export function globArgv(parsed) {
   return buildGlobCommand({ pattern: parsed.pattern })
 }
 
-/** Split rg's newline protocol into root-relative entries (the `./` spelling is normalized). */
+/** The framing addition (see the output framing law A5). Selection-neutral. */
+export const GLOB_OUTPUT_PROTOCOL_ARGV = Object.freeze(['--null'])
+
+/**
+ * THE OUTPUT FRAMING LAW (A5): records are separated by NUL, never by newline.
+ *
+ * `--null` is appended to the host's argv at the spawn site, and that is the
+ * ONLY addition to it — it changes how records are DELIMITED, never what the
+ * walk selects (measured, same fixture: identical set, identical mtime order).
+ * The reason is a forgery class, not tidiness: a file literally named
+ * `README.md\ndocs/guide.md` is ONE object and, under newline framing, TWO
+ * root-relative records — and both of those records can be real files, so the
+ * per-entry law (A4) waves them through and the walk presents paths the
+ * governed tree does not contain. A NUL byte cannot appear in a filename at
+ * all, so NUL framing is INJECTIVE: one record is one filesystem object, and
+ * an embedded newline is ordinary data inside it. This removes the newline
+ * hole the row used to end on TYPED instead of answering (`walk-unverifiable`):
+ * the protocol can now carry the true name, so it does.
+ *
+ * An empty record that is NOT the trailing one is a protocol break (the walker
+ * did not emit what the framing promises) and is reported as such — a typed
+ * refusal, never a silently dropped row.
+ */
 export function parseWalkOutput(stdout) {
-  return stdout
-    .split('\n')
-    .filter((line) => line.length > 0)
-    .map((line) => (line.startsWith('./') ? line.slice(2) : line))
+  const records = String(stdout).split('\0')
+  if (records.length > 0 && records[records.length - 1] === '') records.pop()
+  const entries = []
+  for (const record of records) {
+    if (record.length === 0) {
+      return { ok: false, code: 'walk-protocol-error', detail: 'the walker emitted an empty NUL-delimited record mid-stream' }
+    }
+    entries.push(record.startsWith('./') ? record.slice(2) : record)
+  }
+  return { ok: true, entries }
 }
 
 /**
@@ -515,7 +580,7 @@ export function createAnchoredGlobBackend(options) {
         realmId,
         bindingId: `a5glb-glob:${templateId}`,
         memberScope: instanceId,
-        argv: [rgPath, ...globArgv(parsed)],
+        argv: [rgPath, ...globArgv(parsed), ...GLOB_OUTPUT_PROTOCOL_ARGV],
         // The anchored directory. The walk root itself is the child's cwd, so
         // argv carries no path element (a swappable string never reaches rg).
         cwd: anchor.anchorPath,
@@ -597,18 +662,28 @@ export function createAnchoredGlobBackend(options) {
           observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} (exit read as ${String(code)}; stderr carried it)`)
           return failure('undetermined', 'rg-walker-error', stderrText)
         }
-        const all = parseWalkOutput(stdout)
+        const framed = parseWalkOutput(stdout)
+        if (framed.ok !== true) {
+          // The framing promise broke (an empty record mid-stream): the walk's
+          // output is not attributable to objects, so nothing is presented.
+          observe(`anchored-glob PROTOCOL-BREAK ${framed.code} call=${String(call.callId)}`)
+          return failure('undetermined', framed.code, framed.detail)
+        }
+        const records = framed.entries
         // A4: no path is returned unless every one of them is proven inside the
         // pinned anchor inode at this moment.
-        const verdict = await verifyGlobResultsBeneath(anchor, all)
+        const verdict = await verifyGlobResultsBeneath(anchor, records)
         if (verdict.ok !== true) {
-          observe(`anchored-glob RESULT-REFUSED ${verdict.failure.code} call=${String(call.callId)} entries=${String(all.length)}`)
+          observe(`anchored-glob RESULT-REFUSED ${verdict.failure.code} call=${String(call.callId)} entries=${String(records.length)}`)
           return verdict
         }
-        const prefix = anchor.walkRel.length === 0 ? '' : `${anchor.walkRel}/`
-        const files = (prefix.length === 0 ? all : all.map((p) => prefix + p)).slice(0, maxResults)
-        lastRuns.push({ callId: call?.callId, pid: child.pid, exit: code, total: all.length, capped: all.length > maxResults })
-        observe(`anchored-glob ran realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)} files=${String(all.length)} capped=${String(all.length > maxResults)}`)
+        // A6 (single producer): `verdict.entries` is the verified array with the
+        // anchor's own prefix already applied — no string work happens between
+        // verification and presentation. The ONLY thing done to it here is the
+        // inline cap, an array window that preserves order (pinned by leg P10).
+        const files = verdict.entries.slice(0, maxResults)
+        lastRuns.push({ callId: call?.callId, pid: child.pid, exit: code, total: verdict.entries.length, capped: verdict.entries.length > files.length })
+        observe(`anchored-glob ran realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)} files=${String(verdict.entries.length)} capped=${String(verdict.entries.length > files.length)}`)
         return {
           ok: true,
           outcome: {
@@ -616,8 +691,8 @@ export function createAnchoredGlobBackend(options) {
             matches: [],
             counts: [],
             files,
-            totalMatches: all.length,
-            truncated: all.length > files.length,
+            totalMatches: verdict.entries.length,
+            truncated: verdict.entries.length > files.length,
           },
           settlement: { kind: 'completed' },
         }

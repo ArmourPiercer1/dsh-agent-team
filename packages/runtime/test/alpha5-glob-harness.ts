@@ -202,14 +202,19 @@ export function buildCapFixture(root: string, count: number): string[] {
 /** The six VCS stores the public argv excludes (spelled here, not imported). */
 const NATIVE_VCS = ['.git', '.svn', '.hg', '.bzr', '.jj', '.sl'] as const
 
+/** The row's output-framing addition (mirrors `GLOB_OUTPUT_PROTOCOL_ARGV`). */
+export const NATIVE_OUTPUT_PROTOCOL_ARGV = ['--null'] as const
+
 /**
  * The native `rg --files` vector, spelled longhand (see the header note).
- * `withIgnore`/`withVcsExcludes` toggle the flags so a class can show BOTH
- * what the governed argv does and what the default native invocation does.
+ * `noIgnore`/`hidden`/`vcsExcludes` toggle the flags so a class can show BOTH
+ * what the governed argv does and what a different native invocation does.
+ * `nul` defaults ON: the oracle speaks the SAME framing the governed row asks
+ * for, because parity is about the walk, not about two different protocols.
  */
 export function nativeGlobArgv(
   pattern: string,
-  options: { readonly noIgnore?: boolean; readonly hidden?: boolean; readonly vcsExcludes?: boolean; readonly path?: string } = {},
+  options: { readonly noIgnore?: boolean; readonly hidden?: boolean; readonly vcsExcludes?: boolean; readonly nul?: boolean; readonly path?: string } = {},
 ): string[] {
   const argv = ['--files', `--glob=${pattern}`, '--sort=modified']
   if (options.noIgnore !== false) argv.push('--no-ignore')
@@ -218,6 +223,7 @@ export function nativeGlobArgv(
     for (const name of NATIVE_VCS) argv.push(`--glob=!**/${name}`, `--glob=!**/${name}/**`)
   }
   if (options.path !== undefined) argv.push('--', options.path)
+  if (options.nul !== false) argv.push(...NATIVE_OUTPUT_PROTOCOL_ARGV)
   return argv
 }
 
@@ -234,9 +240,16 @@ export function nativeRg(rgPath: string, cwd: string, argv: readonly string[]): 
   return { code: r.status, stdout: r.stdout ?? '', stderr: r.stderr ?? '', argv }
 }
 
-/** Native stdout → the same root-relative spelling the backend returns. */
+/**
+ * Native stdout → the same root-relative spelling the backend returns. The
+ * delimiter follows the argv the oracle actually ran with, so a control leg
+ * that dropped `--null` is still read correctly (and a newline-named file then
+ * legitimately splits — which is the point leg N1 shows).
+ */
 export function nativePaths(run: NativeRun): string[] {
-  return run.stdout.split('\n').filter((l) => l.length > 0).map((l) => (l.startsWith('./') ? l.slice(2) : l))
+  const nul = run.argv.includes('--null')
+  const records = nul ? run.stdout.split('\0').slice(0, -1) : run.stdout.split('\n').filter((l) => l.length > 0)
+  return records.map((r) => (r.startsWith('./') ? r.slice(2) : r))
 }
 
 // ---------------------------------------------------------------------------
@@ -282,14 +295,23 @@ export interface AnchorOpenOk {
 
 export type AnchorOpen = AnchorOpenOk | { readonly ok: false; readonly failure: GlobBackendFailure }
 
+export type WalkParseVerdict =
+  | { ok: true; entries: string[] }
+  | { ok: false; code: string; detail: string }
+
+export type VerifyVerdict =
+  | { ok: true; verified: number; entries: string[] }
+  | { ok: false; failure: GlobBackendFailure }
+
 export interface GlobBackendRow {
   GLOB_BACKEND_ID: string
   GLOB_MAX_RESULTS_CEILING: number
+  GLOB_OUTPUT_PROTOCOL_ARGV: readonly string[]
   createAnchoredGlobBackend(o: Record<string, unknown>): GlobBackend
   openAnchoredWalkRoot(rootDir: string, target: unknown): Promise<AnchorOpen>
-  verifyGlobResultsBeneath(anchor: AnchorOpenOk, entries: readonly string[]): Promise<{ ok: true; verified: number } | { ok: false; failure: GlobBackendFailure }>
+  verifyGlobResultsBeneath(anchor: AnchorOpenOk, entries: readonly string[]): Promise<VerifyVerdict>
   globArgv(parsed: { pattern: string }): string[]
-  parseWalkOutput(stdout: string): string[]
+  parseWalkOutput(stdout: string): WalkParseVerdict
 }
 
 /** Load the backend row (dynamic import, cast to the types above). */

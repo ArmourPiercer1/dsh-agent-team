@@ -239,9 +239,15 @@ describe('A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays gre
 })
 
 describe('A5-GLOB P — rg PARITY (native oracle vs the confined Team walk)', () => {
-  it('P0 the hand-written native argv IS the host public helper argv', () => {
-    expect(nativeGlobArgv('**/*.ts')).toEqual(buildGlobCommand({ pattern: '**/*.ts' }))
-    expect(nativeGlobArgv('a')).toEqual(buildGlobCommand({ pattern: 'a' }))
+  it('P0 the native argv IS the host public helper argv, plus the row\'s ONE framing token', () => {
+    // The parity oracle must be the host's own selection argv, byte for byte.
+    expect(nativeGlobArgv('**/*.ts', { nul: false })).toEqual(buildGlobCommand({ pattern: '**/*.ts' }))
+    expect(nativeGlobArgv('a', { nul: false })).toEqual(buildGlobCommand({ pattern: 'a' }))
+    // and the row's deviation from it is EXACTLY the NUL framing token (A5).
+    const rowArgv = row.globArgv({ pattern: '**/*.ts' })
+    expect(rowArgv).toEqual(buildGlobCommand({ pattern: '**/*.ts' }))
+    expect([...rowArgv, ...row.GLOB_OUTPUT_PROTOCOL_ARGV]).toEqual(nativeGlobArgv('**/*.ts'))
+    expect(row.GLOB_OUTPUT_PROTOCOL_ARGV).toEqual(['--null'])
   })
 
   it('P1 basic pattern — same paths, SAME modification-time ORDER', async () => {
@@ -421,6 +427,128 @@ describe('A5-GLOB P — rg PARITY (native oracle vs the confined Team walk)', ()
   })
 })
 
+describe('A5-GLOB N — the OUTPUT FRAMING law (NUL, not newline) and the single-producer law', () => {
+  it('N1 a newline in a filename is ONE object now — the single-segment forgery is dead', async () => {
+    // The forgery, spelled exactly as it can exist: '/' cannot appear in a
+    // filename, so ONE object can only forge records inside its own directory.
+    // An object named `plain.ts\nhidden-adjacent.ts` is one file, and under
+    // NEWLINE framing it emits two records — `plain.ts` and
+    // `hidden-adjacent.ts` — BOTH of which are real files here, so a per-entry
+    // "is this real?" law waves them through: the walk then reports a phantom
+    // duplicate of a file the object is not, and the object's own name never
+    // appears. NUL framing cannot be forged because NUL cannot exist in a name.
+    const forgedName = 'plain.ts\nhidden-adjacent.ts'
+    const forgedAbs = join(ROOT_DIR, forgedName)
+    // the two halves must be REAL files for the forgery to pass a "does it
+    // exist?" check — that is what makes this class dangerous rather than noisy
+    writeFileSync(join(ROOT_DIR, 'plain.ts'), 'A5GLB-PLAIN\n')
+    utimesSync(join(ROOT_DIR, 'plain.ts'), 1_657_000_100, 1_657_000_100)
+    writeFileSync(join(ROOT_DIR, 'hidden-adjacent.ts'), 'A5GLB-ADJACENT\n')
+    utimesSync(join(ROOT_DIR, 'hidden-adjacent.ts'), 1_657_000_200, 1_657_000_200)
+    writeFileSync(forgedAbs, 'A5GLB-FORGED-NAME\n')
+    utimesSync(forgedAbs, 1_658_000_000, 1_658_000_000)
+    const nulArgv = nativeGlobArgv('*.ts')
+    const native = nativeRg(rgPath, ROOT_DIR, nulArgv)
+    const lineFramed = nativeRg(rgPath, ROOT_DIR, nativeGlobArgv('*.ts', { nul: false }))
+    const team = await call('*.ts')
+    expect(team.ok, JSON.stringify(team)).toBe(true)
+    const listed = filesOf(team)
+
+    // (1) the counterfactual: newline framing FORGES. Two real objects become
+    // three records, the true name disappears, and a name is reported twice.
+    const asRecords = nativePaths(lineFramed)
+    expect(asRecords.filter((p) => p === 'plain.ts')).toHaveLength(2) // the real one + the forged one
+    expect(asRecords).toContain('hidden-adjacent.ts')
+    expect(asRecords).not.toContain(forgedName) // the object's own name vanishes
+    // one object on disk became TWO records: the framed count is one short of
+    // the newline count, and the difference is exactly the forged half
+    expect(asRecords.length).toBe(nativePaths(native).length + 1)
+
+    // (2) the row: one object, one record, true name, byte-equal to the native
+    // NUL walk — and no phantom duplicate anywhere.
+    expect(listed).toContain(forgedName)
+    expect(listed.filter((p) => p === forgedName)).toHaveLength(1)
+    expect(listed).toEqual(nativePaths(native))
+    expect(new Set(listed).size).toBe(listed.length)
+    expect(listed.filter((p) => p === 'plain.ts')).toHaveLength(1) // the REAL file, once
+    expect(listed.length).toBe(nativePaths(native).length) // one record per object
+    expect(JSON.stringify(team)).not.toContain('forged-by-split')
+    rmSync(forgedAbs, { force: true })
+    rmSync(join(ROOT_DIR, 'plain.ts'), { force: true })
+    rmSync(join(ROOT_DIR, 'hidden-adjacent.ts'), { force: true })
+    parityRows.push({
+      leg: 'N1 newline forgery', pattern: '*.ts', target: '.', nativeExit: native.code, nativeCount: nativePaths(native).length,
+      teamCount: listed.length, teamTotal: team.ok === true ? team.outcome.totalMatches : 0, teamTruncated: false, teamFailure: null,
+      orderMatch: true, note: `NUL framing: one object one record; newline framing on the SAME bytes emits ${String(asRecords.length)} records and loses the true name`,
+    })
+  })
+
+  it('N2 the protocol break is typed, and the parse is injective on the delimiter that cannot occur', () => {
+    const good = row.parseWalkOutput('src/a.ts\0docs/guide.md\0')
+    expect(good.ok).toBe(true)
+    if (good.ok !== true) return
+    expect(good.entries).toEqual(['src/a.ts', 'docs/guide.md'])
+    const newlineName = row.parseWalkOutput('README.md\ndocs/guide.md\0')
+    expect(newlineName.ok).toBe(true)
+    if (newlineName.ok !== true) return
+    expect(newlineName.entries).toEqual(['README.md\ndocs/guide.md']) // ONE record
+    const midBreak = row.parseWalkOutput('src/a.ts\0\0docs/guide.md\0')
+    expect(midBreak.ok).toBe(false)
+    if (midBreak.ok !== false) return
+    expect(midBreak.code).toBe('walk-protocol-error')
+    const trailingOnly = row.parseWalkOutput('')
+    expect(trailingOnly.ok).toBe(true)
+    if (trailingOnly.ok !== true) return
+    expect(trailingOnly.entries).toEqual([])
+  })
+
+  it('N3 STATIC ARGUMENT: nothing between verification and presentation re-parses a string', () => {
+    const source = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+    const code = source.split('\n').filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('/**')).join('\n')
+    // (a) the walker's bytes are cut on NUL and NOWHERE by newline:
+    expect(code.includes("split('\\0')"), 'the framing split must be on NUL').toBe(true)
+    expect(code.includes("split('\\n')"), 'no newline framing may survive anywhere').toBe(false)
+    // (b) the outcome's file array is a WINDOW of the verifier's own output:
+    expect(code.includes('verdict.entries.slice(0, maxResults)'), 'presentation must be the verifier array, windowed').toBe(true)
+    const postVerifyTransforms = code.split('\n').filter((l) => /files:\s*files/.test(l) || /const files =/.test(l))
+    expect(postVerifyTransforms).toHaveLength(1)
+    // (c) the prefix comes from the anchor, never from the walker's bytes:
+    expect(code.includes('anchor.walkRel'), 'the presentation prefix must be anchor-owned').toBe(true)
+    // (d) every entry was opened under the pinned fd before its string entered the array:
+    expect(code.includes('/proc/self/fd/'), 'verification must run through the pinned fd view').toBe(true)
+    expect(code.includes('OPEN_FILE_NOFOLLOW'), 'the final component must be opened without following links').toBe(true)
+    // (e) the framing addition is exactly one token, appended once:
+    expect((code.match(/GLOB_OUTPUT_PROTOCOL_ARGV/g) ?? []).length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('N4 the cap window never re-orders: slice preserves the verified order', async () => {
+    const anchor = await row.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: '.' })
+    expect(anchor.ok).toBe(true)
+    if (anchor.ok !== true) return
+    try {
+      const many = ['src/a.ts', 'src/deep/b.ts', 'src/deep/c.js', 'src/index.ts', 'README.md', 'docs/guide.md']
+      const verdict = await row.verifyGlobResultsBeneath(anchor, many)
+      expect(verdict.ok).toBe(true)
+      if (verdict.ok !== true) return
+      expect(verdict.entries).toEqual(many) // target '.' -> no prefix, order preserved verbatim
+      expect(verdict.entries.slice(0, 2)).toEqual(many.slice(0, 2))
+      const sub = await row.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: 'src' })
+      expect(sub.ok).toBe(true)
+      if (sub.ok !== true) return
+      try {
+        const prefixed = await row.verifyGlobResultsBeneath(sub, ['a.ts', 'deep/b.ts'])
+        expect(prefixed.ok).toBe(true)
+        if (prefixed.ok !== true) return
+        expect(prefixed.entries).toEqual(['src/a.ts', 'src/deep/b.ts']) // anchor-owned prefix, one join
+      } finally {
+        await sub.handle.close()
+      }
+    } finally {
+      await anchor.handle.close()
+    }
+  })
+})
+
 describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined provider', () => {
   it('L1 the capability probe is ENFORCED (kernel), not advisory', async () => {
     const provider = createConfinedProcessProvider({
@@ -507,6 +635,64 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
       teamCount: 0, teamTotal: 0, teamTruncated: false, teamFailure: null, orderMatch: false,
       note: 'fd-magic-link cwd walks EMPTY through the confined spawn — the row uses the anchored path + A4 instead',
     })
+  }, 180_000)
+
+  it('L5 MEASURED interface boundary: a caller-side directory fd CANNOT cross into the confined child', async () => {
+    // Fix-list ② asked for the walk root and every result to share one verified
+    // fd/handle semantics. This leg states how far the provider's PUBLIC face
+    // allows that to go, measured rather than asserted: the fd-inheritance face
+    // is a DECLARATION (`declaredFds` -> fd_plan) and the streaming arm spawns
+    // the launcher on a fixed four-pipe stdio (`provider.ts`
+    // `['pipe','pipe','pipe','pipe']`: 0/1/2 are the streaming interface, 3 is
+    // the launcher's own handshake and is REFUSED as a payload fd by
+    // `compileFdPlan`). So no caller-opened directory fd ever exists in the
+    // child, and `/proc/self/fd/N` inside it can only ever name the child's own
+    // descriptors (leg L3b: using it as cwd walks EMPTY).
+    // The row therefore puts the handle semantics where the interface DOES
+    // allow them: on the caller side, which is also the side that presents the
+    // answer — every emitted record is opened under the pinned anchor fd before
+    // its string is allowed into the presented array (A4 + A6, legs N3/N4/S1).
+    const realmId = 'a5glb-fdface'
+    const provider = createConfinedProcessProvider({
+      realmId, trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+      scratchRoot: join(WORLD, 'scratch-fdface'), assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
+    })
+    expect((await provider.probe()).ok).toBe(true)
+    const { open, constants } = await import('node:fs/promises')
+    const handle = await open(ROOT_DIR, constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW)
+    try {
+      const r = await provider.spawnStreaming({
+        grantFingerprint: 'a5glb-fdface', realmId, bindingId: 'a5glb-fdface', memberScope: 'member',
+        argv: ['/bin/ls', '/proc/self/fd'], cwd: ROOT_DIR,
+        env: [['PATH', '/usr/bin:/bin']], allowPaths: confinedAllow(ROOT_DIR),
+        declaredFds: [{ fd: 7, purpose: 'delivery', resourceFingerprint: `dir:${String(handle.fd)}` }],
+      })
+      expect(r.ok, JSON.stringify(r)).toBe(true)
+      if (r.ok !== true) return
+      let out = ''
+      let err = ''
+      r.value.stdout.on('data', (c: unknown) => { out += String(c) })
+      r.value.stderr.on('data', (c: unknown) => { err += String(c) })
+      await r.value.exited
+      await r.value.terminate()
+      const seen = out.split('\n').filter((l) => l.trim().length > 0).map((l) => l.trim().split(' ')[0])
+      expect(seen.length).toBeGreaterThan(0) // the listing itself ran confined
+      expect(seen).toContain('0')
+      expect(seen).toContain('1')
+      expect(seen).toContain('2')
+      expect(seen).not.toContain('7') // the DECLARED caller fd is NOT in the child: declaration is not inheritance
+      // nothing of the caller's survived past the boundary either — only the
+      // streaming pipes and the launcher's own reserved descriptor are there
+      expect(seen.filter((f) => Number(f) >= 4)).toEqual([])
+      expect(err).toBe('')
+      parityRows.push({
+        leg: 'L5 fd face (measured)', pattern: '-', target: '/proc/self/fd', nativeExit: 0, nativeCount: seen.length,
+        teamCount: seen.length, teamTotal: seen.length, teamTruncated: false, teamFailure: null, orderMatch: true,
+        note: `child fds=${seen.join(',')} (0/1/2 streaming pipes + the launcher's own reserved descriptor); a DECLARED caller fd never crosses, so handle semantics must live on the presenting (caller) side`,
+      })
+    } finally {
+      await handle.close()
+    }
   }, 180_000)
 
   it('L4 the backend mounts through the plane\'s OWN backends seam (no plane edit)', async () => {
@@ -665,17 +851,32 @@ describe('A5-GLOB S — the walk never answers with what the governed root does 
     expect(JSON.stringify(result)).not.toContain(OUTSIDE_TOKEN)
   })
 
-  it('S3 a filename carrying a newline ends TYPED (the protocol cannot be parsed safely)', async () => {
+  it('S3 SUPERSEDED law, kept as a positive: a newline-named file is walked, verified under the pinned fd, and returned by its true name', async () => {
+    // This leg used to pin `walk-unverifiable` for such a name — the row ended
+    // TYPED rather than fabricate paths, because the protocol could not carry
+    // the name. The framing law (A5) removed the cause, so the honest form of
+    // the leg is now: the object is ANSWERED for, and verification still runs
+    // through the anchor's fd chain.
     const weird = join(ROOT_DIR, 'docs', `weird\nname.ts`)
-    writeFileSync(weird, 'A5GLB-NEWLINE\n')
+    writeFileSync(weird, 'A5GLB-NEWLINE-NAME\n')
     utimesSync(weird, 1_655_000_000, 1_655_000_000)
     const result = await call('docs/**')
-    expect(result.ok).toBe(false)
-    if (result.ok !== true) {
-      expect(['walk-unverifiable', 'walk-contaminated']).toContain(result.failure.code)
+    expect(result.ok, JSON.stringify(result)).toBe(true)
+    const listed = filesOf(result)
+    expect(listed).toContain(`docs/weird\nname.ts`)
+    const anchor = await row.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: '.' })
+    expect(anchor.ok).toBe(true)
+    if (anchor.ok !== true) return
+    try {
+      const verdict = await row.verifyGlobResultsBeneath(anchor, ['docs/guide.md', `docs/weird\nname.ts`])
+      expect(verdict.ok, JSON.stringify(verdict)).toBe(true)
+      if (verdict.ok !== true) return
+      expect(verdict.entries).toEqual(['docs/guide.md', `docs/weird\nname.ts`])
+    } finally {
+      await anchor.handle.close()
     }
     rmSync(weird, { force: true })
     const clean = await call('docs/**')
-    expect(clean.ok).toBe(true)
+    expect(clean.ok, JSON.stringify(clean)).toBe(true) // with the object gone, the same walk is clean again
   })
 })

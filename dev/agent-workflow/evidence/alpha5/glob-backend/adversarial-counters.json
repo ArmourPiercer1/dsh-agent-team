@@ -17,5 +17,14 @@
     "symlink-alias",
     "A6:anchor-drift"
   ],
-  "finalAttackerState": "real"
+  "finalAttackerState": "real",
+  "liveWitness": {
+    "real": 2561,
+    "link": 2560,
+    "contended": 0,
+    "okWhileReal": 60,
+    "okWhileLink": 0,
+    "refusedWhileLink": 60,
+    "refusedWhileReal": 0
+  }
 }

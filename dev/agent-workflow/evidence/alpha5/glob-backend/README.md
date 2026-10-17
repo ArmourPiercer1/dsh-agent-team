@@ -23,7 +23,7 @@ edit. Integration is the glue writer's call; the mount contract is in §6 below.
 | --- | --- |
 | `packages/runtime/src/plugin/live/glob-backend.mjs` | NEW — `createAnchoredGlobBackend` + the anchor/verify law |
 | `packages/runtime/test/alpha5-glob-harness.ts` | NEW — fixture tree, hand-written native oracle, TS faces |
-| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + LIVE + typed-shape + fixture hygiene (33 legs) |
+| `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + FRAMING law + LIVE + typed-shape + fixture hygiene (38 legs) |
 | `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | NEW — anchoring under attack, ≥5000-iter race (8 legs) |
 | `packages/runtime/package.json` + `pnpm-lock.yaml` | `@deepseek-ai/dsh-tool-fs-search@0.2.0-rc.2` registered **in the same stroke** (`:128`) |
 | `dev/agent-workflow/evidence/alpha5/glob-backend/` | this README + `parity-table.json` + `adversarial-counters.json` + `red-capture.txt` |
@@ -56,6 +56,23 @@ the walk the tree can move. The row's law, in the order it runs:
   non-symlink **file** inside the anchor (same component law). One bad entry refuses the
   WHOLE walk — `walk-contaminated` / `walk-unverifiable` — instead of silently dropping a
   row. A `..`-crossing or absolute entry cannot be presented.
+- **A5 output framing is NUL, not newline** (fix-list ①). The row appends **exactly one
+  token** to the host's argv — `--null` (`GLOB_OUTPUT_PROTOCOL_ARGV`) — which changes how
+  records are *delimited*, never what the walk selects (measured on one fixture: identical
+  set, identical mtime order, leg P0 pins the argv diff to that one token). The reason is a
+  forgery class, not tidiness: leg N1. A NUL byte cannot exist in a filename, so NUL
+  framing is **injective** — one record, one filesystem object; an embedded newline is
+  ordinary data inside the name.
+- **A6 single producer of presented paths** (fix-list ②). `verifyGlobResultsBeneath`
+  returns the array the outcome presents; the only string operation between verification
+  and presentation happens *inside it*, from `anchor.walkRel` (fixed when the anchor was
+  taken, never derived from the walker's bytes). After that return the caller takes an
+  array **window** for the inline cap and nothing else — no second parse, re-split,
+  re-join or re-resolution. Attribution is handle-based end to end: every entry is opened
+  under the pinned anchor fd (`/proc/self/fd/<n>`, an inode-bound view, `O_NOFOLLOW` on the
+  final component) before its string is allowed into that array. Leg **N3** is the
+  mechanical static argument, **N4** pins the window and the anchor-owned prefix, **S1**
+  keeps the teeth on a hostile entry list.
 
 **Disclosed residua (no overclaim).**
 1. `/proc/self/fd/<n>` re-resolves **by path**, not by inode pin, so an attacker who swaps
@@ -64,8 +81,11 @@ the walk the tree can move. The row's law, in the order it runs:
    — the host exposes no such face to a plugin, and this lane invents none. What is proven
    is: what the row *accepts and presents* was opened, re-read and verified beneath the
    governed root.
-2. A filename carrying a newline ends **typed** (`walk-unverifiable`, leg S3): the argv is
-   the host's, so `--null` is not silently added.
+2. ~~A filename carrying a newline ends typed~~ **closed by A5** (leg S3 is now the
+   positive form: such a file is walked, verified through the anchor's fd chain and
+   returned under its true name). What remains downstream of this row: the presented name
+   still *contains* a newline, so whoever renders it must not re-frame it by line — the
+   row's own outcome is a string array and needs no framing.
 3. A walk whose entries cross an escaping symlink is **refused whole** — a deliberate
    divergence from native rg, disclosed in §4.
 4. No network claim: the confined request carries no network profile, and the row does not
@@ -88,6 +108,16 @@ Two **measurements that changed the design** (both are legs, not prose):
   own responsibility — which is exactly why A4 exists and why a realpath-only row is not
   enough. (Worth the plane's attention: the same asymmetry applies to every row that
   reports paths.)
+- **L5 — the interface boundary for fix-list ②, measured:** the provider's fd face is a
+  *declaration* (`declaredFds → fd_plan`) and the streaming arm spawns the launcher on a
+  fixed four-pipe stdio (`provider.ts`: `['pipe','pipe','pipe','pipe']`), with fd 3
+  launcher-owned and refused as a payload fd by `compileFdPlan`. Declaring fd 7 in a
+  request changes nothing: the child's `/proc/self/fd` shows the streaming pipes and the
+  launcher's own reserved descriptor, **nothing of the caller's** — so a caller-opened
+  directory fd cannot cross into the child, and same-fd semantics are impossible on the
+  child side without a new host interface (not invented here). They are therefore placed
+  where the existing interface does allow them, which is also the side that presents the
+  answer: A4 + A6 on the caller's pinned handle.
 - **L3b — a `/proc/self/fd/N` child cwd does not work here.** Passing the verified dir
   fd's magic link as the spawn `cwd` yields exit 0 with **zero rows and zero stderr**
   through this provider, while the identical argv from the anchored *path* cwd walks fine.
@@ -100,7 +130,7 @@ The native side is invoked with the **hand-written** argv in the harness, and le
 pins that spelling to the host's public `buildGlobCommand` — so a parity match cannot be
 true by construction. Fixed fixture tree (17 files, frozen mtimes; VCS stores;
 `.gitignore`d subtree; a hidden dotdir; a `node_modules` copy). Full numbers:
-[`parity-table.json`](parity-table.json) — **17 rows, 16 exact order-matches, 1 disclosed
+[`parity-table.json`](parity-table.json) — **19 rows, 18 exact order-matches, 1 disclosed
 divergence** (`L3b`, which is a measurement of an alternative design, not a walk).
 
 | class (leg) | native | Team | verdict |
@@ -117,7 +147,18 @@ divergence** (`L3b`, which is a measurement of an alternative design, not a walk
 | illegal pattern (P9) | exit 2 | `undetermined / rg-walker-error` | carries rg's own words (`error parsing glob`), never a fake-empty list |
 | over-cap (P10) | 105 | **100 inline (`GLOB_MAX_RESULTS`) with `totalMatches = 105`, `truncated: true`** | the full 105 match native when the assembly raises the ceiling to 105 |
 | sink bytes (P11) | — | — | `io.sink` received **byte-identical** native stdout |
+| newline forgery (N1) | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing matches native exactly, no duplicate |
+| **newline forgery (N1)** | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing equals the native NUL walk exactly, no duplicate |
 | escaping symlink (S1) | 8 | 8 | rg neither follows nor lists it (so parity holds); A4's teeth are proven separately against a hostile entry list (`../outside/secret.txt`, absolute, an in-tree escaping symlink) |
+
+## 4b. 根 22:30Z 修复单（本轮，逐项对应）
+
+| 单 | 处置 | 证据 |
+| --- | --- | --- |
+| ① NUL 分隔解析 | 采纳并实现为 law **A5**：spawn argv 追加**唯一**一个 token `--null`；`parseWalkOutput` 按 `\0` 切分、注入性由「NUL 不能出现在文件名」保证；流中出现的空记录 = typed `walk-protocol-error`。P11 字节律在 NUL 形下**保持**（sink 字节 == 同 argv 原生 stdout）。 | P0 / N1 / N2 / P11 |
+| ② 归属与 cwd 竞态 | 采纳为 law **A6**（单生产者）：presented 数组由验证器产生、前缀取自 anchor（`walkRel`），此后调用方只做**数组窗口**（上限）；每条记录的字符串进入该数组前都已在 pinned anchor fd 的 `/proc/self/fd/<n>` 下以 `O_NOFOLLOW` 打开过。**子进程侧同 fd 不可能**：公开 fd 面只是声明、streaming 臂 stdio 固定四管道、fd 3 launcher-owned 被 `compileFdPlan` 拒——实测声明 fd 7 后子进程内不存在该 fd（L5）。故句柄语义落在**呈现侧**。 | N3（静态论证）/ N4（窗口与前缀）/ S1（敌意条目）/ L3b + L5（接口边界实测） |
+| ③ live attacker witness | 竞态腿的 witness 变为**可计数**：每次 swap 按状态记账，并把每次真 rg 走的答案/拒答与当时状态对齐。120 次真 rg 竞态维持并随 ② 修后重跑：`real=2561 link=2560`，`okWhileReal=60 refusedWhileLink=60 okWhileLink=0 refusedWhileReal=0 contended=0`（**link 态从不作答**即是要害）。 | `adversarial-counters.json → liveWitness` |
+| ④⑤⑥ 表/套件/门重出 | parity 表 19 行 / 18 顺序全等（1 行为替代设计测量）；对抗 8 腿；门全套（typecheck exit 0 / 4 新文件 eslint 净 / 46 腿 / 世界 0 残留 / 证据两次运行逐字节同）。 | 本目录 |
 
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
@@ -220,7 +261,7 @@ wrong and swept a live sibling's world, so both halves are now pinned, not just 
 lands). The suites need this host's Landlock (probe enforces it); on a host without it
 the live/adversarial-real legs fail loudly — the row refuses, it never fakes.
 
-Last recorded run on this host: **41/41 legs green** (33 row + 8 adversarial),
+Last recorded run on this host: **46/46 legs green** (38 row + 8 adversarial),
 `pnpm -r run typecheck` exit 0 across all 9 packages, `eslint` clean on all four new
 files, `parity-table.json` + `adversarial-counters.json` byte-identical across two
 consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.
