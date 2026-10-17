@@ -1,0 +1,122 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-k4jy3g2v",
+          "name": "a5c08_image_read",
+          "arguments": {
+            "attachment": "attach/shot.png.b64"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-jire7bwm",
+          "name": "a5c08_image_read",
+          "arguments": {
+            "attachment": "attach/shot.png.b64"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-6d7l9xan",
+          "name": "a5c08_thumb_probe",
+          "arguments": {
+            "attachment": "thumb/shot.png.b64"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-w29eo3h8",
+          "name": "a5c08_unbound_read",
+          "arguments": {
+            "attachment": "attach/shot.png.b64"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-hm2rl7i4",
+          "name": "a5c08_binary_probe",
+          "arguments": {
+            "attachment": "attach/shot.png"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "text",
+      "content": "A5C08_GATED_20261017T044050Z_CHAIN_DONE"
+    },
+    "status": 200
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "text",
+      "content": "a5c08-mock: unscripted request, completing quietly."
+    },
+    "status": 200
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-t2s0ei07",
+          "name": "read_image",
+          "arguments": {
+            "file_path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-gated-2026-10-17T04-40-50Z/workspace/repo/attach/shot.png"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 9,
+    "reply": {
+      "kind": "text",
+      "content": "A5C08_GATED_20261017T044050Z_IMG_DONE"
+    },
+    "status": 200
+  }
+]

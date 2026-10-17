@@ -1,0 +1,26 @@
+{
+  "chain": {
+    "image_read": {
+      "chain": "host-direct-read",
+      "grant_id": null,
+      "fingerprint": null,
+      "lane_op": null,
+      "lane_ok": null,
+      "lane_fingerprint": null,
+      "exec_edge_first": null,
+      "exec_edge_replay": null,
+      "ledger_consumed": null,
+      "bytes": 70,
+      "decode": {
+        "ok": true,
+        "width": 1,
+        "height": 1
+      },
+      "decoded_sha_matches_disk": null,
+      "presented": "A5C08-IMG-UNGATED chain=host-direct bytes=70 px=1x1"
+    }
+  },
+  "negative_controls": [],
+  "lane_ledgers": {},
+  "observationsCount": 0
+}

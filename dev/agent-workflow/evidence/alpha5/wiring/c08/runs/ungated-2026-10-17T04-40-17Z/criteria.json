@@ -1,0 +1,144 @@
+{
+  "mode": "ungated",
+  "status": "RED",
+  "criteria": [
+    {
+      "id": "L-C08-PIN",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (read-only reuse)",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "L-C08-IF5",
+      "claim": "IF-5 shared surface (packages/, scripts/, root vitest.config) is byte-untouched by this lane",
+      "pass": true,
+      "observed": "porcelain empty"
+    },
+    {
+      "id": "L-C08-ARTS",
+      "claim": "the runtime dist barrels (tool-governance/tool-admission/tool-dispatch/controlled-fs) are present",
+      "pass": true,
+      "observed": "dist=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/packages/runtime/dist/packages"
+    },
+    {
+      "id": "L-C08-PORTS",
+      "claim": "host port 3186 free (self-proved) and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "hostFree=true mock=3491"
+    },
+    {
+      "id": "L-C08-BOOT",
+      "claim": "the test Host booted on port 3186 with the token gate live (303 + set-cookie)",
+      "pass": true,
+      "observed": "status=303"
+    },
+    {
+      "id": "L-C08-CREATE",
+      "claim": "the host public session/create entry returned a real sessionId (attachment-read tool host)",
+      "pass": true,
+      "observed": "A=session-41d8dfdf-f61"
+    },
+    {
+      "id": "L-C08-TURN1",
+      "claim": "the real session ran a setup turn to a model reply (an Agent now exists behind the session)",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "L-C08-AGENT",
+      "claim": "the session Agent is reachable through the PUBLIC ctx.agents seam",
+      "pass": true,
+      "observed": "agent={\"id\":\"session-41d8dfdf-f615-4d26-ae63-6ec326d41d8f\",\"session\":\"session-41d8dfdf-f615-4d26-ae63-6ec326d41d8f\",\"hasCtx\":t"
+    },
+    {
+      "id": "L-C08-ASSEMBLE-REQ",
+      "claim": "the live assembly started on the real Agent",
+      "pass": true,
+      "observed": "{\"ok\":true,\"started\":true,\"label\":\"session-41d8dfdf-f615-4d26-ae63-6ec326d41d8f\"}"
+    },
+    {
+      "id": "L-C08-ASSEMBLED",
+      "claim": "the row assembly completed on the live Agent (world built + tools registered; guard published in gated mode)",
+      "pass": true,
+      "observed": "wait=true"
+    },
+    {
+      "id": "L-C08-GUARD",
+      "claim": "the PR1 guard installed, bound the four a5c08 tools and PUBLISHED (channel armed/proven on the live subscription)",
+      "pass": false,
+      "observed": "{\"installOk\":false,\"installError\":null,\"bindOwnOk\":false,\"publishedOk\":false,\"channel\":null,\"channelAtPublish\":null}"
+    },
+    {
+      "id": "L-C08-REG",
+      "claim": "the four row tools are on the live scoped registry",
+      "pass": true,
+      "observed": "[\"a5c08_image_read\",\"a5c08_thumb_probe\",\"a5c08_unbound_read\",\"a5c08_binary_probe\"]"
+    },
+    {
+      "id": "L-C08-CHAIN",
+      "claim": "a REAL model-driven attachment read ran the FULL gated chain: PR2 grant minted (read resource effect) → per-call admission-bound ControlledFs lane readText (exec-edge ONE-SHOT consumed, lane ledger fd-closed) → base64/PNG decode (1×1, decoded sha == attachment on disk) → render into the real transcript; chain=admission-gated-controlled-fs",
+      "pass": false,
+      "observed": "grant=null lane=null edge=null consumed=null decode={\"ok\":true,\"width\":1,\"height\":1}"
+    },
+    {
+      "id": "L-C08-ONESHOT",
+      "claim": "ONE-SHOT discipline on the FS path: the same-call SECOND readText on the SAME bound lane is refused through the consumed ledger (grant-consumed, deny-before-open); exactly one fd-closed line for the acted read",
+      "pass": false,
+      "observed": "{\"replay\":null,\"fdClosedLines\":0}"
+    },
+    {
+      "id": "L-C08-THUMB-DENY",
+      "claim": "the thumbnail/preview bypass attempt (armed effect set, OUTSIDE target) is refused by the C-FS lane BEFORE any open: typed effect-outside-grant, bytes_leaked=0, refused line in the lane ledger, thumbnail bytes unchanged on disk",
+      "pass": false,
+      "observed": "{\"callId\":\"c08-thumb-2\",\"tool\":\"thumb-bypass\",\"stage\":null,\"outcome\":\"ungated-readable\",\"code\":null,\"cfDiag\":null,\"grantId\":null,\"fingerprint\":null,\"targetLocator\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-ungated-2026-10-17T04-40-17Z/workspace/repo/thumb"
+    },
+    {
+      "id": "L-C08-UNBOUND-DENY",
+      "claim": "the UNBOUND gated lane refuses every operation by name (law 1): recheck reason admission-unbound verbatim in the diagnostic, bytes_leaked=0, refused line in the lane ledger (the refusal is the lane wiring, not prose)",
+      "pass": false,
+      "observed": "null"
+    },
+    {
+      "id": "L-C08-BINARY-FACT",
+      "claim": "the raw-binary leg MEASURED and BOOKED the C-FS text-read byte fidelity (lane-carried bytes vs bytes on disk compared as a fact; the base64 attachment form is the byte-exact transport recorded by the chain leg)",
+      "pass": true,
+      "observed": "{\"callId\":\"c08-bin-4\",\"tool\":\"binary-probe\",\"stage\":null,\"outcome\":\"measured\",\"code\":null,\"grantId\":null,\"targetLocator\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-gap-c08/tests/homes/a5c08-ungated-2026-10-17T04-40-17Z/workspace/repo/attach/s"
+    },
+    {
+      "id": "L-C08-BYTES-INTACT",
+      "claim": "the chain is READ-ONLY end to end: attachment and thumbnail files carry the SAME sha after the run as the PNG fixture written at world build",
+      "pass": false,
+      "observed": "{\"attach/shot.png\":{\"sha\":\"sha256:c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77\"},\"attach/shot.png.b64\":{\"sha\":\"sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6\"},\"thumb/shot.png.b64\":{\"sha\":\"sha256:e427046b9065448356fbf74a566c314d2538a7245140c8d042054420675db8f6\"}}"
+    },
+    {
+      "id": "L-C08-NATIVE-IMG",
+      "claim": "the host-native read_image round-trip leg was measured end-to-end with its governance-observation delta bracketed around it (the Team chain does NOT substitute for the native face)",
+      "pass": true,
+      "observed": "skipped=false term=done govDelta={\"leg\":\"read_image\",\"new_observations\":0}"
+    },
+    {
+      "id": "L-C08-CENSUS",
+      "claim": "every name on the live guard-observation stream is a master full-prefix name (no retired short form appears); census recorded verbatim",
+      "pass": true,
+      "observed": "{}"
+    },
+    {
+      "id": "L-C08-STABLE",
+      "claim": "the stable :3080 instance was only probed, never operated, status unchanged",
+      "pass": true,
+      "observed": "before=401 after=401"
+    },
+    {
+      "id": "L-C08-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    },
+    {
+      "id": "L-C08-IF5-POST",
+      "claim": "IF-5 shared surface still byte-untouched at closure",
+      "pass": true,
+      "observed": "porcelain empty"
+    }
+  ]
+}
