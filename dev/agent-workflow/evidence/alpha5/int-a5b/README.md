@@ -1,5 +1,8 @@
 # alpha5-int-a5b — 三候选合并集成树（integrator writer）
 
+> **CORRECTION (root 20:01Z):** 「四红项全绿」标题不实，更正为：a5ie 合并树复跑=**24/30**。RED-A/S3/E1=翻转型计数钉（修复证明）；**T5=生产 provider/feed 装配缺 + 生产 team-tool-plane.mjs:365-367 挂载行未传 backends = 当前交付缺口**，各 kit 显式注 fixture / read 分腿 ≠ 实际用户入口。真实装配归 GLUE-7（生产胶水单 writer）；验收=严格发布清单新目录+正常 Team 创建入口下真实 member read/search/shell 成功、deny 负控 backend0/副作用0、非team Δ=[]；mock 仅替 LLM。
+
+
 - **分支/树**：`alpha5-int-a5b`，base=真 master `fe829038`（fetch 亲验），一次性 worktree `.worktrees/a5-int-a5b`。
   **不改任何原分支、不动 master**；本支留父/root 代推（本会话无 push 凭据，未尝试）。
 - **合并序（--no-ff，逐笔合并提交在册）**：
