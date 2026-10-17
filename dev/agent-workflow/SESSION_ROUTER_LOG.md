@@ -6324,6 +6324,15 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **结果**=权威绿跑 `evidence/alpha5/w-lsp-dr/runs/2026-10-17T05-41-03Z/` **20/20 EXIT=0**：①单轮变化四要件全中（旧 realm pid 135 消失/dispose 11ms 有界 → 新 realm pid 279/opens=1/cwd=新根；兄弟 B pid 194 恒定热复用；旧 workspaceRoot /proc cwd+fd 句柄 1→**0**）；②连续两轮=四次生命周期（dispose,create,dispose,create 台账齐：disposed={g0:135,g1:279}+post-change assembled=[g1,g2]；fixture boot4/exit4 全 code=0、终态四根全零句柄、host 无僵尸、host fd 37→40→41→35 收口低于基线）。修复轮如实保留（attempt1=runner TypeError 无裁决；attempt2=19/20 唯一 FAIL 为 kit 判据算术错，observed 已呈目标序列）。
 - **口径钉死**=装配纪律可行性（执行面=装配约定+probe 复跑，**非 OS 强制、非接口承诺**）；同 realm 内 policy 粒度共享/逐出未宣称（SV B1/B4 原状、HAZARD 形状不消解）；真实服务器其他资源（socket/shm）不在「零热句柄」宣称内；若用户答复语义不同，本证据只作参照。
 - **红线**=CORE 0；test-use porcelain=0/HEAD=pin 前后自证；:3080 pre=401/post=401 零触碰；:3180 未触；证据 token 扫描=0；世界零生产行；零 force-push；1 task=1 branch=1 worktree=1 writer。模型：qwen3.8-flash-next。
+
+## 2026-10-17 RA-REVIEW（R-a fact-3 全局假设审查 + scoped-aware 修订方案 + 隔离 PoC）— evidence-only
+
+- **任务**=核对 R-a fact-3 的本仓自设动机（closed-world-guard.ts:284-300/:180-183、install.ts:353-367、agent-bindings.mjs:2248-2266）vs 公开 scoped registry 是否提供"当前调用实际 Definition 身份/代际"；基=master@01df26ca，分支 alpha5-ra-review，一次性 worktree。
+- **①实测**=公开 scoped 读 `get(name,agent)` 返回**将执行对象本身的引用**且跨读稳定（Tier-B H5 5/5，链=get→resolveExecution index.ts:1230/1578）；**无** id/version/generation 公开字段（H6 `identityLikeFields=[]`）→ 公开面=身份可读、代际仅以 per-call 重读+对象身份比对存在。根 08:05Z 硬口径：未断言"上游无解"——互斥只因 fact-3 把 trusted 侧钉死 global 读而成立。
+- **②修订**=不是改比较侧（discovery-style 被 R5 反证否决=放行 R-a 要杀的遮蔽体），而是走冻结设计自带 **R1 Scoped Binding**（post-poc-technical-design.md:42）placement lane：装配自放 Definition 入 own layer、pin 所放对象、每调用 scoped 比对；六不变量+三负控（同名跨 realm/撤销竞态/伪造 scope——后者不可伪造且已证因）。
+- **③PoC**=Tier-A 合成世界（真实编译产物 guard 只读裁决，install 读点 instrumented 克隆）**GREEN 11/11**（修订读法 team 装配 verified + minimal 非 team 零变化 + 三负控+反证全绿）；Tier-B 真实宿主 @3185 只读 probe **GREEN 10/10**；世界已清扫，test-use porcelain 前 0 后 0，:3080 401→401 未操作。
+- **④判定**=互斥对"inherited-native 无 global 面 verified"成立且 guard 读法不可修（反证）；但 GLUE-4 推广结论不成立——R1 placement lane 今日可 verified + 非 team 零 delta，**修订分类=实现读法/装配路线扩展，R-a 冻结语义零变更**；GLUE-4 结论段应增 **Q4**（根裁决：R1 placement 装配范围批准与否），Q2 建议按 R5 否决，Q1 降级为"dsh-native 标签+零扩权"可选上游诉求。
+- **红线**=CORE 0、生产面 porcelain 空（H2；`dev/**` lint-ignores ⇒ 债务集 byte-identical by construction）、证据 token 已 redact、零 push 凭据（ff push 尝试结果随回报）。
 ## 2026-10-17 07:5xZ — PR7-P-C：jobs-gateway owner/lease 注入面固化进生产模块（DORMANT 精确层收敛为"仅缺 live row"；lane-only，零共享文件）
 
 - **任务**=P-C writer（base=origin/master 亲 fetch @ `d714a941`，分支 `alpha5-prod-pr7`，一次性 worktree `.worktrees/a5-prod-pr7`）。只改 `packages/runtime/jobs-gateway` + 其测 + 本 lane kit（W7）+ evidence；live 装配行=GLUE 不落（hygiene spec 依旧绿：lane 仍零生产 import 边）。
