@@ -1,0 +1,52 @@
+=== FIXED under same churn x3 ===
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire
+
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (4 tests) 112ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  00:01:35
+   Duration  326ms (transform 20ms, setup 0ms, import 125ms, tests 112ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+rep1 GREEN(fixed)
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire
+
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (4 tests) 115ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  00:01:35
+   Duration  342ms (transform 21ms, setup 0ms, import 132ms, tests 115ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+rep2 GREEN(fixed)
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire
+
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (4 tests) 113ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  00:01:36
+   Duration  329ms (transform 20ms, setup 0ms, import 124ms, tests 113ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+rep3 GREEN(fixed)

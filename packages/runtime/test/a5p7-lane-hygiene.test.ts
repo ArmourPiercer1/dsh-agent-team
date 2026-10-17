@@ -120,7 +120,20 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         rel.startsWith('domain/vnext-field-mapping/') ||
         /\/a5p7-/.test(rel)
       if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel)) continue
-      const text = readFileSync(file, 'utf8')
+      let text: string
+      try {
+        text = readFileSync(file, 'utf8')
+      } catch (err) {
+        // Same census-load family as the listFiles guard above: between the
+        // module-load walk and this read (which runs while other workers'
+        // suites churn transient paths), an entry can vanish. A file that is
+        // GONE cannot import the lane — skipping it weakens the claim no
+        // further than its own deletion does; every present file is still
+        // read. ENOENT/ENOTDIR only; any other read error still throws.
+        const code = (err as NodeJS.ErrnoException).code
+        if (code === 'ENOENT' || code === 'ENOTDIR') continue
+        throw err
+      }
       if (/jobs-gateway|vnext-field-mapping/.test(text)) importers.push(rel)
     }
     expect(importers).toEqual([])
