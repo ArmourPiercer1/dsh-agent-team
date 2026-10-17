@@ -2226,6 +2226,11 @@ export function createAgentBindings(deps) {
       // keep the pre-feed path byte-identical, and non-plane names never
       // ride the feed.
       const a5PlanePlacementFeed = new Map()
+      // GLUE-7 (live run-5 lesson): the feed the Guard reads must resolve
+      // the placement identity at LOOKUP time — the seam mints def#N during
+      // the install flow, after this assembly ran. So the closure reads
+      // through the LIVE plane value, never a build-time snapshot.
+      let a5PlaneValue = null
       // ONE realm for the plane assembly AND the Guard's feed pairing —
       // computed once, so the pairing can never drift between the two rows.
       const a5PlaneRealmId = String(config?.teamToolPlane?.realmId ?? `a5-realm-${String(teamRoot)}`)
@@ -2307,7 +2312,10 @@ export function createAgentBindings(deps) {
           // the plane assembly below — a name with no row stays on the
           // pre-feed path (never a weaker verification, just the same one).
           realmId: a5PlaneRealmId,
-          bindingFeed: (name) => a5PlanePlacementFeed.get(name),
+          bindingFeed: (name) =>
+            a5PlaneValue === null
+              ? undefined
+              : a5PlaneValue.placementFeed(name),
           // Generation 0 until PR2 (Operation Admission) feeds the overlay /
           // authority generations into the Binding; the Guard validates every
           // call against the generations it PUBLISHED with, so a change made
@@ -2432,13 +2440,12 @@ export function createAgentBindings(deps) {
         }
         a5PlaneOwnNames = [...built.value.ownNames]
         for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
-        // GLUE-7: hand the placement identities to the Guard's feed —
-        // provider-side records minted at placement time (pb §6), read back
-        // by bindOwnTools below. No plane placement = no rows = pre-feed path.
-        for (const name of built.value.placementNames) {
-          const entry = built.value.placementFeed(name)
-          if (entry !== undefined) a5PlanePlacementFeed.set(name, entry)
-        }
+        // GLUE-7: the Guard's feed resolves through this live handle (the
+        // def#N identity mints later, in the seam's install flow — a
+        // build-time snapshot was measured live refusing a legitimate
+        // team.create). No plane placement = no handle = pre-feed path.
+        a5PlaneValue = built.value
+        for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         toolDisposers.push(placed.dispose)
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
