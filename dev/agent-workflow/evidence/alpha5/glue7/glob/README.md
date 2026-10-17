@@ -2,6 +2,16 @@
 
 日期 2026-10-18 · 作者 GLUE-7 writer · 性质 = 证据文档
 
+## 复审终态（2026-10-18 复审轮）：**未入产**
+
+安全复审裁定 CANDIDATE-A **FAIL**：新泄露类 = verify→launcher 字符串 chdir
+窗口 + provider runtime_base '/' 授 READ_DIR → 沙箱外**名单枚举**上线（实测
+3/10700；文件字节不破）。plane 接线已摘（G6 原钉恢复），本工厂保留导出但
+**未接线**（G6b 改工厂级直钉留档）；此前"两层拒"措辞对名单类 overstated，
+已在 glue7/README §4b 收窄重述。glob 生产化 = 独立件 `093aaded` +
+runtime_base 收窄层集成轮（另单）。本目录全部证据（含 live 正控 L6-L9 旧轮
+与 CANDIDATE-A 实现笔）按"未入产候选"留档。
+
 ## 集成状态（协调令 2026-10-18 收口轮，晚于下方实现笔）
 
 本笔实现（`e58ebcb2` 的 plane `glob:` 行）降级标 **CANDIDATE-A**：主候选 =

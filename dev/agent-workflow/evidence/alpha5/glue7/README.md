@@ -12,7 +12,7 @@ keep every fail-closed law untouched, prove it LIVE on this host.
 | `team_bash` | shell | `createConfinedShellBackend` (`plane-effect-backends.mjs:204`) | confined Process provider `sandbox-provider/provider.ts:228` + P-LSP streaming arm `provider.ts:661`, Landlock pre-launcher `sandbox-provider/launcher/landlock-prelauncher.py`, launcher byte-pin double gate (pb-CONTRACT §1 `ProviderAssemblyConfig`) | REAL Landlock ABI v4 on this host: echo token + `exit=0` on the wire, write inside the governed root lands on disk, outside-root read refused by the KERNEL (`Permission denied`, secret never on the wire) — unit legs G3/G4 + live L3/L4 |
 | `team_grep` | fs (read-only search) | `createAnchoredSearchBackend` (`plane-effect-backends.mjs:132`) | the W5 wiring round's REAL grep search ported verbatim: argv `dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs:287` + outcome/shaping `:308`; governed anchor = controlled-fs instance root `controlled-fs/src/controlled-fs.ts:73` (`ControlledFsInstance`) with the lane's own containment law `isBeneath` `controlled-fs/src/open-at-exec.ts:53` | live L2: anchored grep hits the token line over the wire; unit G1/G2 (+ `..` refused at parse, symlink escape refused at realpath) |
 | `read` (takeover placement) | fs | `createGovernedReadExecutor` (`plane-effect-backends.mjs:324`) | same controlled-fs instance root; deny-lane re-check BEFORE any byte (G1 law), template-default-deny honored (an effect the policy never names never runs); placement identity → pb §6 feed (`tool-dispatch/install.ts:116` `definitionIdentityOf`, feed gates `:1073`+) | live L1: real file bytes ride the wire, int-a5b T5 refusal gone on the assembled row; unit G7 (feed row realm pairing + identity equality) |
-| `team_glob` | fs | **CANDIDATE-A (confined rg, e58ebcb2) — NOT the merge candidate** | coordinator ruling 2026-10-18: the MAIN candidate is `093aaded` standalone (`alpha5-glob-backend`, independent file contract); this row STAYS (kept, not deleted) as candidate A for the final glue-writer's pick-and-replace; its missing items per the six-point assessment: ① rg per-class parity table (plan :132 native-vs-Team regression), ② result-side per-entry anchor validation (each presented path re-checked isBeneath before surfacing), ③ race legs ≥5000 iterations + MID-COMPONENT swap shapes (this round ran 200 + final-component only — see `toctou-fix/re-run-output.txt` C4). `glob/README.md` carries the same pointer |
+| `team_glob` | fs | **TYPED-SHUT (re-review ruling: CANDIDATE-A failed, un-wired; never shipped)** | security re-review 2026-10-18 FAILed the confined-rg candidate for a NAME-class leak (§4b); plane row restored to the verbatim shut pin (G6), factory archived UNWIRED (`glob/`, 未入产); production glob awaits the standalone `093aaded` face + a runtime_base narrowing layer in its own integration round |
 
 Assembly rows (the delivery gap int-a5b named — "seam 精确到挂载行缺 backends 入参"):
 
@@ -126,14 +126,32 @@ FIX (this branch, same law reused, no new architecture, no new permission):
   resolve; no public interface closes a recursive walk without `OpenAtPort`
   (declared seam, no native helper — the trichotomy's evidence of interface
   absence). Disclosed as residual.
-* **glob row (ships now, same bar from birth)**: walk root pre-open
-  O_DIRECTORY|O_NOFOLLOW + verify (rg DOES follow command-line symlinked dirs
-  — measured, so the pre-refusal layer is load-bearing here); the walk root
-  reaches rg only as `.` through the launcher cwd, and any swap that slips the
-  window lands the child on a target the Landlock rule set (root-only
-  read_dir/read_file) kernel-refuses — zero bytes. The rg child's own in-tree
-  walk never follows symlinks (measured). Inside-root redirect integrity
-  residual disclosed, boundary escape refused by two layers.
+* **glob row (CANDIDATE-A — assessed, FAILED, UN-WIRED; audit line)**: my
+  earlier two-layer wording ("pre-open refusal + Landlock backstop refuses the
+  swap") was OVERSTATED for the NAME class and is retracted here. The
+  re-review measured a leak the layers do NOT close: the microsecond window
+  between the verified pre-open and the launcher's STRING chdir (the provider
+  chain re-resolves the cwd STRING — fds do not cross the launcher) — and,
+  load-bearing, the confine provider's runtime_base grants READ_DIR on `/`:
+  a child whose cwd landed on an outside symlink target can ENUMERATE
+  outside NAMES (file names surfaced in the walk output; measured 3/10700).
+  FILE BYTES never surface (Landlock read_file remains root-only — the byte
+  boundary holds), but name enumeration through a governed row is its own
+  disclosure class. The fix belongs to the provider surface (runtime_base
+  narrowing) + the standalone glob face — deliberately NOT patched here
+  under CANDIDATE-A. The plane row ships TYPED-SHUT (G6 verbatim); the
+  factory is archived unwired (G6b factory-direct pins); kit L6 now pins
+  the shut landing live.
+
+### 4c. AUDIT — grep fd-view remap display integrity (small, disclosed)
+
+The grep file-leg remap (`rawStdout.split(fdView).join(anchor.path)`) rewrites
+the literal string `/proc/self/fd/3` EVERYWHERE in the payload, not only the
+filename field: a matched FILE whose own bytes contain that literal will have
+its content line rewritten in the presentation (bytes on disk unchanged;
+presentation integrity only, no confidentiality break). Honest fix shape:
+per-line prefix-only replacement, pending an adjudicated round; pinned as a
+known face, not silently carried.
 
 ADVERSARIAL RE-RUN (reviewer-shaped external rename→symlink attacker, same
 templates, driven against the compiled DIST MIRROR — the production face):
@@ -206,6 +224,11 @@ shape / L9 symlink-final refused with ZERO secret bytes), L5 extended to also
 require the `anchored-glob ran` line, and the pre-GREEN L7-red round retained
 at `runs/2026-10-17T22-02-32Z/` (capture-window fix in `a5g7-live-kit.mjs`:
 the 400B tool-result slice hid the marker tail — widened to 2400B).
+UN-WIRE round (re-review, same day): with the CANDIDATE-A glob row removed,
+the recorded GREEN run is `runs/2026-10-17T22-25-06Z/` — **VERDICT GREEN (24/24)**: L6 now
+lands the honest glob TYPED-SHUT on the wire (the four CANDIDATE-A live legs
+retired with the row; L5 no longer requires the glob log line). The 27/27
+run and its glob legs remain on disk as CANDIDATE-A-era evidence (未入产).
 Kit iteration disclosure: 11 launches to GREEN (10 debugged rounds — the
 install-entry kit's precedent was 10; every round's raw failure is on disk,
 none rewritten). The GREEN round also re-proved, same boot: H0/H3 (:3080
