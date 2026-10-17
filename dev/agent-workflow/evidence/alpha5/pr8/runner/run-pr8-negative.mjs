@@ -32,7 +32,7 @@ say(`# PR8 负例 runner — matrix-machine @ base ${machine._meta.base_sha.slic
 say(`# repo-root=${repoRoot}`);
 
 // 1) 结构 lint（机检矩阵 ↔ doc 矩阵对应关系 + final_declaration 代码位）
-const lintIssues = lintCorrespondence(machine, doc);
+const lintIssues = lintCorrespondence(machine, doc, repoRoot);
 say(`\n## 结构 lint: ${lintIssues.length === 0 ? 'OK' : `${lintIssues.length} 项违规`}`);
 for (const i of lintIssues) say(`  LINT-FAIL ${i}`);
 
@@ -55,7 +55,7 @@ say(`\n## 对照臂（观测面非盲证明）: ghost-anchor probe = ${ctrl.stat
 
 // 4) 逐行三态
 say('\n## 逐行三态（criterion-level-fixture；NOT_RUN/RLW 不构成任何通过性结论）');
-say(`## pending_probe 转态自锁（IF-7）: 5 行 = ${RLW_PROBE_ROWS.join('/')} 只能取 LIVE/PROBE-GATED；PASS 被 lint 代码位 assertProbeRegistrations + 运行期 deriveProbeTransition 双位封死；probe-outcomes=${probeOutcomesPath ?? '（未提供 ⇒ 全行 PREPARED-NOT-RUN-READY）'}`);
+say(`## pending_probe 转态自锁（IF-7；W8 正式轮 F-1/F-2）: 5 行 = ${RLW_PROBE_ROWS.join('/')} 只能取 LIVE/PROBE-GATED；PASS 被 lint 代码位 assertProbeRegistrations + 运行期 deriveProbeTransition 双位封死；LIVE 需 runner 亲验（装配面行形 grep + evidence_refs 逐项存在）；probe-outcomes=${probeOutcomesPath ?? '（未提供 ⇒ 用行上 transition_record 复走亲验位）'}`);
 const results = [];
 for (const row of machine.rows) {
   const r = await evaluateRow(row, { repo_root: repoRoot, probe_outcomes: probeOutcomes });

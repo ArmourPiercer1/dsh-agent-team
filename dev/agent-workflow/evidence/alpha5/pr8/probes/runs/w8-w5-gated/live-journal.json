@@ -1,0 +1,113 @@
+{
+  "rows": [
+    {
+      "at": "2026-10-17T03:07:31.345Z",
+      "leg": "plugin-apply",
+      "pid": 58,
+      "mode": "gated",
+      "hasWebServer": true,
+      "dist": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/packages/runtime/dist/packages",
+      "lane": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/.a5w8-build"
+    },
+    {
+      "at": "2026-10-17T03:07:31.389Z",
+      "leg": "lanes-imported",
+      "ok": true,
+      "settlement0": "dispatcher-call-cancelled-before-body"
+    },
+    {
+      "at": "2026-10-17T03:07:31.711Z",
+      "leg": "register",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "names": [
+        "a5w5_search",
+        "a5w5_bash"
+      ],
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T03:07:31.715Z",
+      "leg": "guard-assembled",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "installOk": true,
+      "bindOwnOk": true,
+      "publishedOk": true,
+      "channelAtPublish": "armed"
+    },
+    {
+      "at": "2026-10-17T03:07:31.716Z",
+      "leg": "register",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "name": "a5w5_unbound_probe",
+      "afterAssembly": true,
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T03:07:31.718Z",
+      "leg": "lifecycle-complete",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "legsOk": true
+    },
+    {
+      "at": "2026-10-17T03:07:31.718Z",
+      "leg": "assembly-complete",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9"
+    },
+    {
+      "at": "2026-10-17T03:07:31.902Z",
+      "leg": "gated-presented",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "callId": "w5-search-1",
+      "kindName": "search",
+      "grant": "grant:cbe6e08c313802528adf91db34ddd63e",
+      "spill": {
+        "spillId": "grep-w5-search-1",
+        "bytes": 299
+      }
+    },
+    {
+      "at": "2026-10-17T03:07:31.926Z",
+      "leg": "gated-presented",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "callId": "w5-bash-2",
+      "kindName": "bash",
+      "grant": "grant:bed8e6e956e96d3fed3539c7a2798ddd",
+      "spill": {
+        "spillId": "bash-w5-bash-2",
+        "bytes": 11
+      }
+    },
+    {
+      "at": "2026-10-17T03:07:31.946Z",
+      "leg": "gated-presented",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "callId": "w5-bash-3",
+      "kindName": "bash",
+      "grant": "grant:4ea0502370ffdcb1bad7c64083690199",
+      "spill": {
+        "spillId": "bash-w5-bash-3",
+        "bytes": 8
+      }
+    },
+    {
+      "at": "2026-10-17T03:07:31.968Z",
+      "leg": "gated-presented",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "callId": "w5-bash-4",
+      "kindName": "bash",
+      "grant": "grant:6b072dc4a1f007cff7cec6dd079fb20c",
+      "spill": {
+        "spillId": "bash-w5-bash-4",
+        "bytes": 18893
+      }
+    },
+    {
+      "at": "2026-10-17T03:07:31.989Z",
+      "leg": "gated-refused",
+      "label": "session-df3ae6ea-5640-4110-b1af-805ae17e13e9",
+      "callId": "w5-search-5",
+      "stage": "requires-approval",
+      "code": "requires-approval"
+    }
+  ]
+}

@@ -93,13 +93,14 @@ const REPO_ROOT = resolve(KIT_DIR, '..', '..', '..')
 const TESTUSE = testUseTree(REPO_ROOT)
 const RUN_STAMP = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 const RUN_DIR = args.includes('--evidence-dir') ? resolve(args[args.indexOf('--evidence-dir') + 1]) : join(KIT_DIR, `run-${RUN_STAMP}`)
-const HOME = homeDir(REPO_ROOT, `a5w7-${RUN_STAMP}`)
+const WORLD_PREFIX = args.includes('--world-prefix') ? args[args.indexOf('--world-prefix') + 1] : 'a5w7' // W8 正式轮 --world-prefix a5w8（IF-3）；默认=lane 原前缀
+const HOME = homeDir(REPO_ROOT, `${WORLD_PREFIX}-${RUN_STAMP}`)
 const WORKSPACE = join(HOME, 'workspace')
 const LEDGER = join(RUN_DIR, 'jobs-ledger.jsonl')
 const BLUEPRINT_DIR = join(RUN_DIR, 'blueprints')
 const INSTANCE_LOG = join(RUN_DIR, 'instance.log')
 const INSTANCE_RAW = join(RUN_DIR, 'host-stdout.raw')
-const HOST_PORT = 3184 // IF-2: W7's recorded port; the kit asserts the boot line matches it.
+const HOST_PORT = args.includes('--port') ? Number(args[args.indexOf('--port') + 1]) : 3184 // IF-2: W7's recorded port; W8 正式轮 --port 3186（IF-2 记 W8=3186）；默认不变
 const LANE_BUILD = join(REPO_ROOT, 'node_modules', '.a5w7-jobs-build')
 
 const DIST_RUNTIME = join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime')

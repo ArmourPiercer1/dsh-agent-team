@@ -1,0 +1,75 @@
+{
+  "note": "The definition identity source is the ROW-LOCAL store (disclosed): the pinned host gives a third-party row no public seam to move another scope’s Definition mid-session; the host-registry-shaped chain stays fixture-level (a5p7-mcp-rebind-chain 6/6, cited not booked). What is LIVE: the gateway law (cancel-only-what-moved, neighbour-safe, attribution pinned to the execution-time identity) on the live assembly.",
+  "withdrawn": {
+    "scopeKey": "a5w7-scope-a",
+    "name": "a5w7_def_tool"
+  },
+  "moved": [
+    {
+      "jobId": "w7-a-1",
+      "pinnedIdentity": "def-v1",
+      "currentIdentity": "unreadable:withdrawn"
+    }
+  ],
+  "a1": {
+    "jobId": "w7-a-1",
+    "ownerKey": "{\"instanceId\":\"inst-0qpvg2v1a7pg\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T03-07-36\"}",
+    "scopeKey": "a5w7-scope-a",
+    "toolName": "a5w7_def_tool",
+    "pinnedIdentity": "def-v1",
+    "state": "leased",
+    "cancelRequested": true,
+    "outcome": null,
+    "evidenceEvents": []
+  },
+  "a2Neighbour": {
+    "jobId": "w7-a-2",
+    "ownerKey": "{\"instanceId\":\"inst-0qpvg2v1a7pg\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T03-07-36\"}",
+    "scopeKey": "a5w7-scope-a",
+    "toolName": "a5w7_def_neighbour",
+    "pinnedIdentity": "def-v1",
+    "state": "leased",
+    "cancelRequested": false,
+    "outcome": null,
+    "evidenceEvents": []
+  },
+  "b3Neighbour": {
+    "jobId": "w7-b-3",
+    "ownerKey": "{\"instanceId\":\"inst-069k0820va9v\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T03-07-36\"}",
+    "scopeKey": "a5w7-scope-b",
+    "toolName": "a5w7_def_tool",
+    "pinnedIdentity": "def-v1",
+    "state": "leased",
+    "cancelRequested": false,
+    "outcome": null,
+    "evidenceEvents": []
+  },
+  "recoverAdmit": {
+    "ok": true,
+    "job": {
+      "jobId": "w7-a-5",
+      "ownerKey": "{\"instanceId\":\"inst-0qpvg2v1a7pg\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T03-07-36\"}",
+      "scopeKey": "a5w7-scope-a",
+      "toolName": "a5w7_def_tool",
+      "pinnedIdentity": "def-v2",
+      "state": "leased",
+      "outcome": null,
+      "cancelRequested": false,
+      "evidence": []
+    }
+  },
+  "recoverSettle": {
+    "ok": true
+  },
+  "oldAttribution": {
+    "ok": true,
+    "view": {
+      "jobId": "w7-a-1",
+      "ownerKey": "{\"instanceId\":\"inst-0qpvg2v1a7pg\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T03-07-36\"}",
+      "toolName": "a5w7_def_tool",
+      "state": "leased",
+      "outcome": null,
+      "pinnedIdentity": "def-v1"
+    }
+  }
+}

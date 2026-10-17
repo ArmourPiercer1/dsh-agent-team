@@ -55,8 +55,8 @@
       "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md（行源）"
     ],
     "probe_transition": {
-      "source": "WIRING-PHASE-PLAN IF-7（origin/alpha5-decision-pack-20261016 a4f7f4fc）；挂接轮 alpha5-wire-pr8prep（准备层，不执行 live）",
-      "rule": "5 个 RLW 行（M-04/M-05/M-08/M-09/M-13）各挂 pending_probe；正式轮 runner 输出这些行只能取 LIVE（需 receipt evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本复跑）；REQUIRES-LIVE 禁为本阶段终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations + 运行期代码位 deriveProbeTransition 双位封死 PASS 无证据路径（自测=pr8-runner-self.test.mjs prep 节）",
+      "source": "WIRING-PHASE-PLAN IF-7（origin/alpha5-decision-pack-20261016 a4f7f4fc）；挂接轮 alpha5-wire-pr8prep（准备层）；转态轮 alpha5-wire-pr8（W8 正式轮，基线 master@2ff24c5a；F-1/F-2 前置修后机制）",
+      "rule": "5 个 RLW 行（M-04/M-05/M-08/M-09/M-13）各挂 pending_probe；runner 输出这些行只能取 LIVE（需 runner 亲验：probe receipt 的 evidence_refs 逐项存在于 repo_root + 装配锚点由 grepAssemblyAnchors 行形 grep 装配面亲验在场——F-1 无证据/假证据不 LIVE、F-2 注释/裸子串不算锚点）或 PROBE-GATED（需最小复现=probe 脚本复跑）；REQUIRES-LIVE 禁为本阶段终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（含 TRANSITIONED 行 transition_record refs 提交时核验）+ 运行期代码位 deriveProbeTransition 双位封死（自测=pr8-runner-self.test.mjs prep+F-1/F-2 节）",
       "transition_vocabulary": [
         "LIVE",
         "PROBE-GATED"
@@ -72,8 +72,9 @@
       "lanes": {
         "W4": "provider 工厂→会话装配（受支持 profile 真实 spawn+执行观测；不可用 profile 启动前 typed 拒 IO_POLICY_UNSUPPORTED；Landlock 在场/撤销对照）",
         "W5": "search/shell 工具面经 admission 门控注册进测试会话（spill 生命周期 open/read/close/id-in-use + shell parity 双腿）",
-        "W7": "jobs 身份/lease 经 jobs-gateway 公开面装配（两 member 同宿主隔离 + lease 互斥 + revocation；pinned absent-anchor job_start 仍如实 absent）"
-      }
+        "W7": "jobs 身份/lease 经 jobs-gateway 公开 barrel 装配（a5-w7 kit：两 member 同宿主隔离 + lease 互斥 + revocation；pinned absent-anchor job_start 仍如实 absent；runtime tsconfig include 归 GLUE 队列在册差距）"
+      },
+      "anchor_contract_vocabulary": "装配面表=probes/probe-lib.mjs ASSEMBLY_FACES（W4=w4 kit provider row；W5=w5 kit assembly-row+fixtures；W7=a5-w7-jobs-wiring kit plugin+tsconfig.lane.json；行形=非注释行上的工厂调用/动态 import/模块路径绑定形）"
     }
   },
   "rows": [
@@ -254,7 +255,7 @@
         "probe_id": "M-04-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json",
-        "status_now": "PREPARED-NOT-RUN-READY",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -288,8 +289,25 @@
           }
         ],
         "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
-        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
-        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+        "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
+        "transition_record": {
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T03:09Z",
+          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs",
+          "evidence_refs": [
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-04.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json"
+          ],
+          "live_legs_booked": [],
+          "missing_legs": [
+            "editor_subcommand_map_complete（editor 子命令 I/O 映射腿：str_replace_editor 族无装配 row）",
+            "undo_history_io（undo 治理腿）",
+            "editor 子命令级 IO_POLICY_UNSUPPORTED 负控（W4 nega 的 typed 拒属 confined-exec profile 面，类别不冒充）"
+          ],
+          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+        }
       },
       "g_g_related": false,
       "ga_semantics": false,
@@ -315,7 +333,7 @@
         "probe_id": "M-05-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json",
-        "status_now": "PREPARED-NOT-RUN-READY",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -343,8 +361,25 @@
           }
         ],
         "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
-        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
-        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+        "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
+        "transition_record": {
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T03:09Z",
+          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs",
+          "evidence_refs": [
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-05.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json"
+          ],
+          "live_legs_booked": [],
+          "missing_legs": [
+            "image_read.chain=admission-gated-controlled-fs（read_image 附件→解码→渲染链无装配 row）",
+            "thumbnail-read-bypass typed-deny 负控（旁路面未装配）",
+            "admission-unbound bytes_leaked=0 负控（live 面未观测该 reason；W5 unbound=guard 层非 C-FS admission）"
+          ],
+          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+        }
       },
       "g_g_related": false,
       "ga_semantics": false,
@@ -531,7 +566,7 @@
         "probe_id": "M-08-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json",
-        "status_now": "PREPARED-NOT-RUN-READY",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -552,8 +587,27 @@
           }
         ],
         "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
-        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
-        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+        "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
+        "transition_record": {
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T03:09Z",
+          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
+          "evidence_refs": [
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-08.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json"
+          ],
+          "live_legs_booked": [
+            "A2 per_call OS 真实拒绝负控（W4-DOMAIN-DENY EACCES rc=1 leaked=false；ENFORCE-CONFIRMED legs）",
+            "A3 IO_POLICY_UNSUPPORTED 启动前拒 spawn_count=0（W4-NEG-* spy 零计数）"
+          ],
+          "missing_legs": [
+            "execution.inner_reentry_same_pipeline（PTC 内层复入同一管线逐次 Guard——PTC 管线无装配 row）",
+            "transport_same_name_both_sides_throw（保留传输双侧 throw 属 PTC/PR8 面）"
+          ],
+          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+        }
       },
       "g_g_related": false,
       "ga_semantics": false,
@@ -579,7 +633,7 @@
         "probe_id": "M-09-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-09.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-09.receipt.json",
-        "status_now": "PREPARED-NOT-RUN-READY",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -600,8 +654,25 @@
           }
         ],
         "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
-        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
-        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+        "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
+        "transition_record": {
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T03:09Z",
+          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-09.mjs",
+          "evidence_refs": [
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-09.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-09.receipt.json"
+          ],
+          "live_legs_booked": [],
+          "missing_legs": [
+            "pool.per_member_pids_distinct（lsp 服务池无装配 row）",
+            "pool.policy_change_old_pid_terminated_recreated（公开面无策略输入通道 pr6/SEAM-VERDICTS.md:59，矩阵 note 预设恒 PROBE-GATED）",
+            "server_os_reads_mediated / pool.cross_policy_pid_reuse（lsp 服务器未装配）"
+          ],
+          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+        }
       },
       "g_g_related": false,
       "ga_semantics": false,
@@ -755,7 +826,7 @@
         "probe_id": "M-13-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json",
-        "status_now": "PREPARED-NOT-RUN-READY",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -776,8 +847,27 @@
           }
         ],
         "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
-        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
-        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+        "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
+        "transition_record": {
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T03:09Z",
+          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs",
+          "evidence_refs": [
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-13.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json"
+          ],
+          "live_legs_booked": [
+            "A5 pinned job_start absent 复测（anchor grep pre/post hits=0 @w8-w7-green）"
+          ],
+          "missing_legs": [
+            "veto_matrix TeamPermit×DomainPermit 双向不覆盖（Domain 工具/许可面无装配 row；Domain mock 未建）",
+            "veto_side_effects=0 计数（无 veto 腿）",
+            "unresolved-domain-reference fail-closed 负控（同上）"
+          ],
+          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+        }
       },
       "g_g_related": false,
       "ga_semantics": false,

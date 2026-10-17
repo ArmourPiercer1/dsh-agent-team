@@ -8,6 +8,8 @@ import { spawn } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { grepAssemblyAnchors, evidenceRefsCheck } from '../probes/probe-lib.mjs';
+
 export const RESULTS = Object.freeze({ PASS: 'PASS', FAIL: 'FAIL', NOT_RUN: 'NOT_RUN', RLW: 'REQUIRES-LIVE-WIRING' });
 
 // IF-7 转态词表（W8 准备轮 alpha5-wire-pr8prep）：pending_probe 行的行级转态只允许这两个值。
@@ -49,10 +51,10 @@ export function lintDocFinalDeclaration (machine, doc) {
   return { missing_key, declared_non_null };
 }
 
-export function lintCorrespondence (machine, doc) {
+export function lintCorrespondence (machine, doc, repoRoot = null) {
   const issues = [];
   issues.push(...assertMachineFinalDeclarations(machine));
-  issues.push(...assertProbeRegistrations(machine, doc));
+  issues.push(...assertProbeRegistrations(machine, doc, repoRoot));
   for (const row of doc.rows ?? []) {
     if (row.final_declaration !== null && row.final_declaration !== undefined) {
       issues.push(`doc ${row.row_id}: final_declaration 非空（doc 矩阵同样必须全 null）`);
@@ -101,16 +103,20 @@ export function lintCorrespondence (machine, doc) {
   return issues;
 }
 
-// ---------------------------------------------------------------- pending_probe 转态自锁（IF-7，W8 准备轮）
+// ---------------------------------------------------------------- pending_probe 转态自锁（IF-7；W8 正式轮 F-1/F-2 修后）
 // 代码位一（提交时）：assertProbeRegistrations —— 5 个 RLW 行必须全挂 pending_probe，且其形态
 //   自身不得留出 PASS 通道（automatable=false、无 hooks、词表=LIVE/PROBE-GATED、显式声明禁 PASS、
-//   依赖面 lane 封闭集、doc 行同步）。违例=结构 lint 直接红。
+//   依赖面 lane 封闭集、status_now 词表封闭、TRANSITIONED 行必须带 transition_record 且其
+//   evidence_refs 逐项存在于 repo_root（F-1 提交时位）、doc 行同步 probe_script+status_now）。违例=结构 lint 直接红。
 // 代码位二（运行期）：deriveProbeTransition + evaluateRow —— probe 结论里 attempt PASS / 越词表
-//   终态 = VIOLATION ⇒ 行结果 FAIL（转态违例），LIVE 必须有 receipt 证据（evidence_refs +
-//   assembly_anchors_verified），否则降级 PROBE-GATED；NOT-RUN-READY/FAIL/PROBE-GATED ⇒
-//   PROBE-GATED + 最小复现引注。非 pending_probe 行不受此位管辖（返回 null）。
+//   终态 = VIOLATION ⇒ 行结果 FAIL（转态违例）；LIVE 必须由 runner **亲验**：装配锚点由
+//   grepAssemblyAnchors 现场 grep 装配面（F-2 行形匹配，receipt 自证布尔无效）+ evidence_refs
+//   逐项存在性核验（repo_root 内真实在册，F-1），任一不过 ⇒ 降级 PROBE-GATED；NOT-RUN-READY/FAIL/
+//   PROBE-GATED ⇒ PROBE-GATED + 最小复现引注。非 pending_probe 行不受此位管辖（返回 null）。
 
-export function assertProbeRegistrations (machine, doc) {
+const STATUS_NOW_VOCAB = Object.freeze(['PREPARED-NOT-RUN-READY', 'TRANSITIONED-LIVE', 'TRANSITIONED-PROBE-GATED']);
+
+export function assertProbeRegistrations (machine, doc, repoRoot = null) {
   const issues = [];
   const seen = [];
   for (const row of machine?.rows ?? []) {
@@ -126,11 +132,35 @@ export function assertProbeRegistrations (machine, doc) {
     }
     if (!(pp.forbidden_outcomes ?? []).includes('PASS')) issues.push(`${row.row_id}: forbidden_outcomes 必须显式声明禁 PASS（无证据 PASS 路径封死声明）`);
     if (!String(pp.probe_script ?? '').startsWith('dev/agent-workflow/evidence/alpha5/pr8/probes/')) issues.push(`${row.row_id}: probe_script 必须指向 pr8/probes/ 内脚本`);
-    if (pp.status_now !== 'PREPARED-NOT-RUN-READY') issues.push(`${row.row_id}: 准备轮 pending_probe.status_now 必须为 PREPARED-NOT-RUN-READY`);
+    if (!STATUS_NOW_VOCAB.includes(String(pp.status_now))) issues.push(`${row.row_id}: pending_probe.status_now 越词表: ${pp.status_now}（允许 ${STATUS_NOW_VOCAB.join('/')}）`);
     const deps = pp.depends_on ?? [];
     if (!deps.length) issues.push(`${row.row_id}: depends_on 必须声明至少一个 lane 的观测面`);
     for (const d of deps) {
       if (!PROBE_LANES.includes(d.lane) || !d.surface) issues.push(`${row.row_id}: depends_on 项须 lane∈{W4,W5,W7} 且有 surface（依赖声明=哪个 lane 的哪个观测面）`);
+    }
+    if (String(pp.status_now).startsWith('TRANSITIONED-')) {
+      const tr = pp.transition_record;
+      if (!tr || typeof tr !== 'object') {
+        issues.push(`${row.row_id}: TRANSITIONED 行必须带 transition_record（转态留痕：verdict+refs/repro+run_utc）`);
+      } else {
+        const want = pp.status_now === 'TRANSITIONED-LIVE' ? 'LIVE' : 'PROBE-GATED';
+        if (tr.verdict !== want) issues.push(`${row.row_id}: transition_record.verdict=${tr.verdict} 与 status_now=${pp.status_now} 不符`);
+        const refs = tr.evidence_refs ?? [];
+        if (want === 'LIVE' && !refs.length) issues.push(`${row.row_id}: TRANSITIONED-LIVE 必须有 evidence_refs（F-1 无证据不 LIVE）`);
+        if (repoRoot) {
+          for (const chk of evidenceRefsCheck(repoRoot, refs)) {
+            if (!chk.ok) issues.push(`${row.row_id}: transition_record.evidence_refs ${chk.ref} ${chk.reason}（F-1 提交时位：假 refs 即红）`);
+          }
+          if (want === 'PROBE-GATED' && !existsSync(join(repoRoot, String(tr.repro_ref ?? '')))) {
+            issues.push(`${row.row_id}: TRANSITIONED-PROBE-GATED 的 repro_ref 未指向在册可复跑脚本: ${tr.repro_ref}`);
+          }
+          if (want === 'LIVE') {
+            const lanes = [...new Set(deps.map((d) => d.lane))];
+            const g = grepAssemblyAnchors(repoRoot, lanes);
+            if (g.missing.length) issues.push(`${row.row_id}: TRANSITIONED-LIVE 但装配锚点亲验不在场（F-2）: ${g.missing.join('；')}`);
+          }
+        }
+      }
     }
   }
   const missing = RLW_PROBE_ROWS.filter((id) => !seen.includes(id));
@@ -143,13 +173,24 @@ export function assertProbeRegistrations (machine, doc) {
       const d = doc.rows.find((x) => x.row_id === row.row_id);
       if (!d?.pending_probe || d.pending_probe.probe_script !== row.pending_probe.probe_script) {
         issues.push(`${row.row_id}: doc 矩阵 pending_probe 未同步（probe_script 须同指针）`);
+      } else if (d.pending_probe.status_now !== row.pending_probe.status_now) {
+        issues.push(`${row.row_id}: doc 矩阵 pending_probe.status_now 未同步（${d.pending_probe.status_now} ≠ ${row.pending_probe.status_now}）`);
       }
     }
   }
   return issues;
 }
 
-export function deriveProbeTransition (row, outcome) {
+// runner 亲验装配面（F-2）：row 声明的 lanes 全部 grep 过 ⇒ true。ctx.assembly_face_ok 显式给出时
+// 以显式观测为准（自测注入用）；否则现场 grep（repo_root 缺省时视为未亲验 ⇒ false）。
+function rowAssemblyFaceOk (row, ctx) {
+  if (typeof ctx.assembly_face_ok === 'boolean') return ctx.assembly_face_ok;
+  if (!ctx.repo_root) return false;
+  const lanes = [...new Set((row.pending_probe?.depends_on ?? []).map((d) => d.lane))];
+  return grepAssemblyAnchors(ctx.repo_root, lanes).missing.length === 0;
+}
+
+export function deriveProbeTransition (row, outcome, ctx = {}) {
   const pp = row?.pending_probe;
   if (!pp) return null;
   if (!outcome) {
@@ -161,10 +202,19 @@ export function deriveProbeTransition (row, outcome) {
   }
   if (v === 'LIVE') {
     const refs = Array.isArray(outcome.evidence_refs) ? outcome.evidence_refs : [];
-    if (refs.length && outcome.assembly_anchors_verified === true) {
-      return { probe_transition: PROBE_TRANSITIONS.LIVE, evidence_refs: refs, basis: '装配锚点核验 + 证据引注在册（行级转态提案值，终裁归 PR8 正式轮+独立 reviewer）' };
+    const anchorsOk = rowAssemblyFaceOk(row, ctx);
+    const refsOk = refs.length > 0 && ctx.repo_root
+      ? evidenceRefsCheck(ctx.repo_root, refs).every((c) => c.ok)
+      : false;
+    if (refsOk && anchorsOk) {
+      return { probe_transition: PROBE_TRANSITIONS.LIVE, evidence_refs: refs, basis: 'runner 亲验：装配锚点行形 grep 在场 + evidence_refs 逐项存在（行级转态提案值，终裁归 PR8 正式轮+独立 reviewer；F-1/F-2 双亲验位）' };
     }
-    return { probe_transition: PROBE_TRANSITIONS.PROBE_GATED, repro_ref: outcome.repro_ref ?? pp.probe_script, basis: 'probe 主张 LIVE 但缺 evidence_refs/assembly_anchors_verified ⇒ 无证据不 LIVE，降级 PROBE-GATED（封死无证据路径）' };
+    const why = !anchorsOk
+      ? '装配锚点 runner 亲验不在场（receipt 自证布尔无效，F-2 行形 grep 为准）'
+      : !refs.length
+        ? '缺 evidence_refs（无证据不 LIVE）'
+        : 'evidence_refs 亲验不过：存在指向不存在记录或逃逸 repo_root 的 ref（F-1 逐项存在性核验，refs 必须在树在册）';
+    return { probe_transition: PROBE_TRANSITIONS.PROBE_GATED, repro_ref: outcome.repro_ref ?? pp.probe_script, basis: `probe 主张 LIVE 但 ${why} ⇒ 降级 PROBE-GATED（封死假证据路径）` };
   }
   if (v === 'PROBE-GATED' || v === 'NOT-RUN-READY' || v === 'FAIL') {
     return { probe_transition: PROBE_TRANSITIONS.PROBE_GATED, repro_ref: outcome.repro_ref ?? pp.probe_script, basis: `probe verdict=${v} ⇒ 按 IF-7 落 PROBE-GATED+最小复现（probe 脚本自身可复跑）` };
@@ -371,8 +421,13 @@ export async function evaluateRow (row, ctx = {}) {
     };
     if (row.pending_probe) {
       // 代码位二（运行期）：转态只可能 LIVE / PROBE-GATED；PASS 尝试 ⇒ FAIL+违例注记。
-      const t = deriveProbeTransition(row, ctx.probe_outcomes?.[row.row_id]);
+      // outcome 优先取本轮 fresh probe_outcomes，缺省回落行上 transition_record（W8 轮在册转态，
+      // 复跑仍走同一亲验位：refs 存在性 + 装配锚点 grep，在册≠免检）。
+      const fresh = ctx.probe_outcomes?.[row.row_id];
+      const outcome = fresh ?? row.pending_probe.transition_record ?? undefined;
+      const t = deriveProbeTransition(row, outcome, ctx);
       out.probe_transition = t.probe_transition;
+      if (outcome) out.probe_outcome_source = fresh ? 'fresh' : 'recorded-transition_record';
       if (t.basis) out.probe_basis = t.basis;
       if (t.repro_ref) out.repro_ref = t.repro_ref;
       if (t.evidence_refs) out.evidence_refs = t.evidence_refs;

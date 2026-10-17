@@ -5,9 +5,9 @@
 //   W4 观测面 = 受支持 profile 真实 spawn+执行观测（编辑器 governed 落盘执行腿）；
 //   IF-6 名称面 = 不可精确映射子命令 → typed 默认拒 IO_POLICY_UNSUPPORTED（launch 前、零副作用）。
 // 判据（矩阵 M-04 note）：子命令级 I/O 映射逐路径可观测；不可精确映射者 typed 默认拒；undo 历史 I/O 在治理腿内。
-// 当前无装配 ⇒ 运行即 NOT-RUN-READY exit 3 + 逐条缺装配原因（禁假 PASS）；词表封闭 LIVE/PROBE-GATED/NOT-RUN-READY/FAIL。
+// 装配面缺位 ⇒ 运行即 NOT-RUN-READY exit 3 + 逐条缺装配原因（禁假 PASS；W8 正式轮：kit 装配面已合并 master）；词表封闭 LIVE/PROBE-GATED/NOT-RUN-READY/FAIL。
 // 零端口零世界（IF-2/IF-3 归正式轮）；纯只读。writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
-import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains, ASSEMBLY_ANCHORS, GLUE_PATH } from './probe-lib.mjs';
+import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains } from './probe-lib.mjs';
 
 await runProbe({
   rowId: 'M-04',
@@ -17,11 +17,11 @@ await runProbe({
   deps: [
     { lane: 'W5', surface: 'admission 门控工具面注册进测试会话（IF-1）——editor 子命令 I/O 映射观测面宿主', if_refs: ['IF-1'] },
     { lane: 'W4', surface: '受支持 profile 真实 spawn+执行观测——编辑器执行落盘腿', if_refs: ['IF-1'] },
+    { lane: 'W5', surface: 'IF-6 拒装名观测：不可精确映射子命令 typed 默认拒 IO_POLICY_UNSUPPORTED（launch 前、零副作用）', if_refs: ['IF-6'] },
   ],
   preflight: [
-    { id: 'w5-tool-face-registered', lane: 'W5', surface: 'admission 门控工具面注册（IF-1 plugin row/ctx.agents）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W5.glue_anchor] },
-    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'ConfinedProcessProvider 会话装配（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W4.glue_anchor] },
-    { id: 'registry-20-run-mounted', lane: 'W5', surface: 'registry 套件 20-controlled-fs 断言实现挂载（run≠null）', kind: 'registry-run', suite: '20-controlled-fs' },
+    { id: 'w5-tool-face-assembly', lane: 'W5', surface: 'w5 kit 装配面（admission 门控工具面经 lane 装载注册；IF-1 公开 seam）', kind: 'face' },
+    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'w4 kit 装配面（ConfinedProcessProvider 会话装配，IF-1）', kind: 'face' },
   ],
   assertions: [
     {

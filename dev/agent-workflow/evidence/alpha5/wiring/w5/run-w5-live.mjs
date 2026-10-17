@@ -62,7 +62,8 @@ const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
 const DIST_PACKAGES = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages')
 const LANE_BUILD = resolve(argValue('lane-build', join(WORKTREE, 'tests', 'homes', '.a5w5-build')))
 const ROW_PATH = join(HERE, 'a5w5-assembly-row.mjs')
-const WORLD_ROOT = join(WORKTREE, 'tests', 'homes', `a5w5-${MODE}-${RUN_STAMP}`)
+const WORLD_PREFIX = argValue('world-prefix', 'a5w5') // W8 正式轮 --world-prefix a5w8（IF-3）；默认=lane 原前缀
+const WORLD_ROOT = join(WORKTREE, 'tests', 'homes', `${WORLD_PREFIX}-${MODE}-${RUN_STAMP}`)
 const HOME = WORLD_ROOT
 const REPO = join(HOME, 'repo')
 const SPILL = join(HOME, 'spill')

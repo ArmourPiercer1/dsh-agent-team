@@ -1,0 +1,141 @@
+[
+  {
+    "seq": 1,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_GATED_20261017T030730Z_SET_OK"
+    },
+    "status": 200
+  },
+  {
+    "seq": 2,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_GATED_20261017T030730Z_SET_OK"
+    },
+    "status": 200
+  },
+  {
+    "seq": 3,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-ikrapcvo",
+          "name": "a5w5_search",
+          "arguments": {
+            "pattern": "A5W5TOK-252697cfd7ae",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-gated-2026-10-17T03-07-30Z/repo",
+            "output_mode": "content"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 4,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-ctcgqoda",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "printf 'alpha\\nbeta\\n'",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-gated-2026-10-17T03-07-30Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 5,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-3ehpt088",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "echo out; echo err >&2; exit 3",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-gated-2026-10-17T03-07-30Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 6,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c39d1so9",
+          "name": "a5w5_bash",
+          "arguments": {
+            "command": "seq 1 4000",
+            "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-gated-2026-10-17T03-07-30Z/repo"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 7,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-eoldoudp",
+          "name": "a5w5_search",
+          "arguments": {
+            "pattern": "OUTSIDE",
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8/tests/homes/a5w8-gated-2026-10-17T03-07-30Z/outside",
+            "output_mode": "content"
+          }
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 8,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-l8hbspbo",
+          "name": "a5w5_unbound_probe",
+          "arguments": {}
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 9,
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-hwynuzac",
+          "name": "a5w5_unbound_probe",
+          "arguments": {}
+        }
+      ]
+    },
+    "status": 200
+  },
+  {
+    "seq": 10,
+    "reply": {
+      "kind": "text",
+      "content": "A5W5_GATED_20261017T030730Z_DONE search · content · 2 matches > /srv/work | bash · exit=0 > alpha > beta > a5p5-meta | bash · exit=3 > out > stderr: > err > a5 | bash · exit=0 > 1 > 2 > 3 > 4 > 5 > 6 >  | A5W5-REFUSED kind=requires-approval code | Error: team tool guard: \"a5w5_unbound_pr"
+    },
+    "status": 200
+  }
+]

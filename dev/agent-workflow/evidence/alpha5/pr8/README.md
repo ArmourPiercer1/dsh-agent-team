@@ -70,3 +70,19 @@ IF-7 适用（WIRING-PHASE-PLAN @origin/alpha5-decision-pack-20261016 a4f7f4fc�
 - **④ 转态自锁**：pending_probe 行 runner 输出只能取 LIVE/PROBE-GATED，**PASS 无证据路径不存在**——代码位一 `assertProbeRegistrations`（提交时：automatable=false+无 hooks+词表+禁 PASS 声明+lane 闭集+doc 同步，违例=lint 红）；代码位二 `deriveProbeTransition`/`evaluateRow`（运行期：attempt PASS/越词表=VIOLATION⇒FAIL 判红；LIVE 缺证据⇒降级 PROBE-GATED；NOT-RUN-READY/FAIL⇒PROBE-GATED+repro）。分布 LIVE/PROBE-GATED 与 PASS 分桶。违例自测=套件 prep 节 6 判据 + runs/w8prep-violation-selftest-fixture.json 实跑 runs/w8prep-violation-selftest-full.log（伪造 PASS 尝试⇒FAIL+exit 2；伪造无证据 LIVE⇒PROBE-GATED；带证据 LIVE⇒LIVE 但 PASS 计数不动）。
 - **③ 差距检查表**：[vnext-migration-gap-checklist.md](./vnext-migration-gap-checklist.md)——对照 docs/migration（只读）+ 冻结基线语义 + ACCEPTANCE §2 五 RLW 缺项，C-01..C-13 差距行（差距≠缺陷，逐行证据引用）+ 五行×差距映射与转态上限。
 - **门禁**：RED-first（runs/w8prep-RED-self.log 23P/5F=自锁判据先红）→ GREEN（runs/w8prep-GREEN-self.log **28/28**，EXIT=0）；负例 runner EXIT=0；token 0；porcelain 净；零端口零世界（probe/自测=纯只读+子进程只读）；IF-5 全共享文件零触碰（新增全在本目录 + doc 矩阵 pending_probe 同步=N1 先例的指定转交面）。kit-rerun/p4t6 腿语义不变。
+
+---
+
+## Scope-4（W8 正式轮，2026-10-17；alpha5-wire-pr8 writer=qwen3.8-flash-next，基 master@2ff24c5a）
+
+**① F-1/F-2 前置必修（review-W8prep，RED-first：runs/w8-formal-RED-self.log 9/35 先红 → GREEN 35/35）**：
+- **F-1 证据真实性**：LIVE=runner/probe **亲验**——`evidence_refs` 逐项存在性核验（repo_root 内相对路径，缺文件/`..`/绝对路径=降级 PROBE-GATED）+ receipt 的 `assembly_anchors_verified` 自证布尔**无效化**（仅转印 RECEIPT-CLAIM 行）。runner 侧 TRANSITIONED 行的 `transition_record.evidence_refs` 亦走提交时核验（假 refs 即 lint 红）。
+- **F-2 锚点亲验+行形匹配**：锚点契约 `ASSEMBLY_ANCHORS`（agent-bindings 裸子串）→ `ASSEMBLY_FACES` **装配面表**（W4=w4 kit provider row；W5=w5 kit assembly-row+fixtures；W7=a5-w7 kit plugin+tsconfig.lane.json），匹配=**非注释行上的绑定级代码形**（工厂调用/动态 import/模块路径；注释与字符串裸子串不过——reviewer 的注释锚注入例现被 `grepAssemblyAnchors` 咬缺）。原 registry `run≠null` / jobs-gateway tsconfig include 两条预检**去门**：二者是 GLUE/PR8-build 后续工作项（F-6 披露）而非装配信号，缺口如实登差距检查表。M-04 deps 补 IF-6 第三腿（F-4）。
+- 违例注入自测（全部咬红）：不存在 refs / repo_root 逃逸 refs / 假布尔 LIVE / 注释锚 / 裸子串锚 / 假装配根+伪造 receipt（5 probe 子进程全部非 LIVE）/ TRANSITIONED 假 refs / doc 状态漂移 / status_now 越词表 / anchor_contract-表漂移。
+
+**② 五行真跑（端口 3186·世界 a5w8-\* 跑毕删除·宿主 @639ed01539 porcelain 0）**：W4 kit 三相 **22/22 + 19/19 + 18/18**（runs/w8-w4-{pos,nega,negb}/）、W5 gated **34/34**（runs/w8-w5-gated/，lane 编译 .a5w8-build 已清）、W7 kit **22/22**（runs/w8-w7-green/）。逐行 probe 输出（runs/w8-probe-M-\*.log，exit=4）：**五行全 TRANSITIONED-PROBE-GATED，0 LIVE**——装配面在场（行形 grep 亲验）但各行断言集含未装配工具族腿（M-04 editor 族、M-05 read_image 链、M-08 PTC 管线两腿、M-09 lsp 池四腿、M-13 Domain mock 三腿），逐条精确缺项在 ASSERT NOT-EXECUTED 行与 receipt `not_observed`。如实 book 的在场腿：M-08 A2（OS 真实拒绝 EACCES rc=1 leaked=false）+A3（IO_POLICY_UNSUPPORTED 启动前拒 spawn_count=0）SATISFIED；M-13 A5（job_start absent 复测 hits=0 pre/post）SATISFIED。无一行 NOT-RUN-READY/REQUIRES-LIVE 收尾（IF-7）。
+- kit 附加 `--world-prefix`/`--port` 旗标（默认行为逐字不变；IF-5 非共享文件，披露于此）；宿主树 = read-only 复用 `dsh-020rc2-upgrade` 已建树（同 pin，W4 自带回退路径同款），worktree 内 `tests/deepseek-harness-test-use` 为该树的 gitignored 链接（kit-rerun/pinned-grep 腿因此从 NOT_RUN 转真跑）。
+
+**③ 矩阵/doc 转态 + ④ 差距表**：5 行 `status_now=TRANSITIONED-PROBE-GATED` + `transition_record`（verdict/run/probe log/repro/missing_legs）；doc 矩阵 5 行 status_now 同步；lintCorrespondence 绿。最终分布（runner 无 flag 复跑=走 transition_record 复验位）：**PASS=27 FAIL=0 NOT_RUN=0 RLW=0 LIVE=0 PROBE-GATED=5 TOTAL=32**（vs 准备轮 24/0/3/5：NOT_RUN→0 = 本 worktree 有构建运行时树、kit-rerun 腿真跑，非升格；RLW 5→0=IF-7 转态；PASS 不动）。差距检查表 C-04/05/06/07/08/09/10/11 现状+引证按实录刷新（C-06 OS 负控腿与 C-09 absent-anchor 复测闭合；§2 转态列+W8 结论段新增；F-3 两处引证精确化）。
+
+**门禁**：self-test 35/35 EXIT=0；负例 runner EXIT=0（lint=[]，对照臂抓红）；措辞 lint（G-g/终止保证口径）0 违规；token 扫描证据树 0 raw；世界 0 残留 / 3186 释放 / 宿主 porcelain 0；共享面（packages/tsconfig/barrel/vitest/p4t6/agent-bindings/registry）零改动。

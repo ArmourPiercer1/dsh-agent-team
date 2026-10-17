@@ -81,7 +81,8 @@ const DIST_PACKAGES = join(WORKTREE, 'packages', 'runtime', 'dist', 'packages')
 const LAUNCHER = join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py')
 const REVOKE_PY = join(HERE, 'a5w4-revoke-python.py')
 const ROW_PATH = join(HERE, 'a5w4-provider-row.mjs')
-const WORLD = join(WORKTREE, 'tests', 'homes', `a5w4-${PHASE}-${RUN_STAMP}`)
+const WORLD_PREFIX = argValue('world-prefix', 'a5w4') // W8 正式轮以 --world-prefix a5w8 复用本 kit（IF-3）；默认=lane 原前缀
+const WORLD = join(WORKTREE, 'tests', 'homes', `${WORLD_PREFIX}-${PHASE}-${RUN_STAMP}`)
 const HOME = WORLD
 const LEDGER = join(EVIDENCE_DIR, 'assembly-ledger.jsonl')
 const INSTANCE_RAW = join(EVIDENCE_DIR, 'instance.raw.log')

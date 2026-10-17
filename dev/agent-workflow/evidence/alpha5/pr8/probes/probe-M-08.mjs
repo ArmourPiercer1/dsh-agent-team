@@ -6,9 +6,9 @@
 //   IF-6 名称面 = 不可用/越界 profile 启动前 typed 拒 IO_POLICY_UNSUPPORTED（零 spawn 证据）。
 // 判据（矩阵 M-08 note）：保留传输同名双侧 throw；外层真实进程+内层复入同一管线逐次 Guard；
 // ENFORCE 级宣称必须落在 OS 强制面证据上（IF-7），仅 fixture 级 ⇒ receipt 不得带 OS_ENFORCED 断言。
-// 当前无装配 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS）。零端口零世界，纯只读。
+// 装配面缺位 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS；W8 正式轮：kit 装配面已合并）。零端口零世界，纯只读。
 // writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
-import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains, ASSEMBLY_ANCHORS, GLUE_PATH } from './probe-lib.mjs';
+import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains } from './probe-lib.mjs';
 
 await runProbe({
   rowId: 'M-08',
@@ -19,8 +19,7 @@ await runProbe({
     { lane: 'W4', surface: 'provider 工厂→会话装配 + Landlock 在场/撤销对照（OS 强制面，ENFORCE 证据分级如实）', if_refs: ['IF-1', 'IF-6'] },
   ],
   preflight: [
-    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'ConfinedProcessProvider 会话装配（IF-1）', kind: 'anchor', files: [GLUE_PATH], anchors: [ASSEMBLY_ANCHORS.W4.glue_anchor] },
-    { id: 'registry-50-run-mounted', lane: 'W4', surface: 'registry 套件 50-ptc-lsp 断言实现挂载（run≠null）', kind: 'registry-run', suite: '50-ptc-lsp' },
+    { id: 'w4-spawn-assembly', lane: 'W4', surface: 'w4 kit 装配面（ConfinedProcessProvider 会话装配 + Landlock 在场/撤销对照，IF-1/IF-6）', kind: 'face' },
   ],
   assertions: [
     {

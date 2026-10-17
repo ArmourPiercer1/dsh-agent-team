@@ -1,0 +1,22 @@
+{
+  "round": "W8 formal (alpha5-wire-pr8)",
+  "run_utc": "2026-10-17T03:07Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "port": 3186,
+  "world_prefix": "a5w8-*",
+  "caliber": "LIVE-kit observations only; legs the merged kits do not assemble are NOT booked (NOT-EXECUTED ⇒ 行保持 PROBE-GATED；缺项如实点名)。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-04 str_replace_editor",
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w5-gated/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json"
+  ],
+  "observed_on_assembly_face": [
+    "W5 门控工具面 LIVE（34/34：a5w5_search/a5w5_bash bind→grant→exec→spill；unbound 探针 guard 拒、body exec=0）",
+    "W4 governed 执行腿 LIVE（22/22：真 spawn rc=0 pid 真；域内 deny EACCES rc=1 零泄漏）"
+  ],
+  "not_observed": [
+    "editor_subcommand_map_complete：str_replace_editor 工具族无任何装配 row（W5 kit 只 alias lane grep/bash；editor 不在闭集装配面）⇒ 子命令 I/O 映射无观测面",
+    "undo_history_io：undo 谱无装配腿",
+    "editor 子命令级 IO_POLICY_UNSUPPORTED 负控：W4 nega 的 typed 拒发生在 confined-exec spawn 请求形状（profile 类），不是 editor 子命令映射面；按类别不冒充 book"
+  ]
+}

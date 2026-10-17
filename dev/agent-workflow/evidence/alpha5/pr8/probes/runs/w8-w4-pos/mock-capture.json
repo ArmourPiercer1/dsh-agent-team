@@ -1,0 +1,43 @@
+{
+  "requests": [
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 26
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 0
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    }
+  ],
+  "transcriptTail": [
+    "A5W4W20261017T030711Z_RUN_DONE 3 results: A5W4-RES tag=A5W4W20261017T030711Z_RUN-pos-1-supported-deny mode=supported-deny ok=true code=null rc=1 pid=146 lease=terminated stage=provider-executed | A5W4-RES tag=A5W4W20261017T030711Z_RUN-pos-2-chan mode=chan ok=true code=null rc=null pid=null lease=null stage=observation-only"
+  ]
+}
