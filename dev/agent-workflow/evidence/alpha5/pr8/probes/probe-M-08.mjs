@@ -8,6 +8,19 @@
 // ENFORCE 级宣称必须落在 OS 强制面证据上（IF-7），仅 fixture 级 ⇒ receipt 不得带 OS_ENFORCED 断言。
 // 装配面缺位 ⇒ 运行即 NOT-RUN-READY exit 3 + 缺装配原因（禁假 PASS；W8 正式轮：kit 装配面已合并）。零端口零世界，纯只读。
 // writer=alpha5-wire-pr8prep（qwen3.8-flash-next）。
+// 判据对齐注记（W-PTC-ROWFIX #290，2026-10-17 06:53Z root 口径；以计划口径为准）：
+//   本 probe 原 A1–A4 四条全部只覆盖【内层 per-call 载荷执行边】（A1 内层复入同一管线逐次 Guard /
+//   A2 内层 per-call OS 拒绝 / A3 内层 provider 启动前拒 / A4 同名双侧 throw）。而 M-08 判据的计划口径
+//   （S0-SELECTION-MATRIX.md:55 未测项明文「外层直接 fs/net OS 级拒绝负控」+ 禁止路径「以『内层 guard
+//   通过』替代外层防护」；post-poc-technical-design.md:123/125/66/191/214/22/21）恒含【外层程序直接
+//   fs/net OS 级拒绝负控】边。W-PTC-OUTER 轮（证据 commit 348f9989，独立 reviewer PASS 06c3b502，
+//   canonical runs/outer-2026-10-17T06-34-21Z 27/27+8INFO）实证该外层边在可达面上：真 Landlock 域
+//   fs 写禁区=真阻止（EACCES+不创建、域跨 fork/execve 继承），但 net.connect 真域腿直通（无任何 OS
+//   机制覆盖），且公开 seam 无法把 per-call Grant 注入外层 bootstrap（四处 typed throw + ctx.set 拒）。
+//   ⇒ 判据与 S0:55 的差异=原四条缺外层边判据，A1–A4 全 SATISFIED 不构成行级 LIVE。补 A5（收紧，非放宽）：
+//   receipt 必须带 outer_direct_io_os_denial=true（外层直接 fs/net OS 级拒绝负控在册；net 腿需独立
+//   OS 机制覆盖证明，pr290 实测 net 直通=缺口绝不记为防护）。字段缺 ⇒ NOT-EXECUTED ⇒ 按 probe 自身
+//   词表如实落 PROBE-GATED（不硬凑 verdict；行级转态正本=machine 矩阵 M-08 transition_record）。
 import { runProbe, probeRelPath, receiptRelPath, clauseField, clauseContains } from './probe-lib.mjs';
 
 await runProbe({
@@ -45,6 +58,15 @@ await runProbe({
       id: 'A4-transport-override-both-sides-throw',
       criterion: '保留传输同名双侧 throw（不可覆盖）在装配面复现',
       run: (r) => clauseField(r, 'transport_same_name_both_sides_throw', true, '双侧 throw 观测在册'),
+    },
+    {
+      // 06:53Z 判据对齐补条（计划口径，见头注；A1–A4 为内层边，本条为外层边）：
+      // 外层程序直接 fs/net（不经任何注册工具）的 OS 级拒绝负控在册；net 腿须独立 OS 机制覆盖证明。
+      // W-PTC-OUTER 实测（可达正控真值表）：真 Landlock 域 fs 写禁区 EACCES+不创建，net.connect 真域腿
+      // 直通（1 conn/62B 实收）⇒ 该边未被观测；精确局部阻塞见 w-ptc-outer/pr290-comment.md §5。
+      id: 'A5-outer-direct-io-os-denial',
+      criterion: '外层直接 fs/net OS 级拒绝负控在册（S0:55 未测项 + design:123/125/191/214/21/22 = 原计划受控对象；禁以内层 guard/载荷边替代外层防护）',
+      run: (r) => clauseField(r, 'outer_direct_io_os_denial', true, '外层直接 fs/net OS 级拒绝负控在册（net 腿需独立 OS 机制覆盖，非文件域）'),
     },
   ],
 });

@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "boot": 1,
+  "ready": true,
+  "rootSessionId": "session-a5bd-root-2026-10-17T06-48-22",
+  "liveSessions": [
+    "session-a5bd-root-2026-10-17T06-48-22"
+  ],
+  "toolCount": 15
+}

@@ -1,0 +1,53 @@
+{
+  "anchors": [
+    {
+      "key": "web.disable_tool_bash",
+      "file": "packages/bundle/web-app/cordis.patch.yml",
+      "needle": "- id: tool-bash",
+      "line": 450,
+      "found": true,
+      "text": "- id: tool-bash"
+    },
+    {
+      "key": "web.disable_tool_fs",
+      "file": "packages/bundle/web-app/cordis.patch.yml",
+      "needle": "- id: tool-fs",
+      "line": 469,
+      "found": true,
+      "text": "- id: tool-fs"
+    },
+    {
+      "key": "bash.run_in_background_schema",
+      "file": "packages/shell/tool-bash/src/index.ts",
+      "needle": "run_in_background: { type: 'boolean'",
+      "line": 393,
+      "found": true,
+      "text": "run_in_background: { type: 'boolean' as const, description: 'Run in the background and return a job id immediately (collect with job_output, stop with job_kill). No timeout applies.' },"
+    },
+    {
+      "key": "bash.jobs_swap_register",
+      "file": "packages/shell/tool-bash/src/index.ts",
+      "needle": "const unregister = ctx.tools.register(bashTool(jobCtx.jobs))",
+      "line": 549,
+      "found": true,
+      "text": "const unregister = ctx.tools.register(bashTool(jobCtx.jobs))"
+    },
+    {
+      "key": "registry.view_own_last",
+      "file": "packages/core/tools/src/index.ts",
+      "needle": "The scope's own registrations last",
+      "line": 1202,
+      "found": true,
+      "text": "// The scope's own registrations last, shadowing an inherited name and"
+    },
+    {
+      "key": "registry.schemas_scope",
+      "file": "packages/core/tools/src/index.ts",
+      "needle": "schemas(scope?: ScopeKey)",
+      "line": 1260,
+      "found": true,
+      "text": "schemas(scope?: ScopeKey): ToolSchema[] {"
+    }
+  ],
+  "allFound": true
+}

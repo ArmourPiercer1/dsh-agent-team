@@ -1,0 +1,26 @@
+{
+  "globalNames": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ],
+  "read": {
+    "globalPresent": true,
+    "scopedPresent": true,
+    "sameDefinition": true
+  },
+  "bash": {
+    "globalPresent": true,
+    "scopedPresent": true,
+    "sameDefinition": true
+  },
+  "scopedNames": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ]
+}

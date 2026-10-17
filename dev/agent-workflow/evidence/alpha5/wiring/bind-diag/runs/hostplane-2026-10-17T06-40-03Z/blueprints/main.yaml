@@ -1,0 +1,117 @@
+---
+schemaVersion: 3
+blueprintId: team.a5bd.main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5bd governed team. Follow the user turn exactly: create the members it asks for, or run the command it asks for, and use nothing else."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_create_member
+    builtinToolDeny:
+      - job_kill
+      - job_list
+      - job_output
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: bash
+          resource:
+            kind: any
+        - tool: read
+          resource:
+            kind: any
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - create-member
+    - send-message
+    - report-progress
+    - bash
+  deny: []
+members:
+  - templateId: wa
+    displayName: "a5bd worker A"
+    persona: "You are worker A of the a5bd governed team. Answer A5BD_NOOP_DONE and use no tools."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - job_kill
+        - job_list
+        - job_output
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: wb
+    displayName: "a5bd worker B"
+    persona: "You are worker B of the a5bd governed team. Answer A5BD_NOOP_DONE and use no tools."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - job_kill
+        - job_list
+        - job_output
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+  - templateId: wb
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

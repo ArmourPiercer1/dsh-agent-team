@@ -50,12 +50,24 @@
  * Purity: no `node:*`, no I/O, no timers. The `async` shape is the frozen
  * `OperationAdmission` seam, nothing more.
  *
+ * PRODUCTION ASSEMBLY ENTRY (PR2/PR3 production-assembly round, P-A writer):
+ * THE FILE ALSO CARRIES `deriveTeamPolicyAuthority` (template
+ * `capabilities.permissions` → the PR0 policy document + R-1a deny sources —
+ * the production replacement for the evidence kits' fixture-constant policy
+ * arms) and `createProductionAdmissionAssembly` (the kernel admission
+ * production entry class: derivation + kernel wiring + the default-deny gate
+ * + the PR3 FS-admission port adapter). The kernel law above this marker is
+ * byte-unchanged; the additions REUSE it, never restate it. The assembly
+ * contract for the host (GLUE-5) lives at
+ * `dev/agent-workflow/evidence/alpha5/prod/pa-CONTRACT.md`.
+ *
  * @module @dsh-agent-team/runtime/tool-admission/admission-kernel
  */
-import { type AdmissionRequest, type ExecutionLease, type ExecutionLeaseKind, type GovernanceResult, type OperationAdmission, type OperationGrant, type AssuranceDimension, type AssuranceRequirement, type GrantCallContext, type ToolPolicyDocument } from '../../domain/tool-governance/src/index.js';
+import { type AdmissionRequest, type ExecutionLease, type ExecutionLeaseKind, type Effect, type GovernanceResult, type OperationAdmission, type OperationAdmissionDecision, type OperationGrant, type AssuranceDimension, type AssuranceRequirement, type GrantCallContext, type ToolPolicyDocument } from '../../domain/tool-governance/src/index.js';
 import type { SubtreeContains } from '../../domain/authority-envelope/src/index.js';
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js';
 import type { RuntimeAuthority } from '../governance/runtime-authority.js';
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/types.js';
 import { type AssuranceProbe } from './assurance-runtime.js';
 import { type PolicyDenySource, type EffectSetApprovalPlan, type PresentedApproval } from './approval-case.js';
 import { type GrantLedger } from './grant-mint.js';
@@ -127,4 +139,125 @@ export declare function grantIdForCall(request: AdmissionRequest, authorityGener
  * PR7's durable store lands behind the same view).
  */
 export declare function createAdmissionKernel(options: AdmissionKernelOptions): AdmissionKernel;
+/** Input of {@link deriveTeamPolicyAuthority} — the trusted projection arms. */
+export interface TemplatePolicyProjectionInput {
+    /** REAL authority input: `boundTemplate.capabilities.permissions` (A1-normalized). */
+    readonly permissionPolicy: TemplatePermissionPolicy;
+    readonly realmId: string;
+    /** deny-source provenance prefix: `<templateId>#deny[<i>]`. */
+    readonly templateId: string;
+    /** The rung that OWNS the static template lane (who wrote the policy). */
+    readonly definitionOwnerAuthority: RuntimeAuthority;
+    /** The role of THIS install — the template grammar's shell-allow role gate. */
+    readonly role: 'leader' | 'member';
+    /** Declared path → the effect's canonical locator. Absent ⇒ only paths
+     *  already absolute (`/…`) are accepted (identity mapping, the C-FS
+     *  absolute-path instance law); anything else fails closed. */
+    readonly canonicalizeResource?: (declaredPath: string) => string | null;
+    /** The planes' containment law — REQUIRED whenever a subtree rule exists. */
+    readonly subtreeContains?: SubtreeContains;
+    /** Read-time version stamp for the deny sources (the assembly wires the
+     *  SAME reader as `authorityGeneration`, so trust always tracks the call). */
+    readonly sourceVersion: () => number;
+    /** The Alpha.4 exec dual-gate readout for the leader's whole-tool shell
+     *  ALLOW rule. Absent/false ⇒ the rule projects as `ask` + a note — an
+     *  allow is never invented here. */
+    readonly leaderExecTokenPresent?: () => boolean;
+}
+/** Result of {@link deriveTeamPolicyAuthority} — the read-time arms. */
+export interface TemplatePolicyProjection {
+    readonly templateDefault: 'ask' | 'deny';
+    /** Read-time document build (the leader exec dual gate answers per read). */
+    readonly buildDocument: () => ToolPolicyDocument;
+    /** Read-time R-1a deny-source projection (deny lane, declaration order). */
+    readonly denySources: () => readonly PolicyDenySource[];
+    /** Everything the closed family could not carry — stated, never silent. */
+    readonly notes: readonly string[];
+    /** Does ANY projected rule (any lane) cover this effect? (default-deny gate) */
+    readonly coversEffect: (effect: Effect) => boolean;
+}
+/**
+ * PROJECT the template's static permission policy into the PR0 authority
+ * arms — the production replacement for the kits' `allowPolicy(tg, arms)`
+ * fixture constants. Deterministic: lane order allow → ask → deny, rules in
+ * declaration order, duplicates kept (mirrors the A1 normalization law).
+ * Refusals are typed and name the exact rule (path `lane[i]`), because the
+ * consumer is a host assembly, not a model.
+ */
+export declare function deriveTeamPolicyAuthority(input: TemplatePolicyProjectionInput): GovernanceResult<TemplatePolicyProjection>;
+/** The trusted wiring of {@link createProductionAdmissionAssembly}. */
+export interface ProductionAdmissionConfig {
+    /** = `boundTemplate.capabilities.permissions` (the A1-normalized policy). */
+    readonly permissionPolicy: TemplatePermissionPolicy;
+    readonly realmId: string;
+    readonly templateId: string;
+    readonly definitionOwnerAuthority: RuntimeAuthority;
+    readonly role: 'leader' | 'member';
+    /** The host wall clock (H1 gates it per call; no lane-owned clock). */
+    readonly clock: () => number;
+    /** Same reader the guard publishes with; deny-source versions read it too. */
+    readonly authorityGeneration: () => number;
+    readonly beneficiaryAuthority: RuntimeAuthority;
+    /** Absent ⇒ the documented no-narrowing state (exists, empty; mutation
+     *  absent) — the same fact the Alpha.4 plane states for an unmoved team. */
+    readonly documents?: () => AuthorityEnvelopeDocuments;
+    readonly canonicalizeResource?: (declaredPath: string) => string | null;
+    readonly subtreeContains?: SubtreeContains;
+    readonly leaderExecTokenPresent?: () => boolean;
+    /** Absent ⇒ the lane's honest stub probe (every dimension 'untested' — a
+     *  hard profile is NEVER redeemed by it). Hosts wire the real probe when
+     *  the OS enforcement (PR4) lands. */
+    readonly assuranceProbe?: AssuranceProbe;
+    readonly requiredAssurance?: RequiredAssuranceReader;
+    readonly grantExpiry?: (issuedAt: number) => number | null;
+    readonly ledger?: GrantLedger;
+    /** The host's cancellation view at the execution edge (port reads it). */
+    readonly cancelRequested?: (callId: string) => boolean;
+    readonly onObserve?: (event: Readonly<Record<string, unknown>> & {
+        readonly event: string;
+    }) => void;
+}
+/** Structurally the C-FS lane's `FsAdmissionPort` (the lanes stay decoupled:
+ *  this is the kernel's OWN execution edge, shaped to the port the C-FS
+ *  binding consumes — no second authorization fact, no lane-to-lane import). */
+export interface ProductionFsAdmissionPort {
+    readonly recheckCall: (intent: {
+        readonly op: string;
+        readonly canonicalLocator: string;
+        readonly parametersFingerprint: string;
+    }) => Promise<{
+        readonly ok: true;
+    } | {
+        readonly ok: false;
+        readonly reason: string;
+    }>;
+}
+export interface ProductionAdmissionAssembly {
+    /** The wired kernel (approval loop: planApproval / issueApprovedGrant ride
+     *  it — the Alpha.4 ApprovalCase stays the ONE case, GLUE-5 owns the loop). */
+    readonly kernel: AdmissionKernel;
+    readonly realmId: string;
+    /** Read-time projection (dual gate answers per read). */
+    readonly policyDocument: () => ToolPolicyDocument;
+    readonly denySources: () => readonly PolicyDenySource[];
+    readonly projectionNotes: readonly string[];
+    /** The consumption view to hand the C-FS provider (`consumed:` config arm). */
+    readonly consumed: (grantId: string) => boolean;
+    /** default-deny gate + `kernel.admit` (zero kernel touch on a gate denial). */
+    readonly admitCall: (request: AdmissionRequest) => Promise<GovernanceResult<OperationAdmissionDecision>>;
+    readonly planApproval: AdmissionKernel['planApproval'];
+    readonly issueApprovedGrant: AdmissionKernel['issueApprovedGrant'];
+    readonly consumeForExecution: AdmissionKernel['consumeForExecution'];
+    /** ONE gated C-FS operation per admitted call (the lane's one-shot recheck
+     *  law): this port IS the execution edge the C-04/05 kits drove by hand. */
+    readonly createFsAdmissionPort: (request: AdmissionRequest, grant: OperationGrant) => ProductionFsAdmissionPort;
+}
+/**
+ * THE KERNEL ADMISSION PRODUCTION ENTRY CLASS: derivation → kernel wiring →
+ * default-deny gate → FS port, from the template's real policy object. A
+ * construction failure is typed and complete (the host fails the AgentSetup
+ * the same way a Guard install failure fails it — a permissions agent never
+ * runs on a broken authority).
+ */
+export declare function createProductionAdmissionAssembly(config: ProductionAdmissionConfig): GovernanceResult<ProductionAdmissionAssembly>;
 //# sourceMappingURL=admission-kernel.d.ts.map
