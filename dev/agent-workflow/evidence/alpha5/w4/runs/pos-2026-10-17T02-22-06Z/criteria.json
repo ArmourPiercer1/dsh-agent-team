@@ -1,0 +1,147 @@
+{
+  "phase": "pos",
+  "stamp": "2026-10-17T02-22-06Z",
+  "grade": "ENFORCE-CONFIRMED (fixture/subprocess-grade OS_ENFORCED: rules compiled by the tracked lane launcher, real Landlock domain, real execve; realm/trust-root fixture-grade by the lane wording — not an OS-anchored identity)",
+  "bareAbi": {
+    "rc": 0,
+    "stdout": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "stderr": ""
+  },
+  "launcherSha": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+  "pgrepPrelauncher": "183 bash -c pgrep -af 'landlock-prelauncher' | head -5 || true",
+  "failedCount": 1,
+  "criteria": [
+    {
+      "id": "W4-PIN",
+      "claim": "pinned tree @639ed01539 · porcelain 0 · HEAD==pin",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true"
+    },
+    {
+      "id": "W4-DIST",
+      "claim": "provider factory reachable through the dist PUBLIC barrel only",
+      "pass": true,
+      "observed": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire-pr4/packages/runtime/dist/packages/runtime/sandbox-provider/index.js"
+    },
+    {
+      "id": "W4-LAUNCHER",
+      "claim": "trusted pre-launcher is the TRACKED source copy (disclosed: dist emit carries no .py assets)",
+      "pass": true,
+      "observed": "sha256=cee10ed55f12123f (trustRoot names it)"
+    },
+    {
+      "id": "W4-REVOKE-SELFTEST",
+      "claim": "revocation wrapper really removes the enforcement plane: bare probe finds the ABI, wrapper probe answers EACCES",
+      "pass": true,
+      "observed": "bare rc=0 {\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ · wrapper rc=2 {\"kind\":\"abi-unavailable\",\"abi_version\":null,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSIO"
+    },
+    {
+      "id": "W4-PORTS",
+      "claim": "port 3182 free at start (IF-2 self-proof; netstat)",
+      "pass": true,
+      "observed": "port 3182: no listener"
+    },
+    {
+      "id": "W4-BOOT",
+      "claim": "test instance boots, token gate returns 303, row health answers",
+      "pass": true,
+      "observed": "booted=true health={\"ok\":true,\"pid\":73,\"applied\":true,\"barrel\":true,\"agents\":[]}"
+    },
+    {
+      "id": "W4-SESSION",
+      "claim": "the host public session/create entry returned a real sessionId",
+      "pass": true,
+      "observed": "status=200 sid=session-244b7902-4edf-4f"
+    },
+    {
+      "id": "W4-SETUP",
+      "claim": "the real session ran a setup turn to a model reply (an Agent now exists behind the session)",
+      "pass": true,
+      "observed": "setup=200"
+    },
+    {
+      "id": "W4-AGENT",
+      "claim": "the row resolved the real Agent through the PUBLIC ctx.agents seam and assembled",
+      "pass": true,
+      "observed": "assemble={\"ok\":true,\"assembled\":true,\"label\":\"session-244b7902-4edf-4f36-b1f3-396c762c859b\",\"registration\":{\"ok\":true,\"name\":\"a5w4_confined_exec\",\"via\":\"agent-ctx-tools-"
+    },
+    {
+      "id": "W4-REGISTER",
+      "claim": "the row registered exactly the ONE restricted exec tool on the live Agent scope (argv row-fixed, model picks mode only)",
+      "pass": true,
+      "observed": "registration={\"ok\":true,\"name\":\"a5w4_confined_exec\",\"via\":\"agent-ctx-tools-register\"}"
+    },
+    {
+      "id": "W4-PROMPT",
+      "claim": "turn accepted (202/200)",
+      "pass": true,
+      "observed": "prompt=200"
+    },
+    {
+      "id": "W4-TURN",
+      "claim": "the scripted chain ran to its DONE marker on the mock (fuse not tripped)",
+      "pass": false,
+      "observed": "turn="
+    },
+    {
+      "id": "W4-STABLE",
+      "claim": ":3080 read-only probed before/after, untouched",
+      "pass": true,
+      "observed": "before=401 after=401"
+    },
+    {
+      "id": "W4-POS-SPAWN",
+      "claim": "positive control: REAL confined spawn — provider ok, launcher rc=0, payload pid real, lease terminated",
+      "pass": true,
+      "observed": "ok=true rc=0 pid=153 lease=terminated spyDelta=1(probe legs included) ceDelta=1"
+    },
+    {
+      "id": "W4-POS-SPILL",
+      "claim": "spill observation: launcher out/err refs EXIST under the plan dir; provider read-back matches the fixture content",
+      "pass": true,
+      "observed": "out=true err=true match=true stdout=A5W4-OK-CONTROL 2026-10-17T02-22-06Z\n"
+    },
+    {
+      "id": "W4-DOMAIN-DENY",
+      "claim": "OS enforcement plane ACTS on the payload: the same domain refuses the PRIVATE fixture (cat rc!=0, stderr EACCES, zero leak)",
+      "pass": true,
+      "observed": "rc=1 eacces=true leaked=false stderr=/usr/bin/cat: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-wire-pr4/tests/homes"
+    },
+    {
+      "id": "W4-RC-SURFACE",
+      "claim": "exit codes observed through the public deps spy (seam RunOutput carries NO rc — disclosed 观察-1 gap)",
+      "pass": true,
+      "observed": "supported rc=0 · supported-deny rc=1 · launcherRc=0/0"
+    },
+    {
+      "id": "W4-ENFORCE-LIVE",
+      "claim": "ENFORCE grading COMPUTED FROM LIVE ROWS: content-read & write enforced (double evidence), ABI present, network honestly unsupported, enforcement legs answered clean",
+      "pass": true,
+      "observed": "abi=v4 content-read=enforced write=enforced network=unsupported legVerdicts={\"selective\":\"ENFORCE-CONFIRMED\",\"denyall\":\"ENFORCE-CONFIRMED\",\"badhandled\":\"DEMO-CONFIRMED\"} (badhandled DEMO = the false-ABSENT discriminator)"
+    },
+    {
+      "id": "W4-HARD-REALM",
+      "claim": "hard realm correctly configured (观察 2): hardDimensions set on every instance; accepted spawns passed verifyHardProfileEvidence against the REAL captured evidence",
+      "pass": true,
+      "observed": "hardDims=[\"content-read\",\"write\"] evidence=evidence://a5p4/probe/a5w4-realm-2026-10-17T02-2 realm=a5w4-realm-2026-10-17T02-22-06Z mechanism-names-double-evidence=true"
+    },
+    {
+      "id": "W4-CHAN-OBS",
+      "claim": "G-6/G-7 observation plumbing reused at the provider face: ONE legal registry move on the row’s own Definition, the row-owned control subscription saw the REAL registry deliver (provider seam itself emits no §5 events — recorded, no closure claim; G-g posture unchanged)",
+      "pass": true,
+      "observed": "controlEvents 1→3 move=disposed-reregistered"
+    },
+    {
+      "id": "W4-POS-E2E",
+      "claim": "the tool calls rode the REAL dispatch path (model-driven: tool_result texts visible in the transcript the model read)",
+      "pass": true,
+      "observed": "toolResults=3 transcriptToolResults=3"
+    },
+    {
+      "id": "W4-PRISTINE",
+      "claim": "pinned tree porcelain = 0 at the end",
+      "pass": true,
+      "observed": "porcelain=true"
+    }
+  ]
+}
