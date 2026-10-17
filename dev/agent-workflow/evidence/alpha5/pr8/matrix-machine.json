@@ -826,7 +826,7 @@
         "probe_id": "M-13-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json",
-        "status_now": "TRANSITIONED-PROBE-GATED",
+        "status_now": "TRANSITIONED-LIVE",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -850,23 +850,28 @@
         "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
         "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
         "transition_record": {
-          "verdict": "PROBE-GATED",
-          "run_utc": "2026-10-17T03:09Z",
-          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "verdict": "LIVE",
+          "run_utc": "2026-10-17T04:01Z",
+          "round": "W-E2 (alpha5-wire-tools2) @master aece4f21；port 3183；world a5e2-*（跑毕删除）；宿主 @639ed01539 porcelain 0 pre/post；探针复跑 exit=0（w-e2-post-M-13.log）",
           "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs",
           "evidence_refs": [
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-13.log",
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json"
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-e2-post-M-13.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/veto-table-after-chain.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/interlock-probe.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/run-receipt.md",
+            "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/criteria.json"
           ],
           "live_legs_booked": [
-            "A5 pinned job_start absent 复测（anchor grep pre/post hits=0 @w8-w7-green）"
+            "A1 veto_matrix{team_permit:false,domain_permit:true,outcome:denied}：真实 PR2 kernel requires-approval 臂拒（aux 未挂 domain-ref 政策臂），设备 0 副作用",
+            "A2 veto_matrix{team_permit:true,domain_permit:false,outcome:denied,error:DOMAIN_DENIED}×2（lease 联锁=CAS）：kernel 已铸 grant 仍被 Domain 拒，原文进真实 transcript",
+            "A3 veto_side_effects=0 字节级：模型链读回时 device-actions.jsonl 恰 1 行=acted 腿、aux/belt version=0；ungated 对照红且仅红 Team 门控腿（22/28）",
+            "A4 unresolved-domain-reference fail-closed（铸 grant 前拒、不猜绑定、台账增量 0）+ post-publish unbound body=0 + cross-member lease typed 拒（负控三件在册）",
+            "A5 pinned job_start absent 复测（host 树 grep hits=0 + 活 roster 无 job-start 形名）"
           ],
-          "missing_legs": [
-            "veto_matrix TeamPermit×DomainPermit 双向不覆盖（Domain 工具/许可面无装配 row；Domain mock 未建）",
-            "veto_side_effects=0 计数（无 veto 腿）",
-            "unresolved-domain-reference fail-closed 负控（同上）"
-          ],
-          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+          "missing_legs": [],
+          "basis": "LIVE=行级转态提案值（终裁归 PR8 正式轮 + 独立 reviewer）：Domain mock CAS/模拟设备联锁按矩阵 M-13 evidence_types 在册『待建』口径由 W-E2 kit 建成（row-local MOCK，界面/词表全标 MOCK），真实会话模型驱动六腿链跑通；披露：kernel 信任输入 fixture 级（同 W5/W7/W8）、instanceId row-local（rootSessionIds=HOST 会话事实）、durable-MemberInstance 腿在 W7 kit 在册不在本行断言内。G-g 引用不变（OPEN-only）。"
         }
       },
       "g_g_related": false,

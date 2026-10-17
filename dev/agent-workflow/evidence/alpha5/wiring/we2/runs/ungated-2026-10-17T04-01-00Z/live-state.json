@@ -1,0 +1,402 @@
+{
+  "mode": "ungated",
+  "assemblies": {
+    "session-fa287c18-ee40-4147-824a-3821e7867211": {
+      "mode": "ungated",
+      "guard": {
+        "installOk": false,
+        "installError": null,
+        "bindOwnOk": false,
+        "publishedOk": false,
+        "channel": null,
+        "channelAtPublish": null,
+        "probeRegisteredAfterPublish": true
+      },
+      "eventCensus": {},
+      "observationsCount": 0,
+      "registryNames": [
+        "a5e2_domain_act",
+        "a5e2_unbound_probe"
+      ],
+      "toolCalls": [
+        {
+          "callId": "e2-act-1",
+          "tool": "domain-act",
+          "stage": "ungated-acted",
+          "grantId": null,
+          "fingerprint": "sha256:583b638cc165e47d5d00ab6b06ca8161fdb13f25a1ae626927219dbc10346532",
+          "device": "a5e2.device/main",
+          "team_permit": "never-asked",
+          "domain_permit": true,
+          "outcome": "acted",
+          "code": null,
+          "detail": null,
+          "deviceDelta": 1,
+          "actionsBefore": 0,
+          "actionsAfter": 0,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": "A5E2-ACTED-UNGATED device=a5e2.device/main version=0->1",
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-2",
+          "tool": "domain-act",
+          "stage": "ungated-acted",
+          "grantId": null,
+          "fingerprint": "sha256:720d9193aaac13bf6400feba8394c234eedc91528161e825cfbf553b4fad643f",
+          "device": "a5e2.device/aux",
+          "team_permit": "never-asked",
+          "domain_permit": true,
+          "outcome": "acted",
+          "code": null,
+          "detail": null,
+          "deviceDelta": 1,
+          "actionsBefore": 1,
+          "actionsAfter": 1,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": "A5E2-ACTED-UNGATED device=a5e2.device/aux version=0->1",
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-3",
+          "tool": "domain-act",
+          "stage": null,
+          "grantId": null,
+          "fingerprint": "sha256:87f87b631e6d5ec4a7fd4533f36175b07acacac5477ad8c572c867c9995d4ded",
+          "device": "a5e2.device/belt",
+          "team_permit": "never-asked",
+          "domain_permit": false,
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "device-lease-owner={\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"} (actor is not the lease holder)",
+          "deviceDelta": 0,
+          "actionsBefore": 2,
+          "actionsAfter": 2,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-4",
+          "tool": "domain-act",
+          "stage": null,
+          "grantId": null,
+          "fingerprint": "sha256:7605839f6b7c07ff1767935fa3f6a8231c9824afc2f633d8512d61d863962e0c",
+          "device": "a5e2.device/main",
+          "team_permit": "never-asked",
+          "domain_permit": false,
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "cas-version-stale expected=999 actual=1",
+          "deviceDelta": 0,
+          "actionsBefore": 2,
+          "actionsAfter": 2,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        },
+        {
+          "callId": "e2-act-5",
+          "tool": "domain-act",
+          "stage": "domain-reference-unresolved",
+          "grantId": null,
+          "fingerprint": null,
+          "device": "a5e2.device/ghost",
+          "team_permit": null,
+          "domain_permit": "not-asked",
+          "outcome": "denied",
+          "code": "DOMAIN_DENIED",
+          "detail": "unresolved-domain-reference a5e2.device/ghost",
+          "deviceDelta": 0,
+          "actionsBefore": 2,
+          "actionsAfter": 2,
+          "execEdgeFirst": null,
+          "execEdgeReplay": null,
+          "ledgerConsumed": null,
+          "presented": null,
+          "decisionVerbatim": null
+        }
+      ],
+      "vetoMatrix": [],
+      "vetoSideEffects": 0,
+      "negativeControls": [
+        {
+          "attempt": "unresolved-domain-reference",
+          "outcome": "typed-deny",
+          "code": "DOMAIN_DENIED",
+          "device": "a5e2.device/ghost",
+          "grants_minted_delta": 0
+        }
+      ],
+      "probeBodyCount": 1,
+      "grantMintedCount": 0,
+      "mockSnapshot": {
+        "a5e2.device/main": {
+          "domainAuthorityId": "a5e2.device/main",
+          "version": 1,
+          "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}",
+          "log": [
+            {
+              "seq": 1,
+              "op": "spin",
+              "at": "2026-10-17T04:01:02.045Z",
+              "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}"
+            }
+          ]
+        },
+        "a5e2.device/aux": {
+          "domainAuthorityId": "a5e2.device/aux",
+          "version": 1,
+          "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}",
+          "log": [
+            {
+              "seq": 1,
+              "op": "spin",
+              "at": "2026-10-17T04:01:02.071Z",
+              "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}"
+            }
+          ]
+        },
+        "a5e2.device/belt": {
+          "domainAuthorityId": "a5e2.device/belt",
+          "version": 1,
+          "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}",
+          "log": [
+            {
+              "seq": 1,
+              "op": "owner-spin",
+              "at": "2026-10-17T04:01:05.958Z",
+              "actor": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}"
+            }
+          ]
+        }
+      },
+      "mockActionLines": 3,
+      "gateway": {
+        "leaseState": "ACTIVE",
+        "jobs": [
+          {
+            "jobId": "e2-job-a",
+            "ownerKey": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}",
+            "state": "leased",
+            "pinnedIdentity": "def-v1"
+          },
+          {
+            "jobId": "e2-job-b",
+            "ownerKey": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}",
+            "state": "leased",
+            "pinnedIdentity": "def-v1"
+          }
+        ],
+        "ownerA": {
+          "rootSessionId": "session-fa287c18-ee40-4147-824a-3821e7867211",
+          "instanceId": "a5e2-inst-a",
+          "admitted": true,
+          "key": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-fa287c18-ee40-4147-824a-3821e7867211\"}"
+        },
+        "ownerB": {
+          "rootSessionId": "session-d0bf72f9-11ea-48d3-867c-62cb98edca3f",
+          "instanceId": "a5e2-inst-b",
+          "admitted": true,
+          "key": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-d0bf72f9-11ea-48d3-867c-62cb98edca3f\"}"
+        },
+        "identity_disclosure": "rootSessionIds are HOST facts (sessions the host created); instanceIds are row-local fixture labels (no durable MemberInstance rows in this world — the durable-members leg is on record in the W7 kit)."
+      },
+      "rosterNames": [
+        "read",
+        "write",
+        "edit",
+        "glob",
+        "grep",
+        "job_output",
+        "job_list",
+        "job_kill",
+        "skill",
+        "web_search",
+        "web_fetch",
+        "present",
+        "bash",
+        "read_image",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "todo_write",
+        "workflow",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "ask_user_question",
+        "exit_plan_mode",
+        "subagent_fork",
+        "subagent"
+      ],
+      "rosterHasJobStart": false,
+      "nativeFace": {
+        "total": 26,
+        "names": [
+          "read",
+          "write",
+          "edit",
+          "glob",
+          "grep",
+          "job_output",
+          "job_list",
+          "job_kill",
+          "skill",
+          "web_search",
+          "web_fetch",
+          "present",
+          "bash",
+          "read_image",
+          "send_message",
+          "interrupt_agent",
+          "list_agents",
+          "todo_write",
+          "workflow",
+          "get_goal",
+          "create_goal",
+          "update_goal",
+          "ask_user_question",
+          "exit_plan_mode",
+          "subagent_fork",
+          "subagent"
+        ],
+        "has_edit": true,
+        "has_read_image": true,
+        "has_write": true,
+        "has_str_replace_editor": false,
+        "schemas": [
+          {
+            "name": "read",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to read, resolved by the filesystem backend."
+                },
+                "offset": {
+                  "type": "number",
+                  "description": "1-based first line to return. Defaults to 1."
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of lines to return. Defaults to 2000."
+                }
+              },
+              "required": [
+                "file_path"
+              ]
+            }
+          },
+          {
+            "name": "write",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to write, resolved by the filesystem backend."
+                },
+                "content": {
+                  "type": "string",
+                  "description": "Full UTF-8 text content to write."
+                },
+                "sandbox_permissions": {
+                  "type": "string",
+                  "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+                  "enum": [
+                    "workspace-write",
+                    "danger-full-access"
+                  ]
+                },
+                "justification": {
+                  "type": "string",
+                  "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+                }
+              },
+              "required": [
+                "file_path",
+                "content"
+              ]
+            }
+          },
+          {
+            "name": "edit",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to edit, resolved by the filesystem backend."
+                },
+                "old_string": {
+                  "type": "string",
+                  "description": "Literal text to replace."
+                },
+                "new_string": {
+                  "type": "string",
+                  "description": "Literal replacement text. Use an empty string to delete the match."
+                },
+                "replace_all": {
+                  "type": "boolean",
+                  "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+                },
+                "sandbox_permissions": {
+                  "type": "string",
+                  "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+                  "enum": [
+                    "workspace-write",
+                    "danger-full-access"
+                  ]
+                },
+                "justification": {
+                  "type": "string",
+                  "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+                }
+              },
+              "required": [
+                "file_path",
+                "old_string",
+                "new_string"
+              ]
+            }
+          },
+          {
+            "name": "read_image",
+            "params": {
+              "type": "object",
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to the image file, resolved by the filesystem backend."
+                }
+              },
+              "required": [
+                "file_path"
+              ]
+            }
+          }
+        ]
+      },
+      "nativeCensusDeltas": [
+        {
+          "leg": "edit",
+          "new_observations": 0
+        },
+        {
+          "leg": "read_image",
+          "new_observations": 0
+        }
+      ]
+    }
+  }
+}
