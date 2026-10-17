@@ -1,0 +1,16 @@
+{
+  "rows": 7,
+  "loaded": 1628,
+  "errors": [
+    {
+      "row": "<EXP>packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs",
+      "error": "ERR_MODULE_NOT_FOUND: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z/packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs' imported from /srv/workspace/dsh-plugins/ds"
+    },
+    {
+      "row": "<EXP>packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs",
+      "error": "ERR_MODULE_NOT_FOUND: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z/packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs' imported from /srv/workspace/dsh-plugins/dsh-a"
+    }
+  ],
+  "foreign": [],
+  "foreignCount": 0
+}

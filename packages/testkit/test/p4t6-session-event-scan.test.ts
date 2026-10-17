@@ -2441,41 +2441,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A5G1: readonly string[] = [
       'packages/runtime/test/alpha5-g1-deny-lane.test.ts',
     ]
-    // GLUE-6 (alpha5-glue6-fix, stacked onto this branch by `cherry-pick -x
-    // 3b1b515f` — disclosed stacking, drops out when the #313 PR lands): the
-    // unit leg for the two shipped-artifact fixes. The fixes add NO new
-    // scannable source — the dist-mirror copies of `upstream-resolver.mjs`
-    // and `root-binding/harness/seam.mjs` live under a `dist` segment, which
-    // the scanner excludes by rule (the shipped face is not a source tree),
-    // and every other edit is in a file this ledger already books. So the
-    // chain moves by exactly this one file.
-    const SCANNED_PATHS_A5GLUE6: readonly string[] = [
-      'packages/runtime/test/a5g6-install-face-render.test.ts',
-    ]
-    // alpha5-pb-binding-feed (P-B §6 binding-feed round, stacked onto this
-    // branch by `cherry-pick -x 94abdd90` — disclosed stacking, drops out
-    // when the feed PR lands): the lane's ONE scannable file — the
-    // binding-feed semantics spec (positive control + the three §6
-    // semantics: revoked-drift refusal, cross-realm refusal, no-feed keeps
-    // the verbatim refusal; zero denylist vocabulary; the live kit rows
-    // under dev/agent-workflow/evidence/** are outside the packages/** scan,
-    // exactly as every prior wiring-round kit).
+    // alpha5-pb-binding-feed (P-B §6 binding-feed round): the lane's ONE
+    // scannable file — the binding-feed semantics spec (positive control +
+    // the three §6 semantics: revoked-drift refusal, cross-realm refusal,
+    // no-feed keeps the verbatim refusal; zero denylist vocabulary; the
+    // live kit rows under dev/agent-workflow/evidence/** are outside the
+    // packages/** scan, exactly as every prior wiring-round kit).
     const SCANNED_PATHS_A5PBR2: readonly string[] = [
       'packages/runtime/test/a5pbr2-binding-feed.test.ts',
     ]
-    // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
-    // scannable files of the round — the live-row .mjs that ASSEMBLES the
-    // real effect backends onto the plane (confined Process provider for
-    // shell, the W5-round REAL read-only search anchored at the controlled-
-    // fs instance root, the governed anchored read; glob honestly stays the
-    // typed shut row) and its unit suite (three live positives on REAL
-    // Landlock + the deny-before-backend law with production backends +
-    // the feed rows; zero denylist vocabulary). The live kit rows under
-    // dev/agent-workflow/evidence/** are outside the packages/** scan, as
-    // every prior wiring round.
-    const SCANNED_PATHS_A5GLUE7: readonly string[] = [
-      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
-      'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
+    // GLUE-6 (alpha5-glue6-fix): the unit leg for the two shipped-artifact
+    // fixes. The fixes add NO new scannable source — the dist-mirror copies
+    // of `upstream-resolver.mjs` and `root-binding/harness/seam.mjs` live
+    // under a `dist` segment, which the scanner excludes by rule (the shipped
+    // face is not a source tree), and every other edit is in a file this
+    // ledger already books. So the chain moves by exactly this one file.
+    const SCANNED_PATHS_A5GLUE6: readonly string[] = [
+      'packages/runtime/test/a5g6-install-face-render.test.ts',
     ]
     expect(scanResult.filesScanned).toBe(
       983 +
@@ -2516,8 +2498,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5LSP.length +
         SCANNED_PATHS_A5GLUE5.length +
         SCANNED_PATHS_A5G1.length +
-        SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5PBR2.length +
+        SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5GLUE7.length,
     )
     expect(scanResult.files.length).toBe(
@@ -2559,8 +2541,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5LSP.length +
         SCANNED_PATHS_A5GLUE5.length +
         SCANNED_PATHS_A5G1.length +
-        SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5PBR2.length +
+        SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5GLUE7.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -2624,6 +2606,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5PB,
       ...SCANNED_PATHS_A5LSP,
       ...SCANNED_PATHS_A5GLUE5,
+      ...SCANNED_PATHS_A5GLUE6,
+      ...SCANNED_PATHS_A5PBR2,
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5GLUE6,
       ...SCANNED_PATHS_A5PBR2,
@@ -2877,34 +2861,25 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // and absent from the list the run reads `expected 1169 to be 1168`;
     // booking the one lane-decide test file ends the chain at 1169.
     expect(SCANNED_PATHS_A5G1.length).toBe(1169 - 1168)
-    // The GLUE-6 tie, RE-TIED for this branch's chain order (GLUE-7 stacks
-    // 3b1b515f by `cherry-pick -x` AFTER #315/G1 landed on master, so G1
-    // holds `1169 - 1168` and GLUE-6 re-ties `1170 - 1169`): with the unit
-    // leg on disk and absent from the list the solo run reads `expected 1170
-    // to be 1169` (capture `evidence/alpha5/glue7/p4t6-GLUE6-RETIE-RED.txt`),
-    // booking ends the chain at 1170. One file — the shipped-face unit leg;
-    // the two dist-mirror placements the same round adds are excluded by the
-    // `dist`-segment rule.
-    expect(SCANNED_PATHS_A5GLUE6.length).toBe(1170 - 1169)
-    // The P-B §6 binding-feed tie, RE-TIED for this branch's chain order
-    // (GLUE-7 stacks 94abdd90 by `cherry-pick -x` after GLUE-6 joined this
-    // chain, so GLUE-6 holds `1170 - 1169` and the feed re-ties `1171 -
-    // 1170`): with the lane spec on disk and this clause absent the solo run
-    // reads `expected 1171 to be 1170` (capture
-    // `evidence/alpha5/glue7/p4t6-PBR2-RETIE-RED.txt`), booking the one
-    // named file ends the chain at 1171 — the scanner total of this tree.
-    expect(SCANNED_PATHS_A5PBR2.length).toBe(1171 - 1170)
-    // The GLUE-7 tie (this round joins the chain AFTER the stacked feed
-    // leg, so the feed holds `1171 - 1170` and GLUE-7 ties `1173 - 1171`):
-    // with the two files on disk and this clause absent the solo run reads
-    // `expected 1173 to be 1171` (capture
-    // `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`); booking the two
+    // The P-B §6 binding-feed tie, same form, measured on THIS branch (base
+    // master `23002259`, chain at 1169 after G1 (#315)): with the lane spec on disk and this
+    // clause absent the run reads `expected 1169 to be 1168`; booking the
+    // one named file ends the chain at 1169 — the scanner total of this tree.
+    expect(SCANNED_PATHS_A5PBR2.length).toBe(1170 - 1169)
+    // The GLUE-6 tie, same form, measured on this tree (base master
+    // `28d31f2a`, chain at 1170 after P-B-R2 (#317)): solo RED `expected 1171 to be 1170` before
+    // this booking. One file — the shipped-face unit leg; the two
+    // dist-mirror placements the same round adds are excluded by the
+    // `dist`-segment rule, which is why the chain moves by one and not three.
+    expect(SCANNED_PATHS_A5GLUE6.length).toBe(1171 - 1170)
+    // The GLUE-7 tie. The pre-announced integration re-tie EVENTUALLY
+    // FIRED, exactly as disclosed: `origin/master` landed #317 (feed) and
+    // #318 (GLUE-6 v2), and merging it here DE-DUPLICATED the two stacked
+    // cherry-picks to the same files — no file counts twice, the landed
+    // ties keep master's measured order (`1170 - 1169`, `1171 - 1170`), and
+    // GLUE-7 ties `1173 - 1171`. The solo-RED capture for this leg is
+    // `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the two
     // named files ends the chain at 1173 — the scanner total of this tree.
-    // PRE-ANNOUNCEMENT for the integration re-tie: a later merge that lands
-    // the stacked GLUE-6 (3b1b515f) or feed (94abdd90) commits from master
-    // de-duplicates to the SAME files (cherry-pick -x disclosures) — the
-    // chain total stays 1173 for this set, and the three GLUE-6/PBR2/GLUE-7
-    // ties re-tie around the merge order, never re-counting a file.
     expect(SCANNED_PATHS_A5GLUE7.length).toBe(1173 - 1171)
   })
 

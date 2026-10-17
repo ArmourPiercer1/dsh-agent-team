@@ -1,0 +1,18 @@
+# a5g6-install-kit posture=green surface=strict stamp=2026-10-17T17-56-03Z
+# worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix/tests/deepseek-harness-test-use hostBin=present exp=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/green-2026-10-17T17-56-03Z
+PASS H3a: :3080=401 porcelain=0
+PASS E1: head=3b1b515f31 files=1730 entry=true inFace={"resolver":true,"seam":true} outOfFace={"resolver":false,"seam":false}
+PASS E2: bfs=54 fromStore=38 nmTop=22 skippedForeign=["node-addon-require-builtin-darwin-arm64","node-addon-require-builtin-darwin-x64","node-addon-require-builtin-linux-arm64-gnu","node-addon-require-builtin-win3
+PASS E3: posture=green inFace={"resolver":true,"seam":true} outOfFace={"resolver":false,"seam":false} (a RED posture REQUIRES inFace=false: on pre-fix bytes the face carries neither file — that is the gap)
+PASS E4: rows=7 loaded=1636 foreign=0 errors=[]
+PASS A0: bootLine="dsh web: http://127.0.0.1:3183/?token=<REDACTED>" bootError="" bootstrapFailedBeforeMarker=false
+PASS A1: observerHealth={"status":200,"body":"{\"ok\":true,\"applied\":true}"} moduleNotFound=[] bootError=""
+PASS L0: planeObservations=["a5p2prod: production-admission-constructed","a5-plane: placed [team_grep,team_glob,team_bash]","a5p2prod: production-admission-note"] memberWire team_*=["team_bash","team_glob","team_grep"] globalAliases=[]
+PASS L1: blocksLegal=true crash=false results=[{"toolUseId":"call-a5g6-bash-qywlcqos","wireType":"array","blockTypes":["text"],"content":"[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never fak
+PASS L2: bash="[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]" grep="[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the product
+PASS L3: leaderToolCalls=["team_delegate","team_collect"] memberReqs=3 backToLeader=true verdictCount=2 final={"kind":"text","content":"A5G6_MEMBER_RESULT verdicts=IO_POLICY_UNSUPPORTED,IO_POLICY_UNSUPPORTED crash=n/a"}
+PASS G1: bashCode=IO_POLICY_UNSUPPORTED grepCode=IO_POLICY_UNSUPPORTED denyLaneExpected=template-deny-lane denyLaneSeen=false
+PASS H3b: 401 -> 401; porcelain=0
+PASS C1: home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix/tests/homes/a5g6-green-202610171756 swept=true
+PASS C2: leaks=[] dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix/dev/agent-workflow/evidence/alpha5/glue6/runs/green-2026-10-17T17-56-03Z
+SUMMARY posture=green pass=15 fail=0 of 15 in 43s dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix/dev/agent-workflow/evidence/alpha5/glue6/runs/green-2026-10-17T17-56-03Z
