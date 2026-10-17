@@ -1,0 +1,90 @@
+Alpha.5 wiring round — final measured gates (branch alpha5-int-wiring, HEAD = this commit; base fc9f4a07)
+轮次性质：局部实现 + 接线准备；零验收宣称；G-g 全程 OPEN，未宣称关闭。
+
+root vitest (whole repo, --maxWorkers=1, serial)
+  pristine base fc9f4a07: 10 failing FILES / 24 failing tests / 6884 tests   (.a5w-base-root.json)
+  final HEAD:             9 failing FILES / 23 failing tests / 6936 tests   (root-final.json)
+  identity diff: NEW = 0; RESOLVED = 1 (p4t6 ledger — the tie this round paid).
+  remaining reds are the baseline-known set unchanged (a5p0-layer-audit audit-
+  allow-list red = PR3/PR5 consumers not yet allow-listed: coordinator call,
+  listed in WIRING-SURFACE.md §不在本轮).
+
+suites (all --maxWorkers=1, green)
+  a5w-integration-wiring        14/14   (RED replay captured: 12 failed -> GREEN a5w-SUITE-*.log)
+  controlled-fs lane            37/37   (zero perturbation from the subtree seam)
+  a5p5-tools lane               67/67   (incl. Lane-D ②③ RED 3-leg -> GREEN a5p5-LANE-D-*.log)
+  a5p1 keys + a5p2              107/107 (a5p1-closed-world-guard / a5p1-guard-install / a5p1r-change-abort / a5p2-admission-kernel / a5p2-composition)
+  p4t6 ledger                   10/10   (chain 1109->1120->1139->1153->1155, BY-PATH legs included)
+  a5p4-lane-hygiene 8/8 + a5p4-provider 6/6 + a5p7-lane-hygiene 4/4 + a4p3 9/9 (hygiene full)
+
+static gates
+  tsc packages/runtime/tsconfig.json        exit 0
+  tsc packages/runtime/tsconfig.build.json  exit 0
+  check:artifacts (index)  OK 1656 files, drift 0   (at-head verdict recorded in the report)
+  lint-identities --diff a4 baseline: 161 lines / 76 distinct / new 0 / resolved 0, exit 0
+  audit-a5-tool-governance-imports vs pristine base worktree: findings IDENTICAL
+    (baseline red set unchanged; zero new consumers by design)
+  token scan (silent-channel safety / G-g closure phrasings) in all wiring+lane
+    touched files: 0 real claims (2 hits are the law's own meta-text)
+  ports used: 0 (no listener in 34xx from this round; :3080 never touched)
+  worlds: tests/homes/a5w-* deleted after use (self-teardown + sweep); porcelain clean at HEAD
+
+── FOLLOW-UP ROUND (coordinator order: audit ledger + nine-root census) ──
+(1) PR1_CONSUMERS 正式登记：PR3 controlled-fs/src ×4（review #259@23dc3bd1）+
+    PR5 a5p5-tools/src ×6（review #260@5ccc5839）= 真实台账债入账（audit findings
+    10→0；a5p0-layer-audit 精确 19-file 集钉死=前缀不得夹带）。例外继续只留给
+    "名字出现≠引用"形态。a5p0 全套 5 suites GREEN。
+(2) nine-root census（workflow 同款命令 --full --only census --census-captures 2
+    --census-test-timeout 90000，宿主 @639ed01539 clone+build，porcelain 0）：
+    RED  @ e722665b: NEW 9（census-RED-vs-9-baseline.txt）——定性：8 件=本 worktree
+      环境缺件（client dist 未 build、宿主 app-boot 未 build；provision 后单跑
+      plugin-dsh-compat 7/7、a4p7-merge-gate 35/35 绿，未入账 tolerances）；
+      1 件=poc3 fd-recycling 真竞态（两次 capture 数字各异=fd 表争用），测试侧
+      修复 retry-until-OBSERVED（d1409059），lane solo 13/13 保持。
+    GREEN@ 2b41fab1: verdict=pass，"COUNTS MOVED (549f/6936l vs 508/6373), SET DID
+      NOT"，2 captures identical，new 0 / resolved 0 / escalations 0；9 红全部
+      ∈ pristine-24（双账本 NEW=0）。**未重录 baseline**——public ledger 九条
+      tolerances 即当前真相，无新债入账（诚实结论：RED 的账由 provisioning +
+      竞态修复 + 已付台账清偿，不洗进 tolerances）。
+(3) 复跑：a5p0 全套+p4t6 = 103/103；tsc 双 0；lint new 0（76 distinct 不变）；
+    root vitest NEW=0 由 census 双 capture（并行+union，强于串行）承担。
+    raw captures 留 gitignored scratch；a4-pr7 ci-gate/scratch 恢复原状 40 files。
+
+── FOLLOW-UP ROUND 2 (review-Wiring @3f0a3f15, 条件 A/B/C) ──
+重录宣称原文：前文 "a5p5-tools lane 67/67" 在 2b41fab1 后失实——a5p0 consumer
+登记把 lane 六文件名写进 domain 测试，触发 a5p5-dormant-audit DORMANT 扫描，
+lane 实为 **66/67**（RED: a5p5-CENSUS-REGRESSION-RED.log，offender 恰 1 件
+domain/test/a5p0-layer-audit.test.ts）。A 修复=8b 同格 path-exact 例外 +
+condition-A form-pin leg（quoted-path 形制 + 恰 6 行）→ lane 真值 **68/68**
+（67+新 leg，GREEN: a5p5-CENSUS-REGRESSION-GREEN.log）。B：WIRING-SURFACE 行3
+"五导出"→"七名"已勘正（按 barrel 实际 4 值+3 type）。C：dist policy-adapter
+悬空债 4 件（源删@3b7039e8）已注记于 WIRING-SURFACE §不在本轮，只注记不清算。
+
+── FOLLOW-UP ROUND 3 (CI census-runtime failure @2c955133 → baseline re-record + capture-DIFFER) ──
+① population baseline 重录：新正本 nine-root-067225df.md（549f/6936l/9红/0收集错，
+  3×2 captures 全同集合实测；9 红与 post-d3-4-split ids **逐字节同**=零新增豁免；
+  family 集 {p6t1-parallel, p6t6-actions路径} 逐字携带不变；旧正本原样留史）+
+  ids 副本 + ci-pr-gate 指针与 self-test 钉（59/59 绿）。依据注于文头=PR3/5/7 并入
+  群体（+41f/+563l，与 p4t6 合并纠偏账对账）+ 本分支 2 文件。
+② capture-DIFFER 定位=**LOCATED**：a5p7-lane-hygiene collection 期 listFiles 的
+  readdir→stat 竞态（6941−6937=该文件 4 legs；CI union 给 COLLECTION-ERROR 归属）。
+  构造性复现：churn 下载荷 旧码 3/7 红、修码 3/3 绿（poc3 同型不弱化：ENOENT/ENOTDIR
+  只跳瞬态消失项，其余抛；exact-set 钉继续钉死稳定集）→ 788db2fd + 067225df
+  （后者=merge-gate typecheck 腿抓到的 TS2554 兼容修，RED/GREEN 三份 log 留档）。
+  CI union 另两红（a5p1r G-5 / p4t6 coverage）本地 12+2 captures 零复现、机制未定
+  → 以 OPEN OBSERVATION 记于新正本（率=0/12，不设豁免不贴 family 标签，不猜修）。
+门禁复跑（head 本轮）：census verdict pass（新指针，第 7 对 capture）+ 3 连绿先例；
+a5p0 全套+p4t6=103/103；a5p5 lane 68/68；tsc check/build 双 0；lint new 0（对
+BASELINES.lint=0237d487 正本 76 distinct 不变）；self-test 59/59。porcelain 0。
+
+── FOLLOW-UP ROUND 4 (CI merge-ref 口径；合并 ced9254c + tie 清偿 + 合并树正本) ──
+CI 事实修正了猜测：merge-ref 两红=**p4t6 coverage（1157≠1155）+ a5p1r G-5 wording
+lint（WIRING-SURFACE:36 无限定词）**，均 count/content-pinned 扫描在合并树上的真实
+形态（本地合并树首跑即复现=机制证实；分支树 0/12 是口径差不是玄学）→ 合法修：
+p4t6 入账 SCANNED_PATHS_GGPROBES（#265@ced9254c 两文件，PR3/5/7 合并纠偏同格，
+断言更紧不豁免）；措辞行加 不得/UNTESTED 限定（lint 认账）。census 2×2 @319a60d7
+合并树 全 pass（551f/6941l 恒等×4 capture）。正本九行手误被**逐字节校验**当场抓住
+修正——byte-equality 是机器门不是礼节。口径裁决写入新正本：baseline=CI 所跑的树
+（merge-ref 口径），tolerance 两度重录零漂移。旧 067225df 留史。
+门禁（合并树 head）：p4t6+wording 13/13；census 2 对 pass；self-test 59/59；
+其余见下行复跑记录。

@@ -14,6 +14,16 @@
     // A5-PR2: the tool-admission lane (Operation Admission + one-shot grant).
     // Same rationale as PR1's entry: typecheck coverage for the lane.
     "tool-admission",
+    // A5 integration wiring (G-d, Scope-2): PR3 ControlledFs and PR4
+    // sandbox-provider join the SHARED typecheck surface (their reviews'
+    // "lane never entered a repo-wide tsc" condition). `controlled-fs` is
+    // listed whole (src + lane tests typecheck); the build tsconfig narrows
+    // the emit to `controlled-fs/src` so lane tests never reach dist.
+    "controlled-fs",
+    // Provider side: COMPILE FACE ONLY — factory export stays an explicit
+    // call, no live-registry import, no production consumer (a5w suite
+    // re-pins the dormancy leg; a5p4 hygiene keeps its own self-check).
+    "sandbox-provider",
     "test",
     "vitest.config.ts"
   ]

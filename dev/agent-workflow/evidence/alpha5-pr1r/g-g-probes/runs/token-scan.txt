@@ -1,0 +1,2 @@
+token scan on branch-added content vs origin/master (patterns: token=[A-Za-z0-9], Authorization:, Bearer, [a-f0-9]{32,}, eyJ JWT):
+hits=0

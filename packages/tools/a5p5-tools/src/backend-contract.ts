@@ -80,4 +80,4 @@ export interface ScenarioFixture {
 export type ScenarioTable = Readonly<Record<string, ScenarioFixture>>
 
 /** The settlement of a backend that never produced an outcome (C-PROC honest fact). */
-export const UNREADABLE_SETTLEMENT: LeaseSettlement = { kind: 'cancelled', event: 'outcome-unreadable' }
+export const UNREADABLE_SETTLEMENT: LeaseSettlement = { kind: 'cancelled', event: 'dispatcher-call-outcome-unreadable' }

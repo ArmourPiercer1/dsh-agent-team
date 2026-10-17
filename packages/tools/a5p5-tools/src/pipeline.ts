@@ -29,7 +29,7 @@ import type { ToolContractProblem } from '../../../domain/tool-governance/src/pa
 import { deepFreezeContracts } from '../../../domain/tool-governance/src/parse-util.js'
 import { UNREADABLE_SETTLEMENT, type BackendFailure, type ToolEffectBackend } from './backend-contract.js'
 import { deriveToolEffectSet } from './effects-schema.js'
-import { renderSearchResult, renderShellResult } from './render.js'
+import { RenderClosedValueViolation, renderSearchResult, renderShellResult } from './render.js'
 import { createSpillLease, type LeaseSettlement, type SpillRefusal, type SpillSink, type SpillStore } from './spill.js'
 import type { ParsedToolArgs, RenderedPresentation, SearchOutcome, ShellOutcome } from './types.js'
 
@@ -99,8 +99,24 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
   if (!result.ok) return deepFreezeContracts({ kind: 'backend-failed', failure: result.failure, settlement })
 
   const pointer: SpillPointerFact | null = sink && sink.bytes() > 0 ? { spillId: sink.spillId, bytes: sink.bytes() } : null
-  const rendered = 'outputMode' in result.outcome
-    ? renderSearchResult(result.outcome as SearchOutcome, { spill: pointer ?? undefined })
-    : renderShellResult(result.outcome as ShellOutcome, { spill: pointer ?? undefined })
+  let rendered
+  try {
+    rendered = 'outputMode' in result.outcome
+      ? renderSearchResult(result.outcome as SearchOutcome, { spill: pointer ?? undefined })
+      : renderShellResult(result.outcome as ShellOutcome, { spill: pointer ?? undefined })
+  } catch (error) {
+    // Lane D ③ (wiring gate): a backend result carrying a value outside a
+    // renderer closed set is a CLOSED-SET violation, not a crash and not a
+    // presentation — typed `denied`, nothing presented, the settled residue
+    // (if any) stays where the cancel law put it.
+    if (error instanceof RenderClosedValueViolation) {
+      return deepFreezeContracts({
+        kind: 'backend-failed',
+        failure: { class: 'denied', code: 'outcome-outside-closed-set', detail: error.message },
+        settlement,
+      })
+    }
+    throw error
+  }
   return deepFreezeContracts({ kind: 'presented', effectFingerprint: derived.value.fingerprint, settlement, rendered, spill: pointer })
 }
