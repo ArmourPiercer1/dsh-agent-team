@@ -589,7 +589,7 @@
         "probe_id": "M-08-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json",
-        "status_now": "TRANSITIONED-LIVE",
+        "status_now": "TRANSITIONED-PROBE-GATED",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -613,32 +613,60 @@
         "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
         "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
         "transition_record": {
-          "verdict": "LIVE",
-          "run_utc": "2026-10-17T05:07Z",
-          "round": "W-PTC-C2 组合链轮（alpha5-ptc-chain）@master 8eb93ddd；port 3184（自证空闲）；世界 a5ptc2-compose-2026-10-17T05-07-10Z（跑毕删除）；宿主 @639ed01539 共享只读 built 树 porcelain 0 前后",
+          "verdict": "PROBE-GATED",
+          "run_utc": "2026-10-17T07:10Z",
+          "round": "W-PTC-ROWFIX #290（按 OUTER 真值改写台账；branch alpha5-ptc-rowfix @base 06c3b502=alpha5-ptc-outer tip；06:53Z root 口径：外层已证实原计划范围内缺 per-call Grant 注入 + net 无任何 OS 覆盖 ⇒ 本行不得带 TRANSITIONED-LIVE 值合入）",
           "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
+          "precise_local_blocker": {
+            "quote": "外层进程的可信文件域只能整程序级（mode 粒度）给定，公开 seam 无法把 per-call Grant 注入外层 bootstrap；网络效果无任何 OS 机制覆盖。",
+            "source": "W-PTC-OUTER 三态裁决=分支③ PROBE-GATED + 精确局部阻塞（PR #290 回复 comment 6230822191；证据 commit 348f9989；独立 reviewer PASS 06c3b502；canonical runs/outer-2026-10-17T06-34-21Z 27/27 判据+8INFO exit=0）",
+            "scope_basis": "外层直接 fs/net 效果在 M-08 原计划受控对象内：S0-SELECTION-MATRIX.md:55 未测项列含「外层直接 fs/net OS 级拒绝负控」+禁止路径列含「以『内层 guard 通过』替代外层防护」；post-poc-technical-design.md:123/125/66/191/214/22/21",
+            "minimal_repro": [
+              "cd dev/agent-workflow/evidence/alpha5/w-ptc-outer && node run-a5ptc3-outer.mjs --realm-only   # 零端口/零宿主：两腿真值表（真 Landlock ABI v4 OS 强制口径：fs 写禁区 EACCES+不创建、spawn 子进程继承域亦拒；net.connect 真域腿 1conn/62B 直通=缺口）",
+              "node invert-check.mjs --run-dir runs/outer-2026-10-17T06-34-21Z   # 判据判别性反转：文件写族判别成立；net 判据判别不成立⇒登记为缺口，绝不记为防护",
+              "node pr8/probes/probe-M-08.mjs   # A1–A4（内层边）SATISFIED，A5（外层边，06:53Z 判据对齐补条）NOT-EXECUTED ⇒ VERDICT PROBE-GATED exit=4"
+            ]
+          },
+          "scope_narrowing": {
+            "composed_live": "COMPOSED-LIVE（W-PTC-C2 组合链轮 626daeec/c0333d8f）收窄=仅内层 per-call 载荷执行边 LIVE-observed（同一装配链 guard 逐次断链 + Lane C 受限 provider 真 execve/OS 拒绝 + 启动前 typed 拒零 spawn + 同名双侧 throw）。",
+            "not_evidence": "内层边 LIVE 观测不是外层防护证据（S0:55 禁止路径「以『内层 guard 通过』替代外层防护」）；外层直接 fs/net 边无 LIVE 观测，net 无 OS 覆盖在册。"
+          },
+          "default_posture_refusal_retained": {
+            "statement": "整行保留 LIVE 默认姿态 typed 拒证据：部署默认 workspace-write 下整程序级 fail-closed 于 spawn 之前（typed sandbox-unavailable 逐字原文在册），禁区写/子进程/连接零增量、连工作区内 CONTROL 写都未发生、/proc 采样零外层 OS 子进程；公开加宽面=approval/asked 挂起无 tool/result（审批门非通行证）。行级 PROBE-GATED 不削弱该证据。",
+            "refs": [
+              "dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/legA-state.json",
+              "dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/criteria.json",
+              "dev/agent-workflow/evidence/alpha5/w-ptc-outer/pr290-comment.md"
+            ]
+          },
+          "withdrawn_live_proposal": {
+            "was": "TRANSITIONED-LIVE（W-PTC-C2 组合链轮行级转态提案值，verdict=LIVE，06:53Z 前在册）",
+            "why_withdrawn": "OUTER 轮证实外层直接 fs/net OS 级拒绝负控在 M-08 原计划受控对象内且公开 seam 不足（三态裁决=分支③ PROBE-GATED + 精确局部阻塞，评审 PASS 06c3b502）⇒ 行不得带 TRANSITIONED-LIVE 值合入；按 06:53Z root 口径改写为 PROBE-GATED。",
+            "inner_evidence_preserved": "原 LIVE 提案的 evidence_refs 原样保留（收窄后仍成立，见下）"
+          },
           "evidence_refs": [
             "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/criteria.json",
             "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/composed-state.json",
             "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/assembly-ledger.jsonl",
             "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/GREEN-console.log",
             "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-ptc-c2-probe-M-08.log",
-            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/w-ptc-c2-receipt-M-08.json"
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/w-ptc-c2-receipt-M-08.json",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/legA-state.json",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-outer/README.md",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-outer/pr290-comment.md",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-ptc-rowfix-probe-M-08.log"
           ],
-          "live_legs_booked": [
-            "A1 execution.outer_real_process + execution.inner_reentry_same_pipeline（组合链内层：ptc-runtime-node 子进程 /proc 亲采 + 4 条 inner guard 行 rootCallId=外层 callId 逐次 Guard，inner 执行边=真 spawn）",
-            "A2 per-call OS 真实拒绝负控（组合链内层 mode=deny：同策略 cat 私有 fixture，真 confined spawn ceDelta=1 pid=120 rc=1 EACCES leaked=false；同轮 legs=ENFORCE-CONFIRMED + abi v4；hardDimensions ['content-read','write'] 全程 verifyHardProfileEvidence）",
-            "A3 IO_POLICY_UNSUPPORTED 启动前拒（组合链内层 mode=net-deny：per-call spy delta=0 confined-exec delta=0 零 plan/out 路径；guard 拒绝腿另证：探针体 marker 全证据面缺席 + 全回合 confined-exec 恒=2）",
-            "A4 transport_same_name_both_sides_throw（组合链同回合 4 侧 throw 原文在册）"
-          ],
-          "basis": "单一组合链（run_code 外层真实进程 → 内层复入同一管线逐次 Guard → 内层执行边经 Lane C 受限 provider/真 Landlock launcher spawn）装配成功并真跑 22/22（RED-first 两轮在册：runner 捕获缺陷 + 判据串缺陷各一，均本 writer kit 内，如实留痕）；probe-M-08 对官方 receipt 路径亲跑 LIVE exit=0；装配锚点 runner grep 亲验在场。**在册更正（04:57Z root 口径）**：此前『W-PTC-RE receipt（A1/A4，danger-full-access 测试世界，无 OS 强制）与 W4 receipt（A2/A3，PTC 管线外独立装配）合并即全 SATISFIED ⇒ 行转 LIVE』之提案=不予采纳——拼合不构成 M-08 判据（per-call 策略注入的 run_code OS 拒绝负控）；本行 LIVE 仅由上述同一链证据支撑。PTC runtime 自身 sandbox mode 的 danger-full-access=测试世界公开开关（host typed 错误自述处方），不承担 OS 强制口径；OS 面=provider Landlock 腿。终裁归 PR8 正式轮 + 独立 reviewer。"
+          "runner_distribution": "PASS=24 FAIL=0 NOT_RUN=3 REQUIRES-LIVE-WIRING=0 LIVE=1 PROBE-GATED=4 TOTAL=32  （runner 复跑原文 2026-10-17T07:05:19Z，结构 lint OK，exit=0；LIVE 桶=M-13 唯一，不含 M-08；M-08 归 PROBE-GATED 桶〔M-04/M-05/M-08/M-09/M-13 中的 PG 四行为 M-04/M-05/M-08/M-09〕；runs/matrix-run-2026-10-17T07-05-19-632Z.{json,log}；改前基线 runs/matrix-run-2026-10-17T07-02-58-523Z.{json,log}=LIVE=2 含 M-08）",
+          "basis": "行级 current_status=PROBE-GATED（TRANSITIONED-PROBE-GATED，词表内合法值；runner PG 桶亲验）。C2 内层组合链证据保留有效（收窄口径）；外层边=精确局部阻塞在册，不降低支持标准、不硬凑。终裁归 PR8 正式轮+独立 reviewer。"
         }
       },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",
       "final_declaration": null,
-      "note": "REQUIRES-LIVE-WIRING：届时判据=保留传输同名双侧 throw + 外层真实进程/内层复入同一管线逐次 Guard 断言"
+      "note": "REQUIRES-LIVE-WIRING：届时判据=保留传输同名双侧 throw + 外层真实进程/内层复入同一管线逐次 Guard 断言 【06:53Z 口径（W-PTC-ROWFIX #290）】行级 current_status=PROBE-GATED（外层 per-call Grant 注入公开 seam 不可能 + net 无 OS 覆盖=精确局部阻塞，引注见 transition_record.precise_local_blocker）；COMPOSED-LIVE 收窄=仅内层 per-call 载荷执行边 LIVE-observed；整行保留默认 typed 拒（workspace-write fail-closed）证据。",
+      "runner_distribution": "PASS=24 FAIL=0 NOT_RUN=3 REQUIRES-LIVE-WIRING=0 LIVE=1 PROBE-GATED=4 TOTAL=32  （runner 复跑原文 2026-10-17T07:05:19Z，结构 lint OK，exit=0；LIVE 桶=M-13 唯一，不含 M-08；M-08 归 PROBE-GATED 桶〔M-04/M-05/M-08/M-09/M-13 中的 PG 四行为 M-04/M-05/M-08/M-09〕；runs/matrix-run-2026-10-17T07-05-19-632Z.{json,log}；改前基线 runs/matrix-run-2026-10-17T07-02-58-523Z.{json,log}=LIVE=2 含 M-08）"
     },
     {
       "row_id": "M-09",
