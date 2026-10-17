@@ -367,8 +367,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // An explicit `backends` row (the wiring-kit seam) still wins outright.
   const fsInstance = input.plane?.fsInstance ?? null
   const confinedCfg = input.plane?.confinedProvider ?? null
+  // Backend-observation echo: production rows in this repo log their
+  // assembly facts to stdout in the shipped `[dsh-agent-team]` style
+  // (`remote mount: MOUNTED` is the precedent). The echo exists ONLY for
+  // the configured real-backends rows — an unconfigured plane never
+  // builds these handles, so every existing world stays byte-identical.
+  const logBackend = (prefix) => (row) => {
+    const line = `${prefix}: ${String(row)}`
+    observe(line)
+    console.log(`[dsh-agent-team] ${line}`)
+  }
   const realSearch = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: (row) => observe(`a5g7-search: ${String(row)}`) })
+    ? createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: logBackend('a5g7-search') })
     : null
   const realShell = confinedCfg !== null
     ? createConfinedShellBackend({
@@ -377,7 +387,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       instanceId: String(input.instanceId ?? templateId),
       cwdRoot: typeof fsInstance?.rootDir === 'string' ? fsInstance.rootDir : input.plane?.workingDir,
       confined: confinedCfg,
-      observe: (row) => observe(`a5g7-shell: ${String(row)}`),
+      observe: logBackend('a5g7-shell'),
     })
     : null
   const productionBackends = Object.freeze({
@@ -424,7 +434,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       policy: permissionPolicy,
       decide,
       ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
-      observe: (row) => observe(`a5g7-read: ${String(row)}`),
+      observe: logBackend('a5g7-read'),
     })
     : null
   const allDefs = readExecutor === null ? defs : Object.freeze([
