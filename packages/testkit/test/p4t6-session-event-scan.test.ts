@@ -2459,6 +2459,20 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A5GLUE6: readonly string[] = [
       'packages/runtime/test/a5g6-install-face-render.test.ts',
     ]
+    // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
+    // scannable files of the round — the live-row .mjs that ASSEMBLES the
+    // real effect backends onto the plane (confined Process provider for
+    // shell, the W5-round REAL read-only search anchored at the controlled-
+    // fs instance root, the governed anchored read; glob honestly stays the
+    // typed shut row) and its unit suite (three live positives on REAL
+    // Landlock + the deny-before-backend law with production backends +
+    // the feed rows; zero denylist vocabulary). The live kit rows under
+    // dev/agent-workflow/evidence/** are outside the packages/** scan, as
+    // every prior wiring round.
+    const SCANNED_PATHS_A5GLUE7: readonly string[] = [
+      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+      'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
