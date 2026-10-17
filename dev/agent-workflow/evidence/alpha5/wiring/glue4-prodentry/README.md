@@ -11,7 +11,7 @@ byte-untouched (G1b): the whole method is the two files in THIS directory.
 No `DSH_PERMISSION_MODE` knob anywhere — no tool ever executes in this kit;
 catalog faces are read, never driven.
 
-## AMENDMENT (2026-10-17, per RA-REVIEW `4ba92b77` on `alpha5-ra-review`; **Q4 approved by root**)
+## AMENDMENT (2026-10-17, per RA-REVIEW `4ba92b77` on `alpha5-ra-review`; **Q4 = root approval as implementation completion WITHIN the original authorization semantics (the wiring phase's standing authorization) — not a new user adjudication; Q2 rejected on R5, Q1 demoted, Q3 rejected all stand**)
 
 The NO verdict below is the measured law of the **discovery-style /
 inherited-native lane** — verified INHERITED bindings earned through the
@@ -48,7 +48,9 @@ and Tier-B pinned-host read-only probe GREEN 10/10.
 **Consequence for the adjudication questions below:** the generalization
 "assembly is blocked until Q1/Q2/Q3" is WITHDRAWN — it was scoped to the
 discovery-style reads this kit measured and did not weigh the placement lane.
-Root approved **Q4 (R1 placement; R-a frozen semantics UNCHANGED)**; **Q2 is
+**Q4 (R1 placement; R-a frozen semantics UNCHANGED) is root approval as
+implementation completion WITHIN the original authorization semantics (the
+wiring phase's standing authorization) — NOT a new user adjudication**; **Q2 is
 REJECTED** on the R5 falsification; **Q1 is DEMOTED** to an optional upstream
 ask for a `dsh-native` audit label (placement bindings honestly carry
 `implementationOrigin:'team-trusted-extension'`, `install.ts:1004-1007`). **Q3
@@ -153,9 +155,9 @@ governed team face off the inherited lane entirely — Team-placed Definitions i
 the own layer with placement attribution — so no host word is required for the
 governed-team tool plane. The seam stands as the DEMOTED optional Q1 ask.)
 
-## Adjudication questions (root) — RESOLVED 2026-10-17: **Q4 (R1 placement) APPROVED; Q2 REJECTED; Q1 DEMOTED; Q3 REJECTED**
+## Adjudication questions (root) — RESOLVED 2026-10-17: **Q4 (R1 placement) APPROVED as implementation completion within the original authorization semantics (not a new user adjudication); Q2 REJECTED (R5), Q1 DEMOTED, Q3 REJECTED — all stand**
 
-- **Q4 (approved):** governed team tools ride the frozen-design **R1 placement
+- **Q4 (approved as implementation completion within the original authorization semantics — the wiring phase's standing authorization — not a new user adjudication):** governed team tools ride the frozen-design **R1 placement
   lane** (`post-poc-technical-design.md:42`; production parts at
   `install.ts:987-1029/1106/1062-1063` + `agent-bindings.mjs:2460-2471`,
   evidence `ra-review@4ba92b77`): Team assembles reviewed Definitions into each
