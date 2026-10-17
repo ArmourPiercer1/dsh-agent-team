@@ -1,0 +1,16 @@
+[setup] shared baseline state (read-only source of truth)
+639ed015397290b3745d163aafe02ffee4aa3f84
+0
+[setup] rsync test-use (pristine runtime + its derived build outputs)
+[setup] rsync root node_modules
+[setup] rsync packages/domain/node_modules
+[setup] rsync packages/client/node_modules
+[setup] rsync packages/runtime/node_modules
+[setup] verify pinned pristine state of MY copy
+639ed015397290b3745d163aafe02ffee4aa3f84
+porcelain lines: 0
+[setup] rebuild packages/runtime dist FROM MY TREE (source @b8ac7acb)
+$ tsc -p tsconfig.build.json
+barrel sha (mine): 694852ff90185022263eaa2509cc63eb5ea06f2ddb305e4a817a3883a8bb1d69  packages/runtime/dist/packages/runtime/jobs-gateway/index.js
+barrel sha (writer): 694852ff90185022263eaa2509cc63eb5ea06f2ddb305e4a817a3883a8bb1d69  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m-kit/packages/runtime/dist/packages/runtime/jobs-gateway/index.js
+[setup] DONE

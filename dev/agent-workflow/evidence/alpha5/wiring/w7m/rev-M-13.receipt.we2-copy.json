@@ -1,0 +1,95 @@
+{
+  "round": "W-E2 (alpha5-wire-tools2) — Domain-mock 工具族 LIVE 回合（矩阵 M-13 在册『待建：Domain mock CAS/模拟设备联锁』按批准路径建成并真跑）",
+  "run_utc": "2026-10-17T04:01Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post, HEAD unmoved)",
+  "port": 3183,
+  "world_prefix": "a5e2-*（跑毕删除）",
+  "caliber": "LIVE-kit 观测：装配面 = plugin row（公开 profile-patch seam，IF-1）× PR1 guard（dist barrel）× PR2 admission kernel（dist barrel；tool-invoke+domain-ref 效应经冻结解析器）× PR7 jobs-gateway 公开 barrel（kit-local 编译，W7 同型）× Domain mock（row-local MOCK：CAS+模拟设备联锁；矩阵在册的 planned-to-build 数据源；盘面状态文件+动作台账=副作用的字节面）。kernel 信任输入为 fixture 级（同 W5/W7/W8 口径，不作 ENFORCE 宣称）。身份=HOST 会话事实 + 网关规范 ownerKey；instanceId 为 row-local 标注（durable-MemberInstance 腿在 W7 kit 在册，本行断言不含）。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "row": "M-13 Domain 工具（HPC/RPC/研究状态/设备）",
+  "assembly": {
+    "row": "dev/agent-workflow/evidence/alpha5/wiring/we2/a5e2-domain-mock-row.mjs",
+    "fixtures": "dev/agent-workflow/evidence/alpha5/wiring/we2/a5e2-fixtures.mjs",
+    "lane_compile": "dev/agent-workflow/evidence/alpha5/wiring/we2/tsconfig.lane.json（jobs-gateway 未改源码 kit-local tsc）",
+    "driver": "dev/agent-workflow/evidence/alpha5/wiring/we2/run-we2-live.mjs"
+  },
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/veto-table.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/veto-table-after-chain.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/live-state.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/interlock-probe.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/run-receipt.md",
+    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-e2-pre-M-13.log"
+  ],
+  "veto_matrix": [
+    {
+      "team_permit": true,
+      "domain_permit": true,
+      "outcome": "acted",
+      "leg": "model-driven e2-act-1（PR2 grant 铸出 grant:f9ab61fb… → exec-edge 首耗 ok/重放 typed 拒 grant-consumed ledger=1 → CAS 0→1 单副作用 → presented 进真实 transcript）",
+      "device": "a5e2.device/main",
+      "grant": "grant:f9ab61fb27c764ddb5cc0fe16f345598"
+    },
+    {
+      "team_permit": false,
+      "domain_permit": true,
+      "outcome": "denied",
+      "leg": "model-driven e2-act-2（policy 未挂 aux 的 domain-ref 臂：真实 PR2 kernel 以自有词汇 requires-approval 拒；Domain 侧对 aux 本可允——mock 预置 lease=null/version=0 可 act，未经其即 0 副作用）",
+      "device": "a5e2.device/aux",
+      "kernel_decision_kind": "requires-approval",
+      "side_effects": 0
+    },
+    {
+      "team_permit": true,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "leg": "model-driven e2-act-3（kernel 已 grant grant:6994ff2c…：Domain 联锁 lease-holder=成员B（网关规范 ownerKey）≠ 调用者 A ⇒ typed 拒原文进 transcript；belt 状态文件 version 不变）",
+      "device": "a5e2.device/belt",
+      "side_effects": 0
+    },
+    {
+      "team_permit": true,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "leg": "model-driven e2-act-4（kernel 已 grant grant:287bad83…：CAS expected=999 actual=1 ⇒ typed 拒；main version 保持 1）",
+      "device": "a5e2.device/main",
+      "side_effects": 0
+    }
+  ],
+  "veto_side_effects": 0,
+  "veto_zero_byte_evidence": "模型链读回时点：device-actions.jsonl 恰 1 行（=e2-act-1）；aux/belt 状态文件 version=0（veto-table-after-chain.json）；veto_matrix 全部 denied 行 side_effects=0。联锁可读回对照（interlock-probe.json）：B（lease 持有者）act 成功 CAS 0→1（设备非死）、A 再犯仍 typed 拒且 0 副作用。",
+  "negative_controls": [
+    {
+      "attempt": "unresolved-domain-reference",
+      "outcome": "typed-deny",
+      "code": "DOMAIN_DENIED",
+      "detail": "a5e2.device/ghost 不在 mock registry：拒发生在铸 grant 之前（该调用 grantId=null），不猜测绑定，设备动作台账增量=0（e2-act-5）"
+    },
+    {
+      "attempt": "post-publish-unbound-name",
+      "outcome": "guard-denial",
+      "detail": "publish 后注册的 a5e2_unbound_probe 在调用边被活 guard 拒（『no Team Tool Binding … closed world』原文进 transcript），body 执行计数=0"
+    },
+    {
+      "attempt": "cross-member-lease-act",
+      "outcome": "typed-deny",
+      "code": "DOMAIN_DENIED",
+      "detail": "非 lease 持有者动设备两次（模型腿 e2-act-3 + 联锁探针 foreign_a_act）均 typed 拒 0 副作用；lease 归因=网关规范 ownerKey（rootSessionId 为 HOST 会话事实）"
+    }
+  ],
+  "red_contrast": "ungated 对照（同一判据表、同一工具面、无 guard 无 kernel）：红且仅红 Team 门控腿 L-E2-GUARD/ACTED/TEAM-DENY/DOMAIN-DENY/VETO-ZERO/UNBOUND（22/28）——无门控时 aux（政策外）设备被真实写（ledger=2、aux version=1）、unbound body 跑 1 次、veto-zero 破；Domain 腿（联锁/CAS/未确定引用）独立照拒（门承载 Team 侧拒绝，非文字承载）。",
+  "pinned_host": {
+    "job_start_present": false,
+    "grep_hits_host_tree": 0,
+    "roster_has_job_start": false,
+    "note": "instrument 与 W7/W8 同型：host 全树 grep（--include=ts/js/mjs/json/md）hits=0 + 活装配 roster 无 job-start 形名（anchor-scan.json）；absent 仍如实，本行不制造该面。"
+  },
+  "gate_semantics_note": "TeamPermit 臂=真实 kernel 的 domain-ref 作用域键 <realm>|domain:<authorityId>（approval-case.ts:83 同一律，装配未造新律）；DOMAIN_DENIED=doc M-13 reject_error_candidates 登记名（IF-6 未新造码）。G-g 引用不变（OPEN-only）。",
+  "not_observed": [
+    "durable MemberInstance 身份腿（本行断言不含；W7 kit 在册）",
+    "job_start host 面（absent 事实复测在册，非本行造面）"
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "note": "One row per matrix cell. team_permit is the LIVE gateway verdict (admitJob against host-derived member identities; the team-refused cells collide with the anchor lease HELD by member A => the lane's owner-mismatch). domain_permit is the row-local Domain mock's armed bit (deterministic input). The gate, not the caller, decides outcome.",
+  "cells": [
+    {
+      "cell": "cell-FT",
+      "team_permit": false,
+      "domain_permit": true,
+      "outcome": "denied",
+      "error": "owner-mismatch",
+      "team_refusal_code": "owner-mismatch",
+      "effect_committed": false,
+      "device_version_before": 0,
+      "device_version_after": 0
+    },
+    {
+      "cell": "cell-TF",
+      "team_permit": true,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "team_refusal_code": null,
+      "effect_committed": false,
+      "device_version_before": 0,
+      "device_version_after": 0
+    },
+    {
+      "cell": "cell-FF",
+      "team_permit": false,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "team_refusal_code": "owner-mismatch",
+      "effect_committed": false,
+      "device_version_before": 0,
+      "device_version_after": 0
+    },
+    {
+      "cell": "cell-TT",
+      "team_permit": true,
+      "domain_permit": true,
+      "outcome": "granted",
+      "error": null,
+      "team_refusal_code": null,
+      "effect_committed": true,
+      "device_version_before": 0,
+      "device_version_after": 1
+    }
+  ],
+  "raw": {
+    "cell-FT": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "team_leg": {
+          "ok": false,
+          "code": "owner-mismatch"
+        },
+        "cellId": "cell-FT",
+        "team_permit": false,
+        "domain_permit": true,
+        "team_refusal_code": "owner-mismatch",
+        "ref": "a5w7m_tool",
+        "device_version_before": 0,
+        "at": "2026-10-17T04:26:26.427Z",
+        "outcome": "denied",
+        "error": "owner-mismatch",
+        "effect_committed": false,
+        "actuator_invoked": false,
+        "device_version_after": 0
+      }
+    },
+    "cell-TF": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "team_leg": {
+          "ok": true,
+          "jobId": "a5w7m-tf-2026-10-17T04-26-19"
+        },
+        "cellId": "cell-TF",
+        "team_permit": true,
+        "domain_permit": false,
+        "team_refusal_code": null,
+        "ref": "a5w7m_tool",
+        "device_version_before": 0,
+        "at": "2026-10-17T04:26:26.427Z",
+        "outcome": "denied",
+        "error": "DOMAIN_DENIED",
+        "effect_committed": false,
+        "actuator_invoked": false,
+        "device_version_after": 0
+      }
+    },
+    "cell-FF": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "team_leg": {
+          "ok": false,
+          "code": "owner-mismatch"
+        },
+        "cellId": "cell-FF",
+        "team_permit": false,
+        "domain_permit": false,
+        "team_refusal_code": "owner-mismatch",
+        "ref": "a5w7m_tool",
+        "device_version_before": 0,
+        "at": "2026-10-17T04:26:26.428Z",
+        "outcome": "denied",
+        "error": "DOMAIN_DENIED",
+        "effect_committed": false,
+        "actuator_invoked": false,
+        "device_version_after": 0
+      }
+    },
+    "cell-TT": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "team_leg": {
+          "ok": true,
+          "jobId": "a5w7m-tt-2026-10-17T04-26-19"
+        },
+        "cellId": "cell-TT",
+        "team_permit": true,
+        "domain_permit": true,
+        "team_refusal_code": null,
+        "ref": "a5w7m_tool",
+        "device_version_before": 0,
+        "at": "2026-10-17T04:26:26.429Z",
+        "outcome": "granted",
+        "effect_committed": true,
+        "device_version_after": 1
+      }
+    }
+  }
+}

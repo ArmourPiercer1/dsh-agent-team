@@ -1,0 +1,9 @@
+{
+  "note": "Both permits ARMED TRUE and a genuine team admit — the deny comes from the reference/CAS face itself. unresolved: never-registered reference; withdrawn: reference moved to null; cas-stale: expected version 9999 vs actual — the device is untouched (before==after) and NO commit was appended.",
+  "responses": {
+    "neg1": null,
+    "neg2": null,
+    "neg3": null
+  },
+  "ledger": []
+}
