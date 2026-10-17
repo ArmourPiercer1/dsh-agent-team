@@ -21,7 +21,8 @@
  *
  * @module @dsh-agent-team/runtime/sandbox-provider/probe-abi
  */
-import { mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import {} from './contract-stub.js';
 import { networkProbeRow } from './network.js';
@@ -112,6 +113,25 @@ export function runFdCloseProbe(deps, scratchDir, plan) {
         undeclaredClosed: typeof v['undeclared_closed'] === 'boolean' ? v['undeclared_closed'] : null,
         rc: r.rc,
     });
+}
+/** Verify the launcher bytes against the assembly pin. Never throws. */
+export function verifyLauncherIntegrity(input) {
+    const pinned = String(input.launcherSha256 ?? '').trim().toLowerCase();
+    if (!/^[0-9a-f]{64}$/.test(pinned)) {
+        return Object.freeze({ kind: 'INVALID-PIN', pinned, observed: null, detail: `assembly launcherSha256 pin is not a 64-hex-digit sha256 (got '${pinned.slice(0, 72)}') — the pin itself is a configuration defect, refusing closed` });
+    }
+    let bytes;
+    try {
+        bytes = input.read !== undefined ? input.read(input.launcherPath) : readFileSync(input.launcherPath);
+    }
+    catch (error) {
+        return Object.freeze({ kind: 'UNREADABLE', pinned, observed: null, detail: `launcher file at '${input.launcherPath}' could not be read (${String(error?.message ?? error).slice(0, 160)}) — the pinned bytes cannot be verified, refusing closed` });
+    }
+    const observed = createHash('sha256').update(bytes).digest('hex');
+    if (observed === pinned) {
+        return Object.freeze({ kind: 'PINNED-MATCH', pinned, observed, detail: `launcher bytes at '${input.launcherPath}' hash to the assembly-pinned sha256` });
+    }
+    return Object.freeze({ kind: 'PIN-MISMATCH', pinned, observed, detail: `launcher bytes at '${input.launcherPath}' hash to sha256:${observed}, the assembly pins sha256:${pinned} — the bytes at the configured path are NOT the trusted bytes, refusing closed` });
 }
 // ---------------------------------------------------------------------------
 // EXISTENCE PREFLIGHT — precondition reports only; NO kernel assertions.
