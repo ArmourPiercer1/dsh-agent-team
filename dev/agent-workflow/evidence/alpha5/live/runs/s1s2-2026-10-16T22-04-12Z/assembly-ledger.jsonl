@@ -1,0 +1,6 @@
+{"at":"2026-10-16T22:04:13.904Z","leg":"plugin-apply","pid":45,"mode":"s1s2","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"}
+{"at":"2026-10-16T22:04:13.927Z","leg":"lanes-imported","ok":true}
+{"at":"2026-10-16T22:04:13.927Z","leg":"listen","event":"agent/created","ok":true}
+{"at":"2026-10-16T22:04:14.063Z","leg":"surface-probe","label":"session-1a8a8dcf-beb5-4e6c-9d61-4b060773de54","hasTools":true,"hasGuard":true,"hasGet":true,"hasSchemas":true,"globalSchemaNames":0,"scopedSchemaNames":26}
+{"at":"2026-10-16T22:04:14.072Z","leg":"assembly-s1s2","label":"session-1a8a8dcf-beb5-4e6c-9d61-4b060773de54","unboundOk":true,"boundStage":"flow-complete","boundReadOk":true}
+{"at":"2026-10-16T22:04:14.072Z","leg":"register","label":"session-1a8a8dcf-beb5-4e6c-9d61-4b060773de54","name":"a5live_fs_read","ok":true}

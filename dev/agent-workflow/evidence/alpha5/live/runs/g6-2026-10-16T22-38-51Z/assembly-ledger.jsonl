@@ -1,0 +1,13 @@
+{"at":"2026-10-16T22:38:52.017Z","leg":"plugin-apply","pid":38,"mode":"g6","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5livrev-688b6045/packages/runtime/dist/packages"}
+{"at":"2026-10-16T22:38:52.042Z","leg":"lanes-imported","ok":true}
+{"at":"2026-10-16T22:38:52.042Z","leg":"listen","event":"agent/created","ok":true}
+{"at":"2026-10-16T22:38:52.165Z","leg":"surface-probe","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","hasTools":true,"hasGuard":true,"hasGet":true,"hasSchemas":true,"globalSchemaNames":0,"scopedSchemaNames":26}
+{"at":"2026-10-16T22:38:52.165Z","leg":"register","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","name":"a5live_drift","ok":true,"version":1}
+{"at":"2026-10-16T22:38:52.169Z","leg":"guard-assembled","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","installOk":true,"bindOwnOk":true,"publishedOk":true,"channelBeforeInjection":"armed"}
+{"at":"2026-10-16T22:38:52.329Z","leg":"legal-re-register","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","name":"a5live_drift","version":2}
+{"at":"2026-10-16T22:38:52.330Z","leg":"drift-result","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","isError":true,"text":"Error: tool call aborted before dispatch","verifiedAtCallEdge":false}
+{"at":"2026-10-16T22:38:52.330Z","leg":"rebind","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","ok":true}
+{"at":"2026-10-16T22:38:52.347Z","leg":"drift-body","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","v":2,"version":2}
+{"at":"2026-10-16T22:38:52.348Z","leg":"drift-result","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","isError":false,"text":"drift-body-ran v=2","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:38:52.361Z","leg":"drift-body","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","v":3,"version":2}
+{"at":"2026-10-16T22:38:52.362Z","leg":"drift-result","label":"session-33d0df32-6c34-44ad-befc-fcfe5b5b68e5","isError":false,"text":"drift-body-ran v=3","verifiedAtCallEdge":true}

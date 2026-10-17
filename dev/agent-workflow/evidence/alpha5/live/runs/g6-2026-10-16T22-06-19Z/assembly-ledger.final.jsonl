@@ -1,0 +1,31 @@
+{"at":"2026-10-16T22:06:20.744Z","leg":"plugin-apply","pid":56,"mode":"g6","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"}
+{"at":"2026-10-16T22:06:20.763Z","leg":"lanes-imported","ok":true}
+{"at":"2026-10-16T22:06:20.763Z","leg":"listen","event":"agent/created","ok":true}
+{"at":"2026-10-16T22:06:20.897Z","leg":"surface-probe","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","hasTools":true,"hasGuard":true,"hasGet":true,"hasSchemas":true,"globalSchemaNames":0,"scopedSchemaNames":26}
+{"at":"2026-10-16T22:06:20.897Z","leg":"register","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","name":"a5live_drift","ok":true,"version":1}
+{"at":"2026-10-16T22:06:20.902Z","leg":"guard-assembled","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","installOk":true,"bindOwnOk":true,"publishedOk":true,"channelBeforeInjection":"armed"}
+{"at":"2026-10-16T22:06:21.067Z","leg":"legal-re-register-failed","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","error":"tool \"a5live_drift\" is already registered in this scope"}
+{"at":"2026-10-16T22:06:21.068Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.069Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.085Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.086Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.099Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.099Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.114Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.114Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.127Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.128Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.141Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.141Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.154Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.154Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.168Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.169Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.186Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.186Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.200Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.201Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.215Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.215Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}
+{"at":"2026-10-16T22:06:21.229Z","leg":"drift-body","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","v":1,"version":2}
+{"at":"2026-10-16T22:06:21.229Z","leg":"drift-result","label":"session-006f76fe-14ef-4e35-b01e-dc3fc104bb6c","isError":false,"text":"drift-body-ran v=1","verifiedAtCallEdge":true}

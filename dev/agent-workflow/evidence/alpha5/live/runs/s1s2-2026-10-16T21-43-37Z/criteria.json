@@ -1,0 +1,36 @@
+{
+  "phase": "s1s2",
+  "status": "FATAL",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "test-use runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0 at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "L-DIST",
+      "claim": "the worktree dist carries the gated face + kernel + install",
+      "pass": true,
+      "observed": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host port 3186 free and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "hostFree=true mock=3499"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted on the recorded port with the token gate live (303 + set-cookie)",
+      "pass": true,
+      "observed": "status=303"
+    },
+    {
+      "id": "L-PROMPT",
+      "claim": "the real session accepted the scripted turn (the model reached the mock or the turn completed)",
+      "pass": true,
+      "observed": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5live-1-yi2opgw9\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"a5live-s1s2-2026-10-16T21-43"
+    }
+  ]
+}

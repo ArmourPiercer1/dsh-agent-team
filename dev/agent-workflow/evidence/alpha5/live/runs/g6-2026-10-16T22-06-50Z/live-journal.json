@@ -1,0 +1,102 @@
+{
+  "rows": [
+    {
+      "at": "2026-10-16T22:06:51.101Z",
+      "leg": "plugin-apply",
+      "pid": 48,
+      "mode": "g6",
+      "hasWebServer": true,
+      "dist": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-live-pr3/packages/runtime/dist/packages"
+    },
+    {
+      "at": "2026-10-16T22:06:51.120Z",
+      "leg": "lanes-imported",
+      "ok": true
+    },
+    {
+      "at": "2026-10-16T22:06:51.120Z",
+      "leg": "listen",
+      "event": "agent/created",
+      "ok": true
+    },
+    {
+      "at": "2026-10-16T22:06:51.274Z",
+      "leg": "surface-probe",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "hasTools": true,
+      "hasGuard": true,
+      "hasGet": true,
+      "hasSchemas": true,
+      "globalSchemaNames": 0,
+      "scopedSchemaNames": 26
+    },
+    {
+      "at": "2026-10-16T22:06:51.274Z",
+      "leg": "register",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "name": "a5live_drift",
+      "ok": true,
+      "version": 1
+    },
+    {
+      "at": "2026-10-16T22:06:51.278Z",
+      "leg": "guard-assembled",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "installOk": true,
+      "bindOwnOk": true,
+      "publishedOk": true,
+      "channelBeforeInjection": "armed"
+    },
+    {
+      "at": "2026-10-16T22:06:51.442Z",
+      "leg": "legal-re-register",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "name": "a5live_drift",
+      "version": 2
+    },
+    {
+      "at": "2026-10-16T22:06:51.443Z",
+      "leg": "drift-result",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "isError": true,
+      "text": "Error: tool call aborted before dispatch",
+      "verifiedAtCallEdge": false
+    },
+    {
+      "at": "2026-10-16T22:06:51.443Z",
+      "leg": "rebind",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "ok": true
+    },
+    {
+      "at": "2026-10-16T22:06:51.461Z",
+      "leg": "drift-body",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "v": 2,
+      "version": 2
+    },
+    {
+      "at": "2026-10-16T22:06:51.461Z",
+      "leg": "drift-result",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "isError": false,
+      "text": "drift-body-ran v=2",
+      "verifiedAtCallEdge": true
+    },
+    {
+      "at": "2026-10-16T22:06:51.476Z",
+      "leg": "drift-body",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "v": 3,
+      "version": 2
+    },
+    {
+      "at": "2026-10-16T22:06:51.476Z",
+      "leg": "drift-result",
+      "label": "session-63bb587b-f91a-4392-9f9a-4fe354746d1b",
+      "isError": false,
+      "text": "drift-body-ran v=3",
+      "verifiedAtCallEdge": true
+    }
+  ]
+}
