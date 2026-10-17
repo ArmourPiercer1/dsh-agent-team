@@ -589,7 +589,7 @@
         "probe_id": "M-08-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json",
-        "status_now": "TRANSITIONED-PROBE-GATED",
+        "status_now": "TRANSITIONED-LIVE",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -613,23 +613,25 @@
         "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
         "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
         "transition_record": {
-          "verdict": "PROBE-GATED",
-          "run_utc": "2026-10-17T03:09Z",
-          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "verdict": "LIVE",
+          "run_utc": "2026-10-17T05:07Z",
+          "round": "W-PTC-C2 组合链轮（alpha5-ptc-chain）@master 8eb93ddd；port 3184（自证空闲）；世界 a5ptc2-compose-2026-10-17T05-07-10Z（跑毕删除）；宿主 @639ed01539 共享只读 built 树 porcelain 0 前后",
           "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
           "evidence_refs": [
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-08.log",
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json"
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/composed-state.json",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/assembly-ledger.jsonl",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/runs/compose-2026-10-17T05-07-10Z/GREEN-console.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-ptc-c2-probe-M-08.log",
+            "dev/agent-workflow/evidence/alpha5/w-ptc-c2/w-ptc-c2-receipt-M-08.json"
           ],
           "live_legs_booked": [
-            "A2 per_call OS 真实拒绝负控（W4-DOMAIN-DENY EACCES rc=1 leaked=false；ENFORCE-CONFIRMED legs）",
-            "A3 IO_POLICY_UNSUPPORTED 启动前拒 spawn_count=0（W4-NEG-* spy 零计数）"
+            "A1 execution.outer_real_process + execution.inner_reentry_same_pipeline（组合链内层：ptc-runtime-node 子进程 /proc 亲采 + 4 条 inner guard 行 rootCallId=外层 callId 逐次 Guard，inner 执行边=真 spawn）",
+            "A2 per-call OS 真实拒绝负控（组合链内层 mode=deny：同策略 cat 私有 fixture，真 confined spawn ceDelta=1 pid=120 rc=1 EACCES leaked=false；同轮 legs=ENFORCE-CONFIRMED + abi v4；hardDimensions ['content-read','write'] 全程 verifyHardProfileEvidence）",
+            "A3 IO_POLICY_UNSUPPORTED 启动前拒（组合链内层 mode=net-deny：per-call spy delta=0 confined-exec delta=0 零 plan/out 路径；guard 拒绝腿另证：探针体 marker 全证据面缺席 + 全回合 confined-exec 恒=2）",
+            "A4 transport_same_name_both_sides_throw（组合链同回合 4 侧 throw 原文在册）"
           ],
-          "missing_legs": [
-            "execution.inner_reentry_same_pipeline（PTC 内层复入同一管线逐次 Guard——PTC 管线无装配 row）",
-            "transport_same_name_both_sides_throw（保留传输双侧 throw 属 PTC/PR8 面）"
-          ],
-          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+          "basis": "单一组合链（run_code 外层真实进程 → 内层复入同一管线逐次 Guard → 内层执行边经 Lane C 受限 provider/真 Landlock launcher spawn）装配成功并真跑 22/22（RED-first 两轮在册：runner 捕获缺陷 + 判据串缺陷各一，均本 writer kit 内，如实留痕）；probe-M-08 对官方 receipt 路径亲跑 LIVE exit=0；装配锚点 runner grep 亲验在场。**在册更正（04:57Z root 口径）**：此前『W-PTC-RE receipt（A1/A4，danger-full-access 测试世界，无 OS 强制）与 W4 receipt（A2/A3，PTC 管线外独立装配）合并即全 SATISFIED ⇒ 行转 LIVE』之提案=不予采纳——拼合不构成 M-08 判据（per-call 策略注入的 run_code OS 拒绝负控）；本行 LIVE 仅由上述同一链证据支撑。PTC runtime 自身 sandbox mode 的 danger-full-access=测试世界公开开关（host typed 错误自述处方），不承担 OS 强制口径；OS 面=provider Landlock 腿。终裁归 PR8 正式轮 + 独立 reviewer。"
         }
       },
       "g_g_related": false,
