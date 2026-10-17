@@ -1,0 +1,19 @@
+{
+  "run": "a5ptc3-outer-2026-10-17T06-34-21Z-confined",
+  "childEntry": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+  "workspace": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/ws",
+  "rwScratch": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/rw",
+  "programFile": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-program-confined-a5ptc3-outer-2026-10-17T06-34-21Z.mjs",
+  "paths": {
+    "secretRead": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/forbidden/secret.txt",
+    "writeTarget": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/forbidden/write-target.txt",
+    "writeTargetChild": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/forbidden/child-target.txt",
+    "controlWrite": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/ws/control-write.txt",
+    "controlRead": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/ws/control-read.txt",
+    "marker": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/dev/agent-workflow/evidence/alpha5/w-ptc-outer/runs/outer-2026-10-17T06-34-21Z/realm-world/confined/ws/body-marker.txt",
+    "outsideReadable": "/etc/hostname",
+    "listenPort": 44867,
+    "controlPort": 0
+  },
+  "launcher": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+}

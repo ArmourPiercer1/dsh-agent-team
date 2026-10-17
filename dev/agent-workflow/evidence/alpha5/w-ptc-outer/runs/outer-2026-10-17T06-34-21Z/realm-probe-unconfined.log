@@ -1,0 +1,31 @@
+{
+  "run": "a5ptc3-outer-2026-10-17T06-34-21Z-unconfined",
+  "abi": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "arms": {
+    "unconfined": {
+      "why": "program-done",
+      "rc": null,
+      "ready": true,
+      "done": "done",
+      "apiKeys": [
+        "read_forbidden",
+        "write_forbidden",
+        "write_control",
+        "marker_write",
+        "spawn_direct",
+        "spawn_write_forbidden",
+        "read_outside_readable",
+        "net_connect"
+      ],
+      "pid": 98
+    }
+  }
+}
+
+--- stderr ---

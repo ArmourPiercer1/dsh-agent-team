@@ -1,0 +1,216 @@
+{
+  "run": "a5ptc3-outer-2026-10-17T06-53-28Z",
+  "launcherSha": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine tree @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "P-CHILD-ENTRY",
+      "claim": "the host's own PTC child entry exists (public ./process export)",
+      "pass": true,
+      "observed": "<TESTUSE>/packages/ptc-runtime/ptc-runtime-node/lib/process.js"
+    },
+    {
+      "id": "P-LAUNCHER",
+      "claim": "the trusted pre-launcher is the TRACKED file (sha recorded)",
+      "pass": true,
+      "observed": "sha256=cee10ed55f12123f…"
+    },
+    {
+      "id": "P-HOST-IDENTITY",
+      "claim": "MACHINE-MEASURED host identity for this round (build under claim, sampled by this runner): test-use HEAD sha + porcelain count + launcher sha256 + child-entry sha256 + node/kernel, written to host-identity.json",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=0 launcher=cee10ed55f12 childEntry=1a5631d2a929 node=v24.21.0 kernel=6.8.0-142-generic runnerBranch=alpha5-ptc-outer@2bd9b2e2"
+    },
+    {
+      "id": "R-UNCONFINED-BOOTS",
+      "claim": "REALM control arm: the host’s own PTC child entry boots over the inherited control channel and the program body really runs (in-workspace marker + control write exist)",
+      "pass": true,
+      "observed": "why=program-done rc=- pid=97 marker=true control=true"
+    },
+    {
+      "id": "R-API-SURFACE",
+      "claim": "allowed-API inventory measured INSIDE the real outer realm: dynamic import of node:fs / node:child_process / node:net all SUCCEED — the “capability not exposed” branch does NOT apply, the direct bypass is reachable by design (the runtime’s own instructions advertise await import)",
+      "pass": true,
+      "observed": "imports={\"node:fs\":\"ok(105)\",\"node:child_process\":\"ok(10)\",\"node:net\":\"ok(19)\",\"node:worker_threads\":\"ok(22)\",\"node:module\":\"ok(31)\",\"node:http\":\"ok(22)\"} globalCount=135 typeofRequire=undefined typeofProcess=object"
+    },
+    {
+      "id": "R-API-GLOBALS",
+      "claim": "realm globalThis inventory",
+      "informational": true,
+      "observed": "[\"AbortController\",\"AbortSignal\",\"AggregateError\",\"Array\",\"ArrayBuffer\",\"AsyncDisposableStack\",\"Atomics\",\"BigInt\",\"BigInt64Array\",\"BigUint64Array\",\"Blob\",\"Boolean\",\"BroadcastChannel\",\"Buffer\",\"ByteLengthQueuingStrategy\",\"CloseEvent\",\"CompressionStream\",\"CountQueuingStrategy\",\"Crypto\",\"CryptoKey\",\"CustomEvent\",\"DOMException\",\"DataView\",\"Date\",\"DecompressionStream\",\"DisposableStack\",\"Error\",\"EvalErr"
+    },
+    {
+      "id": "R-ENV-CENSUS",
+      "claim": "realm process.env inventory (host scrubs the environment before the program runs)",
+      "informational": true,
+      "observed": "[]"
+    },
+    {
+      "id": "R-UNCONFINED-PASSTHROUGH",
+      "claim": "REALM control arm per-API truth: the unconfined outer program REACHES the forbidden zone (read + write), spawns a real child, and connects to the decoy listener — the reachable control path really runs",
+      "pass": true,
+      "observed": "read=PASS-THROUGH write=PASS-THROUGH spawn=PASS-THROUGH net=PASS-THROUGH childWrote=true listenerConns=1"
+    },
+    {
+      "id": "R-CONFINED-BOOTS",
+      "claim": "REALM confined arm: the SAME child entry boots under a REAL Landlock domain (program result present, launcher rc recorded)",
+      "pass": true,
+      "observed": "why=program-done kitRc=- launcherRc=- stderr="
+    },
+    {
+      "id": "R-CONFINED-WRITE-OSDENIED",
+      "claim": "OS CALIBER: direct fs write into the forbidden zone is refused by the kernel (EACCES) and NO file is created",
+      "pass": true,
+      "observed": "{\"ok\":false,\"code\":\"EACCES\",\"name\":\"Error\",\"msg\":\"EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/write-target.txt'\"} exists=false"
+    },
+    {
+      "id": "R-CONFINED-SPAWN-WRITE-OSDENIED",
+      "claim": "OS CALIBER: the direct spawn itself SUCCEEDS (execve of a granted path is not the refused effect) but the child’s write into the forbidden zone is refused too — the domain is inherited across fork/execve",
+      "pass": true,
+      "observed": "spawnDirect={\"ok\":true,\"status\":0,\"signal\":null,\"stdoutHead\":\"A5PTC3-SPAWN-RAN\\n1000\",\"errorCode\":\"\"} childWrite={\"status\":2,\"signal\":null,\"stderrHead\":\"/bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/child-target.txt: Permission denied\",\"errorCode\":\"\"} childTarget=false"
+    },
+    {
+      "id": "R-CONFINED-CONTROL-RUNS",
+      "claim": "the confined domain is SELECTIVE, not a blanket failure: the in-workspace control write and the body marker really happen",
+      "pass": true,
+      "observed": "control=true marker=true"
+    },
+    {
+      "id": "R-CONFINED-READ",
+      "claim": "confined arm: direct fs READ of the private fixture (grant narrowed HERE; the host’s own workspace-write profile is read-PERMISSIVE — profiles.ts readOnly [\"/\"])",
+      "informational": true,
+      "observed": "{\"ok\":false,\"code\":\"EACCES\",\"name\":\"Error\",\"msg\":\"EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/secret.txt'\"} secretUnchanged=true"
+    },
+    {
+      "id": "R-CONFINED-READ-SHAPE",
+      "claim": "confined arm: read of an out-of-workspace path the workspace-write SHAPE leaves readable (/etc/hostname)",
+      "informational": true,
+      "observed": "{\"ok\":true,\"head\":\"dsh-plugin-dev\\n\"}"
+    },
+    {
+      "id": "R-CONFINED-NET",
+      "claim": "confined arm: direct net connect to the decoy listener (Landlock ABI 4 grants no network right; network is not a file effect)",
+      "informational": true,
+      "observed": "{\"ok\":true} listenerConns=1 bytes=62 received=\"A5PTC3-OUTER-HELLO a5ptc3-outer-2026-10-17T06-53-28Z-confined\\n\""
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 behind the token gate",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "session created through the public entry (cwd = the world workspace)",
+      "pass": true,
+      "observed": "sid=session-f85a5e5e-43f4-45"
+    },
+    {
+      "id": "A-MODE-DEFAULT",
+      "claim": "LEG A precondition, measured through the PUBLIC read: the world runs the deployment default workspace-write (this row never calls setSandboxMode)",
+      "pass": true,
+      "observed": "pre=workspace-write deploymentDefault=workspace-write"
+    },
+    {
+      "id": "A-WITNESS-ONLY",
+      "claim": "the world’s only registered tool is a never-referenced witness; the bypass program body contains no `tools.` reference at all",
+      "pass": true,
+      "observed": "{\"registeredByThisRow\":1,\"witnessTool\":\"a5ptc3_witness\",\"note\":\"registered as a schema-path witness only; the bypass program never references it, and the guard census below must show ZERO calls to it\",\"scopedFaces\":[\"cancellationStates\",\"canonicalResults\",\"concludingExecutions\",\"contentFinalizers\",\"contentProjectors\",\"ctx\",\"defaultMode\",\"deferredContexts\",\"layers\",\"maxParallelSubCalls\",\"name\",\"ptcTransport\"],\"listed\":null}"
+    },
+    {
+      "id": "A-TYPED-REFUSAL-BEFORE-EXECUTION",
+      "claim": "LEG A verbatim outcome: run_code answers with the host’s typed fail-closed refusal (sandbox-unavailable / “refusing to run the command unconfined” / File sandbox: workspace-write) — the outer program never starts",
+      "pass": true,
+      "observed": "Error: code run failed (sandbox-unavailable): sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.\nFile sandbox: workspace-"
+    },
+    {
+      "id": "A-ZERO-SIDE-EFFECTS",
+      "claim": "LEG A independent census: no write target, no child write, no listener connection, secret hash unchanged — and even the IN-WORKSPACE control write did not happen, so the refusal is whole-program (fail-closed before spawn), not a per-API decision",
+      "pass": true,
+      "observed": "{\"secretUnchanged\":true,\"writeTargetExists\":false,\"childTargetExists\":false,\"controlWriteExists\":false,\"markerExists\":false,\"listenerConnections\":0,\"listenerBytes\":0}"
+    },
+    {
+      "id": "A-NO-OUTER-OS-CHILD",
+      "claim": "LEG A /proc sampler: no OS child process for the outer PTC program ever existed (confinement is decided BEFORE spawn)",
+      "pass": true,
+      "observed": "outerChildren=[] samples=0 inFlight=[]"
+    },
+    {
+      "id": "A-GUARD-OUTER-ONLY",
+      "claim": "the guard saw the OUTER run_code dispatch and NOTHING else: zero inner re-entry and zero calls to the registered witness tool (the bypass really went around the governed edge)",
+      "pass": true,
+      "observed": "[{\"seq\":1,\"name\":\"run_code\",\"callId\":\"call-gjkxfc61\",\"rootCallId\":\"call-gjkxfc61\",\"inner\":false,\"argsHead\":\"{}\"}]"
+    },
+    {
+      "id": "A-MODE-UNCHANGED-AFTER-A",
+      "claim": "mode after LEG A is still workspace-write through the public read (no silent widening on the refused path)",
+      "pass": true,
+      "observed": "{\"post\":\"workspace-write\",\"deploymentDefault\":\"workspace-write\",\"writeCallsByThisRow\":0}"
+    },
+    {
+      "id": "A-SEAM-CENSUS",
+      "claim": "public-seam inventory for taking the outer transport over (reserved-name throws at both faces; PTC-runtime service-slot replaceability)",
+      "informational": true,
+      "observed": "{\"root_register\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\"},\"scope_register\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tool name \\\"run_code\\\" is reserved for the PTC mode presentation transport and cannot be registered or shadowed\"},\"scope_restrict_deny\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\"},\"scope_restrict_allow\":{\"threw\":true,\"reservedName\":true,\"msg\":\"tools.restrict() cannot name reserved PTC mode presentation transport \\\"run_code\\\"; restrict end-capability tools instead\"},\"ptc_runtime_service_replace\":{\"threw\":true,\"reservedName\":false,\"msg\":\"ctx.set refused: cannot set property \\\"ptcRuntime\\\" in multiple fibers\"}}"
+    },
+    {
+      "id": "C-DISCLOSED-TRUTH-TABLE",
+      "claim": "LEG C (DISCLOSED: mode = per-session public switch, ZERO OS-enforcement caliber) per-API outcome at transport level — proves the transport really reaches execution when nothing is confined, so LEG A’s silence is the confinement decision and not a dead transport",
+      "informational": true,
+      "observed": "{\"read_forbidden\":\"PASS-THROUGH\",\"write_forbidden\":\"PASS-THROUGH\",\"spawn_write_forbidden\":\"PASS-THROUGH\",\"spawn_direct\":\"PASS-THROUGH\",\"read_outside_readable\":\"PASS-THROUGH\",\"net_connect\":\"PASS-THROUGH\",\"write_control\":\"PASS-THROUGH\"} marker=true writeTarget=true childWrote=true conns=1 outerChildren=1"
+    },
+    {
+      "id": "C-TRANSPORT-REACHES-EXECUTION",
+      "claim": "DISCLOSED control arm: with the per-session public switch (zero OS caliber, its own -legc target paths) the SAME program body really executes end-to-end — so LEG A’s typed refusal is the confinement decision, not an inert transport",
+      "pass": true,
+      "observed": "landed=true marker=true parsed=true text=A5PTC3-BYPASS {\"tag\":\"a5ptc3-outer-2026-10-17T06-53-28Z-legC\",\"bodyStarted\":true,\"api\":{\"read_forbidden\":{\"ok\":true,\"head\":\"SYNTHETIC-SECRET a5ptc3-\"},\"write_fo"
+    },
+    {
+      "id": "C-LEG-A-TARGETS-PRISTINE",
+      "claim": "LEG A’s forbidden-zone targets are STILL untouched after the disclosed control arm ran on its own paths (the zero-side-effect proof is durable)",
+      "pass": true,
+      "observed": "{\"markerExists\":true,\"writeTargetExists\":true,\"childTargetExists\":true,\"listenerConnections\":1,\"listenerBytes\":58,\"controlWriteExists\":true,\"legATargetsStillPristine\":true}"
+    },
+    {
+      "id": "B-OUTCOME",
+      "claim": "LEG B typed outcome for the per-call widening face (landed = an answer came back; not landed = the widening request never reached execution inside the window — booked either way, with the session log as mechanism evidence)",
+      "informational": true,
+      "observed": "landed=false modePre=workspace-write modePost=workspace-write text="
+    },
+    {
+      "id": "B-WIDENING-IS-GATED",
+      "claim": "LEG B: the per-call sandbox_permissions+justification face does NOT hand the outer program a wider file domain unattended — zero writes anywhere, secret unchanged, zero listener traffic beyond what earlier legs caused, no outer OS child in that session, and its mode never left workspace-write",
+      "pass": true,
+      "observed": "landed=false census={\"markerExists\":false,\"writeTargetExists\":false,\"childTargetExists\":false,\"secretUnchanged\":true,\"listenerConnections\":1} outerChildren=[] mode=workspace-write writes=0"
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": "the :3080 stable dev instance was never touched (equal probe pre/post; this kit binds only port 3184 + ephemeral decoy listeners)",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=639ed01539"
+    },
+    {
+      "id": "P-PORT-RELEASED",
+      "claim": "port 3184 released after teardown",
+      "pass": true,
+      "observed": "free=true"
+    },
+    {
+      "id": "P-WORLD-DELETED",
+      "claim": "test world tests/homes/a5ptc3-outer-2026-10-17T06-53-28Z deleted at teardown",
+      "pass": true,
+      "observed": "exists=false"
+    }
+  ]
+}

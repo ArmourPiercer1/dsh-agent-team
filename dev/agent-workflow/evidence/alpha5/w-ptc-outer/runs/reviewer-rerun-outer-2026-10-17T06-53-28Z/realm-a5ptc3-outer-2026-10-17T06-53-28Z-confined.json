@@ -1,0 +1,930 @@
+{
+  "run": "a5ptc3-outer-2026-10-17T06-53-28Z-confined",
+  "launcherSha": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+  "abi": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "arms": {
+    "confined": {
+      "label": "confined",
+      "why": "program-done",
+      "ready": true,
+      "frames": [
+        "ready",
+        "log",
+        "done"
+      ],
+      "logs": [
+        "A5PTC3-BYPASS {\"tag\":\"a5ptc3-outer-2026-10-17T06-53-28Z-confined\",\"bodyStarted\":true,\"api\":{\"read_forbidden\":{\"ok\":false,\"code\":\"EACCES\",\"name\":\"Error\",\"msg\":\"EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/secret.txt'\"},\"write_forbidden\":{\"ok\":false,\"code\":\"EACCES\",\"name\":\"Error\",\"msg\":\"EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/write-target.txt'\"},\"write_control\":{\"ok\":true,\"readBack\":true},\"marker_write\":{\"ok\":true},\"spawn_direct\":{\"ok\":true,\"status\":0,\"signal\":null,\"stdoutHead\":\"A5PTC3-SPAWN-RAN\\n1000\",\"errorCode\":\"\"},\"spawn_write_forbidden\":{\"status\":2,\"signal\":null,\"stderrHead\":\"/bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/child-target.txt: Permission denied\",\"errorCode\":\"\"},\"read_outside_readable\":{\"ok\":true,\"head\":\"dsh-plugin-dev\\n\"},\"net_connect\":{\"ok\":true}},\"realm\":{\"pid\":76,\"ppid\":75,\"execPath\":\"/home/user/.nvm/versions/node/v24.21.0/bin/node\",\"typeof\":{\"process\":\"object\",\"console\":\"object\",\"tools\":\"undefined\",\"require\":\"undefined\",\"module\":\"undefined\",\"exports\":\"undefined\",\"Buffer\":\"function\",\"fetch\":\"function\",\"WebAssembly\":\"object\",\"Worker\":\"undefined\"},\"hasOwn\":{\"process\":true,\"tools\":false,\"require\":false,\"module\":false},\"globalCount\":135,\"globals\":[\"AbortController\",\"AbortSignal\",\"AggregateError\",\"Array\",\"ArrayBuffer\",\"AsyncDisposableStack\",\"Atomics\",\"BigInt\",\"BigInt64Array\",\"BigUint64Array\",\"Blob\",\"Boolean\",\"BroadcastChannel\",\"Buffer\",\"ByteLengthQueuingStrategy\",\"CloseEvent\",\"CompressionStream\",\"CountQueuingStrategy\",\"Crypto\",\"CryptoKey\",\"CustomEvent\",\"DOMException\",\"DataView\",\"Date\",\"DecompressionStream\",\"DisposableStack\",\"Error\",\"EvalError\",\"Event\",\"EventTarget\",\"File\",\"FinalizationRegistry\",\"Float16Array\",\"Float32Array\",\"Float64Array\",\"FormData\",\"Function\",\"Headers\",\"Infinity\",\"Int16Array\",\"Int32Array\",\"Int8Array\",\"Intl\",\"Iterator\",\"JSON\",\"Map\",\"Math\",\"MessageChannel\",\"MessageEvent\",\"MessagePort\",\"NaN\",\"Navigator\",\"Number\",\"Object\",\"Performance\",\"PerformanceEntry\",\"PerformanceMark\",\"PerformanceMeasure\",\"PerformanceObserver\",\"PerformanceObserverEntryList\",\"PerformanceResourceTiming\",\"Promise\",\"Proxy\",\"RangeError\",\"ReadableByteStreamController\",\"ReadableStream\",\"ReadableStreamBYOBReader\",\"ReadableStreamBYOBRequest\",\"ReadableStreamDefaultController\",\"ReadableStreamDefaultReader\",\"ReferenceError\",\"Reflect\",\"RegExp\",\"Request\",\"Response\",\"Set\",\"SharedArrayBuffer\",\"String\",\"SubtleCrypto\",\"SuppressedError\",\"Symbol\",\"SyntaxError\",\"TextDecoder\",\"TextDecoderStream\",\"TextEncoder\",\"TextEncoderStream\",\"TransformStream\",\"TransformStreamDefaultController\",\"TypeError\",\"URIError\",\"URL\",\"URLPattern\",\"URLSearchParams\",\"Uint16Array\",\"Uint32Array\",\"Uint8Array\",\"Uint8ClampedArray\",\"WeakMap\",\"WeakRef\",\"WeakSet\",\"WebAssembly\",\"WebSocket\",\"WritableStream\",\"WritableStreamDefaultController\",\"WritableStreamDefaultWriter\",\"atob\",\"btoa\",\"clearImmediate\",\"clearInterval\",\"clearTimeout\",\"console\",\"crypto\",\"decodeURI\",\"decodeURIComponent\",\"encodeURI\",\"encodeURIComponent\",\"escape\",\"eval\",\"fetch\",\"global\",\"globalThis\",\"isFinite\",\"isNaN\",\"navigator\",\"parseFloat\",\"parseInt\",\"performance\",\"process\",\"queueMicrotask\",\"setImmediate\",\"setInterval\",\"setTimeout\",\"structuredClone\",\"undefined\",\"unescape\"],\"envKeys\":[],\"cwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws\",\"imports\":{\"node:fs\":{\"ok\":true,\"exportCount\":105},\"node:child_process\":{\"ok\":true,\"exportCount\":10},\"node:net\":{\"ok\":true,\"exportCount\":19},\"node:worker_threads\":{\"ok\":true,\"exportCount\":22},\"node:module\":{\"ok\":true,\"exportCount\":31},\"node:http\":{\"ok\":true,\"exportCount\":22}}}}"
+      ],
+      "done": {
+        "type": "done",
+        "value": [
+          {
+            "kind": "object",
+            "keys": [
+              "tag",
+              "bodyStarted",
+              "api",
+              "realm"
+            ]
+          },
+          "a5ptc3-outer-2026-10-17T06-53-28Z-confined",
+          true,
+          {
+            "kind": "object",
+            "keys": [
+              "read_forbidden",
+              "write_forbidden",
+              "write_control",
+              "marker_write",
+              "spawn_direct",
+              "spawn_write_forbidden",
+              "read_outside_readable",
+              "net_connect"
+            ]
+          },
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "code",
+              "name",
+              "msg"
+            ]
+          },
+          false,
+          "EACCES",
+          "Error",
+          "EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/secret.txt'",
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "code",
+              "name",
+              "msg"
+            ]
+          },
+          false,
+          "EACCES",
+          "Error",
+          "EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/write-target.txt'",
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "readBack"
+            ]
+          },
+          true,
+          true,
+          {
+            "kind": "object",
+            "keys": [
+              "ok"
+            ]
+          },
+          true,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "status",
+              "signal",
+              "stdoutHead",
+              "errorCode"
+            ]
+          },
+          true,
+          0,
+          null,
+          "A5PTC3-SPAWN-RAN\n1000",
+          "",
+          {
+            "kind": "object",
+            "keys": [
+              "status",
+              "signal",
+              "stderrHead",
+              "errorCode"
+            ]
+          },
+          2,
+          null,
+          "/bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/child-target.txt: Permission denied",
+          "",
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "head"
+            ]
+          },
+          true,
+          "dsh-plugin-dev\n",
+          {
+            "kind": "object",
+            "keys": [
+              "ok"
+            ]
+          },
+          true,
+          {
+            "kind": "object",
+            "keys": [
+              "pid",
+              "ppid",
+              "execPath",
+              "typeof",
+              "hasOwn",
+              "globalCount",
+              "globals",
+              "envKeys",
+              "cwd",
+              "imports"
+            ]
+          },
+          76,
+          75,
+          "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+          {
+            "kind": "object",
+            "keys": [
+              "process",
+              "console",
+              "tools",
+              "require",
+              "module",
+              "exports",
+              "Buffer",
+              "fetch",
+              "WebAssembly",
+              "Worker"
+            ]
+          },
+          "object",
+          "object",
+          "undefined",
+          "undefined",
+          "undefined",
+          "undefined",
+          "function",
+          "function",
+          "object",
+          "undefined",
+          {
+            "kind": "object",
+            "keys": [
+              "process",
+              "tools",
+              "require",
+              "module"
+            ]
+          },
+          true,
+          false,
+          false,
+          false,
+          135,
+          {
+            "kind": "array",
+            "length": 135
+          },
+          "AbortController",
+          "AbortSignal",
+          "AggregateError",
+          "Array",
+          "ArrayBuffer",
+          "AsyncDisposableStack",
+          "Atomics",
+          "BigInt",
+          "BigInt64Array",
+          "BigUint64Array",
+          "Blob",
+          "Boolean",
+          "BroadcastChannel",
+          "Buffer",
+          "ByteLengthQueuingStrategy",
+          "CloseEvent",
+          "CompressionStream",
+          "CountQueuingStrategy",
+          "Crypto",
+          "CryptoKey",
+          "CustomEvent",
+          "DOMException",
+          "DataView",
+          "Date",
+          "DecompressionStream",
+          "DisposableStack",
+          "Error",
+          "EvalError",
+          "Event",
+          "EventTarget",
+          "File",
+          "FinalizationRegistry",
+          "Float16Array",
+          "Float32Array",
+          "Float64Array",
+          "FormData",
+          "Function",
+          "Headers",
+          "Infinity",
+          "Int16Array",
+          "Int32Array",
+          "Int8Array",
+          "Intl",
+          "Iterator",
+          "JSON",
+          "Map",
+          "Math",
+          "MessageChannel",
+          "MessageEvent",
+          "MessagePort",
+          "NaN",
+          "Navigator",
+          "Number",
+          "Object",
+          "Performance",
+          "PerformanceEntry",
+          "PerformanceMark",
+          "PerformanceMeasure",
+          "PerformanceObserver",
+          "PerformanceObserverEntryList",
+          "PerformanceResourceTiming",
+          "Promise",
+          "Proxy",
+          "RangeError",
+          "ReadableByteStreamController",
+          "ReadableStream",
+          "ReadableStreamBYOBReader",
+          "ReadableStreamBYOBRequest",
+          "ReadableStreamDefaultController",
+          "ReadableStreamDefaultReader",
+          "ReferenceError",
+          "Reflect",
+          "RegExp",
+          "Request",
+          "Response",
+          "Set",
+          "SharedArrayBuffer",
+          "String",
+          "SubtleCrypto",
+          "SuppressedError",
+          "Symbol",
+          "SyntaxError",
+          "TextDecoder",
+          "TextDecoderStream",
+          "TextEncoder",
+          "TextEncoderStream",
+          "TransformStream",
+          "TransformStreamDefaultController",
+          "TypeError",
+          "URIError",
+          "URL",
+          "URLPattern",
+          "URLSearchParams",
+          "Uint16Array",
+          "Uint32Array",
+          "Uint8Array",
+          "Uint8ClampedArray",
+          "WeakMap",
+          "WeakRef",
+          "WeakSet",
+          "WebAssembly",
+          "WebSocket",
+          "WritableStream",
+          "WritableStreamDefaultController",
+          "WritableStreamDefaultWriter",
+          "atob",
+          "btoa",
+          "clearImmediate",
+          "clearInterval",
+          "clearTimeout",
+          "console",
+          "crypto",
+          "decodeURI",
+          "decodeURIComponent",
+          "encodeURI",
+          "encodeURIComponent",
+          "escape",
+          "eval",
+          "fetch",
+          "global",
+          "globalThis",
+          "isFinite",
+          "isNaN",
+          "navigator",
+          "parseFloat",
+          "parseInt",
+          "performance",
+          "process",
+          "queueMicrotask",
+          "setImmediate",
+          "setInterval",
+          "setTimeout",
+          "structuredClone",
+          "undefined",
+          "unescape",
+          {
+            "kind": "array",
+            "length": 0
+          },
+          "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+          {
+            "kind": "object",
+            "keys": [
+              "node:fs",
+              "node:child_process",
+              "node:net",
+              "node:worker_threads",
+              "node:module",
+              "node:http"
+            ]
+          },
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          105,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          10,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          19,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          22,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          31,
+          {
+            "kind": "object",
+            "keys": [
+              "ok",
+              "exportCount"
+            ]
+          },
+          true,
+          22
+        ]
+      },
+      "stdout": "",
+      "stderr": "",
+      "rc": null,
+      "signal": null,
+      "exitWait": null,
+      "argv": [
+        "python3",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-outer/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+        "--confined-exec",
+        "--policy",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/policy-a5ptc3-outer-2026-10-17T06-53-28Z-confined.json",
+        "--out-dir",
+        "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/launcher-out"
+      ],
+      "policy": {
+        "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+        "argv": [
+          "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+          "--max-old-space-size=512",
+          "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+          "8388608"
+        ],
+        "env": [
+          [
+            "PATH",
+            "/home/user/deepseek-harness/node_modules/.bin:/home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/node-gyp-bin:/home/user/deepseek-harness/node_modules/.bin:/home/user/.nvm/versions/node/v24.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin"
+          ],
+          [
+            "DSH_SUBPROCESS_CONTROL",
+            "pipe"
+          ]
+        ],
+        "runtime_base": true,
+        "close_extra_fds": true,
+        "fd_plan": {
+          "declared": [
+            {
+              "fd": 7
+            }
+          ]
+        },
+        "allow": [
+          {
+            "path": "/home/user/.nvm/versions/node/v24.21.0/bin",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/versions/node/v24.21.0",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/versions/node",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/versions",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home/user",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/home",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev",
+            "bits": {
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/package.json",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/package.json",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/package.json",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/package.json",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/package.json",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/versions/node/v24.21.0/bin",
+            "bits": {
+              "read_file": true,
+              "read_dir": true,
+              "execute": true
+            }
+          },
+          {
+            "path": "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+            "bits": {
+              "read_file": true,
+              "execute": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib",
+            "bits": {
+              "read_file": true,
+              "read_dir": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+            "bits": {
+              "read_file": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+            "bits": {
+              "read_file": true,
+              "read_dir": true,
+              "write_file": true,
+              "make_reg": true,
+              "remove_file": true,
+              "truncate": true
+            }
+          },
+          {
+            "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/rw",
+            "bits": {
+              "read_file": true,
+              "read_dir": true,
+              "write_file": true,
+              "make_reg": true,
+              "remove_file": true,
+              "truncate": true
+            }
+          },
+          {
+            "path": "/dev",
+            "bits": {
+              "read_file": true,
+              "read_dir": true,
+              "write_file": true
+            }
+          },
+          {
+            "path": "/tmp",
+            "bits": {
+              "read_file": true,
+              "read_dir": true,
+              "write_file": true,
+              "make_reg": true,
+              "remove_file": true
+            }
+          }
+        ]
+      },
+      "launcherVerdict": null,
+      "confinedChildStdout": "",
+      "confinedChildStderr": "",
+      "programResult": {
+        "tag": "a5ptc3-outer-2026-10-17T06-53-28Z-confined",
+        "bodyStarted": true,
+        "api": {
+          "read_forbidden": {
+            "ok": false,
+            "code": "EACCES",
+            "name": "Error",
+            "msg": "EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/secret.txt'"
+          },
+          "write_forbidden": {
+            "ok": false,
+            "code": "EACCES",
+            "name": "Error",
+            "msg": "EACCES: permission denied, open '/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/write-target.txt'"
+          },
+          "write_control": {
+            "ok": true,
+            "readBack": true
+          },
+          "marker_write": {
+            "ok": true
+          },
+          "spawn_direct": {
+            "ok": true,
+            "status": 0,
+            "signal": null,
+            "stdoutHead": "A5PTC3-SPAWN-RAN\n1000",
+            "errorCode": ""
+          },
+          "spawn_write_forbidden": {
+            "status": 2,
+            "signal": null,
+            "stderrHead": "/bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/forbidden/child-target.txt: Permission denied",
+            "errorCode": ""
+          },
+          "read_outside_readable": {
+            "ok": true,
+            "head": "dsh-plugin-dev\n"
+          },
+          "net_connect": {
+            "ok": true
+          }
+        },
+        "realm": {
+          "pid": 76,
+          "ppid": 75,
+          "execPath": "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+          "typeof": {
+            "process": "object",
+            "console": "object",
+            "tools": "undefined",
+            "require": "undefined",
+            "module": "undefined",
+            "exports": "undefined",
+            "Buffer": "function",
+            "fetch": "function",
+            "WebAssembly": "object",
+            "Worker": "undefined"
+          },
+          "hasOwn": {
+            "process": true,
+            "tools": false,
+            "require": false,
+            "module": false
+          },
+          "globalCount": 135,
+          "globals": [
+            "AbortController",
+            "AbortSignal",
+            "AggregateError",
+            "Array",
+            "ArrayBuffer",
+            "AsyncDisposableStack",
+            "Atomics",
+            "BigInt",
+            "BigInt64Array",
+            "BigUint64Array",
+            "Blob",
+            "Boolean",
+            "BroadcastChannel",
+            "Buffer",
+            "ByteLengthQueuingStrategy",
+            "CloseEvent",
+            "CompressionStream",
+            "CountQueuingStrategy",
+            "Crypto",
+            "CryptoKey",
+            "CustomEvent",
+            "DOMException",
+            "DataView",
+            "Date",
+            "DecompressionStream",
+            "DisposableStack",
+            "Error",
+            "EvalError",
+            "Event",
+            "EventTarget",
+            "File",
+            "FinalizationRegistry",
+            "Float16Array",
+            "Float32Array",
+            "Float64Array",
+            "FormData",
+            "Function",
+            "Headers",
+            "Infinity",
+            "Int16Array",
+            "Int32Array",
+            "Int8Array",
+            "Intl",
+            "Iterator",
+            "JSON",
+            "Map",
+            "Math",
+            "MessageChannel",
+            "MessageEvent",
+            "MessagePort",
+            "NaN",
+            "Navigator",
+            "Number",
+            "Object",
+            "Performance",
+            "PerformanceEntry",
+            "PerformanceMark",
+            "PerformanceMeasure",
+            "PerformanceObserver",
+            "PerformanceObserverEntryList",
+            "PerformanceResourceTiming",
+            "Promise",
+            "Proxy",
+            "RangeError",
+            "ReadableByteStreamController",
+            "ReadableStream",
+            "ReadableStreamBYOBReader",
+            "ReadableStreamBYOBRequest",
+            "ReadableStreamDefaultController",
+            "ReadableStreamDefaultReader",
+            "ReferenceError",
+            "Reflect",
+            "RegExp",
+            "Request",
+            "Response",
+            "Set",
+            "SharedArrayBuffer",
+            "String",
+            "SubtleCrypto",
+            "SuppressedError",
+            "Symbol",
+            "SyntaxError",
+            "TextDecoder",
+            "TextDecoderStream",
+            "TextEncoder",
+            "TextEncoderStream",
+            "TransformStream",
+            "TransformStreamDefaultController",
+            "TypeError",
+            "URIError",
+            "URL",
+            "URLPattern",
+            "URLSearchParams",
+            "Uint16Array",
+            "Uint32Array",
+            "Uint8Array",
+            "Uint8ClampedArray",
+            "WeakMap",
+            "WeakRef",
+            "WeakSet",
+            "WebAssembly",
+            "WebSocket",
+            "WritableStream",
+            "WritableStreamDefaultController",
+            "WritableStreamDefaultWriter",
+            "atob",
+            "btoa",
+            "clearImmediate",
+            "clearInterval",
+            "clearTimeout",
+            "console",
+            "crypto",
+            "decodeURI",
+            "decodeURIComponent",
+            "encodeURI",
+            "encodeURIComponent",
+            "escape",
+            "eval",
+            "fetch",
+            "global",
+            "globalThis",
+            "isFinite",
+            "isNaN",
+            "navigator",
+            "parseFloat",
+            "parseInt",
+            "performance",
+            "process",
+            "queueMicrotask",
+            "setImmediate",
+            "setInterval",
+            "setTimeout",
+            "structuredClone",
+            "undefined",
+            "unescape"
+          ],
+          "envKeys": [],
+          "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+          "imports": {
+            "node:fs": {
+              "ok": true,
+              "exportCount": 105
+            },
+            "node:child_process": {
+              "ok": true,
+              "exportCount": 10
+            },
+            "node:net": {
+              "ok": true,
+              "exportCount": 19
+            },
+            "node:worker_threads": {
+              "ok": true,
+              "exportCount": 22
+            },
+            "node:module": {
+              "ok": true,
+              "exportCount": 31
+            },
+            "node:http": {
+              "ok": true,
+              "exportCount": 22
+            }
+          }
+        }
+      }
+    }
+  }
+}

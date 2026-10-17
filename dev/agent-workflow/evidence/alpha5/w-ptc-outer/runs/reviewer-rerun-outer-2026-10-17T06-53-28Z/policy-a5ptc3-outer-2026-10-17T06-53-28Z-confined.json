@@ -1,0 +1,272 @@
+{
+  "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+  "argv": [
+    "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+    "--max-old-space-size=512",
+    "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+    "8388608"
+  ],
+  "env": [
+    [
+      "PATH",
+      "/home/user/deepseek-harness/node_modules/.bin:/home/user/.cache/node/corepack/v1/pnpm/11.7.0/dist/node-gyp-bin:/home/user/deepseek-harness/node_modules/.bin:/home/user/.nvm/versions/node/v24.21.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/snap/bin"
+    ],
+    [
+      "DSH_SUBPROCESS_CONTROL",
+      "pipe"
+    ]
+  ],
+  "runtime_base": true,
+  "close_extra_fds": true,
+  "fd_plan": {
+    "declared": [
+      {
+        "fd": 7
+      }
+    ]
+  },
+  "allow": [
+    {
+      "path": "/home/user/.nvm/versions/node/v24.21.0/bin",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/versions/node/v24.21.0",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/versions/node",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/versions",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home/user",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/home",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev",
+      "bits": {
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/package.json",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/package.json",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/package.json",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/package.json",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/package.json",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/versions/node/v24.21.0/bin",
+      "bits": {
+        "read_file": true,
+        "read_dir": true,
+        "execute": true
+      }
+    },
+    {
+      "path": "/home/user/.nvm/versions/node/v24.21.0/bin/node",
+      "bits": {
+        "read_file": true,
+        "execute": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib",
+      "bits": {
+        "read_file": true,
+        "read_dir": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/ptc-runtime/ptc-runtime-node/lib/process.js",
+      "bits": {
+        "read_file": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/ws",
+      "bits": {
+        "read_file": true,
+        "read_dir": true,
+        "write_file": true,
+        "make_reg": true,
+        "remove_file": true,
+        "truncate": true
+      }
+    },
+    {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.tmp-a5ptc3rev/outer-rerun/realm-world/confined/rw",
+      "bits": {
+        "read_file": true,
+        "read_dir": true,
+        "write_file": true,
+        "make_reg": true,
+        "remove_file": true,
+        "truncate": true
+      }
+    },
+    {
+      "path": "/dev",
+      "bits": {
+        "read_file": true,
+        "read_dir": true,
+        "write_file": true
+      }
+    },
+    {
+      "path": "/tmp",
+      "bits": {
+        "read_file": true,
+        "read_dir": true,
+        "write_file": true,
+        "make_reg": true,
+        "remove_file": true
+      }
+    }
+  ]
+}
