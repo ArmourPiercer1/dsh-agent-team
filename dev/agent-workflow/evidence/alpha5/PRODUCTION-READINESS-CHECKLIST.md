@@ -19,7 +19,7 @@
 | **PR5 tools（a5p5）** | `packages/tools/a5p5-tools/src/{index.ts:18-21,args,pipeline,spill,render,backend-*}.ts` | **零生产消费者**（`src/index.ts` 不知该 lane，无 barrel 边）；运行时触达=①根 vitest `vitest.config.ts:27`（GLUE-2 同轮入根）②W5 evidence kit row（`wiring/w5/a5w5-assembly-row.mjs`，经 kit-local `build-lane-esm.mjs` 编译，非 committed dist）③registry 40 | **是（运行面 kit-only）** | build：`packages/tools/tsconfig.build.json:17`（emit→`packages/tools/dist`，**该 dist 不提交**）；vitest：入根=是；**安装面：否**（安装白名单仅 runtime dist+client shim，`git ls-files | grep a5p5*.js`=0）| **否**——受治理 team 的 grep/glob/bash 是 host 原生工具；Team governed search/shell 工具生产不注册 | W5 gated 34/34 + parity 字节等值 + ungated RED 对照；阻塞=安装面（committed emit 或改装配）+ 生产注册边 + registry 40 常跑 |
 | **PR6 PTC（内层链）** | 无生产实现文件（`packages/` 内零 run_code/PTC 治理模块）；kit row=`evidence/alpha5/w-ptc-re/a5ptc-row.mjs` | kit：presentAs('ptc')+scoped defineTool+guard 真跑（A1 内层复入同管线逐次 Guard、A4 同名双侧 throw，#282 已合入证据）；生产 run_code=host 内置原样 | **是（kit-only）** | 无生产编译面 | **否（治理面）**——成员若被装配 run_code，执行的是 host 原生 PTC，未经 Team Grant/中介；Strict Profile 未启用（PoC-6a 分支二） | M-08=TRANSITIONED-PROBE-GATED；缺=外层 OS 强制负控并入 + 外层两半臂（下行）+ #290/#rowfix 队列未合 |
 | **PR6 PTC 外层两半臂** | 无生产实现；分支 `alpha5-ptc-outer`@06c3b502（审 PASS，**未合**）、`alpha5-ptc-outerfs`@9c72769f（本地 worktree，**无 origin ref**） | 三态=**分支③ PROBE-GATED + 精确局部阻塞**：外层 fs 半臂=公开 seam 无法 per-call Grant 注入 bootstrap（SEAM-RECHECK：存在装配途径 F3×F4×F5 在册）；**net 半臂=零公开 arm、无任何 OS 覆盖**（维持局部阻塞，出路=上游词表需求，非 core patch） | **是（分支证据级）** | 无 | **否** | #296（SEAM-RECHECK+Jobs 兑现表）/#290 待合队列；COMPOSED-LIVE 收窄=仅内层执行边 |
-| **PR6 LSP** | 无生产实现；kit row=`w-ptc-re/a5ptc-row.mjs`（per-member `ctx.isolate('lsp')` 重装 barrel，pid 128≠187 实测）+ `evidence/w-lsp-dr`（R-2 拟裁语义装配验证 20/20，#295 已合） | 生产成员 lsp=host 原生共享池（未 per-Member 隔离、未 Confined 中介） | **是（kit-only）** | 无 | **否**——**待答**：两项裁决已正式向用户提出未裁（R-1 streaming-pipe 启动方法 / R-2 策略⇒realm 销毁重建映射），生产接口修改冻结至答复 | M-09=TRANSITIONED-PROBE-GATED；A2=**上游 SEAM-GAP**（公开面无策略输入通道）真缺；A3/A4 等裁决 |
+| **PR6 LSP** | 无生产实现；kit row=`w-ptc-re/a5ptc-row.mjs`（per-member `ctx.isolate('lsp')` 重装 barrel，pid 128≠187 实测）+ `evidence/w-lsp-dr`（R-2 拟裁语义装配验证 20/20，#295 已合） | 生产成员 lsp=host 原生共享池（未 per-Member 隔离、未 Confined 中介） | **是（kit-only）** | 无 | **否**——R-1 streaming-pipe 启动方法 / R-2 策略⇒realm 销毁重建映射 两项裁决 = **用户 07:53Z 已批准，已实施并合入（#304=`77ffb187`）**（P-D3b 同步；本行旧文『**待答**：两项裁决已正式向用户提出未裁……生产接口修改冻结至答复』= 裁决-实施前时点历史口径照录保留，两分见 §5） | M-09=TRANSITIONED-PROBE-GATED；A2=**上游 SEAM-GAP**（公开面无策略输入通道）真缺；A3/A4 口径见 §5 两分 |
 | **PR7 jobs-gateway** | `packages/runtime/jobs-gateway/{index.ts:33 createJobsGateway,jobs-gateway.ts,lease-window.ts,cancellation-boundary.ts,web-projection.ts}` | **零生产消费者**；运行时触达=①根 vitest `runtime/test/a5p7-*`②kit `tests/kits/a5-w7-jobs-wiring`（row 经 profile-patch 缝挂到生产 row 旁，身份读回自 durable MemberInstance；**注意**仍用 kit-local `tsconfig.lane.json` 编译，切 committed dist 是该 lane 后续笔） | **是（运行面 kit-only）** | build：`tsconfig.build.json:22`（GLUE-1 #280 已落）；dist 24 文件 committed（安装面内有码无边）；vitest：是 | **否（gateway 本体）**——**DORMANT 精确层**=「import/装配层」：源码+编译面+安装面全在，独缺生产 import 边与 live row；用户的 jobs 能力（job_output/job_list/job_kill、run_in_background）由 **host 公开 jobs 面**兑现（W7M/W7M-2：FUFILLED 层），gateway 的 owner-fence/lease 未在生产生效 | 隔离三件真钉 PASS + veto 零注册；残余=gateway 生产装配 + `job_start` absent-anchor 如实（pinned host 本无此面，非缺件）|
 | **W5 search/shell 装配** | 装配 row=`evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs`（gated 模式注册 governed 工具面；judgement 全来自 committed dist 的 tool-dispatch/tool-admission/controlled-fs + kit-build a5p5） | 仅 kit runner `run-w5-live.mjs`（端口/世界即删）；生产行零引用 | **是（kit-only 装配）** | 不入 root build/vitest（row 本身）；被装配的 lane 见 PR2/3/5 行 | **否** | gated 34/34 GREEN + ungated RED 对照在册；阻塞=把该行形态搬进生产 glue + a5p5 安装面 |
 | **editor/read_image Team Definition 面** | 装配 row=`evidence/alpha5/wiring/c0405/a5c45-editor-image-row.mjs`（row-owned Team Definition 公开 seam 材料化→guard bind→one-shot grant→gated C-FS 真跑；undo 逐字节复原、delete/undo_all typed IO_POLICY_UNSUPPORTED）；**packages/ 内零实现**（str_replace_editor/read_image 非 dist 命中仅 contracts 封闭词表） | 仅 kit `run-a5c45-live.mjs` + registry/probe M-04/M-05 | **是（kit-only）** | 无生产编译面 | **否**——生产成员 editor/read_image=host 原生 builtin（定义在公开 seam 不可读=W-E2 实测差距保持在册）；Team-owned 治理链仅 kit | M-04/M-05 **TRANSITIONED-LIVE**（kit 判据闭环 37/37 gated + 25/37 仅红 Team 门控腿）；余项=host-native 定义 pin 面 + 生产 compile-plane |
@@ -36,7 +36,7 @@
 | C-04 editor | 见主表 editor 行（kit LIVE，生产 0） | 否 |
 | C-05 read_image | 同上（kit LIVE，生产=contracts 名字 only） | 否 |
 | C-06 run_code | PR6 行（无生产治理实现） | 否 |
-| C-07 lsp | **唯一 C 类=上游 SEAM-GAP**（策略输入通道）+用户待答 | 否 |
+| C-07 lsp | **唯一 C 类=上游 SEAM-GAP**（策略输入通道，仅此腿）；R-1/R-2 = 用户 07:53Z 已批准并合入（#304=`77ffb187`）——旧『+用户待答』为裁决前历史口径，两分见 §5 | 否 |
 | C-08 Domain/M-13 | mock 联锁三腿 kit 闭合（M-13 kit-LIVE）；gateway DORMANT；Domain 生产 compile-plane 不变 | 否（Domain 工具面）|
 | C-09 job_start absent | pinned host 本无此面，absent 机检行（非缺件） | N/A |
 | C-10 provider 生产 glue | **引用=0，GLUE 队列在册**（主表 PR4-glue 行） | 否 |
@@ -60,28 +60,29 @@
 
 ## 4. 三清单收束
 
-**kit-only 清单（运行面仅 tests/kits 或 evidence kit 触达）**：PR2 kernel、PR3 C-FS、PR4 provider（含 W4 kit 全部 OS 证据）、PR5 a5p5（W5 kit + 根 vitest 源级）、PR7 jobs-gateway（tests/kits/a5-w7-*）、PTC 内层链、PTC 外层两半臂（分支级）、LSP 池（待答）、editor/read_image 治理链（c0405/c08）、Domain mock（M-13）、registry 00/40（验收设施）。
+**kit-only 清单（运行面仅 tests/kits 或 evidence kit 触达）**：PR2 kernel、PR3 C-FS、PR4 provider（含 W4 kit 全部 OS 证据）、PR5 a5p5（W5 kit + 根 vitest 源级）、PR7 jobs-gateway（tests/kits/a5-w7-*）、PTC 内层链、PTC 外层两半臂（分支级）、LSP 池（R-1/R-2 已批已合 #304=`77ffb187`）、editor/read_image 治理链（c0405/c08）、Domain mock（M-13）、registry 00/40（验收设施）。
 
 **"用户可用=是"清单（受治理 team，装插件即生效）**：PR1 guard 链+PR1r 取消分型（条件=模板声明 `capabilities.permissions`；上限 ENFORCE-PARTIAL）、PR0 代数（经 PR1）、C-01 team_* 工具面、C-03 身份面、C-12 协作式取消+响亮告警（受限支持）、C-13 P 系列；另 host 公开 jobs/web/fs 面按 host 原样（非 Alpha.5 lane 宣称）。
 
 **最大三个生产缺口**：
 1. **效应面整体未换血**：受治理 team 的文件/进程/搜索/shell/jobs 效应仍全部经 host 原生执行——PR2 one-shot Grant、PR3 C-FS（deny-before-open）、PR4 OS 强制 provider、PR5 governed tools、PR7 owner-fence 五条线零生产 import 边（guard 只是分发层完整性，不中介 effect）。
 2. **a5p5 连安装面都不在**：committed 安装面只有 `packages/runtime/dist`，a5p5 emit 不落该镜像且无 barrel/注册边——即便接受 kit 装配现状，git 安装的用户产物里根本没有 governed search/shell 代码。
-3. **装配收尾全在队列**：G-d 集成确认未闭、C-10 provider glue/GLUE-3 未落、jobs kit 未切 committed dist、#290/ROWFIX/#296/outer/outerfs 未合、LSP 两裁决+PTC net 半臂待用户/上游、Blueprint vNext 未实施、`final_declaration` 全 null——**当前不可对外作 Alpha.5 生产就绪宣称**。
+3. **装配收尾全在队列**：G-d 集成确认未闭、C-10 provider glue/GLUE-3 未落、jobs kit 未切 committed dist、#290/ROWFIX/#296/outer/outerfs 未合、LSP 两裁决已批已合（R-1/R-2 = 用户 07:53Z 批准 + #304=`77ffb187`）+PTC net 半臂=内部提案在册（出路=上游词表需求，尚未向用户正式提出）、Blueprint vNext 未实施、`final_declaration` 全 null——**当前不可对外作 Alpha.5 生产就绪宣称**。
 
 ---
 
 ## 5. 更正节（2026-10-17，P-D vnext-adr 轮；append-only，上方审计正文其余不改）
 
 - 轮次 = `alpha5-prod-vnext-adr`；writer = qwen3.8-flash-next；基 = `origin/master @ d714a941`（fetch 亲验）。**载体说明**：本文件正本原在未合分支 `alpha5-prod-checklist @ 5bea01c6`（基 a2473203），本分支按原路径携带其**字节相同**副本（上方 §0–§4 审计正文与 5bea01c6 diff=空，亲验）+ 本节更正；两分支合并时以本文件为收敛版。
-- **更正对象 = LSP 口径**（主表 PR6-LSP 行、§2 C-07 行、§4 缺口三"LSP 两裁决"行的混合表述）。原文 C-07 行『**唯一 C 类=上游 SEAM-GAP**（策略输入通道）+用户待答』把两件不同层级的事统称一个上游缺口，按在册证据更正为两分：
+- **更正对象 = LSP 口径**（主表 PR6-LSP 行、§2 C-07 行、§4 缺口三"LSP 两裁决"行的混合表述）。原文 C-07 行『**唯一 C 类=上游 SEAM-GAP**（策略输入通道）+用户待答』把两件不同层级的事统称一个上游缺口，按在册证据更正为两分：（P-D3b 注：上方所引主表 PR6-LSP 行、§2 C-07 行、§4 缺口三行的『待答/待用户』措辞已同步为『R-1/R-2 = 07:53Z 已批准并已合入 #304=`77ffb187`』，本节所引原句为历史原文照录。）
 
 | 缺口 | 层级 | 事实源 | 状态 |
 |---|---|---|---|
-| **R-1 = C-PROC streaming-pipe 臂**（长驻双向管道/spawnStreaming 启动方法） | **本仓冻结接口缺**——差异全在 Team 自持 C-PROC 冻结形状侧（`RunOutput`/`SpawnReceipt` 无活进程句柄、无 stdin 流臂），**与上游无关**（host 公开面句柄已有 `stdin: Writable`） | `LSP-rulings-brief.md` §1（GAP gap2 verdict 原文『裁决项(非上游)』；PROV:99-109/:243/:292） | 已正式向用户提出**待答**；冻结面零触碰。其**装配等价物已验** = W-LSP-DR **20/20**（权威绿跑 `w-lsp-dr/runs/2026-10-17T05-41-03Z/`，#295 已合：公开面 `ctx.isolate`+`realm.plugin`+`dispose()` 下策略变化→销毁重建全链 20 判据 + 连续两轮四次转换零泄漏；注：该轮验证的语义面 = 拟裁 R-2 口径，对 R-1 自身臂 README §4 明示未验证——R-1 的增量仅在 C-PROC 覆盖面扩展裁决，不阻塞公开面装配） |
+| **R-1 = C-PROC streaming-pipe 臂**（长驻双向管道/spawnStreaming 启动方法） | **本仓冻结接口缺**——差异全在 Team 自持 C-PROC 冻结形状侧（`RunOutput`/`SpawnReceipt` 无活进程句柄、无 stdin 流臂），**与上游无关**（host 公开面句柄已有 `stdin: Writable`） | `LSP-rulings-brief.md` §1（GAP gap2 verdict 原文『裁决项(非上游)』；PROV:99-109/:243/:292） | **用户 07:53Z 已批准，已实施并合入（#304=`77ffb187`；实施事实见 `ALPHA5-ACCEPTANCE-STATUS.md` §1「LSP 生产装配」行测量基线）**——旧口径『已正式向用户提出**待答**；冻结面零触碰』= 裁决-实施前时点历史措辞，照录保留标注。其**装配等价物已验** = W-LSP-DR **20/20**（权威绿跑 `w-lsp-dr/runs/2026-10-17T05-41-03Z/`，#295 已合：公开面 `ctx.isolate`+`realm.plugin`+`dispose()` 下策略变化→销毁重建全链 20 判据 + 连续两轮四次转换零泄漏；注：该轮验证的语义面 = 拟裁 R-2 口径，对 R-1 自身臂 README §4 明示未验证——R-1 的增量仅在 C-PROC 覆盖面扩展裁决，不阻塞公开面装配） |
 | **sub-realm 全键池**（池键 ⊇ …+PolicyGeneration、代际强制逐出钩子、spawn spec per-policy 参数） | **上游公开面真缺（唯一上游缺口）**：公开面无策略输入通道、无逐出钩子；realm = 公开面可表达**最细**隔离粒度 | `pr6/SEAM-VERDICTS.md` **B4:58-60**（SEAM-GAP·上游）；`w-ptc-re/probe-gap-lsp-policy.result.json` gap1 | BLOCKED 在册（`gap-classification-ABC.md` C-07=C 类所指**仅此腿**）；处置=不派工、不 patch upstream |
 
-- **口径规则**：①『唯一上游缺口/唯一 C 类（上游）』表述**只许**指 sub-realm 全键池（B4）；②R-1/R-2 两项待答裁决 = 本仓冻结面用户裁决项，不得包装成上游阻塞；③M-09 恒 PROBE-GATED 的机检预设针对**全键粒度**腿；realm 粒度装配等价（含"策略变化→旧 PID 终止重建"形状）已由 W-LSP-DR 转 LIVE 在册，主张仍须标粒度并引 `LSP-rulings-brief.md` §3 两分表述。
+- **口径规则**：①『唯一上游缺口/唯一 C 类（上游）』表述**只许**指 sub-realm 全键池（B4）；②R-1/R-2 两项（本仓冻结面用户裁决项）= **用户 07:53Z 已批准、已实施并合入（#304=`77ffb187`）**（P-D3b；旧『待答裁决』= 裁决前历史措辞），其历史上并非上游阻塞、亦不得包装成上游阻塞；③M-09 恒 PROBE-GATED 的机检预设针对**全键粒度**腿；realm 粒度装配等价（含"策略变化→旧 PID 终止重建"形状）已由 W-LSP-DR 转 LIVE 在册，主张仍须标粒度并引 `LSP-rulings-brief.md` §3 两分表述。
 - 同型澄清（防再次统称）：PTC **net 半臂**（外层网络 OS 强制）= 零公开 arm、出路=**上游词表需求**（#296 在册），与上述两腿各自独立，三者不得互为"唯一"。
+- **P-D3b 同步（2026-10-17，@根 14:29Z 口径同轮 = `prod/VNEXT-SCHEMA-ADR.md` P-D3；branch `alpha5-doc-correct` @19afcae7 续一笔，父会话授权）**：本文件所有『R-1/R-2 已正式向用户提出未裁（待答）/待用户』措辞（主表 PR6-LSP 行、§2 C-07 行、§4 kit-only 清单、§4 缺口三、本节 R-1 行、口径规则②）统一改为 **『用户 07:53Z 已批准，已实施并合入（#304=`77ffb187`）』**；历史转录引文照录保留标注。声称与事实同步，**零新裁决**；C-12 行等非 R-1/R-2 口径本轮不动。
 
-— 更正节 writer = alpha5-prod-vnext-adr（qwen3.8-flash-next；只读+本文件追加；所引行号 @d714a941 树亲验）。
+— 更正节 writer = alpha5-prod-vnext-adr（qwen3.8-flash-next；只读+本文件追加；所引行号 @d714a941 树亲验）。P-D3b 同步 = alpha5-doc-correct（qwen3.8-flash-next；markdown-only，仅上列『待答/待用户』措辞+本节注记）。

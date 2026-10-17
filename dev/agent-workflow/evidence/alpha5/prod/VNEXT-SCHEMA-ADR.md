@@ -1,7 +1,8 @@
 # VNEXT-SCHEMA-ADR — Blueprint schemaVersion 4 / vNext 对象模型：原计划必需语义逐条三分 + 迁移顺序 + 待裁最小集
 
 - 轮次 = `alpha5-prod-vnext-adr`（P-D writer）；模型 = qwen3.8-flash-next；基 = `origin/master @ d714a941`（fetch 亲验）；一次性 worktree `.worktrees/a5-pd-vnext-adr`，branch `alpha5-prod-vnext-adr`。纪律 = 只读 + 本文件新增（+ `PRODUCTION-READINESS-CHECKLIST.md` 更正节 append）；**零代码/零矩阵/零 gate 行改动**；零端口、零世界、`:3080` 未触碰。
-- 修订 = **P-D2 @根 08:05Z 口径**（base=`7d609a08`，同分支再一笔）：§6 精简重构——R-1/R-2 移出待裁（07:53Z 用户已批，转录存证）＋ A 项归 ADR Gate 常规转正（非逐条问用户）＋ 真用户级语义分歧单列（A-4/A-3/A-2/当前不支持能力清单）＋ 新增硬约束『不得借 v4 迁移擅自裁历史 trim』＋ A-7 降级派生项（依赖 A-4∧清单姿态）＋ 净用户待裁数重算=7+1 派生。§1–§5 **语义零改动**（仅一致性标签与指针；正文其余逐字节不动）。
+- 修订 = **P-D2 @根 08:05Z 口径**（base=`7d609a08`，同分支再一笔）：§6 精简重构——R-1/R-2 移出待裁（07:53Z 用户已批，转录存证）＋ A 项归 ADR Gate 常规转正（非逐条问用户）＋ 真用户级语义分歧单列（A-4/A-3/A-2/当前不支持能力清单）＋ 新增硬约束『不得借 v4 迁移擅自裁历史 trim』＋ A-7 降级派生项（依赖 A-4∧清单姿态）＋ 净用户待裁数重算=7+1 派生。§1–§5 **语义零改动**（仅一致性标签与指针；正文其余逐字节不动）。〔本行的『净 7+1』与下表旧『已提待答/新增待裁』口径随后被 P-D3 @根 14:29Z 声称同步取代，见下行；本段作为 08:05Z 时点修订记录保留不抹。〕
+- 修订 = **P-D3 @根 14:29Z 口径**（branch `alpha5-doc-correct` @`origin/master 93cd7b09`（fetch 亲验），同证据树再一笔；**markdown-only，仅本文件**）：三件**声称与事实同步**纠错（根件一含 ①② 两处），**零新语义、零新裁决**——① Q1/Q2/OpenAtPort/PTC-net 状态改为 **内部提案在册；尚未向用户正式提出；不得归因『用户未答』**（旧文『已提（C12 brief §3）待答/已提待答/在册待裁/勿重复提』把内部提案条目写成『已向用户提出待答』= 声称失真）；② R-1/R-2 = **07:53Z 用户批准 + 已实施合入（#304=`77ffb187`）**，本文件内『待答/待裁』残留清除；③ §6.1 保证类清单 D-1 条目分列：**『扩大取消范围/延期』= 用户已批准项，与其他保证分开列**（指针 = `PENDING-GATES.md` G-a 行 17:52Z 裁决原文 + D-1 行 DEFERRED 有主），其余保证（投递精确性/静默安全）状态不动；④ A-4/A-3/A-2 改为**『先核对既定语义，再出最小真待裁』工作条目**（附既定语义出处指针），§6.1/§6.2 **不构成七项用户问卷、不是『待用户批量裁决』**；A-7 维持派生项口径。
 - 命题来源 = Alpha.5 计划 §11（`docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md:169-175`，下称 **S0§11**）点名『建议 4，但须记录**正式 Schema ADR**』；本文件**不是**正式 Schema ADR，是其**语义清单与装配可行性底稿**：把原计划对 v4/vNext 对象模型的每条必需语义归入三类，**禁默默省略**——凡计划文本出现的必入表。
 - 输入（行号全部本轮亲验 @d714a941 树）：**ARCH** = `docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md`；**DEV** = `docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Development_Plan_20260829.md`；**MA** = `docs/plans/memo/alpha5-tool-io-governance/architecture.md`；**DES** = `docs/plans/memo/alpha5-tool-io-governance/post-poc-technical-design.md:222`；**CAND** = `docs/plans/memo/alpha5-tool-io-governance/pr8-accept/ADR-CANDIDATE-blueprint-schema-vnext.md`（D-01..D-11 候选决策集）；**NEG** = 同目录 `migration-negative-cases.json`；生产面事实 = `PRODUCTION-READINESS-CHECKLIST.md`（@5bea01c6，更正节见其 §5）+ `pr8/vnext-migration-gap-checklist.md` + `pr8/gap-classification-ABC.md`（正本在未合分支 `alpha5-gap-classify@9a7a0552`）+ `LSP-rulings-brief.md` + `w-lsp-dr/README.md` + `c12-l1/README.md` + `C12-decision-brief.md`。
 
@@ -30,7 +31,7 @@
 | B3 | 字段映射默认拒绝：封闭字段表、未知键 typed 拒、禁剥离放行/alias 折叠 | S0§11:173（『严格 Schema 拒绝未知字段/错误版本』）；CAND D-02 | 【现】 | 引擎在场（B1 行 field-mapping.ts）+ 封闭表面已在模式：validate.ts 逐层 take/封闭字段集 + `scripts/verify-blueprint-version-clean.mjs`（已提交的版本干净性 fence）。负例已有机器可读件 = NEG（`adr_ref` 逐条指 CAND）。 |
 | B4 | Read/Write I/O Policies：`mode: all|restricted` + allow/ask/deny 路径规则；`restricted` 下未写=deny、`all` 起点=执行身份可达集再叠排除 | MA:70-77（§4 全节）；S0§11:171 | 【现】+【裁·转正】CAND D-03 | 资源面词汇已冻结：`resource.ts:66-73` `RESOURCE_RIGHT_MATRIX`（workspace/realm-home/absolute-path/directory/metadata/network-destination × rights 矩阵，越矩阵 typed 拒）+ `:88` 起 locator/`..` 校验。『缺省永不展开为权限』的歧义组合处置= D-03 转正（起草人级）。 |
 | B5 | 路径文法入 schema：禁一切 `..` 段（含折叠后合法者）、首尾空格保留、歧义字符显式报错、`~/` 由受信 Realm 解析、schema 期零归一 | MA:70-77（§4 文法原文）；CAND D-09 | 【现】 | `resource.ts:88` validateLocator 已做形状校验（`..` walk、URI/路径互斥）；Realm 解析留执行面（`~/` 不落 schema）= 现形状天然满足。 |
-| B6 | Network I/O Policies：`mode: allow|restricted|deny`；restricted=端点具名+执行前 ask；缺能力 Provider ⇒ typed 拒不静默放行 | MA:79-88（§5 全节）；S0§11:171 | schema【现】；执行面【迁/在册阻塞】 | `network-destination` kind 已在矩阵（`resource.ts:72`）。**执行面**外层网络 OS 强制=零公开 arm（checklist PR6-PTC-外层行；#296 在册，出路=上游词表需求）。由此派生 v4 发布姿态问题 = **A-7**（§2，用户级）。 |
+| B6 | Network I/O Policies：`mode: allow|restricted|deny`；restricted=端点具名+执行前 ask；缺能力 Provider ⇒ typed 拒不静默放行 | MA:79-88（§5 全节）；S0§11:171 | schema【现】；执行面【迁/在册阻塞】 | `network-destination` kind 已在矩阵（`resource.ts:72`）。**执行面**外层网络 OS 强制=零公开 arm（checklist PR6-PTC-外层行；#296 在册，出路=上游词表需求）。由此派生 v4 发布姿态问题 = **A-7**（§2，**派生项**——依赖 U-4∧U-1 随批落字，不单独问用户，见 §6.1/§6.2）。 |
 
 ### C. Provider/Execution Boundary Binding 与 Assurance（S0§11:171 第 3/4 字段族）
 
@@ -119,7 +120,7 @@ schema 面与执行面解耦：写得出但执行面未落地者 = A-7 姿态问
 ## 5. 迁移顺序 + 兼容窗口建议
 
 **顺序**（每步独立过 Gate，RED-first 用 NEG 现成负例）：
-1. **正式 Schema ADR**（裁 A-1..A-8 + 采纳 D-01..D-11）——CAND 附2 已钉其为矩阵 `final_declaration` 脱 null 前置；用户级项以 §6 为准（A-4/A-3/A-2/Q1/Q2/OpenAtPort/PTC-net 共 7；A-7=派生项随批），其余起草人提案。
+1. **正式 Schema ADR**（裁 A-1..A-8 + 采纳 D-01..D-11）——CAND 附2 已钉其为矩阵 `final_declaration` 脱 null 前置；用户级项以 §6 为准（P-D3 @根 14:29Z 口径：A-4/A-3/A-2 = 「先核对既定语义，再出最小真待裁」**工作条目**（出处指针随条目）；Q1/Q2/OpenAtPort/PTC-net = **内部提案在册，尚未向用户正式提出**；A-7=派生项随批；**不是一份七项用户问卷**），其余起草人提案。
 2. M-1 解析分支+fence（v3 面字节零动；G4『fails loudly』机检即时成立）。
 3. M-2 映射表 + M-4 迁移报告 + M-5 负例接入（升级工具可用，v3 作者先获得迁移报告，后获得 v4）。
 4. M-3 envelope Scope 语法（独立 lane，可与 3 并行；文件面不交叠）。
@@ -128,40 +129,48 @@ schema 面与执行面解耦：写得出但执行面未落地者 = A-7 姿态问
 
 **兼容窗口建议**：{3,4} 双支持自 v4 发布起 ≥1 发布代且以「存量 v3 蓝图全部迁移或经报告显式裁定为不声明治理」为退出条件（对应 A-4 的 a∧b）；v3 退役时走**已在产**的 RETIRED 派生臂（`BLUEPRINT_MIGRATION_REQUIRED`，v1/v2 先例），零新机制；v4 发布同一轮不撤 v3（给操作员迁移动作窗口）；v3 解析器语义冻结由 fence 脚本机检，不靠约定。
 
-## 6. P-D 判定：vNext 原计划中「必须用户裁决」最小集（**P-D2 精简版 @根 08:05Z 口径**）
+## 6. P-D 判定：vNext 原计划中「必须用户裁决」最小集（**P-D2 精简版 @根 08:05Z 口径；P-D3 声称同步 @根 14:29Z 口径——§6.1 = 内部工作条目/内部提案登记册，非用户问卷、非待用户批量裁决**）
 
-判据 = 语义/产品边界/冻结接口变更/上游接触授权；实现取舍、ADR 起草、装配派工**不**入集。精简原则 = **「是 ADR 问题」≠「逐条问用户的理由」**：A-1..A-8 全部走 ADR Gate 常规转正（起草人提案 + 三 reviewer 采纳），只有下表真用户级语义分歧才送裁。**U 编号本轮重排**（旧 U-1/U-2=R-1/R-2 → 已裁移出，见 §6.0；旧 U-3..U-6=本表 U-4..U-7；旧 U-7/U-8=A-4/A-7）。
+判据 = 语义/产品边界/冻结接口变更/上游接触授权；实现取舍、ADR 起草、装配派工**不**入集。精简原则 = **「是 ADR 问题」≠「逐条问用户的理由」**：A-1..A-8 全部走 ADR Gate 常规转正（起草人提案 + 三 reviewer 采纳）；下表（P-D3 后）= 内部登记：**A-4/A-3/A-2 为「先核对既定语义，再出最小真待裁」工作条目，Q1/Q2/OpenAtPort/PTC-net 为内部提案在册（尚未向用户正式提出，不得归因『用户未答』）——本表不构成用户问卷，也不等待用户批量裁决**。**U 编号本轮重排**（旧 U-1/U-2=R-1/R-2 → 已裁移出，见 §6.0；旧 U-3..U-6=本表 U-4..U-7；旧 U-7/U-8=A-4/A-7）。
 
 ### 6.0 移出与归位（转录存证）
 
-- **R-1/R-2 移出待裁——用户已批准（07:53Z）**。转录存证 = `dev/agent-workflow/evidence/alpha5/COORDINATION.md:88`（根协调文件工作副本，行号 @08:1xZ 状态）：『**R-1/R-2 用户批准在册（07:53Z，原文转录存证）**：LSP 方向=同意（独立 streaming 启动方法复用权限/租约/终止、旧 API 不变；策略变化销毁重建成员隔离实例）。解冻实施=P-LSP writer；明确**不扩大**到其他 C12/vNext 待裁项；范围=本仓公开 seam、不改上游、不部署 :3080。ADR 表 A 项/PTC-net/OpenAtPort 等仍待裁不变。』——同行钉死**不扩大**：该裁决不外溢本文件任何其余待裁项；R-1/R-2 的解冻实施归 P-LSP（2437a167），不再是裁决事项。
-- **A-1/A-5/A-6/A-8 = 纯 ADR Gate 常规转正项**：与 D-01..D-11 同轨（起草人提案+Gate 采纳），**不是逐条问用户的理由**，不入用户待裁表。**A-2/A-3**：起草与采纳同归 Gate，但其语义分歧本身属用户级，**只计入 §6.1 一次、不双计**——初稿行「A-3 若 Gate 认为改产品边界再上浮」按根 08:05Z 口径作废，直接送裁。
+- **R-1/R-2 移出待裁——用户已批准（07:53Z）**。转录存证 = `dev/agent-workflow/evidence/alpha5/COORDINATION.md:88`（根协调文件工作副本，行号 @08:1xZ 状态）：『**R-1/R-2 用户批准在册（07:53Z，原文转录存证）**：LSP 方向=同意（独立 streaming 启动方法复用权限/租约/终止、旧 API 不变；策略变化销毁重建成员隔离实例）。解冻实施=P-LSP writer；明确**不扩大**到其他 C12/vNext 待裁项；范围=本仓公开 seam、不改上游、不部署 :3080。ADR 表 A 项/PTC-net/OpenAtPort 等仍待裁不变。』——同行钉死**不扩大**：该裁决不外溢本文件任何其余待裁项；R-1/R-2 的解冻实施归 P-LSP（2437a167），不再是裁决事项。**P-D3 同步（@根 14:29Z）**：该实施**已合入 = #304 @ `77ffb187`**（见证 = `ALPHA5-ACCEPTANCE-STATUS.md` §1「LSP 生产装配」行测量基线『master@77ffb187（#304 R-1/R-2 已合）』）；本文件对 R-1/R-2 不再保留任何『待答/待裁』表述。上引『ADR 表 A 项/PTC-net/OpenAtPort 等仍待裁不变』一句为 07:53Z 时点历史转录原文照录，其今值以 §6.1（P-D3：内部提案在册、尚未向用户正式提出）为准。
+- **A-1/A-5/A-6/A-8 = 纯 ADR Gate 常规转正项**：与 D-01..D-11 同轨（起草人提案+Gate 采纳），**不是逐条问用户的理由**，不入用户待裁表。**A-2/A-3**：起草与采纳同归 Gate，但其语义分歧本身属用户级，**只计入 §6.1 一次、不双计**——初稿行「A-3 若 Gate 认为改产品边界再上浮」按根 08:05Z 口径作废；**@根 14:29Z 口径（P-D3）：A-2/A-3/A-4 的分歧登记为 §6.1『先核对既定语义→再出最小真待裁』工作条目（附出处指针），不作「直接送裁」，也不是用户问卷项**。
 - **硬约束（对任何裁决组合恒生效）**：**不得借 v4 迁移擅自裁历史 trim**——任何 v3 时代字段面/能力面的缩减，不得由 v4 轮 ADR 措辞或迁移工具隐式执行；确需缩减必须单独成项送裁，并在迁移报告中显式记 rejected（同 E4『漂移债不搭车』、F6『不搭车』纪律同构）。
 
-### 6.1 真用户级语义分歧（与 Gate 常规转正分列，不混数；逐条一句）
+### 6.1 真用户级语义分歧与内部提案（与 Gate 常规转正分列，不混数；逐条一句；**P-D3 @根 14:29Z：本表 = 内部登记册——不是用户问卷，不待用户批量裁决；本表各项均未正式向用户提出**）
 
-| # | 待裁项 | 一句 | 状态 |
+| # | 待裁项 | 一句 | 状态（P-D3） |
 |---|---|---|---|
-| U-1 | **A-4 v4 兼容窗口政策** | {3,4} 双版本窗口的时长与退出条件（a 固定≥1 发布代 / b 存量迁完或裁定完为止 / c 用户另定）= 产品边界，仅用户可裁。 | 新增待裁 |
-| U-2 | **A-3 Leader 治理模型** | Leader 效应是否入 v4 `toolBindings` 约束（同受 / 不入 schema 显式排除 / 仅可收紧）= 「谁受治理」的产品边界变更，非起草取舍。 | 新增待裁（初稿 Gate-条件上浮 → 直提） |
-| U-3 | **A-2 继承语义** | team 层与模板层绑定/IO 声明并存时的合并算法（无继承 / 更窄者胜 / 冲突 typed 拒）= 作者可观察语义，钉死后回退成本极高。 | 新增待裁（初稿起草人级 → 直提） |
-| U-4 | C-12 **Q1** =「当前不支持能力清单」的本版本姿态 | 是否接受当前 Host/当前版本能力边界为本版本发布姿态（保证类宣称=UNSUPPORTED、不冻结未来版本）；清单本体见下。 | 已提（C12 brief §3）待答，**勿重复提** |
-| U-5 | C-12 **Q2** 上游接触授权 | D-1 硬保证路线三独立缺口的 c1 候选是否发起 upstream contact/选型（CORE PATCH BUDGET=0 下上游接触本身=用户授权动作）。 | 已提待答，勿重复提 |
-| U-6 | PR3 **OpenAtPort** vs 永久窄 Profile | M-04/05 arbitrary-tree 宣称线：`ALPHA5-ACCEPTANCE-STATUS.md:79` final_declaration 最小集点名（『PR3 OpenAtPort（或永久窄 Profile 裁定）』）。 | 在册待裁，勿重复提 |
-| U-7 | PTC **net 半臂**上游词表需求接触授权 | net 外层执行面零 OS 覆盖⇒零公开 arm，出路=上游词表需求非 core patch（#296 在册；与 U-5 同型不同对象）。 | 在册，勿重复提 |
+| U-1 | **A-4 v4 兼容窗口政策** | {3,4} 双版本窗口的时长与退出条件（a 固定≥1 发布代 / b 存量迁完或裁定完为止 / c 用户另定）= 产品边界。 | **工作条目：先核对既定语义，再出最小真待裁**——既定语义出处 = CAND D-01 已钉窗口 {3,4}（`pr8-accept/ADR-CANDIDATE-blueprint-schema-vnext.md`）+ 本件 §5 兼容窗口建议 + DES:222（不改已绑定生命周期）；非问卷项 |
+| U-2 | **A-3 Leader 治理模型** | Leader 效应是否入 v4 `toolBindings` 约束（同受 / 不入 schema 显式排除 / 仅可收紧）= 「谁受治理」边界。 | **工作条目：先核对既定语义，再出最小真待裁**——既定语义出处 = ARCH §5.3 恰一完整 LeaderTemplate（`docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md:333-344`）+ S0§11:173『Leader/Human User 限权』测试点名 + 本件 §1 F3/B1 行；非问卷项 |
+| U-3 | **A-2 继承语义** | team 层与模板层绑定/IO 声明并存时的合并算法（无继承 / 更窄者胜 / 冲突 typed 拒）= 作者可观察语义。 | **工作条目：先核对既定语义，再出最小真待裁**——既定语义出处 = MA:68（原文把 inheritance 显式留给 design integration）+ 本件 §1 B3 行封闭字段表/默认拒绝在产现状；非问卷项 |
+| U-4 | C-12 **Q1** =「当前不支持能力清单」的本版本姿态 | 是否接受当前 Host/当前版本能力边界为本版本发布姿态（保证类宣称=UNSUPPORTED、不冻结未来版本）；清单本体见下。 | **内部提案在册**（提案件 = C12 brief §3）；**尚未向用户正式提出；不得归因『用户未答』**（旧文『已提待答/勿重复提』为声称失真，P-D3 更正） |
+| U-5 | C-12 **Q2** 上游接触授权 | D-1 硬保证路线三独立缺口的 c1 候选是否发起 upstream contact/选型（CORE PATCH BUDGET=0 下上游接触本身=用户授权动作）。 | **内部提案在册**（提案件 = C12 brief §3）；**尚未向用户正式提出；不得归因『用户未答』** |
+| U-6 | PR3 **OpenAtPort** vs 永久窄 Profile | M-04/05 arbitrary-tree 宣称线：`ALPHA5-ACCEPTANCE-STATUS.md:79` final_declaration 最小集点名（『PR3 OpenAtPort（或永久窄 Profile 裁定）』）。 | **内部提案在册**；**尚未向用户正式提出；不得归因『用户未答』** |
+| U-7 | PTC **net 半臂**上游词表需求接触授权 | net 外层执行面零 OS 覆盖⇒零公开 arm，出路=上游词表需求非 core patch（#296 在册；与 U-5 同型不同对象）。 | **内部提案在册**；**尚未向用户正式提出；不得归因『用户未答』** |
 
 **「当前不支持能力清单」（U-4 的清单本体；逐条一句，姿态由 U-4 一并裁，逐条不另计数）**：
 
-- C-12 保证类（投递/取消精确性 D-1/静默安全）= 当前 Host **UNSUPPORTED**（C12 brief §3；Q1 裁决前=不默认接受弱化）。
+- **取消精确性 D-1「扩大取消范围/延期」= 用户已批准项，单列（P-D3 @根 14:29Z 分列）**：『接受扩大取消范围』= 用户裁决 2026-10-16 17:52Z（原文+三边界 = `dev/agent-workflow/PENDING-GATES.md` G-a 行；边界=不扩大为 provider 卸载自动杀全团队 / G-g 不随之关闭 / 不回填 17:02）；严格『只取消未执行调用』属性 = **DEFERRED 有主在册**（`PENDING-GATES.md` D-1 行 owner=d9da2f74 + `ALPHA5-ACCEPTANCE-STATUS.md` §2-⑥）。该项已裁，**不在 Q1 姿态问题范围内**。
+- C-12 其余保证类（**投递精确性、静默安全**）= 当前 Host **UNSUPPORTED**（C12 brief §3；Q1 姿态裁决前=不默认接受弱化）；**状态不动**，不因上行 D-1 单列而变。
 - PTC 外层 **net 半臂** = 无任何 OS 覆盖、公开 seam 无法 per-call Grant 注入 ⇒ UNSUPPORTED，出路=上游词表需求（接触授权=U-7）。
 - **OpenAtPort** 未落 ⇒ arbitrary-tree profile 恒禁发布（`ALPHA5-ACCEPTANCE-STATUS.md:15/:49-50`）；裁前口径=窄 Profile（U-6 即该裁定）。
 - **network.restricted 等执行面未落地治理字段** = 现『写得出、拒得响』模式，其 v4 文档面姿态=A-7（派生项，见下，不单列问用户）。
 
 **A-7（降级为派生项，不计入净数）**：其选项面被两项上游裁决完全决定——(a)『允许写入+运行时 typed 拒+如实披露』与 U-4『能力边界如实宣称』姿态同源；(c)『等上游词表后随 Provider 一起开』的时序与 U-1（A-4 窗口/发布代语义：v4 发布同窗不撤 v3）同源。**A-7 不单独问用户：随 U-4 ∧ U-1 的裁决同批落字。**
 
-### 6.2 净用户待裁数（重算）
+### 6.2 净用户待裁数（P-D2 重算 → **P-D3 按事实重述：当前『已向用户提出待答』= 0 项**）
 
-原最小集 8 = R-1/R-2/Q1/Q2/OpenAtPort/PTC-net/A-4/A-7。按新口径逐条再核：**R-1/R-2 → 移出**（07:53Z 已批，§6.0 存证）；**Q1/Q2/OpenAtPort/PTC-net → 四条仍成立**（07:53Z 行明文『明确不扩大到其他 C12/vNext 待裁项……仍待裁不变』）；**A-4 → 仍成立**（用户级）；**A-7 → 仍成立但降级派生项**（依赖 U-4∧A-4，同批落字，不单独问）。另按根 08:05Z 口径新增单列 **A-3、A-2** 两条（初稿的 Gate-条件上浮/起草人级均作废）。**净用户待裁 = 7 项**（A-4、A-3、A-2、Q1、Q2、OpenAtPort、PTC-net）**+ 1 派生**（A-7，随依赖同批）。初稿「8 项 = 6 已在册 + 2 净新增」口径作废；U-4..U-7 已在册勿重复提。
+原最小集 8 = R-1/R-2/Q1/Q2/OpenAtPort/PTC-net/A-4/A-7。**P-D2（08:05Z）曾重算为『净用户待裁 7 项 + 1 派生』；该口径的『已向用户提出待答』含义不成立，P-D3（@根 14:29Z）按事实重述如下（零新裁决，仅声称与事实同步）**：
+
+- **R-1/R-2 → 已批已合**：07:53Z 用户批准（§6.0 转录存证）+ **已实施合入 = #304 @ `77ffb187`**；不再是任何待答/待裁项。
+- **Q1/Q2/OpenAtPort/PTC-net → 内部提案在册四条**：均为**内部提案条目，尚未向用户正式提出**；处于『待用户答复』状态 = **不实**，不得归因『用户未答』。07:53Z 引文『明确不扩大到其他 C12/vNext 待裁项……仍待裁不变』= 该时点历史转录（其『待裁』指内部在册，不含『已正式向用户提出』之义）。
+- **A-4/A-3/A-2 → 工作条目**：先核对既定语义（出处指针见 §6.1 表内各条），**再出最小真待裁**——当前登记的是这条**核对工作**，不是一份问用户的问题清单。
+- **A-7 → 派生项（口径不动）**：依赖 U-4∧U-1，随其同批落字，不单独问。
+
+**净结论：本文件当前不存在『已向用户提出、等待答复』的事项；本集不构成七项用户问卷，也不是『待用户批量裁决』**。内部提案是否/何时正式向用户提出 = 根的后移动作，非本文件所能裁决；逐条重复提问与批量问卷两形态均禁。初稿「8 项 = 6 已在册 + 2 净新增」与 P-D2「净 7+1」两口径均作废。
 
 ## 7. 红线自证与文件清单
 
@@ -170,6 +179,6 @@ CORE PATCH BUDGET=0（本文件与更正节均不新增上游接触）；零代�
 | 文件 | 角色 |
 |---|---|
 | `prod/VNEXT-SCHEMA-ADR.md` | 本文件（语义清单+装配草案+待裁清单+迁移顺序+用户裁决最小集） |
-| `../PRODUCTION-READINESS-CHECKLIST.md` | §5 更正节：LSP 两分口径（R-1=本仓冻结面待裁 vs B4=sub-realm 全键池=唯一上游缺口） |
+| `../PRODUCTION-READINESS-CHECKLIST.md` | §5 更正节：LSP 两分口径（B4=sub-realm 全键池=唯一上游缺口）。R-1 该节原文『待答/待裁』措辞 = 裁决前时点历史口径；今值（P-D3 同步）= 07:53Z 用户批准 + 已合入 #304=`77ffb187`（checklist 本文件本轮未触） |
 
-— writer = alpha5-prod-vnext-adr（P-D，qwen3.8-flash-next）；所引行号全部 @d714a941 树亲验；未合分支引用（`alpha5-prod-checklist@5bea01c6`、`alpha5-gap-classify@9a7a0552`）已逐处标注。修订轮 = P-D2（qwen3.8-flash-next，@7d609a08 基）：§6 精简 @根 08:05Z 口径，转录存证行 @COORDINATION.md 工作副本 08:1xZ 状态亲验。
+— writer = alpha5-prod-vnext-adr（P-D，qwen3.8-flash-next）；所引行号全部 @d714a941 树亲验；未合分支引用（`alpha5-prod-checklist@5bea01c6`、`alpha5-gap-classify@9a7a0552`）已逐处标注。修订轮 = P-D2（qwen3.8-flash-next，@7d609a08 基）：§6 精简 @根 08:05Z 口径，转录存证行 @COORDINATION.md 工作副本 08:1xZ 状态亲验。修订轮 = **P-D3**（qwen3.8-flash-next，branch `alpha5-doc-correct` @`93cd7b09` 基）：三件声称与事实同步 @根 14:29Z 口径（§6.1 四提案条目改『内部提案在册/尚未正式提出/不得归因用户未答』＋R-1/R-2 已批已合 #304=`77ffb187`＋D-1 取消项分列＋A-4/A-3/A-2 改工作条目；A-7 派生不动），markdown-only、零新语义、零新裁决。
