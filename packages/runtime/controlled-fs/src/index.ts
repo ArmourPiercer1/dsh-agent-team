@@ -57,6 +57,19 @@ export {
   type TrustedControlledFs,
 } from './controlled-fs.js'
 
+// G-d integration wiring (Scope-2): the PR2-admission GATED consumption face
+// (README §4). This is the ONLY sanctioned wiring entry — the raw factory's
+// pre-freeze NO_RECHECK default must never be the wiring default.
+export {
+  ARBITRARY_TREE_PROFILE_PUBLISHED,
+  bindAdmissionRecheck,
+  createAdmissionGatedControlledFs,
+  UNBOUND_ADMISSION_RECHECK,
+  type AdmissionBoundFsCall,
+  type AdmissionGatedControlledFsConfig,
+  type FsAdmissionPort,
+} from './admission-binding.js'
+
 // The frozen PR0 types the lane implements (read-through re-export only).
 export type {
   ControlledFs,

@@ -2299,6 +2299,92 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/a5p2-admission-kernel.test.ts',
       'packages/runtime/test/a5p2-composition.test.ts',
     ]
+    // G-d INTEGRATION WIRING round (branch `alpha5-int-wiring`, Scope-2 — the
+    // shared-glue writer): THREE Alpha.5 lane merges landed their lane files
+    // WITHOUT paying this ledger, so the suite has been RED on master since
+    // PR3 merged — measured on the pristine control worktree at fc9f4a07:
+    // `expected 1153 to be 1109` (evidence
+    // `dev/agent-workflow/evidence/alpha5/wiring/p4t6-BASE-PRISTINE-RED.log`).
+    // The wiring round is the ledger's designated pay-the-tie owner for the
+    // shared surface, so the merge history is booked HERE, measured per merge
+    // (attribution by `git log --diff-filter=A`), never inferred: PR3 fs
+    // (74d947a3) ELEVEN, PR5 tools (d69bfc4b) NINETEEN, PR7 jobs (fc9f4a07)
+    // FOURTEEN (the field-mapping (vnext) sources rode the PR7 merge), then the
+    // wiring round's OWN pair below. Pre-extend RED on this branch with the
+    // pair on disk and these entries absent: `expected 1155 to be 1109`
+    // (`p4t6-PRE-EXTEND-RED.log`).
+    const SCANNED_PATHS_A5P3FS: readonly string[] = [
+      'packages/runtime/controlled-fs/src/cf-descriptor.ts',
+      'packages/runtime/controlled-fs/src/cf-errors.ts',
+      'packages/runtime/controlled-fs/src/controlled-fs.ts',
+      'packages/runtime/controlled-fs/src/index.ts',
+      'packages/runtime/controlled-fs/src/open-at-exec.ts',
+      'packages/runtime/controlled-fs/test/cf-descriptor.test.ts',
+      'packages/runtime/controlled-fs/test/cf-errors.test.ts',
+      'packages/runtime/controlled-fs/test/controlled-fs.test.ts',
+      'packages/runtime/controlled-fs/test/poc3-harness.ts',
+      'packages/runtime/controlled-fs/test/poc3-probes.test.ts',
+      'packages/runtime/controlled-fs/vitest.config.ts',
+    ]
+    const SCANNED_PATHS_A5P5TOOLS: readonly string[] = [
+      'packages/tools/a5p5-tools/src/args.ts',
+      'packages/tools/a5p5-tools/src/backend-contract.ts',
+      'packages/tools/a5p5-tools/src/backend-direct.ts',
+      'packages/tools/a5p5-tools/src/backend-stub.ts',
+      'packages/tools/a5p5-tools/src/effects-schema.ts',
+      'packages/tools/a5p5-tools/src/index.ts',
+      'packages/tools/a5p5-tools/src/pipeline.ts',
+      'packages/tools/a5p5-tools/src/render.ts',
+      'packages/tools/a5p5-tools/src/spill.ts',
+      'packages/tools/a5p5-tools/src/types.ts',
+      'packages/tools/a5p5-tools/test/a5p5-args.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-effects-schema.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-parity.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-render.test.ts',
+      'packages/tools/a5p5-tools/test/a5p5-spill.test.ts',
+      'packages/tools/a5p5-tools/test/helpers/a5p5-fs-port.ts',
+      'packages/tools/a5p5-tools/vitest.config.ts',
+    ]
+    const SCANNED_PATHS_A5P7JOBS: readonly string[] = [
+      'packages/domain/vnext-field-mapping/src/field-mapping.ts',
+      'packages/domain/vnext-field-mapping/src/index.ts',
+      'packages/domain/test/a5p7-vnext-field-mapping.test.ts',
+      'packages/runtime/jobs-gateway/cancellation-boundary.ts',
+      'packages/runtime/jobs-gateway/index.ts',
+      'packages/runtime/jobs-gateway/jobs-gateway.ts',
+      'packages/runtime/jobs-gateway/lease-window.ts',
+      'packages/runtime/jobs-gateway/types.ts',
+      'packages/runtime/jobs-gateway/web-projection.ts',
+      'packages/runtime/test/a5p7-cproc-fixture.ts',
+      'packages/runtime/test/a5p7-job-owner.test.ts',
+      'packages/runtime/test/a5p7-lane-hygiene.test.ts',
+      'packages/runtime/test/a5p7-lease-cancellation.test.ts',
+      'packages/runtime/test/a5p7-mcp-rebind-chain.test.ts',
+    ]
+    // The wiring round's OWN pair: the admission-binding face (source) and
+    // its RED-first integration suite. Every other file this round touched
+    // is an EDIT to an already-counted path (an edit is not an increment),
+    // `dist/**` is outside the scan, and evidence lives under `dev/`.
+    const SCANNED_PATHS_A5WIRING: readonly string[] = [
+      'packages/runtime/controlled-fs/src/admission-binding.ts',
+      'packages/runtime/test/a5w-integration-wiring.test.ts',
+    ]
+    // Merge-history correction, entry four (same class as PR3/PR5/PR7 above):
+    // PR #265 (`G-g support probes G-1..G-5`, master @ `ced9254c`, review
+    // @ `bbaf45de`) merged with its two scannable test files present and
+    // this set unpaid — the merge tree of ANY later branch inherits the drift
+    // (CI census on this branch's merge-ref measured it: coverage leg red,
+    // `expected 1157 to be 1155`). The probes are reviewed material and the
+    // wording-lint script they ship lives under `scripts/` (outside the
+    // scan); the files' own suite legs are GREEN — the only debt is this
+    // ledger line, booked here by the integration owner on coordinator
+    // order, attributed per-merge exactly like the three entries above.
+    const SCANNED_PATHS_GGPROBES: readonly string[] = [
+      'packages/runtime/test/a5p1r-gg-probes.test.ts',
+      'packages/runtime/test/a5p1r-gg-wording-lint.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2328,7 +2414,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PR1.length +
         SCANNED_PATHS_A5PR1R.length +
         SCANNED_PATHS_A5P4PROV.length +
-        SCANNED_PATHS_A5PR2.length,
+        SCANNED_PATHS_A5PR2.length +
+        SCANNED_PATHS_A5P3FS.length +
+        SCANNED_PATHS_A5P5TOOLS.length +
+        SCANNED_PATHS_A5P7JOBS.length +
+        SCANNED_PATHS_A5WIRING.length +
+        SCANNED_PATHS_GGPROBES.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2359,7 +2450,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PR1.length +
         SCANNED_PATHS_A5PR1R.length +
         SCANNED_PATHS_A5P4PROV.length +
-        SCANNED_PATHS_A5PR2.length,
+        SCANNED_PATHS_A5PR2.length +
+        SCANNED_PATHS_A5P3FS.length +
+        SCANNED_PATHS_A5P5TOOLS.length +
+        SCANNED_PATHS_A5P7JOBS.length +
+        SCANNED_PATHS_A5WIRING.length +
+        SCANNED_PATHS_GGPROBES.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2414,6 +2510,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5PR0,
       ...SCANNED_PATHS_A5PR1,
       ...SCANNED_PATHS_A5PR2,
+      ...SCANNED_PATHS_A5P3FS,
+      ...SCANNED_PATHS_A5P5TOOLS,
+      ...SCANNED_PATHS_A5P7JOBS,
+      ...SCANNED_PATHS_A5WIRING,
+      ...SCANNED_PATHS_GGPROBES,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2623,6 +2724,26 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // Lane-C (PR4 provider) ledger tie: this lane moves the scanned-total
     // endpoint 1092 -> 1109 (its own pair only, pay-the-tie discipline).
     expect(SCANNED_PATHS_A5P4PROV.length).toBe(1109 - 1092)
+    // G-d integration-wiring ledger ties (branch `alpha5-int-wiring`). The
+    // three merge-history entries close the gap this suite has carried RED
+    // on master since PR3 merged (pristine measurement at fc9f4a07: 1153
+    // found against 1109 tied); each endpoint below is the MEASURED scan
+    // total at that merge, reconstructed additively from the per-merge file
+    // counts attributed above, and the FINAL entry (the wiring round's own
+    // pair) is pinned against the pre-extend RED on THIS branch:
+    // `expected 1155 to be 1109` with the pair on disk and these five lists
+    // absent (`p4t6-PRE-EXTEND-RED.log`). A wrong attribution — one file
+    // booked to the wrong merge — leaves these sums green but breaks the
+    // by-path loop above and the per-merge `git log --diff-filter=A`
+    // attribution quoted in the entry comment.
+    expect(SCANNED_PATHS_A5P3FS.length).toBe(1120 - 1109)
+    expect(SCANNED_PATHS_A5P5TOOLS.length).toBe(1139 - 1120)
+    expect(SCANNED_PATHS_A5P7JOBS.length).toBe(1153 - 1139)
+    expect(SCANNED_PATHS_A5WIRING.length).toBe(1155 - 1153)
+    // PR #265 merge tie (probes joined at master @ `ced9254c`; measured on
+    // the merge tree, CI census run at `42c83a1b` and the solo RED captured
+    // locally): the chain ends at the scanner total of the MERGED tree.
+    expect(SCANNED_PATHS_GGPROBES.length).toBe(1157 - 1155)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {

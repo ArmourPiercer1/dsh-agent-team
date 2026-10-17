@@ -93,9 +93,13 @@ export async function verifyOpenedHandle(
 }
 
 /**
- * The exec-time policy re-read seam. INTEGRATION (C-ADM freeze): swap the
- * default for the PR2 `OperationAdmission` recheck bound to the PR1
- * canonical `parametersFingerprint` of THIS call.
+ * The exec-time policy re-read seam. INTEGRATION (C-ADM freeze — LANDED in
+ * the wiring round): the PR2-admission binding lives in `admission-binding.ts`
+ * (`bindAdmissionRecheck` presents the bound PR1 canonical
+ * `parametersFingerprint` of THIS call; `createAdmissionGatedControlledFs` is
+ * the sanctioned wiring entry). The `NO_RECHECK` default below stays a
+ * LANE-INTERNAL pre-freeze deviation only — the wiring face never uses it
+ * (unbound there is a typed refusal, pinned by the a5w suite).
  */
 export interface AdmissionRecheck {
   /** Re-ask admission for the exact call about to effect. */
