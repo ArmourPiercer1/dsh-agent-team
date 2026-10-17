@@ -6273,6 +6273,50 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **文件面**：仅文档（`seam-record-post-door-resolution.md`、`s12-residual-evidence.md`、新建
   `PENDING-GATES.md`、本日志）；实现/测试/kit 零改动。模型：qwen3.8-flash-next。
 
+
+## 2026-10-17 — BIND-DIAG：w7m2"第二缺口"归因轮（preset-realm bash 拒绝 = 装配完成度 (i)，公开路径已实测）
+
+- **裁决问题**：w7m2 逐字拒绝 `Tool Binding for "bash" cannot be verified at dispatch
+  time` 是 (i) 装配侧（kit/profile-patch 未把 tool face 发布到 Guard 读取的面）还是
+  (ii) 无公开路径（须停+最小裁决问题）。**实测裁决：(i)，无需裁决问题**。
+- **法则链（全部钉线/实测，无推断步）**：拒绝文本 ⇒ `unverifiedReason='unattributed'`
+  ⇒ name ∉ `nativeNames` ⇒ name ∉ 全局 `tools.schemas()`（无 scope）；web bundle 禁用
+  root `tool-fs`/`tool-bash` 行、preset-realm 注册不达全局面 ⇒ 全局面恒空。只读观察行
+  （`a5bd-diag-row.mjs`，普通 profile-patch 行）在三个形状世界测得 `globalNames=[]` /
+  `globalPresent=false`（w7m2 形状、a5bd 形状、PR1 原 preset 栈=pr1shape）。
+- **3×2 单元格矩阵一套 kit 全测**（`a5bd-kit.mjs --mode preset|hostplane|pr1shape`，唯一
+  delta=挂载面；同 blueprint/同 lane/同 marker）：preset 形状 leader read/write/bash/bashbg
+  + boot-anchor member read（C8，PR1 形状）+ team.create member read（w7m2 形状）**六腿全
+  拒**（bash 拒绝与 w7m2 逐字节等）；host-plane 形状（`@deepseek-ai/dsh-tool-fs`/
+  `@deepseek-ai/dsh-tool-bash` 作 TOP-LEVEL profile-patch 行=公开 seam）**六腿全跑**，
+  `globalNames=5`、`sameDefinition=true`、后台 bash `started background job bash-2`；
+  pr1shape 全拒。**修正 w7m2 记录**：其"第二缺口"实为**整面缺口**（read/write/edit/
+  read_image，leader 与 member，boot-anchor 与 team.create 两路皆是；w7m2 只测了 bash）。
+  其 trio 三件套（T-allow/T-iso/T-deny）在 registry/gateway 平面，不受影响，本轮同机复跑
+  16/16 绿。
+- **PR1 世界对账（诚实项，实测闭合）**：PR1 kit 今日原样复跑 41/41、governed read RAN 且
+  无任何 unverified 拒绝——与拒绝律面矛盾？测装观察行的只读克隆
+  （`tests/kits/a5p1diag/`，再 41/41）：其 strict member 面同为 `globalNames=[]`/
+  `sameDefinition=false` ⇒ PR1 的跑通发生在**未验证继承绑定被 ABSTAIN（下沉权限层）**的
+  宿主行为下（PR1 自家注记原文即"refusing them is the permission layer's job"），**从来
+  不是**验证过。没有任何世界展示过 preset-realm 挂载的 VERIFIED 继承。开放的主机侧问题
+  （拒绝 vs abstain 何时触发=Guard 语义属性，非 profile-patch 面）单独登记于
+  `PR1-RECONCILIATION.md`，不改变归因：两种行为下挂载全局面都是验证的唯一路，且在会拒绝
+  的行为下是 runnable 的唯一路。
+- **Jobs 承诺-交付表**（PR249 §10 Jobs 行 + PoC-7b 逐行；"user-callable entry" 全库无逐字，
+  表按 §10/PoC-7b 原文建）：owner/身份/list 可列=host 面已证（w7m2 三件套今日复证）+
+  模型驱动后台注册本轮正控；跨 Member 隔离/零注册=已证；Cancel requested-vs-terminated=
+  **显式 BOUNDED-DEFER**；jobs-gateway lane=DORMANT 不变。表在
+  `dev/agent-workflow/evidence/alpha5/wiring/bind-diag/README.md`。
+- **纪律**：共享文件零改动（agent-bindings/install/closed-world-guard/preset-seam/
+  harness plugin 五件冻结；方法=证据目录两新文件 + 测量用克隆 kit）；coverage gate 未删未松
+  （三门世界皆以其自有整改 (a) 通过；两次 pr1shape boot 失败捕获（restrict 缺名 fatal /
+  gate glob-grep fatal）留证，证 gate 活着）；job_* 权限未扩；:3080 只读前后 401→401；
+  port 3186 自证；世界扫净；host 树 pin porcelain 前后 0。
+- **证据**：`dev/agent-workflow/evidence/alpha5/wiring/bind-diag/`（README 台账 +
+  PR1-RECONCILIATION + runs/ 17/17 三门 FINAL + boot 失败捕获 + PR1 复跑/克隆记录）。
+- **git**：分支 `alpha5-bind-diag` @ base `1869460a`，本轮提交后尝试 ff push（无凭证则记录）。
+  模型：qwen3.8-flash-next。
 ## 2026-10-17 05:5xZ — W-LSP-DR：拟裁语义「策略变化→销毁重建 member-isolated 实例」装配纪律可行性验证（evidence-only；零生产接口改动）
 
 - **任务**=LSP 裁决待答窗口内的隔离验证（根 05:34Z 冻结面：SpawnReceipt/新 streaming 方法=冻结，本轮零触碰；语义出处=`alpha5-lsp-rulings`@c73e9af4 R-2 + COORDINATION 05:3xZ）。writer=qwen3.8-flash-next（liveness 首报）；基=master@148c3f49（fetch 亲验）；一次性 worktree `.worktrees/alpha5-lsp-dr`，branch `alpha5-lsp-dr`；端口 3183（bind+release 亲证空闲）；世界 `a5lspdr-*`（teardown 已删）。

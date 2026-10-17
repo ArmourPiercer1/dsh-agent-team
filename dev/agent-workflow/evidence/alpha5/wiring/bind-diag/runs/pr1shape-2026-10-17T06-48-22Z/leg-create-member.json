@@ -1,0 +1,13 @@
+{
+  "done": true,
+  "results": [
+    {
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5bd-team-2026-10-17T06-48-22\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0dssm2304ca4\",\"templateId\":\"wa\",\"childSessionId\":\"session-team-child-c22b81eb9755b80bc48d9d9bbc74e3f8\",\"operationId\":\"op-1fohvg91de0lmy10ukq5z0l2\",\"replayed\":false,\"ledgerSequence\":4,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5bd-ca-2026-10-17T06-48-22\"}",
+      "isError": false
+    },
+    {
+      "text": "{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5bd-team-2026-10-17T06-48-22\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-13jjr7u1hsmh\",\"templateId\":\"wb\",\"childSessionId\":\"session-team-child-94b84efae3bd9093e6e80e1e55ff1455\",\"operationId\":\"op-1hcuhem0tsyw9t0qbtls81ju\",\"replayed\":false,\"ledgerSequence\":5,\"admissionCode\":\"ADMISSION_OPEN\"},\"requestToken\":\"a5bd-cb-2026-10-17T06-48-22\"}",
+      "isError": false
+    }
+  ]
+}

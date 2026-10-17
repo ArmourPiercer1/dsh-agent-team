@@ -1,0 +1,9 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ]
+}

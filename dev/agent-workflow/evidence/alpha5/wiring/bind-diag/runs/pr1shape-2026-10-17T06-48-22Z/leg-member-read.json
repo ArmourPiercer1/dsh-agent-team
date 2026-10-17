@@ -1,0 +1,10 @@
+{
+  "done": true,
+  "ran": false,
+  "results": [
+    {
+      "text": "Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)",
+      "isError": true
+    }
+  ]
+}

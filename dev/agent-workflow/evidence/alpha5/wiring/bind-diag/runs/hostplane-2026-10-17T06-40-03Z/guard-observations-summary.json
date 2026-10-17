@@ -1,0 +1,7 @@
+{
+  "published": 4,
+  "refusedOrUnavailable": 0,
+  "surfaceEvents": 0,
+  "allGuardLines": 85,
+  "note": "strings carry event+agent only (names are NOT in the onObserve format) — the NAME-level facts are faces-leader.json"
+}

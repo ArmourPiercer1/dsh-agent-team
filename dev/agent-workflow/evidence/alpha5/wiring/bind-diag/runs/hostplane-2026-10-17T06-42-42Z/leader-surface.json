@@ -1,0 +1,11 @@
+{
+  "surface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_create_member",
+    "team_list_members",
+    "write"
+  ]
+}

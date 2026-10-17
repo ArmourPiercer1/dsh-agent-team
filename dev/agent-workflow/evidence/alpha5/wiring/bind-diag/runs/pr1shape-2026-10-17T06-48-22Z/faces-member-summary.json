@@ -1,0 +1,20 @@
+{
+  "globalNames": [],
+  "read": {
+    "globalPresent": false,
+    "scopedPresent": true,
+    "sameDefinition": false
+  },
+  "bash": {
+    "globalPresent": false,
+    "scopedPresent": true,
+    "sameDefinition": false
+  },
+  "scopedNames": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "write"
+  ]
+}
