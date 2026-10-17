@@ -14,10 +14,12 @@
 
 import { afterAll, describe, expect, it } from 'vitest'
 import { mkdirSync, writeFileSync } from 'node:fs'
+import { PassThrough } from 'node:stream'
 import { join } from 'node:path'
 import {
   createConfinedProcessProvider,
   type ProviderDeps,
+  type ProviderLease,
   type SpawnRequest,
 } from '../sandbox-provider/provider.js'
 import { compileFdPlan } from '../sandbox-provider/fd-inheritance.js'
@@ -181,5 +183,144 @@ describe('a5p4 provider REAL confined-exec leg (P1 entry self-lock)', () => {
     expect(out.combined).not.toContain('TOP-SECRET')
     expect(out.combined).toContain('ok')
     expect(r.value.lease.status).toBe('terminated')
+  }, 30_000)
+})
+
+// ---------------------------------------------------------------------------
+// Root 09:43Z round: two review notes land as provider laws.
+// (1) fd 3 (L3d): a DECLARED fd 3 used to compile, then the launcher closed
+// its own channel and the declaration silently died. The refusal moved to the
+// declaration face — `prepare()`, shared by the one-shot and the streaming
+// arm, BEFORE any plan or process exists, and the refusal burns no grant.
+// (2) note (b): `leases`/`streamRuns` were append-only — a LONG-LIVED
+// provider (one realm, many calls) grew without bound (this lane has no
+// long-lived world, so nothing was observed; the fix is booked before the
+// growth could bite). Terminal settles now retire the frozen record into a
+// FIFO-bounded audit ledger and drain both live maps to zero.
+// ---------------------------------------------------------------------------
+describe('a5p4 provider fd-3 refusal face (review L3d)', () => {
+  it('a plan DECLARING fd 3 is refused typed BEFORE any process exists — both arms share prepare(); zero stream spawns; no grant burned', async () => {
+    let streamAttempts = 0
+    const deps = fakeDeps({ rc: 0, stdout: '{"executed":true,"rc":0}', stderr: '' })
+    ;(deps as { spawnStream?: unknown }).spawnStream = (): unknown => {
+      streamAttempts += 1
+      return { ok: false, error: { code: 'SANDBOX_UNAVAILABLE', message: 'test fake: never spawns' } }
+    }
+    const provider = createConfinedProcessProvider({
+      realmId: 'realm-provider',
+      trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+      scratchRoot: world,
+      deps: deps as unknown as ProviderDeps,
+    })
+    const declared = { declaredFds: [{ fd: 3, purpose: 'delivery' as const, resourceFingerprint: 'sha256:marker' }] }
+    const oneShot = await provider.spawn(baseRequest({ ...declared }))
+    expect(oneShot.ok).toBe(false)
+    if (!oneShot.ok) {
+      expect(oneShot.error.code).toBe('IO_POLICY_UNSUPPORTED')
+      expect(oneShot.error.message).toContain('fd-launcher-owned') // the refusal names itself
+    }
+    const stream = await provider.spawnStreaming(baseRequest({ ...declared }))
+    expect(stream.ok).toBe(false)
+    if (!stream.ok) expect(stream.error.message).toContain('fd-launcher-owned')
+    expect(deps.calls).toEqual([]) // one-shot arm: ZERO process creations
+    expect(streamAttempts).toBe(0) // stream arm: refused at prepare — the launcher never saw a pipe
+    // the refusal is not a burn: the SAME provider still prepares + runs a legal request untouched
+    const good = await provider.spawn(baseRequest({}))
+    expect(good.ok).toBe(true)
+    expect(deps.calls.length).toBe(1)
+  })
+})
+
+describe('a5p4 provider bounded settled-lease ledger (review note (b))', () => {
+  it('24 one-shot cycles on one long-lived provider (cap 8): live maps stay zero, the ledger is FIFO-capped, inside-horizon leases answer idempotently, evicted ones are honestly forgotten', async () => {
+    const deps = fakeDeps({ rc: 0, stdout: '{"executed":true,"rc":0}', stderr: '' })
+    const provider = createConfinedProcessProvider({
+      realmId: 'realm-provider',
+      trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+      scratchRoot: world,
+      deps: deps as unknown as ProviderDeps,
+      settledLedgerCap: 8,
+    })
+    const issued: { lease: ProviderLease }[] = []
+    for (let i = 0; i < 24; i += 1) {
+      const r = await provider.spawn(baseRequest({ grantFingerprint: `sha256:cycle-${i}` }))
+      expect(r.ok, `cycle ${i}`).toBe(true)
+      if (r.ok) issued.push({ lease: r.value.lease })
+      const bk = provider.bookkeeping()
+      expect(bk.liveLeases, 'a one-shot lease is born terminal — it never occupies the live map').toBe(0)
+      expect(bk.streamRuns).toBe(0)
+      expect(bk.settledLedger).toBeLessThanOrEqual(bk.settledLedgerCap)
+    }
+    expect(provider.bookkeeping().settledLedger).toBe(8)
+    const recent = issued.slice(-8)
+    const evicted = issued.slice(0, 16)
+    const settledAgain = await provider.settleTermination(recent[7]!.lease, true)
+    expect(settledAgain.ok).toBe(true)
+    if (settledAgain.ok) expect(settledAgain.value.status).toBe('terminated')
+    const cancelAgain = await provider.requestCancellation(recent[0]!.lease)
+    expect(cancelAgain.ok).toBe(true) // inside the horizon: the idempotent answer survives via the ledger
+    if (cancelAgain.ok) expect(cancelAgain.value.status).toBe('terminated')
+    const forgotten = await provider.requestCancellation(evicted[0]!.lease)
+    expect(forgotten.ok).toBe(false) // beyond the horizon: refused by name, never a silent ok
+    if (!forgotten.ok) expect(forgotten.error.message).toContain(evicted[0]!.lease.leaseId)
+  })
+
+  it('a streaming settle releases BOTH live maps and retires the record to the ledger; unconfirmed stays LIVE until a terminal settle; request/terminate stay idempotent after the retire', async () => {
+    const deadPid = 4_194_303 // above this world's live pid range: pidAlive() is honestly false
+    const fakeStream = (): unknown => {
+      const pt = (): PassThrough => new PassThrough()
+      const handshake = new PassThrough()
+      handshake.write(`{"stream":true,"pid":${deadPid}}\n`)
+      return {
+        ok: true,
+        value: Object.freeze({
+          pid: deadPid,
+          stdin: pt(),
+          stdout: pt(),
+          stderr: pt(),
+          handshake,
+          kill: (): boolean => true,
+          exit: Promise.resolve({ code: 0, signal: null }),
+        }),
+      }
+    }
+    const deps = fakeDeps({ rc: 0, stdout: '', stderr: '' })
+    ;(deps as { spawnStream?: unknown }).spawnStream = fakeStream
+    const provider = createConfinedProcessProvider({
+      realmId: 'realm-provider',
+      trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+      scratchRoot: world,
+      deps: deps as unknown as ProviderDeps,
+    })
+    const h = await provider.spawnStreaming(baseRequest({}), { handshakeTimeoutMs: 5_000 })
+    expect(h.ok).toBe(true)
+    if (!h.ok) return
+    expect(provider.bookkeeping().liveLeases).toBe(1) // active: a LIVE claim
+    const unconfirmed = await provider.settleTermination(h.value.lease, false)
+    expect(unconfirmed.ok).toBe(true)
+    if (unconfirmed.ok) expect(unconfirmed.value.status).toBe('termination-unconfirmed')
+    expect(provider.bookkeeping().liveLeases).toBe(1) // unconfirmed is NOT retired — the upgrade path stays live
+    const settled = await provider.settleTermination(h.value.lease, true)
+    expect(settled.ok).toBe(true)
+    if (settled.ok) expect(settled.value.status).toBe('terminated')
+    const bk = provider.bookkeeping()
+    expect(bk.liveLeases).toBe(0)
+    expect(bk.streamRuns).toBe(0) // the live process handle was RELEASED at the terminal settle
+    expect(bk.settledLedger).toBe(1)
+    const cancelAfter = await provider.requestCancellation(h.value.lease)
+    expect(cancelAfter.ok).toBe(true) // idempotent through the ledger
+    if (cancelAfter.ok) expect(cancelAfter.value.status).toBe('terminated')
+    const terminateAfter = await h.value.terminate({ graceMs: 50, deadlineMs: 1_000 })
+    expect(terminateAfter.ok).toBe(true)
+    if (terminateAfter.ok) expect(terminateAfter.value.status).toBe('terminated')
+    // and the terminate-DRIVEN path (the dispose leg of a policyChange cycle) drains too:
+    const h2 = await provider.spawnStreaming(baseRequest({ grantFingerprint: 'sha256:term-leg' }), { handshakeTimeoutMs: 5_000 })
+    expect(h2.ok).toBe(true)
+    if (!h2.ok) return
+    const done = await h2.value.terminate({ graceMs: 50, deadlineMs: 3_000 })
+    expect(done.ok).toBe(true)
+    if (done.ok) expect(done.value.status).toBe('terminated')
+    expect(provider.bookkeeping().streamRuns).toBe(0)
+    expect(provider.bookkeeping().settledLedger).toBe(2)
   }, 30_000)
 })

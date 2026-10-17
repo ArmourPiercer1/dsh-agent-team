@@ -80,6 +80,10 @@ export interface SpawnRequest {
   readonly env: readonly (readonly [string, string])[]
   readonly networkProfile?: 'deny' | 'restricted'
   readonly allowPaths?: readonly AllowPathEntry[]
+  /** FD inheritance declarations (fd-inheritance.ts is the law). FD CONTRACT:
+   *  fd 3 is launcher-owned (handshake / ruleset reservation) — declaring it
+   *  is NOT using it; `prepare()` refuses such a plan as `fd-launcher-owned`
+   *  before any plan or process exists, one-shot and streaming arms alike. */
   readonly declaredFds?: readonly { fd: number; purpose: 'stdin' | 'stdout' | 'stderr' | 'delivery'; resourceFingerprint: string }[]
 }
 
@@ -212,6 +216,10 @@ export interface ProviderOptions {
   readonly runnerCommand?: string | null
   /** The assembler's entry parameters (see `ProviderAssemblyConfig`). */
   readonly assembly?: ProviderAssemblyConfig
+  /** Bound of the settled-lease audit ledger (see the ledger block in the
+   *  implementation): terminal leases are audited FIFO up to this many
+   *  entries, older ones are forgotten. Default 1024. */
+  readonly settledLedgerCap?: number
 }
 
 const EVIDENCE_BASE = 'evidence://a5p4/probe'
@@ -249,6 +257,33 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
   const plans = new Map<string, SpawnPlan>()
   const consumedPlans = new Set<string>()
   const leases = new Map<string, ProviderLease>()
+  // ---- settled-lease audit ledger (review note (b), root 09:43Z) ------------
+  // `leases`/`streamRuns` used to be append-only: EVERY one-shot spawn and
+  // EVERY streaming run left entries behind forever, so a long-lived provider
+  // (one realm, many calls) grew without bound. A terminal lease is no longer
+  // a live claim: it is retired from the live maps into this FIFO-bounded
+  // audit ledger, which keeps the FULL frozen lease record (leaseId +
+  // grantFingerprint + realm/binding/member + terminal status), not just an
+  // id. Behavior is preserved for every record still inside the horizon:
+  // `requestCancellation`/`settleTermination` resolve through the ledger
+  // exactly as through the live map (idempotent ok, same frozen bytes), and
+  // `settleTermination` remains the ONLY path to 'terminated'.
+  // `termination-unconfirmed` is deliberately NOT retired — it is a real
+  // state that a later `settleTermination(true)` still upgrades; it stays
+  // live until a terminal settle or eviction-horizon semantics apply.
+  const ledgerCap = opts.settledLedgerCap ?? 1024
+  const settledLeases = new Map<string, ProviderLease>() // insertion order = FIFO
+  function auditSettledLease(lease: ProviderLease): void {
+    settledLeases.set(lease.leaseId, lease)
+    while (settledLeases.size > ledgerCap) {
+      const oldest = settledLeases.keys().next()
+      if (oldest.done === true) break
+      settledLeases.delete(oldest.value)
+    }
+  }
+  function heldLease(leaseId: string): ProviderLease | undefined {
+    return leases.get(leaseId) ?? settledLeases.get(leaseId)
+  }
   let captured: { readonly rows: readonly ProcessCapabilityRow[]; readonly evidence: ProviderProbeEvidence } | null = null
 
   // ---- streaming arm (R-1): state + production seam defaults ----------------
@@ -430,7 +465,7 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     }
     const compiled = compileFdPlan(request.declaredFds ?? [])
     if (!compiled.ok) {
-      return refuse('IO_POLICY_UNSUPPORTED', `fd inheritance declaration refused: ${compiled.problems.map((x) => `${x.path}: ${x.detail}`).join('; ')}`)
+      return refuse('IO_POLICY_UNSUPPORTED', `fd inheritance declaration refused: ${compiled.problems.map((x) => `${x.code} @ ${x.path}: ${x.detail}`).join('; ')}`)
     }
     const planId = `plan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
     const plansDir = join(opts.scratchRoot, 'plans')
@@ -514,7 +549,7 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
       executionKind: 'process' as const,
       status,
     })
-    leases.set(leaseId, lease)
+    auditSettledLease(lease) // spawnSync semantics: born terminal — straight to the audit ledger
     const pid = typeof answer['pid'] === 'number' ? answer['pid'] : 0
     const receipt: SpawnReceipt = Object.freeze({ lease, processIdentity: `pid:${pid}:${plan.planId}` })
     return { ok: true, value: Object.freeze({ receipt, output: Object.freeze({ stdout, stderr, combined: stdout + stderr }), lease }) }
@@ -589,7 +624,7 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     const terminate = (options?: StreamingOptions): Promise<ProviderResult<ProviderLease>> => {
       if (run.terminating !== null) return run.terminating
       run.terminating = (async (): Promise<ProviderResult<ProviderLease>> => {
-        const held0 = leases.get(leaseId)
+        const held0 = heldLease(leaseId)
         if (held0 === undefined) return refuse('IO_POLICY_UNSUPPORTED', `lease '${leaseId}' is not one of this provider's leases`)
         if (held0.status === 'terminated') return { ok: true, value: held0 }
         const held = held0.status === 'active'
@@ -631,7 +666,7 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
 
   /** requestCancellation(): the REQUEST leg — moves the lease, settles via the sync reap. */
   async function requestCancellation(lease: ProviderLease): Promise<ProviderResult<ProviderLease>> {
-    const held = leases.get(lease.leaseId)
+    const held = heldLease(lease.leaseId)
     if (held === undefined) {
       return refuse('IO_POLICY_UNSUPPORTED', `lease '${lease.leaseId}' is not one of this provider's leases`)
     }
@@ -653,13 +688,14 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     // so the request settles confirmed HERE. An async provider settles with
     // settleTermination instead — the request never settles itself.
     const settled: ProviderLease = Object.freeze({ ...held, status: 'terminated' as const })
-    leases.set(held.leaseId, settled)
+    leases.delete(held.leaseId)
+    auditSettledLease(settled)
     return { ok: true, value: settled }
   }
 
   /** settleTermination(): the ONLY path to a terminal lease status. */
   async function settleTermination(lease: ProviderLease, confirmed = true): Promise<ProviderResult<ProviderLease>> {
-    const held = leases.get(lease.leaseId)
+    const held = heldLease(lease.leaseId)
     if (held === undefined) {
       return refuse('IO_POLICY_UNSUPPORTED', `lease '${lease.leaseId}' is not one of this provider's leases`)
     }
@@ -667,9 +703,24 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     const next = confirmed
       ? Object.freeze({ ...held, status: 'terminated' as const })
       : Object.freeze({ ...held, status: 'termination-unconfirmed' as const })
-    leases.set(held.leaseId, next)
+    if (next.status === 'terminated') {
+      // settled terminal: the live claim ends here — release the process
+      // handle (streamRuns) and retire the frozen record to the bounded
+      // audit ledger. `termination-unconfirmed` stays LIVE on purpose.
+      leases.delete(held.leaseId)
+      streamRuns.delete(held.leaseId)
+      auditSettledLease(next)
+    } else {
+      leases.set(held.leaseId, next)
+    }
     return { ok: true, value: next }
   }
 
-  return Object.freeze({ probe, prepare, execute, spawn, spawnStreaming, executeStreaming, requestCancellation, settleTermination })
+  /** Read-only bookkeeping (review note (b) forensics): the live maps must
+   *  stay bounded for a long-lived realm; the settled ledger is FIFO-capped. */
+  function bookkeeping(): { readonly liveLeases: number; readonly streamRuns: number; readonly settledLedger: number; readonly settledLedgerCap: number } {
+    return Object.freeze({ liveLeases: leases.size, streamRuns: streamRuns.size, settledLedger: settledLeases.size, settledLedgerCap: ledgerCap })
+  }
+
+  return Object.freeze({ probe, prepare, execute, spawn, spawnStreaming, executeStreaming, requestCancellation, settleTermination, bookkeeping })
 }

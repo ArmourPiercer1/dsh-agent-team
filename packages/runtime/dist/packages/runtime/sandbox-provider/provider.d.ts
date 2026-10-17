@@ -52,6 +52,10 @@ export interface SpawnRequest {
     readonly env: readonly (readonly [string, string])[];
     readonly networkProfile?: 'deny' | 'restricted';
     readonly allowPaths?: readonly AllowPathEntry[];
+    /** FD inheritance declarations (fd-inheritance.ts is the law). FD CONTRACT:
+     *  fd 3 is launcher-owned (handshake / ruleset reservation) — declaring it
+     *  is NOT using it; `prepare()` refuses such a plan as `fd-launcher-owned`
+     *  before any plan or process exists, one-shot and streaming arms alike. */
     readonly declaredFds?: readonly {
         fd: number;
         purpose: 'stdin' | 'stdout' | 'stderr' | 'delivery';
@@ -184,6 +188,10 @@ export interface ProviderOptions {
     readonly runnerCommand?: string | null;
     /** The assembler's entry parameters (see `ProviderAssemblyConfig`). */
     readonly assembly?: ProviderAssemblyConfig;
+    /** Bound of the settled-lease audit ledger (see the ledger block in the
+     *  implementation): terminal leases are audited FIFO up to this many
+     *  entries, older ones are forgotten. Default 1024. */
+    readonly settledLedgerCap?: number;
 }
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export declare function createConfinedProcessProvider(opts: ProviderOptions): Readonly<{
@@ -203,5 +211,11 @@ export declare function createConfinedProcessProvider(opts: ProviderOptions): Re
     executeStreaming: (plan: SpawnPlan, streaming?: StreamingOptions) => Promise<ProviderResult<StreamingSpawnHandle>>;
     requestCancellation: (lease: ProviderLease) => Promise<ProviderResult<ProviderLease>>;
     settleTermination: (lease: ProviderLease, confirmed?: boolean) => Promise<ProviderResult<ProviderLease>>;
+    bookkeeping: () => {
+        readonly liveLeases: number;
+        readonly streamRuns: number;
+        readonly settledLedger: number;
+        readonly settledLedgerCap: number;
+    };
 }>;
 //# sourceMappingURL=provider.d.ts.map

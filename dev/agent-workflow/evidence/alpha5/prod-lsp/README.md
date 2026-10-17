@@ -87,9 +87,12 @@ unaffected.
 - `abi_unavailable` stream refusal exists because the stream mode re-measures
   the ABI at exec time; NO-FALLBACK holds on both arms.
 - **Stacking**: commits `45436f0f`+`3668da59` (P-B) sit under this branch by
-  cherry-pick `-x`; GLUE-5 dedups when P-B lands. dist regeneration deferred
-  to GLUE-5 by ruling (installed-smoke rebuilt dist locally, reverted, not
-  committed — emitted artifacts verified via import, not shipped).
+  cherry-pick `-x`; GLUE-5 dedups when P-B lands. dist mirror: **CORRECTED
+  2026-10-17 (the earlier "deferred / not committed" wording was false)** —
+  the emitted artifacts ARE committed: `93b728a3` regenerated the whole
+  sandbox-provider/probe-abi/lsp-assembly dist face in the same commit, and
+  `check:artifacts-at-head` re-materializes HEAD, rebuilds and reports
+  drift=0 (byte-reproducible; evidence `ci-304/check-artifacts-at-head-*.log`).
 - Root-suite attribution (measured, not assumed): repo-wide vitest = 7021/7046.
   The 13 failing files were re-run on a base-commit worktree (`d714a941`, same
   host/install): **21 failures exist verbatim at BASE** (0.2.0-rc.2 baseline-pin
@@ -102,8 +105,29 @@ unaffected.
   scan-count pin 1157→1166 (P-B + this lane's added files lack the ledger
   "recording the N increments" clause — GLUE-5 writes ONE combined clause for
   the landed stack to avoid double counting); ③ `a4p7` "commit carries its own
-  build" leg (dist drift — regeneration is ruled INTO GLUE-5, so this leg is
-  red-by-ruling until then). One 4th delta WAS mine and is already FIXED:
+  build" leg — **CORRECTED 2026-10-17 (the earlier "red-by-ruling" wording was
+  stale)**: with the dist mirror committed at `93b728a3` the leg was RE-RUN
+  and PASSES (merge-gate 35/35, EXIT=0, the commit-carries-its-own-build leg
+  green in 13.5 s — evidence `ci-304/a4p7-merge-gate-RERUN-GREEN.log`); the
+  leg is closed by measurement, not by ruling. One 4th delta WAS mine and is
+  already FIXED:
   a real `no-undef (Buffer)` lint identity in the LSP fixture — fixed by
   importing `node:buffer` (lane fix, lint leg now closes; fixture re-verified
   green). Nothing in provider/lsp-assembly behavior fails any existing suite.
+
+## Bookkeeping: settled-lease audit ledger (root 09:43Z note (b), this round)
+
+- The provider's `leases`/`streamRuns` maps used to be append-only (set, never
+  delete): a LONG-LIVED provider (one realm, many calls) grew without bound —
+  this lane has no long-lived world, so no consequence was observed here; the
+  fix is registered before the growth is ever needed.
+- Now: a terminal settle retires the frozen lease record from BOTH live maps
+  into a FIFO-bounded audit ledger (`settledLedgerCap`, default 1024) that
+  keeps the full record (leaseId + grantFingerprint + realm/binding/member +
+  terminal status) — the ledger is the lane's audit face for settled runs.
+  `termination-unconfirmed` is deliberately NOT terminal for the ledger (a
+  later `settleTermination(true)` must still upgrade it). Behavior inside the
+  ledger horizon is byte-identical (idempotent request/settle through the
+  ledger); beyond the horizon the provider honestly refuses ("not one of this
+  provider's leases"). One-shot leases are born terminal and go straight to
+  the ledger. `bookkeeping()` exposes the four counters for regression legs.
