@@ -1,0 +1,80 @@
+{
+  "posture": "red-install",
+  "surface": "strict",
+  "runStamp": "2026-10-17T17-55-26Z",
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g6-red-base",
+  "worktreeHead": "230022598dc96a377e25039bb55a27776a682552",
+  "hostRuntime": {
+    "path": "../a5-glue6-fix/tests/deepseek-harness-test-use",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "clientCommitHash": "639ed01539"
+  },
+  "ports": {
+    "host": 3183,
+    "mock": 3491
+  },
+  "passCount": 10,
+  "failCount": 0,
+  "criteria": [
+    {
+      "id": "H3a",
+      "description": "rig: :3080 probed READ-ONLY before the run (stable instance never signalled) and the test-use host tree is porcelain 0 before",
+      "pass": true,
+      "evidence": ":3080=401 porcelain=0"
+    },
+    {
+      "id": "E1",
+      "description": "EXPANSION: strict `git archive HEAD` of the runtime package's PUBLIC face (packages/runtime/dist + packages/runtime/package.json) unfolded byte-exactly; per-file sha256 manifest written",
+      "pass": true,
+      "evidence": "head=230022598d files=1728 entry=true inFace={\"resolver\":false,\"seam\":false} outOfFace={\"resolver\":false,\"seam\":false}"
+    },
+    {
+      "id": "E2",
+      "description": "the expansion carries its OWN node_modules: the runtime package's installed dependency tree copied dereferenced from the pinned 0.2.0-rc.2 install, BFS-verified over declared deps + peers + optionals (store-filled where absent; foreign-platform optional natives skipped and recorded)",
+      "pass": true,
+      "evidence": "bfs=54 fromStore=38 nmTop=22 skippedForeign=[\"node-addon-require-builtin-darwin-arm64\",\"node-addon-require-builtin-darwin-x64\",\"node-addon-require-builtin-linux-arm64-gnu\",\"node-addon-require-builtin-win3"
+    },
+    {
+      "id": "E3",
+      "description": "install face SELF-SUFFICIENCY (the fix under test / the gap under reproduction): the entry's two runtime .mjs — the module.register resolve hook and the default storage seam — sit INSIDE the unfolded face, at the package-internal paths the entry derives from its own module URL",
+      "pass": true,
+      "evidence": "posture=red-install inFace={\"resolver\":false,\"seam\":false} outOfFace={\"resolver\":false,\"seam\":false} (a RED posture REQUIRES inFace=false: on pre-fix bytes the face carries neither file — that is the gap)"
+    },
+    {
+      "id": "E4",
+      "description": "load graph MEASURED through a module.resolve hook: the seven production loads (entry, three live rows, a5p5 register face, resolve-hook file, seam candidate) import from the expansion with FOREIGN file: modules = 0 — and on pre-fix bytes the ONLY failures are the two in-face runtime files",
+      "pass": true,
+      "evidence": "rows=7 loaded=1628 foreign=0 errors=[{\"row\":\"<EXP>packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs\",\"error\":\"ERR_MODULE_NOT_FOUND: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z/packages/runtime/dist/packages/runtime/src/plugin/upstream-r"
+    },
+    {
+      "id": "A0",
+      "description": "RIG: the pinned host (0.2.0-rc.2 @ 639ed01539) started its web server and answered the token gate in this posture (the boot marker line was written) — so every ERR_MODULE_NOT_FOUND below belongs to the PLUGIN bootstrap, not to the harness",
+      "pass": true,
+      "evidence": "bootLine=\"dsh web: http://127.0.0.1:3183/?token=<REDACTED>\" bootError=\"\" bootstrapFailedBeforeMarker=false"
+    },
+    {
+      "id": "A1",
+      "description": "RED-A REPRODUCED ON THIS BASE COMMIT: the strict face FAILS THE PLUGIN BOOTSTRAP with ERR_MODULE_NOT_FOUND NAMING the in-face runtime file the shipped entry loads (the resolve hook it registers / the storage seam it imports) — the same defect the INSTALL-ENTRY kit recorded on 2026-10-17T17-06-56Z",
+      "pass": true,
+      "evidence": "moduleNotFoundLines=[\"[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g6-expansion/red-install-2026-10-17T17-55-26Z/packages/runtime/src/plugin/upstream-resolver.mjs' imported from data:\"] bootError=\"\""
+    },
+    {
+      "id": "H3b",
+      "description": "rig: :3080 unchanged (identical read-only probe before/after; never POSTed) and the test-use host tree porcelain 0 after",
+      "pass": true,
+      "evidence": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "C1",
+      "description": "cleanup: the DSH_HOME world swept (TEST_METHODS §7)",
+      "pass": true,
+      "evidence": "home=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g6-red-base/tests/homes/a5g6-red-install-202610171755 swept=true"
+    },
+    {
+      "id": "C2",
+      "description": "evidence hygiene: every written file passes the token/cookie leak scan (redactions applied at write time)",
+      "pass": true,
+      "evidence": "leaks=[] dir=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-glue6-fix/dev/agent-workflow/evidence/alpha5/glue6/runs/red-install-2026-10-17T17-55-26Z"
+    }
+  ]
+}
