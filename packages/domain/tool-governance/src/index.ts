@@ -33,6 +33,23 @@ export {
 } from './parse-util.js'
 export type { ParseResult, ToolContractProblem, ToolContractProblemCode } from './parse-util.js'
 
+// VNEXT-SCHEMA reversible half: the R1 PLACEMENT typed face (ADR §1 B1/B2;
+// the GLUE-5 #308 mechanism's object level). Additive — the frozen parsers
+// above are untouched, and mintToolBindingFromPlacement delegates every law
+// to parseToolBinding (no parallel binding system).
+export {
+  PLACED_TEAM_DEFINITION_FIELDS,
+  createPlacementComparator,
+  mintToolBindingFromPlacement,
+  parsePlacedTeamDefinition,
+} from './placement.js'
+export type {
+  AdmittedBindingFacts,
+  PlacementBindingFacts,
+  PlacementComparator,
+  PlacementVerdict,
+} from './placement.js'
+
 export {
   RESOURCE_KINDS,
   RESOURCE_RIGHTS,

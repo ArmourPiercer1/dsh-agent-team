@@ -18,6 +18,10 @@ export { declaredBlueprintSchemaVersion, inspectBlueprintSource } from './inspec
 export type { BlueprintInspectionDiagnostic, BlueprintInspectionResult, BlueprintSourceIdentity, } from './inspect.js';
 export { deriveContentHash, sha256Hex } from './hash.js';
 export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument, } from './validate.js';
+export { BLUEPRINT_V4_AUTHORIZATIONS, BLUEPRINT_V4_EXECUTION_BOUNDARIES, BLUEPRINT_V4_EXECUTION_FIELDS, BLUEPRINT_V4_IMPLEMENTATION_ORIGINS, BLUEPRINT_V4_IO_FIELDS, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_NETWORK_DEFAULTS, BLUEPRINT_V4_NETWORK_FIELDS_BY_MODE, BLUEPRINT_V4_NETWORK_MODES, BLUEPRINT_V4_REMOVED_FIELDS, BLUEPRINT_V4_SCHEMA_VERSION, BLUEPRINT_V4_TOOL_BINDING_FAMILY, BLUEPRINT_V4_TOOL_BINDING_FIELDS, BLUEPRINT_V4_TOP_LEVEL_FIELDS, V4_PROBLEM_CODES, parseBlueprintV4, toHashableBlueprintV4, validateBlueprintV4Document, } from './blueprint-v4.js';
+export type { TeamBlueprintV4, TeamBlueprintV4Core, V4Authorization, V4ContractProblem, V4ExecutionBoundary, V4ImplementationOrigin, V4NetworkLane, V4ProblemCode, V4RwLane, V4ToolBindingAuthoring, } from './blueprint-v4.js';
+export { MIGRATION_PERMISSION_WIDENING, planBlueprintV3toV4Migration, } from './migration-report.js';
+export type { MigrationFieldFinding, MigrationFieldVerdict, MigrationReport, MigrationReportOptions, } from './migration-report.js';
 export { parseModelPreferenceToken, type ParsedModelPreferenceToken, } from './model-preference.js';
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js';
 export { blueprintNotFound, compareBlueprintRevisions, createBlueprintCatalog, createBlueprintCatalogFromSource, } from './catalog.js';

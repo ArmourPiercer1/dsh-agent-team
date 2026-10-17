@@ -25,6 +25,12 @@ export { decodeYamlFrontmatter, splitFrontmatter } from './parse.js';
 export { declaredBlueprintSchemaVersion, inspectBlueprintSource } from './inspect.js';
 export { deriveContentHash, sha256Hex } from './hash.js';
 export { parseBlueprint, toHashableBlueprint, validateBlueprintDocument, } from './validate.js';
+// VNEXT-SCHEMA reversible half (ADR M-1/M-2/M-4): the DORMANT v4 authoring
+// grammar (SUPPORTED stays [3] — nothing shipped dispatches here) and the
+// read-only migration report. Additive; the frozen v3 surface above is
+// untouched.
+export { BLUEPRINT_V4_AUTHORIZATIONS, BLUEPRINT_V4_EXECUTION_BOUNDARIES, BLUEPRINT_V4_EXECUTION_FIELDS, BLUEPRINT_V4_IMPLEMENTATION_ORIGINS, BLUEPRINT_V4_IO_FIELDS, BLUEPRINT_V4_IO_RW_FIELDS_BY_MODE, BLUEPRINT_V4_IO_RW_MODES, BLUEPRINT_V4_NETWORK_DEFAULTS, BLUEPRINT_V4_NETWORK_FIELDS_BY_MODE, BLUEPRINT_V4_NETWORK_MODES, BLUEPRINT_V4_REMOVED_FIELDS, BLUEPRINT_V4_SCHEMA_VERSION, BLUEPRINT_V4_TOOL_BINDING_FAMILY, BLUEPRINT_V4_TOOL_BINDING_FIELDS, BLUEPRINT_V4_TOP_LEVEL_FIELDS, V4_PROBLEM_CODES, parseBlueprintV4, toHashableBlueprintV4, validateBlueprintV4Document, } from './blueprint-v4.js';
+export { MIGRATION_PERMISSION_WIDENING, planBlueprintV3toV4Migration, } from './migration-report.js';
 export { parseModelPreferenceToken, } from './model-preference.js';
 export { blueprintSnapshotKeyOf, toBlueprintSnapshotRef } from './snapshot.js';
 export { blueprintNotFound, compareBlueprintRevisions, createBlueprintCatalog, createBlueprintCatalogFromSource, } from './catalog.js';
