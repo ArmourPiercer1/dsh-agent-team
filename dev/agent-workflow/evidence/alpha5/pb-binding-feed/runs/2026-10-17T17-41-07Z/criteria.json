@@ -1,0 +1,29 @@
+{
+  "status": "FATAL",
+  "criteria": [
+    {
+      "id": "C-PIN",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539, porcelain clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "C-PORTS",
+      "claim": "host port 3184 self-proved free + a mock port from the 349x family free",
+      "pass": true,
+      "observed": "hostFree=true mock=3496"
+    },
+    {
+      "id": "C-3080-BEFORE",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "C-BOOT",
+      "claim": "the test Host booted on port 3184 with the token gate live (303 + set-cookie)",
+      "pass": true,
+      "observed": "status=303"
+    }
+  ]
+}

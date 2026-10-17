@@ -72,8 +72,10 @@ export type {
   ScopedDispatcherOptions,
 } from './scoped-dispatcher.js'
 
-export { hostExecToView, installScopedToolGuard, requireService } from './install.js'
+export { hostExecToView, installScopedToolGuard, requireService, definitionIdentityOf } from './install.js'
 export type {
+  BindingFeed,
+  BindingFeedEntry,
   GuardFn,
   InstallScopedGuardInput,
   ScopedGuardAgentCtx,

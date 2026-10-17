@@ -70,6 +70,35 @@ export interface ScopedGuardAgentCtx {
     };
     readonly on?: (event: string, listener: (...args: never[]) => unknown) => () => void;
 }
+/**
+ * THE PROVIDER SIDE OF THE SAME IDENTITY LAW (pb §6 binding feed). An
+ * assembly that PLACES a Definition holds the very object it registered;
+ * this is how it records that placement's identity in the SAME algebra the
+ * Guard compares against at every call. It is the only way a provider can
+ * say "the Body I reviewed and placed is THIS Body" without stringifying
+ * the Body (which leaks and is spoofable by re-stringifying) and without
+ * reading a clock (which this lane never does).
+ */
+export declare function definitionIdentityOf(target: unknown): string | null;
+/**
+ * One pb §6 binding-feed entry: the identity the PROVIDER — the trusted Team
+ * assembly, the side that PLACES the reviewed Definitions — recorded at
+ * placement time for one name, plus the realm that placement lives in.
+ *
+ * This is the "verified Definition identity → per-call comparison input"
+ * channel: the provider's own placement record, never a registry guess. The
+ * Guard's per-call side stays exactly what PR1 froze — the scoped public
+ * read must still resolve to THIS identity on every call, or the call is
+ * refused and the verification withdrawn.
+ */
+export interface BindingFeedEntry {
+    /** Identity of the Definition this assembly placed (see {@link definitionIdentityOf}). */
+    readonly definitionIdentity: string;
+    /** The realm the placement lives in; must equal the assembly's `realmId`. */
+    readonly realmId: string;
+}
+/** The provider-side feed: the placement record for one name, or none. */
+export type BindingFeed = (name: string) => BindingFeedEntry | undefined;
 /** The mask the assembly owns (design §4.1 step 2), handed over for the drain. */
 export interface MaskPort {
     /** Lift the inherited-name restriction. Called ONLY at RELEASED. */
@@ -160,6 +189,30 @@ export interface InstallScopedGuardInput extends ScopedDispatcherOptions {
      * because the assembly knows its own contributions.
      */
     readonly assemblyOwnedNames?: readonly string[];
+    /**
+     * THE REALM THIS ASSEMBLY PLACES IN (pb §6 binding feed). A placement
+     * identity is only ever evidence inside the realm that made it; an entry
+     * naming any other realm is refused, never compared across the boundary
+     * (design §2.1: Realm 不可混淆 — a same name in another realm is a
+     * different world, and NC-1 measured what trusting it would cost).
+     */
+    readonly realmId?: string;
+    /**
+     * THE pb §6 BINDING FEED — the provider side of the per-call comparison.
+     * The trusted assembly hands, per name, the identity it RECORDED when it
+     * PLACED that Definition; `bindOwnTools` then verifies the LIVE scoped
+     * resolution against the provider's record instead of silently pinning
+     * whatever the seam happens to answer today. ABSENT (or no entry for a
+     * name) = the pre-feed path byte-for-byte — this seam only ever tightens:
+     *  - placement attribution: an entry is honoured ONLY for a name the
+     *    assembly declared it placed (`assemblyOwnedNames`); a feed entry for
+     *    any other name is a laundering attempt and REFUSES the bind;
+     *  - realm pairing: `entry.realmId` must equal this assembly's `realmId`;
+     *  - placement integrity: the current scoped read must resolve to the
+     *    recorded identity — a Body that moved between placement and bind is
+     *    a refusal, never a re-pin of the shadow.
+     */
+    readonly bindingFeed?: BindingFeed;
     /**
      * The restriction this assembly installed (design §4.1 step 2). The Handle
      * owns its lifetime: an armed Guard means the mask is NEVER lifted by the
