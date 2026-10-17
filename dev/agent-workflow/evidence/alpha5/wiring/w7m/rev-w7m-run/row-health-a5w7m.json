@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "boot": 1,
+  "gateway": "assembled",
+  "barrel": "repo-dist-public-barrel",
+  "generation": 1,
+  "publicExports": [
+    "createJobsGateway",
+    "createLeaseWindow",
+    "classifyDispatchEvent",
+    "jobOwnerKey",
+    "projectJobForViewer",
+    "redactCredentials",
+    "gatewayRefusal",
+    "REDACTION_MARKER"
+  ],
+  "runStamp": "2026-10-17T04-40-37"
+}

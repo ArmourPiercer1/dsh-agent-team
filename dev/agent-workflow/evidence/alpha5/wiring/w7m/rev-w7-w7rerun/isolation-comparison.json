@@ -1,0 +1,51 @@
+{
+  "note": "Two live members of the same host session, admitted with their durable host identities. visible/refused are the verbatim projection results of the gateway’s public face (projectFor per job).",
+  "memberA": {
+    "ownerKey": "{\"instanceId\":\"inst-0c9mdlb11fyh\",\"rootSessionId\":\"session-a5w7-team-2026-10-17T04-41-04\"}",
+    "visible": [
+      "w7-a-1",
+      "w7-a-2"
+    ],
+    "refused": {
+      "w7-pin-1": "owner-mismatch",
+      "w7-b-3": "owner-mismatch",
+      "w7-b-4": "owner-mismatch"
+    }
+  },
+  "memberB": {
+    "visible": [
+      "w7-b-3",
+      "w7-b-4",
+      "w7-pin-1"
+    ],
+    "refused": {
+      "w7-a-1": "owner-mismatch",
+      "w7-a-2": "owner-mismatch"
+    }
+  },
+  "bootRootLeaderC": {
+    "visible": [],
+    "refused": {
+      "w7-a-1": "owner-mismatch",
+      "w7-pin-1": "owner-mismatch",
+      "w7-a-2": "owner-mismatch",
+      "w7-b-3": "owner-mismatch",
+      "w7-b-4": "owner-mismatch"
+    }
+  },
+  "swappedRootViewer": {
+    "visible": [],
+    "refused": {
+      "w7-a-1": "owner-mismatch",
+      "w7-pin-1": "owner-mismatch",
+      "w7-a-2": "owner-mismatch",
+      "w7-b-3": "owner-mismatch",
+      "w7-b-4": "owner-mismatch"
+    }
+  },
+  "crossProjectionAtoB3": {
+    "ok": false,
+    "code": "owner-mismatch",
+    "detail": "this viewer is not the owning member scope of the job"
+  }
+}
