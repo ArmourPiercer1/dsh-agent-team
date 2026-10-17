@@ -1,7 +1,7 @@
 # PR6 PoC6a/PoC6b — SEAM-VERDICTS（PoC-1 格式三态记录）
 
 - Lane E（PR6 PTC PoC6a + LSP PoC6b）writer；模型逐字 = `You are a coding agent powered by the qwen3.8-flash-next model.`（模型 `qwen3.8-flash-next`）。
-- 记录日（UTC）：2026-10-19。基线：team base `db5cb5f7`（branch `alpha5-pr6-ptclsp`）；Host T = pristine 0.2.0-rc.2 @ `639ed01539`（porcelain 前后均空；只读；路径=既有 PoC worktree 检出，见 runner `host_env.test_use`）。
+- 记录日（UTC）：2026-10-16（fold 轮修正：原稿误作 10-19；基准 = committed result json `recorded_at_utc` 与 commit 日期，review-LaneE MINOR-1）。基线：team base `db5cb5f7`（branch `alpha5-pr6-ptclsp`）；Host T = pristine 0.2.0-rc.2 @ `639ed01539`（porcelain 前后均空；只读；路径=既有 PoC worktree 检出，见 runner `host_env.test_use`）。
 - 三态 = `SUPPORT`（公开 seam 可钉住该性质）/ `typed-reject`（公开 seam 可先于副作用类型化拒绝）/ `SEAM-GAP`（公开面不可表达，记录缺项）。
 - 格式沿用 PR1 `s12-evidence.md` "PUBLIC-seam gap (PoC-1 format)"：`seam asked for / what it gives / what it does NOT give / consequence / residual`。
 - 复现：`node p6a-runner.mjs`（EXIT=0，9 legs）、`node p6b-runner.mjs`（EXIT=0，10 legs）；证据 = 同目录 `p6a-result.json` / `p6b-result.json`。DORMANT：无任何东西接线进装配；无端口、无 DSH_HOME 世界（分配位 3183 / `tests/homes/a5p6-*` 未使用，如实记录）；:3080 未触碰。
@@ -10,7 +10,7 @@
 
 ### A1 内层 `tools.*` 调用的效果归属 — **SUPPORT**
 - seam asked for：钉住"哪个 member 的哪次 run_code 的哪个内层调用产生了哪个效果/事件"。
-- what it gives：生产桥逐内层调用注入 `{ callId: `${parentCallId}:ptc:n`, rootCallId, agent: exec.agent, parent: exec.token }`（ptc.ts:525-536）→ 内层走同一 scheduler prepare/dispatch/finalize/finish（guard/post-execute/Spill 全管线），durable `tool/ptc-dispatch-start/settle` 只 append 进**拥有者 session**（ptc.ts:611-618）。
+- what it gives：生产桥逐内层调用注入 `{ callId: `${parentCallId}:ptc:n`, rootCallId, agent: exec.agent, parent: exec.token }`（ptc.ts:545-553，fold 轮修正：原稿误作 525-536；pinned src `639ed01539` 逐行复核，review-LaneE MINOR-2）→ 内层走同一 scheduler prepare/dispatch/finalize/finish（guard/post-execute/Spill 全管线），durable `tool/ptc-dispatch-start/settle` 只 append 进**拥有者 session**（ptc.ts:611-618）。
 - what it does NOT give：（无关键缺项；身份=agent 对象，Team 需保证 member↔agent 绑定由装配持有。）
 - 证据：P6A-2 两 member 并发、体内重叠窗口内 `enter` 身份互不漂移（`member-A/p6a-c4:ptc:1`、`member-B/p6a-c5:ptc:1`），session 日志零交叉条目。
 
