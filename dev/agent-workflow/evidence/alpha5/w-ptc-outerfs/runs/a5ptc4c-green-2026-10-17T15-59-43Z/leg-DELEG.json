@@ -1,0 +1,31 @@
+{
+  "foreignRow": {
+    "seq": 11,
+    "at": "2026-10-17T16:00:27.711Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-0ba8aed2-d122-4149-877e-d3540908a708",
+    "callId": "call-A5PTC4CGREEN20261017T155943Z-DELEG",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c DELEG: outsider leg",
+    "decision": "foreign",
+    "outcome": "pass-through",
+    "why": "agent not on this Team roster, or not a host-recognised escalation target"
+  },
+  "hostAskLaneMirror": [
+    {
+      "at": "2026-10-17T16:00:27.710Z",
+      "seq": 49,
+      "type": "approval/asked",
+      "session": "session-0ba8aed2-d122-4149-877e-d3540908a708",
+      "approvalId": "f3201972-bd35-4423-aa49-ae73d5a44662",
+      "toolName": "run_code",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-DELEG",
+      "reason": "escalate sandbox to danger-full-access: a5ptc4c DELEG: outsider leg",
+      "outcome": null
+    }
+  ],
+  "downstreamProbeSaw": [],
+  "hostDecided": [],
+  "written": false
+}

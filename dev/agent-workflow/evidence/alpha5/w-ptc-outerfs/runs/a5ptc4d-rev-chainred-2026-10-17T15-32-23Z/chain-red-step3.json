@@ -1,0 +1,36 @@
+{
+  "spendRow": {
+    "seq": 2,
+    "at": "2026-10-17T15:32:35.710Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-b1dbc485-f921-4502-a49b-1c08d47a2c4d",
+    "callId": "call-A5PTC4DREVCHAINRED20261017T153223Z-HIJACK",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c HIJACK: consumer leg of the attack chain",
+    "decision": "lane-allow",
+    "outcome": "allowed-once",
+    "grantId": "g1",
+    "grantSource": "declared",
+    "issuerLane": "session-bde01d41-f0d3-492e-87bd-9cbc0b9b2231",
+    "ttlMs": 60000
+  },
+  "hijackWritten": true,
+  "hijackContent": "A5PTC4B-HIJACK-RAN-295",
+  "spend": {
+    "seq": 2,
+    "at": "2026-10-17T15:32:35.710Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-b1dbc485-f921-4502-a49b-1c08d47a2c4d",
+    "callId": "call-A5PTC4DREVCHAINRED20261017T153223Z-HIJACK",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c HIJACK: consumer leg of the attack chain",
+    "decision": "lane-allow",
+    "outcome": "allowed-once",
+    "grantId": "g1",
+    "grantSource": "declared",
+    "issuerLane": "session-bde01d41-f0d3-492e-87bd-9cbc0b9b2231",
+    "ttlMs": 60000
+  }
+}

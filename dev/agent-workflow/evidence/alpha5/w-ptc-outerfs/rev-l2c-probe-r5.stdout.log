@@ -1,0 +1,32 @@
+:3080 probe (pre) = 401
+PASS REV-PIN — pinned host tree @639ed01539 porcelain=0
+     observed: head=639ed0153972
+PASS REV-OS — Landlock floor: confined ws write OK, confined write OUTSIDE ws refused at the OS
+     observed: {"wsOk":true,"badDenied":true}
+PASS REV-CHANNEL-0600 — reviewer (assembler) creates the lifecycle channel BEFORE boot at mode 0600
+     observed: mode=600
+PASS REV-BOOT — closure row applied on the reviewer-owned instance; row reports mutatingRoutes=0
+     observed: {"ok":true,"applied":true,"row":"a5ptc4c","pid":58,"assemble":true,"uninstalled":false,"askTtlMs":6000,"mutatingRoutes":0}
+PASS REV-ROUTES-STATIC — route census: mutating=0, no route self-declares mutating, and every registered path is inside the disclosed read-only census/health/mode-echo set (nothing outside it)
+     observed: mutating=0 outsideSet=[] n=14
+PASS REV-CHANNEL-AUTHORITY — single-sink authority: roster entries arrive ONLY from the reviewer-assembler channel (registeredVia recorded); a replayed nonce is refused; already-rostered re-register refused; after seal a well-formed registration is refused — machine reasons in the audit ledger + census agrees
+     observed: lane={"label":"5fe72a72","via":"trusted-lifecycle-channel","laneTools":["a5ptc4c_grant","a5ptc4c_revoke","a5ptc4c_unload"]} ledgerRefusals=["replay-or-missing-nonce","already-rostered","sealed"] censusRefusals=3 consumed=3 neverRegisteredOnRoster=false rosterSize=2
+PASS REV-HTTP-DEAD-MINT — 14 POST shapes (8 reviewed paths + 6 invented) move NOTHING: roster delta 0, grants delta 0, no new lifecycle teardown row, live ADJ faces unchanged
+     observed: roster=2->2 grants=0->0 uninstallRows=0 liveAdjFaces=4->4 statuses={"/__a5ptc4b/provision":405,"/__a5ptc4b/grant":405,"/__a5ptc4c/provision":405,"/__a5ptc4c/grant":405,"/__a5ptc4c/revoke":405,"/__a5ptc4c/register":405,"/__a5ptc4cdev/provision":405,"/__a5ptc4cdev/grant":405,"/__a5ptc4c/lifecycle":200,"/__a5ptc4c/registration":200,"/__a5ptc4c/seal":405,"/__a5ptc4c/unload":405,"/__a5ptc4c/uninstall":405,"/__a5ptc4c/mode":400} preBootJournal=13
+PASS REV-UNINSTALL-HTTP-DEAD — no HTTP face can run lifecycle teardown (POST {op:uninstall-all} to census paths produced zero ledger lifecycle rows and zero disposed faces)
+     observed: tierAdjudication=[{"what":"plugin-ctx","done":false},{"what":"plugin-ctx-global-outer","done":false},{"what":"session-event-mirror","done":false},{"what":"member-approval-ctx","done":false}]
+PASS REV-CENSUS-READONLY — census faces stay readable without a cookie (disclosure) but are inert as mutators (checked above)
+     observed: roster status=200
+PASS REV-CONFINED-EACCES — reviewer-owned confined workspace-write child: channel append EACCES, forbidden-dir EACCES (same floor), ws write OK, every registration/mint face non-2xx, roster census readable but roster unchanged
+     observed: child={"ipcWrite":"EACCES","forb":"EACCES","ws":"ok","statuses":{"/__a5ptc4b/provision":405,"/__a5ptc4c/provision":405,"/__a5ptc4cdev/provision":405,"/__a5ptc4c/register":405,"/__a5ptc4c/grant":405},"rosterStatus":200} roster=2
+PASS REV-BOUNDARY-DISCLOSED — same-uid NON-confined process can write the channel file (assembler power class, boundary disclosed in the closure README — member sessions and their confined children are what is protected); authority still does not follow the bytes: the post-seal record is refused (reason=sealed) and the roster moves ZERO
+     observed: unconfinedAppend=ok roster=2->2 sealedRefusals=2 censusRefusals=4
+PASS REV-NO-PLUGIN-WRITE — the channel file holds exactly the reviewer's own appends (record count matches) ⇒ the plugin never wrote it; mode still 0600
+     observed: records=7 mode=600 sha=afa0344f47516c09
+PASS REV-STABLE — :3080 untouched (pre=401 post=401); only 3184 bound
+     observed: pre=401 post=401
+PASS REV-PRISTINE-POST — pinned host tree still byte-clean
+     observed: porcelain=0 head unchanged
+
+[REV-PROBE] criteria: 14/14 pass
+worlds deleted (kept evidence in runs/a5ptc4d-rev-probe-2026-10-17T15-50-12Z)

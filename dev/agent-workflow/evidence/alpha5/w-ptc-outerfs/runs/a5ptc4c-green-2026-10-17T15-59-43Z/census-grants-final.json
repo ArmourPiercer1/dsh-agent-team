@@ -1,0 +1,346 @@
+[
+  {
+    "grantId": "g1",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-ANCHOR",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T15:59:59.494Z",
+    "expiresAt": "2026-10-17T16:00:59.494Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T15:59:59.495Z",
+    "consumedByAskSeq": 2,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T15:59:59.494Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T15:59:59.495Z",
+        "to": "consumed",
+        "byAskSeq": 2,
+        "outcome": "allowed-once"
+      }
+    ]
+  },
+  {
+    "grantId": "g2",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "expired",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-EXPIRY",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 1200,
+    "issuedAt": "2026-10-17T16:00:01.195Z",
+    "expiresAt": "2026-10-17T16:00:02.395Z",
+    "expired": true,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:01.195Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 1200
+      },
+      {
+        "at": "2026-10-17T16:00:03.131Z",
+        "to": "expired",
+        "from": "issued"
+      }
+    ]
+  },
+  {
+    "grantId": "g3",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "revoked",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-REVOKE",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:03.392Z",
+    "expiresAt": "2026-10-17T16:01:03.392Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": "2026-10-17T16:00:03.895Z",
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:03.392Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T16:00:03.895Z",
+        "to": "revoked",
+        "from": "issued",
+        "by": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3"
+      }
+    ]
+  },
+  {
+    "grantId": "g4",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "issued",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-BIND",
+      "toolName": "run_code",
+      "mode": "workspace-write"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:04.451Z",
+    "expiresAt": "2026-10-17T16:01:04.451Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:04.451Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      }
+    ]
+  },
+  {
+    "grantId": "g5",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-XTEAM",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 20000,
+    "issuedAt": "2026-10-17T16:00:15.271Z",
+    "expiresAt": "2026-10-17T16:00:35.271Z",
+    "expired": true,
+    "consumedAt": "2026-10-17T16:00:25.946Z",
+    "consumedByAskSeq": 8,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:15.271Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 20000
+      },
+      {
+        "at": "2026-10-17T16:00:25.946Z",
+        "to": "consumed",
+        "byAskSeq": 8,
+        "outcome": "allowed-once"
+      }
+    ]
+  },
+  {
+    "grantId": "g6",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-Q1",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:26.844Z",
+    "expiresAt": "2026-10-17T16:01:26.844Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T16:00:26.844Z",
+    "consumedByAskSeq": 10,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:26.844Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T16:00:26.844Z",
+        "to": "consumed",
+        "byAskSeq": 10,
+        "outcome": "allowed-once"
+      }
+    ]
+  },
+  {
+    "grantId": "g7",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "reject",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-1aa779c8-7880-4b03-959a-4a5e03680e4b",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-Q2",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:27.351Z",
+    "expiresAt": "2026-10-17T16:01:27.351Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T16:00:27.352Z",
+    "consumedByAskSeq": 9,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:27.351Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T16:00:27.352Z",
+        "to": "consumed",
+        "byAskSeq": 9,
+        "outcome": "rejected"
+      }
+    ]
+  },
+  {
+    "grantId": "g8",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-d52a1313-20a1-4a57-9fcf-404cca3258e6",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-PANCHOR",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:28.159Z",
+    "expiresAt": "2026-10-17T16:01:28.159Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T16:00:28.159Z",
+    "consumedByAskSeq": 12,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:28.159Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T16:00:28.159Z",
+        "to": "consumed",
+        "byAskSeq": 12,
+        "outcome": "allowed-once"
+      }
+    ]
+  },
+  {
+    "grantId": "g9",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-d52a1313-20a1-4a57-9fcf-404cca3258e6",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "sessionId": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T16:00:53.056Z",
+    "expiresAt": "2026-10-17T16:01:53.056Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T16:00:53.056Z",
+    "consumedByAskSeq": 13,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T16:00:53.056Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T16:00:53.056Z",
+        "to": "consumed",
+        "byAskSeq": 13,
+        "outcome": "allowed-once"
+      }
+    ]
+  }
+]

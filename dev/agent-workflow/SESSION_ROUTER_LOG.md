@@ -6427,3 +6427,9 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
   （`README-L2CLOSE.md` 台账 + `a5ptc4c-grantrow.mjs` + `a5ptc4c-devprovision-pkg/` + `run-a5ptc4c-{chainred,l2close,devkit}.mjs` +
   八轮 `runs/`）。**git**：一次性 worktree `.worktrees/a5ptc4c-l2fix`（本地分支 `alpha5-ptc-outerfs-l2fix`），收口 ff 回
   `alpha5-ptc-outerfs` 并尝试 ff push（无凭证则记录）。模型：qwen3.8-flash-next。
+
+## 2026-10-17 — W-PTC-OUTERFS-L2CLOSE 独立审入库 + 三精度项收口（续笔，branch `alpha5-ptc-outerfs` @780ffbee 之上）
+
+- **独立 L2CLOSE 审查证据入库**（reviewer 亲跑，原样不改写）：`review-SECURITY-L2CLOSE.md` + `rev-l2c-*.{mjs,log}` + `runs/a5ptc4d-rev-*`（9 目录）——被审四件 = reviewer 一行世界前缀副本（diff 全空）+ 自有确定性探针（自有世界/0600 通道/confined 子进程/14 POST 形状，零模型腿）。**判定 = 闭合成立**。
+- **三条非阻断精度项修复并复验**（`runs/a5ptc4c-green-2026-10-17T15-59-43Z/` = 32/32、治理 15/15 全回归）：(a) runner NC-3 写落地单次 existsSync → 有界轮询（reviewer 实测 +58 ms 竞态；判据不放宽，writeLanding 遥测入 leg 证据）；(b) census 措辞 = 「一切登记/铸权/生命周期形路径非 2xx；census 面对任意方法只读体零改变（方法不分治）」；(c) `lifecycle-install.faces` 改报存活数（=liveFaces），旧累计口径保留为 `facesCumulativeSinceBoot` 并注陈旧（reviewer 实例 9 vs 6，修复轮 faces:6=live:6）。
+- 缝事实补：宿主 census 面对 POST 返回只读体（seam 不分治方法）；被 Grant 授权的写在裁决行后数十 ms 落盘属正常时序。收口三件套复查全绿（pin porcelain 0 / :3080=401 / 世界删、3184 释放）。模型：qwen3.8-flash-next。

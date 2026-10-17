@@ -1,0 +1,105 @@
+{
+  "hooksBeforeUnload": {
+    "count": 7,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:946cdb07",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:03680e4b",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:ca3258e6",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "hooksAfterUnload": {
+    "count": 2,
+    "uninstalled": true,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "journal": {
+    "at": "2026-10-17T16:00:28.662Z",
+    "leg": "resolver-unloaded",
+    "disposersRun": 6,
+    "hookCount": 2,
+    "issuerLane": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+    "memberFaces": 3
+  },
+  "ourRowsAfterUnload": [],
+  "runAfterUnload": null,
+  "written": false
+}

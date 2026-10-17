@@ -1,0 +1,19 @@
+{
+  "row": {
+    "seq": 3,
+    "at": "2026-10-17T16:00:00.083Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+    "callId": "call-A5PTC4CGREEN20261017T155943Z-ANCHOR",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c REPLAY: second presentation of the SAME four-way identity; this text also carries the DEAD L1 token verbatim (A5PTC4-TOKEN=A5PTC4CGREEN20261017T155943Z-",
+    "decision": "replay-of-consumed",
+    "outcome": "rejected",
+    "grantId": "g1",
+    "consumedAt": "2026-10-17T15:59:59.495Z"
+  },
+  "grantsDelta": 0,
+  "runsDelta": 1,
+  "written": false
+}

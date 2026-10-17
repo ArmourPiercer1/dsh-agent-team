@@ -670,9 +670,15 @@ async function main() {
     `foreignAsk=${JSON.stringify(rXForeign ?? null).slice(0, 240)} grantState=${xgAfterForeign?.state} consumedAt=${xgAfterForeign?.consumedAt} written=${existsSync(FORB_TARGET('xteam'))}`)
   await prompt(S.M1, `${MK}_XTEAMUSE leg XTEAMUSE`)
   const rXOwner = await pollUntil(LEG_WAIT, async () => approvalsRowFor(callIdFor('XTEAM'), 'allowed-once'), 'M1 owner-side XTEAM row')
-  const ownerWritten = existsSync(FORB_TARGET('xteam'))
+  // Reviewer precision (a): the authorized write can land ~tens of ms AFTER the decision
+  // row appears (reviewer measured +58 ms, file verified on disk). BOUNDED-POLL the
+  // landing — the criterion is NOT relaxed (still must observe the write; a timeout fails).
+  const ownerLanding = await pollUntil(LEG_WAIT, async () => (existsSync(FORB_TARGET('xteam'))
+    ? { file: 'l-xteam.txt', size: statSync(FORB_TARGET('xteam')).size, mtimeMs: statSync(FORB_TARGET('xteam')).mtimeMs, decisionRowAt: rXOwner?.at ?? null }
+    : false), 'XTEAM owner write landing (bounded poll; criterion unchanged)')
+  const ownerWritten = ownerLanding?.__held === undefined
   const xgAfterOwner = (await grants()).find((g) => g.grantId === xg?.grantId)
-  writeEvidence('leg-XTEAMUSE.json', { row: rXOwner, grantStateAfterOwner: xgAfterOwner?.state, written: ownerWritten })
+  writeEvidence('leg-XTEAMUSE.json', { row: rXOwner, grantStateAfterOwner: xgAfterOwner?.state, written: ownerWritten, writeLanding: ownerLanding?.__held === undefined ? ownerLanding : { timedOut: true } })
   check('NEG3-AGENT-BIND-GRANT-UNSPENT-AND-OWNER-ONLY', 'NC-3 second half: the OWNER M1 presenting the same quadruple consumes the Grant (allowed-once, state=consumed, write lands)',
     rXOwner?.__held === undefined && rXOwner?.grantId === xg?.grantId && xgAfterOwner?.state === 'consumed' && ownerWritten,
     `row=${JSON.stringify(rXOwner ?? null).slice(0, 240)} state=${xgAfterOwner?.state} written=${ownerWritten}`)

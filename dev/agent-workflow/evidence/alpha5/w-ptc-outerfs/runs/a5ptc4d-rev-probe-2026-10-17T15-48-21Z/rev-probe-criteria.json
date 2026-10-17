@@ -1,0 +1,36 @@
+{
+  "run": "a5ptc4d-rev-probe-2026-10-17T15-48-21Z",
+  "status": "REV-ALL-PASS",
+  "criteria": [
+    {
+      "id": "REV-PIN",
+      "claim": "pinned host tree @639ed01539 porcelain=0",
+      "pass": true,
+      "observed": "head=639ed0153972"
+    },
+    {
+      "id": "REV-OS",
+      "claim": "Landlock floor: confined ws write OK, confined write OUTSIDE ws refused at the OS",
+      "pass": true,
+      "observed": "{\"wsOk\":true,\"badDenied\":true}"
+    },
+    {
+      "id": "REV-CHANNEL-0600",
+      "claim": "reviewer (assembler) creates the lifecycle channel BEFORE boot at mode 0600",
+      "pass": true,
+      "observed": "mode=600"
+    },
+    {
+      "id": "REV-BOOT",
+      "claim": "closure row applied on the reviewer-owned instance; row reports mutatingRoutes=0",
+      "pass": true,
+      "observed": "{\"ok\":true,\"applied\":true,\"row\":\"a5ptc4c\",\"pid\":50,\"assemble\":true,\"uninstalled\":false,\"askTtlMs\":6000,\"mutatingRoutes\":0}"
+    },
+    {
+      "id": "REV-ROUTES-STATIC",
+      "claim": "route census: mutating=0, no route self-declares mutating, and every registered path is inside the disclosed read-only census/health/mode-echo set (nothing outside it)",
+      "pass": true,
+      "observed": "mutating=0 outsideSet=[] n=14"
+    }
+  ]
+}

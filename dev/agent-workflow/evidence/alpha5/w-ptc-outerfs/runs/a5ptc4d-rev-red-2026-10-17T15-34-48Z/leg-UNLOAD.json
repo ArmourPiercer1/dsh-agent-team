@@ -1,0 +1,59 @@
+{
+  "hooksBeforeUnload": {
+    "count": 2,
+    "uninstalled": false,
+    "mineTags": [],
+    "rows": [
+      {
+        "idx": 0,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "hooksAfterUnload": {
+    "count": 2,
+    "uninstalled": true,
+    "mineTags": [],
+    "rows": [
+      {
+        "idx": 0,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "journal": {
+    "at": "2026-10-17T15:45:17.557Z",
+    "leg": "resolver-unloaded",
+    "disposersRun": 0,
+    "hookCount": 2,
+    "issuerLane": "session-e00cfbd6-380f-472e-b013-d7743e190692",
+    "memberFaces": 0
+  },
+  "ourRowsAfterUnload": [],
+  "runAfterUnload": null,
+  "written": false
+}

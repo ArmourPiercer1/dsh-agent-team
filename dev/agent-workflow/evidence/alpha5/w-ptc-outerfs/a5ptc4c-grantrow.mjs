@@ -631,7 +631,10 @@ export async function apply(ctx) {
         }
       }
       const liveFaces = ADJ.filter((d) => !d.__done()).length
-      record({ leg: 'lifecycle-install', ok: true, faces: rebuilt, liveFaces, roster: ROSTER.size, note: 'reinstall never appends onto an installed face set' })
+      // Reviewer precision (c): `faces` reports the LIVE face count after this install
+      // (the primary number). The pre-fix value — a cumulative since-boot counter that
+      // kept disposed entries — is disclosed unchanged under its own field, flagged stale.
+      record({ leg: 'lifecycle-install', ok: true, faces: liveFaces, liveFaces, facesCumulativeSinceBoot: rebuilt, facesNote: 'faces/liveFaces = live ADJ entries NOW; facesCumulativeSinceBoot = the old (stale) faces field incl. already-disposed entries', roster: ROSTER.size, note: 'reinstall never appends onto an installed face set' })
       return
     }
     record({ leg: 'lifecycle-unknown-record', kind: String(rec.kind ?? 'missing') })

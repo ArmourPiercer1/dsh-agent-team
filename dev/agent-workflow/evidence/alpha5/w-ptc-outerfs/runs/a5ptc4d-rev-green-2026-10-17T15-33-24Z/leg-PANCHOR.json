@@ -1,0 +1,35 @@
+{
+  "pending": {
+    "seq": 12,
+    "bind": {
+      "seq": 12,
+      "at": "2026-10-17T15:34:09.294Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-c0d748f1-9b61-4a46-888b-0f260c63e2b4",
+      "callId": "call-A5PTC4DREVGREEN20261017T153324Z-PANCHOR",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c PANCHOR: justification carries model text only"
+    },
+    "askedAt": "2026-10-17T15:34:09.294Z",
+    "deadlineMsLeft": 9805
+  },
+  "row": {
+    "seq": 12,
+    "at": "2026-10-17T15:34:09.294Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-c0d748f1-9b61-4a46-888b-0f260c63e2b4",
+    "callId": "call-A5PTC4DREVGREEN20261017T153324Z-PANCHOR",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c PANCHOR: justification carries model text only",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 412,
+    "grantId": "g8",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-a8959f80-e216-4d58-b7c2-52b42169f5a0",
+    "ttlMs": 60000
+  },
+  "written": true
+}

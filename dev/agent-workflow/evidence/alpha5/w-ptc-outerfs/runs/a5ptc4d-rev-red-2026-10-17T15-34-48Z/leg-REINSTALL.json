@@ -1,0 +1,53 @@
+{
+  "install1": {
+    "at": "2026-10-17T15:45:29.845Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 0,
+    "liveFaces": 0,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "install2": {
+    "at": "2026-10-17T15:45:33.352Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 0,
+    "liveFaces": 0,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "hooks": {
+    "count": 2,
+    "uninstalled": false,
+    "mineTags": [],
+    "rows": [
+      {
+        "idx": 0,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "mineRe": 0,
+  "pending": null,
+  "row": {
+    "__held": "Q3 allowed-once row"
+  },
+  "written": {
+    "__held": "Q3 write"
+  },
+  "allRows": [],
+  "alreadyRows": []
+}

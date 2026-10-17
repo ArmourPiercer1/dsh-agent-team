@@ -13,7 +13,7 @@ base = `alpha5-ptc-outerfs@303e1195`（= L2 `e80ca6eb` + 独立安全审查 `303
   4. `REDCHAIN-3`：M1 呈现该四元组 → `allowed-once` 带伪造 grantId，**禁区文件真实落盘**（真 confined-OS 越权，Team 从未批准）。全链无诚实 lane、无被盗凭据。
 - **GREEN 权威轮（收口件收死每一步 + 全套不劣化）**：`runs/a5ptc4c-green-2026-10-17T12-05-32Z/`（`node run-a5ptc4c-l2close.mjs --port 3184`）= **32/32 criteria，治理判据集 15/15**，`status=GREEN-ALL-PASS`；收口件 `a5ptc4c-grantrow.mjs`：
   - `F1-REG-TRUSTED-CHANNEL-ONESHOT`：花名册（含 lane）**只**来自装配器私有生命周期通道（registeredVia=trusted-lifecycle-channel，逐条 decision=registered）；消费过的 nonce 重放拒、已在册成员转 lane 拒（永不升格）、**seal 之后一切登记拒**；ATK 从未上册；
-  - `F1-NO-HTTP-REGISTRATION-MINT`：对八条可设想路径（评审面 `/__a5ptc4b/*`、收口面 `/__a5ptc4c/*`、devkit `/__a5ptc4cdev/*`）POST 登记/铸权形 body：全部非 2xx、roster/grants 账本零移动、路由 census `mutating=0`；
+  - `F1-NO-HTTP-REGISTRATION-MINT`：对八条可设想路径（评审面 `/__a5ptc4b/*`、收口面 `/__a5ptc4c/*`、devkit `/__a5ptc4cdev/*`）POST 登记/铸权形 body：**一切登记/铸权/生命周期形路径非 2xx**、roster/grants 账本零移动、路由 census `mutating=0`。**方法不分治（如实披露，审查精度项）**：宿主 seam 不按方法区分路径，只读 census 面对 POST 返回 200 **只读体**——其安全语义不是「非 2xx」而是**任意方法零改变**（reviewer 14 形状探针独立实测：roster/ADJ/账本零差，`REV-HTTP-DEAD-MINT`）；
   - `F1-INWORLD-ATTACK-REFUSED`：RED 轮那个**同一个攻击子进程**再跑：三条登记面 + 铸权形全 405，roster 只读可见但零新增 lane，**追加写生命周期通道文件被 OS 拒（EACCES，与禁区目录同地板对照）**，ws 写控制照常，roster 零差；
   - `F1-ATK-MINT-DEAD`：攻击者驱动 ATK 调 `a5ptc4c_grant` —— ATK 从未登记 ⇒ 其会话上**不存在铸权工具**（模型边界实证 unknown-tool），grants 零移动；
   - `F1-CHAIN-CONSUME-REFUSED`：M1 呈现攻击目标四元组：无 Grant ⇒ 挂 Team lane 至限期 ⇒ `lane-timeout` 拒且无 grantId；**RED 轮真实写过的 `l-chain.txt` 此轮不存在**；
@@ -54,6 +54,7 @@ GREEN 轮 L2 原 10 条治理 id 全 PASS：`ANCHOR-TEAM-GRANT-ALLOWED-ONCE`、`
 - `runs/a5ptc4c-red-2026-10-17T11-46-55Z/`：**终版 RED 判别轮** = 16/32，治理集 **0/15 全 FAIL、其余 17 全 PASS**，`verdict=EXPECTED`。
 - `runs/a5ptc4c-green-2026-10-17T12-05-32Z/`：**终版 GREEN 权威轮** = **32/32，治理 15/15**，`status=GREEN-ALL-PASS`（与终版 runner 逐字节对应）。
 - `runs/a5ptc4c-devkit-2026-10-17T12-07-07Z/`：**dev 形态 7/7**（此前两轮 devkit 自我修复：package.json 内不能带 `#` 注释行——宿主以 JSON 解析整文件并禁该行；`ctx.webServer` 须 `export const inject=['webServer']` 声明方可见——缝事实两条）。
+- `review-SECURITY-L2CLOSE.md` + `rev-l2c-*.{mjs,log}` + `runs/a5ptc4d-rev-*`（9 目录）：**独立 L2CLOSE 审查轮（reviewer 亲跑，证据原样入库）**——被审四件均为 reviewer 一行世界前缀副本（diff 全空 = 逐字节等价）+ reviewer 自有确定性探针（自有世界/0600 通道/confined 子进程/14 条 POST 形状，零模型腿）⇒ **判定 = 闭合成立**；三条非阻断精度项全部收口：**(a)** `run-a5ptc4c-l2close.mjs` NC-3 写落地单次 existsSync 采样 → 有界轮询（reviewer 实测裁决行后 +58 ms 落盘；判据不放宽，仅采样方式修正，`leg-XTEAMUSE.json.writeLanding` 留 mtime/size 遥测）；**(b)** census 措辞精确化：「一切 POST 非 2xx」→「一切登记/铸权/生命周期形路径非 2xx；census 面对任意方法返回只读体零改变（方法不分治，如实披露）」；**(c)** `lifecycle-install` 账行 `faces` 改报**存活数**（=liveFaces），原累计口径保留为 `facesCumulativeSinceBoot` 并注陈旧（reviewer 实例 9 vs 6）。三修后复跑 `runs/a5ptc4c-green-2026-10-17T15-59-43Z/` = **32/32，治理 15/15 全回归**（含 NC-3 有界轮询绿、重装账行 faces:6=liveFaces:6 且累计字段如实=9、census 数字复核）。
 
 ## 可入账 / 不可入账（措辞纪律）
 
