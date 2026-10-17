@@ -167,7 +167,7 @@ export async function apply(ctx) {
 
   // ─────────────────────────────── PTC ───────────────────────────────
   function ptcView(a) {
-    return { ok: a.ok, error: a.error, runtimeCensus: a.runtimeCensus ?? null, guardRows: a.guardRows, throwCensus: a.throwCensus ?? null, runResult: a.runResult ?? null, outerChildren: a.outerChildren ?? [], disposers: a.disposers?.length ?? 0 }
+    return { ok: a.ok, error: a.error, runtimeCensus: a.runtimeCensus ?? null, modeCensus: a.modeCensus ?? null, legs: a.legs ?? [], guardRows: a.guardRows, throwCensus: a.throwCensus ?? null, runResult: a.runResult ?? null, outerChildren: a.outerChildren ?? [], disposers: a.disposers?.length ?? 0 }
   }
 
   async function assemblePtc(asm) {
@@ -195,8 +195,17 @@ export async function apply(ctx) {
     // M-08 A2 = the W4 kit's Landlock plane, booked there, not here).
     if (runtime !== undefined && runtime.sandboxMode !== 'danger-full-access' && agent.session !== undefined) {
       const { setSandboxMode } = await import(URLS.sandboxPolicy)
+      const policy = ctx.get?.('sandboxPolicy')
+      const pre = await Promise.resolve(policy?.resolve?.({ session: agent.session }))
       setSandboxMode(agent.session, 'danger-full-access')
-      legs.push({ leg: 'sandbox-mode-override', mode: 'danger-full-access', from: runtime.sandboxMode, note: 'public setSandboxMode write path; OS-enforcement caliber NOT asserted by this leg' })
+      const post = await Promise.resolve(policy?.resolve?.({ session: agent.session }))
+      asm.modeCensus = {
+        pre: pre?.mode ?? pre?.sandboxMode ?? null,
+        post: post?.mode ?? post?.sandboxMode ?? null,
+        deploymentDefault: runtime.sandboxMode,
+        write_path: 'setSandboxMode(session, mode) = session.append("sandbox/mode", { mode }) — per-session event inside THIS test world only (host lib: THE write path, "nothing mutates mode state out of band")',
+      }
+      legs.push({ leg: 'sandbox-mode-override', mode: 'danger-full-access', from: runtime.sandboxMode, modeCensus: asm.modeCensus, note: 'public setSandboxMode write path; OS-enforcement caliber NOT asserted by this leg' })
     }
 
     const echoDef = defineTool({

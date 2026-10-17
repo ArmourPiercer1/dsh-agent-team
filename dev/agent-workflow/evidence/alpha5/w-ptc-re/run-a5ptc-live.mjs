@@ -32,7 +32,8 @@
  */
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { zstdDecompressSync } from 'node:zlib'
+import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -294,6 +295,40 @@ async function main() {
     const sides = ['root_register', 'scope_register', 'scope_restrict_deny', 'scope_restrict_allow']
     check('PTC-RESERVED-TRANSPORT-THROW', 'reserved run_code transport: register AND restrict throw reserved-name errors at both faces (双侧)',
       sides.every((k) => tc[k]?.threw === true && tc[k]?.reservedName === true), JSON.stringify(tc))
+
+    // mode-scope evidence (coordinator 核验单 04:24Z): the override's ONLY write
+    // surface is session.append('sandbox/mode') — the session event stream, which
+    // lives under THIS world ($DSH_HOME=HOME). Walk the world pre-teardown (zstd
+    // aware) for the event/log; teardown (rm HOME) removes it all — no residual path.
+    const hits = []
+    const sessionLogs = []
+    const walk = (dir) => {
+      for (const e of readdirSync(dir, { withFileTypes: true })) {
+        const p = join(dir, e.name)
+        if (e.isDirectory()) walk(p)
+        else if (e.isFile() && statSync(p).size < 20_000_000) {
+          try {
+            if (/session\..*\.jsonl(\.zstd)?$/.test(e.name)) {
+              sessionLogs.push(p.replace(HOME, '<HOME>'))
+              const txt = e.name.endsWith('.zstd') ? zstdDecompressSync(readFileSync(p)).toString('utf8') : readFileSync(p, 'utf8')
+              if (txt.includes('sandbox/mode')) hits.push(p.replace(HOME, '<HOME>'))
+            } else if (readFileSync(p, 'utf8').includes('sandbox/mode')) hits.push(p.replace(HOME, '<HOME>'))
+          } catch { /* binary/raced/unflushed */ }
+        }
+      }
+    }
+    walk(HOME)
+    writeEvidence('mode-scope-evidence.json', {
+      world: RUN,
+      dsh_home: '<WORKTREE>/tests/homes/' + RUN,
+      world_session_logs: sessionLogs,
+      sandbox_mode_event_files: hits,
+      flush_note: 'event 面持久化=world 内 session 事件流（session.v4.jsonl.zstd）；host 被 runner kill 时 pending 事件可能未 flush——两种情形均无 world 外残留（本 runner 除 HOME 与证据目录外零写入路径）',
+    })
+    const mc = asm.modeCensus ?? {}
+    check('PTC-MODE-SCOPED', 'danger-full-access = per-session fold scoped to THIS world/process (pre→post via public sandboxPolicy.resolve; deployment default untouched every fresh boot; session log confined to <HOME>)',
+      mc.pre === 'workspace-write' && mc.post === 'danger-full-access' && mc.deploymentDefault === 'workspace-write' && sessionLogs.length >= 1,
+      `pre=${mc.pre} post=${mc.post} default=${mc.deploymentDefault} sessionLogs=${JSON.stringify(sessionLogs.slice(0, 2))} persistedEventFiles=${hits.length}`)
     return
   }
 

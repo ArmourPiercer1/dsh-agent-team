@@ -1,4 +1,4 @@
-# probe-M-08 (run_code (PTC)) run-utc=2026-10-17T04:12:58.532Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck
+# probe-M-08 (run_code (PTC)) run-utc=2026-10-17T04:30:56.988Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-ptc-recheck
 DEPEND W4 surface="provider 工厂→会话装配 + Landlock 在场/撤销对照（OS 强制面，ENFORCE 证据分级如实）" if=[IF-1,IF-6]
 CHECK face:W4 lane=W4 present (binding-shape grep)
 ANCHORS runner-grep=PRESENT (binding shapes on non-comment lines; receipt claim ignored)

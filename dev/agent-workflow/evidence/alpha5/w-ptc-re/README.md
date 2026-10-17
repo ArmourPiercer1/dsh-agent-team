@@ -69,7 +69,21 @@ node dev/agent-workflow/evidence/alpha5/w-ptc-re/run-a5ptc-live.mjs --mode lsp
 - 模型路由 = mock 脚本；结果经公开 around-seam 捕获（queue-mode 的 prompt 响应体只回 ack——如实）。
 - 世界零生产行装载；teardown 删世界；:3080 稳定实例前后亲验未动（pre=401 token 门、post=401；kit 只绑 3184）；test-use 树 porcelain=0、HEAD=pin 前后一致（P-PIN/P-PRISTINE 在每份 criteria.json）。
 
-## 5. 文件清单
+## 5. danger-full-access 口径核验节（协调者核验单 2026-10-17 04:24Z）
+
+**① 作用域 = 仅测试世界 / 我启动的测试进程。** 切换唯一入口 = 公开 barrel `@deepseek-ai/dsh-sandbox-policy` 的 `setSandboxMode(session, mode)`，其 host 源码写面只有一行（lib/index.js 原文）：`session.append("sandbox/mode", { mode })`，doc 原文 = "THE write path for a session's sandbox-mode override: appends exactly one `sandbox/mode` event — the switch IS its event; **nothing mutates mode state out of band**"。⇒ 无任何配置写入点（无 config/env/全局路径写）；事件流归属该测试会话，落在该测试世界内（`$DSH_HOME = <WORKTREE>/tests/homes/a5ptc-ptc-*/sessions/<cwd-slug>/<session-id>/session.v4.jsonl.zstd`），随世界消亡。实际团队 / :3080 稳定实例全程未动：判据 P-STABLE-UNTOUCHED（:3080 pre=401 token 门 / post=401，kit 只绑 3184）+ P-PRISTINE（host 树 porcelain=0 / HEAD=pin 前后一致）在册于每份 criteria.json。
+
+**② 前/后模式 + 恢复证据链（最终轮 `runs/ptc-2026-10-17T04-29-42Z/`，11/11 PASS）：**
+
+1. 切换前（首跑，未切换即真跑）typed 拒原文（`runs/ptc-2026-10-17T03-58-41Z/ptc-state.json` runResult.text）：
+   > `Error: code run failed (sandbox-unavailable): sandbox mode "workspace-write" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. … — otherwise switch the consumer to danger-full-access.  File sandbox: workspace-write.`
+2. 切换点 API 调用原文（`a5ptc-row.mjs` L196-209）：`setSandboxMode(agent.session, 'danger-full-access')`，前置/后置各做一次公开 `sandboxPolicy.resolve({ session })` 亲读，modeCensus 实测 `pre="workspace-write" → post="danger-full-access"`，同轮 `deploymentDefault="workspace-write"`（判据 PTC-MODE-SCOPED）。
+3. 部署默认未被改写的横向证据：7 个真跑轮（含切换轮之后）每次全新启动的 runtimeCensus `sandboxMode` 恒 = `workspace-write`（profile 默认原样；我的 cordis.patch.yml 只 insert 证据行、零沙箱配置项）。
+4. 退出/销毁后残留证明：(a) teardown `rm HOME` ⇒ 世界整体（含事件流）删除，`tests/homes` 现无任何 `a5ptc-*` 目录；(b) 现场尸检（`--keep` 轮 + 最终轮 walk）：世界内会话日志为 zstd 压缩、host 被 kill 时 pending `sandbox/mode` 事件未 flush（最终轮 `persistedEventFiles=0`）⇒ **两种情形均无世界外残留**——切换要么随世界文件删除，要么本就只存活于该进程内存投影（`mode-scope-evidence.json` 记录两情形）；(c) 稳定 home `~/.dsh` 残留扫 = `sandbox/mode` 事件命中 **0**（其中 'a5ptc' 字样命中仅为本 writer 与协调者对话会话自身的 projcache 文本，非任何世界状态）。
+
+**③ 显式声明：** 该 `danger-full-access` 是**测试世界装配参数**（本执行环境无可用 bwrap/Landlock 后端时，host typed 错误自述的处方开关），**不构成**任何 OS 隔离/ENFORCE 宣称（M-08 A2 OS 强制面 = W4 kit/Landlock 域，另行在册），**不得作为放宽任何真实设置的依据**。
+
+## 6. 文件清单
 
 | 文件 | 角色 |
 | --- | --- |
@@ -78,6 +92,7 @@ node dev/agent-workflow/evidence/alpha5/w-ptc-re/run-a5ptc-live.mjs --mode lsp
 | `run-a5ptc-live.mjs` | LIVE runner（ptc/lsp；预检+判据+收口） |
 | `probe-gap-lsp-policy.mjs` (+ `.result.json`) | 真缺腿静态公开面普查（自有探针） |
 | `w-ptc-receipt-M-08.json` / `w-ptc-receipt-M-09.json` | 我的 bookable-clause receipts |
-| `runs/ptc-2026-10-17T04-12-17Z/` · `runs/lsp-2026-10-17T04-12-12Z/` | 最终绿跑证据（criteria/state/facts/logs） |
+| `runs/ptc-2026-10-17T04-29-42Z/` | **最终 PTC 绿跑**（11/11，含 PTC-MODE-SCOPED/mode-scope-evidence.json；§5 核验链） |
+| `runs/ptc-2026-10-17T04-12-17Z/` · `runs/lsp-2026-10-17T04-12-12Z/` | receipt 引用的绿跑证据（criteria/state/facts/logs） |
 | `runs/w-ptc-probe-M-08.log` · `runs/w-ptc-probe-M-09.log` | pr8 探针对我的 receipt 的亲跑输出 |
 | `runs/{ptc,lsp}-2026-10-17T03-*/` `04-0*/` | 修复迭代轮证据（保留如实：沙箱后端缺失、render 形状、能力门、cwd 各一） |
