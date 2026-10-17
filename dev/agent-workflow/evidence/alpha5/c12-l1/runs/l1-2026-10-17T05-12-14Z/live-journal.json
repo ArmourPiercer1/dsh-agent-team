@@ -1,0 +1,71 @@
+{
+  "rows": [
+    {
+      "at": "2026-10-17T05:12:15.942Z",
+      "leg": "plugin-apply",
+      "pid": 76,
+      "dist": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/packages/runtime/dist/packages",
+      "hasWebServer": true
+    },
+    {
+      "at": "2026-10-17T05:12:15.961Z",
+      "leg": "install-import",
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T05:12:16.279Z",
+      "leg": "register",
+      "name": "a5l1_probe",
+      "ok": true
+    },
+    {
+      "at": "2026-10-17T05:12:16.280Z",
+      "leg": "subscribe",
+      "event": "tools/change",
+      "form": "forwarder-into-real-table",
+      "disposerType": "function"
+    },
+    {
+      "at": "2026-10-17T05:12:16.282Z",
+      "leg": "guard-assembled",
+      "label": "session-a3bef006-28f3-41ad-8266-1a025494d452",
+      "installOk": true,
+      "bindOwnOk": true,
+      "publishedOk": true,
+      "channel": "armed"
+    },
+    {
+      "at": "2026-10-17T05:12:24.848Z",
+      "leg": "reregister",
+      "mode": "reregister-noop",
+      "name": "a5l1_probe",
+      "controlEvents": 2,
+      "laneDeliveries": 2,
+      "absorbed": 0,
+      "channel": "proven"
+    },
+    {
+      "at": "2026-10-17T05:12:28.361Z",
+      "leg": "swallow-engaged",
+      "via": "G-7 forwarder-stop (entry stays in the real listener table; the disposer the install received was never called)",
+      "channel": "proven"
+    },
+    {
+      "at": "2026-10-17T05:12:28.363Z",
+      "leg": "reregister",
+      "mode": "reregister-drift",
+      "name": "a5l1_probe",
+      "controlEvents": 4,
+      "laneDeliveries": 2,
+      "absorbed": 2,
+      "channel": "proven"
+    },
+    {
+      "at": "2026-10-17T05:12:30.933Z",
+      "leg": "probe-result",
+      "isError": true,
+      "text": "Error: team tool guard: \"a5l1_probe\" now resolves to a different ToolDefinition than the one its Binding pinned (definit",
+      "verifiedAtCallEdge": false
+    }
+  ]
+}

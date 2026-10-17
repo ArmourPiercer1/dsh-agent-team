@@ -1,0 +1,54 @@
+---
+schemaVersion: 3
+blueprintId: team.a5w7m.anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5w7m domain-veto team. A5W7M_DISC_2026-10-17T04-13-23 is the discovery marker."
+  capabilities:
+    teamTools:
+      kind: allow
+      items: []
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: bash
+          resource:
+            kind: any
+      ask:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      deny:
+        - tool: read
+          resource:
+            kind: subtree
+            path: runtime
+teamEnvelope:
+  allow:
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - bash
+  deny: []
+members:
+  - templateId: wa
+    persona: "You are a worker of the a5w7m domain-veto team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

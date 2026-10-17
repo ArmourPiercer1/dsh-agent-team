@@ -1,0 +1,53 @@
+{
+  "anchors": [
+    {
+      "key": "jobs.seam_registry",
+      "file": "packages/jobs/jobs/src/index.ts",
+      "needle": "export abstract class JobRegistry extends Service",
+      "line": 85,
+      "found": true,
+      "text": "export abstract class JobRegistry extends Service {"
+    },
+    {
+      "key": "jobs.seam_list_caller",
+      "file": "packages/jobs/jobs/src/index.ts",
+      "needle": "abstract list(caller?: SessionId): JobView[]",
+      "line": 117,
+      "found": true,
+      "text": "abstract list(caller?: SessionId): JobView[]"
+    },
+    {
+      "key": "jobs.spec_owner_fence",
+      "file": "packages/jobs/jobs/src/types.ts",
+      "needle": "Access is fenced by it, and the owner's live Agent must be",
+      "line": 132,
+      "found": true,
+      "text": "* Owning session. Access is fenced by it, and the owner's live Agent must be"
+    },
+    {
+      "key": "bash.run_in_background_schema",
+      "file": "packages/shell/tool-bash/src/index.ts",
+      "needle": "run_in_background: { type: 'boolean'",
+      "line": 393,
+      "found": true,
+      "text": "run_in_background: { type: 'boolean' as const, description: 'Run in the background and return a job id immediately (collect with job_output, stop with job_kill). No timeout applies.' },"
+    },
+    {
+      "key": "bundle.jobs_provider",
+      "file": "packages/bundle/base/cordis.patch.yml",
+      "needle": "'@deepseek-ai/dsh-jobs-local'",
+      "line": 89,
+      "found": true,
+      "text": "name: '@deepseek-ai/dsh-jobs-local'"
+    },
+    {
+      "key": "preset.standard_tool_jobs",
+      "file": "packages/bundle/web-app/presets/standard.patch.yml",
+      "needle": "'@deepseek-ai/dsh-tool-jobs'",
+      "line": 33,
+      "found": true,
+      "text": "name: '@deepseek-ai/dsh-tool-jobs'"
+    }
+  ],
+  "allFound": true
+}

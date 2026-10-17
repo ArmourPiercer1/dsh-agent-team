@@ -1,0 +1,37 @@
+a5l1 runner stamp=2026-10-17T05-08-04Z port=3182
+PASS C01-PIN — the reused test-use runtime is the pinned pristine 0.2.0-rc.2 build (HEAD == paths.mjs baseline, porcelain 0) [tree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use]
+PASS C02-DIST — the worktree committed dist carries the tool-dispatch install face [/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/packages/runtime/dist/packages]
+PASS C03-PORTS — host port 3182 self-proved free and a 349x mock port free [hostFree=true mock=3491]
+PASS C04-WORLD-FRESH — world /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/tests/homes/a5l1-2026-10-17T05-08-04Z does not pre-exist [/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/tests/homes/a5l1-2026-10-17T05-08-04Z]
+mock: listening on 127.0.0.1:3491
+PASS C05-BOOT — the test Host booted on :3182 with the token gate live (303 + set-cookie) [status=303]
+PASS C06-CREATE — public session/create returned a real sessionId [status=200]
+PASS C07-SETUP — the setup turn completed (a real Agent now exists behind the session) [status=200]
+PASS C08-ASSEMBLE — the row resolved the Agent via the PUBLIC ctx.agents seam and started the assembly [{"ok":true,"started":true,"label":"session-4faef50e-b86b-4e19-b5dd-848afb3d0ea6"}]
+PASS C21-ARMED-PRESENT — ②a subscription present at startup: the install took the wrapped tools/change face (forwarder in the real table) and the channel reads "armed" [sub=true before=armed now=armed]
+mock: 1 [messages] text reply (30 chars): "A5L1_20261017T050804Z_SET_DONE"
+mock: 2 [messages] text reply (30 chars): "A5L1_20261017T050804Z_SET_DONE"
+PASS C10-REREG-RAN — ① the same-name NO-OP re-registration ran through the public change face (disposer + register of the SAME Definition object) [{"ok":true,"action":"reregister-noop","channel":"proven"}]
+PASS C11-EVENT-RAW — ① the Host REALLY emitted: raw tools/change event originals captured on BOTH the guard-forwarded lane and the control subscription [laneRaw=2 controlRaw=2]
+PASS C12-ZERO-WORLD — ① world delta 0: no content-changed/added file in the operation window beyond the control-window noise baseline (disclosed) [opChanged=0 opAdded=0 controlChanged=1 noiseNet=0 []]
+PASS C13-ZERO-LEDGER — ① execution-side ledger delta 0: no alarm/abort/cancel/drift/call rows and no body execution caused by the no-op (pendingCalls 0; admission ledger N/A on this arm — disclosed) [alarmClass=0 bodies={} pending=0]
+PASS C14-ZERO-PORT — ① listening-port delta 0 across the operation window (control window also 0) [opDelta=[] ctlDelta=[]]
+PASS C22-PROVEN-FLIP — ② startup self-prove: after the FIRST delivered synthetic change the live read handle.changeChannelStatus() === "proven" [channel=proven laneDeliveries=2]
+PASS C30-SWALLOW-SET — ③ the time-shifted G-7 swallow engaged post-proof (real-table entry kept; the disposer the install received was never called) and the drifted same-name re-registration ran [disposerCalled=false drifted=true]
+PASS C31-LOSS-CREATED — ③ subsequent delivery LOST: control subscription moved (registry still emits) while guard-forwarded deliveries did NOT move and the forwarder absorbed them [control 2→4 laneDeliveries 2→2 absorbed 0→2]
+PASS C32-STALE-PROVEN — ③ the startup proof is STALE: changeChannelStatus STILL reads "proven" while subsequent deliveries are lost (startup-time health does not describe current delivery) [channel=proven]
+PASS C33-PROMPT — the run turn entered the real dispatch path (model-driven call) [status=200]
+mock: 3 [messages] tool-call reply: a5l1_probe
+mock: 4 [messages] tool-call reply: a5l1_probe
+mock: 5 [messages] tool-call reply: a5l1_probe
+mock: 6 [messages] tool-call reply: a5l1_probe
+mock: 7 [messages] tool-call reply: a5l1_probe
+mock: 8 [messages] tool-call reply: a5l1_probe
+mock: 9 [messages] text reply (27 chars): "A5L1_20261017T050804Z_FUSED"
+FAIL C33-LOUD-DELTA — ③ loud five-piece delta after the lost delivery, with ZERO delivered cancellation: executedUnvalidated +>=1, alarm-severity +>=1, callEdgeDrift +>=1, bindingRevised(verified=false) +>=1, abortIssued +0, cancelledBeforeBody +0, drifted body RAN [dUnvalidated=0 dAlarms=0 dDrift=0 dRevised=1 dAbort=0 dCancel=0 bodies={}]
+PASS C34-STILL-STALE — ③ end-of-run: the channel still reads "proven" and the drifted name shows unverified at the call edge (the proof said healthy while the call ran unverified) [channel=proven verifiedFalse=true]
+PASS C90-STABLE — the stable :3080 instance was only probed (read-only), status unchanged [before=401 after=401]
+PASS C91-PRISTINE — the reused pinned runtime stayed pristine (porcelain empty, HEAD unmoved) [porcelain=0]
+
+RED — 22/23 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-l1/dev/agent-workflow/evidence/alpha5/c12-l1/runs/l1-2026-10-17T05-08-04Z
+RUN EXIT=2

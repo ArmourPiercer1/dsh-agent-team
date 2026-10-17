@@ -1,0 +1,6 @@
+{
+  "p6t6_health_status": 404,
+  "authenticated_plane_responded": true,
+  "production_boot_failures_verbatim": [],
+  "note": "row-less world: /__a5cvg ABSENT (C-red) and the web/auth plane demonstrably alive (real HTTP responses after token auth). Boot failures, when present, are recorded verbatim: a row-less-boot TeamDomain-closed race observed in RED runs — disclosed, root-causing NOT pursued (outside W7M-2 scope)."
+}

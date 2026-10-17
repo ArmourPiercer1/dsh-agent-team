@@ -1,0 +1,16 @@
+[run] 2026-10-17T04:10:02+00:00 mandated port: 3184 (session-start proof was FREE; a foreign listener appeared mid-prep — recorded, never operated)
+[wait] port 3184 FREE at 2026-10-17T04:13:23+00:00 (attempt 41) (waiting out the foreign listener)
+[run] 2026-10-17T04:13:23+00:00 RED (--without-row) on :3184
+[run] 2026-10-17T04:13:33+00:00 RED exit=0
+PASS M0a: the jobs-gateway PUBLIC BARREL loads from repo dist (build include @933f2f5d; no kit-local compile) with all 8 public exports — exit=0 sha256=694852ff90185022 out=BARREL_OK/
+PASS M0b: absent-anchor PRE: job_start is ZERO hits across the pinned host tree; tree at pin and porcelain-clean — hits=0 head=639ed01539 porcelain=0
+PASS M6b: host public jobs face (JOPS (a)-layer) file:line anchors verified on the pinned tree this run — bash.run_in_background_schema=393 bash.run_in_background_exec=108 bash.registry_required=505 tool_jobs.job_output=311 tool_jobs.job_list=352 tool_jobs.job_kill=372 bundle.jobs_provider=89 bundle.tool_jobs=276 remote.job_namespace=59 preset.standard_tool_jobs=33
+[wait] port 3184 FREE at 2026-10-17T04:14:39+00:00 (attempt 14) (between runs)
+[run] 2026-10-17T04:14:39+00:00 GREEN (emit receipt) on :3184
+[run] 2026-10-17T04:14:42+00:00 GREEN exit=1 port=3184
+PASS M0a: the jobs-gateway PUBLIC BARREL loads from repo dist (build include @933f2f5d; no kit-local compile) with all 8 public exports — exit=0 sha256=694852ff90185022 out=BARREL_OK/
+PASS M0b: absent-anchor PRE: job_start is ZERO hits across the pinned host tree; tree at pin and porcelain-clean — hits=0 head=639ed01539 porcelain=0
+PASS M6b: host public jobs face (JOPS (a)-layer) file:line anchors verified on the pinned tree this run — bash.run_in_background_schema=393 bash.run_in_background_exec=108 bash.registry_required=505 tool_jobs.job_output=311 tool_jobs.job_list=352 tool_jobs.job_kill=372 bundle.jobs_provider=89 bundle.tool_jobs=276 remote.job_namespace=59 preset.standard_tool_jobs=33
+dsh web: http://127.0.0.1:3184/?token=<REDACTED-1d600092>
+
+[2026-10-17T04:14:42.658Z] FATAL cleanup: host=SIGKILL sent (unreaped direct child) world=removed residue=verified absent (re-checked 500 ms after the sweep)

@@ -1,0 +1,36 @@
+{
+  "durableMembers": {
+    "session-a5w7m-root-2026-10-17T04-26-19": [
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ],
+    "session-a5w7m-team-2026-10-17T04-26-19": [
+      {
+        "instanceId": "inst-083nwnx1e90z",
+        "templateId": "wa",
+        "childSessionId": "session-team-child-eaf1c32ca851ef75af67c2e192ebc6c1",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-0l5dv401uu8t",
+        "templateId": "wb",
+        "childSessionId": "session-team-child-d1357740ed432f556237c835651f56de",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ]
+  },
+  "extractedInstanceIds": [
+    "inst-083nwnx1e90z",
+    "inst-0l5dv401uu8t"
+  ]
+}

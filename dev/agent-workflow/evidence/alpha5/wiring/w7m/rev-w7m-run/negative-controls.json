@@ -1,0 +1,93 @@
+{
+  "note": "Both permits ARMED TRUE and a genuine team admit — the deny comes from the reference/CAS face itself. unresolved: never-registered reference; withdrawn: reference moved to null; cas-stale: expected version 9999 vs actual — the device is untouched (before==after) and NO commit was appended.",
+  "responses": {
+    "neg1": {
+      "ok": true,
+      "entry": {
+        "attempt": "unresolved-domain-reference",
+        "outcome": "typed-deny",
+        "error": "DOMAIN_DENIED",
+        "detail": "domain-reference-unresolved:a5w7m-ref-NEVER-REGISTERED",
+        "guessed_binding": false,
+        "device_version_before": 1,
+        "device_version_after": 1,
+        "at": "2026-10-17T04:40:44.463Z"
+      },
+      "team_leg_ok": true
+    },
+    "neg2": {
+      "ok": true,
+      "entry": {
+        "attempt": "withdrawn-domain-reference",
+        "outcome": "typed-deny",
+        "error": "DOMAIN_DENIED",
+        "detail": "domain-reference-unresolved:a5w7m-ref-withdrawn",
+        "guessed_binding": false,
+        "device_version_before": 1,
+        "device_version_after": 1,
+        "at": "2026-10-17T04:40:44.463Z"
+      },
+      "team_leg_ok": true
+    },
+    "neg3": {
+      "ok": true,
+      "entry": {
+        "attempt": "cas-stale-version",
+        "outcome": "interlock-refused",
+        "error": "cas-version-conflict",
+        "detail": "expected=9999 actual=1",
+        "guessed_binding": false,
+        "device_version_before": 1,
+        "device_version_after": 1,
+        "at": "2026-10-17T04:40:44.464Z"
+      },
+      "team_leg_ok": true
+    }
+  },
+  "ledger": [
+    {
+      "attempt": "unresolved-domain-reference",
+      "outcome": "typed-deny",
+      "error": "DOMAIN_DENIED",
+      "detail": "domain-reference-unresolved:a5w7m-ref-NEVER-REGISTERED",
+      "guessed_binding": false,
+      "device_version_before": 1,
+      "device_version_after": 1,
+      "at": "2026-10-17T04:40:44.463Z"
+    },
+    {
+      "attempt": "withdrawn-domain-reference",
+      "outcome": "typed-deny",
+      "error": "DOMAIN_DENIED",
+      "detail": "domain-reference-unresolved:a5w7m-ref-withdrawn",
+      "guessed_binding": false,
+      "device_version_before": 1,
+      "device_version_after": 1,
+      "at": "2026-10-17T04:40:44.463Z"
+    },
+    {
+      "attempt": "cas-stale-version",
+      "outcome": "interlock-refused",
+      "error": "cas-version-conflict",
+      "detail": "expected=9999 actual=1",
+      "guessed_binding": false,
+      "device_version_before": 1,
+      "device_version_after": 1,
+      "at": "2026-10-17T04:40:44.464Z"
+    }
+  ],
+  "device_after": {
+    "state": "COMMITTED-cell-TT",
+    "version": 1
+  },
+  "commits_after": [
+    {
+      "cellId": "cell-TT",
+      "ref": "a5w7m_tool",
+      "identity": "def-v1",
+      "versionBefore": 0,
+      "versionAfter": 1,
+      "at": "2026-10-17T04:40:43.237Z"
+    }
+  ]
+}

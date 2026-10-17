@@ -1,0 +1,106 @@
+{
+  "assemblies": {
+    "session-a3bef006-28f3-41ad-8266-1a025494d452": {
+      "installOk": true,
+      "bindOwnOk": true,
+      "publishedOk": true,
+      "channelBeforeInjection": "armed",
+      "changeChannelStatus": "proven",
+      "subAttempted": true,
+      "subDisposerCalled": false,
+      "swallowActive": true,
+      "laneCalls": 4,
+      "laneDeliveries": 2,
+      "absorbed": 2,
+      "controlEvents": 4,
+      "laneEventRaw": [
+        {
+          "at": "2026-10-17T05:12:24.846Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:24.847Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:28.363Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:28.363Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        }
+      ],
+      "controlEventRaw": [
+        {
+          "at": "2026-10-17T05:12:24.847Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:24.848Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:28.363Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        },
+        {
+          "at": "2026-10-17T05:12:28.363Z",
+          "type": "undefined",
+          "ctor": "(none)",
+          "keys": [],
+          "argCount": 1,
+          "text": "undefined"
+        }
+      ],
+      "bodyCounts": {},
+      "drifted": true,
+      "verifiedAtCallEdge": false,
+      "verifiedFalseObserved": true,
+      "verifiedNow": false,
+      "pendingCalls": 0,
+      "observationsCount": 19,
+      "changeAbortIssued": 0,
+      "cancelledBeforeBody": 0,
+      "executedUnvalidated": 0,
+      "executedUnvalidatedAlarms": 0,
+      "callEdgeDrift": 0,
+      "bindingRevisedUnverified": 1,
+      "toolResults": [
+        {
+          "isError": true,
+          "text": "Error: team tool guard: \"a5l1_probe\" now resolves to a different ToolDefinition than the one its Binding pinned (definition drift: an old verification never transfers to a new body; re-bind required)",
+          "verifiedAfter": false
+        }
+      ]
+    }
+  }
+}

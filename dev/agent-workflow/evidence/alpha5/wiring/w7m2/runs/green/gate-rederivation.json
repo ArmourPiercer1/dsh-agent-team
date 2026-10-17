@@ -1,0 +1,28 @@
+{
+  "exit": 0,
+  "verdict": {
+    "liveOk": true,
+    "withTrioOk": false,
+    "withTrioFatal": [
+      {
+        "name": "job_kill",
+        "classification": "known-sensitive-unmanaged",
+        "reason": "background job process control is outside the static permission coverage (no alpha.2 operation adapter)",
+        "remediation": "remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)"
+      },
+      {
+        "name": "job_list",
+        "classification": "known-sensitive-unmanaged",
+        "reason": "background job process control is outside the static permission coverage (no alpha.2 operation adapter)",
+        "remediation": "remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)"
+      },
+      {
+        "name": "job_output",
+        "classification": "known-sensitive-unmanaged",
+        "reason": "background job process control is outside the static permission coverage (no alpha.2 operation adapter)",
+        "remediation": "remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)"
+      }
+    ]
+  },
+  "stderr": ""
+}
