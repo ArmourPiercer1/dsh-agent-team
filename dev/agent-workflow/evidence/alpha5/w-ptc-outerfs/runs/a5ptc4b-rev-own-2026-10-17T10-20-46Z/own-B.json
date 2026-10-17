@@ -1,0 +1,62 @@
+{
+  "rows": [
+    {
+      "seq": 3,
+      "at": "2026-10-17T10:21:07.334Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-1692f2a3-01f2-4b9e-8345-320dacd900cb",
+      "callId": "call-A5PTC4BREVOWN20261017T102046Z-M",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "own-rev B: outer fs program under Team per-call governance",
+      "decision": "lane-timeout",
+      "outcome": "rejected",
+      "heldMs": 8999,
+      "laneDeadlineMs": 9000
+    }
+  ],
+  "grants": [
+    {
+      "grantId": "g2",
+      "via": "team-lane-tool",
+      "source": "declared",
+      "decision": "allow",
+      "state": "issued",
+      "bind": {
+        "agent": "session-1692f2a3-01f2-4b9e-8345-320dacd900cb",
+        "callId": "call-A5PTC4BREVOWN20261017T102046Z-M",
+        "toolName": "run_code",
+        "mode": "workspace-write"
+      },
+      "issuerLane": {
+        "label": "session-0570dd4d-317e-4311-a586-9e938e7ee3b4",
+        "sessionId": "session-0570dd4d-317e-4311-a586-9e938e7ee3b4",
+        "role": "lane"
+      },
+      "ttlMs": 120000,
+      "issuedAt": "2026-10-17T10:21:06.332Z",
+      "expiresAt": "2026-10-17T10:23:06.332Z",
+      "expired": false,
+      "consumedAt": null,
+      "consumedByAskSeq": null,
+      "revokedAt": null,
+      "transitions": [
+        {
+          "at": "2026-10-17T10:21:06.332Z",
+          "to": "issued",
+          "source": "declared",
+          "ttlMs": 120000
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "at": 1792232476357,
+      "callId": "call-A5PTC4BREVOWN20261017T102046Z-M",
+      "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+      "err": true
+    }
+  ],
+  "written": false
+}

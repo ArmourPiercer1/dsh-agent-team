@@ -1,0 +1,12 @@
+{
+  "grantsBeforeProbe": 0,
+  "grantsAfterProbe": 0,
+  "oldGrant": {
+    "status": 405,
+    "body": ""
+  },
+  "newGrant": {
+    "status": 405,
+    "body": ""
+  }
+}

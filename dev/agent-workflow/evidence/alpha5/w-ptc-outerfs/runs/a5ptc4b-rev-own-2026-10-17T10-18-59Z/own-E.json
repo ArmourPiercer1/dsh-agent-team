@@ -1,0 +1,66 @@
+{
+  "rows": [
+    {
+      "seq": 6,
+      "at": "2026-10-17T10:19:44.697Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-5debb37c-b77b-452d-b0bc-413a38e16533",
+      "callId": "call-A5PTC4BREVOWN20261017T101859Z-R",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "own-rev E: outer fs program under Team per-call governance",
+      "decision": "revoked",
+      "outcome": "rejected",
+      "grantId": "g4",
+      "ttlMs": 60000
+    }
+  ],
+  "grant": {
+    "grantId": "g4",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "revoked",
+    "bind": {
+      "agent": "session-5debb37c-b77b-452d-b0bc-413a38e16533",
+      "callId": "call-A5PTC4BREVOWN20261017T101859Z-R",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-5cd4ba75-4425-477d-8006-3d2e0ac8b4b8",
+      "sessionId": "session-5cd4ba75-4425-477d-8006-3d2e0ac8b4b8",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T10:19:42.282Z",
+    "expiresAt": "2026-10-17T10:20:42.282Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": "2026-10-17T10:19:43.495Z",
+    "transitions": [
+      {
+        "at": "2026-10-17T10:19:42.282Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T10:19:43.495Z",
+        "to": "revoked",
+        "from": "issued",
+        "by": "session-5cd4ba75-4425-477d-8006-3d2e0ac8b4b8"
+      }
+    ]
+  },
+  "results": [
+    {
+      "at": 1792232384715,
+      "callId": "call-A5PTC4BREVOWN20261017T101859Z-R",
+      "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+      "err": true
+    }
+  ],
+  "written": false
+}

@@ -1,0 +1,61 @@
+{
+  "rows": [
+    {
+      "seq": 4,
+      "at": "2026-10-17T10:19:32.251Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-5debb37c-b77b-452d-b0bc-413a38e16533",
+      "callId": "call-A5PTC4BREVOWN20261017T101859Z-X",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "REV-TOKEN-9F3-INERT-DOES-NOT-AUTHORIZE — replay attempt; reviewer model text must not be an authority",
+      "decision": "replay-of-consumed",
+      "outcome": "rejected",
+      "grantId": "g1",
+      "consumedAt": "2026-10-17T10:19:14.703Z"
+    }
+  ],
+  "results": [],
+  "written": false,
+  "grants": [
+    {
+      "grantId": "g1",
+      "via": "team-lane-tool",
+      "source": "declared",
+      "decision": "allow",
+      "state": "consumed",
+      "bind": {
+        "agent": "session-5debb37c-b77b-452d-b0bc-413a38e16533",
+        "callId": "call-A5PTC4BREVOWN20261017T101859Z-X",
+        "toolName": "run_code",
+        "mode": "danger-full-access"
+      },
+      "issuerLane": {
+        "label": "session-5cd4ba75-4425-477d-8006-3d2e0ac8b4b8",
+        "sessionId": "session-5cd4ba75-4425-477d-8006-3d2e0ac8b4b8",
+        "role": "lane"
+      },
+      "ttlMs": 120000,
+      "issuedAt": "2026-10-17T10:19:00.573Z",
+      "expiresAt": "2026-10-17T10:21:00.573Z",
+      "expired": false,
+      "consumedAt": "2026-10-17T10:19:14.703Z",
+      "consumedByAskSeq": 2,
+      "revokedAt": null,
+      "transitions": [
+        {
+          "at": "2026-10-17T10:19:00.573Z",
+          "to": "issued",
+          "source": "declared",
+          "ttlMs": 120000
+        },
+        {
+          "at": "2026-10-17T10:19:14.703Z",
+          "to": "consumed",
+          "byAskSeq": 2,
+          "outcome": "allowed-once"
+        }
+      ]
+    }
+  ]
+}

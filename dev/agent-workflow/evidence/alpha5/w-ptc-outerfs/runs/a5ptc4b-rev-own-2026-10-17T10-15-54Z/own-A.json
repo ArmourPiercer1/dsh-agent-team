@@ -1,0 +1,32 @@
+{
+  "grantAfterDeclare": [],
+  "foreignRows": [
+    {
+      "seq": 1,
+      "at": "2026-10-17T10:15:56.914Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-d5fae9fa-d666-42e8-a242-ccb8558c8503",
+      "callId": "call-A5PTC4BREVOWN20261017T101554Z-X",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "own-rev A3: outer fs program under Team per-call governance",
+      "decision": "lane-timeout",
+      "outcome": "rejected",
+      "heldMs": 9000,
+      "laneDeadlineMs": 9000
+    }
+  ],
+  "grantAfterForeign": [],
+  "foreignResults": [
+    {
+      "at": 1792232165934,
+      "callId": "call-A5PTC4BREVOWN20261017T101554Z-X",
+      "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+      "err": true
+    }
+  ],
+  "ownerResults": [],
+  "grantAfterOwner": [],
+  "foreignWritten": false,
+  "ownerWritten": false
+}
