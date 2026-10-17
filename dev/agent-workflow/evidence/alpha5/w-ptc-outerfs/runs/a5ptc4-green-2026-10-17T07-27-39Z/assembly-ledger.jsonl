@@ -1,0 +1,7 @@
+{"at":"2026-10-17T07:27:40.493Z","leg":"plugin-apply","pid":47,"assemble":true,"launcher":"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run","testUse":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"}
+{"at":"2026-10-17T07:27:40.493Z","leg":"launcher-deploy","attempted":true,"ok":true,"note":"public `internals.landlockLauncher` test-hook property set on the host provider instance","selectedRunnerAtApply":null}
+{"at":"2026-10-17T07:27:40.493Z","leg":"resolver-installed","ok":true,"face":"plugin ctx.on(approval/request)"}
+{"at":"2026-10-17T07:27:40.618Z","leg":"assembly-complete","label":"session-a882c6d3-4829-42d2-b587-3da25f18d8a9"}
+{"at":"2026-10-17T07:27:41.160Z","leg":"grant-fed","token":"t3","decision":"reject"}
+{"at":"2026-10-17T07:27:41.162Z","leg":"grant-fed","token":"t3b","decision":"no-answer"}
+{"at":"2026-10-17T07:27:41.167Z","leg":"grant-fed","token":"t4","decision":"allow"}

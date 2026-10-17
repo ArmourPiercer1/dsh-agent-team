@@ -6317,3 +6317,33 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
   PR1-RECONCILIATION + runs/ 17/17 三门 FINAL + boot 失败捕获 + PR1 复跑/克隆记录）。
 - **git**：分支 `alpha5-bind-diag` @ base `1869460a`，本轮提交后尝试 ff push（无凭证则记录）。
   模型：qwen3.8-flash-next。
+
+## 2026-10-17 — W-PTC-OUTERFS：外层 fs 半臂 per-call 治理装配尝试（三分之①=**装配成功**；branch `alpha5-ptc-outerfs`，base=9c72769f，端口 3184，世界 a5ptc4-*）
+
+- **裁决问题**：SEAM-RECHECK-OUTER 草案「更贴原计划那条」（host 原生 per-callId escalation 链 +
+  Team resolver 当批准方）能否把 PTC **外层程序**直接 fs 写的 per-call 治理装配进真实结构。
+  **实测裁决：能。** GREEN 15/15、RED 10/10（判别证明：未装配件时默认姿态逐字
+  `sandbox-unavailable` 整程序 fail-closed 于 spawn 前、无 resolver 时 ask 挂起零台账）。
+- **三腿实况**（权威轮 `runs/a5ptc4-green-2026-10-17T07-48-43Z/`）：①允许域写成功（真实分离进程
+  pid/ppid + Landlock enforcement 回读）；②禁区 create/append 双双 **EACCES 于 open**（程序体真跑、
+  echo canary+控制文件在场、**零字节落盘**、密钥 sha 不变）；③拒绝审批腿=逐字
+  `the user rejected escalating this program to "danger-full-access"`，resolver 不回腿=逐字
+  `... requires approval, but no approval channel is available`（throwing-answerer 宿主文档化归一化），
+  均零副作用、per-callId 台账行在册。正控 LEG4 allowed-once 单次加宽真生效；负控 LEG5 不粘着
+  （无 grant 下一腿再 EACCES；会话 mode 六腿恒 `workspace-write`，零 setSandboxMode/零 setApprovalPolicy）。
+- **OS 负控（任务③）**：**非 ENV_BLOCK**——W4 同款 Landlock 后端家族在场：launcher sha256
+  `a752bc72f111fcc5…` 直跑负控（ws 写 OK / 禁区双 EACCES / 零落盘）+ 管线内 `selectedRunner=landlock`
+  （enforcement=`partial`〔older ABI〕如实入账，不宣称 full ENFORCE）；宿主 bin/ 缺二进制，装配用
+  provider 公开 test-hook `internals.landlockLauncher` 指路（首次 confine 前）。
+- **缝事实**：`approval/request` 链上 boot 时已有 1 个非 global 非 prepend 外部监听且会**吊住**
+  waterfall（RED ask 永久挂起=与 W-PTC-OUTER LEG B 同族）；resolver 以 cordis 公开选项
+  `{global:true, prepend:true}` 置最外层后三 ask 即时裁决——**监听顺序编排=装配方决定**（生产
+  GUI 桥在场时抢序会截胡，真实 Team 部署 ask-lane 裁决人本应唯一回答方）。
+- **矩阵提案（本件零矩阵改，M-08 归 ROWFIX lane）**：fs 半臂转态提案报协调者台账——
+  `per_call_policy_denials.os_level_observed=true` + `execution.outer_real_process` 复证；
+  **net 半臂维持局部阻塞**（本件零网络姿态改动、未测 net 腿）。
+- **收口三件套**：CORE PATCH BUDGET=0（pin 树 @639ed01539 porcelain 前后=0）；:3080 前后 401 未动；
+  世界/禁区目录跑毕删除、3184 释放；test-use 树零写入。**证据**
+  `dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/`（README 台账 + row/kit + RED/GREEN runs/）。
+  **git**：分支 `alpha5-ptc-outerfs` @ base `9c72769f`，本轮提交后尝试 ff push（无凭证则记录）。
+  模型：qwen3.8-flash-next。

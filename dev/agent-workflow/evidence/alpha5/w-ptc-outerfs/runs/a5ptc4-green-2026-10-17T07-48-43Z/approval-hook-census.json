@@ -1,0 +1,29 @@
+{
+  "count": 4,
+  "rows": [
+    {
+      "idx": 0,
+      "global": true,
+      "tag": null,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 1,
+      "global": false,
+      "tag": null,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 2,
+      "global": false,
+      "tag": null,
+      "fnHead": "function () { [native code] }"
+    },
+    {
+      "idx": 3,
+      "global": false,
+      "tag": "session-81dc5b5d-4c24-4511-a745-242beb79c6e0",
+      "fnHead": "function () { [native code] }"
+    }
+  ]
+}
