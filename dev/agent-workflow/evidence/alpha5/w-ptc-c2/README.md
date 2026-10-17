@@ -1,4 +1,13 @@
-# W-PTC-C2 — PTC→受限 provider 同一装配链整链验证（COMPOSED-LIVE）
+# W-PTC-C2 — PTC→受限 provider 同一装配链整链验证（COMPOSED-LIVE ⇒ 06:53Z 口径收窄：仅内层 per-call 载荷执行边 LIVE-observed）
+
+> **06:53Z 口径收窄注记（W-PTC-ROWFIX #290 入册，branch alpha5-ptc-rowfix）**：本文件全部 **COMPOSED-LIVE**
+> 措辞收窄 =『**仅内层 per-call 载荷执行边 LIVE-observed**』（同链 guard 逐次断链 + Lane C 受限 provider
+> 真 execve/OS 拒绝 + 启动前 typed 拒零 spawn + 同名双侧 throw）。历史正文按当时记录保留，但行级判定以
+> W-PTC-OUTER 三态裁决为准：外层直接 fs/net OS 级拒绝负控在 M-08 原计划受控对象内（S0:55），三态裁决=
+> PROBE-GATED + 精确局部阻塞（外层可信文件域只能整程序级给定，公开 seam 无法注入 per-call Grant；
+> 网络效果无任何 OS 机制覆盖），独立 reviewer PASS 06c3b502 ⇒ 矩阵 M-08 行级 current_status=
+> TRANSITIONED-PROBE-GATED，本文 §3/§6 的 TRANSITIONED-LIVE 提案值已撤回。正本=machine 矩阵 M-08
+> transition_record + w-ptc-outer/（README/pr290-comment/runs）。
 
 writer = W-PTC-C2（one-off worktree `.worktrees/alpha5-ptc-chain`，branch `alpha5-ptc-chain`，base `master@8eb93ddd`）。
 liveness 首报（模型行原文）：`You are a coding agent powered by the qwen3.8-flash-next model.`
@@ -65,8 +74,10 @@ model turn ─▶ run_code（PTC 保留传输；host 自带 NodePtcRuntime；
 
 ## 6. 整链判定
 
-**COMPOSED-LIVE**（LEG-SPLIT 不再维持——同一链四 clause 全部 LIVE 观测在册）。
-真缺腿清零于本行断言集；矩阵 M-08 提案值 **TRANSITIONED-LIVE**。
+**COMPOSED-LIVE（06:53Z 口径收窄：仅内层 per-call 载荷执行边 LIVE-observed）**（LEG-SPLIT 不再维持——
+同一链四 clause〔A1–A4，内层边〕全部 LIVE 观测在册）。
+真缺腿清零仅于内层边断言集；矩阵 M-08 当时的 **TRANSITIONED-LIVE** 提案值已于 #290 按 06:53Z root 口径
+**撤回** ⇒ 行级 current_status=TRANSITIONED-PROBE-GATED（外层边=精确局部阻塞在册；见文首收窄注记）。
 
 ## 7. 文件清单
 
