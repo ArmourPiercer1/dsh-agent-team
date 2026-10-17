@@ -66,3 +66,4 @@ ToolBinding 放置语义（R1，#308 GLUE-5 在产机制的**类型面**）：`t
 
 红线：CORE PATCH BUDGET=0（upstream 零触）；`:3080`/`:3180` 零触碰；A-1..A-7 均未代裁
 （v4 字段族可选=可逆临时立场）；未借 v4 擅自裁历史 trim（additive only，ADR §6.0）。
+ci-trigger#3 content probe (no semantic change)
