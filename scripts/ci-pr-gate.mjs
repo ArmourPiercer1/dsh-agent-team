@@ -101,7 +101,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
 const BASELINES = {
   lint: 'dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt',
-  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-319a60d7.md',
+  census: 'dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md',
   fence: 'dev/agent-workflow/evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt',
 }
 
@@ -1369,10 +1369,10 @@ function selfTest() {
     const live = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8'))
     ok(
       live.declaredTotals !== null
-        && live.declaredTotals.files === 551 && live.declaredTotals.legs === 6941
+        && live.declaredTotals.files === 558 && live.declaredTotals.legs === 7010
         && live.ids.length === 9 && live.titledCount === 9 && live.collectionCount === 0
         && live.loadFamilies.length === 2,
-      'the COMMITTED baseline parses to the corpus and tolerance it declares: 551/6941, 9 tolerated ids, 0 collection files, 2 disclosed load families (pointer restated at 319a60d7 — MERGE-TREE caliber, the tree the CI census grades: alpha5-int-wiring merged onto origin/master @ ced9254c; the nine ids stay byte-identical to the b9cc0a2d set across both restatements, so the tolerance has not moved at all; 551/6941 were MEASURED on the merged tree by two consecutive two-capture runs, four captures, identical sets, verdict pass)',
+      'the COMMITTED baseline parses to the corpus and tolerance it declares: 558/7010, 9 tolerated ids, 0 collection files, 2 disclosed load families (pointer restated at 2b1099d7 — GLUE-2: the tools Search/Shell lane\'s seven root-collected test files, 69 legs, moved the CONTEXT corpus 551/6941 → 558/7010; the IDENTITY set moved ZERO lines — the ids file is a cmp-verified byte copy across THREE restatements; master had not moved at capture so branch tree == merge-ref tree, the caliber ruling satisfied by equality; 558/7010 were MEASURED on that tree by a two-capture run, identical sets, verdict pass, and re-graded from the stored captures with --census-json against this pointer)',
     )
   }
 

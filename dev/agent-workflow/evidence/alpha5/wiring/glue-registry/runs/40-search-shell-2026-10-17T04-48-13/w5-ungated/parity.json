@@ -1,0 +1,89 @@
+[
+  {
+    "label": "printf",
+    "governed": {
+      "callId": "w5-bash-ungated-2",
+      "command": "printf 'alpha\\nbeta\\n'",
+      "exit": 0,
+      "stdoutSha": "sha256:e49c81e2d2f84e259d40e2fb8192f3bcd198b355184845d76d8f58807d0d78ee",
+      "stderrSha": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 11,
+      "stderrBytes": 0,
+      "timedOut": false
+    },
+    "raw": {
+      "label": "printf",
+      "kind": "shell",
+      "exit": 0,
+      "stdoutSha": "sha256:e49c81e2d2f84e259d40e2fb8192f3bcd198b355184845d76d8f58807d0d78ee",
+      "stderrSha": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 11,
+      "stderrBytes": 0
+    },
+    "equal": true
+  },
+  {
+    "label": "stderr-exit3",
+    "governed": {
+      "callId": "w5-bash-ungated-3",
+      "command": "echo out; echo err >&2; exit 3",
+      "exit": 3,
+      "stdoutSha": "sha256:54034ac5c6e9ea95734ec2b729fd6d62abf64af34a9f9ce5d466cb788191a73d",
+      "stderrSha": "sha256:2ccde4875ec595757efdf23d7b1336fcd69cf0fb869310b12a0d219c52817b20",
+      "stdoutBytes": 4,
+      "stderrBytes": 4,
+      "timedOut": false
+    },
+    "raw": {
+      "label": "stderr-exit3",
+      "kind": "shell",
+      "exit": 3,
+      "stdoutSha": "sha256:54034ac5c6e9ea95734ec2b729fd6d62abf64af34a9f9ce5d466cb788191a73d",
+      "stderrSha": "sha256:2ccde4875ec595757efdf23d7b1336fcd69cf0fb869310b12a0d219c52817b20",
+      "stdoutBytes": 4,
+      "stderrBytes": 4
+    },
+    "equal": true
+  },
+  {
+    "label": "big-seq",
+    "governed": {
+      "callId": "w5-bash-ungated-4",
+      "command": "seq 1 4000",
+      "exit": 0,
+      "stdoutSha": "sha256:b5522725f65691de77d329f3124bb1ddcd70e4f201c7a0b6f841c6ee138c37c6",
+      "stderrSha": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 18893,
+      "stderrBytes": 0,
+      "timedOut": false
+    },
+    "raw": {
+      "label": "big-seq",
+      "kind": "shell",
+      "exit": 0,
+      "stdoutSha": "sha256:b5522725f65691de77d329f3124bb1ddcd70e4f201c7a0b6f841c6ee138c37c6",
+      "stderrSha": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutBytes": 18893,
+      "stderrBytes": 0
+    },
+    "equal": true
+  },
+  {
+    "label": "grep-token",
+    "governed": {
+      "spillId": null,
+      "spillBytes": null,
+      "spillSha": null,
+      "outcomeRawSha": "sha256:d30d8a088f500858ead1eb7f27b143d3d994f9ef2a2471eceb91225d8bec9856",
+      "totalMatches": 2
+    },
+    "raw": {
+      "label": "grep-token",
+      "kind": "search",
+      "exit": 0,
+      "stdoutSha": "sha256:d30d8a088f500858ead1eb7f27b143d3d994f9ef2a2471eceb91225d8bec9856",
+      "stdoutBytes": 307
+    },
+    "equal": false
+  }
+]
