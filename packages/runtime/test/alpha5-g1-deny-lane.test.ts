@@ -31,10 +31,10 @@
  * (the same plain-`.mjs` live-row discipline the F15 suite uses); the kit
  * re-runs the same shapes against the committed dist mirror bytes.
  */
-import { mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { describe, beforeAll, afterAll, expect, it } from 'vitest'
+import { mkdirSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { destroyDir, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 
 type LaneVerdict = { kind: 'allow' } | { kind: 'deny'; code: string }
 type Decide = (effectSet: unknown) => LaneVerdict
@@ -196,10 +196,14 @@ function exists(p: string): boolean {
 }
 
 describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend runs', () => {
-  let scratch: string
+  const scratch = scratchDir('a5g1-deny')
 
   beforeAll(() => {
-    scratch = mkdtempSync(join(tmpdir(), 'a5g1-deny-'))
+    mkdirSync(scratch, { recursive: true })
+  })
+
+  afterAll(() => {
+    destroyDir(scratch)
   })
 
   it('denied team_bash: typed template-deny-lane refusal, backend execCount 0, ZERO fs write', async () => {
@@ -252,7 +256,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     expect(bash.text).not.toContain('IO_POLICY_UNSUPPORTED')
     // the allow lane lands on the shut face (the disclosed GLUE-4 follow-up
     // gap): the call REACHES the backend and the backend answers it.
-    const grep = await defs.find((d) => d.name === 'team_grep')!.execute({ pattern: 'x', path: '/a5g1/target.txt' })
+    const grep = await defs.find((d) => d.name === 'team_grep')!.execute({ pattern: 'x', path: '/a5g1/target.txt', output_mode: 'content' })
     expect(grep.text).toContain('code=IO_POLICY_UNSUPPORTED')
   })
 
@@ -266,7 +270,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     })
     expect(built.ok).toBe(true)
     const defs = built.value!.definitions
-    const grep = await defs.find((d) => d.name === 'team_grep')!.execute({ pattern: 'x', path: '/a5g1/target.txt' })
+    const grep = await defs.find((d) => d.name === 'team_grep')!.execute({ pattern: 'x', path: '/a5g1/target.txt', output_mode: 'content' })
     expect(grep.text).toContain('code=template-default-deny')
     expect(grep.text).not.toContain('IO_POLICY_UNSUPPORTED')
   })
