@@ -455,7 +455,7 @@ function digestRequest(parsed) {
       else if (b?.type === 'tool_use') { assistantToolNames.push(String(b.name ?? '')); text += '\u0001tool_use:' + String(b.name ?? '') + JSON.stringify(b.input ?? {}) }
       else if (b?.type === 'tool_result') {
         const rep = typeof b.content === 'string' ? b.content : JSON.stringify(b.content ?? '')
-        toolResults.push(rep.slice(0, 400))
+        toolResults.push(rep.slice(0, 2400))
         text += '\u0001tool_result:' + rep
       }
     }
@@ -856,7 +856,7 @@ async function main() {
   check('L6', 'POSITIVE 4 (glob, REAL rg INSIDE the confined sandbox): the assembled team_glob hit rides the wire (g7-hit.g7glob from the rg --files walk under Landlock), no IO_POLICY near it',
     aResults[4]?.includes('g7-hit.g7glob') === true && !(aResults[4] ?? '').includes(IO_TEXT), `r4=${JSON.stringify(aResults[4] ?? 'LEG-MISSING').slice(0, 220)}`)
   check('L7', 'OUTPUT BOUND on the wire: 105 seeded *.g7cap files over the host public-root cap GLOB_MAX_RESULTS=100 — the truncation marker is honest, the walk was never silently cut',
-    aResults[5]?.includes('cap-000.g7cap') === true && aResults[5]?.includes('truncated') === true, `r5=${JSON.stringify(aResults[5] ?? 'LEG-MISSING').slice(0, 260)}`)
+    aResults[5]?.includes('105 matches') === true && aResults[5]?.includes('truncated') === true && (aResults[5]?.match(/g7cap/g) ?? []).length <= 100, `r5=${JSON.stringify(aResults[5] ?? 'LEG-MISSING').slice(0, 260)}`)
   check('L8', 'INVALID-GLOB SHAPE: the typed walker failure surfaces on the wire (rg-walker-error: the streaming arm read rg\'s hard exit as 0 on this host and the walker\'s stderr carried it — disclosed in glue7/glob/probes), never a crash, never a fake-empty',
     aResults[6]?.includes('rg-walker-error') === true && !(aResults[6] ?? '').includes('g7-hit'), `r6=${JSON.stringify(aResults[6] ?? 'LEG-MISSING').slice(0, 220)}`)
   check('L9', 'ANCHOR ADVERSARIAL (symlink-final): team_glob at path=escape-link — a symlink inside the governed root whose FINAL target is the outside secret dir — is refused symlink-alias before any spawn and the secret bytes NEVER ride the wire',
