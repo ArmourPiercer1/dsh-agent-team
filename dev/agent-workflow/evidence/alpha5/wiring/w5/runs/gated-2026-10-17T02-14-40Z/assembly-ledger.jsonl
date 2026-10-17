@@ -1,0 +1,12 @@
+{"at":"2026-10-17T02:14:41.206Z","leg":"plugin-apply","pid":58,"mode":"gated","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/packages/runtime/dist/packages","lane":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5w5/tests/homes/.a5w5-build"}
+{"at":"2026-10-17T02:14:41.236Z","leg":"lanes-imported","ok":true,"settlement0":"dispatcher-call-cancelled-before-body"}
+{"at":"2026-10-17T02:14:41.392Z","leg":"register","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","names":["a5w5_search","a5w5_bash"],"ok":true}
+{"at":"2026-10-17T02:14:41.395Z","leg":"guard-assembled","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","installOk":true,"bindOwnOk":true,"publishedOk":true,"channel":"armed"}
+{"at":"2026-10-17T02:14:41.397Z","leg":"register","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","name":"a5w5_unbound_probe","afterAssembly":true,"ok":true}
+{"at":"2026-10-17T02:14:41.398Z","leg":"lifecycle-complete","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","legsOk":true}
+{"at":"2026-10-17T02:14:41.398Z","leg":"assembly-complete","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee"}
+{"at":"2026-10-17T02:14:41.568Z","leg":"gated-presented","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","callId":"w5-search-1","kindName":"search","grant":"grant:6da2a3057e4fba2fbd000288de78d0ab","spill":{"spillId":"grep-w5-search-1","bytes":297}}
+{"at":"2026-10-17T02:14:41.589Z","leg":"gated-presented","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","callId":"w5-bash-2","kindName":"bash","grant":"grant:e70f3e981f59a10918948e90d4776cc5","spill":{"spillId":"bash-w5-bash-2","bytes":11}}
+{"at":"2026-10-17T02:14:41.609Z","leg":"gated-presented","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","callId":"w5-bash-3","kindName":"bash","grant":"grant:4dfa2b6c7baa0d157686ddab0099650f","spill":{"spillId":"bash-w5-bash-3","bytes":8}}
+{"at":"2026-10-17T02:14:41.629Z","leg":"gated-presented","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","callId":"w5-bash-4","kindName":"bash","grant":"grant:3b001c88e563eaeb0dddf09dbeb7cbd8","spill":{"spillId":"bash-w5-bash-4","bytes":18893}}
+{"at":"2026-10-17T02:14:41.646Z","leg":"gated-refused","label":"session-75836ed9-d843-4d48-8679-5db3a93539ee","callId":"w5-search-5","stage":"requires-approval","code":"requires-approval"}
