@@ -1,0 +1,95 @@
+{
+  "posture": "red",
+  "rowPath": "packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs",
+  "rowSha256": "fe3cd31cd2db51679fecf5b3c441d1efbc9cd0fb706eb282c92d0d0e860f621d",
+  "k1": {
+    "text": "bash · exit=0\n> A5G1_BACKEND_RAN\na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}",
+    "shellExec": 1,
+    "shellSentinelWritten": true
+  },
+  "k2": {
+    "text": "search · content · 1 matches\n> /a5g1/target.txt:2: A5G1_GREP_HIT\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"content\",\"totalMatches\":1,\"truncated\":false}",
+    "searchExec": 1,
+    "searchSentinelWritten": true
+  },
+  "k3": {
+    "bash": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+    "grep": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+  },
+  "k4": {
+    "grep": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+    "bash": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+  },
+  "vectors": [
+    {
+      "id": "native-bash-deny-under-deny-default",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "native-bash-deny-under-ask-default",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "uncovered-grep-arms-bare-deny-default",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "uncovered-glob-arms-bare-deny-default",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "takeover-mount-native-spelling",
+      "expectedForPosture": "deny:template-deny-lane",
+      "got": "deny:template-deny-lane"
+    },
+    {
+      "id": "alias-spelling-team-bash-deny",
+      "expectedForPosture": "deny:template-deny-lane",
+      "got": "deny:template-deny-lane"
+    },
+    {
+      "id": "alias-spelling-team-grep-uncovered",
+      "expectedForPosture": "deny:template-default-deny",
+      "got": "deny:template-default-deny"
+    },
+    {
+      "id": "allow-lane-grep-covered",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "non-plane-invoke-outside-namespace",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    },
+    {
+      "id": "file-class-deny-exact-locator",
+      "expectedForPosture": "deny:template-deny-lane",
+      "got": "deny:template-deny-lane"
+    },
+    {
+      "id": "ask-default-gate-off",
+      "expectedForPosture": "allow",
+      "got": "allow"
+    }
+  ],
+  "vectorsInvariant": [
+    "takeover-mount-native-spelling",
+    "alias-spelling-team-bash-deny",
+    "alias-spelling-team-grep-uncovered",
+    "allow-lane-grep-covered",
+    "non-plane-invoke-outside-namespace",
+    "file-class-deny-exact-locator",
+    "ask-default-gate-off"
+  ],
+  "vectorsFlipped": [
+    "native-bash-deny-under-deny-default",
+    "native-bash-deny-under-ask-default",
+    "uncovered-grep-arms-bare-deny-default",
+    "uncovered-glob-arms-bare-deny-default"
+  ]
+}

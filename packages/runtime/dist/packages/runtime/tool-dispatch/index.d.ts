@@ -37,6 +37,6 @@ export { GOVERNED_UNVERIFIED_REASONS, GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, G
 export type { GovernedEntry, GovernedOrigin, GovernedUnverifiedReason, InheritedSurfaceBinding, GovernedSurface, GovernedSurfaceOptions, GuardDecisionInput, GuardDenialReason, GuardExecView, GuardScopeIdentity, GuardVerdict, } from './closed-world-guard.js';
 export { createScopedDispatcher } from './scoped-dispatcher.js';
 export type { CallToken, DispatcherObservation, ScopedDispatcher, ScopedDispatcherOptions, } from './scoped-dispatcher.js';
-export { hostExecToView, installScopedToolGuard, requireService } from './install.js';
-export type { GuardFn, InstallScopedGuardInput, ScopedGuardAgentCtx, ScopedGuardHandle, SurfaceRevalidation, } from './install.js';
+export { hostExecToView, installScopedToolGuard, requireService, definitionIdentityOf } from './install.js';
+export type { BindingFeed, BindingFeedEntry, GuardFn, InstallScopedGuardInput, ScopedGuardAgentCtx, ScopedGuardHandle, SurfaceRevalidation, } from './install.js';
 //# sourceMappingURL=index.d.ts.map

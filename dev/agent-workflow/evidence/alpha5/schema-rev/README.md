@@ -66,3 +66,11 @@ ToolBinding 放置语义（R1，#308 GLUE-5 在产机制的**类型面**）：`t
 
 红线：CORE PATCH BUDGET=0（upstream 零触）；`:3080`/`:3180` 零触碰；A-1..A-7 均未代裁
 （v4 字段族可选=可逆临时立场）；未借 v4 擅自裁历史 trim（additive only，ADR §6.0）。
+
+## Rebase-integration 注（2026-10-17 merge master@68deccaa）
+
+- master 推进两笔入链：G1 deny-lane 修复（#315，链 1168→1169）+ P-B-R2 binding feed（#317，链 1169→1170）。
+- 本支 p4t6 Δ9 条款按"链在 master 侧，迟到者 re-tie"规则重钉于 **1170→1179**（合并树上实测：p4t6 coverage 精确断言 filesScanned，66/66 绿）。
+- **历史钉保留**：原笔 `1177 - 1168`（base 23002259 上的本轮首落）不删除——本文与 commit message 均保留该历史值；merge 后的现行钉以 p4t6 测试体内注释为准（"Pre-merge this clause tied 1177 - 1168"）。
+- router-log 并集：master 三条按 master 追加顺序在前，本支 17:4xZ 条整体保持原文在后；两侧均无删改（并集非改写）。
+- 语义冲突：无（G1=runtime src 面、P-B-R2=install 面，与本支 dormant domain 面零交集）；a5sr 五套件、typecheck、dist 镜像（9 文件再生）均在合并树亲验。

@@ -1,0 +1,147 @@
+{
+  "runStamp": "2026-10-17T16-59-32Z",
+  "port": 3183,
+  "expansion": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T16-59-32Z",
+  "head": "bcb65eb8ef821cd51b443eeba2f16930a3f339db",
+  "fileCount": 1732,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (porcelain 0 before)",
+      "pass": true,
+      "observed": "head=639ed01539"
+    },
+    {
+      "id": "H2",
+      "claim": "host port 3183 free (self-proved) and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3491"
+    },
+    {
+      "id": "E1",
+      "claim": "unfolded (AUX surface, NON-PURE — the purity claim lives in RED-A): git archive HEAD = dist mirror (1727) + package.json + the TWO tracked sibling files the entry loads at runtime OUTSIDE the mirror (upstream-resolver.mjs hook, harness seam.mjs) + bundled skills. The public manifest (package.json files:[\"dist\"]) does NOT cover the siblings; they are added here ONLY so governance legs ②③④ can run — per the root ruling a backfilled surface is never called a pure install pass; the gap itself is pinned by RED-A. Face: 44-file a5p5, 3 glue placements, entry rows; per-file sha256 in expansion-manifest.json",
+      "pass": true,
+      "observed": "files=1732 a5p5=44 glue=[true,true,true] siblings=[true,true] skills=2"
+    },
+    {
+      "id": "E2",
+      "claim": "the repo drift gate (check-artifacts-committed) grades the committed dist at HEAD: exit 0 and drift=0",
+      "pass": true,
+      "observed": "status=0 tail=[\"DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1730 glue=3\",\"[check-artifacts-committed] OK: 1730 files — working tree equals the git INDEX for both install surfaces (incl. 3 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.\"]"
+    },
+    {
+      "id": "E3",
+      "claim": "import probe FROM THE EXPANSION ONLY: six production loads (host.js + the two live rows + the glue-edited bindings + the boot-time harness seam + the a5p5 register face) import clean with the TRANSITIVE dependency closure (declared deps BFS-complete) landed at EXP/node_modules — zero repo-source path in the load graph",
+      "pass": true,
+      "observed": "attempts=8 bfs=29 nmTop=[\"@deepseek-ai\",\"@modelcontextprotocol\",\"@standard-schema\",\"cross-spawn\",\"eventsource\",\"eventsource-parser\",\"isexe\",\"jose\",\"path-key\",\"pkce-challenge\",\"shebang-command\",\"shebang-regex\",\"which\",\"yaml\","
+    },
+    {
+      "id": "E4",
+      "claim": "purity MEASURED: a module.resolve hook over the probe run enumerates the ENTIRE load graph — every file: module the five production rows load resolves INSIDE the expansion (foreign modules: 0); the ancestor node_modules census is recorded as context",
+      "pass": true,
+      "observed": "loaded=1635 foreign=0 sample=[]"
+    },
+    {
+      "id": "RED-A",
+      "claim": "STRICT public-manifest install face (files:[\"dist\"] + declared deps, NOTHING backfilled from the source tree): the production entry FAILS to boot — the entry's runtime reference to <pkg-root>/src/plugin/upstream-resolver.mjs (and the harness seam behind it) is a REAL install-manifest gap; the reference name + verbatim resolution failure are pinned here; packaging/path fix = GLUE formal round, single writer (this kit changes no packaging)",
+      "pass": true,
+      "observed": "pureFiles=1728 failLine=[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T16-59-32Z-pure/packages/runtime/src"
+    },
+    {
+      "id": "S1",
+      "claim": "SYNTH(EXP): createTeamToolPlaneAssembly mounts the own-layer trio (team_grep/team_glob/team_bash) scoped-only (never global) on a governed scope, straight off the expansion module",
+      "pass": true,
+      "observed": "own=[\"team_bash\",\"team_glob\",\"team_grep\"] placed=true"
+    },
+    {
+      "id": "S1b",
+      "claim": "SYNTH(EXP): the lane re-check denies the shell alias on the deny lane (template-deny-lane) and allows the read-class alias (tighten-only class mapping)",
+      "pass": true,
+      "observed": "bash=template-deny-lane grep=allow"
+    },
+    {
+      "id": "S2",
+      "claim": "SYNTH(EXP): the installed PR7 row refuses unbacked + cross-root owner claims (owner-not-durable) with zero registrations, and its assembly-owned lease walks ACTIVE→DRAINING→RELEASED honestly (the transition close() takes at teardown)",
+      "pass": true,
+      "observed": "refuse=owner-not-durable states=ACTIVE->DRAINING->RELEASED rel=true"
+    },
+    {
+      "id": "H3",
+      "claim": ":3080 stable instance untouched (read-only probe before/after) and the test-use host porcelain 0 after",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "W1",
+      "claim": "all worlds booted from the EXPANSION row name, driven, observer facts captured (worlds swept)",
+      "pass": true,
+      "observed": "team:ok/swept"
+    },
+    {
+      "id": "T1",
+      "claim": "LIVE PRE-FLIGHT (skill §7): the saved blueprint lists in catalog.list AND resolves (strong parse) in catalog.get on the EXPANSION-powered host",
+      "pass": true,
+      "observed": "{\"listStatus\":200,\"listed\":true,\"getStatus\":200,\"getErr\":null}"
+    },
+    {
+      "id": "T2",
+      "claim": "R1 PLACEMENT live on the installed surface: the governed leader carries the own-layer trio (scoped yes, global NO), BOTH governed agents are own-layer carriers, and the assembly logged its placement rows",
+      "pass": true,
+      "observed": "leaderScoped=[\"team_bash\",\"team_collect\",\"team_delegate\",\"team_glob\",\"team_grep\"] placedRows=2 carriers=2"
+    },
+    {
+      "id": "T3",
+      "claim": "the placement reached the model-facing WIRE of BOTH governed agents: leader wire carries team_delegate+team_collect+aliases; the member wire carries the aliases",
+      "pass": true,
+      "observed": "leader team_*=[\"team_bash\",\"team_collect\",\"team_delegate\",\"team_glob\",\"team_grep\"] member team_*=[\"team_bash\",\"team_glob\",\"team_grep\"]"
+    },
+    {
+      "id": "T4",
+      "claim": "REAL delegation: the leader scripted team_delegate(sync)+team_collect over template wa; the member-bound session received the delegated task prompt AT THE WIRE with a multi-request transcript",
+      "pass": true,
+      "observed": "leaderToolCalls=[\"team_delegate\",\"team_collect\"] memberReqs=4"
+    },
+    {
+      "id": "T5",
+      "claim": "① POSITIVE CONTROL (root ruling): the GOVERNED read tool really EXECUTED on the member — the governed lane allowed read-class, the host core backend ran the file read, and the tool result carries the target file content (A5IE_GREP_TARGET line) — a small task completed for real",
+      "pass": false,
+      "observed": "readSucceeded=false result=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"read\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}]\""
+    },
+    {
+      "id": "T6",
+      "claim": "REFUSAL-CHAIN leg 1 (never counted as the positive control): the own-layer trio call team_bash through the R1 placement was DENIED by the lane (template-deny-lane) BEFORE any backend ran",
+      "pass": false,
+      "observed": "bashDenied=false results=[\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"read\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}]\",\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Err"
+    },
+    {
+      "id": "T7",
+      "claim": "REFUSAL-CHAIN leg 2 + LOCALIZED GAP (never counted as the positive control): the own-layer trio call team_grep reached the INSTALLED effect face and got the typed IO_POLICY_UNSUPPORTED — the CHAIN (wire→guard→lane→pipeline→backend edge) runs on the installed surface, but the trio effect bodies are typed-shut: capability = createTeamToolPlaneAssembly default effect backends (team_grep/team_glob/team_bash) in live/team-tool-plane.mjs; provider assembly = GLUE formal round, NOT delivered by this artifact",
+      "pass": false,
+      "observed": "grepIoRefused=false gap=trio-effect-backends/team-tool-plane.mjs memberFinal={\"kind\":\"text\",\"content\":\"A5IE_MEMBER_RESULT read=n/a bash=n/a grep=n/a\"}"
+    },
+    {
+      "id": "T8",
+      "claim": "RESULT BACK TO LEADER: the member final line (A5IE_MEMBER_RESULT quoting read-success + both refusal codes) is present in the LEADER wire transcript inside the delegate/collect chain, and the leader completed its final turn",
+      "pass": false,
+      "observed": "backToLeader=true final={\"kind\":\"text\",\"content\":\"A5IE_MEMBER_RESULT read=n/a bash=n/a grep=n/a\"}"
+    },
+    {
+      "id": "T9",
+      "claim": "LEDGER: every driven turn COMPLETED (all sessions quiet), the PR7 live row is open for the owning root through the production entry (gateway+lease witness, lease ACTIVE pre-close), and the host took the graceful SIGTERM close (exit 0 = close() ran to the end, where the lease drains/releases — the S2-measured lifecycle)",
+      "pass": true,
+      "observed": "sessions=[{\"s\":\"3b7fb6a2888e09\",\"run\":false},{\"s\":\"0-17T16-59-32Z\",\"run\":false},{\"s\":\"0-17T16-59-32Z\",\"run\":false}] gw={\"present\":true,\"hasGateway\":true,\"hasLease\":true,\"leaseState\":\"ACTIVE\"} exit={\"code\":0,\"signal\":null}"
+    },
+    {
+      "id": "C1",
+      "claim": "world cleanup: no a5ie-* DSH_HOME remains under tests/homes and both expansions (aux + RED-A pure) are swept (their per-file sha256 manifests are the retained evidence)",
+      "pass": true,
+      "observed": "exp=true pure=true homes=[]"
+    },
+    {
+      "id": "C2",
+      "claim": "launch-token hygiene: raw instance logs deleted after redaction at capture (only redacted *.log retained)",
+      "pass": true,
+      "observed": "rawLeft=[]"
+    }
+  ]
+}
