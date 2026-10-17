@@ -22,7 +22,8 @@
  * @module @dsh-agent-team/runtime/sandbox-provider/probe-abi
  */
 
-import { mkdirSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { type AssuranceDimension, type ProcessCapabilityRow } from './contract-stub.js'
 import { networkProbeRow } from './network.js'
@@ -163,6 +164,52 @@ export function runFdCloseProbe(deps: LauncherDeps, scratchDir: string, plan?: F
     undeclaredClosed: typeof v['undeclared_closed'] === 'boolean' ? v['undeclared_closed'] : null,
     rc: r.rc,
   })
+}
+
+// ---------------------------------------------------------------------------
+// LAUNCHER INTEGRITY — the assembly-pinned BYTES gate (PR4/5 install round,
+// pb-CONTRACT.md §1.3). The existence preflight above only asks "is a file
+// there"; an installer or a swapped tree answers YES to a file that is NOT
+// the bytes the assembler trusted. When the assembly pins `launcherSha256`,
+// the provider verifies the bytes at the configured path BEFORE any probe
+// leg runs and AGAINST THE SAME PATH before every confined-exec. Like every
+// refusal on this lane it is typed and happens before any process exists.
+// ---------------------------------------------------------------------------
+
+/** Inputs (the `read` seam is injectable for tests; production reads the file). */
+export interface LauncherIntegrityInput {
+  readonly launcherPath: string
+  readonly launcherSha256: string
+  readonly read?: (path: string) => Uint8Array
+}
+
+export type LauncherIntegrityKind = 'PINNED-MATCH' | 'PIN-MISMATCH' | 'UNREADABLE' | 'INVALID-PIN'
+
+/** One integrity verdict. `observed`/`pinned` are full sha256 hex (public bytes-hash facts). */
+export interface LauncherIntegrityVerdict {
+  readonly kind: LauncherIntegrityKind
+  readonly pinned: string
+  readonly observed: string | null
+  readonly detail: string
+}
+
+/** Verify the launcher bytes against the assembly pin. Never throws. */
+export function verifyLauncherIntegrity(input: LauncherIntegrityInput): LauncherIntegrityVerdict {
+  const pinned = String(input.launcherSha256 ?? '').trim().toLowerCase()
+  if (!/^[0-9a-f]{64}$/.test(pinned)) {
+    return Object.freeze({ kind: 'INVALID-PIN', pinned, observed: null, detail: `assembly launcherSha256 pin is not a 64-hex-digit sha256 (got '${pinned.slice(0, 72)}') — the pin itself is a configuration defect, refusing closed` })
+  }
+  let bytes: Uint8Array
+  try {
+    bytes = input.read !== undefined ? input.read(input.launcherPath) : readFileSync(input.launcherPath)
+  } catch (error) {
+    return Object.freeze({ kind: 'UNREADABLE', pinned, observed: null, detail: `launcher file at '${input.launcherPath}' could not be read (${String((error as Error)?.message ?? error).slice(0, 160)}) — the pinned bytes cannot be verified, refusing closed` })
+  }
+  const observed = createHash('sha256').update(bytes).digest('hex')
+  if (observed === pinned) {
+    return Object.freeze({ kind: 'PINNED-MATCH', pinned, observed, detail: `launcher bytes at '${input.launcherPath}' hash to the assembly-pinned sha256` })
+  }
+  return Object.freeze({ kind: 'PIN-MISMATCH', pinned, observed, detail: `launcher bytes at '${input.launcherPath}' hash to sha256:${observed}, the assembly pins sha256:${pinned} — the bytes at the configured path are NOT the trusted bytes, refusing closed` })
 }
 
 // ---------------------------------------------------------------------------

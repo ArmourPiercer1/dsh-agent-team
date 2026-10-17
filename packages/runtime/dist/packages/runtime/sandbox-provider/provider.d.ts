@@ -92,6 +92,30 @@ export interface ProviderDeps {
         readonly legs: Partial<Record<LegName, LegVerdict>>;
     };
 }
+/**
+ * THE ASSEMBLY CONFIG FACE (PR4/5 install round, pb-CONTRACT.md §1): the
+ * production entry parameters the assembler OWNS and this lane never
+ * hardcodes. Every field is optional — ABSENT keeps the historical lane
+ * default (module-relative launcher copy, `A5P4_PYTHON` env, no byte pin,
+ * no ABI floor) so the DORMANT face and every existing consumer stay exact.
+ *
+ * The launcher path matters because the committed install surface is tsc
+ * emit, which carries NO `.py` assets: the module-relative default exists
+ * for the SOURCE TREE only, and an assembly that installs the lane must
+ * name the trusted launcher here (that is what the W4 row had to fake
+ * through the deps spy — this face is the honest seam, `provider` never
+ * asks the assembler to rewrite argv).
+ */
+export interface ProviderAssemblyConfig {
+    /** Interpreter used for probe legs and confined-exec (default: `A5P4_PYTHON` env, else `python3`). */
+    readonly pythonPath?: string;
+    /** Absolute path of the trusted launcher script (default: the module-relative source-tree copy). */
+    readonly launcherPath?: string;
+    /** sha256 (hex, 64) of the launcher BYTES. When set it gates every probe leg and every confined-exec. */
+    readonly launcherSha256?: string;
+    /** Landlock ABI floor: a measured `GET_VERSION` below this refuses before any process exists. */
+    readonly minAbiVersion?: number;
+}
 /** Provider construction options. */
 export interface ProviderOptions {
     readonly realmId: string;
@@ -100,6 +124,8 @@ export interface ProviderOptions {
     readonly deps?: ProviderDeps;
     readonly hardDimensions?: readonly AssuranceDimension[];
     readonly runnerCommand?: string | null;
+    /** The assembler's entry parameters (see `ProviderAssemblyConfig`). */
+    readonly assembly?: ProviderAssemblyConfig;
 }
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export declare function createConfinedProcessProvider(opts: ProviderOptions): Readonly<{

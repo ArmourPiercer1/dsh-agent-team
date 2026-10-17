@@ -25,7 +25,7 @@ import { refuse } from './contract-stub.js';
 import { advancePhase } from './phases.js';
 import { compileFdPlan, fdPlanToPayload } from './fd-inheritance.js';
 import { evaluateNetworkRequirement } from './network.js';
-import { createLauncherDeps, probeToCapabilities, runAbiProbe, runAvailabilityPreflight, runEnforcementLeg, ENFORCEMENT_LEGS, } from './probe-abi.js';
+import { createLauncherDeps, probeToCapabilities, runAbiProbe, runAvailabilityPreflight, runEnforcementLeg, verifyLauncherIntegrity, ENFORCEMENT_LEGS, } from './probe-abi.js';
 import { recordLegEvidence, verifyHardProfileEvidence } from './realm-evidence.js';
 const EVIDENCE_BASE = 'evidence://a5p4/probe';
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
@@ -35,9 +35,10 @@ export function createConfinedProcessProvider(opts) {
     // and `URL` globals; the lane reads env and module paths through globalThis
     // so the SHARED typecheck (`pnpm -r run typecheck`) passes untouched.
     const laneProcess = globalThis.process;
+    const assembly = opts.assembly ?? {};
     const launcher = createLauncherDeps({
-        pythonPath: laneProcess?.env?.['A5P4_PYTHON'] ?? 'python3',
-        launcherPath: join(dirname(fileURLToPath(import.meta.url)), 'launcher', 'landlock-prelauncher.py'),
+        pythonPath: assembly.pythonPath ?? laneProcess?.env?.['A5P4_PYTHON'] ?? 'python3',
+        launcherPath: assembly.launcherPath ?? join(dirname(fileURLToPath(import.meta.url)), 'launcher', 'landlock-prelauncher.py'),
     });
     const deps = opts.deps ?? {
         availability: () => ({
@@ -61,7 +62,22 @@ export function createConfinedProcessProvider(opts) {
     const consumedPlans = new Set();
     const leases = new Map();
     let captured = null;
-    /** probe(): availability → real legs → capability rows (cached per instance). */
+    /**
+     * The byte-pin gate (assembly.launcherSha256). UNPINNED passes — that is
+     * the historical lane face. When pinned, the bytes at the configured
+     * launcher path must hash to the pin; this gate runs before any probe leg
+     * and again before every confined-exec (bytes swapped AFTER a clean probe
+     * still never reach `run`).
+     */
+    function launcherIntegrityGate() {
+        if (assembly.launcherSha256 === undefined)
+            return { ok: true, value: true };
+        const verdict = verifyLauncherIntegrity({ launcherPath: launcher.launcherPath, launcherSha256: assembly.launcherSha256 });
+        if (verdict.kind === 'PINNED-MATCH')
+            return { ok: true, value: true };
+        return refuse('SANDBOX_UNAVAILABLE', `launcher integrity gate: ${verdict.detail}`);
+    }
+    /** probe(): availability → byte-pin gate → real legs → capability rows (cached per instance). */
     async function probe() {
         if (captured !== null)
             return { ok: true, value: captured.rows };
@@ -70,6 +86,9 @@ export function createConfinedProcessProvider(opts) {
         if (missing.length > 0) {
             return refuse('SANDBOX_UNAVAILABLE', `confined spawn unavailable: ${missing.map((m) => m.note).join('; ')}`);
         }
+        const integrity = launcherIntegrityGate();
+        if (!integrity.ok)
+            return integrity;
         const facts = deps.probeFacts();
         const evidenceRef = `${EVIDENCE_BASE}/${opts.realmId}/${Date.now().toString(36)}`;
         const legs = Object.entries(facts.legs).map(([leg, v]) => recordLegEvidence(leg, v?.verdict ?? 'MIXED/FAILED', evidenceRef, ['--enforce-leg', leg]));
@@ -95,6 +114,15 @@ export function createConfinedProcessProvider(opts) {
             // The authoritative probe measured NO landlock ABI on this host.
             // Confinement is impossible and the naked-spawn arm does not exist.
             return refuse('SANDBOX_UNAVAILABLE', 'confined spawn refused: the authoritative probe measured no landlock ABI on this host; an unconfined fallback is forbidden by construction');
+        }
+        if (assembly.minAbiVersion !== undefined && captured !== null) {
+            // The ABI pin (assembly floor): the assembler decides which kernel ABI
+            // its realm's policies need; a measured answer below the floor refuses
+            // here — BEFORE any process exists — never "runs on a weaker plane".
+            const measured = captured.evidence.abiVersion;
+            if (measured === null || measured < assembly.minAbiVersion) {
+                return refuse('SANDBOX_UNAVAILABLE', `ABI pin: the authoritative probe measured ${String(measured)}, below the assembly-pinned floor v${String(assembly.minAbiVersion)} — confined spawn refused before any process exists`);
+            }
         }
         if ((opts.hardDimensions?.length ?? 0) > 0 && captured !== null) {
             const check = verifyHardProfileEvidence(captured.evidence, { realmId: request.realmId, hardDimensions: opts.hardDimensions ?? [] });
@@ -144,6 +172,14 @@ export function createConfinedProcessProvider(opts) {
         const moved = advancePhase('prepare', 'execute');
         if (!moved.ok)
             return refuse('IO_POLICY_UNSUPPORTED', 'phase machine refused prepare → execute (impossible on this lane; kept defensive)');
+        // Re-gate the pinned bytes IMMEDIATELY before the spawn: bytes swapped
+        // after a clean probe still never reach `run`. The refusal happens
+        // BEFORE the plan is consumed — the one-shot grant is not burned by a
+        // refusal that stopped nothing (at most one spawn per grant stays true
+        // because the gate re-opens only when the bytes match the pin again).
+        const integrity = launcherIntegrityGate();
+        if (!integrity.ok)
+            return integrity;
         consumedPlans.add(plan.planId);
         const r = deps.run([launcher.launcherPath, '--confined-exec', '--policy', plan.policyPath, '--out-dir', plan.outDir], 60_000);
         let answer = null;
