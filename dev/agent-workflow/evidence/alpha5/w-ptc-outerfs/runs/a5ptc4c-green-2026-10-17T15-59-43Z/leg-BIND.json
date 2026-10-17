@@ -1,0 +1,20 @@
+{
+  "grantId": "g4",
+  "grantBindMode": "workspace-write",
+  "row": {
+    "seq": 6,
+    "at": "2026-10-17T16:00:04.861Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-95c356d3-17c7-4962-ab69-f7e6946cdb07",
+    "callId": "call-A5PTC4CGREEN20261017T155943Z-BIND",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c BIND: justification carries model text only",
+    "decision": "lane-timeout",
+    "outcome": "rejected",
+    "heldMs": 10001,
+    "laneDeadlineMs": 10000
+  },
+  "heldToLaneDeadline": true,
+  "written": false
+}

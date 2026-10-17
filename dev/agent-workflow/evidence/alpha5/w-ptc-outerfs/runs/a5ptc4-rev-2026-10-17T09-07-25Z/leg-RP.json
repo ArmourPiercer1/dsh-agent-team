@@ -1,0 +1,60 @@
+{
+  "run": {
+    "at": 1792228198228,
+    "startedAt": 1792228198178,
+    "text": "{\n  \"pid\": 312,\n  \"ppid\": 39,\n  \"echo\": \"A5PTC4-ECHO:rev-replay-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}",
+    "raw": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"pid\": 312,\n  \"ppid\": 39,\n  \"echo\": \"A5PTC4-ECHO:rev-replay-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+        }
+      ],
+      "value": {
+        "logs": [],
+        "sandbox": {
+          "mode": "danger-full-access",
+          "denied": false
+        },
+        "result": {
+          "pid": 312,
+          "ppid": 39,
+          "echo": "A5PTC4-ECHO:rev-replay-body",
+          "writeCode": "wrote",
+          "canary": "A5PTC4-REV-BODY-RAN"
+        }
+      }
+    }
+  },
+  "replayWrites": true,
+  "appRP": [
+    {
+      "seq": 3,
+      "at": "2026-10-17T09:09:57.893Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T090725Z-RA",
+      "toolName": "run_code",
+      "agent": "session-50f09d25-3d65-4f09-84d8-acaba2ed1cbd",
+      "token": "t-r",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-r reviewer-leg-RA first use of an allowed-once grant (session A)",
+      "decision": "allow",
+      "outcome": "allowed-once"
+    }
+  ],
+  "jRP": [
+    {
+      "at": "2026-10-17T09:09:58.178Z",
+      "leg": "approval-ask",
+      "seq": 4,
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T090725Z-RP",
+      "toolName": "run_code",
+      "agent": "session-50f09d25-3d65-4f09-84d8-acaba2ed1cbd",
+      "token": "t-r",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-r reviewer-leg-RP REPLAY of the already-consumed grant token",
+      "decision": "duplicate",
+      "outcome": "allowed-once"
+    }
+  ]
+}

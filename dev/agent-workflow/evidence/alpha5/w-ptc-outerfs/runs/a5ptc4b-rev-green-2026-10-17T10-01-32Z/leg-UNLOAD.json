@@ -1,0 +1,145 @@
+{
+  "hooksBeforeUnload": {
+    "count": 8,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 7,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "hooksAfterUnload": {
+    "count": 6,
+    "uninstalled": true,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "unloadedJournal": {
+    "at": "2026-10-17T10:02:09.110Z",
+    "leg": "resolver-unloaded",
+    "disposersRun": 3,
+    "hookCount": 6,
+    "issuerLane": "session-031433b4-3837-4505-ad9a-f55767a05e1f"
+  },
+  "rows": [],
+  "askEvents": [],
+  "run": null,
+  "written": false
+}

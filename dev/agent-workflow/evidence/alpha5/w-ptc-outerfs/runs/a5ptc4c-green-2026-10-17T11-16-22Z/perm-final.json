@@ -1,0 +1,68 @@
+{
+  "modePre": {
+    "LANE": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M1": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M2": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M3": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "FX": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "ATK": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    }
+  },
+  "modePost": {
+    "LANE": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M1": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M2": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "M3": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "FX": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    },
+    "ATK": {
+      "mode": "workspace-write",
+      "approvalPolicy": "ask"
+    }
+  },
+  "forbFinal": [
+    "l-anchor.txt",
+    "l-panchor.txt",
+    "l-q1.txt",
+    "l-q3.txt",
+    "l-revoke.txt",
+    "l-xteam.txt",
+    "secret.txt"
+  ],
+  "unexpected": [],
+  "refusedWrites": [
+    "l-revoke.txt"
+  ],
+  "secretUnchanged": true
+}

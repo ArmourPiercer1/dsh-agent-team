@@ -1,0 +1,24 @@
+{
+  "productionManifest": {
+    "note": "written by run-a5ptc4c-l2close.mjs (runs/*/install-manifest.json)",
+    "rows": [
+      "a5ptc4c-grantrow",
+      "a5ptc4b-downstream-probe"
+    ],
+    "devkitFile": "ABSENT (never referenced; not in patch, not imported)"
+  },
+  "devShapeManifest": {
+    "note": "this run, boot A",
+    "rows": [
+      "a5ptc4c-grantrow",
+      "a5ptc4c-devprovision",
+      "a5ptc4b-downstream-probe"
+    ],
+    "devkitFile": {
+      "path": "a5ptc4c-devprovision-pkg/a5ptc4c-devprovision.mjs",
+      "sha256": "55cb93d08acb4c9d801170d52a218bf2821b9286c144f3b4dd154e78ccf18636"
+    },
+    "envGate": "A5PTC4C_DEVKIT=1 (explicit)"
+  },
+  "diff": "the devkit provision file appears ONLY in the dev shape; production additionally proves absence at runtime (404 on /__a5ptc4cdev/*, F1-NO-HTTP-REGISTRATION-MINT + F1-INWORLD-ATTACK-REFUSED in run-a5ptc4c-l2close.mjs)."
+}

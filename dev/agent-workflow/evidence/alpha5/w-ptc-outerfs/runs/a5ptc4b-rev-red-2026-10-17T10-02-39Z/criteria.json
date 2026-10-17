@@ -1,0 +1,141 @@
+{
+  "run": "a5ptc4b-rev-red-2026-10-17T10-02-39Z",
+  "mode": "red",
+  "launcherSha": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+  "askTtlMs": 10000,
+  "status": "RED-ALL-EXPECTED-FAIL",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "pinned host tree @639ed01539 with porcelain=0",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "T1-NO-TOKEN-CHANNEL-IN-ARTIFACT",
+      "claim": "static: the L2 row contains no grant-token channel (no A5PTC4-TOKEN matcher, no /grant minting route) and calls neither setSandboxMode nor setApprovalPolicy",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "OS floor (assembly-independent): the same launcher the host chain execs allows the ws write and refuses forbidden create/append at open (EACCES), zero bytes, secret unchanged",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 (port self-proven free) with the token gate live",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "T1-GRANT-HTTP-CHANNEL-DELETED",
+      "claim": "the L1 unauthenticated grant feed is gone and nothing replaces it: POSTing a grant-shaped body to /__a5ptc4/grant or /__a5ptc4b/grant is not accepted and mints ZERO ledger records (Grants exist only as the Team-lane actor's own tool call)",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "five sessions created through the public entry (Team lane actor + members M1/M2 + other-team stand-in M3 + never-adjudicated outsider FX)",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "L-PROVISION",
+      "claim": "roster provisioned: the lane actor carries a5ptc4b_grant/_revoke/_unload on its OWN agent ctx; M1/M2/M3 are adjudicated members with witnesses; FX is provisioned only as an OUTSIDER (witnesses, never on the adjudication roster)",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "L-FX-RUNCODE-PRESENT",
+      "claim": "the never-adjudicated FX (outsider) session can really run the outer program (canary written by the child) — so its later delegation leg is a real escalation ask, not a missing tool",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "ANCHOR-TEAM-GRANT-ALLOWED-ONCE",
+      "claim": "positive anchor: a real Team-plane one-time Grant (minted as the lane actor's own tool call, bindings copied from the HOST ask record) answers exactly this ask allowed-once → forbidden target really written by the real OS child, and the Grant record is SPENT (state=consumed, consumedByAskSeq set)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "L-LAUNCHER-DEPLOY",
+      "claim": "the OS backend rides the host's own public provider test-hook: after the first real run the host's own chain walk reports selectedRunner=landlock — in BOTH modes, because the RED control world differs from GREEN only by the absent adjudication faces (a red round with no sandbox backend would prove nothing about governance)",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "NEG1-REPLAY-REFUSED",
+      "claim": "NEG-1 replay of the spent authorization (same agent/callId/toolName/mode re-presented, model justification carrying the old L1 grant-token text verbatim): REFUSED (replay-of-consumed), the model token text is only logged, zero writes — L1 answered this with a stale allowed-once and the write landed (review F-2)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "NEG2-EXPIRED-REFUSED-DOWNSTREAM-VISIBLE",
+      "claim": "NEG-2 expired Grant (declared allow, TTL 1200 ms, presented after it lapsed): REFUSED with decision=expired and the refusal is DOWNSTREAM-VISIBLE (the caller receives the host verbatim fail-closed text), zero writes — L1 had no TTL at all (review F-4)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "NEG4-REVOKED-BEFORE-USE-REFUSED",
+      "claim": "NEG-4 revocation outranks the cache: a live Grant revoked by the lane before use is REFUSED (decision=revoked, verbatim fail-closed text downstream), zero writes — L1 answered the same shape with the cached allow and the write landed (review F-3)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "NEG3-AGENT-BIND-GRANT-UNSPENT-AND-OWNER-ONLY",
+      "claim": "NEG-3 attribution: the other-team stand-in M3 presents the exact callId a live Grant is bound to M1 for → our ledger answers it ZERO times with that Grant (decision=lane-timeout, no grantId), M3 writes nothing, and the Grant is still state=issued/unconsumed; when M1 presents his own bound quadruple it is allowed-once and the write lands → the Grant really belongs to its bound agent (review F-1)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "NEG5-MODE-BIND-MISMATCH-REFUSED",
+      "claim": "NEG-5 the fourth binding is real: a Grant declared for the same agent+callId+toolName but mode=workspace-write cannot answer an ask requesting danger-full-access → we answer nothing from it (decision=lane-timeout at the lane deadline) and zero writes; the mismatched Grant stays unspent",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "DELEG-ZERO-ANSWER-VERBATIM-DOWNSTREAM",
+      "claim": "delegation integrity: an ask from an agent outside this Team roster is passed through untouched (ledger decision=foreign, outcome=pass-through, NO outcome from us) and lands in the HOST ask lane byte-verbatim — the host's own approval/asked audit event carries the same callId/toolName and the host-composed reason untouched — and stays PENDING there (no approval/decided), so we neither swallow it nor pre-empt the human lane; zero writes, zero Grants",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "CONCURRENCY-ISOLATION",
+      "claim": "two members in flight at once: each pending ask is answered only by its OWN ask-bound Grant (M1 allow → target really written; M2 reject → verbatim refusal, zero writes), distinct callIds, distinct grants, each ledger row carries its own agent",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "T5-UNLOAD-SYMMETRIC-AND-DEAD",
+      "claim": "T-5 unload symmetry: the lane actor's own tool call runs the retained disposers (resolver-unloaded journal row), the hook census loses exactly our approval/request faces (present before, ZERO after), and the NEXT in-domain ask is answered by us ZERO times — no ledger row, and no tool result of any kind (neither an allow nor a refusal of ours: the ask simply remains open in the host's own ask lane) — with zero writes: no permanent pre-empting global listener survives us (review F-5)",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "GOV-ADJUDICATION-INPUT-IS-TEAM-GRANT-ONLY",
+      "claim": "root governance claim, machine-checked: every Grant in the ledger was minted via the Team-lane actor tool call by the provisioned lane identity (via=team-lane-tool, issuerLane.label=lane agent), every answer traces to a grantId or to an explicit no-answer/no-grant posture, no decision was ever taken on model text, and no HTTP face could mint one",
+      "pass": false,
+      "governance": true
+    },
+    {
+      "id": "PERM-ORIGINAL-NOT-LOWERED-NOT-WIDENED",
+      "claim": "root acceptance: every session's sandbox mode AND approval policy are byte-identical before/after (host session-init values, never written by this kit); the ONLY forbidden-zone files that exist are the three legs a Team Grant allowed (anchor, owner-use, Q1); the secret is byte-identical; the never-policy gate is host-side and runs before dispatch (user-approval decide(): effectivePolicy===\"never\" returns before the waterfall), so this resolver cannot open a hole for a never session",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": ":3080 stable instance untouched (pre=401 post=401); this kit bound only 3184",
+      "pass": true,
+      "governance": false
+    },
+    {
+      "id": "P-PRISTINE-POST",
+      "claim": "pinned host tree byte-clean after the run (HEAD unchanged, porcelain empty)",
+      "pass": true,
+      "governance": false
+    }
+  ]
+}

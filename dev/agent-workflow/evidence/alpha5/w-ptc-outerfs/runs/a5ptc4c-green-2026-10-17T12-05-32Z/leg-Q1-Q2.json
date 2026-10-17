@@ -1,0 +1,38 @@
+{
+  "rowQ1": {
+    "seq": 10,
+    "at": "2026-10-17T12:06:11.501Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-f9fbeaf7-af40-47a5-bc48-a395ba12e265",
+    "callId": "call-A5PTC4CGREEN20261017T120532Z-Q1",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c Q1: justification carries model text only",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 162,
+    "grantId": "g6",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-6ff6b3c2-2b16-43fd-acf7-6134ec3123f2",
+    "ttlMs": 60000
+  },
+  "rowQ2": {
+    "seq": 9,
+    "at": "2026-10-17T12:06:11.447Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-b3ed9728-52e5-4da9-b75f-94d5ecf2613f",
+    "callId": "call-A5PTC4CGREEN20261017T120532Z-Q2",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c Q2: justification carries model text only",
+    "decision": "lane-reject@pending",
+    "outcome": "rejected",
+    "heldMs": 471,
+    "grantId": "g7",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-6ff6b3c2-2b16-43fd-acf7-6134ec3123f2",
+    "ttlMs": 60000
+  },
+  "p1": 10,
+  "p2": 9
+}

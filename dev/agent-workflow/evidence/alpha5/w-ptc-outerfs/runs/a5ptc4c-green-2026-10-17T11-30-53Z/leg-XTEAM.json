@@ -1,0 +1,20 @@
+{
+  "grantId": "g5",
+  "foreignAsk": {
+    "seq": 7,
+    "at": "2026-10-17T11:31:22.248Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-70da9ad4-81f1-4f7b-ac66-c185b290dba5",
+    "callId": "call-A5PTC4CGREEN20261017T113053Z-XTEAM",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c XTEAM: justification carries model text only",
+    "decision": "lane-timeout",
+    "outcome": "rejected",
+    "heldMs": 10000,
+    "laneDeadlineMs": 10000
+  },
+  "grantStateAfterForeign": "issued",
+  "grantsDelta": 1,
+  "writtenForeign": false
+}

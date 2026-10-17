@@ -1,0 +1,37 @@
+{
+  "grantsBefore": 0,
+  "forged": {
+    "grantId": "g1",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "issued",
+    "bind": {
+      "agent": "session-b1dbc485-f921-4502-a49b-1c08d47a2c4d",
+      "callId": "call-A5PTC4DREVCHAINRED20261017T153223Z-HIJACK",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-bde01d41-f0d3-492e-87bd-9cbc0b9b2231",
+      "sessionId": "session-bde01d41-f0d3-492e-87bd-9cbc0b9b2231",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T15:32:35.455Z",
+    "expiresAt": "2026-10-17T15:33:35.455Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T15:32:35.455Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      }
+    ]
+  },
+  "atkToolResult": null
+}

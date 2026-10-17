@@ -1,0 +1,35 @@
+{
+  "qa": null,
+  "qb": {
+    "at": 1792225829253,
+    "startedAt": 1792225829253,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "rowQA": [],
+  "rowQB": [
+    {
+      "seq": 3,
+      "at": "2026-10-17T08:30:29.253Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T082255Z-QB-soqh5r",
+      "toolName": "run_code",
+      "agent": "session-c5e92f48-45c5-4efb-a15a-1d4fe71aeeec",
+      "token": "tB",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:tB reviewer leg QB: session-B own grant (reject) in a parallel pair",
+      "decision": "reject",
+      "outcome": "rejected"
+    }
+  ]
+}

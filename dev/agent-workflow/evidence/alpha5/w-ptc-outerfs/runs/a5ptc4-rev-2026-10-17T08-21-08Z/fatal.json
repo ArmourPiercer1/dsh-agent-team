@@ -1,0 +1,17 @@
+{
+  "message": "FATAL: timeout waiting for host boot marker",
+  "criteriaSoFar": [
+    {
+      "id": "P-PIN",
+      "claim": "host tree pinned @639ed01539 porcelain=0",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true"
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "Landlock launcher present (--probe exit 0)",
+      "pass": true,
+      "observed": "landlock: partially enforced (older ABI)"
+    }
+  ]
+}

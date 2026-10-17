@@ -1,0 +1,32 @@
+{
+  "grantId": "g3",
+  "revoked": {
+    "at": "2026-10-17T11:28:59.051Z",
+    "leg": "grant-revoked",
+    "grantId": "g3",
+    "from": "issued",
+    "bind": {
+      "agent": "session-4cb367c9-4ac8-4d5d-a15d-04cc6d4b55a0",
+      "callId": "call-A5PTC4CGREEN20261017T112641Z-REVOKE",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": "session-bce9bf50-55d3-4336-ac81-a0a420cd949b"
+  },
+  "stateAfterRevoke": "revoked",
+  "row": {
+    "seq": 5,
+    "at": "2026-10-17T11:28:59.269Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-4cb367c9-4ac8-4d5d-a15d-04cc6d4b55a0",
+    "callId": "call-A5PTC4CGREEN20261017T112641Z-REVOKE",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c REVOKE: justification carries model text only",
+    "decision": "revoked",
+    "outcome": "rejected",
+    "grantId": "g3",
+    "ttlMs": 60000
+  },
+  "written": false
+}

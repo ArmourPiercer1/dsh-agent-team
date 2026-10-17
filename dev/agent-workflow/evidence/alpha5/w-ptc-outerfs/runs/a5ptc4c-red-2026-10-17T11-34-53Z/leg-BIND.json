@@ -1,0 +1,9 @@
+{
+  "grantId": "g3",
+  "grantBindMode": "workspace-write",
+  "row": {
+    "__held": "BIND lane-timeout row"
+  },
+  "heldToLaneDeadline": false,
+  "written": false
+}

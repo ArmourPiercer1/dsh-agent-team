@@ -1,0 +1,189 @@
+{
+  "q1": {
+    "at": 1792230958951,
+    "text": "{\n  \"pid\": 1692,\n  \"ppid\": 727,\n  \"echo\": \"A5PTC4B-ECHO:Q1-body\",\n  \"writeCode\": \"none\",\n  \"canary\": \"A5PTC4B-BODY-RAN\"\n}",
+    "raw": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"pid\": 1692,\n  \"ppid\": 727,\n  \"echo\": \"A5PTC4B-ECHO:Q1-body\",\n  \"writeCode\": \"none\",\n  \"canary\": \"A5PTC4B-BODY-RAN\"\n}"
+        }
+      ],
+      "value": {
+        "logs": [],
+        "sandbox": {
+          "mode": "danger-full-access",
+          "denied": false
+        },
+        "result": {
+          "pid": 1692,
+          "ppid": 727,
+          "echo": "A5PTC4B-ECHO:Q1-body",
+          "writeCode": "none",
+          "canary": "A5PTC4B-BODY-RAN"
+        }
+      }
+    }
+  },
+  "q2": {
+    "at": 1792230959114,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "rowQ1": {
+    "seq": 9,
+    "at": "2026-10-17T09:55:58.653Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+    "callId": "call-A5PTC4BGREEN20261017T095523Z-Q1",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4b Q1: outer direct fs program under Team per-call governance",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 232,
+    "grantId": "g6",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+    "ttlMs": 60000
+  },
+  "rowQ2": {
+    "seq": 10,
+    "at": "2026-10-17T09:55:58.664Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-fe1c8d3f-9f71-41a9-821e-44b9870fdbfa",
+    "callId": "call-A5PTC4BGREEN20261017T095523Z-Q2",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4b Q2: outer direct fs program under Team per-call governance",
+    "decision": "lane-reject@pending",
+    "outcome": "rejected",
+    "heldMs": 449,
+    "grantId": "g7",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+    "ttlMs": 60000
+  },
+  "gQ1": {
+    "grantId": "g6",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "allow",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+      "callId": "call-A5PTC4BGREEN20261017T095523Z-Q1",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "sessionId": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T09:55:58.885Z",
+    "expiresAt": "2026-10-17T09:56:58.885Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T09:55:58.885Z",
+    "consumedByAskSeq": 9,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T09:55:58.885Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T09:55:58.885Z",
+        "to": "consumed",
+        "byAskSeq": 9,
+        "outcome": "allowed-once"
+      }
+    ]
+  },
+  "gQ2": {
+    "grantId": "g7",
+    "via": "team-lane-tool",
+    "source": "ask-bound",
+    "decision": "reject",
+    "state": "consumed",
+    "bind": {
+      "agent": "session-fe1c8d3f-9f71-41a9-821e-44b9870fdbfa",
+      "callId": "call-A5PTC4BGREEN20261017T095523Z-Q2",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "sessionId": "session-84c56509-88d7-4833-b9a2-9cac9077d323",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T09:55:59.113Z",
+    "expiresAt": "2026-10-17T09:56:59.113Z",
+    "expired": false,
+    "consumedAt": "2026-10-17T09:55:59.113Z",
+    "consumedByAskSeq": 10,
+    "revokedAt": null,
+    "transitions": [
+      {
+        "at": "2026-10-17T09:55:59.113Z",
+        "to": "issued",
+        "source": "ask-bound",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T09:55:59.113Z",
+        "to": "consumed",
+        "byAskSeq": 10,
+        "outcome": "rejected"
+      }
+    ]
+  },
+  "pending": {
+    "Q1": {
+      "seq": 9,
+      "bind": {
+        "seq": 9,
+        "at": "2026-10-17T09:55:58.653Z",
+        "face": "plugin-ctx-global-outer",
+        "agent": "session-acdae5fa-aa70-4bd6-b38a-14cdbe35b80a",
+        "callId": "call-A5PTC4BGREEN20261017T095523Z-Q1",
+        "toolName": "run_code",
+        "mode": "danger-full-access",
+        "modelTextLog": "a5ptc4b Q1: outer direct fs program under Team per-call governance"
+      },
+      "askedAt": "2026-10-17T09:55:58.653Z",
+      "deadlineMsLeft": 9872
+    },
+    "Q2": {
+      "seq": 10,
+      "bind": {
+        "seq": 10,
+        "at": "2026-10-17T09:55:58.664Z",
+        "face": "plugin-ctx-global-outer",
+        "agent": "session-fe1c8d3f-9f71-41a9-821e-44b9870fdbfa",
+        "callId": "call-A5PTC4BGREEN20261017T095523Z-Q2",
+        "toolName": "run_code",
+        "mode": "danger-full-access",
+        "modelTextLog": "a5ptc4b Q2: outer direct fs program under Team per-call governance"
+      },
+      "askedAt": "2026-10-17T09:55:58.664Z",
+      "deadlineMsLeft": 9879
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "run": null,
+  "askRow": null,
+  "grants": [
+    {
+      "grantId": "g4",
+      "via": "team-lane-tool",
+      "source": "declared",
+      "decision": "allow",
+      "state": "issued",
+      "bind": {
+        "agent": "session-f2b19210-d2e0-4cf6-a0b9-f737932d6545",
+        "callId": "call-A5PTC4BRED20261017T094223Z-BIND",
+        "toolName": "run_code",
+        "mode": "workspace-write"
+      },
+      "issuerLane": {
+        "label": "session-1a45720a-8336-43a3-99f1-b6416db0e3d4",
+        "sessionId": "session-1a45720a-8336-43a3-99f1-b6416db0e3d4",
+        "role": "lane"
+      },
+      "ttlMs": 120000,
+      "issuedAt": "2026-10-17T09:50:40.455Z",
+      "expiresAt": "2026-10-17T09:52:40.455Z",
+      "expired": false,
+      "consumedAt": null,
+      "consumedByAskSeq": null,
+      "revokedAt": null,
+      "transitions": [
+        {
+          "at": "2026-10-17T09:50:40.455Z",
+          "to": "issued",
+          "source": "declared",
+          "ttlMs": 120000
+        }
+      ]
+    }
+  ],
+  "written": false
+}

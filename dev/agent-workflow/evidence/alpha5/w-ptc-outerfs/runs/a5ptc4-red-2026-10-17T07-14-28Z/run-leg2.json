@@ -1,0 +1,21 @@
+{
+  "at": 1792221269786,
+  "startedAt": 1792221269785,
+  "text": "Error: code run failed (sandbox-unavailable): sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.\nFile sandbox: workspace-write.",
+  "raw": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Error: code run failed (sandbox-unavailable): sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.\nFile sandbox: workspace-write."
+      }
+    ],
+    "isError": true,
+    "error": {
+      "message": "code run failed (sandbox-unavailable): sandbox mode \"workspace-write\" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.\nFile sandbox: workspace-write.",
+      "info": {
+        "name": "CodeRunFailedError",
+        "code": "CODE_RUN_FAILED"
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "Q1_upgrade_answer": {
+    "ok": true,
+    "already": true,
+    "label": "session-885b69d7-e4bf-4494-a4f2-b359a037af8d",
+    "role": "member"
+  },
+  "q1_role_after": "member",
+  "q1_verdict": "NO self-escalation: the face answers already:true and the role STAYS member",
+  "Q2_fresh_lane_answer": {
+    "ok": true,
+    "label": "session-7b5392fa-dead-478f-9d88-9f8f5c31c5a3",
+    "role": "lane",
+    "error": null
+  },
+  "q2_lane_count": 2,
+  "q2_verdict": "REACHABLE-AND-AUTHORIZING without any host credential: a caller that can reach the port may designate ANY session as a Grant-minting lane actor",
+  "Q3_census_no_credential": {
+    "grants": 200,
+    "roster": 200,
+    "laneRolesVisible": [
+      "lane",
+      "member",
+      "lane"
+    ]
+  }
+}

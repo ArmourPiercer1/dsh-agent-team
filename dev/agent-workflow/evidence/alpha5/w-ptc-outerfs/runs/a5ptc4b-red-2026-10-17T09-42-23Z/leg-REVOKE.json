@@ -1,0 +1,44 @@
+{
+  "run": null,
+  "askRow": null,
+  "grant": {
+    "grantId": "g2",
+    "via": "team-lane-tool",
+    "source": "declared",
+    "decision": "allow",
+    "state": "revoked",
+    "bind": {
+      "agent": "session-f2b19210-d2e0-4cf6-a0b9-f737932d6545",
+      "callId": "call-A5PTC4BRED20261017T094223Z-REVOKE",
+      "toolName": "run_code",
+      "mode": "danger-full-access"
+    },
+    "issuerLane": {
+      "label": "session-1a45720a-8336-43a3-99f1-b6416db0e3d4",
+      "sessionId": "session-1a45720a-8336-43a3-99f1-b6416db0e3d4",
+      "role": "lane"
+    },
+    "ttlMs": 60000,
+    "issuedAt": "2026-10-17T09:46:59.019Z",
+    "expiresAt": "2026-10-17T09:47:59.019Z",
+    "expired": false,
+    "consumedAt": null,
+    "consumedByAskSeq": null,
+    "revokedAt": "2026-10-17T09:46:59.310Z",
+    "transitions": [
+      {
+        "at": "2026-10-17T09:46:59.019Z",
+        "to": "issued",
+        "source": "declared",
+        "ttlMs": 60000
+      },
+      {
+        "at": "2026-10-17T09:46:59.310Z",
+        "to": "revoked",
+        "from": "issued",
+        "by": "session-1a45720a-8336-43a3-99f1-b6416db0e3d4"
+      }
+    ]
+  },
+  "written": false
+}

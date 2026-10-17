@@ -1,0 +1,29 @@
+dsh: startup failed: 1 required plugin did not activate
+
+Failed plugins (1):
+  modules (required)
+    Package: @deepseek-ai/dsh-client-modules
+    AggregateError: client-modules: 1 client package failed to compose:
+      other failures:
+        - client-modules: package dsh-agent-team resolves from multiple active Loader sources: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/a5ptc4-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/, "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/rev-sec-probe.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/; remove one entry
+        at new ClientModuleRegistry (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:544:34)
+        at Fiber.execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/#modules
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/#include
+    Error: client-modules: package dsh-agent-team resolves from multiple active Loader sources: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/a5ptc4-row.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/, "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/dev/agent-workflow/evidence/alpha5/w-ptc-outerfs/rev-sec-probe.mjs" from file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/profiles/web/; remove one entry
+        at ClientModuleRegistry.reconcilePackage (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:876:10)
+        at ClientModuleRegistry.processOne (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:852:13)
+        at ClientModuleRegistry.flush (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:898:14)
+        at new ClientModuleRegistry (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/packages/client/modules/lib/index.js:543:8)
+        at Fiber.execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1068:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1142:34
+        at composeError (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
+        at Fiber._execute (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1137:10)
+        at Fiber._reload (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:16)
+
+Plugins waiting for services (1):
+  Plugin      Missing services
+  client-hmr  clientModules
+
+Full diagnostics: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4-rev-sec/tests/homes/a5ptc4-rev-2026-10-17T08-21-08Z/logs/startup-2026-10-17T08-21-11.961Z-8badf96a-c3be-4565-8577-ffbefe666544.log

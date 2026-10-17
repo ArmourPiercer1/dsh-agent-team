@@ -1,0 +1,68 @@
+{
+  "run": {
+    "at": 1792231320086,
+    "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+    "raw": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+        }
+      ],
+      "isError": true,
+      "error": {
+        "message": "the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+      }
+    }
+  },
+  "askRow": {
+    "seq": 7,
+    "at": "2026-10-17T10:01:50.085Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-c917f90b-9718-4cc4-a684-f8dd3103af14",
+    "callId": "call-A5PTC4BREVGREEN20261017T100132Z-BIND",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4b BIND: outer direct fs program under Team per-call governance",
+    "decision": "lane-timeout",
+    "outcome": "rejected",
+    "heldMs": 10001,
+    "laneDeadlineMs": 10000
+  },
+  "grants": [
+    {
+      "grantId": "g5",
+      "via": "team-lane-tool",
+      "source": "declared",
+      "decision": "allow",
+      "state": "issued",
+      "bind": {
+        "agent": "session-c917f90b-9718-4cc4-a684-f8dd3103af14",
+        "callId": "call-A5PTC4BREVGREEN20261017T100132Z-BIND",
+        "toolName": "run_code",
+        "mode": "workspace-write"
+      },
+      "issuerLane": {
+        "label": "session-031433b4-3837-4505-ad9a-f55767a05e1f",
+        "sessionId": "session-031433b4-3837-4505-ad9a-f55767a05e1f",
+        "role": "lane"
+      },
+      "ttlMs": 120000,
+      "issuedAt": "2026-10-17T10:01:49.866Z",
+      "expiresAt": "2026-10-17T10:03:49.866Z",
+      "expired": false,
+      "consumedAt": null,
+      "consumedByAskSeq": null,
+      "revokedAt": null,
+      "transitions": [
+        {
+          "at": "2026-10-17T10:01:49.866Z",
+          "to": "issued",
+          "source": "declared",
+          "ttlMs": 120000
+        }
+      ]
+    }
+  ],
+  "written": false
+}

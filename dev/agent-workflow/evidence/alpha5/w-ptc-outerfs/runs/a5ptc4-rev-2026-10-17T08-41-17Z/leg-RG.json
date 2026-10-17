@@ -1,0 +1,78 @@
+{
+  "journal": [
+    {
+      "at": "2026-10-17T08:43:51.410Z",
+      "leg": "approval-ask",
+      "seq": 9,
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T084117Z-RG",
+      "toolName": "run_code",
+      "agent": "session-df357e21-5717-4aba-9689-7f05456d85f7",
+      "token": "",
+      "reasonHead": "escalate sandbox to danger-full-access: reviewer-leg-RG foreign no-token ask with late probe and attached bridge lane in place",
+      "decision": "foreign",
+      "outcome": "pass-through"
+    }
+  ],
+  "approvals": [],
+  "askedLines": [],
+  "askedId": null,
+  "decided": false,
+  "probeA": [],
+  "probeB": [],
+  "midHooks": {
+    "count": 10,
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 3,
+        "global": true,
+        "prepend": false
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 7,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 8,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 9,
+        "global": true,
+        "prepend": false
+      }
+    ]
+  }
+}

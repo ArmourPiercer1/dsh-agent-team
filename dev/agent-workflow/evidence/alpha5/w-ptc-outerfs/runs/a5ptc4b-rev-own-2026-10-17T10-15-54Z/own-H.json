@@ -1,0 +1,127 @@
+{
+  "hooksPre": {
+    "count": 5,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "hooksPost": {
+    "count": 5,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "results": [
+    {
+      "at": 1792232227957,
+      "callId": "call-A5PTC4BREVOWN20261017T101554Z-U",
+      "text": "Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it",
+      "err": true
+    }
+  ],
+  "rows": [
+    {
+      "seq": 7,
+      "at": "2026-10-17T10:16:58.938Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-a3a28332-1cdc-4e61-8c41-74672c316e2c",
+      "callId": "call-A5PTC4BREVOWN20261017T101554Z-U",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "own-rev H: outer fs program under Team per-call governance",
+      "decision": "lane-timeout",
+      "outcome": "rejected",
+      "heldMs": 9000,
+      "laneDeadlineMs": 9000
+    }
+  ],
+  "written": false
+}

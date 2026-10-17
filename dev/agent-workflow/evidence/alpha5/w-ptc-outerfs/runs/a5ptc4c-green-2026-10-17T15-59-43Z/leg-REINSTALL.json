@@ -1,0 +1,144 @@
+{
+  "install1": {
+    "at": "2026-10-17T16:00:49.013Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 6,
+    "liveFaces": 6,
+    "facesCumulativeSinceBoot": 6,
+    "facesNote": "faces/liveFaces = live ADJ entries NOW; facesCumulativeSinceBoot = the old (stale) faces field incl. already-disposed entries",
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "install2": {
+    "at": "2026-10-17T16:00:52.524Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 6,
+    "liveFaces": 6,
+    "facesCumulativeSinceBoot": 9,
+    "facesNote": "faces/liveFaces = live ADJ entries NOW; facesCumulativeSinceBoot = the old (stale) faces field incl. already-disposed entries",
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "hooks": {
+    "count": 7,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:946cdb07",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:03680e4b",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false,
+        "tag": "member-approval-ctx:ca3258e6",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "mineRe": 5,
+  "pending": {
+    "seq": 13,
+    "bind": {
+      "seq": 13,
+      "at": "2026-10-17T16:00:52.835Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-d52a1313-20a1-4a57-9fcf-404cca3258e6",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only"
+    },
+    "askedAt": "2026-10-17T16:00:52.835Z",
+    "deadlineMsLeft": 9992
+  },
+  "row": {
+    "seq": 13,
+    "at": "2026-10-17T16:00:52.835Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-d52a1313-20a1-4a57-9fcf-404cca3258e6",
+    "callId": "call-A5PTC4CGREEN20261017T155943Z-Q3",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 221,
+    "grantId": "g9",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+    "ttlMs": 60000
+  },
+  "written": true,
+  "allRows": [
+    {
+      "seq": 13,
+      "at": "2026-10-17T16:00:52.835Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-d52a1313-20a1-4a57-9fcf-404cca3258e6",
+      "callId": "call-A5PTC4CGREEN20261017T155943Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+      "decision": "lane-allow@pending",
+      "outcome": "allowed-once",
+      "heldMs": 221,
+      "grantId": "g9",
+      "grantSource": "ask-bound",
+      "issuerLane": "session-bb5584a3-ca82-4fdd-bb65-69ebbcc6f3b3",
+      "ttlMs": 60000
+    }
+  ],
+  "alreadyRows": []
+}

@@ -1,0 +1,47 @@
+{
+  "run": {
+    "at": 1792226630880,
+    "startedAt": 1792226630831,
+    "text": "{\n  \"pid\": 427,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-x-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}",
+    "raw": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"pid\": 427,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-x-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+        }
+      ],
+      "value": {
+        "logs": [],
+        "sandbox": {
+          "mode": "danger-full-access",
+          "denied": false
+        },
+        "result": {
+          "pid": 427,
+          "ppid": 38,
+          "echo": "A5PTC4-ECHO:rev-x-body",
+          "writeCode": "wrote",
+          "canary": "A5PTC4-REV-BODY-RAN"
+        }
+      }
+    }
+  },
+  "xWrites": true,
+  "appRX": [
+    {
+      "seq": 6,
+      "at": "2026-10-17T08:43:50.831Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T084117Z-RX",
+      "toolName": "run_code",
+      "agent": "session-c23f0189-658e-4792-b4e8-806739748dc1",
+      "token": "t-x",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-x reviewer-leg-RX token granted for session A presented by SESSION-B foreign-team stand-in",
+      "decision": "allow",
+      "outcome": "allowed-once"
+    }
+  ],
+  "labelA": "session-ed4e1324-7862-4c1d-8f56-720d3d44f847",
+  "labelB": "session-c23f0189-658e-4792-b4e8-806739748dc1"
+}

@@ -1,0 +1,98 @@
+{
+  "run": "a5ptc4-green-2026-10-17T07-48-02Z",
+  "mode": "green",
+  "launcherSha": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+  "status": "SOME-FAIL",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host tree is the pinned pristine baseline @639ed01539 with porcelain=0",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "OS negative control (task ③): the same launcher grants the ws write and refuses forbidden create/append at open (EACCES), zero bytes, under THIS environment",
+      "pass": true,
+      "observed": "probe=\"landlock: partially enforced (older ABI)\" direct={\"c\":\"EACCES\",\"a\":\"EACCES\"} hackExists=false launcherSha=a752bc72f111fcc5"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "session created through the public entry",
+      "pass": true,
+      "observed": "sid=session-4ebbcdce-efec-44"
+    },
+    {
+      "id": "L-ASSEMBLY",
+      "claim": "row assembled (witness tools + guard + presentAs(ptc); green also launcher deploy=ok)",
+      "pass": true,
+      "observed": "{\"at\":\"2026-10-17T07:48:04.296Z\",\"leg\":\"launcher-deploy\",\"attempted\":true,\"ok\":true,\"note\":\"public `internals.landlockLauncher` test-hook property set on the host provider instance\",\"selectedRunnerAtApply\":null}"
+    },
+    {
+      "id": "LEG1-ALLOW-DOMAIN-SUCCEEDS",
+      "claim": "LEG1: outer program ran in a REAL separate OS process (reported pid/ppid ≠ host pid; file written by the body) and wrote inside the allowed domain — bytes on disk, witness echo through the inner pipeline",
+      "pass": true,
+      "observed": "leg1={\"pid\":112,\"ppid\":47,\"echo\":\"A5PTC4-ECHO:leg1\",\"wsWrite\":\"ok\"} wsFile=\"LEG1-BODY-RAN-112\" hostPid=47 procChildrenSampled=1 runTextHasEnforcement=true"
+    },
+    {
+      "id": "LEG1-SANDBOX-CENSUS",
+      "claim": "the run really executed under the deployed Landlock runner (selectedRunner=landlock, enforcement field from the backend)",
+      "pass": true,
+      "observed": "{\"selectedRunner\":\"landlock\",\"enforcement\":\"partial\",\"landlockLauncher\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run\",\"deploy\":{\"attempted\":true,\"ok\":true,\"note\":\"public `internals.landlockLauncher` test-hook property set on the host provider instance\"}}"
+    },
+    {
+      "id": "LEG2-FORBIDDEN-TYPED-REFUSED-AT-OPEN",
+      "claim": "LEG2: forbidden-zone create AND append came back typed EACCES at open INSIDE the running program (body ran: echo canary + ws control file), zero bytes landed (no new file, secret byte-identical), sandbox.denied=true read back",
+      "pass": true,
+      "observed": "leg2={\"pid\":170,\"ppid\":47,\"echo\":\"A5PTC4-ECHO:leg2\",\"secretSeen\":\"A5PTC4-SECRET-2026-10-17\",\"createCode\":\"EACCES\",\"appendCode\":\"EACCES\"} forbDir=[\"secret.txt\"] secretUnchanged=true runTextHasDenied=false"
+    },
+    {
+      "id": "LEG3-REJECT-VERBATIM-FAILCLOSED",
+      "claim": "LEG3: Team resolver answered rejected on the public approval waterfall → host fail-closed text VERBATIM, program never spawned (no echo canary, zero new files, no forbidden target), per-callId audit row exists",
+      "pass": true,
+      "observed": "hasVerbatim=true ledgerT3={\"seq\":1,\"at\":\"2026-10-17T07:48:05.555Z\",\"face\":\"plugin-ctx-global-outer\",\"callId\":\"call-A5PTC4GREEN20261017T074802Z-P3-gtxl3x\",\"toolName\":\"run_code\",\"agent\":\"session-4ebbcdce-efec-442e-b6c5-5677745fdc0e\",\"token\":\"t3\",\"reasonHead\":\"escalate sandbox to danger-full-access: A5PTC4-TOKEN:t3 outerfs leg3: widen to write the fixture (resolver must reject)\",\"decision\":\"reject\",\"outcome\":\"rejected\"} forb=[\"secret.txt\"] textHead=Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+    },
+    {
+      "id": "LEG3B-NOANSWER-FAILCLOSED",
+      "claim": "LEG3b: resolver passed through (no answer) → host fallback fail-closed text VERBATIM, same zero side effects, pass-through audited",
+      "pass": false,
+      "observed": "hasVerbatim=false ledgerT3b=null textHead=Error: the user rejected escalating this program to \"danger-full-access\"; it stays denied, so stop and explain instead of working around it"
+    },
+    {
+      "id": "LEG4-ALLOWED-ONCE-WIDENS-THIS-CALL",
+      "claim": "LEG4: resolver answered allowed-once → the SAME escalation face let exactly this one call through — forbidden target really written with the body canary, per-callId audit row allowed-once",
+      "pass": true,
+      "observed": "p4Target=\"A5PTC4-BODY-RAN-326\" ledgerT4={\"seq\":3,\"at\":\"2026-10-17T07:48:06.104Z\",\"face\":\"plugin-ctx-global-outer\",\"callId\":\"call-A5PTC4GREEN20261017T074802Z-P4-pquz3y\",\"toolName\":\"run_code\",\"agent\":\"session-4ebbcdce-efec-442e-b6c5-5677745fdc0e\",\"token\":\"t4\",\"reasonHead\":\"escalate sandbox to danger-full-access: A5PTC4-TOKEN:t4 outerfs leg4: widen under an allowed-once grant (per-call lever positive control)\",\"decision\":\"allow\",\"outcome\":\"allowed-once\"} runTextHead={\n  \"pid\": 326,\n  \"ppid\": 47,\n  \"echo\": \"A5PTC4-ECHO:p4-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-BODY-RAN\"\n}"
+    },
+    {
+      "id": "LEG5-NON-STICKY-PER-CALL",
+      "claim": "LEG5: the next identical call WITHOUT a grant is refused again (EACCES, zero bytes) and the session mode never left workspace-write — the widening was PER-CALL, not a mode switch; ledger carries one distinct callId per ask",
+      "pass": false,
+      "observed": "leg5={\"pid\":384,\"ppid\":47,\"echo\":\"A5PTC4-ECHO:leg5\",\"secretSeen\":\"A5PTC4-SECRET-2026-10-17\",\"createCode\":\"EACCES\",\"appendCode\":\"EACCES\"} modePre=workspace-write modePost=workspace-write approvals=2 distinctCallIds=2"
+    },
+    {
+      "id": "C-NO-SESSION-MODE-WRITE",
+      "claim": "zero whole-program/session mode or approval-policy writes by this kit (row never calls setSandboxMode/setApprovalPolicy; census mode constant across all six legs)",
+      "pass": true,
+      "observed": "pre=workspace-write post=workspace-write approvalPolicyPost=\"ask\""
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": ":3080 stable instance untouched (probe pre=401 post=401, kit bound only 3184)",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE-POST",
+      "claim": "pinned host tree byte-clean after the run (HEAD unchanged, porcelain empty)",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true"
+    }
+  ]
+}

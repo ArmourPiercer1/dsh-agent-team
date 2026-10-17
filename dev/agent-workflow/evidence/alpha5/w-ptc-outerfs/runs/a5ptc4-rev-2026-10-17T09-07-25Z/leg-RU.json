@@ -1,0 +1,34 @@
+{
+  "journal": [
+    {
+      "at": "2026-10-17T09:08:42.716Z",
+      "leg": "approval-ask",
+      "seq": 2,
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T090725Z-RU",
+      "toolName": "run_code",
+      "agent": "session-e8005747-8f7c-481e-b681-37774fcd7c4d",
+      "token": "t-nope",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-nope reviewer-leg-RU unknown token, never granted",
+      "decision": "unknown",
+      "outcome": "pass-through"
+    }
+  ],
+  "approvals": [
+    {
+      "seq": 2,
+      "at": "2026-10-17T09:08:42.716Z",
+      "face": "plugin-ctx-global-outer",
+      "callId": "call-A5PTC4REV20261017T090725Z-RU",
+      "toolName": "run_code",
+      "agent": "session-e8005747-8f7c-481e-b681-37774fcd7c4d",
+      "token": "t-nope",
+      "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-nope reviewer-leg-RU unknown token, never granted",
+      "decision": "unknown",
+      "outcome": "pass-through"
+    }
+  ],
+  "askedLines": [],
+  "askedId": null,
+  "decided": false
+}

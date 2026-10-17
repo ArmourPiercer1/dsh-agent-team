@@ -1,0 +1,94 @@
+{
+  "lane": {
+    "ok": true,
+    "label": "session-ff57c179-6e10-43e2-bd06-c85136ad17bd",
+    "role": "lane",
+    "error": null
+  },
+  "m1": {
+    "ok": true,
+    "label": "session-adec8150-de3b-4390-b052-031ed6f4406f",
+    "role": "member",
+    "error": null
+  },
+  "m2": {
+    "ok": true,
+    "label": "session-4a06ba4c-0997-4bd9-88de-25932e6712f9",
+    "role": "member",
+    "error": null
+  },
+  "m3": {
+    "ok": true,
+    "label": "session-b62e1ea6-266b-4df9-a0c9-6aae3ec6c0ff",
+    "role": "member",
+    "error": null
+  },
+  "census": {
+    "rows": [
+      {
+        "label": "session-ff57c179-6e10-43e2-bd06-c85136ad17bd",
+        "role": "lane",
+        "sessionId": "session-ff57c179-6e10-43e2-bd06-c85136ad17bd",
+        "witness": null,
+        "laneTools": [
+          "a5ptc4b_grant",
+          "a5ptc4b_revoke",
+          "a5ptc4b_unload"
+        ],
+        "error": null
+      },
+      {
+        "label": "session-adec8150-de3b-4390-b052-031ed6f4406f",
+        "role": "member",
+        "sessionId": "session-adec8150-de3b-4390-b052-031ed6f4406f",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      },
+      {
+        "label": "session-4a06ba4c-0997-4bd9-88de-25932e6712f9",
+        "role": "member",
+        "sessionId": "session-4a06ba4c-0997-4bd9-88de-25932e6712f9",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      },
+      {
+        "label": "session-b62e1ea6-266b-4df9-a0c9-6aae3ec6c0ff",
+        "role": "member",
+        "sessionId": "session-b62e1ea6-266b-4df9-a0c9-6aae3ec6c0ff",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      },
+      {
+        "label": "session-ae3c75a8-10cb-4f1b-9c4e-b4e5a87ebd82",
+        "role": "outsider",
+        "sessionId": "session-ae3c75a8-10cb-4f1b-9c4e-b4e5a87ebd82",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      }
+    ]
+  }
+}

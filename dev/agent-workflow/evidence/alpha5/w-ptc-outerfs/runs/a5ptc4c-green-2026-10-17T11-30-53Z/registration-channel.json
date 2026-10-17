@@ -1,0 +1,145 @@
+{
+  "census": {
+    "channel": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc4c-l2fix/tests/homes/a5ptc4c-green-2026-10-17T11-30-53Z/.a5ptc4c/lane-channel.jsonl",
+    "sealed": true,
+    "consumed": [
+      "2cdc5e5a-1db6-4a58-a4fd-45a97aaebe16",
+      "92f32948-2a45-4711-ae0b-4eb53851b5da",
+      "d7728894-f39e-4342-a7a2-69626ed2ab1a",
+      "ff49f87f-3424-4ffa-8071-2ae4568140b1",
+      "3bf1d13b-4dbb-4017-8a93-48ba4452fd0d",
+      "5d39b129-47f8-4916-9831-3783be693bed"
+    ],
+    "refused": [
+      {
+        "leg": "lifecycle-register",
+        "nonce": "2cdc5e5a-1db6-4a58-a4fd-45a97aaebe16",
+        "role": "lane",
+        "sessionId": "session-2482b32f-e5bf-44b1-afb9-ef84efbac79e",
+        "reason": "nonce missing or already consumed (one-time)"
+      },
+      {
+        "leg": "lifecycle-register",
+        "nonce": "5d39b129-47f8-4916-9831-3783be693bed",
+        "role": "lane",
+        "sessionId": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892",
+        "reason": "already rostered",
+        "label": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892"
+      },
+      {
+        "leg": "lifecycle-register",
+        "nonce": "0af912cb-9e3b-4158-9630-3b5565159538",
+        "role": "lane",
+        "sessionId": "session-2482b32f-e5bf-44b1-afb9-ef84efbac79e",
+        "reason": "channel sealed — registration is one-time per spawn"
+      }
+    ],
+    "rows": [
+      {
+        "label": "session-b5da6035-d370-42e5-8792-5d49ca5f0eb5",
+        "role": "lane",
+        "via": "trusted-lifecycle-channel",
+        "nonce": "2cdc5e5a-1db6-4a58-a4fd-45a97aaebe16"
+      },
+      {
+        "label": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892",
+        "role": "member",
+        "via": "trusted-lifecycle-channel",
+        "nonce": "92f32948-2a45-4711-ae0b-4eb53851b5da"
+      },
+      {
+        "label": "session-0d3f93a4-678b-4d98-8b30-dce153c75098",
+        "role": "member",
+        "via": "trusted-lifecycle-channel",
+        "nonce": "d7728894-f39e-4342-a7a2-69626ed2ab1a"
+      },
+      {
+        "label": "session-70da9ad4-81f1-4f7b-ac66-c185b290dba5",
+        "role": "member",
+        "via": "trusted-lifecycle-channel",
+        "nonce": "ff49f87f-3424-4ffa-8071-2ae4568140b1"
+      },
+      {
+        "label": "session-eede16d9-57ff-4879-a5b0-28f9ae4b6f86",
+        "role": "outsider",
+        "via": "trusted-lifecycle-channel",
+        "nonce": "3bf1d13b-4dbb-4017-8a93-48ba4452fd0d"
+      }
+    ]
+  },
+  "ledgerRows": [
+    {
+      "at": "2026-10-17T11:30:55.393Z",
+      "leg": "lifecycle-register",
+      "nonce": "2cdc5e5a-1db6-4a58-a4fd-45a97aaebe16",
+      "label": "session-b5da6035-d370-42e5-8792-5d49ca5f0eb5",
+      "role": "lane",
+      "decision": "registered",
+      "via": "trusted-lifecycle-channel"
+    },
+    {
+      "at": "2026-10-17T11:30:55.644Z",
+      "leg": "lifecycle-register",
+      "nonce": "92f32948-2a45-4711-ae0b-4eb53851b5da",
+      "label": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892",
+      "role": "member",
+      "decision": "registered",
+      "via": "trusted-lifecycle-channel"
+    },
+    {
+      "at": "2026-10-17T11:30:55.644Z",
+      "leg": "lifecycle-register",
+      "nonce": "d7728894-f39e-4342-a7a2-69626ed2ab1a",
+      "label": "session-0d3f93a4-678b-4d98-8b30-dce153c75098",
+      "role": "member",
+      "decision": "registered",
+      "via": "trusted-lifecycle-channel"
+    },
+    {
+      "at": "2026-10-17T11:30:55.644Z",
+      "leg": "lifecycle-register",
+      "nonce": "ff49f87f-3424-4ffa-8071-2ae4568140b1",
+      "label": "session-70da9ad4-81f1-4f7b-ac66-c185b290dba5",
+      "role": "member",
+      "decision": "registered",
+      "via": "trusted-lifecycle-channel"
+    },
+    {
+      "at": "2026-10-17T11:30:55.644Z",
+      "leg": "lifecycle-register",
+      "nonce": "3bf1d13b-4dbb-4017-8a93-48ba4452fd0d",
+      "label": "session-eede16d9-57ff-4879-a5b0-28f9ae4b6f86",
+      "role": "outsider",
+      "decision": "registered",
+      "via": "trusted-lifecycle-channel"
+    },
+    {
+      "at": "2026-10-17T11:30:55.893Z",
+      "leg": "lifecycle-register",
+      "nonce": "2cdc5e5a-1db6-4a58-a4fd-45a97aaebe16",
+      "role": "lane",
+      "sessionId": "session-2482b32f-e5bf-44b1-afb9-ef84efbac79e",
+      "decision": "refused",
+      "reason": "replay-or-missing-nonce"
+    },
+    {
+      "at": "2026-10-17T11:30:55.893Z",
+      "leg": "lifecycle-register",
+      "nonce": "5d39b129-47f8-4916-9831-3783be693bed",
+      "role": "lane",
+      "sessionId": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892",
+      "label": "session-2d7ec4f5-fa4a-4326-a90e-7e7a3a72b892",
+      "decision": "refused",
+      "reason": "already-rostered"
+    },
+    {
+      "at": "2026-10-17T11:30:55.893Z",
+      "leg": "lifecycle-register",
+      "nonce": "0af912cb-9e3b-4158-9630-3b5565159538",
+      "role": "lane",
+      "sessionId": "session-2482b32f-e5bf-44b1-afb9-ef84efbac79e",
+      "decision": "refused",
+      "reason": "sealed"
+    }
+  ]
+}

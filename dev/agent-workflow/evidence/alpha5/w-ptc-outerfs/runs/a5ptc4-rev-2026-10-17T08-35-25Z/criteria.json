@@ -1,0 +1,110 @@
+{
+  "run": "a5ptc4-rev-2026-10-17T08-35-25Z",
+  "mode": "REVIEW-v2",
+  "launcherSha": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+  "status": "REVIEW-FINDINGS-PRESENT",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host tree pinned @639ed01539 porcelain=0",
+      "pass": true,
+      "observed": "head=639ed0153972 porcelain=true"
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "Landlock launcher present (--probe exit 0)",
+      "pass": true,
+      "observed": "landlock: partially enforced (older ABI)"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 (port self-proven free) with token gate",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "five sessions created through the public entry (A/B answered, F1/F2/F3 dedicated foreign)",
+      "pass": true,
+      "observed": "A=session-210319c3-b B=session-f93ba520-3"
+    },
+    {
+      "id": "L-ASSEMBLY",
+      "claim": "both session assemblies completed (witness tools + guard + per-agent resolver face)",
+      "pass": true,
+      "observed": "labels=[\"session-210319c3-bf69-4449-a4b2-83c39a8954e6\",\"session-f93ba520-3e27-4563-a5a2-f9b1830821fb\"]"
+    },
+    {
+      "id": "R1-DELEGATION-ZERO-ANSWER-VERBATIM-DOWNSTREAM",
+      "claim": "R1 foreign no-token ask: reviewed resolver answered ZERO (journal decision=foreign outcome=pass-through, no outcome row) AND the ask reached the downstream ask-lane VERBATIM (session-log approval/asked carries the same callId+reason; tool call stays PENDING on the human bridge lane — not swallowed, not pre-empted), zero writes",
+      "pass": false,
+      "observed": "journal=[] approvals_N=0 askedLines={\"__held\":\"approval/asked for RF\"} probeA_saw=0 (0 = the attached lane holds ahead of a later probe)"
+    },
+    {
+      "id": "R2-NEG-WRONG-CALLID-REFUSED-NEVER-GRANTED",
+      "claim": "R2 negative-control wrong/unknown grant token: resolver answered NOTHING beyond pass-through (decision=unknown outcome=pass-through → host fail-closed semantics; never granted), ask visible downstream verbatim, zero writes",
+      "pass": false,
+      "observed": "journal=[] approvals_N=0 asked=undefined targetWritten=false"
+    },
+    {
+      "id": "R3-ALLOWED-ONCE-WIDENS-THIS-CALL",
+      "claim": "R3 positive anchor: grant allow → allowed-once → forbidden target really written this one call (sandbox.mode=danger-full-access for the ONE call)",
+      "pass": true,
+      "observed": "target=\"A5PTC4-REV-BODY-RAN-227\" appRA={\"seq\":1,\"at\":\"2026-10-17T08:37:57.767Z\",\"face\":\"plugin-ctx-global-outer\",\"callId\":\"call-A5PTC4REV20261017T083525Z-RA\",\"toolName\":\"run_code\",\"agent\":\"session-210319c3-bf69-4449-a4b2-83c39a8954e6\",\"token\":\"t-r\",\"reasonHead\":\"escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-r reviewer-leg-RA first use of an allowed-once grant (session A)\",\"decision\":\"allow\",\"outcome\":\"allowed-once\"} sandbox={\"mode\":\"danger-full-access\",\"denied\":false}"
+    },
+    {
+      "id": "R4-NEG-REPLAY-MUST-BE-REFUSED",
+      "claim": "R4 negative-control replay of an already-consumed allowed-once grant (same token, new callId): REQUIRED refused (grant is one-shot) and zero new writes",
+      "pass": false,
+      "observed": "replayTargetWritten=true journalRP=[{\"decision\":\"duplicate\",\"outcome\":\"allowed-once\",\"callId\":\"Z-RP\"}] runText={\n  \"pid\": 285,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-replay-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+    },
+    {
+      "id": "R5-NEG-REVOKED-STALE-MUST-BE-REFUSED",
+      "claim": "R5 negative-control after REVOCATION (grant flipped to reject; expiry stand-in — no TTL exists): a stale re-presentation MUST be refused with zero new writes",
+      "pass": false,
+      "observed": "policyTargetWritten=true journalRC=[{\"decision\":\"duplicate\",\"outcome\":\"allowed-once\"}] runText={\n  \"pid\": 343,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-policy-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+    },
+    {
+      "id": "R6-NEG-FOREIGN-SESSION-MUST-BE-REFUSED",
+      "claim": "R6 negative-control token granted for session A presented by SESSION B (foreign-team stand-in): REQUIRED refused — the resolver must only adjudicate asks VERIFIABLY owned by its Team/member (host fields agent/callId bound to a Grant), not token-shaped strings in model text",
+      "pass": false,
+      "observed": "xTargetWritten=true widened={\"mode\":\"danger-full-access\",\"denied\":false} runText={\n  \"pid\": 401,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-x-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n} t-x-ledger=[{\"seq\":4,\"agent\":\"session-f93ba520-3e27-45\",\"outcome\":\"allowed-once\"}]"
+    },
+    {
+      "id": "R7-CONCURRENCY-ISOLATION",
+      "claim": "R7 two sessions in parallel: tA (A, allow) allowed+wrote, tB (B, reject) refused verbatim+zero writes; distinct callIds; each ask decided only by its own grant; agents match",
+      "pass": true,
+      "observed": "qaWritten=true qbWritten=false rowQA=[{\"outcome\":\"allowed-once\",\"agent\":\"session-210319c3-bf6\",\"callId\":\"25Z-QA\"}] rowQB=[{\"outcome\":\"rejected\",\"agent\":\"session-f93ba520-3e2\",\"callId\":\"25Z-QB\"}]"
+    },
+    {
+      "id": "R8-GUI-BRIDGE-POSTURE-NO-PREEMPT",
+      "claim": "R8 foreign ask with late probe + attached approval lane in place: reviewed side answered ZERO; ask PENDING verbatim at the lane (or answered downstream if a human lane were live); zero grants, zero writes, zero answers from our side",
+      "pass": false,
+      "observed": "asked=undefined probeB_saw=0 (0 = attached lane holds ahead of later probe; ask pending, ours silent)"
+    },
+    {
+      "id": "R9-UNINSTALL-ASYMMETRY-DOCUMENTED",
+      "claim": "R9 install/uninstall symmetry: probe shows the symmetric shape (count -1 on dispose); reviewed resolver retains NO disposer (its {global,prepend} listener still in census after all legs) — asymmetry recorded as a finding",
+      "pass": true,
+      "observed": "probeB count 7->6; global listeners still present=2; total=6"
+    },
+    {
+      "id": "R10-ORIGINAL-PERMS-NOT-LOWERED",
+      "claim": "R10 root acceptance: per-session mode AND approval policy are constant before/after (workspace-write; policy value unchanged — host session-init value, never written by this kit); secret byte-identical; forbidden dir holds ONLY review-controlled target files (each = a recorded decision), nothing uncontrolled",
+      "pass": true,
+      "observed": "A workspace-write/ask->workspace-write/ask B workspace-write/ask->workspace-write/ask secretUnchanged=true forbDir=[\"rev-a-target.txt\",\"rev-policy-target.txt\",\"rev-qa-target.txt\",\"rev-replay-target.txt\",\"rev-x-target.txt\",\"secret.txt\"]"
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": ":3080 stable untouched (pre=401 post=401); bound only 3184",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE-POST",
+      "claim": "pinned host tree byte-clean after the run",
+      "pass": true,
+      "observed": "head=639ed0153972"
+    }
+  ]
+}

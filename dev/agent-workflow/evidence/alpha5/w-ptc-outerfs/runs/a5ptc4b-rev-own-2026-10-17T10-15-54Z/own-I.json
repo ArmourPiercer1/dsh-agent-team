@@ -1,0 +1,52 @@
+{
+  "results": [
+    {
+      "at": 1792232231074,
+      "callId": "call-A5PTC4BREVOWN20261017T101554Z-H2",
+      "text": "landlock-run: partial enforcement (older Landlock ABI)\n\n{\n  \"pid\": 754,\n  \"status\": 404,\n  \"body\": \"{\\\"ok\\\":false,\\\"error\\\":\\\"no agent for session\\\"}\"\n}\nFile sandbox enforcement is partial on this host.",
+      "err": false
+    }
+  ],
+  "rosterAfter": {
+    "rows": [
+      {
+        "label": "session-82f6fa9f-8840-4798-aac5-40e608e7f502",
+        "role": "lane",
+        "sessionId": "session-82f6fa9f-8840-4798-aac5-40e608e7f502",
+        "witness": null,
+        "laneTools": [
+          "a5ptc4b_grant",
+          "a5ptc4b_revoke",
+          "a5ptc4b_unload"
+        ],
+        "error": null
+      },
+      {
+        "label": "session-a3a28332-1cdc-4e61-8c41-74672c316e2c",
+        "role": "member",
+        "sessionId": "session-a3a28332-1cdc-4e61-8c41-74672c316e2c",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      },
+      {
+        "label": "session-d5fae9fa-d666-42e8-a242-ccb8558c8503",
+        "role": "member",
+        "sessionId": "session-d5fae9fa-d666-42e8-a242-ccb8558c8503",
+        "witness": {
+          "echo": true,
+          "guard": true,
+          "presentAs": "ptc",
+          "aroundSeam": true
+        },
+        "laneTools": null,
+        "error": null
+      }
+    ]
+  }
+}

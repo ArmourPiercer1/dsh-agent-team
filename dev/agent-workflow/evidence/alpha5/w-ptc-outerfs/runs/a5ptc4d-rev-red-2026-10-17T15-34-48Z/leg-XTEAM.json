@@ -1,0 +1,9 @@
+{
+  "grantId": "g4",
+  "foreignAsk": {
+    "__held": "M3 foreign ask row"
+  },
+  "grantStateAfterForeign": "issued",
+  "grantsDelta": 1,
+  "writtenForeign": false
+}

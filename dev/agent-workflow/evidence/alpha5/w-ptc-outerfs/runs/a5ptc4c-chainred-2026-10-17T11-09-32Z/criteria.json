@@ -1,0 +1,58 @@
+{
+  "run": "a5ptc4c-chainred-2026-10-17T11-09-32Z",
+  "mode": "chain-red",
+  "askTtlMs": 8000,
+  "status": "RED-CHAIN-COMPLETE",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "pinned host tree @639ed01539 with porcelain=0",
+      "pass": true
+    },
+    {
+      "id": "P-REVIEWED-ROW-UNMODIFIED",
+      "claim": "the attack runs against the REVIEWED L2 row byte-for-byte as shipped at e80ca6eb (no closure code involved)",
+      "pass": true
+    },
+    {
+      "id": "P-OS-PREFLIGHT",
+      "claim": "OS floor up (the escalation that lands at REDCHAIN-3 rides the REAL confine() path; the write is a real OS-level escape, not a fiction)",
+      "pass": true
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the REVIEWED row applied",
+      "pass": true
+    },
+    {
+      "id": "REDCHAIN-0-NO-LANE-ZERO-WRITE",
+      "claim": "baseline (pre-attack): with NO lane provisioned the member's escalation gets zero answer (lane-timeout refusal at the deadline) and writes NOTHING — so any later write can only come from the attack",
+      "pass": true
+    },
+    {
+      "id": "REDCHAIN-1-UNAUTH-LANE-REGISTRATION",
+      "claim": "step 1 HOLDS (danger): the member's OWN confined workspace-write child — no host credential, no escalation, plain loopback — registered the unrostered ATK session as a MINTING LANE: 200 ok role:lane, roster now carries ATK with the three lane tools, ledger carries provision-complete",
+      "pass": true
+    },
+    {
+      "id": "REDCHAIN-2-FORGED-GRANT-MINTED",
+      "claim": "step 2 HOLDS (danger): the attacker never touches a minting HTTP face — ATK is now a provisioned lane, so its OWN tool call mints a Grant bound to the MEMBER's quadruple (the declared form takes agent|callId|toolName|mode as free text: bindings the honest lane could not forge are trivially forgeable once ANY session is a lane)",
+      "pass": true
+    },
+    {
+      "id": "REDCHAIN-3-CONSUMPTION-LANDED",
+      "claim": "step 3 HOLDS (danger fully realized): the member spent its SELF-MINTED grant — decision=lane-allow outcome=allowed-once carrying the FORGED grantId, and the forbidden-zone file really exists on disk (a real confined-OS escape, escalation the Team never approved). Chain = member → loopback registration → mint → consumption, end to end, no honest lane, no stolen credential",
+      "pass": true
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": ":3080 stable instance untouched (pre=401 post=401); this kit bound only 3184",
+      "pass": true
+    },
+    {
+      "id": "P-PRISTINE-POST",
+      "claim": "pinned host tree byte-clean after the run (HEAD unchanged, porcelain empty)",
+      "pass": true
+    }
+  ]
+}

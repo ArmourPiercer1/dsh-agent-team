@@ -1,0 +1,140 @@
+{
+  "install1": {
+    "at": "2026-10-17T11:22:42.556Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 6,
+    "liveFaces": 6,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "install2": {
+    "at": "2026-10-17T11:22:46.061Z",
+    "leg": "lifecycle-install",
+    "ok": true,
+    "faces": 9,
+    "liveFaces": 6,
+    "roster": 5,
+    "note": "reinstall never appends onto an installed face set"
+  },
+  "hooks": {
+    "count": 7,
+    "uninstalled": false,
+    "mineTags": [
+      "plugin-ctx",
+      "plugin-ctx-global-outer"
+    ],
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true,
+        "tag": "plugin-ctx-global-outer",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 2,
+        "global": true,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 3,
+        "global": false,
+        "prepend": false,
+        "tag": "plugin-ctx",
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      },
+      {
+        "idx": 6,
+        "global": false,
+        "prepend": false,
+        "tag": null,
+        "mineBySource": false,
+        "fnHead": "function () { [native code] }"
+      }
+    ]
+  },
+  "mineRe": 0,
+  "pending": {
+    "seq": 13,
+    "bind": {
+      "seq": 13,
+      "at": "2026-10-17T11:22:46.280Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-d06953ed-a352-4698-8647-a0e6a26137ba",
+      "callId": "call-A5PTC4CGREEN20261017T111622Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only"
+    },
+    "askedAt": "2026-10-17T11:22:46.280Z",
+    "deadlineMsLeft": 9881
+  },
+  "row": {
+    "seq": 13,
+    "at": "2026-10-17T11:22:46.280Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-d06953ed-a352-4698-8647-a0e6a26137ba",
+    "callId": "call-A5PTC4CGREEN20261017T111622Z-Q3",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+    "decision": "lane-allow@pending",
+    "outcome": "allowed-once",
+    "heldMs": 216,
+    "grantId": "g8",
+    "grantSource": "ask-bound",
+    "issuerLane": "session-f9d44635-a7f4-405b-9f64-52b4f2739335",
+    "ttlMs": 60000
+  },
+  "written": true,
+  "allRows": [
+    {
+      "seq": 13,
+      "at": "2026-10-17T11:22:46.280Z",
+      "face": "plugin-ctx-global-outer",
+      "agent": "session-d06953ed-a352-4698-8647-a0e6a26137ba",
+      "callId": "call-A5PTC4CGREEN20261017T111622Z-Q3",
+      "toolName": "run_code",
+      "mode": "danger-full-access",
+      "modelTextLog": "a5ptc4c Q3: justification carries model text only",
+      "decision": "lane-allow@pending",
+      "outcome": "allowed-once",
+      "heldMs": 216,
+      "grantId": "g8",
+      "grantSource": "ask-bound",
+      "issuerLane": "session-f9d44635-a7f4-405b-9f64-52b4f2739335",
+      "ttlMs": 60000
+    }
+  ],
+  "alreadyRows": []
+}

@@ -1,0 +1,49 @@
+{
+  "run": {
+    "at": 1792226277840,
+    "startedAt": 1792226277767,
+    "text": "{\n  \"pid\": 227,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-a-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}",
+    "raw": {
+      "isError": false,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"pid\": 227,\n  \"ppid\": 38,\n  \"echo\": \"A5PTC4-ECHO:rev-a-body\",\n  \"writeCode\": \"wrote\",\n  \"canary\": \"A5PTC4-REV-BODY-RAN\"\n}"
+        }
+      ],
+      "value": {
+        "logs": [],
+        "sandbox": {
+          "mode": "danger-full-access",
+          "denied": false
+        },
+        "result": {
+          "pid": 227,
+          "ppid": 38,
+          "echo": "A5PTC4-ECHO:rev-a-body",
+          "writeCode": "wrote",
+          "canary": "A5PTC4-REV-BODY-RAN"
+        }
+      }
+    }
+  },
+  "leg3": {
+    "pid": 227,
+    "ppid": 38,
+    "echo": "A5PTC4-ECHO:rev-a-body",
+    "writeCode": "wrote",
+    "canary": "A5PTC4-REV-BODY-RAN"
+  },
+  "appRA": {
+    "seq": 1,
+    "at": "2026-10-17T08:37:57.767Z",
+    "face": "plugin-ctx-global-outer",
+    "callId": "call-A5PTC4REV20261017T083525Z-RA",
+    "toolName": "run_code",
+    "agent": "session-210319c3-bf69-4449-a4b2-83c39a8954e6",
+    "token": "t-r",
+    "reasonHead": "escalate sandbox to danger-full-access: A5PTC4-TOKEN:t-r reviewer-leg-RA first use of an allowed-once grant (session A)",
+    "decision": "allow",
+    "outcome": "allowed-once"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "row": {
+    "seq": 8,
+    "at": "2026-10-17T11:29:20.227Z",
+    "face": "plugin-ctx-global-outer",
+    "agent": "session-4cb367c9-4ac8-4d5d-a15d-04cc6d4b55a0",
+    "callId": "call-A5PTC4CGREEN20261017T112641Z-XTEAM",
+    "toolName": "run_code",
+    "mode": "danger-full-access",
+    "modelTextLog": "a5ptc4c XTEAMUSE: justification carries model text only",
+    "decision": "lane-allow",
+    "outcome": "allowed-once",
+    "grantId": "g5",
+    "grantSource": "declared",
+    "issuerLane": "session-bce9bf50-55d3-4336-ac81-a0a420cd949b",
+    "ttlMs": 20000
+  },
+  "grantStateAfterOwner": "consumed",
+  "written": true
+}

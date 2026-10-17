@@ -1,0 +1,40 @@
+{
+  "cB0": 7,
+  "cB1": 6,
+  "finalHooks": {
+    "count": 6,
+    "rows": [
+      {
+        "idx": 0,
+        "global": true,
+        "prepend": true
+      },
+      {
+        "idx": 1,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 2,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 3,
+        "global": true,
+        "prepend": false
+      },
+      {
+        "idx": 4,
+        "global": false,
+        "prepend": false
+      },
+      {
+        "idx": 5,
+        "global": false,
+        "prepend": false
+      }
+    ]
+  },
+  "note": "probeB: ctx.on disposer = symmetric install/uninstall (public face). The reviewed resolver in a5ptc4-row.mjs DISCARDS the disposer (lines 174/180: ctx.on(...) results not retained) → the {global,prepend} listener is permanent for the process lifetime; no uninstall route exists."
+}
