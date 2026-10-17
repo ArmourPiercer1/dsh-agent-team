@@ -1,0 +1,142 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g1-redcap
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts (10 tests | 6 failed) 834ms
+     × G1-core: a native-spelled bash effect meets the template deny of the shell class (deny BEFORE backend) 15ms
+     × the deny fast path is default-independent: same deny under an ask default too 1ms
+     × G1-core: an uncovered plane grep/glob invoke is answered by the default-deny gate 2ms
+     ✓ the SAME configuration keeps the allow lane open: read-covered grep reaches the decision allow 0ms
+     ✓ both namespaces answer through the ONE mapping: the mounted-alias spelling keeps deciding as the native one 0ms
+     ✓ a native-name takeover mount (no alias) decides identically — the alias was never the decision namespace 0ms
+     ✓ Δ=[] outside the plane namespace: file-class denies, non-plane invokes and the ask default decide unchanged 0ms
+     × denied team_bash: typed template-deny-lane refusal, backend execCount 0, ZERO fs write 10ms
+     × production (shut) face shape: the denied call is refused by the LANE, not by the backend; the allowed call still lands on the backend face 2ms
+     × default-deny gate at the assembly: an uncovered plane grep is refused before the shut backend answers 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the lane decide answers in ONE namespace (default alias mount) > G1-core: a native-spelled bash effect meets the template deny of the shell class (deny BEFORE backend)
+AssertionError: expected { kind: 'allow' } to deeply equal { kind: 'deny', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "code": "template-deny-lane",
+-   "kind": "deny",
++   "kind": "allow",
+  }
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:89:32
+     87|   it('G1-core: a native-spelled bash effect meets the template deny of…
+     88|     const decide = row.createLaneDecide(DENY_BASH_POLICY, row.DEFAULT_…
+     89|     expect(decide(bashInvoke)).toEqual({ kind: 'deny', code: 'template…
+       |                                ^
+     90|   })
+     91|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the lane decide answers in ONE namespace (default alias mount) > the deny fast path is default-independent: same deny under an ask default too
+AssertionError: expected { kind: 'allow' } to deeply equal { kind: 'deny', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "code": "template-deny-lane",
+-   "kind": "deny",
++   "kind": "allow",
+  }
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:94:32
+     92|   it('the deny fast path is default-independent: same deny under an as…
+     93|     const decide = row.createLaneDecide({ ...DENY_BASH_POLICY, default…
+     94|     expect(decide(bashInvoke)).toEqual({ kind: 'deny', code: 'template…
+       |                                ^
+     95|   })
+     96|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the lane decide answers in ONE namespace (default alias mount) > G1-core: an uncovered plane grep/glob invoke is answered by the default-deny gate
+AssertionError: expected { kind: 'allow' } to deeply equal { kind: 'deny', …(1) }
+
+- Expected
++ Received
+
+  {
+-   "code": "template-default-deny",
+-   "kind": "deny",
++   "kind": "allow",
+  }
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:99:50
+     97|   it('G1-core: an uncovered plane grep/glob invoke is answered by the …
+     98|     const decide = row.createLaneDecide({ default: 'deny', allow: [], …
+     99|     expect(decide(grepArms('/a5g1/target.txt'))).toEqual({ kind: 'deny…
+       |                                                  ^
+    100|     expect(decide(globArms('/a5g1/target.txt'))).toEqual({ kind: 'deny…
+    101|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the assembly answers the deny lane BEFORE any backend runs > denied team_bash: typed template-deny-lane refusal, backend execCount 0, ZERO fs write
+AssertionError: expected 'bash · exit=0\n> A5G1_BACKEND_RAN\na5…' to contain 'a5p5-refused'
+
+- Expected
++ Received
+
+- a5p5-refused
++ bash · exit=0
++ > A5G1_BACKEND_RAN
++ a5p5-meta {"kind":"shell","exitCode":0,"timedOut":false,"cancelled":false,"truncated":false}
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:227:23
+    225|
+    226|     const bash = await defs.find((d) => d.name === 'team_bash')!.execu…
+    227|     expect(bash.text).toContain('a5p5-refused')
+       |                       ^
+    228|     expect(bash.text).toContain('code=template-deny-lane')
+    229|     expect(bash.text).not.toContain('A5G1_BACKEND_RAN')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the assembly answers the deny lane BEFORE any backend runs > production (shut) face shape: the denied call is refused by the LANE, not by the backend; the allowed call still lands on the backend face
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'code=template-deny-lane'
+
+Expected: "code=template-deny-lane"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:255:23
+    253|     // landing code is ABSENT (its presence would mean the call reache…
+    254|     // backend — landing evidence, never deny evidence).
+    255|     expect(bash.text).toContain('code=template-deny-lane')
+       |                       ^
+    256|     expect(bash.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    257|     // the allow lane lands on the shut face (the disclosed GLUE-4 fol…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/alpha5-g1-deny-lane.test.ts > alpha5-g1 — the assembly answers the deny lane BEFORE any backend runs > default-deny gate at the assembly: an uncovered plane grep is refused before the shut backend answers
+AssertionError: expected 'a5p5-refused kind=backend-failed code…' to contain 'code=template-default-deny'
+
+Expected: "code=template-default-deny"
+Received: "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked"
+
+ ❯ packages/runtime/test/alpha5-g1-deny-lane.test.ts:274:23
+    272|     const defs = built.value!.definitions
+    273|     const grep = await defs.find((d) => d.name === 'team_grep')!.execu…
+    274|     expect(grep.text).toContain('code=template-default-deny')
+       |                       ^
+    275|     expect(grep.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    276|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 4 passed (10)
+   Start at  18:34:44
+   Duration  1.18s (transform 705ms, setup 0ms, import 133ms, tests 834ms, environment 0ms)
+
