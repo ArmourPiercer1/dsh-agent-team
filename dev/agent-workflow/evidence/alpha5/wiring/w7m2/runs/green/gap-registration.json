@@ -1,0 +1,16 @@
+{
+  "round": "W7M-2 (alpha5-w7m2-covgate)",
+  "verdict": "OUT OF PLAN (计划外): job_* coverage registration appears in NO plan as a planned item (PR249 §10 PR7 = identity/lease only; alpha2 A2C-1..8 = no jobs adapter; W7 card has no coverage item). Therefore route (3) 分腿保持.",
+  "missing_items": [
+    "packages/runtime/operation-permission/permission-coverage.ts:180 (gate.known_sensitive_prefix_job)",
+    "packages/runtime/operation-permission/permission-coverage.ts:161 (gate.job_list_entry)",
+    "packages/runtime/operation-permission/permission-coverage.ts:138 (gate.remediation)",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs:2435 (glue.facts_closed_triple)",
+    "packages/domain/blueprint/src/schema.ts:406 (schema.permission_tool_names)",
+    "packages/domain/blueprint/src/validate.ts:1185 (validator.member_shell_no_allow)",
+    "MEASURED SECOND GAP (this run; verbatim in guard-binding-probe-anchor.json + t-allow-model-verdict.json): on EVERY strict governed face of this host build (boot anchor AND team.create leader, identical refusal text), a model-driven bash call is refused at dispatch by the a5p1 closed-world Guard — the Tool Binding for the preset-mounted bash cannot be verified at dispatch time (no fallback to the native body) — so MODEL-DRIVEN (run_in_background) registration cannot reach ctx.jobs on a governed session even after the coverage gate is lawfully satisfied. The host jobs PLANE itself works: the row-mounted actuator registers, fences, lists, reads, waits (T-allow-row). Missing item = a verified Tool Binding story for preset natives under the closed-world Guard. NOT routed around: no non-strict template, no gate relaxation, no lane-source edit."
+  ],
+  "minimal_repro": "see runs/repro-jobs/fatal-capture.json (typed alpha2-permission-coverage-unmanaged-tools, entries = EXACTLY the trio) and runs/repro-standard/fatal-capture.json (full governed surface fatal); second gap: runs/green/guard-binding-probe-anchor.json (boot anchor refusal) + runs/green/t-allow-model-verdict.json (created-team leader refusal)",
+  "governed_assembly_that_DOES_work": "strict templates + builtinToolDeny(trio) + host registry plane + row-listable registrations (this run 16/16: T-allow [measured-refusal branch] / T-allow-row / T-deny / T-iso)",
+  "legs_not_borrowed": "W-E2 six-leg M-13 quote NOT reused for promotion; #284/W7M-A3a trio stays 公开能力实证 (plain-session plane)"
+}

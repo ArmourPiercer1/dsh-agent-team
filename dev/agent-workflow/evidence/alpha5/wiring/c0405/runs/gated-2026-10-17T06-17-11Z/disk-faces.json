@@ -1,0 +1,18 @@
+{
+  "doc_sha": "sha256:62d961ad2ea0be8c603c54d981284cd0ead42efa212471750ee037293d6c18d0",
+  "doc_contains_new": true,
+  "doc_contains_insert": false,
+  "memo_sha": "sha256:1438b9b5c6b3853d80c3e2f509eeb99f340f60266d66ee2199e15e20d45382dd",
+  "memo_matches": true,
+  "thumb_sha": "sha256:b9814cf74738bf2c58f86bb4751e01de3349b2405184a339b516fdde23988ac7",
+  "thumb_intact": true,
+  "history_lines": 3,
+  "spill_files": [
+    "c45-view-8.spill",
+    "c45-view-8.spill.meta"
+  ],
+  "spill_disk": {
+    "c45-view-8.spill": 252000,
+    "c45-view-8.spill.meta": 125
+  }
+}

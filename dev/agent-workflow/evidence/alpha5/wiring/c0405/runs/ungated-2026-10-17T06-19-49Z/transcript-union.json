@@ -1,0 +1,15 @@
+[
+  "A5C45-ED-UNGATED view file=doc.txt bytes=29 sha=sha256:d98a5f736b086689ab216b3edb44d0179fdccff8d17711474f12297653dc49f9 head=\"before-edit-line\\nsecond line\\n\"",
+  "A5C45-ED-UNGATED str_replace applied raw (governance observations = 0)",
+  "A5C45-ED-UNGATED insert applied raw (governance observations = 0)",
+  "A5C45-ED-UNGATED undo applied raw (governance observations = 0)",
+  "A5C45-REFUSED kind=subcommand-io code=IO_POLICY_UNSUPPORTED payloadBytes=0 detail=subcommand \"undo_all\" has no precise I/O effect mapping (multi-step restore with undefined target state — no precise I/O effect set exists) — refused before admit, zero effects (IF-6 registered name)",
+  "A5C45-REFUSED kind=subcommand-io code=IO_POLICY_UNSUPPORTED payloadBytes=0 detail=subcommand \"delete\" has no precise I/O effect mapping (no unlink primitive on the governed lane — real-source/target side effects would escape the mapped effect set) — refused before admit, zero effects (IF-6 registered name)",
+  "A5C45-ED-UNGATED create applied raw (governance observations = 0)",
+  "A5C45-ED-UNGATED view file=big.txt bytes=252000 sha=sha256:cc4ed6d59bb867210109fed39d39369352694862fff71c87b7f7a190a892a85e head=\"a5c45-big-line-00000 governance-spill-leg\\na5c45-\"",
+  "A5C45-IMG-UNGATED mode=false {\"ok\":true,\"format\":\"image/png\",\"width\":1,\"height\":1,\"bitDepth\":1,\"bytes\":70} (raw fs, governance delta 0)",
+  "A5C45-IMG-UNGATED mode=true {\"ok\":true,\"format\":\"image/png\",\"width\":1,\"height\":1,\"bitDepth\":1,\"bytes\":70} (raw fs, governance delta 0) THUMB-LEAK bytes=103 head=\"THUMB-LEAK-MARKER-2026-10-17T06-19-49Z t\"",
+  "A5C45-IMG-UNGATED mode=\"grant\" {\"ok\":true,\"format\":\"image/png\",\"width\":1,\"height\":1,\"bitDepth\":1,\"bytes\":70} (raw fs, governance delta 0) THUMB-LEAK bytes=103 head=\"THUMB-LEAK-MARKER-2026-10-17T06-19-49Z t\"",
+  "A5C45-CFPROBE reason=admission-unbound bytes_leaked=0 code=TOOL_BINDING_UNVERIFIED cfClass=denied cf_reason_code=effect-outside-grant raw_readable=true",
+  "A5C45-PROBE-BODY-RAN"
+]

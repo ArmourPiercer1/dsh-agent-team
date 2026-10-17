@@ -1,0 +1,32 @@
+{
+  "durableMembers": {
+    "session-a5cvg-root-2026-10-17T05-37-12": [
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ],
+    "session-a5cvg-team-2026-10-17T05-37-12": [
+      {
+        "instanceId": "inst-02gaqun1yy83",
+        "templateId": "wa",
+        "childSessionId": "session-team-child-d9de440e5cbee1bcfcc476ee697cbd62",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-1m7177i1e2tk",
+        "templateId": "wb",
+        "childSessionId": "session-team-child-54b4a93a65bc6b61435a281bb3007a59",
+        "lifecycle": "CREATED"
+      },
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined"
+      }
+    ]
+  }
+}

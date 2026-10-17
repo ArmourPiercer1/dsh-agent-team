@@ -255,7 +255,7 @@
         "probe_id": "M-04-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json",
-        "status_now": "TRANSITIONED-PROBE-GATED",
+        "status_now": "TRANSITIONED-LIVE",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -292,21 +292,28 @@
         "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
         "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
         "transition_record": {
-          "verdict": "PROBE-GATED",
-          "run_utc": "2026-10-17T03:09Z",
-          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "verdict": "LIVE",
+          "run_utc": "2026-10-17T04:42Z",
+          "round": "C-04/05 gap round (alpha5-gap-c0405) @f26c3971；port 3183（自证空闲）；world a5c45-*（跑毕删除）；宿主 @639ed01539 porcelain 0 pre/post；探针复跑 exit=0（a5c45-post-M-04.log）；RED 先行 ungated 25/37 红且仅红 Team 门控腿、GREEN gated 37/37",
           "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs",
           "evidence_refs": [
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-04.log",
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json"
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-post-M-04.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-state.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-journal.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/disk-faces.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/run-receipt.md",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-pre-M-04.log",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/ungated-2026-10-17T04-42-31Z/criteria.json"
           ],
-          "live_legs_booked": [],
-          "missing_legs": [
-            "editor_subcommand_map_complete（editor 子命令 I/O 映射腿：str_replace_editor 族无装配 row）",
-            "undo_history_io（undo 治理腿）",
-            "editor 子命令级 IO_POLICY_UNSUPPORTED 负控（W4 nega 的 typed 拒属 confined-exec profile 面，类别不冒充）"
+          "live_legs_booked": [
+            "A1 子命令 I/O 映射全谱真跑：view/create/insert/str_replace/undo 经 Team Definition 公开面发布→bind→publish→one-shot grant→gated ControlledFs 真执行（真实编辑往返 sha 变、undo 逐字节复原=sha 回退到 str_replace 后值）；delete/undo_all/未知子命令=无精确映射类",
+            "A2 不可精确映射子命令 typed 默认拒 IO_POLICY_UNSUPPORTED（IF-6 在册名）：铸 grant 之前拒、grantIds=0、文件字节不变、负控两条 side_effects=0",
+            "A3 undo 历史 I/O 全在同一治理面：pre-write 历史 read+append（str_replace/insert）+ undo 腿 read:history→write:target→write:history 各一 one-shot grant；盘上 history/edits.jsonl 含 undo marker 行；治理观测全增量=事件流 begin=13/end=12（census 全名=master 发射面）、grant ledger consumed=15（minted 16−1=缩略图旁路腿 scope 拒先于 exec-edge 不记账，如实）、spill 252000B settle/finalize/close 字节等值、exec-edge 重放逐字 grant-consumed 拒"
           ],
-          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+          "missing_legs": [],
+          "basis": "LIVE=行级转态提案值（终裁归 PR8 正式轮 + 独立 reviewer）：editor 族无 Team 生产实现的事实不变（不发明生产代码=差距事实仍在 gap-checklist 在册）；本行按 W5 工具面模式把 editor 的 Team Definition 在公开 seam 材料化→bind→grant→exec 补齐=矩阵 M-04 判据『无可挂钩观测面』的缺项由装配 row 闭环。host-native edit/str_replace_editor 定义 pin 进 bind 的面不属本行（W-E2 实测差距保持在册）；OpenAtPort 任意树宣称线不受影响（ARBITRARY_TREE_PROFILE_PUBLISHED=false runtime 读回在册）；kernel 信任输入 fixture 级（W5/W7/W-E2 口径），无 ENFORCE 宣称。"
         }
       },
       "g_g_related": false,
@@ -333,7 +340,7 @@
         "probe_id": "M-05-probe",
         "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs",
         "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json",
-        "status_now": "TRANSITIONED-PROBE-GATED",
+        "status_now": "TRANSITIONED-LIVE",
         "allowed_transitions": [
           "LIVE",
           "PROBE-GATED"
@@ -364,21 +371,37 @@
         "anchor_contract": "装配锚点契约=probe-lib.mjs ASSEMBLY_FACES 装配面表（W8 正式轮，review-W8prep F-2 修）：W4 装配面=dev/agent-workflow/evidence/alpha5/w4/a5w4-provider-row.mjs（mod.createConfinedProcessProvider 调用形 + sandbox-provider dist barrel 动态 import 形）；W5 装配面=dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs（fx.loadA5W5Lanes 调用形）+ a5w5-fixtures.mjs（packages/tools/a5p5-tools/src 模块路径形）；W7 装配面=tests/kits/a5-w7-jobs-wiring/a5w7-jobs-plugin.mjs（createJobsGateway 调用形 + 公开 barrel 动态 import 形）+ tsconfig.lane.json（kit-local 编译面覆盖）。匹配=非注释行上的绑定级代码形（行形匹配；注释/裸子串不过）。lane 以别面暴露装配须回报协调者改此表，禁在 probe 内私放宽松判据。runtime tsconfig include / registry run≠null 为 GLUE/PR8-build 后续工作项（review-W8prep F-6 披露），不再是装配信号；相应缺口在 vnext-migration-gap-checklist.md 在册。",
         "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）",
         "transition_record": {
-          "verdict": "PROBE-GATED",
-          "run_utc": "2026-10-17T03:09Z",
-          "round": "W8 formal (alpha5-wire-pr8) @master 2ff24c5a；port 3186；world a5w8-*（跑毕删除）；宿主 @639ed01539 porcelain 0",
+          "verdict": "LIVE",
+          "run_utc": "2026-10-17T04:42Z",
+          "round": "C-04/05 gap round (alpha5-gap-c0405) @f26c3971；port 3183；world a5c45-*（跑毕删除）；宿主 @639ed01539 porcelain 0 pre/post；探针复跑 exit=0（a5c45-post-M-05.log）；RED ungated 25/37 / GREEN gated 37/37；C-08 回合（alpha5-gap-c08）独立装配 LIVE 共验——同判据腿由其 kit（wiring/c08，port 3186，@04:40Z）独立真跑 exit=0，双独立装配共证；receipt canonical=c0405 gated-37 活体读回（parent 合并裁决），c08 轮全字段无损镜像于 receipt.c08_round_receipt_view",
           "repro_ref": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs",
           "evidence_refs": [
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-probe-M-05.log",
-            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json"
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-post-M-05.log",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-state.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-journal.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/disk-faces.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/run-receipt.md",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-pre-M-05.log",
+            "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/ungated-2026-10-17T04-42-31Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/c08-post-M-05.log",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/chain-table.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/transcript-union.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/gated-2026-10-17T04-40-50Z/run-receipt.md",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/criteria.json",
+            "dev/agent-workflow/evidence/alpha5/wiring/c08/runs/ungated-2026-10-17T04-40-41Z/transcript-union.json"
           ],
-          "live_legs_booked": [],
-          "missing_legs": [
-            "image_read.chain=admission-gated-controlled-fs（read_image 附件→解码→渲染链无装配 row）",
-            "thumbnail-read-bypass typed-deny 负控（旁路面未装配）",
-            "admission-unbound bytes_leaked=0 负控（live 面未观测该 reason；W5 unbound=guard 层非 C-FS admission）"
+          "live_legs_booked": [
+            "A1 附件→解码→渲染全链=gated face：shot.png.b64→one-shot admitted readText（createAdmissionGatedControlledFs）→base64→PNG signature+IHDR 真解码（image/png 1x1 70B）→呈报进真实 transcript；chain face 逐字 admission-gated-controlled-fs，字节路径零 host 直读",
+            "A2 缩略图旁路双负控 typed-deny：#1 开放请求 thumb read effect→真实 PR2 kernel requires-approval 先于任何 open 拒（0 字节返回）；#2 attachment grant 指向 thumb 文件→gated lane scope 拒 effect-outside-grant（0 字节）；盘上 thumb 字节不变、marker 不在 transcript（ungated 对照=真实泄漏在册）",
+            "A3 admission-unbound 在 C-FS admission 层（非 guard 层）live 观测：无绑定的 gated face 每 op typed 拒、refusal 消息逐字携 admission-unbound（§5 闭集 cfReason=effect-outside-grant 面如实）、bytes_leaked=0 而原文件可证可读；双模照绿=lane law 独立承载（ungated 对照红的是 Team 门控腿）",
+            "A4 ARBITRARY_TREE_PROFILE_PUBLISHED=false 经装配 runtime 读回，receipt 不主张任意树（W-E2 A4 口径延续）",
+            "C-08 回合共观测（如实归属对方轮）：同 run 二进制保真度 leg utf8-fidelity=false（lane_bytes=94 vs disk_bytes=70）⇒ base64 是经 C-FS 文本读面字节精确存活的附件形态；该观察入册不改判据"
           ],
-          "basis": "装配面在场（runner 行形 grep 亲验 ASSEMBLY_FACES）+ W4/W5/W7 kit W8 回合全绿（22/22+19/19+18/18、34/34、22/22）；但本行断言集含未装配工具族腿 ⇒ 按 IF-7 落 PROBE-GATED+最小复现，LIVE 通道开放（补上缺腿装配/receipt 即闭环）。receipt 已 book 在场腿为 SATISFIED，缺腿 NOT-EXECUTED 如实点名。"
+          "missing_legs": [],
+          "basis": "LIVE=行级转态提案值（终裁归 PR8 正式轮 + 独立 reviewer）：read_image 无 Team 生产实现的事实不变（差距事实仍在 checklist 在册，不发明生产代码）；本行按 W5 工具面模式把 read_image 的 Team Definition 在公开 seam 补齐发布/绑定/授权/执行全链=矩阵 M-05 三缺腿闭环。真实渲染管线/OS 附件存储不属本行观测面（not_observed 如实）；host-native read_image pin 面=W-E2 实测差距保持在册；fixture 级信任输入、无 ENFORCE 宣称。双独立装配（c0405 gated-37 与 c08 gated）各以自身活体观测支撑本行 LIVE；union 系登记面合并，非判据稀释。"
         }
       },
       "g_g_related": false,

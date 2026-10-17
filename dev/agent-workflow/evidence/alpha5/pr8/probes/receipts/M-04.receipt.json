@@ -1,36 +1,246 @@
 {
-  "round": "W-E2 (alpha5-wire-tools2) — editor 面测量回合（真会话真跑；判据腿仍 NOT-EXECUTED，差距事实改为实测式）",
-  "run_utc": "2026-10-17T04:01Z",
-  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post)",
+  "round": "C-04/05 gap round (alpha5-gap-c0405) — editor/read_image Team Definition 发布/绑定路径公开面补齐（W5 工具面模式：definition 材料化→bind→grant→exec 真跑）",
+  "run_utc": "2026-10-17T04:42Z",
+  "host": "tests/deepseek-harness-test-use @639ed01539 (0.2.0-rc.2, read-only reuse, porcelain 0 pre/post, HEAD unmoved)",
   "port": 3183,
-  "world_prefix": "a5e2-*（跑毕删除）",
-  "caliber": "LIVE-kit 观测 only。editor 工具族在 Team 任何包无实现（census 在册）⇒ 本轮按『不发明新生产代码』路线执行：真实会话上两面实测（gated=装配 guard 后原生名调用边拒；ungated=真实编辑往返），判据腿（子命令 I/O 映射/gated 落盘观测/undo）仍 NOT-EXECUTED，不冒充 book。",
-  "row": "M-04 str_replace_editor",
-  "evidence_refs": [
-    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w5-gated/criteria.json",
-    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w8-w4-pos/criteria.json",
-    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/native-face.json",
-    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/native-legs.json",
-    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/gated-2026-10-17T04-01-07Z/transcript-union.json",
-    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/native-legs.json",
-    "dev/agent-workflow/evidence/alpha5/wiring/we2/runs/ungated-2026-10-17T04-01-00Z/transcript-union.json",
-    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/w-e2-pre-M-04.log"
-  ],
-  "observed_on_assembly_face": [
-    "真实会话 NATIVE 工具面（公开 tools.schemas() 读回）：26 名，edit/read_image/write/read 在册，str_replace_editor=absent（has_str_replace_editor=false，native-face.json 逐字）",
-    "gated 面（W5 同型 guard 装配后）：模型驱动调用宿主原生 read/edit 在调用边被活 guard typed 拒，逐字『the trusted global definition of \"edit\" is unreadable at the public seam … refusing rather than crediting a name nobody could pin』；被拒调用文件字节不变、治理流观测到 dispatcher-call-* 事件（edit 腿 delta=6）⇒ 现行公开 seam 无法把宿主原生编辑器钉进治理 bind（=W7 已披露的 Definition 公共 seam 缺口的 editor 侧现测）",
-    "ungated 对照面（无 guard 裸会话）：read→edit 真实文件编辑往返成功（文件 sha 变化在册 native-legs.json），治理观测增量=0 ⇒ 真实编辑字节完全在 Team 治理面之外流动——两面合并给出精确差距：Team lane 无 editor 实现 + 原生面不可治理 bind"
-  ],
-  "not_observed": [
-    "editor_subcommand_map_complete：str_replace_editor 子命令面（view/insert/delete/undo）在 Team 任何包 0 实现（grep 非 dist=0 命中，gap-checklist C-04 census 复验）；计划出处=docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md:51（行 M-04）+ post-poc-technical-design.md:83-84（设计 §3.1 子命令表）+ architecture.md:233；仓库现状=无实现、无装配、无子命令 I/O 映射可挂钩 ⇒ 判据腿保持 NOT-EXECUTED",
-    "undo_history_io：undo 谱在计划出处与仓库双侧均无面（计划=同上；仓库=0 实现）",
-    "editor 子命令级 IO_POLICY_UNSUPPORTED 负控：本轮无 editor 面可触发；W4 nega 的 typed 拒属 confined-exec profile 形状，按类别不冒充（W8 口径保持）"
-  ],
-  "plan_vs_repo_lines": {
-    "plan": "S0-SELECTION-MATRIX.md:51（M-04 行：子命令级 I/O 映射设计条款+默认拒口径）；post-poc-technical-design.md:83（view=read/list/stat）/:84（create/insert/str_replace=create/write+read old）",
-    "repo": "packages/tools/a5p5-tools barrel 闭集=A5P5_TOOL_NAMES（grep/bash/glob）；packages/**/src 非 dist 无 str_replace_editor/editor 实现（W-E2 轮 grep 复验，aece4f21）"
+  "world_prefix": "a5c45-*（跑毕删除）",
+  "assembly": {
+    "row": "dev/agent-workflow/evidence/alpha5/wiring/c0405/a5c45-editor-image-row.mjs",
+    "fixtures": "dev/agent-workflow/evidence/alpha5/wiring/c0405/a5c45-fixtures.mjs",
+    "lane_compile": "dev/agent-workflow/evidence/alpha5/wiring/w5/build-lane-esm.mjs（accepted W5 驱动，未改 lane 源码；产物 tests/homes/.a5c45-build）",
+    "driver": "dev/agent-workflow/evidence/alpha5/wiring/c0405/run-a5c45-live.mjs"
   },
-  "disclosed_constant_citations": [
-    "packages/domain/controlled-fs/src/admission-binding.ts ARBITRARY_TREE_PROFILE_PUBLISHED=false（OpenAtPort 前禁宣称任意树；本行不据此 book 任何 editor 腿）"
+  "row_line": "M-04 str_replace_editor（子命令级 I/O 映射 + undo 历史 I/O + 不可映射 typed 默认拒）",
+  "caliber": "LIVE-kit 观测：Team Definition（editor）在公开 seam 材料化→guard bind→publish→PR2 one-shot grant（dist barrel）→gated ControlledFs（createAdmissionGatedControlledFs，dist barrel）真跑编辑往返；治理观测=事件流/ledger/spill/grant 一次耗全增量在册。kernel 信任输入 fixture 级（W5/W7/W-E2 口径），无 ENFORCE 宣称。host-native edit 原生命名 pin 进 bind 的面=不属本行（W-E2 实测差距保持在册）。receipt 不含 assembly_anchors_verified（F-1：锚点在场以 runner grep 为准）。",
+  "editor_subcommand_map_complete": true,
+  "subcommand_map": {
+    "view": {
+      "mapped": true,
+      "observed": "gated read through the lane, content presented",
+      "legs": [
+        {
+          "op": "read:target",
+          "ok": true
+        }
+      ]
+    },
+    "create": {
+      "mapped": true,
+      "observed": "gated write created a NEW file (memo.txt bytes on disk == content)",
+      "legs": [
+        {
+          "op": "write:target",
+          "ok": true
+        }
+      ]
+    },
+    "insert": {
+      "mapped": true,
+      "observed": "read old + write (pre-write history capture through the SAME face)",
+      "legs": [
+        {
+          "op": "read:target",
+          "ok": true
+        },
+        {
+          "op": "read:history(pre-insert)",
+          "ok": true
+        },
+        {
+          "op": "write:history(pre-insert)",
+          "ok": true
+        },
+        {
+          "op": "write:target",
+          "ok": true
+        }
+      ]
+    },
+    "str_replace": {
+      "mapped": true,
+      "observed": "read-before-edit + write; real byte round-trip (sha before != after, new line on disk); old content NOT echoed (write receipt = fingerprint only, M-02 law)",
+      "legs": [
+        {
+          "op": "read:target",
+          "ok": true
+        },
+        {
+          "op": "read:history(pre-str_replace)",
+          "ok": true
+        },
+        {
+          "op": "write:history(pre-str_replace)",
+          "ok": true
+        },
+        {
+          "op": "write:target",
+          "ok": true
+        }
+      ]
+    },
+    "undo": {
+      "mapped": true,
+      "observed": "history read + target restore write + marker write — restored byte-for-byte (sha after undo == sha after str_replace)",
+      "legs": [
+        {
+          "op": "read:history",
+          "ok": true
+        },
+        {
+          "op": "write:target",
+          "ok": true
+        },
+        {
+          "op": "write:history",
+          "ok": true
+        }
+      ]
+    },
+    "delete": {
+      "mapped": false,
+      "outcome": "typed IO_POLICY_UNSUPPORTED (no unlink primitive on the governed lane) — refused before any admit, zero side effects, file intact",
+      "legs": []
+    },
+    "undo_all": {
+      "mapped": false,
+      "outcome": "typed IO_POLICY_UNSUPPORTED (multi-step restore, undefined target state) — zero grants, file intact",
+      "legs": []
+    },
+    "(unknown)": {
+      "mapped": false,
+      "outcome": "same typed class (SUBCOMMAND_MAP miss path, same leg code)"
+    }
+  },
+  "undo_history_io": {
+    "observed": true,
+    "detail": "undo 历史 I/O 全程经同一 admission-gated face：pre-write 历史 read+append（str_replace/insert 腿）+ undo 腿 read:history→write:target→write:history，各 op 一个 one-shot grant；盘上 history/edits.jsonl 行数 3（含 undo marker 行）。",
+    "history_lines_on_disk": 3,
+    "history_ops_ok": [
+      "read:history:ok",
+      "write:target:ok",
+      "write:history:ok"
+    ]
+  },
+  "negative_controls": [
+    {
+      "attempt": "subcommand-undo_all",
+      "error": "IO_POLICY_UNSUPPORTED",
+      "side_effects": 0,
+      "grants_minted_delta": 0,
+      "file_unchanged": true,
+      "detail": "multi-step restore with undefined target state — no precise I/O effect set exists"
+    },
+    {
+      "attempt": "subcommand-delete",
+      "error": "IO_POLICY_UNSUPPORTED",
+      "side_effects": 0,
+      "grants_minted_delta": 0,
+      "file_unchanged": true,
+      "detail": "no unlink primitive on the governed lane — real-source/target side effects would escape the mapped effect set"
+    },
+    {
+      "attempt": "thumbnail-read-bypass",
+      "outcome": "typed-deny",
+      "layer": "kernel-admission",
+      "stage": "requires-approval",
+      "bytes_returned": 0,
+      "detail": "the bypass requests a second read effect on the thumbnail file; no policy arm exists for it — the real PR2 kernel refuses with its own vocabulary before any open"
+    },
+    {
+      "attempt": "thumbnail-bypass-via-attachment-grant",
+      "outcome": "typed-deny",
+      "layer": "controlled-fs-lane",
+      "cf_reason": "effect-outside-grant",
+      "bytes_returned": 0,
+      "detail": "the admitted attachment grant must not read the thumbnail file through the gated lane"
+    },
+    {
+      "attempt": "controlled-fs-without-admission-binding",
+      "error": "admission-unbound",
+      "bytes_leaked": 0,
+      "cf_reason_code": "effect-outside-grant",
+      "detail": "a gated ControlledFs face with NO admission binding refuses every op by lane law (admission-binding.ts law 1) — observed live on the assembly process; the raw reason admission-unbound rides the refusal message verbatim (frozen §5 closed cfReason code face)"
+    }
+  ],
+  "governance_increments": {
+    "event_stream": {
+      "dispatcher-preparing": 1,
+      "guard-installed": 1,
+      "dispatcher-seam-armed": 5,
+      "dispatcher-bind-inherited": 1,
+      "dispatcher-native-unreadable": 1,
+      "published-surface-native-unreadable": 1,
+      "published-surface-unverified": 1,
+      "surface-inherited": 1,
+      "dispatcher-active": 1,
+      "agent-published": 1,
+      "dispatcher-surface-revalidated": 1,
+      "tools-change-unbound-names": 1,
+      "dispatcher-call-begin": 13,
+      "dispatcher-result-observed": 12,
+      "dispatcher-call-end": 12,
+      "guard-denial": 1,
+      "dispatcher-call-refused": 1
+    },
+    "ledger_consumed": 15,
+    "grants_minted": 16,
+    "exec_edge_replays": {
+      "str_replace": {
+        "ok": false,
+        "error": {
+          "code": "APPROVAL_STALE",
+          "message": "grant \"grant:c52002eaaa80993bb8730b3fbc40167c\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)",
+          "details": {
+            "refusal": "grant-consumed"
+          }
+        }
+      },
+      "undo": {
+        "ok": false,
+        "error": {
+          "code": "APPROVAL_STALE",
+          "message": "grant \"grant:8a0e23373f6d932c01b64cd5b0965b8e\" refused at the consumption edge: grant-consumed (frozen PR0 precedence; no retry, no fallback, design §4.3)",
+          "details": {
+            "refusal": "grant-consumed"
+          }
+        }
+      }
+    },
+    "spill": {
+      "storeOk": true,
+      "sinkOk": true,
+      "spillId": "c45-view-8",
+      "bytes": 252000,
+      "settleOk": true,
+      "finalizeOk": true,
+      "closeOk": true,
+      "readBackMatches": true,
+      "readBackAttribution": {
+        "realmId": "a5c45-realm",
+        "tool": "a5c45_editor",
+        "callId": "spill-c45-view-8"
+      },
+      "diskBytes": 252000,
+      "diskSha": "sha256:cc4ed6d59bb867210109fed39d39369352694862fff71c87b7f7a190a892a85e",
+      "spillRootFiles": [
+        "c45-view-8.spill",
+        "c45-view-8.spill.meta"
+      ]
+    }
+  },
+  "ungated_red_contrast": "同一判据表、同一工具面、无 guard 无 kernel（见 runs/ungated-*）：红且仅红 Team 门控腿（GUARD/GOVERN-EDIT/UNDO-IO/IO-UNSUPPORTED/THUMB×3/SPILL/IMG-CHAIN/LEDGER/EVENTS/ONESHOT/UNBOUND）——ungated 面真实编辑字节照常流动（EDIT-RT 照绿）但治理观测=0；门承载 Team 侧拒绝。",
+  "not_observed": [
+    "host-native edit/str_replace_editor 定义 pin 进 bind 的面（W-E2 实测差距保持在册：『definition unreadable at the public seam』）",
+    "OpenAtPort 任意树 Profile（ARBITRARY_TREE_PROFILE_PUBLISHED=false runtime 读回；本行不宣称任意树）",
+    "OS 强制维度（同 live/W5 口径：in-process 治理链，ENFORCE-PARTIAL 天花板不变）"
+  ],
+  "evidence_refs": [
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/criteria.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-state.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/live-journal.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/transcript-union.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/disk-faces.json",
+    "dev/agent-workflow/evidence/alpha5/wiring/c0405/runs/gated-2026-10-17T04-42-34Z/run-receipt.md",
+    "dev/agent-workflow/evidence/alpha5/pr8/probes/runs/a5c45-pre-M-04.log"
   ]
 }

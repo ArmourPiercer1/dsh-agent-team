@@ -1,0 +1,79 @@
+{
+  "run": "a5lspdr-2026-10-17T05-40-41Z",
+  "hostPid": 38,
+  "pids": {
+    "A_g0": {
+      "pid": 127,
+      "gen": "g0",
+      "opens": 1,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-40-41Z/ws/wsa-g0"
+    },
+    "A_g1": {
+      "pid": 271,
+      "gen": "g1",
+      "opens": 1,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-40-41Z/ws/wsa-g1"
+    },
+    "A_g2": {
+      "pid": 356,
+      "gen": "g2",
+      "opens": 1,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-40-41Z/ws/wsa-g2"
+    },
+    "B_b0": {
+      "pid": 186,
+      "gen": "b0",
+      "opens": 1,
+      "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-40-41Z/ws/wsb"
+    }
+  },
+  "labels": {
+    "A_g0": "session-b52bd230-1d81-4297-8bd1-5a73353be3b8",
+    "A_g1": "session-dc6dfdb0-78c6-4c41-9634-2cd4739d814e",
+    "A_g2": "session-1bec3ad5-0191-4c15-9a68-6d48da96f7a7",
+    "B": "session-30fd3420-ae8e-4d3c-8bdb-84389b64c04a"
+  },
+  "sessions": {
+    "A_g0": "session-b52bd230-1d81-4297-8bd1-5a73353be3b8",
+    "A_g1": "session-dc6dfdb0-78c6-4c41-9634-2cd4739d814e",
+    "A_g2": "session-1bec3ad5-0191-4c15-9a68-6d48da96f7a7",
+    "B": "session-30fd3420-ae8e-4d3c-8bdb-84389b64c04a"
+  },
+  "changes": [
+    {
+      "ok": true,
+      "old": {
+        "label": "session-b52bd230-1d81-4297-8bd1-5a73353be3b8",
+        "lastPid": 127,
+        "disposeMs": 10
+      },
+      "label": "session-dc6dfdb0-78c6-4c41-9634-2cd4739d814e",
+      "gen": "g1"
+    },
+    {
+      "ok": true,
+      "old": {
+        "label": "session-dc6dfdb0-78c6-4c41-9634-2cd4739d814e",
+        "lastPid": 271,
+        "disposeMs": 15
+      },
+      "label": "session-1bec3ad5-0191-4c15-9a68-6d48da96f7a7",
+      "gen": "g2"
+    }
+  ],
+  "finalDispose": [
+    {
+      "ok": true,
+      "disposeMs": 5,
+      "lastPid": 356
+    },
+    {
+      "ok": true,
+      "disposeMs": 5,
+      "lastPid": 186
+    }
+  ],
+  "fdBase": 37,
+  "fdFinal": 35,
+  "pidLedgerLines": 8
+}
