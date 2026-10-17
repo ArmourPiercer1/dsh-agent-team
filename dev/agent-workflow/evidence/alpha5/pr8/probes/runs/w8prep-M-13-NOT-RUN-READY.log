@@ -1,0 +1,11 @@
+# probe-M-13 (Domain 工具（HPC/RPC/研究状态/设备）) run-utc=2026-10-17T02:09:53.011Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8prep
+DEPEND W7 surface="jobs-gateway 公开面装配（身份/lease/隔离）之上的 Domain 许可/引用观测面 + Domain mock 联锁数据源" if=[IF-1,IF-6]
+CHECK w7-jobs-gateway-registered lane=W7 missing
+MISSING-ASSEMBLY W7 jobs-gateway live 装配（IF-1） :: packages/runtime/src/plugin/live/agent-bindings.mjs 未出现装配锚 [jobs-gateway]（装配未落地或未以契约名暴露，回报协调者）
+CHECK w7-jobs-gateway-in-build-plane lane=W7 missing
+MISSING-ASSEMBLY W7 jobs-gateway 进编译/emit 面（tsconfig include 落地，WIRING-SURFACE:34 缺项的关闭信号） :: packages/runtime/tsconfig.build.json 未出现装配锚 [jobs-gateway]（装配未落地或未以契约名暴露，回报协调者）
+CHECK registry-60-run-mounted lane=W7 missing
+MISSING-ASSEMBLY W7 registry 套件 60-web-jobs-mcp-domain 断言实现挂载（run≠null，含 Domain mock） :: registry 套件 60-web-jobs-mcp-domain run=null（断言实现未挂）
+NOT-RUN-READY M-13：依赖装配未在场（上方 MISSING-ASSEMBLY 逐条为缺装配原因），本 probe 未执行任何通过性断言；行仍挂 REQUIRES-LIVE-WIRING，转态只允许 LIVE/PROBE-GATED（见 matrix pending_probe.transition_rule）。
+MINIMAL-REPRO dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs（重跑本脚本即复现缺装配态）
+# VERDICT NOT-RUN-READY exit=3

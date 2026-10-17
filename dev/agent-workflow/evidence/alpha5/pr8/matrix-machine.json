@@ -53,7 +53,28 @@
       "origin/alpha5-decision-pack-20261016 @f51f5aef: DECISION-PACK-20261016.md + INTERFACES-v1.md（C-VNEXT/C-BIND）",
       "origin/alpha5-pr1r-followup @cc47fb18: dev/agent-workflow/PENDING-GATES.md；@98ddbaa9: g-g-support-contract.md",
       "docs/plans/memo/alpha5-tool-io-governance/S0-SELECTION-MATRIX.md（行源）"
-    ]
+    ],
+    "probe_transition": {
+      "source": "WIRING-PHASE-PLAN IF-7（origin/alpha5-decision-pack-20261016 a4f7f4fc）；挂接轮 alpha5-wire-pr8prep（准备层，不执行 live）",
+      "rule": "5 个 RLW 行（M-04/M-05/M-08/M-09/M-13）各挂 pending_probe；正式轮 runner 输出这些行只能取 LIVE（需 receipt evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本复跑）；REQUIRES-LIVE 禁为本阶段终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations + 运行期代码位 deriveProbeTransition 双位封死 PASS 无证据路径（自测=pr8-runner-self.test.mjs prep 节）",
+      "transition_vocabulary": [
+        "LIVE",
+        "PROBE-GATED"
+      ],
+      "rlw_probe_rows": [
+        "M-04",
+        "M-05",
+        "M-08",
+        "M-09",
+        "M-13"
+      ],
+      "probe_dir": "dev/agent-workflow/evidence/alpha5/pr8/probes/",
+      "lanes": {
+        "W4": "provider 工厂→会话装配（受支持 profile 真实 spawn+执行观测；不可用 profile 启动前 typed 拒 IO_POLICY_UNSUPPORTED；Landlock 在场/撤销对照）",
+        "W5": "search/shell 工具面经 admission 门控注册进测试会话（spill 生命周期 open/read/close/id-in-use + shell parity 双腿）",
+        "W7": "jobs 身份/lease 经 jobs-gateway 公开面装配（两 member 同宿主隔离 + lease 互斥 + revocation；pinned absent-anchor job_start 仍如实 absent）"
+      }
+    }
   },
   "rows": [
     {
@@ -229,6 +250,47 @@
         "S0-SELECTION-MATRIX M-04 未测项：view/insert/delete 全谱、undo 历史 I/O（P0 未跑 editor 全谱）",
         "e2e-skeleton registry suite 20-controlled-fs run=null（PR8 正式轮实现）"
       ],
+      "pending_probe": {
+        "probe_id": "M-04-probe",
+        "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-04.mjs",
+        "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-04.receipt.json",
+        "status_now": "PREPARED-NOT-RUN-READY",
+        "allowed_transitions": [
+          "LIVE",
+          "PROBE-GATED"
+        ],
+        "forbidden_outcomes": [
+          "PASS",
+          "SUPPORTED",
+          "REQUIRES-LIVE-WIRING-as-terminal"
+        ],
+        "depends_on": [
+          {
+            "lane": "W5",
+            "surface": "admission 门控工具面注册进测试会话（IF-1 plugin row + ctx.agents + dist barrels）——editor 子命令 I/O 映射观测面宿主",
+            "if_refs": [
+              "IF-1"
+            ]
+          },
+          {
+            "lane": "W4",
+            "surface": "受支持 profile 真实 spawn+执行观测——编辑器 governed 落盘执行腿",
+            "if_refs": [
+              "IF-1"
+            ]
+          },
+          {
+            "lane": "W5",
+            "surface": "IF-6 拒装名观测：不可精确映射子命令 typed 默认拒 IO_POLICY_UNSUPPORTED（launch 前、零副作用）",
+            "if_refs": [
+              "IF-6"
+            ]
+          }
+        ],
+        "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
+        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+      },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",
@@ -249,6 +311,41 @@
         "S0-SELECTION-MATRIX M-05 untested_carried_over=全链（03-fs 未测清单明文）",
         "registry suite 20-controlled-fs run=null"
       ],
+      "pending_probe": {
+        "probe_id": "M-05-probe",
+        "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-05.mjs",
+        "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-05.receipt.json",
+        "status_now": "PREPARED-NOT-RUN-READY",
+        "allowed_transitions": [
+          "LIVE",
+          "PROBE-GATED"
+        ],
+        "forbidden_outcomes": [
+          "PASS",
+          "SUPPORTED",
+          "REQUIRES-LIVE-WIRING-as-terminal"
+        ],
+        "depends_on": [
+          {
+            "lane": "W5",
+            "surface": "admission 门控工具面注册进测试会话（IF-1）——附件读取工具腿",
+            "if_refs": [
+              "IF-1"
+            ]
+          },
+          {
+            "lane": "W4",
+            "surface": "受控文件读经装配面真实执行（deny-before-open 观测腿；IF-6 admission-unbound 未绑负控）",
+            "if_refs": [
+              "IF-1",
+              "IF-6"
+            ]
+          }
+        ],
+        "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
+        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+      },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",
@@ -430,6 +527,34 @@
         "PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported",
         "g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）"
       ],
+      "pending_probe": {
+        "probe_id": "M-08-probe",
+        "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs",
+        "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-08.receipt.json",
+        "status_now": "PREPARED-NOT-RUN-READY",
+        "allowed_transitions": [
+          "LIVE",
+          "PROBE-GATED"
+        ],
+        "forbidden_outcomes": [
+          "PASS",
+          "SUPPORTED",
+          "REQUIRES-LIVE-WIRING-as-terminal"
+        ],
+        "depends_on": [
+          {
+            "lane": "W4",
+            "surface": "provider 工厂→会话装配 + Landlock 在场/撤销对照 = OS 强制面（ENFORCE 证据分级如实；IF-6 IO_POLICY_UNSUPPORTED 启动前拒零 spawn）",
+            "if_refs": [
+              "IF-1",
+              "IF-6"
+            ]
+          }
+        ],
+        "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
+        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+      },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",
@@ -450,6 +575,34 @@
         "PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported",
         "g-g-support-contract.md §3 G-6/G-7 = LIVE-WIRING-GATED=PR3 后（届时端口 3495 族自占自弃、home=tests/homes/a5p7rev-*；本轮零端口不装配）"
       ],
+      "pending_probe": {
+        "probe_id": "M-09-probe",
+        "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-09.mjs",
+        "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-09.receipt.json",
+        "status_now": "PREPARED-NOT-RUN-READY",
+        "allowed_transitions": [
+          "LIVE",
+          "PROBE-GATED"
+        ],
+        "forbidden_outcomes": [
+          "PASS",
+          "SUPPORTED",
+          "REQUIRES-LIVE-WIRING-as-terminal"
+        ],
+        "depends_on": [
+          {
+            "lane": "W4",
+            "surface": "持久服务进程经 provider 装配（服务器 OS 读中介 + per-Member pid + 池策略代际逐出腿）",
+            "if_refs": [
+              "IF-1",
+              "IF-6"
+            ]
+          }
+        ],
+        "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
+        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+      },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",
@@ -598,6 +751,34 @@
         "registry suite 60-web-jobs-mcp-domain run=null；Domain mock 待建",
         "PENDING-GATES.md G-d（origin/alpha5-pr1r-followup）：各 lane 对契约 v1.1 的集成确认未开始；OpenAtPort 前禁宣称任意树 Supported"
       ],
+      "pending_probe": {
+        "probe_id": "M-13-probe",
+        "probe_script": "dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-13.mjs",
+        "receipt_path": "dev/agent-workflow/evidence/alpha5/pr8/probes/receipts/M-13.receipt.json",
+        "status_now": "PREPARED-NOT-RUN-READY",
+        "allowed_transitions": [
+          "LIVE",
+          "PROBE-GATED"
+        ],
+        "forbidden_outcomes": [
+          "PASS",
+          "SUPPORTED",
+          "REQUIRES-LIVE-WIRING-as-terminal"
+        ],
+        "depends_on": [
+          {
+            "lane": "W7",
+            "surface": "jobs-gateway 公开面装配（身份/lease/两 member 隔离）之上的 Domain 许可/引用观测面 + Domain mock 联锁数据源（IF-6 DOMAIN_DENIED/未确定引用 fail-closed）",
+            "if_refs": [
+              "IF-1",
+              "IF-6"
+            ]
+          }
+        ],
+        "transition_rule": "本行 runner 输出只能取 LIVE（需 probe receipt 的 evidence_refs 非空 + assembly_anchors_verified=true）或 PROBE-GATED（需最小复现=probe 脚本自身可复跑）；REQUIRES-LIVE 非终态、PASS 非行级终态——lint 代码位 assertProbeRegistrations（提交时）与运行期代码位 deriveProbeTransition（attempt-PASS=违例判红）双位封死（IF-7）",
+        "anchor_contract": "装配锚点契约=probe preflight 表（probe-lib.mjs ASSEMBLY_ANCHORS）：agent-bindings.mjs 出现 ConfinedProcessProvider（W4）/ a5p5（W5）/ jobs-gateway（W7）+ 对应 registry 套件 run≠null；lane 若以别名暴露装配须回报协调者改锚点表，禁在 probe 内私放宽松判据",
+        "source": "W8 准备轮 alpha5-wire-pr8prep @master 62cc2b87（IF-7；本层只挂接不执行 live）"
+      },
       "g_g_related": false,
       "ga_semantics": false,
       "acceptance_scope": "criterion-level-fixture：runner 结果只声明该判据的三态，不构成行验收/整链验收/SUPPORTED（INTERFACES-v1 集成规则 + review-LaneG 投机通过条件①）",

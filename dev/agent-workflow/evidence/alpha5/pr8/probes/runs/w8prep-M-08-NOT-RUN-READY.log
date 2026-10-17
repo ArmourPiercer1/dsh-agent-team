@@ -1,0 +1,9 @@
+# probe-M-08 (run_code (PTC)) run-utc=2026-10-17T02:09:52.938Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w8prep
+DEPEND W4 surface="provider 工厂→会话装配 + Landlock 在场/撤销对照（OS 强制面，ENFORCE 证据分级如实）" if=[IF-1,IF-6]
+CHECK w4-spawn-assembly lane=W4 missing
+MISSING-ASSEMBLY W4 ConfinedProcessProvider 会话装配（IF-1） :: packages/runtime/src/plugin/live/agent-bindings.mjs 未出现装配锚 [ConfinedProcessProvider]（装配未落地或未以契约名暴露，回报协调者）
+CHECK registry-50-run-mounted lane=W4 missing
+MISSING-ASSEMBLY W4 registry 套件 50-ptc-lsp 断言实现挂载（run≠null） :: registry 套件 50-ptc-lsp run=null（断言实现未挂）
+NOT-RUN-READY M-08：依赖装配未在场（上方 MISSING-ASSEMBLY 逐条为缺装配原因），本 probe 未执行任何通过性断言；行仍挂 REQUIRES-LIVE-WIRING，转态只允许 LIVE/PROBE-GATED（见 matrix pending_probe.transition_rule）。
+MINIMAL-REPRO dev/agent-workflow/evidence/alpha5/pr8/probes/probe-M-08.mjs（重跑本脚本即复现缺装配态）
+# VERDICT NOT-RUN-READY exit=3
