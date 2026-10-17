@@ -1,0 +1,31 @@
+{
+  "requests": [
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 26
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 0
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    },
+    {
+      "path": "/v1/messages",
+      "status": 200,
+      "model": "deepseek-flash",
+      "toolDefs": 27
+    }
+  ],
+  "transcriptTail": [
+    "A5W4W20261017T022640Z_RUN_DONE 1 results: A5W4-RES tag=A5W4W20261017T022640Z_RUN-negb-0-revoked mode=revoked ok=false code=SANDBOX_UNAVAILABLE rc=null pid=null lease=null stage=provider-refused"
+  ]
+}
