@@ -86,3 +86,53 @@
 - **P-D3b 同步（2026-10-17，@根 14:29Z 口径同轮 = `prod/VNEXT-SCHEMA-ADR.md` P-D3；branch `alpha5-doc-correct` @19afcae7 续一笔，父会话授权）**：本文件所有『R-1/R-2 已正式向用户提出未裁（待答）/待用户』措辞（主表 PR6-LSP 行、§2 C-07 行、§4 kit-only 清单、§4 缺口三、本节 R-1 行、口径规则②）统一改为 **『用户 07:53Z 已批准，已实施并合入（#304=`77ffb187`）』**；历史转录引文照录保留标注。声称与事实同步，**零新裁决**；C-12 行等非 R-1/R-2 口径本轮不动。
 
 — 更正节 writer = alpha5-prod-vnext-adr（qwen3.8-flash-next；只读+本文件追加；所引行号 @d714a941 树亲验）。P-D3b 同步 = alpha5-doc-correct（qwen3.8-flash-next；markdown-only，仅上列『待答/待用户』措辞+本节注记）。
+
+---
+
+## 6. R2 刷新 2026-10-17T23Z（append-only；上方 §0–§5 全部按历史时点照读，本节 = 现产面总账）
+
+- 轮次 = `alpha5-checklist-r2`；writer = qwen3.8-flash-next（一次性 worktree，本文件 markdown 追加，零历史改写）；基 = `origin/master @ 382e5fb6`（fetch + `ls-remote` 双亲验同值）。
+- 口径不变：**『已交付』三条件 = master SHA + 双绿 + 独立审**；CI 未跑 = 在途；`final_declaration` 32 行恒 null（机检封死）不受本轮任何条目改变。§0 表头『安装面 = dist+shim+cordis.patch.yml，1677 dist 文件』= @a2473203 历史快照；现面（@382e5fb6 亲数）= root manifest `files` 六项：`.agents/skills`(2) + `cordis.patch.yml` + `packages/client/composition-shim`(3) + `packages/runtime/dist`(**1741** committed) + `packages/runtime/root-binding`(19) + `packages/runtime/src/plugin/upstream-resolver.mjs`——严格包面（`packages/runtime/package.json` `files:["dist"]`）自足 boot 自 GLUE-6（`35bff836`）起成立，RED-A 窗口与复验见 §6.3 末项与 §6.4。
+
+### 6.1 已交付并验证（双绿+独审；守卫合并事实 = master 可达，双绿+独审为根 23Z 口径）
+
+| 行 | master SHA (PR) | 现产面一句 |
+|---|---|---|
+| **G1 deny 单点** | `28d31f2a` (#315) | lane deny/allow 比较并入**单一原生命名空间**；template-deny 现先于 backend 触发、零副作用；success-arm pin 在册（kit 红 17/17 @ fe829038 字节、绿 16/16 @ dcf71bdb 记录见 `alpha5-g1-denyfix` 证据）。 |
+| **P-B-R2 feed 生产入参** | `68deccaa` (#317) | binding feed v2 入参面（`realmId`/`bindingFeed`/`definitionIdentityOf`）落 master；governed read 正控在 live host 真实可得（kit 级；生产装配行消费方 = #321，§6.2/§6.3-4）。CI 断供后重建笔。 |
+| **GLUE-6 安装面自足 + render 契约** | `35bff836` (#318) | RED-A 修复：`upstream-resolver.mjs` + `root-binding/harness/seam.mjs` 经 PLACEMENTS 字节复制进 committed 安装面、入口优先 PACKAGE-FACE 候选；`PLANE_PRESENTATION_FACE.render` 改投 `ContentBlock[]`（宿主法 `core/tools/src/index.ts:217/:1839`），修前**一切** live trio 派发死在宿主组装（`content.some is not a function`）。 |
+| **V4 可逆半区** | `382e5fb6` (#316) | dormant v4 授权语法（SUPPORTED 恒 `[3]`，v4 文档仍 MISMATCH 钉死）、R1 放置 typed 面、v4 authoring maps、migration report、NEG 33/33 接线；flip 脚本 = **干跑备笔 only**，未宣布任何退役。 |
+| **V4 路线** | `71af4f64` (#320) | 4-stage 表（doc-only）：stage 1–3 = ADR-Gate-normal（无需用户裁决），stage 4 **只** gate 于 T-1。 |
+
+### 6.2 在途候选（**明标未合**，一切『已交付』宣称禁用）
+
+- **#321 GLUE-7 = `d9a16061`**（`origin/alpha5-glue7-backend` = `refs/pull/321/head`；`merge-base` 亲验 **非** master 祖先）。内容亲验（README §1 + diff）：plane 生产 backends 装配行——`team_bash`→confined Process provider（REAL Landlock，launcher 双字节门）、`team_grep`→anchored 只读 grep（W5 argv/shaping 逐字移植）、`read`→takeover placement 携 placement-feed 行入 Guard；glob 经安全复审 FAIL 后 **un-wire 回 verbatim typed-shut pin（G6 字节还原）**，factory 归档 `未入产`。三件交付 = **TOCTOU ①(c) 闭**（read/grep-file 改 fd-句柄法 + exec-time 复核；grep-dir 残留=公开面无 OpenAtPort，如实披露）、**诚实 shut**（glob 行不装弱件）、**remap 闭**（grep fd-view 呈现改写 = PATH-FIELD ONLY，内容字节逐字呈现，G1b RED-pinned）。根 22:4xZ 口径 = round4 审 **4/4 PASS**、**待最终 SHA CI**。分支内门证据 = 全树双抓红集 9==9==已发布 9、kit 24/24、TOCTOU 复跑 8/8、drift 1733/0、p4t6 10/10。**未合 + 最终 SHA CI 未跑 ⇒ 在途。**
+- **#322 glob 主候选 = `04f72c1b`**（`origin/alpha5-glob-backend` = `refs/pull/322/head`；未合）。休眠件：自足 open-time 锚定律（逐分量 O_NOFOLLOW fd + exec-time `/proc/self/fd` 复核 + 全程持柄 + 结果侧逐条验证）、17-leg native-rg parity 表、≥5000-iter swap-race 零泄漏、NUL 输出律（单射协议论证）、单生产者呈现律、fixture 清扫立法；46/46 绿、parity/counters 两次字节一致、typecheck EXIT=0、eslint 净。**审 = PASS 带三集成条件**（裁决在根/审查报告，本仓未 commit；挂载侧登记 = 该支 README §6）：①**单一挂载裁决**——glue7 内联 `a5g7-confined-rg-glob` 与 `a5glb-anchored-confined-rg-glob`『两行一动词不构成合并态』，由胶水笔择一；②**runtime_base 收窄集成轮先行**（名单类泄漏未闭前 glob 生产化不独立落地，见下条与 §6.3-3）；③**挂载行与复跑归 glue writer**——plane 已受 `backends.glob` 入参（`register.ts:118` fallback 被 R1 腿永久钉），一行挂载 + INSTALL-ENTRY/p4t6 复跑归集成笔。
+- **runtime_base 收窄 = `8f17f579`（在跑）**。定性 = **实现走样 bug 修复**、非语义扩张——考证件亲验（#321 支 `glue7/runtime-base-probe/README.md`）：provider runtime_base 的 `'/'` READ_DIR grant **无任何授权句**（architecture.md:77 = 枚举解释器/libraries/devices 集 + "Do not accidentally expose host home"；:243 把 reads-unrestricted 列为被批评 OLD 态；:257 = "environment base readability **WITHOUT** arbitrary host-home access"）。**该 SHA 本环境不可见**（`git ls-remote` 无 ref、本地无 object）——状态取根口径，落笔即如实标。
+- **v4-flip 候选 = `75388116`（在写）**。**该 SHA 本环境不可见**（无 ref、无 object），状态取根口径；其前置可逆半区已落 master（§6.1），flip 属 stage-4、只 gate 于 T-1（#320 路线表）。
+
+### 6.3 已知未闭（逐项，含『列明不修』清单）
+
+1. **glob 生产行未接**：master 与 #321 tip 的 plane glob 行都 = verbatim typed-shut pin（R1/G6 腿把 RED 文本永久钉住可查）。**PR5 ≠ 完成**：glob 半壁在 #322 休眠件里，三集成条件在册（§6.2）。
+2. **search 行 ≠ 既定 rg-parity 基线**：#321 search 行 = **grep(1)**（W5 `grepArgv` `-rIn/-rl/-rc/-E` 逐字移植）；既定基线 = 计划 PR5 行（`docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md` `:33`『grep/glob R3 + 原生等价层』）与测试判据 `:132`『**真实固定 rg 版行为回归**（原生 vs Team 的结构化 value/meta/错误/binary/ignore-hidden-VCS/…）』+ 公开包根 `buildGrepCommand/resolveRgPath`（实测 rg 15.0.0）。差异在册：#322 用真 rg 并自带 parity 表，**#321 的 search 行在 rg-parity 律下无表**——grep(1) 与 rg 在 ignore/hidden/VCS、binary、错误形状上不同义，未修、不合并口径。
+3. **shell 行名级枚举受 runtime_base bug 影响**：confined 启动路径 verify→launcher **string-chdir 窗口** + `'/'` READ_DIR grant ⇒ 沙箱外**名单级**（names，非字节）枚举面；#321 §4b 亲测 3/10700 名字泄漏、字节零泄漏（旧双层措辞已按 OVERSTATED 收回重写）；修复 = runtime_base 收窄（在跑，§6.2）。
+4. **provider feed 装配行的 live 全链**：装配行**本身已接通**——#321 内容亲验：`agent-bindings.mjs:2228/2231`（一 realm + feed map）、`:2309-2310`（Guard 得 `realmId`+`bindingFeed` = #313 入参面首个生产调用方）、`:2409`（plane 共用同一 realm 常量，pairing 不可能漂移）、`:2440`（feed 行先于 `bindOwnTools` 交递）+ `team-tool-plane.mjs:370-471`（backends 从 `planeCfg` 生产构建）；live L1 = 真文件字节上线、"int-a5b T5 refusal gone on the assembled row"、unit G7 钉 feed 行配对。**但**『live 全链』的余下三件 = #321 合入 master、installed 严格面 INSTALL-ENTRY 复跑、最终 SHA CI 双绿——均未发生 ⇒ 未闭。
+5. **skills/安装说明与真实支持矩阵仍未按 R2 面刷新**（grep 亲查、逐条列、**不修**）：
+   - `.agents/skills/team-leader-operations/SKILL.md:10,33` —— 『Everything below is the **production behavior** of the closed fifteen…』而全文对效应行 `team_bash`/`team_grep`/`team_glob` **零提及**（grep=0）：该『生产行为』清单停在治理面，未含 master 面 trio typed-shut 实况，更未含 #321 在途 backends 面。
+   - 同文件 `:3` description = fifteen（Alpha.4 含 grant/revoke），而宿主 skill 目录在案副本摘要仍 = **thirteen** —— 已挂载副本落后仓内正本（D-2 时代登记）。
+   - `.agents/skills/team-blueprint-authoring/SKILL.md:367` —— §5.2 标题『live-verified on a **0.1.5-rc.2** host, 2026-09-14』：支持矩阵时代远落后 pin 宿主 0.2.0-rc.2 @ `639ed01539`，GLUE-6/7 时代无 live 复验记录。
+   - 同文件 §2/§3（v3 封闭字段集=全语法的全部教学）—— dormant v4 语法/authoring-map/migration-report 已落（`382e5fb6`）、V4 路线已立（`71af4f64`）；SUPPORTED=[3] 故教学暂仍语义正确，但未披露可逆半区与路线，v4-flip（75388116 在写）落地即过时。
+   - `README.md:123-127` —— 『Fresh-machine installability (verified in the R125 gate) … Proven end-to-end』未按 R2 刷新：#311（fe829038）已在受治理 Team 安装面实测 **RED-A** boot 崩（严格包面 `ERR_MODULE_NOT_FOUND …/upstream-resolver.mjs`），『proven』于 Alpha.5 面不成立；修复 `35bff836` 后 README 既无窗口披露、也未挂严格面复验证据（int-a5b `4552fba5`：RED-A GREEN 15/15 strict）。
+   - `README.md:128-132` —— 『installs and registers in ONE command … install-surface build artifacts are committed prebuilt』：该宣称**自 `35bff836` 起**才为真；bundle-form 窗口内（files 面缺两 .mjs）单命令安装 fail-closed。README 只披露 `e832d73` 的 allowBuilds 旧窗口，未披露 RED-A 窗口。
+   - `docs/INSTALL.md:109-110`（§3.1）—— 『`upstream-resolver.mjs` **无需**复制：resolve 钩子走布局候选列表（dist 或 source 均可解析）』= 与 GLUE-6 根因直接冲突的旧说法（tsc 从不发射 `.mjs`、镜像布局候选静默失效 → 严格面 boot 失败即此因）。
+   - `docs/INSTALL.md:427`（§6 排障）—— 仍教『临时处置 = 从源码树拷贝 `upstream-resolver.mjs` 进依赖目录』；自 `35bff836` 该文件已在 committed 安装面（PLACEMENTS 字节复制），正确处置 = 装 ≥`35bff836` 重装，旧排障行未更。
+   - **真实支持矩阵**：本文件 §2/§3 的 gap/矩阵行仍 @a2473203 时点——R2 面已使 C-10（provider glue）、C-11（search/shell）、PR4-glue、PR5、W5 各行事实移动（GLUE-5/6 已在 master、#321 在途），矩阵正本刷新归下一 PR8 轮（机检 `final_declaration` 恒 null 不变）。
+
+### 6.4 红转绿账（INSTALL-ENTRY 30 判据 × #321 面；『应翻绿』≠『已翻绿』）
+
+- 在册账本：recorded run @ `bcb65eb8` = **26/30**，RED = T5,T6,T7,T8（判据②成员工具执行，`install-entry/runs/2026-10-17T16-59-32Z/criteria.json` 亲读）；int-a5b 合并面（G1+P-B-R2+GLUE-6，**不含** #321 backends）复跑 = **24/30**，其更正注 `5171f599` 逐字：『**correction(int-a5b): 24/30 not all-green; T5 production provider/feed+backends assembly = real delivery gap (GLUE-7 owns); fixture legs are reachability proofs only**』——fixture 腿只证可达性，不折账。
+- #321（`d9a16061`）面上**预期翻绿**：**T5**（受治理 read 正控：GLUE-7 live L1 真字节上线、『int-a5b T5 refusal gone on the assembled row』）；**T6**（team_bash template-deny 先于 backend：G1 `28d31f2a` 已在 master + #321 保持 deny-before-backend；其原 RED 的 observed 由 read binding 拒原文主导 = T5 失败链污染）；**T8**（member 终行回 Leader：read 真成功 + 真拒码 + GLUE-6 render 契约三者齐备后机械通畅）。
+- **T7 不在 #321 面翻绿**（如实）：原判据文本 = 『trio effect bodies typed-shut → `IO_POLICY_UNSUPPORTED`』——其**前提**被 #321 取代（shell/grep 已是真 backend；glob 仍 shut），按原文在绿硬件上仍红；需改写为『链通 + typed 结果』形，其当前等价证据仅存于 GLUE-7 kit L2–L4（非 INSTALL-ENTRY 套件复跑，不可折账）。
+- 全部翻绿**待三条件**：#321 合入 + 最终 SHA CI 双绿 + INSTALL-ENTRY kit 在合并面重跑。三条件前，唯一在册有效账本仍是 26/30（@fe829038）与 24/30（@int-a5b `5171f599`）。
+
+— R2 刷新 writer = alpha5-checklist-r2（qwen3.8-flash-next；本文件 markdown 追加、零历史改写；所引 SHA/行号本环境 git 亲验：五交付 SHA 均为 382e5fb6 可达亲验，`d9a16061`/`04f72c1b` 为非祖先亲验，`8f17f579`/`75388116` = 无 ref 无 object 已明标取根口径；ff push 凭据缺失 → 回报 parent 代推）。
