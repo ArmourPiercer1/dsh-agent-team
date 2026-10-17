@@ -23,7 +23,8 @@ const findSource = (name) => {
   return w === undefined ? null : { dir: join(DEPS_STORE, w, 'node_modules', name), from: 'store' }
 }
 const pkg = JSON.parse(readFileSync(join(EXP, 'packages', 'runtime', 'package.json'), 'utf8'))
-const queue = Object.keys(pkg.dependencies ?? {})
+const queue = ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((k) => Object.keys(pkg[k] ?? {}))
+const OPTIONAL_ONLY = new Set(Object.keys(pkg.optionalDependencies ?? {}))
 const seen = new Set()
 let miss = null
 for (let g = 0; g < 240 && queue.length > 0; g += 1) {
@@ -31,14 +32,20 @@ for (let g = 0; g < 240 && queue.length > 0; g += 1) {
   if (seen.has(name)) continue
   seen.add(name)
   const src = findSource(name)
-  if (src === null) { miss = 'no source ' + name; break }
+  if (src === null) { if (OPTIONAL_ONLY.has(name)) { continue } miss = 'no source ' + name; break }
   const dst = join(nm, ...name.split('/'))
   mkdirSync(dirname(dst), { recursive: true })
   const cp = spawnSync('cp', ['-aL', src.dir, dst], { timeout: 120_000 })
   if (cp.status !== 0) { miss = 'cp ' + name; break }
   const pj = join(dst, 'package.json')
   if (existsSync(pj)) {
-    try { for (const d of Object.keys(JSON.parse(readFileSync(pj, 'utf8')).dependencies ?? {})) if (!seen.has(d)) queue.push(d) } catch { /* probe reports */ }
+    try {
+      const j = JSON.parse(readFileSync(pj, 'utf8'))
+      for (const d of Object.keys(j.optionalDependencies ?? {})) OPTIONAL_ONLY.add(d)
+      for (const d of Object.keys(j.dependencies ?? {})) OPTIONAL_ONLY.delete(d)
+      for (const d of Object.keys(j.peerDependencies ?? {})) OPTIONAL_ONLY.delete(d)
+      for (const key of ['dependencies', 'peerDependencies', 'optionalDependencies']) for (const d of Object.keys(j[key] ?? {})) if (!seen.has(d)) queue.push(d)
+    } catch { /* probe reports */ }
   }
 }
 console.log('BFS done miss=' + (miss ?? 'none') + ' seen=' + seen.size)

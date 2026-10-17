@@ -92,7 +92,11 @@ const WATCH_NAMES = [...ALIASES, 'read']
 const MANAGED_TOOL_NAMES = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
 const SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']
 const ROOT = 'a5g7-root'
-const CREATE_ROOT = ROOT
+// The team's root session is its OWN session id (a5ie-proven pattern): the
+// observer row binds ROOT to the ANCHOR blueprint, and team.create refuses a
+// main blueprint on a root session whose bound TeamSession carries another
+// (TEAM_REMOTE_TEAM_CREATE_BLUEPRINT_MISMATCH — measured on run-4).
+const CREATE_ROOT = `session-a5g7-team-${RUN_STAMP}`
 const BP_MAIN_ID = 'a5g7-main-bp'
 const BP_ANCHOR_ID = 'a5g7-anchor-bp'
 const TK_D1 = 'a5g7-tok-d1'
@@ -215,7 +219,7 @@ function phaseE() {
   const nm = join(EXP, 'node_modules')
   mkdirSync(nm, { recursive: true })
   const pkgJson = JSON.parse(readFileSync(join(EXP, 'packages', 'runtime', 'package.json'), 'utf8'))
-  const declared = Object.keys(pkgJson.dependencies ?? {})
+  const declared = ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((k) => Object.keys(pkgJson[k] ?? {}))
   const storeDirs = existsSync(DEPS_STORE) ? readdirSync(DEPS_STORE) : []
   const findSource = (name) => {
     const direct = join(DEPS_SRC, ...name.split('/'))
@@ -229,20 +233,33 @@ function phaseE() {
   facts.closureMiss = null
   {
     const queue = [...declared]
+    const OPTIONAL_ONLY = new Set(Object.keys(pkgJson.optionalDependencies ?? {}))
     const seen = new Set()
     for (let guard = 0; guard < 240 && queue.length > 0; guard += 1) {
       const name = queue.shift()
       if (seen.has(name)) continue
       seen.add(name)
       const src = findSource(name)
-      if (src === null) { facts.closureMiss = `no source for ${name}`; break }
+      if (src === null) {
+        // an optionalDependency that this platform does not ship (e.g. a
+        // darwin addon on linux) is NOT a face defect: skip it, like pnpm
+        // does. A miss in dependencies/peerDependencies stays fatal.
+        if (OPTIONAL_ONLY.has(name)) continue
+        facts.closureMiss = `no source for ${name}`; break
+      }
       const dst = join(nm, ...name.split('/'))
       mkdirSync(dirname(dst), { recursive: true })
       const cp = spawnSync('cp', ['-aL', src.dir, dst], { timeout: 120_000 })
       if (cp.status !== 0) { facts.closureMiss = `cp -aL ${name}`; break }
       const pjPath = join(dst, 'package.json')
       if (existsSync(pjPath)) {
-        try { for (const dep of Object.keys(JSON.parse(readFileSync(pjPath, 'utf8')).dependencies ?? {})) if (!seen.has(dep)) queue.push(dep) } catch { /* loud via probe */ }
+        try {
+          const pj = JSON.parse(readFileSync(pjPath, 'utf8'))
+          for (const dep of Object.keys(pj.optionalDependencies ?? {})) OPTIONAL_ONLY.add(dep)
+          for (const dep of Object.keys(pj.dependencies ?? {})) OPTIONAL_ONLY.delete(dep)
+          for (const dep of Object.keys(pj.peerDependencies ?? {})) OPTIONAL_ONLY.delete(dep)
+          for (const key of ['dependencies', 'peerDependencies', 'optionalDependencies']) for (const dep of Object.keys(pj[key] ?? {})) if (!seen.has(dep)) queue.push(dep)
+        } catch { /* loud via probe */ }
       }
     }
   }
