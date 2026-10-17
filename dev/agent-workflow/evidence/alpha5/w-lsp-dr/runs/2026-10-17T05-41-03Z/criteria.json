@@ -1,0 +1,125 @@
+{
+  "run": "a5lspdr-2026-10-17T05-41-03Z",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine 0.2.0-rc.2 @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3183 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "two member sessions created through the public entry",
+      "pass": true,
+      "observed": "labels=session-43|session-b1"
+    },
+    {
+      "id": "L-ASSEMBLE",
+      "claim": "both member realms assembled (isolate + public barrel remount)",
+      "pass": true,
+      "observed": "[true,true]"
+    },
+    {
+      "id": "L-DEFS-DISTINCT",
+      "claim": "the two live realms resolve DISTINCT per-agent `lsp` definitions",
+      "pass": true,
+      "observed": "{\"liveRealms\":2,\"allDefined\":true,\"distinctDefinitions\":true}"
+    },
+    {
+      "id": "DR-G0-PIDS",
+      "claim": "g0: per-member resident servers DISTINCT (opens=1; /proc/<pid>/cwd == each own workspace root)",
+      "pass": true,
+      "observed": "{\"A\":{\"pid\":135,\"gen\":\"g0\",\"opens\":1,\"cwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g0\"},\"B\":{\"pid\":194,\"gen\":\"b0\",\"opens\":1,\"cwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsb\"},\"procCwdA\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g0\",\"procCwdB\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsb\"}"
+    },
+    {
+      "id": "DR-G0-HOTREUSE",
+      "claim": "g0: inside ONE realm the same pid is hot-reused (opens 1->2)",
+      "pass": true,
+      "observed": "{\"first\":135,\"hot\":\"135\",\"opens\":\"2\"}"
+    },
+    {
+      "id": "DR-C1-DISPOSED",
+      "claim": "change#1: the ONE policy-change step disposed the old realm (public fiber.dispose; old server pid last served by that realm)",
+      "pass": true,
+      "observed": "{\"ok\":true,\"old\":{\"label\":\"session-43ad960f-1673-4490-b833-78ebadaf6c83\",\"lastPid\":135,\"disposeMs\":11},\"label\":\"session-679b2deb-2b6a-43cf-be1b-771e19ca4058\",\"gen\":\"g1\"}"
+    },
+    {
+      "id": "DR-C1-OLDROOT-ZERO",
+      "claim": "change#1: old pid gone (OS probe) AND ZERO /proc handles (cwd/fd) remain under the OLD workspace root",
+      "pass": true,
+      "observed": "{\"goneA0\":true,\"hits\":[],\"baselineHitCount\":1}"
+    },
+    {
+      "id": "DR-C1-NEWPID",
+      "claim": "change#1: rebuilt realm (NEW isolate) serves the REAL model route with a NEW distinct pid, opens=1, cwd == new root",
+      "pass": true,
+      "observed": "{\"A1\":{\"pid\":279,\"gen\":\"g1\",\"opens\":1,\"cwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g1\"},\"procCwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g1\"}"
+    },
+    {
+      "id": "DR-C1-SIBLING",
+      "claim": "change#1: sibling realm untouched — B pid identical, still hot-serving (opens increased)",
+      "pass": true,
+      "observed": "{\"B\":194,\"after\":\"194\",\"opens\":\"2\"}"
+    },
+    {
+      "id": "DR-C2-DISPOSED",
+      "claim": "change#2: second consecutive policy change disposed the g1 realm",
+      "pass": true,
+      "observed": "{\"ok\":true,\"old\":{\"label\":\"session-679b2deb-2b6a-43cf-be1b-771e19ca4058\",\"lastPid\":279,\"disposeMs\":15},\"label\":\"session-aaa0fca7-dd17-4869-8be4-5706e3bc5868\",\"gen\":\"g2\"}"
+    },
+    {
+      "id": "DR-C2-OLDROOT-ZERO",
+      "claim": "change#2: g1 pid gone AND ZERO /proc handles remain under the g1 workspace root",
+      "pass": true,
+      "observed": "{\"goneA1\":true,\"hits\":[]}"
+    },
+    {
+      "id": "DR-C2-NEWPID",
+      "claim": "change#2: rebuilt g2 realm serves the REAL model route with a NEW distinct pid, opens=1, cwd == new root",
+      "pass": true,
+      "observed": "{\"A2\":{\"pid\":364,\"gen\":\"g2\",\"opens\":1,\"cwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g2\"},\"procCwd\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g2\"}"
+    },
+    {
+      "id": "DR-C2-SIBLING",
+      "claim": "change#2: sibling still undisturbed after TWO consecutive member policy changes (same B pid, hot)",
+      "pass": true,
+      "observed": "{\"B\":194,\"after\":\"194\"}"
+    },
+    {
+      "id": "DR-FOUR-LIFECYCLES",
+      "claim": "two consecutive changes = FOUR lifecycle transitions (dispose,create,dispose,create) journalled on the row face, each dispose bound to the pid that died above",
+      "pass": true,
+      "observed": "{\"disposed\":[{\"gen\":\"g0\",\"lastPid\":135,\"ms\":11},{\"gen\":\"g1\",\"lastPid\":279,\"ms\":15}],\"assembled\":[\"g0\",\"b0\",\"g1\",\"g2\"],\"postChangeAssembled\":[\"g1\",\"g2\"],\"policy\":2}"
+    },
+    {
+      "id": "DR-FINAL-CLOSE",
+      "claim": "final dispose closed every member instance: both pids gone, ZERO handles under ALL four workspace roots",
+      "pass": true,
+      "observed": "{\"goneA2\":true,\"goneB\":true,\"handles\":{\"A0\":0,\"A1\":0,\"A2\":0,\"B\":0}}"
+    },
+    {
+      "id": "DR-NO-FD-PID-LEAK",
+      "claim": "four lifecycles net-clean: every booted fixture pid dead + journalled-exited (pid ledger), no zombie children of the host, host fd count within base+24 (raw samples in leak-samples.jsonl)",
+      "pass": true,
+      "observed": "{\"booted\":[135,194,279,364],\"exited\":[135,279,364,194],\"allDead\":true,\"zombies\":[],\"fdBase\":37,\"fdFinal\":35}"
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": "the :3080 stable dev instance was never touched (probe status equal pre/post; kit binds only port 3183)",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=true"
+    }
+  ]
+}

@@ -6272,3 +6272,11 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
   **不因本裁决关闭**；证据原文见 s12 §(j)。
 - **文件面**：仅文档（`seam-record-post-door-resolution.md`、`s12-residual-evidence.md`、新建
   `PENDING-GATES.md`、本日志）；实现/测试/kit 零改动。模型：qwen3.8-flash-next。
+
+## 2026-10-17 05:5xZ — W-LSP-DR：拟裁语义「策略变化→销毁重建 member-isolated 实例」装配纪律可行性验证（evidence-only；零生产接口改动）
+
+- **任务**=LSP 裁决待答窗口内的隔离验证（根 05:34Z 冻结面：SpawnReceipt/新 streaming 方法=冻结，本轮零触碰；语义出处=`alpha5-lsp-rulings`@c73e9af4 R-2 + COORDINATION 05:3xZ）。writer=qwen3.8-flash-next（liveness 首报）；基=master@148c3f49（fetch 亲验）；一次性 worktree `.worktrees/alpha5-lsp-dr`，branch `alpha5-lsp-dr`；端口 3183（bind+release 亲证空闲）；世界 `a5lspdr-*`（teardown 已删）。
+- **方法**=仅现有公开面：`agent.ctx.isolate('lsp')` + `realm.plugin(host 自家 barrels)` + fiber `dispose()`（W-PTC-RE 已 LIVE 的同组面）；策略标签=Team 侧装配状态（代际→workspaceRoot 映射）；观察=模型真路由 `lsp` 工具（公开 around-seam 捕获）+ fixture pid 台账 + runner 独立 /proc 全表句柄扫描。
+- **结果**=权威绿跑 `evidence/alpha5/w-lsp-dr/runs/2026-10-17T05-41-03Z/` **20/20 EXIT=0**：①单轮变化四要件全中（旧 realm pid 135 消失/dispose 11ms 有界 → 新 realm pid 279/opens=1/cwd=新根；兄弟 B pid 194 恒定热复用；旧 workspaceRoot /proc cwd+fd 句柄 1→**0**）；②连续两轮=四次生命周期（dispose,create,dispose,create 台账齐：disposed={g0:135,g1:279}+post-change assembled=[g1,g2]；fixture boot4/exit4 全 code=0、终态四根全零句柄、host 无僵尸、host fd 37→40→41→35 收口低于基线）。修复轮如实保留（attempt1=runner TypeError 无裁决；attempt2=19/20 唯一 FAIL 为 kit 判据算术错，observed 已呈目标序列）。
+- **口径钉死**=装配纪律可行性（执行面=装配约定+probe 复跑，**非 OS 强制、非接口承诺**）；同 realm 内 policy 粒度共享/逐出未宣称（SV B1/B4 原状、HAZARD 形状不消解）；真实服务器其他资源（socket/shm）不在「零热句柄」宣称内；若用户答复语义不同，本证据只作参照。
+- **红线**=CORE 0；test-use porcelain=0/HEAD=pin 前后自证；:3080 pre=401/post=401 零触碰；:3180 未触；证据 token 扫描=0；世界零生产行；零 force-push；1 task=1 branch=1 worktree=1 writer。模型：qwen3.8-flash-next。
