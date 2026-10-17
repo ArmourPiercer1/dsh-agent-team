@@ -66,6 +66,12 @@ export function pidAlive(pid: number): boolean {
   }
 }
 
+/** This runtime's node binary path (lane-cast: the shared program shims `process`). */
+export function execPath(): string {
+  const laneProcess = (globalThis as { process?: { execPath?: string } }).process
+  return laneProcess?.execPath ?? '/usr/bin/node'
+}
+
 /**
  * Zero-residue sampling: every LIVE process whose /proc cwd or cmdline
  * mentions the lane fixtures/world. Returns the observed pid/cmd facts —
@@ -85,7 +91,7 @@ export function sampleLaneProcesses(worldRoot: string): { pid: number; cwd: stri
     let cwd = ''
     let cmd = ''
     try {
-      cwd = process.platform === 'linux' ? readFileSync(`/proc/${pid}/cwd`, 'utf8') : ''
+      cwd = readFileSync(`/proc/${pid}/cwd`, 'utf8')
     } catch {
       // vanished or unreadable (a pid outside our ownership) — not a lane process we created
     }
@@ -112,6 +118,5 @@ export async function pollUntil(until: () => boolean, deadlineMs: number, everyM
 
 /** The node binary directory the confined fixture needs execute+read on. */
 export function nodeBinDir(): string {
-  const laneProcess = (globalThis as { process?: { execPath?: string } }).process
-  return dirname(laneProcess?.execPath ?? '/usr/bin/node')
+  return dirname(execPath())
 }

@@ -47,6 +47,7 @@ import {
   type SpawnRequest,
 } from '../sandbox-provider/provider.js'
 import {
+  execPath,
   fixturePath,
   makeWorld,
   nodeBinDir,
@@ -156,7 +157,7 @@ function withStream(deps: ProviderDeps & { streamCalls: string[][] }, value: Lau
   const d = deps as unknown as Record<string, unknown>
   d.spawnStream = (argv: readonly string[]) => {
     deps.streamCalls.push([...argv])
-    return value
+    return 'ok' in value ? value : { ok: true, value }
   }
 }
 
@@ -309,6 +310,12 @@ describe('a5lsp2 streaming lease law and termination (fake seam)', () => {
     const deps = fakeDeps({ rc: 0, stdout: '', stderr: '' })
     const fake = fakeProcess({ handshake: { stream: true, pid: 424242 }, exitOn: 'SIGTERM' })
     withStream(deps, fake)
+    const d1 = deps as unknown as Record<string, unknown>
+    d1.signalProcess = (pid: number, signal: string) => {
+      deps.signals.push({ pid, signal })
+      return fake.kill(signal)
+    }
+    d1.pidAlive = (pid: number) => pid === 424242 && !fake.signals.includes('SIGTERM')
     const provider = providerWith(deps)
     const r = await provider.spawnStreaming(baseRequest({}))
     expect(r.ok).toBe(true)
@@ -348,6 +355,7 @@ describe('a5lsp2 streaming lease law and termination (fake seam)', () => {
       deps.signals.push({ pid, signal })
       return fake.kill(signal)
     }
+    d.pidAlive = (pid: number) => pid === 424242 && !fake.signals.includes('SIGTERM')
     const provider = providerWith(deps)
     const r = await provider.spawnStreaming(baseRequest({}))
     expect(r.ok).toBe(true)
@@ -481,7 +489,7 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
       realmId: 'realm-a5lsp2-real',
       bindingId: 'binding-lsp-real',
       memberScope: 'member/real',
-      argv: [process.execPath, join(fixtureDir, 'lsp.mjs'), 'g0', join(secretDir, 'secret.txt')],
+      argv: [execPath(), join(fixtureDir, 'lsp.mjs'), 'g0', join(secretDir, 'secret.txt')],
       cwd: genRoot,
       env: [['PATH', '/usr/bin:/bin']],
       allowPaths: [
@@ -489,9 +497,8 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
         { path: fixtureDir, accessBits: { readFile: true, readDir: true } },
         { path: genRoot, accessBits: { readFile: true, readDir: true } },
       ],
-      networkProfile: 'deny',
     })
-    expect(r.ok).toBe(true)
+    expect(r.ok === true, `spawnStreaming refused: ${JSON.stringify(r.ok === true ? null : r.error)}`).toBe(true)
     if (!r.ok) return
     const h = r.value
     const next = frameReader(h.stdout)
@@ -548,7 +555,7 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
       realmId: 'realm-a5lsp2-real2',
       bindingId: 'binding-lsp-real2',
       memberScope: 'member/real2',
-      argv: [process.execPath, fixturePath('a5lsp2-fixture-ping.mjs'), 'g1'],
+      argv: [execPath(), fixturePath('a5lsp2-fixture-ping.mjs'), 'g1'],
       cwd: genRoot,
       env: [['PATH', '/usr/bin:/bin']],
       allowPaths: [
@@ -556,9 +563,8 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
         { path: join(world, 'fixtures'), accessBits: { readFile: true, readDir: true } },
         { path: genRoot, accessBits: { readFile: true, readDir: true } },
       ],
-      networkProfile: 'deny',
     })
-    expect(r.ok).toBe(true)
+    expect(r.ok === true, `spawnStreaming refused: ${JSON.stringify(r.ok === true ? null : r.error)}`).toBe(true)
     if (!r.ok) return
     const settled = await r.value.terminate({ graceMs: 2_000, deadlineMs: 15_000 })
     expect(settled.ok).toBe(true)

@@ -16,10 +16,18 @@
  * through the lease law (`settleTermination` is the only path to
  * `terminated`; an unconfirmed settlement keeps its `sideEffectUnknown`).
  *
+ * R-1 STREAMING ARM (user ruling 07:53Z, PARALLEL-ADDITIVE): `spawnStreaming`
+ * reuses the SAME prepare ladder, byte-pin double gate, one-shot plan law and
+ * lease/termination vocabulary, and hands back a LIVE handle (stdin Writable,
+ * stdout/stderr Readers, lease, terminate). `spawn`/`RunOutput` and every old
+ * call site keep their exact historical behavior.
+ *
  * @module @dsh-agent-team/runtime/sandbox-provider/provider
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { spawn as spawnChildProcess } from 'node:child_process'
+import { type Readable, type Writable } from 'node:stream'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { refuse, type AssuranceDimension, type ProcessCapabilityRow, type ProviderResult } from './contract-stub.js'
@@ -109,11 +117,64 @@ export interface SpawnReceipt {
   readonly processIdentity: string
 }
 
+// ---------------------------------------------------------------------------
+// THE STREAMING ARM (R-1) — shapes. `spawnStreaming()` is the PARALLEL entry:
+// same ladder, same lease law, plus live pipes.
+// ---------------------------------------------------------------------------
+
+/** The streaming launcher process as the injected seam exposes it. */
+export interface LauncherStreamProcess {
+  /** The LAUNCHER's pid; the confined payload's pid arrives on the fd-3 handshake. */
+  readonly pid: number
+  readonly stdin: Writable
+  readonly stdout: Readable
+  readonly stderr: Readable
+  /** fd-3 handshake channel: launcher-owned, never crosses the payload boundary. */
+  readonly handshake: Readable
+  kill(signal?: string | number): boolean
+  readonly exit: Promise<{ code: number | null; signal: string | null }>
+}
+
+/** Per-call streaming windows (tests script them per leg). */
+export interface StreamingOptions {
+  /** Bounded wait for the launcher's fd-3 handshake line (default 15000). */
+  readonly handshakeTimeoutMs?: number
+  /** SIGTERM → SIGKILL escalation point inside the terminate window (default 1500). */
+  readonly graceMs?: number
+  /** Bounded confirmation window; past it the lease settles `termination-unconfirmed` (default 8000). */
+  readonly deadlineMs?: number
+}
+
+/** The live handle the streaming arm returns (receipt + pipes + lease + terminate). */
+export interface StreamingSpawnHandle {
+  readonly lease: ProviderLease
+  readonly processIdentity: string
+  /** The confined payload's OS pid (handshake-reported; the identity inside `processIdentity`). */
+  readonly pid: number
+  readonly stdin: Writable
+  readonly stdout: Readable
+  readonly stderr: Readable
+  /** Resolves when the process is OBSERVED to exit — observation never settles the lease. */
+  readonly exited: Promise<{ code: number | null; signal: string | null }>
+  /** The handle's termination arm: signal (SIGTERM→SIGKILL escalation), await, settle. */
+  terminate(options?: StreamingOptions): Promise<ProviderResult<ProviderLease>>
+}
+
 /** The injected world (tests inject a counting fake to watch ZERO calls). */
 export interface ProviderDeps {
   readonly availability: () => { readonly rows: readonly AvailabilityRow[] }
   readonly run: (argv: readonly string[], timeoutMs?: number) => RunResult
   readonly probeFacts: () => { readonly abiVersion: number | null; readonly legs: Partial<Record<LegName, LegVerdict>> }
+  /**
+   * Streaming arm (R-1): spawn the launcher in stream mode with the fd-3
+   * handshake channel. OPTIONAL — absent, the production arm (node:child_process
+   * spawn) runs; injected, the leg watches ZERO/signal facts through the fake.
+   */
+  readonly spawnStream?: (argv: readonly string[]) => ProviderResult<LauncherStreamProcess>
+  /** Signal the PAYLOAD pid (terminate arm). Absent: `process.kill` (false = already gone). */
+  readonly signalProcess?: (pid: number, signal: 'SIGTERM' | 'SIGKILL') => boolean
+  /** OS liveness of a payload pid. Absent: `/proc/<pid>` existence. */
+  readonly pidAlive?: (pid: number) => boolean
 }
 
 /**
@@ -189,6 +250,116 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
   const consumedPlans = new Set<string>()
   const leases = new Map<string, ProviderLease>()
   let captured: { readonly rows: readonly ProcessCapabilityRow[]; readonly evidence: ProviderProbeEvidence } | null = null
+
+  // ---- streaming arm (R-1): state + production seam defaults ----------------
+  interface StreamRun {
+    readonly leaseId: string
+    readonly process: LauncherStreamProcess
+    readonly payloadPid: number
+    exited: boolean
+    exitInfo: { code: number | null; signal: string | null } | null
+    readonly exitWaiters: ((v: { code: number | null; signal: string | null }) => void)[]
+    killStarted: boolean
+    terminating: Promise<ProviderResult<ProviderLease>> | null
+  }
+  const streamRuns = new Map<string, StreamRun>()
+
+  const osProcess = (globalThis as { process?: { kill?: (pid: number, signal?: string | number) => boolean } }).process
+  const defaultSpawnStream: NonNullable<ProviderDeps['spawnStream']> = (argv) => {
+    try {
+      const child = spawnChildProcess(launcher.pythonPath, [...argv], { stdio: ['pipe', 'pipe', 'pipe', 'pipe'] })
+      const handshake = child.stdio[3] as Readable | undefined
+      if (child.pid === undefined || handshake === undefined) {
+        try { child.kill('SIGKILL') } catch { /* already gone */ }
+        return refuse('SANDBOX_UNAVAILABLE', 'streaming launcher spawn produced no pid/fd-3 channel')
+      }
+      const guard = (s: Writable | Readable | null): void => { s?.on('error', () => { /* post-exit pipe errors never crash the provider */ }) }
+      guard(child.stdin); guard(child.stdout); guard(child.stderr)
+      const exit = new Promise<{ code: number | null; signal: string | null }>((resolve) => {
+        child.once('exit', (code, signal) => resolve({ code: typeof code === 'number' ? code : null, signal: typeof signal === 'string' ? signal : '' }))
+        child.once('error', () => resolve({ code: null, signal: 'spawn-error' }))
+      })
+      return {
+        ok: true,
+        value: Object.freeze({
+          pid: child.pid,
+          stdin: child.stdin as Writable,
+          stdout: child.stdout as Readable,
+          stderr: child.stderr as Readable,
+          handshake,
+          kill: (signal?: string | number): boolean => { try { return child.kill(signal as never) } catch { return false } },
+          exit,
+        }),
+      }
+    } catch (error) {
+      return refuse('SANDBOX_UNAVAILABLE', `streaming launcher spawn failed: ${String((error as Error)?.message ?? error).slice(0, 160)}`)
+    }
+  }
+  const streamSpawn: NonNullable<ProviderDeps['spawnStream']> = deps.spawnStream ?? defaultSpawnStream
+  const signalProcess: NonNullable<ProviderDeps['signalProcess']> = deps.signalProcess
+    ?? ((pid, signal) => { try { osProcess?.kill?.(pid, signal); return true } catch { return false } })
+  const pidAlive: NonNullable<ProviderDeps['pidAlive']> = deps.pidAlive ?? ((pid) => existsSync(`/proc/${pid}`))
+
+  const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+  /** Read the launcher's single-line fd-3 handshake, bounded; null = missing/unparsable/timed out. */
+  function readHandshake(stream: Readable, timeoutMs: number): Promise<Record<string, unknown> | null> {
+    return new Promise((resolve) => {
+      let buffer = ''
+      let done = false
+      const onData = (chunk: unknown): void => {
+        buffer += String(chunk)
+        const nl = buffer.indexOf('\n')
+        if (nl < 0) return
+        const line = buffer.slice(0, nl).trim()
+        if (line.length === 0) return
+        try {
+          const parsed: unknown = JSON.parse(line)
+          finish(typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : null)
+        } catch {
+          finish(null)
+        }
+      }
+      const onEnd = (): void => { finish(null) }
+      const onError = (): void => { finish(null) }
+      const finish = (value: Record<string, unknown> | null): void => {
+        if (done) return
+        done = true
+        clearTimeout(timer)
+        stream.off('data', onData)
+        stream.off('end', onEnd)
+        stream.off('error', onError)
+        resolve(value)
+      }
+      const timer = setTimeout(() => { finish(null) }, timeoutMs)
+      stream.on('data', onData)
+      stream.on('end', onEnd)
+      stream.on('error', onError)
+    })
+  }
+
+  /** Own the SIGNAL sequence for one streaming run (single flight; never settles a lease). */
+  function beginKillSequence(run: StreamRun, graceMs: number, deadlineMs: number): void {
+    if (run.killStarted) return
+    run.killStarted = true
+    const t0 = Date.now()
+    let termSent = false
+    let killSent = false
+    const tick = (): void => {
+      if (run.exited && !pidAlive(run.payloadPid)) return // gone; settling is the lease law's job
+      if (!run.exited && pidAlive(run.payloadPid)) {
+        if (!termSent) { signalProcess(run.payloadPid, 'SIGTERM'); termSent = true }
+        else if (!killSent && Date.now() - t0 >= graceMs) {
+          signalProcess(run.payloadPid, 'SIGKILL')
+          run.process.kill('SIGKILL') // the launcher supervisor too — never leave a supervisor behind
+          killSent = true
+        }
+      }
+      if (Date.now() - t0 >= deadlineMs + 1_000) return // signal loop is bounded too
+      setTimeout(tick, 25)
+    }
+    tick()
+  }
 
   /**
    * The byte-pin gate (assembly.launcherSha256). UNPINNED passes — that is
@@ -356,11 +527,126 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     return execute(prepared.value)
   }
 
+  /**
+   * executeStreaming(): the R-1 arm over a PREPARED plan — same one-shot plan
+   * law and same byte-pin re-gate (refusal BEFORE consumption never burns the
+   * grant), then the launcher's stream mode with live pipes. The handle's
+   * lease starts `active`; only `settleTermination` ever makes it terminal.
+   */
+  async function executeStreaming(plan: SpawnPlan, streaming?: StreamingOptions): Promise<ProviderResult<StreamingSpawnHandle>> {
+    if (!plans.has(plan.planId) || consumedPlans.has(plan.planId)) {
+      return refuse('IO_POLICY_UNSUPPORTED', `plan '${plan.planId}' was already consumed — re-executing a plan is a second spawn without a second grant`)
+    }
+    const moved = advancePhase('prepare', 'execute')
+    if (!moved.ok) return refuse('IO_POLICY_UNSUPPORTED', 'phase machine refused prepare → execute (impossible on this lane; kept defensive)')
+    const integrity = launcherIntegrityGate()
+    if (!integrity.ok) return integrity // BEFORE consumption: the grant survives a gate refusal (same law as execute)
+    consumedPlans.add(plan.planId)
+    const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir])
+    if (!spawned.ok) return spawned
+    const proc = spawned.value
+    const handshakeTimeoutMs = streaming?.handshakeTimeoutMs ?? 15_000
+    const handshake = await readHandshake(proc.handshake, handshakeTimeoutMs)
+    if (handshake === null || handshake['stream'] !== true || typeof handshake['pid'] !== 'number') {
+      // no half-lived handles: the launcher is killed, and its reap is awaited BOUNDED
+      proc.kill('SIGKILL')
+      await Promise.race([proc.exit.catch(() => undefined), sleep(2_000)])
+      if (handshake?.['abi_unavailable'] === true) {
+        return refuse('SANDBOX_UNAVAILABLE', 'the confined launcher measured no landlock ABI at stream-exec time and refused to run the payload unconfined')
+      }
+      return refuse('SANDBOX_UNAVAILABLE', `streaming launcher handshake missing, unparsable or timed out (${String(handshakeTimeoutMs)}ms) — no streaming handle is issued`)
+    }
+    const payloadPid = handshake['pid']
+    const leaseId = `lease-${plan.planId}`
+    const lease: ProviderLease = Object.freeze({
+      leaseId,
+      grantFingerprint: plan.request.grantFingerprint,
+      realmId: plan.request.realmId,
+      bindingId: plan.request.bindingId,
+      memberScope: plan.request.memberScope,
+      executionKind: 'process' as const,
+      status: 'active' as const,
+    })
+    const run: StreamRun = { leaseId, process: proc, payloadPid, exited: false, exitInfo: null, exitWaiters: [], killStarted: false, terminating: null }
+    void proc.exit.then(
+      (info) => {
+        run.exited = true
+        run.exitInfo = info
+        for (const w of run.exitWaiters.splice(0)) w(info)
+      },
+      () => {
+        run.exited = true
+        run.exitInfo = { code: null, signal: 'exit-error' }
+        for (const w of run.exitWaiters.splice(0)) w(run.exitInfo as { code: number | null; signal: string | null })
+      },
+    )
+    leases.set(leaseId, lease)
+    streamRuns.set(leaseId, run)
+    const exited = new Promise<{ code: number | null; signal: string | null }>((resolve) => {
+      if (run.exited && run.exitInfo !== null) resolve(run.exitInfo)
+      else run.exitWaiters.push(resolve)
+    })
+    const terminate = (options?: StreamingOptions): Promise<ProviderResult<ProviderLease>> => {
+      if (run.terminating !== null) return run.terminating
+      run.terminating = (async (): Promise<ProviderResult<ProviderLease>> => {
+        const held0 = leases.get(leaseId)
+        if (held0 === undefined) return refuse('IO_POLICY_UNSUPPORTED', `lease '${leaseId}' is not one of this provider's leases`)
+        if (held0.status === 'terminated') return { ok: true, value: held0 }
+        const held = held0.status === 'active'
+          ? ((): ProviderLease => { const m = Object.freeze({ ...held0, status: 'cancelling' as const }); leases.set(leaseId, m); return m })()
+          : held0
+        const graceMs = options?.graceMs ?? 1_500
+        const deadlineMs = options?.deadlineMs ?? 8_000
+        beginKillSequence(run, graceMs, deadlineMs)
+        const t0 = Date.now()
+        let confirmed = false
+        for (;;) {
+          if (run.exited && !pidAlive(payloadPid)) { confirmed = true; break }
+          if (Date.now() - t0 >= deadlineMs) break
+          await sleep(25)
+        }
+        return settleTermination(held, confirmed)
+      })()
+      return run.terminating
+    }
+    const handle: StreamingSpawnHandle = Object.freeze({
+      lease,
+      processIdentity: `pid:${payloadPid}:${plan.planId}`,
+      pid: payloadPid,
+      stdin: proc.stdin,
+      stdout: proc.stdout,
+      stderr: proc.stderr,
+      exited,
+      terminate,
+    })
+    return { ok: true, value: handle }
+  }
+
+  /** spawnStreaming(): prepare + executeStreaming as ONE call (the R-1 parallel entry). */
+  async function spawnStreaming(request: SpawnRequest, streaming?: StreamingOptions): Promise<ProviderResult<StreamingSpawnHandle>> {
+    const prepared = await prepare(request)
+    if (!prepared.ok) return prepared
+    return executeStreaming(prepared.value, streaming)
+  }
+
   /** requestCancellation(): the REQUEST leg — moves the lease, settles via the sync reap. */
   async function requestCancellation(lease: ProviderLease): Promise<ProviderResult<ProviderLease>> {
     const held = leases.get(lease.leaseId)
     if (held === undefined) {
       return refuse('IO_POLICY_UNSUPPORTED', `lease '${lease.leaseId}' is not one of this provider's leases`)
+    }
+    const run = streamRuns.get(lease.leaseId)
+    if (run !== undefined) {
+      // Async streaming semantics (R-1): the REQUEST moves the lease to
+      // 'cancelling' and starts the signal sequence — it NEVER settles the
+      // lease itself; only settleTermination does (the frozen law).
+      if (held.status === 'active') {
+        const moved = Object.freeze({ ...held, status: 'cancelling' as const })
+        leases.set(lease.leaseId, moved)
+        beginKillSequence(run, 1_500, 8_000)
+        return { ok: true, value: moved }
+      }
+      return { ok: true, value: held }
     }
     if (held.status === 'terminated') return { ok: true, value: held }
     // Sync spawn semantics: when run() returned the child is already reaped,
@@ -385,5 +671,5 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     return { ok: true, value: next }
   }
 
-  return Object.freeze({ probe, prepare, execute, spawn, requestCancellation, settleTermination })
+  return Object.freeze({ probe, prepare, execute, spawn, spawnStreaming, executeStreaming, requestCancellation, settleTermination })
 }

@@ -41,6 +41,7 @@ import { join } from 'node:path'
 import { createLspRealmAssembly, type LspAssemblyEvent, type LspInstance } from '../sandbox-provider/lsp-assembly.js'
 import type { AllowPathEntry } from '../sandbox-provider/provider.js'
 import {
+  execPath,
   fixturePath,
   makeWorld,
   nodeBinDir,
@@ -91,11 +92,10 @@ function policyFor(member: string, generation: string, fixture = 'ping.mjs') {
   return {
     grantFingerprint: `sha256:grant-${member}-${generation}`,
     bindingId: `binding-lsp-${member}`,
-    argv: [process.execPath, join(fixtureDir, fixture), generation],
+    argv: [execPath(), join(fixtureDir, fixture), generation],
     cwd: genRoot,
     env: [['PATH', '/usr/bin:/bin']] as const,
     allowPaths: allow,
-    networkProfile: 'deny' as const,
   }
 }
 
@@ -116,7 +116,7 @@ function makeAssembly(pin = LAUNCHER_SHA) {
         return {
           grantFingerprint: `sha256:grant-${member}-${generation}`,
           bindingId: `binding-lsp-${member}`,
-          argv: [process.execPath, join(fixtureDir, 'does-not-exist.mjs'), generation],
+          argv: [execPath(), join(fixtureDir, 'does-not-exist.mjs'), generation],
           cwd: genRoot,
           env: [['PATH', '/usr/bin:/bin']] as const,
           allowPaths: [
@@ -124,7 +124,6 @@ function makeAssembly(pin = LAUNCHER_SHA) {
             { path: fixtureDir, accessBits: { readFile: true, readDir: true } },
             { path: genRoot, accessBits: { readFile: true, readDir: true } },
           ] as AllowPathEntry[],
-          networkProfile: 'deny' as const,
         }
       }
       return policyFor(member, generation)
