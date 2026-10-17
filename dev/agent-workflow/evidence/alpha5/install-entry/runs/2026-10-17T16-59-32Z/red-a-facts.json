@@ -1,0 +1,13 @@
+{
+  "pure": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T16-59-32Z-pure",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-install-entry/tests/homes/a5ie-red-a-2026-10-17T16-59-32Z",
+  "pureFileCount": 1728,
+  "failLine": "[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T16-59-32Z-pure/packages/runtime/src/plugin/upstream-resolver.mjs' imported from data:",
+  "failureBlock": [
+    "[dsh-agent-team] bootstrap FAILED: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5ie-expansion/2026-10-17T16-59-32Z-pure/packages/runtime/src/plugin/upstream-resolver.mjs' imported from data:"
+  ],
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  }
+}
