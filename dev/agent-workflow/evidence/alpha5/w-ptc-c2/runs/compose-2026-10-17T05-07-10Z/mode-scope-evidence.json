@@ -1,0 +1,9 @@
+{
+  "world": "a5ptc2-compose-2026-10-17T05-07-10Z",
+  "dsh_home": "<WORKTREE>/tests/homes/a5ptc2-compose-2026-10-17T05-07-10Z",
+  "world_session_logs": [
+    "<HOME>/sessions/--srv-workspace-dsh-plugins-dsh-agent-team-.worktrees-alpha5-ptc-chain-tests-homes-a5ptc2-compose-2026-10-17T05-07-10Z-ws--/session-f33dce82-3d75-47b6-a595-09829ef6f871/session.v4.jsonl.zstd"
+  ],
+  "sandbox_mode_event_files": [],
+  "note": "the mode switch lives ONLY in this world's session event stream; teardown (rm HOME) removes it all; the runner writes nowhere else"
+}

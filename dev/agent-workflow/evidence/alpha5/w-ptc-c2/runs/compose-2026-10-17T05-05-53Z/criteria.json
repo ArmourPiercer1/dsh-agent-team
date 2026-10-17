@@ -1,0 +1,60 @@
+{
+  "run": "a5ptc2-compose-2026-10-17T05-05-53Z",
+  "launcherSha": "cee10ed55f12123f84716e57a5d46b3d0e9abe2394161dd061fb846a4ebfb458",
+  "criteria": [
+    {
+      "id": "P-PIN",
+      "claim": "host is the pinned pristine tree @639ed01539 and porcelain-clean",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=true at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/dsh-020rc2-upgrade/tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "P-LAUNCHER",
+      "claim": "the trusted pre-launcher is the TRACKED file (sha recorded)",
+      "pass": true,
+      "observed": "sha256=cee10ed55f12123f… at packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "host booted on 3184 with the token gate live",
+      "pass": true,
+      "observed": "cookie=true"
+    },
+    {
+      "id": "L-BARREL",
+      "claim": "the sandbox-provider dist PUBLIC BARREL imported in-process (binding censused)",
+      "pass": true,
+      "observed": "barrel=true"
+    },
+    {
+      "id": "L-CREATE",
+      "claim": "session created through the public entry",
+      "pass": true,
+      "observed": "sid=session-8b065ddd-748e-4c"
+    },
+    {
+      "id": "L-PROMPT",
+      "claim": "the scripted run_code turn completed",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "P-STABLE-UNTOUCHED",
+      "claim": "the :3080 stable dev instance was never touched (probe status equal pre/post; kit binds only port 3184)",
+      "pass": true,
+      "observed": "pre=401 post=401"
+    },
+    {
+      "id": "P-PRISTINE",
+      "claim": "the test-use runtime stayed pristine (porcelain empty, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=true head=true"
+    },
+    {
+      "id": "P-PORT-RELEASED",
+      "claim": "port 3184 released after teardown",
+      "pass": true,
+      "observed": "free=true"
+    }
+  ]
+}
