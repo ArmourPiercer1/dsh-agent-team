@@ -2440,6 +2440,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // universe).
     const SCANNED_PATHS_A5G1: readonly string[] = [
       'packages/runtime/test/alpha5-g1-deny-lane.test.ts',
+    ]
     // alpha5-pb-binding-feed (P-B §6 binding-feed round): the lane's ONE
     // scannable file — the binding-feed semantics spec (positive control +
     // the three §6 semantics: revoked-drift refusal, cross-realm refusal,
