@@ -108,7 +108,30 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
   // with it — the leg below pins every lane-naming census line to exactly
   // one quoted path). Path-exact on purpose: a second census file, or any
   // import edge, is still an offender.
-  const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts']
+  const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = [
+    'testkit/test/p4t6-session-event-scan.test.ts',
+    // GLUE-5: the A4 artifacts ledger now DERIVES its fixture world from
+    // scripts/place-dist-glue.mjs's PLACEMENTS list (the re-booked dynamic
+    // glue count) — it names the rows in comments and reads the list, it
+    // imports no lane. Same name-only category as p4t6 above.
+    'testkit/test/a4-artifacts-nonempty.test.ts',
+  ]
+
+  // REVIEWED-EDGE exceptions (alpha5-glue5-entry, GLUE-5 production-assembly
+  // round — THE "wiring enters review as its own change" moment the lane
+  // header reserved): the LIVE ROW `runtime/src/plugin/live/jobs-gateway-assembly.mjs`
+  // opens one gateway assembly per owning team root (pc-CONTRACT §3: the
+  // live row, the dist-mirror import, the assembly-owned lease lifecycle and
+  // the census booking were that section's checklist), and the production
+  // entry `runtime/src/plugin/live/agent-bindings.mjs` reaches the lane ONLY
+  // through that row. Both edges are form-pinned by the leg below: the row
+  // imports the barrel exactly once; the entry imports the row exactly once
+  // and NEVER touches the barrel directly. Dormancy retired here is exactly
+  // "the lane ships dark" — nothing else in these pins moves.
+  const REVIEWED_EDGE_EXCEPTIONS: readonly string[] = [
+    'runtime/src/plugin/live/jobs-gateway-assembly.mjs',
+    'runtime/src/plugin/live/agent-bindings.mjs',
+  ]
 
   it('zero production consumers: no importer outside the lanes and the a5p7 specs', () => {
     const importers: string[] = []
@@ -129,7 +152,7 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         rel.startsWith('runtime/jobs-gateway/') ||
         rel.startsWith('domain/vnext-field-mapping/') ||
         /\/a5p7-/.test(rel)
-      if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel)) continue
+      if (isLaneOwn || NAMES_ONLY_LEDGER_EXCEPTIONS.includes(rel) || REVIEWED_EDGE_EXCEPTIONS.includes(rel)) continue
       let text: string
       try {
         text = readFileSync(file, 'utf8')
@@ -147,6 +170,27 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
       if (/jobs-gateway|vnext-field-mapping/.test(text)) importers.push(rel)
     }
     expect(importers).toEqual([])
+  })
+
+  it('the two reviewed GLUE-5 edges are exactly the pinned import lines', () => {
+    // See the REVIEWED_EDGE_EXCEPTIONS comment: the exception is edge-shaped,
+    // so its shape is the contract. (a) The live row names the lane in
+    // EXACTLY one import line — the barrel, dist-mirror relative form; no
+    // deep imports into the lane's modules. (b) The production entry names
+    // the lane in EXACTLY one import line — the live row itself — and the
+    // barrel string NEVER appears in it: the entry can only reach the lane
+    // through the row, never around it.
+    const row = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'jobs-gateway-assembly.mjs'), 'utf8')
+    const rowEdges = row.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))
+    expect(rowEdges.map((l) => l.trim())).toEqual([
+      `import { createJobsGateway, createLeaseWindow } from '../../../jobs-gateway/index.js'`,
+    ])
+    const entry = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+    const entryEdges = entry.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))
+    expect(entryEdges.map((l) => l.trim())).toEqual([
+      `import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'`,
+    ])
+    expect(entry).not.toContain("jobs-gateway/index.js'")
   })
 
   it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {

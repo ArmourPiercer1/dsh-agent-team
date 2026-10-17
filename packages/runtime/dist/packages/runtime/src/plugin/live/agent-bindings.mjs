@@ -431,6 +431,16 @@ import { leaderExecEnvelopeOps } from '../../../admission/envelope.js'
 // closed-world claim hold AFTER setup is this Guard, armed per agent here and
 // kept until the Dispatcher reaches TOMBSTONED/RELEASED.
 import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
+// GLUE-5 (alpha5-glue5-entry): the two live assembly rows. Import law
+// (pc-CONTRACT §3 checklist 1): the production lanes they use enter only
+// through the committed dist mirror — team-tool-plane.mjs resolves the a5p5
+// barrel / tool-admission / controlled-fs from
+// `packages/runtime/dist/packages/...`, jobs-gateway-assembly.mjs resolves
+// the PR7 gateway the same way. These two lines ARE the production import
+// edges those contracts drafted (P-A/P-B/P-C stayed DORMANT at this layer on
+// purpose: the GLUE owner lands them, nobody else).
+import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
+import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'
 // A2C-2 (plan §7.2) + fix/alpha2-explicit-agent-setup-compat: the
 // agent-scoped tool surface is read through `tools.schemas(runtimeAgent)`
 // where `runtimeAgent` is the setup's CANONICAL runtime-Agent resolver
@@ -746,6 +756,12 @@ export function createAgentBindings(deps) {
   let closing = false
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
   const toolDisposers = []
+  // GLUE-5: the per-team-root PR7 live assemblies (jobs-gateway-assembly).
+  // One assembly per owning root, created lazily on the first governed
+  // mount; drained by close() (the row-stop backstop). The gateway is the
+  // TeamPermit/lease/identity authority for its root — NOT a jobs registry
+  // (the host `jobs` registry coverage stays the registered gap).
+  const liveJobsGatewayAssemblies = new Map()
   /** @type {number} synthetic callId counter (the driver may omit callIds). */
   let callCounter = 0
   /** @type {string[]} noteworthy async observations (e.g. whenIdle quirks). */
@@ -2195,6 +2211,12 @@ export function createAgentBindings(deps) {
       // listeners here, exactly as before (zero interference with ordinary
       // Host sessions, NEG-2).
       let a5p1Guard = undefined
+      // GLUE-5: the names THIS assembly places into the Agent's own layer
+      // (the R1 tool plane). The array is handed to the Guard at install and
+      // filled at placement time — publish() reads it then (install.ts
+      // 1062-1063: owned names never ride the inherited-native lane, so a
+      // global-face same-name can never credit this placement).
+      const a5PlaneOwnedNames = []
       /** The mask this assembly installs (design §4.1 step 2). The Guard
        *  handle OWNS its teardown: an armed Guard never lets the ordinary
        *  disposer drain lift it (NEG-1: "restrict first, adapter last" is
@@ -2264,6 +2286,9 @@ export function createAgentBindings(deps) {
           agentScopeKey: String(sessionId),
           trustedIdentities: [...trusted],
           nativeNames,
+          // GLUE-5: filled by the plane placement BEFORE publish (the
+          // ordering below guarantees it) — see a5PlaneOwnedNames.
+          assemblyOwnedNames: a5PlaneOwnedNames,
           // Generation 0 until PR2 (Operation Admission) feeds the overlay /
           // authority generations into the Binding; the Guard validates every
           // call against the generations it PUBLISHED with, so a change made
@@ -2343,6 +2368,77 @@ export function createAgentBindings(deps) {
         selectedTeamToolNames = selected.map((def) => def.name)
         for (const def of selected) {
           toolDisposers.push(agentCtx.tools.register(def))
+        }
+      }
+      // ── GLUE-5: the governed Team TOOL PLANE (Q4 / R1 PLACEMENT lane) ──
+      // Mounts ONLY here, ONLY for a governed agent (permissionPolicy), and
+      // ONLY when the host row carries `teamToolPlane` in its config
+      // (ABSENT config = this line does not run: every shipped world keeps
+      // the pre-GLUE-5 shape byte-for-byte — the non-team zero-delta hard
+      // negative control holds BY CONSTRUCTION, glue4-prodentry G7/G8 law).
+      // Placement attribution, per-scope judgement, unknown-attribution
+      // fail-closed and the trustRoot pairing are the module's own gates
+      // (see team-tool-plane.mjs header); a refusal at ANY step is a setup
+      // refusal — the same fail-closed posture as the Guard install above,
+      // never a degraded "unverified" fallback (RA-REVIEW ② invariant 3).
+      let a5PlaneOwnNames = []
+      if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
+        const planeCfg = config.teamToolPlane
+        const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
+        const built = createTeamToolPlaneAssembly({
+          permissionPolicy,
+          realmId: String(planeCfg.realmId ?? `a5-realm-${String(teamRoot)}`),
+          templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
+          role: sessionId === String(teamRoot) ? 'leader' : 'member',
+          instanceId,
+          plane: planeCfg,
+          onObserve: (row) => observations.push(String(row)),
+        })
+        if (built.ok !== true) {
+          const error = new Error(
+            `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': ${built.message} (code: ${built.code})`,
+          )
+          error.code = `alpha5-team-tool-plane-${String(built.code).toLowerCase()}`
+          observations.push(`a5-plane: mount-REFUSED for ${sessionId} (${built.code})`)
+          throw error
+        }
+        const placed = built.value.mount(agentCtx)
+        if (placed.ok !== true) {
+          const error = new Error(
+            `agent-bindings: alpha.5 Team tool plane placement refused for '${sessionId}' ('${placed.name}'): ${placed.message} (code: ${placed.code})`,
+          )
+          error.code = 'alpha5-team-tool-plane-placement-refused'
+          observations.push(`a5-plane: placement-REFUSED for ${sessionId} (${placed.code} name=${placed.name})`)
+          throw error
+        }
+        a5PlaneOwnNames = [...built.value.ownNames]
+        for (const name of a5PlaneOwnNames) a5PlaneOwnedNames.push(name)
+        toolDisposers.push(placed.dispose)
+        // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
+        // assembly per owning root, over the SAME durable domain the glue
+        // already holds. It brings NO registry: the TeamPermit gate + lease
+        // mirror + owner fence are live; the actuator leg (`ctx.jobs.start`)
+        // stays the disclosed `job_*` coverage gap — this row never fakes a
+        // host jobs capability.
+        const gatewayRootKey = String(teamRoot)
+        if (!liveJobsGatewayAssemblies.has(gatewayRootKey)) {
+          try {
+            liveJobsGatewayAssemblies.set(
+              gatewayRootKey,
+              createLiveJobsGatewayAssembly({
+                teamRoot: domain,
+                rootSessionId: gatewayRootKey,
+                onObserve: (o) => observations.push(`a5p7-live: ${String(o?.event ?? 'observe')} root=${gatewayRootKey}`),
+              }),
+            )
+          } catch (error) {
+            const typed = new Error(
+              `agent-bindings: alpha.5 jobs-gateway live assembly refused to open for root '${gatewayRootKey}': ${String(error?.message ?? error)}`,
+            )
+            typed.code = 'alpha5-jobs-gateway-assembly-refused'
+            observations.push(`a5p7-live: assembly-REFUSED for root ${gatewayRootKey} (${String(error?.message ?? error).slice(0, 160)})`)
+            throw typed
+          }
         }
       }
       // alpha.1 (plan §10.7): the Team-managed skills — the catalog
@@ -2433,7 +2529,15 @@ export function createAgentBindings(deps) {
         )
         const verdict = evaluatePermissionCoverage(finalSurfaceNames, {
           managedToolNames: PERMISSION_TOOL_NAMES,
-          teamToolNames: selectedTeamToolNames,
+          // GLUE-5: the placed plane names are TEAM-OWNED by authority
+          // (the assembly placed them and the Guard bindOwnTools-verified
+          // them — placement attribution IS their management fact), so they
+          // enter the gate with the team-tool authority owner. They can
+          // never slip past unattributed: a plane name on the surface that
+          // this setup did NOT place cannot exist (own-layer registration
+          // is assembly-only), and anything else on the surface keeps its
+          // original classification — the gate stays as red as it was.
+          teamToolNames: [...selectedTeamToolNames, ...a5PlaneOwnNames],
           mcpToolNames: mcpIntroduced,
         })
         if (!verdict.ok) {
@@ -2458,7 +2562,12 @@ export function createAgentBindings(deps) {
       // this Agent become callable. A publish failure is a setup failure: the
       // Guard armed in step 1 refuses every call in the meantime.
       if (a5p1Guard !== undefined) {
-        const ownNames = [...selectedTeamToolNames]
+        // GLUE-5: the placed plane names ride the SAME placement-attributed
+        // bind — bindAll pins the scoped read of the object THIS assembly
+        // registered (install.ts bindAll), which is exactly the verified-
+        // through-placement fact the Q4 route prescribes (never a discovery
+        // compare; the R5 falsification stays closed).
+        const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames]
         const ownBound = a5p1Guard.bindOwnTools(ownNames)
         if (ownBound.ok !== true) {
           const error = new Error(
@@ -4908,6 +5017,25 @@ export function createAgentBindings(deps) {
         else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
       } catch { /* the scope unwind covers it */ }
     }
+    // GLUE-5: the PR7 live assemblies close with the row (pc-CONTRACT §3
+    // checklist 4 — the ASSEMBLY lifecycle owns the lease window, and
+    // teardown acts on the object the gateway drove). Drain first: a new
+    // admit refuses immediately; outstanding calls settle, then release —
+    // or giveUp honestly records who ended the window.
+    for (const [rootKey, assembly] of [...liveJobsGatewayAssemblies]) {
+      liveJobsGatewayAssemblies.delete(rootKey)
+      try {
+        assembly.drain()
+        const released = assembly.release()
+        if (released !== true && released?.ok === false) {
+          assembly.giveUp('glue-close: outstanding calls at release')
+        }
+      } catch (error) {
+        try {
+          assembly.giveUp(`glue-close: release failed (${String(error?.message ?? error).slice(0, 120)})`)
+        } catch { /* the window tombstones itself; never mask the close */ }
+      }
+    }
     // T12-M2: the persona scope — dispose every agent-scoped
     // 'deployment:persona' entry (exactly the scoped sections; the global
     // prompt layer is never touched) and clear the persona surface state.
@@ -5129,5 +5257,11 @@ export function createAgentBindings(deps) {
       activationFence !== undefined && typeof activationFence.permitOrdinaryOnce === 'function'
         ? (rootSessionId) => activationFence.permitOrdinaryOnce(String(rootSessionId))
         : undefined,
+    // additive (GLUE-5): the PR7 live-row witness — the per-root
+    // jobs-gateway assembly (gateway / lease / observations) once a governed
+    // mount opened it; undefined before that and for un-governed worlds.
+    // NON-AUTHORITY: the durable MemberInstance rows stay the identity
+    // source; this accessor exists for the wiring rounds' read-only kits.
+    liveJobsGatewayFor: (rootSessionId) => liveJobsGatewayAssemblies.get(String(rootSessionId)),
   }
 }

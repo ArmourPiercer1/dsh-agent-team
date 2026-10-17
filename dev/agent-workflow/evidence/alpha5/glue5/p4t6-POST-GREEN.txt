@@ -1,0 +1,18 @@
+# p4t6 coverage — POST-GREEN capture (alpha5-glue5-entry, GLUE-5 round)
+
+After booking SCANNED_PATHS_A5GLUE5 (+2 live rows) and SCANNED_PATHS_A5PBMERGE
+(+3 P-B lane files, per-merge attributed) plus the tie lines
+(1157→1159→1162, both endpoints measured — see p4t6-PRE-EXTEND-RED.txt):
+
+    npx vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+    Test Files  1 passed (1)
+          Tests  10 passed (10)
+
+The same re-run covered the sibling ledgers (the four-suite command):
+  packages/tools/a5p5-tools/test/  → 8 files / 75 tests passed (dormant-audit
+      paid with the REVIEWED-EDGE exception + the runtime-tsconfig include pin)
+  packages/runtime/test/a5p7-lane-hygiene.test.ts → 5 passed (zero-consumer
+      leg paid with the two reviewed-edge exceptions + the pinned-edge leg)
+  packages/domain/test/a5p0-layer-audit.test.ts → the consumer-set leg REMAINS
+      RED on `tools/a5p5-tools/src/register.ts` — the booked #299/#304
+      duplicate per root directive (disclose, do not re-fix).

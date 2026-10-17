@@ -95,8 +95,11 @@ function runChecker(cwd: string): { out: string; status: number } {
 }
 
 /** A world that IS its own git repo, with the PLACEMENTS glue pair staged
- * byte-identical: exactly ONE produced file (the dist mirror, the first
- * surface), matching its staged blob, no placement drift. */
+ * byte-identical: one produced file PER PLACEMENT (the dist mirrors), each
+ * matching its staged blob, no placement drift. GLUE-5 (alpha5-glue5-entry)
+ * re-books this ledger for PLACEMENTS=3 (agent-bindings + team-tool-plane +
+ * jobs-gateway-assembly): the counts below are derived from the SAME list
+ * the checker reads, so the world grows with the surface, never behind it. */
 function makeMatchingRepo(name: string): string {
   const root = makeWorld(name)
   for (const surface of INSTALL_SURFACES) mkdirSync(join(root, surface), { recursive: true })
@@ -155,9 +158,10 @@ describe('check:artifacts cannot report success over an empty produced set', () 
   it('a produced set of one matching file still passes exactly as before', () => {
     const root = makeMatchingRepo('one-matching-file')
     const r = runChecker(root)
-    expect(r.out, r.out).toContain(`OK: 1 file`)
+    const glueCount = PLACEMENTS.length
+    expect(r.out, r.out).toContain(`OK: ${String(glueCount)} file${glueCount === 1 ? '' : 's'}`)
     expect(r.out, 'the OK a consumer reads is the token, and it names its subject').toContain(
-      'DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1',
+      `DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=${String(glueCount)}`,
     )
     expect(r.status, r.out).toBe(0)
   })

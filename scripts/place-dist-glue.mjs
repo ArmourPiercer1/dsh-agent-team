@@ -35,6 +35,15 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/agent-bindings.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
   },
+  // GLUE-5 live rows (byte-copied like the glue itself: tsc never emits .mjs).
+  {
+    src: 'packages/runtime/src/plugin/live/team-tool-plane.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
+  },
 ]
 
 // Direct-invocation guard: the placement runs only when this file IS the
