@@ -22,6 +22,14 @@
  * lane imports no live glue. The integration owner replaces the stub with
  * the frozen contracts import at splice time.
  *
+ * The production assembly contract (which sources the HOST injects at the
+ * gateway's instantiation point — durable identity, the lease window, the
+ * definition reader) is pinned in
+ * `dev/agent-workflow/evidence/alpha5/prod/pc-CONTRACT.md`; the seams are
+ * on this module's types (`GatewayIdentitySource`, the `createJobsGateway`
+ * options). The lane stays DORMANT: injection points are a READY surface,
+ * not a live edge — the live row lands with its GLUE owner.
+ *
  * @module runtime/jobs-gateway/types
  */
 
@@ -36,6 +44,34 @@ export interface JobOwner {
   readonly rootSessionId: string
   /** Instance id, unique within that TeamSession. */
   readonly instanceId: string
+}
+
+/**
+ * The host-injected identity authority (assembly contract, PR7 production
+ * wiring round). The kit legs (W7 / W7M / W7M-2) proved the owner-fence law
+ * against identities READ BACK from durable host state — durable
+ * `MemberInstance` rows, never caller-claimed constants. This interface
+ * moves that authority INSIDE the gateway: when an assembly injects an
+ * identity source, a claimed member scope that the source cannot confirm
+ * from durable host state is refused BEFORE any lease is taken — the
+ * veto-side zero-registration law the legs measured, now enforced by the
+ * production class instead of by the row's discipline.
+ *
+ * CONTRACT for implementations (pc-CONTRACT.md §2):
+ *  - `resolve` answers from the HOST's durable state only (e.g. the
+ *    production assembly's `memberInstances` repository);
+ *  - it returns the durable owner ONLY when a row exists with EXACTLY the
+ *    claimed two components; anything else (no such member, a row whose
+ *    components differ, an unreadable repository) returns `null` — an
+ *    unreadable read confirms nothing, and the closed world credits no read
+ *    it cannot make;
+ *  - the returned object is the AUTHORITY COPY the gateway freezes; the
+ *    caller's claim object is never stored when a source confirmed the
+ *    admission.
+ */
+export interface GatewayIdentitySource {
+  /** Confirm one claimed member scope against durable host state. */
+  readonly resolve: (claimed: JobOwner) => JobOwner | null
 }
 
 /** Canonical key of a {@link JobOwner}: same member ⇒ same key, always. */
@@ -110,6 +146,13 @@ export type GatewayRefusalCode =
   | 'gateway-not-active'
   | 'duplicate-job'
   | 'owner-mismatch'
+  /**
+   * The injected {@link GatewayIdentitySource} could not confirm the claimed
+   * member scope from durable host state. Veto-side zero-registration: this
+   * refusal is raised BEFORE any lease token exists — a refusal at this
+   * gate leaves no job record, no lease, no state delta (the W7M-2 law).
+   */
+  | 'owner-not-durable'
   | 'unknown-job'
   | 'late-settle-across-boundary'
   | 'release-with-outstanding'

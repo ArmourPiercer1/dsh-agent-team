@@ -8,10 +8,14 @@
  *
  * WHAT THIS PROVES, and only this:
  *
- *   W1 assembly      the row boots with the lane's PUBLIC BARREL (compiled
- *                    from unmodified sources by the kit-local project — the
- *                    lane's FIRST tsc run, review-LaneF condition 2) and the
- *                    gateway is armed inside the live Host process.
+ *   W1 assembly      the row boots with the lane's PUBLIC BARREL — the
+ *                    COMMITTED repo dist (W0a proves a fresh build on the
+ *                    REPO BUILD PLANE is byte-identical to it) — and the
+ *                    gateway is armed inside the live Host process on the
+ *                    production injection surface (pc-CONTRACT.md): a
+ *                    durable-member identity authority, the assembly-owned
+ *                    lease window, and the disclosed row-local definition
+ *                    reader.
  *   W2 members       two governed members exist as durable, host-generated
  *                    MemberInstance rows with distinct child sessions —
  *                    two live sessions on one host.
@@ -64,7 +68,7 @@
  *   W10 discipline   :3080 reads the same before/after and was never
  *                    operated; the pinned test-use tree stays porcelain-
  *                    clean; no launch token reaches any artifact; the world
- *                    and the kit-local build dir are removed and verified.
+ *                    and the W0a fresh-build dir are removed and verified.
  *
  * Mechanism: the public profile-patch seam only (production `dsh-agent-team`
  * row from this worktree's built dist + the p6t6 observer + the a5w7 row);
@@ -101,7 +105,7 @@ const BLUEPRINT_DIR = join(RUN_DIR, 'blueprints')
 const INSTANCE_LOG = join(RUN_DIR, 'instance.log')
 const INSTANCE_RAW = join(RUN_DIR, 'host-stdout.raw')
 const HOST_PORT = args.includes('--port') ? Number(args[args.indexOf('--port') + 1]) : 3184 // IF-2: W7's recorded port; W8 正式轮 --port 3186（IF-2 记 W8=3186）；默认不变
-const LANE_BUILD = join(REPO_ROOT, 'node_modules', '.a5w7-jobs-build')
+const FRESH_BUILD = join(REPO_ROOT, 'node_modules', '.a5w7-fresh-build') // W0a parity build (removed at teardown)
 
 const DIST_RUNTIME = join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime')
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
@@ -352,7 +356,7 @@ function writePatchFile(home, gatewayUrl) {
     bashDescription: 'Run commands in a bash shell. State is persistent across calls.',
   })
   const lines = [
-    `# a5w7 W7 patch layer (run ${RUN_STAMP}): production dsh-agent-team row (this worktree's dist) + p6t6 observer + the a5w7 jobs-gateway row (public barrel through the kit-local compile) + one preset — public profile-patch seam only.`,
+    `# a5w7 W7 patch layer (run ${RUN_STAMP}): production dsh-agent-team row (this worktree's dist) + p6t6 observer + the a5w7 jobs-gateway row (public barrel = the COMMITTED repo dist, the install-surface artifact) + one preset — public profile-patch seam only.`,
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
@@ -562,19 +566,41 @@ async function main() {
   if (!existsSync(HOST_BIN)) dieFatal(`pinned host build absent: ${HOST_BIN} (build tests/deepseek-harness-test-use per docs/TEST_METHODS.md §2)`)
   if (!existsSync(join(DIST_RUNTIME, 'src', 'plugin', 'host.js'))) dieFatal(`the production row is not built: ${join(DIST_RUNTIME, 'src', 'plugin', 'host.js')} (run the repo build)`)
 
-  // ── W0a: the lane's FIRST tsc run (kit-local project; review-LaneF cond. 2)
-  rmSync(LANE_BUILD, { recursive: true, force: true })
-  const tsc = spawnSync(process.execPath, [join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '-p', join(KIT_DIR, 'tsconfig.lane.json')], { encoding: 'utf8', timeout: 240_000 })
+  // ── W0a: the lane compiles on the REPO BUILD PLANE; the COMMITTED dist is the barrel (PR7 production wiring)
+  // GLUE-1 landed the tsconfig.build include: the kit-local compile retired
+  // (its retirement path, as the lane README wrote it). The kit now consumes
+  // the production class: the committed dist mirror IS the load path, and
+  // this leg proves the mirror is FRESH — a rebuild is byte-identical.
+  rmSync(FRESH_BUILD, { recursive: true, force: true })
+  const tsc = spawnSync(process.execPath, [
+    join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc'),
+    '-p', join(REPO_ROOT, 'packages', 'runtime', 'tsconfig.build.json'),
+    '--outDir', FRESH_BUILD,
+  ], { encoding: 'utf8', timeout: 600_000, cwd: join(REPO_ROOT, 'packages', 'runtime') })
   writeEvidence('lane-tsc-output.txt', `exit=${String(tsc.status)}\n${String(tsc.stdout ?? '')}${String(tsc.stderr ?? '')}`)
-  try { writeFileSync(join(LANE_BUILD, 'package.json'), '{"type":"module"}\n') } catch { /* import leg reports */ }
+  const FRESH_LANE = join(FRESH_BUILD, 'packages', 'runtime', 'jobs-gateway')
+  const DIST_LANE = join(DIST_RUNTIME, 'jobs-gateway')
+  const parity = (() => {
+    try {
+      const fresh = readdirSync(FRESH_LANE).filter((f) => f.endsWith('.js') || f.endsWith('.d.ts')).sort()
+      const committed = readdirSync(DIST_LANE).filter((f) => f.endsWith('.js') || f.endsWith('.d.ts')).sort()
+      if (JSON.stringify(fresh) !== JSON.stringify(committed)) return { ok: false, detail: `file sets differ: fresh=${fresh.join(',')} committed=${committed.join(',')}` }
+      const drift = fresh.filter((f) => !readFileSync(join(FRESH_LANE, f)).equals(readFileSync(join(DIST_LANE, f))))
+      return drift.length === 0
+        ? { ok: true, detail: `${fresh.length} emitted artifact files byte-identical to the committed mirror (maps excluded: the --outDir override rewrites source paths, a tsc artifact, not drift)` }
+        : { ok: false, detail: `content drift in: ${drift.join(', ')}` }
+    } catch (error) {
+      return { ok: false, detail: `parity read failed: ${String(error?.message ?? error)}` }
+    }
+  })()
   const gateImport = spawnSync(process.execPath, ['--input-type=module', '-e',
-    `import(${JSON.stringify(pathToFileURL(join(LANE_BUILD, 'index.js')).href)}).then((m) => { const need = ['createJobsGateway','createLeaseWindow','classifyDispatchEvent','jobOwnerKey','projectJobForViewer','redactCredentials','gatewayRefusal','REDACTION_MARKER']; const missing = need.filter((n) => m[n] === undefined); if (missing.length > 0) { console.error('missing ' + missing.join(',')); process.exit(1) } console.log('BARREL_OK') }).catch((e) => { console.error(String(e)); process.exit(1) })`],
+    `import(${JSON.stringify(pathToFileURL(join(DIST_LANE, 'index.js')).href)}).then((m) => { const need = ['createJobsGateway','createLeaseWindow','classifyDispatchEvent','jobOwnerKey','projectJobForViewer','redactCredentials','gatewayRefusal','REDACTION_MARKER']; const missing = need.filter((n) => m[n] === undefined); if (missing.length > 0) { console.error('missing ' + missing.join(',')); process.exit(1) } console.log('BARREL_OK') }).catch((e) => { console.error(String(e)); process.exit(1) })`],
     { encoding: 'utf8', timeout: 60_000 })
-  check('W0a', 'the UNMODIFIED lane compiles with the repo strict base via the kit-local project (first tsc pass) and its public barrel imports',
-    tsc.status === 0 && String(gateImport.stdout ?? '').includes('BARREL_OK'),
-    `tsc exit=${String(tsc.status)} import=${String(gateImport.stdout ?? '').trim()}/${String(gateImport.stderr ?? '').slice(0, 200)}`)
-  if (!(tsc.status === 0 && String(gateImport.stdout ?? '').includes('BARREL_OK'))) dieFatal('the lane does not compile / import — nothing downstream can be honest')
-  const gatewayUrl = pathToFileURL(join(LANE_BUILD, 'index.js')).href
+  check('W0a', 'the lane compiles on the REPO BUILD PLANE (packages/runtime/tsconfig.build.json, GLUE-1 include) and the COMMITTED dist barrel imports; the committed mirror is byte-identical to a fresh build (production class, not a stale copy)',
+    tsc.status === 0 && parity.ok && String(gateImport.stdout ?? '').includes('BARREL_OK'),
+    `tsc exit=${String(tsc.status)} parity=${parity.ok ? 'IDENTICAL' : 'DRIFT'}(${parity.detail.slice(0, 200)}) import=${String(gateImport.stdout ?? '').trim()}/${String(gateImport.stderr ?? '').slice(0, 200)}`)
+  if (!(tsc.status === 0 && parity.ok && String(gateImport.stdout ?? '').includes('BARREL_OK'))) dieFatal('the lane does not compile / the committed dist is stale or does not import — nothing downstream can be honest')
+  const gatewayUrl = pathToFileURL(join(DIST_LANE, 'index.js')).href
 
   // ── W0b: the pinned absent-anchor, PRE state (host tree, read-only)
   const anchorPre = anchorGrep()
@@ -633,9 +659,11 @@ async function main() {
     check('W1a', 'host booted on :3184 with the production Team row + p6t6 + the a5w7 row mounted; token gate live',
       Number(boot.m[1]) === HOST_PORT && health.body?.ok === true && st.body?.teamSession !== null && noTok?.status === 401,
       `port=${String(boot.m[1])} p6t6=${String(health.body?.ok)} teamSession=${String(st.body?.teamSession !== null)} noToken=${String(noTok?.status)}`)
-    check('W1b', 'the jobs-gateway is ASSEMBLED in the live process from the lane PUBLIC BARREL (row health reports the export surface)',
+    check('W1b', 'the jobs-gateway is ASSEMBLED in the live process from the lane PUBLIC BARREL (row health reports the export surface) and carries the production injection surface (identity = host durable-member authority, lease = assembly-owned window, definition store row-local/DISCLOSED)',
       w7Health.status === 200 && w7Health.body?.ok === true && w7Health.body?.gateway === 'assembled'
-        && Array.isArray(w7Health.body?.publicExports) && w7Health.body.publicExports.length === 8,
+        && Array.isArray(w7Health.body?.publicExports) && w7Health.body.publicExports.length === 8
+        && w7Health.body?.injected?.identity === 'host-durable-memberInstances'
+        && w7Health.body?.injected?.lease === 'assembly-owned-window',
       `status=${String(w7Health.status)} body=${JSON.stringify(w7Health.body ?? null).slice(0, 300)}`)
     if (!(w7Health.body?.ok === true)) log('W1b: the assembly is absent (--without-row RED control) — continuing; every op leg below fails on its own 404, and the table names what the wiring owes')
 
@@ -764,11 +792,15 @@ async function main() {
     const stateR = await fetchJson(`${origin}/__a5w7/state`, undefined, 30_000)
     const jobNow = (id) => (stateR.body?.jobs ?? []).find((j) => j.jobId === id)
     await op(origin, 'defPut', { scopeKey: 'a5w7-scope-a', name: DEF_TOOL, identity: 'def-v2' })
-    const recoverAdmit = await op(origin, 'admit', { jobId: 'w7-a-5', owner: OWNER_A, scopeKey: 'a5w7-scope-a', toolName: DEF_TOOL, pinnedIdentity: 'def-v2' })
+    // PR7 production-wiring: the recovery admission carries NO pin — the
+    // gateway pins the CURRENT definition identity through the injected
+    // reader at the admit edge (production admit shape; the driver never
+    // passes a row-local constant here).
+    const recoverAdmit = await op(origin, 'admit', { jobId: 'w7-a-5', owner: OWNER_A, scopeKey: 'a5w7-scope-a', toolName: DEF_TOOL })
     const recoverSettle = await op(origin, 'observe', { event: settleEvent('w7-a-5') })
     const projOld = await op(origin, 'project', { viewer: OWNER_A, jobId: 'w7-a-1' })
     writeEvidence('revocation-leg.json', {
-      note: 'The definition identity source is the ROW-LOCAL store (disclosed): the pinned host gives a third-party row no public seam to move another scope\u2019s Definition mid-session; the host-registry-shaped chain stays fixture-level (a5p7-mcp-rebind-chain 6/6, cited not booked). What is LIVE: the gateway law (cancel-only-what-moved, neighbour-safe, attribution pinned to the execution-time identity) on the live assembly.',
+      note: 'The definition identity source is the ROW-LOCAL store (disclosed): the pinned host gives a third-party row no public seam to move another scope\u2019s Definition mid-session; the host-registry-shaped chain stays fixture-level (a5p7-mcp-rebind-chain 7/7, cited not booked). What is LIVE: the gateway law (cancel-only-what-moved, neighbour-safe, attribution pinned to the execution-time identity) on the live assembly, AND the production admit edge (the recovery admission carries no driver-passed pin: the gateway reads the identity through the injected source at admission).',
       withdrawn: { scopeKey: 'a5w7-scope-a', name: DEF_TOOL },
       moved: regChange.body?.moved,
       a1: jobNow('w7-a-1'), a2Neighbour: jobNow('w7-a-2'), b3Neighbour: jobNow('w7-b-3'),
@@ -779,24 +811,26 @@ async function main() {
         && jobNow('w7-a-1')?.cancelRequested === true
         && jobNow('w7-a-2')?.cancelRequested === false && jobNow('w7-b-3')?.cancelRequested === false,
       `moved=${JSON.stringify(movedIds)} a1=${JSON.stringify(jobNow('w7-a-1')?.cancelRequested)} a2=${JSON.stringify(jobNow('w7-a-2')?.cancelRequested)} b3=${JSON.stringify(jobNow('w7-b-3')?.cancelRequested)}`)
-    check('W5b', 'revocation→recovery: the returned Definition admits under the NEW identity and settles; the old job stays pinned to the execution-time identity',
+    check('W5b', 'revocation→recovery: the returned Definition admits under the NEW identity PINED BY THE INJECTED READER at the admit edge (no driver-passed constant) and settles; the old job stays pinned to the execution-time identity',
       recoverAdmit.body?.ok === true && recoverAdmit.body?.job?.pinnedIdentity === 'def-v2'
         && recoverSettle.body?.ok === true
         && projOld.body?.ok === true && projOld.body?.view?.pinnedIdentity === 'def-v1',
       `admit=${JSON.stringify(recoverAdmit.body ?? null).slice(0, 160)} settle=${JSON.stringify(recoverSettle.body ?? null).slice(0, 80)} old=${JSON.stringify(projOld.body ?? null).slice(0, 200)}`)
 
     // ── W6 settle-all + clean release (self-counted zero) ───────────────────
-    const liveJobs = (await fetchJson(`${origin}/__a5w7/state`, undefined, 30_000)).body?.jobs ?? []
+    const statePreRelease = (await fetchJson(`${origin}/__a5w7/state`, undefined, 30_000)).body ?? {}
+    const liveJobs = statePreRelease.jobs ?? []
     const settleOutcomes = []
     for (const j of liveJobs.filter((x) => x.state === 'leased')) {
       settleOutcomes.push({ jobId: j.jobId, res: (await op(origin, 'observe', { event: settleEvent(j.jobId) })).body })
     }
     const drain1 = await assemblyAction(origin, 'drain')
     const release1 = await assemblyAction(origin, 'release')
-    writeEvidence('release-leg.json', { settleOutcomes, drain1: drain1.body, release1: release1.body })
-    check('W6', 'lease: every lease settles while ACTIVE; drain at self-counted zero reaches RELEASED',
-      settleOutcomes.every((s) => s.res?.ok === true) && drain1.body?.ok === true && release1.body?.ok === true && release1.body?.windowState === 'RELEASED',
-      `settled=${String(settleOutcomes.length)} drain=${JSON.stringify(drain1.body ?? null).slice(0, 120)} release=${JSON.stringify(release1.body ?? null).slice(0, 160)}`)
+    writeEvidence('release-leg.json', { settleOutcomes, drain1: drain1.body, release1: release1.body, assemblyOwnsWindow: statePreRelease.assemblyOwnsWindow, identitySourceInjected: statePreRelease.identitySourceInjected })
+    check('W6', 'lease: every lease settles while ACTIVE; drain at self-counted zero reaches RELEASED — and the window the assembly drained IS the window the gateway drove (injected lease, one object)',
+      settleOutcomes.every((s) => s.res?.ok === true) && drain1.body?.ok === true && release1.body?.ok === true && release1.body?.windowState === 'RELEASED'
+        && statePreRelease.assemblyOwnsWindow === true && statePreRelease.identitySourceInjected === true,
+      `settled=${String(settleOutcomes.length)} drain=${JSON.stringify(drain1.body ?? null).slice(0, 120)} release=${JSON.stringify(release1.body ?? null).slice(0, 160)} assemblyOwnsWindow=${String(statePreRelease.assemblyOwnsWindow)} identitySourceInjected=${String(statePreRelease.identitySourceInjected)}`)
 
     // ── W7 lease mutex + cooperative abort (no termination guarantee) ───────
     await op(origin, 'reassemble', {})
@@ -871,15 +905,15 @@ async function main() {
   const world = sweepWorld()
   sleepSync(400)
   const worldGone = !existsSync(HOME)
-  rmSync(LANE_BUILD, { recursive: true, force: true })
-  const buildGone = !existsSync(LANE_BUILD)
+  rmSync(FRESH_BUILD, { recursive: true, force: true })
+  const buildGone = !existsSync(FRESH_BUILD)
   const porcelain = spawnSync('git', ['-C', TESTUSE, 'status', '--porcelain'], { encoding: 'utf8' })
   const porcelainLines = String(porcelain.stdout ?? '').split('\n').filter((l) => l.trim() !== '').length
   check('W10a', 'the stable development instance (:3080) reads the same before/after and was never operated',
     stableAfter.status === stableBefore.status, `before=${String(stableBefore.status)} after=${String(stableAfter.status)}`)
   check('W10b', 'no raw launch token / auth cookie reached any evidence artifact (scan after host stop, before log seal)',
     tokenOffenders.length === 0, JSON.stringify(tokenOffenders).slice(0, 300))
-  check('W10c', `world ${HOME} removed and verified; lane build dir removed; pinned tree still porcelain-clean`,
+  check('W10c', `world ${HOME} removed and verified; W0a fresh-build dir removed; pinned tree still porcelain-clean`,
     (FLAG_KEEP || worldGone) && buildGone && porcelainLines === 0,
     `world=${world} buildGone=${String(buildGone)} porcelain=${String(porcelainLines)}`)
 
@@ -903,7 +937,7 @@ function writeReceipt(failed, world) {
     '',
     `- run stamp: \`${RUN_STAMP}\``,
     `- host baseline: \`${DSH_BASELINE_VERSION}\` @ \`${TEST_USE_BASELINE_SHA}\` (client hash \`${CLIENT_COMMIT_HASH}\`), tree \`${testUseTree(REPO_ROOT)}\` porcelain-clean at W10c`,
-    '- assembly under test: the jobs-gateway PUBLIC BARREL compiled from unmodified sources by the kit-local project (`tsconfig.lane.json` — the lane\u2019s first tsc pass; the repo `tsconfig*.json` include is GLUE\u2019s shared-file duty per WIRING-PHASE IF-5 and is NOT touched here), mounted by the `a5w7-jobs` row through the profile-patch seam beside the production `dsh-agent-team` row (this worktree\u2019s built dist)',
+    '- assembly under test: the jobs-gateway PUBLIC BARREL = the COMMITTED repo dist (`packages/runtime/dist/packages/runtime/jobs-gateway/index.js` — the install-surface artifact; W0a proves a fresh build of the lane on the REPO BUILD PLANE is byte-identical to it, so the assembly under test IS the shipped production class, not a kit-local copy), mounted by the `a5w7-jobs` row through the profile-patch seam beside the production `dsh-agent-team` row (this worktree\u2019s built dist). The row drives the production injection surface (pc-CONTRACT.md): `identity` = durable MemberInstance authority through the production assembly\u2019s repositories (the GATEWAY refuses non-durable claims), `lease` = the assembly-owned window the gateway drives and teardown acts on, `resolveDefinition` = the row-local store (disclosed) doubling as the admit-time pinner (W5b\u2019s recovery admission omits its pin and is pinned BY THE READER).',
     `- port: \`${HOST_PORT}\` (IF-2); the stable development instance :${String(STABLE_INSTANCE_PORT)} only read, never operated — W10a`,
     `- world: \`${HOME}\` — ${world}`,
     '- redaction: credentials redacted AT CAPTURE; the Host\u2019s raw stdout is sealed and deleted; W10b scans every artifact for the raw launch token.',
@@ -911,7 +945,7 @@ function writeReceipt(failed, world) {
     '',
     '## absent-anchor (PROBE-GATED dimension, minimal reproduction)',
     '',
-    `- host tree \`job_start\`: pre-run **${String(criteria.find((c) => c.id === 'W0b')?.ok ? 0 : 'NONZERO')}** / post-run **${String(criteria.find((c) => c.id === 'W8')?.ok ? 0 : 'NONZERO')}** hits (evidence \`anchor-host-grep-pre.json\` / \`anchor-host-grep-post.json\`; reproduction: \`grep -rn job_start <test-use tree>\` → 0). The live roster carries no job-start-shaped name (\`anchor-runtime-roster.json\`). The pinned Host exposes no host-side Jobs face and no public seam for a third-party row to move another scope\u2019s Definition mid-session: the host-registry-shaped revocation therefore stays PROBE-GATED at fixture level (\`a5p7-mcp-rebind-chain\`, 6/6, cited not booked), and W5 proves the gateway law on the live assembly against a DISCLOSED row-local definition store. The absent-anchor fact is re-asserted, never papered over: this kit registers NO host tool and fakes no host Jobs capability.`,
+    `- host tree \`job_start\`: pre-run **${String(criteria.find((c) => c.id === 'W0b')?.ok ? 0 : 'NONZERO')}** / post-run **${String(criteria.find((c) => c.id === 'W8')?.ok ? 0 : 'NONZERO')}** hits (evidence \`anchor-host-grep-pre.json\` / \`anchor-host-grep-post.json\`; reproduction: \`grep -rn job_start <test-use tree>\` → 0). The live roster carries no job-start-shaped name (\`anchor-runtime-roster.json\`). The pinned Host exposes no host-side Jobs face and no public seam for a third-party row to move another scope\u2019s Definition mid-session: the host-registry-shaped revocation therefore stays PROBE-GATED at fixture level (\`a5p7-mcp-rebind-chain\`, 7/7 incl. the production-shape injection leg, cited not booked), and W5 proves the gateway law on the live assembly against a DISCLOSED row-local definition store. The absent-anchor fact is re-asserted, never papered over: this kit registers NO host tool and fakes no host Jobs capability.`,
     '',
     '## Gate G-g / cancellation semantics (G-g is OPEN — cited from PENDING-GATES, not claimed)',
     '',

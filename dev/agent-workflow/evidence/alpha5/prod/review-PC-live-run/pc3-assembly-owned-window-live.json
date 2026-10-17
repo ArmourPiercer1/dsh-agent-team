@@ -1,0 +1,36 @@
+{
+  "assemblyOwnsWindow": true,
+  "identitySourceInjected": true,
+  "ownTokens": [
+    {
+      "jobId": "pc2-j1",
+      "state": "leased"
+    },
+    {
+      "jobId": "pc2-j2",
+      "state": "leased"
+    },
+    {
+      "jobId": "pc2-j5",
+      "state": "leased"
+    }
+  ],
+  "outstandingBeforeDrain": [
+    "pc2-j1",
+    "pc2-j2",
+    "pc2-j5"
+  ],
+  "drain": {
+    "ok": true,
+    "windowState": "DRAINING"
+  },
+  "admitDuringDrain": {
+    "ok": false,
+    "code": "gateway-not-active",
+    "detail": "cannot acquire a lease while DRAINING: new work is refused from the first instant of the drain"
+  },
+  "release": {
+    "ok": true,
+    "windowState": "RELEASED"
+  }
+}

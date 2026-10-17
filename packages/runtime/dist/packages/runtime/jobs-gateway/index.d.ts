@@ -15,12 +15,12 @@
  * @module @dsh-agent-team/runtime/jobs-gateway
  */
 export { jobOwnerKey, gatewayRefusal, } from './types.js';
-export type { JobOwner, DispatchEvent, DispatchEventName, JobOutcome, JobOutcomeKind, GatewayRefusal, GatewayRefusalCode, } from './types.js';
+export type { JobOwner, GatewayIdentitySource, DispatchEvent, DispatchEventName, JobOutcome, JobOutcomeKind, GatewayRefusal, GatewayRefusalCode, } from './types.js';
 export { createLeaseWindow } from './lease-window.js';
 export type { LeaseWindow, LeaseWindowState, LeaseEndReason, LeaseToken } from './lease-window.js';
 export { classifyDispatchEvent } from './cancellation-boundary.js';
 export { createJobsGateway } from './jobs-gateway.js';
-export type { JobsGateway, GatewayJobRecord, DefinitionIdentityProbe, GatewayObservation, } from './jobs-gateway.js';
+export type { JobsGateway, CreateJobsGatewayOptions, GatewayJobRecord, DefinitionIdentityProbe, GatewayObservation, } from './jobs-gateway.js';
 export { projectJobForViewer, redactCredentials, REDACTION_MARKER } from './web-projection.js';
 export type { WebJobView, ProjectionSource } from './web-projection.js';
 //# sourceMappingURL=index.d.ts.map
