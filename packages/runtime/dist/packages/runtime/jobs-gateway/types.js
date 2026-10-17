@@ -22,6 +22,14 @@
  * lane imports no live glue. The integration owner replaces the stub with
  * the frozen contracts import at splice time.
  *
+ * The production assembly contract (which sources the HOST injects at the
+ * gateway's instantiation point — durable identity, the lease window, the
+ * definition reader) is pinned in
+ * `dev/agent-workflow/evidence/alpha5/prod/pc-CONTRACT.md`; the seams are
+ * on this module's types (`GatewayIdentitySource`, the `createJobsGateway`
+ * options). The lane stays DORMANT: injection points are a READY surface,
+ * not a live edge — the live row lands with its GLUE owner.
+ *
  * @module runtime/jobs-gateway/types
  */
 /** Canonical key of a {@link JobOwner}: same member ⇒ same key, always. */

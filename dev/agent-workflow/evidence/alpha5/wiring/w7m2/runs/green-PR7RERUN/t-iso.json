@@ -1,0 +1,35 @@
+{
+  "listA": {
+    "ok": true,
+    "value": [
+      {
+        "id": "a5cvg-1",
+        "kind": "a5cvg",
+        "label": "a5cvg cell cell-TT: a5cvg-tt-2026-10-17T07-49-17",
+        "owner": "session-team-child-fc8c0626334eca8ec40a8f27c17b0731",
+        "status": "completed",
+        "outputTotal": 70,
+        "startedAt": 1792223362780,
+        "finishedAt": 1792223363783,
+        "detail": null
+      }
+    ]
+  },
+  "listB": {
+    "ok": true,
+    "value": []
+  },
+  "listLeader": {
+    "ok": true,
+    "value": []
+  },
+  "crossGet_memberB_on_memberA_job": {
+    "ok": false,
+    "refusal": "job a5cvg-1 belongs to another session"
+  },
+  "crossAdmit_memberB_on_memberA_gatewayJob": {
+    "ok": false,
+    "code": "owner-mismatch",
+    "detail": "this jobId is already owned by another member scope"
+  }
+}

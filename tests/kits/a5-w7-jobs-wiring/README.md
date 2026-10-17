@@ -17,16 +17,18 @@ asserted unchanged. Mock model only, no real key. Credentials redacted at captur
   (this worktree's built `dist`), the p6t6 observer row, and **`a5w7-jobs-plugin.mjs`**
   — a plain plugin row in the accepted p6t6 shape (`inject = ['webServer','teamRoot']`,
   exact-path routes through the public `webServer.register` seam);
-* the row consumes the lane through its **PUBLIC BARREL**
-  (`packages/runtime/jobs-gateway/index.ts`), zero lane-source edits, zero shared-file
-  edits (IF-5);
-* **compile path (disclosed):** at base the lane is not in `packages/runtime/tsconfig*.json`
-  — those are shared files whose sole writer is GLUE (IF-5; Lane F README checklist #1).
-  `tsconfig.lane.json` is a KIT-LOCAL project that compiles the unmodified sources into
-  `node_modules/.a5w7-jobs-build/` (gitignored) for the plain-Node load path, and it is
-  the lane's **first tsc run** (review-LaneF condition 2 — the lane had never entered
-  tsc). When GLUE lands the build include, the kit switches to the repo dist and this
-  file retires;
+* the row consumes the lane through its **PUBLIC BARREL = the COMMITTED repo dist**
+  (`packages/runtime/dist/packages/runtime/jobs-gateway/index.js`), zero shared-file
+  edits (IF-5). Since GLUE-1 landed the build include, the kit-local compile has
+  retired on its own documented path (PR7 production-wiring round): W0a rebuilds the
+  lane on the repo build plane and demands **byte-identity** with the committed `dist`,
+  so the assembly under test IS the shipped production class, not a fresh copy;
+* the row drives the gateway's **production injection surface** (`pc-CONTRACT.md`):
+  `identity` = a durable-MemberInstance authority backed by the production assembly's
+  own repositories (the GATEWAY — not row-side discipline — refuses admissions whose
+  owner no durable row confirms); `lease` = the assembly-OWNED lease window the
+  gateway drives and the teardown routes act on; `resolveDefinition` = the disclosed
+  row-local store doubling as the admit-time pinner;
 * member identities are **host facts**: the two members are durable `MemberInstance`
   rows with host-generated `inst-…` ids and distinct child sessions, created over the
   public `/team-remote` path by a scripted leader (mock model), read back through the
