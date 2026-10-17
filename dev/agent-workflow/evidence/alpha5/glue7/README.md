@@ -143,15 +143,20 @@ FIX (this branch, same law reused, no new architecture, no new permission):
   factory is archived unwired (G6b factory-direct pins); kit L6 now pins
   the shut landing live.
 
-### 4c. AUDIT — grep fd-view remap display integrity (small, disclosed)
+### 4c. AUDIT — grep fd-view remap display integrity (CLOSED same round: path-field-only rewrite, RED-pinned G1b)
 
 The grep file-leg remap (`rawStdout.split(fdView).join(anchor.path)`) rewrites
 the literal string `/proc/self/fd/3` EVERYWHERE in the payload, not only the
 filename field: a matched FILE whose own bytes contain that literal will have
 its content line rewritten in the presentation (bytes on disk unchanged;
 presentation integrity only, no confidentiality break). Honest fix shape:
-per-line prefix-only replacement, pending an adjudicated round; pinned as a
-known face, not silently carried.
+per-line prefix-only replacement. LANDED: `remapFdViewLines` rewrites ONLY
+the path field (a line that IS the fd view — the whole `-l` line is the path
+— and the `fdView:` prefix; matched CONTENT bytes are presented byte-for-byte
+as on disk; an unattributable line keeps the fd name verbatim and raises the
+`presentation-audit` observation). RED-first pinned by G1b (a file whose own
+bytes cite `/proc/self/fd/3`: content leg byte-identical, `-l` leg anchored
+path, no fd name in presented paths) — 12/12 units.
 
 ADVERSARIAL RE-RUN (reviewer-shaped external rename→symlink attacker, same
 templates, driven against the compiled DIST MIRROR — the production face):

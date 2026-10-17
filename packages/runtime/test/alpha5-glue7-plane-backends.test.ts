@@ -150,6 +150,25 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(built.value.backends.search.execCount()).toBe(1)
   })
 
+  // §4c AUDIT closure (RED-first): the presentation rewrite is PATH-FIELD
+  // ONLY. A matched file whose OWN bytes contain the literal fd view must be
+  // presented byte-for-byte equal to disk; only the grep-structured path
+  // field is remapped to the anchored spelling. Forms the parser cannot
+  // attribute to a path field keep the fd name verbatim (audit line), never
+  // a body rewrite.
+  it('G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps', async () => {
+    writeFileSync(join(ROOT_DIR, 'fdlit.txt'), 'needle cites /proc/self/fd/3 literally\n')
+    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
+    if (!built.ok) return
+    const listed = await def(built.value, 'team_grep').execute({ pattern: 'needle', path: 'fdlit.txt', output_mode: 'files_with_matches' })
+    expect(listed.text).toContain('fdlit.txt') // path field: still the anchored spelling
+    expect(listed.text).not.toContain('/proc/self/fd') // the fd name never rides a -l path field
+    const content = await def(built.value, 'team_grep').execute({ pattern: 'needle', path: 'fdlit.txt', output_mode: 'content' })
+    // THE integrity claim: body byte run identical to the file on disk
+    expect(content.text).toContain('needle cites /proc/self/fd/3 literally')
+    expect(content.text).not.toContain(`fdlit.txt cites`) // body was NOT path-substituted
+  })
+
   it('G2 search confinement: a target escaping the governed root is a typed refusal and the backend body never runs', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)

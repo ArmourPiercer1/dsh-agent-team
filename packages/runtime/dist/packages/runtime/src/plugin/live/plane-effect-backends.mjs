@@ -119,6 +119,33 @@ export function grepArgv(parsed, searchPath) {
   return argv
 }
 
+/**
+ * §4c AUDIT closure — the fd-view presentation rewrite is PATH-FIELD ONLY.
+ * A line that IS the fd view (`-l` form: the whole line is the path field)
+ * becomes the anchored spelling; a `fdView:`-prefixed line (any prefixed
+ * form) swaps ONLY its prefix; everything else is BODY — presented
+ * byte-for-byte as on disk, ALWAYS. A line the parser cannot attribute to a
+ * path field that nevertheless carries the fd name keeps the fd name
+ * VERBATIM and raises the honest audit observation — never a body rewrite
+ * (the previous global split/join rewrote matched CONTENT bytes that
+ * happened to contain the literal fd path: display-integrity face, now
+ * closed with a RED-pinned leg, G1b).
+ */
+function remapFdViewLines(raw, fdView, anchorPath, audit) {
+  if (raw.length === 0) return raw
+  let bodyCarries = 0
+  const out = raw.split('\n').map((l) => {
+    if (l === fdView) return anchorPath
+    if (l.startsWith(`${fdView}:`)) return anchorPath + l.slice(fdView.length)
+    if (l.includes(fdView)) {
+      bodyCarries += 1
+      return l
+    }
+    return l
+  }).join('\n')
+  if (bodyCarries > 0) audit(`${String(bodyCarries)} unattributable line(s) keep the fd name verbatim (body bytes never rewritten)`)
+  return out
+}
 function writeAll(sink, text) {
   if (sink === null || sink === undefined || text.length === 0) return
   const CHUNK = 64 * 1024
@@ -222,7 +249,9 @@ export function createAnchoredSearchBackend({ realmId, rootDir, observe = () => 
       }
       executed += 1
       const rawStdout = res.stdout ?? ''
-      const rawOut = fdView === null ? rawStdout : rawStdout.split(fdView).join(anchor.path)
+      const rawOut = fdView === null ? rawStdout : remapFdViewLines(rawStdout, fdView, anchor.path, (msg) => {
+        observe(`anchored-search presentation-audit call=${call.callId} ${msg}`)
+      })
       const lines = rawOut.length === 0 ? [] : rawOut.split('\n').filter((l) => l !== '')
       let outcome
       if (parsed.outputMode === 'files_with_matches') {
@@ -239,7 +268,7 @@ export function createAnchoredSearchBackend({ realmId, rootDir, observe = () => 
         const matches = all.slice(0, parsed.maxResults)
         outcome = { outputMode: 'content', matches, counts: [], files: [], totalMatches: all.length, truncated: all.length > matches.length }
       }
-      writeAll(io.sink, rawOut) // the FULL raw payload — spill bytes == backend bytes (fd-view remapped to the anchored path)
+      writeAll(io.sink, rawOut) // the FULL raw payload — spill == backend bytes except the PATH-FIELD-only fd-view remap above
       trace = [...trace, 'terminate']
       lastOutcomes.push({ callId: call.callId, argv: argv.join(' '), mode: parsed.outputMode, totalMatches: outcome.totalMatches })
       return { ok: true, outcome, settlement: { kind: 'completed' } }
