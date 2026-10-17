@@ -332,7 +332,7 @@ const rc = (code) => ({ code, description: 'p6a' })
     per_body_identity: enters.map(e => ({ member: e.member, callId: e.callId, rootCallId: e.rootCallId })),
     a_outer_call: a.callId, b_outer_call: b.callId,
     session_log_split: { a_events: aEvts.length, b_events: bEvts.length, a_log_foreign_roots: aEvts.filter(e => e.rootCallId !== a.callId).length, b_log_foreign_roots: bEvts.filter(e => e.rootCallId !== b.callId).length },
-    subcall_home: 'input = { callId: `${parentCallId}:ptc:n`, rootCallId: exec.rootCallId, agent: exec.agent, parent: exec.token } (ptc.ts:525-536); durable append per owning session (ptc.ts:611-618)',
+    subcall_home: 'input = { callId: `${parentCallId}:ptc:n`, rootCallId: exec.rootCallId, agent: exec.agent, parent: exec.token } (ptc.ts:545-553); durable append per owning session (ptc.ts:611-618)',
   })
 }
 

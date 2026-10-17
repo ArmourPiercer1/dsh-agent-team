@@ -53,3 +53,10 @@ node --test --test-concurrency=1 dev/agent-workflow/evidence/alpha5/pr8/runner/p
 **skills 候选**：[skills-candidate-D2.md](./skills-candidate-D2.md) —— D-2 六要素（17:52Z 原文边界/触发与影响集合/取消≠终止/无回滚/插件卸载三区别/D-1 延期与恢复条件）的 `team-leader-operations` SKILL 增补段落候选 + 九条验收清单；**只写本 evidence 文件，不触碰 `.agents/**`**；收尾轮执行=4d990c89、独立核验=4dac3d04（PENDING-GATES.md:24 17:54Z 指派）。
 
 **Scope-3a 门禁实录**：token 扫描 0 真实凭据；porcelain 净（新增全在本 evidence 目录 + gitignored 运行时世界）；零端口零世界不变（kit in-process）；共用文件零触碰不变；p4t6 只读查询零隔离区外命中不变（M-14 腿在 27 PASS 内）。
+
+## Fold 轮（alpha5-fold-ins，2026-10-17）：N1 doc 侧补键转交项落地
+
+- 用户指令把 N1 转交项落地到 doc 候选矩阵：`acceptance-matrix.json` SUP-01..18 各行行尾补 **`"final_declaration": null`**（与机检矩阵逐行对齐；全 32 行显式 null，无任何非空声明——解锁三闸语义不变，见上节）。
+- 自跑判据同步 RED-first：N1 doc 键测试改为"真实 doc 矩阵缺键点名=0 + 机制对照臂（剥 SUP 行键 ⇒ 点名恰回 18 条，仪器非空转）+ doc 行显式非 null 仍判红"；RED=`runs/fold-doc-matrix-RED-self.log`（22 tests / 21 pass / 1 fail，红在补齐断言），GREEN=`runs/fold-doc-matrix-GREEN-self.log`（22/22）。
+- 对应 lint 证明（`run-pr8-negative.mjs`，EXIT=0）：`runs/fold-doc-matrix-negative-run.log` — **结构 lint OK，DOC-MISSING-KEY 缺键=0 行**（折叠前同段 =18，final-matrix-run.log），final_declaration 全 null。分布 PASS=24 / FAIL=0 / NOT_RUN=3 / RLW=5：三条 NOT_RUN（M-06/M-11/SUP-08）是本 worktree 缺 gitignored test-use 运行时的既有 fail-closed 腿（钩内原文自证"全新 worktree 缺运行时 ⇒ NOT_RUN 拒伪造 PASS"；27/0 旧分布出自带构建运行时的正式轮 worktree），与本次补键无关——补键只作用于 doc 侧点名段，逐行三态观测未触碰。
+- 触碰面：doc 矩阵（docs/plans/memo/…/pr8-accept/，N1 转交项指定文件）+ 本目录测试件与 runs/ 三份 fold 日志；tsconfig/barrel/registry/scanner 零触碰；p4t6 无新 packages/**/test 文件 ⇒ 账本无入账。

@@ -233,13 +233,26 @@ test('N1: 真实机检矩阵 32 行均显式携带 final_declaration 键且为 n
   }
 });
 
-test('N1: doc 矩阵缺 final_declaration 键 ⇒ 显式点名清单（不按 undefined 静默放行；SUP-01..18 恰 18 条）', () => {
+test('N1: doc 矩阵 final_declaration 键已补齐 ⇒ 缺键点名清单清零（0 条）；机制不变——人工剥键仍逐行显式点名（SUP-01..18）', () => {
   const machine = JSON.parse(requireText(MACHINE_PATH));
   const doc = JSON.parse(requireText(DOC_PATH));
+  // fold 轮（alpha5-fold-ins，按 N1 转交项 + 用户指令）：doc 矩阵全 32 行显式携带 final_declaration=null，
+  // 与机检矩阵 lintCorrespondence 对齐；折叠前状态 = SUP-01..18 无该键（点名 18 条，runs/final-matrix-run.log）。
   const flags = lintDocFinalDeclaration(machine, doc);
-  const missingIds = flags.missing_key.map((f) => f.row_id).sort();
+  assert.deepEqual(flags.missing_key, [], `doc 矩阵缺键点名未清零: ${JSON.stringify(flags.missing_key.map((f) => f.row_id))}`);
+  assert.deepEqual(flags.declared_non_null, []);
+  // 机制对照臂（非空转）：把 SUP 行的键剥掉 ⇒ 点名集恰回 18 条（lint 仍咬人，红绿之差在数据不在仪器）
+  const strippedDoc = {
+    rows: doc.rows.map((r) => {
+      if (!r.row_id.startsWith('SUP-')) return r;
+      const rest = { ...r };
+      delete rest.final_declaration;
+      return rest;
+    }),
+  };
+  const stripped = lintDocFinalDeclaration(machine, strippedDoc);
   const expectIds = Array.from({ length: 18 }, (_, i) => `SUP-${String(i + 1).padStart(2, '0')}`).sort();
-  assert.deepEqual(missingIds, expectIds, `缺键点名集漂移: ${JSON.stringify(missingIds)}`);
+  assert.deepEqual(stripped.missing_key.map((f) => f.row_id).sort(), expectIds, `缺键点名机制漂移: ${JSON.stringify(stripped.missing_key.map((f) => f.row_id))}`);
   // 显式非 null 声明仍是红（走 lintCorrespondence）
   const badDoc = { rows: doc.rows.map((r) => (r.row_id === 'M-01' ? { ...r, final_declaration: 'SUPPORTED' } : { ...r })) };
   const issues = lintCorrespondence(machine, badDoc);
