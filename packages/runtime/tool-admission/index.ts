@@ -70,9 +70,19 @@ export {
 
 export {
   createAdmissionKernel,
+  // PR2/PR3 production-assembly round: the production entry class + the
+  // template-policy → PR0 projection it derives from (contract: evidence
+  // `alpha5/prod/pa-CONTRACT.md`).
+  createProductionAdmissionAssembly,
+  deriveTeamPolicyAuthority,
   grantIdForCall,
   type AdmissionKernel,
   type AdmissionKernelOptions,
   type ExecutionCallFields,
+  type ProductionAdmissionAssembly,
+  type ProductionAdmissionConfig,
+  type ProductionFsAdmissionPort,
   type RequiredAssuranceReader,
+  type TemplatePolicyProjection,
+  type TemplatePolicyProjectionInput,
 } from './admission-kernel.js'

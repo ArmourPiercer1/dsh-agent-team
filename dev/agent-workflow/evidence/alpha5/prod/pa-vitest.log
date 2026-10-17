@@ -1,0 +1,38 @@
+# pa-vitest.log — lane battery (2026-10-17T08:00:58Z)
+## BASELINE (this round's packages/runtime changes stashed — 11-file lane set without new legs)
+ ✓ packages/runtime/controlled-fs/test/controlled-fs.test.ts (11 tests) 25ms
+ ✓ packages/runtime/controlled-fs/test/poc3-probes.test.ts (13 tests) 27ms
+ ✓ packages/runtime/test/a5p2-grant-oneshot.test.ts (12 tests) 22ms
+ ✓ packages/runtime/test/a5w-integration-wiring.test.ts (14 tests) 85ms
+ ✓ packages/runtime/test/a5p2-admission-kernel.test.ts (35 tests) 49ms
+ ✓ packages/runtime/test/a5p2-assurance-probe.test.ts (10 tests) 5ms
+ ✓ packages/runtime/test/a5p2-approval-case.test.ts (19 tests) 11ms
+ ✓ packages/runtime/controlled-fs/test/cf-errors.test.ts (5 tests) 6ms
+ ✓ packages/runtime/test/a5p2-admission-clock.test.ts (9 tests) 9ms
+ ✓ packages/runtime/test/a5p2-composition.test.ts (4 tests) 9ms
+ ✓ packages/runtime/controlled-fs/test/cf-descriptor.test.ts (8 tests) 3ms
+ Test Files  11 passed (11)
+      Tests  140 passed (140)
+## AFTER (production classes + 22 new legs + shared pins)
+ ✓ packages/runtime/controlled-fs/test/poc3-probes.test.ts (13 tests) 22ms
+ ✓ packages/runtime/controlled-fs/test/controlled-fs.test.ts (16 tests) 24ms
+ ✓ packages/runtime/test/a5w-integration-wiring.test.ts (14 tests) 83ms
+ ✓ packages/runtime/test/a5p2-admission-kernel.test.ts (44 tests) 33ms
+ ✓ packages/runtime/test/a5p2-approval-case.test.ts (19 tests) 10ms
+ ✓ packages/runtime/test/a5p2-grant-oneshot.test.ts (12 tests) 17ms
+ ✓ packages/runtime/test/a5p2-admission-clock.test.ts (9 tests) 7ms
+ ✓ packages/runtime/test/a5p2-composition.test.ts (12 tests) 19ms
+ ✓ packages/runtime/controlled-fs/test/cf-errors.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/a5p2-assurance-probe.test.ts (10 tests) 5ms
+ ✓ packages/runtime/controlled-fs/test/cf-descriptor.test.ts (8 tests) 3ms
+ ✓ packages/domain/test/a5p0-layer-audit.test.ts (4 tests) 4ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (21 tests) 1819ms
+     ✓ the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  1693ms
+ Test Files  14 passed (14)
+      Tests  197 passed (197)
+## POST-LINT re-verify (lint fixes: drop unused FILE list import; control-char check without regex)
+runtime tsc EXIT=0
+lane tsc EXIT=0
+ Test Files  14 passed (14)
+      Tests  197 passed (197)

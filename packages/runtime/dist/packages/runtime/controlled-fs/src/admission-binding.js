@@ -98,4 +98,52 @@ export function createAdmissionGatedControlledFs(config) {
  * is a code convenience in this wiring slice.
  */
 export const ARBITRARY_TREE_PROFILE_PUBLISHED = false;
+/**
+ * The C-FS production provider class: assembly-time registration + per-call
+ * gated-lane construction. Construction violations are `TypeError`s (the
+ * same constructor-invariant style as `bindAdmissionRecheck`: a provider
+ * built on a foreign realm or an empty root set can only mislead, so it is
+ * never built).
+ */
+export function createProductionControlledFsProvider(config) {
+    if (typeof config.realmId !== 'string' || config.realmId.length === 0) {
+        throw new TypeError('production controlled-fs provider: realmId must be a non-empty string');
+    }
+    if (typeof config.clock !== 'function' || typeof config.authorityGeneration !== 'function' || typeof config.consumed !== 'function') {
+        throw new TypeError('production controlled-fs provider: clock, authorityGeneration and consumed are required readers (the lane owns no clock, no generation, no ledger)');
+    }
+    const instances = config.instances;
+    if (!Array.isArray(instances) || instances.length === 0) {
+        throw new TypeError('production controlled-fs provider: at least one ControlledFsInstance must be registered (a provider with no roots gates nothing)');
+    }
+    const seenFs = new Set();
+    for (const instance of instances) {
+        if (typeof instance.fs !== 'string' || instance.fs.length === 0) {
+            throw new TypeError('production controlled-fs provider: every instance needs a non-empty fs id');
+        }
+        if (seenFs.has(instance.fs)) {
+            throw new TypeError(`production controlled-fs provider: instance fs id "${instance.fs}" is registered twice (one root per id — a duplicate registration is an ambiguous root, not a wider one)`);
+        }
+        seenFs.add(instance.fs);
+        if (typeof instance.rootDir !== 'string' || instance.rootDir.length === 0) {
+            throw new TypeError(`production controlled-fs provider: instance "${instance.fs}" needs a non-empty rootDir`);
+        }
+        if (instance.realmId !== config.realmId) {
+            throw new TypeError(`production controlled-fs provider: instance "${instance.fs}" names realm "${instance.realmId}" but the provider is built for realm "${config.realmId}" (Realms never confuse each other)`);
+        }
+    }
+    return Object.freeze({
+        realmId: config.realmId,
+        instanceIds: Object.freeze([...seenFs]),
+        gateCall: (bound) => createAdmissionGatedControlledFs({
+            instances,
+            now: config.clock,
+            currentAuthorityGeneration: config.authorityGeneration(),
+            consumed: config.consumed,
+            ...(config.visibility === undefined ? {} : { visibility: config.visibility }),
+            ...(config.subtreeContains === undefined ? {} : { subtreeContains: config.subtreeContains }),
+            admission: bound,
+        }),
+    });
+}
 //# sourceMappingURL=admission-binding.js.map
