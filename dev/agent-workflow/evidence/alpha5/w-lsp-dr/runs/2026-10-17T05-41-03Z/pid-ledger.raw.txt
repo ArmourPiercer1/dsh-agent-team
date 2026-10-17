@@ -1,0 +1,8 @@
+{"at":"2026-10-17T05:41:05.219Z","ev":"server-boot","pid":135,"ppid":46,"gen":"g0","cwd":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g0"}
+{"at":"2026-10-17T05:41:05.394Z","ev":"server-boot","pid":194,"ppid":46,"gen":"b0","cwd":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsb"}
+{"at":"2026-10-17T05:41:05.559Z","ev":"server-exit","pid":135,"gen":"g0","code":0,"signal":null}
+{"at":"2026-10-17T05:41:05.770Z","ev":"server-boot","pid":279,"ppid":46,"gen":"g1","cwd":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g1"}
+{"at":"2026-10-17T05:41:05.873Z","ev":"server-exit","pid":279,"gen":"g1","code":0,"signal":null}
+{"at":"2026-10-17T05:41:06.089Z","ev":"server-boot","pid":364,"ppid":46,"gen":"g2","cwd":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-lsp-dr/tests/homes/a5lspdr-2026-10-17T05-41-03Z/ws/wsa-g2"}
+{"at":"2026-10-17T05:41:06.161Z","ev":"server-exit","pid":364,"gen":"g2","code":0,"signal":null}
+{"at":"2026-10-17T05:41:06.166Z","ev":"server-exit","pid":194,"gen":"b0","code":0,"signal":null}
