@@ -1,0 +1,77 @@
+{
+  "runStamp": "2026-10-17T07-38-38Z",
+  "criteria": [
+    {
+      "id": "G1",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539 (read-only reuse)",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0 at tests/deepseek-harness-test-use"
+    },
+    {
+      "id": "G1b",
+      "claim": "IF-5 shared surface (packages/, scripts/, root vitest.config, root cordis.patch.yml) is byte-untouched by this measurement",
+      "pass": true,
+      "observed": "porcelain empty"
+    },
+    {
+      "id": "G2a",
+      "claim": "host port 3187 free (self-proved) and a mock port from the 349x family free",
+      "pass": true,
+      "observed": "hostFree=true mock=3491"
+    },
+    {
+      "id": "G2b",
+      "claim": ":3080 stable instance untouched (read-only probe before/after)",
+      "pass": true,
+      "observed": "401 → 401, operated=false"
+    },
+    {
+      "id": "G3",
+      "claim": "both worlds booted, both preset sessions ran a setup turn, observer facts captured",
+      "pass": true,
+      "observed": "baseline.ok=true globalmount.ok=true swept=true/true"
+    },
+    {
+      "id": "G4",
+      "claim": "baseline: the trusted GLOBAL face tools.schemas() is EMPTY on the web bundle (bind-diag law re-proved on a team-free world)",
+      "pass": true,
+      "observed": "[]"
+    },
+    {
+      "id": "G5",
+      "claim": "globalmount: the two top-level tool rows put all five native names on the trusted GLOBAL face",
+      "pass": true,
+      "observed": "[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"]"
+    },
+    {
+      "id": "G6",
+      "claim": "negative control (shadowing preset): the standard non-team session model-facing catalog is set-IDENTICAL across the two worlds (registry face AND wire face)",
+      "pass": true,
+      "observed": "registry delta=+[]/-[] wire delta=+[]"
+    },
+    {
+      "id": "G7",
+      "claim": "EXPANSION MEASURED: the minimal non-team session (no tool-fs/tool-bash in its preset) GAINS read/write/edit/read_image in BOTH the registry-scoped and the wire catalog when the global rows are mounted — no public row syntax gates top-level rows by agentPreset/policy",
+      "pass": true,
+      "observed": "registry +[\"edit\",\"read\",\"read_image\",\"write\"] wire +[\"edit\",\"read\",\"read_image\",\"write\"] (minimal baseline catalog=[\"bash\"])"
+    },
+    {
+      "id": "G8",
+      "claim": "the literal negative control \"a non-team session globalNames unchanged\" cannot hold with a global mount: the trusted face is a single process-wide registry view that flipped []→[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] for EVERY session in the process",
+      "pass": true,
+      "observed": "baseline=[] globalmount=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"]"
+    }
+  ],
+  "baseline": {
+    "globalNames": []
+  },
+  "globalmount": {
+    "globalNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "write"
+    ]
+  }
+}
