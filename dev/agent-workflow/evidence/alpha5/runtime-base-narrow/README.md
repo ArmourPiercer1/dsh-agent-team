@@ -52,9 +52,13 @@ Landlock 语义注记：路径规则按**最近祖先规则**匹配，撤 '/' �
 
 ## ③ 正控全存活
 
-- **shell 合法腿**：live kit L3（锚内写盘+echo+exit=0）、L4（越界读 kernel
-  EACCES）与新增 **L7/L8**（`ls /home`/`ls ../outside` 上真 wire：EACCES、
-  零名、零字节）同轮全绿 → 见 `live-kit-run-*.log` 与 `runs/<stamp>/`。
+- **shell 合法腿**：live kit **GREEN 26/26**（`live-kit-run-2.log` +
+  `runs/2026-10-17T23-06-13Z/`，STRICT 出厂面真宿主真 Team 真 Landlock）：
+  L3（锚内写盘+echo+exit=0）、L4（越界读 kernel EACCES）+ 新增 **L7/L8**
+  （同轮真 wire：`ls /home` 与 `ls ../outside` 双双 `Permission denied`，
+  **零名字、零 marker、零字节**上线；预修 witness 同命令形态为真名上线）
+  同轮全绿。注：C1 文案为复制自 glue7 的原句（"a5g7-*"），过滤面已换
+  `a5rbn-` 前缀（`homes=[]` 实证）——文案残留如实注记。
 - **LSP /usr 三条不受涉（走位亲核）**：`real-lsp-kit.mjs:224` 的 clangd/tsserver
   行**自带**显式 `/usr` EXECUTE|READ_FILE|READ_DIR + genRoot 授（注释自证
   "runtime_base" 并列），且 runtime_base 的 /usr 条保留 → 两条腿都不依赖
@@ -107,10 +111,18 @@ glob 行保持逐字 typed-shut（live kit L6 pin 不变，另线不接线）。
 - 新单测 `packages/runtime/test/a5rbn-runtime-base-narrow.test.ts` REAL 8/8；
   p4t6 续钉 1182→**1183**（RED `expected 1183 to be 1182` =
   `p4t6-A5RBN-RETIE-RED.txt`；GREEN 10/10 = `p4t6-A5RBN-RETIE-GREEN.txt`）。
-- drift=0（`check:artifacts:head` @ 最终 HEAD，provider.js/mjs 镜像同笔再生）；
-  双抓恒等见 `vitest-fulltree-{1,2}.log`（红名单逐条=已发布 9 + 基上既有
-  `a4pr0a-fact-type-closed-set` collection 红——在**未改的合并树**上亲测
-  复现（`FACT_TYPE_CATEGORY block not found`），非本轮引入，如实列）。
+- drift=0（`check:artifacts:head` @ 最终 HEAD，provider.js/mjs 镜像同笔再生；
+  其后再跑 `pnpm run build` 全树重产 + 复检 `check-artifacts-at-head` 仍
+  drift=0——镜像确定性再生亲证）。
+- 双抓恒等 = **9 == 9 == 已发布 9**（`vitest-fulltree-1/2.log`：均
+  `9 failed | 7179 passed (7188)`，红名单 diff 逐字恒等：t2×1 /
+  p6t3-mediation×5 / p6t3-restart×2 / p6t6×1）。**环境披露两份**：
+  ① 首抓（`vitest-fulltree-1.PRE-BUILD.env-disclosure.log` 留存）多出的
+  `a4p7-merge-gate` composition-smoke 红 = 新 worktree 未建
+  `packages/client/dist`（gitignored 构建态，非提交面），`pnpm -C
+  packages/client run build` + 全树 build 后消失，双抓在补齐环境后重做；
+  ② 中途一次 `a4pr0a-fact-type-closed-set` **单跑** collection 红系
+  stash 诊断与 vitest 并发下的瞬态（同文件在全部全树抓中 9/9 绿），如实留记。
 - kit（复用 glue7 kit 面）：`a5rbn-live-kit.mjs` = 原 kit 全腿逐字 + L7/L8
   枚举负控 + 世界前缀 a5rbn-*；recorded run = `live-kit-run-<n>.log` +
   `runs/<stamp>/criteria.json`。
