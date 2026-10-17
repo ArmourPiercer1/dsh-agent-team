@@ -1,0 +1,12 @@
+# probe-M-13 (Domain 工具（HPC/RPC/研究状态/设备）) run-utc=2026-10-17T04:26:37.116Z repo-root=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m-kit
+DEPEND W7 surface="jobs-gateway 公开面装配（身份/lease/隔离）之上的 Domain 许可/引用观测面 + Domain mock 联锁数据源" if=[IF-1,IF-6]
+CHECK face:W7 lane=W7 present (binding-shape grep)
+ANCHORS runner-grep=PRESENT (binding shapes on non-comment lines; receipt claim ignored)
+ASSERT A1-team-deny-not-overridable SATISFIED :: veto_matrix 含 {"team_permit":false,"domain_permit":true,"outcome":"denied"}（Team 拒不可被 Domain 覆盖）
+ASSERT A2-domain-deny-not-overridable SATISFIED :: veto_matrix 含 {"team_permit":true,"domain_permit":false,"outcome":"denied","error":"DOMAIN_DENIED"}（Domain 拒不可被 Team 覆盖）
+ASSERT A3-veto-zero-side-effects SATISFIED :: veto_side_effects=0（veto 后副作用计数=0 的观测记录在册）
+ASSERT A4-unresolved-reference-fail-closed SATISFIED :: negative_controls 含 {"attempt":"unresolved-domain-reference","outcome":"typed-deny"}（未确定引用负控在册）
+ASSERT A5-job_start-anchor-still-absent SATISFIED :: pinned_host.job_start_present=false（absent 仍如实（design:72 不杜撰））
+EVIDENCE dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/veto-matrix.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/allow-leg.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/veto-side-effects.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/negative-controls.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/plain-session-create.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/host-face-anchors.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/anchor-host-grep-pre.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/anchor-host-grep-post.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/anchor-runtime-roster.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/lease-hygiene.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/discovery-surface.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/durable-state.json dev/agent-workflow/evidence/alpha5/wiring/w7m/run-GREEN/barrel-import-gate.txt
+LIVE M-13：装配锚点 runner 亲验在场 + receipt 全断言 SATISFIED + evidence_refs 逐项存在性亲验过（行级转态提案值=LIVE，终裁归 PR8 正式轮 + 独立 reviewer）。
+# VERDICT LIVE exit=0

@@ -1,0 +1,22 @@
+{
+  "note": "One row per matrix cell. team_permit is the LIVE gateway verdict (admitJob against host-derived member identities; the team-refused cells collide with the anchor lease HELD by member A => the lane's owner-mismatch). domain_permit is the row-local Domain mock's armed bit (deterministic input). The gate, not the caller, decides outcome.",
+  "cells": [],
+  "raw": {
+    "cell-FT": {
+      "status": 405,
+      "body": null
+    },
+    "cell-TF": {
+      "status": 405,
+      "body": null
+    },
+    "cell-FF": {
+      "status": 405,
+      "body": null
+    },
+    "cell-TT": {
+      "status": 405,
+      "body": null
+    }
+  }
+}

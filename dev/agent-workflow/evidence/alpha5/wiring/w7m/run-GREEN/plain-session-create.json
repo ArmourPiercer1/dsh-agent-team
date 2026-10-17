@@ -1,0 +1,18 @@
+{
+  "request": {
+    "sessionId": "session-a5w7m-plain-2026-10-17T04-26-19",
+    "cwd": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-w7m-kit/tests/homes/a5w7m-2026-10-17T04-26-19/workspace"
+  },
+  "status": 200,
+  "response": {
+    "type": "server-response",
+    "rpcId": "a5w7m-plain-oes4e9z8bi",
+    "result": {
+      "ok": true,
+      "value": {
+        "sessionId": "session-a5w7m-plain-2026-10-17T04-26-19",
+        "agentPreset": "standard"
+      }
+    }
+  }
+}
