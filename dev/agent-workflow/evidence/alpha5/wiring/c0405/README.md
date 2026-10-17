@@ -31,7 +31,8 @@
 2. kernel 信任输入 fixture 级（W5/W7/W-E2 同口径）；**无 ENFORCE 宣称**（in-process 治理链，OS 强制天花板不变）。
 3. 附件字节走 gated lane 文本读（base64 附件 fixture 选择）；真实渲染管线/OS 附件存储 not_observed 如实。
 4. `ARBITRARY_TREE_PROFILE_PUBLISHED=false` runtime 读回在册；无任意树宣称。
-5. LIVE=行级转态提案值（终裁归 PR8 正式轮+独立 reviewer）；本 kit 证据为装配 row 级，非整链验收。
+5. **与 C-08 回合（wiring/c08，port 3186）对 M-05 的双独立装配共证**：两 kit 各自 LIVE，receipt/矩阵按 parent 裁决 union（canonical=本 kit gated-37 活体读回，c08 全字段无损镜像 `c08_round_receipt_view`）；rebase 至 37f56897 后 probe/runner/self-test 复验全绿（a5c45-rebase-M-0{4,5}.log）。
+6. LIVE=行级转态提案值（终裁归 PR8 正式轮+独立 reviewer）；本 kit 证据为装配 row 级，非整链验收。
 6. receipt 由 runner 从活体观测直写（`--write-receipts`），非手写；draft 同件另存 run 目录。
 
 ## 重跑
