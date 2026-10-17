@@ -32,6 +32,7 @@
  */
 
 import { deepFreezeContracts } from '../../../domain/tool-governance/src/parse-util.js'
+import { GREP_OUTPUT_MODES } from './types.js'
 import type {
   RenderedPresentation,
   SearchOutcome,
@@ -40,6 +41,27 @@ import type {
   ShellPresentationMeta,
   SpillPointer,
 } from './types.js'
+
+/**
+ * A closed-set value on the presented outcome is OUTSIDE the vocabulary the
+ * renderer's header law is written over. The header line interpolates
+ * `outputMode` UNESCAPED (renderer-owned structure, law 2), so a value that
+ * erased its way past the type (JSON round-trip, hostile backend) — including
+ * one carrying a newline — would mint structure. The closed law: REFUSE at
+ * the entry; the pipeline maps this class to a typed
+ * `denied / outcome-outside-closed-set` failure and presents NOTHING.
+ * (Lane D review ③ / B3, closed at the wiring gate.)
+ */
+export class RenderClosedValueViolation extends Error {
+  readonly field: string
+  readonly value: unknown
+  constructor(field: string, value: unknown) {
+    super(`render refused: ${field} is outside its closed set (${JSON.stringify(value)})`)
+    this.name = 'RenderClosedValueViolation'
+    this.field = field
+    this.value = value
+  }
+}
 
 /** The footer marker — structural, renderer-owned (see law 2). */
 export const META_PREFIX = 'a5p5-meta '
@@ -100,6 +122,12 @@ export interface RenderOptions {
 
 /** Render one search outcome into the bounded, structure-safe presentation. */
 export function renderSearchResult(outcome: SearchOutcome, options: RenderOptions = {}): RenderedPresentation<SearchPresentationMeta> {
+  // Closed-set gate FIRST (see RenderClosedValueViolation): the header below
+  // prints `outputMode` unescaped, so this is a structure question, decided
+  // before a single byte is presented.
+  if (!GREP_OUTPUT_MODES.includes(outcome.outputMode)) {
+    throw new RenderClosedValueViolation('outputMode', outcome.outputMode)
+  }
   const meta: SearchPresentationMeta = {
     kind: 'search',
     outputMode: outcome.outputMode,
