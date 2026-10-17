@@ -60,6 +60,11 @@ describe('the tool-governance lane audit', () => {
       'tools/a5p5-tools/src/args.ts',
       'tools/a5p5-tools/src/effects-schema.ts',
       'tools/a5p5-tools/src/pipeline.ts',
+      // P-B register.ts = pure-data Definition factory consuming tool-governance;
+      // placement-scoped registration only; P-B PR #299; GLUE-5 will dedup P-LSP
+      // stacked copies. Cross-lane shared-pin edit authorized in writing by the
+      // coordinator (P-B writer brief, the #299 census-red fix round).
+      'tools/a5p5-tools/src/register.ts',
       'tools/a5p5-tools/src/render.ts',
       'tools/a5p5-tools/src/spill.ts',
       'tools/a5p5-tools/src/types.ts',
