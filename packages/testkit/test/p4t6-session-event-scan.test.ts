@@ -2440,6 +2440,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // universe).
     const SCANNED_PATHS_A5G1: readonly string[] = [
       'packages/runtime/test/alpha5-g1-deny-lane.test.ts',
+    ]
     // GLUE-6 (alpha5-glue6-fix): the unit leg for the two shipped-artifact
     // fixes. The fixes add NO new scannable source — the dist-mirror copies
     // of `upstream-resolver.mjs` and `root-binding/harness/seam.mjs` live
