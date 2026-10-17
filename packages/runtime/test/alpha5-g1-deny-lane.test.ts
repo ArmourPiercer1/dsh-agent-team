@@ -274,4 +274,46 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     expect(grep.text).toContain('code=template-default-deny')
     expect(grep.text).not.toContain('IO_POLICY_UNSUPPORTED')
   })
+
+  it('SUCCESS ARM returns the lawful presentation intact (no refusal anywhere), for both plane classes — and the host-facing block law is measured-and-disclosed, not asserted (the #313/#314 rebase face)', async () => {
+    // An ask-default policy with no deny rule: the lane gates nothing, so
+    // BOTH classes reach the fixture backend and must come back as the real
+    // rendered a5p5 presentation — meta line + body + success marker — never
+    // a refusal. (A member DENY cannot show this arm: shell ALLOW is
+    // refused for the member role by the policy derivation, so the ask
+    // default is the minimal lane-open configuration.)
+    const askPolicy = { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] }
+    const shell = createFixtureBackend({ sentinel: join(scratch, 'succ-shell.sentinel'), kind: 'shell' })
+    const search = createFixtureBackend({ sentinel: join(scratch, 'succ-search.sentinel'), kind: 'search' })
+    const built = row.createTeamToolPlaneAssembly({
+      permissionPolicy: askPolicy,
+      realmId: 'a5g1-realm',
+      templateId: 'wa',
+      role: 'member',
+      instanceId: 'a5g1-success',
+      backends: { search, shell },
+    })
+    expect(built.ok).toBe(true)
+    const defs = built.value!.definitions
+    const bash = await defs.find((d) => d.name === 'team_bash')!.execute({ command: 'echo a5g1' })
+    expect(bash.text).toContain('bash · exit=0')
+    expect(bash.text).toContain('A5G1_BACKEND_RAN')
+    expect(bash.text).toContain('a5p5-meta')
+    expect(bash.text).not.toContain('a5p5-refused')
+    expect(shell.execCount()).toBe(1)
+    const grep = await defs.find((d) => d.name === 'team_grep')!.execute({ pattern: 'A5G1_GREP_TARGET', path: '/a5g1/target.txt', output_mode: 'content' })
+    expect(grep.text).toContain('A5G1_GREP_HIT')
+    expect(grep.text).toContain('a5p5-meta')
+    expect(grep.text).not.toContain('a5p5-refused')
+    expect(search.execCount()).toBe(1)
+    // The host-facing projection face on THIS base: `PLANE_PRESENTATION_FACE.render`
+    // is `String(value?.text ?? '')` (measured at #311 SESSION_ROUTER_LOG ⑥587(2))
+    // — the host block law (ContentBlock[]) is enforced by the UNMERGED
+    // #313/#314 bytes. Pinning blocks here would silently pull that lane into
+    // this one, so the face is disclosed here and asserted THERE; this suite
+    // owns the lane decision and the a5p5 presentation content above.
+    expect(row.createLaneDecide(askPolicy, row.DEFAULT_PLANE_NAMES, undefined)(
+      { effects: [{ kind: 'tool-invoke', toolName: 'bash', resource: null }] },
+    )).toEqual({ kind: 'allow' })
+  })
 })
