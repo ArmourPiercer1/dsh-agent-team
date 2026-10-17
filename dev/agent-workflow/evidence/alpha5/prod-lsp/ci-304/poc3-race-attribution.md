@@ -33,7 +33,18 @@ Both labels are refusals; the leg asserts the narrower one.
 | solo (`vitest run poc3-probes.test.ts`) | 3 | 0 |
 | coload with this lane's two REAL-Landlock suites (a5lsp2-streaming + a5lsp2-assembly, same vitest process) | 8 | 0 |
 | full census captures (this branch, pre-walk-fix) | 4 | 1 (0.25) |
-| full census captures (this branch, post-walk-fix) | 2 | 0 |
+| full census captures (this branch, post-walk-fix) | 4 | 1 (0.25) |
+
+Aggregate: **2 of 8 full-census captures across this branch**. The second hit
+(census pair `census-transcripts-r5`, head `c1fe4bdd`) is byte-identical to the
+first — same leg, `poc3-probes.test.ts:261`, `expected 'fd-recycled' to be
+'fd-closed'`, the GUARD refusing throughout (`res.ok === false` passes; only
+the classification label moves). The BASE control pair at `d714a941`
+(`census-transcripts-base-d714a941`, 2 captures) did not sample it — but two
+base samples prove nothing about rate either; non-attribution rests on the
+mechanism (process-wide fd-number recycling, documented by the file's OWN
+sibling leg with its 500-attempt bound) plus `git diff base..HEAD` being EMPTY
+for `controlled-fs/**`.
 
 Coload logs: `coload-clean-*.log` excerpts retained in the census transcripts (`census-run-1-*`
 contains the failing capture verbatim).
@@ -46,5 +57,5 @@ contains the failing capture verbatim).
   observed) is the C-FS lane owner / coordinator's call, routed here as a named finding.
 - This branch does not add itself to any family disclosure; the baseline was not touched.
 - The residual CI risk is stated, not smoothed: a CI census can still sample this race
-  (observed 1/4 full runs on this host); the re-sample protocol does NOT cover it (not a
+  (observed 2/8 full-census captures on this host); the re-sample protocol does NOT cover it (not a
   disclosed family), so a CI hit must be handled by its owner, not by this lane.
