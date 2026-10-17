@@ -1,0 +1,102 @@
+{
+  "veto_matrix": [
+    {
+      "team_permit": true,
+      "domain_permit": true,
+      "outcome": "acted",
+      "leg": "e2-act-1",
+      "device": "a5e2.device/main",
+      "version_after": 1
+    },
+    {
+      "team_permit": false,
+      "domain_permit": true,
+      "outcome": "denied",
+      "leg": "kernel-requires-approval",
+      "device": "a5e2.device/aux",
+      "kernel_decision": {
+        "kind": "requires-approval",
+        "requestedEffects": {
+          "effects": [
+            {
+              "kind": "domain-ref",
+              "domainAuthorityId": "a5e2.device/aux",
+              "resource": null
+            },
+            {
+              "kind": "tool-invoke",
+              "toolName": "a5e2_domain_act",
+              "resource": null
+            }
+          ],
+          "fingerprint": "sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8"
+        },
+        "reason": "one Alpha.4 ApprovalCase (tadm:a5e2-ts:a5e2-member:sha256:8bfb422ae1a84afe40c1387ca640cbaed00e166cd1c8c1e29e72042c676456f8:g1) at rung leader must legally cover ALL 2 effects; per-effect rungs: 0:leader"
+      },
+      "side_effects": 0
+    },
+    {
+      "team_permit": true,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "leg": "mock-device-lease-owner={\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"}",
+      "device": "a5e2.device/belt",
+      "side_effects": 0
+    },
+    {
+      "team_permit": true,
+      "domain_permit": false,
+      "outcome": "denied",
+      "error": "DOMAIN_DENIED",
+      "leg": "mock-cas-version-stale",
+      "device": "a5e2.device/main",
+      "side_effects": 0
+    }
+  ],
+  "veto_side_effects": 0,
+  "negative_controls": [
+    {
+      "attempt": "unresolved-domain-reference",
+      "outcome": "typed-deny",
+      "code": "DOMAIN_DENIED",
+      "device": "a5e2.device/ghost",
+      "grants_minted_delta": 3
+    }
+  ],
+  "device_states_on_disk": {
+    "a5e2.device/main": {
+      "domainAuthorityId": "a5e2.device/main",
+      "version": 1,
+      "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-aedfc87a-e582-425f-b48b-ce6108de757d\"}",
+      "log": [
+        {
+          "seq": 1,
+          "op": "spin",
+          "at": "2026-10-17T04:01:08.379Z",
+          "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-aedfc87a-e582-425f-b48b-ce6108de757d\"}"
+        }
+      ]
+    },
+    "a5e2.device/aux": {
+      "domainAuthorityId": "a5e2.device/aux",
+      "version": 0,
+      "lease_owner": null,
+      "log": []
+    },
+    "a5e2.device/belt": {
+      "domainAuthorityId": "a5e2.device/belt",
+      "version": 1,
+      "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"}",
+      "log": [
+        {
+          "seq": 1,
+          "op": "owner-spin",
+          "at": "2026-10-17T04:01:12.293Z",
+          "actor": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3cbea96a-8019-4634-8e25-2810d6ea71a6\"}"
+        }
+      ]
+    }
+  },
+  "action_ledger_lines": 2
+}

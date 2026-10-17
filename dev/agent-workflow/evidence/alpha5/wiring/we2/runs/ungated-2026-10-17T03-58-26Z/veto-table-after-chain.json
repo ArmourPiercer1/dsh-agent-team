@@ -1,0 +1,48 @@
+{
+  "veto_matrix": [],
+  "veto_side_effects": 0,
+  "negative_controls": [
+    {
+      "attempt": "unresolved-domain-reference",
+      "outcome": "typed-deny",
+      "code": "DOMAIN_DENIED",
+      "device": "a5e2.device/ghost",
+      "grants_minted_delta": 0
+    }
+  ],
+  "device_states_on_disk": {
+    "a5e2.device/main": {
+      "domainAuthorityId": "a5e2.device/main",
+      "version": 1,
+      "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-b1b71391-dcee-448b-95f2-a6728c8edc4e\"}",
+      "log": [
+        {
+          "seq": 1,
+          "op": "spin",
+          "at": "2026-10-17T03:58:27.821Z",
+          "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-b1b71391-dcee-448b-95f2-a6728c8edc4e\"}"
+        }
+      ]
+    },
+    "a5e2.device/aux": {
+      "domainAuthorityId": "a5e2.device/aux",
+      "version": 1,
+      "lease_owner": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-b1b71391-dcee-448b-95f2-a6728c8edc4e\"}",
+      "log": [
+        {
+          "seq": 1,
+          "op": "spin",
+          "at": "2026-10-17T03:58:27.843Z",
+          "actor": "{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-b1b71391-dcee-448b-95f2-a6728c8edc4e\"}"
+        }
+      ]
+    },
+    "a5e2.device/belt": {
+      "domainAuthorityId": "a5e2.device/belt",
+      "version": 0,
+      "lease_owner": "{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-3d791bf0-2ecf-463d-a405-00a93aff7273\"}",
+      "log": []
+    }
+  },
+  "action_ledger_lines": 2
+}

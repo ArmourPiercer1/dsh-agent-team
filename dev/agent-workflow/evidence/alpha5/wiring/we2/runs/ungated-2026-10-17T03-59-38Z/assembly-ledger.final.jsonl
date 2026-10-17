@@ -1,0 +1,14 @@
+{"at":"2026-10-17T03:59:39.824Z","leg":"plugin-apply","pid":67,"mode":"ungated","hasWebServer":true,"dist":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/packages/runtime/dist/packages","jobs":"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-wire-tools2/node_modules/.a5e2-jobs-build"}
+{"at":"2026-10-17T03:59:39.847Z","leg":"lanes-imported","ok":true,"gw_exports":"function","cf_arb_tree":false}
+{"at":"2026-10-17T03:59:40.006Z","leg":"gateway-observation","event":"gateway-job-admitted","jobId":"e2-job-a","ownerKey":"{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8\"}","tool":"a5e2_domain_act"}
+{"at":"2026-10-17T03:59:40.006Z","leg":"gateway-observation","event":"gateway-job-admitted","jobId":"e2-job-b","ownerKey":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-56092000-fa2e-418f-905f-d1e2e8f724e2\"}","tool":"a5e2_domain_act"}
+{"at":"2026-10-17T03:59:40.006Z","leg":"gateway-identity","ownerA":{"rootSessionId":"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8","instanceId":"a5e2-inst-a","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-a\",\"rootSessionId\":\"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8\"}"},"ownerB":{"rootSessionId":"session-56092000-fa2e-418f-905f-d1e2e8f724e2","instanceId":"a5e2-inst-b","admitted":true,"key":"{\"instanceId\":\"a5e2-inst-b\",\"rootSessionId\":\"session-56092000-fa2e-418f-905f-d1e2e8f724e2\"}"}}
+{"at":"2026-10-17T03:59:40.008Z","leg":"register","label":"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8","names":["a5e2_domain_act"],"ok":true}
+{"at":"2026-10-17T03:59:40.008Z","leg":"register","label":"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8","name":"a5e2_unbound_probe","afterAssembly":false,"ok":true}
+{"at":"2026-10-17T03:59:40.008Z","leg":"assembly-complete","label":"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8","native_edit":true,"native_read_image":true}
+{"at":"2026-10-17T03:59:40.103Z","leg":"ungated-acted","callId":"e2-act-1","device":"a5e2.device/main"}
+{"at":"2026-10-17T03:59:40.123Z","leg":"ungated-acted","callId":"e2-act-2","device":"a5e2.device/aux"}
+{"at":"2026-10-17T03:59:40.165Z","leg":"domain-ref-fail-closed","callId":"e2-act-5","device":"a5e2.device/ghost","grants":0}
+{"at":"2026-10-17T03:59:40.177Z","leg":"probe-body-ran","label":"session-c63e2111-f6d0-4bd4-a41c-fe31f19602f8"}
+{"at":"2026-10-17T03:59:42.741Z","leg":"edit","new_observations":0}
+{"at":"2026-10-17T03:59:44.004Z","leg":"read_image","new_observations":0}
