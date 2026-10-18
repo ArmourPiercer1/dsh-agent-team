@@ -96,7 +96,7 @@ fuse=**250ms**（cap 同源常数 GLOB_STDERR_DRAIN_MS）：记录在 launcher �
 ## 残留判据清单 + 方向注（审 B 必办 4，本笔只挂账不删）
 | 残留 | 位置 | 状态 | 方向注 | 排期 |
 | --- | --- | --- | --- | --- |
-| 旧 glob 行 SPEECH/wire-code 律 | plane-effect-backends.mjs:516-524 | **dormant（glue7 消费中，删=另案）** | 偏**拒**非更弱（speech⇒拒整结果），无"接受面扩大" | 与 glue7 迁移到 rc-first 行同批移除；移除腿=另案红→绿 |
+| 旧 glob 行 SPEECH/wire-code 律 | plane-effect-backends.mjs:507-524（合并 master 5885e46e 后现场行号；本支树曾为 :516-524，+cancel 腿插入致移，内容零动——合并 diff 中 speech/walker 行零命中） | **dormant（glue7 消费中，删=另案）** | 偏**拒**非更弱（speech⇒拒整结果），无"接受面扩大" | 与 glue7 迁移到 rc-first 行同批移除；移除腿=另案红→绿 |
 | 行层 fallback 支（recordCapable≠true） | glob-backend.mjs :1077+ | 活（one-shot/测试注入形消费） | 逐字旧律，钉在 rc-first 套件 | one-shot 形出现行消费者时再议 |
 | rg 共存性依赖 | 治理 argv 表 | **已钉**（review-B 行为钉 + corpus 入账） | 升级回退=测试红 | rg 升级时按钉分诊 |
 
