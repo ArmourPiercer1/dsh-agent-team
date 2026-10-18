@@ -18,15 +18,32 @@
  * ask reaches `next()` untouched) pins S1, and the census/boot row pins S4.
  * RED-FIRST: this file was committed BEFORE the row module existed (the
  * first run is the RED pin; the OS-floor lesson from the demo line).
+ * LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53): the three U-legs
+ * (L-U1 drop face / L-U1b archive face / L-U2 cold re-mount) were likewise
+ * committed RED-first against the shipped row — the measured production
+ * reds (row routes a torn-down member; re-mount throws 'already registered')
+ * are reproduced at the unit seam before the fix lands.
  */
 import { describe, expect, it } from 'vitest'
 
+type MemberHandle = {
+  memberKey: string
+  installOn: (ctxLike: { on: (ev: string, h: (...a: never[]) => unknown) => () => void }) => () => void
+  revoke: () => void
+  /** Lifecycle-fix round: routable = this face is live AND the injected
+   *  residency predicate (when given) still says the session is resident. */
+  isRoutable: () => boolean
+}
 type RowAssembly = {
-  registerMember: (m: { sessionId: string; instanceId: string; realmId: string; isLeader: boolean }) => {
-    memberKey: string
-    installOn: (ctxLike: { on: (ev: string, h: (...a: never[]) => unknown) => () => void }) => () => void
-    revoke: () => void
-  }
+  registerMember: (m: {
+    sessionId: string
+    instanceId: string
+    realmId: string
+    isLeader: boolean
+    /** Lifecycle-fix round: the injected residency oracle (the glue passes
+     *  the sync `residency.has` port). Absent = always resident (pure rows). */
+    isResident?: () => boolean
+  }) => MemberHandle
   adjudicate: (
     memberKey: string,
     req: { toolName: string; callId?: string; reason?: string; signal?: AbortSignal },
@@ -41,7 +58,23 @@ type RowAssembly = {
   setBootCensus: (b: { selectedRunner: string; enforcement: string }) => void
   grantsState: () => Array<{ grantId: string; state: string }>
 }
-type RowModule = { createPtcEscalationRowAssembly: (o: Record<string, unknown>) => RowAssembly }
+/** The lifecycle-fix round: the router keys on the member HANDLE (the
+ *  registerMember result), so a re-mounted session's stale Agent object can
+ *  never route into the new generation (identity, not the shared key). */
+type RowRouter = {
+  registerAgent: (agent: object, member: MemberHandle, assembly: RowAssembly) => () => void
+  resolve: (agent: object) => unknown
+  route: (req: Record<string, unknown>, next: () => Promise<'passthrough'>) => Promise<unknown>
+  liveCount: () => number
+  /** Lifecycle-fix round (U-1/U-1b): the public `agent/disposed` mirror —
+   *  drops the disposed Agent's routing entry AND revokes its member face.
+   *  Idempotent; never throws; true only when an entry was dropped. */
+  onAgentDisposed: (agent: unknown) => boolean
+}
+type RowModule = {
+  createPtcEscalationRowAssembly: (o: Record<string, unknown>) => RowAssembly
+  createPtcEscalationRouter: () => RowRouter
+}
 
 const loadRow = async (): Promise<RowModule> =>
   (await import(new URL('../src/plugin/live/ptc-escalation-row.mjs', import.meta.url).href)) as RowModule
@@ -51,6 +84,7 @@ const esc = (mode: string): string => `escalate sandbox to ${mode}: need to writ
 function harness(opts: { ttlMs?: number } = {}) {
   let nowMs = 1_700_000_000_000
   const controls: Array<{ requestId: string; kind: string; toolName: string; correlation: string; summary: string; decision: string | null }> = []
+  const observations: Array<Record<string, unknown>> = []
   let nextDecision: 'allow' | 'deny' = 'allow'
   let abortWait = false
   const controlService = {
@@ -87,11 +121,13 @@ function harness(opts: { ttlMs?: number } = {}) {
       ttlMs: opts.ttlMs ?? 60_000,
       now: () => nowMs,
       nextGrantId: () => `g-${String(++seq)}`,
+      onObserve: (o: Record<string, unknown>) => { observations.push(o) },
     })
   })()
   return {
     assembly,
     controls,
+    observations,
     advance: (ms: number) => { nowMs += ms },
     decide: (d: 'allow' | 'deny') => { nextDecision = d },
     abortWaits: (v: boolean) => { abortWait = v },
@@ -215,5 +251,140 @@ describe('a5ptc-escalation-row (PTC fs half-arm synthetic leg)', () => {
     const rowX = mod.createPtcEscalationRowAssembly({ rootSessionId: 'root-x', getControlService: () => undefined, now: () => 1 })
     const mx = rowX.registerMember({ sessionId: 's-x', instanceId: 'inst-x', realmId: 'rx', isLeader: false })
     expect(await rowX.adjudicate(mx.memberKey, { toolName: 'run_code', callId: 'c-z', reason: esc('workspace-write') }, passthrough)).toBe('unavailable')
+  })
+
+  // ── LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53, U-1/U-1b/U-2) ──
+  // The three production teardown faces measured RED: after a residency
+  // DROP (U-1) or a LEADER ARCHIVE (U-1b) the row kept ROUTING the torn-down
+  // member (`dropped=true … seenByRow=true`, `archived=true … seenByRow=true`)
+  // because the mount's unregister rode the ROW-level toolDisposers drain
+  // (row stop only); and a COLD RE-MOUNT refused with
+  // `member '…' is already registered (one face per session)` (U-2) — the
+  // production entry could not recover a torn-down governed member. The legs
+  // below pin the fix: the member lifecycle rides the RESIDENCY lifecycle —
+  // (a) the public `agent/disposed` face (host.ts, the activation-fence
+  // listener precedent) drops the routing entry AND revokes the face,
+  // idempotent; (b) a dropped (non-resident) member NEVER routes — the ask
+  // delegates through next() with ZERO state (the pre-round host chain owns
+  // it, exactly the measured fail-closed landing); (c) a re-mount REPLACES
+  // the stale face (one LIVE face per session, recoverable forever after).
+
+  it('L-U1 residency drop: a dropped member never routes again — zero state, then the disposed face cleans up idempotently', async () => {
+    const h = harness()
+    const mod = await loadRow()
+    const row = await h.assembly
+    const router = mod.createPtcEscalationRouter()
+    let resident = true
+    const m = row.registerMember({ sessionId: 's-u1', instanceId: 'inst-u1', realmId: 'r1', isLeader: false, isResident: () => resident })
+    const agent = { id: 's-u1' }
+    const off = router.registerAgent(agent, m, row)
+    // positive control: the live member routes and lands allowed-once.
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1-call-1', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+    expect(h.controls.length).toBe(1)
+    // RESIDENCY DROP: liveAgents.delete is synchronous (the sync port /
+    // quiesce step), the Agent dispose runs behind it — the row must stop
+    // routing AT THE DROP, with zero observation and zero durable request.
+    resident = false
+    const obsBefore = h.observations.length
+    const asksBefore = row.census().adjudications.asks
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1-call-2', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+    expect(h.controls.length).toBe(1)
+    expect(h.observations.length).toBe(obsBefore)
+    expect(row.census().adjudications.asks).toBe(asksBefore)
+    // the public agent/disposed face (host.ts global listener): drops the
+    // entry AND revokes the member face (census honest, member-revoked booked).
+    expect(router.onAgentDisposed(agent)).toBe(true)
+    expect(router.liveCount()).toBe(0)
+    expect(row.census().membersLive).toBe(0)
+    expect(h.observations.some((o) => o.event === 'member-revoked' && o.session === 's-u1')).toBe(true)
+    // idempotent: a second disposed event is a no-op that never throws and
+    // writes nothing; the row-stop drain disposer (late) is also a no-op.
+    const obsAfter = h.observations.length
+    expect(router.onAgentDisposed(agent)).toBe(false)
+    expect(router.onAgentDisposed(undefined)).toBe(false)
+    expect(router.onAgentDisposed(null)).toBe(false)
+    off()
+    expect(h.observations.length).toBe(obsAfter)
+    // and the dead identity still never routes:
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1-call-3', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+    expect(h.controls.length).toBe(1)
+  })
+
+  it('L-U1b archive face: the leader-archived member never gets a second durable request; dispose+drain idempotent under any order', async () => {
+    const h = harness()
+    const mod = await loadRow()
+    const row = await h.assembly
+    const router = mod.createPtcEscalationRouter()
+    let resident = true
+    const m = row.registerMember({ sessionId: 's-u1b', instanceId: 'inst-u1b', realmId: 'r1', isLeader: true, isResident: () => resident })
+    const agent = { id: 's-u1b' }
+    const off = router.registerAgent(agent, m, row)
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-1', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+    expect(h.controls[0]?.kind).toBe('user-approval')
+    // ARCHIVE releases residency through the SAME sync port (quiesce.ts
+    // release-residency step) — from the row's face the drop is the law:
+    resident = false
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-2', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+    expect(h.controls.length).toBe(1) // the archived member opens NO second durable request
+    // the archive's live effects dispose the Agent → the disposed face fires.
+    expect(router.onAgentDisposed(agent)).toBe(true)
+    expect(row.census().membersLive).toBe(0)
+    // ANY order of the remaining teardown faces stays a zero-throw no-op:
+    // row-stop drain disposer, a late duplicate disposed event, direct revoke.
+    expect(() => { off() }).not.toThrow()
+    expect(() => { router.onAgentDisposed(agent) }).not.toThrow()
+    expect(() => { m.revoke() }).not.toThrow()
+    expect(h.observations.filter((o) => o.event === 'member-revoked' && o.session === 's-u1b').length).toBe(1)
+    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-3', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+    expect(h.controls.length).toBe(1)
+  })
+
+  it('L-U2 cold re-mount: re-entry REPLACES the stale face (no throw), the new Agent recovers allowed-once one-shot, stale identity never leaks', async () => {
+    const h = harness()
+    const mod = await loadRow()
+    const row = await h.assembly
+    const router = mod.createPtcEscalationRouter()
+    let residentA = true
+    const mA = row.registerMember({ sessionId: 's-u2', instanceId: 'inst-u2', realmId: 'r1', isLeader: false, isResident: () => residentA })
+    const agentA = { id: 's-u2' }
+    const offA = router.registerAgent(agentA, mA, row)
+    expect(await router.route({ agent: agentA, toolName: 'run_code', callId: 'u2-call-1', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+    // cold-resume race: residency dropped, the OLD handle disposed behind —
+    // its agent/disposed event has NOT arrived yet (the sync port is
+    // fire-and-forget). The re-mount MUST NOT throw (U-2's 422 root face) —
+    // same-session re-entry replaces the stale face.
+    residentA = false
+    let residentB = true
+    const mB = row.registerMember({ sessionId: 's-u2', instanceId: 'inst-u2', realmId: 'r1', isLeader: false, isResident: () => residentB })
+    expect(row.census().membersLive).toBe(1)
+    expect(h.observations.some((o) => o.event === 'member-revoked' && o.session === 's-u2')).toBe(true)
+    // the stale Agent object (its dispose event still pending) never routes
+    // into the new generation — delegation, zero state:
+    const obsBefore = h.observations.length
+    expect(await router.route({ agent: agentA, toolName: 'run_code', callId: 'u2-call-9', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+    expect(h.observations.length).toBe(obsBefore)
+    expect(h.controls.length).toBe(1)
+    // the NEW Agent (the host mints a fresh object for the same session id)
+    // registers and recovers adjudication — allowed-once, still ONE-SHOT:
+    const agentB = { id: 's-u2' }
+    router.registerAgent(agentB, mB, row)
+    expect(await router.route({ agent: agentB, toolName: 'run_code', callId: 'u2-call-2', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+    expect(h.controls.length).toBe(2)
+    expect(await router.route({ agent: agentB, toolName: 'run_code', callId: 'u2-call-2', reason: esc('workspace-write') }, passthrough)).toBe('rejected')
+    expect(h.controls.length).toBe(2) // replay meets the CONSUMED mark, never a fresh approval
+    // a pre-drop callId keeps its consumed fact across the re-mount:
+    expect(await router.route({ agent: agentB, toolName: 'run_code', callId: 'u2-call-1', reason: esc('workspace-write') }, passthrough)).toBe('rejected')
+    expect(h.controls.length).toBe(2)
+    // the LATE disposed event for the old Agent drops only the STALE entry;
+    // the old handle's revoke (row-stop drain, late) cannot kill the new face.
+    expect(router.onAgentDisposed(agentA)).toBe(true)
+    expect(router.liveCount()).toBe(1)
+    expect(row.census().membersLive).toBe(1)
+    offA()
+    mA.revoke()
+    expect(row.census().membersLive).toBe(1)
+    expect(await router.route({ agent: agentB, toolName: 'run_code', callId: 'u2-call-3', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+    residentB = false
+    expect(await router.route({ agent: agentB, toolName: 'run_code', callId: 'u2-call-4', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
   })
 })
