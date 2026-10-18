@@ -78,6 +78,157 @@ p4t6 measured ON THIS TREE (pre-booking run): `expected 1196 to be 1194` → boo
 1194 → 1196, five pieces (named array / both chains / spread / tie `toBe(1196 - 1194)` /
 title clause). No chain value copied.
 
+## Production-entry live-kit (parent order: 复跑 battery + recipe 全链真宿主正反控)
+
+### Stack head values (measured three-source; NO unverified SHA anywhere below)
+
+- master = `104b499173687daa0f5c537bc37ae7600089576c` (#333 MERGED — the glob-line
+  production flip is REAL inside the stack from here; transcribed verbatim from the
+  parent's `git rev-parse origin/master`, re-verified on this side by
+  `git fetch origin master` + `git rev-parse origin/master`). Its predecessor
+  `0fa2cd76de2b48ef287ca3bf82ac6b03b30e3ab8` (the #332 merge head; three-source verified
+  when it WAS master: ls-remote == origin/master == stack ancestor) is an ancestor of
+  `104b4991` (merge-base check). The parent-transcribed `7118b798` was a spliced
+  non-existent SHA — 作废, never used, never recorded as a value anywhere.
+- int-r3 = `da29aedc4e94cfe624725e43ecb66e1c42b4d2b3` (round-13 ④闭环 head) — MERGED into
+  the stack (via the 12ceac85 merge lineage; the int-r3 files ride zero-conflict).
+- PTC impl = `5a4a25e7e457f9709405e9b3d8fe3fda333ba1c2` (U-1b follow-up head: ask-time
+  routability gains the DURABLE admissibility oracle — an ARCHIVED/DISPOSED member never
+  routes, not even through a cold re-mount that re-establishes residency; RED-first
+  `c33940d4` upgraded L-U1b to the production archive-procedure form; dual-source verified
+  `git ls-remote origin refs/heads/alpha5-ptc-pr` == `git rev-parse origin/alpha5-ptc-pr`;
+  ancestor chain `45717a9f → b3e99a14 → 5a4a25e7` merge-base-checked).
+- stack tip (#334 merge) = `83ab021eda7fd129767ca6b8d21c13881798777f` = `126bcd90` ⊕
+  `5a4a25e7`, ZERO conflicts (the lifecycle-fix README union rode clean).
+- #333-round stack tip (now ancestor) = `535881a00fde0ac1d356c48cb47278b34c622625` = merge of `0a225e64` (itself
+  `12ceac85` ⊕ `0fa2cd76`, zero conflicts) ⊕ `104b4991`. Conflicts: team-tool-plane
+  (src + dist mirror) and glue7 = COMMENT-ONLY (both sides already carry the flipped
+  anchored-rg glob row in code) — master side taken verbatim per the round-14 ruling;
+  p4t6 = the normalized union tie (HEAD side already contained both sides' pins + the PTC
+  booking); int-r3 README = master side (lane-owned file). `check-artifacts-at-head`:
+  drift=0 over 1748 compared files.
+
+### Replay declaration
+
+On the merged tip `535881a0` the FIVE rehearsal batteries plus the scanner and the flipped
+glob line's own suite re-ran EXIT=0: a5ptc-escalation-row 7/7 · a5p7-lane-hygiene 5/5 ·
+alpha5-search-backend 42/42 · a5natexe-native-takeover 12/12 · a5int-r3-mount-integration
+6/6 · p4t6-session-event-scan 10/10 (the merged tree's re-anchor is the scanner RUN itself —
+the tie passes only when the measured total equals the union chain sum; no arithmetic
+import) · alpha5-glue7-plane-backends 12/12 (vitest logs live under
+`.scratch-logs/a5ptc-stack-104b/` — workspace-local, not committed).
+
+On the #334 merged tip `126bcd90` (PTC `b3e99a14` lifecycle fix inside) the battery re-ran
+EXIT=0 with the a5ptc spec now at its POST-fix count: a5ptc-escalation-row **10/10** (the
+L-U1/L-U1b/L-U2 legs included) · a5p7-lane-hygiene 5/5 · p4t6-session-event-scan 10/10 ·
+alpha5-glue7-plane-backends 12/12 · alpha5-search-backend 42/42 · a5natexe-native-takeover
+12/12 · a5int-r3-mount-integration 6/6 (logs: `.scratch-logs/a5ptc-stack-b3e9/`).
+
+### The kit
+
+`a5ptc-production-kit.mjs` (+ `a5ptc-production-emitter.mjs`) — production-entry live run
+of `production-run-recipe.md` §0–§5 on the pristine pinned host (0.2.0-rc.2 @
+`639ed01539…`, HEAD==baseline and porcelain 0 verified BEFORE and AFTER — legs H0/Z-0).
+Disclosed drive class (fixed by the recon round and accepted by the parent): the escalation
+asks on the drive legs are emitted IN-HOST by the kit emitter row, which drives the host's
+OWN public `approveEscalation` (file-URL import of the pinned host byte) through the
+production `ctx.waterfall('approval/request')` → the shipped PTC row adjudicates → durable
+control request → the kit resolves over the production wire (`team.resolveControl`). The
+emitter writes the token file as the EFFECT stand-in (the ONLY emulated piece; the positive
+control's 禁区真落盘 is a real disk write inside the world home). E-1 measures the NATIVE
+emitter reality separately (member bash + sanctioned retry pair) and reports which arm
+landed, verbatim. Ports 3181/3182/3183 + mocks 3491–3495; `:3080` read-only status probe
+only (401→401 both sides); DSH_HOMES `tests/homes/a5ptc-*` swept at teardown; every receipt
+token-sanitized (`token=REDACTED-<sha8>`). Baseline world (B) boots the PRE-ROUND row from
+`git archive 1962f879` of the committed dist mirror — with its OWN-generation seam
+(`cfg.seamUrl` pinned into the extract; a current seam over a baseline host closes the
+TeamDomain mid-bootstrap — measured, disclosed).
+
+### Kit results (final clean run `runs/live-2026-10-18T12-55-53/`; KIT_EXIT=2 = three FAILs, all reported verbatim below)
+
+| leg | verdict | measured |
+| --- | --- | --- |
+| H0 | PASS | :3080 `401` (read-only probe, before==after), :3180 unreachable both sides; 3181–3183 free; crash-residue homes reclaimed at boot (disclosed, `reclaimed=[]` in the final run) |
+| OS-0 | PASS | official `landlock-run --probe` answers; strict-widening witness: read-only-posture write DENIED (EXIT=2), widened-posture same write EXIT=0 — the floor is real, escalation to workspace-write is never a no-op here |
+| BD-0 | PASS | pre-round baseline extractable at 1962f879, PTC-FREE (`host=true gluePtc=false`) |
+| T-0 | PASS | governed boot surface = 20 tools, deny=0 |
+| T-2a | PASS | production `team.create` fresh-root status=200 |
+| T-1 | PASS | census-boot line with the pinned real Landlock confinedProvider (`landlock-launcher pinned`), CONFIG-DECLARED runner/enforcement (never an OS-probe claim) |
+| T-2 | PASS | wa member + row census recorded `member-registered` observations (2 registrations) |
+| P-1 | **PASS — POSITIVE CONTROL LANDED** | durable `leader-approval` (actionName `parameter-permission`) → wire ALLOW → `allowed-once` → REAL forbidden-zone write ONCE (`ptc-positive.txt`, 24B, hashed); ledger request→decision aligned; consumption fact recorded VERBATIM: final run `consFacts=1` (an early run read 0 through the row's post-allowed-once flush — a flush race, disclosed) |
+| R-1 | PASS | same (member,callId) replay → host fail-closed sentence VERBATIM (`the user rejected escalating this command to "…"; it stays denied…`), NO second durable request, artifact hash unchanged |
+| M-1 | PASS | mode drift to danger-full-access refused on the fingerprint, never a re-approval, zero bytes |
+| O-1 | PASS | T2 member meets T2's OWN closed-world row (fresh request under root2, never a second life of T's grant); leader DENY-before-use → rejected; T2 mints NOTHING; T grant still intact |
+| E-1 | PASS — arm A | native member bash + sanctioned retry pair lands arm A: dispatch refusal VERBATIM `team tool guard: the Tool Binding for "bash" cannot be verified at dispatch time (no fallback to the native body)` + ZERO escalation rows + zero bytes — the GLUE-8 law; arm B (full native chain) stays closed on this host by that law, which is exactly why the drive legs ride the disclosed emitter row |
+| X-1 | PASS | past the frozen 60s production ttl, same callId REFUSED, no second durable request, zero extra bytes (the stacked consumed+expired grades EXPIRED — reason-word pinned by the synthetic leg) |
+| U-1 | **FAIL (REAL RED, verbatim)** | drop face: `dropped={"sessionId":"session-team-child-dc06…","dropped":true} seenByRow=true` — after `dropResidency` the row STILL ROUTES the torn-down member (new ask reaches the row; the drive then times out unresolved). Root cause measured: the mount's `ptcUnregister` disposer rides the ROW-level `toolDisposers` drain, which runs only at row STOP; residency drop/archive do not drain it |
+| U-2 | **FAIL (REAL RED, verbatim)** | re-mount: cold-resume face answers 422 `no live agent for 'session-team-child-dc06…': ptc-escalation-row: member '…' is already registered (one face per session)` — the mount gate THROWS on re-registration (the same never-drained registration), so the production entry cannot recover a torn-down governed member; corroborating: the drive on the stale registration still landed allowed-once and wrote `ptc-remount.txt` |
+| U-1b | **FAIL (REAL RED, verbatim)** | archive face: leader `team_archive_member` SUCCEEDED (`archived=true`, instance `inst-1ez8xku1os7x`) — and the row STILL routes an ask against the archived member (`seenByRow=true`). Same root cause as U-1/U-2: teardown faces never drain the mount's unregister disposer. (cosmetic receipt loss in THIS run: the archive tool-result quote stringified to `[object Object]` — kit receipt bug, fixed after the run; the substantive facts `archived=true` + `seenByRow=true` are unaffected) |
+| N-1 | PASS | non-team world: zero durable rows, zero a5ptc observations, zero bytes; the drive lands fail-closed on the pre-round host chain (`no approval channel is available`) |
+| B-1 | PASS | CURRENT row vs PRE-ROUND baseline row, same plain flow + same escalation-shaped drive: normalized session-event streams BYTE-IDENTICAL (volatiles replaced per the disclosed normalization) and identical drive outcome |
+| Z-0 | PASS | :3080 `401 -> 401` unchanged (probe only); test-use pristine AFTER (HEAD==baseline, porcelain 0); every `^a5ptc-` home swept |
+
+The three U-leg FAILs are the round's honest product findings (not kit artifacts — reproduced
+identically across four independent measurements, runs 4–8; the kit criteria were NOT bent;
+the kit-usage defects found en route — baseline seam generation, boot-retry/orphan-kill,
+crash-residue sweep, archive-receipt dispatch, consumption-fact flush race — were all fixed
+IN THE KIT and are disclosed above). Unload symmetry therefore stands UNSATISFIED on both
+production teardown faces for the PTC mount: the recipe face (`toolDisposers drained`) only
+holds at row stop. Reported for the parent's judgment; no stack code changed this round.
+
+> **[SUPERSEDED 结论指向，终轮追加]** 本段中 U-1b 的"archive 面"定性后被文末
+> 《测量缺陷披露》更正（kit marker 假红：archive 从未合法执行，行路由未归档成员合法）；
+> U-1/U-2 当时的红是真产品红（b3e99a14 修复后本 kit 复测转绿）。表内原文一字未动。
+
+Run hygiene: rounds 1–7 (`kit-run1..7.stdout.log`, their `runs/live-*` dirs) were
+intermediate kit-development rounds (crashes/usage bugs listed above) — swept locally;
+their per-leg outputs are quoted in the parent report. The committed receipts are the
+final run + this README + the two kit files; inside the final run dir,
+`baseline-dist.tar` + the extracted `baseline-pre-round/` (≈28 MB) are NOT committed —
+they are re-derivable byte-for-byte by `git archive 1962f879... packages/runtime/dist`
+(BD-0 re-derives them every run).
+
+### #334 re-run on the lifecycle-fix head `b3e99a14` (final `runs/live-2026-10-18T13-51-55/`; KIT_EXIT=2 — ONE honest red)
+
+> **[SUPERSEDED 结论指向，终轮追加]** 本节 U-1b 的"archive 面真红"定性后被文末
+> 《测量缺陷披露》更正为 kit 测量缺陷（archive 从未合法执行；行路由未归档成员合法）。
+> 本节所有测量现场原文一字未动，如实保留。
+
+Merged as `126bcd90` (single conflict = this README, union-resolved). Battery 7/7 EXIT=0
+(a5ptc spec now 10/10 with the L-U1/L-U1b/L-U2 legs). The lifecycle fix moved the member
+registry to ride RESIDENCY (`onAgentDisposed` = drop entry + revoke); the live kit then
+measured:
+
+- **U-1 PASS** (was red): drop now UNREGISTERS — `seenByRow=false`; the re-driven ask never
+  reaches the row, never mints a durable request, and lands fail-closed on the pre-round
+  host chain VERBATIM `sandbox escalation to "workspace-write" requires approval, but no
+  approval channel is available` (outcome `threw`, zero writes). The drop's own observation
+  `a5ptc: member-revoked` IS the recipe's "the mount unregistered" witness — the kit's
+  observation filter was updated to classify lifecycle events (registered/revoked/…) as
+  mount products rather than ask-sightings (probe vocabulary fix, disclosed; the ask-
+  sighting authority remains the callId-scoped DURABLE REQUEST + landing + zero-write).
+- **U-2 PASS** (was red): cold re-mount re-registers cleanly (`resume=200`, registrations
+  5→6, no duplicate-face throw) and the NEW callId lands allowed-once writing its own
+  artifact (the resume probe's glob call itself correctly answers the closed-world guard).
+- **U-1b FAIL — REAL RED, reproduced independently (runs 9 AND 10, post-fix)**: after the
+  leader's `team_archive_member` settles (`archived=true`, instance `inst-0umqwqq1e7su`),
+  a re-driven escalation ask on the archived member is STILL ROUTED by the row: a durable
+  control request opens against the archived member's instance (receipt
+  `drive-U1B-a5ptc-call-archived.json` + `human-arc-ctrl-*.json` subject
+  `{"kind":"instance","instanceId":"inst-0umqwqq1e7su"}`) and the drive hangs awaiting the
+  leader (`drive-timeout`, zero writes). No `member-revoked` observation fires for the
+  archived member — the row's revoke (which works on the drop face) never triggers through
+  the production ARCHIVE procedure. The fix's vitest L-U1b leg drives dispose+drain
+  directly and is green; on the production face the archive path does not reach the row's
+  revoke. Criteria untouched; reported as measured — for the fix lane: the recipe's
+  archive face remains UNSATISFIED at `b3e99a14`.
+
+Kit usage fixes this round (disclosed): bootWorld orphan-proofing (handle registered
+before the wait; SIGTERM→3s→SIGKILL; one port-offset boot retry), crash-run home reclaim
+at boot (§7 lineage), archive-quote receipt fixes. Intermediate rounds 9 and
+`kit-run8/9.stdout.log` swept locally; committed receipts = the two final runs
+(`live-2026-10-18T12-55-53` pre-fix 3-red + `live-2026-10-18T13-51-55` post-fix 1-red).
+
 ## 生命周期修复轮（lifecycle-fix round，parent 工单 2026-10-18；分支头基点 `45717a9f`）
 
 ### 三红原文引用（live-kit run `live-2026-10-18T12-55-53`，不改写；receipts 在
@@ -255,3 +406,44 @@ member-revoked。事实链：
   （真归档成功 + 冷启 re-mount → 第二条耐久审批），RED 由真归档程序形现场
   复现，与 live 症状同形。criteria 不弯：归档成员（durable ARCHIVED/DISPOSED）
   的 ask 永不被行看见，落原样 `next()` 委派，零耐久状态零观测。
+
+## #334-follow 终轮：U-1b 修复头 `5a4a25e7` 全链 **19/19 全绿**（`runs/live-2026-10-18T15-01-38/`，**KIT_EXIT=0**）
+
+### 测量缺陷披露（旧轮 receipts 一字未动，旧原文不改写）
+
+parent #334-follow 令坐实：**run4/run8/run9/run10 四轮 U-1b 的 `archived=true` 是 kit 的
+marker 级测量假红**。kit 的 mock archive 轮 tool call 只发 `{instanceId}`——公共入口
+（packages/tools/src/tools.ts `makeDefinition().execute` ~:446-452 + `archiveMemberSpec`）
+硬验 `rootSessionId + requestToken + targetInstanceId`，缺形即在入口 typed 拒，
+`ARCHIVE_MEMBER` 从未到达 performAction——被"归档"的成员从未归档、仍 resident+SETTLED，
+**行路由它在法律上是对的**。旧轮 `seenByRow=true` 测量本身为真（行确实路由），但对象是
+未归档成员，故"archive 面真红"的定性不成立（当时如实报的现场原文全部保留原位，不改写）。
+同时如实记：修复方 RED-first（`c33940d4`，生产程序形）证明的 **durable 法律缺口真实存
+在**（真归档成功 + 冷启 re-mount → 旧代码开出第二条耐久审批），`5a4a25e7` 的 durable
+admissibility oracle 已闭合之——本 kit 的 FACE2 腿在生产面独立复验。
+
+kit 侧三处修复（全部属 kit，非判据）：① archive tool call 补齐合法公共入口参数
+（rootSessionId + opaque requestToken + targetInstanceId），成败改以 **tool result** 判
+（verdict 取自最后一条 tool_result 的展平 JSON，executed/rejected/errored/unknown，
+raw 全文入账 `archive-turn.json`）；② U-1b 判据三件（行不见新 ask/零耐久请求/零写）不动，
+新增 **FACE2**：归档后冷启 re-mount（生产 executeTool 面复活 residency）再 drive——
+durable 法高于 residency，仍不可路由（restore 恢复面=派生面，本面无生产 restore 入口，
+由修复 lane vitest FACE3 覆盖，披露）；③ kit 蓝图 leader `teamEnvelope` 补 `archive-member`
+op（run11 首跑 `toolVerdict=rejected`，run12 以新捕获坐实原因
+`TEAM_RUNTIME_ENVELOPE_OUT_OF_BOUNDS`（inBounds 六 op 无 archive-member）——信封法 fail-closed
+正确，kit 蓝图漏授；补入后 run13 全绿。中间轮 run11/run12 为 kit 修复轮，run.log 留本地未提交
+（本节即其结论），提交 receipts = 三个终轮 + kit + README。
+
+### 终轮逐腿（19/19）
+
+H0 · OS-0 · BD-0 · T-0(surface=20 deny=0) · T-2a · T-1 · T-2 · **P-1**（正控真落盘+consFacts=1）
+· R-1 · M-1 · O-1 · E-1(arm A 原文) · X-1 · **U-1**（drop 面注销，宿主链 fail-closed 原文）
+· **U-2**（冷启干净再注册 5→6，allowed-once 真写） · **U-1b 全绿**（下） · N-1 · B-1（逐字节
+零差） · Z-0（401→401/pristine/homes 空）—— 全 PASS，**KIT_EXIT=0**。
+
+U-1b 终轮原文（关键段）：`archived=true toolVerdict=executed e1=session-team-child-47cc…
+instance=inst-0j124a200jai seenByRow=false outcome={"…ok":false,"error":"sandbox escalation
+to \"workspace-write\" requires approval, but no approval channel is available",
+"outcome":"threw"} obsDelta=["a5ptc: member-revoked root=…"]`（真归档触发 dispose→行注销
+见证）+ `FACE2 remount=200/{"…glob…no Team Tool Binding…"} rmSeenByRow=false
+rmOutcome={"…ok":false…}`（residency 翻回真后 durable oracle 仍拒路由，零耐久请求零写）。

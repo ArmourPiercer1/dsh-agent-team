@@ -1,0 +1,36 @@
+{
+  "requests": [
+    {
+      "requestId": "ctrl-1x3npvq0o00i571nde1w008c",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "summary": "bash [cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-stack/tests/homes/a5ptc-T-2026-10-18T15-01-38/workspace] [sandbox=workspace-write] echo A5PTC-E-EMITTER-TOK > '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-stack/tests/homes/a5ptc-T-2026-10...",
+      "correlation": "a5ptc-e-call-1"
+    },
+    {
+      "requestId": "ctrl-0f55wh906ssr1s13hmvlj1di",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "summary": "a5ptc escalation: bash -> workspace-write (call a5ptc-call-1)",
+      "correlation": "a5ptc-call-1"
+    }
+  ],
+  "decisions": [
+    {
+      "requestId": "ctrl-1x3npvq0o00i571nde1w008c",
+      "decision": "allow"
+    },
+    {
+      "requestId": "ctrl-0f55wh906ssr1s13hmvlj1di",
+      "decision": "allow"
+    }
+  ],
+  "consumptions": [
+    {
+      "requestId": "ctrl-1x3npvq0o00i571nde1w008c"
+    }
+  ],
+  "error": null
+}

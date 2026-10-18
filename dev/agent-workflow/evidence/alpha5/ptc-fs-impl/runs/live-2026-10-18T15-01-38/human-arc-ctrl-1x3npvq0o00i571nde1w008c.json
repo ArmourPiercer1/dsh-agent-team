@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "a5ptc-human-49dj8vom8l",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-1x3npvq0o00i571nde1w008c",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-a5ptc-team-2026-10-18T15-01-38"
+          },
+          "scope": {
+            "rootSessionId": "session-a5ptc-team-2026-10-18T15-01-38",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-0j124a200jai"
+            },
+            "targetInstanceId": "inst-0j124a200jai",
+            "actionName": "parameter-permission",
+            "correlation": "a5ptc-e-call-1",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:32e58a86d0e7387fbbaab95d257edffbec0325cdd3fe01d250b03ced6de934b7",
+            "authorityScope": {
+              "operationClass": "bash",
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              }
+            }
+          },
+          "requestSequence": 10,
+          "decisionSequence": 11,
+          "createdAt": "2026-10-18T15:01:43.526Z",
+          "note": "a5ptc kit human arc: allow ask-lane approvals (E leg rides the real chain)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}
