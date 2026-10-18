@@ -6724,3 +6724,48 @@ identity=true）/ drift 0（1746）/ p4t6 10/10 / glue7 kit 24/24 + v4 20/20 +
 preassembly 15/15 / a5glb 57/57。lint 本票 0 error（全仓既有债披露于台账 §3）。
 台账 = `dev/agent-workflow/evidence/alpha5/int-mnt/README.md`。push 未做（无授权，
 ff push 令因无凭据回报）。
+
+## 2026-10-18 natexe 轮（root 02:44/03:05Z 令：治理世界 native「审批后执行」= 正型闭环）
+
+基 = `alpha5-int-mnt@afd936ee`；branch `alpha5-natexe`；一次性 worktree
+`.worktrees/a5natexe`；**生产 diff = 0**（`check:artifacts:head` drift=0/1746、
+glue=7 亲验）。**因果链**（文件:行级，README §1）：ask/decision/consumption 全
+落账（pre-execute adapter + durable 账本三行），dispatch 撞封闭世界守卫：`bash`
+条目 `verified:false/unattributed` → BINDING_UNVERIFIED 逐字拒；根因 =
+`nativeNames` 唯一来源 = 全局面 `tools.schemas()`（agent-bindings.mjs:2287-2296），
+web profile 设计上全局面空（bind-diag 实测）。**修复 = 既有 placement 可信 feed**：
+平面 shell 行以 `teamToolPlane.names={bash:'bash'}` 在 native 拼写 takeover-mount
+（治理 `read` 行 shipped 先例，int-a5b T5；`team-tool-plane.mjs:315` names 合并），
+行经 `a5PlanePlacementFeed`→`bindOwnTools` 走 #313/#6 feed 三闸（realm 配对 /
+placement attribution is the only feed authority / placement→bind 连续性，
+install.ts:1077-1112），guard 以 placement 身份（def#N）核验后 abstain，consumed
+批准之后 placed confined body 真执行。零新语义、零新架构、不从作者字段造身份
+（v4 `toolBindings` 家族继续 dark = u1 ③ 选项 A 既定律）。
+
+**live kit**（`evidence/alpha5/natexe/run-natexe-live.mjs`，真宿主 v3+v4 双世界）=
+**26/26**（KIT_EXIT=0，runs/live-2026-10-18T03-54-26）：账本三行逐 requestId 对齐
++ 批准 OPEN 期零副作用（哨兵/逃逸双证）+ allow 消费后**真执行**（governed root 内
+哨兵字节 + wire exit=0）+ 批准不放大（第二次批准后的越界写 = kernel
+`Permission denied`，HOME 全域无逃逸文件）+ deny 臂先于 ask/backend 由**持久权限层**
+拒（`answered deny from the layer`，decision-lane.ts:387，逐字披露 README §5.2；
+GLUE-7 别名形 `template-deny-lane` 落点由 unit N4 与 #321 kit 继续钉）+ 装配见证
+`placement-feed rows=[team_grep,team_glob,bash,read]`+`confined-shell ran` +
+双时代零漂移（v3 anchor 恒 3/current；v4 = 4+contentHash）。resolveControl
+版本律实测 = v4 方法对 v3-era/v4-era 团队均以 payload version 4 成功。首跑红
+3 项全 = kit 侧伪影（memberEnvelopes 缺 request-control、oracle 会话归属法、
+deny 落点码预期），逐项修复并披露（README §5.3），生产 0 改动全程。
+
+**门**：全树双抓 RUN1≡RUN2≡published 红 9 **逐行三重恒等**（t2×1+mediation×5+
+restart×2+p6t6×1；files 579/legs 7289 = 578/7281+本票 1 文件 8 测试全绿）；
+GLUE-8 两模式本树复跑 **20/20 + 15/15** 零回归（其世界无 takeover config →
+A4.4 落点逐字存续；kit 未改一字节）；unit 新钉
+`a5natexe-native-takeover.test.ts` 8/8（unfed 落点逐字存续/fed 真执行/三闸拒形/
+lane native 拼写）；树律义务履行 = p4t6 具名集入账一笔（SCANNED_PATHS_A5NATEXE,
+tie 1185-1184, 979→980）+ unit 对无声明面 live 行用树内计算式动态 import 法
+（glue7 先例）+ 本 worktree client dist 环境面补齐（gitignored，a4p7 组合烟腿
+35/35 复绿）。收口三件套 = 台账 README + 本条日志 + receipts（kit/glue8/双抓
+logs 全部入账，raw 启动日志 token 全 REDACTED 后提交）。
+
+**git** = branch `alpha5-natexe` @ 本条目 commit；base `alpha5-int-mnt@afd936ee`；
+**push 未做**（https remote 无凭据亲验，如实回报）；:3080/:3180 只读探针前后同值
+（kit H0/H3），世界跑毕即扫，test-use pristine 前后亲验（porcelain 0）。
