@@ -1,0 +1,110 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/runtime
+
+ ❯ test/a5-pindir-reserved-native.test.ts (7 tests | 5 failed) 1139ms
+     × the 13 C-16 names are refused on EVERY mount surface (4 rows × 13 names, per-name) 5ms
+     × assembly-level injection: a full governed plane refuses names.glob=run_code BEFORE any mount (the C-16 repro leg) 10ms
+     × assembly-level injection: names.bash=schedule_list is refused the same way 2ms
+     × BIDIRECTIONAL drift: registry == catalog harvest (forward missing = RED; reverse needs an explicit disposition) 21ms
+     ✓ the host baseline pin matches tests/paths.mjs (drift pin reds when the host moves) 0ms
+     ✓ subagent_fork is a live shipped registration at the pin (KEPT, root ④) and the sibling routes are shipped-disabled 15ms
+     × zero-regression: defaults, the two supported takeover pairs, custom aliases, and the mcp__ prefix law all hold 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5-pindir-reserved-native.test.ts > a5-pindir C-16 reserved-native registry vs the authoritative catalog harvest > the 13 C-16 names are refused on EVERY mount surface (4 rows × 13 names, per-name)
+AssertionError: grep row under 'run_code' must not be accepted: expected true not to be true // Object.is equality
+ ❯ test/a5-pindir-reserved-native.test.ts:143:77
+    141|       for (const cls of ['grep', 'glob', 'bash'] as const) {
+    142|         const v = row.verifyPlaneNames({ ...D, [cls]: name }, 'read')
+    143|         expect(v.ok, `${cls} row under '${name}' must not be accepted`…
+       |                                                                             ^
+    144|         expect(v.code, `${cls} row under '${name}'`).toBe(UNSUPPORTED)
+    145|         expect(v.message ?? '', `${cls} row under '${name}' names it`)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  test/a5-pindir-reserved-native.test.ts > a5-pindir C-16 reserved-native registry vs the authoritative catalog harvest > assembly-level injection: a full governed plane refuses names.glob=run_code BEFORE any mount (the C-16 repro leg)
+AssertionError: expected '{"ok":true,"ownNames":["team_grep","r…' to be '{"ok":false,"code":"PLANE_NAMES_NATIV…' // Object.is equality
+
+Expected: "{"ok":false,"code":"PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED"}"
+Received: "{"ok":true,"ownNames":["team_grep","run_code","team_bash","read"]}"
+
+ ❯ test/a5-pindir-reserved-native.test.ts:173:21
+    171|     // pre-fix this string read {"ok":true,"ownNames":["team_grep","ru…
+    172|     // — the negative control recorded in evidence/alpha5/pindir/.
+    173|     expect(verdict).toBe(JSON.stringify({ ok: false, code: UNSUPPORTED…
+       |                     ^
+    174|     expect((built as { message?: string }).message ?? '').toContain("r…
+    175|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  test/a5-pindir-reserved-native.test.ts > a5-pindir C-16 reserved-native registry vs the authoritative catalog harvest > assembly-level injection: names.bash=schedule_list is refused the same way
+AssertionError: expected true not to be true // Object.is equality
+ ❯ test/a5-pindir-reserved-native.test.ts:191:26
+    189|       },
+    190|     })
+    191|     expect(built.ok).not.toBe(true)
+       |                          ^
+    192|     expect((built as { code?: string }).code).toBe(UNSUPPORTED)
+    193|     expect((built as { message?: string }).message ?? '').toContain("r…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  test/a5-pindir-reserved-native.test.ts > a5-pindir C-16 reserved-native registry vs the authoritative catalog harvest > BIDIRECTIONAL drift: registry == catalog harvest (forward missing = RED; reverse needs an explicit disposition)
+AssertionError: FORWARD drift — catalog names missing from PLANE_RESERVED_NATIVE (missing pin = RED): ["plugin_manager","run_code","schedule_create","schedule_delete","schedule_list","schedule_update","stagehand_act","stagehand_extract","stagehand_navigate","stagehand_observe","stagehand_screenshot","stagehand_tabs","workflow"]: expected [ 'plugin_manager', 'run_code', …(11) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "plugin_manager",
++   "run_code",
++   "schedule_create",
++   "schedule_delete",
++   "schedule_list",
++   "schedule_update",
++   "stagehand_act",
++   "stagehand_extract",
++   "stagehand_navigate",
++   "stagehand_observe",
++   "stagehand_screenshot",
++   "stagehand_tabs",
++   "workflow",
++ ]
+
+ ❯ test/a5-pindir-reserved-native.test.ts:200:137
+    198|     const pinned = new Set<string>(row.PLANE_RESERVED_NATIVE as unknow…
+    199|     const forward = [...catalog].filter((n) => !pinned.has(n)).sort()
+    200|     expect(forward, `FORWARD drift — catalog names missing from PLANE_…
+       |                                                                                                                                         ^
+    201|     const reverse = [...pinned].filter((n) => !catalog.has(n)).sort()
+    202|     const unexplained = reverse.filter((n) => REVERSE_DISPOSITIONS[n] …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  test/a5-pindir-reserved-native.test.ts > a5-pindir C-16 reserved-native registry vs the authoritative catalog harvest > zero-regression: defaults, the two supported takeover pairs, custom aliases, and the mcp__ prefix law all hold
+AssertionError: expected [ Array(53) ] to include 'run_code'
+ ❯ test/a5-pindir-reserved-native.test.ts:242:66
+    240|     expect(mcp.code).toBe(UNSUPPORTED)
+    241|     expect(row.PLANE_RESERVED_NATIVE_PREFIXES).toContain('mcp__')
+    242|     for (const n of C16_NAMES) expect(row.PLANE_RESERVED_NATIVE).toCon…
+       |                                                                  ^
+    243|   })
+    244| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 2 passed (7)
+   Start at  20:44:32
+   Duration  1.40s (transform 928ms, setup 0ms, import 58ms, tests 1.14s, environment 2ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

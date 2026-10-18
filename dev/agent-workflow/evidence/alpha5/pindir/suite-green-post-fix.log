@@ -1,0 +1,12 @@
+ ✓ test/a5-pindir-reserved-native.test.ts (7 tests) 1410ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  20:44:37
+   Duration  1.67s (transform 1.18s, setup 0ms, import 71ms, tests 1.41s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

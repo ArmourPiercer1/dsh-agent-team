@@ -1,0 +1,592 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit
+
+ ❯ test/plugin-dsh-compat.test.ts (7 tests | 5 failed) 757ms
+     ✓ the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version  615ms
+     × the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range) 19ms
+     × positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed) 33ms
+     × negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects) 14ms
+     × negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen 30ms
+     ✓ the vacuous-pass semantics are documented: a peerless manifest imposes no constraint (the pre-fix state the review closed) 15ms
+     × mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here) 28ms
+ ❯ test/a4p7-blueprint-version-clean.test.ts (60 tests | 12 failed) 3092ms
+     × the scan ran (a scan that could not run is never reported as clean) 16ms
+     × invoking the script by name is a real gate: non-zero exit while dirty sites exist 630ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 198ms
+     ✓ run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3) 171ms
+     ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 0ms
+     × every deferred path is still dirty (a migrated path must leave the list) 7ms
+     ✓ the fence needs no exemption for its own author 3ms
+     × the fence reports sites, not a bare count, and names a file the reader can open 38ms
+     × the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 1ms
+     ✓ packages/*/test is in scope: a SYNTHETIC .mjs test-tree emitter is in scope AND its version literal is classified 3ms
+     ✓ the named namespace traps are never reported as Blueprint sites 0ms
+     × the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 1ms
+     × the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
+     × every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 1ms
+     × unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated 1ms
+     ✓ every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row 1ms
+     ✓ the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2) 148ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)  569ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  1131ms
+     × the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4) 18ms
+     ✓ the blind-spot note prints the load-bearing sentence and the two-number audit clause is gone 0ms
+     ✓ the blind-spot line names the numeric-form family the text predicate does not read 0ms
+     ✓ the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3) 102ms
+     ✓ the scope function is the plan's list plus the measured third class — no more, no less 1ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 3ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 4ms
+     ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
+     ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
+     ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
+     ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
+     ✓ f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 0ms
+     ✓ f08 projection wire envelope is REFUSED (projection-envelope) 0ms
+     ✓ f09 session-binding row is REFUSED (session-binding) 0ms
+     ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
+     ✓ f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
+     ✓ f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop 5ms
+     ✓ f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
+     ✓ f14 governance-override row is REFUSED (governance-override) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
+     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f17 prose document without the blueprintId half is not a site at all 0ms
+     ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
+     ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
+     ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 3ms
+     ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
+     × f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 2ms
+     ✓ f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
+     ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
+     ✓ f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 10ms
+     ✓ f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
+     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 0ms
+     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 0ms
+     ✓ f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY) 0ms
+     ✓ f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY) 0ms
+     ✓ f31 quoted and bare key spellings of one typed object share ONE class 0ms
+     ✓ f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1) 4ms
+     ✓ f32 V3: members + identity triple under a row conflict is UNKNOWN; f32b: members WITHOUT the triple stays refused (round-3 F2) 0ms
+     ✓ f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D) 0ms
+     ✓ the fixture corpus exists and every fixture was exercised 0ms
+     × a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 3ms
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 5885e46e, 2 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+ ✓ test/a4-artifacts-nonempty.test.ts (4 tests) 757ms
+ ✓ test/rc2-kit-preset-seam.test.ts (15 tests) 253ms
+ ✓ test/rc2-kit-fault-injection.test.ts (8 tests) 5858ms
+     ✓ F0 the healthy path completes, stops its child, touches nothing else  538ms
+     ✓ F1 the total-request ceiling trips on distinct states and aborts via the owner  530ms
+     ✓ F2 a repeated state trips even with other sessions interleaved  526ms
+     ✓ F3 consecutive wait timeouts trip and unwind through the owner  554ms
+     ✓ F4 an unrecognized wire shape fails loudly and still runs cleanup  508ms
+     ✓ F5 the independent lifetime watchdog fires with no progress at all  908ms
+     ✓ F6 the abort reason is written where the next reader will look  545ms
+     ✓ F7 the actual runner callback and owned-process cleanup regressions pass  1718ms
+ ✓ test/rc2-kit-pin-hygiene.test.ts (7 tests) 367ms
+ ✓ test/t6-4-policy-precedence.test.ts (11 tests) 158ms
+ ✓ test/t6-9-negative-matrix.test.ts (12 tests) 201ms
+ ❯ test/rc2-sanitize-evidence.test.ts (13 tests | 1 failed) 6824ms
+     ✓ S1 a bare invocation is a usage error, not a rewrite 130ms
+     ✓ S2 --verify without a directory is a usage error too 110ms
+     ✓ S3 --from == --to is refused and the raw bytes stay put 152ms
+     ✓ S4 --to reaching --from through a symlink alias is refused 101ms
+     ✓ S5 a nested --to inside --from is refused (recursion into the raw tree) 149ms
+     ✓ S6 --store inside --to is refused (that is how secrets got back in) 156ms
+     ✓ S7 a non-empty --to needs --force, and --manifest must live in --to 238ms
+     ✓ S8 the run succeeds and the manifest records rawBytesUnchanged 4ms
+     ✓ S9 every raw file is byte-identical after the run 1ms
+     ✓ S10 the YAML api-key and JSON token/authorization values are redacted 0ms
+     ✓ S11 --verify accepts the sanitized tree and rejects a planted secret  379ms
+     ✓ S12 --verify notices the raw tree (the check is not vacuous) 101ms
+     × S13 file aliases, quoted values, and capture formats pass the standalone regressions 5160ms
+ ✓ test/t6-2-template-n-instances.test.ts (8 tests) 143ms
+ ✓ test/t6-5-compat-complete-true.test.ts (6 tests) 61ms
+ ✓ test/t6-6-snapshot-immutability.test.ts (8 tests) 98ms
+ ✓ test/t6-8-serialization-roundtrip.test.ts (9 tests) 54ms
+ ✓ test/a3p1-team-domain-tenth-store.test.ts (10 tests) 103ms
+ ✓ test/bp1h-blueprint-authoring.test.ts (8 tests) 56ms
+ ✓ test/t6-7-fresh-per-delegation.test.ts (6 tests) 48ms
+ ✓ test/t6-10-composition-pipeline.test.ts (5 tests) 40ms
+ ✓ test/a3p1-seam-additive-tables.test.ts (8 tests) 18ms
+ ✓ test/p4t5-crash-matrix.test.ts (13 tests) 15ms
+ ✓ test/t6-3-lifecycle-matrix.test.ts (8 tests) 19ms
+ ✓ test/p4t6-session-event-scan.test.ts (10 tests) 47ms
+ ✓ test/rc2-kit-wire-shape.test.ts (17 tests) 17ms
+ ✓ test/rc2-kit-fixture-invariants.test.ts (7 tests) 22ms
+ ✓ test/t6-1-no-agent-dependency.test.ts (6 tests) 27ms
+ ✓ test/p4t5-retry-restart.test.ts (11 tests) 12ms
+ ✓ test/testkit.test.ts (2 tests) 3ms
+ ✓ test/p4t5-corrupt-version.test.ts (10 tests) 7ms
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — tree before: HEAD 5885e46e, 2 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+    tree after:  HEAD 5885e46e, 2 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ ✓ test/a4p75-composition-smoke-classification.test.ts (54 tests) 13063ms
+     ✓ requires by id every arm this repository actually reports  8955ms
+     ✓ never reports a passing gate over a step it did not run  1722ms
+lint-visibility: eslint read 1288 of 2968 OFFERED tracked lintable file(s); 1680 are hidden by an ignore pattern (dev/ 668, docs/ 2, packages/client/composition-shim/ 2, packages/runtime/dist/ 877, tests/ 131); 1288 + 1680 = 2968 offered, + 0 skipped = 2968 tracked lintable path(s); nothing skipped
+ ❯ test/a4p7-merge-gate.test.ts (35 tests | 2 failed) 144878ms
+     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 25ms
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 3098ms
+       ✓ treats a step that did not run as a failure that says why, even at exit 0 1ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  1815ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  1113ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  2175ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  2389ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  1369ms
+       ✓ reports every verdict class with its set by path when run at the toplevel  530ms
+       ✓ refuses a directory that is not a repository, and is never believed as clean 115ms
+       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 157ms
+       ✓ classifies a lint run by its verdict line and its universe line, on captured output 5ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  14381ms
+       ✓ names the three states of a captured stderr, including the arm this gate cannot reach 1ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  14461ms
+       × the committed install surface is fresh against the tree, and a missing surface is refused 332ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  19804ms
+       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 68ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  41538ms
+       ✓ a crashed run's scratch is swept, and a live one is not 57ms
+       ✓ every workspace package that declares a typecheck script typechecks  16414ms
+       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  24479ms
+       ✓ tolerates a green trio and refuses a vanished one — the two are different answers 1ms
+       ✓ the hosted census capture reads as a report — never again as "no vitest summary at all" 4ms
+       ✓ reads a coloured client-lane transcript with the disclosed trio — styling may not change the verdict 5ms
+       ✓ a synthesised FOURTH failure past the disclosed trio is refused by name, coloured included 0ms
+       ✓ a capture with no summary is still refused — the refusal G2 could have quietly deleted to get green 0ms
+       ✓ a summary that exists but cannot be parsed names the shape it saw 0ms
+       ✓ the JSON report is the machine-readable source, and the exit status is part of the report 5ms
+       ✓ a missing instrument is a refusal that names it, never a pass 7ms
+       ✓ an instrument that is killed before reporting is a refusal that says so  509ms
+       ✓ a child killed by a signal is refused even when it printed a complete report 8ms
+       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 6ms
+       ✓ this spec itself is counted by the p4t6 scannable-file ledger 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 20 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the scan ran (a scan that could not run is never reported as clean)
+AssertionError: scan did not run: cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit is not the repository toplevel (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir); the fence gates on the WHOLE tree — run it from the toplevel: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:310:64
+    308| describe('a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope)…
+    309|   it('the scan ran (a scan that could not run is never reported as cle…
+    310|     expect(run.ran, `scan did not run: ${String(run.reason)}`).toBe(tr…
+       |                                                                ^
+    311|     // A positive control for `ran`: the extended scope is non-trivial…
+    312|     // empty tree or a truncated `git ls-files` cannot pass as "nothin…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > invoking the script by name is a real gate: non-zero exit while dirty sites exist
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:327:44
+    325|     // unknown; advisory never moves the exit code.
+    326|     const gating = run.dirty.length + run.unknown.length
+    327|     expect(spawned.status, spawned.stderr).toBe(gating > 0 ? 1 : 0)
+       |                                            ^
+    328|     expect(spawned.stdout).toContain('RESULT dirty(')
+    329|     expect(spawned.stdout).toContain('RESULT advisory(')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every deferred path is still dirty (a migrated path must leave the list)
+AssertionError: expected [ …(6) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "packages/domain/test/blueprint-v1-frozen-resume.test.ts",
++   "packages/domain/test/t2-blueprint-v2-requirements.test.ts",
++   "packages/runtime/test/a3p4-r4-authority-binding.test.ts",
++   "tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs",
++   "tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs",
++   "packages/legacy/test/p7t6-teammates-adapter.test.ts",
++ ]
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:375:19
+    373|     const owed = new Set(dirtyPaths)
+    374|     const stale = [...DEFERRALS.keys()].filter((p) => !owed.has(p))
+    375|     expect(stale).toEqual([])
+       |                   ^
+    376|   })
+    377|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the fence reports sites, not a bare count, and names a file the reader can open
+AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'OFFENDING packages/legacy/test/p7t6-t…'
+
+- Expected
++ Received
+
+- OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: 
++ scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
++ scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
++ scanned-in-scope: 0 tracked files
++ SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
++ adjudication-ledger:  (0 entries)
++ SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
++ RESULT not-run :: cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit is not the repository toplevel (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir); the fence gates on the WHOLE tree — run it from the toplevel
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:441:20
+    439|     // the archetype leg below pins.
+    440|     // §7.3: the named file moved with the archetype (same reason, sam…
+    441|     expect(report).toContain(
+       |                    ^
+    442|       'OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :…
+    443|     )
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line
+AssertionError: packages/legacy/test/p7t6-teammates-adapter.test.ts: the YAML string-carrier sites the fence must name: expected [] to deeply equal [ 119, 258, 285, 390, 408, 426, …(3) ]
+
+- Expected
++ Received
+
+- [
+-   119,
+-   258,
+-   285,
+-   390,
+-   408,
+-   426,
+-   468,
+-   470,
+-   472,
+- ]
++ []
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:476:86
+    474|       'packages/legacy/test/p7t6-teammates-adapter.test.ts'
+    475|     const lines = run.dirty.filter((s) => s.path === archetype).map((s…
+    476|     expect(lines, `${archetype}: the YAML string-carrier sites the fen…
+       |                                                                                      ^
+    477|     expect(report).toContain(`OFFENDING ${archetype} :: `)
+    478|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused
+AssertionError: expected [] to deeply equal [ 101 ]
+
+- Expected
++ Received
+
+- [
+-   101,
+- ]
++ []
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:584:73
+    582|     expect(run.dirty.filter((s) => s.path === f)).toEqual([])
+    583|     expect(run.unknown.filter((s) => s.path === f)).toEqual([])
+    584|     expect(run.advisory.filter((s) => s.path === f).map((s) => s.line)…
+       |                                                                         ^
+    585|     const refusedHere = run.refused.filter((s) => s.path === f)
+    586|     expect(refusedHere.map((s) => s.line)).toEqual([140, 147])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable
+AssertionError: serialization.test.ts must appear as visible REFUSED lines: expected 0 to be greater than 0
+ ❯ test/a4p7-blueprint-version-clean.test.ts:595:86
+    593|     // deciding channel, never just dropped.
+    594|     const ser = run.refused.filter((s) => s.path === 'packages/contrac…
+    595|     expect(ser.length, 'serialization.test.ts must appear as visible R…
+       |                                                                                      ^
+    596|     // The string-embedded sites (:93, :207) refuse from the string's …
+    597|     // pool (BLOCKING 1a split), never from the enclosing object's key…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2)
+AssertionError: packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts:101 must be an advisory line: expected undefined to be defined
+ ❯ named test/a4p7-blueprint-version-clean.test.ts:629:69
+    627|     const named = (path: string, line: number): string => {
+    628|       const s = run.advisory.find((x) => x.path === path && x.line ===…
+    629|       expect(s, `${path}:${String(line)} must be an advisory line`).to…
+       |                                                                     ^
+    630|       return s?.why ?? ''
+    631|     }
+ ❯ test/a4p7-blueprint-version-clean.test.ts:633:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated
+AssertionError: stale ledger row packages/client/test/client-plugin-mount.test.ts::L96::v1 — the site is gone; remove the adjudication: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:705:96
+    703|     }
+    704|     for (const k of UNKNOWN_LEDGER.keys()) {
+    705|       expect(live.has(k), `stale ledger row ${k} — the site is gone; r…
+       |                                                                                                ^
+    706|     }
+    707|     expect(run.unknown.map((u) => `${u.path}::L${String(u.line)}`), 'e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4)
+AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'adjudication-ledger: /srv/workspace/d…'
+
+- Expected
++ Received
+
+- adjudication-ledger: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json
++ scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
++ scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
++ scanned-in-scope: 0 tracked files
++ SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
++ adjudication-ledger:  (0 entries)
++ SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
++ RESULT not-run :: cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit is not the repository toplevel (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir); the fence gates on the WHOLE tree — run it from the toplevel
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:783:20
+    781|   it('the report names the ledger it read, and an UNTRACKED ledger nee…
+    782|     // (a) every normal report prints the resolved path + entry count.
+    783|     expect(report).toContain(`adjudication-ledger: ${resolve(REPO_ROOT…
+       |                    ^
+    784|     expect(report).toContain(`(${String(Object.keys(LEDGER_ALL).length…
+    785|     // (b) the override without test mode is refused: it is the mute w…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string)
+AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'REFUSED packages/contracts/test/seria…'
+
+- Expected
++ Received
+
+- REFUSED packages/contracts/test/serialization.test.ts :: 
++ scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
++ scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
++ scanned-in-scope: 0 tracked files
++ SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
++ adjudication-ledger:  (0 entries)
++ SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
++ RESULT not-run :: cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit is not the repository toplevel (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir); the fence gates on the WHOLE tree — run it from the toplevel
+
+ ❯ test/a4p7-blueprint-version-clean.test.ts:952:20
+    950|     // be visible as REFUSED and never reach a gated or dispatch class.
+    951|     expectSingle(fixture('f22'), 'refused')
+    952|     expect(report).toContain('REFUSED packages/contracts/test/serializ…
+       |                    ^
+    953|     expect([...new Set([...run.dirty, ...run.unknown, ...run.advisory]…
+    954|       'packages/contracts/test/serialization.test.ts',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+
+ FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > a real in-scope file that keys blueprintId WITHOUT a version literal is not a site
+AssertionError: expected 0 to be greater than 0
+ ❯ test/a4p7-blueprint-version-clean.test.ts:1051:28
+    1049|     const clean = 'tests/kits/exec-contract-live-smoke/exec-contract-l…
+    1050|     expect(dirtyPaths).not.toContain(clean)
+    1051|     expect(run.scopeFiles).toBeGreaterThan(dirtyPaths.length)
+       |                            ^
+    1052|   })
+    1053| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+
+ FAIL  test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
+AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD 5885e46e, 2 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
+    output tail:
+        at fail (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/runtime/dist/packages/runtime/src/plugin/host.js:199:15)
+        at validateTeamPluginConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/runtime/dist/packages/runtime/src/plugin/host.js:203:9)
+        at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/runtime/dist/packages/runtime/src/plugin/host.js:1103:33)
+        at Module.apply (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/runtime/dist/packages/runtime/src/plugin/host.js:2336:19)
+        at checkPluginContract (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/scripts/composition-smoke.mjs:201:24)
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/scripts/composition-smoke.mjs:298:13
+    file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/scripts/composition-smoke.mjs:422
+      throw new Error(failed
+            ^
+    Error: composition smoke failed
+        at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/scripts/composition-smoke.mjs:422:9
+    Node.js v24.21.0: expected 'refused' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "refused"
+
+ ❯ fail ../runtime/src/plugin/host.ts:648:10
+ ❯ validateTeamPluginConfig ../runtime/src/plugin/host.ts:654:63
+ ❯ bootstrap ../runtime/src/plugin/host.ts:1709:28
+ ❯ Module.apply ../runtime/src/plugin/host.ts:3096:45
+ ❯ checkPluginContract ../../scripts/composition-smoke.mjs:201:24
+ ❯ ../../scripts/composition-smoke.mjs:298:13
+ ❯ ../../scripts/composition-smoke.mjs:422:9
+ ❯ test/a4p7-merge-gate.test.ts:872:9
+    870|         `the composition arms have to RUN for this gate to be green; a…
+    871|           `It read "${r.verdict}". why: ${r.why}\n    output tail:\n  …
+    872|       ).toBe('passed')
+       |         ^
+    873|
+    874|       for (const target of compositionTargets()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+
+ FAIL  test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the committed install surface is fresh against the tree, and a missing surface is refused
+AssertionError: check:artifacts did not pass. why: verdict=stale drift=1 — the tree owes its rebuild: DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=stale compared=1748 drift=1 sites=1
+    [check-artifacts-committed] STALE install-surface artifacts — rebuild output must be committed together with the source change (same commit):
+      D glue placement drift (run pnpm build:composition and commit both): packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs != packages/runtime/src/plugin/live/team-tool-plane.mjs: expected 'failed' to be 'passed' // Object.is equality
+
+Expected: "passed"
+Received: "failed"
+
+ ❯ test/a4p7-merge-gate.test.ts:1389:72
+    1387|         classify: classifyArtifactsRun,
+    1388|       })
+    1389|       expect(r.verdict, `check:artifacts did not pass. why: ${r.why}`)…
+       |                                                                        ^
+    1390|       // The states, pinned against the tokens the script actually pri…
+    1391|       // this commit) without wrecking the tree to produce them.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range)
+AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+
+- Expected
++ Received
+
+  [
+    [
+      "@deepseek-ai/dsh",
+-     "0.2.0-rc.2",
++     "0.1.7-rc.1",
+    ],
+  ]
+
+ ❯ test/plugin-dsh-compat.test.ts:136:22
+    134|     const peers = manifest.peerDependencies ?? {}
+    135|     const dshPeers = Object.entries(peers).filter(([name]) => name ===…
+    136|     expect(dshPeers).toEqual([
+       |                      ^
+    137|       ['@deepseek-ai/dsh', EXPECTED_PEER_RANGE],
+    138|     ])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)
+AssertionError: expected { name: 'dsh-agent-team', …(4) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "exempted": false,
+  "name": "dsh-agent-team",
+  "peers": {
+    "@deepseek-ai/dsh": "0.1.7-rc.1",
+  },
+  "runtimeVersion": "0.2.0-rc.2",
+  "version": "0.1.1-alpha.2",
+}
+
+ ❯ test/plugin-dsh-compat.test.ts:147:73
+    145|   it('positive: runtime ' + EXPECTED_RUNTIME + ' → compatible, the eva…
+    146|     const { evaluatePluginCompatibility, getDshRuntimeVersion } = awai…
+    147|     expect(evaluatePluginCompatibility(manifest, {}, EXPECTED_RUNTIME)…
+       |                                                                         ^
+    148|     // …and against the evaluator's OWN runtime (the preflight call sh…
+    149|     // host actually makes: no explicit runtimeVersion argument).
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)
+AssertionError: expected undefined to be defined
+ ❯ test/plugin-dsh-compat.test.ts:157:19
+    155|     const { evaluatePluginCompatibility, pluginCompatibilityWarning } …
+    156|     const issue = evaluatePluginCompatibility(manifest, {}, PREVIOUS_G…
+    157|     expect(issue).toBeDefined()
+       |                   ^
+    158|     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_R…
+    159|     expect(issue?.runtimeVersion).toBe(PREVIOUS_GENERATION)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen
+AssertionError: expected { '@deepseek-ai/dsh': '0.1.7-rc.1' } to deeply equal { '@deepseek-ai/dsh': '0.2.0-rc.2' }
+
+- Expected
++ Received
+
+  {
+-   "@deepseek-ai/dsh": "0.2.0-rc.2",
++   "@deepseek-ai/dsh": "0.1.7-rc.1",
+  }
+
+ ❯ test/plugin-dsh-compat.test.ts:172:28
+    170|       const issue = evaluatePluginCompatibility(manifest, {}, runtimeV…
+    171|       expect(issue).toBeDefined()
+    172|       expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER…
+       |                            ^
+    173|       expect(issue?.runtimeVersion).toBe(runtimeVersion)
+    174|       expect(issue?.exempted).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)
+AssertionError: expected undefined to deeply equal { '@deepseek-ai/dsh': '0.2.0-rc.2' }
+
+- Expected:
+{
+  "@deepseek-ai/dsh": "0.2.0-rc.2",
+}
+
++ Received:
+undefined
+
+ ❯ test/plugin-dsh-compat.test.ts:196:26
+    194|     // erase it) — and this repo never supplies the exemption: the rea…
+    195|     // smoke asserts no compatibility.json grant exists.
+    196|     expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_R…
+       |                          ^
+    197|     expect(issue?.exempted).toBe(true)
+    198|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+
+ FAIL  test/rc2-sanitize-evidence.test.ts > evidence sanitizer — credential coverage and raw preservation > S13 file aliases, quoted values, and capture formats pass the standalone regressions
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ test/rc2-sanitize-evidence.test.ts:224:3
+    222|   })
+    223|
+    224|   it('S13 file aliases, quoted values, and capture formats pass the st…
+       |   ^
+    225|     const env: NodeJS.ProcessEnv = { ...process.env, SANITIZE_EVIDENCE…
+    226|     // A Node-based compatibility runner must not suppress nested --te…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+
+
+ Test Files  4 failed | 25 passed (29)
+      Tests  20 failed | 358 passed (378)
+   Start at  20:57:13
+   Duration  145.94s (transform 11.79s, setup 0ms, import 10.34s, tests 177.00s, environment 8ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
