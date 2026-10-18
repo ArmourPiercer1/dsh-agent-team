@@ -36,5 +36,15 @@
     "bytesTotal": 49500,
     "walksPerBackendRun": 1
   },
+  "allChannelProbe": {
+    "walks": 6600,
+    "auditLines": 6601,
+    "internalLines": 3300,
+    "exceptionStrings": 0,
+    "detailsFromTable": 3300,
+    "wireTokenHits": 0,
+    "watchedTokens": 5,
+    "internalWatchedTokens": 2
+  },
   "sinkWriteSitesAudited": "one, after the verdict (see row test X5)"
 }

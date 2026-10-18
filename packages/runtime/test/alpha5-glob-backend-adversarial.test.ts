@@ -91,6 +91,49 @@ const witness = { real: 0, link: 0, contended: 0, okWhileReal: 0, okWhileLink: 0
 /** Per-walk spill-probe tallies, exported into `adversarial-counters.json`. */
 const spill = { walks: 0, admittedWithBytes: 0, refusedWithBytes: 0, attributionMismatch: 0, canaryInChannel: 0, bytesTotal: 0 }
 
+/**
+ * ALL-CHANNEL PROBE (23:48Z 修复单 ④): the same live attacker, but now every
+ * channel a walk can be observed through is watched on every real walk —
+ * the returned object, the spill bytes, the audit/observe lines, the internal
+ * face (deliberately OPENED, worst case), and any exception string. A hit in
+ * ANY of them is recorded as a leak with the channel named.
+ */
+const channels = {
+  walks: 0,
+  resultBytes: 0,
+  spillBytes: 0,
+  auditLines: 0,
+  auditBytes: 0,
+  internalLines: 0,
+  internalBytes: 0,
+  exceptionStrings: 0,
+  detailsFromTable: 0,
+  wireTokenHits: 0,
+}
+/**
+ * Tokens that must never appear on an OUTPUT channel: the outside world's
+ * names, its path, and the canary that only exists inside it.
+ */
+const WIRE_TOKENS = [SECRET, 'leak.ts', 'leak-inner.txt', OUT, WORLD]
+
+/**
+ * The internal face is NOT an output channel, so it is watched against the
+ * OUTSIDE tokens only: it may legitimately quote an entry the row refused
+ * (that is what it is for), and the README says so, but it may never carry the
+ * outside tree's names or bytes either — the row never resolves a name into it.
+ */
+const INTERNAL_TOKENS = [SECRET, OUT]
+
+function watchWire(value: unknown, where: string, tokens: string[] = WIRE_TOKENS): void {
+  const text = typeof value === 'string' ? value : JSON.stringify(value)
+  for (const token of tokens) {
+    if (text.includes(token)) {
+      channels.wireTokenHits += 1
+      leaks.push(`${where}: the channel carries ${token}`)
+    }
+  }
+}
+
 /** One atomic swap of the contested path (rename(2) on one filesystem). */
 function swapTo(state: State): void {
   const contested = join(ROOT_DIR, 'live')
@@ -163,12 +206,63 @@ interface Probed {
   bytes(): string
 }
 
-async function runWalkProbed(pattern: string, locator: string = '.'): Promise<Probed> {
-  const chunks: string[] = []
-  const result = await backend.run(globCall(`advp-${pattern}-${locator}`, pattern, locator) as never, {
-    sink: { write: (v: string) => { chunks.push(String(v)) } },
+let probedBackend: GlobBackend | null = null
+
+/** The row under attack WITH every observability face an assembly could open. */
+function probedConf(): Record<string, unknown> {
+  return { ...confinedConf(WORLD) }
+}
+
+async function makeProbedBackend(): Promise<GlobBackend> {
+  if (probedBackend !== null) return probedBackend
+  const auditLines: string[] = []
+  const internalLines: string[] = []
+  const created = (row.createAnchoredGlobBackend as unknown as (o: Record<string, unknown>) => GlobBackend)({
+    realmId: 'a5glb-adv-channels',
+    rootDir: ROOT_DIR,
+    confined: probedConf(),
+    observe: (line: string) => { auditLines.push(line) },
+    internalLog: (line: string) => { internalLines.push(line) },
   })
-  return { result, bytes: () => chunks.join('') }
+  probedBackend = Object.assign(created, { __audit: auditLines, __internal: internalLines })
+  return probedBackend
+}
+
+async function runWalkProbed(pattern: string, locator: string = '.'): Promise<Probed> {
+  const attacked = await makeProbedBackend()
+  const chunks: string[] = []
+  let result: GlobBackendResult
+  try {
+    result = await attacked.run(globCall('advp', pattern, locator) as never, {
+      sink: { write: (v: string) => { chunks.push(String(v)) } },
+    })
+  } catch (error) {
+    // A8 says this cannot happen; if it ever does, the exception STRING is a
+    // channel and it gets watched exactly like the others.
+    channels.exceptionStrings += 1
+    watchWire(String((error as Error)?.stack ?? error), 'exception-string')
+    throw error
+  }
+  const audit = (attacked as unknown as { __audit: string[] }).__audit
+  const internal = (attacked as unknown as { __internal: string[] }).__internal
+  const bytes = chunks.join('')
+  channels.walks += 1
+  channels.resultBytes += JSON.stringify(result).length
+  channels.spillBytes += bytes.length
+  channels.auditLines += audit.length
+  channels.auditBytes += audit.join('\n').length
+  channels.internalLines += internal.length
+  channels.internalBytes += internal.join('\n').length
+  watchWire(result, 'return-object')
+  watchWire(bytes, 'spill')
+  audit.splice(0).forEach((line, i) => { watchWire(line, `audit-line#${String(i)}`); expect(line, `audit line not grammar-clean: ${line}`).toMatch(/^anchored-glob(?: [A-Za-z-]+)*(?: (?:family=a5glb-refused\/[a-z-]+|[a-zA-Z]+=[A-Za-z0-9._-]+))+$/) })
+  internal.splice(0).forEach((line, i) => { watchWire(line, `internal-line#${String(i)}`, INTERNAL_TOKENS) })
+  if (result.ok !== true) {
+    const table = (row as unknown as { GLOB_REFUSAL_TEXT: Record<string, string> }).GLOB_REFUSAL_TEXT
+    if (Object.values(table).includes(result.failure.detail)) channels.detailsFromTable += 1
+    else leaks.push(`refusal detail is not from the frozen table: ${result.failure.detail}`)
+  }
+  return { result, bytes: () => bytes }
 }
 
 /**
@@ -359,6 +453,16 @@ describe('A5-GLOB A — anchoring under attack', () => {
     expect(spill.canaryInChannel).toBe(0)
     expect(spill.admittedWithBytes).toBe(witness.okWhileReal)
     expect(spill.bytesTotal).toBeGreaterThan(0)
+    // the all-channel half: nothing outside ever reached anything observable,
+    // the audit grammar held on every single line, the frozen table was the
+    // source of every refusal's prose, and no exception string was ever needed.
+    expect(channels.walks).toBe(REAL_RACE_WALKS)
+    expect(channels.wireTokenHits).toBe(0)
+    expect(channels.exceptionStrings).toBe(0)
+    expect(channels.detailsFromTable).toBe(witness.refusedWhileLink + witness.refusedWhileReal)
+    expect(channels.auditLines).toBeGreaterThan(REAL_RACE_WALKS)
+    expect(channels.internalLines).toBeGreaterThan(0) // the opened face really did carry detail
+    expect(channels.resultBytes).toBeGreaterThan(0)
   }, 1_800_000)
 
   it('A6 an anchor EXILED out of the governed root mid-flight never answers', async () => {
@@ -414,6 +518,13 @@ describe('A5-GLOB A — anchoring under attack', () => {
     const dir = env['A5GLB_EVIDENCE_DIR']
     if (dir !== undefined && dir.length > 0) {
       mkdirSync(dir, { recursive: true })
+      // Run-shape byte totals are PRINTED, not committed: they measure the
+      // length of audit lines, and an audit line carries a pid, so they cannot
+      // be byte-identical across runs. No safety claim rests on them — the
+      // committed counters are counts of walks, lines and hits.
+      ;(globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(
+        `a5glb all-channel probe byte totals (diagnostic, not committed): result=${String(channels.resultBytes)} spill=${String(channels.spillBytes)} audit=${String(channels.auditBytes)} internal=${String(channels.internalBytes)}\n`,
+      )
       writeFileSync(join(dir, 'adversarial-counters.json'), `${JSON.stringify({
         raceIterations: RACE_ITERATIONS,
         realRaceWalks: REAL_RACE_WALKS,
@@ -427,6 +538,22 @@ describe('A5-GLOB A — anchoring under attack', () => {
         finalAttackerState: attackerState,
         liveWitness: { ...witness },
         spillProbe: { ...spill, walksPerBackendRun: 1 },
+        // The *byte* totals of the probe's own accumulators are run-shape noise
+        // (they count how many audit lines the timing of the race produced), so
+        // they are reported separately from the counters that must be
+        // reproducible: every law asserted here is a count of WALKS, LINES,
+        // HITS — never a byte total of a diagnostic accumulator.
+        allChannelProbe: {
+          walks: channels.walks,
+          auditLines: channels.auditLines,
+          internalLines: channels.internalLines,
+          exceptionStrings: channels.exceptionStrings,
+          detailsFromTable: channels.detailsFromTable,
+          wireTokenHits: channels.wireTokenHits,
+          watchedTokens: WIRE_TOKENS.length,
+          internalWatchedTokens: INTERNAL_TOKENS.length,
+        },
+
         sinkWriteSitesAudited: 'one, after the verdict (see row test X5)',
       }, null, 2)}\n`)
     }

@@ -372,20 +372,41 @@ describe('A5-GLOB P — rg PARITY (native oracle vs the confined Team walk)', ()
     expect(team.outcome.truncated).toBe(false)
   })
 
-  it('P9 illegal pattern — TYPED failure carrying the walker\'s own words, never an empty list', async () => {
+  it('P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker\'s words', async () => {
+    // Restated under A8: this leg used to pin that the walker's own words came
+    // back in `failure.detail`. Those words are FOREIGN TEXT — an untrusted
+    // program describing the tree — so under the unified output law they are
+    // enumeration data and no longer ride the wire. The error is still fully
+    // distinguishable (family + code + the exit number), and the words are
+    // still available where they belong: the internal face, off by default.
     const bad = '**/[a-'
     const native = nativeRg(rgPath, ROOT_DIR, nativeGlobArgv(bad))
     expect(native.code).toBe(2)
     const team = await call(bad)
     expect(team.ok).toBe(false)
-    const code = team.ok === true ? null : team.failure.code
-    const detail = team.ok === true ? '' : team.failure.detail
-    expect(team.ok === false && team.failure.class === 'undetermined').toBe(true)
-    expect(code).toMatch(/^rg-exit-|^rg-walker-error$|^rg-exit-unobserved$/)
-    expect(detail).toContain('error parsing glob')
+    if (team.ok !== false) return
+    expect(['walker-exit', 'walker-error']).toContain(team.failure.code)
+    expect(team.failure.family).toBe('a5glb-refused/walker-error')
+    expect(team.failure.code).not.toMatch(/\n/) // a code is a token, never prose
+    expect(team.failure.counts).toBeTypeOf('object')
+    expect(Object.values(team.failure.counts).every((v) => typeof v === 'number' && Number.isFinite(v))).toBe(true)
+    expect(team.failure.detail).toBe(row.GLOB_REFUSAL_TEXT[team.failure.code]) // every word comes from the frozen table
+    expect(team.failure.detail).not.toContain('error parsing glob')
+    // the words go to the internal face ONLY when an assembly asks for it:
+    const lines: string[] = []
+    const loud = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-p9-internal', rootDir: ROOT_DIR, confined: confinedConf(WORLD), internalLog: (l: string) => { lines.push(l) },
+    })
+    const loudResult = await loud.run(globCall('p9-loud', bad) as never, { sink: null })
+    expect(loudResult.ok).toBe(false)
+    expect(lines.join('\n')).toContain('error parsing glob')
+    expect(JSON.stringify(loudResult)).not.toContain('error parsing glob')
+    const quiet = await call(bad) // default assembly: nothing retained, nothing echoed
+    expect(JSON.stringify(quiet)).not.toContain('error parsing glob')
     parityRows.push({
       leg: 'P9 illegal pattern', pattern: bad, target: '.', nativeExit: native.code, nativeCount: 0, teamCount: 0,
-      teamTotal: 0, teamTruncated: false, teamFailure: code, orderMatch: true, note: 'typed walker error',
+      teamTotal: 0, teamTruncated: false, teamFailure: team.failure.code, orderMatch: true,
+      note: 'typed walker error: family a5glb-refused/walker-error + exit number; the walker\'s words stay off the wire (internal face only, default off)',
     })
   })
 
@@ -912,8 +933,239 @@ describe('A5-GLOB X — CHANNEL AUDIT: no unverified byte reaches any channel be
     // (e) nothing refuses AFTER the write site — the write is the last thing an
     //     admitted walk does before returning it:
     expect(lines.map((l, i) => ({ l, i })).filter(({ l, i }) => i > (writeSites[0]?.i ?? 0) && (l.includes('return failure(') || l.includes('return verdict')))).toEqual([])
+    // (f) A8 STATIC HALF — no call site can invent a prose channel. Exactly ONE
+    //     place assigns `detail:` in the module, and it is a table lookup; every
+    //     code literal handed to `failure()` is a key of that table. "Just add a
+    //     detail string here" is therefore not expressible in this file — a new
+    //     arm has to add a table row first, where a reviewer sees it.
+    const detailSites = lines.filter((l) => /\bdetail:/.test(l))
+    expect(detailSites.map((l) => l.trim())).toEqual([expect.stringContaining('GLOB_REFUSAL_TEXT[code]')])
+    expect(code.includes('String(detail)')).toBe(false)
+    const codes = new Set<string>()
+    const callShape = /failure\(\s*'([a-z]+)'\s*,\s*'([a-z0-9-]+)'/g
+    let hit: RegExpExecArray | null = callShape.exec(code)
+    while (hit !== null) {
+      codes.add(hit[2] ?? '')
+      hit = callShape.exec(code)
+    }
+    expect(codes.size).toBeGreaterThanOrEqual(20)
+    for (const c of codes) {
+      expect(row.GLOB_REFUSAL_TEXT[c], `refusal code ${c} has no frozen text`).toBeTruthy()
+      expect(row.GLOB_REFUSAL_FAMILIES[c], `refusal code ${c} has no family word`).toBeTruthy()
+    }
+    // (g) the internal face is opt-in in the SOURCE, never defaulted on:
+    expect(code.includes("typeof internalLog === 'function' ? internalLog : NO_DEBUG")).toBe(true)
+    expect(code.includes('const NO_DEBUG = () => {}')).toBe(true)
   })
 })
+
+  it('X7 WIRE SWEEP: every refusal the row can emit is a frozen code + family + arithmetic, and never an echoed name', async () => {
+    const LEAK_CANARY = 'A5GLB-UNVERIFIED-BYTES-DO-NOT-SPILL'
+    // A8 behavioural half. A battery that reaches as many refusal arms as the
+    // harness can drive, each with PLANTED NAMES that would be worth leaking
+    // (a canary file in the tree, a canary file outside it). Nothing in the
+    // returned object may contain any of them, and every word of prose must be
+    // one the module froze in its table.
+    const planted = [`${LEAK_CANARY}-w1.ts`, `${LEAK_CANARY}-w2.ts`]
+    for (const name of planted) {
+      writeFileSync(join(ROOT_DIR, 'docs', name), 'x\n')
+      utimesSync(join(ROOT_DIR, 'docs', name), 1_661_000_000, 1_661_000_000)
+    }
+    const escaping = join(ROOT_DIR, 'docs', 'zz-esc.ts')
+    symlinkSync(join(OUTSIDE_DIR, `${OUTSIDE_TOKEN}.ts`), escaping, 'file')
+    const blocked = join(ROOT_DIR, 'docs', 'zz-blocked.ts')
+    writeFileSync(blocked, 'x\n')
+    utimesSync(blocked, 1_661_000_100, 1_661_000_100)
+    chmodSync(blocked, 0o000)
+    const battery: [string, string, string][] = [
+      ['attribution refusal (post-stream)', 'docs/**', '.'],
+      ['walker error (bad glob)', '**/[a-', '.'],
+      ['protocol / empty pattern', '', '.'],
+      ['missing target', '**/*', 'no-such-dir-xyz'],
+      ['escaping target', '**/*', '../outside'],
+      ['absolute outside target', '**/*', OUTSIDE_DIR],
+      ['file as target', '**/*', 'src/a.ts'],
+      ['wrong placement for an absolute locator', '**/*', ROOT_DIR],
+    ]
+    const seenCodes: string[] = []
+    for (const [label, pattern, locator] of battery) {
+      const result = await call(pattern, locator)
+      expect(result.ok, `${label}: expected a refusal`).toBe(false)
+      if (result.ok !== false) continue
+      const f = result.failure
+      seenCodes.push(f.code)
+      expect(Object.values(row.GLOB_REFUSAL_TEXT)).toContain(f.detail) // no invented prose
+      expect(Object.values(row.GLOB_REFUSAL_FAMILIES)).toContain(f.family)
+      expect(f.code).toMatch(/^[a-z0-9._:-]{1,40}$/)
+      for (const [key, value] of Object.entries(f.counts)) {
+        expect(Number.isFinite(value as number), `count ${key} must be a finite number`).toBe(true)
+      }
+      const wire = JSON.stringify(result)
+      for (const token of [...planted, OUTSIDE_TOKEN, WORLD, ROOT_DIR]) {
+        expect(wire.includes(token), `${label}: the wire echoes ${token}`).toBe(false)
+      }
+    }
+    // the battery actually reached the interesting arms, not just the easy ones
+    expect(seenCodes).toContain('walker-error')
+    expect(seenCodes).toContain('walk-unverifiable') // the post-stream attribution arm
+    // and the OTHER attribution arm, driven directly (rg does not list symlinks,
+    // so a hostile entry list is the only honest way to reach it): same wire law
+    const anchor = await row.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: '.' })
+    expect(anchor.ok).toBe(true)
+    if (anchor.ok !== true) return
+    try {
+      const hostile = await row.verifyGlobResultsBeneath(anchor, [`docs/${planted[0] ?? ''}`, '../../../etc/passwd'])
+      expect(hostile.ok).toBe(false)
+      if (hostile.ok !== true) {
+        expect(Object.values(row.GLOB_REFUSAL_TEXT)).toContain(hostile.failure.detail)
+        expect(hostile.failure.family).toBe('a5glb-refused/walk-attribution')
+        expect(JSON.stringify(hostile)).not.toContain('passwd')
+        expect(JSON.stringify(hostile)).not.toContain(String(planted[0] ?? 'x'))
+      }
+    } finally {
+      await anchor.handle.close()
+    }
+    chmodSync(blocked, 0o644)
+    rmSync(blocked, { force: true })
+    rmSync(escaping, { force: true })
+    for (const p2 of planted) rmSync(p2, { force: true })
+  }, 240_000)
+
+  it('X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data', async () => {
+    // The `observe` face is the last channel that could carry a name "for
+    // debugging". Grammar-pinned: every line must be
+    //   `anchored-glob <verb>( <key>=<token>)+` with token = [A-Za-z0-9._-]+
+    // which excludes '/', spaces, newlines and therefore every path and every
+    // ripgrep sentence by construction.
+    const lines: string[] = []
+    const probeBackend = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-x8', rootDir: ROOT_DIR, confined: confinedConf(WORLD),
+      observe: (line: string) => { lines.push(line) },
+    })
+    // A listed file that cannot be opened at verification time drives the
+    // attribution arm (rg does not list symlinks, so a symlink could not).
+    const blocked = join(ROOT_DIR, 'docs', 'zz-esc2.ts')
+    writeFileSync(blocked, 'x\n')
+    utimesSync(blocked, 1_661_500_000, 1_661_500_000)
+    chmodSync(blocked, 0o000)
+    for (const [pattern, locator, callId] of [['**/*.ts', '.', 'x8-a'], ['**/[a-', '.', 'x8-b'], ['docs/**', '.', 'x8-c'], ['**/*', '../outside', 'x8-d'], ['', '.', 'x8-e']] as [string, string, string][]) {
+      await probeBackend.run(globCall(callId, pattern, locator) as never, { sink: null })
+    }
+    chmodSync(blocked, 0o644)
+    rmSync(blocked, { force: true })
+    expect(lines.length).toBeGreaterThanOrEqual(4)
+    expect(lines.some((l) => l.includes('family=a5glb-refused/walk-attribution'))).toBe(true)
+    expect(lines.some((l) => l.includes('walker-error'))).toBe(true)
+    // verb words (letters only), then key=token pairs. A token cannot contain a
+    // space, a newline or a '/' — the ONE exception is `family=`, whose shape is
+    // pinned exactly (`a5glb-refused/<word>`). So no path and no ripgrep
+    // sentence can parse as an audit line.
+    const grammar = /^anchored-glob(?: [A-Za-z-]+)*(?: (?:family=a5glb-refused\/[a-z-]+|[a-zA-Z]+=[A-Za-z0-9._-]+))+$/
+    for (const line of lines) {
+      expect(line, `audit line is not grammar-clean: ${line}`).toMatch(grammar)
+      expect(line.includes(OUTSIDE_TOKEN)).toBe(false)
+      expect(line.includes(WORLD)).toBe(false)
+      expect(line.includes('\n')).toBe(false)
+    }
+    // the same holds for the reviewer-facing `lastRuns` bookkeeping
+    const bookkeeping = JSON.stringify((probeBackend as unknown as { lastRuns: unknown[] }).lastRuns)
+    expect(bookkeeping.includes(OUTSIDE_TOKEN)).toBe(false)
+    expect(bookkeeping.includes(WORLD)).toBe(false)
+    expect(bookkeeping.includes('/')).toBe(false) // ids and numbers only
+  }, 240_000)
+
+  it('X9 NEVER-THROWS SWEEP: malformed calls settle typed, so no exception string is a channel', async () => {
+    const malformed: unknown[] = [
+      undefined, null, {}, { parsedArgs: null }, { parsedArgs: {} },
+      { parsedArgs: { tool: 'grep', pattern: '*' } },
+      { parsedArgs: { tool: 'glob' } },
+      { parsedArgs: { tool: 'glob', pattern: 42, target: '.' } },
+      { parsedArgs: { tool: 'glob', pattern: '*', target: 'a'.repeat(9000) } },
+      { parsedArgs: { tool: 'glob', pattern: '*', target: { placement: 'weird', locator: 'src' } } },
+      { parsedArgs: { tool: 'glob', pattern: '*', target: { placement: 'workspace', locator: 'src/../../etc' } } },
+      { parsedArgs: { tool: 'glob', pattern: '*', target: { placement: 'workspace', locator: '\0' } } },
+    ]
+    let thrown: unknown = null
+    const before = backend.execCount()
+    for (const [i, call_] of malformed.entries()) {
+      try {
+        const result = await backend.run(call_ as never, { sink: null })
+        expect(result, `legality of case ${String(i)}`).toBeTruthy()
+        if (result.ok === true) {
+          (globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(`a5glb X9 case ${String(i)} ANSWERED: ${JSON.stringify(call_).slice(0, 120)} -> ${JSON.stringify(result.outcome.files).slice(0, 120)}\n`)
+        }
+        expect(result.ok === false, `case ${String(i)} must be a refusal, not an answer`).toBe(true)
+        if (result.ok === false) {
+          expect(Object.values(row.GLOB_REFUSAL_FAMILIES)).toContain(result.failure.family)
+        }
+      } catch (error) {
+        thrown = error
+      }
+    }
+    expect(thrown, 'run() must never throw').toBe(null)
+    expect(backend.execCount()).toBe(before) // none of them reached a child
+  })
+
+  it('X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL', async () => {
+    // Default assembly: no `internalLog` was given, so the walker's words and
+    // every path the anchor law looked at exist nowhere observable. Two runs of
+    // the same input must be byte-identical — if anything were retained and
+    // folded into the answer, this is where it shows.
+    const first = await call('**/[a-')
+    const second = await call('**/[a-')
+    expect(JSON.stringify(first)).toBe(JSON.stringify(second))
+    const keys = Object.keys(backend).sort()
+    expect(keys).toEqual(['backendId', 'execCount', 'lastRuns', 'lastStageTrace', 'run'])
+    const surfaced = JSON.stringify(backend)
+    expect(surfaced).not.toContain('error parsing glob') // nothing retained behind the backend
+    // and when an assembly DOES ask, the text lands only there:
+    const seen: string[] = []
+    const loud = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-x10', rootDir: ROOT_DIR, confined: confinedConf(WORLD), internalLog: (l: string) => { seen.push(l) },
+    })
+    const result = await loud.run(globCall('x10', '**/[a-') as never, { sink: null })
+    expect(JSON.stringify(result)).not.toContain('error parsing glob')
+    expect(seen.some((l) => l.includes('error parsing glob'))).toBe(true)
+  }, 240_000)
+
+  it('X11 THE MATRIX: every source x sink cell is classified, and the classification is what the legs prove', () => {
+    // Fix-list ① asked for the table BEFORE the fix. It lives here as data so
+    // it cannot drift from the code: each cell names the leg that proves it,
+    // and the pre-fix column is the honest record of what WAS reachable.
+    const sources = ['walk-entry-names', 'walk-stdout-bytes', 'walker-stderr-text', 'provider-messages', 'host-parser-message', 'resolved-paths-from-verification', 'unexpected-exception-text']
+    const sinks = ['result-outcome', 'stream-chunk', 'spill-sink', 'failure-detail', 'failure-code-family-counts', 'audit-observe-line', 'thrown-exception-string', 'timeout-settlement', 'lastRuns-bookkeeping', 'internal-face-default-off']
+    const cell = (source: string, sink: string, preFix: string, postFix: string, proof: string) => ({ source, sink, reachableBeforeVerification: preFix, reachableAfterFix: postFix, proof })
+    const matrix = [
+      cell('walk-entry-names', 'result-outcome', 'no (A6 admitted array only)', 'no', 'S1 N3 N4 P1'),
+      cell('walk-entry-names', 'spill-sink', 'NO — written as the stream arrived (the A7 defect)', 'no: written once after the verdict, from the admitted array', 'X1 X4'),
+      cell('walk-entry-names', 'failure-detail', 'NO — the refused entry was quoted verbatim', 'no: frozen table prose + index/depth arithmetic', 'X7 X5'),
+      cell('walk-entry-names', 'audit-observe-line', 'no (codes and counts only)', 'no: grammar-pinned', 'X8'),
+      cell('walk-stdout-bytes', 'stream-chunk', 'NO — the handler wrote the sink per chunk', 'no: buffered only, no channel object in the handler', 'X5 X1'),
+      cell('walk-stdout-bytes', 'result-outcome', 'no (parsed, verified, then admitted)', 'no', 'N1 S1 A4 legs'),
+      cell('walker-stderr-text', 'failure-detail', 'NO — carried verbatim on walker-error and exit arms', 'no: exit number + byte count only', 'P9 X7'),
+      cell('walker-stderr-text', 'spill-sink', 'no (never written)', 'no', 'X2 X5'),
+      cell('provider-messages', 'failure-detail', 'NO — spawn/probe refusals echoed them', 'no: token + arithmetic, text to the internal face', 'X7 X5'),
+      cell('host-parser-message', 'failure-detail', 'NO — pattern-invalid echoed it', 'no', 'X7'),
+      cell('resolved-paths-from-verification', 'failure-detail', 'NO — anchor/exec-time refusals quoted /proc views and components', 'no', 'X7 X5'),
+      cell('unexpected-exception-text', 'thrown-exception-string', 'PARTIAL — construction-time throws only, run() caught nothing', 'no: run() wraps the whole walk, faults become a code', 'X9'),
+      cell('unexpected-exception-text', 'failure-detail', 'n/a (it escaped instead)', 'no: internal-error + arithmetic', 'X9'),
+      cell('walk-entry-names', 'timeout-settlement', 'no (static event word)', 'no', 'X3'),
+      cell('walk-entry-names', 'lastRuns-bookkeeping', 'no (ids and numbers)', 'no: asserted free of paths', 'X8'),
+      cell('walk-entry-names', 'internal-face-default-off', 'n/a (the face did not exist)', 'only here, and only when an assembly opens it (default OFF)', 'X10 P9'),
+    ]
+    expect(sinks.length).toBe(10)
+    expect(new Set(matrix.map((m) => `${m.source}->${m.sink}`)).size).toBe(matrix.length)
+    expect(matrix.filter((m) => m.reachableBeforeVerification.startsWith('NO')).length).toBeGreaterThanOrEqual(7)
+    expect(matrix.every((m) => m.proof.length > 0)).toBe(true)
+    const evidenceDir = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.A5GLB_EVIDENCE_DIR
+    if (typeof evidenceDir === 'string' && evidenceDir.length > 0) {
+      mkdirSync(evidenceDir, { recursive: true })
+      writeFileSync(join(evidenceDir, 'channel-matrix.json'), `${JSON.stringify({
+        note: 'sources of UNTRUSTED ENUMERATION DATA x observable sinks, for the a5glb glob row. "reachableBeforeVerification" is the honest record at commit c0714492 (the reviewer-confirmed leak); "reachableAfterFix" is the state under law A8 at this commit.',
+        sources, sinks, cells: matrix,
+      }, null, 2)}\n`)
+    }
+  })
 
 describe('A5-GLOB C — typed refusals BEFORE the child exists (execCount never moves)', () => {
   async function refused(code: string, pattern: string, locator: string, placement: string = 'workspace'): Promise<void> {

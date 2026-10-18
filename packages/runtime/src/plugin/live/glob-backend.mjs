@@ -90,6 +90,37 @@
  *         Legs X1-X6 are the behavioural per-channel evidence, leg X5 the
  *         mechanical static one (one write site, after the verdict; the stream
  *         handler mentions no channel; stderr never reaches a channel).
+ *     A8. THE UNIFIED OUTPUT LAW — THERE IS NO DATA-SHAPED OUTPUT CHANNEL.
+ *         A7 closed the byte streams; the enumeration data could still leave
+ *         through WORDS: a refusal detail that quotes the entry it refused, the
+ *         walker's stderr text pasted into `failure.detail`, a provider message
+ *         echoed on a spawn refusal, an exception string. Every one of those is
+ *         the attacker's own text, read back to them, and a refusal is exactly
+ *         when that matters. So the rule is now structural, not per-arm:
+ *           (1) an observable failure is a CLOSED CODE, a FAMILY word and
+ *               FINITE INTEGERS (`GLOB_REFUSAL_TEXT` / `GLOB_REFUSAL_FAMILIES` /
+ *               `counts`).
+ *               No call site may build a detail string — the helper takes a
+ *               code and looks the prose up in a frozen table, so a new arm
+ *               cannot invent a channel by accident;
+ *           (2) an observable success is the admitted array only (A6/A7);
+ *           (3) `observe` (the audit line face) carries codes, families, call
+ *               ids and arithmetic — never an entry, path or foreign message;
+ *           (4) an unexpected fault is `internal-error` + arithmetic, and
+ *               `run()` NEVER throws, so no exception string is a channel;
+ *           (5) rich post-mortem text exists ONLY on the internal face
+ *               (`internalLog`), DEFAULT OFF, and that face is NOT an output
+ *               channel: the plane must never wire it to a tool result, a spill
+ *               or anything model-visible (README states this for the mount).
+ *         The proofs, one per clause: X5 is the STATIC form of (1) (one `detail:`
+ *         assignment in this file, a table lookup, and every code literal at a
+ *         call site is a table key) plus of (5) (`internalLog` is opt-in in the
+ *         source); X7 is the behavioural wire sweep of (1)+(2); X8 the
+ *         grammar sweep of (3); X9 the never-throws sweep of (4); X10 the
+ *         default-off proof of (5); X11 emits the source x sink matrix this law
+ *         is derived from. The live attacker (adversarial leg A5) then probes
+ *         EVERY one of these channels, with the internal face deliberately
+ *         OPENED, on each of its real rg walks.
  *   The kernel confine is the layer under that, and its measured shape is
  *   asymmetric: inside the confined child, reading a file outside the root is
  *   EACCES while LISTING a directory outside the root SUCCEEDS (leg L3). So the
@@ -166,8 +197,132 @@ function hasLib64() {
   return lib64Present
 }
 
-/** The closed failure shape (a5p5 `BackendFailure`; the class set is CLOSED). */
-const failure = (cls, code, detail) => ({ ok: false, failure: { class: cls, code, detail: String(detail).slice(0, 400) } })
+/**
+ * THE SAFE-CODE LAW (A8) — an OBSERVABLE failure is a closed code, a family
+ * word, and NUMBERS. Nothing else. Never an entry name, never a path, never a
+ * walker byte, never a foreign error string: those are untrusted enumeration
+ * data, and a refusal is exactly the moment an attacker most wants their own
+ * names read back to them. Semantics stay legible because they live in the
+ * code + family + counts (`walker-exit` + `exit=2`, `walk-contaminated` +
+ * `entries=N`, `walk-too-large` + `bytes=N`), not in prose that echoes data.
+ *
+ * Rich text (which component, which errno, what ripgrep said) still exists for
+ * whoever assembles this row, but it goes ONLY to the internal debug face
+ * (`internalLog`, DEFAULT OFF) and never into a returned value.
+ */
+export const GLOB_REFUSAL_TEXT = Object.freeze({
+  'anchor-law-unavailable': 'this platform cannot honor the anchored open law',
+  'locator-rejected': 'the target locator is not a filesystem locator',
+  'root-symlink-alias': 'the governed root path is an alias, not a directory',
+  'root-unavailable': 'the governed root could not be opened or verified',
+  'placement-mismatch': 'the target placement does not match its locator form',
+  'target-outside-governed-root': 'the target is outside the governed root',
+  'symlink-alias': 'a path component of the target is an alias',
+  'target-unresolvable': 'the target does not exist as an openable directory',
+  'not-a-directory': 'a path component of the target is not a directory',
+  'anchor-open-failed': 'the anchored open of the target failed',
+  'anchor-unverifiable': 'the opened anchor could not be re-read for verification',
+  'exec-time-escape': 'an opened handle resolved outside the governed root',
+  'anchor-drift': 'the pinned anchor is not the object the walk ran under',
+  'root-drift': 'the governed root changed after the anchor was taken',
+  'walk-contaminated': 'a walk entry was proven not to belong inside the pinned anchor',
+  'walk-unverifiable': 'a walk entry could not be proven either way at verification time',
+  'walk-protocol-error': 'the walker broke the NUL output protocol',
+  'walker-exit': 'the walker process reported a nonzero exit',
+  'walker-error': 'the walker process reported an error on its diagnostic stream',
+  'walk-too-large': 'the walk exceeded the buffered output budget and was not parsed',
+  'wrong-tool-for-backend': 'this backend does not serve that tool',
+  'pattern-invalid': 'the host argument law rejected the glob pattern',
+  'rg-unavailable': 'the walker binary could not be resolved',
+  'spawn-failed': 'the confined spawn could not be created',
+  'confined-refused': 'the confined process plane refused the spawn',
+  'confined-unavailable': 'the confined process plane is unavailable on this host',
+  'internal-error': 'an unexpected internal fault stopped the walk',
+})
+
+/** The families are the wire-facing words: they group codes without carrying data. */
+export const GLOB_REFUSAL_FAMILIES = Object.freeze({
+  'anchor-law-unavailable': 'a5glb-refused/anchor-law',
+  'locator-rejected': 'a5glb-refused/request',
+  'root-symlink-alias': 'a5glb-refused/anchor-identity',
+  'root-unavailable': 'a5glb-refused/anchor-identity',
+  'placement-mismatch': 'a5glb-refused/request',
+  'target-outside-governed-root': 'a5glb-refused/request',
+  'symlink-alias': 'a5glb-refused/anchor-identity',
+  'target-unresolvable': 'a5glb-refused/request',
+  'not-a-directory': 'a5glb-refused/request',
+  'anchor-open-failed': 'a5glb-refused/anchor-law',
+  'anchor-unverifiable': 'a5glb-refused/anchor-law',
+  'exec-time-escape': 'a5glb-refused/anchor-identity',
+  'anchor-drift': 'a5glb-refused/anchor-identity',
+  'root-drift': 'a5glb-refused/anchor-identity',
+  'walk-contaminated': 'a5glb-refused/walk-attribution',
+  'walk-unverifiable': 'a5glb-refused/walk-attribution',
+  'walk-protocol-error': 'a5glb-refused/walk-protocol',
+  'walker-exit': 'a5glb-refused/walker-error',
+  'walker-error': 'a5glb-refused/walker-error',
+  'walk-too-large': 'a5glb-refused/cap',
+  'wrong-tool-for-backend': 'a5glb-refused/request',
+  'pattern-invalid': 'a5glb-refused/request',
+  'rg-unavailable': 'a5glb-refused/walker-setup',
+  'spawn-failed': 'a5glb-refused/confined-plane',
+  'confined-refused': 'a5glb-refused/confined-plane',
+  'confined-unavailable': 'a5glb-refused/confined-plane',
+  'internal-error': 'a5glb-refused/internal',
+})
+
+/** A token from OUTSIDE this module (a provider code) may only ever be a token. */
+const safeToken = (value) => {
+  const text = String(value ?? '')
+  return /^[A-Za-z0-9._:-]{1,40}$/.test(text) ? text : 'unspecified'
+}
+
+/**
+ * Build an OBSERVABLE refusal. `counts` is filtered to finite integers, so the
+ * only dynamic content a refusal can ever carry is arithmetic. `debugText` is
+ * handed to the internal face (if one is assembled) and dropped otherwise.
+ */
+const failure = (cls, code, counts = {}, debug = undefined, debugText = '') => {
+  const safeCounts = {}
+  for (const [key, value] of Object.entries(counts)) {
+    if (typeof value === 'number' && Number.isFinite(value)) safeCounts[key] = Math.trunc(value)
+  }
+  if (debug !== undefined && debugText.length > 0) emitDebug(debug, code, debugText)
+  return {
+    ok: false,
+    failure: {
+      class: cls,
+      code,
+      family: GLOB_REFUSAL_FAMILIES[code] ?? 'a5glb-refused/unclassified',
+      detail: GLOB_REFUSAL_TEXT[code] ?? 'the walk was refused; the reason is carried by the code, not by echoed data',
+      counts: safeCounts,
+    },
+  }
+}
+
+/** The internal face is called through here so a throwing sink cannot change a verdict. */
+function emitDebug(debug, code, text) {
+  try {
+    debug(`${code} ${String(text).slice(0, 2000)}`)
+  } catch {
+    /* a debug face is never allowed to alter an outcome */
+  }
+}
+
+/** No debug face: the default. OFF means OFF — nothing is retained anywhere. */
+const NO_DEBUG = () => {}
+
+/**
+ * The placements this row's own law can interpret. Anything else is refused.
+ * PROVENANCE, because there is no host enum to cite: the host glob argument law
+ * (`parseGlobArgs`) carries no placement at all, so `placement` is a LANE word,
+ * and these are the three this lane's callers actually send (relative targets as
+ * `workspace`, and a target given as an absolute path inside the root as
+ * `absolute-path`; `relative` is the same law under its other name). A word
+ * outside this set used to be silently treated as a relative target — the
+ * never-throws sweep (leg X9) caught that, and the row now refuses to guess.
+ */
+export const GLOB_PLACEMENTS = Object.freeze(['workspace', 'relative', 'absolute-path'])
 
 // ---------------------------------------------------------------------------
 // A1/A2 — the anchor: component-wise O_NOFOLLOW opens + exec-time handle re-read
@@ -215,18 +370,18 @@ const OPEN_FILE_NOFOLLOW = (fsConstants.O_RDONLY ?? 0) | (fsConstants.O_NOFOLLOW
  * Returns the accepted, still-open directory handle plus the identity the
  * verifier pins to, or a typed refusal code. Never reads a byte of payload.
  */
-export async function openAnchoredWalkRoot(rootDir, target) {
+export async function openAnchoredWalkRoot(rootDir, target, debug = NO_DEBUG) {
   if (fsConstants.O_NOFOLLOW === undefined || fsConstants.O_DIRECTORY === undefined) {
-    return failure('undetermined', 'anchor-law-unavailable', 'this platform exposes no O_NOFOLLOW/O_DIRECTORY, so the anchored open law cannot be honored')
+    return failure('undetermined', 'anchor-law-unavailable', {}, debug, 'O_NOFOLLOW/O_DIRECTORY absent from this platform')
   }
   if (target === null || typeof target !== 'object' || typeof target.locator !== 'string') {
-    return failure('denied', 'locator-rejected', 'a glob target is {placement, locator}')
+    return failure('denied', 'locator-rejected', { reason: 1 }, debug, 'target is not a {placement, locator} object')
   }
   const locator = target.locator
-  if (locator.trim().length === 0) return failure('denied', 'locator-rejected', 'the glob path must be a non-empty string')
-  if (locator.includes('://')) return failure('denied', 'locator-rejected', 'a filesystem locator never wears a URI scheme')
-  if (locator.startsWith('\\\\')) return failure('denied', 'locator-rejected', 'UNC/leading-backtick targets are refused')
-  if (locator.includes('\0')) return failure('denied', 'locator-rejected', 'a locator may not carry a NUL byte')
+  if (locator.trim().length === 0) return failure('denied', 'locator-rejected', { reason: 2 }, debug, 'locator is empty')
+  if (locator.includes('://')) return failure('denied', 'locator-rejected', { reason: 3 }, debug, 'locator carries a URI scheme')
+  if (locator.startsWith('\\\\')) return failure('denied', 'locator-rejected', { reason: 4 }, debug, 'locator is a UNC path')
+  if (locator.includes('\0')) return failure('denied', 'locator-rejected', { reason: 5 }, debug, 'locator carries a NUL byte')
 
   // The GOVERNED ROOT ITSELF is opened under the same law (measured, leg A3 of
   // the adversarial suite: an anchor taken from `realpath(rootDir)` alone walks
@@ -241,9 +396,9 @@ export async function openAnchoredWalkRoot(rootDir, target) {
   } catch (error) {
     const code = String(error?.code ?? '')
     const kind = kindOfComponent(String(rootDir))
-    if (kind === 'symlink') return failure('denied', 'root-symlink-alias', `the governed root path is a symlink (${code}): ${String(rootDir)}`)
-    if (kind === 'missing') return failure('denied', 'root-unavailable', `the governed root does not exist: ${String(rootDir)}`)
-    return failure('denied', 'root-unavailable', `the governed root could not be opened (${code || 'open-failed'}): ${String(rootDir)}`)
+    if (kind === 'symlink') return failure('denied', 'root-symlink-alias', {}, debug, `root path is an alias errno=${safeToken(code)} root=${String(rootDir)}`)
+    if (kind === 'missing') return failure('denied', 'root-unavailable', { reason: 1 }, debug, `root path absent root=${String(rootDir)}`)
+    return failure('denied', 'root-unavailable', { reason: 2 }, debug, `root open failed errno=${safeToken(code)} root=${String(rootDir)}`)
   }
   let rootReal
   let rootIdentity
@@ -253,17 +408,27 @@ export async function openAnchoredWalkRoot(rootDir, target) {
     rootIdentity = { dev: Number(rs.dev), ino: Number(rs.ino) }
   } catch (error) {
     await rootHandle.close().catch(() => undefined)
-    return failure('undetermined', 'root-unavailable', `the governed root has no verifiable view: ${String(error?.code ?? error)}`)
+    return failure('undetermined', 'root-unavailable', { reason: 3 }, debug, `root has no /proc view errno=${safeToken(error?.code)}`)
   }
   await rootHandle.close().catch(() => undefined)
 
   const absolute = locator.startsWith('/') || /^[A-Za-z]:[\\/]/.test(locator)
-  if (absolute && target.placement !== 'absolute-path') {
-    return failure('denied', 'placement-mismatch', 'an absolute locator must be classified as absolute-path')
+  // A8 also closes a SILENT-ACCEPT arm the never-throws sweep found: a
+  // placement word this row cannot interpret used to be ignored, so a call
+  // classified as something unknown was walked as if it were a plain relative
+  // target. The row's law can interpret exactly three placements; anything else
+  // is refused rather than guessed at. (Anchoring would have held either way —
+  // this is about not answering a question that was not asked.)
+  const placement = String(target.placement ?? '')
+  if (!GLOB_PLACEMENTS.includes(placement)) {
+    return failure('denied', 'placement-mismatch', {}, debug, `placement=${safeToken(placement)}`)
+  }
+  if (absolute && placement !== 'absolute-path') {
+    return failure('denied', 'placement-mismatch', {}, debug, `absolute locator under placement=${safeToken(placement)}`)
   }
   const lex = absolute ? resolve(locator) : resolve(rootReal, locator)
   if (!globIsBeneath(rootReal, lex)) {
-    return failure('denied', 'target-outside-governed-root', `target lexically escapes the governed root (${String(target.placement)}: ${locator})`)
+    return failure('denied', 'target-outside-governed-root', {}, debug, `placement=${safeToken(target.placement)} locator=${locator}`)
   }
 
   const rel = relative(rootReal, lex)
@@ -282,12 +447,15 @@ export async function openAnchoredWalkRoot(rootDir, target) {
         // lstat below only NAMES the reason (a symlink must never be reported
         // as "not a directory" — the reviewer's threat model reads these codes).
         const kind = kindOfComponent(cursor)
-        if (kind === 'symlink') return failure('denied', 'symlink-alias', `a path component is a symlink — refused at open time (${code}): ${cursor}`)
-        if (kind === 'missing') return failure('denied', 'target-unresolvable', `path does not exist at open time (${code}): ${cursor}`)
-        if (code === 'ENOENT') return failure('denied', 'target-unresolvable', `path does not exist at open time: ${cursor}`)
-        return failure('denied', 'not-a-directory', `a path component is not a directory (${code}): ${cursor}`)
+        // The refusal is decided by the failed open; the reason goes to the
+        // internal face only — a component path is enumeration-shaped data and
+        // the wire answer is the code.
+        if (kind === 'symlink') return failure('denied', 'symlink-alias', { depth: i }, debug, `alias component errno=${safeToken(code)} depth=${String(i)} at=${cursor}`)
+        if (kind === 'missing') return failure('denied', 'target-unresolvable', { depth: i, reason: 4 }, debug, `missing component errno=${safeToken(code)} depth=${String(i)} at=${cursor}`)
+        if (code === 'ENOENT') return failure('denied', 'target-unresolvable', { depth: i, reason: 5 }, debug, `ENOENT depth=${String(i)} at=${cursor}`)
+        return failure('denied', 'not-a-directory', { depth: i }, debug, `ENOTDIR errno=${safeToken(code)} depth=${String(i)} at=${cursor}`)
       }
-      return failure('undetermined', 'anchor-open-failed', `${code || 'open-failed'} at ${cursor}`)
+      return failure('undetermined', 'anchor-open-failed', { depth: i }, debug, `open failed errno=${safeToken(code)} depth=${String(i)} at=${cursor}`)
     }
     // A2: the OPENED object, not the path, is what gets judged.
     let opened
@@ -295,11 +463,11 @@ export async function openAnchoredWalkRoot(rootDir, target) {
       opened = fdPath(handle.fd)
     } catch {
       await handle.close().catch(() => undefined)
-      return failure('undetermined', 'anchor-unverifiable', 'no /proc view for the opened anchor fd')
+      return failure('undetermined', 'anchor-unverifiable', { depth: i }, debug, 'no /proc view for the opened anchor fd')
     }
     if (!globIsBeneath(rootReal, canonicalOrSelf(opened))) {
       await handle.close().catch(() => undefined)
-      return failure('denied', 'exec-time-escape', `opened handle resolves outside the governed root: ${opened}`)
+      return failure('denied', 'exec-time-escape', { depth: i }, debug, `opened handle outside governed root at depth=${String(i)} view=${opened}`)
     }
     if (i === components.length) break
     cursor = join(cursor, components[i] ?? '')
@@ -331,10 +499,15 @@ export async function openAnchoredWalkRoot(rootDir, target) {
  * The base is `/proc/self/fd/<anchor fd>`, i.e. the handle A3 kept open — a
  * later rename of the original path cannot move what is being verified.
  */
-export async function verifyGlobResultsBeneath(anchor, entries) {
+export async function verifyGlobResultsBeneath(anchor, entries, debug = NO_DEBUG) {
   if (anchor?.ok !== true || anchor.handle === undefined) {
-    return failure('undetermined', 'anchor-unverifiable', 'result verification needs an accepted anchor')
+    return failure('undetermined', 'anchor-unverifiable', { reason: 1 }, debug, 'result verification needs an accepted anchor')
   }
+  // A8: an entry name is UNTRUSTED ENUMERATION DATA. It may decide a verdict
+  // and it may reach the internal debug face; it never reaches the returned
+  // failure. So every refusal below reports WHERE (index, depth) and WHY (a
+  // reason number + errno-as-token), never WHICH name.
+  let position = -1
   const anchorHandle = anchor.handle
   const rootReal = anchor.rootReal
   const base = `/proc/self/fd/${String(anchorHandle.fd)}`
@@ -342,10 +515,10 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
   try {
     anchorNow = fdPath(anchorHandle.fd)
   } catch {
-    return failure('undetermined', 'anchor-unverifiable', 'the pinned anchor fd has no /proc view at result-verification time')
+    return failure('undetermined', 'anchor-unverifiable', { reason: 2 }, debug, 'the pinned anchor fd has no /proc view at result-verification time')
   }
   if (!globIsBeneath(rootReal, canonicalOrSelf(anchorNow))) {
-    return failure('denied', 'anchor-drift', `the pinned anchor resolves outside the governed root at verification time: ${anchorNow}`)
+    return failure('denied', 'anchor-drift', { entries: entries.length }, debug, `pinned anchor resolves outside the governed root at result time view=${anchorNow}`)
   }
   if (anchor.rootIdentity !== undefined) {
     // The root the anchor was taken under must STILL be the same object —
@@ -362,7 +535,7 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
       if (kind === 'symlink') {
         return failure('denied', 'root-symlink-alias', 'the governed root became a symlink after the anchor was taken')
       }
-      return failure('undetermined', 'root-drift', `the governed root is not verifiable at result time (${String(error?.code ?? 'open-failed')})`)
+      return failure('undetermined', 'root-drift', {}, debug, `governed root not verifiable at result time errno=${safeToken(error?.code)}`)
     } finally {
       await rootNow?.close().catch(() => undefined)
     }
@@ -371,22 +544,23 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
     // A3: the answer was produced under THIS inode; verify under the same one.
     const now = await anchorHandle.stat({ bigint: false })
     if (Number(now.dev) !== anchor.identity.dev || Number(now.ino) !== anchor.identity.ino) {
-      return failure('undetermined', 'anchor-drift', `the anchor inode changed after the walk (${String(anchor.identity.dev)}:${String(anchor.identity.ino)} -> ${String(Number(now.dev))}:${String(Number(now.ino))})`)
+      return failure('undetermined', 'anchor-drift', { entries: entries.length }, debug, `anchor inode changed after the walk ${String(anchor.identity.dev)}:${String(anchor.identity.ino)} -> ${String(Number(now.dev))}:${String(Number(now.ino))}`)
     }
   }
   const dirOk = new Map([['', { ok: true }]])
   const checked = []
   for (const entry of entries) {
+    position += 1
     const parts = String(entry).split('/')
     if (parts.some((p) => p === '..') || isAbsolute(String(entry)) || String(entry).includes('\0')) {
-      return failure('denied', 'walk-contaminated', `a walk entry is not root-relative: ${JSON.stringify(String(entry)).slice(0, 120)}`)
+      return failure('denied', 'walk-contaminated', { entries: entries.length, at: position, reason: 1 }, debug, `entry is not root-relative at=${String(position)} entry=${JSON.stringify(String(entry)).slice(0, 200)}`)
     }
     for (let i = 0; i < parts.length; i++) {
       const isLast = i === parts.length - 1
       const dirKey = parts.slice(0, isLast ? i + 1 : i).join('/')
       const seen = dirOk.get(dirKey)
       if (seen !== undefined && (seen.ok === true || !isLast)) {
-        if (seen.ok !== true) return failure(seen.class, seen.code, seen.detail)
+        if (seen.ok !== true) return seen
         if (!isLast) continue
       }
       const target = join(base, ...parts.slice(0, i + 1))
@@ -402,22 +576,22 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
           try {
             linkTarget = readlinkSync(target)
           } catch {
-            return failure('denied', 'walk-contaminated', `a walk entry is an unreadable symlink: ${entry}`)
+            return failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 2 }, debug, `unreadable symlink entry at=${String(position)} depth=${String(i)} entry=${entry}`)
           }
           const resolved = canonicalOrSelf(isAbsolute(linkTarget) ? linkTarget : join(dirname(target), linkTarget))
           if (!globIsBeneath(rootReal, resolved)) {
-            return failure('denied', 'walk-contaminated', `a walk entry resolves outside the governed root: ${entry}`)
+            return failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 3 }, debug, `entry resolves outside the governed root at=${String(position)} depth=${String(i)} entry=${entry}`)
           }
           dirOk.set(dirKey, { ok: true })
           break
         }
         const verdict = code === 'ELOOP'
-          ? failure('denied', 'walk-contaminated', `a walk entry crosses a symlinked directory: ${dirKey || entry}`)
+          ? failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 4 }, debug, `entry crosses a symlinked directory at=${String(position)} depth=${String(i)} at_path=${dirKey || entry}`)
           : code === 'ENOENT'
-            ? failure('denied', 'walk-unverifiable', `a walk entry does not exist at verification time: ${entry}`)
+            ? failure('denied', 'walk-unverifiable', { entries: entries.length, at: position, depth: i, reason: 1 }, debug, `entry absent at verification time at=${String(position)} depth=${String(i)} entry=${entry}`)
             : code === 'ENOTDIR'
-              ? failure('denied', 'walk-contaminated', `a walk entry is not a directory where one is required: ${dirKey || entry}`)
-              : failure('undetermined', 'walk-unverifiable', `${code || 'open-failed'} verifying ${entry}`)
+              ? failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 5 }, debug, `directory required at=${String(position)} depth=${String(i)} at_path=${dirKey || entry}`)
+              : failure('undetermined', 'walk-unverifiable', { entries: entries.length, at: position, depth: i, reason: 2 }, debug, `verifying open failed errno=${safeToken(code)} at=${String(position)} depth=${String(i)} entry=${entry}`)
         if (isLast) return verdict
         dirOk.set(dirKey, verdict)
         return verdict
@@ -426,16 +600,16 @@ export async function verifyGlobResultsBeneath(anchor, entries) {
         const stats = await handle.stat({ bigint: false })
         const opened = fdPath(handle.fd)
         if (!globIsBeneath(rootReal, canonicalOrSelf(opened))) {
-          const verdict = failure('denied', 'walk-contaminated', `a walk entry resolves through an alias outside the governed root: ${opened}`)
+          const verdict = failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 6 }, debug, `entry resolves through an alias outside the governed root at=${String(position)} depth=${String(i)} view=${opened}`)
           if (isLast) return verdict
           dirOk.set(dirKey, verdict)
           return verdict
         }
         if (isLast && !stats.isFile()) {
-          return failure('denied', 'walk-contaminated', `a walk entry is not a regular file: ${entry}`)
+          return failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 7 }, debug, `entry is not a regular file at=${String(position)} entry=${entry}`)
         }
         if (!isLast && !stats.isDirectory()) {
-          const verdict = failure('denied', 'walk-contaminated', `a walk entry is not a directory: ${dirKey}`)
+          const verdict = failure('denied', 'walk-contaminated', { entries: entries.length, at: position, depth: i, reason: 8 }, debug, `prefix is not a directory at=${String(position)} depth=${String(i)} at_path=${dirKey}`)
           dirOk.set(dirKey, verdict)
           return verdict
         }
@@ -507,7 +681,9 @@ export function parseWalkOutput(stdout) {
   const entries = []
   for (const record of records) {
     if (record.length === 0) {
-      return { ok: false, code: 'walk-protocol-error', detail: 'the walker emitted an empty NUL-delimited record mid-stream' }
+      // No `detail` here either (A8): the parser reports the CODE, and the only
+      // prose for it is the table's. The stream snippet stays out of the verdict.
+      return { ok: false, code: 'walk-protocol-error' }
     }
     entries.push(record.startsWith('./') ? record.slice(2) : record)
   }
@@ -524,7 +700,8 @@ export function parseWalkOutput(stdout) {
  *   templateId?: string, instanceId?: string,
  *   maxResults?: number,                    // inline cap; default GLOB_MAX_RESULTS, ceiling GLOB_MAX_RESULTS_CEILING
  *   timeoutMs?: number,                     // cooperative walk budget
- *   observe?: (line: string) => void,
+ *   observe?: (line: string) => void,           // audit lines: codes + arithmetic only (A8)
+ *   internalLog?: (line: string) => void,       // INTERNAL FACE, default OFF; not an output channel (A8)
  * }
  */
 export function createAnchoredGlobBackend(options) {
@@ -541,7 +718,14 @@ export function createAnchoredGlobBackend(options) {
     // channel audit reachable by a test instead of only by 8 MB of filenames.
     maxWalkBytes = GLOB_MAX_WALK_BYTES,
     observe = () => {},
+    // THE INTERNAL FACE (A8) — NOT AN OUTPUT CHANNEL. Default OFF: nothing is
+    // retained or emitted anywhere. An assembly that wants post-mortem detail
+    // supplies its own sink, and owns keeping it off every model-visible and
+    // user-visible surface; this module never routes it to `io`, to a result, or
+    // to `observe` (which is itself restricted to codes and arithmetic).
+    internalLog,
   } = options ?? {}
+  const debug = typeof internalLog === 'function' ? internalLog : NO_DEBUG
   if (typeof realmId !== 'string' || realmId.length === 0) throw new TypeError('glob backend: realmId is required')
   if (typeof rootDir !== 'string' || rootDir.length === 0) throw new TypeError('glob backend: rootDir is required')
   if (!Number.isInteger(maxResults) || maxResults <= 0 || maxResults > GLOB_MAX_RESULTS_CEILING) {
@@ -575,185 +759,203 @@ export function createAnchoredGlobBackend(options) {
     lastRuns,
 
     async run(call, io) {
-      const parsed = call?.parsedArgs
-      if (parsed?.tool !== 'glob') {
-        return failure('denied', 'wrong-tool-for-backend', 'the glob backend got a non-glob call')
-      }
-      // The host's own public argument law runs as a SECOND gate (the lane
-      // already parsed strictly; this keeps the vocabulary single-owned).
+      // A8: THIS METHOD NEVER THROWS, and a fault never becomes a string
+      // channel either — an unexpected internal fault is a code plus
+      // arithmetic like any other refusal, and its text goes to the internal
+      // face (default off) rather than into an answer.
       try {
-        parseHostGlobArgs({ pattern: parsed.pattern })
+        return await runGoverned(call, io)
       } catch (error) {
-        return failure('denied', 'pattern-invalid', String(error?.message ?? error))
-      }
-      if (rgPath === null) {
-        try {
-          rgPath = await resolveRgPath()
-        } catch (error) {
-          return failure('undetermined', 'rg-unavailable', String(error?.message ?? error))
-        }
-      }
-      trace = ['probe']
-      if (probed === null) {
-        probed = await provider.probe()
-        if (probed.ok !== true) {
-          trace = ['probe', 'terminate']
-          observe(`anchored-glob capability REFUSED realm=${realmId} code=${String(probed.error?.code ?? 'probe-refused')}`)
-          return failure('denied', `confined-unavailable:${String(probed.error?.code ?? 'probe-refused')}`, String(probed.error?.message ?? 'the confined provider refused its capability probe'))
-        }
-        observe(`anchored-glob capability OK realm=${realmId} legs=${String(probed.value.length)}`)
-      }
-
-      // A1 + A2: anchor BEFORE the child exists; on refusal no process and no
-      // byte of payload is ever produced.
-      const anchor = await openAnchoredWalkRoot(rootDir, parsed.target)
-      if (anchor.ok !== true) {
-        trace = ['probe', 'anchor-refused']
-        observe(`anchored-glob refused ${anchor.failure.code} call=${String(call.callId)} realm=${realmId}`)
-        return anchor
-      }
-      trace = ['probe', 'prepare', 'execute']
-      const rgBinDir = rgPath.slice(0, rgPath.lastIndexOf('/'))
-      const request = {
-        grantFingerprint: `a5glb:${realmId}:${templateId}:${String(call.callId)}`,
-        realmId,
-        bindingId: `a5glb-glob:${templateId}`,
-        memberScope: instanceId,
-        argv: [rgPath, ...globArgv(parsed), ...GLOB_OUTPUT_PROTOCOL_ARGV],
-        // The anchored directory. The walk root itself is the child's cwd, so
-        // argv carries no path element (a swappable string never reaches rg).
-        cwd: anchor.anchorPath,
-        env: [['PATH', '/usr/bin:/bin']],
-        allowPaths: [
-          SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
-          ...(hasLib64() ? [SYSTEM_RX('/lib64')] : []),
-          SYSTEM_RX(rgBinDir),
-          { path: anchor.rootReal, accessBits: { readFile: true, readDir: true } },
-        ],
-      }
-      let handle
-      try {
-        handle = await provider.spawnStreaming(request)
-      } catch (error) {
-        await anchor.handle.close().catch(() => undefined)
-        trace = [...trace, 'terminate']
-        return failure('undetermined', 'spawn-failed', String(error?.message ?? error))
-      }
-      if (handle.ok !== true) {
-        await anchor.handle.close().catch(() => undefined)
-        trace = ['probe', 'prepare', 'terminate']
-        observe(`anchored-glob spawn REFUSED realm=${realmId} code=${String(handle.error?.code ?? 'spawn-refused')}`)
-        return failure('denied', `confined-refused:${String(handle.error?.code ?? 'spawn-refused')}`, String(handle.error?.message ?? 'the confined spawn was refused'))
-      }
-      executed += 1
-      const child = handle.value
-      // The pinned anchor handle MUST outlive every path the walk produced:
-      // A4 verifies against it, so it closes only after the verdict exists.
-      try {
-        let stdout = ''
-        let stderr = ''
-        let overflow = false
-        child.stdout.on('data', (chunk) => {
-          // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
-          // UNVERIFIED until the verdict below admits them, and the spill
-          // channel is a channel like any other: writing it as it arrives (the
-          // shape this row had) means a walk that is refused a moment later has
-          // already leaked its raw bytes into spill. So the stream is buffered
-          // (bounded by GLOB_MAX_WALK_BYTES, whose refusal is unchanged) and the
-          // ONLY sink write in this module happens after the verdict, from the
-          // admitted array. See the channel audit in the header.
-          const text = String(chunk)
-          if (stdout.length + text.length <= walkBufferBytes) {
-            stdout += text
-          } else {
-            overflow = true
-          }
-        })
-        child.stderr.on('data', (chunk) => {
-          // Bounded, like every other buffer: the diagnostic channel cannot be
-          // turned into a memory channel by a chatty walker.
-          if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
-        })
-        const exit = await Promise.race([
-          child.exited,
-          new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
-        ])
-        await child.terminate() // the frozen lease arm settles exactly once per path
-        trace = [...trace, 'terminate']
-        if (exit?.timedOut === true) {
-          observe(`anchored-glob TIMEOUT realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)}`)
-          return {
-            ok: true,
-            outcome: { outputMode: 'files_with_matches', matches: [], counts: [], files: [], totalMatches: 0, truncated: false },
-            settlement: { kind: 'cancelled', event: 'glob-walk-terminated-after-timeout' },
-          }
-        }
-        const code = typeof exit?.code === 'number' ? exit.code : null
-        const stderrText = stderr.trim().slice(0, GLOB_MAX_STDERR_BYTES)
-        if (overflow) {
-          return failure('undetermined', 'walk-too-large', `the walk streamed more than ${String(walkBufferBytes)} bytes; it was not parsed, and nothing was written to any channel`)
-        }
-        if (code !== 0 && code !== 1) {
-          observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code)}`)
-          return failure('undetermined', code === null ? 'rg-exit-unobserved' : `rg-exit-${String(code)}`, stderrText || 'ripgrep reported an error')
-        }
-        if (stderrText.length > 0) {
-          // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
-          // arm can report a hard walker error's exit code as 0 while stderr
-          // carries the walker's words (invalid glob, unreadable root). So the
-          // walker's SPEECH, not the code, is the discriminator: a walk that
-          // ends quietly has an empty stderr; one that spoke is an ERROR leg
-          // and lands TYPED — never an empty list pretending the subtree clean.
-          // This cannot false-refuse on the noise a bare rg makes in a nested
-          // repo: the governed argv carries --no-ignore, so the walker runs no
-          // upward ignore-discovery and never touches a parent .git (measured:
-          // without --no-ignore, a confined walk in this repo does emit a
-          // `.git: Permission denied` line; with it, stderr stays empty).
-          observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} (exit read as ${String(code)}; stderr carried it)`)
-          return failure('undetermined', 'rg-walker-error', stderrText)
-        }
-        const framed = parseWalkOutput(stdout)
-        if (framed.ok !== true) {
-          // The framing promise broke (an empty record mid-stream): the walk's
-          // output is not attributable to objects, so nothing is presented.
-          observe(`anchored-glob PROTOCOL-BREAK ${framed.code} call=${String(call.callId)}`)
-          return failure('undetermined', framed.code, framed.detail)
-        }
-        const records = framed.entries
-        // A4: no path is returned unless every one of them is proven inside the
-        // pinned anchor inode at this moment.
-        const verdict = await verifyGlobResultsBeneath(anchor, records)
-        if (verdict.ok !== true) {
-          observe(`anchored-glob RESULT-REFUSED ${verdict.failure.code} call=${String(call.callId)} entries=${String(records.length)}`)
-          return verdict
-        }
-        // A6 (single producer): `verdict.entries` is the verified array with the
-        // anchor's own prefix already applied — no string work happens between
-        // verification and presentation. The ONLY thing done to it here is the
-        // inline cap, an array window that preserves order (pinned by leg P10).
-        const files = verdict.entries.slice(0, maxResults)
-        // THE ONE SINK WRITE IN THIS MODULE (channel audit, header A7): after the
-        // verdict, from the admitted array only. Spill therefore carries exactly
-        // what is presented, in the walker's own NUL framing — never more, never
-        // less, and never a byte of a refused walk.
-        if (io?.sink && files.length > 0) io.sink.write(`${files.join('\0')}\0`)
-        lastRuns.push({ callId: call?.callId, pid: child.pid, exit: code, total: verdict.entries.length, capped: verdict.entries.length > files.length })
-        observe(`anchored-glob ran realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)} files=${String(verdict.entries.length)} capped=${String(verdict.entries.length > files.length)}`)
-        return {
-          ok: true,
-          outcome: {
-            outputMode: 'files_with_matches',
-            matches: [],
-            counts: [],
-            files,
-            totalMatches: verdict.entries.length,
-            truncated: verdict.entries.length > files.length,
-          },
-          settlement: { kind: 'completed' },
-        }
-      } finally {
-        await anchor.handle.close().catch(() => undefined)
+        trace = [...trace, 'internal-fault']
+        observe(`anchored-glob INTERNAL-FAULT realm=${realmId} call=${String(call?.callId)}`)
+        return failure('undetermined', 'internal-error', {}, debug, `unexpected fault code=${safeToken(error?.code)} ${String(error?.stack ?? error?.message ?? error)}`)
       }
     },
+  }
+
+  /** The governed walk itself, kept whole so `run` can wrap it without gaps. */
+  async function runGoverned(call, io) {
+        const parsed = call?.parsedArgs
+        if (parsed?.tool !== 'glob') {
+          return failure('denied', 'wrong-tool-for-backend', {}, debug, `tool=${safeToken(parsed?.tool)}`)
+        }
+        // The host's own public argument law runs as a SECOND gate (the lane
+        // already parsed strictly; this keeps the vocabulary single-owned).
+        try {
+          parseHostGlobArgs({ pattern: parsed.pattern })
+        } catch (error) {
+          // The walker's own words are foreign text: internal face only.
+          return failure('denied', 'pattern-invalid', {}, debug, String(error?.message ?? error))
+        }
+        if (rgPath === null) {
+          try {
+            rgPath = await resolveRgPath()
+          } catch (error) {
+            return failure('undetermined', 'rg-unavailable', {}, debug, String(error?.message ?? error))
+          }
+        }
+        trace = ['probe']
+        if (probed === null) {
+          probed = await provider.probe()
+          if (probed.ok !== true) {
+            trace = ['probe', 'terminate']
+            observe(`anchored-glob capability REFUSED realm=${realmId} code=${safeToken(probed.error?.code)}`)
+            return failure('denied', 'confined-unavailable', {}, debug, `capability probe refused code=${safeToken(probed.error?.code)} ${String(probed.error?.message ?? '')}`)
+          }
+          observe(`anchored-glob capability OK realm=${realmId} legs=${String(probed.value.length)}`)
+        }
+
+        // A1 + A2: anchor BEFORE the child exists; on refusal no process and no
+        // byte of payload is ever produced.
+        const anchor = await openAnchoredWalkRoot(rootDir, parsed.target, debug)
+        if (anchor.ok !== true) {
+          trace = ['probe', 'anchor-refused']
+          observe(`anchored-glob refused code=${anchor.failure.code} family=${anchor.failure.family} call=${String(call.callId)} realm=${realmId}`)
+          return anchor
+        }
+        trace = ['probe', 'prepare', 'execute']
+        const rgBinDir = rgPath.slice(0, rgPath.lastIndexOf('/'))
+        const request = {
+          grantFingerprint: `a5glb:${realmId}:${templateId}:${String(call.callId)}`,
+          realmId,
+          bindingId: `a5glb-glob:${templateId}`,
+          memberScope: instanceId,
+          argv: [rgPath, ...globArgv(parsed), ...GLOB_OUTPUT_PROTOCOL_ARGV],
+          // The anchored directory. The walk root itself is the child's cwd, so
+          // argv carries no path element (a swappable string never reaches rg).
+          cwd: anchor.anchorPath,
+          env: [['PATH', '/usr/bin:/bin']],
+          allowPaths: [
+            SYSTEM_RX('/bin'), SYSTEM_RX('/usr'), SYSTEM_RX('/lib'),
+            ...(hasLib64() ? [SYSTEM_RX('/lib64')] : []),
+            SYSTEM_RX(rgBinDir),
+            { path: anchor.rootReal, accessBits: { readFile: true, readDir: true } },
+          ],
+        }
+        let handle
+        try {
+          handle = await provider.spawnStreaming(request)
+        } catch (error) {
+          await anchor.handle.close().catch(() => undefined)
+          trace = [...trace, 'terminate']
+          return failure('undetermined', 'spawn-failed', {}, debug, String(error?.message ?? error))
+        }
+        if (handle.ok !== true) {
+          await anchor.handle.close().catch(() => undefined)
+          trace = ['probe', 'prepare', 'terminate']
+          observe(`anchored-glob spawn REFUSED realm=${realmId} code=${safeToken(handle.error?.code)}`)
+          return failure('denied', 'confined-refused', {}, debug, `spawn refused code=${safeToken(handle.error?.code)} ${String(handle.error?.message ?? '')}`)
+        }
+        executed += 1
+        const child = handle.value
+        // The pinned anchor handle MUST outlive every path the walk produced:
+        // A4 verifies against it, so it closes only after the verdict exists.
+        try {
+          let stdout = ''
+          let stderr = ''
+          let overflow = false
+          child.stdout.on('data', (chunk) => {
+            // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
+            // UNVERIFIED until the verdict below admits them, and the spill
+            // channel is a channel like any other: writing it as it arrives (the
+            // shape this row had) means a walk that is refused a moment later has
+            // already leaked its raw bytes into spill. So the stream is buffered
+            // (bounded by GLOB_MAX_WALK_BYTES, whose refusal is unchanged) and the
+            // ONLY sink write in this module happens after the verdict, from the
+            // admitted array. See the channel audit in the header.
+            const text = String(chunk)
+            if (stdout.length + text.length <= walkBufferBytes) {
+              stdout += text
+            } else {
+              overflow = true
+            }
+          })
+          child.stderr.on('data', (chunk) => {
+            // Bounded, like every other buffer: the diagnostic channel cannot be
+            // turned into a memory channel by a chatty walker.
+            if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
+          })
+          const exit = await Promise.race([
+            child.exited,
+            new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
+          ])
+          await child.terminate() // the frozen lease arm settles exactly once per path
+          trace = [...trace, 'terminate']
+          if (exit?.timedOut === true) {
+            observe(`anchored-glob TIMEOUT realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)}`)
+            return {
+              ok: true,
+              outcome: { outputMode: 'files_with_matches', matches: [], counts: [], files: [], totalMatches: 0, truncated: false },
+              settlement: { kind: 'cancelled', event: 'glob-walk-terminated-after-timeout' },
+            }
+          }
+          const code = typeof exit?.code === 'number' ? exit.code : null
+          const stderrText = stderr.trim().slice(0, GLOB_MAX_STDERR_BYTES)
+          if (overflow) {
+            return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes }, debug, `walk exceeded the buffered budget budget=${String(walkBufferBytes)}`)
+          }
+          if (code !== 0 && code !== 1) {
+            observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)}`)
+            // A foreign program's stderr is enumeration data: the wire gets the
+            // code and the exit NUMBER, the internal face may see the text.
+            return failure('undetermined', 'walker-exit', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker exit ${String(code)} stderr=${stderrText}`)
+          }
+          if (stderrText.length > 0) {
+            // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
+            // arm can report a hard walker error's exit code as 0 while stderr
+            // carries the walker's words (invalid glob, unreadable root). So the
+            // walker's SPEECH, not the code, is the discriminator: a walk that
+            // ends quietly has an empty stderr; one that spoke is an ERROR leg
+            // and lands TYPED — never an empty list pretending the subtree clean.
+            // This cannot false-refuse on the noise a bare rg makes in a nested
+            // repo: the governed argv carries --no-ignore, so the walker runs no
+            // upward ignore-discovery and never touches a parent .git (measured:
+            // without --no-ignore, a confined walk in this repo does emit a
+            // `.git: Permission denied` line; with it, stderr stays empty).
+            observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)} stderrBytes=${String(stderrText.length)}`)
+            return failure('undetermined', 'walker-error', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker diagnostic stream non-empty exit=${String(code)} stderr=${stderrText}`)
+          }
+          const framed = parseWalkOutput(stdout)
+          if (framed.ok !== true) {
+            // The framing promise broke (an empty record mid-stream): the walk's
+            // output is not attributable to objects, so nothing is presented.
+            observe(`anchored-glob PROTOCOL-BREAK code=${framed.code} call=${String(call.callId)}`)
+            return failure('undetermined', framed.code, { records: records.length }, debug, framed.detail)
+          }
+          const records = framed.entries
+          // A4: no path is returned unless every one of them is proven inside the
+          // pinned anchor inode at this moment.
+          const verdict = await verifyGlobResultsBeneath(anchor, records, debug)
+          if (verdict.ok !== true) {
+            observe(`anchored-glob RESULT-REFUSED code=${verdict.failure.code} family=${verdict.failure.family} call=${String(call.callId)} entries=${String(records.length)}`)
+            return verdict
+          }
+          // A6 (single producer): `verdict.entries` is the verified array with the
+          // anchor's own prefix already applied — no string work happens between
+          // verification and presentation. The ONLY thing done to it here is the
+          // inline cap, an array window that preserves order (pinned by leg P10).
+          const files = verdict.entries.slice(0, maxResults)
+          // THE ONE SINK WRITE IN THIS MODULE (channel audit, header A7): after the
+          // verdict, from the admitted array only. Spill therefore carries exactly
+          // what is presented, in the walker's own NUL framing — never more, never
+          // less, and never a byte of a refused walk.
+          if (io?.sink && files.length > 0) io.sink.write(`${files.join('\0')}\0`)
+          lastRuns.push({ callId: call?.callId, pid: child.pid, exit: code, total: verdict.entries.length, capped: verdict.entries.length > files.length })
+          observe(`anchored-glob ran realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)} files=${String(verdict.entries.length)} capped=${String(verdict.entries.length > files.length)}`)
+          return {
+            ok: true,
+            outcome: {
+              outputMode: 'files_with_matches',
+              matches: [],
+              counts: [],
+              files,
+              totalMatches: verdict.entries.length,
+              truncated: verdict.entries.length > files.length,
+            },
+            settlement: { kind: 'completed' },
+          }
+        } finally {
+          await anchor.handle.close().catch(() => undefined)
+        }
   }
 }

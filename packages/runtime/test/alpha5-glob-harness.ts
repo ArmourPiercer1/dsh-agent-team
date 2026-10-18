@@ -280,7 +280,12 @@ export function nativePaths(run: NativeRun): string[] {
 export interface GlobBackendFailure {
   readonly class: 'denied' | 'hidden' | 'undetermined'
   readonly code: string
+  /** The family word from the frozen table (A8) — `a5glb-refused/<word>`. */
+  readonly family: string
+  /** Frozen-table prose. Never data: see law A8. */
   readonly detail: string
+  /** The only dynamic content a refusal may carry: finite integers. */
+  readonly counts: Record<string, number>
 }
 
 export interface GlobOutcome {
@@ -318,7 +323,7 @@ export type AnchorOpen = AnchorOpenOk | { readonly ok: false; readonly failure: 
 
 export type WalkParseVerdict =
   | { ok: true; entries: string[] }
-  | { ok: false; code: string; detail: string }
+  | { ok: false; code: string }
 
 export type VerifyVerdict =
   | { ok: true; verified: number; entries: string[] }
@@ -326,6 +331,8 @@ export type VerifyVerdict =
 
 export interface GlobBackendRow {
   GLOB_BACKEND_ID: string
+  GLOB_REFUSAL_TEXT: Record<string, string>
+  GLOB_REFUSAL_FAMILIES: Record<string, string>
   GLOB_MAX_RESULTS_CEILING: number
   GLOB_OUTPUT_PROTOCOL_ARGV: readonly string[]
   createAnchoredGlobBackend(o: Record<string, unknown>): GlobBackend

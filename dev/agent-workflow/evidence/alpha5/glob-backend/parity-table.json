@@ -145,9 +145,9 @@
       "teamCount": 0,
       "teamTotal": 0,
       "teamTruncated": false,
-      "teamFailure": "rg-walker-error",
+      "teamFailure": "walker-error",
       "orderMatch": true,
-      "note": "typed walker error"
+      "note": "typed walker error: family a5glb-refused/walker-error + exit number; the walker's words stay off the wire (internal face only, default off)"
     },
     {
       "leg": "P10 cap",
@@ -284,9 +284,9 @@
       "pattern": "**/*.ts",
       "target": ".",
       "nativeExit": 0,
-      "nativeCount": 8,
-      "teamCount": 8,
-      "teamTotal": 8,
+      "nativeCount": 10,
+      "teamCount": 10,
+      "teamTotal": 10,
       "teamTruncated": false,
       "teamFailure": null,
       "orderMatch": true,

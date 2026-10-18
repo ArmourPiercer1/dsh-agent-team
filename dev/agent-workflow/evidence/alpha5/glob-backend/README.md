@@ -35,7 +35,7 @@ writer's call; the mount contract is in §6 below.
 | `packages/runtime/test/alpha5-glob-backend.test.ts` | NEW — RED pin + rg PARITY + FRAMING law + LIVE + typed-shape + fixture hygiene (44 legs) |
 | `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | NEW — anchoring under attack: 5000 anchor-law iterations + **6600 real confined rg walks**, every real walk spill-probed (8 legs) |
 | `packages/runtime/package.json` + `pnpm-lock.yaml` | `@deepseek-ai/dsh-tool-fs-search@0.2.0-rc.2` registered **in the same stroke** (`:128`) |
-| `dev/agent-workflow/evidence/alpha5/glob-backend/` | this README + `parity-table.json` + `adversarial-counters.json` + `red-capture.txt` |
+| `dev/agent-workflow/evidence/alpha5/glob-backend/` | this README + `parity-table.json` + `adversarial-counters.json` + `channel-matrix.json`（§2d 的全通道表，由 leg X11 生成）+ `red-capture.txt` |
 
 `plane-effect-backends.mjs` (the same-dir reference) is **not modified** — read only.
 
@@ -97,7 +97,46 @@ the walk the tree can move. The row's law, in the order it runs:
   is not hypothetical and is not a race — leg **X1** induces it deterministically (a listed
   regular file that cannot be opened at verification time, i.e. after the child streamed).
 
+- **A8 the unified output law** (23:48Z 修复单: "不许逐条孤立修补"). A7 closed the *byte*
+  streams; the root was right that the enumeration data could still leave through **words**.
+  The rule is now structural rather than arm-by-arm:
+  1. an observable failure is a **closed code + a family word + finite integers**. The helper
+     `failure(class, code, counts, debug, debugText)` looks its prose up in a frozen table
+     (`GLOB_REFUSAL_TEXT`) and its family in `GLOB_REFUSAL_FAMILIES`, so **a call site cannot
+     invent a channel** — there is no parameter that becomes `detail`. Every previously
+     echoing arm is gone: the walker's stderr (`rg-walker-error`), the exit arm, the spawn /
+     capability refusals that pasted provider messages, the host parser message, the
+     anchor-law arms that quoted `/proc` views and path components, and every
+     `walk-contaminated`/`walk-unverifiable` that quoted the entry it refused. They now carry
+     `{exit}`, `{stderrBytes}`, `{entries, at, depth, reason}`, `{budget}` — arithmetic.
+     Semantics stay distinguishable: `family=a5glb-refused/walk-attribution` +
+     `code=walk-unverifiable` + `at=3, depth=1` separates every class the reviewer cares
+     about, and the *entry* is at index `at` of the walk the caller can re-derive.
+  2. an observable success is the admitted array only (A6/A7);
+  3. **the audit line face is grammar-pinned**: `anchored-glob <verb words> key=token…`,
+     where a token is `[A-Za-z0-9._-]+` and the one exception is
+     `family=a5glb-refused/<word>`. No space, no slash, no newline ⇒ no path and no
+     ripgrep sentence can *parse* as an audit line (leg X8 checks every emitted line, and the
+     live attacker re-checks every line of all 6600 walks);
+  4. `run()` **never throws** — the whole walk is wrapped, and an unexpected fault is
+     `internal-error` + arithmetic, never an exception string (leg X9);
+  5. rich post-mortem text exists only on the **internal face** `internalLog`, **default
+     OFF** (see §6: it is not an output channel).
+  The sweep also *tightened* behaviour it found: an unrecognised `placement` word used to be
+  silently walked as a relative target; the row now refuses to guess (closed set +
+  provenance note in the source).
+
 **Disclosed residua (no overclaim).**
+- A8 buys "no name on the wire" and pays with *position*: a refusal says
+  `at=<index>, depth=<n>, reason=<k>` rather than naming the entry. That is arithmetic over
+  the walk, and it does identify a slot for anyone who can re-run the same walk — but it
+  writes nothing out, and the entry that tripped attribution was, at that instant, one the
+  row could not even read. If a consumer ever needs the name, the row's contract is "re-walk
+  and index", not "read the failure".
+- The internal face quotes entry names on purpose (that is its use). It is default-off and is
+  declared a non-output channel in §6, but a *mount* that wires it to a visible surface would
+  reintroduce the leak with our blessing: that is now the integrator's responsibility, and
+  the reason §6 states it in the contract text rather than only in this README.
 1. `/proc/self/fd/<n>` re-resolves **by path**, not by inode pin, so an attacker who swaps
    a component *between* the re-read and the walker's own traversal is stopped by A1+A2
    (the walker's cwd/argv never name it) but the pin is not an `openat2(RESOLVE_BENEATH)`
@@ -167,14 +206,19 @@ divergence** (`L3b`, which is a measurement of an alternative design, not a walk
 | sort stability (P7) | 6 | 6 | identical order across three re-runs; order is mtime, not name |
 | sort tie (P7b) | 2 | 2 | equal mtimes: same set, and OUR order never moves between runs (rg's tie order is unspecified — we do not claim it) |
 | empty (P8) | exit 1 | 0 rows | typed empty shape; native exit 1 is NOT an error |
-| illegal pattern (P9) | exit 2 | `undetermined / rg-walker-error` | carries rg's own words (`error parsing glob`), never a fake-empty list |
+| illegal pattern (P9) | exit 2 | `undetermined / walker-error`, `family=a5glb-refused/walker-error`, `counts={exit,stderrBytes}` | restated under A8: still a typed walker error, never a fake-empty list — and rg's own words now go **only** to the internal face (both halves asserted) |
 | over-cap (P10) | 105 | **100 inline (`GLOB_MAX_RESULTS`) with `totalMatches = 105`, `truncated: true`** | the full 105 match native when the assembly raises the ceiling to 105 |
 | sink bytes (P11) | — | — | `io.sink` received **byte-identical** native stdout |
 | newline forgery (N1) | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing matches native exactly, no duplicate |
 | **X1 post-stream refusal → spill** | n/a | 0 bytes | child ran, streamed real rows, verdict refused: sink bytes **0**, answer echoes no rows, execCount still moved |
 | **X4 capped spill window** | 105 | 100 | spill carries the **admitted** rows only (NUL-framed), not the whole walk; `totalMatches` still the native 105 |
 | X3 timeout arm | n/a | 0 bytes | `settlement:'cancelled'`, empty outcome, sink empty |
-| X6 overflow arm | n/a | 0 bytes | narrowing-only buffer (4 KiB) trips `walk-too-large`: unparsed, nothing written |
+| X6 overflow arm | n/a | 0 bytes | narrowing-only buffer (256 B) trips `walk-too-large`: unparsed, nothing written |
+| **X7 wire sweep** | — | — | 8 refusal arms in one battery; every returned object: `detail` is a value of the frozen table, `family` a value of the family table, `code` a `[a-z0-9._:-]{1,40}` token, `counts` finite integers — and **none** of the planted names (canary files inside, the outside tree's name and path) appears anywhere in the returned JSON. The contaminated arm is driven through `verifyGlobResultsBeneath` directly (rg does not list symlinks), under the same law |
+| **X8 audit sweep** | — | — | every `observe` line matches the pinned grammar (verb words, then `key=token` with tokens free of `/`, space, newline; `family=` pinned to `a5glb-refused/<word>`); rejected shapes include `realm=/srv/...`, `detail src/a.ts`, `stderr=rg: error parsing glob` + newline. `lastRuns` bookkeeping asserted path-free |
+| **X9 never-throws sweep** | — | — | 12 malformed calls (missing/nested-wrong shapes, a 9 KB target, unknown `placement`, `..` inside a locator, a NUL locator): all settle typed, **zero throws**, `execCount()` never moves. This leg found the silently-accepted unknown `placement` (fixed: closed set + provenance note) |
+| **X10 internal face default off** | — | — | with no `internalLog`: two identical runs return byte-identical JSON, the backend's key set is fixed, nothing retains rg's words; with the face opened the words appear **there** and not in the result |
+| **X11 the matrix** | — | — | emits `channel-matrix.json`; asserts each cell names its proving leg and that ≥7 cells were genuinely reachable pre-fix (the fix round is not inflating a non-problem) |
 | **newline forgery (N1)** | 4 objects | 4 records | **the counterfactual is in the table**: on the SAME bytes, newline framing emits 5 records, duplicates `plain.ts` and loses the object's real name; NUL framing equals the native NUL walk exactly, no duplicate |
 | escaping symlink (S1) | 8 | 8 | rg neither follows nor lists it (so parity holds); A4's teeth are proven separately against a hostile entry list (`../outside/secret.txt`, absolute, an in-tree escaping symlink) |
 
@@ -200,26 +244,66 @@ law **A7**（见 §2），并按 ①–④ 逐项给证据：
 | ③ 活攻击全套重跑 | 真 confined-rg 竞态由 120 提到 **6600**，且**每一次**都挂 spill 探针：拒答 ⇒ 通道 0 字节；作答 ⇒ 通道字节 == 呈现行的 NUL 拼接；任何通道字节含 canary 即记泄露。link 态**零作答**继续作为断言。 | `adversarial-counters.json → liveWitness` + `spillProbe`（A5 腿内逐条断言） |
 | ④ parity/门随修重出 | P11 字节律在门控后**仍然成立**（root 锚定走：sink 字节 == 同 argv 原生 stdout 逐字节），新增 X4 表明有上限时通道只承载 admitted；全套门重跑见 §7。 | 本目录两份 JSON（两次运行逐字节同） |
 
+## 4d. 根 23:48Z 收口升级单（不许逐条孤立修补 → 全通道数据流治理）
+
+| 单 | 处置 | 证据 |
+| --- | --- | --- |
+| ① 先列全表再修 | §2d 的 源×汇 全表（7 源 × 10 汇），并落成机器可读件 `channel-matrix.json`（由 leg X11 从测试内的数据生成，cell 点名证明它的 leg，故不会与代码漂移）。表里 `pre: YES` 共 **7** 格 = 本轮真实修复面：条目名→spill、条目名→detail、rg stderr→detail、provider 消息→detail、host parser 消息→detail、验证期解析路径→detail、异常串→throw（`run()` 未全包裹）。 | §2d + `channel-matrix.json` + X11 |
+| ② 统一律 | 见 law **A8**：`failure(class, code, counts, debug, debugText)` **没有**能把字符串变成 `detail` 的参数——文案查 `GLOB_REFUSAL_TEXT` 冻结表，族名查 `GLOB_REFUSAL_FAMILIES`，动态内容只剩 `{exit, stderrBytes, entries, at, depth, reason, budget}` 这类有限整数。walker-error / exit / spawn / probe / pattern-invalid / anchor 各臂一次改净，而不是只补被点到的那条。合法语义仍可分辨：`family=a5glb-refused/walk-attribution` + `code=walk-unverifiable` + `at/depth` 与 `walker-error` + `exit=2` 与 `walk-too-large` + `budget` 各自独立。 | `glob-backend.mjs` 表 + X5/X7 |
+| ③ 内部排障通道 | 新增 `internalLog`，**默认关闭**（不给 = 什么都不留，leg X10 证两次结果逐字节同、backend 面不含被藏文本、键集固定）。它是**非输出面**：`io`/result/`observe` 任何一条路径都不接它（X5 静态：写点唯一且只在 verdict 后；X8 语法钉死 `observe`）。§6 里对装配方明确写死"不得接到 tool result / spill / 模型可见面"。 | X10 + X5 + §6 |
+| ④ 同一活跃攻击器挂全通道探针 | 6600 次真 rg 竞态**每次**都过：return 对象 JSON、spill 字节、每条 audit 行（并逐行语法校验）、**故意打开**的 internalLog 面、以及万一抛出的异常字符串；监视 token = 外部树名/外部路径/canary（内部面只监视外部 token，因它按定义可载被拒条目名）。计数：`allChannelProbe{walks:6600, auditLines:6601, auditBytes:639915, internalLines:3300, resultBytes:1181400, spillBytes:49500, exceptionStrings:0, detailsFromTable:3300, wireTokenHits:0}`。`detailsFromTable == 拒答次数`（3300）即"每次拒答的每个字都出自冻结表"。 | `adversarial-counters.json → allChannelProbe` + A5 腿内逐条断言 |
+| ⑤ p4t6/门随修 | 无新增可扫文件（4 个在册文件内容改动不改计数）；p4t6 仍 10/10、scanner 仍 1184。typecheck 9 包 0 错，eslint 干净，零 `a5glb-*` 世界残留。 | §7 |
+
+顺带修掉扫描器自己抓到的一个**行为**缺陷（不是风格）：不认识的 `placement` 词过去被当作
+相对目标静默走；现在源内有 closed set + 出处说明（host 的 glob 参数律根本不携带 placement，
+`placement` 是 lane 词），未知词一律拒。见 leg X9。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
-`rename → symlink` swap race against the anchored path, attacker flipping it every
-iteration between a real directory and a symlink onto the outside canary
-(`real`/`link` both observed):
+> 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8
+> 不是同一套。撞号处（如 leg A5 vs law A5）以"腿/律"区分；下表一律称"腿"。
 
-- **A4 — 5000 iterations: 2500 anchors accepted / 2500 refused, 0 hostile entries
+`rename → symlink` swap race against the anchored path, the attacker flipping it every
+iteration between a real directory and a symlink onto the outside canary (`real`/`link`
+both observed, `contended=0` means every sample had an unambiguous state):
+
+- **腿 A4 — 5000 iterations: 2500 anchors accepted / 2500 refused, 0 hostile entries
   accepted, 0 leaks.** The leak detector is not a verdict check: every accepted entry is
   *read back* and compared against the canary, and every refused state is counted.
-- **A5 — 120 REAL confined-rg walks under the same swap**: 60 `symlink-alias` refusals,
-  the other 60 answering only with `live/…` entries that read back as the inside marker.
-  (The loop against the real child is bounded at 120 because a confined spawn measures
-  ≈45 ms here; the law itself is exercised 5000× in A4.)
-- **A1/A2** mid-segment and last-segment symlink escapes refused **before any process
-  exists** (`execCount()` does not move); **A3** root swapped to a symlink → refused;
-  **A6** anchor exiled out of the governed root mid-flight → `anchor-drift`, never an
-  answer; **A7** no pattern (`../..`, `**/outside/**`, `/etc/**`, `**/leak.ts`) ever
-  presents a path outside the root; **A8** publishes the counters.
+- **腿 A5 — 6600 REAL confined-rg walks under the same swap**（一次 spawn ≈ 45 ms，故这已
+  是该 host 上单次可负担的上限）：`liveWitness = {real:5801, link:5800, contended:0,
+  okWhileReal:3300, okWhileLink:0, refusedWhileLink:3300, refusedWhileReal:0}` ——
+  **link 态零作答**，real 态零拒答（不是靠超时糊过去的"多数拒"）。
+- **同一腿的 spill 探针**（23:05Z 单 ③）：`spillProbe = {walks:6600, admittedWithBytes:3300,
+  refusedWithBytes:0, attributionMismatch:0, canaryInChannel:0, bytesTotal:49500}` ——
+  拒答 ⇒ 通道 0 字节；作答 ⇒ 通道字节 == 呈现行的 NUL 拼接（不是"看起来没漏"，是逐条等式）。
+- **同一腿的全通道探针**（23:48Z 单 ④，worst case：`internalLog` **故意打开**）：
+  `allChannelProbe = {walks:6600, auditLines:6601, internalLines:3300, exceptionStrings:0,
+  detailsFromTable:3300, wireTokenHits:0, watchedTokens:5, internalWatchedTokens:2}`。
+  每次走都监视 return 对象 JSON、spill 字节、**每一条** audit 行（并逐行跑 X8 语法）、内部面
+  行、以及万一抛出的异常字符串；监视 token = 外部树名 / 外部树里的文件名 / 外部路径 / canary。
+  `detailsFromTable == refusedWhileLink` 即"每一次拒答的每个字都出自冻结表"；
+  `auditLines = walks + 1`（多的一条是首探 capability OK）⇒ 没有一条走逃过审计检查。
+  诊断累加器的**字节数**（result/spill/audit/internal 四长度）**只打印、不入册**：audit 行里带
+  pid，其长度逐次必变，而入册件要求三次逐字节同——所以稳定文件里只留"走数/行数/命中数"这类
+  与安全性有关的计数。这是对稳定性的让步，不是隐藏：数值在腿上直接可见（stdout 一行），
+  且 `spillBytes` 的等式律本来就以**逐条断言**（`bytes == files.join(NUL)+'\0'`）而非总和要求。
+- **腿 A1/A2** mid-segment and last-segment symlink escapes refused **before any process
+  exists**（`execCount()` 不动）；**腿 A3** root 本身被换成指向外面的 symlink ⇒ 拒
+  （`root-symlink-alias`，anchor 永不放宽）；**腿 A6** anchor 飞行中被流放 ⇒ `anchor-drift`，
+  从不作答；**腿 A7** 任何 pattern（`../..`、`**/outside/**`、`/etc/**`、`**/leak.ts`）都
+  never presents a path outside the root；**腿 A8** 把上述计数器作为产物发布（躲开竞态的套件
+  会在这里露形迹）。
 
 ## 6. 集成契约 (for the glue writer — nothing here edits the plane)
+
+**两个面的性质必须先读（A8-3 / A8-5）**：`observe` 是**审计面**，其词法被 leg X8 钉死
+（`anchored-glob <verb> key=token`，token 不含 `/`、空格、换行 ⇒ 结构上不可能是路径或 rg 句
+子）；`internalLog` 是**内部排障面，默认关闭**，装配不给就什么都不会留下。**它不是输出通道**：
+装配方不得把它接到 tool result、spill、模型可见或用户可见的任何表面；它存在的唯一理由是让装配方
+在本地进程内看到"哪个分量、哪个 errno、rg 说了什么"。若某次集成选择打开它，那次集成需在各自
+证据里自证该面未被路由到输出侧（本 lane 的对抗腿 A5 是在**打开**该面的最坏情况下跑的，仍证明外面
+的名字与字节从不进入任何通道，包括它）。
 
 Export signature (`packages/runtime/src/plugin/live/glob-backend.mjs`, plain `.mjs`, node
 imports only):
@@ -235,13 +319,16 @@ export function createAnchoredGlobBackend(options: {
   },
   maxResults?: number,                  // default GLOB_MAX_RESULTS (host public root)
   timeoutMs?: number,                   // default GLOB_WALK_TIMEOUT_MS (60_000)
-  observe?: (line: string) => void,     // the row's own log lines (echo style is the plane's)
+  maxWalkBytes?: number,                // NARROWING ONLY: may shrink the walk buffer,
+                                        // never past GLOB_MAX_WALK_BYTES (8 MiB)
+  observe?: (line: string) => void,     // audit lines: grammar-pinned to codes + arithmetic (A8-3)
+  internalLog?: (line: string) => void, // INTERNAL FACE — DEFAULT OFF, NOT AN OUTPUT CHANNEL
 }): {
   backendId: 'a5glb-anchored-confined-rg-glob',
   run(call, io): Promise<BackendResult>, // never throws; closed triad denied|hidden|undetermined
   execCount(): number,                   // pre-execute refusals never move it
   lastStageTrace: readonly string[],     // probe → prepare → execute → terminate
-  lastRuns: readonly { pid, exit, ms, rows, truncated, code }[],
+  lastRuns: readonly { callId, pid, exit, total, capped }[],  // ids + numbers, no paths
 }
 // also exported for review/verification: GLOB_BACKEND_ID, GLOB_WALK_TIMEOUT_MS,
 // GLOB_MAX_RESULTS_CEILING, GLOB_MAX_WALK_BYTES, globIsBeneath, openAnchoredWalkRoot,
@@ -313,10 +400,12 @@ named here rather than quietly deleted.
 booked by name in the p4t6 ledger with a scanner-measured tie `1180 → 1184`; the suite is
 green (10/10). See §1 for the scope of that one-file exception.
 
-Last recorded run on this host: **52/52 legs green** (44 row + 8 adversarial, the adversarial file alone ~168 s at 6600 walks),
-`pnpm -r run typecheck` exit 0 across all 9 packages, `eslint` clean on all four new
-files, `parity-table.json` + `adversarial-counters.json` byte-identical across two
-consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.
+Last recorded run on this host (the A8 round): **57/57 legs green** (49 row + 8 adversarial;
+the two files together ~175 s, the adversarial A5 leg ~156 s at 6600 walks),
+`pnpm -r run typecheck` exit 0 across all 9 packages, `eslint` clean on all four lane files,
+`p4t6` census 10/10 (scanner still measures 1184 paths, the four lane files booked by name),
+and `parity-table.json` + `adversarial-counters.json` + `channel-matrix.json` byte-identical
+across **three** consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.
 
 ## 8. Dependency registration (`:128`, same stroke)
 
