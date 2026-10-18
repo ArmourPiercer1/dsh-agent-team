@@ -305,6 +305,10 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
   无 Landlock 时落既有 refused 形（本机用错误字节 pin 真实执行过）；门语义已核：census 只比
   红身份集，具名弃权不进 ids。
 
+- **§8**：CI 里 FORENSIC=0 的真实断点在门的转写（`ctx.capture` 只把 tail 3 行送进
+  `census-run.txt`）→ 失败命令的完整 stdout 现以 `| ` 前缀逐行回显进那份 artifact；
+  回显行不能伪装成 `^DSH-CI-*` token（前缀是承重件），绿跑一字不多。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8
