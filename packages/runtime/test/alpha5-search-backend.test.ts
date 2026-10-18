@@ -27,8 +27,8 @@
  * Worlds: `tests/homes/a5srgp-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { chmodSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve } from 'node:path'
 import { buildGrepCommand, parseGrepArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
 import {
@@ -72,6 +72,18 @@ const EVIDENCE_DIR = ENV['A5SRGP_EVIDENCE_DIR']
 const SLOW = 120_000
 
 const START_SWEEP = sweepStrayWorlds('a5srgp-')
+
+/** The repository root this spec runs from (`packages/runtime/test/<file>`). */
+const REPO_ROOT = resolve(import.meta.dirname, '../../..')
+/** The dist byte-copy targets named by `scripts/place-dist-glue.mjs`. */
+const placedDistPaths = (): string[] =>
+  [...readFileSync(join(REPO_ROOT, 'scripts/place-dist-glue.mjs'), 'utf8')
+    .matchAll(/^\s+dist: '([^']+\.mjs)'/gm)]
+    .map((m) => m[1] ?? '')
+    .filter((rel) => rel !== '')
+/** Every `.mjs` the shipped live rows import by a relative specifier. */
+const faceImportsOf = (absFile: string): string[] =>
+  [...readFileSync(absFile, 'utf8').matchAll(/from\s+'(\.[^']+)'/g)].map((m) => resolve(dirname(absFile), m[1] ?? ''))
 
 /** The SHIPPED row (the RED control), loaded the house way for live `.mjs` rows. */
 interface PlaneBackendsRow {
@@ -694,6 +706,58 @@ describe('M: the plane\'s search row mounts the rg body where a confined provide
     expect(Object.keys(mounted).sort()).toEqual(['backendId', 'execCount', 'lastRuns', 'lastStageTrace', 'run'])
     expect(typeof mounted.run).toBe('function')
     expect(typeof mounted.execCount).toBe('function')
+  })
+
+  it('M4 the SHIPPED face closes over its own import graph (the leg this line owed)', () => {
+    // Why this leg exists, stated plainly: the master replay narrowed the byte-copy
+    // list to the search row alone after asking "does the PLANE import the glob row?"
+    // — the answer was no, so the copy was cut. The whole-tree census caught it
+    // (`a5g6-install-face-render`, GLUE-6 LEG B, run 39114260882):
+    // `Cannot find module './glob-backend.mjs' imported from dist/.../search-backend.mjs`.
+    // The question had been aimed at the wrong importer: the SEARCH row imports the
+    // anchored walk, and the plane imports the search row. So the law is closure over
+    // the graph of every file the face ships, and this lane now walks that graph
+    // itself instead of trusting a reading of one file's import list.
+    const liveDirRel = 'packages/runtime/dist/packages/runtime/src/plugin/live'
+    const queue = placedDistPaths().filter((rel) => rel.startsWith(liveDirRel))
+    expect(queue.length).toBeGreaterThanOrEqual(2)
+    const missing: string[] = []
+    const seen = new Set<string>()
+    while (queue.length > 0) {
+      const rel = queue.shift() as string
+      if (seen.has(rel)) continue
+      seen.add(rel)
+      const abs = join(REPO_ROOT, rel)
+      if (!existsSync(abs)) {
+        missing.push(`${rel}: named in the placement list, absent from the face`)
+        continue
+      }
+      for (const target of faceImportsOf(abs)) {
+        const faceRoot = join(REPO_ROOT, 'packages/runtime/dist')
+        if (!target.startsWith(faceRoot + '/')) {
+          missing.push(`${rel}: import escapes the shipped face (${relative(REPO_ROOT, target)})`)
+          continue
+        }
+        if (!existsSync(target)) {
+          missing.push(`${rel}: imports ${relative(join(REPO_ROOT, rel, '..'), target)}, which is not shipped`)
+          continue
+        }
+        if (target.endsWith('.mjs')) queue.push(relative(REPO_ROOT, target))
+      }
+    }
+    expect(missing, `shipped face is not import-closed: ${missing.join('; ')}`).toEqual([])
+  })
+
+  it('M5 the edge the census tripped on is pinned as a fact, not inferred', () => {
+    // The delegation is a load-bearing FACE dependency, so it is pinned twice: the
+    // row keeps importing the anchored walk by a RELATIVE in-face specifier (which is
+    // what makes the byte-copy law apply to its target at all), and the placement
+    // list carries that target. Break either half and the shipped row stops loading.
+    const rowSrc = readFileSync(
+      join(REPO_ROOT, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+    expect(rowSrc).toMatch(/from '\.\/glob-backend\.mjs'/)
+    expect(placedDistPaths()).toContain(
+      'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs')
   })
 })
 

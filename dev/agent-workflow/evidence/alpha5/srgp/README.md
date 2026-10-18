@@ -330,4 +330,60 @@ Gates on the replay tree: `alpha5-search-backend` 40/40; neighbourhood six files
 both glob-row files); `p4t6-session-event-scan` 10/10; `a5p5-dormant-audit` 8/8;
 `pnpm -r run typecheck` clean across nine packages; `place-dist-glue` 7 placements;
 `check-artifacts-committed` ok (1746 compared, glue=7) and `check-artifacts-at-head`
-verdict=ok drift=0.
+verdict=ok drift=0. **All of those numbers were true of that commit and all of them
+are superseded by the census round below** — the green set was not sufficient, which
+is the point of that section.
+
+## Census #330 caught a real integration red in this line (and the neighbourhood list was why)
+
+`a5g6-install-face-render`, GLUE-6 LEG B, run 39114260882 — the single NEW RED on the
+census — read:
+
+```
+Cannot find module './glob-backend.mjs' imported from
+  .../packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs
+```
+
+The leg's title is about `render` returning `ContentBlock[]`, and that contract is
+fine; what actually broke was the import underneath it, and it was this line that
+broke it. The replay section above narrowed the byte-copy list to `search-backend.mjs`
+alone after asking a question with a yes/no answer: *does the plane import the glob
+row?* It does not. That question was aimed at the wrong importer. The shipped graph is
+
+```
+plane-effect-backends.mjs -> search-backend.mjs -> glob-backend.mjs
+```
+
+and this row's own delegation (`search-backend.mjs:186`, `openAnchoredWalkRoot` +
+`verifyGlobResultsBeneath`) is exactly what makes the glob row's bytes load-bearing in
+the install surface. Cutting the copy made the shipped search row unloadable, and the
+lane's own suite could not see it: every leg in it imports the row from `src`, so the
+dist face was never opened. The census opened it.
+
+Two laws come out of this, both now pinned rather than asserted in prose:
+
+* **A placement list closes over the graph, transitively.** "Nothing imports it" is
+  only a finding when it was measured from every file the face already ships. The
+  in-list comment in `scripts/place-dist-glue.mjs` now says so, with the census run id
+  and the wrong question named, so the next reader does not narrow it again.
+* **Leg `M4`** walks the shipped face from the placement list itself: every relative
+  import of every placed live row must resolve to a file inside
+  `packages/runtime/dist`, else the leg names the edge. It was written RED first, on
+  the broken tree, and it named both facts (`glob-backend.mjs` listed but absent;
+  `search-backend.mjs` imports a file that is not shipped). **Leg `M5`** pins the
+  tripped edge as a fact — the row keeps its relative in-face import, and the list
+  keeps its target — so neither half can drift silently.
+
+**Neighbourhood lesson, recorded where it will be read:** a lane's neighbourhood is not
+"the sibling rows' test files". It is every leg that touches the artefact this lane
+changes, including the ones that load the SHIPPED FACE rather than source. This line
+ran 131/131 across six files while the tree was red. The list is now seven files and
+includes `a5g6-install-face-render.test.ts`.
+
+Gates after the fix: `alpha5-search-backend` **42/42** (40 + `M4` + `M5`); neighbourhood
+**seven files 138/138** (search, **`a5g6-install-face-render` 5/5**, glue7, lane-hygiene,
+integration-wiring, both glob-row files); `p4t6-session-event-scan` 10/10 (no new package
+files; the 1194 booking holds); `a5p5-dormant-audit` 8/8; `pnpm -r run typecheck` clean;
+`place-dist-glue` **8** placements with `check-artifacts-committed` ok and
+`check-artifacts-at-head` verdict=ok drift=0 (the compared surface grew by the one
+restored byte-copy).
