@@ -98,11 +98,17 @@ Structural rules (all fail loudly with a classified reason):
   delimiters; a markdown body is rejected (`markdown-body-not-allowed`);
 - BOM is stripped, CRLF normalized, the YAML must decode cleanly;
 - identity fields:
-  - `schemaVersion` — positive integer; supported: **3** only (§7.3 cutover;
+  - `schemaVersion` — positive integer; supported: **3 and 4** (the `{3, 4}`
+    dual-parsing window since the v4 flip — 翻档 ≠ 退役, the flip is not a
+    retirement: the window's duration/exit is the T-1 pending ruling and is
+    NOT pre-set anywhere; formal Schema ADR:
+    `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
     v3 = v2 shape + the two REQUIRED authority documents, and a document that
-    omits either does not parse). **1** and **2** remain DEFINED but are RETIRED:
-    this build refuses them with `SCHEMA_VERSION_MISMATCH` and the catalog lists
-    them `migration-required`;
+    omits either does not parse; v4 = the SAME frozen core face (validated by
+    the same frozen v3 validator — the fourth parser delegates) plus the ONE
+    optional v4-only field `toolBindings` (§4.4). **1** and **2** remain
+    DEFINED but are RETIRED: this build refuses them with
+    `SCHEMA_VERSION_MISMATCH` and the catalog lists them `migration-required`;
   - `blueprintId` — non-empty, ≤128 chars, no whitespace/control characters,
     no `@` (reserved for the `blueprintId@revision` form);
   - `revision` — a positive integer (the shipped convention writes it
@@ -114,7 +120,8 @@ Structural rules (all fail loudly with a classified reason):
   `displayName`, `description`, `leader`, `members`, `requirements`,
   `teamEnvelope`, `memberEnvelopes`, `policyStates`, `quotas`,
   `capabilityPolicy`, `metadata`. (v2 ADDITIONALLY accepts
-  `teamRequirements` — §4.2.)
+  `teamRequirements` — §4.2. v4 ONLY, on top of the 14, accepts
+  `toolBindings` — §4.4; at v3 that key is an unknown field, refused.)
 - **Template (leader and members share one schema)**: `templateId` (required),
   `displayName` (≤128), `description` (≤4096), `persona` (**required**,
   non-empty, ≤32768), `modelPreference`, `contextPolicy`, `capabilities`.
@@ -288,6 +295,37 @@ must be closed required persona kinds — currently `standard` (§4.1). The v1
 flat list is NOT re-keyed by this rule (frozen v1): its `name` still must
 SEMANTICALLY be a kind (§4.1), even though the parser does not reject an
 off-kind name.
+
+### 4.4 `schemaVersion: 4` — the optional `toolBindings` family (v4 flip round)
+
+v4 is the v3 face UNCHANGED plus ONE optional top-level field. Authoring
+facts (grammar machine-pinned by `a5sr1`–`a5sr5` + `a5fl1`; every omission
+is a typed refusal — there are NO implicit defaults):
+
+- `toolBindings` — an array (absent = declares nothing; a non-array is a
+  defect). Each entry is EXACTLY the closed set `owner`, `name`,
+  `authorization`, `io`, `execution`; every field is required; unknown keys
+  are refused at their full path, and the REMOVED v2-proposal fields
+  (`kind`, `adapterId`, `runnerId`, `shadowExecute`) are refused BY NAME.
+- `authorization` — `allow` | `ask` | `deny` (no case folding).
+- `io` — exactly `read`, `write`, `network` (all three required):
+  - `read` / `write` lanes: `mode: all` carries only `deny[]`;
+    `mode: restricted` carries `allow[]`, `ask[]`, `deny[]` (a `..` segment
+    in any path is refused; a legal trailing space survives verbatim);
+  - `network` lane: `mode: allow` (no other keys), `mode: deny` (+`default`),
+    `mode: restricted` (+`allow[]`, `ask[]`, `deny[]`, `default`), with
+    `default` ∈ `ask` | `deny` — a never-defaulted lane never guesses wide.
+- `execution` — exactly `implementationOrigin` (`dsh-native` |
+  `team-trusted-extension` | `standalone-runner` | `remote-provider`) and
+  `executionBoundary` (`trusted-host` | `confined-subprocess` |
+  `delegated-remote`) — the three-axis facts, all written explicitly.
+- Identity: the family is PRESENT-ONLY IN THE HASH — two v4 documents
+  differing only in `toolBindings` are different blueprints. The key at v3
+  is an unknown field (refused); nothing at v3 changed.
+- Production posture: the family PARSES, FREEZES and HASH-BINDS today; the
+  runtime effect plane does not yet EXECUTE these lanes (effect-queue
+  round). The first AUTHORED v4 document is the write-format point of no
+  return (翻档 ≠ 退役; window duration/exit = T-1 pending, not pre-set).
 
 ## 5. Capabilities (per template)
 

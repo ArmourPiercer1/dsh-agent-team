@@ -1,0 +1,7 @@
+mock: listening on 127.0.0.1:3493
+mock: 1 [messages] text reply (14 chars): "A5FL_DISC_DONE"
+mock: 2 [messages] text reply (17 chars): "a5fl live session"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] text reply (17 chars): "a5fl live session"
+mock: 5 [messages] tool-call reply: team_delegate
+mock: 6 [messages] text reply (307 chars): "A5FL_LEAD_NO_EXECUTION :: [{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5fl-czau2k"

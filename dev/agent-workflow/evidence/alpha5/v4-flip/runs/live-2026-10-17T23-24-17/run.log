@@ -1,0 +1,19 @@
+[2026-10-17T23:24:17.858Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-17T23:24:17.886Z] mock model on 3493
+[2026-10-17T23:24:20.734Z] PASS A1.0: real host booted on the production row (profile-patch seam; v3 anchor team alive) — origin=http://127.0.0.1:3182
+[2026-10-17T23:24:20.760Z] disc prompt status=200 body={"type":"server-response","rpcId":"a5fl-kzv2adzhpx","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-17T23:24:21.161Z] PASS A1.1: boot root surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-17T23:24:21.176Z] PASS A2.0: catalog.list carries the v4 saved source — row={"blueprintId":"team.a5fl-v4","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}
+[2026-10-17T23:24:21.176Z] PASS A2.1: the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported) — state={"revision":1,"schemaVersion":4,"migrationState":"current"}
+[2026-10-17T23:24:21.176Z] PASS A2.3: v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside — state={"revision":1,"schemaVersion":3,"migrationState":"current"}
+[2026-10-17T23:24:22.179Z] PASS A4.1: the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team) — ledger={"requests":[{"requestId":"ctrl-0cjfzw90ib41oy03jlk1j10t","kind":"leader-approval","toolName":"bash"}],"decisions":[],"consumptions":[],"error":null}
+[2026-10-17T23:24:22.198Z] PASS A4.2: team.resolveControl (v4 wire) ACCEPTS the allow on the v4 team (durable decision) — status=200 body={"type":"server-response","rpcId":"a5flres-x8n6v9n4he","result":{"ok":true,"value":{"data":{"decision":{"requestId":"ctrl-0cjfzw90ib41oy03jlk1j10t","decision":"allow","decider":{"kind":"human","humanId":"session-a5fl-v4team-2026-10-17T23-24-17"},"scope":{"rootSessionId":"session-a5fl-v4team-2026-10-
+[2026-10-17T23:24:23.206Z] PASS A3.0: team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser) — status=200 body={"type":"server-response","rpcId":"a5flc-3t7wivaeae","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5fl-v4team-2026-10-17T23-24-17","blueprint":{"blueprintId":"team.a5fl-v4","revision":"1","contentHash":"sha256:372fc4be8
+[2026-10-17T23:24:23.212Z] PASS A2.2: catalog.get returns the v4 identity (schemaVersion 4 + contentHash, blueprintId match) — status=200 hash=sha256:372fc4be84e2b6a1
+[2026-10-17T23:24:23.213Z] PASS A4.3: the human allow is DURABLE (control-decision-recorded on the team ledger) — decisions=[{"requestId":"ctrl-0cjfzw90ib41oy03jlk1j10t","decision":"allow"}]
+[2026-10-17T23:24:23.213Z] PASS A4.0: the v4 team leader ran create_member + team_delegate and the executed work-admitted receipt landed in the leader context — final=A5FL_LEAD_DONE_DELEGATED
+[2026-10-17T23:24:23.213Z] FAIL A4.4: the member chain consumed the allow: its bash result carries a5fl-executed — member=A5FL_MEM_DONE :: [{"type":"tool_result","tool_use_id":"call-a5fl-d54isf1g","content":[{"type":"text","text":"Error: team tool guard: the Tool Binding for \"bash\" cannot be verified at dispatch time (no fallback to th
+[2026-10-17T23:26:23.365Z] FAIL A5.0: the member bash side effect is durable on disk (marker file written by the delegated step) — content=null
+[2026-10-17T23:26:23.379Z] teardown: stopping host + mock
+[2026-10-17T23:26:23.386Z] world removed (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/tests/homes/a5fl-live-2026-10-17T23-24-17)
+[2026-10-17T23:26:23.386Z] VERDICT FAIL — 12/14; failed: A4.4,A5.0

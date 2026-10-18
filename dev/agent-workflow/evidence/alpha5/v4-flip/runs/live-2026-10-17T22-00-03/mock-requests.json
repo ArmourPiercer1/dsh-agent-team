@@ -1,0 +1,42 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-10-17T22:00:06.826Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-17T22-00-03\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "A5FL_IDLE"
+    }
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-10-17T22:00:06.829Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5FLMK_DISC_2026-10-17T22-00-03\\\"}]\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "A5FL_IDLE"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-10-17T22:00:07.267Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:66f40e90170056b5733560f16c192d94cdaf27078e619a03b77e07a38659db4e] A5FLMK_LEAD_2026-10-17T22-00-03\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "A5FL_IDLE"
+    }
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-10-17T22:00:07.271Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:66f40e90170056b5733560f1",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "A5FL_IDLE"
+    }
+  }
+]

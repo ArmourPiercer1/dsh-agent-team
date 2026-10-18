@@ -1,0 +1,11 @@
+[2026-10-17T22:32:51.300Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-17T22:32:51.328Z] mock model on 3494
+[2026-10-17T22:32:54.180Z] PASS A1.0: real host booted on the production row (profile-patch seam; v3 anchor team alive) — origin=http://127.0.0.1:3183
+[2026-10-17T22:32:54.203Z] disc prompt status=200 body={"type":"server-response","rpcId":"a5fl-2zwr4eu7et","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-17T22:32:54.604Z] PASS A1.1: boot root surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-17T22:32:54.619Z] PASS A2.0: catalog.list carries the v4 saved source — row={"blueprintId":"team.a5fl-v4","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}
+[2026-10-17T22:32:54.619Z] PASS A2.1: the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported) — state={"revision":1,"schemaVersion":4,"migrationState":"current"}
+[2026-10-17T22:32:54.619Z] PASS A2.3: v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside — state={"revision":1,"schemaVersion":3,"migrationState":"current"}
+[2026-10-17T22:32:56.343Z] PASS A3.0: team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser) — status=200 body={"type":"server-response","rpcId":"a5flc-xw8nkbbukp","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5fl-v4team-2026-10-17T22-32-51","blueprint":{"blueprintId":"team.a5fl-v4","revision":"1","contentHash":"sha256:9147b4cd8
+[2026-10-17T22:32:56.350Z] FAIL A2.2: catalog.get returns the v4 blueprint (schemaVersion 4 + contentHash + the toolBindings family) — status=200 hash=sha256:9147b4cd87538035 tb=undefined
+[2026-10-17T22:34:56.642Z] FAIL A4.1: the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team) — ledger={"requests":[],"decisions":[],"consumptions":[],"error":null}

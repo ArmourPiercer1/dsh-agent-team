@@ -18,6 +18,7 @@
  */
 import type { BlueprintContentHash, BlueprintId, BlueprintRevision, TemplateId } from '../../../contracts/src/index.js';
 import type { RequirementType } from '../../compatibility/src/requirement.js';
+import type { V4ToolBindingAuthoring } from './blueprint-v4.js';
 /**
  * The seven tools whose individual calls a static permission policy may
  * gate (alpha.2 plan §4 + A2C-1). The file tools (`read`, `read_image`,
@@ -384,8 +385,15 @@ export interface TeamBlueprint {
      * authority document, with `permissionMutationEnvelope` no longer optional
      * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
      * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
+     *
+     * The v4-flip round WIDENS this annotation to `3 | 4` — the typed face of
+     * the `{3, 4}` dual-parsing window (formal Schema ADR:
+     * `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+     * This is a type-plane fact only: no v3 document ever stamps `4`, no v3
+     * parse path reads it, and v3 behavior is byte-identical across the flip
+     * (the zero-deformation legs of the flip suite pin it).
      */
-    readonly schemaVersion: 3;
+    readonly schemaVersion: 3 | 4;
     /** Stable logical identity (not a path, not a display name). */
     readonly blueprintId: BlueprintId;
     /** Human-readable revision. */
@@ -457,6 +465,17 @@ export interface TeamBlueprint {
     readonly capabilityPolicy?: CapabilityPolicy;
     /** Interpretation metadata (absent = empty). */
     readonly metadata: BlueprintMetadata;
+    /**
+     * The v4-ONLY effect-governance family (the `toolBindings` entries of the
+     * fourth parser, `blueprint-v4.ts`): owner/name + authorization + io lanes
+     * + execution facts, in the closed v4 authoring grammar.
+     *
+     * A v4-FACE fact, never a v3 fact: a v3 document that carries the key is
+     * refused as an unknown field (the closed v3 field set is NOT widened), it
+     * is never defaulted, and every v1/v2/v3 document keeps hashing without
+     * the key (the present-only hash discipline, unchanged).
+     */
+    readonly toolBindings?: readonly V4ToolBindingAuthoring[];
 }
 /**
  * The validated blueprint before its content hash is derived: the full

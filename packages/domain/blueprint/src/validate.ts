@@ -118,6 +118,21 @@ import {
   SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS,
 } from './schema.js'
 import { decodeYamlFrontmatter, splitFrontmatter } from './parse.js'
+// The v4 dispatch imports. This is a RUNTIME cycle (blueprint-v4.js imports
+// this module for its frozen-v3 core delegation): ESM resolves it at call
+// time, and it is safe on two documented grounds — neither module touches
+// the other's exports during module evaluation, and
+// `validateBlueprintV4Document` re-stamps the delegated core to 3 before it
+// recurses into `validateBlueprintDocument`, so the dispatch below cannot
+// loop. The dispatch LINE joins the per-version switch here; the v4 GRAMMAR
+// stays in its own parallel fourth branch (A3: v3 branch 禁改 — dispatch,
+// never merge).
+import {
+  BLUEPRINT_V4_SCHEMA_VERSION,
+  toHashableBlueprintV4,
+  validateBlueprintV4Document,
+} from './blueprint-v4.js'
+import type { TeamBlueprintV4Core } from './blueprint-v4.js'
 import { deriveContentHash } from './hash.js'
 import { parseModelPreferenceToken } from './model-preference.js'
 import type {
@@ -1303,6 +1318,22 @@ export function validateBlueprintDocument(raw: unknown): TeamBlueprintCore {
     )
   }
 
+  // --- the per-version dispatch: `4` routes to the parallel fourth parser ----
+  // The v4-flip stroke. A v4 document RUNS through this entry — but it does
+  // NOT enter the field tables below: its grammar is the fourth parser
+  // (`blueprint-v4.ts`), joined here and nowhere else, and its delegation
+  // re-stamps the core to 3 before recursing, so the frozen v1/v2/v3 branch
+  // keeps every byte of its behavior. Gate-arm truth table (flip-PREP; the
+  // legs live in `packages/domain/test/a5fl1-blueprint-v4-flip.test.ts`):
+  //   1/2 (defined, retired) → MISMATCH above, operator owns the migration;
+  //   3 (frozen branch)      → RUNS, unchanged;
+  //   4 (defined, run)       → RUNS here, moved off the never-defined arm;
+  //   never-defined (e.g. 5) → MISMATCH above — the UNSUPPORTED/migration
+  //                            arms are untouched by this dispatch.
+  if (schemaVersion === BLUEPRINT_V4_SCHEMA_VERSION) {
+    return validateBlueprintV4Document(record)
+  }
+
   // The TOP-LEVEL closed field set is version-gated (plan §E.2): a v1
   // document parses against the FROZEN v1 set (the v2 `teamRequirements`
   // field is an unknown field there — the v1 validator is NOT tightened); a
@@ -1638,7 +1669,22 @@ export function parseBlueprint(source: string): TeamBlueprint {
   const doc = splitFrontmatter(source)
   const raw = decodeYamlFrontmatter(doc.frontmatterText)
   const core = validateBlueprintDocument(raw)
-  const contentHash = deriveContentHash(toHashableBlueprint(core))
+  // The content hash follows the DISPATCH, not a single projection: a v4
+  // core hashes through the v4 projection, which BINDS the declared family
+  // (two v4 documents differing only in `toolBindings` MUST hash differently
+  // — hashing a v4 core through the v3 projection would launder the family
+  // out of the content identity, the exact crack the flip suite pins shut).
+  // v1/v2/v3 cores take the FROZEN projection, byte-identical to before.
+  const contentHash = deriveContentHash(
+    core.schemaVersion === BLUEPRINT_V4_SCHEMA_VERSION
+      ? // The assertion is DISCHARGED BY THE DISPATCH above: a core whose
+        // stamp is 4 can only have come out of `validateBlueprintV4Document`
+        // (the v1/v2/v3 branch stamps 1|2|3), which is exactly the producer of
+        // `TeamBlueprintV4Core`. TS cannot narrow an interface through a
+        // property test, so the narrowing is stated here once, at the join.
+        toHashableBlueprintV4(core as TeamBlueprintV4Core)
+      : toHashableBlueprint(core),
+  )
   return deepFreeze({ ...core, contentHash })
 }
 

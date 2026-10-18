@@ -1,0 +1,22 @@
+{
+  "type": "server-response",
+  "rpcId": "a5flc-p4gwdfl0yn",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+      "message": "team.create: starting the root (leader) agent for 'session-a5fl-v4team-2026-10-17T21-49-36' failed: tools.restrict() names unknown global tools \"team_grant_permission\", \"team_revoke_permission\"; known global tools: bash, edit, read, read_image, write",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+          "message": "team.create: starting the root (leader) agent for 'session-a5fl-v4team-2026-10-17T21-49-36' failed: tools.restrict() names unknown global tools \"team_grant_permission\", \"team_revoke_permission\"; known global tools: bash, edit, read, read_image, write"
+        }
+      }
+    }
+  }
+}
