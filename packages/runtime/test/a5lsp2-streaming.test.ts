@@ -49,13 +49,16 @@ import {
 import {
   execPath,
   fixturePath,
+  laneArgv,
   makeWorld,
   nodeBinDir,
   pidAlive,
   pollUntil,
   productionLauncherPath,
   removeWorld,
+  sampleLaneProcesses,
   sha256File,
+  sourceFixtureLeaksIn,
 } from './a5lsp2-harness.js'
 
 const world = makeWorld('stream')
@@ -489,7 +492,7 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
       realmId: 'realm-a5lsp2-real',
       bindingId: 'binding-lsp-real',
       memberScope: 'member/real',
-      argv: [execPath(), join(fixtureDir, 'lsp.mjs'), 'g0', join(secretDir, 'secret.txt')],
+      argv: laneArgv([execPath(), join(fixtureDir, 'lsp.mjs'), 'g0', join(secretDir, 'secret.txt')]),
       cwd: genRoot,
       env: [['PATH', '/usr/bin:/bin']],
       allowPaths: [
@@ -555,7 +558,7 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
       realmId: 'realm-a5lsp2-real2',
       bindingId: 'binding-lsp-real2',
       memberScope: 'member/real2',
-      argv: [execPath(), fixturePath('a5lsp2-fixture-ping.mjs'), 'g1'],
+      argv: laneArgv([execPath(), fixturePath('a5lsp2-fixture-ping.mjs'), 'g1']),
       cwd: genRoot,
       env: [['PATH', '/usr/bin:/bin']],
       allowPaths: [
@@ -571,5 +574,10 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
     if (!settled.ok) return
     expect(settled.value.status).toBe('terminated')
     expect(await pollUntil(() => !pidAlive(r.value.pid), 5_000)).toBe(true)
+    // Named SOURCE-leak check over THIS world's attributed set. This very leg
+    // spawns the fixture from its source path — the one place the lane does — and
+    // it carries the run nonce, so it reads as ours rather than as a leak; a
+    // process WITHOUT the nonce executing a source fixture is the named red.
+    expect(sourceFixtureLeaksIn(sampleLaneProcesses(world)).map((p) => `${String(p.pid)} ${p.cmd}`), 'a5lsp2 SOURCE-fixture leak: a process without this run\'s nonce is executing a lane fixture from its source path').toEqual([])
   }, 90_000)
 })

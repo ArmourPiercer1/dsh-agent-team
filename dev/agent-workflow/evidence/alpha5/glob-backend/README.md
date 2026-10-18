@@ -314,6 +314,13 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
   （200 行 / 300 字符 / 24 KB 三重硬界、头尾各半、指针行、绿路零输出）+ 逐行同步写
   + 只吞 EPIPE/EOF 的守卫；self-test 59→68；本机复刻 330 形状证明旧版 `missing-token`、新版 `red-run`。
 
+- **§10**：lsp2 根因**已定**=观察器误认（词汇判据 + `/proc/<pid>/cwd` 用 `readFileSync` 恒抛
+  EISDIR ⇒ 第二臂从未生效）；membership 改为身份判据（per-run nonce ∨ cwd-in-world，
+  `readlinkSync` 救活），原 fixture 子串臂改为**具名 source-leak 检查**；双向负控
+  `lsp2-membership-negative-control.txt`（旧判据认错外方=RED 复刻 / 新判据 GREEN / 真泄漏具名 RED）。
+- **§11**：gate self-test 68 → **77**：断管负控（有界必达 VERDICT、洪水负控必 missing-token、
+  管道预算构造性成立）+ 退出码断言（红必 exit=1 带 VERDICT、绿必 exit=0、切断转录必 missing-token）。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8

@@ -245,3 +245,67 @@ capture-2=9+`a5lsp2` `failure cleanup (a)/(b)`，每 capture ~210 KB ANSI stdout
 **self-test**：59 → **68 assertions**（新增：指针行必在最后、每行带 `| `、界由构造保证、
 洪水仍保住两端的现场、绿路零输出、`| DSH-CI-VERDICT` 伪行不被锚点计数、真·重复 token 仍判
 `duplicate-token`）。eslint clean；`tests/deepseek-harness-test-use` 与 :3080 未触。
+
+## 10. lsp2 根因＝观察器误认（已定）；membership 改为按身份不按词汇
+
+根因（父单 07:03Z 亲读 `a5lsp2-harness.ts:103` 的词汇判据 + artifact `FOREIGN=[14668]`=同 job 的
+eslint 腿互证）。本轮再挖出一条更硬的事实支撑同一结论：**第二臂从来没活过**——
+`/proc/<pid>/cwd` 是符号链接，`readFileSync` 对它抛 **EISDIR**（本机实测
+`readFileSync('/proc/self/cwd') → EISDIR`，`readlinkSync` 才返回路径），所以 `cwd` 恒为 `''`、
+`cwd.startsWith(worldRoot)` 恒假 ⇒ 零残留判断 100 % 依赖那条字符串匹配。两个方向的错因此同时成立：
+
+- 假阳：同 CI job 的 lint 腿（cmdline 里出现 fixture 文件名）被算成本 lane 进程
+  ⇒ cleanup(a) `foreign=[14668]` / cleanup(b) `residual=[14668]` 红。
+- 假阴：world 里拷贝出来的 `ping.mjs` / `lsp.mjs` **不含**该词汇 ⇒ 真残留本来看不见。
+
+CPU 假说作废（按 artifact 表述）：`cpuPressure some avg10=13.2`（16 核 runner）、两 capture 同
+`loadavg=2.67`、无 full pressure ⇒ 不是挤占，是观察器认错人。
+
+**修法（membership 按身份）**：
+
+- harness 每 run 生成 nonce（`LANE_NONCE = sha256(randomUUID)[0:16]`），`laneArgv()` 在 spawn argv
+  尾追加 `--lane-token=<nonce>`；四个真实 spawn 点全改（assembly 的正常臂与坏-exec 臂、
+  streaming 的 `lsp.mjs` 与 source-ping 臂）。fixture 只读 `argv[2]`，尾参无副作用（22/22 实测）。
+- `sampleLaneProcesses(worldRoot)` 判据 = `cwd.startsWith(worldRoot) || cmd.includes(nonce)`，
+  cwd 读法改 `readlinkSync`（救活死臂）。
+- 原 fixture-子串臂**没有静默删**，改成**具名 source-leak 检查** `sourceFixtureLeaksIn(set)`：
+  只在 lane 可归属的成员集合里找"正在执行 SOURCE fixture 路径且不带本 run nonce"，命中=具名红；
+  外方 lint/scanner 不再进全域扫。披露其覆盖面边界：cwd 在世界外、又不带 nonce 的源码 fixture
+  实例不在扫面内——本 lane 全部 spawn 点 cwd 必在世界内，真泄漏必落集合内。
+**救活死臂的连带效果（收紧，非放宽，本轮实测绿）**：`readlinkSync` 生效后 `cwd` 第一次真的有值，
+policyChange 腿里那条 `live.some(p => p.cwd === join(world,'ws','A-g0')) === false`（旧 genRoot 不得
+再被任何进程当 cwd）从**恒真**变成**有牙**；另外身份判据还消掉一类跨文件假阳——streaming 世界里
+带 source-ping 的进程，以前会被 assembly 腿的词汇匹配算成"别人的残留"。零残留本身也第一次覆盖
+world 拷贝出的 `ping.mjs`/`lsp.mjs`（词汇臂永远看不见它们）。为防"新判据只是恒空"，cleanup(a)/(b)
+各加一条**正向成员断言**（本 run 活实例必须在集合里），7/7 实测绿 ⇒ "无残留"不再是空话。
+
+- cleanup(a)/(b)、disposeAll、world-scan 语义不变（两臂并集为空 = 零残留）；
+  **30 s 上限一字未动**，既有拒绝/外显断言零动。
+
+**双向负控**（本机复刻 CI 形；逐字输出 = `lsp2-membership-negative-control.txt`，脚本跑完即删）：
+诱饵三枚——(1) 只**提及** fixture 名的外方进程（330 的 eslint 形）；(2) 带 nonce 但 cwd 不在世界内
+的本方进程；(3) 真从 SOURCE fixture 起、cwd 在世界内、不带 nonce 的进程。
+旧判据命中 2：`(1)` 与 `(3)`（另外还匹配到 `bwrap` 包装与跑测试的 bash 自己）；新判据命中 2：
+`(2)` 与 `(3)` —— **把外方 `(1)` 扔掉、把自家 `(2)` 认回来**。
+
+| 检查 | 结果 |
+| --- | --- |
+| CHECK-A 旧词汇判据把外方进程算成 lane 进程 | **RED — census 330 复刻成功** |
+| CHECK-B 身份判据排除同一 pid | GREEN — 修好 |
+| CHECK-C nonce 臂认出"cwd 不在世界内"的本方进程 | GREEN — 第二臂可用 |
+| CHECK-D 真 SOURCE-fixture 实例被具名报出 | **RED by name — 牙未减** |
+
+## 11. 断管负控 + 退出码断言（gate self-test 68 → 77）
+
+按根 07:03Z 令补进 `--self-test`，只加断言、门语义零动：
+
+- **断管负控**：真 spawn 两个子进程跑在"读端只吃 64 KiB"的管道形里（`| head -c 65536`）。
+  有界回显那个：VERDICT 仍完整出现在被评分的流里，且写端 exit=0、stderr 无 EPIPE；
+  无界洪水那个（负控）：**≥60 KB 被读走而 VERDICT 不在其中**，`checkTranscript` 判
+  `missing-token`——若这条哪天变绿，说明洪水回来了。另有构造性一条：
+  `2×ECHO_BYTE_CAP + 8 KiB < 65 536`，即两次 capture 的回显加上门自己的行本就装得下管道预算。
+- **退出码断言**：用 `--census-json` 真跑门两次（不起 vitest）——红 census `exit=1` 且 stdout 有
+  `DSH-CI-VERDICT fail` 并逐名点出那条红；基线同形报告 `exit=0` 且 `DSH-CI-VERDICT pass`；
+  把红跑的转录在 token 之前切断 ⇒ `class=missing-token`（330 的形状永不被当成通过）。
+  这两次 spawn 会在被跟踪的 gate scratch 目录留下 JSON，self-test 前后对比目录名集合，
+  只删自己新增的文件（不整目录删——上轮 `rm -rf` 误删 49 个在册文件的教训已写进代码注释）。

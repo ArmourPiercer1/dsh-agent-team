@@ -92,8 +92,9 @@
  */
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, writeSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -1765,6 +1766,98 @@ function selfTest() {
     checkStatePointers({ ...spGood, graphText: spGood.graphText.replace('s7_round6_records: x\n', '').replace('s7_round7_records: y', 's7_round6_7_records: y') }).findings.length === 0,
     'one combined record node covering two rounds fills both — the real s7_round19_20_records node, which the first version of this leg wrongly called a gap',
   )
+
+  // 6. the exit-code and broken-reader contract, exercised with REAL spawns.
+  //
+  // Why this exists: the 2d3e9c76 census lost its verdict because an unbounded
+  // burst truncated the very file CI grades (`census-run.txt` stopped at 65,953 B,
+  // mid-echo, with zero DSH-CI-LEG lines). Grading was already correct by then;
+  // the ARTIFACT was the casualty. So these assertions do not test who is right
+  // about pipes — they pin three things the gate must never lose: (a) a bounded
+  // transcription burst is small enough that even a reader which stops at the
+  // 64 KiB boundary still received the verdict, (b) the unbounded shape still
+  // loses it (the negative control: if this ever passes, the flood is back), and
+  // (c) exit codes: a red census exits non-zero WITH a verdict on stdout, a green
+  // one exits 0, and a truncated transcript grades as missing-token.
+  const GATE = fileURLToPath(import.meta.url)
+  const tmp = mkdtempSync(join(tmpdir(), 'dsh-ci-selftest-'))
+  const scratch = resolve(REPO_ROOT, 'dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch')
+  const childScript = (flood) => `
+    import { writeSync } from 'node:fs'
+    import { failureEchoLines, writeEchoLine, guardStdout } from ${JSON.stringify(GATE)}
+    guardStdout(process.stdout)
+    const worst = { code: 1, signal: null, error: null, seconds: 1, stderr: '',
+      stdout: Array.from({ length: 5000 }, (_, i) => \`a5lsp2 FORENSIC row \${String(i)} \${'x'.repeat(400)}\`).join('\\n') }
+    ${flood
+      ? "writeSync(1, Buffer.from('y'.repeat(400_000), 'utf8'))"
+      : "for (const line of failureEchoLines('census-capture-1', worst, true)) { if (!writeEchoLine(line)) break }"}
+    writeEchoLine('DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none')
+  `
+  const runPipeline = (name, flood) => {
+    const script = join(tmp, `${name}.mjs`)
+    writeFileSync(script, childScript(flood))
+    // The CI shape: a burst-limited reader (the runner's pipe + tee), not a file.
+    const r = spawnSync('bash', ['-c',
+      `node ${JSON.stringify(script)} 2> ${JSON.stringify(join(tmp, `${name}.err`))} | head -c 65536 > ${JSON.stringify(join(tmp, `${name}.out`))} ; echo "child=\${PIPESTATUS[0]}"`,
+    ], { cwd: tmp, encoding: 'utf8', timeout: 120_000 })
+    return {
+      child: /child=(\S+)/.exec(r.stdout ?? '')?.[1] ?? 'unknown',
+      out: readFileSync(join(tmp, `${name}.out`), 'utf8'),
+      err: readFileSync(join(tmp, `${name}.err`), 'utf8'),
+    }
+  }
+  const pipeBudget = 65_536
+  ok(2 * ECHO_BYTE_CAP + 8 * 1024 < pipeBudget,
+    `by construction two bounded captures (${String(2 * ECHO_BYTE_CAP)} B) plus the gate's own lines still fit the ${String(pipeBudget)} B pipe budget — an unbounded burst is not reachable from this code path`)
+  const boundedPipe = runPipeline('bounded', false)
+  ok(boundedPipe.out.includes('DSH-CI-VERDICT'),
+    'a BOUNDED failure echo leaves the verdict inside a 64 KiB-limited reader: the graded transcript keeps its token')
+  ok(boundedPipe.child === '0' && !/EPIPE/.test(boundedPipe.err),
+    `and the writing side survives it (child exit=${boundedPipe.child}, no uncaught EPIPE) — the guard swallows a dead reader, never a verdict`)
+  const floodPipe = runPipeline('flood', true)
+  ok(floodPipe.out.length >= 60_000 && !floodPipe.out.includes('DSH-CI-VERDICT'),
+    'NEGATIVE CONTROL: the unbounded shape (one 400 KB burst) still cuts the verdict out of the same reader — if this ever passes, the flood is back')
+  ok(checkTranscript(floodPipe.out).klass === 'missing-token',
+    'and the CI grader calls that shape exactly what it is: missing-token, not a red run')
+  ok(floodPipe.child !== 'null',
+    'the writer is not killed by a signal either — in CI the process kept running while the GRADED FILE stopped, which is why the token is the thing to defend')
+
+  // (c) exit codes, against the real gate with stored census reports (no vitest spawn).
+  const baselineIds = parsePopulationBaseline(readFileSync(resolve(REPO_ROOT, BASELINES.census), 'utf8')).ids
+  const reportOf = (ids) => {
+    const byFile = new Map()
+    for (const id of ids) {
+      const body = id.replace(/^TEST /, '')
+      const file = body.slice(0, body.indexOf('::'))
+      if (!byFile.has(file)) byFile.set(file, [])
+      byFile.get(file).push(body.slice(body.indexOf('::') + 2))
+    }
+    return JSON.stringify({
+      testResults: [...byFile.entries()].map(([file, names]) => ({
+        name: join(REPO_ROOT, file),
+        status: 'failed',
+        assertionResults: names.map((n) => ({ fullName: n, title: n, ancestorTitles: [], status: 'failed' })),
+      })),
+    })
+  }
+  const before = new Set(readdirSync(scratch))
+  const gateRun = (file, ids) => {
+    const path = join(tmp, file)
+    writeFileSync(path, reportOf(ids))
+    const r = spawnSync(process.execPath, [GATE, '--only', 'census', '--census-json', path], { cwd: REPO_ROOT, encoding: 'utf8', timeout: 120_000 })
+    return { code: r.status, out: `${r.stdout}${r.stderr}` }
+  }
+  const redRun = gateRun('red.json', [...baselineIds, 'TEST packages/runtime/test/selftest-synthetic.test.ts::a synthetic red written by --self-test for the exit-code contract'])
+  ok(redRun.code === 1 && /^DSH-CI-VERDICT fail/m.test(redRun.out) && redRun.out.includes('selftest-synthetic.test.ts'),
+    `a RED census exits 1 and states its verdict on stdout, naming the red it saw (exit=${String(redRun.code)})`)
+  const greenRun = gateRun('green.json', baselineIds)
+  ok(greenRun.code === 0 && /^DSH-CI-VERDICT pass/m.test(greenRun.out),
+    `the same gate over a report that IS the baseline exits 0 with a pass verdict (exit=${String(greenRun.code)})`)
+  const cutPoint = redRun.out.indexOf('DSH-CI-VERDICT')
+  ok(cutPoint > 0 && checkTranscript(redRun.out.slice(0, cutPoint)).klass === 'missing-token',
+    'and a transcript cut short before its token — the exact CI 330 shape, faithful head and all — never passes: it grades missing-token')
+  for (const f of readdirSync(scratch)) if (!before.has(f)) rmSync(join(scratch, f), { force: true })
+  rmSync(tmp, { recursive: true, force: true })
 
   for (const f of fails) process.stdout.write(`SELFTEST FAIL: ${f}\n`)
   process.stdout.write(

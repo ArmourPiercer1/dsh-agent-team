@@ -1,0 +1,11 @@
+# a5lsp2 membership negative control — generated 2026-10-18T07:15:24Z on this host (script: throwaway, deleted after the run)
+# decoys: (1) a FOREIGN process that only MENTIONS a lane fixture (census 330's eslint shape)
+#         (2) one of OURS carrying --lane-token, cwd OUTSIDE the world  (3) a TRUE source-fixture instance: executes the SOURCE fixture, cwd inside the world, no nonce
+world=/tmp/a5lsp2-receipt-world-xpuJU7
+LANE_NONCE=a3aa2557b6e20364
+members(new identity rule) = 2: 16 cwd=other node /tmp/a5glb-receipt-sleeper.mjs --lane-token=a3a | 17 cwd=<world> node /srv/workspace/dsh-plugins/dsh-agent-team/.work
+old vocabulary rule claims  = 2: 15[node -e /* a5lsp2-fixture-lang-ser] 17[node /srv/workspace/dsh-plugins/ds]
+CHECK-A old rule counts the foreign mention as a lane process (census 330): RED — reproduced
+CHECK-B identity rule excludes that same pid: GREEN — fixed
+CHECK-C nonce arm owns a process whose cwd is NOT the world: GREEN pid=16
+CHECK-D named SOURCE-leak over the attributed set: RED by name pid=17 — teeth intact

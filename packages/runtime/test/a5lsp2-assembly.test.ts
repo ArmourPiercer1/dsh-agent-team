@@ -43,6 +43,7 @@ import type { AllowPathEntry } from '../sandbox-provider/provider.js'
 import {
   execPath,
   fixturePath,
+  laneArgv,
   makeWorld,
   nodeBinDir,
   pidAlive,
@@ -51,6 +52,7 @@ import {
   removeWorld,
   sampleLaneProcesses,
   sha256File,
+  sourceFixtureLeaksIn,
 } from './a5lsp2-harness.js'
 
 /**
@@ -203,7 +205,7 @@ function policyFor(member: string, generation: string, fixture = 'ping.mjs') {
   return {
     grantFingerprint: `sha256:grant-${member}-${generation}`,
     bindingId: `binding-lsp-${member}`,
-    argv: [execPath(), join(fixtureDir, fixture), generation],
+    argv: laneArgv([execPath(), join(fixtureDir, fixture), generation]),
     cwd: genRoot,
     env: [['PATH', '/usr/bin:/bin']] as const,
     allowPaths: allow,
@@ -227,7 +229,7 @@ function makeAssembly(pin = LAUNCHER_SHA) {
         return {
           grantFingerprint: `sha256:grant-${member}-${generation}`,
           bindingId: `binding-lsp-${member}`,
-          argv: [execPath(), join(fixtureDir, 'does-not-exist.mjs'), generation],
+          argv: laneArgv([execPath(), join(fixtureDir, 'does-not-exist.mjs'), generation]),
           cwd: genRoot,
           env: [['PATH', '/usr/bin:/bin']] as const,
           allowPaths: [
@@ -387,6 +389,16 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     // zero new processes: every live lane process belongs to A/B instances
     const live = sampleLaneProcesses(world)
     const foreign = live.filter((p2) => p2.pid !== a.pid && p2.pid !== assembly.current('B')?.pid).map((p2) => p2.pid)
+    // Teeth for the new membership rule: the sampler must SEE the instances this run
+    // owns. Without a positive assertion, "no foreign process" is vacuous — census 330
+    // had both directions of error at once (a stranger counted as ours, our own
+    // world-copied fixtures invisible to it).
+    expect(live.some((p2) => p2.pid === a.pid), 'the identity rule must attribute this run\'s own live instance to the lane, or zero-residue proves nothing').toBe(true)
+    // Named SOURCE-leak check (identity-scoped; see harness): over the set this lane
+    // can attribute to itself, nothing executes a lane fixture from its SOURCE path.
+    // The old global vocabulary arm guarded the same shape but counted a neighbour's
+    // lint process as ours (census 330: foreign=[14668] = eslint of the same job).
+    expect(sourceFixtureLeaksIn(live).map((p2) => `${String(p2.pid)} ${p2.cmd}`), 'a5lsp2 SOURCE-fixture leak: an instance is executing a lane fixture from its source path instead of the world copy').toEqual([])
     if (foreign.length !== 0) forensicScene('failure cleanup (a): a refused change left new processes', [a.pid, assembly.current('B')?.pid ?? -1], 'every live lane process belongs to A or B', { foreign, expected: [a.pid, assembly.current('B')?.pid ?? null] })
     expect(foreign).toEqual([])
   }, 60_000)
@@ -408,6 +420,8 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     expect(assembly.current('A')).toBeUndefined()
     // zero-residue sampling: the ONLY live lane processes left are the sibling B
     const live = sampleLaneProcesses(world)
+    expect(live.some((p2) => p2.pid === b.pid), 'the identity rule must still see the surviving sibling instance in (b)').toBe(true)
+    expect(sourceFixtureLeaksIn(live).map((p2) => `${String(p2.pid)} ${p2.cmd}`), 'a5lsp2 SOURCE-fixture leak at cleanup (b): a survivor executes the source fixture, not the world copy').toEqual([])
     const residual = live.map((p2) => p2.pid).filter((pid) => pid !== b.pid)
     if (residual.length !== 0) forensicScene('failure cleanup (b): residual pids/handles', [oldPid, b.pid], 'no live lane process other than the sibling', { residual, ceilingMs: POLL_CEILING_MS })
     expect(residual).toEqual([])
