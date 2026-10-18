@@ -180,7 +180,11 @@ describe('a5ptc-escalation-row (PTC fs half-arm synthetic leg)', () => {
     let called = 0
     const next = async (): Promise<'passthrough'> => { called++; return 'passthrough' as const }
     expect(await row.adjudicate(m.memberKey, { toolName: 'run_code', callId: 'c-x', reason: 'some other approval reason' }, next)).toBe('passthrough')
-    expect(await row.adjudicate(m.memberKey, { toolName: 'web_fetch', callId: 'c-y', reason: esc('workspace-write') }, next)).toBe('passthrough')
+    // OWNERSHIP is the reason prefix (the host escalation approver face is
+    // tool-generic — {agent, toolName, callId, reason}; the toolName rides
+    // the fingerprint), so a NON-escalation reason — whatever the tool —
+    // delegates untouched:
+    expect(await row.adjudicate(m.memberKey, { toolName: 'web_fetch', callId: 'c-y', reason: 'tool needs permission: network access' }, next)).toBe('passthrough')
     expect(called).toBe(2)
     expect(row.census().adjudications.asks).toBe(2)
     expect(row.census().adjudications.passthrough).toBe(2)

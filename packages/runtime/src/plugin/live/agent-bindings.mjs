@@ -441,6 +441,11 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'
+import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
+// The host.ts install line creates the router through this re-export (the
+// glue is the only module surface host.ts loads; the row module stays
+// dependency-injected below).
+export { createPtcEscalationRouter } from './ptc-escalation-row.mjs'
 // A2C-2 (plan §7.2) + fix/alpha2-explicit-agent-setup-compat: the
 // agent-scoped tool surface is read through `tools.schemas(runtimeAgent)`
 // where `runtimeAgent` is the setup's CANONICAL runtime-Agent resolver
@@ -698,7 +703,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -762,6 +767,12 @@ export function createAgentBindings(deps) {
   // TeamPermit/lease/identity authority for its root — NOT a jobs registry
   // (the host `jobs` registry coverage stays the registered gap).
   const liveJobsGatewayAssemblies = new Map()
+  // alpha5 PTC fs half-arm (10:04Z work order): the per-root escalation
+  // adjudication assemblies (live/ptc-escalation-row.mjs). Same lifecycle
+  // as the jobs-gateway map: created lazily on the first governed mount,
+  // members dispose through toolDisposers; the assemblies themselves are
+  // state-only (no timers, no fds) and die with the bindings close().
+  const livePtcEscalationAssemblies = new Map()
   /** @type {number} synthetic callId counter (the driver may omit callIds). */
   let callCounter = 0
   /** @type {string[]} noteworthy async observations (e.g. whenIdle quirks). */
@@ -2474,6 +2485,86 @@ export function createAgentBindings(deps) {
             observations.push(`a5p7-live: assembly-REFUSED for root ${gatewayRootKey} (${String(error?.message ?? error).slice(0, 160)})`)
             throw typed
           }
+        }
+        // alpha5 PTC fs half-arm (work order 10:04Z; the row-shaped
+        // productization of the reviewed L2 demo): the escalation
+        // adjudication assembly — ONE per owning root (the jobs-gateway
+        // precedent) + ONE routed member identity per governed mount.
+        // The gate above IS the S6 construction: this block runs only
+        // under permissionPolicy + config.teamToolPlane, so a non-Team
+        // install registers NOTHING and the host-level waterfall listener
+        // (host.ts, one install, the activation-fence precedent) sees an
+        // empty router and delegates every ask verbatim. Approval rides
+        // the SAME durable ladder as the ask lane (leader → user-approval,
+        // member → leader-approval); the one-shot grant rides the PR2 mint
+        // + ledger with the frozen kernel precedence — the five negative
+        // controls are pinned in packages/runtime/test/
+        // a5ptc-escalation-row.test.ts (synthetic leg).
+        const ptcRootKey = String(teamRoot)
+        let ptcRow = livePtcEscalationAssemblies.get(ptcRootKey)
+        if (ptcRow === undefined) {
+          try {
+            ptcRow = createPtcEscalationRowAssembly({
+              rootSessionId: ptcRootKey,
+              getControlService: () =>
+                controlServiceRef !== undefined && controlServiceRef !== null ? controlServiceRef.current : undefined,
+              onObserve: (o) => observations.push(`a5ptc: ${String(o?.event ?? 'observe')} root=${ptcRootKey}`),
+            })
+            livePtcEscalationAssemblies.set(ptcRootKey, ptcRow)
+            // S4 boot census after boot — CONFIG-DECLARED faces only (the
+            // confinedProvider trio the row config pins); this row does
+            // NOT claim an OS-level runner probe.
+            const ptcConfined = planeCfg.confinedProvider
+            const ptcLauncher = typeof ptcConfined?.assembly?.launcherPath === 'string' ? ptcConfined.assembly.launcherPath : ''
+            ptcRow.setBootCensus({
+              selectedRunner: ptcLauncher === '' ? 'none' : ptcLauncher,
+              enforcement: ptcLauncher === ''
+                ? 'confine-unset (host sandbox default)'
+                : `landlock-launcher pinned (sha256:${String(ptcConfined?.assembly?.launcherSha256 ?? '').slice(0, 16)})`,
+            })
+            const ptcBoot = ptcRow.census().boot
+            observations.push(`a5ptc: census-boot root=${ptcRootKey} selectedRunner=${String(ptcBoot?.selectedRunner)} enforcement=${String(ptcBoot?.enforcement)}`)
+            globalThis.console?.log(`[dsh-agent-team] a5ptc: census-boot root=${ptcRootKey} selectedRunner=${String(ptcBoot?.selectedRunner)} enforcement=${String(ptcBoot?.enforcement)}`)
+          } catch (error) {
+            const typed = new Error(
+              `agent-bindings: alpha.5 PTC escalation live assembly refused to open for root '${ptcRootKey}': ${String(error?.message ?? error)}`,
+            )
+            typed.code = 'alpha5-ptc-escalation-assembly-refused'
+            observations.push(`a5ptc: assembly-REFUSED for root ${ptcRootKey} (${String(error?.message ?? error).slice(0, 160)})`)
+            throw typed
+          }
+        }
+        if (instanceId !== undefined && instanceId !== null) {
+          const ptcMember = ptcRow.registerMember({
+            sessionId,
+            instanceId,
+            realmId: a5PlaneRealmId,
+            isLeader: sessionId === String(teamRoot),
+          })
+          // S5: the member face dies with the mount — router unregister +
+          // roster revoke through the SAME drain as every tool disposer
+          // (idempotent, order-free). Routing needs the materialized
+          // Agent object (the host projects it as `req.agent`); without
+          // one (legacy setup shape) the member stays UNROUTED — its asks
+          // keep the pre-round host path, a disclosed non-adjudication,
+          // never a silent half-governance.
+          const ptcRouter = ptcEscalationRef !== undefined && ptcEscalationRef !== null ? ptcEscalationRef.current : undefined
+          let ptcUnregister = null
+          if (
+            ptcRouter !== undefined && ptcRouter !== null &&
+            typeof ptcRouter.registerAgent === 'function' &&
+            runtimeAgent !== undefined && runtimeAgent !== null
+          ) {
+            ptcUnregister = ptcRouter.registerAgent(runtimeAgent, ptcMember.memberKey, ptcRow)
+          } else {
+            observations.push(`a5ptc: member-UNROUTED session=${sessionId} (no router or no materialized Agent)`)
+          }
+          toolDisposers.push(() => {
+            if (ptcUnregister !== null) ptcUnregister()
+            ptcMember.revoke()
+          })
+        } else {
+          observations.push(`a5ptc: member-UNREGISTERED session=${sessionId} (no durable instanceId yet)`)
         }
       }
       // alpha.1 (plan §10.7): the Team-managed skills — the catalog
