@@ -168,11 +168,20 @@ function writeAll(sink, text) {
  *    host's PUBLIC `buildGrepCommand`/`parseGrepArgs`/`parseGrepMatches` over
  *    the same confined provider face the glob row rides, so the plane's answer
  *    is what a default-law `rg` answers (ignore / hidden / VCS law, binary law,
- *    `--json` framing) instead of grep(1) folklore. `multiline` and
- *    `contextLines` are refused BY NAME there: rg does answer `-C n` with a
- *    distinct `context` record (measured, probes N9) but the lane's
+ *    `--json` framing) instead of grep(1) folklore. FOUR knobs are refused BY NAME
+ *    there, never reinterpreted: `multiline` and `contextLines` (rg does answer
+ *    `-C n` with a distinct `context` record — measured, probes N9 — but the lane's
  *    `SearchMatchLine` has no arm for that distinction, and forwarding them as
- *    matches would relabel a neighbour line as a hit.
+ *    matches would relabel a neighbour line as a hit), and `fixedString` /
+ *    `ignoreCase`, which the lane's own grep argument law carries (its
+ *    `src/args.ts:148-149`) and which this port honours below, but which the
+ *    host's PUBLIC grep vocabulary (`buildGrepCommand`: pattern / path / include)
+ *    cannot express. `(?i)` and literal-escaping encodings exist — that is
+ *    precisely why they are refused rather than quietly adopted: they are a mapping
+ *    this row does not own. THE MOUNT-FLIP OWNER MUST CARRY THIS: flipping to the
+ *    rg row narrows those two knobs from "honoured" to "refused by name"; leg `V6b`
+ *    pins the delta from both sides, and the honest widening is the host growing an
+ *    arm in its own vocabulary, not this row guessing one.
  *  - `confined` absent (a mount with a controlled-fs instance but NO confined
  *    provider — leg G8/G9 shape) → the grep(1) port below, UNCHANGED. It is
  *    kept deliberately, not by accident: without a confined provider there is

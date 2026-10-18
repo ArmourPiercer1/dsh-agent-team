@@ -8,7 +8,6 @@
     "--json",
     "--regexp=<P>",
     "[--glob=<inc>]",
-    "--no-messages",
     "--no-ignore-parent",
     "--no-ignore-global",
     "--",

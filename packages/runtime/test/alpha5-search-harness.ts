@@ -133,7 +133,11 @@ export function nativeSearchArgv(
   if (options.include !== undefined) argv.push(`--glob=${options.include}`)
   if (options.ignoreCase === true) argv.push('-i')
   if (options.fixedString === true) argv.push('-F')
-  argv.push('--no-messages', '--no-ignore-parent', '--no-ignore-global')
+  // Mirrors the row's frozen additions EXACTLY — and `--no-messages` is NOT among
+  // them, deliberately: the row's coverage law needs the relative permission error
+  // that flag silences, and the oracle must run the SAME argv or the parity claim
+  // would be measured against a different command (leg `argv-additions`).
+  argv.push('--no-ignore-parent', '--no-ignore-global')
   argv.push('--', options.path ?? '.')
   return argv
 }
@@ -142,7 +146,7 @@ export function nativeSearchArgv(
  *  flags, plain (newline) framing — the framing the row does NOT use, which is
  *  exactly why the projection is pinned against them. */
 export function nativeModeArgv(pattern: string, mode: 'files' | 'count'): string[] {
-  return ['--no-config', mode === 'files' ? '-l' : '-c', `--regexp=${pattern}`, '--no-messages', '--no-ignore-parent', '--no-ignore-global', '--', '.']
+  return ['--no-config', mode === 'files' ? '-l' : '-c', `--regexp=${pattern}`, '--no-ignore-parent', '--no-ignore-global', '--', '.']
 }
 
 export interface NativeRun {

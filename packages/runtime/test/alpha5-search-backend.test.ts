@@ -27,7 +27,7 @@
  * Worlds: `tests/homes/a5srgp-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildGrepCommand, parseGrepArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -243,18 +243,27 @@ describe('A5-SRGP A: the fixed argv is one measurement, one builder', () => {
     expect(built).toEqual(nativeSearchArgv(SEARCH_TOK))
     const hostForm = ['--no-config', ...buildGrepCommand(parseGrepArgs({ pattern: SEARCH_TOK })), ...row.SEARCH_ARGV_ADDITIONS, '--', '.']
     expect(built).toEqual(hostForm)
-    expect(built).toEqual(['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--no-messages', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
+    expect(built).toEqual(['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--no-ignore-parent', '--no-ignore-global', '--', '.'])
   })
 
   it('argv-law/include: the lane filter rides the host\'s own --glob= form', () => {
     const built = row.searchArgv({ pattern: 'a(b', globFilter: '*.ts' })
     expect(built).toEqual(nativeSearchArgv('a(b', { include: '*.ts' }))
-    expect(built).toEqual(['--no-config', '--json', '--regexp=a(b', '--glob=*.ts', '--no-messages', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
+    expect(built).toEqual(['--no-config', '--json', '--regexp=a(b', '--glob=*.ts', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
   })
 
-  it('argv-additions: every addition is a --no-* law switch, never a value-taking knob', () => {
-    expect(row.SEARCH_ARGV_ADDITIONS).toEqual(['--no-messages', '--no-ignore-parent', '--no-ignore-global'])
+  it('argv-additions: every addition is a --no-* law switch, and --no-messages is DELIBERATELY ABSENT', () => {
+    expect(row.SEARCH_ARGV_ADDITIONS).toEqual(['--no-ignore-parent', '--no-ignore-global'])
     for (const addition of row.SEARCH_ARGV_ADDITIONS) expect(addition.startsWith('--no-')).toBe(true)
+    // The absence is a law, measured. `--no-messages` silences the ONE line that
+    // separates "this tree has nothing to search" from "the kernel refused the
+    // walk" (`rg: .: Permission denied (os error 13)`): probes
+    // `coverage-probe.mjs` legs G-on-nogrants vs B-off-nogrants — with the flag a
+    // fully refused walk answers `summary` + `stats.searches=0` + EMPTY stderr, a
+    // silent "no matches". The noise the flag was meant for names an ABSOLUTE
+    // path, which the coverage law ignores by shape (legs V11d, V11e).
+    expect(row.SEARCH_ARGV_ADDITIONS).not.toContain('--no-messages')
+    expect(row.searchArgv({ pattern: SEARCH_TOK })).not.toContain('--no-messages')
     expect(row.SEARCH_WALK_PATH_ELEMENT).toBe('.')
   })
 
@@ -418,7 +427,7 @@ describe('P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132)
     }
     for (const included of SEARCH_INCLUDED) expect(team).toContain(included)
     // the classes are REAL, not a fixture accident:
-    const control = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--no-ignore', '--hidden', '--no-messages', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
+    const control = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--no-ignore', '--hidden', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
     const controlPaths = new Set(nativeJsonRows(control).map((r) => r.path))
     for (const excluded of SEARCH_EXCLUDED) expect(controlPaths, `${excluded} must be findable`).toContain(excluded)
     parity('P4', 'ignore/hidden/VCS', control, result, 'excluded under the default ignore law, all found with --no-ignore --hidden', SEARCH_EXCLUDED.every((p) => !team.includes(p) && controlPaths.has(p)) && SEARCH_INCLUDED.every((p) => team.includes(p) && controlPaths.has(p)), controlPaths.size, team.length)
@@ -435,7 +444,7 @@ describe('P: native fixed-rg vs Team row, per class (plan alpha5-s0-pr0-pr8:132)
     expect(team).not.toContain('src/BINARY.bin')
     // the file really does carry the token — the walker skipped it, the fixture
     // did not omit it.
-    const text = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--text', '--no-messages', '--no-ignore-parent', '--no-ignore-global', '--', 'src/BINARY.bin'])
+    const text = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', `--regexp=${SEARCH_TOK}`, '--text', '--no-ignore-parent', '--no-ignore-global', '--', 'src/BINARY.bin'])
     expect(nativeJsonRows(text).length).toBeGreaterThan(0)
     parity('P5', 'binary', native, result, 'no record for a NUL-bearing line, both sides', !team.includes('src/BINARY.bin') && !nativePaths.includes('src/BINARY.bin'), nativePaths.length, team.length)
   }, SLOW)
@@ -693,12 +702,14 @@ describe('M: the plane\'s search row mounts the rg body where a confined provide
 // ---------------------------------------------------------------------------
 
 describe('V: the anchor law and the closed refusal face', () => {
-  it('V1-V4 knobs and placements are refused BY NAME, before any child exists', async () => {
+  it('V1-V6 knobs and placements are refused BY NAME, before any child exists', async () => {
     const before = backend.execCount()
     const cases: Array<[unknown, string]> = [
       [searchCall('v1', { tool: 'glob' }), 'wrong-tool-for-backend'],
       [searchCall('v2', { multiline: true }), 'multiline-unsupported'],
       [searchCall('v3', { contextLines: 2 }), 'context-unsupported'],
+      [searchCall('v6', { fixedString: true }), 'fixed-string-unsupported'],
+      [searchCall('v7', { ignoreCase: true }), 'ignore-case-unsupported'],
       [searchCall('v4', { target: { placement: 'realm-home', locator: '~/notes' } }), 'placement-unsupported'],
     ]
     for (const [call, code] of cases) {
@@ -708,9 +719,40 @@ describe('V: the anchor law and the closed refusal face', () => {
         expect(result.failure.code).toBe(code)
         expect(result.failure.class).toBe('denied')
         expect(result.failure.family).toBe('a5srgp-refused/pre-execute')
+        // Refused by NAME: the prose is the table's, so no caller text echoes.
+        expect(Object.values(row.SEARCH_REFUSAL_TEXT)).toContain(result.failure.detail)
       }
       expect(writes()).toBe(0)
     }
+    expect(backend.execCount()).toBe(before)
+  }, SLOW)
+
+  it('V6b the two new refusals are a DISCLOSED capability delta, not an invisible one', async () => {
+    // `fixed_string` and `ignore_case` ARE lane vocabulary
+    // (`packages/tools/a5p5-tools/src/args.ts:148-149`) and the grep(1) port the
+    // rg row replaces DOES honour them (`plane-effect-backends.mjs:120-122`
+    // pushes `-F` / `-i`). The host's public ripgrep vocabulary has no arm for
+    // either, so this row refuses rather than inventing a mapping. The delta is
+    // pinned from BOTH sides here so nobody discovers it as a silent behaviour
+    // change: the port answers, the rg row refuses by name.
+    const portSource = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/plane-effect-backends.mjs'), 'utf8')
+    expect(portSource).toContain("if (parsed.fixedString) argv.push('-F')")
+    expect(portSource).toContain("if (parsed.ignoreCase) argv.push('-i')")
+    // And the encodings exist — which is exactly why the refusal has to be
+    // deliberate rather than accidental. `(?i)` is answered by THIS walker; the
+    // row does not use it.
+    const viaEncoding = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', '--regexp=(?i)a5srgp-tok', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
+    expect(viaEncoding.code).toBe(0)
+    expect(nativeJsonRows(viaEncoding).length).toBeGreaterThan(0)
+    // The same pattern WITHOUT the encoding finds nothing (the fixture spells the
+    // token in upper case), so `(?i)` would change the answer, not just its shape.
+    const plain = nativeSearchRg(rgPath, ROOT_DIR, ['--no-config', '--json', '--regexp=a5srgp-tok', '--no-ignore-parent', '--no-ignore-global', '--', '.'])
+    expect(nativeJsonRows(plain).length).toBe(0)
+    // So the row's answer is the honest one: a named refusal, zero children.
+    const before = backend.execCount()
+    const { result } = await runRow(backend, searchCall('v6b', { pattern: 'a5srgp-tok', ignoreCase: true }))
+    expect(result.ok).toBe(false)
+    if (result.ok === false) expect(result.failure.code).toBe('ignore-case-unsupported')
     expect(backend.execCount()).toBe(before)
   }, SLOW)
 
@@ -825,13 +867,146 @@ describe('V: the anchor law and the closed refusal face', () => {
     }
     const anchor = await globRow.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: 'doomed' }) as { ok: boolean; handle?: { close(): Promise<void>; fd: number } }
     expect(anchor.ok).toBe(true)
-    const before = await row.verifyAnchorStillGoverned(anchor)
-    expect(before.verdict).toBe('confirmed')
+    // MEASURED division of labour between the two post-walk arms: the shared
+    // law's EMPTY-list arm re-checks the view, the anchor inode and the ROOT — but
+    // an unlinked directory keeps its inode and a `/proc/self/fd` view, so it
+    // passes (asserted below). The row's own A3 arm, which resolves the view,
+    // notices. Both run, because each catches what the other cannot; V11b is the
+    // case only the shared arm catches.
+    const sharedBefore = await globRow.verifyGlobResultsBeneath(anchor, []) as { ok: boolean }
+    expect(sharedBefore.ok).toBe(true)
+    const rowBefore = await row.verifyAnchorStillGoverned(anchor)
+    expect(rowBefore.verdict).toBe('confirmed')
     rmSync(doomed, { recursive: true, force: true })
-    const after = await row.verifyAnchorStillGoverned(anchor)
+    const sharedAfter = await globRow.verifyGlobResultsBeneath(anchor, []) as { ok: boolean }
+    expect(sharedAfter.ok).toBe(true) // the measured blind spot of that arm alone
+    const after = await row.verifyAnchorStillGoverned(anchor) as { verdict: string; detail?: string }
     expect(['undeterminable', 'escape', 'drift']).toContain(after.verdict)
     expect(after.verdict).not.toBe('confirmed')
     await anchor.handle?.close().catch(() => undefined)
+  })
+
+  it('V11b the ROOT-IDENTITY arm covers a directory walk: a swapped governed root is refused, never an empty answer', async () => {
+    // The arm an anchor-inode check cannot see. The pinned anchor is still exactly
+    // the object the walk ran under while the governed ROOT it was taken under has
+    // been replaced underneath it — the answer then belongs to a directory the row
+    // never anchored. Before this round a directory target re-checked only the
+    // anchor, so this is the gap the review named; the row now runs the shared
+    // verifier for both target kinds.
+    const swapped = newWorld('a5srgp-rootswap')
+    try {
+      const root = join(swapped, 'root')
+      mkdirSync(join(root, 'src'), { recursive: true })
+      writeFileSync(join(root, 'src', 'a.txt'), SEARCH_TOK + ' one\n')
+      const globRow = (await import(new URL('../src/plugin/live/glob-backend.mjs', import.meta.url).href)) as unknown as {
+        openAnchoredWalkRoot(root: string, target: unknown, debug?: unknown): Promise<unknown>
+        verifyGlobResultsBeneath(anchor: unknown, entries: readonly string[], debug?: unknown): Promise<unknown>
+      }
+      const anchor = await globRow.openAnchoredWalkRoot(root, { placement: 'workspace', locator: 'src' }) as { ok: boolean; handle?: { close(): Promise<void> } }
+      expect(anchor.ok).toBe(true)
+      expect((await globRow.verifyGlobResultsBeneath(anchor, []) as { ok: boolean }).ok).toBe(true)
+      // Replace the governed root with a DIFFERENT object at the same path.
+      rmSync(root, { recursive: true, force: true })
+      mkdirSync(root, { recursive: true })
+      const after = await globRow.verifyGlobResultsBeneath(anchor, []) as { ok: boolean; failure?: { class?: string; code?: string; family?: string } }
+      expect(after.ok).toBe(false)
+      expect(after.failure?.code).toBe('root-drift')
+      // The shared law's own family word; the ROW re-wraps it into this row's
+      // table, which is what the wire sees (leg V11f).
+      expect(after.failure?.family).toBe('a5glb-refused/anchor-identity')
+      await anchor.handle?.close().catch(() => undefined)
+    } finally {
+      await destroyWorldVerified(swapped)
+      rmSync(swapped, { recursive: true, force: true })
+    }
+  }, SLOW)
+
+  it('V11c a kernel-refused file is a REFUSAL, never a silent "no matches" — the coverage law, live', async () => {
+    // The reachable shape of the whole-walk refusal, live on the confined face: a
+    // file inside the walked tree the walker cannot open. The walker COMPLETES
+    // (`summary` present, zero match records) and prints
+    // `rg: ./src/unreadable.ts: Permission denied (os error 13)`. Answering `ok`
+    // there would tell the model the token is absent from a file that was never
+    // opened — the same class of lie as the silent-zero stdin case, arriving from
+    // the other direction.
+    const blocked = join(ROOT_DIR, 'src', 'unreadable.ts')
+    writeFileSync(blocked, SEARCH_TOK + ' unreadable\n')
+    chmodSync(blocked, 0o000)
+    try {
+      const before = backend.execCount()
+      const res = await runRow(backend, searchCall('v11c', { maxResults: 500 }))
+      expect(res.result.ok).toBe(false)
+      if (res.result.ok === false) {
+        expect(res.result.failure.code).toBe('walker-permission-refused')
+        expect(res.result.failure.family).toBe('a5srgp-refused/walker')
+        expect(res.result.failure.class).toBe('undetermined')
+        expect(res.result.failure.detail)
+          .toBe('ripgrep could not read the searched path \u2014 an empty answer here would be a refusal, not a fact')
+        expect(Number.isFinite(res.result.failure.counts.stderrBytes ?? Number.NaN)).toBe(true)
+      }
+      expect(res.text()).toBe('')
+      // It DID execute — the refusal is about the answer's honesty, not the spawn.
+      expect(backend.execCount()).toBe(before + 1)
+    } finally {
+      chmodSync(blocked, 0o644)
+      rmSync(blocked, { force: true })
+    }
+  }, SLOW)
+
+  it('V11d the coverage law reads the CLASS of a walker error, never its text, and upward noise is a different class', () => {
+    const coverage = (row as unknown as { walkerCoverageRefusal(stderr: string): string | null }).walkerCoverageRefusal
+    // A walk refused end to end, and the partial form: both are refusals.
+    expect(coverage('rg: .: Permission denied (os error 13)\n')).toBe('walker-permission-refused')
+    expect(coverage('rg: ./src/a.ts: Permission denied (os error 13)\n')).toBe('walker-permission-refused')
+    // rg's upward discovery of a parent `.git` it cannot read — measured on EVERY
+    // walk in this world (probes legs A/C/D/F, always an ABSOLUTE path). It is a
+    // fact about the host above the governed root, never about this answer, so it
+    // must not turn a completed walk into a refusal either.
+    expect(coverage('rg: /srv/somewhere/.git: Permission denied (os error 13)\n')).toBe(null)
+    // Not a permission refusal is not this law's business (the walker's own error
+    // law and the completion law stay single-owned).
+    expect(coverage('')).toBe(null)
+    expect(coverage('rg: ./weird: Is a directory (os error 21)\n')).toBe(null)
+    expect(refusalCodeSet(row).has('walker-permission-refused')).toBe(true)
+  })
+
+  it('V11e the coverage law is applied AFTER completion and BEFORE any record is trusted', () => {
+    // Source law: the coverage refusal sits between the completion check and the
+    // record reader, and it cannot write to a channel.
+    const src = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/search-backend.mjs'), 'utf8')
+    const completion = src.indexOf('anchored-search WALKER-INCOMPLETE')
+    const coverageAt = src.indexOf('const coverage = walkerCoverageRefusal(stderrText)')
+    const parseAt = src.indexOf('parseGrepMatches(stdout)')
+    expect(completion).toBeGreaterThan(-1)
+    expect(coverageAt).toBeGreaterThan(completion)
+    expect(parseAt).toBeGreaterThan(coverageAt)
+    const block = src.slice(coverageAt, coverageAt + 700)
+    expect(block).toContain("failure('undetermined', coverage")
+    expect(block).not.toContain('sink')
+    // And the shared root-identity verifier is what BOTH target kinds re-check
+    // against after the walk — the empty list is the directory case.
+    // Both post-walk arms are present, and the shared one is what gives a
+    // DIRECTORY target its root-identity re-check (the empty entry list).
+    expect(src).toContain('verifyGlobResultsBeneath(anchor, fileTarget === null ? [] : [fileTarget], debug)')
+    expect(src).toContain('await verifyAnchorStillGoverned(anchor)')
+  })
+
+  it('V11f a shared-law verification refusal arrives in THIS row\u2019s vocabulary, not the glob row\u2019s', async () => {
+    // The row re-wraps every shared-law refusal, so the plane sees one refusal
+    // vocabulary. Proven at the only reachable point: an anchored directory whose
+    // verification fails after the walk would be re-wrapped — here the reachable
+    // pre-spawn path is measured instead, because it is the same code path.
+    const outside = await runRow(backend, searchCall('v11f', { target: { placement: 'workspace', locator: '../../../etc' } }))
+    expect(outside.result.ok).toBe(false)
+    if (outside.result.ok === false) {
+      expect(outside.result.failure.family.startsWith('a5srgp-refused/')).toBe(true)
+    }
+    const escape = await runRow(backend, searchCall('v11f2', { target: { placement: 'absolute-path', locator: '/etc/passwd' } }))
+    expect(escape.result.ok).toBe(false)
+    if (escape.result.ok === false) {
+      expect(escape.result.failure.family).toBe('a5srgp-refused/verification')
+      expect(escape.result.failure.code).toBe('target-outside-governed-root')
+    }
   })
 
   it('V12 the audit face carries codes and arithmetic only — never a path, a row or the walker\'s words', async () => {

@@ -31,14 +31,14 @@
 ## The fixed argv — one measurement, one builder
 
 ```
-<rg> --no-config --json --regexp=<P> [--glob=<inc>] --no-messages --no-ignore-parent --no-ignore-global -- .
+<rg> --no-config --json --regexp=<P> [--glob=<inc>] --no-ignore-parent --no-ignore-global -- .
 ```
 
 | token | provenance | why it is frozen |
 | --- | --- | --- |
 | `--no-config` | the host's own prefix (`runRipgrep` prepends it to any argv) | a `RIPGREP_CONFIG_PATH`, and through it a `--pre` program, never steers a governed search. |
 | `--json --regexp=<P> [--glob=<inc>]` | the PUBLIC package root's `buildGrepCommand(parseGrepArgs(...))` — the row builds no rg syntax of its own | the lane's `globFilter` is the host's `--glob=` form; the lane's `pattern` never becomes a positional. |
-| `--no-messages` | addition (probe F/D series) | walking a root that is not its own git root, rg prints `…/.git: Permission denied (os error 13)` on EVERY walk — an OUTSIDE path name on a channel. It silences that class only: a walk ripgrep refuses to start still emits nothing on stdout, and a no-match filter still ends with a summary (`P10`). |
+| **(no `--no-messages`)** | round-2 measurement (`coverage-probe.mjs` A–J) — its ABSENCE is the law | the flag was in the argv in round 1 to keep the upward-discovery noise off a channel. Measured: it also erases the ONE line that separates "this tree has nothing to search" from "the kernel refused the walk" (leg G vs leg B: same completion record, same `stats.searches=0`, stderr emptied). The noise it was added for names an ABSOLUTE path and is separable by shape, so the flag costs the coverage signal and buys nothing. |
 | `--no-ignore-parent`, `--no-ignore-global` | addition (probe Q series) | the confined child cannot read the parent's ignore files anyway; pinning the flags makes the row's ignore law the walker's DEFAULT rather than an accident of whichever parents happen to be readable. Selection-neutral in measurement, so it cannot widen anything. |
 | `-- .` (or the file's own basename) | addition — load-bearing | inside the confine fd 0 is a socket, and rg 15's stdin heuristic then "chooses to search stdin", answering **exit 0 with zero records and zero stderr**. An explicit search element is the only thing that makes the walk happen (`dot-arg-probe` D1 vs D3). Second belt: `child.stdin.end()` right after spawn. Suite leg `explicit-path-is-load-bearing`. |
 
@@ -137,10 +137,11 @@ the lane's `SearchMatchLine` has no arm for.
   `run()` never throws (`V10`), and the audit line carries codes and arithmetic
   only — no path, no row, no walker words, no token (`V12`).
 * refused BY NAME before any process exists: non-grep tool, `multiline`,
-  `contextLines > 0`, unknown placement (including the lane's `realm-home`, which
-  this row has no anchor law for), pattern/filter rejected by the host's own
-  `parseGrepArgs`. A refusal costs zero processes and zero bytes (`execCount`
-  proves it).
+  `contextLines > 0`, `fixed_string`, `ignore_case`, unknown placement (including
+  the lane's `realm-home`, which this row has no anchor law for), pattern/filter
+  rejected by the host's own `parseGrepArgs`. A refusal costs zero processes and
+  zero bytes (`execCount` proves it), and its prose is the table's, never a
+  caller's (`V1-V6`).
 
 ## Mount story and the one gap
 
@@ -165,25 +166,37 @@ that line lands.
 
 ## Validation
 
-* `packages/runtime/test/alpha5-search-backend.test.ts` — 34/34 green, live legs
+* `packages/runtime/test/alpha5-search-backend.test.ts` — 40/40 green (round-1 head: 34/34), live legs
   on the REAL confined provider (Landlock child, real rg 15), worlds
   `tests/homes/a5srgp-*` created and destroyed inside the run
   (`destroyWorldVerified` re-appearance count asserted 0).
-* neighbours: `alpha5-glue7-plane-backends` + `a5p4-lane-hygiene` +
-  `a5w-integration-wiring` 38/38; `alpha5-glob-backend` + adversarial 57/57;
+* neighbours (re-run after the round-2 row change, since the argv and the refusal
+  set both moved): `alpha5-glue7-plane-backends` + `a5p4-lane-hygiene` +
+  `a5w-integration-wiring` + `alpha5-glob-backend` + its adversarial file — 95/95;
   `packages/testkit` `p4t6-session-event-scan` 10/10 (count 1191 → 1194 after the
   booking); `packages/tools/a5p5-tools` `a5p5-dormant-audit` 7/7.
 * typecheck: `pnpm -r run typecheck` green across all nine packages.
-* lint: `npx eslint <the nine touched files>` clean (no repo-wide lint run).
+* lint: `npx eslint <the touched files>` clean (no repo-wide lint run), in both
+  rounds.
+* round-2 re-runs after the behaviour change: `alpha5-search-backend` +
+  `alpha5-glue7-plane-backends` 56/56; `a5p4-lane-hygiene` + `a5w-integration-wiring`
+  + both glob-row files 95/95; `p4t6-session-event-scan` 10/10 (no new package
+  files, so the 1187 booking holds); `a5p5-dormant-audit` 7/7 — earned the hard
+  way: a comment in shipped source naming the lane's tool package is an OFFENDER
+  for that ledger, so the shipped prose cites `src/args.ts:148-149` without the
+  package name.
 * shipped-surface placement: `node scripts/place-dist-glue.mjs` placed
   `search-backend.mjs` + the rebuilt `plane-effect-backends.mjs` into
   `packages/runtime/dist` byte-identically (8 placements, the other 6 unchanged),
   and `node scripts/check-artifacts-committed.mjs` named exactly those two files
   as the drift to commit with the source (`verdict=stale … drift=2`), which the
   commit does.
-* full-tree captures (`packages/runtime`, `npx vitest run`, twice —
-  `logs-runtime-capture1.txt`, `logs-runtime-capture2.txt`):
-  4603/4613 and 4602/4613. The runtime share of the published red set —
+* full-tree captures (`packages/runtime`, `npx vitest run`): round 1
+  `logs-runtime-capture1.txt` / `logs-runtime-capture2.txt` (4603/4613,
+  4602/4613); round 2, after the argv and verification changes,
+  `logs-runtime-capture3.txt` / `logs-runtime-capture4.txt` — 4608/4619 in both,
+  and the two failure-line sets are identical to each other (4613 → 4619 is this
+  lane's +6 legs). The runtime share of the published red set —
   `p6t3-mediation` ×5 and `p6t3-restart` ×2 — is present and identical in both.
   Three differences from a naive "same nine" comparison, all measured and none
   produced by this lane:
@@ -201,13 +214,70 @@ that line lands.
     pristine baseline into this worktree as the sibling lanes did
     (`TEST_METHODS` §2; ~3 GB, and this host is at 95 % with 5.8 G free, so this
     lane did not do it).
-  - capture 2 additionally lost `a3p3-governance-lane-hygiene` to
-    `Test timed out in 5000 ms` at `:767` (a heavy source-scan leg under full
-    parallel load; the capture ran while other jobs were live). It passes 21/21
-    twice in isolation. Recorded rather than hidden: that leg has no explicit
-    timeout, so its red is load-dependent.
+  - `a3p3-governance-lane-hygiene` loses one leg (`:767`, a heavy source scan) to
+    `Test timed out in 5000 ms` in every full-tree capture from round 1's second
+    run onward — 6.9 s and 7.3 s against a 5 s default timeout in round 2's two
+    captures, and 21/21 in isolation both before and after them. It is in BOTH
+    round-2 captures, so it is not a one-run flake: it is a load-dependent leg
+    with no explicit timeout. Disclosed rather than hidden; untouched, as it is
+    outside this lane's ownership.
 * tree hygiene: the provider scratch that confined runs leave at the runner cwd
   (`packages/runtime/{out,plans,probe-*}`, also recreated by the pre-existing
   `rc2-persona-probe` during these captures) is deleted, no `a5srgp-*` world
   remains under `tests/homes`, and `git status --ignored packages` afterwards
   shows only this lane's own files.
+
+
+## Round 2 — the solo review's fix order (closed before the mount flip)
+
+The solo review of the first head (`f0831531`) found no blocker but two gaps that
+had to close before anyone flips the mount. Both are closed here, and both changed
+behaviour, so both are measured in `probes/coverage-probe.mjs` first.
+
+**① `fixed_string` and `ignore_case` were being DROPPED SILENTLY.** They are lane
+vocabulary (`packages/tools/a5p5-tools/src/args.ts:148-149`), the grep(1) port this
+row replaces honours them (`plane-effect-backends.mjs:120-122` pushes `-F` / `-i`),
+and the host's public `buildGrepCommand` has no arm for either — so the row was
+accepting a knob and answering a different question. That is the one thing this
+row's own law forbids ("refused BY NAME, never reinterpreted"), so both are now
+refused by name (`fixed-string-unsupported`, `ignore-case-unsupported`,
+`a5srgp-refused/pre-execute`, zero children, zero spill) exactly like `multiline`
+and `context`.
+
+The refusal rather than the mapping, deliberately: `(?i)` IS answered by this
+walker (leg `V6b` measures it finding what the case-sensitive pattern does not),
+and a literal-mapping could be built by escaping metacharacters — but both are the
+row inventing a mapping the host does not own, i.e. a semantic expansion of a
+frozen argv whose whole value is that it is one measurement. The refusal costs zero
+new semantics. When the host's vocabulary grows an arm, this row picks it up
+through `buildGrepCommand` without changing. The capability delta against the port
+is pinned from BOTH sides in `V6b` so nobody meets it as a surprise.
+
+**② A directory target never re-checked the governed ROOT after its walk.** The row
+re-checked its own anchor (view + inode), which is the arm that catches an object
+removed under the walk; the shared law's `rootIdentity` arm is the one that catches
+the governed ROOT being replaced underneath the anchor, and a directory target never
+reached it (only a file target did, via its entry list). Post-walk the row now runs
+BOTH arms for BOTH target kinds — the shared verifier with the file's own name, or
+with the EMPTY list for a directory. Measurement decided the shape, not aesthetics:
+leg `V11` records that the shared law's empty-list arm does NOT notice a removed
+anchor (an unlinked directory keeps its inode and its `/proc/self/fd` view), and
+leg `V11b` that the anchor-inode arm does not notice a swapped root. Each arm sees
+what the other cannot.
+
+**The hole that fell out of ②, closed.** Measuring the kernel-refused walk showed
+`--no-messages` (present in round 1) emptied stderr on a walk the kernel refused
+end to end, so an empty answer was indistinguishable from a refused one on every
+channel the row can see. The flag is gone; the row now reads the CLASS of the
+walker's permission errors — relative path ⇒ the walk's own coverage failed ⇒
+`walker-permission-refused` (`undetermined`), absolute path ⇒ rg's upward discovery
+of a parent `.git`, which appears on EVERY walk here and is not this answer's
+business. Natively the same partial refusal is exit 2, which `search-core` maps to
+`SEARCH_FAILED`: the row is re-pressing the host's verdict through the one channel
+that survives this face, not inventing a stricter one.
+
+New legs: `V6b`, `V11b`, `V11c` (the coverage law live, on a chmod-000 file),
+`V11d` (the classifier, both classes), `V11e` (source law: coverage after
+completion, before any record is trusted; both verification arms present),
+`V11f` (shared-law refusals arrive in this row's vocabulary) — **34 → 40 legs**,
+and `argv-law` / `argv-additions` now pin the ABSENCE of `--no-messages`.
