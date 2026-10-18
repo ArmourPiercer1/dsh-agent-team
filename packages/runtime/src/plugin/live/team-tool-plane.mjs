@@ -163,7 +163,57 @@ export function verifyConfinedProviderPairing(confined) {
   return { ok: true }
 }
 
-/** The tool CLASS a derived effect set speaks for (lane re-check granularity; see header). */
+/**
+ * Gate 0b (natexe ③ audit, root ruling 04:34Z): the CLOSED value domain of
+ * the plane's mount names. `names`/`readName` are ROW-CONFIG input (the
+ * install-level surface — the blueprint grammar is closed and carries no
+ * field reaching the plane), and a half-valid mount spelling is the same
+ * class of config defect as a half-configured trust pair: refuse the mount,
+ * never guess. Three laws, measured adversarial shapes in
+ * dev/agent-workflow/evidence/alpha5/natexe/ (probe legs A1-A4):
+ *  - SHAPE: every mount name is a tool-name-shaped string
+ *    (`^[a-z][a-z0-9_]{0,63}$` — rejects '', '__proto__', whitespace,
+ *    uppercase);
+ *  - KEYS: the names map is exactly the plane's own classes
+ *    (grep/glob/bash — a foreign key pre-seeds the lane's class map with a
+ *    class that has no row);
+ *  - DISTINCT + NATIVE CLAIM: the four mount names (grep/glob/bash/read)
+ *    are pairwise distinct, and a spelling that belongs to a native tool
+ *    class may be claimed ONLY by its own row (names.bash:'bash' is the
+ *    shipped takeover vector exactly as `readName` defaults to 'read';
+ *    names.grep:'bash' or a shell row claiming 'read' is impersonation
+ *    shape and is refused).
+ * Legitimate configs are untouched: DEFAULT_PLANE_NAMES + readName 'read'
+ * pass, and every takeover spelling already live-verified passes.
+ */
+const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
+const PLANE_NATIVE_CLAIMS = Object.freeze({
+  grep: 'grep', glob: 'glob', bash: 'bash', read: 'read', pwsh: 'bash',
+  read_image: 'read', write: 'read', edit: 'read', lsp: 'read',
+})
+export function verifyPlaneNames(names, readName) {
+  for (const key of Object.keys(names ?? {})) {
+    if (key !== 'grep' && key !== 'glob' && key !== 'bash') {
+      return { ok: false, code: 'PLANE_NAMES_INVALID', message: `names carries '${key}' — the plane map is closed to its own classes (grep/glob/bash)` }
+    }
+  }
+  const rows = [['grep', names?.grep], ['glob', names?.glob], ['bash', names?.bash], ['read', readName]]
+  const seen = new Map()
+  for (const [cls, spelling] of rows) {
+    if (typeof spelling !== 'string' || !PLANE_NAME_SHAPE.test(spelling)) {
+      return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane mount name for '${cls}' must match ^[a-z][a-z0-9_]{0,63}$ — got ${JSON.stringify(spelling) ?? 'undefined'}` }
+    }
+    const owner = PLANE_NATIVE_CLAIMS[spelling]
+    if (owner !== undefined && owner !== cls) {
+      return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane row '${cls}' cannot mount under '${spelling}' — that native spelling belongs to row '${owner}'; takeover is legal only in a row's own class` }
+    }
+    if (seen.has(spelling)) {
+      return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane rows '${String(seen.get(spelling))}' and '${cls}' would both mount under '${spelling}' — one name, one placement` }
+    }
+    seen.set(spelling, cls)
+  }
+  return { ok: true }
+}
 function classifyEffectSet(effectSet) {
   const effects = Array.isArray(effectSet?.effects) ? effectSet.effects : []
   const invokes = effects.filter((e) => e?.kind === 'tool-invoke').map((e) => String(e.toolName ?? ''))
@@ -313,6 +363,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
   if (pairing.ok !== true) return { ok: false, code: pairing.code, message: pairing.message }
 
   const names = { ...DEFAULT_PLANE_NAMES, ...(input.plane?.names ?? {}) }
+  const readName = input.plane?.readName ?? 'read'
+  // Gate 0b: the closed mount-name domain, checked BEFORE any construction
+  // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
+  const namesCheck = verifyPlaneNames(names, readName)
+  if (namesCheck.ok !== true) return { ok: false, code: namesCheck.code, message: namesCheck.message }
 
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
@@ -460,7 +515,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // Guard the placement identity (int-a5b T5: `BINDING_UNVERIFIED` was the
   // gap; a feed entry names the placement, it never bypasses the Guard).
   // Deny-lane and template-default-deny re-check BEFORE any byte is read.
-  const readName = input.plane?.readName ?? 'read'
+  // (readName is hoisted to Gate 0b above — the same value, validated there.)
   const readExecutor = fsInstance !== null && typeof fsInstance.rootDir === 'string'
     ? createGovernedReadExecutor({
       realmId,
