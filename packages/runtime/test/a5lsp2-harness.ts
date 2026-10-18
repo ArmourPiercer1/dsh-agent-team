@@ -119,7 +119,54 @@ export type LaneProcess = { pid: number; cwd: string; cmd: string }
  * the CI `FORENSIC` scene shows `foreign=[14668]` = a lint leg of the same job
  * (`node …/eslint/bin/eslint.js …`) being counted as a lane process.
  */
-export function sampleLaneProcesses(worldRoot: string): LaneProcess[] {
+/** `PPid:` from `/proc/<pid>/status`, or 0 when unreadable. */
+function ppidOf(pid: number): number {
+  try {
+    const m = /\nPPid:\s*(\d+)/.exec(readFileSync(`/proc/${pid}/status`, 'utf8'))
+    return m === null ? 0 : Number(m[1])
+  } catch {
+    return 0
+  }
+}
+
+/** Every pid whose ancestor chain reaches one of `roots` (bounded walk). */
+function descendantClosure(all: readonly number[], roots: ReadonlySet<number>): Set<number> {
+  const ppid = new Map<number, number>()
+  for (const pid of all) ppid.set(pid, ppidOf(pid))
+  const hit = new Set<number>()
+  for (const pid of all) {
+    let cur = pid
+    for (let depth = 0; depth < 64; depth += 1) {
+      const parent = ppid.get(cur) ?? 0
+      if (parent <= 0 || roots.has(parent)) {
+        if (parent > 0) hit.add(pid)
+        break
+      }
+      cur = parent
+      if (cur === pid) break
+    }
+  }
+  return hit
+}
+
+/**
+ * Zero-residue sampling: every LIVE process this lane owns, by three arms —
+ *   (a) its /proc cwd is inside this world (read via `readlinkSync`; `readFileSync`
+ *       throws EISDIR on that symlink, which is how this arm died silently for the
+ *       whole life of the lane and left census 330 counting a stranger's eslint),
+ *   (b) its argv carries this run's nonce (`laneArgv`),
+ *   (c) its PPid chain reaches one of `roots` — the descendants of the processes
+ *       this lane started. Arm (c) is what catches the escape the first two are
+ *       blind to: an instance that spawns a helper of its own, with no nonce in
+ *       that helper's argv and a cwd the lane never granted. A neighbour's linter
+ *       is in no arm: no nonce, not our cwd, not our descendant.
+ *
+ * Disclosed limit of arm (c): it walks LIVE processes, so a descendant ORPHANED
+ * by its parent's death (reparented to the namespace init) leaves the chain.
+ * Teardown legs therefore snapshot the closure while the instances are alive
+ * (`descendantsOf`) and require every pid in it to be gone.
+ */
+export function sampleLaneProcesses(worldRoot: string, roots: readonly number[] = []): LaneProcess[] {
   const found: LaneProcess[] = []
   let entries: string[]
   try {
@@ -127,6 +174,7 @@ export function sampleLaneProcesses(worldRoot: string): LaneProcess[] {
   } catch {
     return found
   }
+  const seen: { pid: number; cwd: string; cmd: string }[] = []
   for (const entry of entries) {
     if (!/^\d+$/.test(entry)) continue
     const pid = Number(entry)
@@ -134,18 +182,29 @@ export function sampleLaneProcesses(worldRoot: string): LaneProcess[] {
     if (argv === null) continue
     let cwd = ''
     try {
-      // /proc/<pid>/cwd is a SYMLINK: readFileSync on it throws EISDIR, which is
-      // exactly how the arm above died silently for the whole life of this lane
-      // (cwd was always '', so membership rested on the cmdline arm alone — that
-      // is why census 330 saw a stranger's eslint and never saw our own residue).
       cwd = readlinkSync(`/proc/${pid}/cwd`)
     } catch {
       // vanished, or outside our ownership: cwd stays empty and is never assumed to be ours
     }
-    const cmd = argv.join(' ').slice(0, 200)
-    if (cmd.includes(LANE_NONCE) || cwd.startsWith(worldRoot)) found.push({ pid, cwd, cmd })
+    seen.push({ pid, cwd, cmd: argv.join(' ').slice(0, 200) })
+  }
+  const inherited = descendantClosure(seen.map((p) => p.pid), new Set(roots))
+  for (const p of seen) {
+    if (p.cmd.includes(LANE_NONCE) || p.cwd.startsWith(worldRoot) || inherited.has(p.pid)) found.push(p)
   }
   return found
+}
+
+/** The live descendant closure of `roots`, for snapshot-before-teardown assertions. */
+export function descendantsOf(roots: readonly number[]): number[] {
+  let entries: string[]
+  try {
+    entries = readdirSync('/proc')
+  } catch {
+    return []
+  }
+  const all = entries.filter((e) => /^\d+$/.test(e)).map(Number)
+  return [...descendantClosure(all, new Set(roots))].sort((x, y) => x - y)
 }
 
 /**

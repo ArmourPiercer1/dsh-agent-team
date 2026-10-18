@@ -1,11 +1,16 @@
-# a5lsp2 membership negative control — generated 2026-10-18T07:15:24Z on this host (script: throwaway, deleted after the run)
-# decoys: (1) a FOREIGN process that only MENTIONS a lane fixture (census 330's eslint shape)
-#         (2) one of OURS carrying --lane-token, cwd OUTSIDE the world  (3) a TRUE source-fixture instance: executes the SOURCE fixture, cwd inside the world, no nonce
-world=/tmp/a5lsp2-receipt-world-xpuJU7
-LANE_NONCE=a3aa2557b6e20364
-members(new identity rule) = 2: 16 cwd=other node /tmp/a5glb-receipt-sleeper.mjs --lane-token=a3a | 17 cwd=<world> node /srv/workspace/dsh-plugins/dsh-agent-team/.work
-old vocabulary rule claims  = 2: 15[node -e /* a5lsp2-fixture-lang-ser] 17[node /srv/workspace/dsh-plugins/ds]
-CHECK-A old rule counts the foreign mention as a lane process (census 330): RED — reproduced
-CHECK-B identity rule excludes that same pid: GREEN — fixed
-CHECK-C nonce arm owns a process whose cwd is NOT the world: GREEN pid=16
-CHECK-D named SOURCE-leak over the attributed set: RED by name pid=17 — teeth intact
+# a5lsp2 membership rule — bidirectional negative control, generated 2026-10-18T07:49:35Z on this host
+# script: throwaway (.scratch-logs/a5glb-membership-receipt.mjs, deleted after the run); decoys spawned and killed by the script itself
+# A=old vocabulary rule on the census-330 shape  B=new identity rule on the same pid  C=nonce holder with cwd outside the world
+# D=grandchild spawned BY a lane instance (no nonce, cwd=/) E=a process EXECUTING the SOURCE fixture, cwd inside the world
+# every line below states the command that produced the shape, then the observed verdict
+# world=/tmp/a5lsp2-mem-world-3nrtTb  LANE_NONCE=971b15fd393b1df8  roots(sampleLaneProcesses)=[15]
+# decoy pid=15 argv=["node","/tmp/a5glb-standin-instance.mjs","--lane-token=971b15fd393b1df8"]
+# decoy pid=16 argv=["node","-e","/* a5lsp2-fixture-lang-server.mjs */ setTimeout(() => {}, 60_000)"]
+# decoy pid=17 argv=["node","/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glb-backend/packages/runtime/test/a5lsp2-fixture-lang-server.mjs"]
+# sampleLaneProcesses(world, roots) = 3: 15[cwd=other] node /tmp/a5glb-standin-instance.mjs --l | 17[cwd=<world>] node /srv/workspace/dsh-plugins/dsh-agen | 39[cwd=/] node /tmp/a5glb-grandchild.mjs
+# OLD vocabulary rule claims: 16,17
+CHECK-A (old rule on the CI 330 shape) command: node -e "/* a5lsp2-fixture-lang-server.mjs */ setTimeout(()=>{},60000)"  ->  old rule counts pid=16: RED — false positive reproduced
+CHECK-B (new rule, same pid) command: sampleLaneProcesses(world, [15])  ->  contains eslint pid: GREEN — excluded (no nonce, cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glb-backend not the world, not a descendant) […
+CHECK-C (nonce holder with cwd chdir-ed OUT of the world) command: node /tmp/a5glb-standin-instance.mjs --lane-token=<nonce> cwd=/tmp  ->  pid=15 in set: RED-as-required — nonce arm catches the escape (node /tmp/a5glb-standin-inst…
+CHECK-D (grandchild spawned BY the instance, no nonce, cwd=/) command: <instance> spawns node /tmp/a5glb-grandchild.mjs cwd=/  ->  pid=39 in set: RED-as-required — PPid arm caught it (node /tmp/a5glb-grandchild.mjs)
+CHECK-E (true SOURCE-fixture instance, cwd inside the world, no nonce) command: node /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glb-backend/packages/runtime/test/a5lsp2-fixture-lang-server.mjs  ->  named source-leak: R…

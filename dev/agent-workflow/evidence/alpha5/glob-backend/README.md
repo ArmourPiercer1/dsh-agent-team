@@ -317,7 +317,10 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
 - **§10**：lsp2 根因**已定**=观察器误认（词汇判据 + `/proc/<pid>/cwd` 用 `readFileSync` 恒抛
   EISDIR ⇒ 第二臂从未生效）；membership 改为身份判据（per-run nonce ∨ cwd-in-world，
   `readlinkSync` 救活），原 fixture 子串臂改为**具名 source-leak 检查**；双向负控
-  `lsp2-membership-negative-control.txt`（旧判据认错外方=RED 复刻 / 新判据 GREEN / 真泄漏具名 RED）。
+  成员判据升为**三臂**（cwd-in-world ∨ nonce ∨ **PPid 闭包**，专堵"实例 spawn 无 nonce 孙子"的逃逸；
+  孤儿脱离 PPid 链的限制 disclosed，disposeAll 改为拍闭包快照后逐一要求消失），负控五检 A–E
+  `lsp2-membership-negative-control.txt`（A 旧判据认错外方=RED 复刻 / B 新判据 GREEN /
+  C nonce 逃逸 RED-as-required / D 无 nonce 孙子经 PPid 臂 RED-as-required / E 真 SOURCE-fixture 具名 RED）。
 - **§11**：gate self-test 68 → **77**：断管负控（有界必达 VERDICT、洪水负控必 missing-token、
   管道预算构造性成立）+ 退出码断言（红必 exit=1 带 VERDICT、绿必 exit=0、切断转录必 missing-token）。
 

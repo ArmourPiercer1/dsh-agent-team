@@ -578,6 +578,6 @@ describeReal('a5lsp2 streaming REAL (Landlock launcher + real LSP fixture)', () 
     // spawns the fixture from its source path — the one place the lane does — and
     // it carries the run nonce, so it reads as ours rather than as a leak; a
     // process WITHOUT the nonce executing a source fixture is the named red.
-    expect(sourceFixtureLeaksIn(sampleLaneProcesses(world)).map((p) => `${String(p.pid)} ${p.cmd}`), 'a5lsp2 SOURCE-fixture leak: a process without this run\'s nonce is executing a lane fixture from its source path').toEqual([])
+    expect(sourceFixtureLeaksIn(sampleLaneProcesses(world, [r.value.pid])).map((p) => `${String(p.pid)} ${p.cmd}`), 'a5lsp2 SOURCE-fixture leak: a process without this run\'s nonce is executing a lane fixture from its source path').toEqual([])
   }, 90_000)
 })

@@ -282,7 +282,44 @@ world 拷贝出的 `ping.mjs`/`lsp.mjs`（词汇臂永远看不见它们）。�
 - cleanup(a)/(b)、disposeAll、world-scan 语义不变（两臂并集为空 = 零残留）；
   **30 s 上限一字未动**，既有拒绝/外显断言零动。
 
-**双向负控**（本机复刻 CI 形；逐字输出 = `lsp2-membership-negative-control.txt`，脚本跑完即删）：
+### 10b. 验收加严（根 07:46Z）：第三臂＝以被监视 pid 为根的 PPid 闭包
+
+"只排除误报、漏本方逃逸"不可接受，故成员判据从两臂升为**三臂**：
+
+- (a) `readlinkSync('/proc/<pid>/cwd')` 落在世界内；
+- (b) argv 带本 run nonce；
+- (c) **PPid 链可达被监视 pid**（`sampleLaneProcesses(worldRoot, roots)`，64 层有界上溯）。
+  这条专门堵前两臂都瞎的形：lane 实例自己 spawn 一个**不带 nonce、cwd 也不在任何授权目录**的孙子进程。
+  外方 lint 三臂全不中（无 nonce、cwd 不中、非后代），故 330 的 eslint 形仍被排除。
+- 全部 6 个采样点都传 roots（forensicScene 传它已知的 watchedPids；policyChange / cleanup(a) /
+  cleanup(b) / disposeAll 传在活的实例 pid；streaming 传自己那次 spawn 的 pid）；`rootsOf()` 容忍
+  `number | undefined`（`assembly.current(x)?.pid` 可能为空）。
+  纪律：roots 只能传**该腿作用域里真实存在**的 pid——本轮第一次接线就把别的腿的 `oldPid` 抄进
+  cleanup(a)，`ReferenceError` 当场被 vitest 抓到（`pnpm -r typecheck` 也能静态抓，TS2304），
+  修完复测；这条写在这里是因为它正是"闭包根传错=判据变瞎"的反面教材。
+- **disclosed limit（写清，不留浪漫）**：(c) 只走**活进程**，父死之后被 namespace init 收养的孤儿
+  会脱离 PPid 链。故 disposeAll 腿改成：`descendantsOf([aPid,bPid])` 在 disposeAll **之前**拍闭包快照，
+  之后要求快照内每个 pid 都不再存活——把"闭包只在父活着时有效"这条限制变成断言的前提而不是漏洞。
+- **①"真残留必红"的依据链**：cleanup(a)/(b) 的 `foreign`/`residual` 就是同一集合的函数，
+  而两腿各有一条正向断言实测"本 run 活实例在集合里"（7/7 绿）⇒ 集合非空是被证明的，不是假设；
+  负控 CHECK-C 又单独证明"带 nonce 而 cwd 逃到世界外"的活进程必被认进集合。
+
+**双向负控**（本机复刻 CI 形；逐字输出 = `lsp2-membership-negative-control.txt`，脚本跑完即删；
+每条都带产生该形状的命令行）：A 旧词汇判据把 330 的 eslint 形算成 lane 进程＝**RED 复刻**
+（它还顺手匹配到 `bwrap` 包装与跑测试的 bash 自己）；B 新三臂判据排除同一 pid＝GREEN；
+C 带 nonce 但 cwd 逃到世界外的活进程＝**RED-as-required**（nonce 臂）；
+D **实例自己 spawn 的无 nonce 孙子（cwd=/）**＝**RED-as-required**（PPid 臂，实测 pid 被抓进集合）；
+E 真从 SOURCE fixture 起的实例＝**具名 source-leak RED**。新判据那一轮集合恰好只有 {自家实例, E, D}
+三个——该进的都在、不该进的都不在。
+
+**①"真残留必红"的完整链条（写死，不靠解读）**：`sampleLaneProcesses` 返回的集合就是 cleanup(a) 的
+`foreign` 与 cleanup(b) 的 `residual` 的**唯一输入**（`live.filter(pid ∉ 已知实例)`），负控 C 证明
+"带 nonce 的活进程必进集合"，两腿的正向成员断言又证明"在活的自家实例确实在集合里"⇒ 活实例未收 ⇒
+`foreign`/`residual` 必非空 ⇒ 必红。产品代码零动、30 s 上限零动、词汇臂→具名 source-leak 检查维持。
+
+**§10b 验证**：lsp2 **22/22 ×2 遍**（assembly 7 + streaming 15，三臂判据 + disposeAll 闭包快照全绿，
+绿路零 FORENSIC，`tests/homes` 残留 0）；p4t6 10/10（scanner 1190）；`pnpm -r run typecheck` 无
+`error TS`；gate self-test 77 pass；eslint clean。
 诱饵三枚——(1) 只**提及** fixture 名的外方进程（330 的 eslint 形）；(2) 带 nonce 但 cwd 不在世界内
 的本方进程；(3) 真从 SOURCE fixture 起、cwd 在世界内、不带 nonce 的进程。
 旧判据命中 2：`(1)` 与 `(3)`（另外还匹配到 `bwrap` 包装与跑测试的 bash 自己）；新判据命中 2：
