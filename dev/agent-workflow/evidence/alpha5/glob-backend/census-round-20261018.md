@@ -111,3 +111,53 @@ not assumed, after the law edits.
 - **渲染被真实执行过**：用一次性探针副本强制渲染一次（副本跑完即删、未入库），
   样本入库 [`lsp2-forensic-scene-sample.txt`](lsp2-forensic-scene-sample.txt) 见同目录。
 - **验证**：lsp2 lane 22/22 绿、`tests/homes` 残留 0、eslint clean。
+
+## 7. census round 2 ①：L3 改成**真 measured 律**（fed6d723 CI 首红）
+
+CI 上首红的正是这条自称 measured 的腿。它当年把**一台内核上的一次观测**写死成断言
+（`names` 可见）。按单改造后：现场测两维、四个观测，把实测事实打成**一行 stdout**进 capture，
+断言只跟随实测形；**没有放宽任何拒绝或外显断言**——变的只是"期望的 scope 从写死变成实测"。
+
+**改造过程里实测到的两条事实，比修腿本身值钱**：
+
+1. **"`names` 不被 gate"根本不是内核律**。把改造前的旧腿单独跑（`-t "L3 MEASURED confine scope"`）
+   在**同一台宿主**上直接红：`expected '' to contain 'secret.txt'`；而它在全文件顺序里是绿的。
+   也就是说旧断言成立的是 **leg 顺序**，不是内核——CI 内核报了第三种形，于是红。
+   这就是父单要的裁决依据：期望必须来自现场实测。
+2. **launcher 不把内层退出码传到父侧**：外部 `cat` 的实测是
+   `{bytes=none exit=0 stderr=denied}`。拒绝信号只在子进程 stderr 的 errno 类里，退出码是 0。
+   所以退出码不是本行的安全信号（旧腿的 `stderr contains 'Permission denied'` 恰好是把它当信号用）。
+   新硬断言因此钉：**外部字节在 stdout 与 stderr 双侧都不出现**；父侧先钉
+   `readFileSync(外部文件).length > 0`（前提可验）；且子进程**不得**对已知非空的外部文件
+   回答"成功且零 stderr"——silently-empty 比 refusal 更坏，直接红。
+
+**L3 现在的断言面**：
+
+- 硬（与内核形无关）：`bytes=none`（stdout+stderr 都不含 canary）；不得 `exit=0 && stderr==''`。
+- 硬且**两形同断**：锚定 verifier 必拒 4 例外部件名（`../outside/secret.txt`、绝对路径、
+  `outside/secret.txt`、`leak-inner.txt`），family 必须来自 closed 表（前缀 `a5glb-refused/`），
+  且拒绝体**不回显条目名**（A8：`JSON.stringify(verdict)` 不含该名）。
+- 只测不断言其值：`names` 维打成 `entry=visible|kernel-denied|empty-listing` 进 stdout 与 parity note。
+  本轮全量两次实测均为 `entry=empty-listing stderr=denied`，单跑亦同——与旧"names 可见"记录相反，
+  已在 `glob-backend.mjs` 头注里改正（头注此前把那句当事实陈述，属于文档假装知道内核 scope）。
+- 无 Landlock 时落既有 refused 形：`probe.ok !== true` → 断言行确实拒走
+  （`confined-unavailable` + `a5glb-refused/confined-plane`）；probe 通过但零 enforced 维 →
+  **具名弃权** `ctx.skip()`（实测事实已印在前面那行），不装作绿。
+- 该 refused 形**在本机被真实执行过**：用错误 launcher 字节 pin 令 probe 拒
+  （与"无 Landlock"是同一扇门 `probe.ok!==true`），断言行不裸走。
+  触发条件（无 Landlock 的内核）本机不可达，但**行为可达且已断言**——这是披露不是掩盖；
+  另注：`confined-unavailable` 在本套件此前无任何其它用例，本腿是第一个。
+
+**门语义已核（父单要求自查 census 容不容）**：census 只比红**身份集**——
+`compareCensus` 只接受 titled-red 与 `FILE ` collection 两类 id（scripts/ci-pr-gate.mjs:470-476），
+并明写"a census whose file/leg counts differ from it is not a different result"（:436-438）；
+一条腿变绿或具名弃权都不进 ids，故不可能把红洗白。`--full` 下"任何 skip 即红"约束的是
+**门腿自身**的 `DSH-CI-LEG verdict=skip`（文件头 :49-51，指默认跳过的昂贵门腿），
+不是它所评分的语料里单条 vitest 腿的状态。结论：**census 容得下这条腿的具名弃权**。
+
+**身份影响披露**：这条腿的**名字变了**（红集按身份比，名字只在红时进 ids；本腿历次 capture
+均为绿，故 census 的 ids 集不受影响）。`parity-table.json` 的 L3 行 note 变成实测串（设计意图：
+note 随内核而变，不再是一句写死的话），文件已随本轮重生成并重钉。
+
+**验证**：L3 单跑绿；全对（49+8=57）×2 绿；`parity-table.json` 两次逐字节相同；
+`adversarial-counters.json` 未变；`tests/homes` 残留 0；eslint clean。

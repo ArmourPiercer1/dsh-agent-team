@@ -290,6 +290,21 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
    放宽的只是**数值上界**，"有界"语义保留——`pollUntil` 实测到点返回 false（250 ms 上界 254 ms
    即返），永不退出的子进程照旧红。`a5lsp2-streaming` 的 5 s 上界不在授权范围内，未动。
 
+## 4f. census round 2（fed6d723）两笔
+
+`fed6d723` 上剩两族红，两笔都在 [`census-round-20261018.md`](census-round-20261018.md) 里：
+
+- **§6**：`a5lsp2` cleanup (a)/(b) 在 30 s 上限后仍红 → 我的 CPU 饥饿解释证据不足，改为
+  **失败现场取证**（只在即将失败时印：`sampleLaneProcesses` 全表、被盯 pid 的 `/proc`
+  cmdline/状态、world 递归计数、loadavg+PSI）。**上限 30 s 一字未抬**。
+- **§7**：`L3 MEASURED confine scope` 在 CI 内核红 → 它自称 measured 却把一台内核的一次观测
+  写死。改为现场测 `content`/`names` 两维并把实测形打进一行 stdout；实测发现
+  旧"names 可见"是 **leg 顺序副作用**（同宿主单跑即红），且 **launcher 不传播内层退出码**
+  （拒绝信号在子进程 stderr 的 errno 类，退出码是 0）。硬断言只增不减：外部字节 stdout+stderr
+  双侧不出现、不得对非空外部文件答"成功且空"、四例外部件名必拒且拒绝不回显名。
+  无 Landlock 时落既有 refused 形（本机用错误字节 pin 真实执行过）；门语义已核：census 只比
+  红身份集，具名弃权不进 ids。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8

@@ -121,11 +121,20 @@
  *         is derived from. The live attacker (adversarial leg A5) then probes
  *         EVERY one of these channels, with the internal face deliberately
  *         OPENED, on each of its real rg walks.
- *   The kernel confine is the layer under that, and its measured shape is
- *   asymmetric: inside the confined child, reading a file outside the root is
- *   EACCES while LISTING a directory outside the root SUCCEEDS (leg L3). So the
- *   confine protects BYTES and cannot be cited as protection against path-NAME
- *   disclosure — A4/A6 are what make the row's ANSWER safe, not the sandbox.
+ *   The kernel confine is the layer under that. Its two dimensions are MEASURED,
+ *   per host, by leg L3 — and only one of them is stable enough to rely on:
+ *     - BYTES: reading a file outside the root is refused inside the confined
+ *       child (observed as the denial on the child's stderr; the launcher does
+ *       NOT propagate the inner exit status, so an exit code is not the signal —
+ *       L3 pins the byte and the "not a successful-looking empty answer" instead).
+ *     - NAMES: whether an outside directory can be LISTED is NOT a stable kernel
+ *       property. The same host reported both shapes (visible when the suite ran
+ *       as a whole, kernel-denied when the leg ran alone), and the CI kernel
+ *       reported a third — the recorded "listing SUCCEEDS" claim was a leg-order
+ *       artifact, not a law (evidence/alpha5/glob-backend/census-round-20261018.md §7).
+ *   So this row never cites the sandbox as protection against path-NAME
+ *   disclosure in either direction: A4/A6/A8 are what make the row's ANSWER safe,
+ *   in every name shape the kernel happens to have today.
  *
  * HONEST RESIDUA (disclosed, not hidden):
  *   - A `/proc/self/fd/<n>` view is re-resolved BY PATH at each open (it is a

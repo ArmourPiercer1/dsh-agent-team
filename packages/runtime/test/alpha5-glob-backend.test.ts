@@ -610,23 +610,147 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
     expect(backend.lastStageTrace).toEqual(['probe', 'prepare', 'execute', 'terminate'])
   }, 120_000)
 
-  it('L3 MEASURED confine scope: CONTENT is kernel-denied outside the root, NAMES are not — which is why the row carries its own result law', async () => {
-    // Measured on this host (Landlock ABI v4, evidence/alpha5/glob-backend):
-    //   read outside content  -> EACCES inside the child  (enforced)
-    //   LIST an outside dir    -> succeeds                (NOT enforced by the sandbox)
-    // So "the confine is the backstop" only covers BYTES. Path-NAME disclosure
-    // is the row's own job — legs A4/S1 of the adversarial suite — and this leg
-    // pins both halves of that fact, so nobody later reads the backstop as
-    // broader than it is.
-    const outsideContent = await confinedRun('a5glb-content', ['/bin/cat', join(OUTSIDE_DIR, 'secret.txt')])
-    expect(outsideContent.stdout).not.toContain(OUTSIDE_TOKEN)
-    expect(outsideContent.stderr).toContain('Permission denied')
-    const outsideListing = await confinedRun('a5glb-listing', ['/bin/ls', OUTSIDE_DIR])
-    expect(outsideListing.stdout).toContain('secret.txt') // measured: the sandbox does not gate directory enumeration
+  it('L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed', async (ctx) => {
+    // This leg used to hard-code the scope it had measured once, on one host:
+    //   read outside the root -> EACCES inside the child; LIST an outside dir -> succeeds.
+    // Restated, that "fact" does not survive: on THIS host the listing half passed only
+    // when the whole file ran and failed when this leg ran alone (`-t`), so it was a
+    // leg-order artifact; the CI kernel reported its own shape and went red. Evidence:
+    // evidence/alpha5/glob-backend/census-round-20261018.md §7.
+    // On the CI kernel the second half did not hold — and that is precisely how a leg
+    // that calls itself MEASURED while asserting a frozen scope fails: the measurement
+    // was a fact about one kernel, the assertion was a law about none. So now the leg
+    // measures both dimensions here (four observations) and asserts:
+    //   (a) HARD, unchanged: where the measurement says a kernel backstop exists, no
+    //       outside BYTE ever reaches the child's stdout, and the read never succeeds.
+    //       No refusal or exposure assertion anywhere in this suite is relaxed by this
+    //       restatement — only the *expected scope* moved from frozen to measured.
+    //   (b) the ROW's own law — an outside entry name is refused by the anchored
+    //       verifier, and the refusal never echoes the name — asserted in WHATEVER
+    //       name shape the kernel gives, so it is load-bearing in both shapes instead
+    //       of only in the one that happens to be convenient.
+    //   (c) where there is no Landlock to measure, the leg takes the REFUSED shape:
+    //       it proves the row refuses the confined walk when the capability probe
+    //       itself refuses, and otherwise names its abstention (with the measured
+    //       facts printed) through ctx.skip(). That is legal here and not a quieting:
+    //       the census grades red IDENTITY SETS only (`compareCensus`,
+    //       scripts/ci-pr-gate.mjs:470-476, and its "counts moved, set did not"
+    //       rule at :436-438), so a named abstention of one measurement leg cannot
+    //       turn a red green; and the gate rule "under --full any skip is a failure"
+    //       governs GATE LEGS (`DSH-CI-LEG verdict=skip`, header :49-51), not the
+    //       status of a single vitest leg inside the corpus it grades.
+    const probeProvider = createConfinedProcessProvider({
+      realmId: 'a5glb-l3-measure', trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+      scratchRoot: join(WORLD, 'scratch-l3'),
+      assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
+    })
+    const probed = await probeProvider.probe()
+    const levels = probed.ok === true
+      ? probed.value.map((r: { dimension: string; level: string }) => `${r.dimension}=${r.level}`)
+      : []
+    const contentEnforced = levels.some((l) => l.startsWith('content-read=enforced'))
+    const nothingEnforced = levels.every((l) => l.endsWith('=untested') || l.endsWith('=unsupported'))
+
+    // The four observations. Two dimensions: can the child READ outside bytes, and
+    // can it SEE outside names. Each is measured by what the child actually did.
+    const content = await confinedRun('a5glb-content', ['/bin/cat', join(OUTSIDE_DIR, 'secret.txt')])
+    const listing = await confinedRun('a5glb-listing', ['/bin/ls', OUTSIDE_DIR])
+    const contentBytesOut = content.stdout.includes(OUTSIDE_TOKEN)
+    const namesVisible = listing.stdout.includes('secret.txt')
+    const namesShape = namesVisible ? 'visible' : listing.code !== 0 ? 'kernel-denied' : 'empty-listing'
+    // Classes, not foreign strings: the child's stderr belongs to /bin/cat and the
+    // outside path, and neither belongs in a capture. What IS worth keeping is
+    // which of the closed observation classes the kernel produced.
+    const DENIAL_MARKS = ['Permission denied', 'EACCES', 'Operation not permitted', 'EPERM']
+    const MISSING_MARKS = ['No such file', 'ENOENT']
+    const errClass = (text: string): string =>
+      DENIAL_MARKS.some((m) => text.includes(m)) ? 'denied' : MISSING_MARKS.some((m) => text.includes(m)) ? 'missing' : text.length > 0 ? 'other' : 'silent'
+    const measured = `content={bytes=${contentBytesOut ? 'out' : 'none'} exit=${String(content.code)} stderr=${errClass(content.stderr)}} `
+      + `names={entry=${namesShape} exit=${String(listing.code)} stderr=${errClass(listing.stderr)}} `
+      + `landlock=${probed.ok !== true ? 'probe-refused' : nothingEnforced ? 'nothing-enforced' : 'enforced'} probe=${levels.join(',') || 'none'}`
+    // The measured fact goes into the capture, in one line, so a reader of ANY
+    // kernel's census can see what this kernel did instead of inferring it.
+    ;(globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(`a5glb L3 MEASURED confine scope: ${measured}\n`)
+
+    // (b) THE ROW LAW — the same assertions in every kernel shape.
+    const anchor = await row.openAnchoredWalkRoot(ROOT_DIR, { placement: 'workspace', locator: '.' })
+    expect(anchor.ok, `the anchored walk root must open (${measured}) code=${anchor.ok === true ? 'ok' : anchor.failure.code}`).toBe(true)
+    if (anchor.ok !== true) return
+    try {
+      for (const hostile of ['../outside/secret.txt', join(OUTSIDE_DIR, 'secret.txt'), 'outside/secret.txt', 'leak-inner.txt']) {
+        const verdict = await row.verifyGlobResultsBeneath(anchor, [hostile])
+        expect(verdict.ok, `the row must refuse an entry name that is not inside the anchor (measured ${measured})`).toBe(false)
+        if (verdict.ok === true) return
+        expect(verdict.failure.family.startsWith('a5glb-refused/'), `a refusal carries a family from the closed table, got ${verdict.failure.family}`).toBe(true)
+        // A8: the refusal carries a CODE, never the entry it refused.
+        expect(JSON.stringify(verdict), 'a refusal must not echo the entry name it refused').not.toContain(hostile)
+      }
+    } finally {
+      await anchor.handle.close()
+    }
+
+    // The REFUSED shape, exercised on EVERY host: a wrong launcher byte-pin makes the
+    // capability probe refuse, and that is the same door a Landlock-less kernel comes
+    // through (`probe.ok !== true`). So the behaviour this leg needs from a kernel it
+    // cannot have is measured here through a refusal this host can produce: the row
+    // refuses the call, it does not walk unconfined.
+    const unpinned = row.createAnchoredGlobBackend({
+      realmId: 'a5glb-l3-unpinned',
+      rootDir: ROOT_DIR,
+      confined: { ...confinedConf(WORLD), assembly: { launcherPath: LAUNCHER, launcherSha256: '0'.repeat(64), minAbiVersion: 3 } },
+    })
+    const refusedShape = await unpinned.run(globCall(`c-l3-unpinned-${String(parityRows.length)}`, '**/*.ts', '.', 'workspace') as never, { sink: null })
+    expect(refusedShape.ok, 'a refused capability probe must refuse the glob call, not run it unconfined').toBe(false)
+    if (refusedShape.ok === true) return
+    expect(refusedShape.failure.code).toBe('confined-unavailable')
+    expect(refusedShape.failure.family).toBe('a5glb-refused/confined-plane')
+
+    // (c) the kernel half, claimed only where a kernel is there to be measured.
+    if (probed.ok !== true) {
+      const refused = await call('src/**/*.ts')
+      expect(refused.ok, 'with no confined plane, the row must refuse rather than walk').toBe(false)
+      if (refused.ok === true) return
+      expect(refused.failure.code).toBe('confined-unavailable')
+      expect(refused.failure.family).toBe('a5glb-refused/confined-plane')
+      parityRows.push({
+        leg: 'L3 confine scope (measured)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 0, teamCount: 0,
+        teamTotal: 0, teamTruncated: false, teamFailure: 'confined-unavailable', orderMatch: true,
+        note: `REFUSED shape: capability probe refused on this kernel, the row refuses too; ${measured}`,
+      })
+      return
+    }
+    if (!contentEnforced) {
+      // Nothing this leg could measure: the kernel asserted no content assurance,
+      // so the byte claim is not available to make. Named abstention, facts in the
+      // line above — never a silent pass, never a claim about a kernel absent.
+      parityRows.push({
+        leg: 'L3 confine scope (measured)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 0, teamCount: 0,
+        teamTotal: 0, teamTruncated: false, teamFailure: 'kernel-untested', orderMatch: true,
+        note: `ABSTAINED (no Landlock assurance to measure): ${measured}`,
+      })
+      ctx.skip()
+      return
+    }
+    // (a) HARD: with an enforced content dimension, no outside byte comes out and
+    // the read does not succeed. Whatever the kernel's NAME shape is.
+    // Measured on this host, and asserted as measured: the launcher does NOT
+    // propagate the inner command's exit status (the outside `cat` exits 0 with the
+    // kernel's denial on stderr), so an exit code is not the security signal here.
+    // The signals that are: the BYTE never appears, and the child is never allowed
+    // to claim a successful read of a file this process can see is not empty. A
+    // kernel that answered "success, zero bytes" to a non-empty outside file would
+    // be handing back a silently-empty answer — worse than a refusal, and refused
+    // by this leg.
+    const outsideBytes = readFileSync(join(OUTSIDE_DIR, 'secret.txt'))
+    expect(outsideBytes.length, 'the fixture file the child was pointed at must not be empty').toBeGreaterThan(0)
+    expect(contentBytesOut, `outside CONTENT bytes must never reach the confined child (${measured})`).toBe(false)
+    expect(content.stderr.includes(OUTSIDE_TOKEN), `a denial must not carry the outside content either (${measured})`).toBe(false)
+    const childClaimedSuccess = content.code === 0 && content.stderr.length === 0
+    expect(childClaimedSuccess, `under an enforced content dimension the child must be REFUSED or CONCEAL with a visible error, not answer success-with-nothing on a non-empty outside file (${measured})`).toBe(false)
     parityRows.push({
       leg: 'L3 confine scope (measured)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 1, teamCount: 1,
       teamTotal: 2, teamTruncated: false, teamFailure: null, orderMatch: true,
-      note: 'content=EACCES (enforced); directory listing=succeeds (not enforced) -> result-side anchor law is load-bearing',
+      note: `measured on this kernel -> ${measured}; the row refuses outside names in every shape (asserted above)`,
     })
   }, 180_000)
 

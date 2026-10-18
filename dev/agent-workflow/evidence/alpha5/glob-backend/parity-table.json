@@ -3,7 +3,7 @@
   "rgBinaryPackage": "@vscode/ripgrep (packaged by @deepseek-ai/dsh-tool-fs-search)",
   "globMaxResults": 100,
   "backendId": "a5glb-anchored-confined-rg-glob",
-  "launcherSha256": "e66a8cf77fb74701399ad770e4daa81e63ac1ff1e2ebd2463e591179a1c9825f",
+  "launcherSha256": "0049965daacae5bd04197407c584cf7312bb22b10b35a09f01a89bb108cafe77",
   "startSweepOfStaleWorlds": [],
   "rows": [
     {
@@ -212,7 +212,7 @@
       "teamTruncated": false,
       "teamFailure": null,
       "orderMatch": true,
-      "note": "content=EACCES (enforced); directory listing=succeeds (not enforced) -> result-side anchor law is load-bearing"
+      "note": "measured on this kernel -> content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted; the row refuses outside names in every shape (asserted above)"
     },
     {
       "leg": "L3b fd-cwd face (measured)",
