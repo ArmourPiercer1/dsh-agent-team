@@ -115,3 +115,17 @@ rc0/rc1/rc2/perm 四格**全部 rc=2**，且 rc0/rc1 格的 stderr 里出现的�
 ⇒ **现形下"错误=拒绝整个结果"成立**（钉已写入测试：`rc===2 ⇒ ok===false`，"a walk whose payload rc=2 must never present a list"）。
 如实注记其**成因**：今天的拒绝来自 SPEECH 臂（rg 对不可读目录发了 note），不是 rc-first；
 因此 rc-first 改造后**必须仍成立**——这一条被列为 B 的回归判据而非既成事实。数据入 `corpus.jsonl`（shape=`B1-partial-results-pin`）。
+
+---
+
+## 收口轮补账（review-B 直调表 + 作者套件内直调复现）
+
+**审 B 实测（reviewer-measured，非作者）**：rg 直调三格表——I/O 错误形 **rc=2 + speech + 部分 stdout 三者同现**；
+清形 **rc=0 + 静默**；无匹配 **rc=1 + 静默**（记为 `reviewB-direct-call-table`；版本注记=reviewer 报 @vscode/ripgrep
+**1.18.0**（wrapper 包版本），其下 ripgrep 本体见下条作者现场注）。此表补足作者侧此前
+**NOT-MEASURED-here** 格（作者环境当时 wrapper bin 未下载，直调不冒充）。
+
+**作者现场注（收口轮，close-2-glob.log 腿）**：本环境 wrapper 解析=`@vscode/ripgrep-linux-x64@1.18.0`，
+其下 **ripgrep 15.0.0 (rev 3a612f88b8)**。作者以**行层同款治理 argv**（`globArgv`+`--null`，spawnSync 直调）
+在套件内复现同三格表（`g6b closing (review-B)` 腿，行为钉=升级回退即红；版本入断言消息供升级分诊）。
+数据入 `corpus.jsonl`（shape=`reviewB-direct-call-table` / `author-governed-argv-recheck`）。

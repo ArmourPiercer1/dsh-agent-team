@@ -28,7 +28,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { spawn as spawnChildProcess } from 'node:child_process'
 import { type Readable, type Writable } from 'node:stream'
-import { dirname, join } from 'node:path'
+import { dirname, isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { refuse, type AssuranceDimension, type ProcessCapabilityRow, type ProviderResult } from './contract-stub.js'
 import { advancePhase } from './phases.js'
@@ -512,8 +512,31 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     return refuse('SANDBOX_UNAVAILABLE', `launcher integrity gate: ${verdict.detail}`)
   }
 
+  /**
+   * THE SCRATCH LAW (#337 closing round, review-B item 5): provider scratch NEVER
+   * lands in the process cwd. An empty/absent/relative `scratchRoot` used to make
+   * the `plans`, `out` and `probe` scratch trees fall relative to wherever the
+   * host happened to run — uncommitted garbage at best (104b4991 proves history
+   * recorded it),
+   * a cross-realm scratch collision surface at worst. Refused TYPED at every
+   * entry point: the provider never guesses where its scratch lives. (The glob
+   * row's own comment already declared this intent — "it is refused here" —
+   * this gate is that refusal, finally real.)
+   */
+  function scratchRootGate(): ProviderResult<true> {
+    if (typeof opts.scratchRoot !== 'string' || opts.scratchRoot.length === 0) {
+      return refuse('IO_POLICY_UNSUPPORTED', 'scratchRoot is empty or absent — provider scratch would land in the process cwd; a non-empty ABSOLUTE path is required')
+    }
+    if (!isAbsolute(opts.scratchRoot)) {
+      return refuse('IO_POLICY_UNSUPPORTED', `scratchRoot must be an absolute path (this one is relative: '${opts.scratchRoot.slice(0, 128)}')`)
+    }
+    return { ok: true, value: true }
+  }
+
   /** probe(): availability → byte-pin gate → real legs → capability rows (cached per instance). */
   async function probe(): Promise<ProviderResult<readonly ProcessCapabilityRow[]>> {
+    const scratch = scratchRootGate()
+    if (!scratch.ok) return scratch
     if (captured !== null) return { ok: true, value: captured.rows }
     const avail = deps.availability()
     const missing = avail.rows.filter((r) => !r.present && r.subject !== 'runner-command')
@@ -537,6 +560,8 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
 
   /** prepare(): every gate BEFORE any process exists; compiles the launcher policy. */
   async function prepare(request: SpawnRequest): Promise<ProviderResult<SpawnPlan>> {
+    const scratch = scratchRootGate()
+    if (!scratch.ok) return scratch
     if (request.argv.length === 0 || request.argv.some((a) => typeof a !== 'string' || a.length === 0)) {
       return refuse('IO_POLICY_UNSUPPORTED', 'argv must be a non-empty array of non-empty strings (explicit argv, never a shell string)')
     }
@@ -612,6 +637,8 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
 
   /** execute(): consumes a prepared plan EXACTLY ONCE; runs the launcher confined-exec. */
   async function execute(plan: SpawnPlan): Promise<ProviderResult<{ receipt: SpawnReceipt; output: RunOutput; lease: ProviderLease }>> {
+    const scratch = scratchRootGate()
+    if (!scratch.ok) return scratch
     if (!plans.has(plan.planId) || consumedPlans.has(plan.planId)) {
       return refuse('IO_POLICY_UNSUPPORTED', `plan '${plan.planId}' was already consumed — re-executing a plan is a second spawn without a second grant`)
     }
@@ -680,6 +707,8 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
    * lease starts `active`; only `settleTermination` ever makes it terminal.
    */
   async function executeStreaming(plan: SpawnPlan, streaming?: StreamingOptions): Promise<ProviderResult<StreamingSpawnHandle>> {
+    const scratch = scratchRootGate()
+    if (!scratch.ok) return scratch
     if (!plans.has(plan.planId) || consumedPlans.has(plan.planId)) {
       return refuse('IO_POLICY_UNSUPPORTED', `plan '${plan.planId}' was already consumed — re-executing a plan is a second spawn without a second grant`)
     }

@@ -1039,16 +1039,45 @@ export function createAnchoredGlobBackend(options) {
             // and an unattributable record fails CLOSED like the silent-fatal
             // form it replaces a guess for. The stdout completeness gate ran
             // ABOVE this branch, unchanged: rc=0 admits only a collected list.
-            const rec = await child.payloadExit
-            if (rec.form !== 'recorded') {
-              // The record was PROMISED by the arm; its absence, corruption or
-              // foreign pid means the walk is not attributable to this payload.
-              // Fail closed on the typed entry — never the old speech fallback
-              // (a speech verdict over an unattributable run is the exact class
-              // of guess rc-first exists to remove).
-              observe(`anchored-glob RECORD-UNTRUSTED form=${rec.form} realm=${realmId} call=${String(call.callId)}`)
-              return failure('undetermined', 'walker-error', { record: rec.form, stderrBytes: stderrText.length }, debug, `payload exit record not attributable form=${rec.form}`)
+            // BOUNDED WAIT (closing round, review-B item 3): the record is
+            // promised AT the launcher's death — written before the launcher
+            // exits, read synchronously by the provider right after — so by
+            // the time this line runs (after `exited` AND `terminate` settled)
+            // the promise is a resolved microtask. A record that cannot
+            // arrive inside the budget is therefore a BROKEN PROMISE, not a
+            // slow one, and fails CLOSED like every other untrustworthy form:
+            // fail-SLOW (trusting streams meanwhile) is not on offer. Budget
+            // = the cap-family constant (same 250ms, same measured end-close
+            // distribution, see evidence round-4 endwait 400/400) — the tightest
+            // measured bound in this family; a longer fuse would only blur
+            // "broken wiring" into "slow wiring", and a fuse asserts, it does
+            // not wait.
+            let recTimer = null
+            const recordBudget = new Promise((r) => { recTimer = sleepTimer(() => r(null), GLOB_STDERR_DRAIN_MS).unref?.() ?? null })
+            const rec0 = await Promise.race([child.payloadExit, recordBudget])
+            if (recTimer !== null) clearTimer(recTimer)
+            // SECOND pid look (review-B item 2): the provider matched the record
+            // against the HANDSHAKE pid; the row independently refuses any record
+            // that does not name THIS handle's pid. Two checks, two sides of the
+            // seam — a record agreeing with a stale handshake cannot clear both.
+            const untrusted = rec0 === null
+              ? 'timeout'
+              : rec0.form !== 'recorded'
+                ? String(rec0.form)
+                : rec0.pid !== child.pid
+                  ? 'row-pid-mismatch'
+                  : null
+            if (untrusted !== null) {
+              // The record was PROMISED by the arm; its absence, corruption,
+              // foreign pid or missing deadline means the walk is not
+              // attributable to this payload. Fail closed on the typed entry —
+              // never the old speech fallback (a speech verdict over an
+              // unattributable run is the exact class of guess rc-first exists
+              // to remove).
+              observe(`anchored-glob RECORD-UNTRUSTED form=${untrusted} realm=${realmId} call=${String(call.callId)}`)
+              return failure('undetermined', 'walker-error', { stderrBytes: stderrText.length }, debug, `payload exit record not attributable form=${untrusted}`)
             }
+            const rec = rec0
             if (rec.rc === 2) {
               // walker fatal — DECIDED BY rc, so the SILENT form (empty stderr,
               // e.g. the walker died without speaking) is caught too: the form

@@ -436,3 +436,42 @@ describe('a5p4 provider R1 — the trusted exit record (streaming arm)', () => {
     expect(Object.keys(r.value.receipt).sort()).toEqual(['lease', 'processIdentity'])
   })
 })
+
+/**
+ * #337 closing round — THE SCRATCH LAW (review-B item 5). Provider scratch
+ * (`plans/`, `out/`, `probe-<stamp>/`) is joined onto `opts.scratchRoot`: an
+ * empty, absent or relative value silently grounded the whole scratch family
+ * in the process cwd — the exact leak whose committed fossils are 104b4991's
+ * `probe-mvdng*` fixtures. The gate refuses TYPED at every entry; nothing may
+ * reach a process. (The glob row's own comment — "it is refused here" — the
+ * law makes that comment true.)
+ */
+describe('a5p4 provider — the scratch law (review-B item 5)', () => {
+  const badScratch: Array<[string, unknown]> = [
+    ['empty string', ''],
+    ['relative', 'relative/scratch'],
+    ['dot-relative', './rel-scratch'],
+    ['absent', undefined],
+  ]
+  for (const [label, value] of badScratch) {
+    it(`scratchRoot ${label} ⇒ probe/spawn/spawnStreaming all refuse IO_POLICY_UNSUPPORTED with ZERO process creations`, async () => {
+      const deps = fakeDeps({ rc: 0, stdout: '', stderr: '' })
+      const provider = createConfinedProcessProvider({
+        realmId: 'realm-provider',
+        trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+        scratchRoot: value as never,
+        deps: deps as unknown as ProviderDeps,
+      })
+      const p = await provider.probe()
+      expect(p.ok, `${label}: probe`).toBe(false)
+      if (!p.ok) expect(p.error.code).toBe('IO_POLICY_UNSUPPORTED')
+      const s = await provider.spawn(baseRequest({ grantFingerprint: 'sha256:scratch-law-spawn' }))
+      expect(s.ok, `${label}: spawn`).toBe(false)
+      if (!s.ok) expect(s.error.code).toBe('IO_POLICY_UNSUPPORTED')
+      const st = await provider.spawnStreaming(baseRequest({ grantFingerprint: 'sha256:scratch-law-stream' }), { handshakeTimeoutMs: 2_000 })
+      expect(st.ok, `${label}: spawnStreaming`).toBe(false)
+      if (!st.ok) expect(st.error.code).toBe('IO_POLICY_UNSUPPORTED')
+      expect(deps.calls, `${label}: the refusal precedes every process`).toEqual([])
+    })
+  }
+})

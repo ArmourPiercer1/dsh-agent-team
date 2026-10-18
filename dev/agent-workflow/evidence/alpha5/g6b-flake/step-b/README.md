@@ -73,3 +73,32 @@ typecheck（runtime/testkit）绿、eslint 绿、dist 已 place+drift 过。
 - **基线既有 typecheck 红 1**：⑤ timers 腿直用 ambient `process.getActiveResourcesInfo`（node-min 面外），HEAD 即红。本单改 house globalThis 结构面（行为逐点同，注记在码内）。
 - rg 直调语义表本环境 **NOT-MEASURED-here**（@vscode/ripgrep 1.18.0 bin 未下载）；行层 invivo 语义经套件真链路实测（round-6 语料 + 本单三点一线腿），不冒充直调数。
 - 未做（如实）：真实 rc0+speech / rc2+静默两形在真链路不可确定性构造（launcher 自写记录 + 真 rg 语义），由注入形覆盖（root 令认可）；probe6b 原探针文件不在树（scratch 失），其功能面（截断形 500 连、K 形竞态）由 rc-first 注入 500 连腿 + 既有 cap 腿承接。
+
+---
+
+# 收口轮（双独审必办落地，正向笔于 178bea59）
+
+## 在册：worktree 污染归属（审 A 必办 1）
+本轮 porcelain 曾现 `reviewA-*`/`reviewB-*` 临时 spec 目录 = **并发 reviewer 会话的临时件，非产品面**（root 21:2xZ 核定）；不入本单提交，reviewer 自删。产品面与本单文件集从未含之（提交文件清单可逐笔对账）。
+
+## 信任边界表（收口后全表，② 补充行）
+| 边界 | 谁核 | 何时 |
+| --- | --- | --- |
+| 记录=本次 spawn 的（planId 唯一目录，mkdir 先于 spawn） | provider（:575-576） | 建计划时 |
+| 记录 pid===handshake pid | provider（readExitRecord :705-715 面） | 读时 |
+| **记录 pid===handle.pid（行层第二遍，审 B 必办 2）** | **行（RECORD-UNTRUSTED form=row-pid-mismatch）** | **消费时** |
+| 记录按时到达（审 B 必办 3） | 行有界等待 fuse（form=timeout ⇒ walker-error） | 消费时 |
+| 记录内容与 launcher 写律一致 | launcher 单写者 O_TRUNC + 写先于死 | 写时 |
+
+## 有界等待取值依据（审 B 必办 3）
+fuse=**250ms**（cap 同源常数 GLOB_STDERR_DRAIN_MS）：记录在 launcher 死前已写完、provider 在死亡观察同 tick 同步读 ⇒ 正常路径 `payloadExit` 是已解决 promise 的微任务；250ms 是**断言保险丝非等待策略**（取测量家族最紧界；1s 只把"接线坏"糊成"接线慢"）。超时=承诺破碎 ⇒ fail-CLOSED（walker-error），fail-SLOW（暂信流）不在菜单。测试钉=payloadExit 永不到形（实测 fuse 于预算内触发，<2s 上界钉）。
+
+## 残留判据清单 + 方向注（审 B 必办 4，本笔只挂账不删）
+| 残留 | 位置 | 状态 | 方向注 | 排期 |
+| --- | --- | --- | --- | --- |
+| 旧 glob 行 SPEECH/wire-code 律 | plane-effect-backends.mjs:516-524 | **dormant（glue7 消费中，删=另案）** | 偏**拒**非更弱（speech⇒拒整结果），无"接受面扩大" | 与 glue7 迁移到 rc-first 行同批移除；移除腿=另案红→绿 |
+| 行层 fallback 支（recordCapable≠true） | glob-backend.mjs :1077+ | 活（one-shot/测试注入形消费） | 逐字旧律，钉在 rc-first 套件 | one-shot 形出现行消费者时再议 |
+| rg 共存性依赖 | 治理 argv 表 | **已钉**（review-B 行为钉 + corpus 入账） | 升级回退=测试红 | rg 升级时按钉分诊 |
+
+## 收口必办对账
+①在册（本节首条）②共存性钉=glob 套件 `g6b closing (review-B)` 腿（版本注记入断言消息+corpus 双账；行为钉为准）③行层 pid 双保险=「closing review-B」腿 form=row-pid-mismatch ④有界等待=同腿 timeout 形+依据上表 ⑤scratch law=provider `scratchRootGate`（probe/prepare/execute/executeStreaming 四入口，a5p4 4 形红→绿）+glue7 夹具补键 ⑥上表（只挂账）⑦corpus 双 shape 入账（标 reviewer 实测非作者）。

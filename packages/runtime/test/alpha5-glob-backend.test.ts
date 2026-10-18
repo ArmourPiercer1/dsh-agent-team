@@ -1537,4 +1537,48 @@ describe('A5-GLOB S — the walk never answers with what the governed root does 
       destroyWorldVerified(w)
     }
   }, 120_000)
+
+  // #337 closing round · review-B item 1 (the REAL safety pin). rc-first trusts
+  // an rg-behavior law: under the GOVERNED argv spelling, an I/O-error walk is
+  // rc=2 + SPEECH + partial stdout CO-EMITTED, while clean/no-match walks are
+  // rc 0/1 and SILENT. That table is now pinned at the PAYLOAD level with the
+  // row's own argv (`globArgv` + the framing token): an rg upgrade that moves
+  // any cell turns THIS leg red before any verdict can silently drift on the
+  // new shape. The version rides the assertion messages for triage; reviewer
+  // B's direct-call table (rg 1.18.0) is booked in the round-6 corpus marked
+  // reviewer-measured, not author.
+  it('g6b closing (review-B): the governed argv keeps the rc/speech co-presence table — 0 clean silent · 1 no-match silent · 2 error with speech AND partial stdout co-emitted', async () => {
+    const w = newWorld('a5glb-rcpin')
+    try {
+      const root = join(w, 'root')
+      mkdirSync(join(root, 'src'), { recursive: true })
+      mkdirSync(join(root, 'locked'), { recursive: true })
+      writeFileSync(join(root, 'src', 'a.ts'), 'RCPIN-A\n')
+      writeFileSync(join(root, 'locked', 'b.ts'), 'RCPIN-B\n')
+      const governed = (pattern: string): string[] => [...row.globArgv({ pattern } as never), ...(row.GLOB_OUTPUT_PROTOCOL_ARGV as string[])]
+
+      const ver = nativeRg(rgPath, root, ['--version'])
+      const m = /ripgrep (\d+\.\d+\.\d+)/.exec(ver.stdout)
+      expect(m, `rg --version parses (${ver.stdout.slice(0, 60)})`).not.toBeNull()
+      const version = m?.[1] ?? 'unknown'
+
+      const clean = nativeRg(rgPath, root, governed('*.ts'))
+      expect(clean.code, `clean walk under rg ${version}: rc`).toBe(0)
+      expect(clean.stderr, `clean walk under rg ${version}: silent`).toBe('')
+      expect(clean.stdout).toContain('a.ts')
+
+      const miss = nativeRg(rgPath, root, governed('zz-no-such-*.ts'))
+      expect(miss.code, `no-match walk under rg ${version}: rc`).toBe(1)
+      expect(miss.stderr, `no-match walk under rg ${version}: silent`).toBe('')
+
+      chmodSync(join(root, 'locked'), 0o000)
+      const err = nativeRg(rgPath, root, governed('*.ts'))
+      chmodSync(join(root, 'locked'), 0o755)
+      expect(err.code, `I/O-error walk under rg ${version}: rc=2`).toBe(2)
+      expect(err.stderr.length, `I/O-error walk under rg ${version}: speech present`).toBeGreaterThan(0)
+      expect(err.stdout, `I/O-error walk under rg ${version}: PARTIAL stdout coexists with the error`).toContain('a.ts')
+    } finally {
+      destroyWorldVerified(w)
+    }
+  }, 60_000)
 })

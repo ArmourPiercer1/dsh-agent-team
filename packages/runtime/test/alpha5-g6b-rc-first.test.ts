@@ -42,6 +42,7 @@ vi.mock('../sandbox-provider/index.js', async () => {
     readonly exitInfo?: ExitInfo
     readonly recordCapable?: boolean // false models the LEGITIMATE no-record form
     readonly payloadExit?: unknown
+    readonly payloadExitNever?: boolean // the bounded-fuse form: promised, never arrives
     readonly probeRefused?: boolean
     readonly spawnRefused?: boolean
   }
@@ -77,7 +78,9 @@ vi.mock('../sandbox-provider/index.js', async () => {
     }
     if (script.recordCapable !== false) {
       fields.recordCapable = true
-      fields.payloadExit = Promise.resolve(script.payloadExit)
+      fields.payloadExit = script.payloadExitNever === true
+        ? new Promise<never>(() => { /* the fuse leg: a promised record that never arrives */ })
+        : Promise.resolve(script.payloadExit)
     }
     return Object.freeze(fields)
   }
@@ -330,4 +333,34 @@ describe('a5g6b rc-first (row level) — the trusted record rules; SPEECH is a w
     expect(quiet, `${String(quiet)}/500 silent-rc2 walks were judged quiet`).toBe(0)
     expect(spilled, 'a refused walk leaked into the sink').toBe(0)
   }, 180_000)
+
+  it('closing review-B: a RECORDED record naming a FOREIGN pid is refused by the row second look; a promised record that never arrives trips the bounded fuse (fail-CLOSED, never fail-slow)', async () => {
+    // the row-side second pid look (review-B item 2): well-formed record, wrong
+    // payload named — the provider-side handshake match is NOT taken on faith.
+    planRef.current = {
+      stdoutChunks: ['./a.txt\0'], endStdout: 'terminate', endStderr: 'terminate',
+      payloadExit: { form: 'recorded', rc: 0, pid: 999_999 },
+    }
+    const r1 = await call(makeBackend())
+    expect(r1.ok, 'a record naming another payload cannot clear the row check').toBe(false)
+    if (r1.ok === false) expect(r1.failure.code).toBe('walker-error')
+    expect(observed.some((l) => l.includes('row-pid-mismatch'))).toBe(true)
+    expect(written).toEqual([])
+
+    // the bounded fuse (review-B item 3): recordCapable promised a record that
+    // never arrives — that is broken wiring, and it fails CLOSED at the
+    // cap-family budget, never trustingly, never slowly.
+    planRef.current = {
+      stdoutChunks: ['./a.txt\0'], endStdout: 'terminate', endStderr: 'terminate',
+      payloadExitNever: true,
+    }
+    const t0 = Date.now()
+    const r2 = await call(makeBackend())
+    const dt = Date.now() - t0
+    expect(r2.ok, 'a never-arriving promised record fails closed').toBe(false)
+    if (r2.ok === false) expect(r2.failure.code).toBe('walker-error')
+    expect(observed.some((l) => l.includes('RECORD-UNTRUSTED form=timeout'))).toBe(true)
+    expect(written).toEqual([])
+    expect(dt, `the fuse must trip at the cap-family budget, took ${String(dt)}ms`).toBeLessThan(2_000)
+  }, 30_000)
 })
