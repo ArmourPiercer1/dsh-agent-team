@@ -86,3 +86,34 @@ merge 干净、零冲突。**本笔是声明式预演：若 #330 最终头变化
   因此不得声称全链已过**。
 - **a5rbn kit L6（"GLOB ROW IS TYPED-SHUT ON THE WIRE"）：不动不跑，待 owner 轮重 tie**——它在
   runtime-base-narrow lane 的 kit 里，翻转后语义必红，属该 lane 所有权；由父单另行提请授权。
+
+
+## 续跑（2026-10-18 10:0xZ，#330 落 master 后的 ff 重放轮）
+
+- **ff 重放已做**：`git merge origin/master` 把 `1a7c3c1c`(#330 srgp) + `1962f879`(#331 docs) 并进本支
+  ⇒ 本树从"声明式预演"变成**真合并面**。唯一冲突 = `packages/testkit/test/p4t6-session-event-scan.test.ts`
+  （账本块），按 lane 先例以 master 版为基重新入账本支唯一新增腿文件，tie 按 **scanner 亲数** 重锚：
+  本合并树实测 `filesScanned = 1195`（未入账时 RED 读数 chain 1194 vs 1195），故 tie 写 `1195 - 1194`；
+  两侧历史锚点数字一概不抄。合并提交 `f2b9c4b2`。
+- **全套腿在新面复跑（全绿）**：a5int-r3 4/4 · glue7 12/12 · search 42/42 · glob 49/49 · glob-adversarial 8/8
+  · g1-deny 11/11 · w-integration-wiring 14/14 · p4-lane-hygiene 8/8 · natexe-unit 12/12 ·
+  **a5p5-dormant-audit 8/8**（路径 `packages/tools/a5p5-tools/test/`，参数无需变化）· p4t6 10/10。
+- **② 宿主 checkout 已按 §2 正规路做成**（先前三次整目录复制 cp/rsync 都在 ~454 MB 处静默死亡，
+  已放弃该路并清干净）：`git clone --local --no-hardlinks /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`
+  → `checkout --detach 639ed015397290b3745d163aafe02ffee4aa3f84`（= `tests/paths.mjs` 的
+  `TEST_USE_BASELINE_SHA`）→ `pnpm install --ignore-scripts`（工作区内 store）→ `pnpm run build` 成功
+  （347 client artifacts）。**pristine：HEAD==pin 且 `git status --porcelain` = 0**（跑完 live 之后复验仍为 0）。
+- **② 真跑（本轮实测到的 live 面）**：以 natexe lane 的 `dev/agent-workflow/evidence/alpha5/natexe/run-natexe-live.mjs`
+  **一字未改**在本翻转合并树上真跑（host-port 3184，318x 族；`:3080`/`:3180` 仅只读探针）：
+  **ALL GREEN 26/26，KIT_EXIT=0**（v3 13/13 + v4 13/13）。对本轮有意义的是：
+  **E8.1 装配见证 placement-feed 行表带原生名 `bash`（shell 行确实骑在 plane 上）**、
+  E5.1 批准被消费后原生 `bash` 真执行（受治 root 内哨兵字节 + wire exit=0）、
+  **E6.1 批准不放大**（第二次越界写被内核拒 `Permission denied`，HOME 内零逃逸文件）＝live 反控、
+  E7.1 deny 臂先于 ask/backend、**H3.0 稳定实例前后回答不变 + test-use 跑后仍 pristine**。
+  跑后 `tests/homes` 残留 **0**（kit 自清）。日志：`.scratch-logs/natexe-live-intr3.log`（工作区外，不入仓）。
+- **仍未做（如实）**：本单要的**四工具正反控派生 kit 我未产出**——`evidence/alpha5/glue7/a5g7-live-kit.mjs`
+  是"装配行 + criteria 形状"的底子，但它不含 plane 挂载（无 `confinedProvider`/`plane.names`），
+  而含 plane 挂载的现成件只有 natexe 那只（其 criteria 归 natexe lane，且 glob 行的 shut 语义已由
+  G6/L6 的所有者各自持有）。本轮作者上下文预算耗尽 ⇒ **不产出半成品派生件、不声称四工具全链已过**；
+  glob 的 live 正反控（世界内 pattern 命中 / 跨 root 越界零结果或具名拒）**仍是开口项**。
+- `a5rbn-live-kit.mjs` L6（"GLOB ROW IS TYPED-SHUT ON THE WIRE"）**未动未跑**，待 owner 轮重 tie。

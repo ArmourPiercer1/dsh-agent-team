@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "a5nxres-p7qgxvz52f",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-01gwr9w1wmhtw7085gwau1eo",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-a5nx-team-v4-2026-10-18T10-21-08"
+          },
+          "scope": {
+            "rootSessionId": "session-a5nx-team-v4-2026-10-18T10-21-08",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-15mvlw31o1gq"
+            },
+            "targetInstanceId": "inst-15mvlw31o1gq",
+            "actionName": "parameter-permission",
+            "correlation": "call-nx-a1-rdvkf3",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:d0802a70f589162521404692ee7a5aba45d698579bca776a1dcdfe6bb7045f3d",
+            "authorityScope": {
+              "operationClass": "bash",
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              }
+            }
+          },
+          "requestSequence": 5,
+          "decisionSequence": 6,
+          "createdAt": "2026-10-18T10:21:24.249Z",
+          "note": "a5nx live leg: scripted human allow (execute-after-approval measurement)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}
