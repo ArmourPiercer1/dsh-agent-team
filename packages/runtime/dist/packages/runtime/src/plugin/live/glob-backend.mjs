@@ -172,7 +172,7 @@
 import { constants as fsConstants, lstatSync, readlinkSync, realpathSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { setTimeout as sleepTimer } from 'node:timers'
+import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timers'
 import { buildGlobCommand, GLOB_MAX_RESULTS, parseGlobArgs as parseHostGlobArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 
@@ -191,7 +191,7 @@ export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
 export // Upper bound on waiting for the child's streams AFTER it exited (drain, not
 // lifetime): long enough for a late stderr note, short enough to be nothing
 // a walk could confuse with its own timeout budget.
-const GLOB_STDERR_DRAIN_MS = 2000
+const GLOB_STDERR_DRAIN_MS = 250
 export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
@@ -919,6 +919,17 @@ export function createAnchoredGlobBackend(options) {
             child.stderr.on('close', died)
             streamsWatch = { streams: [child.stdout, child.stderr], handlers: [one, died] }
           })
+          // ROUND-8 (approved, narrow): STDOUT completeness is collected. The watcher is
+          // installed BEFORE the exit race so an 'end' that arrives first is never missed.
+          // Terminal = 'end' | 'close' | 'error'.
+          let stdoutWatch = null
+          const stdoutEnded = new Promise((resolve) => {
+            const done = () => resolve(true)
+            child.stdout.once('end', done)
+            child.stdout.once('close', done)
+            child.stdout.once('error', done)
+            stdoutWatch = done
+          })
           const exit = await Promise.race([
             child.exited,
             new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
@@ -928,6 +939,42 @@ export function createAnchoredGlobBackend(options) {
           // failed attempt, where draining BEFORE terminate timed out on EVERY walk and
           // mass-failed the suites). The drain therefore judges AFTER terminate.
           await child.terminate() // the frozen lease arm settles exactly once per path
+          // ... and the collection happens AFTER the lease is released: while the
+          // supervised child lives, 'end' cannot be promised (measured: draining before
+          // terminate refused 1176/6600 clean walks). Terminality is structurally promised
+          // — the launcher closes 0/1/2 before it waits (prelauncher :32-34), so once
+          // 'exit' fires no writer holds the descriptors; the cap only covers a provider
+          // that breaks that promise (cap basis: evidence round-3/4 lag measurements and
+          // the diagnostic round's endwait 400/400 distribution).
+          // An uncollected stdout is NOT completeness: it lands TYPED on the frozen
+          // table's existing completeness item `walk-too-large`, whose sibling `overflow`
+          // case is the same defect class (output the row could not fully take), and the
+          // diagnostic D-drain-load round measured 3/400 walks whose tail was truncated
+          // while the payload rc was still 0 — no exit status substitutes for it. A
+          // silently truncated list must never be presented as success.
+          // STDERR IS NOT COLLECTED THIS ROUND: the SPEECH arm below is byte-for-byte
+          // unchanged, so the capture-1 race (late stderr speech missed by the verdict)
+          // remains a DISCLOSED limitation pending the rc-first semantic ruling.
+          let stdoutCollected = true
+          if (exit?.timedOut !== true) {
+            let capTimer = null
+            const won = await Promise.race([
+              stdoutEnded,
+              new Promise((r) => { capTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
+            ])
+            if (capTimer !== null) clearTimer(capTimer)
+            stdoutCollected = won === true
+          }
+          if (stdoutWatch !== null) {
+            child.stdout.off('end', stdoutWatch)
+            child.stdout.off('close', stdoutWatch)
+            child.stdout.off('error', stdoutWatch)
+            stdoutWatch = null
+          }
+          if (stdoutCollected !== true) {
+            observe(`anchored-glob WALK-INCOMPLETE realm=${realmId} call=${String(call.callId)} stream=stdout exit=${String(exit?.code ?? -1)}`)
+            return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes, incomplete: 'stdout' }, debug, `walk output was not collected to the end of the stream`)
+          }
           // THE DRAIN RESULT IS CONSUMED, NOT IGNORED (round: root ruling ①). A walk may
           // only be judged quiet once BOTH streams have closed; a drain that expires with
           // a stream still open is INDETERMINATE, and this row's frozen completion law
@@ -943,7 +990,7 @@ export function createAnchoredGlobBackend(options) {
               new Promise((r) => { drainTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
             ])
           }
-          if (drainTimer !== null) clearTimeout(drainTimer)
+          if (drainTimer !== null) clearTimer(drainTimer)
           drainTimer = null
           if (streamsWatch !== null) {
             for (const stream of streamsWatch.streams) {
@@ -953,7 +1000,9 @@ export function createAnchoredGlobBackend(options) {
             }
             streamsWatch = null
           }
-          // LANDED STATE (round-3): the drain outcome is OBSERVED, not enforced. Making it
+          // LANDED STATE (round-3, amended round-8): the drain outcome for STDERR is
+          // OBSERVED, not enforced (SPEECH semantics are unchanged pending the rc-first
+          // ruling); STDOUT is now enforced above (walk-too-large on non-collection). Making it
           // fail closed was implemented and MEASURED on the real race suite: with a 250ms
           // bound 1176 of 6600 legitimate walks were refused as walker-error, with 2000ms
           // still 373 — the provider's stdio pipes are NOT guaranteed to close when the
@@ -964,12 +1013,6 @@ export function createAnchoredGlobBackend(options) {
           // injected shapes in test/alpha5-g6b-drain-injection.test.ts document the hole.
           if (drainClosed === false) {
             observe(`anchored-glob DRAIN-INCOMPLETE realm=${realmId} call=${String(call.callId)} exit=${String(exit?.code ?? -1)}`)
-          }
-          if (false) { // the fail-closed arm, kept verbatim for the transport-round hand-off
-            return failure('undetermined', 'walker-error', {
-              exit: exit?.code ?? -1,
-              stderrBytes: stderr.trim().length,
-            }, debug, 'walker streams did not close after the lease was released')
           }
           trace = [...trace, 'terminate']
           if (exit?.timedOut === true) {
