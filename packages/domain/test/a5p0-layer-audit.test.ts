@@ -49,6 +49,13 @@ describe('the tool-governance lane audit', () => {
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
+      // alpha5-ptc-fs (branch `alpha5-ptc-pr`; review provenance 独审 PASS,
+      // id 7f0e5d6e, booked by the integration coordinator on the #334 census
+      // red): the PTC fs escalation row — direct lane edge = the effect-grammar
+      // face (`parseRequestedEffectSet`), grants via the already-reviewed PR2
+      // grant-mint module only; zero lane edits (audit script entry carries
+      // the file:line provenance).
+      'runtime/src/plugin/live/ptc-escalation-row.mjs',
       // GLUE-7 (alpha5-glue7-backend): placement-feed wiring via the
       // tool-dispatch §6 face (see the audit script entry for provenance).
       'runtime/src/plugin/live/team-tool-plane.mjs',
