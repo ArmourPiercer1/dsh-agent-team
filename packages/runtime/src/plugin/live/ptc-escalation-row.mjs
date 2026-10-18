@@ -9,7 +9,9 @@
  *
  * SEMANTICS (six legs, per the read-only diagnostic):
  *  S1 the row listens to the host `approval/request` waterfall (public:
- *     api-catalog 3852 — `Scoped<Agent>`, "return an outcome to claim,
+ *     api-catalog :3921 ON THE PINNED HOST (measured; the work order's
+ *     ":3852" is that file's entry-field offset, not the line) —
+ *     `Scoped<Agent>`, "return an outcome to claim,
  *     call next() to delegate"). A request this row does not OWN (no
  *     governed member, or a reason outside the escalation prefix) is
  *     delegated to `next()` UNTOUCHED — zero state written. The router

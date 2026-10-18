@@ -6846,3 +6846,11 @@ GREEN 7/7=五负控（重放/过期/他队闭world/撤销先于用零铸/mode �
 卫生保持绿且其 reviewed-edge 例外表零加宽（row 头注释刻意不用 lane 词）。生产入口真跑配方落
 evidence/alpha5/ptc-fs-impl/（正反控+五负控+non-team 零差+unload 对称，可等 int-r3 合并面）。
 net 半臂不在本单。
+
+## 2026-10-18 PTC fs 半臂 独审通过+登记轮（owner 1ef62fcd，必办=空）
+
+独审通过入账。三项非阻塞如实入 evidence README：①同 callId 并发双发=重复提示、双独立耐久
+审批、无未授权放行（in-flight 去重=未来轮）；②consumed+expired 叠加时内核判 expired 在前
+（frozen precedence 正确，工单措辞序反；NC-1/NC-2 各单因腿各自绿）；③api-catalog 锚点行头
+注释改实测 :3921（纯注释，dist 镜像随动重放）。真跑配方维持等 int-r3（#333 合并后 ff 叠
+master 跑 production-run-recipe 全链）。

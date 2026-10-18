@@ -58,6 +58,20 @@ errors (:112 unused, :3228 empty block) — identical on clean HEAD; this round 
 new lint violations and ZERO new denylist vocabulary (the row header deliberately names no
 lane words; the a5p7 hygiene exception list stays UNWIDENED).
 
+## 独审登记（通过轮，必办=空；三项非阻塞，如实入账，代码零语义改动）
+
+① **同 callId 并发双发**：两个 in-flight ask 同 (member, callId) 会各自开一条独立耐久
+审批、各自成组一次性铸权——后果是**重复提示**（人会被问两次），不存在未授权放行（两条
+都必须各自拿到 allow 才各自放行，grant 逐条独立且各消费一次）。in-flight 去重（second-asker
+挂到 first-fact）= 未来轮，非本轮语义。
+② **consumed+expired 叠加**：两事实同时成立时内核判 `expired`（frozen precedence：
+fingerprint→expiry→consumption-LAST，expiry 在 consumption 之前——内核冻结正确；工单
+措辞把两者次序说反）。本腿的两个负控各走单因腿（NC-1 未过期+已消费、NC-2 未消费+已过期），
+各自独立正确、各自绿。
+③ **api-catalog 锚点**：S1 监听契约的实测行号 = pinned-host `api-catalog.ts:3921`（工单
+记 :3852 为文件条目字段偏移）；本 README 原先已按实测披露，本轮把行头注释一并改为实测值
+（纯注释，dist 镜像随动重放，无行为变化）。
+
 ## Scanner re-anchor
 
 p4t6 measured ON THIS TREE (pre-booking run): `expected 1196 to be 1194` → booked
