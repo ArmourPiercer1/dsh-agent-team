@@ -237,10 +237,18 @@ capture-2=9+`a5lsp2` `failure cleanup (a)/(b)`，每 capture ~210 KB ANSI stdout
 逐行同步写与"只吞 EPIPE/EOF"的守卫因此定位成**额外加固**（读端消失时不得带走裁决进程），
 不是对病根的断言。
 
-**独立缺口记账（本轮不做，需单独特批）**：转录文件在 `--check-transcript` 之前就已落盘，
-任何"晚发生的截断"都晚于最终判定——门自己看不见它被截断（330 的 VERDICT 若写出来也是绿谎）。
-真修 = 把 transcript 完整性（末行是否为 token、字节数是否与内存中的输出一致）纳入门**后**步骤的
-语义，属工作流/门后步骤改动，需特批；此处先入账，不在本轮动。
+**剩余缺口精确化（本轮不做，需单独特批）**：先把"已有保证"与"真缺口"分开，别把有保证的东西写成缺口。
+**job 级 fail-closed 已有保证**，它不等任何特批：`census-runtime.yml:311-316` 的重判步是 `if: always()` +
+`set -euo pipefail` 包住 `node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/census-run.txt"`，
+其退出码来自 `ci-pr-gate.mjs` 的 `--check-transcript` 分支
+`return checked.verdict === 'pass' ? 0 : 1`（本轮实测在 **:1305-1309**；锚点=那个 return，行号随注释增删浮动）
+⇒ 步骤非零 ⇒ **整个 job 非零**。330 那次 job 红就是这条保证**在起作用**的实证（被截断的转录被判
+`missing-token` ⇒ 步骤红 ⇒ job 红），不是"门看不见所以没保证"。
+**真正未覆盖的剩余面只有一块**：re-grade 读的是它**当时**看到的文件终态；从 re-grade 结束到
+`Upload census transcripts`（同 workflow :325-332）之间若再发生截断，已没有任何步骤会再读那份文件——
+这是**转录产物的封印（seal）问题**：最后一次写之后由谁校验、上传的是不是被校验过的那一份。真修 =
+upload 步语义或产物自校验（例如 re-grade 后对同一文件求哈希并随产物上传、由复核侧比对），
+属工作流改动，需特批；此处按精确边界入账，不在本轮动。
 
 **self-test**：59 → **68 assertions**（新增：指针行必在最后、每行带 `| `、界由构造保证、
 洪水仍保住两端的现场、绿路零输出、`| DSH-CI-VERDICT` 伪行不被锚点计数、真·重复 token 仍判

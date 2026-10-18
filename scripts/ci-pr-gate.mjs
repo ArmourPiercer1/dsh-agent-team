@@ -295,13 +295,19 @@ function tail(text, n = 12) {
 
 // ── BOUNDED failure transcription (2026-10-18, second draft) ─────────────────
 // The first draft of this echoed the WHOLE captured stdout of a failed command.
-// On a real census that is 210-215 KB per capture: `census-run.txt` stopped at
-// 65,953 bytes — the first 64 KiB of one write — and the gate never printed a
-// DSH-CI-LEG line or a VERDICT, because the write to a pipe whose reader had
-// gone back EPIPE on a stream with no 'error' handler killed the gate process
-// between its captures and its verdict. The transcript that carries the verdict
-// is the one a reader grades, so a flood on the transcription channel destroyed
-// the grading channel. Teeth: the census's red IDENTITY SETS were already
+// On a real census that is 210-215 KB per capture. Measured facts from census 330
+// (CI artifact, re-run locally to the same shape): the graded file `census-run.txt`
+// stopped at 65,953 bytes — one 64 KiB write boundary, mid capture-1 — it never
+// contained a DSH-CI-LEG line and never a VERDICT, while the per-capture files
+// `census-transcripts/<label>.txt` were written IN FULL and the run went on to
+// produce them. So the proven mechanism is: AN UNBOUNDED BURST ON THE
+// TRANSCRIPTION CHANNEL TRUNCATED THE FILE A READER GRADES.
+// The hypothesis first recorded in this comment — "the pipe write EPIPE'd on a
+// stream with no 'error' handler and the gate process died between its captures
+// and its verdict" — is REFUTED by those same artifacts: a dead process neither
+// finishes the later capture file nor keeps grading, and the verdict was never
+// attempted in that file at all. It stays here as investigation history, not as
+// a conclusion (evidence §9). Teeth: the census's red IDENTITY SETS were already
 // computed and are untouched by any of this.
 //
 // So: on a failed command the gate echoes back only the lines a reader is
@@ -393,9 +399,15 @@ export function writeEchoLine(line) {
  * Last-resort guard for the gate's OTHER writes: a reader that disappears
  * mid-run may not crash the process before it states its verdict. EPIPE/EOF
  * only — any other stream error still propagates — and losing a write is never
- * silent in CI: the workflow re-grades the transcript by the missing-token
- * rule, so a transcript whose verdict got lost fails as `missing-token` rather
- * than passing quietly. Grading itself happens before any of these writes.
+ * silent in CI: the workflow re-grades the transcript by the missing-token rule
+ * (.github/workflows/census-runtime.yml:311-316 — `if: always()` and
+ * `set -euo pipefail` wrapping `--check-transcript`, whose exit code is the
+ * `--check-transcript` branch below, `return checked.verdict === 'pass' ? 0 : 1`
+ * (at :1305-1309 as this comment lands; the anchor is that return, the line number
+ * drifts with any future comment edit), and a non-zero step makes the whole job
+ * non-zero — census 330's red job is that guarantee WORKING, not a gap in it), so
+ * a transcript whose verdict got lost fails as `missing-token` rather than passing
+ * quietly. Grading itself happens before any of these writes.
  */
 export function guardStdout(stream) {
   stream.on('error', (err) => {
@@ -1249,7 +1261,8 @@ function main(argv) {
   // that hangs up on the transcript must not be able to take the gate down before
   // it states its verdict. EPIPE/EOF only; every other stream error still
   // propagates. Losing a write is never silent — the workflow re-grades the
-  // transcript by the missing-token rule. See guardStdout.
+  // transcript by the missing-token rule (census-runtime.yml:311-316 ⇒ this file's
+  // --check-transcript return, :1305-1309), which is job-failing. See guardStdout.
   guardStdout(process.stdout)
   guardStdout(process.stderr)
   const opts = parseArgs(argv)
