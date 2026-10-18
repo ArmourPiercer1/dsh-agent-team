@@ -1,0 +1,38 @@
+# Pre-flip production-entry capture (raw, verbatim) — captured BEFORE any flip edit
+
+Worktree: .worktrees/alpha5-v4-flip @ 382e5fb6 (origin/master, fetch-verified)
+Entry: packages/runtime/dist/packages/domain/blueprint/src/index.js (the shipped
+dist mirror of the production barrel; parseBlueprint / inspectBlueprintSource).
+
+## v3 canary document (unchanged across the flip — the zero-deformation pin)
+
+source (frontmatter):
+  schemaVersion: 3
+  blueprintId: team.flipcanary
+  revision: "1"
+  leader: { templateId: leader, persona: Lead. }
+  members: []
+  requirements: []
+  memberEnvelopes: []
+  policyStates: []
+  permissionMutationEnvelope: { rules: [] }
+  teamHardEnvelope: { rules: [] }
+  metadata: {}
+
+parseBlueprint  -> HASH sha256:1723a76497492913cf85d8f41f17b7b1ff04689de298b6f3c7e9899137bdaf4f V 3
+inspectBlueprintSource -> ok
+
+## v4 document through the production entry — THE PRE-FLIP REFUSAL (MISMATCH, 原文)
+
+same document with schemaVersion: 4
+
+parseBlueprint  -> CODE SCHEMA_VERSION_MISMATCH
+                    MESSAGE unsupported blueprint schema version 4; this build supports [3]
+                    DETAILS {"schemaVersion":4,"supported":[3]}
+inspectBlueprintSource -> rejected
+                    [{"reason":"schemaVersion-unsupported","message":"unsupported blueprint schema version 4; this build supports [3]"}]
+
+The flip PR's RED-first contract: after the flip, this exact document RUNS through
+this exact entry (a5fl1), the v3 canary hash above is byte-identical post-flip,
+and v1/v2 keep the migration arm while a never-defined version keeps the
+rejected/UNSUPPORTED arm (gate-arm truth table, v4-flip-PREP).

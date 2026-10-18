@@ -34,15 +34,19 @@ export {
   AUTHORITY_OPERATION_CLASSES,
   AUTHORITY_SHELL_OPERATION_CLASSES,
   AUTHORITY_UNDETERMINED_REASONS,
+  AUTHORITY_V4_SCOPE_CLASSES,
+  AUTHORITY_V4_SCOPE_MATCHER_KINDS,
   CEILING_IDENTITY,
   CEILING_NO_AUTHORITY,
   effectiveAuthorityCeiling,
   isShellOperationClass,
+  isV4ScopeOperationClass,
   matcherCovers,
   meetAllAuthorityCeilings,
   meetAuthorityCeilings,
   narrowingForApproval,
   parseAuthorityEnvelope,
+  v4ScopeMatcherLaw,
 } from './authority-envelope.js'
 
 export type {
@@ -60,6 +64,7 @@ export type {
   AuthorityResourceMatcher,
   AuthorityScope,
   AuthorityUndeterminedReason,
+  AuthorityV4ScopeClass,
   CoverageVerdict,
   EffectiveCeiling,
   SubtreeContains,

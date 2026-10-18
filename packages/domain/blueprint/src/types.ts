@@ -26,6 +26,10 @@ import type {
 // The v2 requirement's `type` reuses the frozen domain requirement-type
 // vocabulary (Architecture §27.1) so the closed six-set never forks.
 import type { RequirementType } from '../../compatibility/src/requirement.js'
+// Type-only cycle (types → blueprint-v4 → types): erased at compile time,
+// a runtime import would NOT be added here. The family's canonical shape is
+// owned by the fourth parser (#316), not duplicated.
+import type { V4ToolBindingAuthoring } from './blueprint-v4.js'
 
 /**
  * The seven tools whose individual calls a static permission policy may
@@ -412,8 +416,15 @@ export interface TeamBlueprint {
    * authority document, with `permissionMutationEnvelope` no longer optional
    * (ADR A1-19). `3` is admitted for the PR1-PR6 bridge only (ADR A2-11); the
    * Alpha.4 contract is v3-only and the PR7 cutover narrows the accepted set.
+   *
+   * The v4-flip round WIDENS this annotation to `3 | 4` — the typed face of
+   * the `{3, 4}` dual-parsing window (formal Schema ADR:
+   * `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+   * This is a type-plane fact only: no v3 document ever stamps `4`, no v3
+   * parse path reads it, and v3 behavior is byte-identical across the flip
+   * (the zero-deformation legs of the flip suite pin it).
    */
-  readonly schemaVersion: 3
+  readonly schemaVersion: 3 | 4
   /** Stable logical identity (not a path, not a display name). */
   readonly blueprintId: BlueprintId
   /** Human-readable revision. */
@@ -485,6 +496,17 @@ export interface TeamBlueprint {
   readonly capabilityPolicy?: CapabilityPolicy
   /** Interpretation metadata (absent = empty). */
   readonly metadata: BlueprintMetadata
+  /**
+   * The v4-ONLY effect-governance family (the `toolBindings` entries of the
+   * fourth parser, `blueprint-v4.ts`): owner/name + authorization + io lanes
+   * + execution facts, in the closed v4 authoring grammar.
+   *
+   * A v4-FACE fact, never a v3 fact: a v3 document that carries the key is
+   * refused as an unknown field (the closed v3 field set is NOT widened), it
+   * is never defaulted, and every v1/v2/v3 document keeps hashing without
+   * the key (the present-only hash discipline, unchanged).
+   */
+  readonly toolBindings?: readonly V4ToolBindingAuthoring[]
 }
 
 /**

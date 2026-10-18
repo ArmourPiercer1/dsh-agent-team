@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "a5flres-x8n6v9n4he",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-0cjfzw90ib41oy03jlk1j10t",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-a5fl-v4team-2026-10-17T23-24-17"
+          },
+          "scope": {
+            "rootSessionId": "session-a5fl-v4team-2026-10-17T23-24-17",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-1gtsb6l1j6ke"
+            },
+            "targetInstanceId": "inst-1gtsb6l1j6ke",
+            "actionName": "parameter-permission",
+            "correlation": "call-a5fl-d54isf1g",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:2d37de00e8972ca1ee1b882d27ebf6e4cb8949ee9980f4ea9f58be752f7ead79",
+            "authorityScope": {
+              "operationClass": "bash",
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              }
+            }
+          },
+          "requestSequence": 5,
+          "decisionSequence": 6,
+          "createdAt": "2026-10-17T23:24:22.195Z",
+          "note": "a5fl live leg: scripted human allow (the Leader is blocked in the sync delegate)"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

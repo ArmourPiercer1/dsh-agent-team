@@ -1,0 +1,15 @@
+mock: listening on 127.0.0.1:3493
+mock: 1 [messages] text reply (14 chars): "A5FL_DISC_DONE"
+mock: 2 [messages] text reply (14 chars): "A5FL_DISC_DONE"
+mock: unhandled error: TypeError: Cannot read properties of undefined (reading 'arguments')
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:325:40
+    at Array.forEach (<anonymous>)
+    at handle (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:324:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async IncomingMessage.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:188:9)
+mock: unhandled error: TypeError: Cannot read properties of undefined (reading 'arguments')
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:325:40
+    at Array.forEach (<anonymous>)
+    at handle (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:324:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async IncomingMessage.<anonymous> (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools/harness/mock-deepseek.mjs:188:9)

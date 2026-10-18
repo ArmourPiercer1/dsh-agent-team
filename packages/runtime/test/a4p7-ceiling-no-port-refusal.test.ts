@@ -366,12 +366,19 @@ describe('A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the 
   it('R1 the strong parse CANNOT hand the facts layer a pre-v3 document: the only line that makes it pre-v3 is the version line, and that line is refused', () => {
     // The list the whole argument rests on, re-pinned HERE because this is the lane whose
     // skip depends on it. If someone re-opens the bridge, this leg and R2 fail together.
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3])
+    // v4-flip round: the run set widened to `[3, 4]` — the argument does NOT weaken.
+    // This lane refuses to let a NON-RUN document reach the facts layer; which stamps
+    // RUN is exactly what this constant says, and the never-defined witness below moved
+    // from 4 to one past DEFINED (4 now parses — a v4 document is a CONTEXT on the same
+    // face as v3, which R2 re-measures).
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
     // Sanity: the unedited source really does parse, so a refusal below is about the
     // version and not about the fixture.
     expect(parseBlueprint(P6T4_BLUEPRINT_SOURCE).schemaVersion).toBe(3)
     const seen: string[] = []
-    for (const version of [1, 2, 4, 9]) {
+    // 1/2 = defined-but-retired (operator-owns arm); 5/9 = never-defined. `4`
+    // LEFT this list with the flip — it runs; R2 covers its context shape.
+    for (const version of [1, 2, 5, 9]) {
       let code: string | undefined
       try {
         parseBlueprint(sourceAtVersion(version))
@@ -381,7 +388,7 @@ describe('A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the 
       expect(code, `v${String(version)} was accepted by the strong parse`).toBe('SCHEMA_VERSION_MISMATCH')
       seen.push(`v${String(version)}:${code ?? 'ACCEPTED'}`)
     }
-    expect(seen.join(' ')).toBe('v1:SCHEMA_VERSION_MISMATCH v2:SCHEMA_VERSION_MISMATCH v4:SCHEMA_VERSION_MISMATCH v9:SCHEMA_VERSION_MISMATCH')
+    expect(seen.join(' ')).toBe('v1:SCHEMA_VERSION_MISMATCH v2:SCHEMA_VERSION_MISMATCH v5:SCHEMA_VERSION_MISMATCH v9:SCHEMA_VERSION_MISMATCH')
   })
 
   it('R2 MEASUREMENT — through the shipped reader over the shipped facts, NO reachable binding answers undefined; only v3 is a context, everything else is a refusal', async () => {
@@ -406,9 +413,15 @@ describe('A4-PR7 §7.5 — the pre-v3 `undefined` skip has no route through the 
         `defined/${slot.rules === undefined ? String(slot.status ?? 'unrecognised') : 'declared'}`,
       )
     }
-    // THE CLAIM, as a table: a decided binding is only ever a refusal or a v3 context.
+    // THE CLAIM, as a table: a decided binding is only ever a refusal or a
+    // context of a RUN version. v4-flip round: `4` moved from the refusal
+    // column to the context column — a v4 document carries the SAME frozen
+    // core face (the fourth parser delegates every core field to the v3
+    // validator), so the ceiling documents read it as declared, exactly like
+    // v3. The claim this lane guards — NO decided binding ever takes the
+    // `undefined` skip — holds across the widened run set unchanged.
     expect([...answers.entries()].map(([k, v]) => `${k}=${v}`).join(' ')).toBe(
-      '1=defined/unavailable 2=defined/unavailable 4=defined/unavailable 9=defined/unavailable unbound=defined/unavailable 3=defined/declared',
+      '1=defined/unavailable 2=defined/unavailable 4=defined/declared 9=defined/unavailable unbound=defined/unavailable 3=defined/declared',
     )
     expect(spy.undefinedAnswers, JSON.stringify([...answers.entries()])).toBe(0)
     expect(spy.calls).toBe(6)

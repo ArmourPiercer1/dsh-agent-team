@@ -1,0 +1,12 @@
+PASS S1/read-still-runs :: needle alpha
+
+PASS S2/grep-dir-still-runs :: ok=true fdview=false
+PASS S3/grep-file-fd-view-remapped :: out=1:needle alpha
+
+PASS S4/final-symlink-refused :: refused-schema symlink-alias — target resolves outside the governed root through a symlink — refused
+PASS C1/toctou/read :: iters=20000 ok=7 refused=19993 windowMs=3730 leaked=false
+PASS C2/toctou/grep-filearg :: iters=400 ok=400 refused=0 windowMs=84 leaked=false
+PASS C3/toctou/grep-dirarg :: iters=400 ok=185 symlinkAliasRefused=135 otherRefused=80 windowMs=656 leaked=false (residual DISCLOSED in README §4, not exempted)
+PASS C4/toctou/glob-dirwalk :: iters=200 ok=0 anchorOrExecRefused=139 otherRefused=61 windowMs=29 leaked=false positive-walk=true
+
+TOCTOU-RE-RUN VERDICT GREEN (8/8)
