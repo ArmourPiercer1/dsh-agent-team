@@ -40,8 +40,8 @@
 
 - **开关/配置键**：同一 `teamToolPlane` 挂载即活（#333=`104b4991…` 翻转入 master；后端 `packages/runtime/src/plugin/live/glob-backend.mjs`，`createAnchoredGlobBackend` 于 `team-tool-plane.mjs:80` 装配；`GLOB_MAX_RESULTS=100` 封顶+诚实 truncated 标记；越界 symlink 别名具名拒 `symlink-alias`；walker 错误=闭码表内 `walker-error`，非静默零）。
 - **未闭洞（如实，不降判据）**：
-  1. **live stderr 代理判据**：glob/search 行无 payload exit code，launcher 的 `exit.json` rc 缺席时按 DEFAULT EXIT LAW（prelauncher :36-38）完成，行侧以"非空 stderr ⇒ walker-error"作**代理判据**（`plane-effect-backends.mjs:516-524`、`glob-backend.mjs:902-925`）；terminate-前 drain 实测假拒 373/6600@2000ms、Node 层 2.5–4% 直现复现（`11c246f2` 探针在台账在册），**前置在 transport 层**。
-  2. **#337=两线均已裁、实施中（#341 补修①刷新，非"候裁"）**：rc-first 判据=步骤 B `178bea59411b2d257cadc0582603b361aec7f96c`（g6b-flake 头，双审中）；stdout 完整性门=`203cac85f00dcadc71df98405f87eca01a477b06`（round-8）；均**未入 master 头**（merge-base 实证）⇒ 洞**闭合前**试用口径不变。
+  1. **live stderr 代理判据**：glob/search 行无 payload exit code，launcher 的 `exit.json` rc 缺席时按 DEFAULT EXIT LAW（prelauncher :36-38）完成，行侧以"非空 stderr ⇒ walker-error"作**代理判据**（`plane-effect-backends.mjs:516-524`、`glob-backend.mjs:902-925`）；terminate-前 drain 实测假拒 373/6600@2000ms、Node 层 2.5–4% 直现复现（探针数字=COORD 台账行在册；该行所引 SHA `11c246f2` **现场 cat-file 无此对象**，勿作可核引用），**前置在 transport 层**。
+  2. **#337=两线均已裁（#341 三次补修刷新实况，非"候裁"）**：rc-first 判据=步骤 B `178bea59411b2d257cadc0582603b361aec7f96c`（g6b-flake 头；**双独审回**=A `e593709f` GO/B `d3cad43b` 投机通过[必办五项在册]→**收口单已派，merge-sync 收口进行中**）；stdout 完整性门=`203cac85f00dcadc71df98405f87eca01a477b06`（round-8）；两 commit 现场实存但**未入 master 头**（merge-base 实证）⇒ 洞**闭合前**试用口径不变。
 - **最小验证命令**：五控录制腿 `a5ie-r3` G1/G2/G3/G4/G5（GLOB-POS/BOUND(140 真总数+truncated)/SYMLINK(别名不出现)/OUTSIDE-ANCHOR(外名+外字节全 wire 零)/WALKER-ERROR(typed 非静默)）50/50；现行装面复跑同待 `a5ie-r5`。
 - **证据**：`dev/agent-workflow/evidence/alpha5/glob-backend/`、`a5ie-r3/`（翻转后五控全过逐字）、`runtime-base-narrow/`（#323 收窄=bug 修复口径）。
 
