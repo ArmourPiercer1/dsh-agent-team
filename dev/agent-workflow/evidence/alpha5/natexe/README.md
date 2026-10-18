@@ -154,3 +154,75 @@ time (no fallback to the native body)`，NOTHING 执行。
    伪影；改为「首条 user 消息归属法」后消失（mock-digest.jsonl 全程见证）；
    (c) unit G-c 首跑红 = 本测试对生产漂移消息的转写不符，以生产 VERBATIM
    为真（§3）。生产代码全程 0 改动。
+
+## 6. 定性补单（根 04:34Z）：配置来源定性 → 合法配置面 → 防冒充值域封闭
+
+### 6.1 ① takeover 配置来源定性（文件:行因果链）
+
+`teamToolPlane.names={bash:'bash'}` **不是 kit 专属注入**，它是**行 config
+的既有语法面**，真实安装路径可达：
+
+- 宿主行 config 来源 = `DSH_HOME/profiles/web/cordis.patch.yml`
+  （docs/INSTALL.md §3.2，公开安装面；git-install 的 bundle 行同面）；
+- 装配消费点 = `agent-bindings.mjs:2412-2413`
+  （`config.teamToolPlane` 存在且模板 governed → 挂平面；`planeCfg` 整块
+  传入 `createTeamToolPlaneAssembly` 的 `input.plane`）；
+- `names` 合并点 = `team-tool-plane.mjs`（`{...DEFAULT_PLANE_NAMES,
+  ...input.plane?.names}`），与 shipped 的 `readName` 默认 `'read'`
+  （治理 read 行的 native takeover，GLUE-7 shipped 先例）同块同通道；
+- **blueprint 无通道（设计如此）**：顶层字段集封闭
+  （`validate.ts:1347 assertNoUnknownFields` → `common.ts:35` 抛
+  `MALFORMED_DTO`「TeamBlueprint has unknown field」；v4 集 = v3 + 冻结增量，
+  `blueprint-v4.ts:63-64`），任何作者字段都造不出平面挂载——placement
+  attribution 是 feed 的唯一权威，作者面参与造身份即破封闭世界法。
+
+### 6.2 ② 合法配置面 + 用户文档
+
+行为面本就走 §3.2 行 config（零新通道）；本轮补**用户文档** = INSTALL
+新增 **§3.5 治理工具面（`teamToolPlane` 行 config）**：完整 config 模板
+（realmId/fsInstance/confinedProvider 三件套 + names 接管）、值域封闭法、
+缺省零挂载（A4.4 fail-closed 存续）、审批后执行语义。只写已验证行为，
+每条挂证据线（natexe/glue7/glue8）。
+
+### 6.3 ③ 防同名冒充审计（实测→封闭）
+
+审计**实测**（probe legs A1-A4，`probe-takeover-assembly.mjs` 扩展腿）：
+值域原本**不闭**——(A1) shell 行挂到 grep 行名（同名双行）、(A2) shell 行
+冒充 `read`、(A3) 空串名、(A4) `__proto__` 全部通过装配。lane 的
+native-first 律（team-tool-plane.mjs createLaneDecide）使这些异常只能
+**收紧** deny 覆盖、不能放宽，且不污染原型——但同名双挂载是真实危害面。
+
+**修复 = Gate 0b `verifyPlaneNames`**（build 边界，与 Gate 0
+`verifyConfinedProviderPairing` 同一装配拒绝面，生产码 +1 文件）：
+形状 `^[a-z][a-z0-9_]{0,63}$`；键集封闭（grep/glob/bash）；四挂载名两两
+互异；**原生拼写只能被本类行接管**（`bash:'bash'` = 本轮 takeover 合法；
+`bash:'read'`/`grep:'bash'`/`bash:'write'` 冒充一律拒）。violation →
+`PLANE_NAMES_INVALID` 装配拒绝 = 启动 fail-closed。
+真值表 11/11（合法形态 defaults/takeover/自定义别名全过）；probe 9/9
+（A1-A4 全部 REFUSED）；unit **N5** 两腿（恶意形态逐字码 + 合法形态零回归）；
+总 unit 10/10。
+
+**攻击面闭合结论**：(a) 恶意 blueprint → names 冒充 = 无通道（§6.1，
+封闭字段集既有法定死）；(b) 恶意行 config = 安装者信任层（与 `glueUrl`
+任意代码同层，无新增攻击面），realm 配对 + attribution 唯一权威 +
+placement→bind 连续性三闸已把身份封死在本装配 realm 内，跨 realm 同名
+不可能（unit N3 G-a/G-b/G-c 持续钉）；(c) 无 takeover 旧配置 fail-closed
+存续由 unit N1（逐字落点）+ GLUE-8 两模式复跑钉死。
+
+### 6.4 生产 diff 披露（更正首节口径）
+
+首节「生产 diff=0」自本补单起更正为：**生产改动 = 1 文件 1 面**
+（`team-tool-plane.mjs` Gate 0b 值域封闭，装配期拒绝，无任何运行时新语义/
+新权限；dist 镜像同步，drift 门复验）。合法配置（缺省别名形 / takeover 形 /
+自定义别名）逐字节行为不变——由 GLUE-7 unit 16/16、GLUE-8 两模式、
+natexe 双时代 kit 复跑证明。
+
+### 6.5 复跑 receipts（Gate 0b 之后，全部本树）
+
+- natexe live kit 双时代 **26/26 ALL GREEN**（`kit-supplement-run.log`，
+  runs/live-2026-10-18T04-45-51）；
+- GLUE-8 assembled **20/20** + preassembly **15/15**（换端 3185 复跑：
+  `glue8-rerun-assembled-0434.log` / `glue8-rerun-preassembly-0434.log`，
+  3182 被并行世界占用属他方，换端非语义变化）；
+- GLUE-7 live kit（#321，plane 挂载世界全链）：<G7_RECEIPT>；
+- 全树双抓：<FULLTREE_SUPPLEMENT_RECEIPT>。

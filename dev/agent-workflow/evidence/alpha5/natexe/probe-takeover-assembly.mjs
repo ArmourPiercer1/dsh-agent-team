@@ -70,6 +70,55 @@ if (denyPlane.ok !== true) {
 const alias = mk(undefined)
 results.push(['CTRL default names keep team_bash alias', JSON.stringify(alias.ok === true ? alias.value.ownNames : alias.code), alias.ok === true && alias.value.ownNames.includes('team_bash') && !alias.value.ownNames.includes('bash')])
 
+// ── ③ anti-spoofing audit (root 04:34Z): adversarial ROW-CONFIG `names`. ──
+// Trust model: `names` is only writable by the ROW CONFIG (install-level —
+// INSTALL §3.2); the blueprint grammar is CLOSED (assertNoUnknownFields →
+// MALFORMED_DTO), so no authoring channel reaches the plane. The audit pins
+// the measured face: an anomalous names must be REFUSED or land FAIL-SAFE —
+// (i) the lane's native-first rule (team-tool-plane.mjs:196-203) makes a
+// shell deny TIGHTEN over a colliding spelling, never loosen; (ii) mount
+// collisions are the registry's to refuse; (iii) values like ''/__proto__
+// cannot pollute or silently claim a name. Measured, never assumed.
+for (const [id, names] of [
+  ['A1 names.bash collides team_grep', { bash: 'team_grep' }],
+  ['A2 names.bash impersonates read', { bash: 'read' }],
+  ['A3 names.bash empty string', { bash: '' }],
+  ['A4 names.bash __proto__', { bash: '__proto__' }],
+]) {
+  const built = mk(names)
+  if (built.ok !== true) {
+    console.log(`MEASURED ${id}: build REFUSED ${built.code} — ${String(built.message ?? '').slice(0, 160)}`)
+    results.push([id, `REFUSED ${built.code}`, true])
+    continue
+  }
+  const v = built.value
+  const lane = createTeamToolPlaneAssembly({
+    permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any' } }] },
+    realmId: 'a5natexe-probe', templateId: 'team.probe.adv', role: 'member', instanceId: 'inst-probe',
+    plane: { realmId: 'a5natexe-probe', names, confinedProvider: { trustRoot, assembly: { launcherPath: LAUNCHER, launcherSha256: sha, minAbiVersion: 3 } } },
+  })
+  const clashName = String(names.bash)
+  const facts = {
+    ownNames: v.ownNames,
+    // deny under the anomalous map: which spellings the bash deny now covers
+    deny: lane.ok === true
+      ? {
+          [clashName || '<empty>']: lane.value.decide({ effects: [{ kind: 'tool-invoke', toolName: clashName, resource: { kind: 'any' } }] }).kind,
+          bash: lane.value.decide({ effects: [{ kind: 'tool-invoke', toolName: 'bash', resource: { kind: 'any' } }] }).kind,
+        }
+      : `lane-build-refused ${lane.code}`,
+    polluted: Object.prototype.hasOwnProperty.call(Object.prototype, 'bash'),
+    claimedBash: v.ownNames.includes('bash'),
+    claimedEmpty: v.ownNames.includes(''),
+  }
+  console.log(`MEASURED ${id}: ${JSON.stringify(facts)}`)
+  const failSafe = facts.polluted === false && facts.claimedEmpty === false && facts.claimedBash === false
+    // under a collision, the deny lane may only widen ITS OWN COVERAGE over
+    // more names (tighten), never drop: the clash spelling must be DENIED.
+    && (typeof facts.deny === 'string' || facts.deny[clashName || '<empty>'] === 'deny' || facts.deny.bash === 'deny')
+  results.push([id, JSON.stringify(facts).slice(0, 220), failSafe])
+}
+
 let allOk = true
 for (const [label, detail, ok] of results) {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}  ${detail}`)

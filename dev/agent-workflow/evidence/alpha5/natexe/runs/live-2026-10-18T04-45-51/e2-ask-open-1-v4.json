@@ -1,0 +1,16 @@
+{
+  "ledger": {
+    "requests": [
+      {
+        "requestId": "ctrl-1hi35lb0bvwijs1awm9a5094",
+        "kind": "leader-approval",
+        "toolName": "bash"
+      }
+    ],
+    "decisions": [],
+    "consumptions": [],
+    "error": null
+  },
+  "preSentinel": false,
+  "preEscape": false
+}
