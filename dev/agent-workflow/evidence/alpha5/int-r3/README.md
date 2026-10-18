@@ -57,5 +57,24 @@ merge 干净、零冲突。**本笔是声明式预演：若 #330 最终头变化
   `a5intr3-live-kit.mjs`，把 `plane.names` 置为 `{grep:'team_grep',glob:'team_glob',bash:'bash'}`，
   并把 a5rbn kit 的 L6（"GLOB ROW IS TYPED-SHUT ON THE WIRE"）在新形下重 tie —— **该 L6 属
   runtime-base-narrow lane 的所有权，需其 owner 或父单授权后改**。
-- `a5p5-dormant-audit` 位于 `packages/tools/a5p5-tools/test/`，本轮批量脚本按错误路径找它 ⇒ 未跑，
-  下轮补（文件存在，非缺失）。
+## 续跑（2026-10-19，同 worktree 叠加）
+
+- **a5p5-dormant-audit 已按正确路径补跑：`packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts` = 8/8 绿**。
+  预期的"glob dormant/shut 断言被翻转改写"**没有发生**，原因实测在文件里：该套件里的 glob 字样只涉及
+  a5p5 tools `register.ts` 的 closed barrel / 零全局挂载审计与 a5glb parity spec 的**路径引用**
+  （:103-105、:121、:185），**不引用 plane 挂载行**，故对 ① 的翻转天然免疫；无红即无重 tie——
+  不为凑"红→改→绿"三步去动别的腿（其余断言一字未动）。
+- **宿主 checkout 已入本 worktree**：`tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84`
+  （0.2.0-rc.2 pin）。**方法与 §2 的差别如实写明**：不是重新 `clone --local` + install/build，而是整目录
+  复制本仓另一 worktree 里**已备好且 pristine 的同 pin 副本**（`a5natexe`）——省去重装的磁盘/时间，
+  代价是依赖"源副本 pristine"这一条，已用 `git -C ... status --porcelain` 与 HEAD 双验（数字见提交说明）。
+  `tests/` 本身 gitignored ⇒ 不进本分支账本。
+- **live kit 仍未跑（本轮未完成项，不粉饰）**：派生件需从
+  `dev/agent-workflow/evidence/alpha5/live/{run-live-assembly.mjs, a5live-assembly-row.mjs, a5live-fixtures.mjs}`
+  派生 `evidence/alpha5/int-r3/a5intr3-live-kit.mjs`，在 row 里置
+  `plane.names = { grep:'team_grep', glob:'team_glob', bash:'bash' }`，四工具正反控（glob 正=世界内
+  pattern 命中；反=跨 root/越界零结果或具名拒）+ non-team Δ=[] 反控，端口取 318x 族（默认 3186，
+  `:3080` 只读探针、绝不触），跑完按 §7 自清 homes。本轮作者上下文预算耗尽，**未产出可交付的派生件，
+  因此不得声称全链已过**。
+- **a5rbn kit L6（"GLOB ROW IS TYPED-SHUT ON THE WIRE"）：不动不跑，待 owner 轮重 tie**——它在
+  runtime-base-narrow lane 的 kit 里，翻转后语义必红，属该 lane 所有权；由父单另行提请授权。
