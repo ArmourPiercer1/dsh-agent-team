@@ -1,0 +1,21 @@
+[2026-10-18T03:58:38.544Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-18T03:58:38.577Z] mock model on 3493
+[2026-10-18T03:58:41.406Z] PASS A1.0: real host booted on the production row (profile-patch seam; v3 anchor team alive) — origin=http://127.0.0.1:3182
+[2026-10-18T03:58:41.427Z] disc prompt status=200 body={"type":"server-response","rpcId":"a5fl-4dpcnsq2x5","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-18T03:58:41.829Z] PASS A1.1: boot root surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-18T03:58:41.845Z] PASS A2.0: catalog.list carries the v4 saved source — row={"blueprintId":"team.a5fl-v4","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}
+[2026-10-18T03:58:41.845Z] PASS A2.1: the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported) — state={"revision":1,"schemaVersion":4,"migrationState":"current"}
+[2026-10-18T03:58:41.845Z] PASS A2.3: v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside — state={"revision":1,"schemaVersion":3,"migrationState":"current"}
+[2026-10-18T03:58:42.853Z] PASS A4.1: the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team) — ledger={"requests":[{"requestId":"ctrl-1p8viua1psuc6t0yw0kgk0q4","kind":"leader-approval","toolName":"bash"}],"decisions":[],"consumptions":[],"error":null}
+[2026-10-18T03:58:42.854Z] PASS C5: refuse-before-side-effect, live: with the leader-approval request OPEN, the ask-gated native bash produced ZERO side effect in the world (no marker file anywhere under HOME; the tool body had not been reached) — preAllowSideEffect=false requestId=ctrl-1p8viua1psuc6t0yw0kgk0q4
+[2026-10-18T03:58:42.869Z] PASS A4.2: team.resolveControl (v4 wire) ACCEPTS the allow on the v4 team (durable decision) — status=200 body={"type":"server-response","rpcId":"a5flres-f3h2n56nfn","result":{"ok":true,"value":{"data":{"decision":{"requestId":"ctrl-1p8viua1psuc6t0yw0kgk0q4","decision":"allow","decider":{"kind":"human","humanId":"session-a5fl-v4team-2026-10-18T03-58-38"},"scope":{"rootSessionId":"session-a5fl-v4team-2026-10-
+[2026-10-18T03:58:43.879Z] PASS A3.0: team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser) — status=200 body={"type":"server-response","rpcId":"a5flc-4yrxfirsyn","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5fl-v4team-2026-10-18T03-58-38","blueprint":{"blueprintId":"team.a5fl-v4","revision":"1","contentHash":"sha256:45747ca98
+[2026-10-18T03:58:43.886Z] PASS A2.2: catalog.get returns the v4 identity (schemaVersion 4 + contentHash, blueprintId match) — status=200 hash=sha256:45747ca98cb8156c
+[2026-10-18T03:58:43.886Z] PASS A4.3: the human allow is DURABLE (control-decision-recorded on the team ledger) — decisions=[{"requestId":"ctrl-1p8viua1psuc6t0yw0kgk0q4","decision":"allow"}]
+[2026-10-18T03:58:43.886Z] PASS A4.0: the v4 team leader ran create_member + team_delegate and the executed work-admitted receipt landed in the leader context — final=A5FL_LEAD_DONE_DELEGATED
+[2026-10-18T03:58:43.887Z] PASS A4.4: RED-FIRST fail-closed pin: the allow was CONSUMED and the member bash dispatch reached the Tool Binding verification gate (unfed plane = refusal, the exact refusal text) — consumed=true guardFace=true memberText="A5FL_MEM_DONE :: [{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5fl-hxzhja5e\",\"content\":[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to th"
+[2026-10-18T03:58:58.890Z] PASS A5.0: the unverified binding executed NOTHING: no marker file on disk (closed world, no fallback to the native body) — markerExists=false
+[2026-10-18T03:58:58.908Z] teardown: stopping host + mock
+[2026-10-18T03:58:58.915Z] world removed (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/tests/homes/a5g8-v4feed-preassembly-2026-10-18T03-58-38)
+[2026-10-18T03:58:58.915Z] VERDICT PASS — 15/15
+A5G8-V4-FEED preassembly VERDICT GREEN (15/15) fails=[]

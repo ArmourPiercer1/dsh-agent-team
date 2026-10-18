@@ -1,0 +1,12 @@
+ok defaults accepted ok
+ok takeover bash accepted ok
+ok A1 clash refused PLANE_NAMES_INVALID — plane rows 'grep' and 'bash' would both mount under 'team_grep' — one name, one placement
+ok A2 impersonate read refused PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED — plane row 'bash' cannot mount under reserved native name 'read' — this install surface assembles no 
+ok A3 empty refused PLANE_NAMES_INVALID — plane mount name for 'bash' must match ^[a-z][a-z0-9_]{0,63}$ — got ""
+ok A4 proto refused PLANE_NAMES_INVALID — plane mount name for 'bash' must match ^[a-z][a-z0-9_]{0,63}$ — got "__proto__"
+ok foreign key refused PLANE_NAMES_INVALID — names carries 'foo' — the plane map is closed to its own classes (grep/glob/bash)
+ok grep claims bash refused PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED — plane row 'grep' cannot mount under reserved native name 'bash' — this install surface assembles no 
+ok bash claims write refused PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED — plane row 'bash' cannot mount under reserved native name 'write' — this install surface assembles no
+ok custom alias accepted ok
+ok readName clash refused PLANE_NAMES_INVALID — plane rows 'grep' and 'read' would both mount under 'team_grep' — one name, one placement
+TRUTH TABLE GREEN: 11 rows, 3 accepted / 8 refused (refused codes: PLANE_NAMES_INVALID + PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED — the 06:43Z named-subtype split)

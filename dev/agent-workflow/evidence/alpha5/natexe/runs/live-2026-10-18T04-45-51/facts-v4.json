@@ -1,0 +1,39 @@
+{
+  "era": "v4",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/tests/homes/a5natexe-v4-2026-10-18T04-45-51",
+  "ok": true,
+  "denyList": [],
+  "memResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/tests/homes/a5natexe-v4-2026-10-18T04-45-51/governed\\n> A5NX-BASH-TOK\\n> SENTINEL-WROTE\\n> A5NX-SENTINEL-WROTE\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+  ],
+  "denyResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: exec fingerprint sha256:131abf98f675b8037760a523c95355d301e318058fa8d4e49d3d4b3dd61167c4 answered deny from the layer\"}]"
+  ],
+  "askWitnesses": [
+    {
+      "requestId": "ctrl-1hi35lb0bvwijs1awm9a5094",
+      "toolName": "bash",
+      "preSentinel": false,
+      "preEscape": false,
+      "at": "2026-10-18T04:46:06.773Z"
+    },
+    {
+      "requestId": "ctrl-1d7nsl10shp78m0ho0iar0hc",
+      "toolName": "bash",
+      "preSentinel": true,
+      "preEscape": false,
+      "at": "2026-10-18T04:46:07.497Z"
+    }
+  ],
+  "escapeCheck": {
+    "escapeAnywhere": false,
+    "r1Head": "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"trun"
+  },
+  "v4Identity": {
+    "schemaVersion": 4,
+    "contentHash": "sha256:d45e7e5b36cc31d2ec4c080cfb1f147ceb632a0f6ff1c003ecebf150eac2c0cf"
+  },
+  "leaderDone": true,
+  "memberFinalSeen": true
+}

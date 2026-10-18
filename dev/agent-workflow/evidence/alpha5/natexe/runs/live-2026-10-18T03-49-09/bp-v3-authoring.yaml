@@ -1,0 +1,114 @@
+---
+schemaVersion: 3
+blueprintId: team.a5nx-main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5nx v3 team. A5NX_20261018T034909_L0 is your directive marker. Follow it exactly."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_follow_up
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+members:
+  - templateId: wa
+    displayName: "a5nx worker A (bash ask)"
+    persona: "You are worker A of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T034909_TASK_A"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: wd
+    displayName: "a5nx worker D (bash denied)"
+    persona: "You are worker D of the a5nx v3 team. Follow delegated work exactly, tool by tool, in order. A5NX_20261018T034909_TASK_D"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask: []
+        deny:
+          - tool: bash
+            resource:
+              kind: any
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+  - templateId: wd
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+teamEnvelope:
+  allow:
+    - create-member
+    - assign-task
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+requirements:
+  - domain: persona
+    name: standard
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

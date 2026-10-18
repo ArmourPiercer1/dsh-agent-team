@@ -1,0 +1,35 @@
+{
+  "era": "v3",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe-pr/tests/homes/a5natexe-v3-2026-10-18T05-54-43",
+  "ok": true,
+  "denyList": [],
+  "memResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe-pr/tests/homes/a5natexe-v3-2026-10-18T05-54-43/governed\\n> A5NX-BASH-TOK\\n> SENTINEL-WROTE\\n> A5NX-SENTINEL-WROTE\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+  ],
+  "denyResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: exec fingerprint sha256:a7c9916e6cc23053c5a1f0f06e13901d0ce47c78a7e32d15913e224ef0b032c0 answered deny from the layer\"}]"
+  ],
+  "askWitnesses": [
+    {
+      "requestId": "ctrl-0kx8i2f14643pk13gam3x1hp",
+      "toolName": "bash",
+      "preSentinel": false,
+      "preEscape": false,
+      "at": "2026-10-18T05:54:48.411Z"
+    },
+    {
+      "requestId": "ctrl-1b8t2180nw5yiv1recvj204g",
+      "toolName": "bash",
+      "preSentinel": true,
+      "preEscape": false,
+      "at": "2026-10-18T05:54:49.130Z"
+    }
+  ],
+  "escapeCheck": {
+    "escapeAnywhere": false,
+    "r1Head": "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"trun"
+  },
+  "leaderDone": true,
+  "memberFinalSeen": true
+}

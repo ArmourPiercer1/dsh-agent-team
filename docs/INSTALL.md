@@ -413,6 +413,64 @@ config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
 > profile 层的 resolved 行配置 —— 该信息不在公开 seam 暴露，实现需侵入
 > loader，按指南「不强求」从略；本节文档 + C1/C2 回归为最低修复面。
 
+## 3.5 治理工具面（`teamToolPlane` 行 config，可选）——「审批后执行」
+
+`config.teamToolPlane`（§3.2 同一行 config 面）为团队 agent 挂载**治理工具面**：
+grep/glob/shell（以及受治 `read`）行由本装配**放置**（placement），调用经
+permission lane 复核与 durable 审批账本，**批准被消费之后** placed body 才执行。
+本节只写已 live 验证的行为（证据：`dev/agent-workflow/evidence/alpha5/` 的
+natexe / glue7 / glue8 三条线，live kit 双时代全绿）。
+
+```yaml
+config:
+  # … §3.2 必填字段 …
+  teamToolPlane:
+    realmId: "my-team-realm"                    # 装配 realm（feed 配对键；每世界唯一）
+    names: { bash: "bash" }                     # 可选；见下方挂载名规则
+    fsInstance:                                 # 受治 fs 后端（read/grep/glob 的行根）
+      rootDir: "/absolute/path/to/team-root"
+    confinedProvider:                           # shell 行的受治执行器（信任对三件套）
+      trustRoot: "sha256:<launcherSha256前16位>#<launcher绝对路径>"
+      assembly:
+        launcherPath: "/absolute/path/to/landlock-prelauncher.py"
+        launcherSha256: "<launcher 文件 sha256（64 位小写 hex）>"
+        minAbiVersion: 3
+```
+
+- **行 config 是唯一的配置面**。blueprint 语法是封闭字段集（未知字段直接
+  `MALFORMED_DTO`），**没有任何 blueprint 字段可以挂载或影响工具面**——放置
+  身份是装配期事实，作者字段不参与造身份（placement attribution 是 feed 的
+  唯一权威）。信任模型：能写本行 config 者 = 安装者（与 `glueUrl` 同层）。
+- **缺省不挂平面**：行 config 无 `teamToolPlane` = 零挂载（typed-shut 旧世界
+  逐字存续）。此形态下原生 `bash` 在治理世界保持 dispatch 期
+  `BINDING_UNVERIFIED` 拒绝（fail-closed，GLUE-8 A4.4 已逐字钉）。
+- **挂载名（`names` / `readName`）值域封闭**，装配期校验（拒启动，
+  fail-closed）：形状 `^[a-z][a-z0-9_]{0,63}$`；`names` 键集 = plane 自身类
+  （grep/glob/bash）；四个挂载名两两互异（违规 = `PLANE_NAMES_INVALID`）；
+  **原生保留名只能按"装配面同名同义"接管**（违规 =
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`，独审 06:43Z 裁决：粗权限类别 ≠
+  工具实现等价）——受支持的对仅有 **shell 行 @ `"bash"`**（live 双时代实测
+  的 confined-shell 接管）与 **read 行 @ `"read"`**（shipped `readName`
+  默认）；**其余一切宿主原生拼写**在任何行上一律拒。保留名 = **宿主发布面
+  穷尽表**：53 个精确注册名 + `mcp__` 前缀族，钉宿主
+  `0.2.0-rc.2@639ed01539`——装配面输入仅 `{backends, fs, instanceId,
+  plane}`，宿主工具面在挂载名固化处不可得，且治理世界 web profile 的原生
+  派发面实测为空（派生即空表 = 不设防），故取静态超集 + **漂移钉测**（宿主
+  基线一动，钉测即 RED，强制按新宿主发布面重导出后才可移 pin）。
+  **混合缺陷按 形状→保留名声明→互异 的检查序先命中者拒**（保留名与互异并存
+  时报 UNSUPPORTED 而非互异 INVALID；"其余违规保持 INVALID"仅对纯单类缺陷
+  成立）。全矩阵（全宿主名 × 4 行，可执行重放）见
+  `dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native.mjs`。
+  非保留的自定义别名任意可挂（不冒充原生身份）。缺省 = `team_grep` /
+  `team_glob` / `team_bash` 别名形态。
+- **审批后执行**（takeover 形态 + 模板 `permissions.ask` 的 `{ tool: bash,
+  resource: { kind: any } }`）：调用先开 durable ask；批准被**消费**后 placed
+  confined body 才执行（governed root 内落盘可见）；OPEN 期零副作用；批准不
+  放大范围（root 外写 = kernel 拒绝）；deny 臂在任何执行前沿拒（持久权限层 /
+  template-deny-lane 按各层 precedence）。Leader 侧闭环需 envelope 携带
+  `request-control` / `resolve-control` 操作与审批工具面（见 blueprint
+  authoring 指南的审批环约定）。
+
 ## 4. 真实模型
 
 - `staticModel` 必须指向目标机器上**真实可用**的 provider/model，且该 DSH 实例已配置

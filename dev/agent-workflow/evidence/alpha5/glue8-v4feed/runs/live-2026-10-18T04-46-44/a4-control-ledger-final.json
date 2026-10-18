@@ -1,0 +1,21 @@
+{
+  "requests": [
+    {
+      "requestId": "ctrl-1iv5rc61x9nnat1fdxiwg1pc",
+      "kind": "leader-approval",
+      "toolName": "bash"
+    }
+  ],
+  "decisions": [
+    {
+      "requestId": "ctrl-1iv5rc61x9nnat1fdxiwg1pc",
+      "decision": "allow"
+    }
+  ],
+  "consumptions": [
+    {
+      "requestId": "ctrl-1iv5rc61x9nnat1fdxiwg1pc"
+    }
+  ],
+  "error": null
+}

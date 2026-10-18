@@ -1,0 +1,28 @@
+[
+  {
+    "blueprintId": "team.a5fl-anchor",
+    "revisions": [
+      1
+    ],
+    "revisionStates": [
+      {
+        "revision": 1,
+        "schemaVersion": 3,
+        "migrationState": "current"
+      }
+    ]
+  },
+  {
+    "blueprintId": "team.a5fl-v4",
+    "revisions": [
+      1
+    ],
+    "revisionStates": [
+      {
+        "revision": 1,
+        "schemaVersion": 4,
+        "migrationState": "current"
+      }
+    ]
+  }
+]
