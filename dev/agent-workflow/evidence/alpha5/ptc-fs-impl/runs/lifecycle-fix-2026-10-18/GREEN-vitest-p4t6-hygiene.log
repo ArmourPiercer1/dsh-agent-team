@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 17ms
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (5 tests) 329ms
+     ✓ zero production consumers: no importer outside the lanes and the a5p7 specs  313ms
+
+ Test Files  2 passed (2)
+      Tests  15 passed (15)
+   Start at  13:20:49
+   Duration  1.08s (transform 230ms, setup 0ms, import 1.06s, tests 346ms, environment 0ms)
+

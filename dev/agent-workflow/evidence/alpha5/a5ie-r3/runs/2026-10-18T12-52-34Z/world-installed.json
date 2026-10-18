@@ -1,0 +1,321 @@
+{
+  "mode": "installed",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z",
+  "ok": true,
+  "face": "REAL INSTALL (dsh plugin --profile web add github:…#<sha>)",
+  "globSeeds": {
+    "gpos": 2,
+    "gbound": 140,
+    "perLegFixtures": "link.txt, goutside/ext, denied/ (mode 000)"
+  },
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "nodeModulesTop": [
+      "dsh-agent-team"
+    ],
+    "dependencies": [
+      "dsh-agent-team"
+    ],
+    "bundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app",
+      "dsh-agent-team"
+    ]
+  },
+  "installedFace": {
+    "expectedCount": 1772,
+    "actualCount": 1772,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "9936ffad182550412a9af481f410ed3d4adb704677b01109a26d2f96b73c0db0"
+  },
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/deployment/landlock-prelauncher.py",
+    "sha": "0049965daacae5bd04197407c584cf7312bb22b10b35a09f01a89bb108cafe77",
+    "worktreeSha": "0049965daacae5bd04197407c584cf7312bb22b10b35a09f01a89bb108cafe77",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "bytes": 23691
+  },
+  "launcherAbiPreflight": {
+    "rc": 0,
+    "error": null,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED-f51ccfc0>",
+  "discPrompt": {
+    "attempts": 2,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true,
+    "getStatus": 200
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5ie-installed-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"blueprint\":{\"blueprintId\":\"a5ie-r3-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:c6bfec5b46a2bcd4f8b2eb67b42b850c90bdcea387fd8a08b20ce3d2b5b8632f\"},\"createdAt\":\"2026-10-18T12:53:18.519Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-18T12:53:18.537Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-"
+  },
+  "leaderToolCalls": [
+    "team_delegate",
+    "team_collect",
+    "team_delegate",
+    "team_collect"
+  ],
+  "memberResultsBackToLeader": true,
+  "memberARequestCount": 14,
+  "memberDRequestCount": 2,
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_collect",
+    "team_delegate",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberAToolResults": [
+    "[{\"type\":\"text\",\"text\":\"line one\\nA5IE-R3-READ-TOKEN-77\\nline three\\nA5IE-R3-GREP-TOK lives here\\n\"}]",
+    "[{\"type\":\"text\",\"text\":\"refused-schema target-outside-governed-root — target lexically escapes the governed root (workspace: ../outside/secret.txt)\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/workspace/governed/notes.txt:4: A5IE-R3-GREP-TOK lives here\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · content · 0 matches\\n> (no matches)\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":0,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · content · 0 matches\\n> (no matches)\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":0,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> A5IE-R3-BASH-TOK\\n> A5IE-R3-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 2 matches\\n> gpos/beta.txt\\n> gpos/alpha.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":2,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 140 matches\\n> gbound/g005.txt\\n> gbound/g000.txt\\n> gbound/g002.txt\\n> gbound/g006.txt\\n> gbound/g001.txt\\n> gbound/g003.txt\\n> gbound/g004.txt\\n> gbound/g016.txt\\n> gbound/g028.txt\\n> gbound/g027.txt\\n> gbound/g034.txt\\n> gbound/g010.txt\\n> gbound/g040.txt\\n> gbound/g022.txt\\n> gbound/g033.txt\\n> gbound/g037.txt\\n> gbound/g021.txt\\n> gbound/g038.txt\\n> gbound/g035.txt\\n> gbound/g026.txt\\n> gbound/g013.txt\\n> gbound/g045.txt\\n> gbound/g023.txt\\n> gbound/g032.txt\\n> gbound/g008.txt\\n> gbound/g017.txt\\n> gbound/g031.txt\\n> gbound/g044.txt\\n> gbound/g007.txt\\n> gbound/g041.txt\\n> gbound/g014.txt\\n> gbound/g015.txt\\n> gbound/g030.txt\\n> gbound/g009.txt\\n> gbound/g025.txt\\n> gbound/g042.txt\\n> gbound/g029.txt\\n> gbound/g012.txt\\n> gbound/g020.txt\\n> gbound/g036.txt\\n> gbound/g039.txt\\n> gbound/g019.txt\\n> gbound/g018.txt\\n> gbound/g011.txt\\n> gbound/g024.txt\\n> gbound/g043.txt\\n> gbound/g051.txt\\n> gbound/g077.txt\\n> gbound/g063.txt\\n> gbound/g079.txt\\n> gbound/g083.txt\\n> gbound/g054.txt\\n> gbound/g069.txt\\n> gbound/g066.txt\\n> gbound/g076.txt\\n> gbound/g073.txt\\n> gbound/g061.txt\\n> gbound/g057.txt\\n> gbound/g046.txt\\n> gbound/g080.txt\\n> gbound/g078.txt\\n> gbound/g062.txt\\n> gbound/g071.txt\\n> gbound/g074.txt\\n> gbound/g082.txt\\n> gbound/g055.txt\\n> gbound/g086.txt\\n> gbound/g064.txt\\n> gbound/g068.txt\\n> gbound/g060.txt\\n> gbound/g048.txt\\n> gbound/g058.txt\\n> gbound/g084.txt\\n> gbound/g049.txt\\n> gbound/g047.txt\\n> gbound/g067.txt\\n> gbound/g075.txt\\n> gbound/g052.txt\\n> gbound/g065.txt\\n> gbound/g056.txt\\n> gbound/g059.txt\\n> gbound/g053.txt\\n> gbound/g072.txt\\n> gbound/g081.txt\\n> gbound/g085.txt\\n> gbound/g070.txt\\n> gbound/g050.txt\\n> gbound/g093.txt\\n> gbound/g102.txt\\n> gbound/g115.txt\\n> gbound/g101.txt\\n> gbound/g107.txt\\n> gbound/g088.txt\\n> gbound/g103.txt\\n> gbound/g118.txt\\n> gbound/g089.txt\\n> gbound/g117.txt\\n> gbound/g114.txt\\n> gbound/g104.txt\\n> gbound/g099.txt\\n> … truncated …\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":140,\\\"truncated\\\":true}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 1 matches\\n> gsym/real.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 1 matches\\n> goutside/inside.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=symlink-alias detail=a path component of the target is an alias\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=walker-error detail=the walker process reported an error on its diagnostic stream\"}]"
+  ],
+  "memberAToolCallOrder": [
+    "read",
+    "read",
+    "team_grep",
+    "team_grep",
+    "team_grep",
+    "team_bash",
+    "team_bash",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob"
+  ],
+  "memberAFinal": {
+    "kind": "text",
+    "content": "A5IE_R3_MEMBER_RESULT r0=[{\"type\":\"text\",\"text\":\"line one\\nA5IE-R3-READ-TOKEN-77\\nline three\\nA5IE-R3-GREP-TOK lives here\\n\"}] | r1=[{\"type\":\"text\",\"text\":\"refused-schema target-outside-governed-root — target lexically escapes the governed root (workspace: ../outside/secret.txt)\"}] | r2=[{\"type\":\"text\",\"text\":\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/workspace/governed/notes.txt:4: | r3=[{\"type\":\"text\",\"text\":\"search · content · 0 matches\\n> (no matches)\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":0,\\\"truncated\\\":false}\"}] | r4=[{\"type\":\"text\",\"text\":\"search · content · 0 matches\\n> (no matches)\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"content\\\",\\\"totalMatches\\\":0,\\\"truncated\\\":false}\"}] | r5=[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> A5IE-R3-BASH-TOK\\n> A5IE-R3-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}] | r6=[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":fal | r7=[{\"type\":\"text\",\"text\":\"search · files_with_matches · 2 matches\\n> gpos/beta.txt\\n> gpos/alpha.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":2,\\\"truncated\\ | r8=[{\"type\":\"text\",\"text\":\"search · files_with_matches · 140 matches\\n> gbound/g005.txt\\n> gbound/g000.txt\\n> gbound/g002.txt\\n> gbound/g006.txt\\n> gbound/g001.txt\\n> gbound/g003.txt\\n> gbound/g004.txt\\n | r9=[{\"type\":\"text\",\"text\":\"search · files_with_matches · 1 matches\\n> gsym/real.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}] | r10=[{\"type\":\"text\",\"text\":\"search · files_with_matches · 1 matches\\n> goutside/inside.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}] | r11=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=symlink-alias detail=a path component of the target is an alias\"}] | r12=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=walker-error detail=the walker process reported an error on its diagnostic stream\"}]"
+  },
+  "memberDToolResults": [
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  ],
+  "memberDFinal": {
+    "kind": "text",
+    "content": "A5IE_R3_DENY_RESULT [{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  },
+  "sentinelExists": false,
+  "bashWroteExists": true,
+  "bashWroteBytes": "A5IE-R3-WROTE-9\n",
+  "outsideMarkerOnWire": 0,
+  "standard": {
+    "sessionId": "session-2aacf1a7-9d48-4445-9f35-0c0a910fa74b",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]"
+  ],
+  "leader": {
+    "session": "session-a5ie-r3-team-2026-10-18T12-52-34Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_bash",
+      "team_collect",
+      "team_delegate",
+      "team_glob",
+      "team_grep",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "read": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      }
+    }
+  },
+  "sessions": [
+    {
+      "s": "a5ie-r3-root",
+      "run": false
+    },
+    {
+      "s": "5-0c0a910fa74b",
+      "run": false
+    },
+    {
+      "s": "b9ef4a95c5dbbf",
+      "run": false
+    },
+    {
+      "s": "f6916c9552fc60",
+      "run": false
+    },
+    {
+      "s": "0-18T12-52-34Z",
+      "run": false
+    }
+  ],
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "logObservations": [
+    "[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm",
+    "[dsh-agent-team] a5g7-read: governed-read RAN bytes=70 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/workspace/governed/notes.txt",
+    "[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5ie-r3-realm legs=6",
+    "[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-1 records=1 total=1 truncated=false",
+    "[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-2 records=0 total=0 truncated=false",
+    "[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-3 records=0 total=0 truncated=false",
+    "[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5ie-r3-realm rows=6",
+    "[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-bash-4 pid=268 exit=0 timedOut=false",
+    "[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-bash-5 pid=271 exit=0 timedOut=false",
+    "[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5ie-r3-realm legs=6",
+    "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-6 pid=282 files=2 capped=false",
+    "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-7 pid=284 files=140 capped=true",
+    "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-8 pid=286 files=1 capped=false",
+    "[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-9 pid=288 files=1 capped=false",
+    "[dsh-agent-team] a5glb-glob: anchored-glob refused code=symlink-alias family=a5glb-refused/anchor-identity call=team-inst-0e1il6a0c1h9-glob-10 realm=a5ie-r3-realm",
+    "[dsh-agent-team] a5glb-glob: anchored-glob walker-error realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-11 exit=0 stderrBytes=81",
+    "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm"
+  ],
+  "hostErrors": [],
+  "swept": true
+}

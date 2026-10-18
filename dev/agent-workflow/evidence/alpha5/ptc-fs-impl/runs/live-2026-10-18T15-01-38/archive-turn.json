@@ -1,0 +1,7 @@
+{
+  "archivedTurn": true,
+  "archiveOk": true,
+  "toolVerdict": "executed",
+  "e1Sid": "session-team-child-47cc3fd6f7f3e83f2d4631f67897b4b3",
+  "archiveResultRaw": "LAST=[{\"type\":\"text\",\"text\":\"{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5ptc-team-2026-10-18T15-01-38\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0j124a200jai\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"inst-0j124a200jai\",\"from\":\"SETTLED\",\"to\":\"ARCHIVED\",\"sequence\":29},\"requestToken\":\"a5ptc-arc-rt-2026-10-18T15-01-38\"}\"}]"
+}

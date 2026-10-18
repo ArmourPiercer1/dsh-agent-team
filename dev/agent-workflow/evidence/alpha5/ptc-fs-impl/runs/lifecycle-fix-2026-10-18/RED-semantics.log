@@ -1,0 +1,3 @@
+baseline drive            -> allowed-once (controls=1)
+post-drop drive (U-1/1b)  -> allowed-once (controls=2)  seenByRow=true
+re-mount (U-2)            -> THREW: ptc-escalation-row: member 's-u1' is already registered (one face per session)
