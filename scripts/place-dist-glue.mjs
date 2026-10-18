@@ -60,13 +60,17 @@ export const PLACEMENTS = [
   // GLUE-7 production backend assembly row (byte-copied: tsc never emits
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).
-  {
-    src: 'packages/runtime/src/plugin/live/glob-backend.mjs',
-    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs',
-  },
-  // A5-SRGP search row (byte-copied for the same reason as the glob row: the
-  // plane's search row delegates to it by a relative in-face specifier, so the
-  // shipped face must carry it).
+  // A5-SRGP search row (byte-copied: tsc never emits .mjs, and the plane's search
+  // row delegates to it by a relative in-face specifier, so the shipped face must
+  // carry it exactly like the plane row itself).
+  //
+  // SCOPE NOTE, because branch lines differ here: the anchored GLOB row
+  // (`glob-backend.mjs`) is deliberately NOT listed. On this baseline it ships as a
+  // DORMANT file — `plane-effect-backends.mjs` still builds the glob row inline and
+  // imports nothing from it — so putting a copy of it in the dist face would claim a
+  // face row nothing can reach. A placement means "the shipped face needs this
+  // byte-copy", not "this source file exists". When the glob mount lands and imports
+  // it, that row's owner adds the entry.
   {
     src: 'packages/runtime/src/plugin/live/search-backend.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs',

@@ -26,7 +26,7 @@
 | `packages/runtime/test/alpha5-search-backend.test.ts` | 34 legs: R1–R5 RED control, argv law, P-series parity, V-series anchor/refusal, M-series mount. |
 | `packages/runtime/src/plugin/live/plane-effect-backends.mjs` | search row + assembly ONLY: the factory delegates to the new row where a confined provider exists, keeps the grep(1) port where none does. Glob / shell / read rows untouched. |
 | `dev/agent-workflow/evidence/alpha5/srgp/**` | this README, `probes/**` (the measurements), `parity-table.json` (the suite's own parity witness). |
-| bookings | `p4t6-session-event-scan.test.ts` (`SCANNED_PATHS_A5SRGP`, 1184 → 1187), `a5p4-lane-hygiene.test.ts` + `a5w-integration-wiring.test.ts` (third named confined-provider consumer), `a5p5-dormant-audit.test.ts` (names-only exception), `scripts/place-dist-glue.mjs` (src→dist placement). |
+| bookings | `p4t6-session-event-scan.test.ts` (`SCANNED_PATHS_A5SRGP`, 1184 → 1187 on the lane base; re-measured to 1191 → 1194 on the master replay), `a5p4-lane-hygiene.test.ts` + `a5w-integration-wiring.test.ts` (third named confined-provider consumer), `a5p5-dormant-audit.test.ts` (names-only exception), `scripts/place-dist-glue.mjs` (src→dist placement). |
 
 ## The fixed argv — one measurement, one builder
 
@@ -158,13 +158,22 @@ face keys identical to the plane contract).
 `createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: … })`
 without `confined`, exactly as it did before — so in production today the search
 row is STILL the grep port while the rg row is mounted only where a caller passes
-the provider conf (which is how the glob row is mounted, ~`:407`). Closing it is
-one line (`confined: confinedCfg` at the search mount, the glob mount is the
-pattern), and the shipped-dist placement for this row
-(`scripts/place-dist-glue.mjs`) is booked so the placement gate stays true once
-that line lands.
+the provider conf. Closing it is one line — `confined: confinedCfg` at the search
+mount — and the shape to copy is the row right below it in the same file, the shell
+backend, which already takes `confined`. The lines move per tree, so they are named
+per tree: `:392` / `:394-401` on the pre-squash base, `:521` / `:529` on the master
+replay base (`15481988`). The shipped-dist placement for this row
+(`scripts/place-dist-glue.mjs`) is booked so the placement gate stays true once that
+line lands. An earlier draft of this paragraph pointed at "the glob mount" as the
+pattern, which was true on the lane branch and is not true on master: the glob row
+is not production-wired there (see the replay section).
 
 ## Validation
+
+Which tree: the captures and gate numbers in THIS section were taken in the lane
+worktree (base = the integration tree `afd936ee`). The replay section at the end of
+this file records the set re-run on master `15481988`, where the booked scanner
+number moves.
 
 * `packages/runtime/test/alpha5-search-backend.test.ts` — 40/40 green (round-1 head: 34/34), live legs
   on the REAL confined provider (Landlock child, real rg 15), worlds
@@ -181,7 +190,8 @@ that line lands.
 * round-2 re-runs after the behaviour change: `alpha5-search-backend` +
   `alpha5-glue7-plane-backends` 56/56; `a5p4-lane-hygiene` + `a5w-integration-wiring`
   + both glob-row files 95/95; `p4t6-session-event-scan` 10/10 (no new package
-  files, so the 1187 booking holds); `a5p5-dormant-audit` 7/7 — earned the hard
+  files, so the 1187 booking holds ON THAT TREE — master re-anchors it, see the replay
+  section); `a5p5-dormant-audit` 7/7 — earned the hard
   way: a comment in shipped source naming the lane's tool package is an OFFENDER
   for that ledger, so the shipped prose cites `src/args.ts:148-149` without the
   package name.
@@ -281,3 +291,43 @@ New legs: `V6b`, `V11b`, `V11c` (the coverage law live, on a chmod-000 file),
 completion, before any record is trusted; both verification arms present),
 `V11f` (shared-law refusals arrive in this row's vocabulary) — **34 → 40 legs**,
 and `argv-law` / `argv-additions` now pin the ABSENCE of `--no-messages`.
+
+
+## Replay on master `15481988` (`alpha5-srgp-pr2`) — two laws carried, every number re-measured
+
+`#322` squashed into master, so a chain value from any earlier branch is a different
+tree's ledger. Redone from `15481988` with `cherry-pick -x` of `c0b81cc3` + `559e4424`
+plus this replay commit; the booked numbers were produced on the new tree, not
+inherited.
+
+| booking | earlier chain value | master replay | how it was obtained |
+| --- | --- | --- | --- |
+| p4t6 scanner total | lane 1184 -> 1187; pre-squash PR 1190 -> 1193 | **1191 -> 1194** | master's OWN `p4t6` file, run against this tree with the clause unbooked, read `expected 1194 to be 1191` — master's booked 1191 plus exactly this lane's three paths. Booking them by name ends the chain at 1194, the scanner total of this tree. |
+| provider-consumer ledgers | equality list of offender paths (lane) | `NAMED_PROVIDER_MOUNTS` entry | master carries the stricter structure already, so the search row is booked as a mount: pinned public-face edge, deep imports refused, factory call counted. No number to copy, nothing to re-anchor. |
+| `place-dist-glue` | glob + search copies (lane) | **search only** | see the placement law below. |
+
+**Placement law (carried unchanged).** Master ships `glob-backend.mjs` as a DORMANT
+file: `plane-effect-backends.mjs` still builds the glob row inline and imports nothing
+from it, and master's own placement list has no glob entry. So the byte-copy list here
+carries `search-backend.mjs` alone; a copy of a row no shipped file can reach would put
+an unreachable row into the install surface. The comment inside the list states this so
+the next reader does not "restore" it from a branch where the mount existed.
+
+**CANDIDATE-A accounting (carried unchanged, line numbers re-measured).**
+`team-tool-plane.mjs:494-499` on this tree states that the confined-rg glob candidate
+**FAILED the security re-review for a name-class leak** — the `verify` -> launcher
+string-`chdir` window plus the provider's `runtime_base '/'` READ_DIR grant, so outside
+NAMES can surface (bytes never; re-review measured 3/10700) — that it ships NOTHING,
+and that the glob integration waits for a `runtime_base` narrowing layer in its own
+round. This search row rides THE SAME provider and launcher, so it does not claim that
+exposure away; what it controls is its wire, and there the vocabulary is a closed table
+of codes plus arithmetic, never a walker path and never the walker's sentence (leg
+`V12`; the coverage law reads a stderr line's CLASS and discards the line). The
+narrowing layer stays the face's own round and this PR does not preempt it.
+
+Gates on the replay tree: `alpha5-search-backend` 40/40; neighbourhood six files
+131/131 (`alpha5-glue7-plane-backends`, `a5p4-lane-hygiene`, `a5w-integration-wiring`,
+both glob-row files); `p4t6-session-event-scan` 10/10; `a5p5-dormant-audit` 8/8;
+`pnpm -r run typecheck` clean across nine packages; `place-dist-glue` 7 placements;
+`check-artifacts-committed` ok (1746 compared, glue=7) and `check-artifacts-at-head`
+verdict=ok drift=0.
