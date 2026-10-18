@@ -176,7 +176,7 @@ export function createPtcEscalationRowAssembly(deps) {
 
   return {
     registerMember({ sessionId, instanceId, realmId, isLeader }) {
-      const memberKey = `${rootSessionId} ${String(sessionId)}`
+      const memberKey = `${rootSessionId}\u0000${String(sessionId)}`
       if (members.has(memberKey)) throw new Error(`ptc-escalation-row: member '${String(sessionId)}' is already registered (one face per session)`)
       const member = {
         memberKey,
@@ -243,7 +243,7 @@ export function createPtcEscalationRowAssembly(deps) {
         onObserve({ event: 'ask-unbound', root: rootSessionId, memberKey })
         return 'unavailable'
       }
-      const key = `${member.ref.instanceId} ${callId}`
+      const key = `${member.ref.instanceId}\u0000${callId}`
       const fact = byKey.get(key)
       if (fact !== undefined) {
         // one-shot edge: the grant exists for this (member, callId). The
