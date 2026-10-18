@@ -106,8 +106,24 @@ build:composition`）。
    `packages/runtime/src/plugin/live/agent-bindings.mjs` **字节级复制**到
    `packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs`
    （host 行 `glueUrl` 的行内目标，无回退，必须存在；T12/P9 boot kit 同款步骤
-   的产品化）。`upstream-resolver.mjs` **无需**复制：host.js 的 resolve 钩子
-   走布局候选列表（dist 或 source 均可解析）。
+   的产品化）。
+   **GLUE-6（`35bff836`）更正 —— 旧说法作废**：本节此前写「`upstream-resolver.mjs`
+   **无需**复制：host.js 的 resolve 钩子走布局候选列表（dist 或 source 均可解析）」。
+   该候选列表隐含假设「源码树始终在场」，而运行时包的**公开面**是
+   `packages/runtime/package.json` 的 `files: ["dist"]`：严格按该面展开安装时
+   两个运行时 `.mjs` 都不在里面，boot 直接红
+   `ERR_MODULE_NOT_FOUND … /packages/runtime/src/plugin/upstream-resolver.mjs`
+   （实测红证 = `dev/agent-workflow/evidence/alpha5/install-entry/runs/2026-10-17T17-06-56Z/`
+   的 `install-manifest-red-evidence.log` + `red-a-facts.json`，即 RED-A）。
+   **现势事实**：入口在运行时按相对 specifier 加载的两个文件本身即安装面依赖，
+   已随 `PLACEMENTS` 字节复制清单进镜像 ——
+   `packages/runtime/src/plugin/upstream-resolver.mjs` 与
+   `packages/runtime/root-binding/harness/seam.mjs`，且 host.ts 优先取**面内**候选
+   （面外 specifier 只作后续候选，注册失败时点名面内文件）。`PLACEMENTS` 是
+   「哪些 src 文件 tsc 永不发射但 dist 必须携带」的唯一清单来源，
+   `scripts/check-artifacts-committed.mjs` 按同一清单做 parity 校验（新增项自动被门覆盖）。
+   GLUE-6 修复后的严格面自足证据 = GREEN 15/15，
+   `dev/agent-workflow/evidence/alpha5/glue6/runs/green-2026-10-17T17-56-03Z`。
 2. `scripts/build-client-composition.mjs` — 把 `packages/client` 的 tsc ESM dist
    + CSS 源编译为单文件 client bundle（`window.__ModuleLoader__.load` wire 格式，
    identity class map + `<style>` 注入，基线 external 集合 fail-closed 校验），
@@ -424,7 +440,7 @@ config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
 | `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（快速安装，**仅 commit ≤ `e832d73`**） | 旧安装面依赖 `prepare` 构建链，pnpm 11 拒绝执行未白名单的 git 依赖 `prepare`：把 pnpm 打印的**完整 `name@spec#commit` 键**（照抄、非裸包名）写入 profile `pnpm-workspace.yaml` 的 `allowBuilds:`，重跑 `add`。**本 commit 起的 master 安装面无任何构建脚本，此错误不可能发生**；若出现，说明安装的是旧 commit |
 | `declares no dsh.bundle` 警告 / 无 Team UI | 装入的 commit 是 bundle-form 之前的旧版（root 无 `dsh.bundle` 声明）：`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<新commit>` 重装，或改 §3 手动路径 |
 | 快速安装 host 行加载失败（无 file:// 路径） | **仅旧 commit（≤ `e832d73`）**：`prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile）。**master 安装面 dist 为提交产物，此症状不应出现**——安装目录残缺时直接重装 |
-| 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
+| 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 两个**已闭**窗口，按装入 commit 分辨：**(a)** bundle-form 初期根 `files` 面不全（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被漏列）—— `89fccd72` 起它已在根安装清单内；**(b) RED-A 严格面窗口（收口于 `35bff836`）**：运行时包自身的 `packages/runtime/package.json` `files: ["dist"]` 面缺入口在运行时加载的两个 `.mjs`（`upstream-resolver.mjs` + `root-binding/harness/seam.mjs`），严格展开该面 boot 必红（红证 `dev/agent-workflow/evidence/alpha5/install-entry/runs/2026-10-17T17-06-56Z/install-manifest-red-evidence.log`）。**正确处置 = 装 ≥ `35bff836` 的 commit 重装**：自该 SHA 起两文件经 `scripts/place-dist-glue.mjs` 的 `PLACEMENTS` 字节复制进入 committed 安装面，面自足且 host 优先取面内候选（见 §3.1）。**旧「从源码树把 `upstream-resolver.mjs` 拷进依赖目录」的临时处置已作废**：它只遮半边（`seam.mjs` 的同类缺口原样留着），而在新面上更无意义 —— 面内已有字节相同副本，缺文件只可能是安装目录残缺，直接重装即可 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
 | host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection`（必填、fail-closed，见 §3 模板），或 MCP 字段组合非法 —— `mcpServers` 必须是 `{ name: 非空 string, port: number|null }` 数组且 name 不重名；`mcpServers` 缺省时 legacy `mcpServer` 必须存在（`null` 或 `{ name, port }`）；两者同时出现时 `mcpServer` 必须为 `null`（否则 ambiguous 拒）。`mcpServers: []`（或 `mcpServer: null`）= 无 MCP，合法（语义细节见 §3.3） |
 | host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突（典型：既有 home 上用 `create` → `TEAM_DOMAIN_EXISTS`；生产用 `create-or-open`）；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install`；报 `TEAM_PLUGIN_GLUE_UNAVAILABLE` 且含 legacy reader 候选失败 → 安装面产物不全（`pnpm build` 未跑或 dist 镜像被清理），重跑 `pnpm setup` |
