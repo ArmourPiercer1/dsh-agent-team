@@ -6704,3 +6704,23 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **git**=branch `alpha5-glue8-v4feed` @ 本条目 commit；base=
   `alpha5-v4-flip@a7a1cfd2`+merge `master@0e59140b`（`4aff3071`）；无 push
   （fetch 可用未推）。:3080 仅只读探针面未触。
+
+## 2026-10-18 集成轮 alpha5-int-mnt（root 02:21Z 令：glob 挂载 + v3/v4 正负控 + 门全套）
+
+基 = GLUE-8 终态 `8b1dbb5a`；merge `alpha5-glob-backend@ee9b30d5`（#322 终件）=
+`46e5649a`。**mount** `34e59098`：productionBackends.glob 在行配置齐备（governed
+fsInstance + confinedProvider）时接 #322 anchored backend，未配置世界逐字节
+typed-shut 不变；round-7 两集成条件锁死 = INT-a（allowPaths 同形 anchor.rootReal
+只读 + anchor-before-child）/ INT-b（装配面不传 internalLog = 内部面默认关，
+sink 无路径）/ INT-c（round5 名级枚举攻击模板在接通行复跑全拒零外名）/ INT-d
+（deny 负控 template-default-deny 先于 backend 零副作用；**实测披露**：file-class
+any/subtree deny 均不 address glob list effect）。行为变更腿 L3'（收窄层 CONTENT+
+NAMES 双 kernel-denied listing 零名）、G6'、kit L6'/C3'；place-dist-glue 第 7
+placement（glob-backend.mjs）。台账具名集入账 = `4df8e98c`（a5p4/a5w/a5p5 =
+mount 的第二消费面，具名集法本身在工作）。环境修复（gitignored，porcelain 恒 0）：
+root test-use 构建面补全（kit STRICT expansion 上跳解析所至）+ int 树 test-use
+rsync。门：全树双抓 RUN1≡RUN2 红 9 ≡ published 9（files 574/legs 7272，
+identity=true）/ drift 0（1746）/ p4t6 10/10 / glue7 kit 24/24 + v4 20/20 +
+preassembly 15/15 / a5glb 57/57。lint 本票 0 error（全仓既有债披露于台账 §3）。
+台账 = `dev/agent-workflow/evidence/alpha5/int-mnt/README.md`。push 未做（无授权，
+ff push 令因无凭据回报）。

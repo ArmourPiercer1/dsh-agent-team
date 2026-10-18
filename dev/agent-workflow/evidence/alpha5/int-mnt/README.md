@@ -36,11 +36,25 @@ governed `fsInstance` 与 `confinedProvider` 时装配 `createAnchoredGlobBacken
 | native ask 臂 | durable leader-approval 全链 | **不变**（v4 kit A4.1–A4.4 + C5 20/20 重跑绿） | v4 kit |
 | dist 面 | 7 placement（glob-backend.mjs 缺席=运行时 Cannot find module） | `place-dist-glue` 第 7 项 = glob-backend.mjs 入列 | drift 门 |
 
-## 3. 门
+## 3. 门（终型回执，`4df8e98c` 树）
 
-双抓恒等（本目录 `vitest-fulltree-int-*.log`）/ drift 0 / p4t6 10/10 续钉（a5glb
-四文件入账 + A5RBN 断链修复）/ kit 共存：glue7 24/24（L6 更新为接通面）+
-v4 assembled 20/20 + preassembly 15/15 / a5glb 两 suite + plane-backends 16/16。
+* **全树双抓**（本目录 `vitest-fulltree-int-1/2.log`）：RUN1≡RUN2，
+  files 574 / legs 7272，红 9 = **published 9 恒等**
+  （t2×1 + p6t3-mediation×5 + p6t3-restart×2 + p6t6×1），identity=true。
+  首轮双抓曾暴露 3 条**台账续钉红**（a5p4 lane-hygiene / a5w wiring /
+  a5p5 dormant-audit 具名集未记 mount = 设计变更必须入账的具名集法本身在
+  工作）；`4df8e98c` 逐条 booking 后终型恒等。
+* **drift 0**（`check:artifacts:head`，1745 面互为新构建）。
+* **p4t6 10/10** 续钉（含双抓内）。
+* **kit 共存**：glue7 STRICT kit **24/24**（L6 接通面：governed 名上线 +
+  外部判据 `/workspace/outside/`+OUTSIDE token）；v4 kit assembled **20/20**
+  （C3 = r2 段真命中 v4g8-read.txt）+ preassembly **15/15**（RED 面零回归 =
+  mount 不碰无 plane 世界，实证）。
+* **suite**：a5glb 两 suite 57/57、plane-backends 16/16（G6'+INT-a/b/c/d）、
+  a5p4/a5w/a5p5 台账 8/14/7 全绿。
+* **lint**：本票全部文件 0 error。**披露**：`pnpm run lint` 全仓存在既有债
+  （client tests / model-preference control-regex / t1 / legacy e2e 等，
+  base `8b1dbb5a` 同样红，本票零 commit 触及相关包）——非本票引入，未动。
 
 ## 4. 披露与环境
 
