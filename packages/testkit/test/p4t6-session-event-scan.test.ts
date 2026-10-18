@@ -2947,6 +2947,12 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (the launcher `.py`, evidence kits under dev/**) — the chain moves by
     // exactly the one new spec.
     expect(SCANNED_PATHS_A5RBN.length).toBe(1183 - 1182)
+    // The v4-flip tie, restored on THIS merged tree (the coordinator's union
+    // merge initially DROPPED this pin; this commit restores it — disclosure
+    // in the merge commit message). Anchor: GLUE-7 re-tied at 1182, the
+    // narrowing suite at 1183; the three named flip files ride after them,
+    // re-tying `1186 - 1183`. Scanner total of this tree measured 1186.
+    expect(SCANNED_PATHS_A5FLIP.length).toBe(1186 - 1183)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
