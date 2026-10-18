@@ -414,7 +414,7 @@ function createShutBackend(backendId) {
  * Create the per-agent governed tool plane. `input`:
  *  { permissionPolicy, realmId, templateId, role, instanceId,
  *    fs?: { canonicalizeResource?, subtreeContains? },
- *    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance? },
+ *    plane?: { realmId, names?, confinedProvider?, definitionOwnerAuthority?, fsInstance?, globEnabled? },
  *    backends?: { search?, glob?, shell? },            // wiring-kit override point
  *    onObserve?: (row: string) => void }
  * Returns { ok:true, value: plane } | { ok:false, code, message }.
@@ -442,6 +442,27 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
   if (namesCheck.ok !== true) return { ok: false, code: namesCheck.code, message: namesCheck.message }
+
+  // Gate 0c (root ruling 20:31Z, a5-globoff): `planeCfg.globEnabled` is a
+  // CLOSED CONSUMPTION KEY, validated here before anything is constructed.
+  //  - ABSENT = true: every existing world keeps the production glob row
+  //    byte-for-byte (the zero-flip law).
+  //  - false: the glob row lands on the EXISTING typed shut face (same code,
+  //    same refusal grammar — zero new error surface), and the gate holds
+  //    over the kit `backends` injection seam too (④: no fallback bypass).
+  //  - a non-boolean value is a config defect and fails closed on the
+  //    existing PLANE_CONFIG_INCOMPLETE refusal — never silently coerced to
+  //    true. Unknown plane keys keep their historical silent-ignore law;
+  //    this single key is the one the assembly now consumes.
+  const globEnabledRaw = input.plane?.globEnabled
+  if (globEnabledRaw !== undefined && typeof globEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.globEnabled must be a boolean when present — got ${JSON.stringify(globEnabledRaw) ?? String(globEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const globEnabled = globEnabledRaw !== false
 
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
@@ -555,7 +576,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // narrowing content, so pairing passing is not evidence that the base is narrowed.
   // The walk root is the child's cwd, so no swappable path string rides argv (what the
   // CANDIDATE-A note credits this row with).
-  const realGlob = fsInstance !== null && typeof fsInstance.rootDir === 'string' && confinedCfg !== null
+  // Gate 0c enforcement, part 2 (a5-globoff ②/④): `globEnabled:false` builds
+  // NO glob backend at all — the row is the existing typed shut face from the
+  // FIRST branch, never the rg row, so nothing can spawn. The shut instance
+  // carries its own honest backendId; the refusal grammar and the code are
+  // the existing ones (zero new error surface).
+  const realGlob = globEnabled === false ? null
+    : fsInstance !== null && typeof fsInstance.rootDir === 'string' && confinedCfg !== null
     ? createAnchoredGlobBackend({
       realmId,
       rootDir: fsInstance.rootDir,
@@ -575,9 +602,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
       observe: logBackend('a5g7-shell'),
     })
     : null
+  // Gate 0c enforcement, part 3 (a5-globoff ④): the disabled form's shut face
+  // — its own honest backendId, the EXISTING refusal bytes (code/class/detail
+  // verbatim). It WINS over the kit `backends` injection seam: the mount gate
+  // is config law, not wiring, so no injected glob/search backend can carry
+  // the glob class while the key says off.
+  const globDisabledShut = globEnabled === false ? createShutBackend('a5-glob-config-disabled') : null
   const productionBackends = Object.freeze({
     search: realSearch ?? shut,
-    glob: realGlob ?? shut,
+    glob: globDisabledShut ?? realGlob ?? shut,
     shell: realShell ?? shut,
   })
   const hostedSearch = input.backends?.search ?? productionBackends.search
@@ -585,7 +618,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // search backend): an injected fixture search keeps carrying glob exactly
   // as before. PRODUCTION search never does — the glob row has no existing
   // implementation and lands on the honest typed shut face.
-  const hostedGlob = input.backends?.glob ?? input.backends?.search ?? productionBackends.glob
+  const hostedGlob = globDisabledShut ?? input.backends?.glob ?? input.backends?.search ?? productionBackends.glob
   const hostedShell = input.backends?.shell ?? productionBackends.shell
   // The host REGISTRATION law (packages/core/tools: every registerable tool
   // must declare output { schema, render }) is an INSTALLER face: the a5p5
