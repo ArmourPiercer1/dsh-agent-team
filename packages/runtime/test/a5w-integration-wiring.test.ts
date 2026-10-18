@@ -159,9 +159,13 @@ describe('a5w compile surface', () => {
     // the second live-glue file wired to the provider factory — the mount
     // (round-7 condition (a)) builds the provider behind its own anchored
     // request. Evidence: dev/agent-workflow/evidence/alpha5/int-mnt/README.md.
+    // A5-SRGP booking, same round as the lane-hygiene ledger above: the
+    // confined-rg search row is the third named live-glue consumer. Evidence:
+    // dev/agent-workflow/evidence/alpha5/srgp/README.md.
     expect(offenders.sort()).toEqual([
       join(RUNTIME, 'src/plugin/live/glob-backend.mjs'),
       join(RUNTIME, 'src/plugin/live/plane-effect-backends.mjs'),
+      join(RUNTIME, 'src/plugin/live/search-backend.mjs'),
     ])
   })
 })

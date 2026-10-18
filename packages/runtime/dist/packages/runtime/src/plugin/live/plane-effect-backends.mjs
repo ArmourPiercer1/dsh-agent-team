@@ -18,14 +18,20 @@
  *    string on the provider's own face), the network dimension makes NO
  *    claim (the lane refuses a `deny` profile — PoC-4b honesty).
  *
- *  - `createAnchoredSearchBackend` (grep, read-only) rides the REAL grep
- *    search the W5 wiring round shipped and proved live — argv construction,
- *    outcome shaping and the spill-bytes law ported verbatim from
- *    `dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs`
- *    (`grepArgv` + `createRealSearchBackend`). The governed anchor is the
- *    P-C controlled-fs INSTANCE root declared on the plane row
- *    (`packages/runtime/controlled-fs/src/admission-binding.ts:211`), with
- *    the lane's own containment law `isBeneath`
+ *  - `createAnchoredSearchBackend` (search, read-only) has TWO bodies and
+ *    picks by what the mount holds. With a confined provider it delegates to
+ *    `./search-backend.mjs` — the PR5 fixed-ripgrep row (memo plan :33
+ *    "grep/glob R3 + … 原生等价层", :132 "真实固定 rg 版行为回归"): the host's
+ *    PUBLIC `@deepseek-ai/dsh-tool-fs-search` grep vocabulary run INSIDE the
+ *    same confined provider face the glob row rides, on the anchored walk root.
+ *    Without one it keeps the grep(1) port the W5 wiring round shipped and
+ *    proved live (`dev/agent-workflow/evidence/alpha5/wiring/w5/a5w5-fixtures.mjs`
+ *    `grepArgv` + `createRealSearchBackend`) — a mount with a controlled-fs
+ *    instance and no sandbox must not lose its search row, and that port is the
+ *    RED control the parity suite pins (R1–R5). Both bodies anchor the same way:
+ *    the P-C controlled-fs INSTANCE root declared on the plane row
+ *    (`packages/runtime/controlled-fs/src/admission-binding.ts:211`) under the
+ *    lane's own containment law `isBeneath`
  *    (`packages/runtime/controlled-fs/src/open-at-exec.ts:53`).
  *
  *  - `createGovernedReadExecutor` (fs class, the placed governed `read`)
@@ -56,6 +62,7 @@ import { setTimeout as sleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { isBeneath, verifyOpenedHandle } from '../../../controlled-fs/src/index.js'
+import { createAnchoredRgSearchBackend } from './search-backend.mjs'
 
 /** Bounded single-file read (no silent truncation: over-bound refuses). */
 export const MAX_READ_BYTES = 1024 * 1024
@@ -153,13 +160,45 @@ function writeAll(sink, text) {
 }
 
 /**
- * The grep backend over the REAL read-only search implementation, anchored at
- * the governed controlled-fs instance root. `multiline` is refused BY NAME
- * (the implementation greps with grep(1)) — honest refusal, never a silent
- * reinterpretation. `execCount` counts bodies that actually ran; every
- * pre-execute refusal (anchor, capability gate) never counts.
+ * The search row of the plane, anchored at the governed controlled-fs instance
+ * root. TWO implementations, selected by what the mount actually has:
+ *
+ *  - `confined` present → the row DELEGATES to `search-backend.mjs`, the
+ *    confined fixed-ripgrep row (PR5 "原生等价层", memo plan :33/:132): the
+ *    host's PUBLIC `buildGrepCommand`/`parseGrepArgs`/`parseGrepMatches` over
+ *    the same confined provider face the glob row rides, so the plane's answer
+ *    is what a default-law `rg` answers (ignore / hidden / VCS law, binary law,
+ *    `--json` framing) instead of grep(1) folklore. `multiline` and
+ *    `contextLines` are refused BY NAME there: rg does answer `-C n` with a
+ *    distinct `context` record (measured, probes N9) but the lane's
+ *    `SearchMatchLine` has no arm for that distinction, and forwarding them as
+ *    matches would relabel a neighbour line as a hit.
+ *  - `confined` absent (a mount with a controlled-fs instance but NO confined
+ *    provider — leg G8/G9 shape) → the grep(1) port below, UNCHANGED. It is
+ *    kept deliberately, not by accident: without a confined provider there is
+ *    no sandbox to run rg in, and a member with a search grant must not lose
+ *    the row. It is the RED control the parity suite pins leg by leg
+ *    (`alpha5-search-backend.test.ts` R1–R5: no ignore/hidden/VCS law, context
+ *    lines arriving as matches, newline-named files splitting in two), and the
+ *    retirement note says so out loud.
+ *
+ * `execCount` counts bodies that actually ran; every pre-execute refusal
+ * (anchor, capability gate, refusal-by-name) never counts.
  */
-export function createAnchoredSearchBackend({ realmId, rootDir, observe = () => {} }) {
+export function createAnchoredSearchBackend({ realmId, rootDir, observe = () => {}, confined = null, templateId = 'plane', instanceId = 'member', timeoutMs, maxJsonBytes }) {
+  if (confined !== null && confined !== undefined) {
+    const rgRow = createAnchoredRgSearchBackend({
+      realmId,
+      rootDir,
+      confined,
+      templateId,
+      instanceId,
+      observe,
+      ...(typeof timeoutMs === 'number' ? { timeoutMs } : {}),
+      ...(typeof maxJsonBytes === 'number' ? { maxJsonBytes } : {}),
+    })
+    return rgRow
+  }
   let executed = 0
   let trace = []
   const lastOutcomes = []

@@ -157,9 +157,15 @@ describe('a5p4 lane purity and dormancy', () => {
     // consumer — it builds its own confined provider for the anchored rg
     // walk (request allowPaths anchor.rootReal READ-ONLY). Evidence:
     // dev/agent-workflow/evidence/alpha5/int-mnt/README.md §1(a) + §2.
+    // A5-SRGP booking (search-row mount): the #PR5 anchored confined-rg SEARCH
+    // backend is the THIRD named production consumer — it builds its own
+    // confined provider for the anchored rg walk (allowPaths: the system dirs
+    // the binary needs + the governed root READ-ONLY). Evidence:
+    // dev/agent-workflow/evidence/alpha5/srgp/README.md.
     expect(offenders.sort()).toEqual([
       'runtime/src/plugin/live/glob-backend.mjs',
       'runtime/src/plugin/live/plane-effect-backends.mjs',
+      'runtime/src/plugin/live/search-backend.mjs',
     ])
   })
 
