@@ -30,8 +30,26 @@
 | d2 | `22-29-33`, `22-32-09` | 加 X 族判据（X0/X-byte-chain/X-byte-names/X-boot/X-glob/X-glob-spawn/X-refuse×3/X-scope）+ H1d + `landings.json` 按执行模式键 | `22-29-33` FATAL（容错支位于 `team.create` 之后，守卫先触发）；`22-32-09` 33/37：`H1b` + 三 `X-refuse` 红 —— 拒绝形未走正常前门，挂载从未被尝试（驱动不足，非产品结论） |
 | **d3** | **`22-35-04`（#344 判定跑）** | 所有形统一走 discovery barrier + `team.create`；拒答证据轮询实例日志与观测流；X-refuse 判据取任一带 typed code 的见证面 | **36/37 +2 booked**，仅 `H1b` 钉条件红（live master 再前移 `52d73534`）；三 `X-refuse` 全绿 |
 
+## ⑤ 缺省形正控轮（同一 kit 的参数化，root 23:34Z 令）
+
+派生脚本：`derive-round3-default-control.py`（参数化 + shape 账 + H1e）、`derive-round3b-scratch-laws.py`
+（`S1`/`S1b` 两腿 + 跨形腿入 shape 账）。**判据本体未动**：新增只增不减，`--only` 未跑的形记 `na:true` 而非绿。
+
+| 变体 | 用于 run | 改动 | 结果 |
+| --- | --- | --- | --- |
+| v5 | `23-36-12`（`--only default`） | 参数化 `--install-sha/--install-ref/--install-lineage/--world-prefix`；H1b 改对**被点名 ref** 双源测；H1c 加 #337 旁系缺省字节证；新增 H1e（master 关系另记）；`LEG_SHAPE` shape 账 | FATAL：`masterAncestorOfGraded` 标识符笔误（世界未起） |
+| v5.1 | `23-36-28` | 修标识符 | 31/33：红 `C5`,`R4` —— 单形跑的**覆盖红**（跨形腿无世界可读），非行为红 |
+| **v5.2** | **`23-39-12`（⑤ 判定跑）** | `C5→off` / `R4→rename` 入 shape 账；新增 `S1`（旁系 scratch 装面律 + listing 洁净）与 `S1b`（基线路径差 book） | **32/32 +4 booked +18 shape-N/A，KIT_EXIT=0** |
+
+判定跑 kit 快照 `runs/2026-10-18T23-39-12Z/kit-as-run.mjs` 与 `code/a5glob-off-kit.mjs` 同哈希
+`edeebfac7e7c6c1434adbc11ceb8ca41805a99accaa888fe23fcd78b4207a0da`。
+注：①-④ 判定跑（`22-07-01`）的字节仍是 `9e8eec…`（存于其自身 `kit-as-run.mjs` 与 `a5glob-off-kit@v4.mjs`），
+⑤ 轮的参数化改动**晚于**那一次判定跑，不回写其结论。
+
 ## 收尾复核（精确名清理后）
 
 - `git worktree remove .worktrees/a5glob-off-src-20261018T214327Z`、
   `git worktree remove .worktrees/a5glob-off-delta-src-20261018T222000Z`、`rm -rf tests/homes/.a5glob-off-store`
-- `ls tests/homes | grep -c a5glob-off` → `0`；`git worktree list | grep -c a5glob-off` → `0`；端口 3182-3186/3493 自证空闲。
+- ⑤ 轮同律：`git worktree remove .worktrees/a5scratchdef-src-20261018T233528Z`、`rm -rf tests/homes/.a5scratchdef-store`
+- `ls tests/homes | grep -Ec 'a5glob-off|a5scratchdef'` → `0`；`git worktree list | grep -c a5glob-off` → `0`；
+  `git worktree list | grep -c a5scratchdef` → `0`；端口 3182-3186/3493 自证空闲；`:3080` 仍 `401`。

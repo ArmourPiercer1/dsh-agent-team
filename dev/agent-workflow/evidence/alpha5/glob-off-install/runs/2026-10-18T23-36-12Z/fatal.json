@@ -1,0 +1,23 @@
+{
+  "error": "masterAncestorOfGraded is not defined",
+  "criteriaSoFar": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "INSTALL SPEC = live a5-g6b-rcfinal, measured from TWO SOURCES (git ls-remote inside the pinned source worktree AND inside the main checkout), both equal to the graded SHA, and the pinned source worktree HEAD IS that SHA (nothing spliced in)",
+      "pass": true,
+      "observed": "ls-remote[src]=097fccf9922ce009c0184d514ac365f1f22b634f ls-remote[main]=097fccf9922ce009c0184d514ac365f1f22b634f srcHEAD=097fccf9922ce009c0184d514ac365f1f22b634f"
+    },
+    {
+      "id": "H1c",
+      "claim": "the graded SHA carries the candidate in its OWN lineage and source bytes: its subject lineage matches /#337/ , the production plane row still consumes globEnabled / a5-glob-config-disabled, and the live glob row's DEFAULT scratch is the governed-root SIBLING (the #337 form the default contract rides with no scratchRoot key at all)",
+      "pass": true,
+      "observed": "lineage-match=true src-globEnabled=true src-shutId=true globDefaultSiblingScratch=true row=097fccf9 fix(assembly): #337 生产兼容收口——live glob 行缺省 scratch 落治理根旁系（根 23"
+    }
+  ]
+}

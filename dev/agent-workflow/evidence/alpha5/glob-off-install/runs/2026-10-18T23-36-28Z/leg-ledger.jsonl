@@ -1,0 +1,52 @@
+{"leg":"H1","verdict":"PASS","receipts":["criteria.json"],"wire":"head=639ed01539 porcelain=0"}
+{"leg":"H1b","verdict":"PASS","receipts":["criteria.json"],"wire":"ls-remote[src]=097fccf9922ce009c0184d514ac365f1f22b634f ls-remote[main]=097fccf9922ce009c0184d514ac365f1f22b634f srcHEAD=097fccf9922ce009c0184d514ac365f1f22b634f"}
+{"leg":"H1c","verdict":"PASS","receipts":["criteria.json"],"wire":"lineage-match=true src-globEnabled=true src-shutId=true globDefaultSiblingScratch=true row=097fccf9 fix(assembly): #337 生产兼容收口——live glob 行缺省 scratch 落治理根旁系（根 23"}
+{"leg":"H1e","verdict":"PASS","receipts":["criteria.json"],"wire":"graded=097fccf9922c ref=a5-g6b-rcfinal masterNow=708fb3fed655 gradedAncestorOfMaster=false masterAncestorOfGraded=true masterOnTop=0 gradedOnTop=27"}
+{"leg":"H2","verdict":"PASS","receipts":["criteria.json"],"wire":"mock=3493"}
+{"leg":"H0","verdict":"PASS","receipts":["criteria.json"],"wire":"status=401"}
+{"leg":"RG","verdict":"BOOK","receipts":["criteria.json"],"wire":"resolved=true answer=\"ripgrep 15.0.0 (rev 3a612f88b8)\""}
+{"leg":"I1","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 in 24s; tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-te"}
+{"leg":"I2","verdict":"PASS","receipts":["criteria.json"],"wire":"deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"}
+{"leg":"I3a","verdict":"PASS","receipts":["criteria.json"],"wire":"installed=1773 face=1773 (files:=1771 + pack-always=2)"}
+{"leg":"I3b","verdict":"PASS","receipts":["criteria.json"],"wire":"missing=0 []"}
+{"leg":"I3c","verdict":"PASS","receipts":["criteria.json"],"wire":"extra=0 []"}
+{"leg":"I3d","verdict":"PASS","receipts":["criteria.json","install-manifest.json"],"wire":"mismatch=0 rootSha=dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af"}
+{"leg":"I3e","verdict":"PASS","receipts":["criteria.json"],"wire":"alwaysIncluded=[\"README.md\",\"package.json\"]"}
+{"leg":"I4","verdict":"PASS","receipts":["criteria.json"],"wire":"hostRow=true"}
+{"leg":"I9","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"sha=1264ea584e3438d6… bytes=26992 commit==src=true abi=abi-available/4"}
+{"leg":"I8","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"launcherInFace=false launcherSha=1264ea584e3438d6…"}
+{"leg":"I5","verdict":"PASS","receipts":["criteria.json","dump-config-install-probe.txt"],"wire":"exit=0 teamRow=true plane=true globEnabledFalse=true subRows=true"}
+{"leg":"I-SHIP","verdict":"PASS","receipts":["criteria.json","installed-gate-witness.json","install-manifest.json"],"wire":"globEnabledHits=14 shutIdHits=1"}
+{"leg":"W.default.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=dd2b75e17fddbc2e==probe"}
+{"leg":"H3","verdict":"PASS","receipts":["criteria.json"],"wire":"401 -> 401; porcelain=0"}
+{"leg":"W1","verdict":"PASS","receipts":["criteria.json"],"wire":"default:ok/swept"}
+{"leg":"M0b","verdict":"BOOK","receipts":["criteria.json","observer-facts-off.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M0","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M1","verdict":"BOOK","receipts":["criteria.json","landings.json","instance-off.log"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M2","verdict":"BOOK","receipts":["criteria.json","confined-ledger-off.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M2b","verdict":"BOOK","receipts":["criteria.json","confined-ledger-off.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M3","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M4","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M5","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M6","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M7","verdict":"BOOK","receipts":["criteria.json","proc-sampler-off.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M8","verdict":"BOOK","receipts":["criteria.json","instance-off.log"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M9","verdict":"BOOK","receipts":["criteria.json","instance-off.log","wire-digests-off.jsonl"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"M10","verdict":"BOOK","receipts":["criteria.json"],"wire":"shape 'off' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"C1","verdict":"PASS","receipts":["criteria.json","landings.json","wire-digests-default.jsonl"],"wire":"names=[\"gpos/zzgloboff-alpha.txt\",\"gpos/zzgloboff-beta.txt\"]"}
+{"leg":"C2","verdict":"PASS","receipts":["criteria.json","confined-ledger-default.json"],"wire":"globWalkerPlans=1 withExit=1 planAt=\"workspace/governed.a5g7-glob-scratch/plans/plan-mvegv796-9c2h13.json\" argv=[\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek"}
+{"leg":"C2b","verdict":"BOOK","receipts":["criteria.json"],"wire":"rgTotal=0 globWalker=0"}
+{"leg":"C3","verdict":"PASS","receipts":["criteria.json","instance-default.log"],"wire":"lines=[\"[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-default-realm call=team-inst-1kqul440meju-glob-4 pid=271 files=2 capped=false\"]"}
+{"leg":"C4","verdict":"PASS","receipts":["criteria.json"],"wire":"grep=\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T2 bash=\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n>"}
+{"leg":"C5","verdict":"FAIL","receipts":["criteria.json"],"wire":"offLayerHasGlobEnabled=undefined defaultLayerHasGlobEnabled=false"}
+{"leg":"C6","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\""}
+{"leg":"R1","verdict":"BOOK","receipts":["criteria.json","wire-digests-rename.jsonl"],"wire":"shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"R2","verdict":"BOOK","receipts":["criteria.json","landings.json"],"wire":"shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"R3","verdict":"BOOK","receipts":["criteria.json","confined-ledger-rename.json"],"wire":"shape 'rename' not executed in this run (--only default), so this leg is coverage-N/A, not a verdict"}
+{"leg":"R4","verdict":"FAIL","receipts":["criteria.json"],"wire":"landing=\"LEG-MISSING\" rgGlobWalkerSightings=undefined"}
+{"leg":"Z1","verdict":"PASS","receipts":["criteria.json"],"wire":"hostErrors=[]"}
+{"leg":"Z2","verdict":"PASS","receipts":["criteria.json"],"wire":"ioLandings=0 of 5 legs"}
+{"leg":"T1","verdict":"PASS","receipts":["criteria.json"],"wire":"left=[] installHomeSwept=true"}
+{"leg":"T2","verdict":"PASS","receipts":["criteria.json"],"wire":"rawLeft=[]"}
+{"leg":"T3","verdict":"PASS","receipts":["criteria.json"],"wire":"ports=3183+3493 free=true"}
+{"leg":"T4","verdict":"BOOK","receipts":["criteria.json"],"wire":"storeExists=true"}

@@ -21,6 +21,11 @@
 3. **① 真装 + 缺省零变化 + 卫生 通**：三零（miss/extra/sha≠=0，rootSha `b18fcfee908c4923…`）；同配置缺键世界 glob 真跑（两 seed 全列，glob law 未加 exit 面）；`left=[]`、端口释放、:3080 未动。
 4. **⇒ 装面关断可用**；唯一红是钉条件红 `H1b`（master 在本轮跑中前移，原文见「红」章），非产品行为红；#344 差异三腿全通（见末章）。
 
+**追加（root 23:34Z 令，复用同一 kit）**：**⑤ 缺省公开形正控 通** —— 真装 `a5-g6b-rcfinal @ 097fccf9`（#337 装配收口）后，
+**不含 `scratchRoot` 键**的 §3.5 契约形经 member/RPC 全链真实返回两枚 seed（`gpos/zzgloboff-alpha.txt` / `…-beta.txt`），
+且该行的受限 walker plan 落治理根**旁系** `<root>.a5g7-glob-scratch/plans/`（含 exit 记录）、listing 无 scratch 残留物。
+**32/32 +4 booked +18 shape-N/A，KIT_EXIT=0**（详见「⑤」章）。
+
 ---
 
 ## ① 真装（基线世界 `off` / `default` / `rename` + 安装探针）
@@ -84,6 +89,43 @@ search 行=其兄弟目录；glob 行**未配置** → provider 以 `''` 解析�
 
 ---
 
+## ⑤ 缺省公开形可用性正控（root 23:34Z 令；`a5-g6b-rcfinal @ 097fccf9922ce009c0184d514ac365f1f22b634f`）
+
+**为何存在**：①-④ 那张关断表不覆盖「新 provider 拒空 scratch 法之后，**缺省形**在装面还能不能用」。
+本轮复用同一 kit（未造新轮；参数化仅 `--install-sha/--install-ref/--install-lineage/--world-prefix`，
+判据本体未动），世界前缀换 `a5scratchdef-`（清理仍精确名）。
+
+**层级标注（写准）**：公共 `plugin add` 真安装（`github:…#097fccf9…`，exit=0 in 24s）→ 宿主 boot →
+`team.create` → **member/RPC 全链**取回工具落点；kit 不 import 任何产品模块参与执行。
+（层级低于此的证据不成立：非手工装配单元、非模块层。）
+
+| 面 | 值 |
+| --- | --- |
+| 装面 | `1773/1773`，miss=0 extra=0 sha≠=0，rootSha `dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af`（世界与探针同根） |
+| 钉 | H1b 双源（worktree 内 + 主检出的 `ls-remote origin refs/heads/a5-g6b-rcfinal`）= `097fccf9…` = 源码 worktree HEAD，**绿** |
+| 钉条件（H1e，另记不并条） | `masterNow=708fb3fed655 masterAncestorOfGraded=true gradedAncestorOfMaster=false masterOnTop=0 gradedOnTop=27` —— 被点名 ref 含当前 master 并领先 27 个 commit；本轮**不**对 master 面作任何全绿宣称 |
+| 配置 | 公开契约 §3.5 实文原样：`realmId` + `fsInstance{rootDir,…}` + `confinedProvider{trustRoot, assembly{launcherPath, launcherSha256, minAbiVersion}}`，**全文无 `scratchRoot` 键**（kit 内 `grep -c scratchRoot` = 0） |
+
+**判据腿（原文）**：
+
+```
+PASS C1 — … both seeded files listed, no refusal, and the glob completion law untouched (no exit=/exitCode) [names=["gpos/zzgloboff-alpha.txt","gpos/zzgloboff-beta.txt"]]
+PASS S1 — THE DEFAULT FORM IS LIVE ON THE INSTALLED FACE, AND ITS SCRATCH LAW HOLDS WHERE IT LANDED: … prepared its confined walker plan at the governed-root SIBLING (`<root>.a5g7-glob-scratch/plans/plan-*.json`) with its exit record, no glob-walker plan sits inside the governed root, and the listing the member got back carries no scratch artifact [globPlans=1 atSibling=1 insideRoot=0 withExit=1 planAt="workspace/governed.a5g7-glob-scratch/plans/plan-….json" scratchInListing=0]
+PASS C3 — … [lines=["[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5scratchdef-default-realm call=team-inst-…-glob-4 pid=271 files=2 capped=false"]]
+```
+
+**同场其余形状（argv 归因）**：`{rg-search:1, rg-glob-walker:1, shell:2}`，四枚 plan 各带 exit 记录
+（`confined-ledger-default.json`）；越界 bash 负控仍 `exit=1` + 内核拒原文（C6），`Z1 hostErrors=[]`。
+
+**S1b（book，不计分）**：同一契约形在 21-5xZ 基线把 glob 行 plan 落在 `workspace/plans/plan-….json`
+（provider 缺省曾按 cwd 相对解析），本轮落在 `workspace/governed.a5g7-glob-scratch/plans/plan-….json` ——
+两次真装记下的**路径差**正是 #337 装配收口补上的那段。顺带把 ①-④ 的一处旧账说明白：那轮 `<root>.a5g7-glob-scratch`
+读空，是因为**当时的面确实没把 glob 行 scratch 放那儿**（缺省 `''` → 相对宿主进程 cwd），不是路径写错那么简单——
+所以那轮 M2/C2 改成「全树走查 + argv 归因」，本轮 S1 才第一次能在该旁系路径上正面钉住它。
+
+**覆盖账**：`--only default` 单形跑，18 条属 `off` / `rename` 形的腿记为 **shape-N/A**（booked，非绿非红，
+`criteria.json` 内 `na:true` 逐条在案）；`C5`（跨形对比腿）同记 N/A。判据本体一字未改。
+
 ## #344 差异验收（root 22:03Z 令；master `ca7ab2ab`，= 基线 SHA 的直接子 commit）
 
 差异面 = C-16 钉名增量，三腿 + 字节证（`runs/<delta-stamp>/`）：
@@ -132,7 +174,11 @@ commitsOnTop=1 specPinnedToGradedSha=true` —— 被安装/被跑的面仍是�
 | `runs/2026-10-18T22-12-57Z`, `…T22-14-00Z`（终端转录未落文件，逐腿以 `leg-ledger.jsonl` 为准） | 差异 kit 校验（`--only doff`） | FATAL ×2 | ①`rowConfig('off')` 残引（差异 kit 模式名已换 `doff`）；②误把 discovery 正跑改成容错支 → 蓝图 deny 表为空、梯子永不完成。两处均修。 |
 | `runs/2026-10-18T22-29-33Z` | 差异 kit 首跑 | FATAL | 容错支放在 `team.create` 之后（守卫先触发）；且拒绝形未经正常前门 → 挂载从未被尝试。修：所有形同走 discovery + `team.create`，拒答证据轮询观测流与实例日志。 |
 | `runs/2026-10-18T22-32-09Z` | 差异全量 | 33/37，红 `H1b` + 三 `X-refuse` | 同上新原因：master 再前移至 `52d73534`（H1b 按其条款记红）；三 `X-refuse` 红 = 驱动不足（未触发挂载），非产品面结论。修后为判定跑。 |
+| `runs/2026-10-18T23-36-12Z` | ⑤ 校验（`--only default`） | FATAL（KIT_EXIT=1） | kit 侧标识符笔误（`masterAncestorOfGraded` 未定义）；世界未起。修后重跑。 |
+| `runs/2026-10-18T23-36-28Z` | ⑤ 单形跑 | 31/33，红 `C5`,`R4` | **覆盖红而非行为红**：单形跑里跨形腿 `C5`（需 off 形）与 `R4`（rename 形）无世界可读。处置=把两条腿纳入 shape 账（N/A 记账），并新增 `S1`（旁系 scratch 装面律）+`S1b`（路径差 book）后重跑；**未删任何判据**。 |
 | `runs/2026-10-18T22-35-04Z` | **#344 差异判定期** | **36/37 +2 booked**，仅 `H1b` 红（同因：live master 跑中再前移至 `52d73534`） | 三 `X-refuse` 全绿（原文见「差异验收」章）；kit 快照 `kit-as-run.mjs` + 全程转录 `RECORDED-TRANSCRIPT.log` |
+
+| `runs/2026-10-18T23-39-12Z` | **⑤ 缺省形正控判定期** | **32/32 +4 booked +18 shape-N/A**（KIT_EXIT=0） | 无红；kit 快照 `kit-as-run.mjs`（`edeebfac…`）+ 全程转录 `RECORDED-TRANSCRIPT.log` |
 
 注：前两次 run 的终端转录写到 per-call `/tmp`（沙箱不跨调用共享），未随证据留存；每轮的逐腿持久记录是各 run 目录内
 `leg-ledger.jsonl` + `criteria.json`，判定期两跑的完整终端转录以 `RECORDED-TRANSCRIPT.log` 留存。
@@ -144,7 +190,8 @@ commitsOnTop=1 specPinnedToGradedSha=true` —— 被安装/被跑的面仍是�
 | `code/a5glob-off-kit.mjs` / 判定期快照 `runs/2026-10-18T22-07-01Z/kit-as-run.mjs` | ①-④ 判定 kit（含修订）；`code/a5glob-off-kit@v4.mjs` 为判定跑同一字节快照 |
 | `code/a5glob-delta-kit.mjs`（判定期快照 `runs/2026-10-18T22-35-04Z/kit-as-run.mjs`） | 差异 kit |
 | `code/delta-kit-derivation.diff` | 差异 kit 相对 v4 骨架的**全部**改动面（骨架 → 差异 kit 的统一 diff；前两步派生以内联 heredoc 施作未留脚本，此 diff 即其可复核替代；第三步留 `code/derive-delta-3-refuse-drive.py`） |
-| `code/KIT-VERSIONS.md` | kit 变体与各 run 的对应（哪一跑用哪一版、修了什么） |
+| `code/KIT-VERSIONS.md` | kit 变体与各 run 的对应（哪一跑用哪一版、修了什么、逐版 sha256） |
+| `code/derive-round3-default-control.py`, `code/derive-round3b-scratch-laws.py` | ⑤ 轮的两步派生（参数化 + shape 账与 S 腿） |
 | `code/a5ie-r5-kit-reference.mjs` | 复用的 a5ie-r5 装面骨架（`git show c44f51e4:…`，未造新轮子） |
 | `runs/*/install-manifest.json` | 三零 + rootSha + 逐文件 sha256 + face 清单 |
 | `runs/*/installed-gate-witness.json` | 已装 dist 字节的关断门命中数 |
@@ -160,6 +207,7 @@ commitsOnTop=1 specPinnedToGradedSha=true` —— 被安装/被跑的面仍是�
 
 - 已按精确名清除（本回合收尾，`git worktree remove` + 目录按名删除）：`.worktrees/a5glob-off-src-20261018T214327Z`、
   `.worktrees/a5glob-off-delta-src-20261018T222000Z`、`tests/homes/.a5glob-off-store`；复核见 `code/KIT-VERSIONS.md` 末段。
-- 世界：`tests/homes/a5glob-off-*` 由 T1 每跑前缀扫尽；复核 `ls tests/homes | grep a5glob-off` 为空。
+- 世界：`tests/homes/a5glob-off-*`（①-④/#344 两轮）与各跑 T1 前缀扫尽；⑤ 轮世界为 `tests/homes/a5scratchdef-default-*`，同由 T1 精确前缀扫尽。
+- ⑤ 轮待清并已清（精确名）：`.worktrees/a5scratchdef-src-20261018T233528Z`、`tests/homes/.a5scratchdef-store`。
 - 主检出：HEAD 未动（`6259cf4b`），产品码零改动；本工作唯一新增 = `dev/agent-workflow/evidence/alpha5/glob-off-install/`（未跟踪目录）。
 - `:3080`：仅 GET 探测，前后 `401`；其 DSH_HOME 与数据未触。

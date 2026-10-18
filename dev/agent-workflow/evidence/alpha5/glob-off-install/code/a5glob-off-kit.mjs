@@ -80,8 +80,21 @@ const argValue = (n, d) => { const i = args.indexOf(`--${n}`); return i === -1 ?
 const flag = (n) => args.includes(`--${n}`)
 const HERE = dirname(new URL(import.meta.url).pathname)
 
-/** The commit this round grades (root instruction 21:39Z, #342 landed). */
-const EXPECTED_MASTER = '46e48218e48314662586ff053ca3825e2889a6bb'
+/**
+ * The commit this round grades. Defaults to the 21:39Z #342 baseline; a later
+ * round (root 23:34Z) re-drives the SAME sheet for a default-contract positive
+ * control on a named ref, so the install face is parameterised:
+ *   --install-sha <40-hex>   the frozen SHA to install and grade
+ *   --install-ref refs/heads/<branch>  the ref whose live tip must equal it
+ *   --install-lineage <re>   what the graded commit's own subject must carry
+ *   --world-prefix <p>       DSH_HOME prefix (cleanup stays exact-name)
+ * Nothing else about the criteria moves: the three zeros, the argv-attributed
+ * ledger, the sweep and the :3080 probe law are the same code.
+ */
+const EXPECTED_MASTER = argValue('install-sha', '46e48218e48314662586ff053ca3825e2889a6bb')
+const INSTALL_REF = argValue('install-ref', 'refs/heads/master')
+const INSTALL_REF_SHORT = INSTALL_REF.replace(/^refs\/heads\//, '')
+const EXPECT_LINEAGE = new RegExp(argValue('install-lineage', '#342'))
 /** Byte-pinned source root: a detached worktree AT that commit (harness bytes too). */
 const SRC = resolve(argValue('src-root', ''))
 if (!existsSync(join(SRC, 'tests/paths.mjs'))) throw new Error(`--src-root must be a checkout of the team repo: ${SRC}`)
@@ -103,7 +116,7 @@ const { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH, testUseTree } = pathsMod
 const OBSERVER_ROW = pathToFileURL(join(SRC, 'dev/agent-workflow/evidence/alpha5/install-entry/a5ie-observer-row.mjs')).href
 const WORKTREE_HEAD = spawnSync('git', ['-C', SRC, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim()
 
-const WORLD_PREFIX = 'a5glob-off'
+const WORLD_PREFIX = argValue('world-prefix', 'a5glob-off')
 const PRESET_ID = 'a5glob-off-base'
 const ROOT = 'a5glob-off-root'
 const CREATE_ROOT = `session-a5glob-off-team-${RUN_STAMP}`
@@ -150,7 +163,26 @@ const stepMarker = ([name, a]) => `tool_use:${name}${JSON.stringify(a)}`
 
 // ─── plumbing ────────────────────────────────────────────────────────────────
 const CRITERIA = []
+/**
+ * Which world each leg needs. When a run drives a SUBSET of shapes (the
+ * 23:34Z default-contract control drives `default` only), a leg belonging to a
+ * shape that was not executed is recorded as `na` — booked, printed, and kept
+ * out of the red set. That is a statement about coverage, never a relaxed
+ * criterion: the leg itself is unchanged and still fails if its own shape ran.
+ */
+const LEG_SHAPE = {
+  M0: 'off', M0b: 'off', M1: 'off', M2: 'off', M2b: 'off', M3: 'off', M4: 'off', M5: 'off', M6: 'off', M7: 'off', M8: 'off', M9: 'off', M10: 'off',
+  S1: 'default',
+  C1: 'default', C2: 'default', C3: 'default', C6: 'default', C4: 'default', C5: 'off',
+  R1: 'rename', R2: 'rename', R3: 'rename', R4: 'rename',
+}
 function check (id, claim, cond, observed) {
+  const shape = LEG_SHAPE[id]
+  if (shape !== undefined && !MODE_RUN.includes(shape)) {
+    CRITERIA.push({ id, claim, pass: null, na: true, observed: `shape '${shape}' not executed in this run (--only ${MODE_RUN.join('/')}), so this leg is coverage-N/A, not a verdict` })
+    console.log(`NA   ${id} — ${claim} [shape '${shape}' not executed this run]`)
+    return
+  }
   CRITERIA.push({ id, claim, pass: cond === true, observed })
   console.log(`${cond === true ? 'PASS' : 'FAIL'} ${id} — ${claim}${observed === undefined ? '' : ` [${observed}]`}`)
 }
@@ -537,8 +569,8 @@ function rowConfig (mode, blueprintDir, world, launcher) {
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
   }
   const plane = {
-    realmId: `a5glob-off-${mode}-realm`,
-    fsInstance: { fs: `a5glob-off-${mode}-ctl`, rootDir: world.governedRoot, realmId: `a5glob-off-${mode}-realm`, kind: 'absolute-path' },
+    realmId: `${WORLD_PREFIX}-${mode}-realm`,
+    fsInstance: { fs: `${WORLD_PREFIX}-${mode}-ctl`, rootDir: world.governedRoot, realmId: `${WORLD_PREFIX}-${mode}-realm`, kind: 'absolute-path' },
     confinedProvider: {
       trustRoot: `sha256:${launcher.sha.slice(0, 16)}#${launcher.path}`,
       assembly: { launcherPath: launcher.path, launcherSha256: launcher.sha, minAbiVersion: 3 },
@@ -815,19 +847,33 @@ async function main () {
   check('H1', `the test-use host is the pinned pristine runtime @${TEST_USE_BASELINE_SHA.slice(0, 10)} with porcelain clean before`,
     head === TEST_USE_BASELINE_SHA && porcelainBefore === '', `head=${head.slice(0, 10)} porcelain=${porcelainBefore === '' ? 0 : 'DIRTY'}`)
 
-  const lsSrc = spawnSync('git', ['-C', SRC, 'ls-remote', 'origin', 'refs/heads/master'], { encoding: 'utf8', timeout: 180_000 }).stdout.trim().split(/\s/)[0] ?? ''
-  const lsMain = spawnSync('git', ['-C', MAIN_CHECKOUT, 'ls-remote', 'origin', 'refs/heads/master'], { encoding: 'utf8', timeout: 180_000 }).stdout.trim().split(/\s/)[0] ?? ''
+  const lsSrc = spawnSync('git', ['-C', SRC, 'ls-remote', 'origin', INSTALL_REF], { encoding: 'utf8', timeout: 180_000 }).stdout.trim().split(/\s/)[0] ?? ''
+  const lsMain = spawnSync('git', ['-C', MAIN_CHECKOUT, 'ls-remote', 'origin', INSTALL_REF], { encoding: 'utf8', timeout: 180_000 }).stdout.trim().split(/\s/)[0] ?? ''
   writeEvidence('master-pin.json', { expected: EXPECTED_MASTER, lsRemoteFromSrcWorktree: lsSrc, lsRemoteFromMainCheckout: lsMain, srcWorktreeHead: WORKTREE_HEAD })
-  check('H1b', 'INSTALL SPEC = live master, measured from TWO SOURCES (git ls-remote inside the pinned source worktree AND inside the main checkout), both equal to the graded SHA, and the pinned source worktree HEAD IS that SHA (nothing spliced in)',
+  check('H1b', `INSTALL SPEC = live ${INSTALL_REF_SHORT}, measured from TWO SOURCES (git ls-remote inside the pinned source worktree AND inside the main checkout), both equal to the graded SHA, and the pinned source worktree HEAD IS that SHA (nothing spliced in)`,
     /^[0-9a-f]{40}$/.test(lsSrc) && lsSrc === EXPECTED_MASTER && lsMain === EXPECTED_MASTER && WORKTREE_HEAD === EXPECTED_MASTER,
     `ls-remote[src]=${lsSrc} ls-remote[main]=${lsMain} srcHEAD=${WORKTREE_HEAD}`)
   INSTALL_SPEC = `github:ArmourPiercer1/dsh-agent-team#${EXPECTED_MASTER}`
 
   const lineage = gitAt(SRC, 'log', '--format=%s', EXPECTED_MASTER).slice(0, 4000)
   const srcPlaneBytes = spawnSync('git', ['-C', SRC, 'show', `${EXPECTED_MASTER}:packages/runtime/src/plugin/live/team-tool-plane.mjs`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).stdout ?? ''
-  check('H1c', 'the graded SHA carries the candidate in its OWN lineage and source bytes: subject lineage contains #342 and the source of the production plane row consumes globEnabled / a5-glob-config-disabled',
-    /#342/.test(lineage) && srcPlaneBytes.includes('globEnabled') && srcPlaneBytes.includes('a5-glob-config-disabled'),
-    `lineage-#342=${String(/#342/.test(lineage))} src-globEnabled=${String(srcPlaneBytes.includes('globEnabled'))} src-shutId=${String(srcPlaneBytes.includes('a5-glob-config-disabled'))} row=${gitAt(SRC, 'log', '--format=%h %s', '-1', EXPECTED_MASTER).slice(0, 70)}`)
+  const srcGlobBytes = spawnSync('git', ['-C', SRC, 'show', `${EXPECTED_MASTER}:packages/runtime/src/plugin/live/glob-backend.mjs`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).stdout ?? ''
+  const siblingDefault = srcGlobBytes.includes('`.a5g7-glob-scratch`') || srcGlobBytes.includes(".a5g7-glob-scratch")
+  check('H1c', `the graded SHA carries the candidate in its OWN lineage and source bytes: its subject lineage matches ${String(EXPECT_LINEAGE)} , the production plane row still consumes globEnabled / a5-glob-config-disabled, and the live glob row's DEFAULT scratch is the governed-root SIBLING (the #337 form the default contract rides with no scratchRoot key at all)`,
+    EXPECT_LINEAGE.test(lineage) && srcPlaneBytes.includes('globEnabled') && srcPlaneBytes.includes('a5-glob-config-disabled') && siblingDefault,
+    `lineage-match=${String(EXPECT_LINEAGE.test(lineage))} src-globEnabled=${String(srcPlaneBytes.includes('globEnabled'))} src-shutId=${String(srcPlaneBytes.includes('a5-glob-config-disabled'))} globDefaultSiblingScratch=${String(siblingDefault)} row=${gitAt(SRC, 'log', '--format=%h %s', '-1', EXPECTED_MASTER).slice(0, 70)}`)
+
+  // The already-ruled pin convention, recorded as its own leg instead of being
+  // folded into H1b: a frozen SHA whose ref has since moved is graded on
+  // per-file byte equivalence (I3a-I3d) plus the successor difference — and the
+  // run never claims green for a face it did not install.
+  const liveMasterNow = (spawnSync('git', ['-C', MAIN_CHECKOUT, 'ls-remote', 'origin', 'refs/heads/master'], { encoding: 'utf8' }).stdout ?? '').split('\t')[0].trim()
+  spawnSync('git', ['-C', MAIN_CHECKOUT, 'fetch', '-q', 'origin', liveMasterNow], { encoding: 'utf8' })
+  const gradedIsAncestorOfMaster = spawnSync('git', ['-C', MAIN_CHECKOUT, 'merge-base', '--is-ancestor', EXPECTED_MASTER, liveMasterNow], { encoding: 'utf8' }).status === 0
+  const masterIsAncestorOfGraded = spawnSync('git', ['-C', MAIN_CHECKOUT, 'merge-base', '--is-ancestor', liveMasterNow, EXPECTED_MASTER], { encoding: 'utf8' }).status === 0
+  check('H1e', 'pin condition of the NAMED ref, stated not hidden: the ref tip measured live equals the frozen SHA that this run installs (H1b above), while master is recorded separately with its relation to the graded SHA (ancestor / descendant / diverged) so the report never implies a face it did not run',
+    true,
+    `graded=${EXPECTED_MASTER.slice(0, 12)} ref=${INSTALL_REF_SHORT} masterNow=${liveMasterNow.slice(0, 12)} gradedAncestorOfMaster=${String(gradedIsAncestorOfMaster)} masterAncestorOfGraded=${String(masterIsAncestorOfGraded)} masterOnTop=${spawnSync('git', ['-C', MAIN_CHECKOUT, 'rev-list', '--count', `${EXPECTED_MASTER}..${liveMasterNow}`], { encoding: 'utf8' }).stdout.trim()} gradedOnTop=${spawnSync('git', ['-C', MAIN_CHECKOUT, 'rev-list', '--count', `${liveMasterNow}..${EXPECTED_MASTER}`], { encoding: 'utf8' }).stdout.trim()}`)
 
   const ports = MODE_RUN.map((m) => MODES[m].port)
   let mockPort = 0
@@ -889,7 +935,7 @@ async function main () {
 
   const probeCfg = rowConfig('off', join(INSTALL_HOME, 'blueprints'), probeWorld, probeLauncher)
   const probeLayer = [
-    `# a5glob-off INSTALL-PROBE layer (run ${RUN_STAMP}): the OFF-form config on the installed bundle row — does the shut-off key ride the host's own composition?`,
+    `# ${WORLD_PREFIX} INSTALL-PROBE layer (run ${RUN_STAMP}): the OFF-form config on the installed bundle row — does the shut-off key ride the host's own composition?`,
     '- id: dsh-agent-team', '  name: dsh-agent-team/host', '  config:',
     ...Object.entries(probeCfg).flatMap(([k, v]) => yamlEmit(k, v, 2)),
     ...['- insert:', ...yamlEmitItem(presetDeclarationRow({ id: PRESET_ID, displayName: 'a5glob-off base', description: 'probe preset', plugins: smokePresetPlugins({ personaText: 'You are a coding agent powered by the {{model}} model.', cwdSuffix: 'Your working directory is {{cwd}}.', bashDescription: 'Run commands in a bash shell.' }) }), 1)],
@@ -1081,6 +1127,25 @@ async function main () {
     dGlobPlans.length >= 1 && dGlobPlans.every((x) => x.hasExitRecord) && String(dGlobPlans[0]?.argv?.[0] ?? '').includes('/ripgrep'),
     `globWalkerPlans=${String(dGlobPlans.length)} withExit=${String(dLed.countsWithExit?.['rg-glob-walker'] ?? 0)} planAt=${JSON.stringify(dGlobPlans[0]?.rel ?? '')} argv=${JSON.stringify((dGlobPlans[0]?.argv ?? []).slice(0, 3)).slice(0, 200)}`)
   const dSampler = dflt.sampler ?? { counts: {} }
+  // S family — the DEFAULT public-contract form on the installed face (root
+  // 23:34Z: the shut-off sheet never covered default-form usability after the
+  // provider's empty-scratch law, so grade it here with the SAME plumbing).
+  // The contract (docs/INSTALL.md §3.5) carries NO scratchRoot key; the live
+  // glob row therefore runs entirely on its assembled default. Where that
+  // default lands is not assumed — it is read from the provider's own records.
+  const dLedS = dflt.worldLedger ?? { counts: {}, plans: [] }
+  const dGlobPlansS = dLedS.plans.filter((x) => x.kind === 'rg-glob-walker')
+  const siblingHits = dGlobPlansS.filter((x) => /governed\.a5g7-glob-scratch\/plans\//.test(x.rel))
+  const insideRoot = dGlobPlansS.filter((x) => /^governed\/plans\//.test(x.rel) || x.rel.startsWith('governed/'))
+  const listingScratch = (L.default.byTool.team_glob ?? []).flatMap((x) => namedFiles(x.text)).filter((n) => /a5g7-glob-scratch|\/plans\/|exit\.json/.test(n))
+  check('S1', 'THE DEFAULT FORM IS LIVE ON THE INSTALLED FACE, AND ITS SCRATCH LAW HOLDS WHERE IT LANDED: the glob row — configured with the contract text and NO scratchRoot key — prepared its confined walker plan at the governed-root SIBLING (`<root>.a5g7-glob-scratch/plans/plan-*.json`) with its exit record, no glob-walker plan sits inside the governed root, and the listing the member got back carries no scratch artifact',
+    dGlobPlansS.length >= 1 && dGlobPlansS.every((x) => x.hasExitRecord) && siblingHits.length === dGlobPlansS.length && insideRoot.length === 0 && listingScratch.length === 0,
+    `globPlans=${String(dGlobPlansS.length)} atSibling=${String(siblingHits.length)} insideRoot=${String(insideRoot.length)} withExit=${String(dGlobPlansS.filter((x) => x.hasExitRecord).length)} planAt=${JSON.stringify(dGlobPlansS[0]?.rel ?? '')} scratchInListing=${String(listingScratch.length)}`)
+  const baselineLedgerPath = join(HERE, '..', 'runs', '2026-10-18T22-07-01Z', 'confined-ledger-default.json')
+  let baselinePlanAt = '(baseline ledger unreadable)'
+  try { baselinePlanAt = (JSON.parse(readFileSync(baselineLedgerPath, 'utf8')).wholeTree?.globWalkerPlans ?? [{ rel: '(none recorded)' }])[0].rel } catch { /* booked only */ }
+  note('S1b', 'where the same default moved (booked, never graded): the SAME contract-shaped default world at the 21-5xZ baseline put the glob row\'s plan at ' + JSON.stringify(baselinePlanAt) + ' (provider default was cwd-relative, before the empty-scratch law); this run records ' + JSON.stringify(dGlobPlansS[0]?.rel ?? '') + ' — the two recorded paths are the difference the #337 assembly fix closed, observed on two real installs',
+    `baseline=${JSON.stringify(baselinePlanAt)} now=${JSON.stringify(dGlobPlansS[0]?.rel ?? '')}`)
   note('C2b', `sampling-resolution book (never graded): rg sightings in the CONTROL world where the glob row IS live — rgTotal=${String(dSampler.counts.rg ?? 0)}, glob-walker-attributable=${String(dSampler.counts.rgGlobWalker ?? 0)}; a ~10 ms rg process may simply be missed at 50 ms, which is exactly why M2/C2 ride the provider ledger, not the sampler`, `rgTotal=${String(dSampler.counts.rg ?? 0)} globWalker=${String(dSampler.counts.rgGlobWalker ?? 0)}`)
   const dLogGlobLines = (dflt.logObservations ?? []).filter((l) => /anchored-glob ran/.test(l))
   check('C3', 'the host\'s own glob witness fires in the control world (`anchored-glob ran … pid= files=`) — the pair that makes M8\'s zero a fact about the key and not about logging',
@@ -1162,7 +1227,8 @@ async function main () {
     writeFileSync(join(EVIDENCE_DIR, 'leg-ledger.jsonl'), lines.join('\n') + '\n')
   }
   const red = CRITERIA.filter((c) => c.pass === false)
-  console.log(`VERDICT ${red.length === 0 ? 'GREEN' : `RED (${red.map((c) => c.id).join(',')})`} (${String(CRITERIA.filter((c) => c.pass === true).length)}/${String(CRITERIA.filter((c) => c.pass !== null).length)}${CRITERIA.some((c) => c.pass === null) ? ` +${String(CRITERIA.filter((c) => c.pass === null).length)} booked` : ''})`)
+  const naCount = CRITERIA.filter((c) => c.na === true).length
+  console.log(`VERDICT ${red.length === 0 ? 'GREEN' : `RED (${red.map((c) => c.id).join(',')})`} (${String(CRITERIA.filter((c) => c.pass === true).length)}/${String(CRITERIA.filter((c) => c.pass === true || c.pass === false).length)}${CRITERIA.some((c) => c.pass === null && c.na !== true) ? ` +${String(CRITERIA.filter((c) => c.pass === null && c.na !== true).length)} booked` : ''}${naCount > 0 ? ` +${String(naCount)} shape-N/A` : ''})`)
   process.exit(red.length === 0 ? 0 : 2)
 }
 

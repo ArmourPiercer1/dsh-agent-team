@@ -1,0 +1,76 @@
+{
+  "counts": {
+    "rg": 0,
+    "rgGlobWalker": 0,
+    "launcher": 13,
+    "bash": 1,
+    "other": 9
+  },
+  "sightings": [
+    {
+      "at": 1792366830236,
+      "kind": "launcher",
+      "cmd": "python3 -c import os,sys; sys.exit(0 if os.path.isfile(\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployme"
+    },
+    {
+      "at": 1792366830337,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg denyall"
+    },
+    {
+      "at": 1792366830387,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg badhand"
+    },
+    {
+      "at": 1792366830437,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --confined-exec-strea"
+    },
+    {
+      "at": 1792366830487,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --confined-exec-strea"
+    },
+    {
+      "at": 1792366830587,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --abi-probe"
+    },
+    {
+      "at": 1792366830637,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg selecti"
+    },
+    {
+      "at": 1792366830686,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg badhand"
+    },
+    {
+      "at": 1792366830737,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --confined-exec-strea"
+    },
+    {
+      "at": 1792366830836,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --abi-probe"
+    },
+    {
+      "at": 1792366830887,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg selecti"
+    },
+    {
+      "at": 1792366830937,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --enforce-leg badhand"
+    },
+    {
+      "at": 1792366830987,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5scratchdef-default-2026-10-18T23-39-12Z/deployment/landlock-prelauncher.py --confined-exec-strea"
+    }
+  ]
+}
