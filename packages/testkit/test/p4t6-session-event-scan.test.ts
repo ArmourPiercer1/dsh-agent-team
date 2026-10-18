@@ -2950,13 +2950,13 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // (provider.ts, plane-effect-backends.mjs) or files outside the scan
     // (the launcher `.py`, evidence kits under dev/**) — the chain moves by
     // exactly the one new spec.
-    expect(SCANNED_PATHS_A5RBN.length).toBe(1183 - 1182) +
-    // The a5glb tie, same form, measured on THIS branch (base master
-    // `382e5fb6`, chain at 1180 after alpha5-schema-rev): with the glob row and
-    // its suites on disk and this clause absent the run reads
-    // `expected 1184 to be 1180`; booking the four named lane files ends the
-    // chain at 1184 — the scanner total of this tree.
-    expect(SCANNED_PATHS_A5GLB.length).toBe(1184 - 1180)
+    expect(SCANNED_PATHS_A5RBN.length).toBe(1183 - 1182)
+    // The a5glb tie, re-anchored on THIS merged tree (the union merge keeps
+    // the GLUE-7 + RBN bookings: chain 1182 → 1183; the glob row's FOUR named
+    // files ride after them, re-tying `1187 - 1183`). Solo RED history for
+    // this leg (`expected 1184 to be 1180`) belongs to the pre-merge base
+    // `382e5fb6`; scanner total of this merged tree measured 1187.
+    expect(SCANNED_PATHS_A5GLB.length).toBe(1187 - 1183)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
