@@ -176,19 +176,54 @@ export function verifyConfinedProviderPairing(confined) {
  *  - KEYS: the names map is exactly the plane's own classes
  *    (grep/glob/bash — a foreign key pre-seeds the lane's class map with a
  *    class that has no row);
- *  - DISTINCT + NATIVE CLAIM: the four mount names (grep/glob/bash/read)
- *    are pairwise distinct, and a spelling that belongs to a native tool
- *    class may be claimed ONLY by its own row (names.bash:'bash' is the
- *    shipped takeover vector exactly as `readName` defaults to 'read';
- *    names.grep:'bash' or a shell row claiming 'read' is impersonation
- *    shape and is refused).
+ *  - DISTINCT: the four mount names (grep/glob/bash/read) are pairwise
+ *    distinct (one name, one placement);
+ *  - RESERVED NATIVE CLAIM (tightened by the root ruling 06:43Z — the
+ *    first cut keyed this off the COARSE permission class and thereby
+ *    accepted readName 'write'/'edit'/'lsp'/'read_image' and names.bash
+ *    'pwsh'; coarse class is not tool-implementation equivalence): a
+ *    reserved host/native spelling may be mounted ONLY where this install
+ *    surface assembles a same-name, same-meaning implementation for that
+ *    row — the supported pairs are the bash row at 'bash' (live-verified
+ *    takeover) and the read row at 'read' (the shipped `readName`
+ *    default). Every other reserved pairing (write/edit/read_image/lsp/
+ *    pwsh/grep/glob spellings on any row) is refused as
+ *    PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED before any construction.
  * Legitimate configs are untouched: DEFAULT_PLANE_NAMES + readName 'read'
  * pass, and every takeover spelling already live-verified passes.
  */
 const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
-const PLANE_NATIVE_CLAIMS = Object.freeze({
-  grep: 'grep', glob: 'glob', bash: 'bash', read: 'read', pwsh: 'bash',
-  read_image: 'read', write: 'read', edit: 'read', lsp: 'read',
+// Reserved host/native tool spellings a plane row must NOT silently mount
+// under. The criterion is the ASSEMBLED face, NOT the coarse permission
+// class (the first cut of this gate got that wrong — read_image/write/edit/
+// lsp share the read FILE CLASS with `read`, pwsh shares the shell CLASS
+// with `bash`, and coarse class is not tool-implementation equivalence;
+// root ruling 06:43Z). A reserved spelling may be claimed only where this
+// install surface actually assembles a same-name, same-meaning
+// implementation for that row. Measured pre-fix impostor face:
+// dev/agent-workflow/evidence/alpha5/natexe/measure-native-claims-pre-fix.
+// log — a governed READER mounted as 'write' MASKS the host writer, answers
+// with a read schema (file_path, no content face), returns file content
+// while writing zero bytes, and the placement feed hands the Guard its
+// identity to ABSTAIN (a VERIFIED impostor); the plane lane judges it by
+// effect CLASS while the durable permission-lifecycle face keys the
+// DISPATCHED name (permission-lifecycle/decision-lane.ts:174-184) — one
+// call, two verdict identities.
+const PLANE_RESERVED_NATIVE = Object.freeze(['bash', 'pwsh', 'read', 'read_image', 'write', 'edit', 'lsp', 'grep', 'glob'])
+// The supported takeover pairs, each with its shipped/verified lineage:
+//   bash row -> 'bash': the confined-shell placement under the native bash
+//              spelling, live-verified on both blueprint eras (natexe live
+//              kit) — the row's body IS a bash implementation under bash
+//              semantics (same name, same meaning);
+//   read row -> 'read': the shipped `readName` default (GLUE-7), a governed
+//              reader over the row's fs instance (same name, same meaning).
+// grep/glob rows keep the alias mount (GLUE-5 alias ruling): their own
+// native spellings have no verified assembled pairing on this surface.
+const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
+  bash: Object.freeze(['bash']),
+  read: Object.freeze(['read']),
+  grep: Object.freeze([]),
+  glob: Object.freeze([]),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -202,9 +237,8 @@ export function verifyPlaneNames(names, readName) {
     if (typeof spelling !== 'string' || !PLANE_NAME_SHAPE.test(spelling)) {
       return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane mount name for '${cls}' must match ^[a-z][a-z0-9_]{0,63}$ — got ${JSON.stringify(spelling) ?? 'undefined'}` }
     }
-    const owner = PLANE_NATIVE_CLAIMS[spelling]
-    if (owner !== undefined && owner !== cls) {
-      return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane row '${cls}' cannot mount under '${spelling}' — that native spelling belongs to row '${owner}'; takeover is legal only in a row's own class` }
+    if (PLANE_RESERVED_NATIVE.includes(spelling) && !(PLANE_SUPPORTED_NATIVE_TAKEOVERS[cls] ?? []).includes(spelling)) {
+      return { ok: false, code: 'PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED', message: `plane row '${cls}' cannot mount under reserved native name '${spelling}' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence` }
     }
     if (seen.has(spelling)) {
       return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane rows '${String(seen.get(spelling))}' and '${cls}' would both mount under '${spelling}' — one name, one placement` }

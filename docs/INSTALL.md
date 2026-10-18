@@ -444,12 +444,18 @@ config:
 - **缺省不挂平面**：行 config 无 `teamToolPlane` = 零挂载（typed-shut 旧世界
   逐字存续）。此形态下原生 `bash` 在治理世界保持 dispatch 期
   `BINDING_UNVERIFIED` 拒绝（fail-closed，GLUE-8 A4.4 已逐字钉）。
-- **挂载名（`names` / `readName`）值域封闭**，装配期校验（`PLANE_NAMES_INVALID`
-  = 拒启动，fail-closed）：形状 `^[a-z][a-z0-9_]{0,63}$`；`names` 键集 =
-  plane 自身类（grep/glob/bash）；四个挂载名两两互异；**原生拼写只能被本类
-  行接管**（`names.bash: "bash"` 合法 = shell 行接管 native `bash`，与 shipped
-  的 `readName` 默认 `"read"` 同款；shell 行冒充 `read`/`write` 或 grep 行冒充
-  `bash` 一律拒）。缺省 = `team_grep` / `team_glob` / `team_bash` 别名形态。
+- **挂载名（`names` / `readName`）值域封闭**，装配期校验（拒启动，
+  fail-closed）：形状 `^[a-z][a-z0-9_]{0,63}$`；`names` 键集 = plane 自身类
+  （grep/glob/bash）；四个挂载名两两互异（违规 = `PLANE_NAMES_INVALID`）；
+  **原生保留名只能按"装配面同名同义"接管**（违规 =
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`，独审 06:43Z 裁决：粗权限类别 ≠
+  工具实现等价）——受支持的对仅有 **shell 行 @ `"bash"`**（live 双时代实测
+  的 confined-shell 接管）与 **read 行 @ `"read"`**（shipped `readName`
+  默认）；`write`/`edit`/`read_image`/`lsp`/`pwsh`/`grep`/`glob` 等其余保留
+  拼写在任何行上一律拒（全 36 格矩阵见
+  `dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native.mjs`）。
+  非保留的自定义别名任意可挂（不冒充原生身份）。缺省 = `team_grep` /
+  `team_glob` / `team_bash` 别名形态。
 - **审批后执行**（takeover 形态 + 模板 `permissions.ask` 的 `{ tool: bash,
   resource: { kind: any } }`）：调用先开 durable ask；批准被**消费**后 placed
   confined body 才执行（governed root 内落盘可见）；OPEN 期零副作用；批准不

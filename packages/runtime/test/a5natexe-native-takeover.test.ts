@@ -261,30 +261,44 @@ describe('natexe N4 — the lane re-check speaks the native spelling of the take
 
 describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root 04:34Z)', () => {
   const D = { grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' }
-  it('every adversarial names shape is REFUSED with the typed code, never mounted', async () => {
+  const UNSUPPORTED = 'PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED'
+  it('every adversarial names shape is REFUSED with its typed code, never mounted', async () => {
     const verify = await loadVerifyPlaneNames()
-    const refused: Array<[string, Record<string, string>, string, string?]> = [
-      ['row-name collision (shell row under the grep row)', { ...D, bash: 'team_grep' }, "both mount under 'team_grep'"],
-      ['native-spelling impersonation (shell row under read)', { ...D, bash: 'read' }, "belongs to row 'read'"],
-      ['empty-string mount', { ...D, bash: '' }, 'must match'],
-      ['prototype-ish mount', { ...D, bash: '__proto__' }, 'must match'],
-      ['foreign class key', { ...D, foo: 'x' }, "closed to its own classes"],
-      ['file row claiming the shell native', { ...D, grep: 'bash' }, "belongs to row 'bash'"],
-      ['shell row claiming a file-tool native', { ...D, bash: 'write' }, "belongs to row 'read'"],
-      ['readName colliding with a mounted row', D, "both mount under 'team_grep'", 'team_grep'],
+    // (id, names, readName, expected code, verbatim message tail) — the code
+    // split (PLANE_NAMES_INVALID vs _NATIVE_CLAIM_UNSUPPORTED) is the 06:43Z
+    // ruling: reserved native names die on the ASSEMBLED-PAIRING law, not on
+    // coarse permission class.
+    const refused: Array<[string, Record<string, string>, string, string, string]> = [
+      ['row-name collision (shell row under the grep row)', { ...D, bash: 'team_grep' }, 'read', 'PLANE_NAMES_INVALID', "both mount under 'team_grep'"],
+      ['shell row under reserved read', { ...D, bash: 'read' }, 'read', UNSUPPORTED, "assembles no same-name, same-meaning implementation"],
+      ['shell row under reserved pwsh', { ...D, bash: 'pwsh' }, 'read', UNSUPPORTED, "reserved native name 'pwsh'"],
+      ['file row claiming the shell native', { ...D, grep: 'bash' }, 'read', UNSUPPORTED, "reserved native name 'bash'"],
+      ['shell row claiming a file-tool native', { ...D, bash: 'write' }, 'read', UNSUPPORTED, "reserved native name 'write'"],
+      ['reader row as the writer (readName=write)', D, 'write', UNSUPPORTED, "reserved native name 'write'"],
+      ['reader row as the editor (readName=edit)', D, 'edit', UNSUPPORTED, "reserved native name 'edit'"],
+      ['reader row as the image reader (readName=read_image)', D, 'read_image', UNSUPPORTED, "reserved native name 'read_image'"],
+      ['reader row as the lsp (readName=lsp)', D, 'lsp', UNSUPPORTED, "reserved native name 'lsp'"],
+      ['grep row claiming its own native (no assembled pairing)', { ...D, grep: 'grep' }, 'read', UNSUPPORTED, "reserved native name 'grep'"],
+      ['empty-string mount', { ...D, bash: '' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
+      ['prototype-ish mount', { ...D, bash: '__proto__' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
+      ['foreign class key', { ...D, foo: 'x' }, 'read', 'PLANE_NAMES_INVALID', 'closed to its own classes'],
+      ['readName colliding with a mounted row', D, 'team_grep', 'PLANE_NAMES_INVALID', "both mount under 'team_grep'"],
     ]
-    for (const [id, names, messageNeedle, read] of refused) {
-      const v = verify(names, read ?? 'read')
+    for (const [id, names, read, code, needle] of refused) {
+      const v = verify(names, read)
       expect(v.ok, id).not.toBe(true)
-      expect(v.code, id).toBe('PLANE_NAMES_INVALID')
-      expect(v.message ?? '', id).toContain(messageNeedle)
+      expect(v.code, id).toBe(code)
+      expect(v.message ?? '', id).toContain(needle)
     }
   })
-  it('every legitimate shape stays accepted (zero-regression: defaults, takeover, custom alias)', async () => {
+  it('every legitimate shape stays accepted (zero-regression: defaults, the two SUPPORTED takeover pairs, custom aliases)', async () => {
     const verify = await loadVerifyPlaneNames()
     expect(verify(D, 'read').ok).toBe(true)
+    // The supported pairs — bash row at 'bash' (live-verified takeover), read
+    // row at 'read' (the shipped readName default):
     expect(verify({ ...D, bash: 'bash' }, 'read').ok).toBe(true)
+    // Non-reserved custom aliases are always mountable (no native identity claimed):
     expect(verify({ ...D, bash: 'myshell' }, 'read').ok).toBe(true)
-    expect(verify({ grep: 'grep', glob: 'glob', bash: 'bash' }, 'read').ok).toBe(true)
+    expect(verify({ grep: 'mygrep', glob: 'myglob', bash: 'myshell' }, 'myread').ok).toBe(true)
   })
 })
