@@ -103,14 +103,14 @@ Structural rules (all fail loudly with a classified reason):
     retirement: the window's duration/exit is the T-1 pending ruling and is
     NOT pre-set anywhere; formal Schema ADR:
     `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
-    **Provenance of that run set** (doc-sync 2026-10-18): the `{3, 4}` face is
-    the **flip candidate `a7a1cfd2` (PR #324, pending)**; on master
-    (`7ab56dbf`) the constant is still `[3]`
-    (`packages/domain/blueprint/src/schema.ts:75`) and a v4 document is refused
-    `SCHEMA_VERSION_MISMATCH` — the dormant grammar ships unwired there
-    (`382e5fb6`). Read the v4 lines of this file as *what the candidate
-    accepts* until the flip merges; adjudication (1) at the end of this file
-    holds the full per-generation table.
+    **Provenance of that run set** (doc-sync round 2, post-merge): the flip
+    LANDED — `{3, 4}` is a master fact since **`ee49c4c0`** (PR #324),
+    `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3, 4]` at
+    `packages/domain/blueprint/src/schema.ts:87`. Immediately before it
+    (`7ab56dbf` and back to `382e5fb6`) the constant was `[3]` and the same
+    grammar shipped dormant/unwired. Adjudication (1) at the end of this file
+    holds the full per-generation table **and the document-face limitation**
+    (a v4 document runs; its `toolBindings` lanes do not execute).
     v3 = v2 shape + the two REQUIRED authority documents, and a document that
     omits either does not parse; v4 = the SAME frozen core face (validated by
     the same frozen v3 validator — the fourth parser delegates) plus the ONE
@@ -681,36 +681,43 @@ _Which run set "the current supported version" names moved after Alpha.4, and
 this file said nothing about it until now (doc-sync 2026-10-18; every line below
 was read off the code at the SHA it names):_
 
-- **On master today (`7ab56dbf`) the run set is `[3]`.**
-  `packages/domain/blueprint/src/schema.ts:75` reads
-  `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3]`, so a
-  `schemaVersion: 4` document is refused `SCHEMA_VERSION_MISMATCH`. On master,
-  **v3 is the only version to author against.**
-- **The v4 GRAMMAR already exists — DORMANT** (`382e5fb6`, PR #316, the
-  reversible half): the fourth parser ships **unwired**
-  (`packages/domain/blueprint/src/blueprint-v4.ts`, whose header section is
-  titled "WHY THIS FILE IS NOT WIRED": *"NOTHING shipped reaches the functions
-  below"*), alongside the v4 authoring maps and the migration report. The §4.4
-  closed grammar is machine-pinned by `packages/domain/test/a5sr1-…` through
-  `a5sr5-…` (NEG 33/33). Dormant = it parses in tests, it runs nowhere.
-- **The enablement route is public** (`71af4f64`, PR #320, doc-only): a
-  4-stage table; stages 1–3 are ADR-gate-normal (no user ruling needed),
-  stage 4 is gated **only** on T-1.
-- **The flip is a CANDIDATE, not a delivered fact**: `a7a1cfd2`
-  (`alpha5-v4-flip`, **PR #324 — pending, not on master**) is the stroke that
-  moves the constant to `[3, 4]`; it is what makes the `{3, 4}` wording of §2,
-  §4.4 and `docs/blueprint-authoring.md` literally true on the tree that carries
-  it. Read those sections as **what the candidate accepts** until it merges. The
-  ADR (`docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`)
-  carries the window law either way: **翻档 ≠ 退役** — the flip is not a
-  retirement, and its duration/exit is the T-1 pending ruling, pre-set nowhere.
-- **Effect posture, both generations**: a v4 document's `toolBindings` is
-  parsed, frozen and hash-bound; the runtime effect plane does not yet EXECUTE
-  those lanes. Authoring v4 is safe-but-dark for effects and irreversible for
-  identity.
-- **Retired set is generation-stable**: **1** and **2** stay defined-but-retired
-  (`migration-required`, operator owns the migration); a never-defined version
-  keeps its typed parse refusal.
+- **Since `ee49c4c0` (PR #324, MERGED) master runs `{3, 4}`.**
+  `packages/domain/blueprint/src/schema.ts:87` reads
+  `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3, 4]`; a
+  `schemaVersion: 4` document parses, freezes, hash-binds and runs through the
+  production entry (live-host leg VERDICT PASS 14/14,
+  `dev/agent-workflow/evidence/alpha5/v4-flip/`; pins
+  `packages/domain/test/a5fl1-blueprint-v4-flip.test.ts` /
+  `a5fl2-envelope-scope-mirror.test.ts`). v3 keeps its frozen branch with zero
+  load-time deformation — authoring at 3 or at 4 is legal today.
+- **Immediately before the flip** (from `7ab56dbf` back to `382e5fb6`) the run
+  set was `[3]` and the same grammar shipped **dormant and unwired** (the
+  fourth parser's own header: "WHY THIS FILE IS NOT WIRED … NOTHING shipped
+  reaches the functions below", `packages/domain/blueprint/src/blueprint-v4.ts`
+  @ `382e5fb6`, PR #316 — the reversible half, with the v4 authoring maps and
+  the migration report; §4.4's closed grammar was pinned there by
+  `a5sr1-…`–`a5sr5-…`). That is the history of the constant, not its face today.
+- **The enablement route** (`71af4f64`, PR #320, doc-only): a 4-stage table;
+  stages 1–3 ADR-gate-normal (no user ruling), stage 4 gated **only** on T-1.
+  `ee49c4c0` is that stage-4 stroke, taken under that table.
+- **Document face, not effect face — what the flip did NOT move**: a v4
+  document's `toolBindings` is parsed, frozen and hash-bound; the runtime effect
+  plane does not EXECUTE those lanes and dispatch fail-closes at the Tool
+  Binding verification gate. The same-stroke M-3 envelope Scope tables are
+  **GRAMMAR-not-ACCEPTANCE** — `fs-metadata` / `network-destination` /
+  `domain-reference` PARSE
+  (`packages/domain/authority-envelope/src/authority-envelope.ts:149-151`)
+  with **zero new rung** and grant nothing by themselves; the verified-effect
+  feed is the effect-queue round's. Authoring v4 is therefore safe-but-dark for
+  effects and irreversible for identity. The ADR
+  (`docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`)
+  carries the window law: **翻档 ≠ 退役** — the flip is not a retirement, its
+  duration/exit is the T-1 pending ruling, pre-set nowhere.
+- **Retired set is generation-stable**: `DEFINED = [1, 2, 3, 4]`
+  (`schema.ts:105`) while `RETIRED` stays the DERIVED complement — `[1, 2]` —
+  (`migration-required`, operator owns the migration; the flip deleted no v3
+  field and declared no retirement). A never-defined version keeps its typed
+  parse refusal.
 
 **(2) A shell-class rule narrowed below `allow` is a one-way door in Alpha.4.**
 If an envelope or member overlay caps a shell-class command at `ask`, executing

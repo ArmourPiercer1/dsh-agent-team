@@ -37,11 +37,20 @@ gitignored) — this section is a pointer summary, not the authority:
 - A **TeamBlueprint** must contain **exactly one complete LeaderTemplate** (plus member
   templates / policy / quota definitions); a blueprint that only defines teammates is
   structurally invalid.
-- A **TeamBlueprint** document is versioned and closed-world. The run set is the
-  dual-parsing window **`{3, 4}`**: v3 parses through its frozen branch with zero
-  load-time deformation; v4 adds only the optional `toolBindings` effect-governance
-  family over the same frozen core face (formal Schema ADR:
-  `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+- A **TeamBlueprint** document is versioned and closed-world. Since the v4 flip
+  (**merged at `ee49c4c0`, PR #324**) the run set is the dual-parsing window
+  **`{3, 4}`** (`packages/domain/blueprint/src/schema.ts:87`; before it the set
+  was `[3]` with the v4 grammar shipped dormant at `382e5fb6`): v3 parses
+  through its frozen branch with zero load-time deformation (canary hash pinned
+  in the formal Schema ADR:
+  `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`);
+  v4 adds only the optional `toolBindings` effect-governance family over the
+  same frozen core face. **DOCUMENT FACE, NOT EFFECT FACE**: a v4 document
+  parses, freezes, hash-binds and runs as a document (live-host leg 14/14,
+  `dev/agent-workflow/evidence/alpha5/v4-flip/`), while its lanes are not
+  executed — dispatch fail-closes at the Tool Binding verification gate, the
+  same-stroke M-3 envelope Scope tables are GRAMMAR-not-ACCEPTANCE (zero new
+  rung), and the verified-effect feed is a later route.
   **翻档 ≠ 退役 — the flip is not a retirement**: the window's DURATION and EXIT are
   the T-1 pending ruling and this round does NOT pre-set them; v1/v2 stay
   defined-but-retired (discoverable with identity, refused as operator-owns-the-migration),

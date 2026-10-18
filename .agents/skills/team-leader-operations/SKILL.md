@@ -1,6 +1,6 @@
 ---
 name: team-leader-operations
-description: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals, archive member, grant/revoke permission rules — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, move a member out of the active work set, or change a member's durable permission overlay.
+description: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending controls (team_list_pending_control), archive member, grant/revoke permission rules — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, move a member out of the active work set, or change a member's durable permission overlay.
 ---
 
 # Team Leader Operations
@@ -145,11 +145,29 @@ row `0e59140b`, PR #323, which carried the reviewed GLUE-7 work of the closed
   `plane.confinedProvider`.
 - `team_glob` — **no production effect body at all**: every call lands on the
   typed refusal `IO_POLICY_UNSUPPORTED` (`productionBackends.glob = shut`,
-  `team-tool-plane.mjs:403-408` at `0e59140b`). The anchored rg implementation
-  is the **candidate `04f72c1b`…`ee9b30d5` (PR #322, pending — not on master)**,
-  whose own re-review found a name-class leak and whose four merge gates are
-  open; until it lands, `team_glob` is honestly shut and must not be described
-  as working.
+  `team-tool-plane.mjs:403-408` at `0e59140b`). Two DIFFERENT candidate
+  histories sit behind that shut row, with two different failure classes —
+  keep them apart:
+  - the **archived inline attempt** of the GLUE-7 round
+    (`a5g7-confined-rg-glob`: wiring removed, factory archived 未入产, the
+    disclosure is in the plane's own comment) failed its security re-review on
+    a **name-class** leak — a verify→launcher string-chdir window combined with
+    the then-present provider `runtime_base` `'/'` READ_DIR grant could surface
+    outside NAMES (measured **3/10700**; content bytes never). The
+    `runtime_base` half of that cause is closed on master: the `'/'` grant was
+    dropped by `0e59140b` (PR #323) with enumeration negative controls live.
+  - the **standalone anchored-rg candidate** `04f72c1b`…`ee9b30d5`
+    (**PR #322, pending — not on master**) is judged **整体未过** in the R2
+    register (`dev/agent-workflow/evidence/alpha5/PRODUCTION-READINESS-CHECKLIST.md`
+    §6.2, root 23:05Z correction): the answer/race channel PASSED (6600
+    swap-race iterations, zero leak) while the **spill channel flowed results
+    BEFORE the verdict (184/5100 = safety FAIL)** — a channel the green 46/46
+    suite did not cover. Its four merge gates stay open (verdict-after sink
+    gating re-attacked across return/stream/spill/error; the `runtime_base`
+    narrowing interplay; `allowPaths` same-shape assembly; a fresh review at the
+    real production entry).
+  Until a glob row lands on master and passes at the production entry,
+  `team_glob` is honestly shut and must not be described as working.
 - Any class whose row is unconfigured keeps that same typed shut landing —
   the closed world invents no fallback. A shut landing is a LANDING, not
   evidence of a policy denial.
