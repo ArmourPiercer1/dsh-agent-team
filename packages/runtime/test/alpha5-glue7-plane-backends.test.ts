@@ -215,12 +215,29 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(existsSync(sentinel)).toBe(false)
   })
 
-  it('G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider', async () => {
+  // G6 — INT-R3 RE-TIE (this round, by the integration owner). The pin above this
+  // block recorded the PRE-integration landing: the glob row honestly shut because
+  // no anchored implementation was wired. Master's own glob commit names the round
+  // that changes it — "mount comes with integration round + runtime_base narrowing"
+  // (15481988) — and G6b below is the CANDIDATE-A archive written to be paired with
+  // exactly that narrowing layer. So the current form is: the row mounts the
+  // anchored confined-rg face. What the old leg guarded is NOT weakened — it is
+  // replaced by a stronger, measurable statement: an inside match comes back and
+  // OUTSIDE BYTES NEVER DO. The residual CANDIDATE-A name-class exposure (outside
+  // NAMES can surface via the provider's runtime_base '/' READ_DIR grant plus the
+  // verify->launcher string-chdir window; bytes never, measured 3/10700) stays
+  // disclosed at the mount row and in glue7/glob/, and G6b keeps pinning the
+  // factory's bounded face unchanged.
+  it('G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
+    expect(String(built.value.backends.glob.backendId)).toBe('a5glb-anchored-confined-rg-glob')
     const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
-    expect(res.text).toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).toContain('.txt')
+    expect(res.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
+    expect(res.text).not.toContain(OUTSIDE_DIR)
   })
 
   // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18: the confined-rg

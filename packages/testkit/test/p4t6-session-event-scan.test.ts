@@ -2539,6 +2539,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/alpha5-search-harness.ts',
       'packages/runtime/test/alpha5-search-backend.test.ts',
     ]
+    // alpha5-int-r3 (branch `alpha5-int-r3`, DECLARATIVE REHEARSAL of PR #330's
+    // candidate head 3f78fcce on master 15481988): the integration round's own leg
+    // file — the two integration conditions of the mount flip (allowPaths same-shape
+    // across the glob/search/shell rows; the internal log never reaching a
+    // member-visible sink) plus the flip-coverage and matrix-name legs. One new
+    // scannable path, owned by this round.
+    const SCANNED_PATHS_A5INTR3: readonly string[] = [
+      'packages/runtime/test/a5int-r3-mount-integration.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2586,7 +2595,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5FLIP.length +
         SCANNED_PATHS_A5NATEXE.length +
         SCANNED_PATHS_A5GLB.length +
-        SCANNED_PATHS_A5SRGP.length,
+        SCANNED_PATHS_A5SRGP.length +
+        SCANNED_PATHS_A5INTR3.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2635,7 +2645,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5FLIP.length +
         SCANNED_PATHS_A5NATEXE.length +
         SCANNED_PATHS_A5GLB.length +
-        SCANNED_PATHS_A5SRGP.length,
+        SCANNED_PATHS_A5SRGP.length +
+        SCANNED_PATHS_A5INTR3.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2708,6 +2719,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5NATEXE,
       ...SCANNED_PATHS_A5GLB,
       ...SCANNED_PATHS_A5SRGP,
+      ...SCANNED_PATHS_A5INTR3,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }

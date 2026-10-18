@@ -77,6 +77,7 @@ import { createProductionAdmissionAssembly } from '../../../tool-admission/index
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
+import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -517,8 +518,44 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // standard global object is the honest route.
     globalThis.console?.log(`[dsh-agent-team] ${line}`)
   }
+  // INT-R3 FLIP 1/3 — the srgp lane shipped the rg row behind `confined` and left the
+  // mount as the integration owner's one line (evidence/alpha5/srgp/README.md
+  // "Gap for the integration owner"): WITHOUT `confined` the production search row is
+  // still the grep(1) port and the rg row only exists where a caller passes the
+  // provider conf. Same shape as the shell row below (`confined: confinedCfg`), so the
+  // governed rg face is what a configured world actually runs; an fsInstance-only
+  // world still gets the disclosed grep port (legs G1/G1b/G2/G9 stay green by design).
   const realSearch = fsInstance !== null && typeof fsInstance.rootDir === 'string'
-    ? createAnchoredSearchBackend({ realmId, rootDir: fsInstance.rootDir, observe: logBackend('a5g7-search') })
+    ? createAnchoredSearchBackend({
+      realmId,
+      rootDir: fsInstance.rootDir,
+      confined: confinedCfg,
+      observe: logBackend('a5g7-search'),
+    })
+    : null
+  // INT-R3 FLIP 2/3 — the glob row leaves the typed shut face for the anchored rg
+  // backend, on the SAME provider and launcher as its two siblings and with the SAME
+  // allowPaths shape (system rx dirs + the rg bin dir + a READ_DIR/READ_FILE grant on
+  // the anchored root: glob-backend.mjs:837-842 is byte-for-byte the search row's
+  // list at search-backend.mjs:746-751; the rw lane stays exclusively the shell row's).
+  // CANDIDATE-A'S RESIDUAL EXPOSURE IS NOT CLAIMED AWAY: the confined-rg glob
+  // candidate FAILED the security re-review for a NAME-CLASS leak — the
+  // `verify` -> launcher string-`chdir` window plus the provider's `runtime_base '/'`
+  // READ_DIR grant — so OUTSIDE NAMES can surface to a caller on this face (bytes
+  // never: the re-review measured 3/10700). The runtime-base narrowing round built the
+  // pre-condition layer this mount was waiting on for the swap-cwd landing cause; the
+  // name-class window is the provider/launcher's own face, disclosed here rather than
+  // denied. The walk root is the child's cwd, so no swappable path string rides argv
+  // (that removal is what the CANDIDATE-A note credits this row with).
+  const realGlob = fsInstance !== null && typeof fsInstance.rootDir === 'string' && confinedCfg !== null
+    ? createAnchoredGlobBackend({
+      realmId,
+      rootDir: fsInstance.rootDir,
+      confined: confinedCfg,
+      templateId: String(templateId),
+      instanceId: String(input.instanceId ?? templateId),
+      observe: logBackend('a5glb-glob'),
+    })
     : null
   const realShell = confinedCfg !== null
     ? createConfinedShellBackend({
@@ -532,7 +569,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     : null
   const productionBackends = Object.freeze({
     search: realSearch ?? shut,
-    glob: shut,
+    glob: realGlob ?? shut,
     shell: realShell ?? shut,
   })
   const hostedSearch = input.backends?.search ?? productionBackends.search
