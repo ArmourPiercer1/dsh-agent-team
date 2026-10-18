@@ -7,9 +7,9 @@
 
 ## 0. 结论速览
 
-1. **承诺程度**：#249/S0/PR8 承诺的是（a）字段族在 vNext schema 的**存在与封闭形状**（已交付 #316/#324）、（b）**声明语义**（无隐式默认、声明零授权力、不新造第二套身份语言）、（c）家族进**内容哈希**；**没有任何一处**承诺本窗口内 runtime 消费 v4 家族，**没有任何一处**承诺 `def#N` 由家族推导。runtime 生效被**排期**给 effect-queue 行为轮（ADR §7 原文 + `docs/blueprint-authoring.md:168-172`「safe-but-dark」），PR8 总 Gate（矩阵+真拒）才收全量效应行为——**缺实现=在排期，缺字段=既定封闭形状，均非新裁**。
+1. **承诺程度**：#249/S0/PR8 承诺的是（a）字段族在 vNext schema 的**存在与封闭形状**（已交付 #316/#324）、（b）**声明语义**（无隐式默认、声明零授权力、不新造第二套身份语言）、（c）家族进**内容哈希**；**没有任何一处**承诺本窗口内 runtime 消费 v4 家族，**没有任何一处**承诺 `def#N` 由家族推导。定性 = **有来源的既定延期项**，出处**分层**：**最初承诺**（2026-10-16：S0 `:171`/`:16`、post-poc `:222`）只到「字段存在+封闭形状+进哈希」，**延期字样在其间不出现**；**延期声明出自后补文件**——正式 Schema ADR `:101-102`（v4-flip 轮 2026-10-17 后补，commit `a7a1cfd2` 同笔，git 亲验）把 runtime 消费排期 effect-queue 轮，`docs/blueprint-authoring.md:168-172`「safe-but-dark」亦同笔同轮产物。这是**后补文件的排期声明**，不得读作「最初承诺时即批准延期」；PR8 总 Gate（矩阵+真拒）才收全量效应行为——字段面已兑现，消费面=有来源的既定延期，**均非新裁项**（但见 ④.2 独立可用性缺口行）。
 2. **复用差**：feed 通道（#313 入参面）条目 = `{definitionIdentity, realmId}` 平坦两键、身份=placement 时刻 WeakMap 指纹（不可作者、进程内、内容无关）；v4 家族条目 = `{owner, name, authorization, io, execution}` 声明五键——**除 `name` 外键集不相交**，家族侧无任何身份载体，feed 侧无任何策略载体，不能不改语义直接复用。
-3. **定性**：**可映射**（选项 A=现状律即最小安全映射：家族=声明面，身份继续走 placement，效应接线归 effect-queue 轮——GLUE-8 assembled 20/20 已实证 v4 世界在家族全暗下真执行）；**选项 B**（def#N 自家族推导）**须新增一条确切身份语义**且撞 `不新造第二套身份语言`（CAND D-04）与 #313 三闸的 placement-only 权威法，才是真待裁。
+3. **定性**：**可映射**——**选项 A = 既定律现行**（家族=声明面，身份继续走 placement，效应接线归 effect-queue 轮——GLUE-8 assembled 20/20 已实证 v4 世界在家族全暗下真执行）；**选项 B**（def#N 自家族推导）**须新增一条确切身份语义**且撞 `不新造第二套身份语言`（CAND D-04）与 #313 三闸的 placement-only 权威法——**选项 B 不推进、不呈裁**（§3.3 问句仅备查留存，未呈报）。
 4. **明确声明**：**不假定用户已被问过本件 §3.3 的问题**——该问题（作者面是否获得身份 mint 权）在本仓任何已登记待裁表（A-1..A-8、§6.1 U 表、DECISION-PACK）中**无先例条目**，属 GLUE-8（02:2xZ）首见披露。
 
 ---
@@ -52,12 +52,12 @@
   - `:27`（D-02）封闭字段表/默认拒绝；`:36`（D-03）无隐式默认；`:54`（D-05）三轴取代 kind（生产落值仅 `implementationOrigin/executionBoundary`，assurance 未入生产字段表）；`:95`（D-10）「schema 声明本身零授权力」。全部 = A+语义律，**无 B/C 承诺**。
 - 正式 ADR `ADR-vnext-blueprint-schema-v4.md`（v4-flip 轮转正件，#324 同笔）：
   - `:49-51`：「**v4**：= v3 全部核心面 **+ 可选 `toolBindings` effect-governance 家族**（…家族按 D-02/D-03/D-05 封闭词表拒绝式解析）。`toolBindings` 进入内容哈希的 v4 投影：**只有 `toolBindings` 不同的两篇 v4 文档必须哈希不同**（家族不落进哈希 = 身份洗白…）」 → **A + 哈希绑定承诺（已兑现）**。
-  - `:101-102`（§7）：「文档面**接受**这些 token 属 **effect-queue 行为轮**（独立 PR、独立审查）：在那之前文档仍按名拒绝——先钉死的方向是『**parse-accept ⇒ runtime 可映射**』，本文件不制造反向裂缝。」 → **B/C 的既定排期条款**：行为接线另有其轮；本轮只要求「可映射」（映射表在场=满足，见 §2.4）。
+  - `:101-102`（§7）：「文档面**接受**这些 token 属 **effect-queue 行为轮**（独立 PR、独立审查）：在那之前文档仍按名拒绝——先钉死的方向是『**parse-accept ⇒ runtime 可映射**』，本文件不制造反向裂缝。」 → B/C 的**后补排期条款**（本 ADR = 正式 ADR，**2026-10-17 v4-flip 轮后补**（`a7a1cfd2` 同笔，git 亲验），**晚于** 2026-10-16 的最初承诺文件——它是排期声明的**出处**，不是最初承诺的一部分）：行为接线另有其轮；本轮只要求「可映射」（映射表在场=满足，见 §2.4）。
   - `:109`：D-02…D-11「随本 ADR **采纳**（grammar 半已在 #316 在产，语义逐腿 = a5sr1…a5sr5 在册钉）」。
-- 用户面披露 `docs/blueprint-authoring.md:168-172`：「**Production effect acceptance is still closed.** A v4 document's `toolBindings` is parsed, frozen and hash-bound — but the runtime effect plane does not yet EXECUTE those lanes… **wiring is the effect-queue round's.** Authoring a v4 document is therefore **safe-but-dark for effects**…」 → 发布轮自己声明「未生效」为既定态。
+- 用户面披露 `docs/blueprint-authoring.md:168-172`：「**Production effect acceptance is still closed.** A v4 document's `toolBindings` is parsed, frozen and hash-bound — but the runtime effect plane does not yet EXECUTE those lanes… **wiring is the effect-queue round's.** Authoring a v4 document is therefore **safe-but-dark for effects**…」 → 发布轮文件自宣「未生效」为既定态。**年代/地位**：本文件 v4 段与正式 ADR 同为 `a7a1cfd2`（2026-10-17 23:29Z，v4-flip 轮）产物（`git log -S` 亲验）——**后补披露**，非 2026-10-16 最初承诺件内容。
 - 待裁登记面 `dev/agent-workflow/evidence/alpha5/prod/VNEXT-SCHEMA-ADR.md`：`:29`（B1 行）「内部对象已冻结：`tool-governance/src/binding.ts:56` `ToolBinding`…作者面→内部面映射引擎已落码且默认拒绝 = `…/field-mapping.ts`（…**DORMANT 待接**）」；`:81` A-1（必填性=文本真空→后按 (c) 可选落产）；`:110` 既定消费链草图「`toolBindings` → ToolBinding{agentScopeKey,toolName,policyGeneration,…}(binding.ts:56)」；`:90` 归位注「A-1..A-8 全部归 ADR Gate 常规转正流程…**是 ADR 问题不是逐条问用户的理由**」。**无任何条目把「家族→def#N」列为已裁/已问项。**
 
-**①小结（承诺到什么程度）**：承诺到「**字段族存在、封闭形状、拒绝式解析、进哈希、方向上经映射表挂 PR0 契约、效应行为排期 effect-queue 轮**」；未承诺「本窗口 runtime 消费」，未承诺「v4 即生效」，更未出现「def-anchor/digest 家族字段」或「def#N 由家族推导」的任何承诺或登记——**GLUE-8 停针披露与既定设计一致，非缺口上裁，唯 def#N 推导问题为新语义（见 ③）**。
+**①小结（承诺到什么程度）**：最初承诺（2026-10-16）到「**字段族存在、封闭形状、拒绝式解析、进哈希、方向上经映射表挂 PR0 契约**」为止；「效应行为延期 effect-queue 轮」是**后补文件**（2026-10-17 正式 ADR `:101-102` + 同轮 authoring 披露）的排期声明 = **有来源的既定延期项**（勿写成最初承诺时已批延期）。最初件未承诺「本窗口 runtime 消费」，未承诺「v4 即生效」，更未出现「def-anchor/digest 家族字段」或「def#N 由家族推导」的任何承诺或登记——**GLUE-8 停针披露与既定设计一致，非缺口上裁；def#N 推导 = 选项 B，不推进、不呈裁（见 ③）**。
 
 ---
 
@@ -129,21 +129,31 @@ grep -rn "toolBindings" packages/runtime packages/tools packages/remote packages
 6. `v4-authoring-map.ts` 须新增身份目标键（破「作者面零身份」）+ 家族闭五键须加 digest/def-anchor 键 = schema 扩面，触 D-02 封闭表与 a5sr5 负例表；
 7. `a5g8-v4feed-units.test.ts` U1 STOP-pin 翻案 + `run-v4-feed-live.mjs:953-957`（「asserting executed here would assert the wrong design」）所钉设计面改写。
 
-### 3.3 一个可决策问题的精确措辞（只 U1；保守暂停范围 = U1）
+### 3.3 一个可决策问题的精确措辞（**未呈报、备查**——根 02:44Z ②：选项 A 即既定律现行、无需裁；选项 B 不推进、不呈裁）
+
+**地位**：下列问句**未向任何裁决主体呈报**，仅备查；仅当未来**显式指令**「家族推导 def#N」（选项 B）时才启用。
 
 > **U1 裁定问：** v4 `toolBindings` 家族的运行时消费，是否批准**选项 A = 既定律不变**——家族保持声明面（parse/冻结/进哈希），绑定验证身份继续只由 placement 记录 mint（def#N 代数不动），家族策略条目（authorization/io/execution）的效应接线按既定排期归 effect-queue 行为轮、本窗口不做任何消费接线？
 > 若**不批准**、而要求家族条目参与/推导绑定身份（digest/def-anchor 或 def#N 映射），即须另批 §3.2 引文那**一条新身份语义**（作者面获得身份授予权，撞 D-04「不新造第二套身份语言」，需随附 ADR 修正案）。
-> 未获裁定前，**保守暂停范围 = U1 仅此一项**（v4 面家族消费接线不做、不发明）；GLUE-8 已交付面、effect-queue 轮排期、其余 lane 不受该暂停影响。
+> 若未来实际触发该问，**保守暂停范围 = U1 仅此一项**（v4 面家族消费接线不做、不发明）；GLUE-8 已交付面、effect-queue 轮排期、其余 lane 不受该暂停影响。
 
 ## ④ 明确声明
 
-1. **不假定用户已被问过任何问题**：§3.3 之问在本仓全部已登记待裁面（VNEXT-SCHEMA-ADR A-1..A-8 表 `:78-88` + 归位注 `:90`/`:139`、§6.1 U 表、DECISION-PACK-20261016、COORDINATION）中**均无既问问项**；A-1..A-8 按根 08:05Z 口径属 Gate 常规转正、非用户问卷，而「家族→身份」连 A-1..A-8 亦不在列——该映射问题是 GLUE-8 停针（SESSION_ROUTER_LOG `:6701-6702`）首次显式化为「待根裁」。
-2. 本件为只读考证：零端口、零世界、零宿主、:3080 零触碰、`tests/` 零写入、生产树零改动（本分支唯一新增 = 本 evidence 目录一笔 docs）。
-3. **ff push 状态（运行记录）：** 见下节。
+1. **不假定用户已被问过任何问题**：§3.3 之问在本仓全部已登记待裁面（VNEXT-SCHEMA-ADR A-1..A-8 表 `:78-88` + 归位注 `:90`/`:139`、§6.1 U 表、DECISION-PACK-20261016、COORDINATION）中**均无既问问项**；A-1..A-8 按根 08:05Z 口径属 Gate 常规转正、非用户问卷，而「家族→身份」连 A-1..A-8 亦不在列——该映射问题是 GLUE-8 停针（SESSION_ROUTER_LOG `:6701-6702`）首次显式化（其时写作「待根裁」；**本件现状态 = 未呈报、备查**，选项 B 不推进、不呈裁）。
+2. **如实缺口行（根 02:44Z ③，独立于①的延期声明，不得混谈）**：GLUE-8 assembled 世界实测——native `bash` 走 ask → **durable leader-approval 开、审批落账被消费**（账本三行对齐 chain=true）→ **落点仍是 Tool Binding verification gate 拒（`TOOL_BINDING_UNVERIFIED`， NOTHING 执行）**（glue8 README `:59-65`、A4.4 钉拒绝落点；kit `run-v4-feed-live.mjs:953-959` 注释自认该落点为当时「正确设计」面）。这构成**实际可用性缺口**：原生工具承诺的「**审批后执行**」在产品面（fed plane 治理世界）**未通**——批准发生了、执行不发生。**此条不得用 U1「家族=声明面/safe-but-dark」的延期声明解释或淡化**：延期的是 v4 家族效应接线；「批准后执行」本身是被承诺的治理语义（S0 `:173`「多 Effect ASK」测试项、`:175` 矩阵行「所有 Supported…真实 Host 证据」、`:204` DoD「正/负控…均由真实 Host 验证」），native bash 批准后执行腿在治理世界要等原生族 adapter/placement 覆盖（S0 PR5 Bash Tool Adapter / pb 正控可达化线）才闭合。归属=**产品可用性缺口，单独追踪**，非 U1 声明面问题、非本件可关闭项。
+3. 本件为只读考证：零端口、零世界、零宿主、:3080 零触碰、`tests/` 零写入、生产树零改动（本分支新增 = 本 evidence 目录两笔 docs，forward-only）。
+4. **ff push 状态（运行记录）：** 见下节。
 
 ## ⑤ 红线与运行记录
 
 - CORE PATCH BUDGET = 0；本分支 = 纯 docs（`dev/agent-workflow/evidence/alpha5/u1-toolbindings/` 单文件）。
 - 1 task = 1 branch = 1 worktree = 1 writer（`.worktrees/alpha5-u1-probe`，base `alpha5-int-mnt@46e5649a`）。
-- ff push：`git push origin alpha5-u1-probe` 于本会话执行，结果如实记录于此 → **无凭据，未推**（https remote 无凭据，同 GLUE-7/runtime-base 先例）；branch 本地留存，head 以 `git rev-parse alpha5-u1-probe` 为准。
+- ff push：`git push origin alpha5-u1-probe` 于本会话执行，结果如实记录于此 → **无凭据，未推**（https remote 无凭据，dry-run 与实推同报 fatal，同 GLUE-7/runtime-base 先例）；branch 本地留存，head 以 `git rev-parse alpha5-u1-probe` 为准。
+
+## ⑥ 更正笔登记（根 02:44Z，forward-only，本文件第二笔 commit）
+
+1. **①定性改「有来源的既定延期项」**，出处分层引：最初承诺 = S0 `:171`/`:16` + post-poc `:222`（2026-10-16，到「字段存在+封闭形状+进哈希」为止）；延期排期 = **后补 ADR**（正式 Schema ADR `:101-102`，2026-10-17 v4-flip 轮 `a7a1cfd2` 同笔）+ 同轮 authoring 披露 `:168-172`——后补文件的排期声明，**不是**最初承诺时已批准的延期（§0.1、§1.4、①小结已按此改写）。
+2. **「待根裁」定性删除/改写**：选项 A = 既定律现行（无需裁）；选项 B = **不推进、不呈裁**；§3.3 问句保留并标「**未呈报、备查**」（§0.3、§3.3、④.1 已按此改写）。
+3. **新增如实缺口行（④.2）**：native bash 批准后仍 `TOOL_BINDING_UNVERIFIED` 拒 = **实际可用性缺口**（「审批后执行」在治理世界产品面未通），**不得**以 U1 声明面/延期声明淡化；单独追踪，归属原生族 adapter/placement 覆盖线（S0 PR5 / pb 正控可达化线）。
+- 第一笔原文 = `cc58e4d28df1dd5facebca49e4b4959053f3f93b`（历史保留，本笔 forward-only 于其上叠加，不重写）。
 
