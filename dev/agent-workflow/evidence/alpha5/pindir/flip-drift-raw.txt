@@ -1,0 +1,35 @@
+host tree @ 639ed01539 (pin MATCH)
+
+==== subagent_codex ====
+pinned in PLANE_RESERVED_NATIVE: true
+  web-app/presets/cordis.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  web-app/presets/ptc.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  web-app/presets/standard.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  [A shipped-disabled] verifyPlaneNames(glob='subagent_codex') -> code=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED message="plane row 'glob' cannot mount under reserved native name 'subagent_codex' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence"
+  [A shipped-disabled] assembly(names.glob='subagent_codex')  -> {"ok":false,"code":"PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED"}
+  [B flipped-enabled] verifyPlaneNames(glob='subagent_codex') -> code=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED message="plane row 'glob' cannot mount under reserved native name 'subagent_codex' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence"
+  [B flipped-enabled] assembly(names.glob='subagent_codex')  -> {"ok":false,"code":"PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED"}
+  host bundle after fixture: git status --porcelain = ""
+
+==== subagent_claude_code ====
+pinned in PLANE_RESERVED_NATIVE: true
+  web-app/presets/cordis.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  web-app/presets/ptc.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  web-app/presets/standard.patch.yml
+    direction A shipped-disabled: block disabled=[true]
+    direction B flipped-enabled : block disabled=[false] fixture-marker=[true]
+  [A shipped-disabled] verifyPlaneNames(glob='subagent_claude_code') -> code=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED message="plane row 'glob' cannot mount under reserved native name 'subagent_claude_code' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence"
+  [A shipped-disabled] assembly(names.glob='subagent_claude_code')  -> {"ok":false,"code":"PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED"}
+  [B flipped-enabled] verifyPlaneNames(glob='subagent_claude_code') -> code=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED message="plane row 'glob' cannot mount under reserved native name 'subagent_claude_code' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence"
+  [B flipped-enabled] assembly(names.glob='subagent_claude_code')  -> {"ok":false,"code":"PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED"}
+  host bundle after fixture: git status --porcelain = ""

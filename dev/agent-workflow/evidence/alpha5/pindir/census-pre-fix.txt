@@ -1,0 +1,5 @@
+host: 0.2.0-rc.2@639ed01539 (pinned, verified)
+catalog harvest names (schemas ∪ shippedNames, mcp__ family excluded): 66
+pinned exact names: 53
+FORWARD (in catalog, NOT pinned — missing pin, RED): 13 ["plugin_manager","run_code","schedule_create","schedule_delete","schedule_list","schedule_update","stagehand_act","stagehand_extract","stagehand_navigate","stagehand_observe","stagehand_screenshot","stagehand_tabs","workflow"]
+REVERSE (pinned, NOT in catalog — needs explicit reason): 0 []
