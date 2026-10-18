@@ -57,6 +57,13 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
   },
+  {
+    // alpha5 PTC fs half-arm (10:04Z work order): the escalation
+    // adjudication row — production import edge from agent-bindings (the
+    // gate), shipped through the same dist mirror as every prior live row.
+    src: 'packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs',
+  },
   // GLUE-7 production backend assembly row (byte-copied: tsc never emits
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).
