@@ -415,7 +415,12 @@ export function createConfinedProcessProvider(opts) {
         if (!integrity.ok)
             return integrity; // BEFORE consumption: the grant survives a gate refusal (same law as execute)
         consumedPlans.add(plan.planId);
-        const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir]);
+        // The one place the B2 flag enters the world: an ADDITIVE token on the launcher
+        // argv, present only when the REQUEST asked for it. Nothing else about the
+        // launch changes, so an unset flag is the same argv, byte for byte, that every
+        // pre-B2 leg has always spawned.
+        const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir,
+            ...(plan.request.exitPassthrough === true ? ['--exit-passthrough'] : [])]);
         if (!spawned.ok)
             return spawned;
         const proc = spawned.value;

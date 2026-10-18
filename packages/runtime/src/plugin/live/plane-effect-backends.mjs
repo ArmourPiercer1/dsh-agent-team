@@ -637,6 +637,17 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
           ]),
           anchorGrant,
         ],
+        // B2 EXIT-CODE FIDELITY — the SHELL ARM ONLY, and the reason it is this arm
+        // and not the others: a shell row's whole answer is "what did the command
+        // do", and `exit=0` next to `cat: …: Permission denied` is a sentence that
+        // contradicts itself on the wire (the recorded shape this closes reads
+        // `bash · exit=0` over `> cat: ../outside/secret.txt: Permission denied`).
+        // The flag is opt-in per REQUEST, so asking for it here changes this row and
+        // nothing else: the glob and search rows keep the flag unset and therefore
+        // keep the constant-0 completion law they pin (their face carries no payload
+        // exit code at all, and their legs prove completion from the stream — a law
+        // this edit must not and does not weaken).
+        exitPassthrough: true,
       }
       const handle = await provider.spawnStreaming(request)
       if (handle.ok !== true) {
@@ -668,7 +679,14 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
       return {
         ok: true,
         outcome: {
-          exitCode: timedOut ? null : (typeof exit.code === 'number' ? exit.code : null),
+          // B2: the code the launcher measured (the shell arm asked for it). The two
+          // null arms are the contract's own NOT-OBSERVED cases and neither is
+          // flattened into a 0: a timeout never saw an end (`types.ts:144-151`), and
+          // a code that is not a non-negative number cannot be reported as one —
+          // 128+signum is produced by the launcher for signal death, so anything
+          // negative reaching here would be a bug on the way up, and a bug is
+          // reported as "not observed" rather than as a number nobody measured.
+          exitCode: timedOut ? null : (typeof exit.code === 'number' && exit.code >= 0 ? exit.code : null),
           stdout,
           stderr,
           timedOut,
