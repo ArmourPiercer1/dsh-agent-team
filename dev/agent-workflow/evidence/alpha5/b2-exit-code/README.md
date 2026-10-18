@@ -63,6 +63,54 @@ convention `/bin/sh` itself uses: `128 + signum` (SIGTERM → 143, SIGKILL → 1
 citation in the order was `types.ts:145`; in the tree at this base the law sits at
 `:144-151` with the field itself at `:151` — same statement, precise lines measured.
 
+### Correction (branch `alpha5-b2c-comment`, off master `b35b9ea763430f385706effe205a852daa3697bc`)
+
+An earlier revision of the launcher comment ended that passage with a claim which is
+**false**, and it is recorded here rather than quietly rewritten:
+
+> … 128 + signum (SIGTERM -> 143, SIGKILL -> 137), **which is a number the caller can
+> distinguish from any code a payload could have returned and from null.**
+
+A payload can return 137 itself — the literal `exit 137`, or any wrapper re-reporting its
+child's signal status — and it reaches the same number through the non-negative branch.
+The mapping is constructive and one-way: the launcher knows which branch it took, and the
+exit status does not carry that. So the 128..159 range identifies no cause of death, and
+the sentence promised a discrimination the interface does not provide.
+
+Replaced by what is true: the `/bin/sh` convention, stated together with the coincidence,
+with "the reported number never identifies a cause of death", and with the record that
+DOES separate the two cases — `<out-dir>/exit.json`, whose `rc` is the raw waitpid value
+(a returned code stays positive, a killed payload is negative). Two sibling wordings in
+`provider.ts` carried the same overreach in milder form (a constructed value described as
+"the code it actually measured", and a flat "or 128+signum if a signal killed it"); both
+now say the value is constructed and may coincide with a code the payload chose.
+
+The corrected statement is pinned rather than merely re-worded: **leg `A5`** runs
+`exit 137` and `kill -KILL $$` through the same arm and asserts they yield the SAME
+observable code (137) while their `exit.json` records differ (`137` against `-9`). It was
+written to pass — a witness, not a RED — and it is the thing that fails if the stronger
+claim is ever re-asserted in behaviour rather than prose.
+
+Inventory of same-shape claims (`distinguish|differentiate|told apart|tell apart|confused|
+ambiguous` within ±6 lines of exit-code context, across all `.ts/.mts/.mjs/.js/.py` under
+`packages/`, `dist` excluded as a derived mirror): **4 hits, 1 real.** The other three are
+unrelated vocabulary — an `'ambiguous-omission'` blueprint code name, a
+`CONTROL_GUARD_AMBIGUOUS` constant, and a test-doubles sentence about canonical order of
+table additions. A second pass over every mention of `128+signum`, `143` and `137` in
+`packages/` and in this directory found only the two provider wordings above, now
+corrected. **One false claim, three comment edits, zero behaviour change**: the launcher's
+executable lines are untouched, its bytes change in comments only, and every byte-pin
+holder recomputes the hash — verified by running them (`a5b2` 11/11 with the new `A5`;
+glue7 + the a5lsp2 pair + a5p4-assembly-config + a5rbn + a5int-r3 + search = 100/100;
+`p4t6` 10/10 with NO booking movement, since the new leg lives in an already-booked file;
+`a5p5-dormant-audit` 8/8; `pnpm -r run typecheck` clean; 8 placements; drift gates at the
+commit below).
+
+**Why 128+signum at all, then?** Because the two alternatives are both wrong: reporting 0
+for a run that never returned, or reporting null ("no end observed") for an end that was
+plainly observed. The convention keeps the two apart in the only direction the exit status
+can express, and the honest sentence about it says what it cannot do.
+
 **Why only the shell arm, stated as a boundary.** The glob and search rows carry no
 payload exit code on their face and prove completion from the stream instead —
 `alpha5-search-backend.test.ts` leg `P8b` pins exactly that law. They leave the flag

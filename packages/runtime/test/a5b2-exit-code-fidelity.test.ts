@@ -42,7 +42,7 @@
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -152,6 +152,24 @@ function request(command: string, over: Partial<SpawnRequest> = {}): SpawnReques
   }
 }
 
+/** Every launcher bookkeeping record written under this world so far. */
+function exitRecords(dir: string, found: string[] = []): string[] {
+  if (!existsSync(dir)) return found
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const abs = join(dir, entry.name)
+    if (entry.isDirectory()) exitRecords(abs, found)
+    else if (entry.name === 'exit.json') found.push(abs)
+  }
+  return found
+}
+
+/** The ONE record a just-finished spawn added (asserted as one, never guessed). */
+function recordAddedSince(before: Set<string>): { pid: number; rc: number } {
+  const fresh = exitRecords(join(WORLD, 'out')).filter((f) => !before.has(f))
+  expect(fresh.length, `expected exactly one new exit.json, saw ${String(fresh.length)}`).toBe(1)
+  return JSON.parse(readFileSync(fresh[0] as string, 'utf8')) as { pid: number; rc: number }
+}
+
 /** Run one payload on the stream arm and report the settle, pipes drained. */
 async function settle(handle: ProviderResult<StreamingSpawnHandle>): Promise<{ code: number | null; signal: string | null; stdout: string; stderr: string }> {
   // A refusal here is a fact worth reading, not a shape error to trip over.
@@ -201,6 +219,33 @@ describe('B2 A — the stream arm at the provider seam (REAL launcher, real wait
     const provider = await realProvider()
     const settled = await settle(await provider.spawnStreaming(request('kill -TERM $$', { exitPassthrough: true })))
     expect(settled.code, 'SIGTERM death must read 143, not 0 and not null').toBe(143)
+  }, SLOW)
+
+  it('A5 the 128-range number does NOT identify a cause of death: a payload that exits 137 and a payload killed by SIGKILL are the same number here', async () => {
+    // Constructive witness against a claim an earlier revision of this lane made in a
+    // launcher comment — that 128+signum was "a number the caller can distinguish
+    // from any code a payload could have returned". It is not: the mapping is
+    // constructive and one-way, so `exit 137` and a SIGKILL death agree exactly. What
+    // DOES separate them is the launcher's bookkeeping record, whose rc is the raw
+    // waitpid value (137 for a return, -9 for a kill). Pinned so the honest wording is
+    // checked rather than merely asserted, and so nobody re-adds the stronger claim.
+    const provider = await realProvider()
+
+    const beforeReturn = new Set(exitRecords(join(WORLD, 'out')))
+    const returned = await settle(await provider.spawnStreaming(request('exit 137', { exitPassthrough: true })))
+    const returnedRecord = recordAddedSince(beforeReturn)
+
+    const beforeKill = new Set(exitRecords(join(WORLD, 'out')))
+    const killed = await settle(await provider.spawnStreaming(request('kill -KILL $$', { exitPassthrough: true })))
+    const killedRecord = recordAddedSince(beforeKill)
+
+    expect(returned.code).toBe(137)
+    expect(killed.code, 'a SIGKILL death maps to 128+9, the same number 137').toBe(137)
+    expect(killed.code, 'the exit code alone cannot tell the two apart — that is the point')
+      .toBe(returned.code as number)
+    expect(returnedRecord.rc, 'the record keeps the returned code as-is').toBe(137)
+    expect(killedRecord.rc, 'the record keeps the kill as a negative waitpid result').toBe(-9)
+    expect(killedRecord.rc).not.toBe(returnedRecord.rc)
   }, SLOW)
 
   it('A4 the terminate path lands on a signal death too: the code stays a 128-range number, never a fabricated 0', async () => {
