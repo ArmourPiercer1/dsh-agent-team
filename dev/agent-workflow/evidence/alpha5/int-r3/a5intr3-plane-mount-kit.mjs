@@ -114,6 +114,14 @@ try {
       fsInstance: { fs: 'a5intr3-kit-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' },
       confinedProvider: {
         trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+        // #337 closing round (review-B item 5 law): provider scratch is a LAW, not
+        // an option — the provider refuses an absent/relative scratchRoot (the
+        // plans/out/probe trees would land in the process cwd). A WORLD-sibling
+        // (NOT under the governed ROOT_DIR: the row's own comment says parent-side
+        // or every walk would see the scratch) inside the kit world the cleanup
+        // below already deletes. The fourth keying of this family
+        // (glue7 -> a5b3 -> globoff -> this kit), found by the nine-root census.
+        scratchRoot: join(WORLD, 'scratch-kit'),
         assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
       },
       // flip 3: the only matrix-ACCEPTED native claim for this lane
