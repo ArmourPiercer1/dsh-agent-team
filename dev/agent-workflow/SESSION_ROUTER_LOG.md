@@ -6769,3 +6769,42 @@ logs 全部入账，raw 启动日志 token 全 REDACTED 后提交）。
 **git** = branch `alpha5-natexe` @ 本条目 commit；base `alpha5-int-mnt@afd936ee`；
 **push 未做**（https remote 无凭据亲验，如实回报）；:3080/:3180 只读探针前后同值
 （kit H0/H3），世界跑毕即扫，test-use pristine 前后亲验（porcelain 0）。
+
+## 2026-10-18 natexe 定性补单（根 04:34Z：可用路径证据 → 缺口闭合）
+
+①**配置来源定性**（文件:行）：`teamToolPlane` = 宿主**行 config**（INSTALL
+§3.2 `cordis.patch.yml` 公开安装面 → `agent-bindings.mjs:2412-2413` 读
+`config.teamToolPlane` 挂平面 → `team-tool-plane.mjs` `names` 合并 = shipped
+`readName:'read'` takeover 同块同通道）——**安装级用户可达**，真实安装路径 =
+§3.2 模板同一行；**blueprint 无通道 = 设计如此**（顶层字段集封闭，
+`validate.ts:1347 assertNoUnknownFields` → `MALFORMED_DTO`；作者字段参与
+造身份即破 placement-feed 唯一权威法）。
+②**合法配置面 + 文档**：行为面本就走行 config（零新通道）；用户文档 =
+INSTALL 新增 **§3.5 治理工具面**（config 模板 realmId/fsInstance/
+confinedProvider 三件套 + names 接管、值域封闭法、缺省零挂载 A4.4 存续、
+审批消费后执行语义；只写已验证行为，逐条挂证据线）。
+③**防同名冒充审计**：**实测值域不闭**（probe A1-A4：shell 行挂 grep 行名
+双行共存 / 冒充 `read` / 空串 / `__proto__` 全过装配；lane native-first
+律只收紧不放宽、不污染原型）→ **Gate 0b `verifyPlaneNames`**（Gate 0
+`verifyConfinedProviderPairing` 同一装配拒绝面）：形状
+`^[a-z][a-z0-9_]{0,63}$` + 键集封闭（grep/glob/bash）+ 四挂载名互异 +
+**原生拼写仅本类行可接管**（`bash:'bash'` = 本轮 takeover 合法），
+violation = `PLANE_NAMES_INVALID` 拒启动；真值表 11/11、probe 9/9、
+unit N5（总 10/10）。攻击面结论：blueprint→names 无通道（既有封闭法定死）；
+恶意行 config = 安装者信任层（与 glueUrl 任意代码同层，无新增面），三闸
+（realm 配对 / attribution 唯一权威 / placement→bind 连续性）封死本 realm
+身份（unit N3 G-a/b/c 持续钉）；**无 takeover 旧配置 fail-closed** 由
+unit N1 逐字 + GLUE-8 两模式复跑钉死。
+
+**生产 diff 更正披露**：首条目「生产 diff=0」自本条起更正为 **1 文件 1 面**
+（`team-tool-plane.mjs` Gate 0b 装配期拒绝，零运行时新语义；dist 镜像同步，
+drift 门 HEAD ok 1746）。**Gate 0b 后全链复跑**：natexe kit 双时代 26/26；
+GLUE-8 **20/20 + 15/15**（3182 被并行世界占用 → 换端 3185，非语义变化）；
+GLUE-7 live kit **24/24 GREEN**（首跑 RED 唯一腿 = E2 drift 门评 committed
+面，commit 后即绿，两轮存证）；glue7-line unit 16/16、p4t6 10/10、runtime
+tsc 净；全树双抓 **RUN5≡RUN6≡published 红 9 逐行恒等**（files 579/legs
+7291；另一对中 RUN3≠RUN4 = 树内既有竞态：a4p7 构建腿运行期在 packages/**
+写临时文件与 p4t6 冻结计数扫描重叠 `1194≠1192`，非本票引入、持久产物不在
+扫描面，solo 恒绿，README §6.5 披露）。git = `alpha5-natexe` @ 本条 commit；
+push 仍不可（https 无凭据，如实）。:3080/:3180 只读探针不变；世界已扫；
+台账 = `dev/agent-workflow/evidence/alpha5/natexe/README.md` §6。

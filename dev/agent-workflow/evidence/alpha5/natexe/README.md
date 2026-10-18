@@ -224,5 +224,15 @@ natexe 双时代 kit 复跑证明。
 - GLUE-8 assembled **20/20** + preassembly **15/15**（换端 3185 复跑：
   `glue8-rerun-assembled-0434.log` / `glue8-rerun-preassembly-0434.log`，
   3182 被并行世界占用属他方，换端非语义变化）；
-- GLUE-7 live kit（#321，plane 挂载世界全链）：<G7_RECEIPT>；
-- 全树双抓：<FULLTREE_SUPPLEMENT_RECEIPT>。
+- GLUE-7 live kit（#321，plane 挂载世界全链）：**24/24 GREEN**（`glue7-rerun-run2-GREEN-24-24.log`，换端 3186/3187；首跑 RED 唯一腿 = E2 drift 门，当时 src/dist 尚未 commit——commit 后复跑即绿，两轮日志均存证，非语义失败）；
+- 全树双抓（Gate 0b 后）：**RUN5 ≡ RUN6 ≡ published 红 9 逐行恒等**
+  （`vitest-fulltree-natexe-{5,6}.log`，`.reds` diff 空 =
+  RUN5_EQ_RUN6_EQ_PUBLISHED；files 579 / legs 7291；红 = t2×1 +
+  p6t3-mediation×5 + p6t3-restart×2 + p6t6×1）。
+- **树内既有竞态披露（本票补单二次双抓发现，非本票引入）**：全树 RUN 对
+  中，`p4t6 coverage` 计数题与 `a4p7-merge-gate` 的真实构建腿存在时序竞态
+  ——a4p7 的构建腿运行期在 `packages/**` 下写临时文件（运行毕即消失；其持久
+  dist 产物不在 p4t6 扫描面，solo 复跑在产物在场时恒绿），p4t6 的冻结计数
+  扫描若与之重叠会瞬时多计（实测 `expected 1194 to be 1192` 一例，
+  `vitest-fulltree-natexe-4.log`）。本票改动不触任何构建产物；双抓恒等以
+  竞态未命中的 RUN 对为准，两轮日志全存证。
