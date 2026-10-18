@@ -211,3 +211,8 @@
 3. **『FULL stdout』注释漂移**（`.github/workflows/census-runtime.yml` 旧注释 vs `scripts/ci-pr-gate.mjs` 的有界回显实现 ECHO_LINE_LIMIT=200/ECHO_LINE_CAP=300/ECHO_BYTE_CAP=24000/`FORENSIC|MEASURED` 命中律）= **由本轮②注释笔关闭**（纯注释，机检语义零动；限额取 ci-pr-gate.mjs 该文件亲读值，非转录）。
 
 — R4 writer = docs-a5r4（qwen3.8-flash-next；markdown 追加、零历史改写；本轮 diff = `docs/INSTALL.md` 一句 + `census-runtime.yml` 注释块 + 本节，产品码零动；p4t6 实测见回报；未 push）。
+
+### 8.5 net-半臂局部阻塞单独登记（R4.1 追加，根 10:04Z 令"单独登记、不混成整个 PTC 未实现"）
+- **范围**：PTC 的 network/process-visibility 半臂。**证据**：宿主 sandbox 类型明文（tests/deepseek-harness-test-use @639ed01539 `packages/sandbox/sandbox/lib/types/index.d.ts:17`："Network and process visibility are outside this vocabulary"，只读亲验）+ SEAM-RECHECK-OUTER F6 全树扫描零公开 arm。
+- **口径**：上游词表需求登记（宿主侧未来公开能力），非本仓待办、非 PTC-fs 的阻塞——fs 半臂（一次性 Grant 裁决链）为缺实施（只读诊断六段差集+最小计划在案），已按批准独立开工（alpha5-ptc-pr：live/ptc-escalation-row.mjs + host.ts install 行 + agent-bindings :2412 门内登记；契约冻结不与 int-r3 域重叠）。**禁止**为绕开该缺口扩展上游/权限面（根令）。
+- L4 人类判断维度维持 review-SECURITY §7 证据口径边界原文，不因本登记改动。

@@ -17,6 +17,12 @@ tests/homes/
 # PR #26 supplemental git-install boot probe, 2026-09-21) — same
 # never-committed discipline as tests/homes/
 tests/dsh-homes/
+# harness-created probe world dirs at repo root (mount-flip/permission probe
+# harnesses self-mint `probe-mv<rand>` synthetic worlds; world state is
+# never-committed — same discipline as tests/homes/). Accidental tracking
+# entered master via 104b4991 (#333, `git add -A` over a lane worktree);
+# untracked forward by alpha5-master-cleanup, files kept on disk.
+probe-mv*/
 # real published-host npm install for the alpha.2 0.1.5-rc.2 live smoke
 # (task fix/alpha2-explicit-agent-setup-compat; npm node_modules — never
 # committed; reinstall: npm install --no-save @deepseek-ai/dsh@0.1.5-rc.2

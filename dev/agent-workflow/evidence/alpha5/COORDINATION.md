@@ -1,0 +1,1 @@
+- 10:3xZ 台账卫生自纠：我曾把 8.5 登记 commit 到**主检出陈旧 master 线（6259cf4b）**=分叉，已 `reset --soft`+restore 撤销（零推送，无后果）；正确做法=worktree a5docs5@1962f879 正向笔。规则补充：协调性文档笔必须开在 origin/master 的 worktree 上，主检出 6259cf4b 只作历史基线不作提交点。

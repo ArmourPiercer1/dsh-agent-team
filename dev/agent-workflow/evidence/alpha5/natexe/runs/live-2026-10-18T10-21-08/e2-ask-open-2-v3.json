@@ -1,0 +1,30 @@
+{
+  "ledger": {
+    "requests": [
+      {
+        "requestId": "ctrl-0083ib709gugek12wfc411ow",
+        "kind": "leader-approval",
+        "toolName": "bash"
+      },
+      {
+        "requestId": "ctrl-146pv9f1bvyvgs1pyu1x90nn",
+        "kind": "leader-approval",
+        "toolName": "bash"
+      }
+    ],
+    "decisions": [
+      {
+        "requestId": "ctrl-0083ib709gugek12wfc411ow",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "requestId": "ctrl-0083ib709gugek12wfc411ow"
+      }
+    ],
+    "error": null
+  },
+  "preSentinel": true,
+  "preEscape": false
+}

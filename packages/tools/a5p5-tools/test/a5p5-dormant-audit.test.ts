@@ -118,7 +118,16 @@ function* walk(dir: string): Generator<string> {
  * barrel, the mount or the per-scope judgement moves.
  */
 const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json',
-  'runtime/test/alpha5-glob-backend.test.ts', 'runtime/test/alpha5-search-backend.test.ts']
+  'runtime/test/alpha5-glob-backend.test.ts', 'runtime/test/alpha5-search-backend.test.ts',
+  // Seventh entry (A5-B2 exit-code fidelity, branch `alpha5-b2-rc-pr`): this spec names
+  // the lane in exactly ONE comment line, citing `render.ts:183-184` as the location of a
+  // renderer branch it proves unreachable through the shell row — the citation is the
+  // leg's content, not decoration. Weaker than entries five and six, not stronger: it
+  // reads NO lane source from disk (its readFileSync calls open two natexe capture logs
+  // and the launcher it spawns) and imports nothing from the lane
+  // (`../sandbox-provider/index.js` only). Zero barrel, zero mount, zero glue; the
+  // barrel, the mount and the per-scope judgement keep every tooth.
+  'runtime/test/a5b2-exit-code-fidelity.test.ts']
 
 /**
  * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly

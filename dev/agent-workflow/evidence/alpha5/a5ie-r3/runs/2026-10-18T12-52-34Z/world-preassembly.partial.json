@@ -1,0 +1,294 @@
+{
+  "mode": "preassembly",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-preassembly-2026-10-18T12-52-34Z",
+  "ok": true,
+  "face": "REAL INSTALL (dsh plugin --profile web add github:…#<sha>)",
+  "globSeeds": {
+    "gpos": 2,
+    "gbound": 140,
+    "perLegFixtures": "link.txt, goutside/ext, denied/ (mode 000)"
+  },
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "nodeModulesTop": [
+      "dsh-agent-team"
+    ],
+    "dependencies": [
+      "dsh-agent-team"
+    ],
+    "bundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app",
+      "dsh-agent-team"
+    ]
+  },
+  "installedFace": {
+    "expectedCount": 1772,
+    "actualCount": 1772,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "9936ffad182550412a9af481f410ed3d4adb704677b01109a26d2f96b73c0db0"
+  },
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-preassembly-2026-10-18T12-52-34Z/deployment/landlock-prelauncher.py",
+    "sha": "0049965daacae5bd04197407c584cf7312bb22b10b35a09f01a89bb108cafe77",
+    "worktreeSha": "0049965daacae5bd04197407c584cf7312bb22b10b35a09f01a89bb108cafe77",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "bytes": 23691
+  },
+  "launcherAbiPreflight": {
+    "rc": 0,
+    "error": null,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED-14d2dcf9>",
+  "discPrompt": {
+    "attempts": 2,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true,
+    "getStatus": 200
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5ie-preassembly-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"blueprint\":{\"blueprintId\":\"a5ie-r3-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:36071706fd8036db204c7e6058520f4cc4cc474c81a09b7c06362d3afc3d0560\"},\"createdAt\":\"2026-10-18T12:54:01.601Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-preassembly-2026-10-18T12-52-34Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-18T12:54:01.609Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\",\"rootSessionId\":\"session-a5ie-r3-team-2026-10-18T12-52-34Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/over"
+  },
+  "leaderToolCalls": [
+    "team_delegate",
+    "team_collect",
+    "team_delegate",
+    "team_collect"
+  ],
+  "memberResultsBackToLeader": true,
+  "memberARequestCount": 14,
+  "memberDRequestCount": 2,
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_collect",
+    "team_delegate",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberAToolResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]"
+  ],
+  "memberAToolCallOrder": [
+    "read",
+    "read",
+    "team_grep",
+    "team_grep",
+    "team_grep",
+    "team_bash",
+    "team_bash",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob",
+    "team_glob"
+  ],
+  "memberAFinal": {
+    "kind": "text",
+    "content": "A5IE_R3_MEMBER_RESULT r0=[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}] | r1=[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}] | r2=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r3=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r4=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r5=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r6=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r7=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r8=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r9=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r10=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r11=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the  | r12=[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the "
+  },
+  "memberDToolResults": [
+    "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  ],
+  "memberDFinal": {
+    "kind": "text",
+    "content": "A5IE_R3_DENY_RESULT [{\"type\":\"text\",\"text\":\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\"}]"
+  },
+  "sentinelExists": false,
+  "bashWroteExists": false,
+  "bashWroteBytes": null,
+  "outsideMarkerOnWire": 0,
+  "standard": {
+    "sessionId": "session-65b8a8a7-4322-4f71-a607-35afeca9d026",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash]"
+  ],
+  "leader": {
+    "session": "session-a5ie-r3-team-2026-10-18T12-52-34Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_bash",
+      "team_collect",
+      "team_delegate",
+      "team_glob",
+      "team_grep",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      },
+      "read": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      }
+    }
+  },
+  "sessions": [
+    {
+      "s": "7-35afeca9d026",
+      "run": false
+    },
+    {
+      "s": "b9ef4a95c5dbbf",
+      "run": false
+    },
+    {
+      "s": "f6916c9552fc60",
+      "run": false
+    },
+    {
+      "s": "0-18T12-52-34Z",
+      "run": false
+    },
+    {
+      "s": "a5ie-r3-root",
+      "run": false
+    }
+  ]
+}

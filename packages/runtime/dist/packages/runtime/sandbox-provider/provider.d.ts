@@ -61,6 +61,27 @@ export interface SpawnRequest {
         purpose: 'stdin' | 'stdout' | 'stderr' | 'delivery';
         resourceFingerprint: string;
     }[];
+    /**
+     * B2 EXIT-CODE FIDELITY (additive, DEFAULT OFF): ask the streaming arm to carry
+     * the payload's OWN completion state as the observable exit code.
+     *
+     * Off (every existing caller, and this field's absence is exactly "off"), the
+     * stream arm keeps its historical law: the launcher exits 0 whatever the payload
+     * did and the payload's code lives only in `<out-dir>/exit.json` as bookkeeping —
+     * the constant-completion law the glob and search rows were built against and
+     * still pin. On, the launcher re-exports the waitpid result: a payload that
+     * RETURNED is reported with the code it returned, and a payload killed by signal
+     * N is reported as 128+N — a value the launcher CONSTRUCTS from the convention
+     * /bin/sh uses, not a code the payload returned. The two can coincide (a payload
+     * that runs `exit 137` produces the number a SIGKILL death produces), so the
+     * reported number never identifies a cause of death; the raw waitpid-derived rc,
+     * which does separate the two cases, stays in `<out-dir>/exit.json`.
+     *
+     * It changes NO policy, NO grant and NO rule: the flag rides the launcher argv
+     * only, which is why `prepare()` never copies it into the policy file (an extra
+     * key there would be a second source of truth for the same byte).
+     */
+    readonly exitPassthrough?: boolean;
 }
 /** The lease the provider issues (mirror of the frozen lease vocabulary). */
 export interface ProviderLease {
@@ -125,7 +146,16 @@ export interface StreamingSpawnHandle {
     readonly stdin: Writable;
     readonly stdout: Readable;
     readonly stderr: Readable;
-    /** Resolves when the process is OBSERVED to exit — observation never settles the lease. */
+    /**
+     * Resolves when the process is OBSERVED to exit — observation never settles the
+     * lease. `code` is the LAUNCHER's exit status: with the plan's `exitPassthrough`
+     * unset that is the constant 0 of the historical stream arm (a 0 here therefore
+     * proves nothing about the payload, which is why rows that leave the flag off
+     * prove completion from the stream instead); with the flag set it is the code the
+     * payload returned, or the constructed 128+signum convention for a payload killed
+     * by a signal — see `SpawnRequest.exitPassthrough`, whose value can coincide with
+     * a code a payload chose itself.
+     */
     readonly exited: Promise<{
         code: number | null;
         signal: string | null;

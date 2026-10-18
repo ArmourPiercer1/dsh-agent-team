@@ -20,7 +20,7 @@ Modes:
   --confined-exec --policy FILE --out-dir DIR     (P1: self-lock, then execve
                                                   the untrusted argv; NEVER
                                                   runs unconfined)
-  --confined-exec-stream --policy FILE --out-dir DIR
+  --confined-exec-stream --policy FILE --out-dir DIR [--exit-passthrough]
       (R-1 streaming arm: the SAME ruleset build and the SAME P1 self-lock,
       but the payload keeps this launcher's inherited 0/1/2 as LIVE PIPES
       (the provider's end-to-end pipes; no out-file redirection), and the
@@ -31,11 +31,23 @@ Modes:
       After fork THIS process closes 0/1/2/3 (zero hot handles on the
       payload pipes), waits, and records {"pid":…,"rc":…} in
       <out-dir>/exit.json. The exit record is bookkeeping; the streaming
-      provider observes the exit through the process itself.)
+      provider observes the exit through the process itself.
+      DEFAULT EXIT LAW (unchanged, additive flag below): the process itself
+      exits 0 whatever the payload did — the constant-completion law every
+      stream consumer was built against.
+      --exit-passthrough (B2, opt-in, DEFAULT OFF): the payload's OWN
+      completion state becomes this process's exit code. Off, the arm is
+      byte-for-byte the historical behaviour, so a consumer that has not
+      asked for the code (glob, search) keeps its constant-0 completion law
+      and its "no payload exit code on this face" pin stays true. The code
+      is taken from the waitpid status and nothing else — never guessed
+      from stderr text, never flattened to 0 on failure.)
 
 One single-line JSON verdict on stdout; diagnostics on stderr.
 Exit codes: 0 usable answer; 2 ABI unavailable; 4 config/self-lock failure;
-1 MIXED/FAILED leg.
+1 MIXED/FAILED leg. On --confined-exec-stream with --exit-passthrough the
+process exit code is the payload's (signal death reported as 128+signum);
+without the flag it stays the constant 0 above.
 """
 import ctypes
 import errno as EN
@@ -439,7 +451,7 @@ def hs_close_quiet(*fds):
             pass
 
 
-def mode_confined_exec_stream(policy_path, out_dir):
+def mode_confined_exec_stream(policy_path, out_dir, exit_passthrough=False):
     try:
         os.fstat(HANDSHAKE_FD)
     except OSError:
@@ -493,7 +505,40 @@ def mode_confined_exec_stream(policy_path, out_dir):
             json.dump({"pid": pid, "rc": rc}, f)
     except OSError:
         pass
-    sys.exit(0)
+    if not exit_passthrough:
+        # THE DEFAULT LAW, byte-for-byte unchanged: the streaming face completes with
+        # 0 and the payload's own code stays inside exit.json as bookkeeping. Every
+        # consumer that did not ask for a code (glob, search) proves completion from
+        # the stream itself and pins that there is no payload exit code on its face.
+        sys.exit(0)
+    # B2 --exit-passthrough: the payload's completion state IS this process's exit
+    # code, taken from the waitpid status and from nothing else — never guessed from
+    # stderr text, never flattened to 0 because a run "looked like it finished".
+    #
+    # A NEGATIVE rc means the payload never exited: waitpid reports -signum for a
+    # child that was killed. The consumer contract reserves a non-number for that
+    # gap — packages/tools/a5p5-tools/src/types.ts:144-151 says `exitCode === null`
+    # means NOT OBSERVED ("never a fabricated 0 and never conflated with
+    # 'stopped'"). Here the end WAS observed, it just had no exit code, so pushing
+    # it into the null bucket would erase the difference between "killed by
+    # SIGKILL" and "we never saw an end at all". Reported instead in the convention
+    # /bin/sh itself uses for this case: 128 + signum (SIGTERM -> 143,
+    # SIGKILL -> 137).
+    #
+    # WHAT THAT NUMBER DOES NOT PROVE, said out loud because the mapping is
+    # constructive and one-way: a payload that returns 137 BY ITSELF (the literal
+    # `exit 137`, or any wrapper re-reporting a child's signal status) leaves the
+    # NON-negative branch above with the same 137. So the 128..159 range does not
+    # identify a cause of death, and a caller cannot read "killed by signal N" off
+    # the exit code — this process knows which branch it took and the exit status
+    # does not carry that. The mapping is there to avoid the two errors its
+    # alternatives commit (fabricating a 0 for a run that never returned, or
+    # claiming no end was observed when one clearly was), not to make signal death
+    # detectable. Where the difference matters, the record that DOES carry it is
+    # <out-dir>/exit.json above: its "rc" is the raw waitpid-derived value,
+    # NEGATIVE for a killed payload and the plain number for a returned one.
+    # Pinned as leg A5 of `a5b2-exit-code-fidelity.test.ts`.
+    sys.exit(rc if rc >= 0 else 128 + (-rc))
 
 
 def main():
@@ -511,7 +556,7 @@ def main():
     elif a[0] == "--confined-exec":
         mode_confined_exec(flag("--policy"), flag("--out-dir"))
     elif a[0] == "--confined-exec-stream":
-        mode_confined_exec_stream(flag("--policy"), flag("--out-dir"))
+        mode_confined_exec_stream(flag("--policy"), flag("--out-dir"), "--exit-passthrough" in a)
     else:
         emit({"verdict": "MIXED/FAILED", "raw": [f"unknown mode {a[0]}"]}, 4)
 

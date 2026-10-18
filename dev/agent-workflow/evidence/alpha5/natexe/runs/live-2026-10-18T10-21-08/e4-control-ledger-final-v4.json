@@ -1,0 +1,33 @@
+{
+  "requests": [
+    {
+      "requestId": "ctrl-01gwr9w1wmhtw7085gwau1eo",
+      "kind": "leader-approval",
+      "toolName": "bash"
+    },
+    {
+      "requestId": "ctrl-1sz8whn0z1ru3s0zlx3m118j",
+      "kind": "leader-approval",
+      "toolName": "bash"
+    }
+  ],
+  "decisions": [
+    {
+      "requestId": "ctrl-01gwr9w1wmhtw7085gwau1eo",
+      "decision": "allow"
+    },
+    {
+      "requestId": "ctrl-1sz8whn0z1ru3s0zlx3m118j",
+      "decision": "allow"
+    }
+  ],
+  "consumptions": [
+    {
+      "requestId": "ctrl-01gwr9w1wmhtw7085gwau1eo"
+    },
+    {
+      "requestId": "ctrl-1sz8whn0z1ru3s0zlx3m118j"
+    }
+  ],
+  "error": null
+}
