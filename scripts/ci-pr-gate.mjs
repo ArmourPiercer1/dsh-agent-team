@@ -360,9 +360,12 @@ export function failureEchoLines(label, r, transcriptsEnabled) {
 }
 
 /**
- * One echo line, written synchronously to fd 1 so a dead reader surfaces HERE,
- * at the transcription call, instead of as an async 'error' event on a stream
- * nobody is listening to (which is what killed the 2d3e9c76 census). Only
+ * One echo line, written synchronously to fd 1. This is hardening, not the
+ * diagnosis: what broke the 2d3e9c76 census was the SIZE of the burst (an
+ * unbounded write truncating the very file CI grades — evidence §9), and the
+ * bound in failureEchoLines is the fix. Synchronous per-line writes simply mean
+ * that if a reader does disappear, it surfaces here at the transcription call
+ * instead of as an async 'error' event on a stream nobody is listening to. Only
  * EPIPE/EOF are swallowed — a reader that hung up on a transcription line must
  * not be able to take the verdict down with it. Anything else rethrows, loudly.
  * Returns false once the reader is gone, so the caller stops echoing.
@@ -1240,10 +1243,12 @@ function shapeFromReport(jsonPath) {
 }
 
 function main(argv) {
-  // A reader that hangs up on the transcript (the `| tee` of a CI step) must not be
-  // able to kill the gate before it states its verdict — that is exactly how the
-  // 2d3e9c76 census produced a transcript with zero DSH-CI-LEG lines. EPIPE/EOF
-  // only; every other stream error still propagates. See guardStdout.
+  // Hardening, not the diagnosis (see evidence §9: the 2d3e9c76 census died of an
+  // unbounded burst truncating the graded file, not of a stream error): a reader
+  // that hangs up on the transcript must not be able to take the gate down before
+  // it states its verdict. EPIPE/EOF only; every other stream error still
+  // propagates. Losing a write is never silent — the workflow re-grades the
+  // transcript by the missing-token rule. See guardStdout.
   guardStdout(process.stdout)
   guardStdout(process.stderr)
   const opts = parseArgs(argv)
