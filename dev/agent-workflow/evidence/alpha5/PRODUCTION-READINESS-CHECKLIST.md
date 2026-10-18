@@ -137,3 +137,41 @@
 
 — R2 刷新 writer = alpha5-checklist-r2（qwen3.8-flash-next；本文件 markdown 追加、零历史改写；所引 SHA/行号本环境 git 亲验：五交付 SHA 均为 382e5fb6 可达亲验，`d9a16061`/`04f72c1b` 为非祖先亲验，`8f17f579`/`75388116` = 无 ref 无 object 已明标取根口径；ff push 凭据缺失 → 回报 parent 代推）。
 — 更正笔（根 23:05Z）= 同 writer 同分支续笔：§6.2 #322 判定改为**整体未过**（答题通道 6600 竞态零泄露 PASS + **spill 通道 verdict 前流出 184/5100 = 安全 FAIL**），初稿『审 PASS 带三集成条件』作废，**glob 合并硬门四条**明列（①sink 写门控 verdict 后修复+攻击复测覆盖 return/stream/spill/error 全通道 ②runtime_base `'/'` READ_DIR 收窄层协同 ③allowPaths 同形装配 ④修后在实际生产入口重新独审）；§6.3-1 状态定词 =『shut 诚实留待完成，PR5 未闭』，软措辞禁用。判定数字与硬门条文取根 23:05Z 口径（根/审查报告未 commit 本仓，此处为转录登记）。
+
+---
+
+## R3 刷新（2026-10-18T05:0Z，append-only @ master `ee49c4c0`；writer = 协调者本人，根 04:34Z 派第 9 条矩阵项）
+
+### 7.1 交付行（SHA + ancestor 亲验于 origin/master）
+
+| 行 | 头 | 判定要点 |
+| --- | --- | --- |
+| runtime_base '/' READ_DIR 收窄（bug 修复） | `0e59140b`（#323） | round-5 独审 + 双 CI；stat-probe 残余披露在册 |
+| R2 checklist 更正笔 | `d5f78b58`（#325） | §6.2 #322 整体未过；本文件上笔 |
+| CI workflow_dispatch 触发件 | `7ab56dbf`（#326） | 事后独审 PASS（ecf68fe7 亲验 +2 行门语义零动）；**合并前独审缺失=偏差，永久在册** |
+| v4 flip（schema {3,4} + formal ADR） | `ee49c4c0`（#324） | 内容审(a7a1cfd2)+最终头增量审(05361fc7)+双 CI×2；**document-face 限定**：parse/freeze/hash+14/14 live leg；lanes 不执行、dispatch 在 Tool Binding verification gate fail-closed；执行 feed=后段 |
+
+### 7.2 在途候选（合并=逐 PR 根确认制，根 04:13Z）
+
+- **#322 glob 行**：判面 `ee9b30d5`（round1-7 链+ecf68fe7+ba398cca 法册复核）；census 交互修复 `8681c3a0`（三 law 具名册改写=牙未换，红形实证在册；pace 礼让默认律不变）；恢复 merge-sync `b78aef3f`（04:36:45Z force-push 偏差的正向恢复，ff-pushed，四门在跑）。
+- **#327 docsync-r2** `7c0e70b8`：独审 round-2 PASS；双 CI 全绿；候根放行。
+- **srgp**（search rg-parity）`f0831531`+补修中：独审=补充内容（无阻塞）；必办=fixed_string/ignore_case 按名拒+目录 root-identity 臂+内核拒 summary 腿（mount-flip 前必关）。面发现入册：**confined 面无 payload exit code**（shell 行报的 exit 是 launcher 的——后续行不得再报）。
+- **natexe**（native 审批后执行）`b0b49761`：takeover 配置 26/26 双世界=配置级证据；**缺口闭合宣告需**：真实安装/创建路径可达性+用户文档+无 takeover 旧配置仍拒存续+防同名冒充——补单在途（根 04:34Z）。**在此之前"native 批准后执行"仍是真实可用性缺口**，不以本行注销。
+- **int-mnt r2**：基 master `ee49c4c0` 同步+全链终验在跑（f1e64a1e）。
+- U1（toolBindings 运行消费者）=具名延期（S0 原文承诺 vs 后段 ADR 分列在册），**非用户待裁**。
+
+### 7.3 矩阵（九条 docs 项，根 03:40Z 要求测量范围纠正保留）
+
+| # | 项 | 状态 |
+| - | --- | --- |
+| 1-8 | leader-ops/blueprint/README/INSTALL 八项 | docsync r1 修、r2 复审 PASS（README {3,4} 按 `ee49c4c0` 合后现实+document-face 三限定；**RED-A 两面分列**：strict 包面 RED 实录 vs 根 git-dep manifest 面 GREEN，永不互串） |
+| 9 | 本矩阵刷新 | 本笔交付（R3） |
+
+### 7.4 偏差账（永久，根 04:01/04:13Z 裁定）
+
+1. #326 合并前无独审（内容事后 PASS 保留不回滚；当时流程不合规）。
+2. #322 分支 04:36:45Z force-push（1257963e→8681c3a0，丢两枚非 gated merge-sync 修复笔；正向恢复 `b78aef3f`；判面 blob 未损）。
+
+— R3 writer = 协调者（qwen3.8-flash-next）；markdown 追加、零历史重写；红绿全部指向可复跑证据路径而非转述。
+
+> 注记（独审 3ebfdceb 两条 MINOR 的当轮处置，append-only）：(1) 矩阵第 9 条闭合**不改变** §2/§3 正本仍 @a2473203 时点的事实——正本矩阵刷新归 PR8 轮；且 `ee49c4c0` 后 §1 的「Blueprint vNext 未实施 / SUPPORTED=[3]」行已与现产面冲突，同归 PR8 轮正本刷新，此处只作指向注、不改正文。(2) 本节内的 ecf68fe7/ba398cca/06e6bff5/852048e3/f1e64a1e 等 = 评审/worker **会话号（handle）**，非 git 对象、origin 无 ref；其根口径以本目录 COORDINATION.md 与 SESSION_ROUTER_LOG 落仓为准；凡标 SHA 者方可 git 亲验。(3) 头注时间为 wave 钟（约），committer 时刻以 git 为准。

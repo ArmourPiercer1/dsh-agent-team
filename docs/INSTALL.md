@@ -106,8 +106,24 @@ build:composition`）。
    `packages/runtime/src/plugin/live/agent-bindings.mjs` **字节级复制**到
    `packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs`
    （host 行 `glueUrl` 的行内目标，无回退，必须存在；T12/P9 boot kit 同款步骤
-   的产品化）。`upstream-resolver.mjs` **无需**复制：host.js 的 resolve 钩子
-   走布局候选列表（dist 或 source 均可解析）。
+   的产品化）。
+   **GLUE-6（`35bff836`）更正 —— 旧说法作废**：本节此前写「`upstream-resolver.mjs`
+   **无需**复制：host.js 的 resolve 钩子走布局候选列表（dist 或 source 均可解析）」。
+   该候选列表隐含假设「源码树始终在场」，而运行时包的**公开面**是
+   `packages/runtime/package.json` 的 `files: ["dist"]`：严格按该面展开安装时
+   两个运行时 `.mjs` 都不在里面，boot 直接红
+   `ERR_MODULE_NOT_FOUND … /packages/runtime/src/plugin/upstream-resolver.mjs`
+   （实测红证 = `dev/agent-workflow/evidence/alpha5/install-entry/runs/2026-10-17T17-06-56Z/`
+   的 `install-manifest-red-evidence.log` + `red-a-facts.json`，即 RED-A）。
+   **现势事实**：入口在运行时按相对 specifier 加载的两个文件本身即安装面依赖，
+   已随 `PLACEMENTS` 字节复制清单进镜像 ——
+   `packages/runtime/src/plugin/upstream-resolver.mjs` 与
+   `packages/runtime/root-binding/harness/seam.mjs`，且 host.ts 优先取**面内**候选
+   （面外 specifier 只作后续候选，注册失败时点名面内文件）。`PLACEMENTS` 是
+   「哪些 src 文件 tsc 永不发射但 dist 必须携带」的唯一清单来源，
+   `scripts/check-artifacts-committed.mjs` 按同一清单做 parity 校验（新增项自动被门覆盖）。
+   GLUE-6 修复后的严格面自足证据 = GREEN 15/15，
+   `dev/agent-workflow/evidence/alpha5/glue6/runs/green-2026-10-17T17-56-03Z`。
 2. `scripts/build-client-composition.mjs` — 把 `packages/client` 的 tsc ESM dist
    + CSS 源编译为单文件 client bundle（`window.__ModuleLoader__.load` wire 格式，
    identity class map + `<style>` 注入，基线 external 集合 fail-closed 校验），
@@ -397,6 +413,64 @@ config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
 > profile 层的 resolved 行配置 —— 该信息不在公开 seam 暴露，实现需侵入
 > loader，按指南「不强求」从略；本节文档 + C1/C2 回归为最低修复面。
 
+## 3.5 治理工具面（`teamToolPlane` 行 config，可选）——「审批后执行」
+
+`config.teamToolPlane`（§3.2 同一行 config 面）为团队 agent 挂载**治理工具面**：
+grep/glob/shell（以及受治 `read`）行由本装配**放置**（placement），调用经
+permission lane 复核与 durable 审批账本，**批准被消费之后** placed body 才执行。
+本节只写已 live 验证的行为（证据：`dev/agent-workflow/evidence/alpha5/` 的
+natexe / glue7 / glue8 三条线，live kit 双时代全绿）。
+
+```yaml
+config:
+  # … §3.2 必填字段 …
+  teamToolPlane:
+    realmId: "my-team-realm"                    # 装配 realm（feed 配对键；每世界唯一）
+    names: { bash: "bash" }                     # 可选；见下方挂载名规则
+    fsInstance:                                 # 受治 fs 后端（read/grep/glob 的行根）
+      rootDir: "/absolute/path/to/team-root"
+    confinedProvider:                           # shell 行的受治执行器（信任对三件套）
+      trustRoot: "sha256:<launcherSha256前16位>#<launcher绝对路径>"
+      assembly:
+        launcherPath: "/absolute/path/to/landlock-prelauncher.py"
+        launcherSha256: "<launcher 文件 sha256（64 位小写 hex）>"
+        minAbiVersion: 3
+```
+
+- **行 config 是唯一的配置面**。blueprint 语法是封闭字段集（未知字段直接
+  `MALFORMED_DTO`），**没有任何 blueprint 字段可以挂载或影响工具面**——放置
+  身份是装配期事实，作者字段不参与造身份（placement attribution 是 feed 的
+  唯一权威）。信任模型：能写本行 config 者 = 安装者（与 `glueUrl` 同层）。
+- **缺省不挂平面**：行 config 无 `teamToolPlane` = 零挂载（typed-shut 旧世界
+  逐字存续）。此形态下原生 `bash` 在治理世界保持 dispatch 期
+  `BINDING_UNVERIFIED` 拒绝（fail-closed，GLUE-8 A4.4 已逐字钉）。
+- **挂载名（`names` / `readName`）值域封闭**，装配期校验（拒启动，
+  fail-closed）：形状 `^[a-z][a-z0-9_]{0,63}$`；`names` 键集 = plane 自身类
+  （grep/glob/bash）；四个挂载名两两互异（违规 = `PLANE_NAMES_INVALID`）；
+  **原生保留名只能按"装配面同名同义"接管**（违规 =
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`，独审 06:43Z 裁决：粗权限类别 ≠
+  工具实现等价）——受支持的对仅有 **shell 行 @ `"bash"`**（live 双时代实测
+  的 confined-shell 接管）与 **read 行 @ `"read"`**（shipped `readName`
+  默认）；**其余一切宿主原生拼写**在任何行上一律拒。保留名 = **宿主发布面
+  穷尽表**：53 个精确注册名 + `mcp__` 前缀族，钉宿主
+  `0.2.0-rc.2@639ed01539`——装配面输入仅 `{backends, fs, instanceId,
+  plane}`，宿主工具面在挂载名固化处不可得，且治理世界 web profile 的原生
+  派发面实测为空（派生即空表 = 不设防），故取静态超集 + **漂移钉测**（宿主
+  基线一动，钉测即 RED，强制按新宿主发布面重导出后才可移 pin）。
+  **混合缺陷按 形状→保留名声明→互异 的检查序先命中者拒**（保留名与互异并存
+  时报 UNSUPPORTED 而非互异 INVALID；"其余违规保持 INVALID"仅对纯单类缺陷
+  成立）。全矩阵（全宿主名 × 4 行，可执行重放）见
+  `dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native.mjs`。
+  非保留的自定义别名任意可挂（不冒充原生身份）。缺省 = `team_grep` /
+  `team_glob` / `team_bash` 别名形态。
+- **审批后执行**（takeover 形态 + 模板 `permissions.ask` 的 `{ tool: bash,
+  resource: { kind: any } }`）：调用先开 durable ask；批准被**消费**后 placed
+  confined body 才执行（governed root 内落盘可见）；OPEN 期零副作用；批准不
+  放大范围（root 外写 = kernel 拒绝）；deny 臂在任何执行前沿拒（持久权限层 /
+  template-deny-lane 按各层 precedence）。Leader 侧闭环需 envelope 携带
+  `request-control` / `resolve-control` 操作与审批工具面（见 blueprint
+  authoring 指南的审批环约定）。
+
 ## 4. 真实模型
 
 - `staticModel` 必须指向目标机器上**真实可用**的 provider/model，且该 DSH 实例已配置
@@ -424,7 +498,7 @@ config schema 与 upstream `LocalSpillStore` 一致：`root` 字符串、
 | `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`（快速安装，**仅 commit ≤ `e832d73`**） | 旧安装面依赖 `prepare` 构建链，pnpm 11 拒绝执行未白名单的 git 依赖 `prepare`：把 pnpm 打印的**完整 `name@spec#commit` 键**（照抄、非裸包名）写入 profile `pnpm-workspace.yaml` 的 `allowBuilds:`，重跑 `add`。**本 commit 起的 master 安装面无任何构建脚本，此错误不可能发生**；若出现，说明安装的是旧 commit |
 | `declares no dsh.bundle` 警告 / 无 Team UI | 装入的 commit 是 bundle-form 之前的旧版（root 无 `dsh.bundle` 声明）：`pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<新commit>` 重装，或改 §3 手动路径 |
 | 快速安装 host 行加载失败（无 file:// 路径） | **仅旧 commit（≤ `e832d73`）**：`prepare` 链未走完 → dist 缺失（boot fail-loud）：在依赖目录 `<profile>/node_modules/dsh-agent-team` 手工补跑 `pnpm install --ignore-scripts && pnpm build && pnpm build:composition` 后重启；@deepseek-ai/\* 解析错 = 嵌套安装闭包不全（registry 可达性 / lockfile）。**master 安装面 dist 为提交产物，此症状不应出现**——安装目录残缺时直接重装 |
-| 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 装入的 commit 处于 bundle-form 初期 `files` 安装面不全的窗口（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被遗漏）：用新 commit 重装；临时处置 = 从源码树把 `packages/runtime/src/plugin/upstream-resolver.mjs` 拷入依赖目录同相对路径后重启 |
+| 快速安装 host 行加载失败（`upstream-resolver.mjs` not found） | 两个**已闭**窗口，按装入 commit 分辨：**(a)** bundle-form 初期根 `files` 面不全（pnpm 对 git 依赖按 `files` 字段裁剪物化，该文件曾被漏列）—— `89fccd72` 起它已在根安装清单内；**(b) RED-A 严格面窗口（收口于 `35bff836`）**：运行时包自身的 `packages/runtime/package.json` `files: ["dist"]` 面缺入口在运行时加载的两个 `.mjs`（`upstream-resolver.mjs` + `root-binding/harness/seam.mjs`），严格展开该面 boot 必红（红证 `dev/agent-workflow/evidence/alpha5/install-entry/runs/2026-10-17T17-06-56Z/install-manifest-red-evidence.log`）。**正确处置 = 装 ≥ `35bff836` 的 commit 重装**：自该 SHA 起两文件经 `scripts/place-dist-glue.mjs` 的 `PLACEMENTS` 字节复制进入 committed 安装面，面自足且 host 优先取面内候选（见 §3.1）。**旧「从源码树把 `upstream-resolver.mjs` 拷进依赖目录」的临时处置已作废**：它只遮半边（`seam.mjs` 的同类缺口原样留着），而在新面上更无意义 —— 面内已有字节相同副本，缺文件只可能是安装目录残缺，直接重装即可 |
 | seam 推导失败（`no default seam module was found`） | 安装目录结构残缺（入口推导的两个布局候选都不存在）：重装，或改 §3 手动形态写显式 `seamUrl` |
 | host 行配置校验失败 | `TEAM_PLUGIN_CONFIG_INVALID`：`config:` 缺 `generation` / `deniedSelection`（必填、fail-closed，见 §3 模板），或 MCP 字段组合非法 —— `mcpServers` 必须是 `{ name: 非空 string, port: number|null }` 数组且 name 不重名；`mcpServers` 缺省时 legacy `mcpServer` 必须存在（`null` 或 `{ name, port }`）；两者同时出现时 `mcpServer` 必须为 `null`（否则 ambiguous 拒）。`mcpServers: []`（或 `mcpServer: null`）= 无 MCP，合法（语义细节见 §3.3） |
 | host 行加载失败 | 核 file:// 路径（正斜杠、文件存在：`pnpm build` 已跑）；`bootPhase`/`rootSessionId` 与既有世界冲突（典型：既有 home 上用 `create` → `TEAM_DOMAIN_EXISTS`；生产用 `create-or-open`）；glue 加载报 @deepseek-ai/* 解析错 → `pnpm install` 闭包不全（registry 可达性 / lockfile），重跑 `pnpm install`；报 `TEAM_PLUGIN_GLUE_UNAVAILABLE` 且含 legacy reader 候选失败 → 安装面产物不全（`pnpm build` 未跑或 dist 镜像被清理），重跑 `pnpm setup` |

@@ -1,6 +1,6 @@
 ---
 name: team-leader-operations
-description: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending approvals, archive member, grant/revoke permission rules — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, move a member out of the active work set, or change a member's durable permission overlay.
+description: Operate a DSH Agent Team as the Leader using the closed set of fifteen team tools — list members/templates, inspect config, create member, delegate, follow up, collect, send message, report progress, request/resolve control, list pending controls (team_list_pending_control), archive member, grant/revoke permission rules — including request-token discipline, sync vs async delegation, guard-blocked semantics, and instance addressing. Use when you are the team Leader (your session exposes team_* tools) and need to create members, delegate work, track results, coordinate with members, manage approval requests, move a member out of the active work set, or change a member's durable permission overlay.
 ---
 
 # Team Leader Operations
@@ -8,7 +8,13 @@ description: Operate a DSH Agent Team as the Leader using the closed set of fift
 Operate a DSH Agent Team from the Leader session. The Leader is the only agent
 role that can create members, delegate work, and resolve leader-level
 approvals. Everything below is the production behavior of the closed fifteen
-`team_*` tools — there are no other team tools, and no hidden side channels.
+`team_*` **coordination** tools — there are no other coordination tools and no
+hidden side channels. They are NOT the whole `team_` namespace: a governed agent
+whose host row carries `teamToolPlane` is additionally given the three
+**effect-face** tools `team_grep` / `team_glob` / `team_bash` plus a
+takeover-placed `read` (§2.1). That face is separately mounted and separately
+lane-governed, none of the fifteen tools drives it, and its real-versus-refused
+shape is a fact you must know before you promise a member's work will run.
 
 ## 1. Preconditions
 
@@ -56,6 +62,24 @@ why this table shows them with the same required args. See the section at the en
 on why narrowing a shell-class rule below `allow` is the one mutation you should think twice
 about before issuing.
 
+**Fifteen is the closed count — and a mounted copy of this text can lag it.**
+The production factory materialises exactly fifteen definitions: thirteen static
+specs plus the `permissionSpec('grant')` / `permissionSpec('revoke')` pair
+(`packages/tools/src/tools.ts:1524-1541` — the pair is invisible to a
+`name: 'team_*'` grep, which is how the count drifted in the first place). The
+same count is recorded independently in the host-upgrade evidence
+`dev/agent-workflow/evidence/dsh-020rc2-upgrade/03-team-tool-deny-least-privilege.md`
+("the plugin registers **15** team tools … plus the pair a `name: 'team_*'` grep
+misses"). A copy of this skill that was **mounted into a host skill directory,
+or checked out on an older branch/tree, is a snapshot**: the Alpha.3-era copy
+still summarizes "the closed set of **thirteen** team tools" (it predates
+`team_grant_permission` / `team_revoke_permission`; e.g.
+`.worktrees/dsh-020rc2-upgrade/.agents/skills/team-leader-operations/SKILL.md:3`
+in this repo is exactly that stale copy). When the mounted text and your live
+session disagree, the **live registered `team_*` surface is the authority** and
+the text is stale — re-copy it from this repo file, and do not conclude from a
+thirteen-name summary that grant/revoke do not exist.
+
 Optional args worth knowing:
 
 - `team_delegate` / `team_follow_up`: `async` (boolean, **default true
@@ -91,6 +115,95 @@ Optional args worth knowing:
   mutations, it is guarded on the target: a pending control request for
   the scope blocks it. A member caller is rejected
   (`TEAM_TOOL_ARCHIVE_NOT_LEADER`) before any effect.
+
+### 2.1 The effect-face tools: what a governed agent can actually execute
+
+The fifteen tools above move **team state**. File / search / shell effects run
+through a different, separately governed plane, mounted per agent (Leader or
+member) ONLY when that agent's host row carries `teamToolPlane` in its config —
+an absent row means none of these tools exists at all (mount gate:
+`packages/runtime/src/plugin/live/agent-bindings.mjs`, the GLUE-5 row; assembly:
+`packages/runtime/src/plugin/live/team-tool-plane.mjs`). The names are
+`team_grep` / `team_glob` / `team_bash` (`DEFAULT_PLANE_NAMES`,
+`team-tool-plane.mjs:82` at `0e59140b`), plus the native `read`, which is
+takeover-placed with its placement-feed rows into the Guard.
+
+Production behavior of that face **as delivered on master** (backend assembly
+row `0e59140b`, PR #323, which carried the reviewed GLUE-7 work of the closed
+#321):
+
+- `team_grep` — a REAL anchored **read-only `grep(1)`** search over the row's
+  governed fs root (`grepArgv` = `-rIn --binary-files=without-match`;
+  multiline is refused by name, never reinterpreted:
+  `packages/runtime/src/plugin/live/plane-effect-backends.mjs:109,:177`), and
+  ONLY when the row configured `plane.fsInstance.rootDir`
+  (`createAnchoredSearchBackend`). Do not promise rg semantics (ignore/hidden
+  handling, binary shape, error shape) from this row — the plan's rg-parity
+  regression baseline is a separate open item.
+- `team_bash` — a REAL confined process provider (kernel-confined, launcher
+  double byte gate + `trustRoot` pairing), and ONLY when the row configured
+  `plane.confinedProvider`.
+- `team_glob` — **no production effect body at all on master**: every call lands
+  on the typed refusal `IO_POLICY_UNSUPPORTED` (`productionBackends.glob = shut`,
+  `team-tool-plane.mjs:403-408` at `0e59140b`; still `shut` on the current
+  master line). The candidate behind that row has **three distinct states** —
+  writing them as one is wrong in both directions:
+  - **(a) Historical failures on the candidate line, each closed by a named
+    fix stroke.** *Spill round*: before `c0714492` the backend wrote to
+    `io.sink` from the stdout callback, so a walk refused later had already put
+    unverified rows on the spill channel (R2 register §6.2, root 23:05Z
+    correction: results before the verdict **184/5100** = safety FAIL) — closed
+    by law **A7** in `c0714492` (exactly one `sink.write`, positioned after the
+    verdict, its source can only be the admitted array; a refused walk writes
+    **0 bytes**, leg X1 induces it deterministically). *Detail/echo round*:
+    before `ee9b30d5`, **7** source×sink cells were genuinely reachable (entry
+    names → spill and → detail, rg stderr → detail, provider and host-parser
+    messages → detail, verification-time resolved path → detail, exception
+    string → throw; the root 23:48Z register measured the detail echo at
+    **351/3600**, and the in-repo witness is the `pre:` column of
+    `dev/agent-workflow/evidence/alpha5/glob-backend/channel-matrix.json`) —
+    closed by law **A8** in `ee9b30d5` (`failure(...)` carries **no**
+    string→`detail` parameter; wording comes from the frozen
+    `GLOB_REFUSAL_TEXT` table; the `internalLog` face is default-OFF and is
+    never wired to io / result / observe). The **name-class 3/10700** figure is
+    a DIFFERENT subject: the ARCHIVED GLUE-7 inline attempt
+    (`a5g7-confined-rg-glob`, wiring removed, factory 未入产) whose
+    verify→launcher string-chdir window plus the then-present provider
+    `runtime_base` `'/'` READ_DIR grant could surface outside NAMES (bytes
+    never); the `runtime_base` half is closed on master at `0e59140b` (PR #323).
+  - **(b) The module fix IS verified — on the candidate line.** At `ee9b30d5`
+    the same live attacker re-ran **6600 real-rg races with probes on every
+    exoteric channel**: `allChannelProbe {walks 6600, auditLines 6601,
+    internalLines 3300, spillBytes 49500, exceptionStrings 0, detailsFromTable
+    3300 == the refusal count, wireTokenHits 0}`
+    (`dev/agent-workflow/evidence/alpha5/glob-backend/adversarial-counters.json`),
+    suites 57/57 three times byte-stable, and the **round-7 independent review
+    of that head is PASS** (root review register; the committed witness of that
+    pass is its residual integration conditions being pinned — not fixed away —
+    at the integration mount as INT-a (`allowPaths` same-shape), INT-b
+    (`internalLog` never passed by the assembly), INT-c (the name-enumeration
+    template re-run **on the connected row**) — see `34e59098` and its ledger
+    `46454f99` on `alpha5-int-mnt`). Candidate-line records: `ee9b30d5` is an
+    ancestor of the (still-moving, reviewed-pending) PR head — `1257963e` at the
+    fetch of this note, `b78aef3f` at its re-check — and is **not** an ancestor
+    of master.
+  - **(c) The production mount is still unverified.** PR #322 is open
+    (unmerged), the `alpha5-int-mnt` mount is an integration-tree mount (未产),
+    and no terminal acceptance ruling at the real production entry is on record.
+    So on master `team_glob` is honestly shut and must not be described as
+    working — and the fixed rounds above must not be re-reported as open bugs
+    either.
+- Any class whose row is unconfigured keeps that same typed shut landing —
+  the closed world invents no fallback. A shut landing is a LANDING, not
+  evidence of a policy denial.
+- The template lane denies **before** any backend runs (`28d31f2a`, G1): a
+  denied effect call executes nothing and leaves zero side effects.
+
+What that means for you: `IO_POLICY_UNSUPPORTED` from a member's `team_glob`, or
+from any unconfigured row, is a **missing-backend fact, not a pending approval**
+— no `team_resolve_control` answer unlocks it. Change the configuration (or wait
+for the candidate row to land), and report the refusal verbatim instead of
+retrying it.
 
 ## 3. Delegation: the standard loop
 
@@ -318,7 +431,7 @@ ships **no Human Admin resolver** (`CONTROL_UNRESOLVABLE_AUTHORITIES =
 its terminal deny (ADR A1-12). Consequences you will observe:
 
 - the member's affected command is **permanently unavailable at runtime** — no
-  pending approval appears, `team_list_pending_approvals` will not show it, and
+  pending approval appears, `team_list_pending_control` will not show it, and
   nothing retries or unblocks it;
 - there is **no UI affordance** to release it; `team_resolve_control` cannot
   answer a case whose reviewer cannot exist;

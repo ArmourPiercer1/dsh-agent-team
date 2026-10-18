@@ -37,11 +37,20 @@ gitignored) — this section is a pointer summary, not the authority:
 - A **TeamBlueprint** must contain **exactly one complete LeaderTemplate** (plus member
   templates / policy / quota definitions); a blueprint that only defines teammates is
   structurally invalid.
-- A **TeamBlueprint** document is versioned and closed-world. The run set is the
-  dual-parsing window **`{3, 4}`**: v3 parses through its frozen branch with zero
-  load-time deformation; v4 adds only the optional `toolBindings` effect-governance
-  family over the same frozen core face (formal Schema ADR:
-  `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+- A **TeamBlueprint** document is versioned and closed-world. Since the v4 flip
+  (**merged at `ee49c4c0`, PR #324**) the run set is the dual-parsing window
+  **`{3, 4}`** (`packages/domain/blueprint/src/schema.ts:87`; before it the set
+  was `[3]` with the v4 grammar shipped dormant at `382e5fb6`): v3 parses
+  through its frozen branch with zero load-time deformation (canary hash pinned
+  in the formal Schema ADR:
+  `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`);
+  v4 adds only the optional `toolBindings` effect-governance family over the
+  same frozen core face. **DOCUMENT FACE, NOT EFFECT FACE**: a v4 document
+  parses, freezes, hash-binds and runs as a document (live-host leg 14/14,
+  `dev/agent-workflow/evidence/alpha5/v4-flip/`), while its lanes are not
+  executed — dispatch fail-closes at the Tool Binding verification gate, the
+  same-stroke M-3 envelope Scope tables are GRAMMAR-not-ACCEPTANCE (zero new
+  rung), and the verified-effect feed is a later route.
   **翻档 ≠ 退役 — the flip is not a retirement**: the window's DURATION and EXIT are
   the T-1 pending ruling and this round does NOT pre-set them; v1/v2 stay
   defined-but-retired (discoverable with identity, refused as operator-owns-the-migration),
@@ -129,19 +138,47 @@ gitignored) — this section is a pointer summary, not the authority:
   `0738b45`; DoD 15/15; reuse audit 47/47 confirmed). Post-GO trial defects closed in
   P9-F1 (`d199d4d6`) + P9-F2 (`dc056d5`); production-host browser vertical S1–S9 all
   green.
-- Fresh-machine installability (verified in the R125 gate): clone → `pnpm install`
-  → `pnpm build` → `pnpm build:composition` → mount per **`docs/INSTALL.md`** →
-  `dsh web`. Proven end-to-end on clean-clone-equivalent trees (registry-only
-  dependencies, 0 external junctions, byte-identical install surface) and on a fresh
-  production-world boot (S8-READY + full browser vertical, zero failures).
-  Since plugin-bundle-form, the root manifest declares `dsh.bundle` + `dsh.client`
-  (machine-agnostic bundle layer, no file:// rows):
+- Fresh-machine installability (**era-scoped — the R125 wording was stale; disclosure added 2026-10-18**):
+  clone → `pnpm install` → `pnpm build` → `pnpm build:composition` → mount per
+  **`docs/INSTALL.md`** → `dsh web`. The R125-gate proof (clean-clone-equivalent
+  trees, registry-only dependencies, 0 external junctions, byte-identical install
+  surface; fresh production-world boot S8-READY + full browser vertical, zero
+  failures) is a **pre-Alpha.5 measurement** and is not a claim about an
+  arbitrary current commit. Alpha.5's own install-entry round (`fe829038`,
+  PR #311) measured **RED-A** on the runtime package's *declared* face: a strict
+  unfolding of `packages/runtime/package.json` `files: ["dist"]` boots RED with
+  `ERR_MODULE_NOT_FOUND … /src/plugin/upstream-resolver.mjs`
+  (`dev/agent-workflow/evidence/alpha5/install-entry/runs/2026-10-17T17-06-56Z/`
+  → `install-manifest-red-evidence.log` + `red-a-facts.json`; that round's ②③④
+  criteria ran on the aux face — strict dist + the two out-of-face `.mjs` +
+  skills, 1732 files — and the round explicitly never claimed a pure-face pass).
+  **Since `35bff836` (PR #318, GLUE-6) the strict face is self-sufficient**: both
+  runtime `.mjs` ride the committed install face through the PLACEMENTS
+  byte-copy (`scripts/place-dist-glue.mjs`) and the entry prefers the in-face
+  candidate; the fix's own strict-face record is GREEN **15/15**
+  (`dev/agent-workflow/evidence/alpha5/glue6/runs/green-2026-10-17T17-56-03Z`),
+  and the merged-tree re-run `4552fba5` (RED-A strict **15/15**) is
+  branch-local evidence on `alpha5-int-a5b`, not a master record.
+- **One-command install**: since plugin-bundle-form the root manifest declares
+  `dsh.bundle` + `dsh.client` (machine-agnostic bundle layer, no file:// rows),
+  the install-surface build artifacts are committed prebuilt, and the package
+  declares no lifecycle scripts (plugin-prebuilt-artifacts, R131;
+  `docs/INSTALL.md` §2), so
   `pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team`
-  installs and registers in ONE command — **no `allowBuilds` whitelist needed**:
-  the install-surface build artifacts are committed prebuilt and the package
-  declares no lifecycle scripts (plugin-prebuilt-artifacts, R131; `docs/INSTALL.md`
-   §2). Commits ≤ `e832d73` still need the one-time `allowBuilds` key (INSTALL.md
-   §6 troubleshooting); clone + mount remains the offline / manual path (§3).
+  installs and registers in ONE command with **no `allowBuilds` whitelist**.
+  Two disclosed windows in this claim's history, each closed at a named commit:
+  commits ≤ `e832d73` need the one-time `allowBuilds` key (INSTALL.md §6
+  troubleshooting); and the **RED-A window** above — inside it the *runtime
+  package's own* `files: ["dist"]` face was not self-sufficient (the two runtime
+  `.mjs` lived outside it), so a strict install of such a commit fail-closes at
+  boot. What the root git-dependency manifest ships (`.agents/skills`,
+  `cordis.patch.yml`, `packages/client/composition-shim`,
+  `packages/runtime/dist`, `packages/runtime/root-binding`,
+  `packages/runtime/src/plugin/upstream-resolver.mjs` — the last two since
+  `b3a7813f` / `89fccd72`) is why the one-command path itself measured GREEN on
+  the aux face at `fe829038`; the strict-face gap it did **not** cover is closed
+  only at `35bff836`, so install a commit ≥ `35bff836`. clone + mount remains
+  the offline / manual path (§3).
 - Test baseline: **0.2.0-rc.2 @ `639ed01539`** (test-use runtime checkout, from
   the 2026-10-03 host upgrade round; the anchor is the fork branch
   `stable-3-0.2.0-rc.2` tip — the fork carries no `dsh-v0.2.0-rc.2` tag;

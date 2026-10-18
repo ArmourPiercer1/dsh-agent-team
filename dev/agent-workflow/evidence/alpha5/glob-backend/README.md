@@ -321,6 +321,10 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
   孤儿脱离 PPid 链的限制 disclosed，disposeAll 改为拍闭包快照后逐一要求消失），负控五检 A–E
   `lsp2-membership-negative-control.txt`（A 旧判据认错外方=RED 复刻 / B 新判据 GREEN /
   C nonce 逃逸 RED-as-required / D 无 nonce 孙子经 PPid 臂 RED-as-required / E 真 SOURCE-fixture 具名 RED）。
+- **§12**：merge-sync 试合 master `1fb14c4d`——唯一冲突 p4t6 账本，master 整文件为底 + 本 lane 块
+  按 scanner **实测**重入账（入账前 RED 读数 `expected 1191 to be 1187`，实测总 1191，tie 重锚
+  `1191 - 1187`；A5NATEXE 块与其 tie 一字未改 ⇒ 零双计；两侧旧锚点 1184/1187 均不抄）。
+
 - **§11**：gate self-test 68 → **77**：断管负控（有界必达 VERDICT、洪水负控必 missing-token、
   管道预算构造性成立）+ 退出码断言（红必 exit=1 带 VERDICT、绿必 exit=0、切断转录必 missing-token）。
 

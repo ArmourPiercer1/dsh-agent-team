@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3185/?token=REDACTED-9c57640c
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g8-v4-realm
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=33 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/tests/homes/a5g8-v4feed-assembled-2026-10-18T04-46-44/governed/v4g8-read.txt
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g8-v4-realm legs=6
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g8-v4-realm call=team-inst-1gw267h0ihpv-glob-2 pid=138 files=1 capped=false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g8-v4-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g8-v4-realm call=team-inst-1gw267h0ihpv-bash-3 pid=148 exit=0 timedOut=false

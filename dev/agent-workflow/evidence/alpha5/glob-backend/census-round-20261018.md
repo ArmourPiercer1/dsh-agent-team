@@ -346,3 +346,26 @@ E 真从 SOURCE fixture 起的实例＝**具名 source-leak RED**。新判据那
   把红跑的转录在 token 之前切断 ⇒ `class=missing-token`（330 的形状永不被当成通过）。
   这两次 spawn 会在被跟踪的 gate scratch 目录留下 JSON，self-test 前后对比目录名集合，
   只删自己新增的文件（不整目录删——上轮 `rm -rf` 误删 49 个在册文件的教训已写进代码注释）。
+
+## 12. merge-sync：试合 master `1fb14c4d`（唯一冲突＝p4t6 账本）
+
+父单如实报的踩坑（第一版 union 解析出 5 处并留解析错误）已 `git merge --abort`，本笔从零开始正式解。
+**唯一冲突＝`packages/testkit/test/p4t6-session-event-scan.test.ts`**：A5GLB 与 A5NATEXE 两侧在
+`SCANNED_PATHS_A5FLIP` 之后同一位置各加了自己的账本块（块内还带 `.length` 求和尾项，纯文本 union
+必产语法错误——这就是"嵌套账本区不能简单拼接"的成因）。
+
+**解法（master 侧整文件为底）**：`git checkout 1fb14c4d -- <该文件>` 取 master 版为底，再把本 lane
+的 `SCANNED_PATHS_A5GLB`（glob 四文件 + 其注释）原样入账，两处总和各加一项 `+ SCANNED_PATHS_A5GLB.length,`，
+并集加 `...SCANNED_PATHS_A5GLB,`。**A5NATEXE 的账本块、求和项与 `1187 - 1186` 那条 tie 一字未改**
+（diff 只有 `SCANNED_PATHS_A5NATEXE.length,` → `.length +` 的尾项位移）⇒ 两块各计各的，零双计。
+
+**入账数字全部实测**（不手算）：以 master 版为底、A5GLB 块**尚未**入账时亲跑 scanner＝
+`filesScanned = 1191`，p4t6 入账前 RED 读数 `expected 1191 to be 1187`（1187＝natexe 链已入账链条，
+1191＝再加 glob 四文件）；故本 lane 的 tie 重锚为 `expect(SCANNED_PATHS_A5GLB.length).toBe(1191 - 1187)`。
+两侧 merge 前的旧锚点（本 lane 链 1184 / natexe 链 1187）**都不抄**——它们不是这棵树的总数，
+理由写在 tie 的注释里。
+
+**验证（合入前跑）**：p4t6 **10/10**（入账后转绿）；邻域 a5natexe-native-takeover **12/12**、
+glob 主 suite **49/49** + 对抗 **8/8**、lsp2 assembly **7/7** + streaming **15/15**（三臂成员判据在新
+runtime 下仍全绿）、`tests/homes` 残留 0；`pnpm -r run typecheck` 无 `error TS`；eslint clean；
+gate self-test 77 pass。产品代码零动——本笔只动一个测试账本文件＋本证据。

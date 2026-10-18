@@ -1,0 +1,155 @@
+{
+  "runStamp": "2026-10-18T03-54-32",
+  "hostBaseline": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPort": 3182,
+  "mockPort": 3493,
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe",
+  "criteria": [
+    {
+      "id": "A0.0",
+      "name": "test-use pristine at the paths.mjs baseline",
+      "ok": true,
+      "detail": "sha=639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    {
+      "id": "A1.0",
+      "name": "real host booted on the production row (profile-patch seam; v3 anchor team alive)",
+      "ok": true,
+      "detail": "origin=http://127.0.0.1:3182"
+    },
+    {
+      "id": "A1.1",
+      "name": "boot root surface captured (bash present; unmanaged remainder computed)",
+      "ok": true,
+      "detail": "surface=20 deny=0"
+    },
+    {
+      "id": "A2.0",
+      "name": "catalog.list carries the v4 saved source",
+      "ok": true,
+      "detail": "row={\"blueprintId\":\"team.a5fl-v4\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":4,\"migrationState\":\"current\"}]}"
+    },
+    {
+      "id": "A2.1",
+      "name": "the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported)",
+      "ok": true,
+      "detail": "state={\"revision\":1,\"schemaVersion\":4,\"migrationState\":\"current\"}"
+    },
+    {
+      "id": "A2.3",
+      "name": "v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside",
+      "ok": true,
+      "detail": "state={\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}"
+    },
+    {
+      "id": "A4.1",
+      "name": "the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team)",
+      "ok": true,
+      "detail": "ledger={\"requests\":[{\"requestId\":\"ctrl-0i5st1i0486i650h8yydc0cd\",\"kind\":\"leader-approval\",\"toolName\":\"bash\"}],\"decisions\":[],\"consumptions\":[],\"error\":null}"
+    },
+    {
+      "id": "C5",
+      "name": "refuse-before-side-effect, live: with the leader-approval request OPEN, the ask-gated native bash produced ZERO side effect in the world (no marker file anywhere under HOME; the tool body had not been reached)",
+      "ok": true,
+      "detail": "preAllowSideEffect=false requestId=ctrl-0i5st1i0486i650h8yydc0cd"
+    },
+    {
+      "id": "A4.2",
+      "name": "team.resolveControl (v4 wire) ACCEPTS the allow on the v4 team (durable decision)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5flres-7xn2v94u2d\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-0i5st1i0486i650h8yydc0cd\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-a5fl-v4team-2026-10-18T03-54-32\"},\"scope\":{\"rootSessionId\":\"session-a5fl-v4team-2026-10-"
+    },
+    {
+      "id": "A3.0",
+      "name": "team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5flc-ziyux6bcos\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5fl-v4team-2026-10-18T03-54-32\",\"blueprint\":{\"blueprintId\":\"team.a5fl-v4\",\"revision\":\"1\",\"contentHash\":\"sha256:3a98989ec"
+    },
+    {
+      "id": "A2.2",
+      "name": "catalog.get returns the v4 identity (schemaVersion 4 + contentHash, blueprintId match)",
+      "ok": true,
+      "detail": "status=200 hash=sha256:3a98989ecd1c151e"
+    },
+    {
+      "id": "A4.3",
+      "name": "the human allow is DURABLE (control-decision-recorded on the team ledger)",
+      "ok": true,
+      "detail": "decisions=[{\"requestId\":\"ctrl-0i5st1i0486i650h8yydc0cd\",\"decision\":\"allow\"}]"
+    },
+    {
+      "id": "A4.0",
+      "name": "the v4 team leader ran create_member + team_delegate and the executed work-admitted receipt landed in the leader context",
+      "ok": true,
+      "detail": "final=A5FL_LEAD_DONE_DELEGATED"
+    },
+    {
+      "id": "C0",
+      "name": "the v4-bound scope mounted the plane: placement-feed rows logged through the SAME #313 binding feed (realm a5g8-v4-realm)",
+      "ok": true,
+      "detail": "rows=[\"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g8-v4-realm\"]"
+    },
+    {
+      "id": "C1",
+      "name": "POSITIVE READ on a v4-bound team: the governed read row ran and returned REAL BYTES from the controlled root (r0 carries the file content, no refusal vocabulary)",
+      "ok": true,
+      "detail": "memberText=\"A5FL_MEM_DONE_QUOTE r0=[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-v061u8vs\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"A5G8-V4-REAL-BYTES-42 token G8QZ\\\\n\\\"}],\\\"is_error\\\":false}] | r1=[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-eyvgeqrl\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"t"
+    },
+    {
+      "id": "C2",
+      "name": "POSITIVE SEARCH: team_grep ran the REAL read-only search over the governed root and the token hit rode the wire",
+      "ok": true,
+      "detail": "memberText=\"A5FL_MEM_DONE_QUOTE r0=[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-v061u8vs\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"A5G8-V4-REAL-BYTES-42 token G8QZ\\\\n\\\"}],\\\"is_error\\\":false}] | r1=[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-eyvgeqrl\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"t"
+    },
+    {
+      "id": "C3",
+      "name": "GLOB ROW RUNS REAL on the v4 wire (int-mnt: the #322 FINAL anchored backend is mounted under the two integration conditions — allowPaths同形 read-only + internalLog never wired): the r2 result names the governed file, outside names absent",
+      "ok": true,
+      "detail": "r2=\"r2=[{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-vun6cipa\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"search · files_with_matches · 1 matches\\\\n> v4g8-read.txt\\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"search\\\\\\\",\\\\\\\"outputMode\\\\\\\":\\\\\\\"files_with_matches\\\\\""
+    },
+    {
+      "id": "C4",
+      "name": "PLACEMENT SHELL runs on the plane face, governed by the Team runtime plane itself (ruling 81861aa1: team_bash = OTHER_MANAGED_TEAM_TOOL, permission-coverage.ts:66-78 — authority owner is the Team runtime/control plane, NOT the operation-permission lane): exit=0 + marker on the wire + the sentinel file written INSIDE the governed root",
+      "ok": true,
+      "detail": "exec=true tok=true sentinel=true gov=[bash-sentinel.txt,out,plans,probe-mvdakjc6-u557ne,v4g8-read.txt]"
+    },
+    {
+      "id": "A4.4",
+      "name": "execute-after-approval, measured precisely: the approval chain completed (ledger request→decision→consumption aligned to one requestId) AND the ask-gated native bash then landed on the Tool Binding verification gate — the Guard refuses it (no native-body fallback, the shipped closed-world law), the zero-side-effect state from C5 persists (allow does not silently widen execution)",
+      "ok": true,
+      "detail": "chain=true refusal=true stillZero=true consumptions=1"
+    },
+    {
+      "id": "A5.0",
+      "name": "the governed WRITE landed for REAL where allowed: bash-sentinel.txt exists under the controlled root (positive control of execution, the mirror of the preassembly NEGATIVE)",
+      "ok": true,
+      "detail": "sentinel=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe/tests/homes/a5g8-v4feed-assembled-2026-10-18T03-54-32/governed/bash-sentinel.txt"
+    }
+  ],
+  "passed": 20,
+  "total": 20,
+  "failed": [],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    }
+  },
+  "verdict": "PASS"
+}
