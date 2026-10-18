@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-18T22:57:23.329Z",
+  "mode": "to-last",
+  "fromSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "toSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "note": "public-face reinstall of the previous recorded SHA; three-zero re-graded by install-candidate.sh",
+  "rehearsalPlaceholder": "{{ROLLBACK_REHEARSAL_RECEIPT}}"
+}

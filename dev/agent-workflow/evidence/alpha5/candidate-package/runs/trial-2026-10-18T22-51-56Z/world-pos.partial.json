@@ -1,0 +1,104 @@
+{
+  "mode": "pos",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-18T22-51-56Z",
+  "ok": true,
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"
+  },
+  "launcher": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-18T22-51-56Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3"
+  },
+  "abi": {
+    "kind": "abi-available",
+    "abi_version": 4,
+    "raw": [
+      "[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'"
+    ]
+  },
+  "bootLine": "dsh web: http://127.0.0.1:3180/?token=<REDACTED-104c00de>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "catalogPreflight": 200,
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"cand-pos-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-cand-pos-team-2026-10-18T22-51-56Z\",\"blueprint\":{\"blueprintId\":\"cand-pos-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:f9bbe2b9ede62be9a5866a40e980763d52e6e7dbde968ec0f35ce94eab6980b7\"},\"createdAt\":\"2026-10-18T22:52:33.941Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pos-2026-10-18T22-51-56Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-cand-pos-team-2026-10-18T22-51-56Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-cand-pos-team-2026-10-18T22-51-56Z\",\"instanceId\":\"inst-leader\""
+  },
+  "leaderToolCalls": [
+    "team_create_member",
+    "team_list_members",
+    "team_delegate",
+    "team_collect"
+  ],
+  "memberResultsBackToLeader": true,
+  "listMembersResult": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"list-members\\\",\\\"rootSessionId\\\":\\\"session-cand-pos-team-2026-10-18T22-51-56Z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"members-listed\\\",\\\"members\\\":[{\\\"instanceId\\\":\\\"inst-08oon5i01fqr\\\",\\\"templateId\\\":\\\"wa\\\",\\\"label\\\":\\\"cand-a\\\",\\\"lifecycle\\\":\\\"CREATED\\\",\\\"childSessionId\\\":\\\"session-team-child-29c5afe0bb9414e1829f6ae6e45747f3\\\"},{\\\"instanceId\\\":\\\"inst-leader\\\",\\\"templateId\\\":\\\"leader\\\",\\\"label\\\":\\\"leader\\\"}]},\\\"requestToken\\\":\\\"cand-pos-tok-lm\\\"}\"}]",
+  "memberRequestCount": 3,
+  "memberWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "team_bash",
+    "team_bash"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> CAND-BASH-TOK\\n> CAND-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"CAND_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=0\\\\n> CAND-BASH-TOK\\\\n> CAND-WROTE-9\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":0,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":false}\\\"}] | r1=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=1\\\\n> (empty stdout)\\\\nstderr:\\\\n> cat: ../outside/secret.txt: Permission denied\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":1,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"truncated\\\\\\\":fal\"}",
+  "outsideMarkerOnWire": 0,
+  "seedNamesOnWire": [
+    {
+      "name": "zzcand-alpha.txt",
+      "hits": 0
+    },
+    {
+      "name": "zzcand-beta.txt",
+      "hits": 0
+    }
+  ],
+  "bashWroteExists": true,
+  "bashWroteBytes": "CAND-WROTE-9\n",
+  "results": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> CAND-BASH-TOK\\n> CAND-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+  ],
+  "names": [
+    "team_bash",
+    "team_bash"
+  ],
+  "expectedRefusalVerbatim": ""
+}

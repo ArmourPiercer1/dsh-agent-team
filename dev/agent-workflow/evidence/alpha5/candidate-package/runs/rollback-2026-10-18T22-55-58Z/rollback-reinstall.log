@@ -1,0 +1,56 @@
+[install-candidate 22:55:59Z] node=v24.21.0 pnpm=11.7.0 git=2.43.0
+[install-candidate 22:55:59Z] stable :3080 read-only probe = 401 (never touched by this script)
+[install-candidate 22:55:59Z] source 1: git ls-remote refs/heads/master (outside the clone)
+[install-candidate 22:56:00Z] NOTE: CANDIDATE_SHA != live master (708fb3fed6555ad664d9817cea64db06150eeff1); CANDIDATE_ALLOW_ANCESTOR=1 → ancestor check after clone
+[install-candidate 22:56:00Z] clone --branch master @ CANDIDATE_SHA → /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-src-2026-10-18T22-55-58Z
+[install-candidate 22:56:20Z] reachability: CANDIDATE_SHA is an ancestor-or-equal of the cloned origin/master
+[install-candidate 22:56:20Z] source 2: rev-parse in the clone = 52d73534f92e69efe12c72c347d435f66f3f85fe (== CANDIDATE_SHA; ls-remote tip = 708fb3fed6555ad664d9817cea64db06150eeff1)
+[install-candidate 22:56:20Z] host = /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 porcelain 0
+[install-candidate 22:56:20Z] install: node …/bin.js plugin --profile web add 'github:ArmourPiercer1/dsh-agent-team#52d73534f92e69efe12c72c347d435f66f3f85fe' (DSH_HOME=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-install-2026-10-18T22-55-58Z)
+[install-candidate 22:56:24Z] install exit=0 in 4s (full output: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/reinstall-2026-10-18T22-55-58Z/install-2026-10-18T22-55-58Z/install-output.log)
+[install-candidate 22:56:24Z] face-check (three zeros + launcher bytes + dump-config composition)
+PASS I2 — STRICT profile face: the profile declares EXACTLY the candidate plugin, node_modules top level holds nothing else, and the reconciler appended the bundle rows [deps=["dsh-agent-team"] nm=["dsh-agent-team"] bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]]
+PASS I3a — INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry (RECOUNTED from package.json files: at CANDIDATE_SHA; never a hard-coded expectation) [installed=1773 declared-files-face=1773 (files: entries=1771 + pack-always=2)]
+PASS I3b — INSTALL THREE-ZEROS (2/4 missing = 0): every declared file materialized in the install dir [missing=0 []]
+PASS I3c — INSTALL THREE-ZEROS (3/4 extra = 0): nothing outside the declared face landed [extra=0 []]
+PASS I3d — INSTALL THREE-ZEROS (4/4 sha-mismatch = 0): every installed file is BYTE-IDENTICAL to that path at the installed commit [mismatch=0 rootSha=91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7]
+PASS I3e — the bytes beyond the declared files: list are exactly the pack rules' always-included pair (disclosed, not folded into the count) [alwaysIncluded=["README.md","package.json"]]
+PASS I4 — the installed bundle layer is machine-agnostic (rows reference the package by name; no file:/ URL landed in the profile manifest) [bundles=["@deepseek-ai/dsh-base","@deepseek-ai/dsh-web-app","dsh-agent-team"]]
+PASS I8 — DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face — the installer supplies it as a deployment input, byte-pinned from the SAME commit [launcherInFace=false launcherSha=1264ea584e3438d6… bytes=26992]
+PASS I9 — the deployment input is the RIGHT BYTES: commit blob == clone blob, starts with "#!", and the launcher itself answers the ABI probe [sha=1264ea584e3438d6… commit==src=true abi=abi-available/4]
+PASS I5 — the host composes the INSTALLED bundle row through the public profile seam: --dump-config carries id dsh-agent-team / name dsh-agent-team/host plus the spill-local + client rows, no skipped bundle [exit=0 teamRow=true subRows=true skipped=false]
+SUMMARY pass=10 fail=0 booked=0 (receipt: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/reinstall-2026-10-18T22-55-58Z/install-2026-10-18T22-55-58Z/face-check.json)
+[install-candidate 22:56:24Z] previous state appended to /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-INSTALLED.history.jsonl (rollback --to-last uses it)
+{
+  "schema": "candidate-installed-v1",
+  "installedAt": "2026-10-18T22:56:24Z",
+  "sha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "lsRemoteMasterAtVerify": "708fb3fed6555ad664d9817cea64db06150eeff1",
+  "allowAncestor": true,
+  "installSpec": "github:ArmourPiercer1/dsh-agent-team#52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "installHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-install-2026-10-18T22-55-58Z",
+  "srcHome": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-src-2026-10-18T22-55-58Z",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/.pnpm-store-candidate",
+  "testUse": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+  "testUseHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7",
+  "face": {
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0
+  },
+  "launcher": {
+    "sha256": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992,
+    "abi": "abi-available",
+    "abiVersion": 4
+  },
+  "faceCheckExit": 0,
+  "nodeVersion": "24.21.0",
+  "pnpmVersion": "11.7.0"
+}
+[install-candidate 22:56:25Z] INSTALLED.json written → /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-INSTALLED.json
+[install-candidate 22:56:25Z] NEXT: ./try-candidate.sh --dry-run   then   ./try-candidate.sh  (full 3-leg chain, at final assembly with the final receipt)
+[install-candidate 22:56:25Z] ROLLBACK: ./rollback-candidate.sh --to-last | --uninstall

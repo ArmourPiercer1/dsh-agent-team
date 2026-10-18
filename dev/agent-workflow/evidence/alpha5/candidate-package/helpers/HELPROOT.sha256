@@ -1,0 +1,5 @@
+# helpers/ = byte copies of the tracked files at CANDIDATE pin 52d73534f92e69efe12c72c347d435f66f3f85fe (pre-assembly live master; final = {{FINAL_CANDIDATE_SHA}}).
+# source paths: packages/tools/harness/mock-deepseek.mjs | tests/kits/_shared/preset-seam.mjs | tests/paths.mjs
+8beade69588c105efb66df6a7a99dd915cb41b7aba91635ec0ebf73e6278fb06  mock-deepseek.mjs
+ba922e50b3c2d03d40ab4dec73f2935a1168e9f496bef0690140a7584f4bc72b  paths.mjs
+eb4fa7409db54010da82c49e0461e6ef9025e51028f904ded244ed5143e0a4e2  preset-seam.mjs

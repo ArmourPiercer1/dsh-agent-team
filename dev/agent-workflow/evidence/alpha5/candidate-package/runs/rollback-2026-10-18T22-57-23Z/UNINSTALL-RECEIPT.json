@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-18T22:57:25.453Z",
+  "mode": "uninstall",
+  "lastSha": "52d73534f92e69efe12c72c347d435f66f3f85fe",
+  "stateFilesMoved": true,
+  "rehearsalPlaceholder": "{{ROLLBACK_REHEARSAL_RECEIPT}}"
+}
