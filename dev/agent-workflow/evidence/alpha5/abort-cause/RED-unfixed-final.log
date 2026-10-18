@@ -1,0 +1,197 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-abort-cause
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts (9 tests | 8 failed) 20ms
+     × R1 user arm (the measured red): an incoming abort with {kind:'user'} reaches the row as THAT object, and the row law mints cancelled:true (currently the wrapper replays its own marker → RED) 11ms
+     × R2 parent arm: {kind:'parent'} relays verbatim and mints cancelled:true (a parent tearing down its child call IS a cancel) 1ms
+     × R3 hook arm: the relay is verbatim, the law still REFUSES — honoring the abort is not claiming a user cancel 1ms
+     × R4 disposed arm: verbatim relay, death form stands — a teardown never renders `bash · cancelled` 1ms
+     × R5 timeout/deadline shape, zero motion: a DOMException cause (host timeout-policy shape) passes through with IDENTITY and mints no cancelled 1ms
+     × R6 a reason-less incoming abort lands on a plain AbortError — never the old marker object, and mints nothing 1ms
+     × R7 pre-aborted incoming (the door sees an already-fired phase signal): the row is handed the cause at once 1ms
+     ✓ R8 zero motion on the lane-OWNED word: a definition-move abort keeps its `definition-moved:` reason and mints no cancelled (the relay fix does not touch pending-calls.ts) 1ms
+     × R9 net-1 negative pin (根裁决②, the boundary this fix does NOT cross): with the cause relayed, a body aborted AFTER it started still settles on the host death form on the wire — `Error: tool call aborted`, never a cancelled word 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R1 user arm (the measured red): an incoming abort with {kind:'user'} reaches the row as THAT object, and the row law mints cancelled:true (currently the wrapper replays its own marker → RED)
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be { kind: 'user' } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "kind": "user",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:187:24
+    185|     expect(row.aborted).toBe(true)
+    186|     // VERBATIM relay: the host's cause object, identity-preserved.
+    187|     expect(row.reason).toBe(cause)
+       |                        ^
+    188|     // The consumer that was starved: the row's own closed law, untouc…
+    189|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R2 parent arm: {kind:'parent'} relays verbatim and mints cancelled:true (a parent tearing down its child call IS a cancel)
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be { kind: 'parent' } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "kind": "parent",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:196:24
+    194|     const cause = { kind: 'parent' }
+    195|     const { row } = await runRelayScenario({ cause })
+    196|     expect(row.reason).toBe(cause)
+       |                        ^
+    197|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+    198|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R3 hook arm: the relay is verbatim, the law still REFUSES — honoring the abort is not claiming a user cancel
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be { kind: 'hook', …(1) } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "kind": "hook",
+-   "reason": "a governance hook asked this call to stop",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:203:24
+    201|     const cause = { kind: 'hook', reason: 'a governance hook asked thi…
+    202|     const { row } = await runRelayScenario({ cause })
+    203|     expect(row.reason).toBe(cause)
+       |                        ^
+    204|     expect(row.aborted).toBe(true)
+    205|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R4 disposed arm: verbatim relay, death form stands — a teardown never renders `bash · cancelled`
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be { kind: 'disposed' } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "kind": "disposed",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:211:24
+    209|     const cause = { kind: 'disposed' }
+    210|     const { row } = await runRelayScenario({ cause })
+    211|     expect(row.reason).toBe(cause)
+       |                        ^
+    212|     expect(row.aborted).toBe(true)
+    213|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R5 timeout/deadline shape, zero motion: a DOMException cause (host timeout-policy shape) passes through with IDENTITY and mints no cancelled
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be DOMException{ stack: 'TimeoutError: …' } // Object.is equality
+
+- Expected
++ Received
+
+- TimeoutError {
+-   "message": "deadline exceeded",
++ {
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:219:24
+    217|     const cause = new DOMException('deadline exceeded', 'TimeoutError')
+    218|     const { row } = await runRelayScenario({ cause })
+    219|     expect(row.reason).toBe(cause)
+       |                        ^
+    220|     expect(row.aborted).toBe(true)
+    221|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R6 a reason-less incoming abort lands on a plain AbortError — never the old marker object, and mints nothing
+AssertionError: expected undefined to be 'AbortError' // Object.is equality
+
+- Expected:
+"AbortError"
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:228:26
+    226|     expect(row.aborted).toBe(true)
+    227|     const reason = row.reason as { name?: string } | undefined
+    228|     expect(reason?.name).toBe('AbortError')
+       |                          ^
+    229|     expect(row.reason).not.toHaveProperty('reason', 'inherited-signal')
+    230|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R7 pre-aborted incoming (the door sees an already-fired phase signal): the row is handed the cause at once
+AssertionError: expected { reason: 'inherited-signal', …(1) } to be { kind: 'user' } // Object.is equality
+
+- Expected
++ Received
+
+  {
+-   "kind": "user",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:237:24
+    235|     const { row } = await runRelayScenario({ cause, preAbort: true })
+    236|     expect(row.aborted).toBe(true)
+    237|     expect(row.reason).toBe(cause)
+       |                        ^
+    238|     expect(cancelledLaw({ timedOut: false, aborted: row.aborted, reaso…
+    239|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  packages/runtime/test/a5r-cause-relay.test.ts > a5r cause relay — the install wrapper forwards the cause it was given > R9 net-1 negative pin (根裁决②, the boundary this fix does NOT cross): with the cause relayed, a body aborted AFTER it started still settles on the host death form on the wire — `Error: tool call aborted`, never a cancelled word
+AssertionError: expected { reason: 'inherited-signal', …(1) } to deeply equal { kind: 'user' }
+
+- Expected
++ Received
+
+  {
+-   "kind": "user",
++   "reason": "inherited-signal",
++   "tool": "team_bash",
+  }
+
+ ❯ packages/runtime/test/a5r-cause-relay.test.ts:304:58
+    302|     // cancelled:true for a row that renders it (the a5b3 row does).
+    303|     expect(heldByRow?.aborted === true).toBe(true)
+    304|     expect((heldByRow as unknown as AbortSignal).reason).toEqual({ kin…
+       |                                                          ^
+    305|     expect(cancelledLaw({ timedOut: false, aborted: true, reason: (hel…
+    306|     // The wire stays the host's uniform death form (DIAGNOSIS §C.1 re…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  8 failed | 1 passed (9)
+   Start at  22:17:08
+   Duration  697ms (transform 418ms, setup 0ms, import 532ms, tests 20ms, environment 0ms)
+
