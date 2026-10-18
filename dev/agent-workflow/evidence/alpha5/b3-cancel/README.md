@@ -115,11 +115,11 @@ absent from the module — the seam did not exist to be injected); C4-C7 stay gr
 
 | 根 item | leg(s) | how it is deterministic |
 | --- | --- | --- |
-| ① abort ALREADY fired before the call | **C1b** (e2e) + the pre-aborted arm inside `raceShellSettle` (`if (signal.aborted === true) onAbort()` — settles at setup, no event ordering) | C1b asserts `bash · cancelled` AND `elapsed < 10s` with the signal aborted before `execute` is even entered; monotonic clock, no race with the payload |
+| ① abort ALREADY fired before the call | **C1b** (e2e) + **C11** (boundary witness, §3c) + the pre-aborted arm inside `raceShellSettle` (`if (signal.aborted === true) onAbort()` — settles at setup, no event ordering) | C1b asserts `bash · cancelled` AND `elapsed < 10s` with the signal aborted before `execute` is even entered; monotonic clock; C11 witnesses the honest boundary — spawned-first (provider's own outDir mkdir), controlled fast termination, payload-side-effect direction RECORDED not bet |
 | ② exit-vs-cancel race — one truth, pinned order | **C8** | controlled deferred for `exited`: ends-first → winner is the report and a LATER abort cannot rewrite it; aborts-first → winner is the abort and a later exit cannot rewrite it; BOTH-already-settled tie → `exited` wins (race registration order is the law, documented at the export) — the tie is decided ONCE, cancelled cannot also be true |
 | ③ timeout-vs-cancel race — timedOut outranks, pinned | **C9** (race) + guard rows in **C10** (law) | injected `sleep`: immediate-fire timer + already-aborted signal at construction → timeout leg wins by array order, and `shellCancelled` composes to `false`; reverse window (timer held, abort lands) → abort wins, "a held timer cannot fabricate a timeout". No sleep anywhere in either race leg |
 | ④ hook/disposed terminate for real, never impersonate | **C3** | end-to-end: payload IS stopped (elapsed bound) but the row prints the death — `bash · exit=not-observed`, `cancelled:false` — for BOTH causes |
-| ⑤ cause range MEASURED, not imagined | **C10** | (a) re-reads the `AgentCancelCause` declaration from the baseline checkout's own `types.ts` on this machine and asserts the arms are EXACTLY `user|parent|hook|disposed` — a union change trips the leg before the law ships; (b) truth-table over the exported `shellCancelled`: the two arms → true; hook/disposed/foreign-kind/bare-string/null/undefined/case-folded → false; `timedOut+aborted` → false; never-fired → false |
+| ⑤ cause range MEASURED, not imagined | **C10** | (a) re-reads the `AgentCancelCause` declaration from the baseline checkout's own `types.ts` — resolved through `tests/paths.mjs` alone, and **FAIL-CLOSED** when it cannot be read (no silent skip; receipt = printed path + git blob sha, §3c) — asserting the arms are EXACTLY `user|parent|hook|disposed`; a union change trips the leg before the law ships; (b) truth-table over the exported `shellCancelled`: the two arms → true; hook/disposed/foreign-kind/bare-string/null/undefined/case-folded → false; `timedOut+aborted` → false; never-fired → false |
 
 GREEN with the change (`green-fixed-v2.log`, EXIT=0): **11/11** (race legs settle in 0-1 ms —
 fully injected; the e2e legs stop their payloads in ~430 ms). One disclosed flake fixed on the
@@ -129,8 +129,68 @@ standalone reproductions were green — the step does not repeat). The stopwatch
 `process.hrtime.bigint()` (monotonic), documented at the helper; the failure mode is gone
 regardless of the host clock, and the suite re-ran 11/11.
 
-## 4. Gates run at HEAD (this tree)
+## 3c. Root 16:15Z correction order + 16:30Z three-point narrow review (this closure commit)
 
+Five closures, each measured before it was worded:
+
+* **16:15Z ① — C10(a) is now FAIL-CLOSED with one source and a receipt.** The private
+  two-candidate path list is gone: the baseline checkout is resolved through the repo's only
+  path authority, `tests/paths.mjs` (`findTestRepoRoot`/`testUseTree`, the same resolvers
+  `rc2-persona-probe.test.ts:29` uses — static import, typed via `paths.d.mts`). If no
+  resolvable checkout carries `packages/core/session/src/types.ts`, the leg FAILS (an
+  acceptance environment carries the pristine checkout at the pinned baseline BY DEFINITION;
+  the rejected `it.skip` alternative could never be tallied as done, so it buys nothing —
+  the demo: `findTestRepoRoot('/tmp/deep/a-b')` → `null`, printed in
+  `green-v3-c10-failclosed.log`). Acceptance receipt (①c): every run prints the resolved
+  path AND the git blob sha of the bytes read —
+  `git-blob-sha=593c86d52a5c26d531913ffaff9aac651732c2da`, matching
+  `git -C tests/deepseek-harness-test-use hash-object packages/core/session/src/types.ts`
+  exactly. Environment placement (TEST_METHODS-canonical for a fresh worktree):
+  `git clone --local --no-hardlinks /srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness
+  tests/deepseek-harness-test-use` + `checkout --detach 639ed01539…` (the `TEST_USE_BASELINE_SHA`
+  constant) + `pnpm install --ignore-scripts --frozen-lockfile` + host build, EXIT=0; the
+  shared baseline is never written; the checkout is gitignored (porcelain stayed 0).
+* **16:30Z ① — the abort-listener removal path is proven closed, not felt closed.** The
+  concern (removal lives in `.then(success)` — a rejecting race would strand the listener)
+  is answered from the provider's construction: `exited` is built RESOLVE-ONLY
+  (`provider.ts:657-660` — the executor takes no reject parameter), and even a REJECTED
+  `proc.exit` is absorbed there into a resolve of `{code:null, signal:'exit-error'}`
+  (`provider.ts:649-653`). The timeout leg resolves via the timer callback, the abort leg
+  only ever resolves — the race has NO rejection path, so the `.then`-side removal covers
+  every settlement. Recorded at the export's JSDoc; no code motion (the conditional the root
+  set — code fix + reject-injection leg — applies when rejection is reachable; it is not,
+  line-proven above).
+* **16:30Z ② — cleanup, enumerated honestly, no full-cleanup claim.** This round ADDED the
+  abort listener and REMOVES it once the race settles (the new surface, cleaned). The
+  timeout timer keeps its HISTORICAL shape byte-for-byte — no handle kept, never cleared;
+  an early winner leaves it scheduled to fire into a decided race, exactly as the pre-B3
+  shell race (`git show fee982d2:…` side-by-side) and the untouched search arm
+  (`plane-effect-backends.mjs:496`) already did. Preserved pre-existing property, stated
+  as such at the export.
+* **16:30Z ③ — C1b's pre-abort boundary: evidence corrected the wording before it shipped.**
+  The new **C11** witness leg records the boundary: the row SPAWNS, then races — the
+  provider's own spawn-prep `outDir` mkdir (`provider.ts:496-497`, under the governed root,
+  fresh per plan) proves THIS call reached spawn even with the signal pre-fired (asserted
+  before/after count — payload timing irrelevant). What the payload manages to EXECUTE
+  before the kill is NOT row-determined: measured, terminate's first-tick SIGTERM
+  (`provider.ts:400-412`) landed before the payload's first statement ran — the recorded
+  line reads `payload-side-effect-landed=false settled-in=241ms` — so the leg RECORDS the
+  side-effect direction (and stamps its order vs the abort if it lands) without asserting
+  either way. The honest boundary, now the wording everywhere: **spawned first, terminated
+  under control, fast** — never rewritten as "never started", nor as "always ran". Scope:
+  the host never routes a pre-aborted call to the row at all (dispatch pre-check
+  `core/tools/src/index.ts:1572-1574` in the pinned checkout answers
+  `toolAbortedBeforeDispatchResult` before `execute`); the row-level leg is the belt for
+  direct/non-host callers of the seam. Leg count: 11 → **12**.
+* **16:15Z ② + 16:30Z ④ — provider-lane numbers corrected to receipts.** The logged original
+  receipt `gates-provider-lane.log` says **41/41 (4 files)** and the README now says exactly
+  that. The intermediate 8-file extension run of the v2 battery left NO stdout receipt (only
+  the rc line `PROVIDER2=0`) — per the order it is **not counted** and its "63/63" is struck
+  from the numbers; the same 8-file set was re-run WITH a log at this closure head
+  (`closure-provider.log`) and is cited as its own fresh row instead. The reviewer 98274a4f's
+  47/47 stays a SEPARATE corroborating line (§4, last rows) — not merged, not substituted.
+
+## 4. Gates run at HEAD (this tree)
 | gate | result | log |
 | --- | --- | --- |
 | B2 baseline at base (before any edit) | 10/10, EXIT=0 | `b2-baseline-at-base.log` |
@@ -140,7 +200,8 @@ regardless of the host clock, and the suite re-ran 11/11.
 | B3 spec GREEN (v2, final tree shape) | 11/11, EXIT=0 | `green-fixed-v2.log` |
 | B3+B2 together (A-series no-regression) | 21/21, EXIT=0 | `v2-battery.log` |
 | glue7 + search + glob suites | 103/103, EXIT=0 | `v2-battery.log` |
-| provider lane (a5p4 set + a5lsp2 pair + a5int-r3) | 63/63, EXIT=0 | this session (`PROVIDER2=0` in `gates-battery-rc.txt`) |
+| provider lane — LOGGED original receipt (4 files) | **41/41, EXIT=0** (verbatim from the receipt) | `gates-provider-lane.log` |
+| provider lane — v2-battery 8-file EXTENSION | rc was recorded (`PROVIDER2=0`) but its stdout never entered a log → **不作数, not counted**; the "63/63" number is struck (root 16:15Z ②) | `gates-battery-rc.txt` `PROVIDER2` line only |
 | ledgers (p4t6 1198 counted + dormant-audit 8th name + a5p0 consumer set + barrel) + a5p5-tools lane suite | 86/86, EXIT=0 | `v2-battery.log` |
 | full root suite at HEAD (first run) — NO-NEW-RED by twin comparison | same 7 failing files / same 18 failing tests as BASE; +7 passes = this round's legs | `full-suite.log` (HEAD) vs `full-suite-BASE-fee982d2.log` (BASE twin, below) |
 | full root suite BASE twin (identical tree `fee982d2`, same host, same command — run in the byte-identical `a5b2-rc` twin) | 18 failed / 7327 passed — the 18 are PRE-EXISTING env reds (p6t3 ×2, p6t6-actions, plugin-dsh-compat, rc2-persona-probe, t2-blueprint-hash v3-drift, a4p7-merge-gate) | `full-suite-BASE-fee982d2.log` |
@@ -150,6 +211,21 @@ regardless of the host clock, and the suite re-ran 11/11.
 | `npx eslint` on every touched file | 0 errors | this session |
 | `node scripts/lint-identities.mjs` | EXIT=0 | `typecheck-identities.log` |
 | `pnpm check:artifacts` (drift, staged) | EXIT=0 (first run EXIT=1 = the gate working: dist mirror staged in the same commit) | `build-and-drift.log` |
+
+**CLOSURE-HEAD rows (root 16:15Z ④ + 16:30Z, this commit — all re-run at the final content):**
+
+| gate | result | log |
+| --- | --- | --- |
+| B3 spec 12 legs (C11 added; C10 fail-closed) | 12/12, EXIT=0; C10 receipt + C11 boundary line printed in-log | `green-v4-b3-12legs.log` |
+| B3+B2 together | **22/22, EXIT=0** (`CLOSURE_B2B3_FINAL=0`) | `closure-b2b3.log` |
+| glue7 + glob + glob-adversarial + search (4 files) | 111/111, EXIT=0 | `closure-glue.log` |
+| a5p5-tools suite dir (8 files, ledgers incl. dormant-audit) | 76/76, EXIT=0 | `closure-ledgers.log` |
+| provider-lane EXTENSION set re-run WITH receipt (a5p4 ×5 + a5lsp2 ×2 + a5int-r3) | **71/71, EXIT=0** — this is the extension's first real log; counts stand on it alone | `closure-provider.log` |
+| p4t6 (1198 count holds at closure tree) | 10/10, EXIT=0 | `closure-a2c7-p4t6.log` |
+| a2c7-subtree-matcher (walk-up now resolves the worktree's own built checkout) | 31/31, EXIT=0 | `closure-a2c7-p4t6.log` |
+| `pnpm -r typecheck` / eslint on touched files / `lint-identities` | EXIT=0 / 0 errors / EXIT=0 | `typecheck-closure.log`, `eslint-closure.log` |
+| drift (staged) / `check:artifacts:head` | staged EXIT=0 at this commit (index==tree; the at-head self-build property was proven at the parent 914b834b and this commit's dist movement is the comment-only glue re-place, `cmp`-verified byte-identical to the build) | `build-and-drift-v2.log` (v2 lineage), commit message |
+| CORROBORATING, NOT MERGED, NOT SUBSTITUTED: reviewer run at 98274a4f | provider segment 47/47 (the reviewer's own receipt, cited at the root's word, not a number of this branch) | root's review record |
 
 ## 5. What this round deliberately is NOT
 
@@ -199,6 +275,19 @@ regardless of the host clock, and the suite re-ran 11/11.
 * **The v2 clock artifact** (a live forward wall-clock step fabricating a 27 s "slow stop") is
   documented in §3b; the fix is monotonic timing inside this spec only — no production file
   reads any clock for the cancelled law.
-* **No push. No :3080. No upstream/host tree. No system permissions.** The commit sits on
-  branch `alpha5-b3-cancel-pr` in `.worktrees/a5b3-cancel`, one commit on `fee982d2`, for the
+* **The wide-glob `rm` incident, booked per the root's 16:15Z ③ (with the discipline it
+  produced).** While clearing provider scratch after the v2 battery, `rm -rf probe-mvd*` was
+  run at the worktree root — and the base tree TRACKS 66 `probe-*` fixture files (six
+  probe dirs from the B2 era, committed into `fee982d2` itself). The glob expanded across
+  tracked and untracked alike; the staged-deletion count (66 `D` entries in `git add -A`)
+  caught it before commit; every file was restored from HEAD (`git restore --staged
+  --worktree`), and the final commit touches ZERO `probe-*` paths (`git show --stat` proves
+  it). **Standing rule adopted for this lane, root's wording: 未来禁止宽 glob 删除** — scratch
+  removal addresses entries by exact name (or by name taken from a `git status --porcelain`
+  `??` listing, which cannot name a tracked file); no `rm -rf <prefix>*` at any tree root,
+  ever, including during this round's own cleanups (the closure cleanups above were all
+  name-list driven).
+* **No push. No :3080. No upstream/host tree. No system permissions.** The branch
+  `alpha5-b3-cancel-pr` in `.worktrees/a5b3-cancel` carries THREE commits on `fee982d2`
+  (B3 main → X6 prose truth-update per 15:14Z → this closure per 16:15Z+16:30Z), for the
   Gate loop to pull from.

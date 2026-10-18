@@ -49,9 +49,10 @@
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { findTestRepoRoot, testUseTree } from '../../../tests/paths.mjs'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
 import type { SpawnRequest } from '../sandbox-provider/index.js'
 
@@ -209,6 +210,10 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     // 根① gets its own leg: the signal arrives with `aborted === true` already.
     // The abort leg must settle at race setup — deterministic, no dependence on
     // event ordering — and the row must terminate the payload immediately.
+    // What that termination honestly preserves (spawned-first, controlled,
+    // fast; payload-statement execution recorded, not asserted) is witnessed
+    // by C11 — no invented "pre-abort means un-executed" semantics live
+    // anywhere in this row.
     const plane = buildPlane()
     const done = new AbortController()
     done.abort({ kind: 'user' })
@@ -218,6 +223,53 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     expect(res.text).toContain('bash · cancelled')
     expect(metaOf(res.text).cancelled).toBe(true)
     expect(elapsed, `a pre-aborted call must not wait for its payload (took ${String(elapsed)}ms)`).toBeLessThan(10_000)
+  }, SLOW)
+  it('C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet', async () => {
+    // Evidence-first wording (先证据后措辞), and the evidence corrected an
+    // assumption before it could ship. This arm SPAWNS, THEN races — the row
+    // cannot un-spawn. The spawn-side witness is deterministic and asserted:
+    // the provider mkdir's the per-plan outDir during stream spawn
+    // (provider.ts:496-497), so `WORLD/out` existing proves this call really
+    // reached spawn, payload timing irrelevant. What the PAYLOAD manages to
+    // execute before the kill is NOT row-determined: measured, terminate's
+    // first-tick SIGTERM (provider.ts:400-412) landed BEFORE the payload's
+    // first statement ran — the witness write (the script's first statement)
+    // did not land and the row settled in ~240ms. So this leg RECORDS whether
+    // the payload's own side
+    // effect landed (and stamps its order vs the abort if it did) without
+    // asserting a direction — a leg betting on either side would be exactly
+    // the timing bet the root banned. The honest boundary stands: SPAWNED
+    // FIRST, terminated under control and fast; no wording here or in the
+    // README may rewrite the measured "settles in ~250ms of controlled
+    // termination" into "never started" — nor, for the same reason, into
+    // "always ran". Scope: the HOST never routes such a call here (dispatch
+    // pre-check, core/tools/src/index.ts:1572-1574 in the pinned test-use
+    // checkout, answers toolAbortedBeforeDispatchResult before `execute`);
+    // this seam is the belt for direct/non-host callers.
+    const plane = buildPlane()
+    const witness = join(ROOT_DIR, `c11-witness-${Date.now().toString(36)}`)
+    const outs = join(ROOT_DIR, 'out') // the shell row's scratchRoot falls back to cwdRoot = the governed root (:648)
+    const outCount = () => (existsSync(outs) ? readdirSync(outs).length : 0)
+    const outBefore = outCount()
+    const done = new AbortController()
+    const abortAt = Date.now() // stamped BEFORE the call: anything this call
+    done.abort({ kind: 'user' }) // spawns is therefore after the abort
+    const started = nowMs()
+    const res = await def(plane, 'team_bash').execute(
+      { command: `echo ran > '${witness}'; sleep 8`, timeout: 10 },
+      { signal: done.signal },
+    )
+    const elapsed = nowMs() - started
+    expect(res.text).toContain('bash · cancelled')
+    expect(metaOf(res.text).cancelled).toBe(true)
+    expect(outCount(), 'this very call must have reached spawn — the provider mkdir\'s a fresh per-plan outDir during stream-spawn prep (provider.ts:496-497), so a pre-aborted call reaching THIS row was spawned first, by construction').toBeGreaterThanOrEqual(outBefore + 1)
+    const landed = existsSync(witness)
+    console.info(`[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=${String(landed)} settled-in=${String(Math.round(elapsed))}ms abort-at=${String(abortAt)}`)
+    if (landed) {
+      const st = statSync(witness) as unknown as { mtimeMs: number } // the lane shim types statSync structurally; mtimeMs read like the hrtime cast above
+      expect(Math.floor(st.mtimeMs), 'whatever the payload wrote necessarily postdates the abort').toBeGreaterThanOrEqual(abortAt)
+    }
+    expect(elapsed, `the controlled terminate must confirm fast, not after the 8s payload (took ${String(elapsed)}ms)`).toBeLessThan(10_000)
   }, SLOW)
 
   it('C2 parent cancel: cause {kind:\'parent\'} is the same cancelled shape (a parent tearing down its child\'s call IS a cancel)', async () => {
@@ -444,20 +496,32 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
   }, SLOW)
 
   it('C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false)', async () => {
-    // (a) the MEASURED union: read the baseline's own declaration from disk when
-    // the checkout is on this machine (test-use checkout or the shared read-only
-    // baseline); the kind set is whatever the SOURCE says, asserted to be the
-    // four arms this round's law was written against — an imagined fifth kind
-    // cannot enter the law, and a source-side change trips this leg first.
-    const candidates = [
-      join(REPO, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'session', 'src', 'types.ts'),
-      '/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness/packages/core/session/src/types.ts',
-    ]
-    const found = candidates.find((p) => existsSync(p))
-    if (found !== undefined) {
-      const src = readFileSync(found, 'utf8')
+    // (a) the MEASURED union, resolved through the ONE sanctioned source: the
+    // checkout lives where `tests/paths.mjs` — the repo's only path authority
+    // (TEST_METHODS: 路径唯一来源) — says it lives, so there is no private
+    // candidate list to drift. And absence FAILS: an acceptance environment
+    // carries the pristine checkout at the pinned baseline BY DEFINITION, so a
+    // checkout that cannot be resolved is an unqualified environment, and a
+    // fail-closed red is the honest verdict — a silent skip here would let a
+    // gate packet tally "cause range verified" out of zero verification
+    // (root 16:15Z ①; the rejected alternative was it.skip + visible skip
+    // count, which still cannot be tallied as done, so it buys nothing).
+    const repoRoot = findTestRepoRoot(fileURLToPath(new URL('.', import.meta.url).href))
+    expect(repoRoot, "tests/paths.mjs resolved no repo root carrying tests/deepseek-harness-test-use — environment unqualified; this leg FAILS CLOSED and must not be tallied as a verified cause range (root 16:15Z ①)").not.toBeNull()
+    const anchor = join(testUseTree(repoRoot as string), 'packages', 'core', 'session', 'src', 'types.ts')
+    expect(existsSync(anchor), `the resolved checkout carries no packages/core/session/src/types.ts at ${anchor} — environment unqualified; FAIL-CLOSED (root 16:15Z ①)`).toBe(true)
+    const src = readFileSync(anchor, 'utf8')
+    // (c) the acceptance receipt, printed into the run log (root 16:15Z ①c):
+    // the exact bytes measured, named the way git itself names them (blob sha)
+    // next to the path they were read from. Cross-checkable with
+    // `git -C tests/deepseek-harness-test-use hash-object packages/core/session/src/types.ts`.
+    const blobSha = createHash('sha1')
+      .update(`blob ${readFileSync(anchor).length}\u0000${src}`)
+      .digest('hex')
+    console.info(`[a5b3 C10] baseline union read: path=${anchor} git-blob-sha=${blobSha}`)
+    {
       const m = /export type AgentCancelCause =([\s\S]*?)\n\n/.exec(src)
-      expect(m, `AgentCancelCause declaration not found in ${found}`).not.toBeNull()
+      expect(m, `AgentCancelCause declaration not found in ${anchor}`).not.toBeNull()
       const kinds = [...(m![1] as string).matchAll(/kind: '(\w+)'/g)].map((x) => x[1])
       expect([...kinds].sort(), `the union arms moved — re-derive the law before shipping it: ${JSON.stringify(kinds)}`).toEqual(['disposed', 'hook', 'parent', 'user'])
     }

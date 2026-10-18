@@ -573,6 +573,34 @@ const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true
  * rewrite the winner — exactly one of {exit code, timed-out, aborted} is ever
  * observed for one call. `sleep` is injectable so the legs pin THIS function
  * instead of a spec-side reimplementation; production calls pass no sleep.
+ *
+ * NO LEG REJECTS — that is why removing the listener in `.then` is complete
+ * (root 16:30Z ①, proven from the contract, not vibes): `exited` is the
+ * provider's stream handle, constructed RESOLVE-ONLY at provider.ts:657-660;
+ * even a rejected `proc.exit` is absorbed there into a resolve of
+ * `{code:null, signal:'exit-error'}` (provider.ts:649-653); the timeout leg
+ * resolves through the timer callback; the abort leg only ever resolves. The
+ * race therefore has no rejection path that could strand the listener.
+ * CLEANUP, ENUMERATED HONESTLY (root 16:30Z ②): this round ADDED the abort
+ * listener and REMOVES it once the race settles (the new surface, cleaned).
+ * The timeout timer keeps its HISTORICAL shape byte-for-byte: no handle kept,
+ * never cleared — an early winner leaves it scheduled to fire into a decided
+ * race, exactly as the pre-B3 shell race and the still-untouched search arm
+ * (:496) do. This is a preserved pre-existing property, not a full-cleanup
+ * claim. PRE-ABORT BOUNDARY (root 16:30Z ③, measured before worded): the race
+ * is registered AFTER the provider spawn, so a signal that already fired still
+ * finds a spawned payload — the spawn-side outDir (provider.ts:496-497) proves
+ * the call reached spawn regardless of what the payload then does. This row's
+ * honest act is the immediate controlled `terminate()`; measured, its
+ * first-tick SIGTERM landed before the payload's first statement ran (row
+ * settled in ~240ms, no payload side effect), so whether any payload STATEMENT
+ * ever executes is not row-determined — C11 records that fact without betting
+ * either direction,
+ * and no wording may turn "terminated under control, fast" into "never
+ * started" or "always ran". The host does not route such a call here at all —
+ * its dispatch pre-check (core/tools/src/index.ts:1572-1574) answers
+ * `toolAbortedBeforeDispatchResult` before `execute`; this leg is the belt
+ * for direct/non-host callers of the seam.
  */
 export function raceShellSettle({ exited, timeoutMs, signal, sleep = sleepTimer }) {
   let onAbort = null
@@ -600,8 +628,10 @@ export function raceShellSettle({ exited, timeoutMs, signal, sleep = sleepTimer 
  * `parent`. The range is MEASURED, not imagined (根⑤): the union is exactly
  * user|parent|hook|disposed at the baseline (host
  * packages/core/session/src/types.ts:189-193; C10 re-reads the declaration from
- * the baseline checkout when it is on this machine, so a source-side change trips
- * the leg before the law ever ships). `hook`/`disposed` HONOR the abort — the
+ * the baseline checkout — resolved through tests/paths.mjs, and FAILING CLOSED
+ * when it cannot be read, so a source-side change trips the leg before the law
+ * ever ships and no environment lacking the source can tally it as verified).
+ * `hook`/`disposed` HONOR the abort — the
  * payload is still terminated through the frozen arm — but keep the death shape
  * (`exit=not-observed`, cancelled false): a hook firing or a teardown is not
  * someone pressing cancel, and the renderer must never claim it was. A cause
