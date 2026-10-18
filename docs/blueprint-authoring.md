@@ -146,6 +146,28 @@ Author-facing facts since the v4 flip (formal Schema ADR:
 `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`;
 every claim below is machine-pinned by `packages/domain/test/a5fl1-blueprint-v4-flip.test.ts`):
 
+> **Provenance (doc-sync round 2, 2026-10-18, post-merge).** This section is a
+> **delivered master fact since the flip merged at `ee49c4c0`** (PR #324):
+> `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4]`
+> (`packages/domain/blueprint/src/schema.ts:87`) and the pin suites
+> `a5fl1` / `a5fl2` pin files (with the `a5fl3` mirror legs they carry) are on
+> master. Before that merge the same grammar
+> shipped **dormant and unwired** at run set `[3]` (the fourth parser's own
+> header: "WHY THIS FILE IS NOT WIRED … NOTHING shipped reaches the functions
+> below", `packages/domain/blueprint/src/blueprint-v4.ts` @ `382e5fb6`,
+> PR #316) — that is the history of this constant, not its current face. The
+> route that authorized the stroke is the 4-stage table of `71af4f64` (PR #320,
+> `dev/agent-workflow/evidence/alpha5/vnext-semantics/V4-ENABLEMENT-ROUTE.md`
+> §1): `ee49c4c0` executed **stages ② (M-3 mirror, same stroke) + ③ (the
+> dual-parse flip + formal Schema ADR)**; **stage ④ — exiting the `{3, 4}`
+> window and discussing v3 retirement — is gated only on T-1 and was NOT
+> advanced by this merge.** What the flip did
+> NOT move stays disclosed in the bullets below: the family is a
+> **document-face** binding (parse / freeze / hash), dispatch fail-closes at the
+> Tool Binding verification gate, and the verified-effect feed is a later route
+> (`ee49c4c0` commit body; live-host leg 14/14 under
+> `dev/agent-workflow/evidence/alpha5/v4-flip/`).
+
 - **Two versions RUN.** `schemaVersion: 3` keeps its frozen branch with zero
   load-time deformation (the same document hashes exactly what it hashed
   before the flip). `schemaVersion: 4` now parses and hashes through the
@@ -167,8 +189,13 @@ every claim below is machine-pinned by `packages/domain/test/a5fl1-blueprint-v4-
   parse refusal unchanged.
 - **Production effect acceptance is still closed.** A v4 document's
   `toolBindings` is parsed, frozen and hash-bound — but the runtime effect
-  plane does not yet EXECUTE those lanes (the envelope document face still
-  refuses the new scope classes by name); wiring is the effect-queue round's.
+  plane does not EXECUTE those lanes, and dispatch fail-closes at the Tool
+  Binding verification gate. The same-stroke M-3 envelope Scope tables are
+  **GRAMMAR-not-ACCEPTANCE**: the added scope classes
+  (`fs-metadata` / `network-destination` / `domain-reference`,
+  `packages/domain/authority-envelope/src/authority-envelope.ts:149-151`)
+  PARSE, with zero new rung, and grant nothing by themselves; wiring the
+  verified-effect feed is the effect-queue round's.
   Authoring a v4 document is therefore safe-but-dark for effects, and
   irreversible for identity: the point of no return is the FIRST authored v4
   document, not the constant flip.
