@@ -1,0 +1,71 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts (10 tests | 3 failed) 349ms
+     ✓ NC-1 replay: one approval allows EXACTLY ONE call; the replayed ask is refused  317ms
+     ✓ NC-2 expiry: a grant consumed after its window is refused (expiry precedes consumption) 2ms
+     ✓ NC-3 other team: another root never vouches for this root's grants; keys are member-scoped 4ms
+     ✓ NC-4 revocation before use: a denied decision and an aborted wait mint NOTHING 2ms
+     ✓ NC-5 mode binding: a replay under a DIFFERENT mode refuses on the fingerprint 2ms
+     ✓ S1 pass-through: non-escalation asks delegate via next() UNTOUCHED (zero state) 1ms
+     ✓ S4 census + boot row + S5 disposer symmetry: install/uninstall is symmetric and the census is honest 3ms
+     × L-U1 residency drop: a dropped member never routes again — zero state, then the disposed face cleans up idempotently 8ms
+     × L-U1b archive face: the leader-archived member never gets a second durable request; dispose+drain idempotent under any order 6ms
+     × L-U2 cold re-mount: re-entry REPLACES the stale face (no throw), the new Agent recovers allowed-once one-shot, stale identity never leaks 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5ptc-escalation-row.test.ts > a5ptc-escalation-row (PTC fs half-arm synthetic leg) > L-U1 residency drop: a dropped member never routes again — zero state, then the disposed face cleans up idempotently
+AssertionError: expected 'unavailable' to be 'allowed-once' // Object.is equality
+
+Expected: "allowed-once"
+Received: "unavailable"
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts:282:131
+    280|     const off = router.registerAgent(agent, m, row)
+    281|     // positive control: the live member routes and lands allowed-once.
+    282|     expect(await router.route({ agent, toolName: 'run_code', callId: '…
+       |                                                                                                                                   ^
+    283|     expect(h.controls.length).toBe(1)
+    284|     // RESIDENCY DROP: liveAgents.delete is synchronous (the sync port…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/a5ptc-escalation-row.test.ts > a5ptc-escalation-row (PTC fs half-arm synthetic leg) > L-U1b archive face: the leader-archived member never gets a second durable request; dispose+drain idempotent under any order
+AssertionError: expected 'unavailable' to be 'allowed-once' // Object.is equality
+
+Expected: "allowed-once"
+Received: "unavailable"
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts:322:132
+    320|     const agent = { id: 's-u1b' }
+    321|     const off = router.registerAgent(agent, m, row)
+    322|     expect(await router.route({ agent, toolName: 'run_code', callId: '…
+       |                                                                                                                                    ^
+    323|     expect(h.controls[0]?.kind).toBe('user-approval')
+    324|     // ARCHIVE releases residency through the SAME sync port (quiesce.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/a5ptc-escalation-row.test.ts > a5ptc-escalation-row (PTC fs half-arm synthetic leg) > L-U2 cold re-mount: re-entry REPLACES the stale face (no throw), the new Agent recovers allowed-once one-shot, stale identity never leaks
+AssertionError: expected 'unavailable' to be 'allowed-once' // Object.is equality
+
+Expected: "allowed-once"
+Received: "unavailable"
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts:351:139
+    349|     const agentA = { id: 's-u2' }
+    350|     const offA = router.registerAgent(agentA, mA, row)
+    351|     expect(await router.route({ agent: agentA, toolName: 'run_code', c…
+       |                                                                                                                                           ^
+    352|     // cold-resume race: residency dropped, the OLD handle disposed be…
+    353|     // its agent/disposed event has NOT arrived yet (the sync port is
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 7 passed (10)
+   Start at  13:15:47
+   Duration  575ms (transform 341ms, setup 0ms, import 83ms, tests 349ms, environment 0ms)
+

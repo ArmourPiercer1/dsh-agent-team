@@ -1,0 +1,7 @@
+{
+  "probeStatus": 0,
+  "probeOut": "landlock: partially enforced (older ABI)\n",
+  "denialStdout": "EXIT=2\n",
+  "denialStderr": "landlock-run: partial enforcement (older Landlock ABI)\nsh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-stack/dev/agent-workflow/evidence/alpha5/ptc-fs-impl/runs/live-2026-10-18T15-01-38/os-floor-forbidden/should-fail.txt: Permission denied\n",
+  "widenedStdout": "EXIT=0\n"
+}

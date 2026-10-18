@@ -1,0 +1,26 @@
+[
+  {
+    "instanceId": "inst-0j124a200jai",
+    "templateId": "eb",
+    "label": "e1",
+    "childSessionId": "session-team-child-47cc3fd6f7f3e83f2d4631f67897b4b3",
+    "lifecycle": "SETTLED",
+    "activityVersion": 3
+  },
+  {
+    "instanceId": "inst-16odew60g9vy",
+    "templateId": "wa",
+    "label": "wa",
+    "childSessionId": "session-team-child-4eb54038d9531c42b76f4d59ccbe5d40",
+    "lifecycle": "SETTLED",
+    "activityVersion": 3
+  },
+  {
+    "instanceId": "inst-leader",
+    "templateId": "leader",
+    "label": "leader",
+    "childSessionId": "undefined",
+    "lifecycle": "undefined",
+    "activityVersion": 1
+  }
+]

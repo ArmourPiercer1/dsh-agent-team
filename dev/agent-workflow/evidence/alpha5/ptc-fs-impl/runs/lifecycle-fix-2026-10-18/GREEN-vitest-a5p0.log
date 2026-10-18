@@ -1,0 +1,15 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ✓ packages/domain/test/a5p0-planes.test.ts (19 tests) 12ms
+ ✓ packages/domain/test/a5p0-grant-replay.test.ts (17 tests) 22ms
+ ✓ packages/domain/test/a5p0-fingerprint-negatives.test.ts (11 tests) 27ms
+ ✓ packages/domain/test/a5p0-schema-negatives.test.ts (35 tests) 47ms
+ ✓ packages/domain/test/a5p0-contracts.test.ts (18 tests) 53ms
+ ✓ packages/domain/test/a5p0-layer-audit.test.ts (4 tests) 9ms
+
+ Test Files  6 passed (6)
+      Tests  104 passed (104)
+   Start at  13:20:43
+   Duration  1.05s (transform 2.11s, setup 0ms, import 2.91s, tests 170ms, environment 1ms)
+

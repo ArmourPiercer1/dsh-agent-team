@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts (10 tests | 1 failed) 1270ms
+     ✓ NC-1 replay: one approval allows EXACTLY ONE call; the replayed ask is refused 258ms
+     ✓ NC-2 expiry: a grant consumed after its window is refused (expiry precedes consumption) 2ms
+     ✓ NC-3 other team: another root never vouches for this root's grants; keys are member-scoped 5ms
+     ✓ NC-4 revocation before use: a denied decision and an aborted wait mint NOTHING 2ms
+     ✓ NC-5 mode binding: a replay under a DIFFERENT mode refuses on the fingerprint 2ms
+     ✓ S1 pass-through: non-escalation asks delegate via next() UNTOUCHED (zero state) 6ms
+     ✓ S4 census + boot row + S5 disposer symmetry: install/uninstall is symmetric and the census is honest 4ms
+     ✓ L-U1 residency drop: a dropped member never routes again — zero state, then the disposed face cleans up idempotently 2ms
+     × L-U1b archive face (PRODUCTION PROCEDURE FORM): the REAL archiveMember commits ARCHIVED durably — the archived member never routes again, NOT EVEN through a cold re-mount that re-establishes residency; restore recovers 983ms
+     ✓ L-U2 cold re-mount: re-entry REPLACES the stale face (no throw), the new Agent recovers allowed-once one-shot, stale identity never leaks 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5ptc-escalation-row.test.ts > a5ptc-escalation-row (PTC fs half-arm synthetic leg) > L-U1b archive face (PRODUCTION PROCEDURE FORM): the REAL archiveMember commits ARCHIVED durably — the archived member never routes again, NOT EVEN through a cold re-mount that re-establishes residency; restore recovers
+AssertionError: expected 'allowed-once' to be 'passthrough' // Object.is equality
+
+Expected: "passthrough"
+Received: "allowed-once"
+
+ ❯ packages/runtime/test/a5ptc-escalation-row.test.ts:384:142
+    382|       router.registerAgent(agent2, m2, row)
+    383|       const obsBefore = h.observations.length
+    384|       expect(await router.route({ agent: agent2, toolName: 'run_code',…
+       |                                                                                                                                              ^
+    385|       expect(h.controls.length).toBe(1) // NO durable request for an a…
+    386|       expect(h.observations.length).toBe(obsBefore) // zero observatio…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  14:33:18
+   Duration  1.45s (transform 995ms, setup 0ms, import 45ms, tests 1.27s, environment 0ms)
+

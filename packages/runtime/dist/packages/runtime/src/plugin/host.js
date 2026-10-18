@@ -1524,6 +1524,36 @@ export async function apply(ctx, config) {
         if (anchorState.status === 'refused') {
             console.warn(degradedAnchorBootLine(rowConfig.rootSessionId, anchorState));
         }
+        // --- alpha5 PTC fs half-arm: the host-level `approval/request` install -
+        // Public waterfall (api-catalog: "return an outcome to claim the request
+        // or call next() to delegate"). Installed ONCE per row activation,
+        // global + prepend, so a governed member's escalation ask is claimed
+        // BEFORE any UI answerer composes in front of it (scoped ordering cannot
+        // guarantee that); like the activation-fence listeners, it rides this
+        // row's fiber and is disposed with the row. The ROUTER starts empty —
+        // membership lives behind the agent-bindings scope gate (S6), so a
+        // non-Team install sees every request delegate verbatim through an
+        // empty map: zero expansion by construction, not by a runtime branch.
+        // LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53, U-1/U-1b/U-2):
+        // the router ALSO mirrors the public `agent/disposed` event (the same
+        // fire-and-forget fence face above) — a disposed Agent drops its routing
+        // entry and revokes its member face synchronously with the event, so
+        // residency teardown (dropResidency, the archive/dispose live effects)
+        // never leaves a torn-down member routable, and a cold re-mount
+        // re-registers cleanly (the row replaces the stale face). The ask-time
+        // routability gate in the router closes the window the fire-and-forget
+        // sync residency port leaves open (quiesce.ts release-residency does not
+        // await the dispose); this listener is the state-cleanup face, never a
+        // race the row depends on.
+        const ptcEscalationRef = { current: null };
+        if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
+            const ptcRouter = glue.createPtcEscalationRouter();
+            ptcEscalationRef.current = ptcRouter;
+            ctx.on('approval/request', (req, next) => ptcRouter.route(req, next), { global: true, prepend: true });
+            ctx.on('agent/disposed', (payload) => {
+                ptcRouter.onAgentDisposed(payload.agent);
+            }, { global: true });
+        }
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1531,6 +1561,7 @@ export async function apply(ctx, config) {
             config: resolvedRowConfig,
             teamToolsRef,
             controlServiceRef,
+            ptcEscalationRef,
             now: () => new Date().toISOString(),
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-

@@ -240,7 +240,12 @@ export interface TeamPluginHostContext {
    *   the upstream AgentLoop rolls the unpublished agent back — the
    *   fence's veto point, guide §8.1);
    * - `'agent/disposed'` — the fire-and-forget disposal announcement
-   *   (the fence's exact-generation rollback barrier, guide §8.2).
+   *   (the fence's exact-generation rollback barrier, guide §8.2);
+   * - `'approval/request'` — the approval-answerer WATERFALL (public
+   *   contract: return an outcome to claim the request, or call `next()`
+   *   to delegate; the outcome vocabulary is the host's closed set
+   *   `'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'`). The
+   *   alpha5 PTC fs escalation row installs exactly one of these.
    */
   on?(
     name: 'internal/get',
@@ -266,7 +271,25 @@ export interface TeamPluginHostContext {
     listener: (payload: { readonly agent: unknown }) => void,
     options?: boolean | Record<string, unknown>,
   ): void
+  on?(
+    name: 'approval/request',
+    listener: (
+      req: {
+        readonly agent: unknown
+        readonly toolName: string
+        readonly callId?: string
+        readonly reason?: string
+        readonly signal?: AbortSignal
+      },
+      next: () => Promise<TeamApprovalOutcome>,
+    ) => Promise<TeamApprovalOutcome>,
+    options?: boolean | Record<string, unknown>,
+  ): void
 }
+
+/** The host's closed approval vocabulary (public; mirrored structurally,
+ *  never imported — the entry's independence discipline, guide §4.1). */
+type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'
 
 /** The durable-consumption surface the glue bundle reads off the domain. */
 interface DomainConsumption {
@@ -285,12 +308,31 @@ interface LegacyEntryModule {
 
 /** The plain-JS glue module (config.glueUrl) export surface. */
 interface GlueModule {
+  /** alpha5 PTC fs half-arm (optional additive glue surface): creates the
+   *  `approval/request` escalation router (live/ptc-escalation-row.mjs,
+   *  re-exported by the glue). The listener installed by this file routes
+   *  THROUGH it; membership is registered by the agent-bindings gate only
+   *  under the S6 scope gate, so an empty router is the non-Team world.
+   *  LIFECYCLE-FIX ROUND: `onAgentDisposed` mirrors the host's public
+   *  `agent/disposed` event (the fence-listener face below) into the
+   *  router — the disposed Agent's routing entry and member face die with
+   *  the event (idempotent, never throws outward). */
+  createPtcEscalationRouter?: () => {
+    readonly route: (req: unknown, next: () => Promise<TeamApprovalOutcome>) => Promise<TeamApprovalOutcome>
+    readonly liveCount: () => number
+    readonly onAgentDisposed: (agent: unknown) => boolean
+  }
   createAgentBindings(deps: {
     readonly agents: unknown
     readonly sessionPersistence: unknown
     readonly domain: TeamDomain & { readonly consumption: DomainConsumption }
     readonly config: TeamPluginConfig
     readonly teamToolsRef: { current: unknown }
+    /** alpha5 PTC fs half-arm (10:04Z work order): the plain
+     *  `{ current }` reference carrying the escalation router created by
+     *  the install line below (undefined = the glue ships no row = every
+     *  ask keeps the pre-round host path). */
+    readonly ptcEscalationRef?: { current: unknown }
     readonly now: () => string
     /**
      * T12-M3 (optional additive): the DSH `subagents` public service,
@@ -2159,6 +2201,45 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     console.warn(degradedAnchorBootLine(rowConfig.rootSessionId, anchorState))
   }
 
+  // --- alpha5 PTC fs half-arm: the host-level `approval/request` install -
+  // Public waterfall (api-catalog: "return an outcome to claim the request
+  // or call next() to delegate"). Installed ONCE per row activation,
+  // global + prepend, so a governed member's escalation ask is claimed
+  // BEFORE any UI answerer composes in front of it (scoped ordering cannot
+  // guarantee that); like the activation-fence listeners, it rides this
+  // row's fiber and is disposed with the row. The ROUTER starts empty —
+  // membership lives behind the agent-bindings scope gate (S6), so a
+  // non-Team install sees every request delegate verbatim through an
+  // empty map: zero expansion by construction, not by a runtime branch.
+  // LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53, U-1/U-1b/U-2):
+  // the router ALSO mirrors the public `agent/disposed` event (the same
+  // fire-and-forget fence face above) — a disposed Agent drops its routing
+  // entry and revokes its member face synchronously with the event, so
+  // residency teardown (dropResidency, the archive/dispose live effects)
+  // never leaves a torn-down member routable, and a cold re-mount
+  // re-registers cleanly (the row replaces the stale face). The ask-time
+  // routability gate in the router closes the window the fire-and-forget
+  // sync residency port leaves open (quiesce.ts release-residency does not
+  // await the dispose); this listener is the state-cleanup face, never a
+  // race the row depends on.
+  const ptcEscalationRef: { current: unknown } = { current: null }
+  if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
+    const ptcRouter = glue.createPtcEscalationRouter()
+    ptcEscalationRef.current = ptcRouter
+    ctx.on(
+      'approval/request',
+      (req, next) => ptcRouter.route(req, next) as Promise<TeamApprovalOutcome>,
+      { global: true, prepend: true },
+    )
+    ctx.on(
+      'agent/disposed',
+      (payload) => {
+        ptcRouter.onAgentDisposed(payload.agent)
+      },
+      { global: true },
+    )
+  }
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -2166,6 +2247,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     config: resolvedRowConfig,
     teamToolsRef,
     controlServiceRef,
+    ptcEscalationRef,
     now: () => new Date().toISOString(),
     // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
     // blueprint resolver (the glue's dynamic Team authority — the three-
