@@ -610,23 +610,29 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
     expect(backend.lastStageTrace).toEqual(['probe', 'prepare', 'execute', 'terminate'])
   }, 120_000)
 
-  it('L3 MEASURED confine scope: CONTENT is kernel-denied outside the root, NAMES are not — which is why the row carries its own result law', async () => {
-    // Measured on this host (Landlock ABI v4, evidence/alpha5/glob-backend):
+  it('L3 MEASURED confine scope on the NARROWED runtime_base layer: CONTENT and NAMES are BOTH kernel-denied outside the root; the row keeps its own result law anyway (defense in depth)', async () => {
+    // RE-MEASURED on the integration tree (int-mnt: the runtime_base
+    // narrowing layer master@0e59140b — the #323 allowPaths rework — ships
+    // in this tree). The pre-narrowing measurement (evidence/alpha5/
+    // glob-backend, a5glb branch line) recorded listing as NOT enforced;
+    // the narrowed layer closes directory enumeration too:
     //   read outside content  -> EACCES inside the child  (enforced)
-    //   LIST an outside dir    -> succeeds                (NOT enforced by the sandbox)
-    // So "the confine is the backstop" only covers BYTES. Path-NAME disclosure
-    // is the row's own job — legs A4/S1 of the adversarial suite — and this leg
-    // pins both halves of that fact, so nobody later reads the backstop as
-    // broader than it is.
+    //   LIST an outside dir    -> EMPTY inside the child  (now enforced:
+    //                             zero names leave the child — the round-5
+    //                             name-level enumeration law at kernel level)
+    // The row's result-side anchor law stays load-bearing regardless (the
+    // kernel backstop is NOT the row's contract — legs A4/S1 stay the
+    // row-side law; this leg pins both layers so neither is over-read).
     const outsideContent = await confinedRun('a5glb-content', ['/bin/cat', join(OUTSIDE_DIR, 'secret.txt')])
     expect(outsideContent.stdout).not.toContain(OUTSIDE_TOKEN)
     expect(outsideContent.stderr).toContain('Permission denied')
     const outsideListing = await confinedRun('a5glb-listing', ['/bin/ls', OUTSIDE_DIR])
-    expect(outsideListing.stdout).toContain('secret.txt') // measured: the sandbox does not gate directory enumeration
+    expect(outsideListing.stdout).not.toContain('secret.txt') // measured on the NARROWED layer: enumeration is gated
+    expect(outsideListing.exit).not.toBe(0) // the listing itself fails (EACCES), it does not succeed-empty
     parityRows.push({
-      leg: 'L3 confine scope (measured)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 1, teamCount: 1,
-      teamTotal: 2, teamTruncated: false, teamFailure: null, orderMatch: true,
-      note: 'content=EACCES (enforced); directory listing=succeeds (not enforced) -> result-side anchor law is load-bearing',
+      leg: 'L3 confine scope (measured, narrowed layer)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 0, teamCount: 0,
+      teamTotal: 0, teamTruncated: false, teamFailure: null, orderMatch: true,
+      note: 'content=EACCES and listing=EACCES on the narrowed layer (zero names leave the child); the row-side anchor law stays load-bearing independently',
     })
   }, 180_000)
 

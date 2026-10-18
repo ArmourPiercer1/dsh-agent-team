@@ -215,13 +215,87 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(existsSync(sentinel)).toBe(false)
   })
 
-  it('G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider', async () => {
+  // G6 (int-mnt BEHAVIOR CHANGE, integration ledger): the #322 FINAL
+  // a5glb anchored backend is MOUNTED on the production plane where the row
+  // configures BOTH a governed fs root AND the confined provider — the glob
+  // row then runs REAL confined rg over the governed root. The two
+  // integration conditions ride the mount (a5glb request shape carries
+  // { path: anchor.rootReal, accessBits: { readFile, readDir } } READ-ONLY
+  // = condition (a); the assembly constructs WITHOUT internalLog = the
+  // internal face stays default-OFF, condition (b) — both pinned by the
+  // INT-* legs in this suite's integration block). UNCONFIGURED planes keep
+  // the shut landing byte-for-byte (R1 above stays the zero-regression pin).
+  it('G6 (integrated): with fsInstance + confinedProvider the glob row mounts the a5glb ANCHORED backend — REAL hits over the governed root', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
-    expect(res.text).toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).toContain('needle.txt') // the fixture file under data/ really enumerated
   })
+
+  // INT-a / INT-b — the TWO integration conditions, pinned at the mount
+  // (round-7 integration conditions; cited in glue8's integration ledger).
+  it('INT-a allowPaths同形: the mounted glob backend issues the a5glb request shape — the anchored root READ-ONLY (readFile+readDir, no write bit), assembled from anchor.rootReal', async () => {
+    const src = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/glob-backend.mjs'), 'utf8')
+    // the request face, verbatim law:
+    const ri = src.indexOf('const request = {')
+    expect(ri).toBeGreaterThan(-1)
+    const req = src.slice(ri, src.indexOf('let handle', ri))
+    expect(req).toContain('{ path: anchor.rootReal, accessBits: { readFile: true, readDir: true } }')
+    // READ-ONLY: no write access bit anywhere in the anchored request:
+    expect(req).not.toContain('writeFile')
+    expect(req).not.toContain('readWrite')
+    // the cwd is the ANCHOR handle path, never a caller string:
+    expect(req).toContain('cwd: anchor.anchorPath')
+    // and the anchor exists BEFORE the child (refusal = no process):
+    expect(src.indexOf('openAnchoredWalkRoot')).toBeLessThan(src.indexOf('const request = {'))
+  })
+
+  it('INT-b internalLog is NEVER wired to a member-visible sink: the production assembly constructs the glob backend WITHOUT the option (internal face default-OFF); the only channels out are codes+arithmetic observe and the closed result', async () => {
+    const plane = readFileSync(join(REPO, 'packages/runtime/src/plugin/live/team-tool-plane.mjs'), 'utf8')
+    const i = plane.indexOf('createAnchoredGlobBackend({')
+    expect(i).toBeGreaterThan(-1)
+    const ctor = plane.slice(i, plane.indexOf(': null', i))
+    expect(ctor).not.toContain('internalLog') // assembly passes NO internal sink
+    expect(ctor).toContain("observe: logBackend('a5glb-glob')") // codes+arithmetic only (A8 law)
+    // member-visible face carries nothing from the internal channel:
+    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
+    expect(built.ok, JSON.stringify(built)).toBe(true)
+    if (!built.ok) return
+    const res = await def(built.value, 'team_glob').execute({ pattern: 'data/*.txt' })
+    expect(res.text).not.toContain('INTERNAL') // no post-mortem text on the member face (X10 law)
+    expect(res.text).toContain('needle.txt')
+  })
+
+  // INT-c — the round-5 name-level ENUMERATION attack template, re-run on
+  // the NOW-CONNECTED glob row (the round the row was shut could not carry
+  // it; the integration conditions require it rides and refuses): parent
+  // traversal, absolute outside target, symlink escape — ZERO outside NAMES
+  // surface on any leg (the narrowed runtime_base layer closes the kernel
+  // listing hole too, L3-measured on the a5glb line).
+  it('INT-c name-enumeration attacks over the mounted glob row: outside names NEVER surface (traversal / absolute / symlink-escape)', async () => {
+    const symlinkTarget = join(ROOT_DIR, 'escape-link')
+    if (!existsSync(symlinkTarget)) symlinkSync(OUTSIDE_DIR, symlinkTarget)
+    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
+    expect(built.ok, JSON.stringify(built)).toBe(true)
+    if (!built.ok) return
+    const globDef = def(built.value, 'team_glob')
+    const attacks = [
+      { pattern: '../**' },
+      { pattern: join(OUTSIDE_DIR, '**') }, // absolute outside target
+      { pattern: 'escape-link/**' }, // symlink escape through the walk root
+      { pattern: '*', path: OUTSIDE_DIR },
+    ]
+    for (const args of attacks) {
+      const res = await globDef.execute(args as Record<string, unknown>)
+      expect(res.text, JSON.stringify(args)).not.toContain('secret.txt')
+      expect(res.text, JSON.stringify(args)).not.toContain('A5G7-OUTSIDE-SECRET-42')
+    }
+    // The positive face still works (attacks refused, real work runs):
+    const ok = await globDef.execute({ pattern: '*.txt' })
+    expect(ok.text).toContain('needle.txt')
+  }, 120_000)
 
   // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18: the confined-rg
   // glob row FAILED for a NAME-class leak — the verify->launcher STRING-chdir

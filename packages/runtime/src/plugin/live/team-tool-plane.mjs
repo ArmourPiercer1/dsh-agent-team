@@ -77,6 +77,7 @@ import { createProductionAdmissionAssembly } from '../../../tool-admission/index
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
+import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -401,9 +402,31 @@ export function createTeamToolPlaneAssembly(input = {}) {
       observe: logBackend('a5g7-shell'),
     })
     : null
+  // INTEGRATION ROUND (int-mnt): the glob row meets its governed anchor.
+  // The #322 FINAL face (a5glb anchored confined-rg, branch
+  // alpha5-glob-backend@ee9b30d5) is mounted where — and ONLY where — the
+  // row configured BOTH a governed fs root and the confined provider:
+  //   (a) allowPaths同形: the backend's confined request carries
+  //       { path: anchor.rootReal, accessBits: { readFile, readDir } } —
+  //       the anchored walk root READ-ONLY, byte-for-byte the a5glb
+  //       request shape (glob-backend.mjs:828, pinned by unit leg);
+  //   (b) internalLog NOT wired to any member-visible sink: the assembly
+  //       constructs the backend WITHOUT the option at all (the internal
+  //       face stays default-OFF; there is no config path from a row to a
+  //       sink — pinned by unit leg, round-7 integration conditions).
+  // Unconfigured worlds keep the shut landing byte-for-byte (zero-regression
+  // law); an explicit `backends` row (wiring-kit seam) still wins outright.
+  const realGlob = confinedCfg !== null && typeof fsInstance?.rootDir === 'string'
+    ? createAnchoredGlobBackend({
+      realmId,
+      rootDir: fsInstance.rootDir,
+      confined: confinedCfg,
+      observe: logBackend('a5glb-glob'),
+    })
+    : null
   const productionBackends = Object.freeze({
     search: realSearch ?? shut,
-    glob: shut,
+    glob: realGlob ?? shut,
     shell: realShell ?? shut,
   })
   const hostedSearch = input.backends?.search ?? productionBackends.search
