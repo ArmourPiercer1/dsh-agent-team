@@ -258,6 +258,30 @@ law **A7**（见 §2），并按 ①–④ 逐项给证据：
 相对目标静默走；现在源内有 closed set + 出处说明（host 的 glob 参数律根本不携带 placement，
 `placement` 是 lane 词），未知词一律拒。见 leg X9。
 
+## 4e. 根 census 同池交互轮（2026-10-18，#322 最后门）
+
+CI 的 census 是**九根同池一个进程**（pool=threads），本 lane 的两个套件因此第一次与
+`a5lsp2-assembly` / `a5p4-lane-hygiene` 等判面同场。合树 7 条新红的机制、修法与本地两次
+capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-20261018.md)**。要点三条：
+
+1. **三条 law 红是判面语义撞上了合法装配**，不是本产品缺陷：`sandbox-provider` 的
+   dormancy law 有两份副本（`a5p4-lane-hygiene` 律 (4) 与 `a5w-integration-wiring`），
+   加上 `a5p5-dormant-audit` 的 name-only 台账。修法按 a5p5/a5w 既有先例：
+   **具名 + 形钉**——每条装配行按文件名册，钉死"恰一条 public-face import 边、不得深 import、
+   不得长第二条边"，**未命名的引用照旧是红**（牙没换，只是把已发生的装配事实公开记账）。
+   注意披露：`plane-effect-backends.mjs`（glue lane）在 master 侧 `7ab56dbf` 上就已触发同一条
+   红（`git grep -lE` 于该 commit 可复现），本轮把两个名字一起记账，不掩盖也不代其认罪。
+2. **本 lane 自己的 name-only 触发**：`alpha5-glob-backend.test.ts` 里 leg P0 会
+   `readFileSync` 读 `a5p5-tools/src/register.ts` 的**文本**以钉 argv 平价——那是名字不是边，
+   故入 `NAMES_ONLY_LEDGER_EXCEPTIONS` 第五项，并新增一条形钉腿：全文件恰一行携带该路径形状、
+   且必须是那条 pinned `readFileSync`，任何 import/require/from-specifier 出现即红。
+3. **a5lsp2 的 REAL 腿在本地无法复现**（standalone 绿、两次全量 capture 绿、我的风暴在另一进程
+   mid-flight 时亦绿）；其观测面是 world-scoped，看得见我的世界的可能性已被排除（pid_max
+   4194304 / 风暴期 fd≤40 实测）。剩余解释是小 runner 上的 CPU 挤占撞上它们的**有界 poll**。
+   本侧加了两项**不减少任何断言数字**的礼让：`A5GLB_RACE_PACE_MS`（默认 4 ms，每次真走之后让出
+   CPU，计数器逐字节不变）与 `A5GLB_RACE_WALKS`（默认 6600 的规模旋钮；一旦拧小**腿名自己会
+   说出来**，故被拧过的 census 不可能被当作硬门引用——硬门仍是不带 env 的 lane 直跑）。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8

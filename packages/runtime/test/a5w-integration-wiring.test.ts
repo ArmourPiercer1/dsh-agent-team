@@ -32,7 +32,7 @@
  * @module packages/runtime/test/a5w-integration-wiring
  */
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -132,10 +132,24 @@ describe('a5w compile surface', () => {
     expect(raw).toContain('"sandbox-provider"')
   })
 
-  it('the provider factory is exported for EXPLICIT calls but wired into no live glue', async () => {
+  /**
+   * Restated 2026-10-18 (was: "DORMANT stays: nothing under runtime/src imports
+   * it"). The provider lane is mounted by NAMED production rows now; the teeth
+   * are unchanged in kind — an UNNAMED reference under the live-glue tree is a
+   * red, and each named row is pinned to exactly ONE import edge at the lane's
+   * PUBLIC FACE (`sandbox-provider/index.js`), so no row can grow a second edge
+   * or reach into the lane's internals without a new booking. The same two names
+   * are booked in `a5p4-lane-hygiene` law (4); the two lists must move together,
+   * and the leg below asserts that they do by pinning the names literally.
+   */
+  const NAMED_PROVIDER_MOUNTS: readonly { file: string; edge: string }[] = [
+    { file: 'plugin/live/plane-effect-backends.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
+    { file: 'plugin/live/glob-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
+  ]
+
+  it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {
     const { createConfinedProcessProvider } = await import('../sandbox-provider/index.js')
     expect(typeof createConfinedProcessProvider).toBe('function')
-    // DORMANT stays: nothing under runtime/src (the live-glue tree) imports it.
     const { readdirSync, statSync } = await import('node:fs')
     const offenders: string[] = []
     const walk = (dir: string): void => {
@@ -150,7 +164,23 @@ describe('a5w compile surface', () => {
       }
     }
     walk(join(RUNTIME, 'src'))
-    expect(offenders).toEqual([])
+    const underSrc = offenders.map((f) => f.slice(join(RUNTIME, 'src').length + 1).split('\\').join('/')).sort()
+    const named = new Set(NAMED_PROVIDER_MOUNTS.map((m) => m.file))
+    const unnamed = underSrc.filter((f) => !named.has(f))
+    expect(unnamed, `unbooked live-glue references to the confined provider lane: ${unnamed.join(', ')}`).toEqual([])
+    for (const mount of NAMED_PROVIDER_MOUNTS) {
+      const path = join(RUNTIME, 'src', mount.file)
+      if (!existsSync(path)) continue // that row is not on this tree (each lane books on its own branch)
+      const body = readFileSync(path, 'utf8')
+      const edges = body.split('\n').map((l) => l.trim()).filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l))
+      expect(edges, `${mount.file}: one pinned edge, at the public face`).toEqual([mount.edge])
+      const deep = body.split('\n').map((l) => l.trim()).filter((l) => /from\s+'[^']*sandbox-provider\/[^']+'/.test(l) && !/sandbox-provider\/index\.js'/.test(l))
+      expect(deep, `${mount.file}: no deep import into the lane`).toEqual([])
+      expect(
+        body.split('\n').filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l.trim())).length,
+        `${mount.file}: the booked row must actually mount the factory`,
+      ).toBeGreaterThanOrEqual(1)
+    }
   })
 })
 

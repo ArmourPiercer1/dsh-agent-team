@@ -49,7 +49,38 @@ const RACE_ITERATIONS = 5_000
  * (fix-list ③). Measured on this host a confined walk is ~25 ms, so the leg is
  * minutes rather than hours — and every one of them carries a spill probe.
  */
-const REAL_RACE_WALKS = 6600
+/**
+ * Two dials, both DEFAULTING TO THE HARD-GATE SHAPE, and both here for one
+ * reason: this file is a good neighbour in a shared pool. The root census runs
+ * all ~570 files in ONE process (pool=threads); on a big runner my race is
+ * ~1.5 cores of launcher CPU and nobody notices, while on a small one a
+ * sustained spawn storm of this size is exactly what tips another lane's
+ * BOUNDED polls (e.g. a5lsp2-assembly's `pollUntil(..., 8_000)` for "the old
+ * pid is gone"). Measured on this host: the full census WITH this file collected
+ * is green for those lanes, so this is courtesy, not a fix for an observed
+ * failure here — and it is stated rather than hidden.
+ *
+ *  - `A5GLB_RACE_PACE_MS` (default 4): a gap after every walk. It lowers the
+ *    duty cycle of the storm, which is what gives a sibling's bounded poll room
+ *    to complete; the walk COUNT, and so every asserted number, is unchanged.
+ *  - `A5GLB_RACE_WALKS` (default 6600): the scale. A census that is starved may
+ *    re-sample at a smaller scale — the leg NAME then says so, so a dialled run
+ *    can never be quoted as the hard gate. The reviewer's hard gate is the lane
+ *    run with no env set: `npx vitest run
+ *    packages/runtime/test/alpha5-glob-backend-adversarial.test.ts`.
+ */
+const RACE_ENV = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
+const RACE_PACE_MS = Number.isFinite(Number(RACE_ENV['A5GLB_RACE_PACE_MS'])) && RACE_ENV['A5GLB_RACE_PACE_MS'] !== undefined
+  ? Math.max(0, Math.trunc(Number(RACE_ENV['A5GLB_RACE_PACE_MS'])))
+  : 4
+const REAL_RACE_WALKS = RACE_ENV['A5GLB_RACE_WALKS'] !== undefined && Number.isFinite(Number(RACE_ENV['A5GLB_RACE_WALKS']))
+  ? Math.max(1, Math.trunc(Number(RACE_ENV['A5GLB_RACE_WALKS'])))
+  : 6600
+
+/** The neighbour gap; `sleepMs(0)` when the pace is dialled to zero. */
+function sleepMs(ms: number): Promise<void> {
+  return new Promise((resolve) => { setTimeout(resolve, ms) })
+}
 
 let row: GlobBackendRow
 let backend: GlobBackend
@@ -404,6 +435,9 @@ describe('A5-GLOB A — anchoring under attack', () => {
       tally.states.add(stateAtCall)
       const probe = await runWalkProbed('**/*.txt', 'live')
       const result = probe.result
+      // the neighbour gap (see RACE_PACE_MS): the walk happened, the probes ran,
+      // and the CPU goes back to the pool for a moment before the next spawn.
+      if (RACE_PACE_MS > 0) await sleepMs(RACE_PACE_MS)
       walks += 1
       spill.walks += 1
       auditSpill(probe, `A5 spill it=${String(i)}`)

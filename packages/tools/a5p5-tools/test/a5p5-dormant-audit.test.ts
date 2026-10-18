@@ -99,7 +99,19 @@ function* walk(dir: string): Generator<string> {
  * form. The live row's REAL edge is NOT here — it is the REVIEWED_EDGE
  * exception below, separately pinned and separately disclosed.
  */
-const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json']
+/**
+ * Fifth entry (a5glb glob-backend lane, 2026-10-18): the glob row's PARITY spec
+ * `runtime/test/alpha5-glob-backend.test.ts` reads `a5p5-tools/src/register.ts`
+ * from disk to pin that the glob backend's argv equals what the lane's own
+ * registration face feeds the host argument law (leg P0). It is a NAME, not an
+ * edge: the file reads the source text, imports nothing from the lane, and its
+ * pinned form is one quoted packages-relative path inside one `readFileSync`
+ * call (the leg below). Nothing about the barrel, the mount or the per-scope
+ * judgement moves — this audit keeps every one of its teeth; an unnamed new
+ * reference is still a red.
+ */
+const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json',
+  'runtime/test/alpha5-glob-backend.test.ts']
 
 /**
  * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly
@@ -160,6 +172,28 @@ describe('a5p5-dormant-audit', () => {
     for (const line of ledger.split('\n')) {
       if (!line.includes('a5p5-tools')) continue
       expect(line.trim(), line.trim()).toMatch(/^'packages\/tools\/a5p5-tools\/[^']+',$/)
+    }
+  })
+
+  it('the a5glb glob parity spec names the lane ONLY as one quoted read path, never as an edge', () => {
+    // The fifth name-only booking (see the exception list above). Form is the
+    // contract, same discipline as the four names before it: EXACTLY ONE line
+    // in that spec carries the `a5p5-tools` path shape, it is a `readFileSync`
+    // of one quoted packages-relative path (leg P0 pins argv parity against the
+    // lane's registration face by reading its TEXT), and the file carries no
+    // import/require edge to the lane of any shape.
+    const spec = readFileSync(join(packagesRoot, 'runtime', 'test', 'alpha5-glob-backend.test.ts'), 'utf8')
+    let namedLines = 0
+    for (const line of spec.split('\n')) {
+      if (!line.includes('a5p5-tools')) continue
+      namedLines += 1
+      expect(line.trim(), line.trim()).toMatch(/^const registerSource = readFileSync\(join\(REPO, 'packages\/tools\/a5p5-tools\/src\/register\.ts'\), 'utf8'\)$/)
+    }
+    expect(namedLines).toBe(1) // exactly the one parity read — if the spec grows a second reference, this trips
+    for (const line of spec.split('\n')) {
+      expect(/^(import|export)\b.*a5p5-tools/.test(line.trim()), `an import edge appeared: ${line.trim()}`).toBe(false)
+      expect(/require\(.*a5p5-tools/.test(line), `a require edge appeared: ${line.trim()}`).toBe(false)
+      expect(/from\s+'[^']*a5p5-tools/.test(line), `a module specifier appeared: ${line.trim()}`).toBe(false)
     }
   })
 
