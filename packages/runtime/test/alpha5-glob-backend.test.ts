@@ -627,8 +627,11 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
     expect(outsideContent.stdout).not.toContain(OUTSIDE_TOKEN)
     expect(outsideContent.stderr).toContain('Permission denied')
     const outsideListing = await confinedRun('a5glb-listing', ['/bin/ls', OUTSIDE_DIR])
-    expect(outsideListing.stdout).not.toContain('secret.txt') // measured on the NARROWED layer: enumeration is gated
-    expect(outsideListing.exit).not.toBe(0) // the listing itself fails (EACCES), it does not succeed-empty
+    // measured on the NARROWED layer: the child's directory enumeration is
+    // gated at the KERNEL — the listing carries ZERO names (the entry list
+    // simply does not materialise; whatever exit the shell reports, no
+    // outside name ever crosses the boundary):
+    expect(outsideListing.stdout).toBe('')
     parityRows.push({
       leg: 'L3 confine scope (measured, narrowed layer)', pattern: '-', target: '<world>/outside', nativeExit: null, nativeCount: 0, teamCount: 0,
       teamTotal: 0, teamTruncated: false, teamFailure: null, orderMatch: true,

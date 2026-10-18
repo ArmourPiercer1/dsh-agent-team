@@ -974,9 +974,16 @@ async function main() {
       const grepHit = memberText.includes('v4g8-read.txt') && memberText.includes(G8_GREP_TOK)
       check('C2', 'POSITIVE SEARCH: team_grep ran the REAL read-only search over the governed root and the token hit rode the wire', grepHit, `memberText=${JSON.stringify(memberText).slice(0, 300)}`)
       if (!grepHit) fail('C2')
-      const globShut = memberText.includes('IO_POLICY_UNSUPPORTED')
-      check('C3', 'GLOB ROW STAYS TYPED-SHUT on the v4 wire too (CANDIDATE-A never shipped): the shut face lands honestly, no walk, no names', globShut, `memberText=${JSON.stringify(memberText).slice(0, 300)}`)
-      if (!globShut) fail('C3')
+      // C3 (int-mnt BEHAVIOR CHANGE): the a5glb anchored backend is now
+      // MOUNTED — on the v4 wire the glob row runs REAL over the governed
+      // root: the governed file NAME surfaces (r2 section), outside names
+      // never do (INT-c law at the plane layer; the attack template lives
+      // in the unit suite). The r2 section is isolated so a grep-leg
+      // mention cannot satisfy this leg.
+      const r2 = memberText.slice(memberText.indexOf('r2='), memberText.indexOf('| r3='))
+      const globReal = r2.includes('v4g8-read.txt') && !r2.includes('SECRET')
+      check('C3', 'GLOB ROW RUNS REAL on the v4 wire (int-mnt: the #322 FINAL anchored backend is mounted under the two integration conditions — allowPaths同形 read-only + internalLog never wired): the r2 result names the governed file, outside names absent', globReal, `r2=${JSON.stringify(r2.slice(0, 220))}`)
+      if (!globReal) fail('C3')
       await new Promise((r) => setTimeout(r, 8_000))
       let sentinelExists = false
       let govListing = 'n/a'

@@ -32,7 +32,7 @@
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -297,6 +297,35 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(ok.text).toContain('needle.txt')
   }, 120_000)
 
+  // INT-d — the deny NEGATIVE control on the CONNECTED row (integration
+  // ticket ③: refuse BEFORE the backend, zero exec, zero side effect).
+  // Measured form on this wire: the file-class DENY lanes (any/subtree)
+  // project/refuse per PR0 law and a subtree rule does NOT cover the glob
+  // row's list effect (its effect resource carries no locator to compare —
+  // recorded honestly in the integration ledger). THE operative template
+  // deny that DOES address the row = the default-deny gate: a plane tool
+  // with no allow/ask coverage at all lands `template-default-deny`
+  // BEFORE any backend — no rg process, no scratch, nothing written.
+  it('INT-d deny negative control on the mounted glob row: template-deny-lane BEFORE any backend — zero exec, zero side effect', async () => {
+    const DENY_DEFAULT = Object.freeze({
+      default: 'deny',
+      allow: [] as unknown[],
+      ask: [] as unknown[],
+      deny: [] as unknown[],
+    })
+    const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } }, DENY_DEFAULT)
+    expect(built.ok, JSON.stringify(built)).toBe(true)
+    if (!built.ok) return
+    const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
+    expect(res.text).toContain('template-default-deny')
+    expect(res.text).not.toContain('needle.txt')
+    // zero side effect: the run created NOTHING in the governed root (no
+    // scratch dir, no rg artifacts — the backend was never reached):
+    const entries = readdirSync(ROOT_DIR).join(',')
+    expect(entries).not.toContain('scratch')
+    expect(entries).not.toContain('rg-')
+  }, 120_000)
+
   // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18: the confined-rg
   // glob row FAILED for a NAME-class leak — the verify->launcher STRING-chdir
   // window plus the provider runtime_base '/' READ_DIR grant lets outside
@@ -309,7 +338,7 @@ describe('GLUE-7 plane backends assembly', () => {
     const manyDir = join(ROOT_DIR, 'many')
     mkdirSync(manyDir, { recursive: true })
     for (let i = 0; i < 105; i++) writeFileSync(join(manyDir, `f${String(i)}.gen`), 'x\n')
-    symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link'))
+    if (!existsSync(join(ROOT_DIR, 'escape-link'))) symlinkSync(OUTSIDE_DIR, join(ROOT_DIR, 'escape-link')) // INT-c may have created it first (same fixture root)
     const beMod = (await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)) as {
       createAnchoredGlobBackend: (cfg: Record<string, unknown>) => {
         run: (call: unknown, io: unknown) => Promise<{ ok: boolean; failure?: { code?: string }; outcome?: { files?: string[]; truncated?: boolean } }>

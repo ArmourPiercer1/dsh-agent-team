@@ -1,0 +1,23 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-31-21Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 7 entries did not activate
+typert-loader (@deepseek-ai/dsh-typert-loader): AggregateError: typert-loader: 1 typert contributor(s) failed to register:
+  - typert-loader: @deepseek-ai/dsh-user-questions exports "./typert" but importing /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js failed: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js
+    at Object.apply [as callback] (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js:344:33)
+    at async Fiber._reload (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:5)
+    at async Promise.allSettled (index 1)
+    at async Proxy.await (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/loader/lib/index.js:158:4)
+    at async boot (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:4067:3)
+    at async runProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-CO0MPY31.js:270:15)
+    at async runCli (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:212:5)
+    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:248:23
+Error: typert-loader: @deepseek-ai/dsh-user-questions exports "./typert" but importing /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js failed: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js:274:11
+otel (@deepseek-ai/dsh-otel): failed to import
+llm-deepseek (@deepseek-ai/dsh-llm-deepseek-api-key): failed to import
+llm-deepseek-account (@deepseek-ai/dsh-llm-deepseek-account): failed to import
+shortcuts (@deepseek-ai/dsh-client-shortcuts): failed to import
+ui-shortcuts (@deepseek-ai/dsh-client-ui-shortcuts): failed to import
+ui-settings-session-log (@deepseek-ai/dsh-client-ui-settings-session-log): failed to import
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-fb6035f0>
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-31-21Z/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs) could not be loaded: Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-31-21Z/packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-31-21Z/packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs
+    at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-31-21Z/packages/runtime/dist/packages/runtime/src/plugin/host.js:1269:19)
