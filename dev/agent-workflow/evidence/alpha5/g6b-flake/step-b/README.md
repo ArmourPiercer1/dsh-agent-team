@@ -104,10 +104,12 @@ fuse=**250ms**（cap 同源常数 GLOB_STDERR_DRAIN_MS）：记录在 launcher �
 ①在册（本节首条）②共存性钉=glob 套件 `g6b closing (review-B)` 腿（版本注记入断言消息+corpus 双账；行为钉为准）③行层 pid 双保险=「closing review-B」腿 form=row-pid-mismatch ④有界等待=同腿 timeout 形+依据上表 ⑤scratch law=provider `scratchRootGate`（probe/prepare/execute/executeStreaming 四入口，a5p4 4 形红→绿）+glue7 夹具补键 ⑥上表（只挂账）⑦corpus 双 shape 入账（标 reviewer 实测非作者）。
 
 ## CI census 红归因（九根全量复现，根 ② 单）
+（口径注·根定稿：census 判"失败身份集不新增"，非"全套测试零失败"。）
+
 **复现形** = CI 原文命令：`node scripts/ci-pr-gate.mjs --full --only census --census-captures 2 --census-test-timeout 90000`（pin 宿主本机 clone+build，`census-local-run.txt`）。门判据=**身份集非计数**（"the counts are context and the identity set is the verdict"，ci-pr-gate.mjs :636 仅 added 定 verdict）：计数 558/7010→586/7401 的移动系 2b1099d7 重述后 master 语料增长（#342/#344 绿跑同带此移动——CI 报的 585f/7394l 对 558/7010 之"差 27"即此，非 27 枚新红）。
 
 **身份集实测差 = 1 枚**：`a5intr3-kit-runner::KIT every criterion PASSes`——栈落点=provider 入口真拒（`anchored-glob capability REFUSED code=IO_POLICY_UNSUPPORTED`→行 confined-unavailable→C1 glob POS 拒）。归因=**scratch law 调用方未跟上第 4 例**（glue7→a5b3→globoff→本 kit），非环境；修复=kit conf 补 `scratchRoot: join(WORLD,'scratch-kit')`（WORLD 内、治理根 ROOT_DIR 旁系=行注释 parent-side 律同形、随既有 rmSync(WORLD) 清；`census-kit-singleflight-green.log` 1/1 绿）。捕获内 p6t3-restart 族红逐枚核为基线语料内既有语境腿。
 
-**修后 census 形复跑**：verdict=**pass**，"identity set IDENTICAL to the published baseline"（merge 前 kit 修后跑 `census-local-run2.txt` 586f/7401l×2；merge-round-3 后终跑 `census-local-final2.txt` 588f/7425l×2 恒等集，pindir 24 腿入语料）。
+**修后 census 形复跑**：verdict=**pass**，"identity set IDENTICAL to the published baseline"（merge 前 kit 修后跑 `census-local-run2.txt` 586f/7401l×2；merge-round-3 后终跑 `census-local-final2.txt` 588f/7425l×2 恒等集，pindir 24 腿入语料）。口径按根定稿：**census 判"失败身份集不新增"，非"全套测试零失败"**——基线语料本就载有 558 文件族既有语境红（p6t3-restart 等），pass = 相对已发布基线身份集零新增红，全量跑内语境红照常存在且被基线吸收。
 
 **merge-round-3（ca7ab2ab #344）后终跑暴露的 1 枚 census 语境红（已归因，非本分支产物）**：p4t6 coverage 腿在 capture-2 单捕红 `expected 1206 to be 1204`。机理实查=a4p7-merge-gate 的 lint-scratch 控制腿**瞬时**在 `packages/testkit/test/` 写 2 枚 `.mts` 控制文件（a/b，finally 即删——现树零泄漏），p4t6 扫描器在 capture-2 恰落入该窗（同文件在 capture-1=绿 1204；单跑 10/10=绿 1204 `merge7-p4t6-green.log`；扫描器只跳 node_modules/dist/.tmp-fault，控制文件不可跳——它必须进 lint universe 才成立，挪不得）。分类=**census 并发语境文件形竞态**（两 master 侧仪器互相瞬时可见，#342/#344 绿=竞态未落，本盘 24 核并行更易落；历次 10 捕获仅落 1 次）。非产品链、非缺键族、词表审计零命中；根治需动 master 侧仪器时序（p4t6 扫描时机），越 #337 职权，只报不擅动。
