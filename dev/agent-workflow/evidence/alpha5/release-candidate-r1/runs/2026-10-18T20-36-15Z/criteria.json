@@ -1,0 +1,100 @@
+{
+  "runStamp": "2026-10-18T20-36-15Z",
+  "masterSha": "5885e46ec2bcbfa7bfa58882d835801ec8b79e1f",
+  "pass": 15,
+  "fail": 0,
+  "book": 0,
+  "exitCode": 1,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "test-use host is the pinned pristine runtime (master tests/paths.mjs TEST_USE_BASELINE_SHA=639ed01539) and porcelain 0 before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the install spec pins THIS round's live ls-remote master SHA and the audit worktree equals it",
+      "pass": true,
+      "observed": "master=5885e46ec2bcbfa7bfa58882d835801ec8b79e1f worktree=5885e46ec2bcbfa7bfa58882d835801ec8b79e1f"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before the run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "H2",
+      "claim": "ports 3183 AND 3184 AND the mock port 3491 self-proved free before the run",
+      "pass": true,
+      "observed": "3183=true 3184=true mock=true"
+    },
+    {
+      "id": "I1",
+      "claim": "REAL install through the pinned host's own public package face — plugin --profile web add github:ArmourPiercer1/dsh-agent-team#5885e46ec2bcbfa7bfa58882d835801ec8b79e1f",
+      "pass": true,
+      "observed": "exit=0 in 4s tail=Progress: resolved 1, reused 1, downloaded 0, added 1, done | Done in 3.5s using pnpm v11.7.0 | dsh: initialized profile web at /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/rc-trial-1/profiles/web"
+    },
+    {
+      "id": "I2",
+      "claim": "STRICT profile face: the profile declares EXACTLY this repo's one plugin and node_modules top level holds nothing else; the reconciler appended the bundle rows",
+      "pass": true,
+      "observed": "deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "id": "I3a",
+      "claim": "INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry (face RECOUNTED at this commit; no hard-coded expectation)",
+      "pass": true,
+      "observed": "installed=1773 declared-files-face=1773 (files: entries=1771 + pack-always=2)"
+    },
+    {
+      "id": "I3b",
+      "claim": "INSTALL THREE-ZEROS (2/4 missing = 0): every declared file materialized in the install dir",
+      "pass": true,
+      "observed": "missing=0 []"
+    },
+    {
+      "id": "I3c",
+      "claim": "INSTALL THREE-ZEROS (3/4 extra = 0): nothing outside the declared face landed",
+      "pass": true,
+      "observed": "extra=0 []"
+    },
+    {
+      "id": "I3d",
+      "claim": "INSTALL THREE-ZEROS (4/4 sha-mismatch = 0): every installed file is BYTE-IDENTICAL to that path at the installed commit",
+      "pass": true,
+      "observed": "mismatch=0 rootSha=3a3911a8fb494034"
+    },
+    {
+      "id": "I3e",
+      "claim": "the two bytes beyond the declared files: list are exactly the pack rules' always-included pair (disclosed, not folded into the count)",
+      "pass": true,
+      "observed": "alwaysIncluded=[\"README.md\",\"package.json\"]"
+    },
+    {
+      "id": "I4",
+      "claim": "the installed bundle layer is machine-agnostic (the bundle rows reference the package by name; no file: URL landed in the profile manifest)",
+      "pass": true,
+      "observed": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"] hostJsBytes=157099"
+    },
+    {
+      "id": "I8",
+      "claim": "DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face (packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py ∉ files:) — the installer supplies it as a deployment input, byte-pinned from the SAME commit",
+      "pass": true,
+      "observed": "launcherInFace=false launcherSha=1264ea584e3438d6… bytes=26992"
+    },
+    {
+      "id": "I9",
+      "claim": "the deployment input is the RIGHT BYTES before any host exists: commit blob == worktree blob, starts with \"#!\", and the launcher itself answers the ABI probe",
+      "pass": true,
+      "observed": "sha=1264ea584e3438d6… abi=abi-available/4"
+    },
+    {
+      "id": "I5",
+      "claim": "the pinned host composes the INSTALLED bundle row through the public profile seam: --dump-config carries id dsh-agent-team / name dsh-agent-team/host with THIS round's teamToolPlane (realmId + fsInstance + confinedProvider launcher pin) and the client/spill-local rows, no skipped bundle",
+      "pass": true,
+      "observed": "exit=0 teamRow=true plane=true confine=true subRows=true skipped=false"
+    }
+  ]
+}

@@ -81,6 +81,7 @@ const TK_D1 = 'rc1-tok-delegate-1'
 const TOK_READ = 'RC1-READ-TOKEN-77'
 const TOK_GREP = 'RC1-GREP-TOK'
 const TOK_BASH = 'RC1-BASH-TOK'
+const NAT_TOK = 'RC1-NATIVE-TOK'
 const WRITE_TOK = 'RC1-WROTE-9'
 const OUTSIDE_MARKER = 'RC1-OUTSIDE-ONLY-MARKER-9182'
 
@@ -237,7 +238,7 @@ const ANCHOR_YAML = [
 
 function mainBlueprintYaml (denyList, mkTask) {
   const denyBlock = (pad) => denyList.length === 0 ? [`${pad}builtinToolDeny: []`] : [`${pad}builtinToolDeny:`, ...denyList.map((n) => `${pad}  - ${n}`)]
-  const task = `${mkTask} Work EXACTLY in this order, one tool call per turn: (1) tool team_bash with {"command":"echo ${TOK_BASH}; echo ${WRITE_TOK} > ./rc-wrote.txt; cat ./rc-wrote.txt"}; (2) tool team_bash with {"command":"cat ../outside/secret.txt"}; then (3) finish with ONE line starting RC1_MEMBER_RESULT quoting each of the two tool results you received.`
+  const task = `${mkTask} Work EXACTLY in this order, one tool call per turn: (1) tool team_bash with {"command":"echo ${TOK_BASH}; echo ${WRITE_TOK} > ./rc-wrote.txt; cat ./rc-wrote.txt"}; (2) tool team_bash with {"command":"cat ../outside/secret.txt"}; (3) tool bash (the NATIVE tool named exactly 'bash') with {"command":"echo ${NAT_TOK}"}; then (4) finish with ONE line starting RC1_MEMBER_RESULT quoting each of the three tool results you received.`
   const leaderPersona = `You are the leader of the rc-trial team. On your directive: FIRST call team_create_member exactly once with rootSessionId ${CREATE_ROOT}, requestToken ${TK_CM}, delegationTemplateId "wa", label "rc-a". SECOND call team_list_members with rootSessionId ${CREATE_ROOT} and requestToken ${TK_LM}. THIRD call team_delegate exactly once with rootSessionId ${CREATE_ROOT}, requestToken ${TK_D1}, the delegationInstanceId returned by team_list_members for instance rc-a, async false, and the prompt ${JSON.stringify(task)}. FOURTH call team_collect with rootSessionId ${CREATE_ROOT} and requestTokens ["${TK_D1}"]. FIFTH finish with one line starting RC1_LEADER_DONE.`
   return [
     '---', 'schemaVersion: 3', `blueprintId: ${BP_MAIN_ID}`, 'revision: "1"',
@@ -507,6 +508,7 @@ try {
         const calls = digest.assistantToolNames
         if (calls.length === 0) return toolCall(`call-rc-bash-pos-${rnd()}`, 'team_bash', { command: `echo ${TOK_BASH}; echo ${WRITE_TOK} > ./rc-wrote.txt; cat ./rc-wrote.txt` })
         if (calls.length === 1) return toolCall(`call-rc-bash-out-${rnd()}`, 'team_bash', { command: 'cat ../outside/secret.txt' })
+        if (calls.length === 2) return toolCall(`call-rc-native-${rnd()}`, 'bash', { command: `echo ${NAT_TOK}` })
         const results = digest.toolResults
         const quote = results.map((r, i) => `r${i}=${r.slice(0, 140).replace(/\s+/g, ' ')}`).join(' | ')
         return { kind: 'text', content: `RC1_MEMBER_RESULT ${quote}` }
@@ -630,10 +632,28 @@ try {
     check('M5', 'team_bash OUT-OF-BOUNDS renders the TRUE exit code (#336 exit-passthrough on the installed face): bash · exit=1 over the kernel Permission denied stderr, presentationMeta exitCode=1',
       rOut.includes('bash · exit=1') && /Permission denied/.test(rOut) && /exitCode[\\"]*\s*:\s*1/.test(rOut),
       `r_out=${JSON.stringify(rOut.slice(0, 300))}`)
-    check('M6', 'zero disclosure + honest render: the outside marker never rides the wire in ANY request of this world, and the cancelled text stays unreachable pre-#340 (cancelled:false renders verbatim — the booked current state, not a mis-render)',
+    check('M6', 'zero disclosure + honest render: the outside marker never rides the wire in ANY request of this world, and the cancelled text renders false absent a cancel (post-#340 semantics: only user/parent cancel sets true; no cancel is injected here)',
       (mock.requests ?? []).slice(reqBase).filter((r) => JSON.stringify({ reply: r.reply ?? null, d: r.digest?._text ?? '' }).includes(OUTSIDE_MARKER)).length === 0
       && !rOut.includes('bash · cancelled') && /cancelled[\\"]*\s*:\s*false/.test(rOut),
       `markerOnWire=${String((mock.requests ?? []).slice(reqBase).filter((r) => JSON.stringify({ reply: r.reply ?? null, d: r.digest?._text ?? '' }).includes(OUTSIDE_MARKER)).length)} cancelledFalse=${String(/cancelled[\\"]*\s*:\s*false/.test(rOut))}`)
+
+    // M9 (BOOKED witness leg, #341-④): dispatch the NATIVE 'bash' row in THIS release-candidate
+    // shape. Either outcome is a typed, quotable fact: native execution = SAFE_UNMANAGED face;
+    // typed refusal = the w7m2/BIND-DIAG 'cannot be verified at dispatch time' face. Which
+    // branch fires in the RC shape was genuinely UNKNOWN before this leg — that unknown is the
+    // precise remaining of the booked 'native 审批后执行' gap at the profile layer.
+    const idxNat = names.indexOf('bash')
+    const rNat = String(idxNat >= 0 ? (results[idxNat] ?? 'LEG-MISSING') : 'LEG-MISSING')
+    const rNatUnesc = rNat.replace(/\\+"/g, '"')
+    const natRan = rNatUnesc.includes('bash · exit=0') && rNatUnesc.includes(NAT_TOK)
+    const natRefused = /Tool Binding for "bash" cannot be verified/i.test(rNatUnesc)
+    // branch #3, OBSERVED live at r6b (@5885e46e): the host permission face routes the native
+    // bash call to request-control, and OUR TeamRuntime envelope guard fails it closed BEFORE
+    // any dispatch-time binding check — matcher extended to record this branch, not to rerun.
+    const natEnvelope = /outside the caller's mutation envelope/i.test(rNatUnesc)
+    check('M9', 'BOOKED witness: NATIVE bash dispatch in the release-candidate shape yields a typed quotable outcome (ran-unmanaged OR typed binding refusal OR envelope-guard fail-closed at request-control); branch recorded verbatim',
+      natRan || natRefused || natEnvelope,
+      `branch=${natRan ? 'ran-unmanaged(native)' : natRefused ? 'typed-refusal(binding)' : natEnvelope ? 'envelope-fail-closed(request-control)' : 'UNKNOWN'} r_nat=${JSON.stringify(rNat.slice(0, 320))}`)
 
     // host-log witnesses (placement + confined shell + PTC census row)
     const rawLog = existsSync(INSTANCE_RAW) ? readFileSync(INSTANCE_RAW, 'utf8') : ''
