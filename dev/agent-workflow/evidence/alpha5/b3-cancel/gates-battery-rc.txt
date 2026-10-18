@@ -35,3 +35,15 @@ CLOSURE_B2B3_FINAL=0
 DRIFT_CLOSURE=0
 MICRO_12=0
 P4T6_1200=0
+MERGE_DRIFT=0
+C2_B2B3=0
+C2_GLUE2=0
+C2_LEDGERS2=0
+C2_PROVIDER=0
+C2_LSP2=0
+C2_A2C7=0
+C2_TC=0
+C2_ESLINT=0
+C2_LINTID=0
+C2_AT_HEAD=0
+NOTE: C2_GLUE=1/C2_LEDGERS=1 were wrong-path invocations (a5b3-glue7.test.ts, runtime/test/a5p5-tools) - no test files matched, nothing ran; corrected reruns logged as C2_GLUE2/C2_LEDGERS2

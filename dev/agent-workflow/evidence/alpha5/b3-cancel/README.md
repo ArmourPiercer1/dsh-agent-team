@@ -192,6 +192,64 @@ Five closures, each measured before it was worded:
   (`closure-provider.log`) and is cited as its own fresh row instead. The reviewer 98274a4f's
   47/47 stays a SEPARATE corroborating line (§4, last rows) — not merged, not substituted.
 
+## 3d. Merge-sync (root 19:3xZ, after #334): master `b6d7c48a` merged forward into this branch
+
+Per the integration order: NOT a merge of this branch into master — this branch merges
+master, forward, no rebase/amend/force, with the live master read from `ls-remote`
+(`b6d7c48a9730d230758749dc05abad87cea5e41f`, agreeing with #334's merge-commit oid).
+All four branch SHAs (`9ba4c161`, `914b834b`, `916885cb`, `10c5dbb0`) remain ancestors of
+the merge head, as is `origin/master` (five `merge-base --is-ancestor` proofs, printed in
+the session). The merge is one commit: `8de35861`, `origin/master` into
+`alpha5-b3-cancel-pr`.
+
+* **Exactly one conflicted file, as the order predicted: the p4t6 ledger.** Both sides
+  booked onto the same lines of the shared ledger — this branch's A5-B3 clause after the
+  A5-B2 tie, master's PTC clause in the same slots. Every resolution is
+  **union-both-sides** (no attribution dropped): the coverage title keeps master's PTC
+  clause verbatim and appends the B3 clause; both totals' term lists gain both
+  `SCANNED_PATHS_A5PTCFS.length` and `SCANNED_PATHS_A5B3.length`; the by-path loops spread
+  both name sets; the A5-B3 tie and master's PTC tie coexist. Nothing else needed a hand:
+  provider.ts/launcher/A5 legs/.gitignore/probe-mv deletions came in clean from master
+  (this branch never touched them).
+* **The count was RE-ANCHORED, not copied: → 1200.** Master booked PTC to 1199 by its own
+  measurement; this branch measured 1198 on ITS tree. Neither number is this merged
+  tree's total, so the scanner ran on THIS tree: an anchor print of
+  `scanResult.files.length` (printed, read, deleted — captured in
+  `closure2-p4t6-1200.log`'s run), reading **MEASURED_TOTAL=1200** = master's 1199 plus
+  exactly this round's single B3 spec on disk. The coverage title's literal, the B3 tie
+  spelling, and the array comment carry the merged-tree reading; both narratives (branch
+  1198, merged 1200) stand as separate measurements. The suite re-ran 10/10 with the
+  anchor line removed (grep for the anchor string in the final file: zero).
+* **The merge head was rebuilt, not hand-sewn**: `pnpm -r build` + glue re-place on the
+  merged tree, drift-vs-index EXIT=0, `check:artifacts:head` EXIT=0. The at-head file
+  count moved 1747 → **1748**, honestly recorded: #334 added the PTC row module to the
+  build surfaces while master dropped the tracked probe fixtures — the surface is
+  master's, plus this branch's comment-only glue.
+* The probe-* tracked fixtures are gone from master, and with them the reviewer deletion
+  trap; cleanup on this tree continues exact-name/`??`-list only (this round's runs left
+  three probe dirs + one scratch dir, each removed by exact name). The
+  `tests/deepseek-harness-test-use` checkout (this branch's C10 dependency) survived the
+  merge untouched — gitignored on both sides. No push: the order holds this branch for
+  the root's push + two gates + the merge-surface-only delta review.
+
+### 3d-continued. The integration-tree battery (root: old-head green does not excuse new-head green)
+
+Every gate re-ran at the merged tree. Where a battery invocation used a wrong path and
+vitest matched nothing, the attempt is marked and the corrected run is the receipt — a
+filter that runs nothing is never reported as green:
+
+| gate | result | log |
+| --- | --- | --- |
+| B3 12 + B2 **11** (master brought its A5 witness leg; B2+B3 is now a 23-leg pair) | 23/23, EXIT=0 | `closure2-b2b3-23.log` |
+| p4t6 at the merged tree, count re-anchored by scan | 10/10, EXIT=0, total=1200 | `closure2-p4t6-1200.log` |
+| glue7 + glob + glob-adversarial + search | 111/111, EXIT=0 (first attempt wrong-path, ran nothing, `C2_GLUE=1` not counted) | `closure2-glue.log` |
+| a5p5-tools suite dir incl. dormant-audit | 76/76, EXIT=0 (same wrong-path note `C2_LEDGERS=1`) | `closure2-ledgers.log` |
+| provider lane (a5p4 ×5 + a5int-r3 = 49; lsp2 pair with the real file names = 22) | 71 tests, all green, EXIT=0 | `closure2-provider.log` |
+| a2c7-subtree-matcher | 31/31, EXIT=0 | `closure2-a2c7.log` |
+| typecheck / eslint (touched files) / lint-identities | EXIT=0 / 0 errors / EXIT=0 | `closure2-typecheck.log`, `closure2-eslint.log` |
+| drift (working tree vs index, post-merge rebuild) | EXIT=0, **1748 files** | `merge-drift-staged.log` |
+| `check:artifacts:head` at the merge commit | EXIT=0 | `merge-at-head.log` |
+
 ## 4. Gates run at HEAD (this tree)
 | gate | result | log |
 | --- | --- | --- |
