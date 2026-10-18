@@ -85,7 +85,7 @@ not assumed, after the law edits.
 - **复跑**：`a5lsp2-assembly` 单独 7/7、加 `a5lsp2-streaming` 22/22；我的风暴（6600 真竞态 +
   49 腿套件）mid-flight 时同跑该 lane 22/22 绿（腿时长 0.44–0.49 s → 1.0–1.2 s，离 30 s 上界很远；
   当时 load avg 2.80/5.96/6.78），风暴自身 8/8 与 49/49 exit 0；`tests/homes` 收尾残留 0。
-  日志：`stress-lsp2/lsp2-under-storm.log`（宿主 scratch，不入库）。
+  日志入库：[`lsp2-under-storm.log`](lsp2-under-storm.log)（同目录）。
 - **未动的相邻面**：`a5lsp2-streaming` 里 2 处 `5_000` 上界不在授权范围内，保持原样——
   若它日后也翻，同一笔礼让照搬即可，不必再讨论语义。
 - **环境披露**：本轮期间宿主磁盘 98 % 满（2.9 G 可用，非本 lane 足迹：本 worktree `tests/` 6.2 MB、
