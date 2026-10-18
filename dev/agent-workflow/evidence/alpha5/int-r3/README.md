@@ -142,3 +142,11 @@ D1 shell 正=世界内写真落（host 侧文件存在 + wire exit=0）；
 拒证在 stderr 与"文件不存在"，故判据按 host 侧验（此形制如实呈报，待裁）；
 E non-team Δ=[]：无 plane 时三行恒 `a5-effect-face-pending`，执行后世界清单哈希不变；
 F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，零变更）。
+
+### parent 裁决（2026-10-18，两裁已下；判据一字未改）
+
+- **C2 glob 跨 root = ZERO-RESULTS**：这是**锚定语义的正确形**——pattern 在锚根下遍历，相对逃逸无物可配即零结果；
+  字节与外名都未出现恰是所求之形，**具名拒保留在绝对形（C2b）**。
+- **D2 shell `exit=0` + stderr + fs 缺席**：受治面完成律不回报子进程 rc 属既有公开律（srgp/glob 头注在册）；
+  拒证 = 内核 stderr + host fs 不存在，与 natexe E6.1 同形先例；**"wire exit=0" 不作放行证据**，判据以 fs 探针为准
+  （本 kit 判据已是此形）。
