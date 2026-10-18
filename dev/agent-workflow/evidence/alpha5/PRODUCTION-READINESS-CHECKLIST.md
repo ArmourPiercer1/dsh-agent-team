@@ -175,3 +175,39 @@
 — R3 writer = 协调者（qwen3.8-flash-next）；markdown 追加、零历史重写；红绿全部指向可复跑证据路径而非转述。
 
 > 注记（独审 3ebfdceb 两条 MINOR 的当轮处置，append-only）：(1) 矩阵第 9 条闭合**不改变** §2/§3 正本仍 @a2473203 时点的事实——正本矩阵刷新归 PR8 轮；且 `ee49c4c0` 后 §1 的「Blueprint vNext 未实施 / SUPPORTED=[3]」行已与现产面冲突，同归 PR8 轮正本刷新，此处只作指向注、不改正文。(2) 本节内的 ecf68fe7/ba398cca/06e6bff5/852048e3/f1e64a1e 等 = 评审/worker **会话号（handle）**，非 git 对象、origin 无 ref；其根口径以本目录 COORDINATION.md 与 SESSION_ROUTER_LOG 落仓为准；凡标 SHA 者方可 git 亲验。(3) 头注时间为 wave 钟（约），committer 时刻以 git 为准。
+
+---
+
+## R4 刷新（2026-10-18T≈09:0Z，wave 钟；append-only @ master `15481988`；writer = docs 轮 `docs-a5r4`，qwen3.8-flash-next；committer 时刻以 git 为准）
+
+- 基 = `origin/master @ 154819881c81`（fetch + rev-parse 亲验；其父 `1fb14c4d`、祖 `b90aad2a`/`ee49c4c0` 均可达亲验）。上方 §6=R2、§7=R3 全部按历史时点照读，本节零历史改写；R3 注记(3)（wave 钟/committer 时刻以 git 为准）沿用。
+
+### 8.1 三轨覆盖表（要点版；基线 master@`15481988` 亲查）
+
+| 轨 | 现势要点（本笔 git 亲验面） |
+|---|---|
+| **原生治理面**（宿主原生拼写在治理世界的审批后执行） | **闭合（限定式）**：#329=`1fb14c4d` 已合 master——takeover 行 + Gate 0b `verifyPlaneNames` 封闭挂载名域；原生保留名 = **53 精确注册名 + `mcp__` 前缀族穷尽表**（钉宿主 `0.2.0-rc.2@639ed01539`，漂移钉测强制重导出后方可移 pin）+ **216 格全矩阵**（54 拼写 × 4 行，可执行重放 `natexe/matrix-reserved-native.mjs`）；live kit 26/26 双时代 + GLUE-8 零回归 20/20+15/15。闭合范围限定句已入 `docs/INSTALL.md` §3.5 末（本轮①）：**闭合=限明确安装配置（cordis.patch.yml §3.2 takeover 行），不代表全工具总验收**；缺省无平面世界 A4.4 拒逐字存续 |
+| **协调 15 工具**（`team_*` 协调面） | 本轮**零移动**：facade `selectTeamTools` 生产装配在位（C-01 行维持），registry 00 live-PASS 维持；R2/R3 各协调面结论不改 |
+| **效应面**（read/grep/glob/bash 效应行） | **read/grep/bash 真 backend 已在 master**：committed dist 带 `live/plane-effect-backends.mjs`，git 首见 = `0e59140b`(#323)（其 squash 正文含 `feat(alpha5-glue7): production backend assembly…glob stays typed-shut` 诸笔）；**glob 供体已合**（#322=`15481988`，休眠件 `live/glob-backend.mjs` 970 行入树、零挂载边）**但 mount flip 未翻**：生产 glob 行仍 verbatim typed-shut pin；**allowPaths 同形 + internalLog 不外显两条件 = 待 int-r3 真实入口验收**（根口径；本仓无该两回执）。**search 线 rg-parity = 在制**：远端 `alpha5-srgp` tip=`69f4334e`（round-2 补修，parent `f0831531`），非 master 祖先亲验；`alpha5-srgp-pr2` 仅本地支（远端无该 ref），未合 ⇒ 『在制』维持，不写未发生的事 |
+
+### 8.2 状态行（对照 §6.2/§7.2 在途清单的增量）
+
+| 线 | R2/R3 口径 | R4 实况（亲验） |
+|---|---|---|
+| natexe | §7.2『补单在途，缺口闭合宣告需四件』 | **已合 `1fb14c4d`**（#329）：四件中 真实安装/创建路径可达性+用户文档（INSTALL §3.5）+无 takeover 旧配置仍拒存续（A4.4 verbatim，N1 零回归律钉）+防同名冒充（Gate 0b + 216 格矩阵）逐件落面；『native 批准后执行』可用性缺口由**限定式闭合**替代（限定见 §8.1 首行） |
+| glob 供体 | §6.2『#322 整体未过 + 硬门四条』、§7.2 判面链在途 | **已合 `15481988`**（#322 squash；源支 tip `8747d331` ls-remote 亲验、非祖先——载体=squash）。合入判定与硬门四条的历史条文不撤销：合的是**休眠供体**，生产翻挂归 int-r3（两条件见 §8.1 效应面行） |
+| search（srgp） | §7.2『f0831531+补修中，独审=补充内容』 | **仍在制**：tip 现为 `69f4334e`（round-2：knob drop + coverage blind spot 关闭，审查序①②③），未合 |
+
+### 8.3 差异登记（本轮只登记，不改 §6/§7 原文）
+
+1. **install-entry 账本两处未对齐**：仓内在册回执 = 两个 recorded run（`runs/2026-10-17T16-59-32Z` + `17-06-56Z`）**均 26/30**（RED=T5,T6,T7,T8；`expansion-manifest.head=bcb65eb8` 亲读）；而 §6.4 引 int-a5b 复跑 **24/30**（更正笔 `5171f599`，在 `origin/alpha5-int-a5b`，未合）且 §6.4 末行把 26/30 记为 **@fe829038**。即：①26/30 的挂名（fe829038 vs bcb65eb8）两说不一致；②『唯一在册有效账本』口径（24/30 引自未合分支的更正笔，其本体未走 master 在册通道）与仓内 recorded run 面未对齐。哪一面对外生效待根裁；本轮不动 §6.4 原文。
+2. **E1 判据文本漂移**：kit `install-entry/a5ie-install-kit.mjs` 硬编码 `fileCount === 1732 && a5p5Files === 44`（判据文本另含『dist mirror (1727)』『44-file a5p5, 3 glue placements』；criteria.json @bcb65eb8 在册 observed=`files=1732 a5p5=44 glue=[true,true,true]`）。本轮于 `15481988` 面**亲数**= `1747-44-3`：aux 面 = dist 1742 + package.json 1 + 两 sibling 2 + `.agents/skills` 2 = **1747**；a5p5 dist-mirror 面 = **44**；kit glue 名单仍 **3** 文件（而 `scripts/place-dist-glue.mjs` `PLACEMENTS` 实已 **6**，int-mnt@`342b266c` 面 =7）⇒ E1 在今树因硬编码字面量即 RED = **判据文本漂移**，非安装面回归。链侧口径记 **1747-46-4**：其中 46/4 两格本环境在任何可见 ref 上均不可复现（`15481988`=1747-44-3；int-mnt@`342b266c`=1748-44-3；srgp 线 `c2172549`=1748-44-3、`f0831531`/`69f4334e`=1749-44-3，均亲数），原回执候根侧材料补入后对齐；files 格 1747 两侧一致。
+3. **§6.2『GLUE-7 在途』过期**：§6.2 记 #321=`d9a16061`『非 master 祖先 ⇒ 在途』——**内容事实已变**：GLUE-7 交付面（plane 生产 backends 装配 + committed dist `live/plane-effect-backends.mjs` + agent-bindings feed 行 + p4t6 booking）已随 **#323=`0e59140b`** squash 载体落 master（首见笔亲验：`.../live/plane-effect-backends.mjs | 736 ++`；正文含 glue7 诸提交与 `dist mirror same commit (6th byte-placement)`）；`d9a16061` tip 本身仍非祖先（亲验）——**载体≠分支**，在途判定当时成立、现已过期。§6.3-4 的『live 全链余三件』据此重读：#321 内容合入=已完成件，余 INSTALL-ENTRY 严格面复跑 + 最终 SHA CI 两件。
+
+### 8.4 债账追加（永久）
+
+1. **产物封印缺口（census workflow）**：re-grade 步读 `$RUNNER_TEMP/census-run.txt` 出 verdict，Upload 步在其**后**另行收集 `census-run.txt` + `census-transcripts/`——两步之间若再发生截断类事故，**入库 artifact ≠ 被定级转写本**（verdict 对 artifact 无哈希封印）。闭合需 workflow 改动（从已上传 artifact 定级，或上传前 hash-seal 并回验）= 需特批的工作流改动，本轮不修、只登记。
+2. **351/3600 = root-register 归因数字**（glob spill 通道归因口径）：本仓无原始回执可对（R3 注记(2) 同族），原回执定位候根侧材料。
+3. **『FULL stdout』注释漂移**（`.github/workflows/census-runtime.yml` 旧注释 vs `scripts/ci-pr-gate.mjs` 的有界回显实现 ECHO_LINE_LIMIT=200/ECHO_LINE_CAP=300/ECHO_BYTE_CAP=24000/`FORENSIC|MEASURED` 命中律）= **由本轮②注释笔关闭**（纯注释，机检语义零动；限额取 ci-pr-gate.mjs 该文件亲读值，非转录）。
+
+— R4 writer = docs-a5r4（qwen3.8-flash-next；markdown 追加、零历史改写；本轮 diff = `docs/INSTALL.md` 一句 + `census-runtime.yml` 注释块 + 本节，产品码零动；p4t6 实测见回报；未 push）。
