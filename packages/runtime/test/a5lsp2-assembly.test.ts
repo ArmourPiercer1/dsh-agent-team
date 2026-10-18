@@ -53,6 +53,35 @@ import {
   sha256File,
 } from './a5lsp2-harness.js'
 
+/**
+ * COURTESY CEILING — one line of neighbourliness, coordinator-authorized
+ * (a5glb census round, 2026-10-18). A COURTESY EDIT, not a semantics change:
+ * the five polls below watch a confined child terminate, and their SHAPE is
+ * byte-identical in kind — same predicates, same OS observation (`/proc`
+ * liveness, `sampleLaneProcesses` on this world), same `toBe(true)` assertions.
+ * Only the CEILING moved: 10 s / 8 s -> 30 s.
+ *
+ * Why: the root census runs all nine roots in ONE process (pool=threads). On a
+ * small CI runner the CPU can be busy with a neighbour's spawn storm long
+ * enough for a 10 s ceiling to expire while the child is genuinely still on its
+ * way out — a timing ceiling reading as a lifecycle failure. Measured on a
+ * six-core host the legs are green standalone, green in two full captures, and
+ * green with that neighbour's storm mid-flight, which is what localized the
+ * cause to the ceiling rather than to teardown. This is the same family as the
+ * census operator's existing `--testTimeout=90000` override.
+ *
+ * What stays true: nothing about Landlock lifecycle semantics moved, and a
+ * child that never exits is STILL a red — it just takes 30 s to say so. The
+ * "old pid EXITS, bounded" claim in the header keeps its meaning (a bound
+ * exists and is enforced); the numeric bound is now 30 s on this ceiling, and
+ * an operator may dial it per run with `A5LSP2_POLL_CEILING_MS`.
+ */
+const POLL_CEILING_MS = (() => {
+  const raw = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.['A5LSP2_POLL_CEILING_MS']
+  const n = Number(raw)
+  return raw !== undefined && Number.isFinite(n) && n > 0 ? Math.trunc(n) : 30_000
+})()
+
 const world = makeWorld('assembly')
 afterAll(() => removeWorld(world))
 
@@ -217,7 +246,7 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
 
     // (1) old pid is GONE — OS liveness, bounded
     expect(r.value.pid).not.toBe(oldPid)
-    expect(await pollUntil(() => !pidAlive(oldPid), 10_000)).toBe(true)
+    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
     // (2) new instance answers with the NEW generation and NEW cwd
     const p = await ping(r.value, 1)
     expect(p.gen).toBe('g1')
@@ -244,7 +273,7 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const r = await assembly.policyChange('A', 'g2')
     expect(r.ok).toBe(true)
     if (!r.ok) return
-    expect(await pollUntil(() => !pidAlive(oldPid), 10_000)).toBe(true)
+    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
     expect(r.value.pid).not.toBe(oldPid)
     const p = await ping(r.value, 1)
     expect(p.gen).toBe('g2')
@@ -284,7 +313,7 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const r = await assembly.policyChange('A', 'gBROKEN')
     expect(r.ok).toBe(false)
     // the OLD instance was disposed first (destroy→rebuild semantics) and is OS-gone
-    expect(await pollUntil(() => !pidAlive(oldPid), 10_000)).toBe(true)
+    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
     // the half-built instance was cleaned: current(A) is EMPTY, not a dead handle
     expect(assembly.current('A')).toBeUndefined()
     // zero-residue sampling: the ONLY live lane processes left are the sibling B
@@ -307,8 +336,8 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const aPid = a2.value.pid
     const all = await assembly.disposeAll()
     expect(all.ok).toBe(true)
-    expect(await pollUntil(() => !pidAlive(aPid) && !pidAlive(bPid), 10_000)).toBe(true)
-    expect(await pollUntil(() => sampleLaneProcesses(world).length === 0, 8_000)).toBe(true)
+    expect(await pollUntil(() => !pidAlive(aPid) && !pidAlive(bPid), POLL_CEILING_MS)).toBe(true)
+    expect(await pollUntil(() => sampleLaneProcesses(world).length === 0, POLL_CEILING_MS)).toBe(true)
     expect(assembly.current('A')).toBeUndefined()
     expect(assembly.current('B')).toBeUndefined()
   }, 120_000)

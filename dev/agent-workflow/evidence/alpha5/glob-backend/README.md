@@ -282,6 +282,14 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
    CPU，计数器逐字节不变）与 `A5GLB_RACE_WALKS`（默认 6600 的规模旋钮；一旦拧小**腿名自己会
    说出来**，故被拧过的 census 不可能被当作硬门引用——硬门仍是不带 env 的 lane 直跑）。
 
+4. **收尾笔（协调批准，见 §5 of `census-round-20261018.md`）**：census 只剩 a5lsp2-assembly 的
+   REAL 腿，机制已定位为小 runner 的 CPU 挤占撞其**有界** pollUntil(8s/10s)。按授权做了一处
+   **courtesy edit**：该文件 5 处 poll 上限改为 `POLL_CEILING_MS`（默认 30 s，
+   `A5LSP2_POLL_CEILING_MS` 可逐 run 覆盖），与 census 算子既有 `--testTimeout=90000` 同族。
+   断言与观测面逐位不变（谓词、`/proc` liveness、`sampleLaneProcesses(world)`、`toBe(true)`）；
+   放宽的只是**数值上界**，"有界"语义保留——`pollUntil` 实测到点返回 false（250 ms 上界 254 ms
+   即返），永不退出的子进程照旧红。`a5lsp2-streaming` 的 5 s 上界不在授权范围内，未动。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8

@@ -65,3 +65,28 @@ No file-set change this round (the three law files were already booked in the le
 Suite 10/10 and `scanSessionEventVocabulary()` still measures **1184** paths — re-measured,
 not assumed, after the law edits.
 
+
+## 5. 收尾笔：a5lsp2 有界 poll 的 courtesy ceiling（协调批准，2026-10-18 #322 收尾单）
+
+`b78aef3f` 上 census 剩 4 红 = `a5lsp2-assembly` 的 REAL 腿（disposeAll / failure cleanup a、b），
+与本报告 §2 的本地不可复现一致：小 CI runner 的 CPU 挤占撞其**有界** `pollUntil(8_000/10_000)`。
+本 lane 的 pace 已把 7 条压到 4 条。协调授权一处最小跨 lane 礼让笔（courtesy edit，非语义改动）：
+
+- **改动面**：`packages/runtime/test/a5lsp2-assembly.test.ts` 一个文件，`git diff --stat` =
+  34 insertions / 5 deletions = 五条 poll 上限的等位替换 + 一个常量与其注释块。
+  5 处上限 `10_000 × 4` / `8_000 × 1` → `POLL_CEILING_MS`（默认 30_000；
+  `A5LSP2_POLL_CEILING_MS` 可逐 run 覆盖），与 census 算子既有 `--testTimeout=90000` 同族。
+- **逐位不变的东西**：谓词（`!pidAlive(pid)`、`sampleLaneProcesses(world).length === 0`）、
+  观测面（`/proc` liveness、world-scoped 进程采样）、断言（`toBe(true)`）、腿的编排与顺序，
+  全部未动；放宽的只是**数值上界**，头注里 "the old OS pid EXITS, bounded" 的"有界"语义保留。
+- **牙还在（实测）**：直接调用 harness 的 `pollUntil(() => false, 250)` → `false`（254 ms 返回），
+  即上界到点仍判失败、永不退出的子进程照旧红；把上界拧到 `1` ms 重跑该文件仍 7/7 绿，
+  说明在这台六核宿主上这些谓词首采样即已成立——失败只可能来自被饿到的 runner，而非 teardown。
+- **复跑**：`a5lsp2-assembly` 单独 7/7、加 `a5lsp2-streaming` 22/22；我的风暴（6600 真竞态 +
+  49 腿套件）mid-flight 时同跑该 lane 22/22 绿（腿时长 0.44–0.49 s → 1.0–1.2 s，离 30 s 上界很远；
+  当时 load avg 2.80/5.96/6.78），风暴自身 8/8 与 49/49 exit 0；`tests/homes` 收尾残留 0。
+  日志：`stress-lsp2/lsp2-under-storm.log`（宿主 scratch，不入库）。
+- **未动的相邻面**：`a5lsp2-streaming` 里 2 处 `5_000` 上界不在授权范围内，保持原样——
+  若它日后也翻，同一笔礼让照搬即可，不必再讨论语义。
+- **环境披露**：本轮期间宿主磁盘 98 % 满（2.9 G 可用，非本 lane 足迹：本 worktree `tests/` 6.2 MB、
+  npm 缓存 632 KB）。census 规模对这个值敏感，故记录而非默不作声。
