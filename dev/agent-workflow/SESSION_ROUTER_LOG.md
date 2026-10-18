@@ -6678,3 +6678,29 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **门禁（⑤）**=p4t6 续钉 1182→**1183**（RED `expected 1183 to be 1182`/GREEN 10/10 双 capture 留存）；dist 镜像同笔再生+`check:artifacts:head` drift=0（全树重产后复检仍 0）；双抓恒等=已发布 9（首抓多出的 a4p7 红=新 worktree 未建 gitignored client dist 的环境红，补 build 后消失，PRE-BUILD log 留证披露）；typecheck 全绿、touched 文件 lint 0 error。
 - **红线与收口三件套**=CORE 0（launcher 为本仓文件；全走既有机制）；`:3080` 只读探针 401→401（kit H0 leg）；世界 `a5rbn-*` 0 残留（kit C1 `homes=[]` + 中断轮瞬态世界手清留记）；test-use porcelain 0 @ `639ed01539`；3183/3184 free→used→free 自证。
 - **git**=无 push 凭据（ff push 不可，如实回报 parent）；branch 本地留存，head 以 `git rev-parse alpha5-runtime-base-narrow` 为准。
+
+## 2026-10-18 02:2xZ — ALPHA5-GLUE-8 v4 执行 feed 集成准备（正控 live；assembled 20/20 / preassembly 15/15）
+
+- **定性（照抄根口径）**=#324 的 14/14 是 v4 文档/创建链，dispatch 仍 binding
+  fail-closed，**非 v4 工具执行终验**；本单=准备集成，不宣布 v4 可用。
+- **交付**=v4 blueprint 经**正常 Team 创建入口**（真宿主 profile-patch seam）
+  create→member→delegate→**dispatch 真执行**：C1 governed read **真字节**、
+  C2 team_grep **真命中**、C3 glob **诚实 typed-shut**（CANDIDATE-A 未上产）、
+  C4 placement shell **confined 真执行**（sentinel 真写 governed root）——
+  装配全复用既有 feed/placement/backends，**零新架构、CORE 0**。
+- **权限独审裁定 81861aa1 落型**=team_* = OTHER_MANAGED_TEAM_TOOL
+  （permission-coverage.ts:66-78）lane 不可寻址=已批语义非绕过；
+  **ask-gated native-bash 腿 live**：durable 开+账本三行对齐（chain 实测）
+  +C5 **审批前零副作用** live 见证+批准后 **Tool Binding gate 拒落点**
+  （allow 不静默扩宽执行）。曾把无 ask 面钉绿的笔**作废回退**，按裁定文案
+  重钉（禁 consumption/durable-allow 误称于 C4）。
+- **门**=全树双抓 RUN1≡RUN2=**published 9 精确恒等**（files 572/legs 7211，
+  含本单 4 新测试）；`check:artifacts:head` drift=0（1745）；p4t6 链 10/10；
+  a5g8 units 4/4；#321 kit **共存回归 24/24**（#321 面×runtime_base 收窄层
+  同树跑绿=收编单要求的共存回归）；TOCTOU re-run 8/8。
+- **停点/披露**=toolBindings 家族 runtime 消费者=0（U1 stop-pin：家族无
+  digest/def-anchor 字段，映射 def#N=新语义待根裁）；glob 行仍 typed-shut；
+  环境红全修（test-use 完整化、client dist 构建、merge-gate lint/tsc 净）。
+- **git**=branch `alpha5-glue8-v4feed` @ 本条目 commit；base=
+  `alpha5-v4-flip@a7a1cfd2`+merge `master@0e59140b`（`4aff3071`）；无 push
+  （fetch 可用未推）。:3080 仅只读探针面未触。
