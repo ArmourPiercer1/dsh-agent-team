@@ -1,0 +1,8 @@
+ FAIL  test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs > the committed install surface is fresh against the tree, and a missing surface is refused
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range)
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > positive: runtime 0.2.0-rc.2 → compatible, the evaluator reports no issue (no exemption needed)
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: runtime 0.1.7-rc.1 (the generation this plugin left) → the evaluator reports the unmet peer with NO active exemption (the gate now rejects)
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > negative: a later prerelease (0.2.0-rc.3) and the later stable (0.2.0) are also unmet — the exact-RC range does not widen
+ FAIL  test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed01539) > mechanics: the evaluator recognizes an exact-version exemption (documented, never granted here)
+ Test Files  3 failed | 26 passed (29)
+      Tests  19 failed | 359 passed (378)

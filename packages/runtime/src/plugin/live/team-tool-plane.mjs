@@ -230,12 +230,26 @@ const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
 // impostor face. The list below is the full registry (fs 6, shells 2,
 // str_replace_editor, lsp, present, skill 2, todo, ask, web 2, goal 3, jobs
 // 3, plan, subagent family 6, terminal 6, session-query 5, mcp-resource 3,
-// ralph, experimental agent-team 6, cordis preset 2), plus the dynamic
+// ralph, experimental agent-team 6, cordis preset 2 — plus the C-16 second
+// derivation (a5-pindir round): ptc reserved transport 1, plugin-manager 1,
+// schedule 4, workflow 1, experimental browser-use stagehand 6), plus the dynamic
 // `mcp__` family by
 // prefix. Drift law: PLANE_RESERVED_NATIVE_HOST_PIN is pinned to the host
 // baseline; the unit drift pin compares it against tests/paths.mjs — when
 // the host baseline moves, the pin test goes RED and this list must be
 // re-derived from the new host release before the pin moves with it.
+// BIDIRECTIONAL drift law (C-16, root ruling 20:31Z): the registry is checked
+// against the AUTHORITATIVE catalog harvest of the pinned host release — the
+// generator `scripts/gen-tool-catalog.ts` boots every shipped tool package and
+// its committed artifact `docs/tool-catalog.md` (verified fresh by the host's
+// own guarantee test at the pinned commit) contributes the schemas column ∪
+// the shippedNames column. A catalog name missing here is RED (the C-16 hole:
+// the first derivation grepped `name: '<n>'` sources and missed names that
+// reach the registry another way — run_code via the tool registry itself,
+// schedule_*/plugin_manager via tools.ts maps, workflow/stagehand via the
+// toolName-config route). A pinned name NOT in the catalog needs an explicit
+// reason entry in the drift test — never silent (retire or keep-with-rationale,
+// both lawful; the subagent-fork disposition below is the worked example).
 export const PLANE_RESERVED_NATIVE_HOST_PIN = '0.2.0-rc.2@639ed01539'
 export const PLANE_RESERVED_NATIVE = Object.freeze([
   'read', 'read_image', 'write', 'edit', 'glob', 'grep',
@@ -250,6 +264,20 @@ export const PLANE_RESERVED_NATIVE = Object.freeze([
   'create_goal', 'get_goal', 'update_goal',
   'job_kill', 'job_list', 'job_output',
   'exit_plan_mode',
+  // subagent_fork disposition (root 20:31Z, checked against the pin): KEPT —
+  // a live shipped registration at 639ed01539, not a forward guess. The
+  // boot-harvest schemas column misses it (the fork route is a SECOND
+  // bundle-composed instance of tool-subagent whose name comes from the
+  // load-time toolName config), the release surface carries it: the generator
+  // manifest ships `subagent_fork` in shippedNames (host
+  // scripts/gen-tool-catalog.ts tool-subagent entry) and every shipped profile
+  // mounts it ENABLED (packages/bundle/base/cordis.patch.yml tool-subagent-fork
+  // + web-app presets cordis/ptc/standard `toolName: subagent_fork`, no
+  // disabled flag). The sibling routes subagent_codex / subagent_claude_code
+  // are `disabled: true` in every shipped preset (cordis/ptc/standard) — not
+  // model-visible at any shipped default, absent from the catalog artifact,
+  // therefore NOT pinned here; reported to root for a separate ruling (a
+  // one-line flip makes them mountable — the impersonor face would be identical).
   'subagent', 'subagent_fork', 'list_subagent_models', 'list_agents', 'send_message', 'interrupt_agent',
   'terminal_open', 'terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal',
   'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace',
@@ -257,6 +285,22 @@ export const PLANE_RESERVED_NATIVE = Object.freeze([
   'ralph',
   'spawn_teammate', 'wait_agent', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
   'cordis_inspect_list', 'cordis_inspect_query',
+  // C-16 second derivation (a5-pindir round, root ruling 20:31Z): the names
+  // the first source-grep derivation missed, each registered at the pin —
+  // run_code is the tool registry's own reserved PTC transport (@deepseek-ai/
+  // dsh-tools, catalog row `mode: ptc/both`), plugin_manager registers from
+  // packages/boot/plugin-manager/src/tools.ts, the schedule_* four from
+  // packages/schedule/schedule/src/tools.ts, workflow arrives under
+  // tool-workflow's toolName-config default (packages/workflow/tool-workflow/
+  // src/index.ts), and the stagehand_* six are the experimental browser-use
+  // package (packages/experimental/browser-use-stagehand-native). Pre-fix the
+  // assembly ACCEPTED plane rows mounted under these host names (negative
+  // control: dev/agent-workflow/evidence/alpha5/pindir/).
+  'run_code',
+  'plugin_manager',
+  'schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update',
+  'workflow',
+  'stagehand_act', 'stagehand_extract', 'stagehand_navigate', 'stagehand_observe', 'stagehand_screenshot', 'stagehand_tabs',
 ])
 export const PLANE_RESERVED_NATIVE_PREFIXES = Object.freeze(['mcp__'])
 const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
