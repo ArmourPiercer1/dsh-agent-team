@@ -1,0 +1,70 @@
+# a5ie-r2b live layer (run 2026-10-18T12-14-43Z, mode baseline): config override on the INSTALLED bundle row id "dsh-agent-team" + observer row + preset — public profile-patch seam only (INSTALL §3.2/§3.5).
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    rootSessionId: a5ie-r2b-root
+    bootPhase: create
+    blueprintSource: "---\nschemaVersion: 3\nblueprintId: a5ie-r2b-anchor-bp\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5ie-r2b install team.\"\nmembers:\n  - templateId: wa\n    persona: \"You are a worker of the a5ie-r2b install team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    blueprintDir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/dev/agent-workflow/evidence/alpha5/a5ie-r2b/runs/2026-10-18T12-14-43Z/blueprints/baseline
+    rootPresetId: a5ie-r2b-base
+    memberPresetId: a5ie-r2b-base
+    seedMembers: []
+    generation: 1
+    staticModel:
+      provider: deepseek-official
+      model: a5ie-r2b-model
+    deniedSelection: null
+    mcpServers: []
+    mcpServer: null
+    environmentFacts:
+      - domain: tool
+        subject: web
+        available: true
+        generation: 1
+      - domain: skill
+        subject: base
+        available: true
+        generation: 1
+      - domain: persona
+        subject: standard
+        available: true
+        generation: 1
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+- insert:
+  - id: a5ie-r2b-observer
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/dev/agent-workflow/evidence/alpha5/install-entry/a5ie-observer-row.mjs"
+    config: {}
+- insert:
+  - id: preset-a5ie-r2b-base
+    name: "@deepseek-ai/dsh-agent-preset"
+    config:
+      id: a5ie-r2b-base
+      name: "a5ie-r2b base"
+      description: "a5ie-r2b base preset (run 2026-10-18T12-14-43Z) = smoke preset"
+      order: 900
+      plugins:
+        - id: persona
+          name: "@deepseek-ai/dsh-persona"
+          config:
+            prefix: "You are a coding agent powered by the {{model}} model."
+            suffix: "Your working directory is {{cwd}}."
+        - id: tool-fs
+          name: "@deepseek-ai/dsh-tool-fs"
+        - id: persistent-shell
+          name: "cordis:group"
+          group: true
+          isolate:
+            terminals: true
+          config:
+            - id: pty
+              name: "@deepseek-ai/dsh-terminal"
+            - id: terminal-bash
+              name: "@deepseek-ai/dsh-terminal-bash"
+              config:
+                timeoutMs: 300000
+            - id: persistent-bash
+              name: "@deepseek-ai/dsh-tool-bash-persistent"
+              config:
+                timeoutMs: 300000

@@ -1,0 +1,21 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-f51ccfc0>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=70 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ie-r2b/tests/homes/a5ie-r3-installed-2026-10-18T12-52-34Z/workspace/governed/notes.txt
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5ie-r3-realm legs=6
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-1 records=1 total=1 truncated=false
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-2 records=0 total=0 truncated=false
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-grep-3 records=0 total=0 truncated=false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5ie-r3-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-bash-4 pid=268 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-bash-5 pid=271 exit=0 timedOut=false
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5ie-r3-realm legs=6
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-6 pid=282 files=2 capped=false
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-7 pid=284 files=140 capped=true
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-8 pid=286 files=1 capped=false
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-9 pid=288 files=1 capped=false
+[dsh-agent-team] a5glb-glob: anchored-glob refused code=symlink-alias family=a5glb-refused/anchor-identity call=team-inst-0e1il6a0c1h9-glob-10 realm=a5ie-r3-realm
+[dsh-agent-team] a5glb-glob: anchored-glob walker-error realm=a5ie-r3-realm call=team-inst-0e1il6a0c1h9-glob-11 exit=0 stderrBytes=81
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5ie-r3-realm
