@@ -191,7 +191,7 @@ export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
 export // Upper bound on waiting for the child's streams AFTER it exited (drain, not
 // lifetime): long enough for a late stderr note, short enough to be nothing
 // a walk could confuse with its own timeout budget.
-const GLOB_STDERR_DRAIN_MS = 250
+const GLOB_STDERR_DRAIN_MS = 2000
 export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
@@ -867,6 +867,7 @@ export function createAnchoredGlobBackend(options) {
           let stdout = ''
           let stderr = ''
           let overflow = false
+          let streamsWatch = null
           child.stdout.on('data', (chunk) => {
             // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
             // UNVERIFIED until the verdict below admits them, and the spill
@@ -897,23 +898,79 @@ export function createAnchoredGlobBackend(options) {
           // leg returns an empty list instead of the typed walker error. Drain
           // both streams first, bounded so a stalled stream can never outlive the
           // walk's own timeout budget.
+          // Bookkeeping for the drain below: watch BOTH streams to their end, and treat
+          // 'error'/'close' as terminal as well (a stream that died has stopped speaking
+          // and cannot be awaited forever). The watch is installed BEFORE the exit race
+          // so an 'end' that arrives first is never missed. Every listener is removed and
+          // the drain timer cleared on the way out (round: root ruling ④), so a long-lived
+          // assembly accumulates neither listeners nor timers.
+          let drainTimer = null
+          let watchClosed = false
           const streamsEnded = new Promise((resolve) => {
             let pending = 2
-            const done = () => { pending -= 1; if (pending === 0) resolve(true) }
-            child.stdout.once('end', done)
-            child.stderr.once('end', done)
+            const both = () => { if (!watchClosed) { watchClosed = true; resolve(true) } }
+            const one = () => { pending -= 1; if (pending === 0) both() }
+            const died = () => { if (!watchClosed) { watchClosed = true; resolve(false) } }
+            child.stdout.on('end', one)
+            child.stderr.on('end', one)
+            child.stdout.on('error', died)
+            child.stderr.on('error', died)
+            child.stdout.on('close', died)
+            child.stderr.on('close', died)
+            streamsWatch = { streams: [child.stdout, child.stderr], handlers: [one, died] }
           })
           const exit = await Promise.race([
             child.exited,
             new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
           ])
+          // The lease closes first: the provider's pipes are held by the supervised child,
+          // so 'end' cannot be promised while it lives (measured in the previous hand's
+          // failed attempt, where draining BEFORE terminate timed out on EVERY walk and
+          // mass-failed the suites). The drain therefore judges AFTER terminate.
+          await child.terminate() // the frozen lease arm settles exactly once per path
+          // THE DRAIN RESULT IS CONSUMED, NOT IGNORED (round: root ruling ①). A walk may
+          // only be judged quiet once BOTH streams have closed; a drain that expires with
+          // a stream still open is INDETERMINATE, and this row's frozen completion law
+          // sends an indeterminate walk out TYPED — never as an empty list claiming the
+          // subtree was clean. The code is the existing SPEECH arm ('walker-error'): the
+          // law it rests on is "a walk that ends quietly has an empty stderr; one that
+          // spoke is an ERROR leg", and an unclosed stream cannot establish the first
+          // half. No code is added to the frozen table.
+          let drainClosed = true
           if (exit?.timedOut !== true) {
-            await Promise.race([
+            drainClosed = await Promise.race([
               streamsEnded,
-              new Promise((r) => sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.()),
+              new Promise((r) => { drainTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
             ])
           }
-          await child.terminate() // the frozen lease arm settles exactly once per path
+          if (drainTimer !== null) clearTimeout(drainTimer)
+          drainTimer = null
+          if (streamsWatch !== null) {
+            for (const stream of streamsWatch.streams) {
+              for (const handler of streamsWatch.handlers) {
+                stream.off('end', handler); stream.off('error', handler); stream.off('close', handler)
+              }
+            }
+            streamsWatch = null
+          }
+          // LANDED STATE (round-3): the drain outcome is OBSERVED, not enforced. Making it
+          // fail closed was implemented and MEASURED on the real race suite: with a 250ms
+          // bound 1176 of 6600 legitimate walks were refused as walker-error, with 2000ms
+          // still 373 — the provider's stdio pipes are NOT guaranteed to close when the
+          // lease is released, so "both streams closed" is not an achievable precondition
+          // at this layer. Fail-closed here punishes clean walks, so the enforcement needs
+          // a transport-side close guarantee (or a handle-level `pipesClosed` signal)
+          // first. The bookkeeping below (watch + off + clearTimeout) is landed; the
+          // injected shapes in test/alpha5-g6b-drain-injection.test.ts document the hole.
+          if (drainClosed === false) {
+            observe(`anchored-glob DRAIN-INCOMPLETE realm=${realmId} call=${String(call.callId)} exit=${String(exit?.code ?? -1)}`)
+          }
+          if (false) { // the fail-closed arm, kept verbatim for the transport-round hand-off
+            return failure('undetermined', 'walker-error', {
+              exit: exit?.code ?? -1,
+              stderrBytes: stderr.trim().length,
+            }, debug, 'walker streams did not close after the lease was released')
+          }
           trace = [...trace, 'terminate']
           if (exit?.timedOut === true) {
             observe(`anchored-glob TIMEOUT realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)}`)

@@ -52,6 +52,11 @@ const SCANNED_PATHS_A5B2: readonly string[] = [
   'packages/runtime/test/a5b2-exit-code-fidelity.test.ts',
 ]
 
+// g6b-flake (this round): the injected-timing spec that documents the drain window.
+const SCANNED_PATHS_A5G6B: readonly string[] = [
+  'packages/runtime/test/alpha5-g6b-drain-injection.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2618,7 +2623,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5SRGP.length +
         SCANNED_PATHS_A5INTR3.length +
         SCANNED_PATHS_A5INTR3_KIT.length +
-        SCANNED_PATHS_A5B2.length,
+        SCANNED_PATHS_A5B2.length +
+        SCANNED_PATHS_A5G6B.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2670,7 +2676,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5SRGP.length +
         SCANNED_PATHS_A5INTR3.length +
         SCANNED_PATHS_A5INTR3_KIT.length +
-        SCANNED_PATHS_A5B2.length,
+        SCANNED_PATHS_A5B2.length +
+        SCANNED_PATHS_A5G6B.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2746,6 +2753,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5INTR3,
       ...SCANNED_PATHS_A5INTR3_KIT,
       ...SCANNED_PATHS_A5B2,
+      ...SCANNED_PATHS_A5G6B,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3067,6 +3075,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // BEFORE booking this clause read `expected 1197 to be 1196`, so the chain of this
     // tree ends at 1197 - the int-r3 booking (1196) plus this round's single spec.
     expect(SCANNED_PATHS_A5B2.length).toBe(1197 - 1196)
+    // g6b-flake, measured on THIS tree: before booking this file the ledger read
+    // `expected 1198 to be 1197`, so the chain continues 1197 -> 1198 with exactly one
+    // new spec (this one). Nothing was copied from any branch.
+    expect(SCANNED_PATHS_A5G6B.length).toBe(1198 - 1197)
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
     expect(scanResult.excludedSelfFiles).toEqual([
