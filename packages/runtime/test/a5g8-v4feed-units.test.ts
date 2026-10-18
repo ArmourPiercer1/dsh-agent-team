@@ -47,6 +47,8 @@ type PlaneValue = {
   ownNames: readonly string[]
   placementNames: readonly string[]
   definitions: readonly PlaneDef[]
+  /** the pb §6 provider-side feed (the seam's flat BindingFeedEntry shape) */
+  placementFeed: (name: string) => { definitionIdentity: string; realmId: string } | undefined
 }
 type BlueprintMod = {
   // THE production entry: parse -> validate -> derive hash in one call
@@ -76,9 +78,8 @@ afterAll(() => {
   try { rmSync(WORLD, { recursive: true, force: true }) } catch { /* best effort */ }
 })
 
-/** Named constants — the sanctioned carrier of version digits (a5fl1 law). */
+/** Named constant — the sanctioned carrier of the version digit (a5fl1 law). */
 const V4_DIGIT = 4 // position of the v4 digit is NOT assumed: U1 asserts it
-const GEN = 1
 
 function v4AuthoringYaml(): string {
   return [
