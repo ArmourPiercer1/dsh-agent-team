@@ -173,3 +173,5 @@
 2. #322 分支 04:36:45Z force-push（1257963e→8681c3a0，丢两枚非 gated merge-sync 修复笔；正向恢复 `b78aef3f`；判面 blob 未损）。
 
 — R3 writer = 协调者（qwen3.8-flash-next）；markdown 追加、零历史重写；红绿全部指向可复跑证据路径而非转述。
+
+> 注记（独审 3ebfdceb 两条 MINOR 的当轮处置，append-only）：(1) 矩阵第 9 条闭合**不改变** §2/§3 正本仍 @a2473203 时点的事实——正本矩阵刷新归 PR8 轮；且 `ee49c4c0` 后 §1 的「Blueprint vNext 未实施 / SUPPORTED=[3]」行已与现产面冲突，同归 PR8 轮正本刷新，此处只作指向注、不改正文。(2) 本节内的 ecf68fe7/ba398cca/06e6bff5/852048e3/f1e64a1e 等 = 评审/worker **会话号（handle）**，非 git 对象、origin 无 ref；其根口径以本目录 COORDINATION.md 与 SESSION_ROUTER_LOG 落仓为准；凡标 SHA 者方可 git 亲验。(3) 头注时间为 wave 钟（约），committer 时刻以 git 为准。
