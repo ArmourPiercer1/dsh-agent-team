@@ -112,3 +112,66 @@ three files — is the arithmetic witness that no other scannable residue is lef
 Later probes and every suite leg keep their worlds under
 `tests/homes/a5srgp-*` and destroy them (`TEST_METHODS` §7); none of them
 depends on `out/`/`plans/` living inside the package.
+
+## Round 2 (the review fix order): `coverage-probe.mjs` + the knob refusals
+
+The solo review of the first head closed two gaps, and both were measured before
+being written into the row.
+
+`coverage-probe.mjs` (legs A–J, raw output in `coverage-measurements.json`) asked
+what the confined face actually reports when the WALK itself is refused, and the
+answer moved a flag out of the frozen argv:
+
+| leg | shape | reported | summary | `stats` | stderr |
+| --- | --- | --- | --- | --- | --- |
+| A-off-normal | normal walk, granted | `{code:0,signal:""}` | yes | searches 1, bytes 15 | 102 B, ONE absolute noise line |
+| B-off-nogrants | **whole walk kernel-refused** | `{code:0,signal:""}` | yes | searches 0, bytes 0 | `rg: .: Permission denied (os error 13)` |
+| C-off-emptyroot | genuinely empty tree | same | yes | searches 0, bytes 0 | noise only |
+| D-off-allignored | every file ignored by the law | same | yes | searches 0, bytes 0 | noise only |
+| E-off-readdir-only | names listable, bytes unreadable | same | yes | searches 0, bytes 0 | `rg: ./src/a.ts: Permission denied …` |
+| F-on-normal | normal walk WITH `--no-messages` | same | yes | searches 1, bytes 15 | **empty** |
+| G-on-nogrants | refused walk WITH `--no-messages` | same | yes | searches 0, bytes 0 | **empty** |
+| H-off-partial-refusal | one unreadable file in a walked tree | same | yes, with matches | searches 1 | `rg: ./src/blocked.ts: Permission denied …` |
+| I-native-normal | native reference | exit **0** | — | — | — |
+| J-native-partial-refusal | native, one unreadable file | exit **2** | — | — | the same relative line |
+
+Three facts came out of it, all of them now law:
+
+1. **C, D, B and G are the same on every channel the row can see** — completion
+   present, zero records, zero bytes searched — except for one stderr line, and
+   `--no-messages` erases exactly that line (G vs B). Keeping the flag would have
+   made "the kernel refused everything" and "the tree is empty"
+   indistinguishable, i.e. it would have turned a refusal into a confident
+   "no matches". The flag is therefore GONE from the argv (leg `argv-additions`
+   pins its absence), and the noise it was added for turned out to be separable
+   by shape anyway.
+2. **The discriminator is the path's shape, not its text.** Every refusal of the
+   walk's own coverage names a path RELATIVE to the search element (`.:`,
+   `./src/a.ts`); the upward-discovery noise — which appears on EVERY walk in
+   this environment, including the successful ones (legs A, C, D) — names an
+   ABSOLUTE path above the governed root. So the row's coverage law is: a
+   permission error naming a relative path ⇒ refusal (`walker-permission-refused`),
+   anything absolute ⇒ not this answer's business. It reads the CLASS of the line
+   and returns a code; the walker's sentence stays internal (A8).
+3. **The row is re-pressing the host's own law, not inventing one.** Natively the
+   same partial refusal is exit 2 (leg J), which `search-core` maps to
+   `SEARCH_FAILED`. The row cannot see that exit code (round 1's finding), so it
+   reads the class from the one channel that survives and refuses — the same
+   verdict the host reaches, from an honest witness.
+
+The knob refusals (`fixed_string`, `ignore_case`) needed no new face measurement:
+`fixed_string`/`ignore_case` exist in the lane's closed vocabulary
+(`packages/tools/a5p5-tools/src/args.ts:148-149`), the grep(1) port honours them
+(`plane-effect-backends.mjs:120-122` pushes `-F`/`-i`), and the host's public
+`buildGrepCommand` has no arm for either. Leg `V6b` measures that `(?i)` IS
+answered by this walker (it finds what the case-sensitive pattern does not), which
+is exactly why the refusal is a decision rather than a limitation: encoding the
+knob into the pattern is a mapping this row does not own. The delta is therefore
+pinned from both sides, and the row answers with a named refusal and zero
+children.
+
+INVALID LEGS of round 2: none — the first draft of leg `V11` asserted that the
+shared verifier catches a removed anchor; measurement showed it does not (an
+unlinked directory keeps its inode and its `/proc/self/fd` view), so the leg now
+records that blind spot explicitly and the row runs BOTH arms (the row-local
+realpath arm for the removed object, the shared law for the swapped root).

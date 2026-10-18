@@ -50,21 +50,27 @@
  *      --json --regexp=<P> [--glob=<inc>] `buildGrepCommand` verbatim: `=`-attached,
  *                                         so a leading-dash pattern is data, never
  *                                         a flag
- *      --no-messages            addition. The confined child cannot read the PARENT
- *                               ignore/VCS machinery and rg says so on stderr on
- *                               EVERY walk of a root that is not its own git root
- *                               (`…/.git: Permission denied (os error 13)`), which
- *                               would otherwise put an OUTSIDE path name on a
- *                               channel. This silences that class only: a filter
- *                               that matches nothing still ends with a summary
- *                               record and exit 1 with the flag present (leg
- *                               `P10`), so no answer is hidden by it. It is not
- *                               where the error law lives, and it hides no fault:
- *                               a walk ripgrep refuses to start still emits
- *                               nothing on stdout (measured: a bad pattern leaves
- *                               zero bytes while the parse error stays on stderr,
- *                               `--no-messages` or not), and the completion law
- *                               below refuses on exactly that.
+ *      (no --no-messages)       DELIBERATE ABSENCE, and it is a law, not taste.
+ *                               The flag was in this argv until the coverage
+ *                               measurement (probes `coverage-probe.mjs`, legs
+ *                               G-on-nogrants vs B-off-nogrants): with it, a walk
+ *                               the KERNEL refuses end to end answers `summary`
+ *                               present, `stats.searches=0`, `stats.bytes_searched
+ *                               =0` and an EMPTY stderr — a silent "no matches"
+ *                               for a tree that was never read. Without it the
+ *                               same walk says `rg: .: Permission denied (os error
+ *                               13)`, which is the only evidence that an empty
+ *                               answer is a refusal rather than a fact. What the
+ *                               flag also silences — the upward-discovery noise
+ *                               (`/…/.git: Permission denied` on every walk of a
+ *                               root that is not its own git root) — is NOT lost:
+ *                               it names an ABSOLUTE path, the refusal evidence
+ *                               names a path RELATIVE to the search element, and
+ *                               the coverage law below reads only the second
+ *                               class. Nothing from stderr is ever PRESENTED:
+ *                               stderr is a count on the wire and an internal-face
+ *                               line at most (A8), so silencing it bought nothing
+ *                               and cost the one signal that matters.
  *      --no-ignore-parent       additions: rules from ABOVE the governed root, or
  *      --no-ignore-global       from a user profile, never steer the answer. Both
  *                               are selection-neutral on every fixture measured
@@ -195,7 +201,7 @@ export const SEARCH_MAX_STDERR_BYTES = 8 * 1024
  *  alternative to refusing it is guessing at it (see the header residuum). */
 export const SEARCH_PLACEMENTS = Object.freeze(['workspace', 'relative', 'absolute-path'])
 /** The row's ONLY additions to the host's fixed argv, in the order they ride. */
-export const SEARCH_ARGV_ADDITIONS = Object.freeze(['--no-messages', '--no-ignore-parent', '--no-ignore-global'])
+export const SEARCH_ARGV_ADDITIONS = Object.freeze(['--no-ignore-parent', '--no-ignore-global'])
 /** The search element for a directory target: the child's cwd IS the anchor. */
 export const SEARCH_WALK_PATH_ELEMENT = '.'
 
@@ -204,6 +210,8 @@ export const SEARCH_REFUSAL_TEXT = Object.freeze({
   'wrong-tool-for-backend': 'the search backend received a call for a different tool',
   'multiline-unsupported': 'multiline search is not implemented (refused by name, never reinterpreted)',
   'context-unsupported': 'context lines are not implemented by the ripgrep search row (refused by name, never reinterpreted)',
+  'fixed-string-unsupported': 'fixed-string search is not implemented by the ripgrep search row (refused by name, never reinterpreted)',
+  'ignore-case-unsupported': 'case-insensitive search is not implemented by the ripgrep search row (refused by name, never reinterpreted)',
   'placement-unsupported': 'the target placement is outside this row\'s anchor law (refused by name, never guessed at)',
   'pattern-invalid': 'the pattern or file filter was rejected by the search vocabulary',
   'rg-unavailable': 'the packaged ripgrep binary could not be resolved',
@@ -212,6 +220,7 @@ export const SEARCH_REFUSAL_TEXT = Object.freeze({
   'spawn-failed': 'the confined child could not be spawned',
   'walker-invalid-pattern': 'ripgrep rejected the pattern',
   'walker-error': 'ripgrep reported a search error',
+  'walker-permission-refused': 'ripgrep could not read the searched path — an empty answer here would be a refusal, not a fact',
   'output-too-large': 'the raw search output exceeded the buffered cap',
   'protocol-error': 'ripgrep output did not match its protocol',
   'record-out-of-scope': 'a ripgrep record named something outside the anchored tree',
@@ -239,6 +248,8 @@ export const SEARCH_REFUSAL_FAMILIES = Object.freeze({
   'wrong-tool-for-backend': 'a5srgp-refused/pre-execute',
   'multiline-unsupported': 'a5srgp-refused/pre-execute',
   'context-unsupported': 'a5srgp-refused/pre-execute',
+  'fixed-string-unsupported': 'a5srgp-refused/pre-execute',
+  'ignore-case-unsupported': 'a5srgp-refused/pre-execute',
   'placement-unsupported': 'a5srgp-refused/pre-execute',
   'pattern-invalid': 'a5srgp-refused/pre-execute',
   'rg-unavailable': 'a5srgp-refused/pre-execute',
@@ -248,6 +259,7 @@ export const SEARCH_REFUSAL_FAMILIES = Object.freeze({
   'spawn-failed': 'a5srgp-refused/transport',
   'walker-invalid-pattern': 'a5srgp-refused/walker',
   'walker-error': 'a5srgp-refused/walker',
+  'walker-permission-refused': 'a5srgp-refused/walker',
   'output-too-large': 'a5srgp-refused/transport',
   'protocol-error': 'a5srgp-refused/transport',
   'record-out-of-scope': 'a5srgp-refused/verification',
@@ -368,10 +380,15 @@ export function searchArgv(parsed, pathElt = SEARCH_WALK_PATH_ELEMENT) {
 }
 
 /**
- * The A3 arm of the anchor law, in the shape a search needs: the handle that
- * produced the answer must STILL resolve inside the governed root and STILL be
- * the inode the walk ran under. Words are the controlled-fs open-at-exec
- * vocabulary: `escape` / `drift` / `undeterminable` / `confirmed`.
+ * The row-local A3 arm, in the shape a search needs: the handle that produced the
+ * answer must STILL resolve, by REALPATH, inside the governed root, and still be
+ * the inode the walk ran under. Complementary to the shared verifier by
+ * measurement (leg `V11`): an unlinked anchor keeps its inode and keeps a
+ * `/proc/self/fd` view, so the shared law's checks pass on it while THIS arm,
+ * which resolves the view, reports it — and the shared law's root-identity arm
+ * catches the case this one cannot (leg `V11b`). The row runs both; the words are
+ * the controlled-fs open-at-exec vocabulary: `escape` / `drift` / `undeterminable`
+ * / `confirmed`.
  */
 export async function verifyAnchorStillGoverned(anchor) {
   if (anchor?.ok !== true || anchor.handle === undefined) {
@@ -494,6 +511,41 @@ export function renderRows(rows, outputMode) {
   return rows.map((r) => `${r.path}:${String(r.line)}:${r.text}`).join('\n')
 }
 
+/**
+ * THE COVERAGE LAW — the second half of the completion law, and the answer to
+ * "an empty answer is not proof of an empty tree". Measured on the confined face
+ * (probes `coverage-probe.mjs`, six shapes):
+ *
+ *   walk completed, files read      stats.searches>0, stderr: absolute noise only
+ *   walk of a genuinely empty tree  stats.searches=0, stderr: absolute noise only
+ *   every file ignored by the law   stats.searches=0, stderr: absolute noise only
+ *   THE WHOLE WALK REFUSED          stats.searches=0, stderr: `rg: .: Permission
+ *                                   denied (os error 13)` — a path RELATIVE to the
+ *                                   search element, i.e. about THIS walk
+ *   a searched file unreadable      stats.searches=0, `rg: ./src/a.ts: Permission
+ *                                   denied …` — same class, partial refusal
+ *
+ * So `searches=0` alone cannot separate "nothing to search" from "refused": only
+ * the RELATIVE permission error can, and it must therefore reach the row — which
+ * is why `--no-messages` is absent above. A refusal naming an ABSOLUTE path is
+ * rg's upward discovery of a parent `.git` it cannot read: it is a fact about the
+ * host's tree above the governed root, never about this answer, so it must not
+ * turn a completed walk into a refusal either. The row reads the CLASS of the
+ * error, never its text: the returned value is a code, and the walker's sentence
+ * stays internal (A8).
+ */
+export function walkerCoverageRefusal(stderrText) {
+  const lines = String(stderrText).split('\n')
+  for (const line of lines) {
+    const match = /^rg: (.*): (Permission denied|Operation not permitted)/.exec(line)
+    if (match === null) continue
+    const named = match[1] ?? ''
+    if (named.startsWith('/') || /^[A-Za-z]:[\\/]/.test(named)) continue // upward noise
+    return 'walker-permission-refused'
+  }
+  return null
+}
+
 /** The host's own failure classification (`search-core`'s `classifyRunFailure`),
  *  kept as the ONE place its rule is written down: a stderr naming a regex or a
  *  glob parse problem is a PATTERN refusal, anything else a generic search
@@ -587,6 +639,26 @@ export function createAnchoredRgSearchBackend(options) {
     if (typeof parsed.contextLines === 'number' && parsed.contextLines > 0) {
       observe(`anchored-search REFUSED context-unsupported call=${safeToken(call?.callId)} lines=${String(parsed.contextLines)}`)
       return failure('denied', 'context-unsupported', { lines: parsed.contextLines }, debug)
+    }
+    // `fixed_string` and `ignore_case` are lane vocabulary (the lane's own grep
+    // argument law, `src/args.ts:148-149`) and the grep(1) port honours them
+    // (`-F`, `-i`), but
+    // the host's PUBLIC ripgrep vocabulary has no arm for them: `buildGrepCommand`
+    // accepts `pattern`/`path`/`include` only. Both have encodings — `(?i)` as a
+    // pattern prefix works on this walker, and `\Q…\E`-style literal escaping can
+    // be emulated by escaping the metacharacters — and BOTH are this row inventing
+    // a mapping the host does not own, i.e. a semantic expansion of the frozen
+    // argv. The refusal form costs no new semantics and is the same shape as the
+    // `context`/`multiline` refusals above, so it is what this row does until the
+    // host's own vocabulary grows an arm (then the mapping belongs to the host,
+    // and this row picks it up through `buildGrepCommand` without changing).
+    if (parsed.fixedString === true) {
+      observe(`anchored-search REFUSED fixed-string-unsupported call=${safeToken(call?.callId)}`)
+      return failure('denied', 'fixed-string-unsupported', {}, debug)
+    }
+    if (parsed.ignoreCase === true) {
+      observe(`anchored-search REFUSED ignore-case-unsupported call=${safeToken(call?.callId)}`)
+      return failure('denied', 'ignore-case-unsupported', {}, debug)
     }
     const placement = String(parsed.target?.placement ?? '')
     if (!SEARCH_PLACEMENTS.includes(placement)) {
@@ -776,6 +848,12 @@ export function createAnchoredRgSearchBackend(options) {
         observe(`anchored-search WALKER-INCOMPLETE realm=${safeToken(realmId)} call=${safeToken(call.callId)} code=${safeToken(incompleteCode)} stderrBytes=${String(stderrText.length)}`)
         return failure('undetermined', incompleteCode, { stderrBytes: stderrText.length, outBytes: stdout.length }, debug, `stderr=${stderrText}`)
       }
+      // ---- coverage: a completed walk that read nothing may not answer empty --
+      const coverage = walkerCoverageRefusal(stderrText)
+      if (coverage !== null) {
+        observe(`anchored-search COVERAGE-REFUSED realm=${safeToken(realmId)} call=${safeToken(call.callId)} stderrBytes=${String(stderrText.length)} records=${String(stdout.length)}`)
+        return failure('undetermined', coverage, { stderrBytes: stderrText.length, outBytes: stdout.length }, debug, `stderr=${stderrText}`)
+      }
       const code = launcherCode
       // ---- the record stream: the host's own reader, nothing else -----------
       let records
@@ -787,7 +865,16 @@ export function createAnchoredRgSearchBackend(options) {
         observe(`anchored-search PROTOCOL realm=${safeToken(realmId)} call=${safeToken(call.callId)} code=${safeToken(error?.code)}`)
         return failure('undetermined', 'protocol-error', {}, debug, String(error?.message ?? error))
       }
-      // ---- A3: the anchor that produced the answer is still that anchor -----
+      // ---- A3, BOTH arms, for BOTH target kinds -----------------------------
+      // (1) the row's own arm: the pinned view still resolves inside the governed
+      // root and the anchor is still the inode the walk ran under — the arm that
+      // notices an object removed under the walk;
+      // (2) the SHARED law, with the file target's own name or the EMPTY list for
+      // a directory target, which additionally re-checks that the governed ROOT the
+      // anchor was taken under is still the same object — the arm an anchor-inode
+      // check cannot see, and the one a directory target used to skip entirely
+      // (review finding this round: legs `V11` / `V11b` measure that each arm
+      // catches a case the other misses, which is why both run).
       const recheck = await verifyAnchorStillGoverned(anchor)
       if (recheck.verdict !== 'confirmed') {
         observe(`anchored-search exec-refused:${safeToken(recheck.verdict)} realm=${safeToken(realmId)} call=${safeToken(call.callId)}`)
@@ -796,6 +883,11 @@ export function createAnchoredRgSearchBackend(options) {
           : recheck.verdict === 'drift'
             ? failure('denied', 'anchor-drift', { records: records.length }, debug, String(recheck.detail))
             : failure('undetermined', 'anchor-unverifiable', {}, debug, String(recheck.detail))
+      }
+      const shared = await verifyGlobResultsBeneath(anchor, fileTarget === null ? [] : [fileTarget], debug)
+      if (shared.ok !== true) {
+        observe(`anchored-search exec-refused:${safeToken(shared.failure?.code)} realm=${safeToken(realmId)} call=${safeToken(call.callId)}`)
+        return mapSharedLaw(shared, debug)
       }
       const projected = projectMatches(records, parsed.outputMode ?? 'content', parsed.maxResults, (p) => presentPath(anchor, p))
       if (projected.ok !== true) {
