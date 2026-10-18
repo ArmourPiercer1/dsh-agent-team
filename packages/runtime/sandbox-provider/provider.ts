@@ -185,7 +185,49 @@ export interface StreamingSpawnHandle {
   readonly exited: Promise<{ code: number | null; signal: string | null }>
   /** The handle's termination arm: signal (SIGTERM→SIGKILL escalation), await, settle. */
   terminate(options?: StreamingOptions): Promise<ProviderResult<ProviderLease>>
+  /**
+   * R1 (#337 step B, root ruling 20:12Z) — the machine-readable promise that
+   * THIS arm supervises the payload through the launcher's waitpid + out-of-band
+   * record. It is `true` on every streaming handle, proven by the arm's own
+   * shape: the `--out-dir` token is UNCONDITIONAL on the stream argv
+   * (`provider.ts:695`), the launcher writes `<out-dir>/exit.json` after
+   * `waitpid` and before its own exit (`landlock-prelauncher.py:501-505`
+   * precede `:513`/`:528` — single O_TRUNC writer, record before death), and
+   * this provider reads it only AFTER the launcher is observed dead. The
+   * one-shot arm has no such face at all — it is the legitimate no-record form
+   * (its rc travels in the emit frame, launcher :420), and rows must treat an
+   * absent `recordCapable` as exactly that, never as a missing record.
+   */
+  readonly recordCapable: true
+  /**
+   * R1 — the trusted completion record, resolving after the launcher's death
+   * (see `recordCapable`). A `recorded` form carries the payload's own rc
+   * verbatim (signal death arrives as the launcher's negative signum, never
+   * flattened); every other form is fail-closed material for the row — the
+   * provider NEVER guesses a code, and a row that trusts `recordCapable` must
+   * never fall back to a success reading of the streams when the record is
+   * absent, corrupt or unattributable. Bookkeeping on the provider's own
+   * trusted face: not wire, not a grant, not a tool permission — the same
+   * class as the lease ledger.
+   */
+  readonly payloadExit: Promise<PayloadExitRecord>
 }
+
+/**
+ * R1 (#337 step B) — the shapes `payloadExit` resolves to. The union is
+ * TOTAL: every launcher/record outcome arrives as one of these forms, and the
+ * `recorded` form never invents an rc (`Number.isInteger` or it is not the
+ * record law). Rows map forms onto the frozen code table; nothing here adds
+ * an error code to any row face.
+ */
+export type PayloadExitRecord =
+  | { readonly form: 'recorded'; readonly rc: number; readonly pid: number }
+  /** death observed, record absent — the launcher died outside its own law */
+  | { readonly form: 'missing' }
+  /** present but not attributable AS a record (bytes lie, or cannot be read) */
+  | { readonly form: 'unparsable'; readonly reason: 'unreadable' | 'oversize' | 'malformed' }
+  /** the record names a different payload than the handshake did — binding violation */
+  | { readonly form: 'pid-mismatch'; readonly recordPid: number }
 
 /** The injected world (tests inject a counting fake to watch ZERO calls). */
 export interface ProviderDeps {
@@ -246,6 +288,43 @@ export interface ProviderOptions {
 }
 
 const EVIDENCE_BASE = 'evidence://a5p4/probe'
+
+/** R1: the launcher's record is `{pid,rc}` — a few dozen bytes. Anything
+ *  larger is not the record law and is refused as material, never parsed. */
+const EXIT_RECORD_MAX_BYTES = 4096
+
+/**
+ * R1 (#337 step B) — read THIS plan's completion record. Called only after the
+ * launcher is observed dead, from the provider's own trusted face: `outDir` is
+ * the directory THIS provider mkdir'd for ONE unique `planId` (never granted
+ * to the payload — the confined ruleset only carries the walk root and the
+ * system rx), and the expected pid is the handshake's own number. No guessing:
+ * a non-integer rc is NOT a code, a mismatched pid is NOT this payload, and
+ * every refusal names its form so the row can fail closed on the frozen table.
+ */
+function readExitRecord(outDir: string, expectedPid: number): PayloadExitRecord {
+  let text: string
+  try {
+    text = readFileSync(join(outDir, 'exit.json'), 'utf8')
+  } catch (error) {
+    const code = (error as { code?: unknown } | null)?.code
+    return code === 'ENOENT' || code === 'ENOTDIR'
+      ? { form: 'missing' }
+      : { form: 'unparsable', reason: 'unreadable' }
+  }
+  if (text.length > EXIT_RECORD_MAX_BYTES) return { form: 'unparsable', reason: 'oversize' }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch {
+    return { form: 'unparsable', reason: 'malformed' }
+  }
+  if (typeof parsed !== 'object' || parsed === null) return { form: 'unparsable', reason: 'malformed' }
+  const rec = parsed as { pid?: unknown; rc?: unknown }
+  if (typeof rec.pid !== 'number' || !Number.isInteger(rec.rc)) return { form: 'unparsable', reason: 'malformed' }
+  if (rec.pid !== expectedPid) return { form: 'pid-mismatch', recordPid: rec.pid }
+  return { form: 'recorded', rc: rec.rc as number, pid: rec.pid }
+}
 
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export function createConfinedProcessProvider(opts: ProviderOptions) {
@@ -658,6 +737,16 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
       if (run.exited && run.exitInfo !== null) resolve(run.exitInfo)
       else run.exitWaiters.push(resolve)
     })
+    // R1 (#337 step B): the record is read at the launcher's death and nowhere
+    // earlier — the launcher's law writes it after waitpid and before exiting
+    // (launcher :501-505 precede :513/:528), so an observed death means the
+    // single O_TRUNC writer has finished. Both settle legs read: an
+    // `exit-error` observation is still a death observation, and a record that
+    // cannot be read then arrives as `missing`/`unreadable`, never as a guess.
+    const payloadExit = proc.exit.then(
+      () => readExitRecord(plan.outDir, payloadPid),
+      () => readExitRecord(plan.outDir, payloadPid),
+    )
     const terminate = (options?: StreamingOptions): Promise<ProviderResult<ProviderLease>> => {
       if (run.terminating !== null) return run.terminating
       run.terminating = (async (): Promise<ProviderResult<ProviderLease>> => {
@@ -690,6 +779,8 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
       stderr: proc.stderr,
       exited,
       terminate,
+      recordCapable: true as const,
+      payloadExit,
     })
     return { ok: true, value: handle }
   }

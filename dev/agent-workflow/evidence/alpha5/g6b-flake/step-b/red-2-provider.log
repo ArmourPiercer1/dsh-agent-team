@@ -1,0 +1,71 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+ ❯ packages/runtime/test/a5p4-provider.test.ts (12 tests | 2 failed) 254ms
+     ✓ hard-required dimension WITHOUT enforcement rows ⇒ IO_POLICY_UNSUPPORTED/SANDBOX_UNAVAILABLE and NOTHING ran 3ms
+     ✓ a denied network profile refuses pre-spawn even with full FS enforcement (network never rides on FS bits) 0ms
+     ✓ an empty argv array is a typed refusal (argv is an explicit array, never a shell string, never empty) 0ms
+     ✓ an undeclared FD plan is refused at prepare (the closed-set FD law bites before execute) 0ms
+     ✓ prepare/execute is a real split: prepare yields a plan WITHOUT a process; execute consumes it exactly once 1ms
+     ✓ confines the untrusted argv under a scratch policy: deny-path read refused inside the child, allowed write ok 227ms
+     ✓ a plan DECLARING fd 3 is refused typed BEFORE any process exists — both arms share prepare(); zero stream spawns; no grant burned 1ms
+     ✓ 24 one-shot cycles on one long-lived provider (cap 8): live maps stay zero, the ledger is FIFO-capped, inside-horizon leases answer idempotently, evicted ones are honestly forgotten 4ms
+     ✓ a streaming settle releases BOTH live maps and retires the record to the ledger; unconfirmed stays LIVE until a terminal settle; request/terminate stay idempotent after the retire 3ms
+     × R1: a recorded rc arrives VERBATIM (0 / 2 / a signal death as -9), and the streaming arm declares itself record-capable 6ms
+     × R1 negative controls: missing / malformed / oversize / pid-mismatch arrive as their OWN forms — fail-closed material, never a silent success and never a guessed rc 2ms
+     ✓ R1 boundary: the record never touches the old faces — the ONE-SHOT arm stays the legitimate no-record form (its rc travels in the emit frame, launcher :420; receipt shape byte-for-byte unchanged) 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5p4-provider.test.ts > a5p4 provider R1 — the trusted exit record (streaming arm) > R1: a recorded rc arrives VERBATIM (0 / 2 / a signal death as -9), and the streaming arm declares itself record-capable
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5p4-provider.test.ts:394:36
+    392|       // line-proof of the promise: provider.ts:616 passes --out-dir U…
+    393|       // on the stream argv; the launcher writes the record after wait…
+    394|       expect(handle.recordCapable).toBe(true)
+       |                                    ^
+    395|       const rec = await handle.payloadExit
+    396|       expect(rec).toEqual({ form: 'recorded', rc, pid: FAKE_PID })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  packages/runtime/test/a5p4-provider.test.ts > a5p4 provider R1 — the trusted exit record (streaming arm) > R1 negative controls: missing / malformed / oversize / pid-mismatch arrive as their OWN forms — fail-closed material, never a silent success and never a guessed rc
+AssertionError: r1-missing: expected undefined to deeply equal { form: 'missing' }
+
+- Expected:
+{
+  "form": "missing",
+}
+
++ Received:
+undefined
+
+ ❯ packages/runtime/test/a5p4-provider.test.ts:416:28
+    414|       if (handle === null) return
+    415|       const rec = await handle.payloadExit
+    416|       expect(rec, f.grant).toEqual(f.want)
+       |                            ^
+    417|       const done = await handle.terminate({ graceMs: 20, deadlineMs: 2…
+    418|       expect(done.ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 10 passed (12)
+   Start at  20:29:00
+   Duration  509ms (transform 97ms, setup 0ms, import 121ms, tests 254ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -155,7 +155,59 @@ export interface StreamingSpawnHandle {
     }>;
     /** The handle's termination arm: signal (SIGTERM→SIGKILL escalation), await, settle. */
     terminate(options?: StreamingOptions): Promise<ProviderResult<ProviderLease>>;
+    /**
+     * R1 (#337 step B, root ruling 20:12Z) — the machine-readable promise that
+     * THIS arm supervises the payload through the launcher's waitpid + out-of-band
+     * record. It is `true` on every streaming handle, proven by the arm's own
+     * shape: the `--out-dir` token is UNCONDITIONAL on the stream argv
+     * (`provider.ts:695`), the launcher writes `<out-dir>/exit.json` after
+     * `waitpid` and before its own exit (`landlock-prelauncher.py:501-505`
+     * precede `:513`/`:528` — single O_TRUNC writer, record before death), and
+     * this provider reads it only AFTER the launcher is observed dead. The
+     * one-shot arm has no such face at all — it is the legitimate no-record form
+     * (its rc travels in the emit frame, launcher :420), and rows must treat an
+     * absent `recordCapable` as exactly that, never as a missing record.
+     */
+    readonly recordCapable: true;
+    /**
+     * R1 — the trusted completion record, resolving after the launcher's death
+     * (see `recordCapable`). A `recorded` form carries the payload's own rc
+     * verbatim (signal death arrives as the launcher's negative signum, never
+     * flattened); every other form is fail-closed material for the row — the
+     * provider NEVER guesses a code, and a row that trusts `recordCapable` must
+     * never fall back to a success reading of the streams when the record is
+     * absent, corrupt or unattributable. Bookkeeping on the provider's own
+     * trusted face: not wire, not a grant, not a tool permission — the same
+     * class as the lease ledger.
+     */
+    readonly payloadExit: Promise<PayloadExitRecord>;
 }
+/**
+ * R1 (#337 step B) — the shapes `payloadExit` resolves to. The union is
+ * TOTAL: every launcher/record outcome arrives as one of these forms, and the
+ * `recorded` form never invents an rc (`Number.isInteger` or it is not the
+ * record law). Rows map forms onto the frozen code table; nothing here adds
+ * an error code to any row face.
+ */
+export type PayloadExitRecord = {
+    readonly form: 'recorded';
+    readonly rc: number;
+    readonly pid: number;
+}
+/** death observed, record absent — the launcher died outside its own law */
+ | {
+    readonly form: 'missing';
+}
+/** present but not attributable AS a record (bytes lie, or cannot be read) */
+ | {
+    readonly form: 'unparsable';
+    readonly reason: 'unreadable' | 'oversize' | 'malformed';
+}
+/** the record names a different payload than the handshake did — binding violation */
+ | {
+    readonly form: 'pid-mismatch';
+    readonly recordPid: number;
+};
 /** The injected world (tests inject a counting fake to watch ZERO calls). */
 export interface ProviderDeps {
     readonly availability: () => {

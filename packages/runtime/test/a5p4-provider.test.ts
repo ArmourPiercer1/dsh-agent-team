@@ -324,3 +324,115 @@ describe('a5p4 provider bounded settled-lease ledger (review note (b))', () => {
     expect(provider.bookkeeping().settledLedger).toBe(2)
   }, 30_000)
 })
+
+/**
+ * #337 STEP B — R1 TRUSTED COMPLETION RECORD (root ruling 20:12Z, item ①). The
+ * streaming handle carries the launcher's out-of-band exit record. The binding
+ * is threefold and mechanical: the record lives in THIS plan's freshly made
+ * `<out-dir>` (`provider.ts:575-576` — one unique `planId`, mkdir BEFORE the
+ * spawn, the payload can never reach it: the confined ruleset never grants it),
+ * the record's `pid` must equal the handshake pid (`provider.ts:705-715`), and
+ * the provider reads only AFTER the launcher is observed dead — the launcher's
+ * own law writes `exit.json` after `waitpid` and BEFORE it exits
+ * (`landlock-prelauncher.py:501-505` precede `:513`/`:528`), so an observed
+ * death means a complete write (single O_TRUNC writer; no second writer exists).
+ * The fake conforms to the real stream-process shape the probes recorded:
+ * PassThrough pipes, the `{"stream":true,"pid":N}` fd-3 handshake line, a
+ * scripted `exit` promise — and the record is written through the SAME
+ * `--out-dir` token the real launcher receives on argv (`provider.ts:695`).
+ */
+describe('a5p4 provider R1 — the trusted exit record (streaming arm)', () => {
+  const FAKE_PID = 4_194_300 // above this world's live pid range, like the sibling legs
+
+  const streamFake = (writeRecord: ((outDir: string) => void) | null) =>
+    (argv: readonly string[]): unknown => {
+      const idx = argv.indexOf('--out-dir')
+      const outDir = idx >= 0 ? String(argv[idx + 1]) : ''
+      const handshake = new PassThrough()
+      handshake.write(`{"stream":true,"pid":${FAKE_PID}}\n`)
+      const pt = (): PassThrough => new PassThrough()
+      // the launcher law, replayed: record FIRST, death second (the write
+      // precedes the launcher's own exit — the reader must never race a partial write)
+      let settleExit!: (v: { code: number | null; signal: string | null }) => void
+      const exit = new Promise<{ code: number | null; signal: string | null }>((res) => { settleExit = res })
+      queueMicrotask(() => {
+        if (writeRecord !== null && outDir !== '') writeRecord(outDir)
+        settleExit({ code: 0, signal: null })
+      })
+      return {
+        ok: true,
+        value: Object.freeze({ pid: FAKE_PID, stdin: pt(), stdout: pt(), stderr: pt(), handshake, kill: (): boolean => true, exit }),
+      }
+    }
+
+  const providerFor = (writeRecord: ((outDir: string) => void) | null) => {
+    const deps = fakeDeps({ rc: 0, stdout: '', stderr: '' })
+    ;(deps as { spawnStream?: unknown }).spawnStream = streamFake(writeRecord)
+    return createConfinedProcessProvider({
+      realmId: 'realm-provider',
+      trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+      scratchRoot: world,
+      deps: deps as unknown as ProviderDeps,
+    })
+  }
+
+  const openHandle = async (provider: ReturnType<typeof providerFor>, grant: string) => {
+    const h = await provider.spawnStreaming(baseRequest({ grantFingerprint: `sha256:${grant}` }), { handshakeTimeoutMs: 5_000 })
+    expect(h.ok, `spawnStreaming for ${grant}`).toBe(true)
+    if (!h.ok) return null
+    return h.value
+  }
+
+  it('R1: a recorded rc arrives VERBATIM (0 / 2 / a signal death as -9), and the streaming arm declares itself record-capable', async () => {
+    for (const rc of [0, 2, -9] as const) {
+      const provider = providerFor((outDir) => { writeFileSync(join(outDir, 'exit.json'), JSON.stringify({ pid: FAKE_PID, rc })) })
+      const handle = await openHandle(provider, `r1-rc-${String(rc)}`)
+      expect(handle).not.toBeNull()
+      if (handle === null) return
+      // line-proof of the promise: provider.ts:695 passes --out-dir UNCONDITIONALLY
+      // on the stream argv; the launcher writes the record after waitpid (:501-505).
+      expect(handle.recordCapable).toBe(true)
+      const rec = await handle.payloadExit
+      expect(rec).toEqual({ form: 'recorded', rc, pid: FAKE_PID })
+      const done = await handle.terminate({ graceMs: 20, deadlineMs: 2_000 })
+      expect(done.ok).toBe(true)
+    }
+  }, 30_000)
+
+  it('R1 negative controls: missing / malformed / oversize / pid-mismatch arrive as their OWN forms — fail-closed material, never a silent success and never a guessed rc', async () => {
+    const forms: Array<{ grant: string; write: ((outDir: string) => void) | null; want: Record<string, unknown> }> = [
+      { grant: 'r1-missing', write: null, want: { form: 'missing' } },
+      { grant: 'r1-malformed', write: (d) => { writeFileSync(join(d, 'exit.json'), 'not-json{') }, want: { form: 'unparsable', reason: 'malformed' } },
+      { grant: 'r1-oversize', write: (d) => { writeFileSync(join(d, 'exit.json'), 'x'.repeat(8192)) }, want: { form: 'unparsable', reason: 'oversize' } },
+      { grant: 'r1-mismatch', write: (d) => { writeFileSync(join(d, 'exit.json'), JSON.stringify({ pid: FAKE_PID + 7, rc: 0 })) }, want: { form: 'pid-mismatch', recordPid: FAKE_PID + 7 } },
+      { grant: 'r1-rc-not-integer', write: (d) => { writeFileSync(join(d, 'exit.json'), JSON.stringify({ pid: FAKE_PID, rc: '0' })) }, want: { form: 'unparsable', reason: 'malformed' } },
+    ]
+    for (const f of forms) {
+      const provider = providerFor(f.write)
+      const handle = await openHandle(provider, f.grant)
+      expect(handle).not.toBeNull()
+      if (handle === null) return
+      const rec = await handle.payloadExit
+      expect(rec, f.grant).toEqual(f.want)
+      const done = await handle.terminate({ graceMs: 20, deadlineMs: 2_000 })
+      expect(done.ok).toBe(true)
+    }
+  }, 60_000)
+
+  it('R1 boundary: the record never touches the old faces — the ONE-SHOT arm stays the legitimate no-record form (its rc travels in the emit frame, launcher :420; receipt shape byte-for-byte unchanged)', async () => {
+    const deps = fakeDeps({ rc: 0, stdout: JSON.stringify({ executed: true, rc: 0, pid: 1, out_ref: 'x', err_ref: 'y' }), stderr: '' })
+    const provider = createConfinedProcessProvider({
+      realmId: 'realm-provider',
+      trustRoot: 'git:alpha5-pr4-prov:sandbox-provider/launcher',
+      scratchRoot: world,
+      deps: deps as unknown as ProviderDeps,
+    })
+    const r = await provider.spawn(baseRequest({ grantFingerprint: 'sha256:r1-oneshot-shape' }))
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const flat = JSON.stringify({ receipt: r.value.receipt, output: r.value.output, lease: r.value.lease })
+    expect(flat).not.toContain('payloadExit')
+    expect(flat).not.toContain('recordCapable')
+    expect(Object.keys(r.value.receipt).sort()).toEqual(['lease', 'processIdentity'])
+  })
+})

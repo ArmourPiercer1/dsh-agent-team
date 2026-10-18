@@ -103,6 +103,12 @@ function buildPlane() {
       fsInstance: { fs: 'a5b2-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' },
       confinedProvider: {
         trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+        // step-B hygiene (disclosed): without this key the shell row's documented
+        // `cwdRoot` fallback put provider plans/out/probe scratch in the process
+        // cwd — the repo root during test runs (the same leak 104b4991 committed
+        // as fixtures). The shell row itself is untouched; the scratch location
+        // is not what any leg here asserts, and WORLD is self-removed below.
+        scratchRoot: WORLD,
         assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
       },
     },

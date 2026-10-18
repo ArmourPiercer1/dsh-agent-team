@@ -36,6 +36,47 @@ import { evaluateNetworkRequirement } from './network.js';
 import { createLauncherDeps, probeToCapabilities, runAbiProbe, runAvailabilityPreflight, runEnforcementLeg, verifyLauncherIntegrity, ENFORCEMENT_LEGS, } from './probe-abi.js';
 import { recordLegEvidence, verifyHardProfileEvidence } from './realm-evidence.js';
 const EVIDENCE_BASE = 'evidence://a5p4/probe';
+/** R1: the launcher's record is `{pid,rc}` — a few dozen bytes. Anything
+ *  larger is not the record law and is refused as material, never parsed. */
+const EXIT_RECORD_MAX_BYTES = 4096;
+/**
+ * R1 (#337 step B) — read THIS plan's completion record. Called only after the
+ * launcher is observed dead, from the provider's own trusted face: `outDir` is
+ * the directory THIS provider mkdir'd for ONE unique `planId` (never granted
+ * to the payload — the confined ruleset only carries the walk root and the
+ * system rx), and the expected pid is the handshake's own number. No guessing:
+ * a non-integer rc is NOT a code, a mismatched pid is NOT this payload, and
+ * every refusal names its form so the row can fail closed on the frozen table.
+ */
+function readExitRecord(outDir, expectedPid) {
+    let text;
+    try {
+        text = readFileSync(join(outDir, 'exit.json'), 'utf8');
+    }
+    catch (error) {
+        const code = error?.code;
+        return code === 'ENOENT' || code === 'ENOTDIR'
+            ? { form: 'missing' }
+            : { form: 'unparsable', reason: 'unreadable' };
+    }
+    if (text.length > EXIT_RECORD_MAX_BYTES)
+        return { form: 'unparsable', reason: 'oversize' };
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    }
+    catch {
+        return { form: 'unparsable', reason: 'malformed' };
+    }
+    if (typeof parsed !== 'object' || parsed === null)
+        return { form: 'unparsable', reason: 'malformed' };
+    const rec = parsed;
+    if (typeof rec.pid !== 'number' || !Number.isInteger(rec.rc))
+        return { form: 'unparsable', reason: 'malformed' };
+    if (rec.pid !== expectedPid)
+        return { form: 'pid-mismatch', recordPid: rec.pid };
+    return { form: 'recorded', rc: rec.rc, pid: rec.pid };
+}
 /** Create one provider instance for one realm. Probes are captured ONCE per instance. */
 export function createConfinedProcessProvider(opts) {
     // Accessor casts: the runtime program carries the plugin node-min ambient
@@ -466,6 +507,13 @@ export function createConfinedProcessProvider(opts) {
             else
                 run.exitWaiters.push(resolve);
         });
+        // R1 (#337 step B): the record is read at the launcher's death and nowhere
+        // earlier — the launcher's law writes it after waitpid and before exiting
+        // (launcher :501-505 precede :513/:528), so an observed death means the
+        // single O_TRUNC writer has finished. Both settle legs read: an
+        // `exit-error` observation is still a death observation, and a record that
+        // cannot be read then arrives as `missing`/`unreadable`, never as a guess.
+        const payloadExit = proc.exit.then(() => readExitRecord(plan.outDir, payloadPid), () => readExitRecord(plan.outDir, payloadPid));
         const terminate = (options) => {
             if (run.terminating !== null)
                 return run.terminating;
@@ -505,6 +553,8 @@ export function createConfinedProcessProvider(opts) {
             stderr: proc.stderr,
             exited,
             terminate,
+            recordCapable: true,
+            payloadExit,
         });
         return { ok: true, value: handle };
     }

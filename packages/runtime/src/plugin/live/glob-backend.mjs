@@ -1028,26 +1028,78 @@ export function createAnchoredGlobBackend(options) {
           if (overflow) {
             return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes }, debug, `walk exceeded the buffered budget budget=${String(walkBufferBytes)}`)
           }
-          if (code !== 0 && code !== 1) {
-            observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)}`)
-            // A foreign program's stderr is enumeration data: the wire gets the
-            // code and the exit NUMBER, the internal face may see the text.
-            return failure('undetermined', 'walker-exit', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker exit ${String(code)} stderr=${stderrText}`)
-          }
-          if (stderrText.length > 0) {
-            // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
-            // arm can report a hard walker error's exit code as 0 while stderr
-            // carries the walker's words (invalid glob, unreadable root). So the
-            // walker's SPEECH, not the code, is the discriminator: a walk that
-            // ends quietly has an empty stderr; one that spoke is an ERROR leg
-            // and lands TYPED — never an empty list pretending the subtree clean.
-            // This cannot false-refuse on the noise a bare rg makes in a nested
-            // repo: the governed argv carries --no-ignore, so the walker runs no
-            // upward ignore-discovery and never touches a parent .git (measured:
-            // without --no-ignore, a confined walk in this repo does emit a
-            // `.git: Permission denied` line; with it, stderr stays empty).
-            observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)} stderrBytes=${String(stderrText.length)}`)
-            return failure('undetermined', 'walker-error', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker diagnostic stream non-empty exit=${String(code)} stderr=${stderrText}`)
+          if (child.recordCapable === true) {
+            // RC-FIRST (#337 step B, root ruling 20:12Z): the streaming arm
+            // supervises the payload through the launcher's waitpid + record
+            // (`recordCapable` = the provider's promise, proven at its face),
+            // so the payload's OWN rc rules this verdict and the walker's
+            // SPEECH is demoted to a witness: it may describe, it may never
+            // decide. The frozen table is not extended — every exit below
+            // lands on the existing `walker-error` / `walker-exit` entries,
+            // and an unattributable record fails CLOSED like the silent-fatal
+            // form it replaces a guess for. The stdout completeness gate ran
+            // ABOVE this branch, unchanged: rc=0 admits only a collected list.
+            const rec = await child.payloadExit
+            if (rec.form !== 'recorded') {
+              // The record was PROMISED by the arm; its absence, corruption or
+              // foreign pid means the walk is not attributable to this payload.
+              // Fail closed on the typed entry — never the old speech fallback
+              // (a speech verdict over an unattributable run is the exact class
+              // of guess rc-first exists to remove).
+              observe(`anchored-glob RECORD-UNTRUSTED form=${rec.form} realm=${realmId} call=${String(call.callId)}`)
+              return failure('undetermined', 'walker-error', { record: rec.form, stderrBytes: stderrText.length }, debug, `payload exit record not attributable form=${rec.form}`)
+            }
+            if (rec.rc === 2) {
+              // walker fatal — DECIDED BY rc, so the SILENT form (empty stderr,
+              // e.g. the walker died without speaking) is caught too: the form
+              // the speech arm was structurally blind to. No list flows.
+              observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} rc=2 stderrBytes=${String(stderrText.length)}`)
+              return failure('undetermined', 'walker-error', { exit: 2, stderrBytes: stderrText.length }, debug, `walker rc=2 stderr=${stderrText}`)
+            }
+            if (rec.rc !== 0 && rec.rc !== 1) {
+              // Anything outside {0,1,2} — a negative signum (the launcher's
+              // signal-death spelling), 137, 3, a future rg code — is the
+              // frozen exit-coded entry. Never re-guessed as success from the
+              // streams, never silently dropped.
+              observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} rc=${String(rec.rc)}`)
+              return failure('undetermined', 'walker-exit', { exit: rec.rc, stderrBytes: stderrText.length }, debug, `walker exit ${String(rec.rc)} stderr=${stderrText}`)
+            }
+            // rc 0/1: the walk is ADMITTED to framing and A4 (rc=1 is the
+            // legitimate empty result). Speech still WITNESSES: a note family
+            // under a clean rc lands on the internal face (observer gets
+            // arithmetic and codes only, per A8) — visible for diagnosis,
+            // silent on the wire, and without any power over the verdict.
+            if (stderrText.length > 0) {
+              observe(`anchored-glob walker-note realm=${realmId} call=${String(call.callId)} rc=${String(rec.rc)} stderrBytes=${String(stderrText.length)}`)
+              debug(`anchored-glob note on an admitted walk rc=${String(rec.rc)} stderr=${stderrText}`)
+            }
+          } else {
+            // THE LEGITIMATE NO-RECORD FORM (`recordCapable` absent or false —
+            // the one-shot arm's shape and any pre-R1 handle): the frozen
+            // pre-#337 law, byte for byte, exactly as every legacy leg pins it.
+            // This branch is the honest answer to "what happens where no record
+            // exists": the old law, with the old disclosure — not a fake rc.
+            if (code !== 0 && code !== 1) {
+              observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)}`)
+              // A foreign program's stderr is enumeration data: the wire gets the
+              // code and the exit NUMBER, the internal face may see the text.
+              return failure('undetermined', 'walker-exit', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker exit ${String(code)} stderr=${stderrText}`)
+            }
+            if (stderrText.length > 0) {
+              // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
+              // arm can report a hard walker error's exit code as 0 while stderr
+              // carries the walker's words (invalid glob, unreadable root). So the
+              // walker's SPEECH, not the code, is the discriminator: a walk that
+              // ends quietly has an empty stderr; one that spoke is an ERROR leg
+              // and lands TYPED — never an empty list pretending the subtree clean.
+              // This cannot false-refuse on the noise a bare rg makes in a nested
+              // repo: the governed argv carries --no-ignore, so the walker runs no
+              // upward ignore-discovery and never touches a parent .git (measured:
+              // without --no-ignore, a confined walk in this repo does emit a
+              // `.git: Permission denied` line; with it, stderr stays empty).
+              observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)} stderrBytes=${String(stderrText.length)}`)
+              return failure('undetermined', 'walker-error', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker diagnostic stream non-empty exit=${String(code)} stderr=${stderrText}`)
+            }
           }
           const framed = parseWalkOutput(stdout)
           if (framed.ok !== true) {
