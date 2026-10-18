@@ -1,0 +1,61 @@
+{
+  "mode": "doff",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-14-00Z",
+  "ok": false,
+  "face": "REAL INSTALL (dsh plugin --profile web add github:…#<sha>)",
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "nodeModulesTop": [
+      "dsh-agent-team"
+    ],
+    "dependencies": [
+      "dsh-agent-team"
+    ]
+  },
+  "installedFace": {
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"
+  },
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-14-00Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992,
+    "worktreeSha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "carriesExitPassthrough": true
+  },
+  "launcherAbiPreflight": {
+    "rc": 0,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "layerHasGlobEnabledKey": true,
+  "bootLine": "dsh web: http://127.0.0.1:3185/?token=<REDACTED-960222e2>",
+  "discoverySurface": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5go-doff-tc\",\"result\":{\"ok\":false,\"error\":{\"code\":\"internal-error\",\"message\":\"remote method 'team.create' is unavailable while the team runtime is not ready (state: starting) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"runtime-not-ready\"}}}}"
+  },
+  "sampler": {
+    "counts": {
+      "rg": 0,
+      "rgGlobWalker": 0,
+      "launcher": 0,
+      "bash": 1,
+      "other": 4
+    },
+    "sightings": []
+  }
+}

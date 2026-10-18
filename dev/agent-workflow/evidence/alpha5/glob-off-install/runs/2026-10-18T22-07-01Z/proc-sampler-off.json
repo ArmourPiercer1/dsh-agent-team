@@ -1,0 +1,51 @@
+{
+  "counts": {
+    "rg": 0,
+    "rgGlobWalker": 0,
+    "launcher": 8,
+    "bash": 1,
+    "other": 9
+  },
+  "sightings": [
+    {
+      "at": 1792361327056,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --abi-probe"
+    },
+    {
+      "at": 1792361327157,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+    },
+    {
+      "at": 1792361327208,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg denyall --scr"
+    },
+    {
+      "at": 1792361327258,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg badhandled --"
+    },
+    {
+      "at": 1792361327358,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+    },
+    {
+      "at": 1792361327513,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+    },
+    {
+      "at": 1792361327766,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+    },
+    {
+      "at": 1792361327816,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/deployment/landlock-prelauncher.py --enforce-leg denyall --scr"
+    }
+  ]
+}

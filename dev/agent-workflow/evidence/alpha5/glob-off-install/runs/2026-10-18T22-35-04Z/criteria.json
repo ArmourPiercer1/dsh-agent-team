@@ -1,0 +1,259 @@
+{
+  "runStamp": "2026-10-18T22-35-04Z",
+  "ports": [
+    3185,
+    3186,
+    3182,
+    3183,
+    3493
+  ],
+  "installSpec": "github:ArmourPiercer1/dsh-agent-team#ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "installedSha": "ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glob-off-delta-src-20261018T222000Z",
+  "srcWorktreeHead": "ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "expectedRefusalVerbatim": "a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked",
+  "testuse": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use",
+    "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "porcelainAfter": ""
+  },
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5glob-off-store",
+  "installedFileCount": 1773,
+  "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7",
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "INSTALL SPEC = live master, measured from TWO SOURCES (git ls-remote inside the pinned source worktree AND inside the main checkout), both equal to the graded SHA, and the pinned source worktree HEAD IS that SHA (nothing spliced in)",
+      "pass": false,
+      "observed": "ls-remote[src]=52d73534f92e69efe12c72c347d435f66f3f85fe ls-remote[main]=52d73534f92e69efe12c72c347d435f66f3f85fe srcHEAD=ca7ab2abcfa0d91650bbb2994395a7bd9c065b59"
+    },
+    {
+      "id": "H1c",
+      "claim": "the graded SHA carries the candidate in its OWN lineage and source bytes: subject lineage contains #342 and the source of the production plane row consumes globEnabled / a5-glob-config-disabled",
+      "pass": true,
+      "observed": "lineage-#342=true src-globEnabled=true src-shutId=true row=ca7ab2ab alpha5(rc): C-16 reserved-name pins + bidirectional drift che"
+    },
+    {
+      "id": "H1d",
+      "claim": "the pin condition, stated instead of hidden: the graded SHA was the master the order named and is an ANCESTOR of the master measured right now (with N commits on top of it), while the install spec stays hard-pinned to the graded SHA itself — so what this run installs and runs is the named face, byte for byte",
+      "pass": true,
+      "observed": "graded=ca7ab2abcfa0 liveNow=52d73534f92e ancestorOfLive=true commitsOnTop=1 specPinnedToGradedSha=true"
+    },
+    {
+      "id": "H2",
+      "claim": "host ports 3185/3186/3182/3183 self-proved free before the run + a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3493"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "RG",
+      "claim": "rg deployment precondition (booked): the glob/search rows spawn the packaged ripgrep through the host resolver",
+      "pass": null,
+      "observed": "resolved=true answer=\"ripgrep 15.0.0 (rev 3a612f88b8)\""
+    },
+    {
+      "id": "I1",
+      "claim": "REAL install through the host's own public package face — `dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#<master-sha>` into a NEW install dir (workspace-local pnpm store) — exits 0",
+      "pass": true,
+      "observed": "exit=0 in 4s; tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-team#ca7ab2abcfa0d91650bbb2994395a7bd9c065b59 | Pack"
+    },
+    {
+      "id": "I2",
+      "claim": "STRICT profile face: the profile declares EXACTLY this repo's one plugin, node_modules top level holds nothing else, and the reconciler appended the dsh-agent-team bundle row",
+      "pass": true,
+      "observed": "deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "id": "I3a",
+      "claim": "INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry",
+      "pass": true,
+      "observed": "installed=1773 face=1773 (files:=1771 + pack-always=2)"
+    },
+    {
+      "id": "I3b",
+      "claim": "INSTALL THREE-ZEROS (2/4 missing = 0)",
+      "pass": true,
+      "observed": "missing=0 []"
+    },
+    {
+      "id": "I3c",
+      "claim": "INSTALL THREE-ZEROS (3/4 extra = 0)",
+      "pass": true,
+      "observed": "extra=0 []"
+    },
+    {
+      "id": "I3d",
+      "claim": "INSTALL THREE-ZEROS (4/4 sha ≠ 0): every installed file is BYTE-IDENTICAL to that path at the installed commit; rootSha recorded",
+      "pass": true,
+      "observed": "mismatch=0 rootSha=91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"
+    },
+    {
+      "id": "I3e",
+      "claim": "the bytes beyond the declared `files:` list are exactly the pack rules' always-included pair (disclosed, not folded into the count)",
+      "pass": true,
+      "observed": "alwaysIncluded=[\"README.md\",\"package.json\"]"
+    },
+    {
+      "id": "I4",
+      "claim": "the installed bundle layer is machine-agnostic (rows reference the package by name — no file: URL, no absolute path)",
+      "pass": true,
+      "observed": "hostRow=true"
+    },
+    {
+      "id": "I9",
+      "claim": "the launcher bytes the installer supplies for the confined provider are the RIGHT BYTES: git-show blob byte-identical to the graded commit and the pinned checkout, `#!` script, carries the --exit-passthrough arm, and --abi-probe measures a real landlock ABI (launcher bytes present: recorded)",
+      "pass": true,
+      "observed": "sha=1264ea584e3438d6… bytes=26992 commit==src=true abi=abi-available/4"
+    },
+    {
+      "id": "I8",
+      "claim": "DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face, so the installer supplies it as a deployment input",
+      "pass": true,
+      "observed": "launcherInFace=false launcherSha=1264ea584e3438d6…"
+    },
+    {
+      "id": "I5",
+      "claim": "the pinned host composes the INSTALLED bundle row through the public profile seam AND carries the OFF key verbatim into the composed tree (--dump-config shows the team row + plane + globEnabled: false + spill/client rows)",
+      "pass": true,
+      "observed": "exit=0 teamRow=true plane=true globEnabledFalse=true subRows=true"
+    },
+    {
+      "id": "I-SHIP",
+      "claim": "THE SHUT-OFF GATE IS ON THE FACE THAT RUNS: the INSTALLED dist bytes of the production plane row consume planeCfg.globEnabled and carry the honest disabled backendId (not only the git source)",
+      "pass": true,
+      "observed": "globEnabledHits=14 shutIdHits=1"
+    },
+    {
+      "id": "X0",
+      "claim": "the graded head is the BASELINE'S DIRECT CHILD and carries #344 in its own subject (the delta set is exactly #344, nothing else rode along)",
+      "pass": true,
+      "observed": "parent=46e48218e483 baseline=46e48218e483 parentIsBaseline=true lineage-#344=true commitsBetween=1"
+    },
+    {
+      "id": "X-byte-chain",
+      "claim": "BYTE PROOF that the consumption chain the shut form rides is untouched by #344: in the shipped dist module the unified diff baseline→new head changes 65 lines and NOT ONE of them matches globEnabled / globDisabledShut / createShutBackend / IO_POLICY_UNSUPPORTED / a5-glob-config-disabled; the two heads' glob-off line sets are identical in order",
+      "pass": true,
+      "observed": "changedLines=65 chainTouched=0 chainLines=16 identical=true installedShaNew=e03ccd452606da4c installedShaBase=03252c2687297242"
+    },
+    {
+      "id": "X-byte-names",
+      "claim": "the delta name face: all three claimed names are pinned in the shipped registry AT THE NEW HEAD, and the byte record says which of them are NEW here (subagent_codex / subagent_claude_code are #344's additions; subagent_fork was already pinned at the baseline — stated, not smoothed over)",
+      "pass": true,
+      "observed": "pinned=[\"subagent_codex:true\",\"subagent_claude_code:true\",\"subagent_fork:true\"] baselineHadFork=true baselineHadCodex=false baselineHadClaude=false registrySize=53->69"
+    },
+    {
+      "id": "W.doff.install",
+      "claim": "the doff world booted on a REAL installed face with three zeros (missing/extra/sha) and byte-identical to the measured install probe (rootSha equality)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"
+    },
+    {
+      "id": "W.dcodex.install",
+      "claim": "the dcodex world booted on a REAL installed face with three zeros (missing/extra/sha) and byte-identical to the measured install probe (rootSha equality)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"
+    },
+    {
+      "id": "W.dclaude.install",
+      "claim": "the dclaude world booted on a REAL installed face with three zeros (missing/extra/sha) and byte-identical to the measured install probe (rootSha equality)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"
+    },
+    {
+      "id": "W.dfork.install",
+      "claim": "the dfork world booted on a REAL installed face with three zeros (missing/extra/sha) and byte-identical to the measured install probe (rootSha equality)",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"
+    },
+    {
+      "id": "H3",
+      "claim": ":3080 stable instance untouched (read-only probe before/after identical) and the test-use host porcelain 0 after",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "W1",
+      "claim": "every delta world ran on the REAL installed face (its own three-zero install) and was swept",
+      "pass": true,
+      "observed": "doff:ok/swept dcodex:ok/swept dclaude:ok/swept dfork:ok/swept"
+    },
+    {
+      "id": "X-boot",
+      "claim": "(a) THE MOUNT IS UNCHANGED BY THE BIGGER REGISTRY: on a real install of the new head the production entry places all four plane rows (observer stream, /__a5ie/facts) and a confined bash leg still RUNS (token on stdout, exit=0, the inside-root write landed on disk)",
+      "pass": true,
+      "observed": "placed=[\"a5-plane: placed [team_grep,team_glob,team_bash,read]\",\"a5-plane: placed [team_grep,team_glob,team_bash,read]\"] bash=\"bash · exit=0\\n> A5GLOBOFFD-BASH-TOK\\n> A5GLOBOFFD-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\ wrote=true"
+    },
+    {
+      "id": "X-glob",
+      "claim": "(b) THE SHUT FORM STILL LANDS, AND LANDS THE SAME BYTES: one measured team_glob leg on the new head (globEnabled:false, plugin boot path) lands the typed shut refusal, and that landing is BYTE-IDENTICAL to the baseline run's recorded off-world landing read from its own evidence file",
+      "pass": true,
+      "observed": "sameBytesAsBaseline=true landing=\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never fa baselineLen=242 newLen=242 baselineRun=uns/2026-10-18T22-07-01Z"
+    },
+    {
+      "id": "X-glob-spawn",
+      "claim": "(b continued) the shut glob row still spawns nothing on the new head either: the argv-attributed confined ledger of that world has no glob-walker plan while its shell plan is there with its exit record",
+      "pass": true,
+      "observed": "planKinds={\"shell\":1} withExit={\"shell\":1}"
+    },
+    {
+      "id": "X-refuse.dcodex",
+      "claim": "(c) the plane row may NOT impersonate the native name 'subagent_codex': the mount is refused TYPED on the install face (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED in the entry's own observation stream / host log), nothing is placed, no plane row reaches any wire, and nothing spawns in that world",
+      "pass": true,
+      "observed": "witness=\"a5-plane: mount-REFUSED for session-a5glob-off-team-2026-10-18T22-35-04Z (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED)\" placedLine=false wirePlaneRows=[] planKinds={} createStatus=200 polledMs=3 discoverySurface=[]"
+    },
+    {
+      "id": "X-refuse.dclaude",
+      "claim": "(c) the plane row may NOT impersonate the native name 'subagent_claude_code': the mount is refused TYPED on the install face (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED in the entry's own observation stream / host log), nothing is placed, no plane row reaches any wire, and nothing spawns in that world",
+      "pass": true,
+      "observed": "witness=\"a5-plane: mount-REFUSED for session-a5glob-off-team-2026-10-18T22-35-04Z (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED)\" placedLine=false wirePlaneRows=[] planKinds={} createStatus=200 polledMs=3 discoverySurface=[]"
+    },
+    {
+      "id": "X-refuse.dfork",
+      "claim": "(c) the plane row may NOT impersonate the native name 'subagent_fork': the mount is refused TYPED on the install face (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED in the entry's own observation stream / host log), nothing is placed, no plane row reaches any wire, and nothing spawns in that world",
+      "pass": true,
+      "observed": "witness=\"a5-plane: mount-REFUSED for session-a5glob-off-team-2026-10-18T22-35-04Z (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED)\" placedLine=false wirePlaneRows=[] planKinds={} createStatus=200 polledMs=3 discoverySurface=[]"
+    },
+    {
+      "id": "X-scope",
+      "claim": "the delta is narrow on the wire too: exactly ONE typed shut landing across the whole delta run (the one shut glob leg) and the three claim refusals carry a DIFFERENT code — no new error surface appears anywhere",
+      "pass": true,
+      "observed": "ioLandings=1 of 2 legs"
+    },
+    {
+      "id": "T1",
+      "claim": "world cleanup: EXACT-prefix sweep — no a5glob-off-* DSH_HOME (or lock) remains under tests/homes; the byte manifest + logs are the retained evidence",
+      "pass": true,
+      "observed": "left=[] installHomeSwept=true"
+    },
+    {
+      "id": "T2",
+      "claim": "launch-token hygiene: raw instance logs deleted after redaction at capture",
+      "pass": true,
+      "observed": "rawLeft=[]"
+    },
+    {
+      "id": "T3",
+      "claim": "ports released after the run (three host ports + the mock port self-prove free again)",
+      "pass": true,
+      "observed": "ports=3185/3186/3182/3183+3493 free=true"
+    },
+    {
+      "id": "T4",
+      "claim": "pnpm store kept OUTSIDE the world set and is removed by name by the operator after this run: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5glob-off-store; pinned source worktree: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glob-off-delta-src-20261018T222000Z @ca7ab2abcfa0",
+      "pass": null,
+      "observed": "storeExists=true"
+    }
+  ]
+}

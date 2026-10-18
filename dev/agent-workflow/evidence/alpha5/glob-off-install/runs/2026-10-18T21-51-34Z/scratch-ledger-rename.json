@@ -1,0 +1,37 @@
+{
+  "glob": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T21-51-34Z/workspace/governed.a5g7-glob-scratch",
+    "exists": false,
+    "plans": [],
+    "exits": []
+  },
+  "search": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T21-51-34Z/workspace/governed.a5srgp-search-scratch",
+    "exists": false,
+    "plans": [],
+    "exits": []
+  },
+  "shell": {
+    "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-rename-2026-10-18T21-51-34Z/workspace/governed",
+    "exists": true,
+    "plans": [
+      {
+        "file": "plan-mved7jbr-658t4y.json",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "echo A5GLOBOFF-BASH-TOK; echo A5GLOBOFF-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+        ]
+      }
+    ],
+    "exits": [
+      {
+        "plan": "plan-mved7jbr-658t4y",
+        "pid": 534,
+        "rc": 0
+      }
+    ],
+    "rgPlans": 0,
+    "globWalkerPlans": 0
+  }
+}

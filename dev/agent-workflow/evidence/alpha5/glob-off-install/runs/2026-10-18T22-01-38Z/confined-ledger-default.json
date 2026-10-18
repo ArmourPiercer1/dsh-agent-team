@@ -1,0 +1,155 @@
+{
+  "byRowDefaultPath": {
+    "globDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-default-2026-10-18T22-01-38Z/workspace/governed.a5g7-glob-scratch",
+      "exists": false,
+      "plans": [],
+      "exits": []
+    },
+    "searchDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-default-2026-10-18T22-01-38Z/workspace/governed.a5srgp-search-scratch",
+      "exists": true,
+      "plans": [
+        {
+          "file": "plan-mvediuon-9yrlcg.json",
+          "argv": [
+            "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux",
+            "--no-config",
+            "--json",
+            "--regexp=A5GLOBOFF-GREP-TOK",
+            "--no-ignore-parent",
+            "--no-ignore-global",
+            "--",
+            "."
+          ]
+        }
+      ],
+      "exits": [
+        {
+          "plan": "plan-mvediuon-9yrlcg",
+          "pid": 388,
+          "rc": 0
+        }
+      ],
+      "rgPlans": 0,
+      "globWalkerPlans": 0
+    },
+    "shellDefaultScratch": {
+      "dir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-default-2026-10-18T22-01-38Z/workspace/governed",
+      "exists": true,
+      "plans": [
+        {
+          "file": "plan-mvediufi-y3zf07.json",
+          "argv": [
+            "/bin/sh",
+            "-c",
+            "echo A5GLOBOFF-BASH-TOK; echo A5GLOBOFF-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+          ]
+        },
+        {
+          "file": "plan-mvediuhh-l2r4q9.json",
+          "argv": [
+            "/bin/sh",
+            "-c",
+            "cat ../outside/secret.txt"
+          ]
+        }
+      ],
+      "exits": [
+        {
+          "plan": "plan-mvediufi-y3zf07",
+          "pid": 374,
+          "rc": 0
+        },
+        {
+          "plan": "plan-mvediuhh-l2r4q9",
+          "pid": 377,
+          "rc": 1
+        }
+      ],
+      "rgPlans": 0,
+      "globWalkerPlans": 0
+    }
+  },
+  "wholeTree": {
+    "root": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-default-2026-10-18T22-01-38Z",
+    "dirsVisited": 69,
+    "counts": {
+      "other": 2,
+      "shell": 2
+    },
+    "countsWithExit": {
+      "other": 2,
+      "shell": 2
+    },
+    "exitRecords": 4,
+    "globWalkerPlans": [],
+    "plans": [
+      {
+        "rel": "workspace/plans/plan-mvediuvu-k6gdv0.json",
+        "planId": "plan-mvediuvu-k6gdv0",
+        "kind": "other",
+        "argv": [
+          "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux",
+          "--files",
+          "--glob=*.txt",
+          "--sort=modified",
+          "--no-ignore",
+          "--hidden",
+          "--glob=!**/.git",
+          "--glob=!**/.git/**",
+          "--glob=!**/.svn",
+          "--glob=!**/.svn/**",
+          "--glob=!**/.hg",
+          "--glob=!**/.hg/**",
+          "--glob=!**/.bzr",
+          "--glob=!**/.bzr/**",
+          "--glob=!**/.jj",
+          "--glob=!**/.jj/**",
+          "--glob=!**/.sl",
+          "--glob=!**/.sl/**",
+          "--null"
+        ],
+        "hasExitRecord": true
+      },
+      {
+        "rel": "workspace/governed.a5srgp-search-scratch/plans/plan-mvediuon-9yrlcg.json",
+        "planId": "plan-mvediuon-9yrlcg",
+        "kind": "other",
+        "argv": [
+          "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux",
+          "--no-config",
+          "--json",
+          "--regexp=A5GLOBOFF-GREP-TOK",
+          "--no-ignore-parent",
+          "--no-ignore-global",
+          "--",
+          "."
+        ],
+        "hasExitRecord": true
+      },
+      {
+        "rel": "workspace/governed/plans/plan-mvediufi-y3zf07.json",
+        "planId": "plan-mvediufi-y3zf07",
+        "kind": "shell",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "echo A5GLOBOFF-BASH-TOK; echo A5GLOBOFF-WROTE-9 > ./bash-wrote.txt; cat ./bash-wrote.txt"
+        ],
+        "hasExitRecord": true
+      },
+      {
+        "rel": "workspace/governed/plans/plan-mvediuhh-l2r4q9.json",
+        "planId": "plan-mvediuhh-l2r4q9",
+        "kind": "shell",
+        "argv": [
+          "/bin/sh",
+          "-c",
+          "cat ../outside/secret.txt"
+        ],
+        "hasExitRecord": true
+      }
+    ]
+  }
+}

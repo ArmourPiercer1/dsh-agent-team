@@ -1,0 +1,507 @@
+--- a5glob-off-kit@v4.mjs	2026-10-18 22:07:46.653543069 +0000
++++ a5glob-delta-kit.mjs	2026-10-18 22:35:00.394915193 +0000
+@@ -1,72 +1,28 @@
+ #!/usr/bin/env node
+ /**
+- * a5glob-off-kit.mjs — globEnabled:false ON THE REAL INSTALLED FACE.
++ * a5glob-delta-kit.mjs — THE #344 DELTA on the installed face (root order 22:03Z).
+  *
+- * What this kit is: the install-face acceptance of master's #342 (the closed
+- * `planeCfg.globEnabled` shut-off key). The module layer already pins K1-K5
+- * (`packages/runtime/test/a5-globoff-key.test.ts` at the commit); the root's
+- * 21:39Z order says a module test is NOT the acceptance — the candidate must be
+- * verified AFTER AN ACTUAL INSTALL OF THE NEW HEAD, on a plane world mounted
+- * through the REAL host entry (the plugin boot path, row config in the profile
+- * layer), never a hand-built assembly unit. This kit therefore reuses the
+- * a5ie-r5 real-install skeleton (same install face, same three-zero law, same
+- * public seams only) and changes only what the question needs.
++ * The full glob-off acceptance (four-tool matrix, no-fallback, control, rename)
++ * was graded on master 46e48218 in this directory and stays the labelled
++ * baseline. #344 (C-16) landed on top of it; this kit re-grades ONLY the delta
++ * face the root named, on a real install of the new head:
++ *   (a) the plane still mounts normally with the bigger reserved-name registry
++ *       (observer `a5-plane: placed […]` + one REAL confined bash leg),
++ *   (b) the globEnabled:false shut form is re-confirmed with ONE measured leg
++ *       whose landing must be BYTE-IDENTICAL to the baseline run's recorded
++ *       landing, backed by the byte proof that #344 touched no line of the
++ *       glob-off consumption chain (Gate 0c parts 1-3 / createShutBackend),
++ *   (c) the three names subagent_codex / subagent_claude_code / subagent_fork,
++ *       claimed by a plane row as its mount spelling, are refused TYPED on the
++ *       install face (`a5-plane: mount-REFUSED … PLANE_NAMES_NATIVE_CLAIM_
++ *       UNSUPPORTED`, no placement, no plane tool on any wire of that world) —
++ *       plus the byte statement of WHICH of the three are new at this head.
++ * Plumbing (install face, three zeros, host entry, teardown law) is the audited
++ * v4 skeleton of the baseline kit, unchanged in behaviour.
+  *
+- * THE LEGS
+- *  H  pins. H1 pristine host @ its own pin, porcelain 0. H1b the install spec is
+- *     measured LIVE from TWO SOURCES (ls-remote in the pinned source worktree +
+- *     ls-remote in the main checkout), both equal to the master SHA the kit was
+- *     told to grade, and equal to the source worktree HEAD (nothing spliced).
+- *     H1c that SHA's own lineage carries #342 and its SOURCE bytes carry the
+- *     gate. H2 ports self-proved free. H0 :3080 read-only probe only.
+- *  I  the REAL network install (`dsh plugin --profile web add github:…#<sha>`)
+- *     into a NEW dir: THREE ZEROS (missing=0 / extra=0 / sha≠=0) + rootSha +
+- *     launcher deployment bytes + --dump-config composition + I-SHIP: the gate
+- *     is present in the INSTALLED dist bytes (the bytes that actually run).
+- *  W  every live world re-installs byte-identical to the probe face.
+- *  M  THE OFF FORM (world 'off': full config + teamToolPlane.globEnabled:false):
+- *       M0 the mount is UNCHANGED (four plane names reach the member wire)
+- *       M1 team_glob lands the EXISTING typed shut face, verbatim, and the
+- *          detail sentence is compared against the sentence read out of the
+- *          INSTALLED bytes (not transcribed here) — zero new error surface
+- *       M2 ZERO glob-row spawns, out-of-band: the glob row's own confined
+- *          scratch (`<root>.a5g7-glob-scratch`, the provider's plan/out ledger:
+- *          one plans/<planId>.json + one out/<planId>/exit.json per confined
+- *          spawn) is empty or absent — a shut row never even prepares a plan
+- *       M2b the SAME ledger for the search and shell rows in the SAME world is
+- *          NON-empty (the ledger detector's in-world positive control: it is
+- *          not empty because nobody looked)
+- *       M3/M4/M5/M6 team_grep hit / team_bash exit=0 + real write / team_bash
+- *          out-of-bounds exit=1 + kernel stderr verbatim / read really reads
+- *       M7 process-table corroboration: zero `rg` sightings for the whole off
+- *          world while the sampler demonstrably saw the launcher lanes
+- *       M8 host-log row witness: zero `anchored-glob` lines in the off world
+- *          while `anchored-search`/`confined-shell` witnesses are present
+- *       M9 NO FALLBACK: the glob fixture's unique seed names appear in NO wire
+- *          byte and NO host-log byte of this world (nothing listed out, no
+- *          partial result after the refusal)
+- *       M10 the refusal landing carries NO result lines (no `> ` entries, no
+- *          files_with_matches meta) — a refusal, not a truncated answer
+- *  C  THE CONTROL (world 'default': byte-identical config with the key ABSENT):
+- *       C1 glob runs for real (both seeds listed, no refusal, no exit=) — the
+- *          zero-default-change law re-proved on the installed face
+- *       C2 the glob row's plan ledger is NON-empty and its argv carries rg +
+- *          `--files` (the out-of-band positive control of M2)
+- *       C3 host log shows `anchored-glob ran` (the pair of M8)
+- *       C4 the other three rows land the SAME shape as in the off world
+- *       C5 the config bytes differ in exactly one key (layer file asserted)
+- *       C6 r5-shaped regression on this world: bash positive + negative control
+- *  R  RENAME CANNOT RESTORE (world 'rename': globEnabled:false + names.glob
+- *     ='zglob'): the row mounts under the new spelling (R1) and still lands the
+- *     same typed refusal (R2), its scratch ledger stays empty (R3), bash stays
+- *     live (R4).
+- *  Z/T closed-world checks and teardown (worlds swept by EXACT prefix, token
+- *     hygiene, ports released, :3080 unchanged, pristine host still clean).
++ * KIT_EXIT: 0 GREEN · 2 RED · 1 FATAL. BOOK = observation, never counted.
+  *
+- * KIT_EXIT: 0 GREEN · 2 RED (criteria kept at full height, landings quoted) ·
+- * 1 FATAL. BOOK = recorded observation, never counted either way.
+- *
+- * @module evidence/alpha5/glob-off-install/a5glob-off-kit
++ * @module evidence/alpha5/glob-off-install/a5glob-delta-kit
+  */
+ import { spawn, spawnSync } from 'node:child_process'
+ import { createHash } from 'node:crypto'
+@@ -80,8 +36,14 @@
+ const flag = (n) => args.includes(`--${n}`)
+ const HERE = dirname(new URL(import.meta.url).pathname)
+ 
+-/** The commit this round grades (root instruction 21:39Z, #342 landed). */
+-const EXPECTED_MASTER = '46e48218e48314662586ff053ca3825e2889a6bb'
++/** The commit this DELTA round grades (root order 22:03Z: #344 landed). */
++const EXPECTED_MASTER = 'ca7ab2abcfa0d91650bbb2994395a7bd9c065b59'
++/** The already-graded baseline this delta hangs off (its direct parent). */
++const BASELINE_MASTER = '46e48218e48314662586ff053ca3825e2889a6bb'
++/** Where the baseline kit's graded run evidence lives (landing byte-compare). */
++const BASELINE_RUN = resolve(argValue('baseline-run', ''))
++/** The baseline kit's pinned source worktree (byte-diff of the plane module). */
++const BASELINE_SRC = resolve(argValue('baseline-src-root', ''))
+ /** Byte-pinned source root: a detached worktree AT that commit (harness bytes too). */
+ const SRC = resolve(argValue('src-root', ''))
+ if (!existsSync(join(SRC, 'tests/paths.mjs'))) throw new Error(`--src-root must be a checkout of the team repo: ${SRC}`)
+@@ -111,22 +73,28 @@
+ const TK_A1 = 'a5glob-off-tok-a1'
+ const MODEL_ID = 'a5glob-off-model'
+ 
+-const TOK_GREP = 'A5GLOBOFF-GREP-TOK'
+-const TOK_BASH = 'A5GLOBOFF-BASH-TOK'
+-const BASH_WRITE_MARKER = 'A5GLOBOFF-WROTE-9'
+-const OUTSIDE_MARKER = 'A5GLOBOFF-OUTSIDE-ONLY-MARKER-7331'
++const TOK_GREP = 'A5GLOBOFFD-GREP-TOK'
++const TOK_BASH = 'A5GLOBOFFD-BASH-TOK'
++const BASH_WRITE_MARKER = 'A5GLOBOFFD-WROTE-9'
++const OUTSIDE_MARKER = 'A5GLOBOFFD-OUTSIDE-ONLY-MARKER-7331'
+ /** UNIQUE per-fixture names: if one of these ever reaches the wire, a list did flow out. */
+-const GPOS_SEEDS = ['zzgloboff-alpha.txt', 'zzgloboff-beta.txt']
++const GPOS_SEEDS = ['zzgloboffd-alpha.txt', 'zzgloboffd-beta.txt']
+ const IO_TEXT = 'IO_POLICY_UNSUPPORTED'
+ const REFUSAL_PREFIX = 'a5p5-refused'
+ 
+-/** The three shapes. Same config object, one key apart. */
++/**
++ * The delta shapes. `doff` re-runs the shut form with two legs (one REAL
++ * confined bash leg as the boot/live control + the glob refusal leg); the three
++ * `d*` refuse shapes each try to mount the glob ROW under a reserved native
++ * name and must land the typed claim refusal.
++ */
+ const MODES = {
+-  off: { port: 3182, globEnabled: false, globName: 'team_glob', full: true },
+-  default: { port: 3183, globEnabled: undefined, globName: 'team_glob', full: true },
+-  rename: { port: 3184, globEnabled: false, globName: 'zglob', full: false },
++  doff: { port: 3185, globEnabled: false, globName: 'team_glob', full: false },
++  dcodex: { port: 3186, globEnabled: false, globName: 'team_glob', full: false, refuseName: 'subagent_codex', ladderless: true },
++  dclaude: { port: 3182, globEnabled: false, globName: 'team_glob', full: false, refuseName: 'subagent_claude_code', ladderless: true },
++  dfork: { port: 3183, globEnabled: false, globName: 'team_glob', full: false, refuseName: 'subagent_fork', ladderless: true },
+ }
+-const MODE_NAMES = ['off', 'default', 'rename']
++const MODE_NAMES = ['doff', 'dcodex', 'dclaude', 'dfork']
+ /** Validation-time subset (`--only off,default`); the GRADED run executes all three. */
+ const MODE_RUN = (() => {
+   const only = argValue('only', '')
+@@ -139,12 +107,11 @@
+ 
+ function stepsFor (mode) {
+   const m = MODES[mode]
+-  const s = [['team_bash', { command: `echo ${TOK_BASH}; echo ${BASH_WRITE_MARKER} > ./bash-wrote.txt; cat ./bash-wrote.txt` }]]
+-  if (m.full) s.push(['team_bash', { command: 'cat ../outside/secret.txt' }])
+-  if (m.full) s.push(['team_grep', { pattern: TOK_GREP, path: '.', output_mode: 'content' }])
+-  s.push([m.globName, { pattern: '*.txt', path: './gpos' }])
+-  if (m.full) s.push(['read', { file_path: 'notes.txt' }])
+-  return s
++  if (m.ladderless === true) return []
++  return [
++    ['team_bash', { command: `echo ${TOK_BASH}; echo ${BASH_WRITE_MARKER} > ./bash-wrote.txt; cat ./bash-wrote.txt` }],
++    [m.globName, { pattern: '*.txt', path: './gpos' }],
++  ]
+ }
+ const stepMarker = ([name, a]) => `tool_use:${name}${JSON.stringify(a)}`
+ 
+@@ -546,7 +513,7 @@
+   }
+   const m = MODES[mode]
+   if (m.globEnabled === false) plane.globEnabled = false
+-  if (mode === 'rename') plane.names = { glob: 'zglob' }
++  if (m.refuseName !== undefined) plane.names = { glob: m.refuseName }
+   cfg.teamToolPlane = plane
+   return cfg
+ }
+@@ -703,7 +670,13 @@
+     }
+ 
+     const MKD = `${MK}_${mode.toUpperCase()}_DISC`
++    // EVERY shape — the refusal shapes included — enters through the same front
++    // door the ladder shapes use: the real discovery round on the root session.
++    // The refuse worlds differ from `doff` by exactly ONE config key (the name
++    // the glob row claims), so the only thing that can change is what the mount
++    // does, not how the world is driven.
+     const disc = await promptBarrier({ sessionId: ROOT, textBase: MKD, rpcTag: `a5go-${mode}-d` })
++    facts.discoveryAttempts = disc.attempts
+     const surface = [...new Set(disc.hit.digest.toolNames ?? [])].sort()
+     const denyList = surface.filter((n) => !n.startsWith('team_') && !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n))
+     facts.discoverySurface = surface
+@@ -722,6 +695,56 @@
+     }, 90_000)
+     facts.teamCreate = { status: created.status, body: redact(JSON.stringify(created.body ?? null)).slice(0, 800) }
+ 
++    if (MODES[mode].ladderless === true) {
++      // The mount is attempted while the host binds the sessions team.create
++      // brings up. Poll the two faces that can carry the typed refusal — the
++      // plugin's own observation stream (read through the read-only observer
++      // row) and the instance's own log — and stop as soon as one shows it.
++      facts.refusalWitness = { source: null, line: null, polledMs: 0 }
++      const wantNames = ['team_grep', 'team_glob', 'team_bash', 'read', 'subagent_codex', 'subagent_claude_code', 'subagent_fork'].join(',')
++      const t0 = Date.now()
++      while (Date.now() - t0 < 150_000) {
++        try {
++          const rawLog = readFileSync(INSTANCE_RAW, 'utf8')
++          const hit = rawLog.split('\n').find((l) => /mount-REFUSED|PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED/.test(l))
++          if (hit !== undefined) { facts.refusalWitness = { source: 'instance-log', line: redact(hit).slice(0, 300), polledMs: Date.now() - t0 }; break }
++        } catch { /* the log may not be flushed yet */ }
++        try {
++          const f = await fetchJson(`${origin}/__a5ie/facts?names=${encodeURIComponent(wantNames)}&roots=${encodeURIComponent(CREATE_ROOT)}`, null, 10_000)
++          const lines = (f?.body?.planeObservations ?? []).map(String)
++          const hit = lines.find((l) => /mount-REFUSED|PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED/.test(l))
++          if (hit !== undefined) { facts.refusalWitness = { source: 'observer-stream', line: hit.slice(0, 300), polledMs: Date.now() - t0 }; break }
++        } catch { /* not yet */ }
++        await new Promise((r) => setTimeout(r, 2_000))
++      }
++      facts.refusalWitness.polledMs = Date.now() - t0
++    }
++    if (MODES[mode].ladderless === true) {
++      // No ladder: collect the refusal face and stop. The production entry's own
++      // observation stream (through the read-only observer row) and the host log
++      // are the witnesses; the confined ledger says nothing spawned at all.
++      const obs = await waitQuietTolerant(20_000, async () => {
++        const f = await fetchJson(`${origin}/__a5ie/facts?names=${encodeURIComponent(['team_grep', 'team_glob', 'team_bash', 'read', 'subagent_codex', 'subagent_claude_code', 'subagent_fork'].join(','))}&roots=${encodeURIComponent(CREATE_ROOT)}`).catch(() => null)
++        return f?.status === 200 ? f.body : false
++      })
++      if (obs !== null) writeEvidence(`observer-facts-${mode}.json`, JSON.parse(redact(JSON.stringify(obs))))
++      facts.planeObservations = obs?.planeObservations ?? null
++      facts.globalNames = obs?.globalNames ?? null
++      facts.agentWireCatalogs = (obs?.agents ?? []).map((a) => ({ session: a.session, scopedNames: a.scopedNames }))
++      facts.worldLedger = collectWorldLedger(HOME)
++      writeEvidence(`confined-ledger-${mode}.json`, { wholeTree: facts.worldLedger })
++      const wireAllR = (mock.requests ?? []).slice(reqBase).map((r) => JSON.stringify({ reply: r.reply ?? null, digest: r.digest === undefined ? null : { toolResults: r.digest.toolResults, text: r.digest._text } }))
++      facts.wireTextAll = wireAllR
++      facts.memberAWireCatalog = [...new Set((mock.requests ?? []).slice(reqBase).flatMap((r) => r.digest?.toolNames ?? []))].sort()
++      facts.memberToolCallOrder = []
++      facts.memberToolResults = []
++      facts.outsideMarkerOnWire = 0
++      facts.seedNamesOnWire = []
++      facts.refusalCreateBody = facts.teamCreate?.body ?? null
++      facts.ok = true
++      return facts
++    }
++
+     const chain = await waitFor(900_000, async () => {
+       stormCheck(`${mode} chain`)
+       const memberFinal = (mock.requests ?? []).find((r) => r.digest?.markerHits.includes(MKT) && !r.digest.markerHits.includes(`${MK}_${mode.toUpperCase()}_L0`) && JSON.stringify(r.reply ?? '').includes('A5GLOBOFF_MEMBER_RESULT'))
+@@ -829,6 +852,21 @@
+     /#342/.test(lineage) && srcPlaneBytes.includes('globEnabled') && srcPlaneBytes.includes('a5-glob-config-disabled'),
+     `lineage-#342=${String(/#342/.test(lineage))} src-globEnabled=${String(srcPlaneBytes.includes('globEnabled'))} src-shutId=${String(srcPlaneBytes.includes('a5-glob-config-disabled'))} row=${gitAt(SRC, 'log', '--format=%h %s', '-1', EXPECTED_MASTER).slice(0, 70)}`)
+ 
++  // H1b grades the r5 law UNCHANGED (install spec == live master == graded SHA).
++  // When master advances while this round runs, that law goes RED on its own
++  // terms and stays red in the record — the criterion is never bent. H1d is the
++  // ADDITIONAL statement the red needs: the graded SHA is still on master's
++  // first-parent history, and the install spec is hard-pinned to it, so the face
++  // graded here is exactly the face the order named.
++  const liveNow = (spawnSync('git', ['-C', MAIN_CHECKOUT, 'ls-remote', 'origin', 'refs/heads/master'], { encoding: 'utf8' }).stdout ?? '').split('\t')[0].trim()
++  spawnSync('git', ['-C', MAIN_CHECKOUT, 'fetch', '-q', 'origin', liveNow], { encoding: 'utf8' })
++  const ancestor = spawnSync('git', ['-C', MAIN_CHECKOUT, 'merge-base', '--is-ancestor', EXPECTED_MASTER, liveNow], { encoding: 'utf8' }).status === 0
++  const ahead = spawnSync('git', ['-C', MAIN_CHECKOUT, 'rev-list', '--count', `${EXPECTED_MASTER}..${liveNow}`], { encoding: 'utf8' }).stdout.trim()
++  check('H1d', 'the pin condition, stated instead of hidden: the graded SHA was the master the order named and is an ANCESTOR of the master measured right now (with N commits on top of it), while the install spec stays hard-pinned to the graded SHA itself — so what this run installs and runs is the named face, byte for byte',
++    ancestor && liveNow !== EXPECTED_MASTER && INSTALL_SPEC.includes(EXPECTED_MASTER),
++    `graded=${EXPECTED_MASTER.slice(0, 12)} liveNow=${liveNow.slice(0, 12)} ancestorOfLive=${String(ancestor)} commitsOnTop=${ahead} specPinnedToGradedSha=true`)
++
++
+   const ports = MODE_RUN.map((m) => MODES[m].port)
+   let mockPort = 0
+   for (const p of [3493, 3496, 3497, 3498, 3499]) { if (await portFree(p)) { mockPort = p; break } }
+@@ -887,7 +925,7 @@
+     !face.expected.includes(launcherRel) && existsSync(join(SRC, launcherRel)),
+     `launcherInFace=${String(face.expected.includes(launcherRel))} launcherSha=${probeLauncher.sha.slice(0, 16)}…`)
+ 
+-  const probeCfg = rowConfig('off', join(INSTALL_HOME, 'blueprints'), probeWorld, probeLauncher)
++  const probeCfg = rowConfig('doff', join(INSTALL_HOME, 'blueprints'), probeWorld, probeLauncher)
+   const probeLayer = [
+     `# a5glob-off INSTALL-PROBE layer (run ${RUN_STAMP}): the OFF-form config on the installed bundle row — does the shut-off key ride the host's own composition?`,
+     '- id: dsh-agent-team', '  name: dsh-agent-team/host', '  config:',
+@@ -926,6 +964,46 @@
+     new Set(m.manifest.map((x) => x.path)).has(distPlaneRel) && distPlane.includes('globEnabled') && distPlane.includes("globEnabled === false") && distPlane.includes('a5-glob-config-disabled'),
+     `globEnabledHits=${String(distPlane.split('globEnabled').length - 1)} shutIdHits=${String(distPlane.split('a5-glob-config-disabled').length - 1)}`)
+   faceReference = { rootSha: m.rootSha, fromProbe: true }
++  // ── DELTA byte proofs (root order 22:03Z: the delta face is C-16 名钉 only) ──
++  const parent = gitAt(MAIN_CHECKOUT, 'rev-parse', `${EXPECTED_MASTER}^`)
++  const lineageNew = gitAt(SRC, 'log', '--format=%s', EXPECTED_MASTER).slice(0, 4000)
++  check('X0', 'the graded head is the BASELINE\'S DIRECT CHILD and carries #344 in its own subject (the delta set is exactly #344, nothing else rode along)',
++    parent === BASELINE_MASTER && /#344/.test(lineageNew),
++    `parent=${parent.slice(0, 12)} baseline=${BASELINE_MASTER.slice(0, 12)} parentIsBaseline=${String(parent === BASELINE_MASTER)} lineage-#344=${String(/#344/.test(lineageNew))} commitsBetween=${String(spawnSync('git', ['-C', MAIN_CHECKOUT, 'rev-list', '--count', `${BASELINE_MASTER}..${EXPECTED_MASTER}`], { encoding: 'utf8' }).stdout.trim())}`)
++
++  const PLANE_DIST_REL = distPlaneRel
++  const distAt = (sha) => spawnSync('git', ['-C', MAIN_CHECKOUT, 'show', `${sha}:${PLANE_DIST_REL}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).stdout ?? ''
++  const distBase = distAt(BASELINE_MASTER)
++  const distNew = distAt(EXPECTED_MASTER)
++  writeEvidence('delta-plane-baseline-dist.mjs', distBase)
++  writeEvidence('delta-plane-new-dist.mjs', distNew)
++  const diffRun = spawnSync('diff', ['-u', join(EVIDENCE_DIR, 'delta-plane-baseline-dist.mjs'), join(EVIDENCE_DIR, 'delta-plane-new-dist.mjs')], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
++  const diffText = `${diffRun.stdout ?? ''}${diffRun.stderr ?? ''}`
++  writeEvidence('delta-plane-dist.diff', diffText)
++  const changedLines = diffText.split('\n').filter((l) => (l.startsWith('+') || l.startsWith('-')) && !l.startsWith('+++') && !l.startsWith('---'))
++  const GLOB_CHAIN = /globEnabled|globDisabledShut|createShutBackend|IO_POLICY_UNSUPPORTED|a5-glob-config-disabled/
++  const chainTouched = changedLines.filter((l) => GLOB_CHAIN.test(l))
++  const chainLinesNew = distNew.split('\n').filter((l) => GLOB_CHAIN.test(l)).map((l) => l.trim())
++  const chainLinesBase = distBase.split('\n').filter((l) => GLOB_CHAIN.test(l)).map((l) => l.trim())
++  writeEvidence('delta-glob-chain-lines.json', { baseline: chainLinesBase, newHead: chainLinesNew, identical: JSON.stringify(chainLinesBase) === JSON.stringify(chainLinesNew), changedLineCount: changedLines.length })
++  check('X-byte-chain', 'BYTE PROOF that the consumption chain the shut form rides is untouched by #344: in the shipped dist module the unified diff baseline→new head changes ' + String(changedLines.length) + ' lines and NOT ONE of them matches globEnabled / globDisabledShut / createShutBackend / IO_POLICY_UNSUPPORTED / a5-glob-config-disabled; the two heads\' glob-off line sets are identical in order',
++    chainTouched.length === 0 && chainLinesBase.length > 0 && JSON.stringify(chainLinesBase) === JSON.stringify(chainLinesNew),
++    `changedLines=${String(changedLines.length)} chainTouched=${String(chainTouched.length)} chainLines=${String(chainLinesBase.length)} identical=${String(JSON.stringify(chainLinesBase) === JSON.stringify(chainLinesNew))} installedShaNew=${sha256Text(distNew).slice(0, 16)} installedShaBase=${sha256Text(distBase).slice(0, 16)}`)
++  const RESERVED = /export const PLANE_RESERVED_NATIVE = Object\.freeze\(\[([\s\S]*?)\]\)/
++  const namesBase = (RESERVED.exec(distBase)?.[1] ?? '').split("'").filter((x) => /^[a-z_]+$/.test(x))
++  const namesNew = (RESERVED.exec(distNew)?.[1] ?? '').split("'").filter((x) => /^[a-z_]+$/.test(x))
++  const THREE = ['subagent_codex', 'subagent_claude_code', 'subagent_fork']
++  writeEvidence('delta-reserved-names.json', {
++    baselineHead: BASELINE_MASTER, newHead: EXPECTED_MASTER,
++    baselineCount: namesBase.length, newCount: namesNew.length,
++    added: namesNew.filter((n) => !namesBase.includes(n)),
++    removed: namesBase.filter((n) => !namesNew.includes(n)),
++    three: THREE.map((n) => ({ name: n, pinnedAtBaseline: namesBase.includes(n), pinnedAtNewHead: namesNew.includes(n) })),
++  })
++  check('X-byte-names', 'the delta name face: all three claimed names are pinned in the shipped registry AT THE NEW HEAD, and the byte record says which of them are NEW here (subagent_codex / subagent_claude_code are #344\'s additions; subagent_fork was already pinned at the baseline — stated, not smoothed over)',
++    THREE.every((n) => namesNew.includes(n)) && namesBase.includes('subagent_fork') && !namesBase.includes('subagent_codex') && !namesBase.includes('subagent_claude_code') && namesBase.length < namesNew.length,
++    `pinned=${JSON.stringify(THREE.map((n) => `${n}:${String(namesNew.includes(n))}`))} baselineHadFork=${String(namesBase.includes('subagent_fork'))} baselineHadCodex=${String(namesBase.includes('subagent_codex'))} baselineHadClaude=${String(namesBase.includes('subagent_claude_code'))} registrySize=${String(namesBase.length)}->${String(namesNew.length)}`)
++
+ 
+   // ── mock at the LLM slot ───────────────────────────────────────────────────
+   MK = `A5GLOBOFF_${RUN_STAMP.replace(/[^A-Za-z0-9]/g, '')}`
+@@ -991,7 +1069,7 @@
+   const stableAfter = await stableProbe()
+   check('H3', ':3080 stable instance untouched (read-only probe before/after identical) and the test-use host porcelain 0 after',
+     String(stableBefore) === String(stableAfter) && porcelainAfter === '', `${String(stableBefore)} -> ${String(stableAfter)}; porcelain=${porcelainAfter === '' ? 0 : 'DIRTY'}`)
+-  check('W1', 'all three worlds ran on the REAL installed face and were swept',
++  check('W1', 'every delta world ran on the REAL installed face (its own three-zero install) and was swept',
+     MODE_RUN.every((w) => worlds[w]?.ok === true), MODE_RUN.map((w) => `${w}:${worlds[w]?.ok === true ? 'ok' : 'FAIL'}${worlds[w]?.swept ? '/swept' : '/UNSWEPT'}`).join(' '))
+ 
+   // ─── reading helpers ───────────────────────────────────────────────────────
+@@ -1007,123 +1085,57 @@
+     names.forEach((n, i) => { (byTool[n] ??= []).push({ i, text: results[i] ?? 'LEG-MISSING' }) })
+     return { names, results, byTool }
+   }
+-  const L = { off: landings('off'), default: landings('default'), rename: landings('rename') }
+-  const pick = (mode, tool) => (L[mode].byTool[tool] ?? [{ text: 'LEG-MISSING' }])[0].text
++  const L = {}
++  for (const w of MODE_RUN) L[w] = landings(w)
++  const pick = (mode, tool) => ((L[mode] ?? { byTool: {} }).byTool[tool] ?? [{ text: 'LEG-MISSING' }])[0].text
+   writeEvidence('landings.json', {
+-    off: L.off.byTool, default: L.default.byTool, rename: L.rename.byTool,
++    byMode: Object.fromEntries(MODE_RUN.map((w) => [w, L[w].byTool])),
++    memberToolCallOrderByMode: Object.fromEntries(MODE_RUN.map((w) => [w, L[w].names])),
+     expectedRefusalVerbatim: EXPECTED_REFUSAL,
++    baselineRun: BASELINE_RUN,
+   })
+ 
+-  // ─── M family: the OFF form on the installed face ──────────────────────────
+-  const off = worlds.off ?? {}
+-  const offObs = (off.planeObservations ?? []).filter((l) => /^a5-plane: placed /.test(String(l)))
+-  check('M0b', 'the production entry\'s OWN observation stream (read through the read-only observer row, /__a5ie/facts) shows the plane placing all four rows in the off world — the mount line is the same face the plugin booted, not a kit reconstruction',
+-    offObs.some((l) => /team_grep,team_glob,team_bash,read/.test(String(l))),
+-    `placedLines=${JSON.stringify(offObs.map((l) => String(l).slice(0, 90)))}`)
+-  const offGlob = pick('off', 'team_glob')
+-  const offPlaneNames = (off.memberAWireCatalog ?? []).filter((n) => n.startsWith('team_') || n === 'read')
+-  check('M0', 'THE MOUNT IS UNCHANGED BY THE KEY: with globEnabled:false the four plane names still reach the model-facing wire of the governed member (the row mounts and its EFFECT face is what refuses — nothing disappears)',
+-    ['team_grep', 'team_glob', 'team_bash', 'read'].every((n) => (off.memberAWireCatalog ?? []).includes(n)),
+-    `member plane names=${JSON.stringify(offPlaneNames)}`)
+-  check('M1', 'team_glob ON THE INSTALLED FACE lands the EXISTING typed shut face verbatim — a5p5-refused / kind=backend-failed / IO_POLICY_UNSUPPORTED with the shut detail read OUT OF THE INSTALLED BYTES (zero new error surface)',
+-    offGlob.includes(EXPECTED_REFUSAL) && offGlob.includes(IO_TEXT),
+-    `landing=${JSON.stringify(offGlob).slice(0, 320)}`)
+-  const offLed = off.worldLedger ?? { counts: {}, countsWithExit: {}, plans: [], globWalkerPlans: [] }
+-  check('M2', 'ZERO glob-row spawns, out-of-band (no in-process counter, no log trust, no path assumption): walking the WHOLE off world for the provider\'s own records (plans/plan-*.json + out/plan-*/exit.json) and attributing every plan from its own argv finds NO glob-walker plan (`rg … --files`) anywhere while the key is off — a shut row never even prepares a confined plan',
+-    (offLed.counts['rg-glob-walker'] ?? 0) === 0 && offLed.globWalkerPlans.length === 0,
+-    `planKinds=${JSON.stringify(offLed.counts)} withExit=${JSON.stringify(offLed.countsWithExit)} globWalkerPlans=${String(offLed.globWalkerPlans.length)} dirsVisited=${String(offLed.dirsVisited)}`)
+-  check('M2b', 'IN-WORLD POSITIVE CONTROL for that detector: in the SAME off world the argv-attributed ledger shows the shell row\'s confined plans (>= 2, one per bash leg) and the search row\'s rg plan (>= 1, rg WITHOUT --files), each with its exit.json record — the missing glob-walker plan is the row being shut, not the detector being blind',
+-    (offLed.counts.shell ?? 0) >= 2 && (offLed.counts['rg-search'] ?? 0) >= 1 && (offLed.countsWithExit.shell ?? 0) >= 2 && (offLed.countsWithExit['rg-search'] ?? 0) >= 1,
+-    `shell=${String(offLed.counts.shell ?? 0)} rgSearch=${String(offLed.counts['rg-search'] ?? 0)} shellExit=${String(offLed.countsWithExit.shell ?? 0)} rgSearchExit=${String(offLed.countsWithExit['rg-search'] ?? 0)}`)
+-  const offGrep = pick('off', 'team_grep')
+-  check('M3', 'team_grep REALLY RUNS with glob shut: the governed search row returns the seeded token on the content face (no refusal, no exit= anywhere)',
+-    offGrep.includes(TOK_GREP) && offGrep.includes('a5p5-meta') && !offGrep.includes(IO_TEXT) && !offGrep.includes('exit='),
+-    `landing=${JSON.stringify(offGrep).slice(0, 260)}`)
+-  const offBash1 = pick('off', 'team_bash')
+-  check('M4', 'team_bash POSITIVE (REAL Landlock) with glob shut: confined run RAN (token on stdout, exit=0) and the inside-root write landed on disk (fs-probed before the sweep)',
+-    offBash1.includes(TOK_BASH) && offBash1.includes('bash · exit=0') && off.bashWroteExists === true && String(off.bashWroteBytes ?? '').includes(BASH_WRITE_MARKER),
+-    `landing=${JSON.stringify(offBash1).slice(0, 220)} wrote=${String(off.bashWroteExists)} abi=${String(off.launcherAbiPreflight?.kind)}/${String(off.launcherAbiPreflight?.abiVersion)}`)
+-  const offBash2 = (L.off.byTool.team_bash ?? [])[1]?.text ?? 'LEG-MISSING'
+-  check('M5', 'team_bash NEGATIVE CONTROL with glob shut (r5 same-shape): the out-of-bounds leg still lands `bash · exit=1` + the kernel refusal verbatim, and the outside marker appears in NO wire byte of this world',
+-    offBash2.includes('bash · exit=1') && offBash2.includes('"exitCode":1') && offBash2.includes('Permission denied') && off.outsideMarkerOnWire === 0,
+-    `landing=${JSON.stringify(offBash2).slice(0, 260)} markerOnWire=${String(off.outsideMarkerOnWire)}`)
+-  const offRead = pick('off', 'read')
+-  check('M6', 'read REALLY READS with glob shut (governed read row, takeover name untouched): the seeded file content comes back through the plane, no refusal',
+-    offRead.includes(TOK_GREP) && !offRead.includes('a5p5-refused') && !offRead.includes(IO_TEXT),
+-    `landing=${JSON.stringify(offRead).slice(0, 220)}`)
+-  const offSampler = off.sampler ?? { counts: {}, sightings: [] }
+-  check('M7', 'process-table corroboration (attributable form): the /proc sampler (50 ms, whole world lifetime) sighted NO rg process carrying the glob-walker face (`rg … --files …`) in the off world, while it demonstrably saw that world\'s confined lanes (launcher sightings > 0). Corroboration only — M2 (the provider plan/exit ledger) is the proof.',
+-    offSampler.counts.rgGlobWalker === 0 && offSampler.counts.launcher > 0,
+-    `rgGlobWalker=${String(offSampler.counts.rgGlobWalker)} rgTotal=${String(offSampler.counts.rg)} launcher=${String(offSampler.counts.launcher)} bash=${String(offSampler.counts.bash)} other=${String(offSampler.counts.other)}`)
+-  const offLogGlobLines = (off.logObservations ?? []).filter((l) => /anchored-glob/.test(l))
+-  const offLogOtherLines = (off.logObservations ?? []).filter((l) => /anchored-search|confined-shell ran/.test(l))
+-  check('M8', 'host-log row witness (the provider\'s own lines): ZERO anchored-glob witness lines in the off world while the search/shell witnesses are present in the same log',
+-    offLogGlobLines.length === 0 && offLogOtherLines.length >= 2,
+-    `globLines=${String(offLogGlobLines.length)} otherLines=${String(offLogOtherLines.length)}`)
+-  const seedWire = (off.seedNamesOnWire ?? []).reduce((a, x) => a + x.hits, 0)
+-  const seedLog = (off.seedNamesInLog ?? []).reduce((a, x) => a + x.hits, 0)
+-  check('M9', 'NO FALLBACK, install-face form: the glob fixture\'s unique seed names (zzgloboff-*) appear in NO wire byte and NO host-log byte of the off world — after the refusal nothing listed out, no partial result, no direct-fs enumeration surface',
+-    seedWire === 0 && seedLog === 0,
+-    `wireHits=${String(seedWire)} logHits=${String(seedLog)} perSeed=${JSON.stringify(off.seedNamesOnWire)}`)
+-  check('M10', 'the refusal is a REFUSAL, not a truncated answer: the glob landing carries no result lines and no files_with_matches meta alongside the typed refusal',
+-    offGlob.includes(IO_TEXT) && namedFiles(offGlob).length === 0 && !offGlob.includes('files_with_matches'),
+-    `nameLines=${String(namedFiles(offGlob).length)} hasMetaFiles=${String(offGlob.includes('files_with_matches'))}`)
+-
+-  // ─── C family: the same config with the key ABSENT ─────────────────────────
+-  const dflt = worlds.default ?? {}
+-  const dGlob = pick('default', 'team_glob')
+-  check('C1', 'CONTROL (zero-default-change ON THE INSTALLED FACE): the byte-identical config with the key ABSENT runs the REAL anchored rg glob — both seeded files listed, no refusal, and the glob completion law untouched (no exit=/exitCode)',
+-    dGlob.includes('a5p5-meta') && dGlob.includes('files_with_matches') && GPOS_SEEDS.every((n) => namedFiles(dGlob).some((x) => x.endsWith(n))) && !dGlob.includes(IO_TEXT) && !dGlob.includes('exit='),
+-    `names=${JSON.stringify(namedFiles(dGlob)).slice(0, 200)}`)
+-  const dLed = dflt.worldLedger ?? { counts: {}, countsWithExit: {}, globWalkerPlans: [] }
+-  const dGlobPlans = dLed.globWalkerPlans ?? []
+-  check('C2', 'OUT-OF-BAND POSITIVE CONTROL for the M2 detector: in the control world the SAME whole-tree walk DOES find the glob-walker plan — packaged rg with the glob walker face (`--files`), one plan + one exit.json per glob call — which is what turns M2\'s zero into a fact about the key',
+-    dGlobPlans.length >= 1 && dGlobPlans.every((x) => x.hasExitRecord) && String(dGlobPlans[0]?.argv?.[0] ?? '').includes('/ripgrep'),
+-    `globWalkerPlans=${String(dGlobPlans.length)} withExit=${String(dLed.countsWithExit?.['rg-glob-walker'] ?? 0)} planAt=${JSON.stringify(dGlobPlans[0]?.rel ?? '')} argv=${JSON.stringify((dGlobPlans[0]?.argv ?? []).slice(0, 3)).slice(0, 200)}`)
+-  const dSampler = dflt.sampler ?? { counts: {} }
+-  note('C2b', `sampling-resolution book (never graded): rg sightings in the CONTROL world where the glob row IS live — rgTotal=${String(dSampler.counts.rg ?? 0)}, glob-walker-attributable=${String(dSampler.counts.rgGlobWalker ?? 0)}; a ~10 ms rg process may simply be missed at 50 ms, which is exactly why M2/C2 ride the provider ledger, not the sampler`, `rgTotal=${String(dSampler.counts.rg ?? 0)} globWalker=${String(dSampler.counts.rgGlobWalker ?? 0)}`)
+-  const dLogGlobLines = (dflt.logObservations ?? []).filter((l) => /anchored-glob ran/.test(l))
+-  check('C3', 'the host\'s own glob witness fires in the control world (`anchored-glob ran … pid= files=`) — the pair that makes M8\'s zero a fact about the key and not about logging',
+-    dLogGlobLines.length >= 1, `lines=${JSON.stringify(dLogGlobLines.map((l) => l.slice(0, 150)))}`)
+-  const dGrep = pick('default', 'team_grep')
+-  const dBash1 = pick('default', 'team_bash')
+-  const dRead = pick('default', 'read')
+-  check('C4', 'SAME-SHAPE CONTROL for the three surviving rows: with the key absent the grep/bash/read landings keep the same form as in the off world (grep hit + search meta; bash exit=0 + write; read content) — the key changes exactly one row',
+-    dGrep.includes(TOK_GREP) && dGrep.includes('"kind":"search"') && dBash1.includes('bash · exit=0') && dflt.bashWroteExists === true && dRead.includes(TOK_GREP) && !dGrep.includes(IO_TEXT) && !dBash1.includes(IO_TEXT) && !dRead.includes(IO_TEXT),
+-    `grep=${JSON.stringify(dGrep).slice(0, 120)} bash=${JSON.stringify(dBash1).slice(0, 120)} read=${JSON.stringify(dRead).slice(0, 120)}`)
+-  check('C5', 'the two configs differ in EXACTLY ONE key: the off world\'s written profile layer carries teamToolPlane.globEnabled and the control world\'s does not (the difference is the config, not the kit)',
+-    off.layerHasGlobEnabledKey === true && dflt.layerHasGlobEnabledKey === false,
+-    `offLayerHasGlobEnabled=${String(off.layerHasGlobEnabledKey)} defaultLayerHasGlobEnabled=${String(dflt.layerHasGlobEnabledKey)}`)
+-  const dBash2 = (L.default.byTool.team_bash ?? [])[1]?.text ?? 'LEG-MISSING'
+-  check('C6', 'r5-shaped regression on the control world (a5ie-r5 minimum): the out-of-bounds bash leg still lands exit=1 with the kernel refusal verbatim and the marker stays off the wire',
+-    dBash2.includes('bash · exit=1') && dBash2.includes('"exitCode":1') && dBash2.includes('Permission denied') && dflt.outsideMarkerOnWire === 0,
+-    `landing=${JSON.stringify(dBash2).slice(0, 260)} markerOnWire=${String(dflt.outsideMarkerOnWire)}`)
+-
+-  // ─── R family: rename cannot restore ───────────────────────────────────────
+-  const rn = worlds.rename ?? {}
+-  const rnGlob = pick('rename', 'zglob')
+-  check('R1', 'RENAME FORM mounts under the new spelling: with names.glob="zglob" + globEnabled:false the member wire carries zglob and NOT team_glob (the shut decision rides the class, the name is still a valid mount spelling)',
+-    (rn.memberAWireCatalog ?? []).includes('zglob') && !(rn.memberAWireCatalog ?? []).includes('team_glob'),
+-    `member plane names=${JSON.stringify((rn.memberAWireCatalog ?? []).filter((n) => n.startsWith('team_') || n === 'read' || n === 'zglob'))}`)
+-  check('R2', 'a renamed glob is STILL SHUT on the installed face: zglob lands the same typed refusal bytes (same code, same detail sentence from the installed face)',
+-    rnGlob.includes(EXPECTED_REFUSAL) && rnGlob.includes(IO_TEXT), `landing=${JSON.stringify(rnGlob).slice(0, 320)}`)
+-  const rnLed = rn.worldLedger ?? { counts: {}, globWalkerPlans: [] }
+-  check('R3', 'and it still spawns nothing: the rename world\'s whole-tree ledger carries no glob-walker plan either (the class gate wins before any backend is built), while its shell plan is there',
+-    (rnLed.counts['rg-glob-walker'] ?? 0) === 0 && (rnLed.counts.shell ?? 0) >= 1,
+-    `planKinds=${JSON.stringify(rnLed.counts)} globWalkerPlans=${String(rnLed.globWalkerPlans.length)}`)
+-  const rnBash = pick('rename', 'team_bash')
+-  const rnSampler = rn.sampler ?? { counts: {} }
+-  check('R4', 'nothing else closed in the rename world: team_bash still runs for real (exit=0) and no glob-walker rg was sighted in that world either',
+-    rnBash.includes('bash · exit=0') && rnSampler.counts.rgGlobWalker === 0,
+-    `landing=${JSON.stringify(rnBash).slice(0, 160)} rgGlobWalkerSightings=${String(rnSampler.counts.rgGlobWalker)}`)
+-
+-  // ─── Z family ──────────────────────────────────────────────────────────────
+-  const allHostErrors = MODE_RUN.flatMap((w) => worlds[w]?.hostErrors ?? [])
+-  check('Z1', 'no bootstrap/module/config refusal leaked in any of the three worlds (no ERR_MODULE_NOT_FOUND, no mount-REFUSED, no PLANE_CONFIG/TEAM_PLUGIN_CONFIG line, no placement-REFUSED)',
+-    allHostErrors.length === 0, `hostErrors=${JSON.stringify(allHostErrors.slice(0, 2)).slice(0, 240)}`)
+-  const anyUnexpectedIO = MODE_RUN.flatMap((w) => (worlds[w]?.memberToolResults ?? []).map((r) => wireText(r))).filter((t) => t.includes(IO_TEXT))
+-  check('Z2', 'the typed refusal appears EXACTLY where the key puts it: one IO_POLICY landing for each shut glob call (off world + rename world) and none in the control world — across all driven legs of all executed worlds the count is exactly the number of shut shapes, never one more, never one less',
+-    anyUnexpectedIO.length === MODE_RUN.filter((x) => MODES[x].globEnabled === false).length, `ioLandings=${String(anyUnexpectedIO.length)} of ${String(MODE_RUN.reduce((a, w) => a + ((worlds[w]?.memberToolResults ?? []).length), 0))} legs`)
++  // ─── X family: the delta face ─────────────────────────────────────────────
++  const doff = worlds.doff ?? {}
++  const dObs = (doff.planeObservations ?? []).filter((l) => /^a5-plane: placed /.test(String(l)))
++  const dBash = pick('doff', 'team_bash')
++  check('X-boot', '(a) THE MOUNT IS UNCHANGED BY THE BIGGER REGISTRY: on a real install of the new head the production entry places all four plane rows (observer stream, /__a5ie/facts) and a confined bash leg still RUNS (token on stdout, exit=0, the inside-root write landed on disk)',
++    dObs.some((l) => /team_grep,team_glob,team_bash,read/.test(String(l))) && dBash.includes(TOK_BASH) && dBash.includes('bash · exit=0') && doff.bashWroteExists === true,
++    `placed=${JSON.stringify(dObs.map((l) => String(l).slice(0, 80)))} bash=${JSON.stringify(dBash).slice(0, 150)} wrote=${String(doff.bashWroteExists)}`)
++  const dGlob = pick('doff', 'team_glob')
++  let baselineGlobLanding = '(baseline landing not available)'
++  try {
++    const bl = JSON.parse(readFileSync(join(BASELINE_RUN, 'landings.json'), 'utf8'))
++    baselineGlobLanding = (bl.off?.byTool ?? bl.off).team_glob[0].text
++  } catch { /* graded RED below with the reason in the open */ }
++  check('X-glob', '(b) THE SHUT FORM STILL LANDS, AND LANDS THE SAME BYTES: one measured team_glob leg on the new head (globEnabled:false, plugin boot path) lands the typed shut refusal, and that landing is BYTE-IDENTICAL to the baseline run\'s recorded off-world landing read from its own evidence file',
++    dGlob.includes(EXPECTED_REFUSAL) && dGlob === baselineGlobLanding && dGlob.includes(IO_TEXT),
++    `sameBytesAsBaseline=${String(dGlob === baselineGlobLanding)} landing=${JSON.stringify(dGlob).slice(0, 240)} baselineLen=${String(baselineGlobLanding.length)} newLen=${String(dGlob.length)} baselineRun=${BASELINE_RUN.slice(-24)}`)
++  const dLed = doff.worldLedger ?? { counts: {}, countsWithExit: {} }
++  check('X-glob-spawn', '(b continued) the shut glob row still spawns nothing on the new head either: the argv-attributed confined ledger of that world has no glob-walker plan while its shell plan is there with its exit record',
++    (dLed.counts['rg-glob-walker'] ?? 0) === 0 && (dLed.counts.shell ?? 0) >= 1 && (dLed.countsWithExit.shell ?? 0) >= 1,
++    `planKinds=${JSON.stringify(dLed.counts)} withExit=${JSON.stringify(dLed.countsWithExit)}`)
++
++  const REFUSE_MODES = ['dcodex', 'dclaude', 'dfork']
++  for (const mode of REFUSE_MODES) {
++    const w = worlds[mode] ?? {}
++    const name = MODES[mode].refuseName
++    const obsLine = String((w.planeObservations ?? []).find((l) => /mount-REFUSED|PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED/.test(String(l))) ?? '')
++    const logLine = String((w.logObservations ?? []).find((l) => /mount-REFUSED|PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED/.test(String(l))) ?? '')
++    const hostErr = String((w.hostErrors ?? []).find((l) => /PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED/.test(String(l))) ?? '')
++    const pollLine = String(w.refusalWitness?.line ?? '')
++    const createLine = String(w.refusalCreateBody ?? w.teamCreate?.body ?? '')
++    const witness = [pollLine, obsLine, logLine, hostErr, createLine].find((l) => l.includes('PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED')) ?? ''
++    const placed = (w.planeObservations ?? []).some((l) => /^a5-plane: placed /.test(String(l)))
++    const wirePlane = (w.memberAWireCatalog ?? []).filter((n) => ['team_grep', 'team_glob', 'team_bash'].includes(n) || n === name)
++    const led = w.worldLedger ?? { counts: {} }
++    check(`X-refuse.${mode}`, `(c) the plane row may NOT impersonate the native name '${name}': the mount is refused TYPED on the install face (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED in the entry's own observation stream / host log), nothing is placed, no plane row reaches any wire, and nothing spawns in that world`,
++      witness !== '' && !placed && wirePlane.length === 0,
++      `witness=${JSON.stringify(witness).slice(0, 300)} placedLine=${String(placed)} wirePlaneRows=${JSON.stringify(wirePlane)} planKinds=${JSON.stringify(led.counts)} createStatus=${JSON.stringify(w.teamCreate?.status ?? null)} polledMs=${String(w.refusalWitness?.polledMs ?? -1)} discoverySurface=${JSON.stringify((w.discoverySurface ?? []).filter((n) => n === 'team_glob' || n === name))}`)
++  }
++  const ioLandings = ['doff', ...REFUSE_MODES].flatMap((wd) => (worlds[wd]?.memberToolResults ?? []).map((r) => wireText(r))).filter((t) => t.includes(IO_TEXT))
++  check('X-scope', 'the delta is narrow on the wire too: exactly ONE typed shut landing across the whole delta run (the one shut glob leg) and the three claim refusals carry a DIFFERENT code — no new error surface appears anywhere',
++    ioLandings.length === 1, `ioLandings=${String(ioLandings.length)} of ${String(['doff', ...REFUSE_MODES].reduce((a, wd) => a + ((worlds[wd]?.memberToolResults ?? []).length), 0))} legs`)
+ 
+   // ─── T family ──────────────────────────────────────────────────────────────
+   if (!KEEP) { try { rmSync(faceMirror, { recursive: true, force: true }) } catch { /* best effort */ } }

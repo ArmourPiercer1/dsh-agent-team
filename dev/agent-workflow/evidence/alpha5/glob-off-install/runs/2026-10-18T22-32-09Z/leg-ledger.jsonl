@@ -1,0 +1,39 @@
+{"leg":"H1","verdict":"PASS","receipts":["criteria.json"],"wire":"head=639ed01539 porcelain=0"}
+{"leg":"H1b","verdict":"FAIL","receipts":["criteria.json"],"wire":"ls-remote[src]=52d73534f92e69efe12c72c347d435f66f3f85fe ls-remote[main]=52d73534f92e69efe12c72c347d435f66f3f85fe srcHEAD=ca7ab2abcfa0d91650bbb2994395a7bd9c065b59"}
+{"leg":"H1c","verdict":"PASS","receipts":["criteria.json"],"wire":"lineage-#342=true src-globEnabled=true src-shutId=true row=ca7ab2ab alpha5(rc): C-16 reserved-name pins + bidirectional drift che"}
+{"leg":"H1d","verdict":"PASS","receipts":["criteria.json"],"wire":"graded=ca7ab2abcfa0 liveNow=52d73534f92e ancestorOfLive=true commitsOnTop=1 specPinnedToGradedSha=true"}
+{"leg":"H2","verdict":"PASS","receipts":["criteria.json"],"wire":"mock=3493"}
+{"leg":"H0","verdict":"PASS","receipts":["criteria.json"],"wire":"status=401"}
+{"leg":"RG","verdict":"BOOK","receipts":["criteria.json"],"wire":"resolved=true answer=\"ripgrep 15.0.0 (rev 3a612f88b8)\""}
+{"leg":"I1","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 in 4s; tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-tea"}
+{"leg":"I2","verdict":"PASS","receipts":["criteria.json"],"wire":"deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"}
+{"leg":"I3a","verdict":"PASS","receipts":["criteria.json"],"wire":"installed=1773 face=1773 (files:=1771 + pack-always=2)"}
+{"leg":"I3b","verdict":"PASS","receipts":["criteria.json"],"wire":"missing=0 []"}
+{"leg":"I3c","verdict":"PASS","receipts":["criteria.json"],"wire":"extra=0 []"}
+{"leg":"I3d","verdict":"PASS","receipts":["criteria.json","install-manifest.json"],"wire":"mismatch=0 rootSha=91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"}
+{"leg":"I3e","verdict":"PASS","receipts":["criteria.json"],"wire":"alwaysIncluded=[\"README.md\",\"package.json\"]"}
+{"leg":"I4","verdict":"PASS","receipts":["criteria.json"],"wire":"hostRow=true"}
+{"leg":"I9","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"sha=1264ea584e3438d6… bytes=26992 commit==src=true abi=abi-available/4"}
+{"leg":"I8","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"launcherInFace=false launcherSha=1264ea584e3438d6…"}
+{"leg":"I5","verdict":"PASS","receipts":["criteria.json","dump-config-install-probe.txt"],"wire":"exit=0 teamRow=true plane=true globEnabledFalse=true subRows=true"}
+{"leg":"I-SHIP","verdict":"PASS","receipts":["criteria.json","installed-gate-witness.json","install-manifest.json"],"wire":"globEnabledHits=14 shutIdHits=1"}
+{"leg":"X0","verdict":"PASS","receipts":["criteria.json"],"wire":"parent=46e48218e483 baseline=46e48218e483 parentIsBaseline=true lineage-#344=true commitsBetween=1"}
+{"leg":"X-byte-chain","verdict":"PASS","receipts":["criteria.json"],"wire":"changedLines=65 chainTouched=0 chainLines=16 identical=true installedShaNew=e03ccd452606da4c installedShaBase=03252c2687297242"}
+{"leg":"X-byte-names","verdict":"PASS","receipts":["criteria.json"],"wire":"pinned=[\"subagent_codex:true\",\"subagent_claude_code:true\",\"subagent_fork:true\"] baselineHadFork=true baselineHadCodex=false baselineHadClaude=false registrySize=53->69"}
+{"leg":"W.doff.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"}
+{"leg":"W.dcodex.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"}
+{"leg":"W.dclaude.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"}
+{"leg":"W.dfork.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=91984080a41ea694==probe"}
+{"leg":"H3","verdict":"PASS","receipts":["criteria.json"],"wire":"401 -> 401; porcelain=0"}
+{"leg":"W1","verdict":"PASS","receipts":["criteria.json"],"wire":"doff:ok/swept dcodex:ok/swept dclaude:ok/swept dfork:ok/swept"}
+{"leg":"X-boot","verdict":"PASS","receipts":["criteria.json"],"wire":"placed=[\"a5-plane: placed [team_grep,team_glob,team_bash,read]\",\"a5-plane: placed [team_grep,team_glob,team_bash,read]\"] bash=\"bash · exit=0\\n> A5GLOBOFFD-BASH-TOK\\n> A5G"}
+{"leg":"X-glob","verdict":"PASS","receipts":["criteria.json"],"wire":"sameBytesAsBaseline=true landing=\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered"}
+{"leg":"X-glob-spawn","verdict":"PASS","receipts":["criteria.json"],"wire":"planKinds={\"shell\":1} withExit={\"shell\":1}"}
+{"leg":"X-refuse.dcodex","verdict":"FAIL","receipts":["criteria.json"],"wire":"witness=\"\" placedLine=false wirePlaneRows=[] planKinds={} provoke={\"attempts\":2,\"statuses\":[200,200],\"wireSeen\":true}"}
+{"leg":"X-refuse.dclaude","verdict":"FAIL","receipts":["criteria.json"],"wire":"witness=\"\" placedLine=false wirePlaneRows=[] planKinds={} provoke={\"attempts\":1,\"statuses\":[200],\"wireSeen\":true}"}
+{"leg":"X-refuse.dfork","verdict":"FAIL","receipts":["criteria.json"],"wire":"witness=\"\" placedLine=false wirePlaneRows=[] planKinds={} provoke={\"attempts\":2,\"statuses\":[200,200],\"wireSeen\":true}"}
+{"leg":"X-scope","verdict":"PASS","receipts":["criteria.json"],"wire":"ioLandings=1 of 2 legs"}
+{"leg":"T1","verdict":"PASS","receipts":["criteria.json"],"wire":"left=[] installHomeSwept=true"}
+{"leg":"T2","verdict":"PASS","receipts":["criteria.json"],"wire":"rawLeft=[]"}
+{"leg":"T3","verdict":"PASS","receipts":["criteria.json"],"wire":"ports=3185/3186/3182/3183+3493 free=true"}
+{"leg":"T4","verdict":"BOOK","receipts":["criteria.json"],"wire":"storeExists=true"}

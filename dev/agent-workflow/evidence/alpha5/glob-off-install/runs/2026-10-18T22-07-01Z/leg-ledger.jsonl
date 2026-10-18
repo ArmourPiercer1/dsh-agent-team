@@ -1,0 +1,53 @@
+{"leg":"H1","verdict":"PASS","receipts":["criteria.json"],"wire":"head=639ed01539 porcelain=0"}
+{"leg":"H1b","verdict":"FAIL","receipts":["criteria.json"],"wire":"ls-remote[src]=ca7ab2abcfa0d91650bbb2994395a7bd9c065b59 ls-remote[main]=ca7ab2abcfa0d91650bbb2994395a7bd9c065b59 srcHEAD=46e48218e48314662586ff053ca3825e2889a6bb"}
+{"leg":"H1c","verdict":"PASS","receipts":["criteria.json"],"wire":"lineage-#342=true src-globEnabled=true src-shutId=true row=46e48218 alpha5(rc): minimal independent glob-off config key (RED-firs"}
+{"leg":"H2","verdict":"PASS","receipts":["criteria.json"],"wire":"mock=3493"}
+{"leg":"H0","verdict":"PASS","receipts":["criteria.json"],"wire":"status=401"}
+{"leg":"RG","verdict":"BOOK","receipts":["criteria.json"],"wire":"resolved=true answer=\"ripgrep 15.0.0 (rev 3a612f88b8)\""}
+{"leg":"I1","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 in 4s; tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-tea"}
+{"leg":"I2","verdict":"PASS","receipts":["criteria.json"],"wire":"deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"}
+{"leg":"I3a","verdict":"PASS","receipts":["criteria.json"],"wire":"installed=1773 face=1773 (files:=1771 + pack-always=2)"}
+{"leg":"I3b","verdict":"PASS","receipts":["criteria.json"],"wire":"missing=0 []"}
+{"leg":"I3c","verdict":"PASS","receipts":["criteria.json"],"wire":"extra=0 []"}
+{"leg":"I3d","verdict":"PASS","receipts":["criteria.json","install-manifest.json"],"wire":"mismatch=0 rootSha=b18fcfee908c4923fd1f15a9d0ba1a4249f3697d76f6d6831562453c30b88023"}
+{"leg":"I3e","verdict":"PASS","receipts":["criteria.json"],"wire":"alwaysIncluded=[\"README.md\",\"package.json\"]"}
+{"leg":"I4","verdict":"PASS","receipts":["criteria.json"],"wire":"hostRow=true"}
+{"leg":"I9","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"sha=1264ea584e3438d6… bytes=26992 commit==src=true abi=abi-available/4"}
+{"leg":"I8","verdict":"PASS","receipts":["criteria.json","launcher-deployment.json"],"wire":"launcherInFace=false launcherSha=1264ea584e3438d6…"}
+{"leg":"I5","verdict":"PASS","receipts":["criteria.json","dump-config-install-probe.txt"],"wire":"exit=0 teamRow=true plane=true globEnabledFalse=true subRows=true"}
+{"leg":"I-SHIP","verdict":"PASS","receipts":["criteria.json","installed-gate-witness.json","install-manifest.json"],"wire":"globEnabledHits=14 shutIdHits=1"}
+{"leg":"W.off.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=b18fcfee908c4923==probe"}
+{"leg":"W.default.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=b18fcfee908c4923==probe"}
+{"leg":"W.rename.install","verdict":"PASS","receipts":["criteria.json"],"wire":"exit=0 n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=b18fcfee908c4923==probe"}
+{"leg":"H3","verdict":"PASS","receipts":["criteria.json"],"wire":"401 -> 401; porcelain=0"}
+{"leg":"W1","verdict":"PASS","receipts":["criteria.json"],"wire":"off:ok/swept default:ok/swept rename:ok/swept"}
+{"leg":"M0b","verdict":"PASS","receipts":["criteria.json","observer-facts-off.json"],"wire":"placedLines=[\"a5-plane: placed [team_grep,team_glob,team_bash,read]\",\"a5-plane: placed [team_grep,team_glob,team_bash,read]\"]"}
+{"leg":"M0","verdict":"PASS","receipts":["criteria.json"],"wire":"member plane names=[\"read\",\"team_bash\",\"team_glob\",\"team_grep\"]"}
+{"leg":"M1","verdict":"PASS","receipts":["criteria.json","landings.json","instance-off.log"],"wire":"landing=\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CON"}
+{"leg":"M2","verdict":"PASS","receipts":["criteria.json","confined-ledger-off.json"],"wire":"planKinds={\"rg-search\":1,\"shell\":2} withExit={\"rg-search\":1,\"shell\":2} globWalkerPlans=0 dirsVisited=53"}
+{"leg":"M2b","verdict":"PASS","receipts":["criteria.json","confined-ledger-off.json"],"wire":"shell=2 rgSearch=1 shellExit=2 rgSearchExit=1"}
+{"leg":"M3","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T22-07-01Z/workspace/governed/notes.txt:2: A5GLOBO"}
+{"leg":"M4","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n> A5GLOBOFF-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":f"}
+{"leg":"M5","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\""}
+{"leg":"M6","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"line one\\nA5GLOBOFF-GREP-TOK lives here\\n\""}
+{"leg":"M7","verdict":"PASS","receipts":["criteria.json","proc-sampler-off.json"],"wire":"rgGlobWalker=0 rgTotal=0 launcher=8 bash=1 other=9"}
+{"leg":"M8","verdict":"PASS","receipts":["criteria.json","instance-off.log"],"wire":"globLines=0 otherLines=4"}
+{"leg":"M9","verdict":"PASS","receipts":["criteria.json","instance-off.log","wire-digests-off.jsonl"],"wire":"wireHits=0 logHits=0 perSeed=[{\"name\":\"zzgloboff-alpha.txt\",\"hits\":0},{\"name\":\"zzgloboff-beta.txt\",\"hits\":0}]"}
+{"leg":"M10","verdict":"PASS","receipts":["criteria.json"],"wire":"nameLines=0 hasMetaFiles=false"}
+{"leg":"C1","verdict":"PASS","receipts":["criteria.json","landings.json","wire-digests-default.jsonl"],"wire":"names=[\"gpos/zzgloboff-alpha.txt\",\"gpos/zzgloboff-beta.txt\"]"}
+{"leg":"C2","verdict":"PASS","receipts":["criteria.json","confined-ledger-default.json"],"wire":"globWalkerPlans=1 withExit=1 planAt=\"workspace/plans/plan-mvedp91i-ix1p52.json\" argv=[\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modu"}
+{"leg":"C2b","verdict":"BOOK","receipts":["criteria.json"],"wire":"rgTotal=0 globWalker=0"}
+{"leg":"C3","verdict":"PASS","receipts":["criteria.json","instance-default.log"],"wire":"lines=[\"[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5glob-off-default-realm call=team-inst-1yvwcqm0o91d-glob-4 pid=404 files=2 capped=false\"]"}
+{"leg":"C4","verdict":"PASS","receipts":["criteria.json"],"wire":"grep=\"search · content · 1 matches\\n> /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-default-2026-10-18T22- bash=\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n>"}
+{"leg":"C5","verdict":"PASS","receipts":["criteria.json"],"wire":"offLayerHasGlobEnabled=true defaultLayerHasGlobEnabled=false"}
+{"leg":"C6","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"bash · exit=1\\n> (empty stdout)\\nstderr:\\n> cat: ../outside/secret.txt: Permission denied\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":1,\\\"timedOut\\\":false,\\\""}
+{"leg":"R1","verdict":"PASS","receipts":["criteria.json","wire-digests-rename.jsonl"],"wire":"member plane names=[\"read\",\"team_bash\",\"team_grep\",\"zglob\"]"}
+{"leg":"R2","verdict":"PASS","receipts":["criteria.json","landings.json"],"wire":"landing=\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CON"}
+{"leg":"R3","verdict":"PASS","receipts":["criteria.json","confined-ledger-rename.json"],"wire":"planKinds={\"shell\":1} globWalkerPlans=0"}
+{"leg":"R4","verdict":"PASS","receipts":["criteria.json"],"wire":"landing=\"bash · exit=0\\n> A5GLOBOFF-BASH-TOK\\n> A5GLOBOFF-WROTE-9\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\" r"}
+{"leg":"Z1","verdict":"PASS","receipts":["criteria.json"],"wire":"hostErrors=[]"}
+{"leg":"Z2","verdict":"PASS","receipts":["criteria.json"],"wire":"ioLandings=2 of 12 legs"}
+{"leg":"T1","verdict":"PASS","receipts":["criteria.json"],"wire":"left=[] installHomeSwept=true"}
+{"leg":"T2","verdict":"PASS","receipts":["criteria.json"],"wire":"rawLeft=[]"}
+{"leg":"T3","verdict":"PASS","receipts":["criteria.json"],"wire":"ports=3182/3183/3184+3493 free=true"}
+{"leg":"T4","verdict":"BOOK","receipts":["criteria.json"],"wire":"storeExists=true"}

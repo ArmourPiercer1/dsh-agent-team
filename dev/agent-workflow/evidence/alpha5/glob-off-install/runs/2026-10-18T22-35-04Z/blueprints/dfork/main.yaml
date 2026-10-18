@@ -1,0 +1,74 @@
+---
+schemaVersion: 3
+blueprintId: a5glob-off-main-bp
+revision: "1"
+displayName: "a5glob-off glob-shut install team"
+description: "a5glob-off: the ordinary governed Team entry on the REAL installed face carrying #342 (planeCfg.globEnabled). Mock only at the LLM position. Grades the four-tool matrix with the key off, the same config with the key absent, and the rename form."
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5glob-off install team. On your directive: FIRST call team_delegate exactly once with rootSessionId session-a5glob-off-team-2026-10-18T22-35-04Z, requestToken a5glob-off-tok-a1, delegationTemplateId \"wa\", label \"off-a\", async false, and the prompt \"A5GLOBOFF_20261018T223504Z_DFORK_TASK_A Work EXACTLY in this order, one tool call per turn: ; then (final) answer with ONE line starting A5GLOBOFF_MEMBER_RESULT quoting each of the 0 tool results you received, verbatim.\"; SECOND call team_collect with rootSessionId session-a5glob-off-team-2026-10-18T22-35-04Z and requestTokens [\"a5glob-off-tok-a1\"]; THIRD finish with one line starting A5GLOBOFF_LEADER_DONE."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_delegate
+        - team_collect
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+  deny: []
+members:
+  - templateId: wa
+    displayName: "a5glob-off worker A"
+    persona: "You are worker A of the a5glob-off install team. Follow delegated work exactly, tool by tool, in order. Never invent a tool result; always wait for the real one."
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: any
+        ask: []
+        deny: []
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+requirements:
+  - domain: persona
+    name: standard
+policyStates: []
+metadata: {}
+---

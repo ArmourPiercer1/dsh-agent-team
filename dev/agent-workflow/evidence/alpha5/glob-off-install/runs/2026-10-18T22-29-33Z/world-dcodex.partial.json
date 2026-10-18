@@ -1,0 +1,86 @@
+{
+  "mode": "dcodex",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-dcodex-2026-10-18T22-29-33Z",
+  "ok": false,
+  "face": "REAL INSTALL (dsh plugin --profile web add github:…#<sha>)",
+  "install": {
+    "exit": 0,
+    "seconds": 4,
+    "nodeModulesTop": [
+      "dsh-agent-team"
+    ],
+    "dependencies": [
+      "dsh-agent-team"
+    ]
+  },
+  "installedFace": {
+    "expectedCount": 1773,
+    "actualCount": 1773,
+    "missing": 0,
+    "extra": 0,
+    "shaMismatch": 0,
+    "rootSha": "91984080a41ea694dad0f0c5ee0b34158eed98911d88c82c7bd9f50d70f137e7"
+  },
+  "launcher": {
+    "rel": "packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-dcodex-2026-10-18T22-29-33Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992,
+    "worktreeSha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytesMatchCommitAndWorktree": true,
+    "isScript": true,
+    "carriesExitPassthrough": true
+  },
+  "launcherAbiPreflight": {
+    "rc": 0,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "kind": "abi-available",
+    "abiVersion": 4
+  },
+  "layerHasGlobEnabledKey": true,
+  "bootLine": "dsh web: http://127.0.0.1:3186/?token=<REDACTED-8f48c297>",
+  "refusalProvoke": {
+    "attempts": 2,
+    "statuses": [
+      200,
+      200
+    ],
+    "wireSeen": true
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": false
+  },
+  "sampler": {
+    "counts": {
+      "rg": 0,
+      "rgGlobWalker": 0,
+      "launcher": 0,
+      "bash": 1,
+      "other": 4
+    },
+    "sightings": []
+  }
+}

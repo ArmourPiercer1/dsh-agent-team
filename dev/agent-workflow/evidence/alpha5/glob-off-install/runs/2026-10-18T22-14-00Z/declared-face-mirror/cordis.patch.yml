@@ -1,0 +1,144 @@
+# dsh-agent-team — the shipped bundle layer (manifest `dsh.bundle.patch`).
+#
+# Machine-agnostic by contract: every row references THIS PACKAGE by name —
+# the host row via the `./host` subpath export (the built dist host entry),
+# the client row via the bare package name (the client module system reads
+# the root `dsh.client` manifest and serves the `./client` export). No file
+# URLs, no machine paths, no repo-relative locations: the same layer doc
+# installs on any machine.
+#
+# The row config intentionally carries NO glueUrl/seamUrl/defaultWorkspace:
+# the host entry derives the glue and seam module URLs from its own module
+# location (see packages/runtime/src/plugin/host.ts — defaultGlueUrl /
+# defaultSeamUrlCandidates, fail-closed when unresolvable) and, when the
+# row carries no defaultWorkspace, defaults the team workspace to the
+# directory the operator launched the host from (withDefaultWorkspace —
+# the projection fold requires a resolvable effective workspace on every
+# team row; the glue's agent-cwd fallback reads the same config value).
+#
+# Override semantics (last-write-wins, WHOLE config replaced): the profile's
+# own `cordis.patch.yml` is applied AFTER this bundle layer; a row with the
+# same `id` and a `config` replaces this layer's config entirely — use that
+# to point `staticModel` at your provider/model, to customize the
+# `blueprintSource` team design, or to set `defaultWorkspace`. Omitting a
+# field in the override row drops it (no field-level merge).
+#
+# Boot phase (remote-mount-race fix, root cause B): the shipped row boots
+# with `bootPhase: "create-or-open"` — ADOPT an already-stamped `team_domain`,
+# or initialize a fresh medium on the first-ever boot (a restart can never
+# break a production host). This is a DISTINCT phase, deliberately not
+# `resume`: plan §7-B2 makes `resume` strict load-only (a resume never
+# creates — T12-B2 W4), and `create` stays the strict fresh-world entry the
+# harness/boot worlds use. The pre-fix default `"create"` threw
+# TEAM_DOMAIN_EXISTS on every returning home and the row bootstrap
+# SWALLOWED that rejection (zero terminal signal: the /team-remote routes
+# never registered and the team UI failed with the frontend static
+# handler's HTTP 405).
+#
+# Strict-read + core-spill (Phase C): the base `spill-local` row is
+# DISABLED and replaced by this package's Team-aware provider
+# (`dsh-agent-team/spill-local` → packages/runtime/dist/.../
+# team-spill-local.js, the `./spill-local` subpath export). The provider
+# is a strict superset of the base row — same `spillStore` service name,
+# same config surface (no config here = the base row's defaults: private
+# temp root, 30-day cleanup sweep) — plus the durable artifact-read
+# grant record for managed Team sessions (the producer side of the
+# content-read vertical; the host row fills the `teamArtifactAuthority`
+# bridge the provider reads lazily per save). An unmanaged session
+# (no team binding) stays byte-for-byte upstream-equivalent.
+- id: spill-local
+  disabled: true
+
+- insert:
+    - id: "dsh-agent-team"
+      name: "dsh-agent-team/host"
+      config:
+        bootPhase: "create-or-open"
+        rootSessionId: "team-root"
+        # The embedded Team design is a schema version 3 document: it carries
+        # the two authority documents that this version makes REQUIRED
+        # (`permissionMutationEnvelope` — optional at every earlier version and
+        # a hard requirement here, ADR A1-19; `teamHardEnvelope` — introduced
+        # by this version and never optional, spec §3.2 "no implicit default is
+        # permitted"). §7.4 promotion, landed BEFORE the §7.3 version flip:
+        # v3 parses today and is the only form the flip keeps, so this row is
+        # unchanged in acceptance by the cutover it precedes.
+        blueprintSource: |
+          ---
+          schemaVersion: 3
+          blueprintId: my-team-bp-1
+          revision: "1"
+          leader:
+            templateId: leader
+            persona: "You lead this team."
+          members:
+            - templateId: worker
+              displayName: "Worker A"
+              persona: "You are a worker on this team."
+          requirements:
+            - domain: persona
+              name: standard
+          teamEnvelope:
+            allow: [assign-task, create-member, send-message, report-progress, archive-member, restore-member]
+            deny: [delete-team]
+          memberEnvelopes:
+            - templateId: worker
+              envelope:
+                allow: [send-message, report-progress]
+                deny: []
+          policyStates:
+            - id: default
+              description: "Default state."
+          quotas:
+            team:
+              maxInstances: 12
+              maxConcurrent: 12
+            members:
+              maxInstances: 4
+              maxConcurrent: 4
+          metadata: {}
+          # The two authority documents this version requires, at the HONEST
+          # ZERO position `rules: []` — never a permissive filler rule. The two
+          # planes read this same absence differently, and both readings are
+          # pinned in production code, so the claim is stated per plane:
+          #   - EXPANSION plane (domain/authority-envelope effectiveAuthority-
+          #     Ceiling): an unmatched scope is no-authority — with an empty
+          #     rule list the Leader of this Team may expand NOTHING.
+          #   - APPROVAL plane (domain/permission-plane bindingDocs): an absent
+          #     rule imposes NO narrowing — a Human User approving a concrete
+          #     operation is impeded only by the host-side law, never by a
+          #     narrowing from this document.
+          # This zero is inert in exactly one world, and this shipped design
+          # lives in it: a Team that never asks to expand anything — member
+          # permissions come solely from the static lanes declared above, no
+          # permission mutation ever runs, and no rising-authority proposal is
+          # made. It is NOT inert in general: an operator whose profile-layer
+          # override of this row designs for expansion must declare real rules
+          # in these documents, not inherit this pair.
+          permissionMutationEnvelope:
+            rules: []
+          teamHardEnvelope:
+            rules: []
+          ---
+        seedMembers: []
+        generation: 1
+        deniedSelection: null
+        # Canonical 0..N MCP configuration (empty array = no MCP). The legacy
+        # single `mcpServer` field is still accepted during this alpha; when
+        # both are present, `mcpServer` must be null (ambiguous otherwise).
+        # See docs/INSTALL.md §3.3 for the full semantics.
+        mcpServers: []
+        staticModel:
+          provider: deepseek-official
+          model: deepseek-v4-flash
+        environmentFacts:
+          - { domain: "tool", subject: "web", available: true, generation: 1 }
+          - { domain: "skill", subject: "base", available: true, generation: 1 }
+          - { domain: "persona", subject: "standard", available: true, generation: 1 }
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+    - id: "team-spill-local"
+      name: "dsh-agent-team/spill-local"
+    - id: "dsh-agent-team-client"
+      name: "dsh-agent-team"

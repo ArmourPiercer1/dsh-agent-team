@@ -1,0 +1,77 @@
+{
+  "globalNames": [],
+  "agents": [
+    {
+      "session": "a5glob-off-root",
+      "scopedNames": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "write"
+      ],
+      "perName": {
+        "team_grep": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "team_glob": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "team_bash": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "read": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "subagent_codex": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "subagent_claude_code": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "subagent_fork": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        }
+      }
+    }
+  ],
+  "planeObservations": [],
+  "liveJobsGateway": {
+    "session-a5glob-off-team-2026-10-18T22-32-09Z": {
+      "present": false,
+      "hasGateway": false,
+      "hasLease": false,
+      "leaseState": "no-lease-accessor"
+    }
+  },
+  "observations": []
+}

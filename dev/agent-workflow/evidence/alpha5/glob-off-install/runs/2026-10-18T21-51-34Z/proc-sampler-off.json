@@ -1,0 +1,66 @@
+{
+  "counts": {
+    "rg": 1,
+    "rgGlobWalker": 0,
+    "launcher": 10,
+    "bash": 2,
+    "other": 8
+  },
+  "sightings": [
+    {
+      "at": 1792360399493,
+      "kind": "launcher",
+      "cmd": "python3 -c import os,sys; sys.exit(0 if os.path.isfile(\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/lan"
+    },
+    {
+      "at": 1792360399543,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+    },
+    {
+      "at": 1792360399594,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg denyall --scr"
+    },
+    {
+      "at": 1792360399643,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg badhandled --"
+    },
+    {
+      "at": 1792360399694,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+    },
+    {
+      "at": 1792360399844,
+      "kind": "launcher",
+      "cmd": "python3 -c import os,sys; sys.exit(0 if os.path.isfile(\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/lan"
+    },
+    {
+      "at": 1792360399895,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg selective --s"
+    },
+    {
+      "at": 1792360399944,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg denyall --scr"
+    },
+    {
+      "at": 1792360399994,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --enforce-leg badhandled --"
+    },
+    {
+      "at": 1792360400045,
+      "kind": "launcher",
+      "cmd": "python3 /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-off-2026-10-18T21-51-34Z/deployment/landlock-prelauncher.py --confined-exec-stream --po"
+    },
+    {
+      "at": 1792360400045,
+      "kind": "rg",
+      "cmd": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --no-config --json --regexp=A5GLOBOFF-GREP-TOK --no-ignore-parent --"
+    }
+  ]
+}

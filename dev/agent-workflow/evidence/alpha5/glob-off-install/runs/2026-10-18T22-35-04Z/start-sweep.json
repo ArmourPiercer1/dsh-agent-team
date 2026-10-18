@@ -1,0 +1,6 @@
+{
+  "staleHomes": [],
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.a5glob-off-store",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glob-off-delta-src-20261018T222000Z"
+}

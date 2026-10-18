@@ -1,0 +1,155 @@
+{
+  "globalNames": [],
+  "agents": [
+    {
+      "session": "a5glob-off-root",
+      "scopedNames": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message",
+        "write"
+      ],
+      "perName": {
+        "team_grep": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "team_glob": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "team_bash": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        },
+        "read": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "zglob": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        }
+      }
+    },
+    {
+      "session": "session-a5glob-off-team-2026-10-18T22-01-38Z",
+      "scopedNames": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_collect",
+        "team_delegate",
+        "team_glob",
+        "team_grep",
+        "write"
+      ],
+      "perName": {
+        "team_grep": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "team_glob": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "team_bash": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "read": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "zglob": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        }
+      }
+    },
+    {
+      "session": "session-team-child-30b984463e79041e1fc137a23dadcb64",
+      "scopedNames": [
+        "bash",
+        "edit",
+        "read",
+        "read_image",
+        "team_bash",
+        "team_glob",
+        "team_grep",
+        "write"
+      ],
+      "perName": {
+        "team_grep": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "team_glob": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "team_bash": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "read": {
+          "globalPresent": false,
+          "scopedPresent": true,
+          "sameDefinition": false
+        },
+        "zglob": {
+          "globalPresent": false,
+          "scopedPresent": false,
+          "sameDefinition": false
+        }
+      }
+    }
+  ],
+  "planeObservations": [
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]",
+    "a5p2prod: production-admission-note",
+    "a5p2prod: production-admission-constructed",
+    "a5-plane: placed [team_grep,team_glob,team_bash,read]"
+  ],
+  "liveJobsGateway": {
+    "session-a5glob-off-team-2026-10-18T22-01-38Z": {
+      "present": true,
+      "hasGateway": true,
+      "hasLease": true,
+      "leaseState": "ACTIVE"
+    }
+  },
+  "observations": []
+}

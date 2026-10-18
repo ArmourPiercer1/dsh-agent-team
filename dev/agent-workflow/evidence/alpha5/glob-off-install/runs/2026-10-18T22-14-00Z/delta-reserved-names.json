@@ -1,0 +1,41 @@
+{
+  "baselineHead": "46e48218e48314662586ff053ca3825e2889a6bb",
+  "newHead": "ca7ab2abcfa0d91650bbb2994395a7bd9c065b59",
+  "baselineCount": 53,
+  "newCount": 69,
+  "added": [
+    "subagent_codex",
+    "subagent_claude_code",
+    "run_code",
+    "plugin_manager",
+    "schedule_create",
+    "schedule_delete",
+    "schedule_list",
+    "schedule_update",
+    "workflow",
+    "stagehand_act",
+    "stagehand_extract",
+    "stagehand_navigate",
+    "stagehand_observe",
+    "stagehand_screenshot",
+    "stagehand_tabs"
+  ],
+  "removed": [],
+  "three": [
+    {
+      "name": "subagent_codex",
+      "pinnedAtBaseline": false,
+      "pinnedAtNewHead": true
+    },
+    {
+      "name": "subagent_claude_code",
+      "pinnedAtBaseline": false,
+      "pinnedAtNewHead": true
+    },
+    {
+      "name": "subagent_fork",
+      "pinnedAtBaseline": true,
+      "pinnedAtNewHead": true
+    }
+  ]
+}

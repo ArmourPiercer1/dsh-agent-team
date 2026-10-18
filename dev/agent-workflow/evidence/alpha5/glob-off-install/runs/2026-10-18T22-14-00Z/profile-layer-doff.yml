@@ -1,0 +1,84 @@
+# a5glob-off live layer (run 2026-10-18T22-14-00Z, mode doff): config override on the INSTALLED bundle row id "dsh-agent-team" + observer row + preset — public profile-patch seam only (INSTALL §3.2/§3.5).
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    rootSessionId: a5glob-off-root
+    bootPhase: create
+    blueprintSource: "---\nschemaVersion: 3\nblueprintId: a5glob-off-anchor-bp\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5glob-off install team.\"\nmembers:\n  - templateId: wa\n    persona: \"You are a worker of the a5glob-off install team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    blueprintDir: /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/glob-off-install/runs/2026-10-18T22-14-00Z/blueprints/doff
+    rootPresetId: a5glob-off-base
+    memberPresetId: a5glob-off-base
+    seedMembers: []
+    generation: 1
+    staticModel:
+      provider: deepseek-official
+      model: a5glob-off-model
+    deniedSelection: null
+    mcpServers: []
+    mcpServer: null
+    environmentFacts:
+      - domain: tool
+        subject: web
+        available: true
+        generation: 1
+      - domain: skill
+        subject: base
+        available: true
+        generation: 1
+      - domain: persona
+        subject: standard
+        available: true
+        generation: 1
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+    teamToolPlane:
+      realmId: a5glob-off-doff-realm
+      fsInstance:
+        fs: a5glob-off-doff-ctl
+        rootDir: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-14-00Z/workspace/governed
+        realmId: a5glob-off-doff-realm
+        kind: absolute-path
+      confinedProvider:
+        trustRoot: "sha256:1264ea584e3438d6#/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-14-00Z/deployment/landlock-prelauncher.py"
+        assembly:
+          launcherPath: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5glob-off-doff-2026-10-18T22-14-00Z/deployment/landlock-prelauncher.py
+          launcherSha256: 1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3
+          minAbiVersion: 3
+      globEnabled: false
+- insert:
+  - id: a5glob-off-observer
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5glob-off-delta-src-20261018T222000Z/dev/agent-workflow/evidence/alpha5/install-entry/a5ie-observer-row.mjs"
+    config: {}
+- insert:
+  - id: preset-a5glob-off-base
+    name: "@deepseek-ai/dsh-agent-preset"
+    config:
+      id: a5glob-off-base
+      name: "a5glob-off base"
+      description: "a5glob-off base preset (run 2026-10-18T22-14-00Z) = smoke preset"
+      order: 900
+      plugins:
+        - id: persona
+          name: "@deepseek-ai/dsh-persona"
+          config:
+            prefix: "You are a coding agent powered by the {{model}} model."
+            suffix: "Your working directory is {{cwd}}."
+        - id: tool-fs
+          name: "@deepseek-ai/dsh-tool-fs"
+        - id: persistent-shell
+          name: "cordis:group"
+          group: true
+          isolate:
+            terminals: true
+          config:
+            - id: pty
+              name: "@deepseek-ai/dsh-terminal"
+            - id: terminal-bash
+              name: "@deepseek-ai/dsh-terminal-bash"
+              config:
+                timeoutMs: 300000
+            - id: persistent-bash
+              name: "@deepseek-ai/dsh-tool-bash-persistent"
+              config:
+                timeoutMs: 300000
