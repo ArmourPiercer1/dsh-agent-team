@@ -150,13 +150,18 @@ every claim below is machine-pinned by `packages/domain/test/a5fl1-blueprint-v4-
 > **delivered master fact since the flip merged at `ee49c4c0`** (PR #324):
 > `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4]`
 > (`packages/domain/blueprint/src/schema.ts:87`) and the pin suites
-> `a5fl1` / `a5fl2` / `a5fl3` are on master. Before that merge the same grammar
+> `a5fl1` / `a5fl2` pin files (with the `a5fl3` mirror legs they carry) are on
+> master. Before that merge the same grammar
 > shipped **dormant and unwired** at run set `[3]` (the fourth parser's own
 > header: "WHY THIS FILE IS NOT WIRED … NOTHING shipped reaches the functions
 > below", `packages/domain/blueprint/src/blueprint-v4.ts` @ `382e5fb6`,
 > PR #316) — that is the history of this constant, not its current face. The
-> route that authorized the stroke is the 4-stage table of `71af4f64` (PR #320):
-> stages 1–3 ADR-gate-normal, stage 4 gated **only** on T-1. What the flip did
+> route that authorized the stroke is the 4-stage table of `71af4f64` (PR #320,
+> `dev/agent-workflow/evidence/alpha5/vnext-semantics/V4-ENABLEMENT-ROUTE.md`
+> §1): `ee49c4c0` executed **stages ② (M-3 mirror, same stroke) + ③ (the
+> dual-parse flip + formal Schema ADR)**; **stage ④ — exiting the `{3, 4}`
+> window and discussing v3 retirement — is gated only on T-1 and was NOT
+> advanced by this merge.** What the flip did
 > NOT move stays disclosed in the bullets below: the family is a
 > **document-face** binding (parse / freeze / hash), dispatch fail-closes at the
 > Tool Binding verification gate, and the verified-effect feed is a later route

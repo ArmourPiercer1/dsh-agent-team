@@ -697,9 +697,17 @@ was read off the code at the SHA it names):_
   @ `382e5fb6`, PR #316 — the reversible half, with the v4 authoring maps and
   the migration report; §4.4's closed grammar was pinned there by
   `a5sr1-…`–`a5sr5-…`). That is the history of the constant, not its face today.
-- **The enablement route** (`71af4f64`, PR #320, doc-only): a 4-stage table;
-  stages 1–3 ADR-gate-normal (no user ruling), stage 4 gated **only** on T-1.
-  `ee49c4c0` is that stage-4 stroke, taken under that table.
+- **The enablement route** (`71af4f64`, PR #320, doc-only — the table is
+  `dev/agent-workflow/evidence/alpha5/vnext-semantics/V4-ENABLEMENT-ROUTE.md`
+  §1): **①** the reversible half (delivered in #316), **②** the M-3
+  coverage/kernel atomic mirror (same stroke as the flip PR), **③** the
+  dual-parse enablement itself (`SUPPORTED [3] → [3, 4]`) plus the formal Schema
+  ADR (D-01 转正), **④ after T-1 only**: exit of the `{3, 4}` compatibility
+  window → the v3-retirement discussion. Stages ①–③ are ADR-Gate-normal (no
+  user ruling); **④ is the only stage the table gates on a ruling**.
+  `ee49c4c0` executed **stages ② + ③** — its own title says "route stages 2+3".
+  **Stage ④ is NOT advanced by that merge**: retiring v3 stays behind the T-1
+  adjudication, and nothing in the merged face implies it.
 - **Document face, not effect face — what the flip did NOT move**: a v4
   document's `toolBindings` is parsed, frozen and hash-bound; the runtime effect
   plane does not EXECUTE those lanes and dispatch fail-closes at the Tool
