@@ -15,17 +15,32 @@
  *      runtime tsconfig DOES include `sandbox-provider` — the compile-face
  *      entry — but the self-check stays: it pins the lane's own strictness
  *      independent of the shared surface, and it predates the wiring.)
- *  (4) DORMANT: no production file outside the lane references the lane —
- *      the wiring round changed ONLY the compile surface, never the import
- *      surface (factory export is for EXPLICIT calls; no live-registry
- *      wiring); the hard-profile enablement constant stays false and appears
- *      flipped nowhere.
+ *  (4) NAMED MOUNTS (restated 2026-10-18; it WAS "(4) DORMANT: no production
+ *      file outside the lane references the lane"): the lane is no longer
+ *      dark — the production assembly rows that need a confined child mount it
+ *      through its PUBLIC FACE, by name, one pinned edge each. The restatement
+ *      changed the shape of the claim, NOT its teeth: every reference must be
+ *      one of the named mounts below, each with exactly ONE import line pinned
+ *      character-for-character and pointing at the public face only (a deep
+ *      import is a violation), and ANY file that references the lane without
+ *      being named here is a red — including a new file, a renamed file, or a
+ *      named file that grows a second edge. What is still NOT allowed and is
+ *      separately pinned below: live-registry wiring, the hard-profile
+ *      enablement constant flipping to true, and a mount reaching past
+ *      `sandbox-provider/index.js` into the lane's internals.
+ *      Names and provenance (one line each, no blanket exemption):
+ *        - `runtime/src/plugin/live/plane-effect-backends.mjs` — the governed
+ *          Team tool plane's effect-backends row (glue lane; it mounts the
+ *          shell/streaming rows behind the plane's own admission binding).
+ *        - `runtime/src/plugin/live/glob-backend.mjs` — the a5glb anchored glob
+ *          row (alpha5-glob-backend lane; confined rg walk, evidence
+ *          `dev/agent-workflow/evidence/alpha5/glob-backend/`).
  *
  * @module packages/runtime/test/a5p4-lane-hygiene.test
  */
 
 import { describe, expect, it } from 'vitest'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
@@ -33,6 +48,13 @@ import { ASSURANCE_DIMENSIONS, ASSURANCE_LEVELS, GOVERNANCE_ERROR_CODES, LEASE_S
 import { PROVIDER_ASSURANCE_DIMENSIONS, PROVIDER_ASSURANCE_LEVELS, PROVIDER_ERROR_CODES } from '../sandbox-provider/contract-stub.js'
 import { LEASE_STATUS_MIRROR } from '../sandbox-provider/phases.js'
 import { HARD_PROFILE_ENABLED } from '../sandbox-provider/realm-evidence.js'
+
+/** Print the live named-mount set so a census capture records what was seen. */
+function reportNamedMounts(live: string[]): void {
+  ;(globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout?.write(
+    `a5p4 law(4) live named provider mounts on this tree: ${live.join(' , ')}\n`,
+  )
+}
 
 const LANE_DIR = resolve(fileURLToPath(import.meta.url).slice(0, -'/a5p4-lane-hygiene.test.ts'.length), '../sandbox-provider')
 const PACKAGES_DIR = resolve(LANE_DIR, '../..')
@@ -111,14 +133,28 @@ describe('a5p4 lane purity and dormancy', () => {
     expect(text).toBe('')
   })
 
-  it('WIRED (GLUE-7): exactly ONE production consumer imports the lane — the assembly row (no accretion)', () => {
-    // PR0 froze this lane DORMANT; GLUE-7 (alpha5-glue7-backend) is the
-    // instruction-backed end of that state: the production Team tool plane
-    // now ASSEMBLES the confined provider behind the shell row. The ledger
-    // law survives in the same form — the consumer set is a NAMED SET: a
-    // second production importer is a design change that must appear here,
-    // and a vanished one is a broken wire. Booking evidence:
-    // dev/agent-workflow/evidence/alpha5/glue7/ (inventory table, row 1).
+  /**
+   * The named-mount face of law (4). A LIST OF FILES, each with the ONE edge it
+   * is allowed to carry, is the whole exemption — there is no wildcard, no
+   * directory rule and no "in production" carve-out. `subset` semantics: every
+   * offender must appear here, so an unnamed consumer breaks the leg the same
+   * way it always did; a named mount that is simply absent from this checkout is
+   * reported, not required (each lane books its own row on its own branch).
+   */
+  const NAMED_PROVIDER_MOUNTS: readonly { file: string; lane: string; edge: string }[] = [
+    {
+      file: 'runtime/src/plugin/live/plane-effect-backends.mjs',
+      lane: 'glue — Team tool plane effect backends',
+      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+    },
+    {
+      file: 'runtime/src/plugin/live/glob-backend.mjs',
+      lane: 'a5glb — anchored confined-rg glob row',
+      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+    },
+  ]
+
+  it('NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge', () => {
     const offenders: string[] = []
     const walk = (dir: string): void => {
       let entries: string[]
@@ -152,7 +188,32 @@ describe('a5p4 lane purity and dormancy', () => {
       }
     }
     walk(PACKAGES_DIR)
-    expect(offenders).toEqual(['runtime/src/plugin/live/plane-effect-backends.mjs'])
+    const named = new Map(NAMED_PROVIDER_MOUNTS.map((m) => [m.file, m]))
+    const unnamed = offenders.filter((o) => !named.has(o)).sort()
+    // THE TEETH, unchanged: a reference with no booked name is a red, exactly as
+    // when the list was empty.
+    expect(unnamed, `unnamed production consumers of the confined provider lane: ${unnamed.join(', ')}`).toEqual([])
+    // Each booked name, on the tree that carries it, is pinned to ONE edge at
+    // the public face — the shape of the mount is part of the booking.
+    for (const mount of NAMED_PROVIDER_MOUNTS) {
+      const path = resolve(PACKAGES_DIR, mount.file)
+      if (!existsSync(path)) continue // that lane has not mounted on THIS tree (reported below)
+      const body = readFileSync(path, 'utf8')
+      const edges = body.split('\n').map((l) => l.trim()).filter((l) => /sandbox-provider/.test(l) && /^import\b/.test(l))
+      expect(edges, `${mount.file}: a mount carries exactly one pinned import edge (${mount.lane})`).toEqual([mount.edge])
+      const deep = body.split('\n').map((l) => l.trim()).filter((l) => /from\s+'[^']*sandbox-provider\/[^']+'/.test(l) && !/sandbox-provider\/index\.js'/.test(l))
+      expect(deep, `${mount.file}: only the PUBLIC FACE may be imported — no deep path into the lane`).toEqual([])
+      // Call sites, counted on their own: the pinned edge names the symbol
+      // without calling it, so the import line never enters this count.
+      // A call site is `createConfinedProcessProvider(` — the pinned import line
+      // names the symbol without a paren, so it never counts here.
+      const calls = body.split('\n').filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l.trim())).length
+      expect(calls, `${mount.file}: the booked row must actually mount the factory`).toBeGreaterThanOrEqual(1)
+    }
+    // What the leg SAW, in the open — the identity of the live set is the claim.
+    const live = offenders.slice().sort()
+    expect(live.length).toBeGreaterThanOrEqual(1)
+    reportNamedMounts(live)
   })
 
   it('hard-profile enablement is compiled OFF and no source turns it on', () => {

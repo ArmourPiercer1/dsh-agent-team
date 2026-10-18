@@ -2518,6 +2518,16 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     const SCANNED_PATHS_A5NATEXE: readonly string[] = [
       'packages/runtime/test/a5natexe-native-takeover.test.ts',
     ]
+    // alpha5-glob-backend (a5glb, branch `alpha5-glob-backend`): the anchored
+    // confined-rg GLOB row and its two suites + shared harness. Four scannable
+    // files, all NEW paths owned by that lane; the row is a production live row
+    // (.mjs, like the GLUE-5/6 live rows) and carries no denylist vocabulary.
+    const SCANNED_PATHS_A5GLB: readonly string[] = [
+      'packages/runtime/src/plugin/live/glob-backend.mjs',
+      'packages/runtime/test/alpha5-glob-harness.ts',
+      'packages/runtime/test/alpha5-glob-backend.test.ts',
+      'packages/runtime/test/alpha5-glob-backend-adversarial.test.ts',
+    ]
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2563,7 +2573,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5GLUE7.length +
         SCANNED_PATHS_A5RBN.length +
         SCANNED_PATHS_A5FLIP.length +
-        SCANNED_PATHS_A5NATEXE.length,
+        SCANNED_PATHS_A5NATEXE.length +
+        SCANNED_PATHS_A5GLB.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2610,7 +2621,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5GLUE7.length +
         SCANNED_PATHS_A5RBN.length +
         SCANNED_PATHS_A5FLIP.length +
-        SCANNED_PATHS_A5NATEXE.length,
+        SCANNED_PATHS_A5NATEXE.length +
+        SCANNED_PATHS_A5GLB.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2681,6 +2693,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5RBN,
       ...SCANNED_PATHS_A5FLIP,
       ...SCANNED_PATHS_A5NATEXE,
+      ...SCANNED_PATHS_A5GLB,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -2976,6 +2989,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // chain stands untouched), and the scanner total of this tree with the one
     // named spec booked is 1187 — asserted green by the union totals above.
     expect(SCANNED_PATHS_A5NATEXE.length).toBe(1187 - 1186)
+    // The a5glb tie, RE-ANCHORED by the scanner on THIS merged tree (the pre-merge
+    // anchors do not carry across the two chains: the a5glb chain measured 1184 with
+    // the natexe spec absent, the natexe chain measured 1187 with the four glob paths
+    // absent — neither number is this tree's total, so neither was copied). Measured
+    // here, master's file as the base and this clause NOT yet booked, the run read
+    // `expected 1191 to be 1187`: the natexe chain's booked chain (1187) plus exactly
+    // the four new glob paths on disk. Booking them by name ends the chain at the
+    // measured scanner total of this tree, 1191 — asserted green by the union totals above.
+    expect(SCANNED_PATHS_A5GLB.length).toBe(1191 - 1187)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
