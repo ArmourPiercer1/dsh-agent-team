@@ -1,0 +1,80 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b2-rc/packages/runtime
+
+ ✓ test/a5w-integration-wiring.test.ts (14 tests) 77ms
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5g7-unit-realm legs=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=team-a5g7-instance-grep-1 records=1 total=1 truncated=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5g7-unit-realm call=team-a5g7-instance-grep-2 records=1 total=1 truncated=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=217 exit=0 timedOut=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=276 exit=1 timedOut=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob-1 pid=309 files=22 capped=false
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b2-rc/tests/homes/a5g7-unit-mvdubm7z/root/data/needle.txt
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
+
+stdout | test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=436 exit=0 timedOut=false
+
+ ✓ test/alpha5-glue7-plane-backends.test.ts (12 tests) 2746ms
+     ✓ G1b grep file-leg presentation integrity: body bytes stay disk-identical; only the path field remaps  381ms
+     ✓ G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do  304ms
+     ✓ G6b CANDIDATE-A archive: the glob FACTORY (unwired) keeps its bounded face + typed walker error + symlink-final refusal  354ms
+a5p4 law(4) live named provider mounts on this tree: runtime/src/plugin/live/glob-backend.mjs , runtime/src/plugin/live/plane-effect-backends.mjs , runtime/src/plugin/live/search-backend.mjs
+ ✓ test/a5p4-lane-hygiene.test.ts (8 tests) 1822ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  1742ms
+a5glb L3 MEASURED confine scope: content={bytes=none exit=0 stderr=denied} names={entry=empty-listing exit=0 stderr=denied} landlock=enforced probe=content-read=enforced,write=enforced,directory-metadata=unsupported,alias=unsupported,network-destination=unsupported,inherit-cancel=author-trusted
+ ✓ test/alpha5-search-backend.test.ts (42 tests) 4374ms
+     ✓ argv-no-path: a directory target carries NO path string; a file target carries only its own name  335ms
+     ✓ explicit-path-is-load-bearing: without `-- .` the confined child answers a SILENT ZERO  347ms
+     ✓ P8b the confined face carries NO payload exit code — so completion is proved from the stream  380ms
+     ✓ P11 overflow/Spill class: the inline window truncates honestly, the spill keeps EVERY admitted row  866ms
+     ✓ V8 a governed root that is a symlink alias is refused, never followed  324ms
+     ✓ V12 the audit face carries codes and arithmetic only — never a path, a row or the walker's words  301ms
+ ✓ test/alpha5-glob-backend.test.ts (49 tests) 7423ms
+     ✓ R1 team_glob on the UNCONFIGURED plane row lands on the typed shut face, verbatim  514ms
+     ✓ P1 basic pattern — same paths, SAME modification-time ORDER  315ms
+     ✓ P9 illegal pattern — TYPED walker error (code + arithmetic), never an empty list and never the walker's words  384ms
+     ✓ P10 over-cap — GLOB_MAX_RESULTS inline, totalMatches = the FULL native count, truncated honest  752ms
+     ✓ L3 MEASURED confine scope: BOTH dimensions are measured on this kernel (content x names), the row law is asserted against the measurement, and the measurement is printed  743ms
+     ✓ L3b a `/proc/self/fd/N` cwd is NOT a usable walk root through the confined spawn (measured empty)  502ms
+     ✓ X4 the capped window: spill carries the ADMITTED rows, never the whole walk  303ms
+   ✓ X8 AUDIT SWEEP: an audit line is a verb plus key=tokens, never data  358ms
+   ✓ X10 THE INTERNAL FACE IS DEFAULT OFF AND NOT AN OUTPUT CHANNEL  343ms
+ ✓ test/alpha5-glob-backend-adversarial.test.ts (8 tests) 214232ms
+     ✓ A4 rename→symlink RACE LOOP: 5000 iterations, zero leak  13618ms
+     ✓ A5 the REAL confined rg walk under the same swap race (6600 walks), zero leak  199477ms
+     ✓ A7 nothing outside the root is ever PRESENTED, whatever the pattern says  304ms
+
+ Test Files  6 passed (6)
+      Tests  133 passed (133)
+   Start at  13:07:33
+   Duration  214.57s (transform 2.22s, setup 0ms, import 2.30s, tests 230.67s, environment 1ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -85,6 +85,22 @@ export interface SpawnRequest {
    *  is NOT using it; `prepare()` refuses such a plan as `fd-launcher-owned`
    *  before any plan or process exists, one-shot and streaming arms alike. */
   readonly declaredFds?: readonly { fd: number; purpose: 'stdin' | 'stdout' | 'stderr' | 'delivery'; resourceFingerprint: string }[]
+  /**
+   * B2 EXIT-CODE FIDELITY (additive, DEFAULT OFF): ask the streaming arm to carry
+   * the payload's OWN completion state as the observable exit code.
+   *
+   * Off (every existing caller, and this field's absence is exactly "off"), the
+   * stream arm keeps its historical law: the launcher exits 0 whatever the payload
+   * did and the payload's code lives only in `<out-dir>/exit.json` as bookkeeping —
+   * the constant-completion law the glob and search rows were built against and
+   * still pin. On, the launcher re-exports the waitpid result (signal death as
+   * 128+signum) so a shell row can report the code it actually measured.
+   *
+   * It changes NO policy, NO grant and NO rule: the flag rides the launcher argv
+   * only, which is why `prepare()` never copies it into the policy file (an extra
+   * key there would be a second source of truth for the same byte).
+   */
+  readonly exitPassthrough?: boolean
 }
 
 /** The lease the provider issues (mirror of the frozen lease vocabulary). */
@@ -158,7 +174,14 @@ export interface StreamingSpawnHandle {
   readonly stdin: Writable
   readonly stdout: Readable
   readonly stderr: Readable
-  /** Resolves when the process is OBSERVED to exit — observation never settles the lease. */
+  /**
+   * Resolves when the process is OBSERVED to exit — observation never settles the
+   * lease. `code` is the LAUNCHER's exit status: with the plan's `exitPassthrough`
+   * unset that is the constant 0 of the historical stream arm (a 0 here therefore
+   * proves nothing about the payload, which is why rows that leave the flag off
+   * prove completion from the stream instead); with the flag set it is the
+   * payload's own code, or 128+signum if a signal killed it.
+   */
   readonly exited: Promise<{ code: number | null; signal: string | null }>
   /** The handle's termination arm: signal (SIGTERM→SIGKILL escalation), await, settle. */
   terminate(options?: StreamingOptions): Promise<ProviderResult<ProviderLease>>
@@ -586,7 +609,12 @@ export function createConfinedProcessProvider(opts: ProviderOptions) {
     const integrity = launcherIntegrityGate()
     if (!integrity.ok) return integrity // BEFORE consumption: the grant survives a gate refusal (same law as execute)
     consumedPlans.add(plan.planId)
-    const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir])
+    // The one place the B2 flag enters the world: an ADDITIVE token on the launcher
+    // argv, present only when the REQUEST asked for it. Nothing else about the
+    // launch changes, so an unset flag is the same argv, byte for byte, that every
+    // pre-B2 leg has always spawned.
+    const spawned = streamSpawn([launcher.launcherPath, '--confined-exec-stream', '--policy', plan.policyPath, '--out-dir', plan.outDir,
+      ...(plan.request.exitPassthrough === true ? ['--exit-passthrough'] : [])])
     if (!spawned.ok) return spawned
     const proc = spawned.value
     const handshakeTimeoutMs = streaming?.handshakeTimeoutMs ?? 15_000
