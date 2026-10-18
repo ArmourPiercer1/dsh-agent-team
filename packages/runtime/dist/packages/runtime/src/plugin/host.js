@@ -1524,6 +1524,22 @@ export async function apply(ctx, config) {
         if (anchorState.status === 'refused') {
             console.warn(degradedAnchorBootLine(rowConfig.rootSessionId, anchorState));
         }
+        // --- alpha5 PTC fs half-arm: the host-level `approval/request` install -
+        // Public waterfall (api-catalog: "return an outcome to claim the request
+        // or call next() to delegate"). Installed ONCE per row activation,
+        // global + prepend, so a governed member's escalation ask is claimed
+        // BEFORE any UI answerer composes in front of it (scoped ordering cannot
+        // guarantee that); like the activation-fence listeners, it rides this
+        // row's fiber and is disposed with the row. The ROUTER starts empty —
+        // membership lives behind the agent-bindings scope gate (S6), so a
+        // non-Team install sees every request delegate verbatim through an
+        // empty map: zero expansion by construction, not by a runtime branch.
+        const ptcEscalationRef = { current: null };
+        if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
+            const ptcRouter = glue.createPtcEscalationRouter();
+            ptcEscalationRef.current = ptcRouter;
+            ctx.on('approval/request', (req, next) => ptcRouter.route(req, next), { global: true, prepend: true });
+        }
         const live = glue.createAgentBindings({
             agents,
             sessionPersistence,
@@ -1531,6 +1547,7 @@ export async function apply(ctx, config) {
             config: resolvedRowConfig,
             teamToolsRef,
             controlServiceRef,
+            ptcEscalationRef,
             now: () => new Date().toISOString(),
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-

@@ -38,7 +38,12 @@ export interface TeamPluginHostContext {
      *   the upstream AgentLoop rolls the unpublished agent back — the
      *   fence's veto point, guide §8.1);
      * - `'agent/disposed'` — the fire-and-forget disposal announcement
-     *   (the fence's exact-generation rollback barrier, guide §8.2).
+     *   (the fence's exact-generation rollback barrier, guide §8.2);
+     * - `'approval/request'` — the approval-answerer WATERFALL (public
+     *   contract: return an outcome to claim the request, or call `next()`
+     *   to delegate; the outcome vocabulary is the host's closed set
+     *   `'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'`). The
+     *   alpha5 PTC fs escalation row installs exactly one of these.
      */
     on?(name: 'internal/get', listener: (readerCtx: TeamPluginHostContext, prop: string, error: Error, next: () => unknown) => unknown, options?: boolean | Record<string, unknown>): void;
     on?(name: 'agent/created', listener: (payload: {
@@ -49,7 +54,17 @@ export interface TeamPluginHostContext {
     on?(name: 'agent/disposed', listener: (payload: {
         readonly agent: unknown;
     }) => void, options?: boolean | Record<string, unknown>): void;
+    on?(name: 'approval/request', listener: (req: {
+        readonly agent: unknown;
+        readonly toolName: string;
+        readonly callId?: string;
+        readonly reason?: string;
+        readonly signal?: AbortSignal;
+    }, next: () => Promise<TeamApprovalOutcome>) => Promise<TeamApprovalOutcome>, options?: boolean | Record<string, unknown>): void;
 }
+/** The host's closed approval vocabulary (public; mirrored structurally,
+ *  never imported — the entry's independence discipline, guide §4.1). */
+type TeamApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable';
 /**
  * Validate the row `config` channel loudly (plan §19.2: the row config is
  * the entry's ONLY input channel — a malformed composition must reject
@@ -228,4 +243,5 @@ export declare const inject: string[];
  *   {@link validateTeamPluginConfig}).
  */
 export declare function apply(ctx: TeamPluginHostContext, config?: unknown): Promise<void>;
+export {};
 //# sourceMappingURL=host.d.ts.map
