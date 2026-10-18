@@ -1,0 +1,13 @@
+{
+  "bookedAt": "2026-10-18T12-00-01Z",
+  "installedSha": "0fa2cd76de2b48ef287ca3bf82ac6b03b30e3ab8",
+  "currentForm": "team_glob lands the typed shut face verbatim (A8); the plane source at the installed commit keeps glob: shut",
+  "notCountedGreen": [
+    "GLOB-POS after the flip: the anchored rg walk answers a real match set over the wire",
+    "GLOB-BOUND after the flip: GLOB_MAX_RESULTS bound with the honest truncated marker over >limit seeds",
+    "GLOB-WALKER-ERROR after the flip: typed rg walker-error shape (never a silent zero)",
+    "GLOB-SYMLINK after the flip: a final-component symlink refused with ZERO secret bytes disclosed",
+    "GLOB-OUTSIDE-ANCHOR after the flip: no outside name and no outside byte may surface through the row"
+  ],
+  "rerunTrigger": "merge of the glob mount (#333) — these five controls are to be re-run then; on THIS commit they are NOT green and NOT attempted"
+}
