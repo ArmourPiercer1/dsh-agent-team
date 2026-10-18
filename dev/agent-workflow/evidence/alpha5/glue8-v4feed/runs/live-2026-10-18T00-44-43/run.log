@@ -1,0 +1,25 @@
+[2026-10-18T00:44:43.474Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-18T00:44:43.510Z] mock model on 3496
+[2026-10-18T00:44:46.338Z] PASS A1.0: real host booted on the production row (profile-patch seam; v3 anchor team alive) — origin=http://127.0.0.1:3185
+[2026-10-18T00:44:46.361Z] disc prompt status=200 body={"type":"server-response","rpcId":"a5fl-9s93rvdoef","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-18T00:44:46.762Z] PASS A1.1: boot root surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-18T00:44:46.778Z] PASS A2.0: catalog.list carries the v4 saved source — row={"blueprintId":"team.a5fl-v4","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}
+[2026-10-18T00:44:46.778Z] PASS A2.1: the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported) — state={"revision":1,"schemaVersion":4,"migrationState":"current"}
+[2026-10-18T00:44:46.778Z] PASS A2.3: v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside — state={"revision":1,"schemaVersion":3,"migrationState":"current"}
+[2026-10-18T00:45:03.321Z] FAIL A4.1: the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team) — ledger={"requests":[],"decisions":[],"consumptions":[],"error":null}
+[2026-10-18T00:45:03.323Z] PASS A3.0: team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser) — status=200 body={"type":"server-response","rpcId":"a5flc-l4uabuetpe","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5fl-v4team-2026-10-18T00-44-43","blueprint":{"blueprintId":"team.a5fl-v4","revision":"1","contentHash":"sha256:31499b216
+[2026-10-18T00:45:03.338Z] PASS A2.2: catalog.get returns the v4 identity (schemaVersion 4 + contentHash, blueprintId match) — status=200 hash=sha256:31499b216226b6f1
+[2026-10-18T00:46:44.145Z] FAIL A4.3: the human allow is DURABLE (control-decision-recorded on the team ledger) — decisions=[]
+[2026-10-18T00:51:44.246Z] timeout waiting for: member done turn
+[2026-10-18T00:56:44.332Z] timeout waiting for: leader final turn
+[2026-10-18T00:56:44.332Z] FAIL A4.0: the v4 team leader ran create_member + team_delegate and the executed work-admitted receipt landed in the leader context — final=timeout
+[2026-10-18T00:57:44.444Z] FAIL C0: the v4-bound scope mounted the plane: placement-feed rows logged through the SAME #313 binding feed (realm a5g8-v4-realm) — rows=[]
+[2026-10-18T00:57:44.444Z] FAIL C1: POSITIVE READ on a v4-bound team: the governed read row ran and returned REAL BYTES from the controlled root (r0 carries the file content, no refusal vocabulary) — memberText=""
+[2026-10-18T00:57:44.444Z] FAIL C2: POSITIVE SEARCH: team_grep ran the REAL read-only search over the governed root and the token hit rode the wire — memberText=""
+[2026-10-18T00:57:44.444Z] FAIL C3: GLOB ROW STAYS TYPED-SHUT on the v4 wire too (CANDIDATE-A never shipped): the shut face lands honestly, no walk, no names — memberText=""
+[2026-10-18T00:57:52.448Z] FAIL C4: POSITIVE SHELL on the v4 wire: after the durable allow was CONSUMED, team_bash ran CONFINED and the sentinel file exists with real bytes inside the governed root — consumed=false tok=false sentinel=false
+[2026-10-18T00:57:52.448Z] FAIL A4.4: the allow was CONSUMED and the member dispatch EXECUTED on the governed rows (v4 era, plane fed — the fail-closed leg of the preassembly run is the paired RED) — consumed=false
+[2026-10-18T00:57:52.449Z] FAIL A5.0: the governed WRITE landed for REAL where allowed: bash-sentinel.txt exists under the controlled root (positive control of execution, the mirror of the preassembly NEGATIVE) — sentinel=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/homes/a5g8-v4feed-assembled-2026-10-18T00-44-43/governed/bash-sentinel.txt
+[2026-10-18T00:57:52.462Z] teardown: stopping host + mock
+[2026-10-18T00:57:52.468Z] world removed (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/homes/a5g8-v4feed-assembled-2026-10-18T00-44-43)
+[2026-10-18T00:57:52.468Z] VERDICT FAIL — 8/18; failed: A4.1,A4.3,A4.0,C0,C1,C2,C3,C4,A4.4,A5.0

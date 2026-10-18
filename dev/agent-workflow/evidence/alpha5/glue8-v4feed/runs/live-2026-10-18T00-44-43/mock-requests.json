@@ -1,0 +1,106 @@
+[
+  {
+    "seq": 1,
+    "receivedAt": "2026-10-18T00:44:46.472Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 2,
+    "receivedAt": "2026-10-18T00:44:46.476Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"A5FLMK_DISC_2026-10-18T00-44-43\\\"}]\"}]",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5fl live session"
+    }
+  },
+  {
+    "seq": 3,
+    "receivedAt": "2026-10-18T00:44:46.917Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 4,
+    "receivedAt": "2026-10-18T00:44:46.918Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": {
+      "kind": "text",
+      "content": "a5fl live session"
+    }
+  },
+  {
+    "seq": 5,
+    "receivedAt": "2026-10-18T00:44:47.030Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 6,
+    "receivedAt": "2026-10-18T00:44:47.411Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 7,
+    "receivedAt": "2026-10-18T00:44:47.967Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 8,
+    "receivedAt": "2026-10-18T00:44:48.443Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 9,
+    "receivedAt": "2026-10-18T00:44:49.948Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 10,
+    "receivedAt": "2026-10-18T00:44:50.656Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 11,
+    "receivedAt": "2026-10-18T00:44:53.960Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 12,
+    "receivedAt": "2026-10-18T00:44:54.728Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 13,
+    "receivedAt": "2026-10-18T00:45:02.544Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"A5FLMK_DISC_2026-10-18T00-44-43\"},{\"type\":\"text\",\"text\":\"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\\n\\nCurrent DSH file policy: worksp",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  },
+  {
+    "seq": 14,
+    "receivedAt": "2026-10-18T00:45:03.148Z",
+    "userTextHead": "[{\"type\":\"text\",\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:6a88a2343c74abe44bc56771f8b31d63ffbeff8e0b4beb5f0eece3e8c8aa0510] A5FLMK_LEAD_2026-10-18T00-44-43\"},{\"type\":\"text\",",
+    "toolMsgCountAfterLastUser": 0,
+    "reply": null
+  }
+]

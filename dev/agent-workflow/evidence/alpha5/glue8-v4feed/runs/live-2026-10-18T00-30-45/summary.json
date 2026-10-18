@@ -1,0 +1,12 @@
+{
+  "runStamp": "2026-10-18T00-30-45",
+  "fatal": "host boot failed (exit 1/null)\n--- tail ---\nnode:internal/modules/esm/resolve:272\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/boot/app-boot/node_modules/@deepseek-ai/cordis/lib/index.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\n    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/boot/app-boot/node_modules/@deepseek-ai/cordis/lib/index.js'\n}\n\nNode.js v24.21.0\n",
+  "criteria": [
+    {
+      "id": "A0.0",
+      "name": "test-use pristine at the paths.mjs baseline",
+      "ok": true,
+      "detail": "sha=639ed015397290b3745d163aafe02ffee4aa3f84"
+    }
+  ]
+}

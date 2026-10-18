@@ -1,0 +1,12 @@
+{
+  "requests": [
+    {
+      "requestId": "ctrl-1wcze5d04r0hii1avu33n0ip",
+      "kind": "leader-approval",
+      "toolName": "bash"
+    }
+  ],
+  "decisions": [],
+  "consumptions": [],
+  "error": null
+}

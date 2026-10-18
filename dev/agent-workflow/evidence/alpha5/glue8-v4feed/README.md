@@ -44,31 +44,41 @@ final run `23-27-09`）已把 fail-closed 打到**精确落点**：
 binding identity = **placement 时刻的运行时对象指纹**，文档 family 是声明面，
 本轮在装配侧做**一致性读验**（执行事实冲突即 refuse mount），不新造身份代数。
 
-## 2. live 轮真实抓到并钉下的装配/披露面（GREEN 迭代全录）
+## 2. live 轮真实抓到并钉下的装配面（GREEN 迭代全录；权限独审裁定 81861aa1 对齐）
 
 * **placement 行属于 team-tool 家族**（agent-bindings:2575 `teamToolNames =
   selected + a5PlaneOwnNames`）：v4 BP member `teamTools: {kind: deny}` 会
-  **显式拒掉治理行**（GLUE-7 世界的 member 面是 allow-空集——原生 team_* 目录
-  靠缺席关闭，plane 行走自身治理）。v4-flip 14/14 的 RED 世界用 kind deny
-  无碍（无 plane 行），fed 世界必须 allow-空集。preassembly RED 保留逐字形。
-* **permissions lane 家族闭集 = read|read_image|write|edit|lsp|bash|pwsh**
-  （create MALFORMED_DTO 实测）：grep/glob **不在** lane 词汇——搜索族不归
-  permission lane 管（#321 同面）。**实测披露面**：lane 的 `bash` 家族匹配
-  **不覆盖 placement 名 team_bash**——fed 世界 placement-row dispatch 的治理
-  = plane 自身（Guard binding identity + confined provider + 行 schema），
-  durable leader-approval 面**不为其开请求**（A4.1/A4.3 按此事实钉，
-  ledger 空=一致而非旁路）。此面如实上线，是否扩 lane 归根裁。
-* **shell 行闭集 schema = {command}**：多余 `timeoutMs` 落行自身
-  `refused-schema code=unknown-field`（行内治理在工作，非缺陷）。
-* **mock 面的 rc.2 wire 教训**（kit 自身，非产品）：tool 结果以 user-message
-  tool_result 形回（lastUser 判据在 turn2+ 失效——用 trigger-消息判据）；
-  toolCall 包装是 2 参（3 参错位产 MALFORMED_RESPONSE 被宿主拒）。
+  **显式拒掉治理行**（GLUE-7 世界的 member 面是 allow-空集，a5g7-live-kit:840
+  同形在案——原生 team_* 目录靠缺席关闭，plane 行走自身治理）。preassembly
+  RED 保留逐字形。
+* **治理归属按裁定 81861aa1**：`team_*` = **OTHER_MANAGED_TEAM_TOOL**
+  （permission-coverage.ts:66-78，authority owner = Team runtime/control
+  plane），**lane 不可寻址**（types.ts:203 unsupported 类；schema.ts:421 闭集
+  七名之外）——placement shell 直跑**不属"必须 ask"臂**，非绕过。
+  `read` = lane 显式 allow（闭集词面命中）；native `bash` 仍 default ask。
+* **ask-gated 正负控（裁定 (i)，live）**：fed 世界同一 member 调 native
+  `bash` → **durable leader-approval 必开**（A4.1）→ 审批落账（A4.2/A4.3）
+  → 账本三行对齐 request→decision→consumption（A4.4 chain=true 实测）；
+  **执行前零副作用** = C5 live 见证（request OPEN 时世界内无 marker）；
+  批准后落点 = **Tool Binding verification gate 拒**（`no fallback to the
+  native body`，#321 已产封闭世界语义：fed scope 上无 placement 行的原生族
+  不执行），**allow 不静默扩宽执行**（A4.4 钉拒绝落点 + 零态持续）。
+* **permissions 闭集实测 = read|read_image|write|edit|lsp|bash|pwsh**
+  （create MALFORMED_DTO）：grep/glob 不在 lane 词汇——搜索族不归 permission
+  lane 管（#321 同面）。**shell 行闭集 schema = {command}**：多余 timeoutMs
+  落行自身 refused-schema（行内治理在工作）。
+* **mock 面的 rc.2 wire 教训**（kit 自身）：tool 结果以 user-message
+  tool_result 形回（lastUser 判据 turn2+ 失效，用 trigger 判据）；toolCall
+  包装 2 参（3 参错位产 MALFORMED_RESPONSE 被宿主拒）；quote 内层 JSON 转义
+  （断言锚串避开引号）。
 
-## 3. 正控终态（assembled 面）
+## 3. 正控终态（assembled 20/20 · preassembly 15/15）
 
 C0 placement-feed 行过 #313 同一 feed（realm a5g8-v4-realm）· C1 **read 真
-字节**（A5G8-V4-REAL-BYTES-42 上线）· C2 **grep 真命中**（真 rg/grep over
-governed root）· C3 **glob 诚实 shut**（IO_POLICY 上线，无名单）·
-C4 **team_bash confined 真执行**（exit=0 + TOK + sentinel 真写入 governed
-root）。RED 面对照（preassembly）：A4.4 fail-closed 原文 + A5.0 零执行，
-14/14 逐字重跑绿。
+字节** · C2 **grep 真命中**（真 rg over governed root）· C3 **glob 诚实 shut**
+（IO_POLICY_UNSUPPORTED，无名单）· C4 **placement shell 真执行**（exit=0 +
+TOK + sentinel 真写入 governed root；治理面=plane 自身，按裁定文案，无
+approval 误称）· C5 **审批前零副作用**（live）· A4.1-A4.4 审批链+对齐账本+
+Guard 拒绝落点。RED 面对照（preassembly）：A4.4 fail-closed 原文 + A5.0 零
+执行，15/15 逐字绿（含 C5）。两份 BP 字节件 = run 目录
+`bp-v4-authoring.yaml`（入口对照见 entry-comparison.md）。

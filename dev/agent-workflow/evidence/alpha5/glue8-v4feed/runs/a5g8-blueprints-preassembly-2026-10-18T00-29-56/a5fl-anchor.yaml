@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5fl-anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5fl boot team. A5FLMK_DISC_2026-10-18T00-29-56 is the discovery marker."
+members:
+  - templateId: worker
+    persona: "You are a worker of the a5fl boot team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

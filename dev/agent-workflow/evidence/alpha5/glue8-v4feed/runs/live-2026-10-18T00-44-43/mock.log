@@ -1,0 +1,15 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 decide() threw: userTextOf(...).some is not a function
+mock: 2 [messages] text reply (17 chars): "a5fl live session"
+mock: 3 decide() threw: userTextOf(...).some is not a function
+mock: 4 [messages] text reply (17 chars): "a5fl live session"
+mock: 5 decide() threw: userTextOf(...).some is not a function
+mock: 6 decide() threw: userTextOf(...).some is not a function
+mock: 7 decide() threw: userTextOf(...).some is not a function
+mock: 8 decide() threw: userTextOf(...).some is not a function
+mock: 9 decide() threw: userTextOf(...).some is not a function
+mock: 10 decide() threw: userTextOf(...).some is not a function
+mock: 11 decide() threw: userTextOf(...).some is not a function
+mock: 12 decide() threw: userTextOf(...).some is not a function
+mock: 13 decide() threw: userTextOf(...).some is not a function
+mock: 14 decide() threw: userTextOf(...).some is not a function

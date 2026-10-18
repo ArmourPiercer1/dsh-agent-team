@@ -1,0 +1,12 @@
+{
+  "runStamp": "2026-10-18T00-29-47",
+  "fatal": "host boot failed (exit 1/null)\n--- tail ---\nnode:internal/modules/cjs/loader:1568\n  throw err;\n  ^\n\nError: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/apps/cli/lib/bin.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: []\n}\n\nNode.js v24.21.0\n",
+  "criteria": [
+    {
+      "id": "A0.0",
+      "name": "test-use pristine at the paths.mjs baseline",
+      "ok": true,
+      "detail": "sha=639ed015397290b3745d163aafe02ffee4aa3f84"
+    }
+  ]
+}

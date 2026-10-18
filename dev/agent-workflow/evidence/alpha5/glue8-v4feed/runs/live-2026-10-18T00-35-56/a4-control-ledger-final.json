@@ -1,0 +1,21 @@
+{
+  "requests": [
+    {
+      "requestId": "ctrl-0ckny1018a2omz1s66t2e0t3",
+      "kind": "leader-approval",
+      "toolName": "bash"
+    }
+  ],
+  "decisions": [
+    {
+      "requestId": "ctrl-0ckny1018a2omz1s66t2e0t3",
+      "decision": "allow"
+    }
+  ],
+  "consumptions": [
+    {
+      "requestId": "ctrl-0ckny1018a2omz1s66t2e0t3"
+    }
+  ],
+  "error": null
+}

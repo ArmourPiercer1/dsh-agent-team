@@ -1,0 +1,18 @@
+roles=[user]
+0 <user> [{"type":"text","text":"[team-root-work requestToken=team-create:initial-work:sha256:ea4cc61cf6fdf05e3895c4afc97369181e5cc75a466f58c36a7521af80d17c6f] A5FLMK_LEAD_2026-10-18T02-01-04"},{"type":"text","text":"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may m
+triggerIdx=0
+----
+roles=[user,assistant,user]
+0 <user> [{"type":"text","text":"[team-root-work requestToken=team-create:initial-work:sha256:ea4cc61cf6fdf05e3895c4afc97369181e5cc75a466f58c36a7521af80d17c6f] A5FLMK_LEAD_2026-10-18T02-01-04"},{"type":"text","text":"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may m
+1 <assistant> [{"type":"tool_use","id":"call-a5fl-1ounx7kv","name":"team_create_member","input":{"rootSessionId":"session-a5fl-v4team-2026-10-18T02-01-04","requestToken":"a5fl-create-2026-10-18T02-01-04","delegationTemplateId":"worker","label":"w-v4"}}]
+2 <user> [{"type":"tool_result","tool_use_id":"call-a5fl-1ounx7kv","content":[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5fl-v4team-2026-10-18T02-01-04\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1jsvoi109h0k\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-fa60bf3beaa9790b5c792
+triggerIdx=0
+----
+roles=[user,assistant,user,assistant,user]
+0 <user> [{"type":"text","text":"[team-root-work requestToken=team-create:initial-work:sha256:ea4cc61cf6fdf05e3895c4afc97369181e5cc75a466f58c36a7521af80d17c6f] A5FLMK_LEAD_2026-10-18T02-01-04"},{"type":"text","text":"Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may m
+1 <assistant> [{"type":"tool_use","id":"call-a5fl-1ounx7kv","name":"team_create_member","input":{"rootSessionId":"session-a5fl-v4team-2026-10-18T02-01-04","requestToken":"a5fl-create-2026-10-18T02-01-04","delegationTemplateId":"worker","label":"w-v4"}}]
+2 <user> [{"type":"tool_result","tool_use_id":"call-a5fl-1ounx7kv","content":[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"create-member\",\"rootSessionId\":\"session-a5fl-v4team-2026-10-18T02-01-04\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-1jsvoi109h0k\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-fa60bf3beaa9790b5c792
+3 <assistant> [{"type":"tool_use","id":"call-a5fl-h2w4701z","name":"team_delegate","input":{"rootSessionId":"session-a5fl-v4team-2026-10-18T02-01-04","requestToken":"a5fl-delegate-2026-10-18T02-01-04","delegationInstanceId":"inst-1jsvoi109h0k","label":"w-v4","prompt":"A5FLMK_MEM_2026-10-18T02-01-04","async":false}}]
+4 <user> [{"type":"tool_result","tool_use_id":"call-a5fl-h2w4701z","content":[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5fl-v4team-2026-10-18T02-01-04\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-admitted\",\"instanceId\":\"inst-1jsvoi109h0k\",\"fromLifecycle\":\"CREATED\",\"lifecycleCommitted\":true,\"sequence\":3,\"replayed\":false,\"s
+triggerIdx=0
+----

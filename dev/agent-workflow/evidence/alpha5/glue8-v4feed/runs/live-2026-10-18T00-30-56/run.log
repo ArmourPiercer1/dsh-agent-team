@@ -1,0 +1,39 @@
+[2026-10-18T00:30:56.873Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-18T00:30:56.902Z] mock model on 3495
+[2026-10-18T00:34:59.065Z] FATAL row health not ready in 240s
+--- tail ---
+dsh: warning: 21 entries did not activate
+typert-loader (@deepseek-ai/dsh-typert-loader): AggregateError: typert-loader: 1 typert contributor(s) failed to register:
+  - typert-loader: @deepseek-ai/dsh-user-questions exports "./typert" but importing /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js failed: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js
+    at Object.apply [as callback] (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js:344:33)
+    at async Fiber._reload (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:5)
+    at async Promise.allSettled (index 1)
+    at async Proxy.await (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/vendor/loader/lib/index.js:158:4)
+    at async boot (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/boot/app-boot/lib/index.js:4067:3)
+    at async runProfile (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/apps/cli/lib/profile-boot-CO0MPY31.js:270:15)
+    at async runCli (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:212:5)
+    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/apps/cli/lib/bin.js:248:23
+Error: typert-loader: @deepseek-ai/dsh-user-questions exports "./typert" but importing /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js failed: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/bundle/base/node_modules/@deepseek-ai/dsh-user-questions/lib/typert.host.js' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/tests/deepseek-harness-test-use/packages/typert/loader/lib/index.js:274:11
+session-persistence-jsonl (@deepseek-ai/dsh-session-persistence-jsonl): failed to import
+otel (@deepseek-ai/dsh-otel): failed to import
+session-telemetry-otel (@deepseek-ai/dsh-session-telemetry-otel): failed to import
+sandbox (@deepseek-ai/dsh-sandbox-local): failed to import
+bash-sandbox (@deepseek-ai/dsh-bash-sandbox): pending (waiting for service: sandbox)
+permission (@deepseek-ai/dsh-permission-presets): pending (waiting for service: shell)
+ptc-runtime (@deepseek-ai/dsh-ptc-runtime-node): pending (waiting for service: sandbox)
+session-checkpoint-policy (@deepseek-ai/dsh-session-checkpoint-policy): pending (waiting for service: sessionPersistence)
+llm-deepseek (@deepseek-ai/dsh-llm-deepseek-api-key): failed to import
+llm-deepseek-account (@deepseek-ai/dsh-llm-deepseek-account): failed to import
+message-feedback (@deepseek-ai/dsh-message-feedback): pending (waiting for service: sessionPersistence)
+workspace (@deepseek-ai/dsh-workspace): pending (waiting for service: sessionPersistence)
+session-controller (@deepseek-ai/dsh-api-session-controller): pending (waiting for service: workspaceRegistry)
+workspace-controller (@deepseek-ai/dsh-api-workspace-controller): pending (waiting for service: workspaceRegistry)
+shortcuts (@deepseek-ai/dsh-client-shortcuts): failed to import
+ui-shortcuts (@deepseek-ai/dsh-client-ui-shortcuts): failed to import
+ui-deliverables (@deepseek-ai/dsh-client-ui-deliverables): pending (waiting for service: sessionController)
+ui-settings-session-log (@deepseek-ai/dsh-client-ui-settings-session-log): failed to import
+dsh-agent-team (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/packages/runtime/dist/packages/runtime/src/plugin/host.js): pending (waiting for services: sessionPersistence, workspaceRegistry)
+p6t6-team-tools (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g8-v4feed/packages/tools/harness/plugin.mjs): pending (waiting for service: teamRoot)
+dsh web: http://127.0.0.1:3185/?token=JGNPb-BjH7NvRua6DdFRM4eg7jDSsoiW-7d4p7oXmrU
+
