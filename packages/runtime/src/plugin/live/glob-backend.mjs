@@ -192,7 +192,7 @@ export // Upper bound on waiting for the child's streams AFTER it exited (drain,
 // lifetime): long enough for a late stderr note, short enough to be nothing
 // a walk could confuse with its own timeout budget.
 const GLOB_STDERR_DRAIN_MS = 250
-const GLOB_MAX_STDERR_BYTES = 8 * 1024
+export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
 const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true, readDir: true } })
