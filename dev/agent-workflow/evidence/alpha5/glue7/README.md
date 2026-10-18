@@ -242,3 +242,15 @@ none rewritten). The GREEN round also re-proved, same boot: H0/H3 (:3080
 401→401 read-only probe, test-use porcelain 0), H2 (3183/3184 free→used→
 free), W1 (three worlds booted from the STRICT face, swept), C1/C2 (worlds
 + expansion swept, launch tokens redacted).
+
+## 6. 收编终态（absorbed，2026-10-18）
+
+face + tests + evidence 已**全量入产**：经 runtime-base-narrow 合并流入
+master@`0e59140b`（#323 合并流按 merge-base 法逐字节吸收）。sha 对表四项入册：
+plane **src** master `f05aab098b` vs 本支 `8655edc2e3` = 21 行差、逐 hunk 即
+#323 anchorGrant/DYNAMIC-GRANT 注释与 allowPaths 重构（master = 本支面的
+**超集**）；**dist** 镜像同 21 行差同因（真径
+packages/runtime/dist/packages/runtime/src/plugin/live/）；**测试文件**
+`f79bfa3a1f` 等（G1b 腿计数 master=1=本支）；**README §4c/CLOSED**
+`83ebbbf764` 等。PR #321 闭为 **absorbed**（superseded 注由协调侧执行）。
+本支留档不再续笔；后续同面工作在新基线进行。
