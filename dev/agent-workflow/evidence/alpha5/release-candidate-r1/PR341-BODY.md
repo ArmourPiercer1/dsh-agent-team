@@ -15,7 +15,8 @@
 3. **固定 SHA+回退+试用脚本** `ROLLBACK-AND-TRIAL.md` + `rc-trial.sh`/`rc-trial-kit.mjs`/`helpers/`：装=公开 `plugin add github:…#<master-SHA>`；launcher=同 commit 字节带外供给（I8 披露面外）；回退=具名 uninstall+world 清。
 4. **隔离 smoke receipts** `SMOKE.md` + `runs/`（r1-r6b 全录不删）：`tests/homes/` 世界+3183/3185 族端口，:3080 只读探针，具名清理。
 5. **当前态台账** `ALPHA5-CURRENT-STATE.md`（§A-F 现在时事实+出处）+ `REWORK-2026-10-18.md`（21 行三层口径表+逐名 §⑤+§④ native 精确版）。
-6. **G-e 一页映射** `G-e-mapping.md`（未裁子项内容/已同意相邻方向逐条带时戳行号/覆盖关系/真未裁清单）。
+6. **G-e 一页映射** `G-e-mapping.md`（四编号=历史身份待核+隔离标注；已同意相邻方向逐条带时戳行号；推测映射与覆盖关系；不重问用户/不阻已明确范围）。
+7. **scoped visibility 三选项评估材料** `scoped-visibility-options.md`（Q1/Q2/Q3 正文原文+语义+影响面+与已生效裁决关系；**呈根评估非呈用户**）。
 
 ### 验收摘要（现场 SHA 均 rev-parse/ls-remote 直读）
 
@@ -30,7 +31,7 @@
 - **C-16（钉名表 13 名缺口+反向漂移）**：已裁修复中 `a5-pindir`@`68e8d70f`（subagent_fork 不得因 catalog 无即删，须保留/退役理由）。
 - **native 审批后执行**：**接管形（bash@bash）已交付**=#329 `1fb14c4d`（INSTALL 3.5；durable ask unchanged；natexe 症状链=其修的前态）；剩余=**非接管原生名**（RC 形状=r6b M9 envelope-fail-closed）；同名接管=supported 恰两对（`bash`@`bash`/`read`@`read`，`verifyPlaneNames` 拒文原文为证），grep/glob 强制别名。
 - **LSP #306 口径（去混称）**：**clangd 18.1.3=唯一真 LSP 正例**（initialize+31 能力键/真 definition·documentSymbol/shutdown→**自退 code 0**→/proc 消失→lease `terminated`/policyChange 新 pid 真握手+strict EACCES 原文腿）；**tsserver 6.0.3=非 LSP**（原报告 "**no LSP mode**"，官方 TS stdio JSON 面）**仅承载 cross-member 第二服务器腿**（definition offsets 17–30、completionInfo 1042 真条目）；LSP 协议判据=单实现（clangd）背书；hover/completion 慢=原报告披露留档。**不存在"两服务器均通过同等 LSP 交互"。**
-- **G-e（原 G1/G3/G7/YAML 待裁项）与 scoped visibility**：**仍待用户裁——非我方恢复**（唯一权威源=PENDING-GATES.md 现头行；见 `G-e-mapping.md` 的覆盖映射与真未裁清单）。
+- **G-e（原 G1/G3/G7/YAML）与 scoped visibility（根 21:15Z 口径修正版）**：G-e 四编号=**历史事项身份/决策状态待核——不构成"已证实待用户裁"**；正文不在仓内（全集 grep 皆同源转写），历史指针保留+隔离（「内容不明，勿据此行动」），不向用户重问不明问题，不阻任何已有明确范围（全表=`G-e-mapping.md`）。scoped visibility=GLUE-4 Q 单 **10-17 已 RESOLVED**（Q4 准/Q2 拒/Q1 降级 optional upstream ask/Q3 拒），三选项正文+影响评估=`scoped-visibility-options.md`（**呈根评估，非呈用户**）；现册真待用户项=**T-1（v3 退役窗口）**唯一。
 
 ### 红线与范围
 

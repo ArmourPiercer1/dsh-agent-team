@@ -28,7 +28,7 @@
 | search | confined rg 行 | **#330=`1a7c3c1cb1e8ae59c43cb1fa00d4c19a8f6172e1`**（rg-parity）+`E/srgp/` | r5 `RG` booked 腿=`ripgrep 15.0.0 (rev 3a612f88b8)` 答题在场 | — |
 | read | governed 行（feed rows 含 read） | #317=`E/pb-binding-feed/`；A1/A2/P1=`a5ie-r2b` | I 族+placement 见证 | — |
 | blueprint v4 | 文档面 SUPPORTED=[3,4]；执行面 fail-closed（Tool Binding 验证门）+M-3=GRAMMAR-not-ACCEPTANCE | **#324=`ee49c4c0`**（flip）+`E/v4-flip/``E/schema-rev/`+ADR-vnext | 装面 v3 正控（B2/B3）；v4 负控**不在 r5 判据集**（r5 criteria 现场核=44 行无 v4 腿；负控另列） | — |
-| scoped visibility | =NO on public assembly face（seam gap+3 选项裁决单**已呈待裁**） | GLUE-4 #302=`79f82441` | — | — |
+| scoped visibility | **GLUE-4 Q 单 10-17 已 RESOLVED**（Q4 准=placement lane 已产品化/Q2 拒 R5 反证/Q1 **降级 optional upstream ask 休眠**/Q3 拒 G7·G8 实测）；**三选项正文+影响评估=`E/release-candidate-r1/scoped-visibility-options.md`（根 21:15Z 令：呈根评估，非呈用户）**；"已呈待裁"旧口径=过时，本行取代 | GLUE-4 #302=`79f82441` README「RESOLVED 2026-10-17」节+`4ba92b77` | — | — |
 
 ## C. Gate/裁决当前态
 
@@ -40,8 +40,8 @@
 | **glob 独立关断键** | **已裁实施中**：`a5-globoff-key`@`11c246f2`（缺省不变/显式 false 走既有 typed-shut/names 改名不可恢复/无绕过/read-search-bash 零扩/RED-first+独审+CI；planeCfg 区 owner）；**新候选形=master+关断键（待绿门独审）**；E3 降格路线作废 | COORDINATION 20:31Z 裁决轮（同上源注记）；`.worktrees/a5-globoff` 在场 |
 | **C-16（钉名表缺口）** | **已裁修复中**：`a5-pindir`@`68e8d70f`（钉名清单+双向漂移机检 owner；**subagent_fork 不得因 catalog 无即删、须保留/退役理由**）；两单共享文件分区互零触 | 同上 |
 | G-d | **OPEN（未开始）** | PG:17 |
-| G-e | **仍待用户裁（#341-③ 按最新源核实：非我方恢复）**——唯一权威源 `dev/agent-workflow/PENDING-GATES.md:18`（现 master 头行）=「原 G1/G3/G7/YAML 待裁项 | 未裁 | 不默认旧提案」；COORDINATION 01:4xZ「待用户：G-e 待裁」至今无新裁决条目（工作树尾现场 grep 实证） | PG:18 + 两账 grep 尾部 |
-| scoped visibility | =NO on public assembly face（GLUE-4 #302=`79f82441`）；**3 选项裁决单已呈=待用户**（同 G-e 口径：待用户，非我方恢复） | #302 + 裁决单在册 |
+| G-e | **历史事项身份/决策状态=待核——不构成"已证实待用户裁"（根 21:15Z 口径，取代我方"仍待用户裁"旧写法）**：四编号正文不在仓内（全集 grep=5 处同源转写，见 `E/release-candidate-r1/G-e-mapping.md` §1b）⇒ 引用一律带**「内容不明，勿据此行动」**，**不向用户重问四个不明问题**，不阻任何已有明确范围；PG:18 历史指针保留不删 | G-e-mapping.md（逐坐标）+ PG:18 |
+| scoped visibility（§C 口径） | 见 §B 行：**Q 单 10-17 RESOLVED**；三选项材料**呈根评估非呈用户**（`scoped-visibility-options.md`）；唯一可定态动作=Q1 休眠/登记 upstream ask 二选一（根一句话） | #302 README RESOLVED 节 |
 | T-1 | **仅「v3 退役窗口」待用户裁**（双 v3/v4 并行试用期本身可运行=非必决项，根 20:2xZ 口径） | COORDINATION 08:1xZ P-D2/A-4 |
 | D-1 | DEFERRED 有主（恢复三条件之一公开才解） | PG:24 |
 | C12 静默保证类 | UNSUPPORTED（当前版本）已裁（A1） | `C12-decision-brief.md` |
