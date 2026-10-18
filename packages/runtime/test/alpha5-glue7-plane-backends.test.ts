@@ -215,19 +215,40 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(existsSync(sentinel)).toBe(false)
   })
 
-  it('G6 glob stays TYPED-SHUT (no existing implementation — honestly unconnected): lands IO_POLICY_UNSUPPORTED even with fsInstance + confinedProvider', async () => {
+  // G6 — INT-R3 RE-TIE (this round, by the integration owner). The pin above this
+  // block recorded the PRE-integration landing: the glob row honestly shut because
+  // no anchored implementation was wired. Master's own glob commit names the round
+  // that changes it — "mount comes with integration round + runtime_base narrowing"
+  // (15481988) — and G6b below is the CANDIDATE-A archive written to be paired with
+  // exactly that narrowing layer. So the current form is: the row mounts the
+  // anchored confined-rg face. What the old leg guarded is NOT weakened — it is
+  // replaced by a stronger, measurable statement: an inside match comes back and
+  // OUTSIDE BYTES NEVER DO. CANDIDATE-A's name-class exposure is stated there in PAST
+  // TENSE with PRESENT values (the 3/10700 reading belongs to 2026-10-17 against the
+  // pre-#323 launcher at c2be086a:176/:331, not to this tree), together with the
+  // reachability sentence — only deliberately pinning those historical bytes reopens it,
+  // and the pairing gate pins integrity, not narrowing content. G6b below keeps pinning
+  // the factory's bounded face unchanged.
+  it('G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do', async () => {
     const { built } = buildPlane({ plane: { fsInstance: fsInstance(), confinedProvider: confinedProvider() } })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
+    expect(String(built.value.backends.glob.backendId)).toBe('a5glb-anchored-confined-rg-glob')
     const res = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
-    expect(res.text).toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).not.toContain('IO_POLICY_UNSUPPORTED')
+    expect(res.text).toContain('.txt')
+    expect(res.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
+    expect(res.text).not.toContain(OUTSIDE_DIR)
   })
 
-  // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18: the confined-rg
-  // glob row FAILED for a NAME-class leak — the verify->launcher STRING-chdir
-  // window plus the provider runtime_base '/' READ_DIR grant lets outside
-  // NAMES surface (bytes never; measured 3/10700). The plane row is UN-WIRED
-  // back to typed-shut (G6 above). The FACTORY stays exported and this leg
+  // G6b — CANDIDATE-A ARCHIVE (security re-review 2026-10-18, against the
+  // PRE-#323 launcher that is not in this tree: the confined-rg glob row
+  // FAILED for a NAME-class leak — the verify->launcher STRING-chdir window
+  // plus the then-current provider runtime_base '/' READ_DIR grant let
+  // outside NAMES surface (bytes never; measured 3/10700 there). HISTORICAL
+  // reading; see the mount row for the narrowed present values.) The G6 leg
+  // above now pins the live-anchored current form (the int-r3 flip), so this
+  // archive is no longer "the row is shut". The FACTORY stays exported and this leg
   // pins its honest face for the integration round that pairs it with a
   // runtime_base narrowing layer — driving the factory DIRECTLY, through no
   // plane. The row it once wired shipped NOTHING. See glue7/glob/ + §4b.
