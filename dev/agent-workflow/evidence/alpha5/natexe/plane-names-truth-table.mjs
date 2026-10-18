@@ -7,6 +7,11 @@
  * wording and expectations are UNCHANGED (根令: 补交工件, 别改口径) — against
  * the shipped build gate `verifyPlaneNames` (Gate 0b, team-tool-plane.mjs).
  * Exit 0 only when every row lands on its recorded verdict.
+ * 06:43Z ruling note: the verdicts (3 accepted / 8 refused) are unchanged;
+ * three refused rows now carry the named subtype code
+ * PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED (bash-under-read, grep-claims-bash,
+ * bash-claims-write) instead of the generic PLANE_NAMES_INVALID — the codes
+ * are printed per row so the receipt shows the split honestly.
  */
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -39,5 +44,6 @@ for (const [id, names, readName, expect] of CASES) {
   if (got !== expect) bad++
   console.log(`${got === expect ? 'ok' : 'MISMATCH'} ${id} ${got} ${detail}`)
 }
-console.log(bad === 0 ? 'TRUTH TABLE GREEN: 11 rows, 3 accepted / 8 refused (PLANE_NAMES_INVALID)' : `TRUTH TABLE RED: ${bad} mismatches`)
+const refusedCodes = [...new Set(CASES.map((c) => verifyPlaneNames(c[1], c[2])).filter((r) => r.ok !== true).map((r) => r.code))]
+console.log(bad === 0 ? `TRUTH TABLE GREEN: 11 rows, 3 accepted / 8 refused (refused codes: ${refusedCodes.join(' + ')} — the 06:43Z named-subtype split)` : `TRUTH TABLE RED: ${bad} mismatches`)
 process.exit(bad === 0 ? 0 : 1)

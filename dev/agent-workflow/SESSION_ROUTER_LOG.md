@@ -6776,3 +6776,21 @@ PLANE_NAMES_INVALID，口径未改）。**PR 链验证**：unit+p4t6 20/20、pro
 runtime tsc 净、eslint 净、drift 门 HEAD ok、live kit 双时代 **26/26 ALL
 GREEN**（宿主 test-use @639ed01539 现 pin 本 worktree 克隆+构建，porcelain
 0 前后，:3080/:3180 探针同值）。push/PR 由 parent 代推+dispatch。
+
+## 2026-10-18 natexe 独审 06:43Z 修正轮（#329 暂不放行 → Gate 0b 语义收紧）
+
+根裁决：粗权限类别归并的 native 声明表把 `readName="write"/"edit"/"lsp"/
+"read_image"`、`names.bash="pwsh"` 放过闸——类别 ≠ 实现等价。**① 三面实测
+先行**（`measure-native-claims-pre-fix.mjs`+log，修复前面孔留痕）：五形全过
+装配闸；`readName="write"` 实测 MASK 宿主 write、以 read schema 应答、execute
+返回内容零写入、feed 交身份令 guard verified-abstain（受验冒充者）；lane 按
+effect CLASS、durable 面按 DISPATCHED 名（decision-lane.ts:174-184）——一次
+调用两个裁决身份。每形代码级结论 = **无受支持的同类接管依据**。**② 最小
+拒绝**：装配面同名同义判据；支持对 = bash 行@`bash`（live 实测）+ read 行@
+`read`（shipped 默认），其余保留名一切组合装配前 typed 拒（具名子类
+`PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`；shape/keys/collision 保持
+`PLANE_NAMES_INVALID`；grep/glob 保留别名挂载 = GLUE-5）。**③ 36 格全矩阵**
+入 evidence 可重放（GREEN：2 accepted/34 refused）。**④ 回归**：unit 10/10
+（N5 扩至 14 拒形逐形钉 code）、probe 9/9、truth table 11 行 verdict 不变
+（3 行 code 换具名子类，口径披露于 README §6.6 + 工件注记）、INSTALL §3.5
+同步、kit 时代腿与 drift 门见后续 receipt。typecheck/eslint 净。

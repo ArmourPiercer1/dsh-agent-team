@@ -236,3 +236,33 @@ natexe 双时代 kit 复跑证明。
   扫描若与之重叠会瞬时多计（实测 `expected 1194 to be 1192` 一例，
   `vitest-fulltree-natexe-4.log`）。本票改动不触任何构建产物；双抓恒等以
   竞态未命中的 RUN 对为准，两轮日志全存证。
+
+## 6.6 独审 06:43Z 修正轮（Gate 0b 语义收紧，PR 链续笔）
+
+裁决：`PLANE_NATIVE_CLAIMS` 以粗权限类别归并（write/edit/read_image/lsp→read、
+pwsh→bash）导致 `readName="write"/"edit"/"lsp"/"read_image"`、
+`names.bash="pwsh"` 过闸——**粗粒度权限类别 ≠ 工具实现等价**。
+
+- **① 三面实测（修复前留痕，代码级结论）**：`measure-native-claims-pre-fix.mjs` +
+  `-pre-fix.log`。FACE A：五形全过 verifyPlaneNames（缺陷坐实）。FACE B：
+  `readName="write"` 装配出的 read 行 **MASK 宿主 write**（own 层胜出）、以
+  read schema（`file_path`，无 content 面）应答、execute 返回文件内容而零写入，
+  placement feed 交出 def 身份 → guard 会 **verified-abstain**（受验的冒充者）；
+  `bash@pwsh` 行被 lane 按 BASH 类判 while durable exec-approval 面说 PWSH
+  身份（一次调用两个裁决身份）。FACE C：plane lane 按 effect CLASS 分类
+  （`{tool:'write'}` deny 不命中 read-kind，实测 allow），durable 面按
+  DISPATCHED 名投影（permission-lifecycle/decision-lane.ts:174-184）。
+  **每形结论：无受支持的同类接管依据**（read 实现≠write 实现；bash body≠pwsh
+  实现；schema/权限身份双侧分裂）。
+- **② 最小拒绝**：判据 = 装配面存在同名同义实现。支持对 = **bash 行@`bash`**
+  （live 双时代实测）+ **read 行@`read`**（shipped readName 默认）；其余保留名
+  （write/edit/read_image/lsp/pwsh/grep/glob 一切组合）装配前 typed 拒，具名子类
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`（shape/keys/collision 保持
+  `PLANE_NAMES_INVALID`）。grep/glob 行保留别名挂载（GLUE-5 别名裁决：无已验
+  装配对）。非保留自定义别名不受影响。
+- **③ 全矩阵**：`matrix-reserved-native.mjs`（9 reserved × 4 rows = 36 格，
+  每格 verdict+依据，可执行重放）+ receipt：GREEN，2 accepted / 34 refused。
+- **口径变更披露**：truth table 11 行 verdict 不变（3 accepted / 8 refused），
+  其中 3 行 code 换为具名子类（工件注记+receipt 重打）；unit N5 拒形清单扩至
+  14 形并逐形钉 code；探针 A2 现报新 code（REFUSED 语义不变，9/9）。
+  INSTALL §3.5 挂载名规则同步改写。

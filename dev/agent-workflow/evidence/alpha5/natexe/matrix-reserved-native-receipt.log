@@ -1,0 +1,37 @@
+ok grep @ 'bash' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: rows other than the confined shell are not bash implementations
+ok grep @ 'pwsh' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a bash body is not a pwsh implementation; the durable exec-approval face speaks the PWSH identity while the lane maps the mount to the BASH class — one call, two verdict identities
+ok grep @ 'read' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the reader row is same-name already; any other row under read is a reader mask over a different row body
+ok grep @ 'read_image' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an image reader is a different implementation (binary/image contract) from the text reader, the shell, or the search rows
+ok grep @ 'write' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a reader (or any non-writer row) is not the host writer; measured: the masked write answers with a read schema and returns file content (measure-native-claims-pre-fix.log)
+ok grep @ 'edit' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an editor is a different implementation than every plane row
+ok grep @ 'lsp' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the lsp surface is a different implementation than every plane row
+ok grep @ 'grep' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the grep row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing on this surface; other rows are not grep at all
+ok grep @ 'glob' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the glob row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing; other rows are not glob at all
+ok glob @ 'bash' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: rows other than the confined shell are not bash implementations
+ok glob @ 'pwsh' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a bash body is not a pwsh implementation; the durable exec-approval face speaks the PWSH identity while the lane maps the mount to the BASH class — one call, two verdict identities
+ok glob @ 'read' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the reader row is same-name already; any other row under read is a reader mask over a different row body
+ok glob @ 'read_image' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an image reader is a different implementation (binary/image contract) from the text reader, the shell, or the search rows
+ok glob @ 'write' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a reader (or any non-writer row) is not the host writer; measured: the masked write answers with a read schema and returns file content (measure-native-claims-pre-fix.log)
+ok glob @ 'edit' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an editor is a different implementation than every plane row
+ok glob @ 'lsp' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the lsp surface is a different implementation than every plane row
+ok glob @ 'grep' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the grep row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing on this surface; other rows are not grep at all
+ok glob @ 'glob' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the glob row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing; other rows are not glob at all
+ok bash @ 'bash' ACCEPTED — basis: the confined-shell placement under the native bash spelling — same name, same meaning, live-verified on both blueprint eras (natexe live kit)
+ok bash @ 'pwsh' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a bash body is not a pwsh implementation; the durable exec-approval face speaks the PWSH identity while the lane maps the mount to the BASH class — one call, two verdict identities
+ok bash @ 'read' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the reader row is same-name already; any other row under read is a reader mask over a different row body
+ok bash @ 'read_image' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an image reader is a different implementation (binary/image contract) from the text reader, the shell, or the search rows
+ok bash @ 'write' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a reader (or any non-writer row) is not the host writer; measured: the masked write answers with a read schema and returns file content (measure-native-claims-pre-fix.log)
+ok bash @ 'edit' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an editor is a different implementation than every plane row
+ok bash @ 'lsp' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the lsp surface is a different implementation than every plane row
+ok bash @ 'grep' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the grep row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing on this surface; other rows are not grep at all
+ok bash @ 'glob' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the glob row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing; other rows are not glob at all
+ok read @ 'bash' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: rows other than the confined shell are not bash implementations
+ok read @ 'pwsh' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a bash body is not a pwsh implementation; the durable exec-approval face speaks the PWSH identity while the lane maps the mount to the BASH class — one call, two verdict identities
+ok read @ 'read' ACCEPTED — basis: the shipped readName default — a governed reader over the row fs instance, same name, same meaning (GLUE-7)
+ok read @ 'read_image' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an image reader is a different implementation (binary/image contract) from the text reader, the shell, or the search rows
+ok read @ 'write' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: a reader (or any non-writer row) is not the host writer; measured: the masked write answers with a read schema and returns file content (measure-native-claims-pre-fix.log)
+ok read @ 'edit' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: an editor is a different implementation than every plane row
+ok read @ 'lsp' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the lsp surface is a different implementation than every plane row
+ok read @ 'grep' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the grep row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing on this surface; other rows are not grep at all
+ok read @ 'glob' REFUSED (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED) — basis: the glob row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing; other rows are not glob at all
+MATRIX GREEN: 36 cells, 2 accepted (bash@bash, read@read), 34 refused with the named subtype PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
