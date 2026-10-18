@@ -1,0 +1,33 @@
+=== runtime-full-suite-final.log
+test/a4pr0a-fact-type-closed-set.test.ts [ test/a4pr0a-fact-type-closed-set.test.ts ]  ||  Error: FACT_TYPE_CATEGORY block not found — the guard has no subject
+test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 1. no grant →   ||  AssertionError: expected 'session-root-p6t1' to be 'session-child-p6t3-leader' // Object.is equality
+test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 3. grants are   ||  TypeError: Cannot read properties of undefined (reading 'sessionId')
+test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 4. a newer ove  ||  TypeError: Cannot read properties of undefined (reading 'sessionId')
+test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 5. authority b  ||  AssertionError: expected 4 to be 1 // Object.is equality
+test/p6t3-mediation.test.ts > P6-T3 member→member mediation (the documented rule, end to end) > 7. the relay t  ||  TypeError: Cannot read properties of undefined (reading 'attribution')
+test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 2. the pending MEDIATED int  ||  TypeError: Cannot read properties of undefined (reading 'sessionId')
+test/p6t3-restart.test.ts > P6-T3 restart durability + pending-delivery recovery > 5. recovery aborts on the f  ||  Error: assertMessagingCode: expected MessagingError 'MESSAGING_DELIVERY_FAILED', got undefined
+test/rc2-persona-probe.test.ts > PP1 the probe follows the host persona interface, not an invented one > the p  ||  Error: ENOENT: no such file or directory, open '/srv/workspace/dsh-plugins/dsh-agent-team/packages/runtime/root-binding/harness/persona-prob
+test/rc2-persona-probe.test.ts > PP3 the harness residue is gone and stays gone > no plugin source imports the  ||  AssertionError: expected [ …(4) ] to deeply equal []
+test/rc2-persona-probe.test.ts > PP3 the harness residue is gone and stays gone > no harness re-inlines a pers  ||  AssertionError: expected [ { …(2) }, { …(2) }, { …(2) }, …(1) ] to deeply equal []
+=== testkit-full-suite-full.log
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: scan did not run: cwd /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-pindir/packages/testkit is not the repository 
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > inv  ||  AssertionError: expected 1 to be +0 // Object.is equality
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > eve  ||  AssertionError: expected [ …(6) ] to deeply equal []
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'OFFENDING packages/legacy/test/p7t6-t…'
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: packages/legacy/test/p7t6-teammates-adapter.test.ts: the YAML string-carrier sites the fence must name: expected [] to deepl
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: expected [] to deeply equal [ 101 ]
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: serialization.test.ts must appear as visible REFUSED lines: expected 0 to be greater than 0
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > eve  ||  AssertionError: packages/runtime/test/policy-state-multi-team-bound-blueprint.test.ts:101 must be an advisory line: expected undefined to be
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > unk  ||  AssertionError: stale ledger row packages/client/test/client-plugin-mount.test.ts::L96::v1 — the site is gone; remove the adjudication: expe
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the  ||  AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'adjudication-ledger: /srv/workspace/d…'
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > f22  ||  AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'REFUSED packages/contracts/test/seria…'
+test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > a r  ||  AssertionError: expected 0 to be greater than 0
+test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition sm  ||  AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "ref
+test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the static legs >   ||  AssertionError: check:artifacts did not pass. why: verdict=stale drift=1 — the tree owes its rebuild: DSH-ARTIFACT-VERDICT script=check-arti
+test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed  ||  AssertionError: expected [ Array(1) ] to deeply equal [ Array(1) ]
+test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed  ||  AssertionError: expected { name: 'dsh-agent-team', …(4) } to be undefined
+test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed  ||  AssertionError: expected undefined to be defined
+test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed  ||  AssertionError: expected { '@deepseek-ai/dsh': '0.1.7-rc.1' } to deeply equal { '@deepseek-ai/dsh': '0.2.0-rc.2' }
+test/plugin-dsh-compat.test.ts > F1 plugin DSH peer compatibility (real 0.2.0-rc.2 evaluator, test-use @ 639ed  ||  AssertionError: expected undefined to deeply equal { '@deepseek-ai/dsh': '0.2.0-rc.2' }
+test/rc2-sanitize-evidence.test.ts > evidence sanitizer — credential coverage and raw preservation > S13 file   ||  Error: Test timed out in 5000ms.
