@@ -188,7 +188,11 @@ export const GLOB_MAX_RESULTS_CEILING = 10_000
 /** A walk may not stream more than this many bytes of path list into the parent. */
 export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
 /** The diagnostic channel is bounded too (A7): an error arm carries a snippet. */
-export const GLOB_MAX_STDERR_BYTES = 8 * 1024
+export // Upper bound on waiting for the child's streams AFTER it exited (drain, not
+// lifetime): long enough for a late stderr note, short enough to be nothing
+// a walk could confuse with its own timeout budget.
+const GLOB_STDERR_DRAIN_MS = 250
+const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
 const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true, readDir: true } })
@@ -884,10 +888,31 @@ export function createAnchoredGlobBackend(options) {
             // turned into a memory channel by a chatty walker.
             if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
           })
+          // g6b-flake: the settlement MUST NOT read stderr before the stream has
+          // ended. This row's discriminator is the walker's SPEECH (see the
+          // walker-error arm below), and Node can resolve `child.exited` while
+          // stderr 'data' callbacks are still pending — under CI's 9-root
+          // concurrency that window is real: a walker that DID speak (invalid
+          // glob, exit reported 0 by the streaming arm) is judged quiet, and the
+          // leg returns an empty list instead of the typed walker error. Drain
+          // both streams first, bounded so a stalled stream can never outlive the
+          // walk's own timeout budget.
+          const streamsEnded = new Promise((resolve) => {
+            let pending = 2
+            const done = () => { pending -= 1; if (pending === 0) resolve(true) }
+            child.stdout.once('end', done)
+            child.stderr.once('end', done)
+          })
           const exit = await Promise.race([
             child.exited,
             new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
           ])
+          if (exit?.timedOut !== true) {
+            await Promise.race([
+              streamsEnded,
+              new Promise((r) => sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.()),
+            ])
+          }
           await child.terminate() // the frozen lease arm settles exactly once per path
           trace = [...trace, 'terminate']
           if (exit?.timedOut === true) {

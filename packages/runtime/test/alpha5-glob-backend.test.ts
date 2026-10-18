@@ -1435,4 +1435,21 @@ describe('A5-GLOB S — the walk never answers with what the governed root does 
     const clean = await call('docs/**')
     expect(clean.ok, JSON.stringify(clean)).toBe(true) // with the object gone, the same walk is clean again
   })
+  it('g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)', async () => {
+  // g6b-flake regression net (deterministic trigger, no external contention): this row's
+  // discriminator is the walker's SPEECH, and the speech can arrive after `child.exited`
+  // resolves — the settlement now drains both streams before judging (glob-backend.mjs).
+  // The trigger is rg's own deterministic hard glob-parse failure; the loop is the net:
+  // one quiet judgement in N IS the flake, so N consecutive typed landings is what the
+  // fix guarantees. No criterion bent, no code added: this row's own frozen code for the
+  // shape is `walker-error` at the row and `rg-walker-error` once the plane wraps it, so
+  // both spellings of the SAME entry are accepted (nothing new is admitted).
+  let quietJudgements = 0
+  for (let i = 0; i < 12; i++) {
+    const r = await call('[unclosed')
+    if (r.ok === true) quietJudgements += 1
+    else expect(String(r.failure?.code)).toMatch(/^(?:rg-)?walker-error$|^rg-exit-\d$/)
+  }
+  expect(quietJudgements, `${quietJudgements}/12 walker errors were judged quiet (ok=true)`).toBe(0)
+  })
 })
