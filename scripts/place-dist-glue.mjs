@@ -60,6 +60,34 @@ export const PLACEMENTS = [
   // GLUE-7 production backend assembly row (byte-copied: tsc never emits
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).
+  //
+  // A5-SRGP (PR5 search row) CORRECTED the scope of the two entries below on the
+  // master replay, and the correction stays visible here because an earlier note in
+  // this list was wrong in a way only the whole-tree census caught:
+  // `a5g6-install-face-render` (run 39114260882) failed with
+  // `Cannot find module './glob-backend.mjs' imported from
+  // .../dist/.../search-backend.mjs`. The law is the TRANSITIVE import graph of the
+  // shipped face, not "what the plane row happens to name":
+  //
+  //   plane-effect-backends.mjs -> search-backend.mjs -> glob-backend.mjs
+  //
+  // The search row delegates its anchored-walk and shared-law work to the confined-rg
+  // row (`search-backend.mjs:186` imports `openAnchoredWalkRoot` +
+  // `verifyGlobResultsBeneath` from `./glob-backend.mjs`), so the face must carry that
+  // file even though the PLANE never imports it and even though the glob row is not
+  // itself production-wired on this line. The dropped note asked only "does the plane
+  // import the glob row?", heard "no", and cut the copy — a narrowing measured from
+  // the wrong importer. The list must be walked from every file it already contains,
+  // which is what leg `M3` of `alpha5-search-backend.test.ts` now pins so the mistake
+  // cannot be repeated by the next reader who narrows this list.
+  {
+    src: 'packages/runtime/src/plugin/live/glob-backend.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/search-backend.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs',
+  },
   {
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',

@@ -109,9 +109,16 @@ function* walk(dir: string): Generator<string> {
  * call (the leg below). Nothing about the barrel, the mount or the per-scope
  * judgement moves — this audit keeps every one of its teeth; an unnamed new
  * reference is still a red.
+ *
+ * Sixth entry (a5srgp search row, alpha5-srgp): `runtime/test/alpha5-search-backend.test.ts`
+ * is the search row's PARITY spec and cites the lane's argument law by NAME
+ * (`src/args.ts:148-149`) when it pins which knobs the row refuses and why, plus
+ * one packages-relative path it reads from disk to pin the RED control's argv
+ * form. Again a NAME, not an edge: no import of the lane, nothing about the
+ * barrel, the mount or the per-scope judgement moves.
  */
 const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json',
-  'runtime/test/alpha5-glob-backend.test.ts']
+  'runtime/test/alpha5-glob-backend.test.ts', 'runtime/test/alpha5-search-backend.test.ts']
 
 /**
  * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly
