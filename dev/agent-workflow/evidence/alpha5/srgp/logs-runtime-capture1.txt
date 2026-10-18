@@ -1,0 +1,24 @@
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ ❯ test/a4pr0a-fact-type-closed-set.test.ts (0 test)
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+    at collectTests (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)
+ ❯ test/p6t3-mediation.test.ts (7 tests | 5 failed) 16ms
+ ❯ test/p6t3-restart.test.ts (5 tests | 2 failed) 16ms
+ ❯ test/rc2-persona-probe.test.ts (13 tests | 3 failed) 44ms
+ ❯ parseHostMap test/a4pr0a-fact-type-closed-set.test.ts:333:29
+ ❯ test/a4pr0a-fact-type-closed-set.test.ts:375:14
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+ ❯ test/p6t3-mediation.test.ts:334:36
+ ❯ test/p6t3-mediation.test.ts:399:31
+ ❯ test/p6t3-mediation.test.ts:415:29
+ ❯ test/p6t3-mediation.test.ts:429:43
+ ❯ test/p6t3-mediation.test.ts:471:18
+ ❯ test/p6t3-restart.test.ts:404:18
+ ❯ assertMessagingCode test/p6t3-helpers.ts:373:11
+ ❯ test/p6t3-restart.test.ts:451:21
+ ❯ pluginFile test/rc2-persona-probe.test.ts:34:45
+ ❯ test/rc2-persona-probe.test.ts:67:17
+ ❯ test/rc2-persona-probe.test.ts:139:23
+ ❯ test/rc2-persona-probe.test.ts:151:21
+ Test Files  4 failed | 394 passed (398)
+      Tests  10 failed | 4603 passed (4613)

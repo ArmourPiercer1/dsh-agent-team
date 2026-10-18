@@ -152,6 +152,16 @@ describe('a5p4 lane purity and dormancy', () => {
       lane: 'a5glb — anchored confined-rg glob row',
       edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
     },
+    {
+      // A5-SRGP (PR5 原生等价层, search row): the confined-rg SEARCH backend builds
+      // its own provider for the anchored walk — allowPaths are the system dirs the
+      // packaged binary needs plus the governed root READ-ONLY (readFile/readDir,
+      // never write), and the walk rides the child's cwd at the anchor. Evidence:
+      // dev/agent-workflow/evidence/alpha5/srgp/README.md.
+      file: 'runtime/src/plugin/live/search-backend.mjs',
+      lane: 'a5srgp — anchored confined-rg search row',
+      edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'",
+    },
   ]
 
   it('NAMED MOUNTS ONLY: every production reference to the lane is a booked row with one pinned public-face edge', () => {
@@ -213,8 +223,7 @@ describe('a5p4 lane purity and dormancy', () => {
     // What the leg SAW, in the open — the identity of the live set is the claim.
     const live = offenders.slice().sort()
     expect(live.length).toBeGreaterThanOrEqual(1)
-    reportNamedMounts(live)
-  })
+    reportNamedMounts(live)  })
 
   it('hard-profile enablement is compiled OFF and no source turns it on', () => {
     expect(HARD_PROFILE_ENABLED).toBe(false)

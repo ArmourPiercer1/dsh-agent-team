@@ -1,0 +1,131 @@
+{
+  "row": "packages/runtime/src/plugin/live/search-backend.mjs",
+  "rg": "ripgrep 15.0.0 (rev 3a612f88b8) — @vscode/ripgrep-linux-x64@1.18.0",
+  "launcher": "sha256:0049965daacae5bd",
+  "fixedArgv": [
+    "<rg>",
+    "--no-config",
+    "--json",
+    "--regexp=<P>",
+    "[--glob=<inc>]",
+    "--no-ignore-parent",
+    "--no-ignore-global",
+    "--",
+    "."
+  ],
+  "legs": {
+    "total": 9,
+    "matched": 9
+  },
+  "rows": [
+    {
+      "leg": "P1",
+      "mode": "content",
+      "nativeExit": 0,
+      "nativeCount": 9,
+      "teamCount": 9,
+      "teamTotal": 9,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "rows equal (path/line/text), anchored spelling"
+    },
+    {
+      "leg": "P2",
+      "mode": "files_with_matches",
+      "nativeExit": 0,
+      "nativeCount": 8,
+      "teamCount": 8,
+      "teamTotal": 8,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "projection vs native -l (plain form splits a newline name)"
+    },
+    {
+      "leg": "P3",
+      "mode": "count",
+      "nativeExit": 0,
+      "nativeCount": 8,
+      "teamCount": 8,
+      "teamTotal": 9,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "projection vs native -c (plain form splits a newline name)"
+    },
+    {
+      "leg": "P4",
+      "mode": "ignore/hidden/VCS",
+      "nativeExit": 0,
+      "nativeCount": 14,
+      "teamCount": 8,
+      "teamTotal": 8,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "excluded under the default ignore law, all found with --no-ignore --hidden"
+    },
+    {
+      "leg": "P5",
+      "mode": "binary",
+      "nativeExit": 0,
+      "nativeCount": 9,
+      "teamCount": 9,
+      "teamTotal": 9,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "no record for a NUL-bearing line, both sides"
+    },
+    {
+      "leg": "P8",
+      "mode": "error/invalid-pattern",
+      "nativeExit": 2,
+      "nativeCount": 0,
+      "teamCount": 0,
+      "teamTotal": -1,
+      "teamTruncated": false,
+      "teamFailure": "walker-invalid-pattern",
+      "match": true,
+      "note": "native exit 2 / row refusal walker-invalid-pattern, no echoed words"
+    },
+    {
+      "leg": "P9",
+      "mode": "empty",
+      "nativeExit": 1,
+      "nativeCount": 0,
+      "teamCount": 0,
+      "teamTotal": 0,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "native exit 1 = empty answer, row answers 0 matches"
+    },
+    {
+      "leg": "P10",
+      "mode": "include",
+      "nativeExit": 0,
+      "nativeCount": 7,
+      "teamCount": 7,
+      "teamTotal": 8,
+      "teamTruncated": false,
+      "teamFailure": null,
+      "match": true,
+      "note": "filter honored; no-match filter is an empty answer on both sides"
+    },
+    {
+      "leg": "P11",
+      "mode": "overflow/Spill",
+      "nativeExit": 0,
+      "nativeCount": 129,
+      "teamCount": 5,
+      "teamTotal": 129,
+      "teamTruncated": true,
+      "teamFailure": null,
+      "match": true,
+      "note": "inline window truncates honestly, spill keeps every admitted row"
+    }
+  ],
+  "strayWorldsSweptAtStart": []
+}

@@ -1,0 +1,276 @@
+[
+  {
+    "tag": "F1-native-rowform",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "."
+    ],
+    "code": 2,
+    "outBytes": 1262,
+    "outHead": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"./src/a.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"./src/a.ts\"},\"lines\":{\"text\":\"one A5SRGP-TOK\\n\"},\"line_number\":1,",
+    "matches": [
+      {
+        "path": "./src/a.ts",
+        "line": 1,
+        "hasBytes": false
+      },
+      {
+        "path": "./src/deep.ts",
+        "line": 1,
+        "hasBytes": false
+      }
+    ],
+    "stderr": "rg: ./unreadable.ts: Permission denied (os error 13)\n"
+  },
+  {
+    "tag": "F2-native-invalid",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=(",
+      "--",
+      "."
+    ],
+    "code": 2,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": "rg: regex parse error:\n    (?:()\n    ^\nerror: unclosed group\n"
+  },
+  {
+    "tag": "F3-native-file-arg",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "src/a.ts"
+    ],
+    "code": 0,
+    "outBytes": 750,
+    "outHead": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"src/a.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"src/a.ts\"},\"lines\":{\"text\":\"one A5SRGP-TOK\\n\"},\"line_number\":1,\"abs",
+    "matches": [
+      {
+        "path": "src/a.ts",
+        "line": 1,
+        "hasBytes": false
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "tag": "F4-native-escape-arg",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "escape-link.txt"
+    ],
+    "code": 0,
+    "outBytes": 775,
+    "outHead": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"escape-link.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"escape-link.txt\"},\"lines\":{\"text\":\"A5SRGP-TOK OUTSIDE\\n\"},\"l",
+    "matches": [
+      {
+        "path": "escape-link.txt",
+        "line": 1,
+        "hasBytes": false
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "tag": "F5-native-nomessages",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--no-messages",
+      "--",
+      "."
+    ],
+    "code": 2,
+    "outBytes": 1261,
+    "outHead": "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"./src/deep.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"./src/deep.ts\"},\"lines\":{\"text\":\"A5SRGP-TOK deep\\n\"},\"line_num",
+    "matches": [
+      {
+        "path": "./src/deep.ts",
+        "line": 1,
+        "hasBytes": false
+      },
+      {
+        "path": "./src/a.ts",
+        "line": 1,
+        "hasBytes": false
+      }
+    ],
+    "stderr": ""
+  },
+  {
+    "tag": "C0-confined-echo",
+    "argv": [
+      "HELLO"
+    ],
+    "code": 0,
+    "outBytes": 6,
+    "outHead": "HELLO\n",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C0b-confined-rgversion",
+    "argv": [
+      "--version"
+    ],
+    "code": 0,
+    "outBytes": 160,
+    "outHead": "ripgrep 15.0.0 (rev 3a612f88b8)\n\nfeatures:+pcre2\nsimd(compile):+SSE2,-SSSE3,-AVX2\nsimd(runtime):+SSE2,+SSSE3,+AVX2\n\nPCRE2 10.45 is available (JIT is available)\n",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C0c-confined-ls-rgdir",
+    "argv": [
+      "-l",
+      "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin"
+    ],
+    "code": 0,
+    "outBytes": 58,
+    "outHead": "total 5596\n-rwxr-xr-x 8 user user 5728032 Oct 17 20:11 rg\n",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C0d-confined-sh-rg",
+    "argv": [
+      "-c",
+      "echo start; ls -l <rg>; /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg --version; echo rc=$?"
+    ],
+    "code": 0,
+    "outBytes": 373,
+    "outHead": "start\n-rwxr-xr-x 8 user user 5728032 Oct 17 20:11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C1-confined-rowform",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "."
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "CX-confined-debug",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--debug",
+      "--",
+      "."
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C2-confined-invalid",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=(",
+      "--no-ignore-parent",
+      "--",
+      "."
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C3-confined-file-arg",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "src/a.ts"
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C4-confined-escape-arg",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "escape-link.txt"
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C5-confined-nomessages",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--no-messages",
+      "--",
+      "."
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  },
+  {
+    "tag": "C6-confined-abs-dot-arg",
+    "argv": [
+      "--no-config",
+      "--json",
+      "--regexp=A5SRGP-TOK",
+      "--no-ignore-parent",
+      "--",
+      "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/tests/homes/a5srgp-form-mvd9vi6p/root"
+    ],
+    "code": 0,
+    "outBytes": 0,
+    "outHead": "",
+    "matches": [],
+    "stderr": ""
+  }
+]

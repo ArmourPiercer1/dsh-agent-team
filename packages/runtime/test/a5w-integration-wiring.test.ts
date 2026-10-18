@@ -145,6 +145,9 @@ describe('a5w compile surface', () => {
   const NAMED_PROVIDER_MOUNTS: readonly { file: string; edge: string }[] = [
     { file: 'plugin/live/plane-effect-backends.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
     { file: 'plugin/live/glob-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
+    // A5-SRGP search row: the third named consumer, booked in the hygiene ledger too
+    // (evidence dev/agent-workflow/evidence/alpha5/srgp/README.md).
+    { file: 'plugin/live/search-backend.mjs', edge: "import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'" },
   ]
 
   it('the provider factory is exported for EXPLICIT calls, and only the named rows call it', async () => {
@@ -180,8 +183,7 @@ describe('a5w compile surface', () => {
         body.split('\n').filter((l) => /createConfinedProcessProvider\s*\(/.test(l) && !/^import\b/.test(l.trim())).length,
         `${mount.file}: the booked row must actually mount the factory`,
       ).toBeGreaterThanOrEqual(1)
-    }
-  })
+    }  })
 })
 
 // ---------------------------------------------------------------------------

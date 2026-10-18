@@ -1,0 +1,18 @@
+--- native (unconfined oracle) ---
+F1-native-rowform | exit=2 outBytes=1262 out="{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"./src/a.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"./src/a.ts\"},\"lines\":{\"text\":\"one A5SRGP-TOK\\n\"},\"line_number\":1," matches=[{"path":"./src/a.ts","line":1,"hasBytes":false},{"path":"./src/deep.ts","line":1,"hasBytes":false}] | err="rg: ./unreadable.ts: Permission denied (os error 13)\n"
+F2-native-invalid | exit=2 outBytes=0 out="" matches=[] | err="rg: regex parse error:\n    (?:()\n    ^\nerror: unclosed group\n"
+F3-native-file-arg | exit=0 outBytes=750 out="{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"src/a.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"src/a.ts\"},\"lines\":{\"text\":\"one A5SRGP-TOK\\n\"},\"line_number\":1,\"abs" matches=[{"path":"src/a.ts","line":1,"hasBytes":false}] | err=""
+F4-native-escape-arg | exit=0 outBytes=775 out="{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"escape-link.txt\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"escape-link.txt\"},\"lines\":{\"text\":\"A5SRGP-TOK OUTSIDE\\n\"},\"l" matches=[{"path":"escape-link.txt","line":1,"hasBytes":false}] | err=""
+F5-native-nomessages | exit=2 outBytes=1261 out="{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"./src/deep.ts\"}}}\n{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"./src/deep.ts\"},\"lines\":{\"text\":\"A5SRGP-TOK deep\\n\"},\"line_num" matches=[{"path":"./src/deep.ts","line":1,"hasBytes":false},{"path":"./src/a.ts","line":1,"hasBytes":false}] | err=""
+--- confined (the row execution face) --- probe.ok = true
+C0-confined-echo | exit=0 outBytes=6 out="HELLO\n" matches=[] | err=""
+C0b-confined-rgversion | exit=0 outBytes=160 out="ripgrep 15.0.0 (rev 3a612f88b8)\n\nfeatures:+pcre2\nsimd(compile):+SSE2,-SSSE3,-AVX2\nsimd(runtime):+SSE2,+SSSE3,+AVX2\n\nPCRE2 10.45 is available (JIT is available)\n" matches=[] | err=""
+C0c-confined-ls-rgdir | exit=0 outBytes=58 out="total 5596\n-rwxr-xr-x 8 user user 5728032 Oct 17 20:11 rg\n" matches=[] | err=""
+C0d-confined-sh-rg | exit=0 outBytes=373 out="start\n-rwxr-xr-x 8 user user 5728032 Oct 17 20:11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5srgp/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18." matches=[] | err=""
+C1-confined-rowform | exit=0 outBytes=0 out="" matches=[] | err=""
+CX-confined-debug | exit=0 outBytes=0 out="" matches=[] | err=""
+C2-confined-invalid | exit=0 outBytes=0 out="" matches=[] | err=""
+C3-confined-file-arg | exit=0 outBytes=0 out="" matches=[] | err=""
+C4-confined-escape-arg | exit=0 outBytes=0 out="" matches=[] | err=""
+C5-confined-nomessages | exit=0 outBytes=0 out="" matches=[] | err=""
+C6-confined-abs-dot-arg | exit=0 outBytes=0 out="" matches=[] | err=""
