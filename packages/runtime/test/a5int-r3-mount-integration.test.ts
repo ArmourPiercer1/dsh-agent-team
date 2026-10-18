@@ -105,8 +105,9 @@ function backendIdOf(value: PlaneValue, row: 'search' | 'glob' | 'shell'): strin
  * The `allowPaths: [ … ]` literal a source file hands to the confined provider.
  * BRACKET-BALANCED, not `indexOf('],')`: a `],` planted in a comment or string must not
  * truncate the extraction (round-12 review ④ — silent truncation would make the parity
- * law vacuously true). Brackets inside quoted strings and `//` comments are skipped, so
- * the returned list is the real grant list whatever the surrounding prose says.
+ * law vacuously true). Brackets inside quoted strings, line comments and BLOCK comments
+ * are skipped (the block-comment state is the round-13 addition), so the returned list
+ * is the real grant list whatever the surrounding prose says.
  */
 function grantBlockOf(src: string): string[] {
   const i = src.lastIndexOf('allowPaths: [')
@@ -115,13 +116,21 @@ function grantBlockOf(src: string): string[] {
   let depth = 0
   let quote: string | null = null
   let lineComment = false
+  // round-13 review: a BLOCK-comment state is required too — `/* … ], planted */` would
+  // otherwise close the grant list early and mask a real divergence behind the plant.
+  let blockComment = false
   let end = -1
   for (let k = start; k < src.length; k++) {
     const c = src[k]
+    if (blockComment) {
+      if (c === '*' && src[k + 1] === '/') { blockComment = false; k++ }
+      continue
+    }
     if (lineComment) {
       if (c === '\n') lineComment = false
       continue
     }
+    if (c === '/' && src[k + 1] === '*') { blockComment = true; k++; continue }
     if (quote !== null) {
       if (c === '\\') k++
       else if (c === quote) quote = null
@@ -136,9 +145,9 @@ function grantBlockOf(src: string): string[] {
     }
   }
   if (end < 0) throw new Error('grant block never closes')
-  const block = src.slice(start, end + 1)
-  // bracket-only lines are structure, not grants — dropping them makes any count
-  // assertion about "the grant items" mean the items
+  const block = src.slice(start, end + 1).replace(/\/\*[\s\S]*?\*\//g, '')
+  // bracket-only lines are structure and comment lines are prose — dropping both makes a
+  // count assertion about "the grant items" actually mean the items
   return block.split('\n').map((l) => l.trim())
     .filter((l) => /[A-Za-z0-9_']/.test(l) && !l.startsWith('//'))
 }
@@ -236,6 +245,32 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     expect(one).not.toEqual(two) // teeth: a real divergence stays a RED
     // and the real sources still agree under the hardened reader
     expect(grantBlockOf(readFileSync(GLOB_SRC, 'utf8'))).toEqual(grantBlockOf(readFileSync(SEARCH_SRC, 'utf8')))
+  })
+
+  it('RED-INJECTION ④b: a `],` planted inside a BLOCK comment must not mask a real divergence', () => {
+    // round-13 review: the balanced scanner had a line-comment state but no block-comment
+    // state, so a block comment containing a bracket-close-and-comma would close the
+    // and put a REAL divergence behind it and the parity leg stays green while blind.
+    // This leg plants exactly that and requires the divergence to still be a RED.
+    const plant = '      /* governance note ], planted */\n'
+    const synth = (a: string, b: string, extra = '') => '  const request = {\n    allowPaths: [\n'
+      + plant
+      + '      { path: \'' + a + '\', accessBits: { readFile: true } },\n'
+      + '      { path: \'' + b + '\', accessBits: { readDir: true } },\n'
+      + extra
+      + '    ],\n  }\n'
+    const base = synth('/bin', '/usr')
+    const diverged = synth('/bin', '/usr', "      { path: '/etc', accessBits: { readDir: true } },\n")
+    const baseGrants = grantBlockOf(base)
+    const divergedGrants = grantBlockOf(diverged)
+    expect(baseGrants.length, 'the planted block comment must not truncate the list').toBe(2)
+    expect(baseGrants).not.toContain('],')
+    expect(divergedGrants).toContain("{ path: '/etc', accessBits: { readDir: true } },")
+    expect(baseGrants).not.toEqual(divergedGrants) // the mask must fail: divergence is a RED
+    // and the real sources still agree, with every grant item present
+    const globGrants = grantBlockOf(readFileSync(GLOB_SRC, 'utf8'))
+    expect(globGrants.length, 'the real grant list is not a one-liner').toBeGreaterThan(2)
+    expect(globGrants).toEqual(grantBlockOf(readFileSync(SEARCH_SRC, 'utf8')))
   })
 
   it('CONDITION (b) INTERNAL LOG IS NOT A MEMBER SINK: the plane wires no internalLog, and host observations never read back through the wire', async () => {

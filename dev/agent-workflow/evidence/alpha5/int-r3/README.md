@@ -162,3 +162,16 @@ F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，�
 | ⑤ | 独审 round-12：kit 直跑崩（`log` 越界 @kit:203）+ 头注声称可直跑的文实漂移 | 复现：直跑在 guard 处 `log is not defined`（我把 `log` 一起包进了 `runKit()`），而头注写"直跑打印并退出" | 二者都做实：**`log` 提到模块作用域**（guard 可用），并把头注改成实话——**受支持路径是 vitest shim**，裸 node 载不动本仓源码图，直跑只会在 loader 层失败后到 guard | kit shim **1/1**（14/14 criteria 仍全 PASS） |
 
 **未减的牙**：注入腿为新增；G6/C2/D2 判据一字未动（两裁注在上一节）。**pr-gate** 的 exit 2 与 census 同族，本地以 ①②③ 三道的同形复跑为代理证据，正式门由 parent 重跑。
+
+### round-13（独审闭环：④ 的块注释态）
+
+独审复植成立：`grantBlockOf` 有行注释态但**无块注释态**，`/* … ], planted */` 会提前闭合 grant 列表 ⇒
+两侧植块注释 + glob 尾随真发散时 ALLOWPATHS 腿仍绿（发散被掩）。修法 = 扫描器补**块注释态**
+（进入/退出配对，块内字符一概不参与括号与引号判定），并让返回表**剥掉注释跨段**，使"逐项计数"真指条目。
+新增合成腿 **RED-INJECTION ④b**：两块同植 `/* … ], planted */`、其中一块再尾随一条真发散 ⇒
+断言植注释不截断（2 项）、发散项被读到、两块**仍不相等**，且真实 glob/search 两块在硬化读取器下仍相等。
+**先红后绿两行实录**：
+`× RED-INJECTION ④b … AssertionError: the planted block comment must not truncate the list: expected 1 to be 2`
+（未修时截断为一项）⇒ `Tests  6 passed (6)`（补块注释态 + 剥注释跨段后）。
+邻域不回归：glue7 12/12 · kit-runner 1/1 · p4t6 10/10 · a5p5-dormant-audit 8/8；runtime `error TS` 0；eslint clean；homes 0。
+中途自伤如实记：我在 JSDoc 里写了字面块注释闭合符（PARSE_ERROR "no tests"）与一处零宽空格（no-irregular-whitespace），均已改净。
