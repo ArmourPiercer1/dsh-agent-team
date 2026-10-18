@@ -69,13 +69,28 @@ export const BLUEPRINT_DOCUMENT_SCHEMA_VERSION = 1;
  * live-host/Chrome lanes already adjudicated as environment-blocked (A1.5).
  * The v3-only switch itself lives in PR2's single adapter, selected by
  * `schemaVersion` (ADR A5-12).
+ *
+ * **The v4 flip (the alpha5-v4-flip round, V4-ENABLEMENT-ROUTE stage ③; the
+ * formal Schema ADR is `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-
+ * blueprint-schema-v4.md`).** This run set is `[3, 4]`: the v4 document (the
+ * v3 face plus the optional `toolBindings` effect-governance family) joins the
+ * RUN set through the dormant fourth parser shipped by the schema-rev round.
+ * `3` stays in the set UNCHANGED — the v3 branch of the parser is frozen, v3
+ * documents keep running with zero load-time deformation, and nothing here
+ * declares or performs a v3 RETIREMENT. The `{3, 4}` dual-parsing window's
+ * DURATION and EXIT condition are the T-1 pending ruling — this constant does
+ * not pre-set them (翻档 ≠ 退役; the derived retired set below is the proof:
+ * it still reads `[1, 2]`).
  */
-export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3];
+export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3, 4];
 /**
  * Every Blueprint DOCUMENT VERSION this product has ever defined and shipped:
  * `1` (the frozen Alpha.1/2 document), `2` (Alpha.3's requirements document),
- * `3` (Alpha.4's authority-document form). This is a HISTORY set, not a
- * permission set — nothing consults it to decide what may run.
+ * `3` (Alpha.4's authority-document form), `4` (the alpha5 vNext document —
+ * the v3 face plus the optional `toolBindings` effect-governance family,
+ * defined by the schema-rev round's dormant fourth parser and RUN-enabled by
+ * the v4-flip round). This is a HISTORY set, not a permission set — nothing
+ * consults it to decide what may run.
  *
  * It exists because "the reader cannot parse this" and "the reader can parse
  * this but will not run it" are DIFFERENT facts with different operator actions
@@ -84,7 +99,7 @@ export const SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3];
  * it but outside {@link SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS} is a document the
  * operator owns and can migrate.
  */
-export const DEFINED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3];
+export const DEFINED_BLUEPRINT_DOCUMENT_VERSIONS = [1, 2, 3, 4];
 /**
  * The versions this product DEFINED and no longer RUNS: a document carrying one
  * still has a readable identity (`blueprintId`, `revision`, `schemaVersion`), so

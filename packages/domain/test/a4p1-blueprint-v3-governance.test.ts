@@ -269,21 +269,27 @@ const v3HardVariant = attempt([
 // ---------------------------------------------------------------------------
 
 describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched)', () => {
-  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3]: the temporary bridge is closed (§7.3, ADR A2-11)', () => {
+  it('V1 SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS is [3, 4]: the v3-only bridge closed at §7.3; the v4 flip widened the run set (v4-flip round)', () => {
     // ADR A2-11 widened the set to 1|2|3 FOR the PR1-PR6 bridge and named PR7's
     // collapse to `[3]` as its own end condition. This is that collapse, so the
     // leg is inverted rather than deleted: the widening was always temporary and
     // the retirement is now the asserted contract. `RETIRED_BLUEPRINT_DOCUMENT_VERSIONS`
     // is DEFINED minus SUPPORTED, so it moved to [1, 2] on its own — pinned here
     // so a future edit cannot narrow one set without noticing the other.
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3])
+    //
+    // THE WIDENING ARRIVED (alpha5-v4-flip round): the run set is `[3, 4]` —
+    // the flip-PREP gate-arm truth table, executed leg-by-leg in
+    // `a5fl1-blueprint-v4-flip.test.ts`. This pin moves WITH the constant, as
+    // its own comment below demanded. RETIRED did NOT move: adding a version
+    // demits nothing (翻档 ≠ 退役); `[1, 2]` is pinned on both sides of it.
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
     expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
     // The REFUSAL carries the set, DERIVED from this constant — which is what
-    // `testdata/fixtures.ts` means when it moves the witness to v4 and declines
-    // to pin the `supported` detail there. The derivation is pinned at the
-    // constant, not at the fixture: a future widening (or PR7's collapse to
-    // `[3]`) must move the error text with it, never strand a stale list in a
-    // message an operator reads.
+    // `testdata/fixtures.ts` means when it derives its never-defined witness
+    // one past DEFINED and declines to pin the `supported` detail there. The
+    // derivation is pinned at the constant, not at the fixture: a future
+    // widening must move the error text with it, never strand a stale list in
+    // a message an operator reads.
     let refused: unknown
     try {
       parseBlueprint(NEG_SCHEMA_VERSION_MISMATCH.source) // the fixture's text, verbatim
@@ -449,7 +455,7 @@ describe('A4-PR1 lane A — Blueprint v3 is an additive carrier (v1/v2 untouched
       if (outcome.ok) throw new Error('a retired stamp must not parse')
       const err = outcome.error as { code?: string; message?: string }
       expect(err.code).toBe('SCHEMA_VERSION_MISMATCH')
-      expect(String(err.message)).toContain('[3]')
+      expect(String(err.message)).toContain('[3, 4]')
     }
     expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(1)
     expect(RETIRED_BLUEPRINT_DOCUMENT_VERSIONS).toContain(2)

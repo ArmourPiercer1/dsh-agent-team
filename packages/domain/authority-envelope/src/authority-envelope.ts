@@ -112,6 +112,91 @@ export function isShellOperationClass(operationClass: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// The v4 Scope-grammar extension (VNEXT-SCHEMA-ADR §1-D1【迁】/ §3 M-3 —
+// landed ATOMIC with the v4 flip: "if effect-face scope were half-landed
+// with a runnable v4, parse-accept/runtime-unmap would be the crack")
+// ---------------------------------------------------------------------------
+
+/**
+ * The operation TYPES the vNext effect face adds to the envelope Scope
+ * grammar (CAND D-06, ratified): fs metadata, network destinations, and
+ * Domain references. fs READ and fs WRITE are NOT here — they keep their
+ * existing classes (`read` / `write`, the mirrored tool names); this set is
+ * exactly the DELTA.
+ *
+ * THIS IS GRAMMAR, NOT ACCEPTANCE. The two authority DOCUMENTS are parsed by
+ * the frozen v3 validator, whose closed set is {@link
+ * AUTHORITY_OPERATION_CLASSES}; a document naming one of these tokens is
+ * refused TODAY, by name, at exactly the same gate as any unknown token —
+ * and the runtime write-time classifier keeps answering `unknown` for them.
+ * The production-plane acceptance of these scopes is the effect-queue round
+ * (a behavior change, its own PR, its own review). What lands here, with the
+ * flip, is the SCOPE LAW the effect round must implement and the kernel
+ * mirror test can already pin: the shapes exist, the matcher law over them
+ * is total, and nothing maps a v4 declaration to a hole.
+ *
+ * ZERO NEW RUNGS (the D1 line's hard clause): the effect lattice, the two
+ * documents, the matcher kinds, and the `coverageOf` /
+ * `containment-undetermined` semantics are UNTOUCHED by this table — these
+ * classes travel the existing ladder, the existing ceiling fold, the
+ * existing coverage algebra. The pin pair:
+ * `packages/domain/test/a5fl2-envelope-scope-mirror.test.ts` (grammar +
+ * coverage over the new descriptor shapes) and
+ * `packages/runtime/test/a5fl3-kernel-scope-mirror.test.ts` (kernel mirror:
+ * same objects, same functions, write-time refusal unchanged).
+ */
+export const AUTHORITY_V4_SCOPE_CLASSES = [
+  'fs-metadata',
+  'network-destination',
+  'domain-reference',
+] as const
+
+/** One v4-scope operation type. */
+export type AuthorityV4ScopeClass = (typeof AUTHORITY_V4_SCOPE_CLASSES)[number]
+
+/**
+ * The matcher-shape law of the v4-scope classes — a total map INTO THE SAME
+ * closed {@link AUTHORITY_MATCHER_KINDS}, inventing NO new kind:
+ *
+ *  - `fs-metadata` is an fs-class scope: `exact | subtree` (metadata of a
+ *    named resource, or of everything under one), never `fingerprint`;
+ *  - `network-destination` is EXACT-ONLY: destinations are canonical
+ *    `scheme://host[:port]` identities (`domain/tool-governance` resource
+ *    law) and this grammar invents no destination hierarchy a `subtree`
+ *    matcher would silently claim;
+ *  - `domain-reference` is EXACT-ONLY: a TeamDomain reference is a pure
+ *    identity, the same discipline as an exec fingerprint but over the
+ *    domain identity, so it needs no containment seam either.
+ *
+ * `shell-class ⇒ fingerprint-only` and `fs tool class ⇒ exact|subtree` are
+ * UNCHANGED; this law is the parallel table for the delta classes and the
+ * single source effect acceptance must read.
+ */
+export const AUTHORITY_V4_SCOPE_MATCHER_KINDS = Object.freeze({
+  'fs-metadata': Object.freeze(['exact', 'subtree'] as const),
+  'network-destination': Object.freeze(['exact'] as const),
+  'domain-reference': Object.freeze(['exact'] as const),
+} as const satisfies Record<AuthorityV4ScopeClass, readonly AuthorityMatcherKind[]>)
+
+/** Whether a token is a v4-scope operation type (total, pure, leaf-side). */
+export function isV4ScopeOperationClass(operationClass: string): operationClass is AuthorityV4ScopeClass {
+  return (AUTHORITY_V4_SCOPE_CLASSES as readonly string[]).includes(operationClass)
+}
+
+/**
+ * The matcher kinds one v4-scope class may carry, or `undefined` when the
+ * token is NOT a v4-scope class (the refusal stays a value, never a throw —
+ * this is a lookup, not a gate).
+ */
+export function v4ScopeMatcherLaw(
+  operationClass: string,
+): readonly AuthorityMatcherKind[] | undefined {
+  return isV4ScopeOperationClass(operationClass)
+    ? AUTHORITY_V4_SCOPE_MATCHER_KINDS[operationClass]
+    : undefined
+}
+
+// ---------------------------------------------------------------------------
 // TWO shapes, TWO names (correction X5-E2)
 // ---------------------------------------------------------------------------
 

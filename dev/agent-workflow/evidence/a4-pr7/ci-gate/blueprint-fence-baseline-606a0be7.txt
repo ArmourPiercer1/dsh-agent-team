@@ -1,5 +1,11 @@
 # A4-PR7 §7.6 blueprint-fence BASELINE for scripts/ci-pr-gate.mjs
 # recorded at: master@606a0be7 (porcelain 0), main checkout, 2026-10-09
+# RE-RECORDED (coordinator act in the open, 2026-10-18) on alpha5-v4-flip:
+#   ONE identity line moved `L156=v1` -> `L159=v1` for blueprint-v1-frozen-
+#   resume.test.ts. Cause: the flip round's disclosed re-pin at that file's
+#   L106 (pin flip #324 item 5) shifted the SAME v1-fixture line down by 3.
+#   Same identity (=v1), same fixture, no new offending content, nothing
+#   resolved. All other six identities verbatim-unchanged.
 # command:     node scripts/verify-blueprint-version-clean.mjs   (exit 1, "dirty-or-unknown")
 # lines:       every OFFENDING/UNKNOWN line, verbatim, sorted; one identity per line.
 #
@@ -16,7 +22,7 @@
 #
 # Standing condition at recording time: dirty(6 files, 15 sites), unknown(0 files, 0 sites),
 # adjudicated(16 files, 24 sites), refused(52 files, 115 sites), prose(5 files, 5 sites).
-OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L156=v1
+OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
 OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
 OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
 OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1

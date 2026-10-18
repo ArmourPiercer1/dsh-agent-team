@@ -83,6 +83,7 @@ import type { PERMISSION_MUTATION_ERROR_CODES } from '../../governance/index.js'
 import type { GovernanceMutationService, GovernancePermissionLaneDeps } from '../../governance/types.js'
 import { LEADER_INSTANCE_ID } from '../../../contracts/src/index.js'
 import type { MemberLifecycleState } from '../../../contracts/src/index.js'
+import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../../domain/blueprint/src/index.js'
 import type { TeamBlueprint, TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
 // A4-PR1 (plan Task 1 lane C, ADR A2-3 + correction X5-E2): the ONE AST→runtime
 // canonicalization for BOTH v3 authority documents lives in this file, next to
@@ -930,29 +931,44 @@ function unreadableAuthorityCeilingContext(
  * every refusal law live in the authority-ceiling lane, and the decision whether
  * this Team is v3 lives HERE and nowhere else.
  *
- * THE VERSION SWITCH IS `schemaVersion === 3`, EXACTLY. Not "the reader was
- * wired", not "the hard ceiling declares rules", not "the envelope is non-empty":
- * a `{ rules: [] }` hard ceiling is a v3 Team that authorized NOTHING, and
- * reading its emptiness as "must be a pre-v3 Team, skip the gate" is a relaxation
- * in the forbidden direction, in the most restrictive Team in the fleet. The two
- * branches — the v1/v2 existential (return `undefined`, Alpha.3 behaviour
- * byte-identical) and the v3 branch — are both pinned in
- * `test/a4p2-dual-envelope-mutation.test.ts` (A5-12: one file, so the existential
- * leg cannot be deleted when the v3 leg starts passing).
+ * THE VERSION SWITCH IS THE RUN SET, EXACTLY — never "the reader was
+ * wired", never "the hard ceiling declares rules", never "the envelope is
+ * non-empty": a `{ rules: [] }` hard ceiling is a governed Team that
+ * authorized NOTHING, and reading its emptiness as "must be a pre-v3 Team,
+ * skip the gate" is a relaxation in the forbidden direction, in the most
+ * restrictive Team in the fleet. The two branches — the v1/v2 existential
+ * (return `undefined`, Alpha.3 behaviour byte-identical) and the governed
+ * branch — are both pinned in `test/a4p2-dual-envelope-mutation.test.ts`
+ * (A5-12: one file, so the existential leg cannot be deleted when the
+ * governed leg starts passing).
+ *
+ * THE v4 FLIP moved WHICH VERSIONS ARE GOVERNED, not what governance is:
+ * the governed arm is `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS` — `{3, 4}`
+ * since the flip — because a v4 document's core face IS the frozen v3
+ * output (the fourth parser DELEGATES every core field, including both
+ * authority documents, to the v3 validator: a v4 Team carries the same
+ * ceiling documents, read the same way; `a5fl1` pins the delegation, the
+ * a4p7 R2 table re-measures this reader). A version OUTSIDE the run set and
+ * outside {1, 2} — never-defined, or an unresolvable binding — keeps the
+ * refusal arm unchanged; the flip opened no new door here, it moved one
+ * version from the refusal column to the governed column WITH ITS DOCUMENTS
+ * INTACT.
  *
  * THREE ANSWERS, AND THE MIDDLE ONE IS THE ONE THAT MATTERS.
  *  1. `schemaVersion` is 1 or 2 — a DECIDED pre-v3 Team: `undefined`, the
  *     existential branch, Alpha.3 behaviour byte-identical. That answer is a fact
  *     about the DOCUMENT, and it dies with the cutover, when no document below 3
  *     can be bound at all.
- *  2. `schemaVersion` is `undefined`, or it is 3 but the content hash no longer
- *     resolves: `unreadableAuthorityCeilingContext` above — a refusal. `undefined`
+ *  2. `schemaVersion` is `undefined`, is outside the run set (never-defined),
+ *     or is a run version whose content hash no longer resolves:
+ *     `unreadableAuthorityCeilingContext` above — a refusal. `undefined`
  *     from this seam has ALWAYS meant "no resolvable bound Blueprint" (a resolvable
  *     v1/v2 document answers 1 or 2), so it never meant "pre-v3 Team" and cannot be
  *     allowed to keep buying a skipped gate. Post-cutover it is the ONLY thing the
  *     branch can mean, which is why it must not be carrying a silent commit into
  *     the window where the ceiling gate is the last law standing.
- *  3. `schemaVersion === 3` with a resolvable hash: the real v3 context, unchanged.
+ *  3. `schemaVersion` is a RUN version (3, or 4 since the flip) with a
+ *     resolvable hash: the real governed context, unchanged in shape.
  *
  * The distinction the old two-answer shape erased is the one A5-12 exists to keep:
  * "this Team is not governed by the v3 ceiling" and "nobody can tell" are different
@@ -971,10 +987,17 @@ export function createAuthorityCeilingReader(deps: {
     // v1/v2 Blueprint answers 1 or 2 here, and only those two answers may skip the v3
     // gate (Alpha.3 behaviour, byte-identical, until the cutover retires them).
     if (schemaVersion === 1 || schemaVersion === 2) return undefined
-    // Anything else that is not 3 — `undefined` (no resolvable bound Blueprint) or a
-    // version this build does not know — is NOT a pre-v3 Team, and it does not get a
-    // skipped gate. See {@link unreadableAuthorityCeilingContext}.
-    if (schemaVersion !== 3) return unreadableAuthorityCeilingContext(memberInstanceId, actor)
+    // Anything OUTSIDE the RUN SET (and outside the {1, 2} existential arm) —
+    // `undefined` (no resolvable bound Blueprint) or a version this build does
+    // not know — is NOT a pre-v3 Team, and it does not get a skipped gate.
+    // See {@link unreadableAuthorityCeilingContext}. The run set is READ FROM
+    // THE CONSTANT (the flip's single-point-of-truth discipline: the day the
+    // window changes, this reader follows it, it does not strand a governed
+    // version in the refusal column — that is the parse-accept/read-refuse
+    // crack this line exists to keep shut).
+    if (schemaVersion === undefined || !SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion)) {
+      return unreadableAuthorityCeilingContext(memberInstanceId, actor)
+    }
     // A4-PR5 (rebase round, parent plan-wiring item): THE FINGERPRINT ANCHOR.
     // The hash resolves through the SAME bound-Blueprint route that just chose
     // the v3 branch — the two reads share one resolution law, so an anchor is

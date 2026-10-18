@@ -1,0 +1,8 @@
+[2026-10-17T22:15:28.617Z] PASS A0.0: test-use pristine at the paths.mjs baseline — sha=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-10-17T22:15:28.646Z] mock model on 3493
+[2026-10-17T22:15:31.852Z] PASS A1.0: real host booted on the production row (profile-patch seam; v3 anchor team alive) — origin=http://127.0.0.1:3182
+[2026-10-17T22:15:31.874Z] disc prompt status=200 body={"type":"server-response","rpcId":"a5fl-9r1h448ygh","result":{"ok":true,"value":{"accepted":true}}}
+[2026-10-17T22:15:32.276Z] PASS A1.1: boot root surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-17T22:15:32.292Z] PASS A2.0: catalog.list carries the v4 saved source — row={"blueprintId":"team.a5fl-v4","revisions":[1],"revisionStates":[{"revision":1,"schemaVersion":4,"migrationState":"current"}]}
+[2026-10-17T22:15:32.292Z] PASS A2.1: the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported) — state={"revision":1,"schemaVersion":4,"migrationState":"current"}
+[2026-10-17T22:15:32.292Z] PASS A2.3: v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside — state={"revision":1,"schemaVersion":3,"migrationState":"current"}

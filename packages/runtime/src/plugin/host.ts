@@ -108,6 +108,7 @@ import type {
 } from '../../governance-warning/index.js'
 import { commitDurableFact } from '../../action-router/index.js'
 import type { CanonicalKeyContains, PermissionAuthorityFacts, TeamPermissionPlane } from './permission-plane.js'
+import { SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS } from '../../../domain/blueprint/src/index.js'
 import type { TemplatePermissionPolicy } from '../../../domain/blueprint/src/index.js'
 import { TEAM_DOMAIN_SCHEMA_VERSION } from '../../../storage/schema/index.js'
 import type { StorageDomainSeam } from '../../../storage/schema/index.js'
@@ -897,7 +898,19 @@ export function buildGovernanceWarningDocs(deps: {
     async read(teamSessionId): Promise<GovernanceWarningDocumentView> {
       const schemaVersion = deps.blueprintSchemaVersion(teamSessionId)
       if (schemaVersion === undefined) return { stage: 'unreadable' }
-      if (schemaVersion !== 3) return { stage: 'pre-v3', schemaVersion }
+      // THE RUN-SET RULE (v4-flip round), same law as the ceiling reader:
+      // `pre-v3` means the {1, 2} existential arm — a decided pre-governance
+      // document — NEVER "anything that is not 3". A v4 document is a governed
+      // document (its core face, both authority documents included, IS the
+      // frozen v3 output by the fourth parser's delegation); labeling it
+      // `pre-v3` here would hand the warnings comparator a fact the parse
+      // plane contradicts. Any version outside {1, 2} AND outside the run set
+      // is `unreadable` — fail closed, as before. The stage NAME `v3` below is
+      // this lane's frozen governance-stage vocabulary (documented on
+      // `GovernanceWarningDocumentView`), read as "governed run-version
+      // document", not as the document's own stamp.
+      if (schemaVersion === 1 || schemaVersion === 2) return { stage: 'pre-v3', schemaVersion }
+      if (!SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS.includes(schemaVersion)) return { stage: 'unreadable' }
       const hard = await deps.teamHardEnvelope(teamSessionId, deps.leaderInstanceId)
       if (hard.status === 'unavailable') return { stage: 'unreadable' }
       const contentHash = deps.blueprintContentHash(teamSessionId)

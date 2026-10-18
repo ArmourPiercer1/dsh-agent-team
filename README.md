@@ -37,6 +37,15 @@ gitignored) — this section is a pointer summary, not the authority:
 - A **TeamBlueprint** must contain **exactly one complete LeaderTemplate** (plus member
   templates / policy / quota definitions); a blueprint that only defines teammates is
   structurally invalid.
+- A **TeamBlueprint** document is versioned and closed-world. The run set is the
+  dual-parsing window **`{3, 4}`**: v3 parses through its frozen branch with zero
+  load-time deformation; v4 adds only the optional `toolBindings` effect-governance
+  family over the same frozen core face (formal Schema ADR:
+  `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+  **翻档 ≠ 退役 — the flip is not a retirement**: the window's DURATION and EXIT are
+  the T-1 pending ruling and this round does NOT pre-set them; v1/v2 stay
+  defined-but-retired (discoverable with identity, refused as operator-owns-the-migration),
+  and nothing in the run set implies a v3 retirement.
 - A blueprint revision instantiates a **TeamSession** with `id = RootSessionId` (no
   separate Team UUID; 0-or-1 TeamSession per root session) bound to an immutable
   blueprint snapshot.

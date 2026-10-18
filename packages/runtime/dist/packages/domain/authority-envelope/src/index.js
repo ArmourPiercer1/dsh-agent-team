@@ -25,5 +25,5 @@
  *
  * @module @dsh-agent-team/domain/authority-envelope
  */
-export { AUTHORITY_EFFECT_PRECEDENCE, AUTHORITY_EFFECT_VALUES, AUTHORITY_ENVELOPE_PROBLEMS, AUTHORITY_MATCHER_KINDS, AUTHORITY_OPERATION_CLASSES, AUTHORITY_SHELL_OPERATION_CLASSES, AUTHORITY_UNDETERMINED_REASONS, CEILING_IDENTITY, CEILING_NO_AUTHORITY, effectiveAuthorityCeiling, isShellOperationClass, matcherCovers, meetAllAuthorityCeilings, meetAuthorityCeilings, narrowingForApproval, parseAuthorityEnvelope, } from './authority-envelope.js';
+export { AUTHORITY_EFFECT_PRECEDENCE, AUTHORITY_EFFECT_VALUES, AUTHORITY_ENVELOPE_PROBLEMS, AUTHORITY_MATCHER_KINDS, AUTHORITY_OPERATION_CLASSES, AUTHORITY_SHELL_OPERATION_CLASSES, AUTHORITY_UNDETERMINED_REASONS, AUTHORITY_V4_SCOPE_CLASSES, AUTHORITY_V4_SCOPE_MATCHER_KINDS, CEILING_IDENTITY, CEILING_NO_AUTHORITY, effectiveAuthorityCeiling, isShellOperationClass, isV4ScopeOperationClass, matcherCovers, meetAllAuthorityCeilings, meetAuthorityCeilings, narrowingForApproval, parseAuthorityEnvelope, v4ScopeMatcherLaw, } from './authority-envelope.js';
 //# sourceMappingURL=index.js.map

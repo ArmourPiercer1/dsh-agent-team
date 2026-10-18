@@ -1,0 +1,61 @@
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: blueprint/src/validate.ts(1679,31): error TS2345: Argument of type 'TeamBlueprintCore' is not assignable to parameter of type 'TeamBlueprintV4Core'.
+packages/domain typecheck:   Type 'TeamBlueprintCore' is not assignable to type '{ readonly schemaVersion: 4; readonly toolBindings?: readonly V4ToolBindingAuthoring[] | undefined; }'.
+packages/domain typecheck:     Types of property 'schemaVersion' are incompatible.
+packages/domain typecheck:       Type '3 | 4' is not assignable to type '4'.
+packages/domain typecheck:         Type '3' is not assignable to type '4'.
+packages/domain typecheck: test/a5fl1-blueprint-v4-flip.test.ts(180,63): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+packages/domain typecheck:   Type 'undefined' is not assignable to type 'number'.
+packages/domain typecheck: Failed
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: ../domain/blueprint/src/validate.ts(1679,31): error TS2345: Argument of type 'TeamBlueprintCore' is not assignable to parameter of type 'TeamBlueprintV4Core'.
+packages/testkit typecheck:   Type 'TeamBlueprintCore' is not assignable to type '{ readonly schemaVersion: 4; readonly toolBindings?: readonly V4ToolBindingAuthoring[] | undefined; }'.
+packages/testkit typecheck:     Types of property 'schemaVersion' are incompatible.
+packages/testkit typecheck:       Type '3 | 4' is not assignable to type '4'.
+packages/testkit typecheck:         Type '3' is not assignable to type '4'.
+packages/testkit typecheck: Failed
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?
+packages/tools typecheck: ../domain/blueprint/src/validate.ts(1679,31): error TS2345: Argument of type 'TeamBlueprintCore' is not assignable to parameter of type 'TeamBlueprintV4Core'.
+packages/tools typecheck:   Type 'TeamBlueprintCore' is not assignable to type '{ readonly schemaVersion: 4; readonly toolBindings?: readonly V4ToolBindingAuthoring[] | undefined; }'.
+packages/tools typecheck:     Types of property 'schemaVersion' are incompatible.
+packages/tools typecheck:       Type '3 | 4' is not assignable to type '4'.
+packages/tools typecheck:         Type '3' is not assignable to type '4'.
+packages/tools typecheck: Failed
+[WARN]  Local package.json exists, but node_modules missing, did you mean to install?
+packages/runtime typecheck: ../domain/blueprint/src/validate.ts(1679,31): error TS2345: Argument of type 'TeamBlueprintCore' is not assignable to parameter of type 'TeamBlueprintV4Core'.
+packages/runtime typecheck:   Type 'TeamBlueprintCore' is not assignable to type '{ readonly schemaVersion: 4; readonly toolBindings?: readonly V4ToolBindingAuthoring[] | undefined; }'.
+packages/runtime typecheck:     Types of property 'schemaVersion' are incompatible.
+packages/runtime typecheck:       Type '3 | 4' is not assignable to type '4'.
+packages/runtime typecheck:         Type '3' is not assignable to type '4'.
+packages/runtime typecheck: Failed
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+[ERR_PNPM_RECURSIVE_FAIL] 
+
+
+Summary: 4 fails, 4 passes
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/domain:
+[ERROR] @dsh-agent-team/domain@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/runtime:
+[ERROR] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/testkit:
+[ERROR] @dsh-agent-team/testkit@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/alpha5-v4-flip/packages/tools:
+[ERROR] @dsh-agent-team/tools@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

@@ -139,3 +139,36 @@ is to correct the document, never a runtime relaxation.
   `Number.MAX_SAFE_INTEGER` are rejected instead of silently coerced to
   the nearest double (two different source documents used to hash
   identically); the gate now matches the same-worded contracts gate.
+
+## The `{3, 4}` dual-parsing window (v4 flip round, 2026-10-18)
+
+Author-facing facts since the v4 flip (formal Schema ADR:
+`docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`;
+every claim below is machine-pinned by `packages/domain/test/a5fl1-blueprint-v4-flip.test.ts`):
+
+- **Two versions RUN.** `schemaVersion: 3` keeps its frozen branch with zero
+  load-time deformation (the same document hashes exactly what it hashed
+  before the flip). `schemaVersion: 4` now parses and hashes through the
+  production entry too — its core face is validated by the SAME frozen v3
+  validator (the fourth parser delegates; it forks nothing).
+- **What v4 adds.** Exactly one optional top-level field: the `toolBindings`
+  effect-governance family (closed entry grammar: owner / name / authorization /
+  io read-write-network lanes / execution facts — all values explicit, no
+  implicit defaults, unknown keys refused at their full path, removed proposal
+  fields refused BY NAME). A v4 document that declares no family declares
+  nothing new. `toolBindings` is an UNKNOWN FIELD at v3 — refused there, as before.
+- **The family moves the content hash.** Two v4 documents differing only in
+  `toolBindings` are different blueprints; identity binds the family.
+- **翻档 ≠ 退役 — the flip is not a retirement.** The window's DURATION and
+  EXIT are the T-1 pending ruling; this round does not pre-set them, declares
+  no v3 retirement, and demotes nothing (the retired set stays derived at
+  `[1, 2]` — v1/v2 remain discoverable-with-identity, refused as
+  operator-owns-the-migration). A never-defined version keeps the typed
+  parse refusal unchanged.
+- **Production effect acceptance is still closed.** A v4 document's
+  `toolBindings` is parsed, frozen and hash-bound — but the runtime effect
+  plane does not yet EXECUTE those lanes (the envelope document face still
+  refuses the new scope classes by name); wiring is the effect-queue round's.
+  Authoring a v4 document is therefore safe-but-dark for effects, and
+  irreversible for identity: the point of no return is the FIRST authored v4
+  document, not the constant flip.

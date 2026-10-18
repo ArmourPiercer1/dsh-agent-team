@@ -14,6 +14,12 @@
  *     dispatches to it): its core face is parsed by the FROZEN v3 validator
  *     itself (delegation, not a fork), so the v3 face cannot drift by
  *     construction;
+ *     — CLAUSES 1–3 were the DORMANCY contract of the reversible half and
+ *     were INVERTED by the alpha5-v4-flip round in the two legs of the first
+ *     describe block (named disclosure there; the pre-flip text stands in git
+ *     history and in the flip's RED evidence). Clauses 4–5 — the GRAMMAR
+ *     contract — are unchanged by the flip and stay pinned verbatim below:
+ *     the flip moved the dispatch, not one rule of this grammar.
  *  4. the v4 additions are OPTIONAL (A-1 reversible stance: a v4 document
  *     that declares no `toolBindings` declares exactly NOTHING about Team
  *     effect governance — absence never expands authority);
@@ -104,22 +110,27 @@ function hasProblem(fn: () => unknown, code: string, path: string): void {
   }
 }
 
-describe('a5sr2 version sets — this round flips NOTHING (the 翻档 is the irreversible half)', () => {
-  it('SUPPORTED=[3], DEFINED=[1,2,3], RETIRED=[1,2] exactly', () => {
-    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3])
-    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3])
+describe('a5sr2 version sets — the FLIP round moved exactly the run set (翻档 ≠ 退役)', () => {
+  // DORMANT → ACTIVE, named disclosure (the flip-PREP 逐名 clause): this suite
+  // shipped as the reversible half, pinning the sets at their DORMANT values.
+  // The alpha5-v4-flip round INVERTS these two legs rather than deleting them
+  // (the a4p1 V1 precedent): the pre-flip assertions stand in git history and
+  // in `runs/a5fl1-RED.log`; from here on they pin the post-flip truth.
+  it('SUPPORTED=[3,4], DEFINED=[1,2,3,4], RETIRED=[1,2] exactly (the flip added to the run set; the derived retired set moved NOTHING)', () => {
+    expect([...SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([3, 4])
+    expect([...DEFINED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2, 3, 4])
     expect([...RETIRED_BLUEPRINT_DOCUMENT_VERSIONS]).toEqual([1, 2])
   })
 
-  it('a v4 document through the PRODUCTION ENTRY still fails loudly with SCHEMA_VERSION_MISMATCH', () => {
-    let threw: unknown
-    try {
-      validateBlueprintDocument(v4Doc())
-    } catch (err) {
-      threw = err
-    }
-    if (!isTeamContractError(threw)) throw new Error('expected a TeamContractError')
-    expect(threw.code).toBe('SCHEMA_VERSION_MISMATCH')
+  it('a v4 document through the PRODUCTION ENTRY RUNS (the arm this suite reserved: rejected -> RUNS; the refusal pair now starts one version higher)', () => {
+    // Pre-flip this leg pinned `SCHEMA_VERSION_MISMATCH` at the production
+    // entry — the DORMANCY witness. Post-flip the same entry accepts the same
+    // document: the entry dispatches to the fourth parser and returns a v4
+    // core. The never-defined arm is NOT gone — it moved to the version above
+    // the defined set (pinned by a5fl1's truth table and by the derived
+    // fixtures witness).
+    const core = validateBlueprintDocument(v4Doc())
+    expect(core.schemaVersion).toBe(4)
   })
 })
 

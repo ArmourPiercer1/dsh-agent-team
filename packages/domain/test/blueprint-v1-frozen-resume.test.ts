@@ -103,7 +103,10 @@ describe('E.11 blueprint-v1-frozen-resume (§7.3): the v1 document is refused, d
       expect(a.err?.code).toBe('SCHEMA_VERSION_MISMATCH')
     }
     expect(attempts[0]?.err?.message).toBe(attempts[1]?.err?.message)
-    expect(String(attempts[0]?.err?.message)).toContain('[3]')
+    // The derived list: `[3, 4]` since the v4 flip (the message is pinned as
+    // DERIVED, so this leg tracked the constant — the point of the leg holds:
+    // the two refusals are byte-identical to each other, whatever the set is).
+    expect(String(attempts[0]?.err?.message)).toContain('[3, 4]')
   })
 
   // The old leg read the v1 projection to show it carried no `teamRequirements`
