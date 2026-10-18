@@ -6644,3 +6644,14 @@ Delta 复核（`review-PR2-delta.md` @ `58a7ae67`）判定 F-1 代码级闭合�
 - **环境披露**=①新 worktree 不带 gitignored `tests/deepseek-harness-test-use` → 按 TEST_METHODS 从只读共享 baseline `clone --local --no-hardlinks` + detached `639ed01539` + `pnpm install --ignore-scripts`（home store sqlite 被沙箱拒→`--store` 指工作区 `.pnpm-store`，先前轮次的同一 store）+ `pnpm run build`（porcelain 前后 0）；②launcher 不在 dist 面（tsc 不发 .py）=pb-CONTRACT §1 披露的部署输入，kit 传源树路径；③provider scratchRoot 须在 workspace 内（沙箱实测）；④网络维度无声明（networkProfile:'deny' 被 lane 拒，PoC-4b 诚实律）。
 - **红线与收口三件套**=CORE 0（全部本仓文件+committed 镜像+公开 seam）；`:3080` 仅只读探针 401→401；世界 `a5g7-*` 0 残留（kit C1+start-sweep 自扫本名残留）+ expansion 扫（sha256 manifest 留存）；test-use porcelain 0；3183/3184 free→used→free。
 - **git**=无 push 凭据（https 无凭据，ff push 未成，如实回报）；branch 本地留存，head=`901474ee`（本句随行落定；branch 最终 head 以 `git rev-parse alpha5-glue7-backend` 为准，树差=仅本日志条目及其尾注日期）。
+
+## 2026-10-18 01:0xZ — GLUE-7 #321 收编终态：absorbed（不另开 PR）
+
+- **判定**=#321（TOCTOU 修 + 诚实 shut + 4c remap 修，尾 HEAD `d9a16061`）全部内容经
+  **runtime-base-narrow 合并流入 master@`0e59140b`**（#323 按 merge-base 法逐字节吸收）。
+  协调侧四对 sha 亲跑全表：plane src master `f05aab098b` vs `8655edc2e3` = 21 行差、逐 hunk
+  即 #323 anchorGrant/DYNAMIC-GRANT 注释与 allowPaths 重构（master=超集）；dist 镜像同差同因；
+  测试 `f79bfa3a1f` 等；README `83ebbbf764` 等（G1b 腿/§4c CLOSED 计数等）。→ **absorbed**。
+- **处置**=PR #321 闭为 absorbed（superseded 注=协调侧执行）；本支（`alpha5-glue7-backend`）
+  以 README §6 尾注笔 `611c2f2e` 收档，不再续笔；glob 集成走独立件+runtime_base 收窄层
+  集成轮另单。**GLUE-8（v4 执行 feed 集成准备）在新基线 a5g8 worktree 并行进行中。**
