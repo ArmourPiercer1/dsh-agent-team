@@ -1,9 +1,9 @@
 /**
  * Shim that DRIVES this lane's plane-mount kit under a TS-aware resolver.
  * Why a shim: the kit's criteria are a kit artifact (evidence/alpha5/int-r3/), but the
- * production source graph it mounts (`team-tool-plane.mjs` -> a5p5-tools `src/index.js`
- * -> .ts) cannot be loaded by bare `node` in this repo, and `npx tsx` is not available
- * offline. vitest's resolver can, so the kit exports `runKit()` and this file runs it and
+ * production source graph it mounts (the plane module reaches a sibling tool package's
+ * TypeScript sources through a `.js` specifier) cannot be loaded by bare `node` in this
+ * repo, and a TS loader is not installable offline. vitest's resolver can, so the kit exports `runKit()` and this file runs it and
  * asserts the criteria — the kit still prints its own PASS/FAIL lines, so the receipt is
  * identical in shape to a standalone kit run (KIT_EXIT == this file's verdict).
  */

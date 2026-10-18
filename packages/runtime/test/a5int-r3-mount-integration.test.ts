@@ -91,12 +91,56 @@ function buildPlane(extra: Record<string, unknown> = {}, sink: string[] = []) {
   return { built, sink }
 }
 
+/**
+ * Backend identity of a mounted row, typed for `noUncheckedIndexedAccess` — the merge gate's
+ * typecheck lane runs the test tree too (a5int-r3 round-12 fix ③).
+ */
+function backendIdOf(value: PlaneValue, row: 'search' | 'glob' | 'shell'): string {
+  const entry = (value.backends as Record<string, { backendId?: string } | undefined>)[row]
+  return String(entry?.backendId)
+}
+
 /** The `allowPaths: [ … ]` literal a source file hands to the confined provider. */
+/**
+ * The `allowPaths: [ … ]` literal a source file hands to the confined provider.
+ * BRACKET-BALANCED, not `indexOf('],')`: a `],` planted in a comment or string must not
+ * truncate the extraction (round-12 review ④ — silent truncation would make the parity
+ * law vacuously true). Brackets inside quoted strings and `//` comments are skipped, so
+ * the returned list is the real grant list whatever the surrounding prose says.
+ */
 function grantBlockOf(src: string): string[] {
   const i = src.lastIndexOf('allowPaths: [')
   if (i < 0) throw new Error('no allowPaths grant found')
-  const block = src.slice(i, src.indexOf('],', i) + 1)
-  return block.split('\n').map((l) => l.trim()).filter((l) => l.length > 0 && !l.startsWith('//'))
+  const start = src.indexOf('[', i)
+  let depth = 0
+  let quote: string | null = null
+  let lineComment = false
+  let end = -1
+  for (let k = start; k < src.length; k++) {
+    const c = src[k]
+    if (lineComment) {
+      if (c === '\n') lineComment = false
+      continue
+    }
+    if (quote !== null) {
+      if (c === '\\') k++
+      else if (c === quote) quote = null
+      continue
+    }
+    if (c === '/' && src[k + 1] === '/') { lineComment = true; continue }
+    if (c === "'" || c === '"' || c === '`') { quote = c; continue }
+    if (c === '[') depth++
+    else if (c === ']') {
+      depth--
+      if (depth === 0) { end = k; break }
+    }
+  }
+  if (end < 0) throw new Error('grant block never closes')
+  const block = src.slice(start, end + 1)
+  // bracket-only lines are structure, not grants — dropping them makes any count
+  // assertion about "the grant items" mean the items
+  return block.split('\n').map((l) => l.trim())
+    .filter((l) => /[A-Za-z0-9_']/.test(l) && !l.startsWith('//'))
 }
 
 beforeAll(async () => {
@@ -123,10 +167,9 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     // glob = this lane's anchored confined-rg face; search = the srgp rg face
     // (SEARCH_BACKEND_ID, search-backend.mjs:189), which production could NOT
     // reach before flip 1. A reverted flip changes these strings and goes red.
-    const B = built.value.backends
-    expect(String(B.glob.backendId)).toBe('a5glb-anchored-confined-rg-glob')
-    expect(String(B.search.backendId)).toBe('a5srgp-anchored-confined-rg-grep')
-    expect(String(B.shell.backendId)).toBe('a5g7-confined-exec-shell')
+    expect(backendIdOf(built.value, 'glob')).toBe('a5glb-anchored-confined-rg-glob')
+    expect(backendIdOf(built.value, 'search')).toBe('a5srgp-anchored-confined-rg-grep')
+    expect(backendIdOf(built.value, 'shell')).toBe('a5g7-confined-exec-shell')
     expect(built.value.definitions.map((d) => d.name)).toContain('team_glob')
     // unconfigured world: the control row — search keeps the grep port, glob keeps
     // the typed shut face. The flip is conditional on the anchor, never invented.
@@ -140,19 +183,17 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     expect(bareObserved).not.toContain('a5g7-shell')
     // nothing configured at all: every row keeps the typed shut landing,
     // byte-for-byte as GLUE-7 shipped it (the closed world invents nothing).
-    const bb = bare.built.value.backends
-    expect(String(bb.glob.backendId)).toBe('a5-effect-face-pending')
-    expect(String(bb.search.backendId)).toBe('a5-effect-face-pending')
-    expect(String(bb.shell.backendId)).toBe('a5-effect-face-pending')
+    expect(backendIdOf(bare.built.value, 'glob')).toBe('a5-effect-face-pending')
+    expect(backendIdOf(bare.built.value, 'search')).toBe('a5-effect-face-pending')
+    expect(backendIdOf(bare.built.value, 'shell')).toBe('a5-effect-face-pending')
     // the DISCLOSED CONTROL (glue7 legs G1/G1b/G2/G9): an fsInstance world with NO
     // provider conf keeps the grep(1) search port and the shut glob row — flip 1 is
     // conditional on the provider conf, flip 2 on both, and neither is ever invented.
     const anchoredOnly = buildPlane({ plane: { fsInstance: fsInstance() } })
     expect(anchoredOnly.built.ok, JSON.stringify(anchoredOnly.built)).toBe(true)
     if (!anchoredOnly.built.ok) return
-    const ao = anchoredOnly.built.value.backends
-    expect(String(ao.search.backendId)).toBe('a5g7-controlled-fs-anchored-grep')
-    expect(String(ao.glob.backendId)).toBe('a5-effect-face-pending')
+    expect(backendIdOf(anchoredOnly.built.value, 'search')).toBe('a5g7-controlled-fs-anchored-grep')
+    expect(backendIdOf(anchoredOnly.built.value, 'glob')).toBe('a5-effect-face-pending')
   })
 
   it('CONDITION (a) ALLOWPATHS SAME-SHAPE: the glob row grants exactly what the search row grants, and only the shell row carries a write lane', () => {
@@ -179,6 +220,22 @@ describe('a5int-r3 mount flip — the two integration conditions', () => {
     const globRow = planeSrc.slice(planeSrc.indexOf('const realGlob'), planeSrc.indexOf('const productionBackends'))
     expect(searchRow).toContain('rootDir: fsInstance.rootDir')
     expect(globRow).toContain('rootDir: fsInstance.rootDir')
+  })
+
+  it('RED-INJECTION ④: a `],` planted in a comment still yields every grant item', () => {
+    // The parity law is worth nothing if the reader can be silenced. This synthetic pair
+    // differs ONLY in grant order and BOTH carry `],` inside a comment — the exact shape a
+    // planted marker takes. An `indexOf('],')` reader returns a one-line block for both and
+    // declares them equal; the balanced reader does not.
+    const synth = (a: string, b: string) => '  const request = {\n    allowPaths: [\n      // escape hatch ], keep reading\n      { path: \'' + a + '\', accessBits: { readFile: true } },\n      { path: \'' + b + '\', accessBits: { readDir: true } },\n    ],\n  }\n'
+    const one = grantBlockOf(synth('/bin', '/usr'))
+    const two = grantBlockOf(synth('/usr', '/bin'))
+    expect(one.length, 'the planted `],` must not truncate the list').toBe(2)
+    expect(one).toContain("{ path: '/bin', accessBits: { readFile: true } },")
+    expect(one).toContain("{ path: '/usr', accessBits: { readDir: true } },")
+    expect(one).not.toEqual(two) // teeth: a real divergence stays a RED
+    // and the real sources still agree under the hardened reader
+    expect(grantBlockOf(readFileSync(GLOB_SRC, 'utf8'))).toEqual(grantBlockOf(readFileSync(SEARCH_SRC, 'utf8')))
   })
 
   it('CONDITION (b) INTERNAL LOG IS NOT A MEMBER SINK: the plane wires no internalLog, and host observations never read back through the wire', async () => {

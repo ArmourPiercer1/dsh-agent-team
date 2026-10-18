@@ -150,3 +150,15 @@ F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，�
 - **D2 shell `exit=0` + stderr + fs 缺席**：受治面完成律不回报子进程 rc 属既有公开律（srgp/glob 头注在册）；
   拒证 = 内核 stderr + host fs 不存在，与 natexe E6.1 同形先例；**"wire exit=0" 不作放行证据**，判据以 fs 探针为准
   （本 kit 判据已是此形）。
+
+## round-12 修复单（#333 双门红 → 本地复现 → 修 → 绿；正向笔，判据未减）
+
+| # | 红（逐字身份） | 本地复现 | 修法 | 绿 |
+| --- | --- | --- | --- | --- |
+| ① | census `p4t6 coverage`：kit 驱动 shim 是新 scannable 文件，账本停在 merge 重锚的 1195 | scanner 亲数 **1196**（未入账读数 = chain 1195 vs 1196） | 新增**具名钉** `SCANNED_PATHS_A5INTR3_KIT`（1 条 = `packages/runtime/test/a5intr3-kit-runner.test.ts`），tie `1196 - 1195`；同处补上 merge 时漏插的 `SCANNED_PATHS_A5INTR3` tie `1195 - 1194`。**中途两次自伤如实记**：账本块先插进 import 段（PARSE_ERROR），后插在 totals 之后（TDZ ReferenceError）——最终两条声明都上移到模块作用域并注明原因 | p4t6 **10/10** |
+| ② | `a5p5-dormant-audit::no shipped source outside the lane references a5p5-tools`（本地 8/8 绿、census 红） | 按 census 同形（root vitest 跑该套件）复现：`AssertionError: expected [ Array(1) ] to deeply equal []`，命中点 = 本 lane 新 shim 的**注释残词**（第 4 行提了那个包名） | 纯文本非 import ⇒ 改措辞为"一个兄弟工具包的 TS 源、经 `.js` 说明符可达"，不引包名；**未给 dormant-audit 加任何豁免** | 该套件 **8/8** |
+| ③ | `a4p7-merge-gate §7.6`（code merge gate 的 typecheck 道） | `pnpm -r run typecheck` 复现：`packages/runtime typecheck: Failed`，8 × TS18048 `'B.glob' is possibly 'undefined'`（`noUncheckedIndexedAccess` 下我的 `backends[k].backendId` 直取；gate 的 typecheck 道确实跑测试树） | 加类型化访问器 `backendIdOf(value,'search'|'glob'|'shell')`，8 处改走它；顺带删掉因此失效的三个别名与一处 useless-escape | runtime 包 `error TS` 计数 **0**；eslint clean |
+| ④ | 独审 round-12：`grantBlockOf` 的 `indexOf('],')` 截断旁路（评审在注释植 `],` 实证可掩发散） | 旁路成立：注释里一个 `],` 就能让"同形"变空洞 | 提取器改**括号平衡**（跳过字符串与 `//` 注释内的括号，深度归零才收口），并加**红注入腿**：合成两块、都含 `// escape hatch ],`、只差顺序 ⇒ 断言逐项都读到且 `not.toEqual`（真发散仍红），且真实两块在硬化读取器下仍相等 | a5int-r3 **5/5**（含注入腿） |
+| ⑤ | 独审 round-12：kit 直跑崩（`log` 越界 @kit:203）+ 头注声称可直跑的文实漂移 | 复现：直跑在 guard 处 `log is not defined`（我把 `log` 一起包进了 `runKit()`），而头注写"直跑打印并退出" | 二者都做实：**`log` 提到模块作用域**（guard 可用），并把头注改成实话——**受支持路径是 vitest shim**，裸 node 载不动本仓源码图，直跑只会在 loader 层失败后到 guard | kit shim **1/1**（14/14 criteria 仍全 PASS） |
+
+**未减的牙**：注入腿为新增；G6/C2/D2 判据一字未动（两裁注在上一节）。**pr-gate** 的 exit 2 与 census 同族，本地以 ①②③ 三道的同形复跑为代理证据，正式门由 parent 重跑。

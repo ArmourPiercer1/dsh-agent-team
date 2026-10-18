@@ -17,6 +17,8 @@
 
 import { describe, it, expect } from 'vitest'
 import {
+
+
   matchDenyListInText,
   scanSessionEventVocabulary,
 } from '../fault-injection/session-event-scan.mjs'
@@ -29,6 +31,17 @@ import {
  * six fixture tokens) together with the spec itself, restoring this
  * original two-file set.
  */
+// alpha5-int-r3 bookings at module scope, so every ledger site and both named pins see
+// them (the in-body placement left by the merge replay was out of scope at the pins).
+// MEASURED on this tree: the leg file landed with the merge replay (1194 -> 1195), the
+// kit DRIVER landed after it (1195 -> 1196); no anchor copied from either side.
+const SCANNED_PATHS_A5INTR3: readonly string[] = [
+  'packages/runtime/test/a5int-r3-mount-integration.test.ts',
+]
+const SCANNED_PATHS_A5INTR3_KIT: readonly string[] = [
+  'packages/runtime/test/a5intr3-kit-runner.test.ts',
+]
+
 const QUARANTINE_FILES: ReadonlySet<string> = new Set([
   'packages/contracts/src/legacy-vocabulary.ts',
   'packages/contracts/test/negative.test.ts',
@@ -2543,9 +2556,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // landed): the integration round's own leg file — the two integration conditions of
     // the mount flip (allowPaths same-shape across glob/search/shell; the internal log
     // never reaching a member-visible sink) plus flip-coverage and matrix-name legs.
-    const SCANNED_PATHS_A5INTR3: readonly string[] = [
-      'packages/runtime/test/a5int-r3-mount-integration.test.ts',
-    ]
+    // the kit DRIVER (the vitest shim that runs evidence/alpha5/int-r3's plane-mount kit);
+    // declared next to its sibling so the totals below can see it.
     expect(scanResult.filesScanned).toBe(
       983 +
         SCANNED_PATHS_A4PR2.length +
@@ -2594,7 +2606,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5NATEXE.length +
         SCANNED_PATHS_A5GLB.length +
         SCANNED_PATHS_A5SRGP.length +
-        SCANNED_PATHS_A5INTR3.length,
+        SCANNED_PATHS_A5INTR3.length +
+        SCANNED_PATHS_A5INTR3_KIT.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2644,7 +2657,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5NATEXE.length +
         SCANNED_PATHS_A5GLB.length +
         SCANNED_PATHS_A5SRGP.length +
-        SCANNED_PATHS_A5INTR3.length,
+        SCANNED_PATHS_A5INTR3.length +
+        SCANNED_PATHS_A5INTR3_KIT.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
@@ -2718,6 +2732,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5GLB,
       ...SCANNED_PATHS_A5SRGP,
       ...SCANNED_PATHS_A5INTR3,
+      ...SCANNED_PATHS_A5INTR3_KIT,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
     }
@@ -3029,6 +3044,11 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // master's booked 1191 plus exactly the three named paths on disk. Booking them ends the
     // chain at 1194, the scanner total of this tree.
     expect(SCANNED_PATHS_A5SRGP.length).toBe(1194 - 1191)  })
+    // int-r3 named pins, MEASURED on this tree (no anchor copied from either side):
+    // the leg file landed with the merge replay (chain 1194 -> 1195), the kit DRIVER
+    // landed after it (1195 -> 1196). Both are owned by alpha5-int-r3.
+    expect(SCANNED_PATHS_A5INTR3.length).toBe(1195 - 1194)
+    expect(SCANNED_PATHS_A5INTR3_KIT.length).toBe(1196 - 1195)
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
     expect(scanResult.excludedSelfFiles).toEqual([

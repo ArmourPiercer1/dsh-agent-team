@@ -52,10 +52,11 @@ const STABLE_URL = process.env.DSH_STABLE_URL ?? 'http://127.0.0.1:3080/'
 const INSIDE_TOK = `A5INTR3-INSIDE-${STAMP}`
 const OUTSIDE_SECRET = `A5INTR3-OUTSIDE-SECRET-${STAMP}`
 
+const log = (m) => process.stdout.write(`${new Date().toISOString()} ${m}\n`)
+
 export async function runKit() {
 const criteria = []
 let fatal = null
-const log = (m) => process.stdout.write(`${new Date().toISOString()} ${m}\n`)
 const check = (id, ok, detail) => {
   criteria.push({ id, ok: ok === true })
   log(`${ok ? 'PASS' : 'FAIL'} ${id}: ${detail}`)
@@ -193,9 +194,12 @@ try {
   return { criteria, failed, fatal }
 }
 
-// Direct invocation prints the criteria lines and exits 0/2/1; imported (the vitest
-// shim, which is how this runs — the repo source graph needs a TS-aware resolver, plain
-// node cannot resolve `src/index.js` -> `.ts`) it only exports runKit().
+// Direct invocation (under a TS-aware loader) prints the criteria lines and exits 0/2/1;
+// imported, it only exports runKit(). THE SUPPORTED PATH IN THIS ENVIRONMENT IS THE
+// VITEST SHIM (`packages/runtime/test/a5intr3-kit-runner.test.ts`): bare `node` cannot
+// resolve the production source graph this mounts, so `node <this file>` reaches the
+// guard only after a loader-level failure — the round-12 review ⑤ point, stated here
+// rather than claimed away.
 const invokedDirectly = process.argv[1] !== undefined
   && process.argv[1].endsWith('a5intr3-plane-mount-kit.mjs')
 if (invokedDirectly) {
