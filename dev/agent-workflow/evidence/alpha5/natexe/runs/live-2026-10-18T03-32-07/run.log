@@ -1,0 +1,5 @@
+[2026-10-18T03:32:07.312Z] PASS [*] H0.0: the stable :3080 and :3180 instances were probed read-only before the run (probe only, never touched) — {"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":"unreachable"}}
+[2026-10-18T03:32:07.312Z] mock model on 3491; eras=v3,v4
+[2026-10-18T03:32:09.326Z] PASS [v3] E1.0: real host booted on the production row with the takeover plane (profile-patch seam; v3 anchor alive) — origin=http://127.0.0.1:3184
+[2026-10-18T03:32:10.384Z] PASS [v3] E1.1: boot surface captured (bash present; unmanaged remainder computed) — surface=20 deny=0
+[2026-10-18T03:32:10.399Z] PASS [v3] E2.0: v3 saved source lists RUNS (3/current) through the wire catalog — state={"revision":1,"schemaVersion":3,"migrationState":"current"}

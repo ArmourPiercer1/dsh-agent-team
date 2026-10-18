@@ -1,0 +1,13 @@
+{
+  "runStamp": "2026-10-18T03-31-39",
+  "fatal": "[v3] auth failed: auth returned HTTP 401 (expected 303)",
+  "criteria": [
+    {
+      "era": "*",
+      "id": "H0.0",
+      "name": "the stable :3080 and :3180 instances were probed read-only before the run (probe only, never touched)",
+      "ok": true,
+      "detail": "{\"p3080\":{\"url\":\"http://127.0.0.1:3080/\",\"status\":401},\"p3180\":{\"url\":\"http://127.0.0.1:3180/\",\"status\":\"unreachable\"}}"
+    }
+  ]
+}
