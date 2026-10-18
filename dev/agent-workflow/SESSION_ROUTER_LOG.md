@@ -6761,3 +6761,18 @@ tsc 净；全树双抓 **RUN5≡RUN6≡published 红 9 逐行恒等**（files 57
 扫描面，solo 恒绿，README §6.5 披露）。git = `alpha5-natexe` @ 本条 commit；
 push 仍不可（https 无凭据，如实）。:3080/:3180 只读探针不变；世界已扫；
 台账 = `dev/agent-workflow/evidence/alpha5/natexe/README.md` §6。
+
+## 2026-10-18 natexe PR 化（根放行流程 = 逐 PR；master b90aad2a）
+
+`alpha5-natexe-pr` = b90aad2a + 8 笔 `cherry-pick -x`（源
+b0b49761..c883236f/alpha5-natexe 线，含 Gate 0b `verifyPlaneNames` + dist
+镜像、unit N1-N5、natexe evidence、INSTALL §3.5、ROUTER_LOG 两条目）。
+**p4t6 入账在 master 链上 scanner 实测重锚**：本链无 a5glb 入账（int 线
+`1185-1184` 系他链事实），实测基线 = FLIP 轮 1186，solo RED
+`expected 1187 to be 1186`，入账后链和 = scanner 总数 = **1187**（10/10 绿）。
+**独审必办 2 清**：11 行真值表工件真入库
+（`plane-names-truth-table.mjs` + GREEN receipt，3 accepted / 8
+PLANE_NAMES_INVALID，口径未改）。**PR 链验证**：unit+p4t6 20/20、probe 9/9、
+runtime tsc 净、eslint 净、drift 门 HEAD ok、live kit 双时代 **26/26 ALL
+GREEN**（宿主 test-use @639ed01539 现 pin 本 worktree 克隆+构建，porcelain
+0 前后，:3080/:3180 探针同值）。push/PR 由 parent 代推+dispatch。
