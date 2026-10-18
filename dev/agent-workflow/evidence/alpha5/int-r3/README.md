@@ -175,3 +175,15 @@ F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，�
 （未修时截断为一项）⇒ `Tests  6 passed (6)`（补块注释态 + 剥注释跨段后）。
 邻域不回归：glue7 12/12 · kit-runner 1/1 · p4t6 10/10 · a5p5-dormant-audit 8/8；runtime `error TS` 0；eslint clean；homes 0。
 中途自伤如实记：我在 JSDoc 里写了字面块注释闭合符（PARSE_ERROR "no tests"）与一处零宽空格（no-irregular-whitespace），均已改净。
+
+
+## round-14 后续（docs 修正笔 + 一项登记为后续轮选项）
+
+- 措辞修正（**零行为、零判据**）：挂载行 CANDIDATE-A 段改**过去时 + 现值**并加 HISTORICAL 限定
+  （3/10700 属 2026-10-17 对 pre-#323 launcher `odir("/")` @c2be086a:176/:331 的读数，该 launcher 不在本树）；
+  现值按 runtime-base-narrow 轮收据转述（narrowed 基 **0/1400** + race 腿 + 19 武器臂全零，**本笔未重测**，
+  复跑入口 = `evidence/alpha5/runtime-base-narrow/` 自有 kit + witness）；并保留**可达性句**作为诚实披露：
+  只有故意 pin 历史 launcher 字节才重开该读数，**pairing 门管完整性/字节 pin，不管收窄内容**。
+  `alpha5-glue7-plane-backends.test.ts` 的 G6/G6b 注释同步（G6b 不再是"行恒 shut"，因 G6 已钉 live-anchored 现形）。
+- **登记为后续轮选项（不随本笔）**：给 `launcherIntegrityGate` 加"内容须含 narrowed 标记"的**具名拒绝**
+  ——这是新语义，等根裁；本笔只把"pairing 不证收窄"这句话写进挂载行注释。

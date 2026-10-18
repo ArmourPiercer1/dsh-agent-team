@@ -495,7 +495,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // integration round) was assessed CANDIDATE-A and FAILED the security
   // re-review for a name-class leak (verify->launcher string-chdir window
   // + the provider runtime_base '/' READ_DIR grant: outside NAMES can
-  // surface, bytes never — re-review measured 3/10700). It ships NOTHING:
+  // surface, bytes never — re-review measured 3/10700). HISTORICAL — that
+  // reading is 2026-10-17's, against the PRE-#323 launcher whose `odir("/")`
+  // stood at c2be086a:176/:331; that launcher is NOT in this tree, and the
+  // current-state wording below carries the narrowed values. It ships NOTHING:
   // wiring removed, factory archived (glue7/glob/, marked 未入产); the glob
   // integration rides the standalone 093aaded face + a runtime_base
   // narrowing layer in its own round. A real backend appears ONLY where the row
@@ -538,15 +541,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // allowPaths shape (system rx dirs + the rg bin dir + a READ_DIR/READ_FILE grant on
   // the anchored root: glob-backend.mjs:837-842 is byte-for-byte the search row's
   // list at search-backend.mjs:746-751; the rw lane stays exclusively the shell row's).
-  // CANDIDATE-A'S RESIDUAL EXPOSURE IS NOT CLAIMED AWAY: the confined-rg glob
-  // candidate FAILED the security re-review for a NAME-CLASS leak — the
-  // `verify` -> launcher string-`chdir` window plus the provider's `runtime_base '/'`
-  // READ_DIR grant — so OUTSIDE NAMES can surface to a caller on this face (bytes
-  // never: the re-review measured 3/10700). The runtime-base narrowing round built the
-  // pre-condition layer this mount was waiting on for the swap-cwd landing cause; the
-  // name-class window is the provider/launcher's own face, disclosed here rather than
-  // denied. The walk root is the child's cwd, so no swappable path string rides argv
-  // (that removal is what the CANDIDATE-A note credits this row with).
+  // CANDIDATE-A'S RESIDUAL EXPOSURE, IN PAST TENSE WITH PRESENT VALUES (round-14
+  // ruling): the confined-rg glob candidate FAILED its 2026-10-17/18 security re-review
+  // for a NAME-CLASS leak — the `verify` -> launcher string-`chdir` window plus the
+  // then-current provider `runtime_base '/'` READ_DIR grant, measured 3/10700 there.
+  // That launcher is gone: on the narrowed baseline the same round reports 0/1400 on the
+  // probe base with the race leg and all 19 weapon arms zero (re-runnable through
+  // evidence/alpha5/runtime-base-narrow/'s own kit + witness; THIS DOCS PASS DID NOT
+  // RE-MEASURE — the values are restated from that round's receipts per the ruling).
+  // REACHABILITY, kept as honest disclosure rather than deleted: the historical reading
+  // is only reopened by deliberately pinning the historical launcher bytes — the
+  // pairing gate at the row above governs launcher INTEGRITY/byte-pinning, NOT the
+  // narrowing content, so pairing passing is not evidence that the base is narrowed.
+  // The walk root is the child's cwd, so no swappable path string rides argv (what the
+  // CANDIDATE-A note credits this row with).
   const realGlob = fsInstance !== null && typeof fsInstance.rootDir === 'string' && confinedCfg !== null
     ? createAnchoredGlobBackend({
       realmId,
