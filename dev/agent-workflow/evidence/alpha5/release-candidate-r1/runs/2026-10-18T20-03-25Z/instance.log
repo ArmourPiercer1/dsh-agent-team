@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/rc-trial-1/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-ce53e79a>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=rc-trial-realm
+[dsh-agent-team] a5ptc: census-boot root=session-rc-trial-team-2026-10-18T20-03-25Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/rc-trial-1/deployment/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=rc-trial-realm
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=rc-trial-realm rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=rc-trial-realm call=team-inst-0qmcem61qj9u-bash-1 pid=190 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=rc-trial-realm call=team-inst-0qmcem61qj9u-bash-2 pid=193 exit=1 timedOut=false
