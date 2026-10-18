@@ -28,3 +28,30 @@
 | rc=2 真错原文（`[unclosed` 族） | 部分：round-4 抓到行层 detail 前缀逐字；rg 原文未取 |
 | 权限形（unreadable） | 缺 |
 | 每格 ≥1 条逐字原文 | 缺（仅 rc=2 有行层 detail 前缀） |
+
+## round-6 续单实际产物（`corpus.jsonl`，18 行实测，无伪数据）
+
+**(甲) 四格配对样本（本轮实测到的）**
+| 格 | 采集 | 逐字（redact 后） | 线上 exit | exit.json rc |
+| --- | --- | --- | --- | --- |
+| rc2 真错（`[unclosed`）**全链行层** | `row-internalLog+exit.json` ×3 | `walker-error walker diagnostic stream non-empty exit=0 stderr=rg: error parsing glob '[unclosed': unclosed character class; missing ']'` | **exit=0**（LAUNCHER 常量完成律） | **未取到**：internalLog 里**没有** `--out-dir` 字段，out-dir 定位法在行层内部面不成立 |
+| rc0 有匹配（`*.txt`）行层 | 同上 ×3 | internalLog 为空、`ok=true`（正常走查不说话） | exit=0 | 未取到（同上） |
+
+**(乙) 直调 rg（用**行层同款解析式** `resolveRgPath()` from `@deepseek-ai/dsh-tool-fs-search`，绝对路径，非 PATH）**
+| 名义格 | 3 次 rc 实测 | 逐字 stderr（首条） |
+| --- | --- | --- |
+| rc0 有匹配 | **[2,2,2]** | `rg: ./tests/homes/a5tmp-r6-…/noperm: Permission denied (os error 13)` |
+| rc1 无匹配 | **[2,2,2]** | 上句 + `rg: No files were searched, which means ripgrep probably has no access to your directory` |
+| rc2 真错 | **[2,2,2]** | `rg: error parsing glob '[unclosed': unclosed character class; missing ']'` |
+| 权限形 | **[2,2,2]** | `rg: …/noperm: Permission denied (os error 13)` |
+
+**诚实结论：直调那张表被我的夹具串扰污染了**——chmod 000 的 `noperm` 与搜索根同处一个 world，rg 把权限错
+带进了本应 rc=0/rc=1 的两次格，于是四格全成 rc=2。**这不是"rg 在无匹配时也退 2"的证据**，需要把不可读目录
+放到搜索根之外重跑才算数。已如实保留原行（不改数据），并在本段标注污染。
+
+**"来源全证"更新判定：部分推进，仍为否。** 新证到的：rc2 格的**逐字 rg 原词已在**行层内部面出现，且同次
+wire exit=0（LAUNCHER 码）——"非空 stderr 即 ERROR 是 rc 缺席下的代理判据"这条现在有了原文级证据。
+仍缺：①干净的 0/1/权限三格直调表（夹具重放）；②**同次 exit.json rc 配对**——`internalLog` 不含 `--out-dir`，
+需换捕获点（provider 侧 argv 或在旁路装配里传固定 out-dir）。51 腿全量 = 移交产品实现轮回归附带（planned）。
+教训一行：**凡直调 rg 必走行层解析式**（`resolveRgPath()`），裸 shell 无 rg；且**夹具隔离**（不可读目录不得
+与搜索根同 world），否则 rc 表整体失真。
