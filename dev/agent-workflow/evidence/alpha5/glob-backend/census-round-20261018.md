@@ -90,3 +90,24 @@ not assumed, after the law edits.
   若它日后也翻，同一笔礼让照搬即可，不必再讨论语义。
 - **环境披露**：本轮期间宿主磁盘 98 % 满（2.9 G 可用，非本 lane 足迹：本 worktree `tests/` 6.2 MB、
   npm 缓存 632 KB）。census 规模对这个值敏感，故记录而非默不作声。
+
+## 6. census round 2（fed6d723）：a5lsp2 失败现场取证——上限不动
+
+`fed6d723` 上 `a5lsp2` cleanup (a)/(b) 在 **30 s 上限后仍红**。这条事实推翻了我上一轮的
+解释强度：CPU 饥饿至多是不充分原因，**证据不足**，我不再拿它当结论。按指令做的不是"再修一次"，
+而是**把下一次红变成可诊断事实**：
+
+- **上限一个字节都没动**（`POLL_CEILING_MS` 默认 30_000 与 env 覆盖原样，`git diff` 可证）。
+- **6 个失败路径 call site**：policyChange g0→g1 与 g1→g2 的 pid-gone poll、failure cleanup (a)
+  的"新进程"检查、failure cleanup (b) 的 pid-gone poll 与 residual 检查、disposeAll 的两个 poll。
+  绿路径**零输出**（实测：同场跑的正式文件 stdout 里 `a5lsp2 FORENSIC` 计数 0）。
+- **断言真值条件不变**：`expect(x).toBe(true)` / `toEqual([])` 原样保留；唯一形状变化是 (a)
+  的 `live.every(...) === true` 等价改写为 `foreign` 数组 `toEqual([])`（同一真值条件，
+  失败时可报出具体 pid）。观测面仍是那两条：`/proc` liveness 与 world-scoped `sampleLaneProcesses`。
+- **一场取证包含**：world 标签 / 腿名 / 期望 / 观测值；`/proc/loadavg` 与 `/proc/pressure/cpu`（PSI）；
+  `sampleLaneProcesses(world)` 全表（pid/cwd/cmdline 截断 180）；每个被盯 pid 的
+  `pidAlive` + `stat` 状态位 + `cmdline`；world 递归计数（files/dirs/maxDepth/前 12 项）。
+  每个读取都是 best-effort——pid 在取样瞬间消失本身被记成事实（`<unreadable:ENOENT>`），不抛异常。
+- **渲染被真实执行过**：用一次性探针副本强制渲染一次（副本跑完即删、未入库），
+  样本入库 [`lsp2-forensic-scene-sample.txt`](lsp2-forensic-scene-sample.txt) 见同目录。
+- **验证**：lsp2 lane 22/22 绿、`tests/homes` 残留 0、eslint clean。

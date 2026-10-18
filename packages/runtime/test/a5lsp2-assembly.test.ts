@@ -36,7 +36,7 @@
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createLspRealmAssembly, type LspAssemblyEvent, type LspInstance } from '../sandbox-provider/lsp-assembly.js'
 import type { AllowPathEntry } from '../sandbox-provider/provider.js'
@@ -81,6 +81,88 @@ const POLL_CEILING_MS = (() => {
   const n = Number(raw)
   return raw !== undefined && Number.isFinite(n) && n > 0 ? Math.trunc(n) : 30_000
 })()
+
+/**
+ * FAILURE-SCENE FORENSICS (2026-10-18, census round 2; the ceilings are NOT
+ * touched — 30 s stays the cap, that was the deal). These legs failed on a CI
+ * runner twice, the second time with a 30 s ceiling, which is evidence that my
+ * "starved runner" reading was not enough: something else is alive in that
+ * world, or something is not. Green runs print NOTHING. On the path that is
+ * about to fail, one block goes to stdout with the facts a log cannot show
+ * afterwards: the full `sampleLaneProcesses` table, for every watched pid its
+ * `/proc` liveness + cmdline + scheduler state, a capped scan of the world
+ * directory, and the machine's load/PSI numbers. Every read is best-effort —
+ * a pid that vanishes mid-scene is itself a fact, not an exception. This makes
+ * no claim about the cause; it puts the scene in the capture so the next red
+ * is diagnosed from evidence instead of from a hypothesis.
+ */
+function procText(path: string): string {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch (err) {
+    return `<unreadable:${(err as { code?: string }).code ?? 'ERR'}>`
+  }
+}
+
+/** Capped recursive scan of the world: how much is left, and what is in it. */
+function scanWorldCounts(dir: string): string {
+  let files = 0
+  let dirs = 0
+  let deepest = 0
+  const names: string[] = []
+  const walk = (d: string, depth: number): void => {
+    if (depth > deepest) deepest = depth
+    if (files + dirs > 500) return
+    let entries: ReturnType<typeof readdirSync> extends never ? never : { name: string; isDirectory(): boolean }[]
+    try {
+      entries = readdirSync(d, { withFileTypes: true }) as unknown as { name: string; isDirectory(): boolean }[]
+    } catch (err) {
+      names.push(`${d.replace(dir, '<world>')} <unreadable:${(err as { code?: string }).code ?? 'ERR'}>`)
+      return
+    }
+    for (const entry of entries) {
+      const full = join(d, entry.name)
+      if (depth < 2 && names.length < 12) names.push(full.replace(dir, '<world>'))
+      if (entry.isDirectory()) {
+        dirs += 1
+        walk(full, depth + 1)
+      } else {
+        files += 1
+      }
+    }
+  }
+  walk(dir, 0)
+  return `files=${String(files)} dirs=${String(dirs)} maxDepth=${String(deepest)} firstEntries=[${names.join(' , ')}]`
+}
+
+function forensicScene(label: string, watchedPids: readonly number[], expected: string, observed: unknown): void {
+  const out = (globalThis as { process?: { stdout?: { write(v: string): void } } }).process?.stdout
+  const lines: string[] = []
+  lines.push(`a5lsp2 FORENSIC world=${world.split('/').pop()} leg="${label}" expected=${expected}`)
+  lines.push(`  observed=${JSON.stringify(observed)}`)
+  const load = procText('/proc/loadavg').trim().replace(/\s+/g, ' ')
+  const psi = procText('/proc/pressure/cpu').trim().replace(/\n/g, '; ')
+  lines.push(`  loadavg="${load}" cpuPressure="${psi}" ceilingMs=${String(POLL_CEILING_MS)}`)
+  let procs: { pid: number; cwd: string; cmd: string }[] = []
+  try {
+    procs = sampleLaneProcesses(world)
+  } catch (err) {
+    lines.push(`  sampleLaneProcesses threw:${String(err)}`)
+  }
+  lines.push(`  sampleLaneProcesses(world) = ${String(procs.length)} live`)
+  for (const p of procs) {
+    lines.push(`    pid=${String(p.pid)} cwd=${p.cwd} cmd=${p.cmd.slice(0, 180)}`)
+  }
+  for (const pid of watchedPids) {
+    if (pid <= 0) continue
+    const stat = procText(`/proc/${String(pid)}/stat`).trim().split(' ')
+    lines.push(
+      `  watched pid=${String(pid)} pidAlive=${String(pidAlive(pid))} state=${stat.length > 2 ? stat[2] : '?'} cmdline="${procText(`/proc/${String(pid)}/cmdline`).replace(/\0/g, ' ').trim().slice(0, 180)}"`,
+    )
+  }
+  lines.push(`  world ${scanWorldCounts(world)}`)
+  out?.write(lines.join('\n') + '\n')
+}
 
 const world = makeWorld('assembly')
 afterAll(() => removeWorld(world))
@@ -246,7 +328,9 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
 
     // (1) old pid is GONE — OS liveness, bounded
     expect(r.value.pid).not.toBe(oldPid)
-    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
+    const oldGoneG1 = await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)
+    if (!oldGoneG1) forensicScene('policyChange A g0->g1: the old pid is still alive after the ceiling', [oldPid, r.value.pid], 'old pid gone within the ceiling', { oldPid, newPid: r.value.pid, ceilingMs: POLL_CEILING_MS })
+    expect(oldGoneG1).toBe(true)
     // (2) new instance answers with the NEW generation and NEW cwd
     const p = await ping(r.value, 1)
     expect(p.gen).toBe('g1')
@@ -273,7 +357,9 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const r = await assembly.policyChange('A', 'g2')
     expect(r.ok).toBe(true)
     if (!r.ok) return
-    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
+    const oldGoneG2 = await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)
+    if (!oldGoneG2) forensicScene('policyChange A g1->g2: the old pid is still alive after the ceiling', [oldPid], 'old pid gone within the ceiling', { oldPid, ceilingMs: POLL_CEILING_MS })
+    expect(oldGoneG2).toBe(true)
     expect(r.value.pid).not.toBe(oldPid)
     const p = await ping(r.value, 1)
     expect(p.gen).toBe('g2')
@@ -300,7 +386,9 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     expect(pidAlive(a.pid)).toBe(true)
     // zero new processes: every live lane process belongs to A/B instances
     const live = sampleLaneProcesses(world)
-    expect(live.every((p2) => p2.pid === a.pid || p2.pid === assembly.current('B')?.pid)).toBe(true)
+    const foreign = live.filter((p2) => p2.pid !== a.pid && p2.pid !== assembly.current('B')?.pid).map((p2) => p2.pid)
+    if (foreign.length !== 0) forensicScene('failure cleanup (a): a refused change left new processes', [a.pid, assembly.current('B')?.pid ?? -1], 'every live lane process belongs to A or B', { foreign, expected: [a.pid, assembly.current('B')?.pid ?? null] })
+    expect(foreign).toEqual([])
   }, 60_000)
 
   it('failure cleanup (b): a mid-change failure (readiness never comes) leaves ZERO residual pids/handles', async () => {
@@ -313,12 +401,16 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const r = await assembly.policyChange('A', 'gBROKEN')
     expect(r.ok).toBe(false)
     // the OLD instance was disposed first (destroy→rebuild semantics) and is OS-gone
-    expect(await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)).toBe(true)
+    const oldGoneB = await pollUntil(() => !pidAlive(oldPid), POLL_CEILING_MS)
+    if (!oldGoneB) forensicScene('failure cleanup (b): the disposed pid is still alive after the ceiling', [oldPid, b.pid], 'old pid gone within the ceiling', { oldPid, siblingPid: b.pid, ceilingMs: POLL_CEILING_MS })
+    expect(oldGoneB).toBe(true)
     // the half-built instance was cleaned: current(A) is EMPTY, not a dead handle
     expect(assembly.current('A')).toBeUndefined()
     // zero-residue sampling: the ONLY live lane processes left are the sibling B
     const live = sampleLaneProcesses(world)
-    expect(live.map((p2) => p2.pid).filter((pid) => pid !== b.pid)).toEqual([])
+    const residual = live.map((p2) => p2.pid).filter((pid) => pid !== b.pid)
+    if (residual.length !== 0) forensicScene('failure cleanup (b): residual pids/handles', [oldPid, b.pid], 'no live lane process other than the sibling', { residual, ceilingMs: POLL_CEILING_MS })
+    expect(residual).toEqual([])
     // sibling untouched and still answering
     expect(assembly.current('B')?.pid).toBe(b.pid)
     const pb = await ping(assembly.current('B')!, 7)
@@ -336,8 +428,12 @@ describeReal('a5lsp2 assembly REAL — per-(member×generation) lifecycle on the
     const aPid = a2.value.pid
     const all = await assembly.disposeAll()
     expect(all.ok).toBe(true)
-    expect(await pollUntil(() => !pidAlive(aPid) && !pidAlive(bPid), POLL_CEILING_MS)).toBe(true)
-    expect(await pollUntil(() => sampleLaneProcesses(world).length === 0, POLL_CEILING_MS)).toBe(true)
+    const pidsGone = await pollUntil(() => !pidAlive(aPid) && !pidAlive(bPid), POLL_CEILING_MS)
+    if (!pidsGone) forensicScene('disposeAll: an instance pid is still alive after the ceiling', [aPid, bPid], 'both instance pids gone within the ceiling', { aPid, bPid, ceilingMs: POLL_CEILING_MS })
+    expect(pidsGone).toBe(true)
+    const worldQuiet = await pollUntil(() => sampleLaneProcesses(world).length === 0, POLL_CEILING_MS)
+    if (!worldQuiet) forensicScene('disposeAll: lane processes still sample from this world after the ceiling', [aPid, bPid], 'sampleLaneProcesses(world) empty within the ceiling', { aPid, bPid, ceilingMs: POLL_CEILING_MS })
+    expect(worldQuiet).toBe(true)
     expect(assembly.current('A')).toBeUndefined()
     expect(assembly.current('B')).toBeUndefined()
   }, 120_000)
