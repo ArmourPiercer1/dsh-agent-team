@@ -1,0 +1,50 @@
+{
+  "raceIterations": 5000,
+  "realRaceWalks": 6600,
+  "statesSwapped": [
+    "real",
+    "link"
+  ],
+  "anchorAccepted": 2500,
+  "anchorRefused": 2500,
+  "hostileEntriesAccepted": 0,
+  "leaks": 0,
+  "realRaceRefusals": {
+    "symlink-alias": 3300
+  },
+  "verdictCodes": [
+    "inside",
+    "symlink-alias",
+    "A6:anchor-drift"
+  ],
+  "finalAttackerState": "real",
+  "liveWitness": {
+    "real": 5801,
+    "link": 5800,
+    "contended": 0,
+    "okWhileReal": 3300,
+    "okWhileLink": 0,
+    "refusedWhileLink": 3300,
+    "refusedWhileReal": 0
+  },
+  "spillProbe": {
+    "walks": 6600,
+    "admittedWithBytes": 3300,
+    "refusedWithBytes": 0,
+    "attributionMismatch": 0,
+    "canaryInChannel": 0,
+    "bytesTotal": 49500,
+    "walksPerBackendRun": 1
+  },
+  "allChannelProbe": {
+    "walks": 6600,
+    "auditLines": 6601,
+    "internalLines": 3300,
+    "exceptionStrings": 0,
+    "detailsFromTable": 3300,
+    "wireTokenHits": 0,
+    "watchedTokens": 5,
+    "internalWatchedTokens": 2
+  },
+  "sinkWriteSitesAudited": "one, after the verdict (see row test X5)"
+}
