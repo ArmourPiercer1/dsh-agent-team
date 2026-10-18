@@ -315,6 +315,13 @@ jobs:
           set -euo pipefail
           node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/census-run.txt"
 
+      # What to read when this job is red: `census-run.txt` first (the gate's own
+      # channel: the DSH-CI tokens, the graded identity sets, and — since the
+      # 2026-10-18 forensics round — the FULL stdout of every failed command,
+      # line-marked with `| `, so a leg's own failure scene (`a5lsp2 FORENSIC`
+      # blocks, `a5glb L3 MEASURED` lines) is in the artifact and not only in the
+      # per-command files under `census-transcripts/`, which stay the complete,
+      # uncut copies.
       - name: Upload census transcripts
         if: always()
         uses: actions/upload-artifact@v4

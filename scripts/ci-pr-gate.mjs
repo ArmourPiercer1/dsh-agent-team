@@ -1201,6 +1201,31 @@ function main(argv) {
         r.stderr,
       ].join('\n')
       process.stdout.write(`  [${label}] exit=${String(r.code)} ${tail(r.stdout + r.stderr, 3)}\n`)
+      // FAILED RUN: echo the whole captured stream into THIS transcript (added
+      // 2026-10-18, census forensics round). A leg that prints its own failure
+      // scene — the `a5lsp2 FORENSIC` block (PSI/loadavg, per-pid /proc state and
+      // cmdline, world scan), or a `a5glb L3 MEASURED` kernel-scope line — used to
+      // have that scene land only in `census-transcripts/<label>.txt`, while the
+      // file a reader actually greps is `census-run.txt`: the tee'd stdout of this
+      // script, uploaded beside those transcripts as
+      // `census-runtime-transcripts-<run>` (.github/workflows/census-runtime.yml
+      // "Upload census transcripts"). Here it stayed a three-line tail, so a red
+      // census reached the reader with zero forensic lines. On a FAILED command the
+      // full captured stdout+stderr is now echoed, every line behind a `| ` marker
+      // — the marker is load-bearing, not cosmetic: `checkTranscript` grades THIS
+      // file by `^DSH-CI-LEG` / `^DSH-CI-VERDICT` anchors and counts them, and an
+      // echoed line must never be able to impersonate a token. Grading is untouched
+      // (verdicts, ids, tokens, baselines, captures all computed before and after
+      // this line): this is transcription, not a semantic change. Green runs echo
+      // nothing, so a passing census stays exactly as quiet as it was.
+      if (r.code !== 0 || (r.error !== null && r.error !== undefined)) {
+        const ECHO_CAP = 400_000
+        const full = `--- stdout ---\n${r.stdout}\n--- stderr ---\n${r.stderr}`
+        const body = full.length > ECHO_CAP
+          ? `${full.slice(0, ECHO_CAP)}\n(echo truncated at ${String(ECHO_CAP)} characters; the complete text is in the uploaded transcript ${transcriptDir === null ? '<transcripts not enabled>' : `${label}.txt`})`
+          : full
+        process.stdout.write(`${body.split('\n').map((line) => `| ${line}`).join('\n')}\n`)
+      }
       if (transcriptDir === null) return
       writeFileSync(join(transcriptDir, `${label}.txt`), `${text}\n`)
     },

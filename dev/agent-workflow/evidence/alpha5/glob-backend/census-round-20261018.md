@@ -161,3 +161,35 @@ note 随内核而变，不再是一句写死的话），文件已随本轮重生
 
 **验证**：L3 单跑绿；全对（49+8=57）×2 绿；`parity-table.json` 两次逐字节相同；
 `adversarial-counters.json` 未变；`tests/homes` 残留 0；eslint clean。
+
+## 8. 取证上链：失败命令的完整 stdout 现在进 census-run.txt
+
+现象：`1b44da20` 上 lsp2 cleanup(a)/(b) 两红，但 CI 里 **FORENSIC=0**。查到的不是"取证没跑"，
+而是**通道断在门自己的转写里**：`ctx.capture()`（scripts/ci-pr-gate.mjs:1194）把命令的完整
+stdout/stderr 写进 `census-transcripts/<label>.txt`，而进 `census-run.txt`（工作流 tee 的那份、
+也是人实际 grep 的那份）只有 `tail(…, 3)` 三行——取证块正好被这三行埋掉。
+
+**最小笔**（门语义零动，只加转写）：`capture()` 里，**仅当命令失败**（`code !== 0` 或有 spawn error）
+时把该命令的完整 stdout+stderr 逐行回显进门自己的 stdout，每行前面加 `| ` 标记；
+绿跑一字不多。`| ` 不是装饰：`checkTranscript` 用 `^DSH-CI-LEG` / `^DSH-CI-VERDICT` **锚点**给
+这份文件重新定级并计数，被回显的行绝不能长得像 token。超限（400 000 字符）时截断并指名
+完整文本所在的 transcript 文件名。`.github/workflows/census-runtime.yml` 的
+`Upload census transcripts` 步上方加"红了先读什么"的注释（artifact
+`census-runtime-transcripts-<run>` = `census-run.txt` + `census-transcripts/`）。
+
+**没加 `--reporter=verbose` 的理由**（父单给的另一选项）：它不增加内容——vitest 的 worker
+console 转发与 reporter 无关，实测同一条 `process.stdout.write` 已经进了 `run.stdout`——
+却会把 census-run.txt 多出约 7000 行 per-test 噪声，反而盖住 token 通道。
+
+**实测（一次性探针副本，跑完即删、未入库）**：
+1. 合成失败捕获：`a5lsp2 FORENSIC …`、`a5glb L3 MEASURED …`、PSI 行逐行带 `| ` 出现在门输出里；
+   并在回显内容里故意塞一行 `DSH-CI-VERDICT pass …`——`--check-transcript` 对该转录仍判
+   `class=ok :: 1 leg(s), final token pass`（锚点没被伪造）；
+2. **真实 vitest** 走同一 capture 路径（把退出码伪造成 1 以触发回显）：a5p4 腿用
+   `process.stdout.write` 打的那行 `a5p4 law(4) live named provider mounts on this tree:
+   runtime/src/plugin/live/glob-backend.mjs , …/plane-effect-backends.mjs` 带 `| ` 出现 ⇒
+   链路 worker→run.stdout→census-run.txt 打通；
+3. `node scripts/ci-pr-gate.mjs --self-test`：`pass 59 assertions` 不变；eslint clean。
+
+于是下一次 census 若这两腿再红，artifact 里就有 CI 侧硬事实（PSI/loadavg、每个被盯 pid 的
+`/proc` 状态与 cmdline、world 递归计数），判因不再靠猜：CPU 挤占 vs teardown 真缺陷。
