@@ -752,9 +752,22 @@ export function createAnchoredGlobBackend(options) {
   const provider = createConfinedProcessProvider({
     realmId,
     trustRoot: confined?.trustRoot ?? null,
-    // The provider writes its scratch PARENT-side; rooted inside the governed
-    // root it would show up in every walk result, so it is refused here.
-    scratchRoot: typeof confined?.scratchRoot === 'string' && confined.scratchRoot.length > 0 ? confined.scratchRoot : '',
+    // The provider writes its scratch PARENT-SIDE; rooted inside the governed
+    // root it would show up in every walk result (probe-cwd measured), so the
+    // DEFAULT is a sibling of the root and never the root itself — the exact
+    // law the search row ships (search-backend.mjs :590-596) and the shape
+    // `plane-effect-backends.mjs` :357 already defaults to. The public
+    // contract (docs/INSTALL.md §3.5) carries NO scratchRoot key, so
+    // defaulting this to '' refused every default-form install once the
+    // provider gate made '' a typed refusal (#337 law); root's production
+    // compatibility audit (23:12Z, off the #346 glob-off README) ruled the
+    // default a production transport bug, fixed HERE, not a contract change.
+    // An EXPLICIT string value passes through untouched: the provider's gate
+    // (empty/relative -> typed IO_POLICY_UNSUPPORTED) is the law and is NOT
+    // weakened — only a never-valid default became the valid sibling form.
+    scratchRoot: typeof confined?.scratchRoot === 'string'
+      ? confined.scratchRoot
+      : `${rootDir}.a5g7-glob-scratch`,
     ...(confined?.runnerCommand === undefined ? {} : { runnerCommand: confined.runnerCommand }),
     assembly: confined?.assembly ?? {},
   })

@@ -113,3 +113,18 @@ fuse=**250ms**（cap 同源常数 GLOB_STDERR_DRAIN_MS）：记录在 launcher �
 **修后 census 形复跑**：verdict=**pass**，"identity set IDENTICAL to the published baseline"（merge 前 kit 修后跑 `census-local-run2.txt` 586f/7401l×2；merge-round-3 后终跑 `census-local-final2.txt` 588f/7425l×2 恒等集，pindir 24 腿入语料）。口径按根定稿：**census 判"失败身份集不新增"，非"全套测试零失败"**——基线语料本就载有 558 文件族既有语境红（p6t3-restart 等），pass = 相对已发布基线身份集零新增红，全量跑内语境红照常存在且被基线吸收。
 
 **merge-round-3（ca7ab2ab #344）后终跑暴露的 1 枚 census 语境红（已归因，非本分支产物）**：p4t6 coverage 腿在 capture-2 单捕红 `expected 1206 to be 1204`。机理实查=a4p7-merge-gate 的 lint-scratch 控制腿**瞬时**在 `packages/testkit/test/` 写 2 枚 `.mts` 控制文件（a/b，finally 即删——现树零泄漏），p4t6 扫描器在 capture-2 恰落入该窗（同文件在 capture-1=绿 1204；单跑 10/10=绿 1204 `merge7-p4t6-green.log`；扫描器只跳 node_modules/dist/.tmp-fault，控制文件不可跳——它必须进 lint universe 才成立，挪不得）。分类=**census 并发语境文件形竞态**（两 master 侧仪器互相瞬时可见，#342/#344 绿=竞态未落，本盘 24 核并行更易落；历次 10 捕获仅落 1 次）。非产品链、非缺键族、词表审计零命中；根治需动 master 侧仪器时序（p4t6 扫描时机），越 #337 职权，只报不擅动。
+
+## 生产 scratchRoot 兼容核查（根 23:12Z 单，#346-README 疑点收口）
+**①静态链表（默认形=公开契约 INSTALL.md §3.5 :424-438，confinedProvider 无 scratchRoot 键）**
+| 跳 | 位置 | 缺省实值 |
+|---|---|---|
+| 装配入口 | agent-bindings.mjs :2424 `planeCfg=config.teamToolPlane` | 原样透传 |
+| 平面构造 | team-tool-plane.mjs :586 `createAnchoredGlobBackend({confined: confinedCfg})` | 装配层不注入键 |
+| **glob 行（本件主角）** | glob-backend.mjs :757（修复前） | **`''`→provider 入口拒→行 confined-unavailable = 默认可用性回归** |
+| search 行 | search-backend.mjs :594-596 | `${rootDir}.a5srgp-search-scratch`（兄弟旁系，合法） |
+| plane-effect glob 行 | plane-effect-backends.mjs :357 | `${rootDir}.a5g7-glob-scratch`（兄弟，合法——但非 team_glob 装配口） |
+| shell 行 | plane-effect-backends.mjs :649 | `cwdRoot(=rootDir 绝对) ?? workingDir`（非空可过 gate；落治理根=旧披露形，非本单新增） |
+
+**②真装正控（RED→GREEN 实录）**：`a5-scratch-default.test.ts`（生产函数 createTeamToolPlaneAssembly + 真 launcher + 真 packaged rg，conf=INSTALL.md §3.5 原样无键，两 seed 必真实返回）。修复前 **RED**：D1 `confined-unavailable`（正控红=生产回归实锤，`compat1-scratch-default-RED.log`）；修复后 **GREEN** 5/5（`compat1-scratch-default-GREEN.log`）。
+**③裁决口径**：公开契约文本**不要求**显式 scratchRoot（§3.5 实文即默认形）→ 缺省传 '' 属**生产传递 bug**，修在装配层（glob 行缺省=治理根**旁系** `${rootDir}.a5g7-glob-scratch`，与 search 行 :590-596 同律、与 plane-effect 行 :357 同形；治理根**内**落 scratch=行注释与 104b4991 泄漏账反对的 walk 污染形，故取旁系——"治理根内有效绝对路径"按此执行并在此披露）。**不放宽拒空**：显式 `''`/相对值原样透传 provider 门，typed 拒（D3/D4 钉）；显式有效值规则不变（D5）。四夹具补键不回退（显式键仍有效）。
+**④入账**：正控新件入 p4t6，亲数 `expected 1206 to be 1205`（`compat2-p4t6-red-measure.log`）→ 链 **1206**（G6B 账扩两文件）。回归邻域十二套件+provider 全绿零动。
