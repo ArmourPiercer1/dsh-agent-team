@@ -470,6 +470,7 @@ config:
   template-deny-lane 按各层 precedence）。Leader 侧闭环需 envelope 携带
   `request-control` / `resolve-control` 操作与审批工具面（见 blueprint
   authoring 指南的审批环约定）。
+- **闭合范围限定**：native 审批后执行闭合=限明确安装配置（cordis.patch.yml §3.2 takeover 行），不代表全工具总验收。
 
 ## 4. 真实模型
 

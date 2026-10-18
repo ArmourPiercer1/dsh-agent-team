@@ -2539,12 +2539,10 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/runtime/test/alpha5-search-harness.ts',
       'packages/runtime/test/alpha5-search-backend.test.ts',
     ]
-    // alpha5-int-r3 (branch `alpha5-int-r3`, DECLARATIVE REHEARSAL of PR #330's
-    // candidate head 3f78fcce on master 15481988): the integration round's own leg
-    // file — the two integration conditions of the mount flip (allowPaths same-shape
-    // across the glob/search/shell rows; the internal log never reaching a
-    // member-visible sink) plus the flip-coverage and matrix-name legs. One new
-    // scannable path, owned by this round.
+    // alpha5-int-r3 (rehearsal branch, replayed onto merged master 1962f879 after #330
+    // landed): the integration round's own leg file — the two integration conditions of
+    // the mount flip (allowPaths same-shape across glob/search/shell; the internal log
+    // never reaching a member-visible sink) plus flip-coverage and matrix-name legs.
     const SCANNED_PATHS_A5INTR3: readonly string[] = [
       'packages/runtime/test/a5int-r3-mount-integration.test.ts',
     ]

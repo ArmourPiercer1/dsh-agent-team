@@ -317,11 +317,15 @@ jobs:
 
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the
-      # 2026-10-18 forensics round — the FULL stdout of every failed command,
-      # line-marked with `| `, so a leg's own failure scene (`a5lsp2 FORENSIC`
-      # blocks, `a5glb L3 MEASURED` lines) is in the artifact and not only in the
-      # per-command files under `census-transcripts/`, which stay the complete,
-      # uncut copies.
+      # 2026-10-18 forensics round — a BOUNDED key-line echo per failed command:
+      # only `FORENSIC|MEASURED` hit lines are echoed (a leg's own failure scene:
+      # `a5lsp2 FORENSIC` blocks, `a5glb L3 MEASURED` lines), line-marked with
+      # `| `, hard-capped at 200 lines (head+tail split) x 300 chars/line x
+      # 24,000 bytes total; when lines are dropped an `echo capped` note says so.
+      # The echo ends with a `full capture:` pointer naming the per-command file
+      # under `census-transcripts/` — those stay the complete, uncut copies (the
+      # caps live in scripts/ci-pr-gate.mjs: ECHO_LINE_LIMIT/ECHO_LINE_CAP/
+      # ECHO_BYTE_CAP, pinned by that file's own bound-by-construction legs).
       - name: Upload census transcripts
         if: always()
         uses: actions/upload-artifact@v4
