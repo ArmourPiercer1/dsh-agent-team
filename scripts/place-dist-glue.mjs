@@ -61,6 +61,17 @@ export const PLACEMENTS = [
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).
   {
+    src: 'packages/runtime/src/plugin/live/glob-backend.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs',
+  },
+  // A5-SRGP search row (byte-copied for the same reason as the glob row: the
+  // plane's search row delegates to it by a relative in-face specifier, so the
+  // shipped face must carry it).
+  {
+    src: 'packages/runtime/src/plugin/live/search-backend.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs',
+  },
+  {
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
   },
