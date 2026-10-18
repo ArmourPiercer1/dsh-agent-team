@@ -55,3 +55,33 @@ wire exit=0（LAUNCHER 码）——"非空 stderr 即 ERROR 是 rc 缺席下的�
 需换捕获点（provider 侧 argv 或在旁路装配里传固定 out-dir）。51 腿全量 = 移交产品实现轮回归附带（planned）。
 教训一行：**凡直调 rg 必走行层解析式**（`resolveRgPath()`），裸 shell 无 rg；且**夹具隔离**（不可读目录不得
 与搜索根同 world），否则 rc 表整体失真。
+
+## round-6 收官：三点一线成立（决定性样本），直调表仍不成立（我的工装问题，如实）
+
+**③ 三点一线（本轮最重要的产物，同一次行层走查内三点互证）**
+| 形 | wire（行层内部面） | rg 原词（逐字，redact 后） | 同次 `exit.json` | scratch 锚 |
+| --- | --- | --- | --- | --- |
+| `[unclosed` | `exit=0`（LAUNCHER 常量完成律），`ok=false code=walker-error` | `rg: error parsing glob '[unclosed': unclosed character class; missing ']'` | **`{"pid":132,"rc":2}`** | `out/plan-mve8b1ti-c7cjse`（计数 +1 = 当次唯一性锚成立） |
+| `*.txt`（有匹配） | `ok=true`，内部面为空 | （无——正常走查不说话） | **`{"pid":142,"rc":0}`** | `out/plan-mve8b1zu-4jtg0u`（+1） |
+
+⇒ **payload 的真实 rg 退出码在带外（exit.json）就在场且正确（2 vs 0），而 wire 恒 0**。
+"B 路线（结构化结束状态）优于『非空 stderr 即 ERROR』代理判据"这一条，现在有**同次三点互证**的样本。
+捕获点（无需改产品码）：本套装配 `scratchRoot` 缺省 = `ROOT_DIR`，故 `out/<plan-*>` 最新目录即当次；
+采集前后目录计数 +1 作为唯一性锚；读其中 `exit.json`。
+
+**① 干净 0/1/权限格：仍然不成立——但这次是我方工装失效，不是 rg 语义。**
+四格各自独立 world（`r6b-rc0/`、`r6b-rc1/`、`r6b-perm/`、`r6b-rc2/`，perm 的 chmod 000 目录在其根内），
+argv 为行层同款 `--files -g <P> --no-ignore --json <ROOT>`、rg 取 `resolveRgPath()` 绝对路径。结果：
+rc0/rc1/rc2/perm 四格**全部 rc=2**，且 rc0/rc1 格的 stderr 里出现的是 **perm world 的路径**
+（`rg: ./tests/homes/r6b-perm-…/root/locked: Permission denied (os error 13)`）——**跨 world 串写**。
+⇒ 我的 `execFileSync` 直调工装在同一进程内不可信（错误对象/stderr 缓冲串扰，或 argv 组装缺陷），
+**这张表不得用作 rg 退出码语义证据**；数据原样入 `corpus.jsonl` 未改。
+下一手若要这张表：每格起**独立进程**（一次 execFileSync 一个子进程 → 或直接跑 rg 二进制到临时文件再读），
+或者干脆用行层三点一线这条已验证的路线替代直调（带外 rc 已经足够）。
+
+**终判：来源全证 = 部分成立（决定性样本已在手，工程表格仍缺）。**
+成立：rc2 与 rc0 两格的**同次三点一线**（wire exit / rg 原词 / 带外 rc），即"代理判据可用但会把 rc=1/note 族误判成 ERROR，
+而带外 rc 能分开"这一机制判断，已有原文级样本。
+剩余格清单：①干净的 rc=1（无匹配）与权限格的**直调**表（工装需改为单进程单次）；②rc=1 的三点一线样本
+（预期 exit.json rc=1，行层现形应判 ok=true 且 stderr 空——这条一旦取到，代理判据的误判面就完整了）；
+③51 腿全量（planned，移交产品实现轮回归附带）。
