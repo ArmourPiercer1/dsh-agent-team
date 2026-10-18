@@ -92,7 +92,7 @@
  */
 
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -290,6 +290,116 @@ function runCommand(command, args, opts = {}) {
 function tail(text, n = 12) {
   const lines = String(text).split('\n').filter((l) => l.trim().length > 0)
   return lines.slice(Math.max(0, lines.length - n)).join(' | ')
+}
+
+// ── BOUNDED failure transcription (2026-10-18, second draft) ─────────────────
+// The first draft of this echoed the WHOLE captured stdout of a failed command.
+// On a real census that is 210-215 KB per capture: `census-run.txt` stopped at
+// 65,953 bytes — the first 64 KiB of one write — and the gate never printed a
+// DSH-CI-LEG line or a VERDICT, because the write to a pipe whose reader had
+// gone back EPIPE on a stream with no 'error' handler killed the gate process
+// between its captures and its verdict. The transcript that carries the verdict
+// is the one a reader grades, so a flood on the transcription channel destroyed
+// the grading channel. Teeth: the census's red IDENTITY SETS were already
+// computed and are untouched by any of this.
+//
+// So: on a failed command the gate echoes back only the lines a reader is
+// actually looking for — a leg's own forensic scene (`a5lsp2 FORENSIC`) or a
+// measured-kernel fact (`a5glb L3 MEASURED`) — under hard bounds (lines, bytes
+// per line, total bytes), then a pointer to the complete capture, which was
+// always in `census-transcripts/<label>.txt` inside the uploaded artifact
+// `census-runtime-transcripts-<run>`. A green run still writes nothing.
+//
+// The `| ` prefix is load-bearing, not cosmetic: `checkTranscript` re-grades
+// this very file through the anchors `^DSH-CI-LEG` / `^DSH-CI-VERDICT` and
+// counts them, so an echoed line must never be able to start a token. Both
+// directions are pinned in `--self-test`.
+export const ECHO_MARK = '| '
+/** Only these lines of a failed command's output are worth the transcript. */
+export const ECHO_PATTERN = /FORENSIC|MEASURED/
+/** Hard bounds. All three must hold; `--self-test` proves they do. */
+export const ECHO_LINE_LIMIT = 200
+export const ECHO_LINE_CAP = 300
+export const ECHO_BYTE_CAP = 24_000
+
+/**
+ * The lines a failed capture contributes to the gate's own transcript. PURE on
+ * purpose — no I/O — so the bounds above are provable by `--self-test` without
+ * a pipe to flood. Returns [] for anything that did not fail.
+ */
+export function failureEchoLines(label, r, transcriptsEnabled) {
+  const failed = r.code !== 0 || (r.error !== null && r.error !== undefined)
+  if (!failed) return []
+  const safeLabel = String(label).replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 60)
+  const pointer = transcriptsEnabled
+    ? `${ECHO_MARK}full capture: census-transcripts/${safeLabel}.txt (artifact census-runtime-transcripts-<run>)`
+    : `${ECHO_MARK}full capture: transcripts not enabled; rerun with --transcript-dir for the complete capture`
+  const note = (dropped) => `${ECHO_MARK}echo capped: ${String(dropped)} matched line(s) not echoed (line/byte caps)`
+  const all = `${String(r.stdout)}\n${String(r.stderr)}`.split('\n').filter((l) => ECHO_PATTERN.test(l))
+  // When there are more matches than the bound, keep BOTH ends: a flood in the
+  // middle must not be able to hide the scene printed just before the failure,
+  // and the first one is what usually names the leg that broke.
+  const head = Math.ceil(ECHO_LINE_LIMIT / 2)
+  const tailN = Math.floor(ECHO_LINE_LIMIT / 2)
+  const hits = all.length <= ECHO_LINE_LIMIT
+    ? all
+    : [...all.slice(0, head), ...all.slice(all.length - tailN)]
+  const out = []
+  let used = pointer.length + note(Math.max(all.length, 1)).length + 2
+  for (const hit of hits) {
+    const line = hit.length > ECHO_LINE_CAP ? `${hit.slice(0, ECHO_LINE_CAP)}…[line capped]` : hit
+    const cost = line.length + ECHO_MARK.length + 1
+    if (used + cost > ECHO_BYTE_CAP) break
+    used += cost
+    out.push(`${ECHO_MARK}${line}`)
+  }
+  const dropped = all.length - out.length
+  if (dropped > 0) out.push(note(dropped))
+  out.push(pointer)
+  return out
+}
+
+/**
+ * One echo line, written synchronously to fd 1 so a dead reader surfaces HERE,
+ * at the transcription call, instead of as an async 'error' event on a stream
+ * nobody is listening to (which is what killed the 2d3e9c76 census). Only
+ * EPIPE/EOF are swallowed — a reader that hung up on a transcription line must
+ * not be able to take the verdict down with it. Anything else rethrows, loudly.
+ * Returns false once the reader is gone, so the caller stops echoing.
+ */
+export function writeEchoLine(line) {
+  const buf = Buffer.from(`${line}\n`, 'utf8')
+  let off = 0
+  while (off < buf.length) {
+    let n
+    try {
+      n = writeSync(1, buf, off)
+    } catch (err) {
+      const code = String(err?.code ?? '')
+      if (code === 'EPIPE' || code === 'EOF') return false
+      throw err
+    }
+    if (n <= 0) return false
+    off += n
+  }
+  return true
+}
+
+/**
+ * Last-resort guard for the gate's OTHER writes: a reader that disappears
+ * mid-run may not crash the process before it states its verdict. EPIPE/EOF
+ * only — any other stream error still propagates — and losing a write is never
+ * silent in CI: the workflow re-grades the transcript by the missing-token
+ * rule, so a transcript whose verdict got lost fails as `missing-token` rather
+ * than passing quietly. Grading itself happens before any of these writes.
+ */
+export function guardStdout(stream) {
+  stream.on('error', (err) => {
+    const code = String(err?.code ?? '')
+    if (code === 'EPIPE' || code === 'EOF') return
+    throw err
+  })
+  return stream
 }
 
 // ──────────────────────────────────────────────────────────────────────────── baselines ──────
@@ -1130,6 +1240,12 @@ function shapeFromReport(jsonPath) {
 }
 
 function main(argv) {
+  // A reader that hangs up on the transcript (the `| tee` of a CI step) must not be
+  // able to kill the gate before it states its verdict — that is exactly how the
+  // 2d3e9c76 census produced a transcript with zero DSH-CI-LEG lines. EPIPE/EOF
+  // only; every other stream error still propagates. See guardStdout.
+  guardStdout(process.stdout)
+  guardStdout(process.stderr)
   const opts = parseArgs(argv)
 
   if (opts.help) {
@@ -1201,30 +1317,11 @@ function main(argv) {
         r.stderr,
       ].join('\n')
       process.stdout.write(`  [${label}] exit=${String(r.code)} ${tail(r.stdout + r.stderr, 3)}\n`)
-      // FAILED RUN: echo the whole captured stream into THIS transcript (added
-      // 2026-10-18, census forensics round). A leg that prints its own failure
-      // scene — the `a5lsp2 FORENSIC` block (PSI/loadavg, per-pid /proc state and
-      // cmdline, world scan), or a `a5glb L3 MEASURED` kernel-scope line — used to
-      // have that scene land only in `census-transcripts/<label>.txt`, while the
-      // file a reader actually greps is `census-run.txt`: the tee'd stdout of this
-      // script, uploaded beside those transcripts as
-      // `census-runtime-transcripts-<run>` (.github/workflows/census-runtime.yml
-      // "Upload census transcripts"). Here it stayed a three-line tail, so a red
-      // census reached the reader with zero forensic lines. On a FAILED command the
-      // full captured stdout+stderr is now echoed, every line behind a `| ` marker
-      // — the marker is load-bearing, not cosmetic: `checkTranscript` grades THIS
-      // file by `^DSH-CI-LEG` / `^DSH-CI-VERDICT` anchors and counts them, and an
-      // echoed line must never be able to impersonate a token. Grading is untouched
-      // (verdicts, ids, tokens, baselines, captures all computed before and after
-      // this line): this is transcription, not a semantic change. Green runs echo
-      // nothing, so a passing census stays exactly as quiet as it was.
-      if (r.code !== 0 || (r.error !== null && r.error !== undefined)) {
-        const ECHO_CAP = 400_000
-        const full = `--- stdout ---\n${r.stdout}\n--- stderr ---\n${r.stderr}`
-        const body = full.length > ECHO_CAP
-          ? `${full.slice(0, ECHO_CAP)}\n(echo truncated at ${String(ECHO_CAP)} characters; the complete text is in the uploaded transcript ${transcriptDir === null ? '<transcripts not enabled>' : `${label}.txt`})`
-          : full
-        process.stdout.write(`${body.split('\n').map((line) => `| ${line}`).join('\n')}\n`)
+      // A FAILED command contributes its bounded key lines to this transcript (see
+      // failureEchoLines for the whole reasoning: the unbounded version of this
+      // block is what destroyed the 2d3e9c76 census). Green commands write nothing.
+      for (const line of failureEchoLines(label, r, transcriptDir !== null)) {
+        if (!writeEchoLine(line)) break
       }
       if (transcriptDir === null) return
       writeFileSync(join(transcriptDir, `${label}.txt`), `${text}\n`)
@@ -1506,6 +1603,34 @@ function selfTest() {
   ok(checkTranscript('DSH-CI-LEG leg=a verdict=pass\nDSH-CI-LEG leg=b verdict=pass\nDSH-CI-VERDICT pass pass=2 fail=0 skip=0 skipped=none legs=2\n').verdict === 'pass', 'two-leg pass parses')
   ok(checkTranscript('DSH-CI-VERDICT pass pass=3 fail=0 skip=0 skipped=none legs=3\nDSH-CI-LEG leg=a verdict=pass\n').verdict === 'fail', 'a transcript that lost a leg line fails (the run stopped mid-leg)')
   ok(checkTranscript('DSH-CI-LEG leg=a verdict=fail\nDSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1\n').verdict === 'fail', 'a pass token over a failing leg fails the check')
+  // 5b. the transcript echo of a failed command: bounded, and unable to forge a token.
+  // The 2d3e9c76 census died of the unbounded version of this (a 210 KB write to a
+  // pipe whose reader had gone), so the bound is the tooth and it is pinned here.
+  const flood = {
+    code: 1, signal: null, error: null, seconds: 120,
+    stdout: `${'noise line that nobody asked for\n'.repeat(4000)}a5lsp2 FORENSIC world=w leg=cleanup (a)\n${'  a5lsp2 FORENSIC pid row\n'.repeat(5000)}a5glb L3 MEASURED confine scope: content={bytes=none}\n`,
+    stderr: 'x'.repeat(200_000),
+  }
+  const echoed = failureEchoLines('census-capture-2', flood, true)
+  ok(echoed.length > 0 && echoed[echoed.length - 1].startsWith(`${ECHO_MARK}full capture: census-transcripts/census-capture-2.txt`),
+    'a failed capture always ends its echo with the pointer to the full capture in the artifact')
+  ok(echoed.every((l) => l.startsWith(ECHO_MARK)),
+    'every echoed line carries the | prefix: an echoed line can never satisfy the ^DSH-CI- token anchors')
+  ok(echoed.reduce((n, l) => n + l.length + 1, 0) <= ECHO_BYTE_CAP && echoed.length <= ECHO_LINE_LIMIT + 2,
+    `the echo is bounded by construction (${ECHO_LINE_LIMIT} lines / ${ECHO_LINE_CAP} chars / ${ECHO_BYTE_CAP} bytes), so a 420 KB capture cannot flood the transcript again`)
+  ok(echoed.some((l) => l.includes('a5lsp2 FORENSIC')) && echoed.some((l) => l.includes('L3 MEASURED')),
+    'the bound still carries what a reader came for: the forensic scene and the measured-kernel line')
+  ok(echoed.some((l) => l.includes('echo capped')),
+    'when matches were dropped the echo says how many, instead of silently looking complete')
+  ok(echoed.filter((l) => l.includes('FORENSIC pid row')).length < 5000 && echoed.some((l) => l.includes('FORENSIC pid row')),
+    'a mid-stream flood is SAMPLED, not truncated from one end: the kept rows still show the scene shape')
+  ok(failureEchoLines('census-capture-1', { ...flood, code: 0, error: null, stdout: 'a5lsp2 FORENSIC x\n' }, true).length === 0,
+    'a GREEN capture still writes nothing: the normal census stays as quiet as it was before this feature')
+  const planted = `DSH-CI-LEG leg=census verdict=fail seconds=1 detail=red\n${echoed.map((l) => `${l.replace('| ', '| ')}\n`).join('')}| DSH-CI-VERDICT pass pass=99 fail=0 skip=0 skipped=none legs=99\nDSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none\n`
+  ok(checkTranscript(planted).klass === 'red-run' && checkTranscript(planted).legs.length === 1,
+    'an echoed line that SAYS DSH-CI-VERDICT is not counted by the anchors: one leg line, one token, graded red-run (the anti-forgery half)')
+  ok(checkTranscript(`${planted}DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1\n`).klass === 'duplicate-token',
+    'and the anchor still bites: a real second token in the same transcript is a duplicate-token failure')
   // …and the classes keep the two kinds of red apart: a gate that refused a tree is working, and a
   // transcript that cannot be graded is a broken instrument. Both exit 1; only one is a fault.
   ok(checkTranscript('DSH-CI-LEG leg=census verdict=fail\nDSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1\n').klass === 'red-run',

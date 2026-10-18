@@ -309,6 +309,11 @@ capture 的恒等结果都写在 **[`census-round-20261018.md`](census-round-202
   `census-run.txt`）→ 失败命令的完整 stdout 现以 `| ` 前缀逐行回显进那份 artifact；
   回显行不能伪装成 `^DSH-CI-*` token（前缀是承重件），绿跑一字不多。
 
+- **§9**：§8 那笔完整回显是洪水（420 KB+），在 64 KiB 管道边界毁掉被评分转录
+  （CI 330 = `class=missing-token`）。撤回单执行：命中行（`FORENSIC|MEASURED`）有界回显
+  （200 行 / 300 字符 / 24 KB 三重硬界、头尾各半、指针行、绿路零输出）+ 逐行同步写
+  + 只吞 EPIPE/EOF 的守卫；self-test 59→68；本机复刻 330 形状证明旧版 `missing-token`、新版 `red-run`。
+
 ## 5. 对抗腿 (`adversarial-counters.json`)
 
 > 命名说明：本文件里的 **leg 编号 A1–A8 是腿自己的编号**（早于 §2 的 law 编号），与 law A1–A8

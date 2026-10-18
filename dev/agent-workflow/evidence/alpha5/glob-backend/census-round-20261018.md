@@ -193,3 +193,44 @@ console 转发与 reporter 无关，实测同一条 `process.stdout.write` 已�
 
 于是下一次 census 若这两腿再红，artifact 里就有 CI 侧硬事实（PSI/loadavg、每个被盯 pid 的
 `/proc` 状态与 cmdline、world 递归计数），判因不再靠猜：CPU 挤占 vs teardown 真缺陷。
+
+## 9. census 330 崩溃的机制与有界回显（撤回单的执行）
+
+**先纠正我自己**：§8 那笔（2d3e9c76）把"完整 stdout 回显"当成无害转写。它是**洪水**：
+真实 census 一次 capture 就是 210-215 KB，两 capture 420 KB+，经 `| tee` 写出时在
+64 KiB 管道边界处把被评分的那份转录冲掉——`census-run.txt` 停在 65,953 B、**0 条 DSH-CI-LEG**、
+无 VERDICT ⇒ `class=missing-token`。取证通道杀掉了裁决通道。牙没掉（红身份集早就算完），
+但门的产物废了。**教训入律**：任何往被评分转录里写的东西都必须有界。
+
+**修法（门语义零动，牙不减）**：
+
+1. `failureEchoLines(label, r, transcriptsEnabled)`（**纯函数**，便于 self-test 直接证界）：
+   失败路径只回显 `FORENSIC|MEASURED` 命中行；三重硬界 `ECHO_LINE_LIMIT=200` 行、
+   `ECHO_LINE_CAP=300` 字符/行、`ECHO_BYTE_CAP=24_000` 字节/次；命中过多时**头尾各取一半**
+   （中间的洪水不得埋掉失败前那一段），并印一行 `echo capped: N matched line(s) not echoed`；
+   末尾固定指针行 `| full capture: census-transcripts/<label>.txt (artifact census-runtime-transcripts-<run>)`。
+   绿路返回 `[]`：一次通过的 census 与加这个特性之前一字不差。
+2. `writeEchoLine()`：逐行 `writeSync(1,…)`，**同步**写 ⇒ 读端已断就在这一行当场暴露，
+   不再变成没人听的异步 'error' 事件；只吞 EPIPE/EOF，其它错误照抛（转写可丢，裁决不陪）。
+3. `guardStdout()`：给 gate 自己的 stdout/stderr 装同样的"只吞 EPIPE/EOF"守卫；
+   丢写不会静默——CI 第二读手按 missing-token 规则重新定级，丢 VERDICT 必判 fail。
+4. `| ` 前缀仍是承重件：`checkTranscript` 用 `^DSH-CI-LEG` / `^DSH-CI-VERDICT` 锚点计数，
+   回显行永远不可能起一个 token；两个方向都在 self-test 里钉死。
+
+**本机复刻 330 的形状（探针副本 + 假 vitest，跑完即删）**：capture-1=published 9 红、
+capture-2=9+`a5lsp2` `failure cleanup (a)/(b)`，每 capture ~210 KB ANSI stdout：
+
+| 场景 | 结果 |
+| --- | --- |
+| 完整管道（写文件） | 到 VERDICT：`DSH-CI-LEG leg=census verdict=fail` + `DSH-CI-VERDICT fail`，`NEW RED(S) 2:` 逐名点出两条 cleanup 腿，转录重定级 `class=red-run`（忠实红跑，非仪器故障）⇒ **牙在** |
+| 回显量 | 48 行 / **12 852 B**（界内）；指针行 2 条 |
+| 读端停在 64 KiB（旧洪水版） | 转录停在 66 000 B、0 条 leg、无 VERDICT ⇒ `--check-transcript` 判 **`class=missing-token`**——与 CI 330 同类同形 ⇒ **机制复刻成功** |
+| 读端停在 64 KiB（有界版） | 全部输出 15 428 B，转录完整 ⇒ `class=red-run` ⇒ **同类不再发生** |
+
+**机制的诚实边界**：写文件时旧版照样打出 VERDICT（exit 1 是红 census 的合法码），
+所以 artifact 本身**不能证明**进程死于 EPIPE；能证明的是洪水在管道边界毁掉了被评分转录。
+两种可能（进程死 / 进程活但转录断）都被同一修法覆盖：不产洪水，且逐行写 + 只吞 EPIPE/EOF。
+
+**self-test**：59 → **68 assertions**（新增：指针行必在最后、每行带 `| `、界由构造保证、
+洪水仍保住两端的现场、绿路零输出、`| DSH-CI-VERDICT` 伪行不被锚点计数、真·重复 token 仍判
+`duplicate-token`）。eslint clean；`tests/deepseek-harness-test-use` 与 :3080 未触。
