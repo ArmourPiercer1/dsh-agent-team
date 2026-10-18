@@ -23,6 +23,13 @@
  * committed RED-first against the shipped row — the measured production
  * reds (row routes a torn-down member; re-mount throws 'already registered')
  * are reproduced at the unit seam before the fix lands.
+ * U-1b FOLLOW-UP ROUND (live runs live-2026-10-18T13-4* + T13-51-55, 2x):
+ * L-U1b was RED again — the first version flipped a `resident` boolean and
+ * never modeled that a COLD RE-MOUNT re-establishes residency on a durably
+ * ARCHIVED member. The leg now walks the PRODUCTION archive procedure (the
+ * real P7-T3 core service over the real durable domain) and pins the row
+ * against every post-archive face; the ask-time routability gained the
+ * DURABLE admissibility oracle beside the residency oracle.
  */
 import { describe, expect, it } from 'vitest'
 
@@ -43,6 +50,11 @@ type RowAssembly = {
     /** Lifecycle-fix round: the injected residency oracle (the glue passes
      *  the sync `residency.has` port). Absent = always resident (pure rows). */
     isResident?: () => boolean
+    /** U-1b follow-up round: the injected DURABLE admissibility oracle (the
+     *  glue reads the durable member lifecycle; ARCHIVED/DISPOSED ⇒ false —
+     *  residency is volatile, the durable record is the archive truth).
+     *  Absent = always admissible (pure rows). */
+    isAdmissible?: () => boolean
   }) => MemberHandle
   adjudicate: (
     memberKey: string,
@@ -310,33 +322,86 @@ describe('a5ptc-escalation-row (PTC fs half-arm synthetic leg)', () => {
     expect(h.controls.length).toBe(1)
   })
 
-  it('L-U1b archive face: the leader-archived member never gets a second durable request; dispose+drain idempotent under any order', async () => {
-    const h = harness()
-    const mod = await loadRow()
-    const row = await h.assembly
-    const router = mod.createPtcEscalationRouter()
-    let resident = true
-    const m = row.registerMember({ sessionId: 's-u1b', instanceId: 'inst-u1b', realmId: 'r1', isLeader: true, isResident: () => resident })
-    const agent = { id: 's-u1b' }
-    const off = router.registerAgent(agent, m, row)
-    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-1', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
-    expect(h.controls[0]?.kind).toBe('user-approval')
-    // ARCHIVE releases residency through the SAME sync port (quiesce.ts
-    // release-residency step) — from the row's face the drop is the law:
-    resident = false
-    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-2', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
-    expect(h.controls.length).toBe(1) // the archived member opens NO second durable request
-    // the archive's live effects dispose the Agent → the disposed face fires.
-    expect(router.onAgentDisposed(agent)).toBe(true)
-    expect(row.census().membersLive).toBe(0)
-    // ANY order of the remaining teardown faces stays a zero-throw no-op:
-    // row-stop drain disposer, a late duplicate disposed event, direct revoke.
-    expect(() => { off() }).not.toThrow()
-    expect(() => { router.onAgentDisposed(agent) }).not.toThrow()
-    expect(() => { m.revoke() }).not.toThrow()
-    expect(h.observations.filter((o) => o.event === 'member-revoked' && o.session === 's-u1b').length).toBe(1)
-    expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-3', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
-    expect(h.controls.length).toBe(1)
+  it('L-U1b archive face (PRODUCTION PROCEDURE FORM): the REAL archiveMember commits ARCHIVED durably — the archived member never routes again, NOT EVEN through a cold re-mount that re-establishes residency; restore recovers', async () => {
+    // U-1b follow-up round: the first L-U1b flipped a `resident` boolean —
+    // too weak, and that is exactly why vitest was green while the live kit
+    // stayed red (runs live-2026-10-18T12-55-53 + T13-51-55). This leg walks
+    // the PRODUCTION archive procedure instead: the real P7-T3 core service
+    // over the REAL durable domain (p7t3-helpers: five live quiesce steps →
+    // durable COMMIT_ARCHIVE through the CAS commit port), then measures the
+    // row against EVERY later face. The law being pinned: RESIDENCY is a
+    // volatile runtime map (a drop flips it, ANY later cold resume flips it
+    // BACK); the durable member lifecycle is the ARCHIVE truth. A routable
+    // ask-time face needs BOTH: resident AND durably admissible.
+    const { createLifecycleWorld, destroyWorld, P7T3_SPEC_A } = await import('./p7t3-helpers.js')
+    const world = await createLifecycleWorld('a5ptc-u1b-archive', {
+      seedMembers: [{ label: P7T3_SPEC_A.label, lifecycle: 'SETTLED', resident: true }],
+    })
+    try {
+      const h = harness()
+      const mod = await loadRow()
+      const row = await h.assembly
+      const router = mod.createPtcEscalationRouter()
+      const target = world.target(P7T3_SPEC_A.label)
+      const sid = world.childSessions[P7T3_SPEC_A.label]
+      // the DURABLE admissibility oracle — in production the glue injects a
+      // read of the real durable member row (agent-bindings:
+      // domain.repositories.memberInstances, the SAME public read the
+      // lifecycle interrupt port rides); ARCHIVED/DISPOSED ⇒ not routable.
+      const isAdmissible = (): boolean => {
+        const lc = world.recordFor(P7T3_SPEC_A.label)?.lifecycle
+        return lc !== 'ARCHIVED' && lc !== 'DISPOSED'
+      }
+      const isResident = (): boolean => world.residency.hasResidency(sid)
+      const m = row.registerMember({ sessionId: sid, instanceId: String(target.instanceId), realmId: 'r1', isLeader: false, isResident, isAdmissible })
+      const agent = { id: sid }
+      router.registerAgent(agent, m, row)
+      // positive control: the live member routes and lands allowed-once.
+      expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-1', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+      expect(h.controls.length).toBe(1)
+      // THE PRODUCTION ARCHIVE PROCEDURE (leader tool → router → the locked
+      // LifecycleService core): quiesce (close-admission, interrupt, drain,
+      // wait-quiescence, RELEASE-RESIDENCY) then the durable ARCHIVE commit.
+      const archive = await world.service.archiveMember(target)
+      expect(archive.residencyDropped).toBe(true)
+      expect(world.recordFor(P7T3_SPEC_A.label)?.lifecycle).toBe('ARCHIVED')
+      // FACE 1 — the drop itself: residency has gone false at step 5, so the
+      // ask delegates untouched (the U-1 mechanism, still true).
+      expect(await router.route({ agent, toolName: 'run_code', callId: 'u1b-call-2', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+      expect(h.controls.length).toBe(1)
+      // FACE 2 — THE LIVE RED: the durable session stays on disk; ANY later
+      // execution of the archived member cold-resumes it — residency is
+      // re-established and the host mounts a FRESH Agent object (the mount
+      // re-registers through the replace semantics). Residency says resident
+      // again; only the DURABLE lifecycle still says ARCHIVED. The row must
+      // refuse on the durable truth: delegation, zero observation, and above
+      // all NO second durable request (the measured live red opened one).
+      world.residency.markResident(sid)
+      const agent2 = { id: sid }
+      const m2 = row.registerMember({ sessionId: sid, instanceId: String(target.instanceId), realmId: 'r1', isLeader: false, isResident, isAdmissible })
+      router.registerAgent(agent2, m2, row)
+      const obsBefore = h.observations.length
+      expect(await router.route({ agent: agent2, toolName: 'run_code', callId: 'u1b-call-3', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+      expect(h.controls.length).toBe(1) // NO durable request for an archived member
+      expect(h.observations.length).toBe(obsBefore) // zero observation, zero state
+      // the LATE disposed event for the drop-step handle stays entry-identity
+      // guarded: it drops only the stale entry, never the new face.
+      expect(router.onAgentDisposed(agent)).toBe(true)
+      expect(router.liveCount()).toBe(1)
+      expect(await router.route({ agent: agent2, toolName: 'run_code', callId: 'u1b-call-3', reason: esc('workspace-write') }, passthrough)).toBe('passthrough')
+      // FACE 3 — restore through the REAL procedure (ARCHIVED → SETTLED):
+      // the durable truth reopens, the SAME live face routes again — the
+      // admissibility gate is state-derived, never a permanent lock-out.
+      await world.service.restoreMember(target)
+      expect(world.recordFor(P7T3_SPEC_A.label)?.lifecycle).toBe('SETTLED')
+      expect(await router.route({ agent: agent2, toolName: 'run_code', callId: 'u1b-call-4', reason: esc('workspace-write') }, passthrough)).toBe('allowed-once')
+      expect(h.controls.length).toBe(2)
+      // and one-shot stays one-shot on the recovered face (replay refused).
+      expect(await router.route({ agent: agent2, toolName: 'run_code', callId: 'u1b-call-4', reason: esc('workspace-write') }, passthrough)).toBe('rejected')
+      expect(h.controls.length).toBe(2)
+    } finally {
+      await destroyWorld(world)
+    }
   })
 
   it('L-U2 cold re-mount: re-entry REPLACES the stale face (no throw), the new Agent recovers allowed-once one-shot, stale identity never leaks', async () => {
