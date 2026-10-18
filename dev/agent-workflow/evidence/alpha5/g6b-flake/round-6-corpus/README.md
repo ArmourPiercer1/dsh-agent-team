@@ -102,3 +102,16 @@ rc0/rc1/rc2/perm 四格**全部 rc=2**，且 rc0/rc1 格的 stderr 里出现的�
 （=合法的"零结果"，不是错误）；权限形落 **2**（rg 把不可读目录当致命错处理），不是 1。
 ⇒ 判据地基成立：`0=成功 / 1=空结果 / 2=错`，其余（含负值、128+sig、137、缺失/损坏/未知）按约束 1 一律 fail-closed。
 直调路线的旧行（跨 world 串写 + "0 码不出现"）保留在 corpus 内并标注为**工装假象**，不作判据依据。
+
+## B-① partial-results 实测钉（rc=2 时部分结果是否流出）
+
+夹具：root 内 **两个可读 `.txt`** + 一个 `chmod 000` 子目录，pattern `*.txt`（即"必有部分结果"的形），
+行层真 argv 端到端 ×3，同次 scratchRoot 计数锚（+1）读 `exit.json`：
+
+| run | 同次 `exit.json.rc` | 行层判定 | 部分列表是否流出 | 返回文件数 |
+| --- | --- | --- | --- | --- |
+| 1 / 2 / 3 | **2 / 2 / 2** | `ok=false` `walker-error` ×3 | **false ×3** | null（无任何列表） |
+
+⇒ **现形下"错误=拒绝整个结果"成立**（钉已写入测试：`rc===2 ⇒ ok===false`，"a walk whose payload rc=2 must never present a list"）。
+如实注记其**成因**：今天的拒绝来自 SPEECH 臂（rg 对不可读目录发了 note），不是 rc-first；
+因此 rc-first 改造后**必须仍成立**——这一条被列为 B 的回归判据而非既成事实。数据入 `corpus.jsonl`（shape=`B1-partial-results-pin`）。
