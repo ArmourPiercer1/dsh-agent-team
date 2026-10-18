@@ -174,7 +174,9 @@ Five closures, each measured before it was worded:
   before/after count — payload timing irrelevant). What the payload manages to EXECUTE
   before the kill is NOT row-determined: measured, terminate's first-tick SIGTERM
   (`provider.ts:400-412`) landed before the payload's first statement ran — the recorded
-  line reads `payload-side-effect-landed=false settled-in=241ms` — so the leg RECORDS the
+  line reads `payload-side-effect-landed=false settled-in=240ms`
+  (`green-v4-b3-12legs.log:24`; the second receipt reads `239ms` —
+  `closure-b2b3.log:24`) — so the leg RECORDS the
   side-effect direction (and stamps its order vs the abort if it lands) without asserting
   either way. The honest boundary, now the wording everywhere: **spawned first, terminated
   under control, fast** — never rewritten as "never started", nor as "always ran". Scope:
@@ -216,7 +218,7 @@ Five closures, each measured before it was worded:
 
 | gate | result | log |
 | --- | --- | --- |
-| B3 spec 12 legs (C11 added; C10 fail-closed) | 12/12, EXIT=0; C10 receipt + C11 boundary line printed in-log | `green-v4-b3-12legs.log` |
+| B3 spec 12 legs (C11 added; C10 fail-closed) | 12/12, EXIT=0; C10 receipt + C11 boundary line printed in-log | `green-v4-b3-12legs.log` (re-run post-micro-order: `green-v5-micro.log`, 12/12, C11 238ms) |
 | B3+B2 together | **22/22, EXIT=0** (`CLOSURE_B2B3_FINAL=0`) | `closure-b2b3.log` |
 | glue7 + glob + glob-adversarial + search (4 files) | 111/111, EXIT=0 | `closure-glue.log` |
 | a5p5-tools suite dir (8 files, ledgers incl. dormant-audit) | 76/76, EXIT=0 | `closure-ledgers.log` |

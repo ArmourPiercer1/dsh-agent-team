@@ -248,7 +248,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     // this seam is the belt for direct/non-host callers.
     const plane = buildPlane()
     const witness = join(ROOT_DIR, `c11-witness-${Date.now().toString(36)}`)
-    const outs = join(ROOT_DIR, 'out') // the shell row's scratchRoot falls back to cwdRoot = the governed root (:648)
+    const outs = join(ROOT_DIR, 'out') // the shell row's scratchRoot falls back to cwdRoot = the governed root (plane-effect-backends.mjs:649)
     const outCount = () => (existsSync(outs) ? readdirSync(outs).length : 0)
     const outBefore = outCount()
     const done = new AbortController()
