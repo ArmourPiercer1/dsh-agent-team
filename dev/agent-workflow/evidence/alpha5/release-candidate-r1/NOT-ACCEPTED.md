@@ -20,7 +20,7 @@
 ## C. 在册待办 / 环境项（不阻塞今日试用，但如实报）
 
 10. **`a5ie-r4-b2` 真装面 B2 复跑证据未入仓**：冻结 tag `a5ie-r4-b2-evidence`=`b071b4f5`（本地），候新 master 重放呈小 PR（台账 14:0xZ）。装面 A7 翻形 `exit=1` 的官方收据今天仍以该 tag 存在。
-11. **`a5ie-r5` = #340/#334 合后真安装验收「真跑进行中」**（#341-① 刷新，非"备而不跑"；0.5.5 派单 58a7367a）：分支 `a5ie-r5`@`1c490667`（merge 含 5885e46e），runs `E/a5ie-r5/runs/2026-10-18T20-29-14Z/`（实况观察=三世界安装绿/双实例在跑〔3184+3491 实占，故本审计轮 r6b 换 3185/3186/3492〕/cancel-leg.json 在场；终态以执行方回报为准）。本轮 ④ = 最小 smoke（+M9 见证腿），不等价于 r5。
+11. **`a5ie-r5` = 真安装全量验收已跑：40/41+3 booked，唯一红 C1（#341 补修收账，判据未降）**：入账 `a5ie-r5`@`c44f51e4`（runs `2026-10-18T20-36-13Z`）；**C1=取消腿装面端到端未达**——cancel RPC 命中成员 sleep-90 lane（E1 判别器 ≤5s 触发、http=200）仍落死亡形（`exit=not-observed cancelled=false`+模型见 `Error: tool call aborted`），`bash · cancelled`/`"cancelled":true` 未在装面 team lane 端到端出现 ⇒ **#340"已合"≠装面端到端已通**（红在册未闭，归取消链路线；早先"真跑进行中"行由本行收账取代）。本轮 ④ = 最小 smoke（+M9 见证腿），不等价于 r5。
 12. **census 工件上传强化脚本**（capture log 作 artifact 上传）=待根批准，独立小 PR（06:2xZ；即任务单所称"re-grade 上传封"在册项）。CI 自身零改动=根裁（06:3xZ：#326 后禁再动 CI）。
 13. **外部 CI 事件丢失未闭**：GitHub Actions 对 PR 事件约半数被丢（opened/synchronize 皆丢，check-runs=0 实证；master push 事件仍全门跑通）。唯一主动通道=已合的 `workflow_dispatch`（#326）。**合并门不得以本地实跑+独审替代**；PR head 上 check-runs=0 必须复核不得猜绿（台账 05:5xZ/03:3xZ + `.ci-outage-evidence/`）。
 14. **测试宿主窗口纪律**：test-use 树任何 SHA 切换须广播+窗口外复验（#330 重钉 639ed01539 轮教训）；本轮 smoke 全程未动 test-use（porcelain 0 前后=腿 `H1`/`C2`）。
