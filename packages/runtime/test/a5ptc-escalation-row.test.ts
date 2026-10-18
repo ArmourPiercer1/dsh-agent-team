@@ -344,6 +344,7 @@ describe('a5ptc-escalation-row (PTC fs half-arm synthetic leg)', () => {
       const router = mod.createPtcEscalationRouter()
       const target = world.target(P7T3_SPEC_A.label)
       const sid = world.childSessions[P7T3_SPEC_A.label]
+      if (sid === undefined) throw new Error('a5ptc-u1b: seeded member child session missing')
       // the DURABLE admissibility oracle — in production the glue injects a
       // read of the real durable member row (agent-bindings:
       // domain.repositories.memberInstances, the SAME public read the

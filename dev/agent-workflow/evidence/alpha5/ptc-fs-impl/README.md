@@ -170,3 +170,88 @@ title clause). No chain value copied.
 | typecheck（pnpm -r） | EXIT=0 全包 Done |
 | eslint | 四改动文件定向 = 仅 host.ts 已披露 2 错（:112 unused、空块 :3228→**位移 :3251**，同 site 非新增）；row/glue/test 三文件 0；全仓 `161 problems (129 errors, 32 warnings)`（eslint-full-repo.log），把修复 stash 回出货字节复跑 = **同样 161 problems、逐规则分布 diff 相同**（eslint-base-stashed.log），本轮新增 **0** |
 | 全库 battery（runtime+domain+tools+testkit，6062 tests） | `18 failed \| 6044 passed`——**18 红与本修复无关**：把修复 stash 回出货字节重跑同 7 文件集，失败测试名集合 `diff` **完全相同**（IDENTICAL-FAIL-SETS，full-run/base 两份 log 入账）。既有红集 = p6t3-mediation×5 / p6t3-restart×2 / rc2-persona-probe×3 / plugin-dsh-compat×5 / a4p7-merge-gate×1 / t2-blueprint-hash×1 / p6t6-actions×1（相对上轮 README 披露行有漂移——rc2-persona-probe 1→3、plugin-dsh-compat 等 4 文件新入红——但**均已在 45717a9f 出货面复现**，属分支/环境既有态，非本轮引入；如实入账不代上游圆场） |
+
+## U-1b 续修轮（parent 续修单 2026-10-18；基点 `b3e99a14`；live-kit 18/19，U-1b 两次独立复红 `live-2026-10-18T13-4*` + `T13-51-55`）
+
+### 取证（只读，a5ptc-stack 侧 live 收据 + 本树读码行号）
+
+live 现象：archive 轮后 drive e1 的 ask 仍被行接走（`seenByRow=true`、开出
+`human-arc-ctrl-*.json` 耐久请求 subject=instance），`obsDelta=[]` 且无
+member-revoked。事实链：
+
+1. **工具层硬校验**（tools.ts `makeDefinition().execute` :446-452）：
+   `rootSessionId` + `requestToken` 在一切 `spec.run` 之前强制。kit 的 mock
+   archive 轮（a5ptc-production-kit.mjs :399-411）tool call 只带
+   `{instanceId}` → 在公共入口即 typed 参数拒绝，`ARCHIVE_MEMBER` 从未到达
+   performAction / effects.ts:568。kit 的 `archived=true` 是 **marker 级测量**
+   （轮只看 `A5PTC_T_ARCHIVED` marker 不验 result；其 quote 引的是旧 delegate
+   回执）——该 live run **不能证成 e1 被提交 ARCHIVED**，e1 未归档、仍
+   resident+SETTLED，行路由它在法律上是对的（drive-U1B receipt
+   requestSeen:null + human-arc-ctrl allow 收据均与此一致）。
+2. **quiesce 硬序论证**（排除"提交成功但 residency 仍真"的一切机制）：
+   archiveMember（effects.ts:899 → lifecycle/archive.ts）先跑 quiesceMember
+   （quiesce.ts），**step5 :143 `dropResidency`（sync boolean 端口，glue
+   :4962 = liveAgents.delete + fire-and-forget dispose）先于 durable
+   COMMIT_ARCHIVE**；handle 不在场则 step3 drainDescendants（glue :4919）抛
+   `recursive-drain-unavailable` 中止（零写、residency 不动）。故**真提交过
+   archive 的现场，ask-time residency 门必先假**。
+3. **但 durable 法律缺口真实且可达**：b3e99a14 的行 ask-time routability 只查
+   `live ∧ residency`（volatile live-handle 面），durable ARCHIVED/DISPOSED
+   从不被咨询。真成功的 archive 之后，durable session 可被任何后续执行
+   **冷启 re-mount**（U-2 替换语义使此路必通）：residency 翻回真 + 新 Agent
+   替换注册 → 行为归档成员再开**第二条耐久审批**。合成腿第一版只翻
+   `resident` 布尔、从未模拟这一面——这就是 vitest 绿而 live 红的结构性根源
+   （合成腿弱于生产程序形，不是运气差）。
+
+### 修法（公开面，core budget 0；跟随 durable 真源）
+
+- row `registerMember` 增注入式 **durable admissibility oracle** `isAdmissible`
+  （与 isResident 同款注入形态）；`isRoutable = live ∧ admissible ∧ resident`
+  ——durable 真源排在 residency 之前（ptc-escalation-row.mjs，registerMember
+  JSDoc + isRoutable）。
+- glue 注入 durable 读（agent-bindings.mjs registerMember 块 :2554 后）：每
+  ask 读 `domain.repositories.memberInstances.list(teamRoot)`（interrupt 端口
+  :941-943 族同一条公开耐久面，零新 lane import），`ARCHIVED/DISPOSED ⇒`
+  拒；无行 ⇒ fail-closed 拒；leader 无 member 行且 archive/dispose 不指它 ⇒
+  不注入（undefined=恒可）。
+- restore（durable 回 SETTLED）自动恢复路由 = 状态派生门，非永久锁出；
+  residency 门保留（U-1 drop 面不动）。
+
+### RED→绿实录（`runs/u1b-followup-2026-10-18/`）
+
+- **RED-first 对现头**（c33940d4，src 未动）：升级后的 L-U1b 走**生产程序形**
+  ——真 `createLifecycleWorld`（真 P4 耐久域）+ 真 `service.archiveMember`
+  （五步 quiesce：close-admission→interrupt→drain→wait→**RELEASE-RESIDENCY**，
+  再 CAS 提交 ARCHIVED）→ 冷启 re-mount（markResident 复活 + 新 Agent 替换
+  注册）→ drive：`expected 'passthrough' received 'allowed-once'`
+  （`1 failed | 9 passed`，RED-vitest-a5ptc.log）= live 症状逐字。
+- dist 镜像见证（出货 API，stash 回 b3e99a14 src+dist 字节复跑）：
+  `archived re-mount drive (U-1b) -> allowed-once (newDurableRequests=1)`
+  （RED-witness.log）→ 修复后 `PASSTHROUGH (newDurableRequests=0)`
+  （GREEN-witness.log）。
+- GREEN：spec `10 passed (10)`（含 FACE1 drop 面 / FACE2 冷启 re-mount 拒 +
+  迟到 disposed 身份守卫 / FACE3 真 restore 恢复 allowed-once 且重放仍拒）。
+
+### 修后腿清单（本树实测，`runs/u1b-followup-2026-10-18/`）
+
+| 腿 | 结果 |
+| --- | --- |
+| a5ptc-escalation-row.test.ts（升级 L-U1b 生产程序形） | `10 passed (10)`（GREEN-vitest-a5ptc.log） |
+| p7t3 五 suite（archive/drain/dispose-race/fact/restore——程序与 helper 完整性） | `31 passed (31)` |
+| a5p0 消费者集（domain 六 suite） | `104 passed (104)`——lane 集不动：row 边不变，glue durable 读走既有 `domain` 依赖（无新 import） |
+| p4t6-session-event-scan + a5p7-lane-hygiene + a5p7-vnext-field-mapping | `21 passed (21)`——文件集不变（零新文件，腿全进既有 spec） |
+| typecheck（pnpm -r） | EXIT=0 全包 Done（GREEN-typecheck.log；中途一次 TS2345=测试内 `string \| undefined` 索引访问，已 fail-closed 守卫修复后复跑） |
+| eslint（改动三文件定向） | 0 问题（GREEN-eslint.log；host.ts 本轮未动） |
+| drift | 见提交后 check-artifacts-at-head 复跑 |
+
+### 披露（不代上游圆场）
+
+- live U-1b 两红 run 的最自洽解释是 **archive 从未完成**（工具参数形：mock
+  只发 `{instanceId}`，缺 `rootSessionId/requestToken`，且参数字段名应为
+  `targetInstanceId`）——该 run 里行的路由行为合法；kit 侧应以 **tool result**
+  （而非 marker）测 archive 成败，kit 修复属 stack 侧，不在本 worktree 权限内，
+  如实上报 parent。
+- 本修不依赖上述 kit 判断成立：它钉的是生产语义下可复现的**法律违反面**
+  （真归档成功 + 冷启 re-mount → 第二条耐久审批），RED 由真归档程序形现场
+  复现，与 live 症状同形。criteria 不弯：归档成员（durable ARCHIVED/DISPOSED）
+  的 ask 永不被行看见，落原样 `next()` 委派，零耐久状态零观测。

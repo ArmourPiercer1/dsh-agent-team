@@ -2552,6 +2552,30 @@ export function createAgentBindings(deps) {
             // (host.ts) stay as the idempotent state-cleanup faces behind
             // the gate.
             isResident: () => residency.has(sessionId),
+            // U-1b FOLLOW-UP ROUND (live runs T12-55-53 + T13-51-55): the
+            // DURABLE admissibility oracle. RESIDENCY IS VOLATILE — the
+            // archive quiesce drops it, ANY later cold resume of the durable
+            // session flips it back with a fresh Agent, and the row would
+            // route an ARCHIVED member again (the measured live red). The
+            // durable member row is the archive truth: read it per ask
+            // through the SAME public durable surface the lifecycle
+            // interrupt port rides (:4665 family); ARCHIVED/DISPOSED never
+            // route; a restore (durable SETTLED again) reopens routing —
+            // state-derived, never a permanent lock-out. The leader has no
+            // member-instance row (archive/dispose never address it); a
+            // member whose durable row is absent fails CLOSED (no durable
+            // face, no governance-protected routing).
+            isAdmissible: sessionId === String(teamRoot)
+              ? undefined
+              : () => {
+                  for (const mrow of domain.repositories.memberInstances.list(teamRoot)) {
+                    if (String(mrow.instanceId) === String(instanceId)) {
+                      const state = String(mrow.lifecycle ?? '')
+                      return state !== 'ARCHIVED' && state !== 'DISPOSED'
+                    }
+                  }
+                  return false
+                },
           })
           // S5: the member face dies with the mount — router unregister +
           // roster revoke through the SAME drain as every tool disposer

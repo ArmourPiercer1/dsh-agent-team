@@ -46,10 +46,12 @@
  *     RESIDENCY lifecycle: the router mirrors the host's public
  *     `agent/disposed` event (drop entry + revoke face, idempotent), every
  *     ask is gated on the member handle's routability (live + the injected
- *     residency oracle), and a same-session re-mount REPLACES the stale
- *     face instead of throwing (one LIVE face per session; the shipped
- *     "already registered" refusal made the production entry unrecoverable
- *     — U-2's 422).
+ *     residency oracle + the injected DURABLE admissibility oracle: an
+ *     ARCHIVED/DISPOSED member that cold-resumes re-establishes residency
+ *     but never the durable archive truth — U-1b), and a same-session
+ *     re-mount REPLACES the stale face instead of throwing (one LIVE face
+ *     per session; the shipped "already registered" refusal made the
+ *     production entry unrecoverable — U-2's 422).
  *  S6 the scope gate lives in the CALLER (agent-bindings :2412 — the
  *     `permissionPolicy !== undefined && config.teamToolPlane` face): a
  *     non-Team install never registers anything, the router is then an
@@ -112,12 +114,19 @@ function fingerprintOf(member, callId, toolName, mode, reason) {
  * with it AND its member face is revoked — idempotent, entry-identity
  * guarded (a late event for a replaced generation drops ONLY the stale
  * entry). (b) {@link route} asks the registered member HANDLE whether it
- * is still routable (live + resident) BEFORE adjudicating: a residency
- * drop is synchronous at the port (liveAgents.delete precedes the async
- * dispose), so the very next ask delegates through next() with zero state
- * — the pre-round host chain owns it (the measured fail-closed landing).
- * The entries key on the member HANDLE (the registerMember result), not
- * the shared memberKey, so a re-mounted session's stale Agent can never
+ * is still routable (live + resident + durably admissible) BEFORE
+ * adjudicating: a residency drop is synchronous at the port
+ * (liveAgents.delete precedes the async dispose), so the very next ask
+ * delegates through next() with zero state — the pre-round host chain owns
+ * it (the measured fail-closed landing). (c) U-1B FOLLOW-UP ROUND (live
+ * runs T12-55-53 + T13-51-55): the routability check ALSO consults the
+ * injected DURABLE admissibility oracle — residency is a VOLATILE runtime
+ * map (a drop flips it false; any later cold resume of the durable session
+ * flips it back true with a fresh Agent), so an ARCHIVED member that
+ * cold-resumes would otherwise route again; the durable member lifecycle
+ * (ARCHIVED/DISPOSED ⇒ refused) is the archive truth the ask-time gate
+ * rides. The entries key on the member HANDLE (the registerMember result),
+ * not the shared memberKey, so a re-mounted session's stale Agent can never
  * route into the new generation.
  */
 export function createPtcEscalationRouter() {
@@ -254,8 +263,15 @@ export function createPtcEscalationRowAssembly(deps) {
      * dropResidency (the sync port / the archive quiesce step do not await
      * the Agent dispose, so the ask-time gate, not the disposed event, is
      * what makes the drop race-free). Absent = pure row, always resident.
+     * `isAdmissible` (optional, U-1b follow-up round): the injected DURABLE
+     * admissibility oracle — the glue reads the durable member lifecycle
+     * (ARCHIVED/DISPOSED ⇒ false). RESIDENCY IS VOLATILE: a drop flips it,
+     * any later cold resume flips it BACK with a fresh Agent — the archive
+     * law lives in the durable record, never in the live-handle map. A face
+     * routes only while live AND resident AND admissible. Absent = pure
+     * row, always admissible.
      */
-    registerMember({ sessionId, instanceId, realmId, isLeader, isResident }) {
+    registerMember({ sessionId, instanceId, realmId, isLeader, isResident, isAdmissible }) {
       const memberKey = `${rootSessionId}\u0000${String(sessionId)}`
       const previous = members.get(memberKey)
       if (previous !== undefined && typeof previous.revoke === 'function') {
@@ -298,12 +314,16 @@ export function createPtcEscalationRowAssembly(deps) {
       return {
         memberKey,
         revoke,
-        /** ROUTABILITY (lifecycle-fix round, the U-1/U-1b gate): this face
-         *  routes only while it is the live generation AND the injected
-         *  residency oracle still claims the session. Read-only, never
-         *  writes state. */
+        /** ROUTABILITY (lifecycle-fix rounds): this face routes only while
+         *  it is the live generation, the injected residency oracle still
+         *  claims the session (U-1/U-1b drop face), AND the durable
+         *  admissibility oracle still admits it (U-1b archive face — an
+         *  ARCHIVED member that cold-resumes re-establishes residency but
+         *  never re-establishes the durable archive truth). Read-only,
+         *  never writes state. */
         isRoutable() {
           if (!member.live) return false
+          if (typeof isAdmissible === 'function' && isAdmissible() !== true) return false
           if (typeof isResident === 'function' && isResident() !== true) return false
           return true
         },

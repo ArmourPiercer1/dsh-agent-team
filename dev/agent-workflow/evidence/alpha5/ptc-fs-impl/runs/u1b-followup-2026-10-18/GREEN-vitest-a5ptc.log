@@ -1,0 +1,27 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ✓ packages/runtime/test/a5ptc-escalation-row.test.ts (10 tests) 1396ms
+     ✓ L-U1b archive face (PRODUCTION PROCEDURE FORM): the REAL archiveMember commits ARCHIVED durably — the archived member never routes again, NOT EVEN through a cold re-mount that re-establishes residency; restore recovers  1127ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  14:39:16
+   Duration  1.58s (transform 1.11s, setup 0ms, import 45ms, tests 1.40s, environment 0ms)
+
+EXIT_A5PTC=0
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-impl
+
+ ✓ packages/runtime/test/p7t3-dispose-race.test.ts (6 tests) 8ms
+ ✓ packages/runtime/test/p7t3-descendant-drain.test.ts (5 tests) 9ms
+ ✓ packages/runtime/test/p7t3-restore-no-agent.test.ts (6 tests) 7ms
+ ✓ packages/runtime/test/p7t3-lifecycle-fact.test.ts (7 tests) 8ms
+ ✓ packages/runtime/test/p7t3-archive-running.test.ts (7 tests) 6ms
+
+ Test Files  5 passed (5)
+      Tests  31 passed (31)
+   Start at  14:39:45
+   Duration  2.04s (transform 6.35s, setup 0ms, import 8.88s, tests 37ms, environment 0ms)
+
+EXIT_P7T3=0
