@@ -1,0 +1,4 @@
+catalog harvest names (schemas ∪ shippedNames, mcp__ family excluded): 66
+pinned exact names: 68
+FORWARD (in catalog, NOT pinned — missing pin, RED): 0 []
+REVERSE (pinned, NOT in catalog — needs explicit reason): 2 ["subagent_claude_code","subagent_codex"]

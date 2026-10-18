@@ -1,0 +1,56 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-globoff/packages/runtime
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob-1 pid=42 files=2 capped=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob-1 pid=52 files=2 capped=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob-1 pid=62 files=2 capped=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5globoff-realm call=team-a5globoff-instance-grep-1 records=1 total=1 truncated=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5globoff-realm rows=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5globoff-realm call=team-a5globoff-instance-bash-2 pid=88 exit=0 timedOut=false cancelled=false
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=10 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-globoff/tests/homes/a5globoff-unit-mveadoub/root/a.txt
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5globoff-realm legs=6
+
+stdout | test/a5-globoff-key.test.ts > a5-globoff: the closed globEnabled consumption key > K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5globoff-realm call=team-a5globoff-instance-glob-3 pid=98 files=12 capped=false
+
+ ❯ test/a5-globoff-key.test.ts (7 tests | 5 failed) 2020ms
+     ✓ K1 (default law): key ABSENT keeps the current production glob form — the REAL anchored rg glob runs 238ms
+     × K2 (②): globEnabled:false lands the EXISTING typed shut face — IO_POLICY_UNSUPPORTED, execCount stays 0 233ms
+     × K3 (③): a renamed names.glob cannot restore the row — the shut decision rides the class, not the name 233ms
+     × K4 (④): the gate holds over the kit backends injection seam — an injected glob backend is never run 2ms
+     × K5 (④): non-boolean globEnabled fails closed on the existing config-refusal code — never silently true 2ms
+     ✓ K6 (④ discipline): an UNKNOWN plane key keeps the silent-ignore law — only globEnabled is consumed+validated 0ms
+     × K7 (⑤): the four-tool matrix — globEnabled:false shrinks nothing else: grep/bash/read run for real, only glob lands shut 699ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 2 passed (7)
+   Start at  20:37:03
+   Duration  2.19s (transform 509ms, setup 0ms, import 36ms, tests 2.02s, environment 0ms)
+

@@ -114,3 +114,24 @@ provider 路由名，**在每个 shipped preset 均 `disabled: true`**
   覆盖标题字面=1202。p4t6 10/10 绿。
 - 邻居矩阵 4 文件 **48/48**（natexe-glue7-pindir-flip-green.log）；tsc 双包 0；
   全套复跑=runtime-full-suite-r2.log（判读按 PREEXISTING-ENV-FAILURES.md，同法重锚）。
+
+## 附记：merge-sync @46e48218（#342=a5-globoff-key 已合，master 前进）
+
+- 双源核：`git ls-remote origin master` = fetch 后 `git rev-parse origin/master` =
+  `46e48218e48314662586ff053ca3825e2889a6bb`（一致）。正向 `git merge`（祖先链保持，无 rebase/amend/force）。
+- **冲突清单**：仅 `packages/testkit/test/p4t6-session-event-scan.test.ts`（双单同抢 1201 账位：
+  globoff 钉 1200→1201，本单 1201→1202/1202→锚区）。解=**union 重锚**：globoff 条款与 tie 原样保留
+  （1201-1200），本单条款上移为 1201→1203，标题=master 版+A5-PINDIR 尾款合并，合并树现场亲数
+  `MEASURED_TOTAL=1203`（p4t6-anchor-1203.txt，pindir=true/true globoff=true 三路径在场自证），
+  tie=`toBe(1203-1201)`，禁抄纪律合规。
+- plane .mjs src+dist 双双 **auto-merge 干净**；亲读合并块归因：master 侧 5 hunk 全落
+  :473-:677 装配体/闭合键区（globoff 属区），零触钉名清单区；本单对 master diff=65 行全在清单/注释区。
+  合并后 src↔dist 镜像 `diff -q` 字节一致。
+- 证据脚本 census 假阳性修正：其裸正则把新注释里的 `default('subagent')` 计数成第三遍 'subagent'
+  →"duplicate pin" 假警报；加注释行过滤（与 provenance-census 同法）。合并树复量：
+  catalog=66、pinned=68、FORWARD=0、REVERSE=2（两名均有 REVERSE_DISPOSITIONS 理由）=设计内
+  （census-merged-tree.txt）。
+- 整合树必跑全表（旧头绿不豁免，全部在合并树现场跑）：装配邻域 11 件（含 pindir 全组+flip+natexe+
+  glue7+globoff+glob-backend+g1-deny+g6-install+a5b2+a5b3+a5int-r3）**149/149**；p4t6 10/10@1203；
+  tsc runtime+testkit 双 0；lint-identities exit 0（161 行/76 distinct/1291 files）；
+  drift at-head=census 复量+spec host-pin/drift 腿绿+镜像字节一致；freshness verdict=ok(1748/glue=9)。

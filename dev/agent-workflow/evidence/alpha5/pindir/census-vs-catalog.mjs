@@ -65,7 +65,7 @@ for (const r of rows) if (r.names.length === 0) { console.error(`row with no nam
 const src = readFileSync(path.join(ROOT, 'packages/runtime/src/plugin/live/team-tool-plane.mjs'), 'utf8')
 const arr = src.match(/PLANE_RESERVED_NATIVE = Object\.freeze\(\[([\s\S]*?)\]\)/)?.[1]
 if (!arr) { console.error('PLANE_RESERVED_NATIVE array not found'); process.exit(2) }
-const pinned = [...arr.matchAll(/'([^']+)'/g)].map((m) => m[1])
+const pinned = [...arr.split('\n').filter((line) => !line.trim().startsWith('//')).join('\n').matchAll(/'([^']+)'/g)].map((m) => m[1])
 const pin = new Set(pinned)
 if (pin.size !== pinned.length) { console.error('duplicate pin'); process.exit(2) }
 const forward = [...catalog].filter((n) => !pin.has(n)).sort()
