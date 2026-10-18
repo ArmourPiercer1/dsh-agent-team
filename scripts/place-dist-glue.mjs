@@ -61,6 +61,10 @@ export const PLACEMENTS = [
   // .mjs; the plane row imports it by a relative in-face specifier, so the
   // shipped face must carry it exactly like the plane row itself).
   {
+    src: 'packages/runtime/src/plugin/live/glob-backend.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs',
+  },
+  {
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
   },

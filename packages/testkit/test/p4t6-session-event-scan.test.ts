@@ -2513,6 +2513,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // prior kit round.
     const SCANNED_PATHS_A5RBN: readonly string[] = [
       'packages/runtime/test/a5rbn-runtime-base-narrow.test.ts',
+    ]
     // alpha5-glob-backend (a5glb, branch `alpha5-glob-backend`): the anchored
     // confined-rg GLOB row and its two suites + shared harness. Four scannable
     // files, all NEW paths owned by that lane; the row is a production live row
