@@ -1,0 +1,7 @@
+{
+  "mode": "assembled",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-assembled-2026-10-17T20-41-12Z",
+  "ok": false,
+  "face": "strict (files:[\"dist\"] + declared deps)",
+  "bootLine": "dsh web: http://127.0.0.1:3183/?token=<REDACTED-ab548421>"
+}

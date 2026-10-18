@@ -173,7 +173,12 @@ def mode_enforce_leg(leg, scratch):
         rs, _ = sc("create_ruleset(selective)", SYS_CR, ctypes.c_void_p(ctypes.addressof(attr)), 16, 0)
         if rs < 0:
             emit({"verdict": "MIXED/FAILED", "checks": [], "raw": list(RAW)}, 1)
-        add_rule(rs, odir("/"), FS['READ_DIR'], abi)
+        # runtime-base-narrow: this leg mirrors the PRODUCTION base set — the
+        # '/' READ_DIR drift is gone here too (see build_ruleset). No check on
+        # this leg depends on whole-tree READ_DIR: the fixture reads ride
+        # scratch paths (READ_FILE never granted outside `allowed`), the base
+        # reads ride /etc (POS) and /usr (EXEC legs). Verdict semantics
+        # unchanged; instrument stays honest to what production enforces.
         add_rule(rs, odir("/usr"), FS['READ_DIR'] | FS['READ_FILE'] | FS['EXECUTE'], abi)
         add_rule(rs, odir("/etc"), FS['READ_DIR'] | FS['READ_FILE'], abi)
         add_rule(rs, odir("/proc"), FS['READ_DIR'] | FS['READ_FILE'], abi)
@@ -328,7 +333,20 @@ def build_ruleset(pol, abi, label):
     if rs < 0:
         return -1
     if pol.get("runtime_base", True):
-        add_rule(rs, odir("/"), FS['READ_DIR'], abi)
+        # runtime-base-narrow (bug fix, root ruling 22:43Z): the base is the
+        # EXPLICIT enumeration of architecture.md:77 — "a trusted execution
+        # runtime base (interpreter, libraries, devices) … Do not accidentally
+        # expose host home" — and :257 gates "environment base readability
+        # WITHOUT arbitrary host-home access". The former `odir("/") READ_DIR`
+        # line had NO authorizing sentence (glue7 runtime-base-probe): under
+        # Landlock's nearest-ancestor rule matching it reached EVERY
+        # ungoverned directory (/home, /srv, …) and surfaced host NAMES
+        # through governed rows (glue7 §4b name-class leak; a5rbn witness
+        # `ls /home/*` -> real names on the row output). Devices: fs_mask()
+        # handles no block/char-device bit, so the :77 device word carries no
+        # FS rule here. Anything a legitimate row needs beyond THIS
+        # enumeration rides its per-call allow[] grants (dynamic anchor
+        # roots), never the whole tree.
         add_rule(rs, odir("/usr"), FS['READ_DIR'] | FS['READ_FILE'] | FS['EXECUTE'], abi)
         add_rule(rs, odir("/etc"), FS['READ_DIR'] | FS['READ_FILE'], abi)
         add_rule(rs, odir("/proc"), FS['READ_DIR'] | FS['READ_FILE'], abi)

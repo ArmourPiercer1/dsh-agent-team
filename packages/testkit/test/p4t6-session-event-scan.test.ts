@@ -2475,6 +2475,31 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a5sr4-migration-report.test.ts',
       'packages/domain/test/a5sr5-migration-negative-cases.test.ts',
     ]
+    // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
+    // scannable files of the round — the live-row .mjs that ASSEMBLES the
+    // real effect backends onto the plane (confined Process provider for
+    // shell, the W5-round REAL read-only search anchored at the controlled-
+    // fs instance root, the governed anchored read; glob honestly stays the
+    // typed shut row) and its unit suite (three live positives on REAL
+    // Landlock + the deny-before-backend law with production backends +
+    // the feed rows; zero denylist vocabulary). The live kit rows under
+    // dev/agent-workflow/evidence/** are outside the packages/** scan, as
+    // every prior wiring round.
+    const SCANNED_PATHS_A5GLUE7: readonly string[] = [
+      'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+      'packages/runtime/test/alpha5-glue7-plane-backends.test.ts',
+    ]
+    // alpha5-runtime-base-narrow (the '/' READ_DIR bug fix): the ONE scannable
+    // file is the narrowing lane suite (byte pin + policy-surface pin + REAL
+    // Landlock enumeration negatives and base/anchor positives). The fix
+    // itself edits ALREADY-COUNTED files only (the launcher .py is outside
+    // the packages source scan by extension rule, provider.ts and
+    // plane-effect-backends.mjs were booked by their owner rounds), and the
+    // witness kit + runs live under dev/agent-workflow/evidence/** like every
+    // prior kit round.
+    const SCANNED_PATHS_A5RBN: readonly string[] = [
+      'packages/runtime/test/a5rbn-runtime-base-narrow.test.ts',
+    // alpha5-v4-flip (#324) flip-round test trio (measured on this tree):
     const SCANNED_PATHS_A5FLIP: readonly string[] = [
       'packages/domain/test/a5fl1-blueprint-v4-flip.test.ts',
       'packages/domain/test/a5fl2-envelope-scope-mirror.test.ts',
@@ -2522,6 +2547,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5SCHEMAREV.length +
+        SCANNED_PATHS_A5GLUE7.length +
+        SCANNED_PATHS_A5RBN.length +
         SCANNED_PATHS_A5FLIP.length,
     )
     expect(scanResult.files.length).toBe(
@@ -2566,6 +2593,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5PBR2.length +
         SCANNED_PATHS_A5GLUE6.length +
         SCANNED_PATHS_A5SCHEMAREV.length +
+        SCANNED_PATHS_A5GLUE7.length +
+        SCANNED_PATHS_A5RBN.length +
         SCANNED_PATHS_A5FLIP.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -2633,6 +2662,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5PBR2,
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5SCHEMAREV,
+      ...SCANNED_PATHS_A5GLUE7,
+      ...SCANNED_PATHS_A5RBN +
       ...SCANNED_PATHS_A5FLIP,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
@@ -2898,6 +2929,23 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // nine scannable files, 1171 -> 1180 on the merged tree (scanner-measured, not copied).
     // History: 1177 - 1168 on base 23002259; 1179 - 1170 after master@68deccaa.
     expect(SCANNED_PATHS_A5SCHEMAREV.length).toBe(1180 - 1171)
+    // The GLUE-7 tie, re-tied on THIS merged tree (base master `382e5fb6`,
+    // schema-rev landed #316 first: chain at 1180). On the glue7 branch the
+    // tie read `1173 - 1171` because that base lacked #316; here the two
+    // named files ride after the nine schema-rev files, so the same delta
+    // (two files) re-ties `1182 - 1180`. The solo-RED capture for this leg
+    // stays at `evidence/alpha5/glue7/p4t6-GLUE7-RETIE-RED.txt`; booking the
+    // two named files ends the chain at 1182 — the scanner total of this tree.
+    expect(SCANNED_PATHS_A5GLUE7.length).toBe(1182 - 1180)
+    // The runtime-base-narrow tie, measured on THIS merged tree (the GLUE-7
+    // re-tie above landed at 1182): solo RED read `expected 1183 to be 1182`
+    // (`evidence/alpha5/runtime-base-narrow/p4t6-A5RBN-RETIE-RED.txt`);
+    // booking the one named lane suite ends the chain at 1183 — the scanner
+    // total of this tree. The fix's own edits touch ALREADY-COUNTED files
+    // (provider.ts, plane-effect-backends.mjs) or files outside the scan
+    // (the launcher `.py`, evidence kits under dev/**) — the chain moves by
+    // exactly the one new spec.
+    expect(SCANNED_PATHS_A5RBN.length).toBe(1183 - 1182)
   })
 
   it('exclusion contract: exactly the two self-referential files are excluded, in sorted order', () => {
