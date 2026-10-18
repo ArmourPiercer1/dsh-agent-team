@@ -1,0 +1,17 @@
+### glob leg #1 (G1)
+[{"type":"text","text":"search · files_with_matches · 2 matches\n> gpos/beta.txt\n> gpos/alpha.txt\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"files_with_matches\",\"totalMatches\":2,\"truncated\":false}"}]
+
+### glob leg #2 (G2)
+[{"type":"text","text":"search · files_with_matches · 140 matches\n> gbound/g000.txt\n> gbound/g016.txt\n> gbound/g028.txt\n> gbound/g027.txt\n> gbound/g034.txt\n> gbound/g010.txt\n> gbound/g005.txt\n> gbound/g022.txt\n> gbound/g033.txt\n> gbound/g002.txt\n> gbound/g021.txt\n> gbound/g035.txt\n> gbound/g026.txt\n> gbound/g013.txt\n> gbound/g023.txt\n> gbound/g032.txt\n> gbound/g008.txt\n> gbound/g017.txt\n> gbound/g031.txt\n> gbound/g007.txt\n> gbound/g014.txt\n> gbound/g015.txt\n> gbound/g030.txt\n> gbound/g009.txt\n> gbound/g006.txt\n> gbound/g001.txt\n> gbound/g025.txt\n> gbound/g029.txt\n> gbound/g003.txt\n> gbound/g012.txt\n> gbound/g020.txt\n> gbound/g004.txt\n> gbound/g036.txt\n> gbound/g019.txt\n> gbound/g018.txt\n> gbound/g011.txt\n> gbound/g024.txt\n> gbound/g051.txt\n> gbound/g063.txt\n> gbound/g054.txt\n> gbound/g069.txt\n> gbound/g040.txt\n> gbound/g066.txt\n> gbound/g037.txt\n> gbound/g073.txt\n> gbound/g061.txt\n> gbound/g057.txt\n> gbound/g046.txt\n> gbound/g038.txt\n> gbound/g062.txt\n> gbound/g045.txt\n> gbound/g071.txt\n> gbound/g074.txt\n> gbound/g044.txt\n> gbound/g055.txt\n> gbound/g041.txt\n> gbound/g064.txt\n> gbound/g068.txt\n> gbound/g060.txt\n> gbound/g048.txt\n> gbound/g058.txt\n> gbound/g042.txt\n> gbound/g049.txt\n> gbound/g047.txt\n> gbound/g067.txt\n> gbound/g075.txt\n> gbound/g052.txt\n> gbound/g065.txt\n> gbound/g056.txt\n> gbound/g059.txt\n> gbound/g053.txt\n> gbound/g072.txt\n> gbound/g039.txt\n> gbound/g070.txt\n> gbound/g050.txt\n> gbound/g043.txt\n> gbound/g093.txt\n> gbound/g077.txt\n> gbound/g102.txt\n> gbound/g079.txt\n> gbound/g101.txt\n> gbound/g083.txt\n> gbound/g107.txt\n> gbound/g088.txt\n> gbound/g076.txt\n> gbound/g103.txt\n> gbound/g089.txt\n> gbound/g080.txt\n> gbound/g078.txt\n> gbound/g104.txt\n> gbound/g099.txt\n> gbound/g090.txt\n> gbound/g082.txt\n> gbound/g092.txt\n> gbound/g097.txt\n> gbound/g110.txt\n> gbound/g086.txt\n> gbound/g098.txt\n> gbound/g112.txt\n> gbound/g111.txt\n> … truncated …\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"files_with_matches\",\"totalMatches\":140,\"truncated\":true}"}]
+
+### glob leg #3 (G3)
+[{"type":"text","text":"search · files_with_matches · 1 matches\n> gsym/real.txt\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"files_with_matches\",\"totalMatches\":1,\"truncated\":false}"}]
+
+### glob leg #4 (G4)
+[{"type":"text","text":"search · files_with_matches · 1 matches\n> goutside/inside.txt\na5p5-meta {\"kind\":\"search\",\"outputMode\":\"files_with_matches\",\"totalMatches\":1,\"truncated\":false}"}]
+
+### glob leg #5 (G5)
+[{"type":"text","text":"a5p5-refused kind=backend-failed code=symlink-alias detail=a path component of the target is an alias"}]
+
+### glob leg #6 (G6)
+[{"type":"text","text":"a5p5-refused kind=backend-failed code=walker-error detail=the walker process reported an error on its diagnostic stream"}]

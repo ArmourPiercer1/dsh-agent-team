@@ -1,0 +1,15 @@
+{
+  "seq": 6,
+  "agentSessionId": "session-team-child-4eb54038d9531c42b76f4d59ccbe5d40",
+  "callId": "a5ptc-call-unloaded",
+  "requestSeen": null,
+  "result": {
+    "seq": 6,
+    "callId": "a5ptc-call-unloaded",
+    "ok": false,
+    "error": "sandbox escalation to \"workspace-write\" requires approval, but no approval channel is available",
+    "outcome": "threw",
+    "at": "2026-10-18T15:02:51.070Z"
+  },
+  "elapsedMs": 401
+}

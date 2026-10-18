@@ -42,7 +42,7 @@
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -158,6 +158,24 @@ function request(command: string, over: Partial<SpawnRequest> = {}): SpawnReques
   }
 }
 
+/** Every launcher bookkeeping record written under this world so far. */
+function exitRecords(dir: string, found: string[] = []): string[] {
+  if (!existsSync(dir)) return found
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const abs = join(dir, entry.name)
+    if (entry.isDirectory()) exitRecords(abs, found)
+    else if (entry.name === 'exit.json') found.push(abs)
+  }
+  return found
+}
+
+/** The ONE record a just-finished spawn added (asserted as one, never guessed). */
+function recordAddedSince(before: Set<string>): { pid: number; rc: number } {
+  const fresh = exitRecords(join(WORLD, 'out')).filter((f) => !before.has(f))
+  expect(fresh.length, `expected exactly one new exit.json, saw ${String(fresh.length)}`).toBe(1)
+  return JSON.parse(readFileSync(fresh[0] as string, 'utf8')) as { pid: number; rc: number }
+}
+
 /** Run one payload on the stream arm and report the settle, pipes drained. */
 async function settle(handle: ProviderResult<StreamingSpawnHandle>): Promise<{ code: number | null; signal: string | null; stdout: string; stderr: string }> {
   // A refusal here is a fact worth reading, not a shape error to trip over.
@@ -207,6 +225,33 @@ describe('B2 A — the stream arm at the provider seam (REAL launcher, real wait
     const provider = await realProvider()
     const settled = await settle(await provider.spawnStreaming(request('kill -TERM $$', { exitPassthrough: true })))
     expect(settled.code, 'SIGTERM death must read 143, not 0 and not null').toBe(143)
+  }, SLOW)
+
+  it('A5 the 128-range number does NOT identify a cause of death: a payload that exits 137 and a payload killed by SIGKILL are the same number here', async () => {
+    // Constructive witness against a claim an earlier revision of this lane made in a
+    // launcher comment — that 128+signum was "a number the caller can distinguish
+    // from any code a payload could have returned". It is not: the mapping is
+    // constructive and one-way, so `exit 137` and a SIGKILL death agree exactly. What
+    // DOES separate them is the launcher's bookkeeping record, whose rc is the raw
+    // waitpid value (137 for a return, -9 for a kill). Pinned so the honest wording is
+    // checked rather than merely asserted, and so nobody re-adds the stronger claim.
+    const provider = await realProvider()
+
+    const beforeReturn = new Set(exitRecords(join(WORLD, 'out')))
+    const returned = await settle(await provider.spawnStreaming(request('exit 137', { exitPassthrough: true })))
+    const returnedRecord = recordAddedSince(beforeReturn)
+
+    const beforeKill = new Set(exitRecords(join(WORLD, 'out')))
+    const killed = await settle(await provider.spawnStreaming(request('kill -KILL $$', { exitPassthrough: true })))
+    const killedRecord = recordAddedSince(beforeKill)
+
+    expect(returned.code).toBe(137)
+    expect(killed.code, 'a SIGKILL death maps to 128+9, the same number 137').toBe(137)
+    expect(killed.code, 'the exit code alone cannot tell the two apart — that is the point')
+      .toBe(returned.code as number)
+    expect(returnedRecord.rc, 'the record keeps the returned code as-is').toBe(137)
+    expect(killedRecord.rc, 'the record keeps the kill as a negative waitpid result').toBe(-9)
+    expect(killedRecord.rc).not.toBe(returnedRecord.rc)
   }, SLOW)
 
   it('A4 the terminate path lands on a signal death too: the code stays a 128-range number, never a fabricated 0', async () => {
@@ -289,16 +334,30 @@ describe('B2 X — the shipped shell row, end to end (real plane, real kernel re
     expect(res.text).toContain('bash · exit=not-observed · timed-out')
   }, SLOW)
 
-  it('X6 disclosed, NOT fixed: this row always reports cancelled false, so the renderer cancelled branch has no path here', async () => {
-    // Pinned so the gap stays a KNOWN gap rather than an implied guarantee. The
-    // shell row has no cancel input: the only way it stops a payload is its own
-    // timeout, and that path reports timedOut with a null code (X5). So the
+  it('X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel', async () => {
+    // The fact in two layers, per the root's 15:14Z ① (this prose is the only
+    // thing updated; the judgment below is byte-identical to B2's pin).
+    // LAYER 1 — what B2 booked: at that time the shell row genuinely had no
+    // cancel input — its only stop was its own timeout (X5) — so the
     // `bash · cancelled` line in `renderShellResult` (packages/tools/a5p5-tools/
-    // src/render.ts:183-184) is unreachable through this row, and the
-    // `cancelled: false` the row returns is not a lie — it is "this row was never
-    // asked to cancel". Whether cancellation should exist at all on the effect
-    // face is a different semantic, owned by that face (A4 measures the provider
-    // terminate arm, which is a different thing again). Recorded here, unchanged.
+    // src/render.ts:183-184) was unreachable through this row, and the
+    // `cancelled: false` the row returned was not a lie but "never asked".
+    // LAYER 2 — what B3 changed and what it did not: B3 wired the row's cancel
+    // channel (the host's cooperative signal, carried on the TWO-argument
+    // execute path — `a5b3-cancel-leg.test.ts` pins it end to end). So the
+    // B2-era wording "the shell row has no cancel input" is superseded prose:
+    // the row HAS a signal surface now. What this leg still pins, load-bearing
+    // and unchanged, is the other half: the ONE-argument caller path — this
+    // very call, no exec argument, no signal — is NOT a cancellation path.
+    // No signal, no leg (`register.ts`'s optional second parameter keeps it
+    // byte-identical; `raceShellSettle` grows no abort leg it was never given),
+    // so the honest report stays the honest report: `cancelled: false`, the
+    // cancelled word out of this wire. "This leg injects no signal" is the
+    // pinned fact; "the row has no signal surface" was stale prose — the two
+    // must not be conflated. Whether non-user stops (hook/disposed, provider
+    // terminate) should ever RENDER as cancellation is owned elsewhere (A4
+    // measures the terminate arm; B3's C3 pins the death form). Recorded
+    // here, judgment UNCHANGED: a register single-arg compatibility pin.
     const plane = buildPlane()
     const res = await def(plane, 'team_bash').execute({ command: 'sleep 15', timeout: 1 })
     expect(metaOf(res.text).cancelled).toBe(false)

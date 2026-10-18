@@ -1,0 +1,22 @@
+{
+  "seq": 5,
+  "agentSessionId": "session-team-child-4eb54038d9531c42b76f4d59ccbe5d40",
+  "callId": "a5ptc-call-1",
+  "requestSeen": {
+    "requestId": "ctrl-0f55wh906ssr1s13hmvlj1di",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "parameter-permission",
+    "summary": "a5ptc escalation: bash -> workspace-write (call a5ptc-call-1)",
+    "correlation": "a5ptc-call-1"
+  },
+  "result": {
+    "seq": 5,
+    "callId": "a5ptc-call-1",
+    "ok": false,
+    "error": "the user rejected escalating this command to \"workspace-write\"; it stays denied, so stop and explain instead of working around it",
+    "outcome": "threw",
+    "at": "2026-10-18T15:02:50.590Z"
+  },
+  "elapsedMs": 427
+}

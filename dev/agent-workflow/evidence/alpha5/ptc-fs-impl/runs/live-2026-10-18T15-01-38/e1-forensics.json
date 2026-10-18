@@ -1,0 +1,232 @@
+{
+  "eDone": true,
+  "eWorkDone": true,
+  "eQuote": "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+  "eFile": false,
+  "eEscRows": [],
+  "arm": "A (native dispatch refusal — the closed-world binding law; the native emitter never reaches approveEscalation — which is WHY the drive legs ride the kit emitter row)",
+  "mockTrail": [
+    {
+      "n": 1,
+      "opener": "A5PTC_20261018T150138_DISC\u0001Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any a",
+      "last": "A5PTC_20261018T150138_DISC\u0001Current runtime context. This snapshot supersedes earlier runtime-context",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 2,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"A5PTC_20261018T150138_DISC\"}]",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"A5PTC_20261018T",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 3,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 4,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 5,
+      "opener": "[team-work requestToken=a5ptc-d-a-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_A Do the delegated work exactly as instructed.\u0001Current runtime context. This s",
+      "last": "[team-work requestToken=a5ptc-d-a-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_A Do the delegated",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 6,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=a5ptc-d-a-2026-10-18T15-01-38] A5PTC_20261018T15013",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requ",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 7,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\""
+      ]
+    },
+    {
+      "n": 8,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a-2026-10-18T15-01-"
+      ]
+    },
+    {
+      "n": 9,
+      "opener": "[team-work requestToken=a5ptc-d-e-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_E Do the delegated work exactly as instructed, tool by tool, in order.\u0001Current",
+      "last": "[team-work requestToken=a5ptc-d-e-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_E Do the delegated",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 10,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=a5ptc-d-e-2026-10-18T15-01-38] A5PTC_20261018T15013",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requ",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 11,
+      "opener": "[team-work requestToken=a5ptc-d-e-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_E Do the delegated work exactly as instructed, tool by tool, in order.\u0001Current",
+      "last": "",
+      "assistantToolNames": [
+        "bash"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"bash\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]"
+      ]
+    },
+    {
+      "n": 12,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect",
+        "team_delegate"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a-2026-10-18T15-01-",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0j124a200jai\\\",\\\"templateId\\\":\\\"eb\\\""
+      ]
+    },
+    {
+      "n": 13,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect",
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a-2026-10-18T15-01-",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0j124a200jai\\\",\\\"templateId\\\":\\\"eb\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-e-2026-10-18T15-01-"
+      ]
+    },
+    {
+      "n": 14,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "[team-control requestId=ctrl-1x3npvq0o00i571nde1w008c]\nA Team member operation is waiting for Leader",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect",
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a-2026-10-18T15-01-",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0j124a200jai\\\",\\\"templateId\\\":\\\"eb\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-e-2026-10-18T15-01-"
+      ]
+    },
+    {
+      "n": 15,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:9c641c21afde08a953bd9dcac484e56e5c335db65d50b6378c168d9a77f2c83b] A5PTC_20261018T150138_L0_T Begin ",
+      "last": "[team-control requestId=ctrl-0f55wh906ssr1s13hmvlj1di]\nA Team member operation is waiting for Leader",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect",
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-16odew60g9vy\\\",\\\"templateId\\\":\\\"wa\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a-2026-10-18T15-01-",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0j124a200jai\\\",\\\"templateId\\\":\\\"eb\\\"",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-e-2026-10-18T15-01-"
+      ]
+    },
+    {
+      "n": 16,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cbfa6c91f3eab127b870779d7ae767ef92a5d34ccfe6da53dde9] A5PTC_20261018T150138_L0_T2 Begin",
+      "last": "[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cbfa6c91f3eab127b870779d7ae",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 17,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cb",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 18,
+      "opener": "[team-work requestToken=a5ptc-d-a2-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_A2 Do the delegated work exactly as instructed.\u0001Current runtime context. This",
+      "last": "[team-work requestToken=a5ptc-d-a2-2026-10-18T15-01-38] A5PTC_20261018T150138_TASK_A2 Do the delegat",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 19,
+      "opener": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=a5ptc-d-a2-2026-10-18T15-01-38] A5PTC_20261018T1501",
+      "last": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requ",
+      "assistantToolNames": [],
+      "toolResults": []
+    },
+    {
+      "n": 20,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cbfa6c91f3eab127b870779d7ae767ef92a5d34ccfe6da53dde9] A5PTC_20261018T150138_L0_T2 Begin",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team2-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1x9dp6e10on4\\\",\\\"templateId\\\":\\\"wa\\"
+      ]
+    },
+    {
+      "n": 21,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cbfa6c91f3eab127b870779d7ae767ef92a5d34ccfe6da53dde9] A5PTC_20261018T150138_L0_T2 Begin",
+      "last": "",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team2-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1x9dp6e10on4\\\",\\\"templateId\\\":\\\"wa\\",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team2-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a2-2026-10-18T15-0"
+      ]
+    },
+    {
+      "n": 22,
+      "opener": "[team-root-work requestToken=team-create:initial-work:sha256:ea7a1815a474cbfa6c91f3eab127b870779d7ae767ef92a5d34ccfe6da53dde9] A5PTC_20261018T150138_L0_T2 Begin",
+      "last": "[team-control requestId=ctrl-1uvblrb0gj18zc1c28jfx16h]\nA Team member operation is waiting for Leader",
+      "assistantToolNames": [
+        "team_delegate",
+        "team_collect"
+      ],
+      "toolResults": [
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team2-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1x9dp6e10on4\\\",\\\"templateId\\\":\\\"wa\\",
+        "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5ptc-team2-2026-10-18T15-01-38\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5ptc-d-a2-2026-10-18T15-0"
+      ]
+    }
+  ]
+}

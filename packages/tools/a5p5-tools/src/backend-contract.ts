@@ -34,11 +34,30 @@ export interface BackendFailure {
   readonly detail: string
 }
 
+/**
+ * The lane's STRUCTURAL view of the host's cooperative cancel signal (B3).
+ * The host hands every tool call an `exec.signal: AbortSignal` (public
+ * ToolExecutionInput; dispatch passes it verbatim and the host's own law
+ * makes async work observe it) — but the lane names neither node nor host
+ * types, so this closed four-member view is the WHOLE surface any backend
+ * may read: `aborted`, an `unknown` reason it walks for a discriminator
+ * alone, and the two listener methods. ABSENT on a call means the row was
+ * never asked to cancel — the pre-B3 case, pinned by B2's X6 leg.
+ */
+export interface ToolCancelSignal {
+  readonly aborted: boolean
+  readonly reason?: unknown
+  addEventListener(type: 'abort', listener: () => void, options?: { readonly once?: boolean }): void
+  removeEventListener(type: 'abort', listener: () => void): void
+}
+
 /** One call handed to a backend (realm/call identity is admission-injected). */
 export interface BackendCall {
   readonly realmId: string
   readonly callId: string
   readonly parsedArgs: ParsedToolArgs
+  /** B3 ADDITIVE: the host cancel signal when the assembly carried one; a backend that grew no abort leg simply never reads it. */
+  readonly signal?: ToolCancelSignal
 }
 
 /** The execution I/O a backend may use: the lease and the spill sink (if any). */

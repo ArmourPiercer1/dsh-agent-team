@@ -1,0 +1,15 @@
+KIT_EXIT=0  (GREEN: 50/50 graded + 4 booked, 0 FAIL)
+run stamp        : 2026-10-18T12-52-34Z   (recorded run runs/2026-10-18T12-52-34Z)
+install spec     : github:ArmourPiercer1/dsh-agent-team#104b499173687daa0f5c537bc37ae7600089576c  (live git ls-remote origin refs/heads/master, measured inside the kit)
+worktree HEAD    : baa697f047143ce21ccbd12b5ea73bb7f9f80f7b  (branch a5ie-r2b after: git merge 104b4991… ; porcelain 0; master is an ancestor)
+three zeros      : installed=1772/1772  missing=0  extra=0  sha-mismatch=0
+face rootSha     : 9936ffad182550412a9af481f410ed3d4adb704677b01109a26d2f96b73c0db0  (identical across install probe + installed + preassembly + baseline worlds)
+drift gate       : [check-artifacts-committed] OK: 1747 files (exit 0)
+launcher gap     : landlock-prelauncher.py NOT on the published face (disclosed); deployment input sha256:0049965daacae5bd…, --abi-probe answers abi-available/4 on this host
+walker binary    : rg resolved from the host graph = ripgrep 15.0.0 (rev 3a612f88b8)  (flip deployment precondition; resolved fine, no rg-unavailable leg)
+five controls    : GLOB-POS PASS · GLOB-BOUND PASS (total 140 / inline 100 / truncated marker + meta) · GLOB-SYMLINK PASS (alias not disclosed, 0 secret bytes) · GLOB-OUTSIDE-ANCHOR PASS (+G3b symlink-alias typed refusal) · GLOB-WALKER-ERROR PASS (typed code=walker-error, walker sentence off the wire)
+attribution      : mount passes confined: confinedCfg for search AND glob; rg row per-call lines anchored-search OK = 3; anchored-glob ran = 4 → the confined rg row answers (not the grep(1) port)
+A8 post-flip     : 6 glob legs, ioPolicy=0 (historical shut landing preserved verbatim in glob-row-shut-historical-a5ie-r2b.txt)
+teardown         : homes=[] locks=[] · ports 3183/3184/3491 free after · test-use host porcelain 0 · :3080 401 -> 401 (untouched)
+still booked     : B1 (fail-closed lane really exercised, in a5ie-r2b) · B2 (payload exit-code fidelity NOT claimed on this face; #333 itself discloses the pre-launcher exits 0 regardless) · notes A3c / G3-law / G4-note
+push             : NOT pushed (branch a5ie-r2b local only)

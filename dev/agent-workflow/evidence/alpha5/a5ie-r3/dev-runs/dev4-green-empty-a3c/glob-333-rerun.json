@@ -1,0 +1,56 @@
+{
+  "runStamp": "2026-10-18T12-46-32Z",
+  "installedSha": "104b499173687daa0f5c537bc37ae7600089576c",
+  "promisedIn": "a5ie-r2b pending-333.json (five controls; rerunTrigger = merge of the glob mount #333)",
+  "historicalShutLanding": "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the registered GLUE-4 follow-up (pb-CONTRACT §6); the gated surface is live, the effect body stays refused — never faked\"}]",
+  "controls": {
+    "GLOB-POS": {
+      "verdict": "RUN",
+      "landing": "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 2 matches\\n> gpos/beta.txt\\n> gpos/alpha.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":2,\\\"truncated\\\":false}\"}]",
+      "names": [
+        "gpos/beta.txt",
+        "gpos/alpha.txt"
+      ]
+    },
+    "GLOB-BOUND": {
+      "verdict": "RUN",
+      "total": 140,
+      "inline": 100,
+      "cap": 100,
+      "truncatedMarker": true
+    },
+    "GLOB-SYMLINK": {
+      "verdict": "RUN",
+      "landing": "[{\"type\":\"text\",\"text\":\"search · files_with_matches · 1 matches\\n> gsym/real.txt\\na5p5-meta {\\\"kind\\\":\\\"search\\\",\\\"outputMode\\\":\\\"files_with_matches\\\",\\\"totalMatches\\\":1,\\\"truncated\\\":false}\"}]",
+      "names": [
+        "gsym/real.txt"
+      ],
+      "linkNameSurfaced": false,
+      "secretBytesOnWire": 0
+    },
+    "GLOB-SYMLINK-AS-TARGET": {
+      "verdict": "RUN",
+      "landing": "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=symlink-alias detail=a path component of the target is an alias\"}]",
+      "outsideNameSurfaced": false
+    },
+    "GLOB-OUTSIDE-ANCHOR": {
+      "verdict": "RUN",
+      "names": [
+        "goutside/inside.txt"
+      ],
+      "outsideNameSurfaced": false,
+      "outsideBytesSurfaced": false
+    },
+    "GLOB-WALKER-ERROR": {
+      "verdict": "RUN",
+      "landing": "[{\"type\":\"text\",\"text\":\"a5p5-refused kind=backend-failed code=walker-error detail=the walker process reported an error on its diagnostic stream\"}]"
+    }
+  },
+  "searchRowAttribution": {
+    "mountSearchConfined": true,
+    "mountGlobConfined": true,
+    "rgRowPerCallLines": 3,
+    "hitLine": ""
+  },
+  "globRowPerCallLines": 4
+}

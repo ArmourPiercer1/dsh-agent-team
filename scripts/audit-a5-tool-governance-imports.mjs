@@ -72,6 +72,20 @@ const PR1_CONSUMERS = Object.freeze([
   // (`definitionIdentityOf` from tool-dispatch) to mint placement-binding
   // rows for the Guard — the #313 入参面's first production caller.
   'runtime/src/plugin/live/team-tool-plane.mjs',
+  // alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879; review
+  // provenance 独审 PASS — the round's 独审 id 7f0e5d6e, booked by the
+  // integration coordinator on the #334 census red): the PTC fs escalation
+  // adjudication row consumes the lane's effect-grammar face DIRECTLY
+  // (packages/runtime/src/plugin/live/ptc-escalation-row.mjs:66 —
+  // `parseRequestedEffectSet`, the canonical one-shot effect set the grant
+  // carries), and reaches the frozen grant algebra only through the
+  // ALREADY-REVIEWED PR2 consumer
+  // packages/runtime/src/plugin/live/ptc-escalation-row.mjs:65 —
+  // `../../../tool-admission/grant-mint.js` (mintOperationGrant/
+  // createGrantLedger — grant-mint.ts is in this list via the PR2 prefix;
+  // the row imports the RUNTIME module, never the lane barrel for grants).
+  // Zero lane edits; scope-gated production consumer by the :2412 face.
+  'runtime/src/plugin/live/ptc-escalation-row.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.

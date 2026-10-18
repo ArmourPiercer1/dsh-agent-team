@@ -523,8 +523,21 @@ def mode_confined_exec_stream(policy_path, out_dir, exit_passthrough=False):
     # it into the null bucket would erase the difference between "killed by
     # SIGKILL" and "we never saw an end at all". Reported instead in the convention
     # /bin/sh itself uses for this case: 128 + signum (SIGTERM -> 143,
-    # SIGKILL -> 137), which is a number the caller can distinguish from any code a
-    # payload could have returned and from null.
+    # SIGKILL -> 137).
+    #
+    # WHAT THAT NUMBER DOES NOT PROVE, said out loud because the mapping is
+    # constructive and one-way: a payload that returns 137 BY ITSELF (the literal
+    # `exit 137`, or any wrapper re-reporting a child's signal status) leaves the
+    # NON-negative branch above with the same 137. So the 128..159 range does not
+    # identify a cause of death, and a caller cannot read "killed by signal N" off
+    # the exit code — this process knows which branch it took and the exit status
+    # does not carry that. The mapping is there to avoid the two errors its
+    # alternatives commit (fabricating a 0 for a run that never returned, or
+    # claiming no end was observed when one clearly was), not to make signal death
+    # detectable. Where the difference matters, the record that DOES carry it is
+    # <out-dir>/exit.json above: its "rc" is the raw waitpid-derived value,
+    # NEGATIVE for a killed payload and the plain number for a returned one.
+    # Pinned as leg A5 of `a5b2-exit-code-fidelity.test.ts`.
     sys.exit(rc if rc >= 0 else 128 + (-rc))
 
 

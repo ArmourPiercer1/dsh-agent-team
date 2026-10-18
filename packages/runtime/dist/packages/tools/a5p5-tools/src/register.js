@@ -6,9 +6,12 @@
  * `..` refusal) → effect derivation → the injected admission verdict → the
  * ONE pipeline (deny-before-backend) → renderer-only presentation. This file
  * packages exactly that body into plain tool DEFINITIONS — name, description,
- * closed parameter schema, and an `execute(raw)` closure returning
+ * closed parameter schema, and an `execute(raw, exec?)` closure returning
  * `{ text }` — the shape every public assembly seam's `tools.register` takes
  * (the measured W5 row form, `evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs`).
+ * Since B3 the optional second argument is READ, not dropped: it carries the
+ * host's cooperative cancel signal, which this face forwards onto the backend
+ * call and nothing else (see GovernedToolExecContext).
  *
  * What this file deliberately does NOT do (the mount ruling is GLUE-4's, not
  * this lane's): it names no host module, knows no Agent/session scope, never
@@ -81,14 +84,22 @@ export function createGovernedToolDefinitions(assembly) {
     const globBackend = assembly.globBackend ?? assembly.searchBackend;
     const names = assembly.names ?? {};
     let callSeq = 0;
-    const makeExecute = (toolKind, parse, backend) => async (raw) => {
+    const makeExecute = (toolKind, parse, backend) => async (raw, exec) => {
         const parsed = parse(raw);
         if (!parsed.ok) {
             return { text: refusalText('refused-schema', parsed.problems[0]?.code ?? 'unknown', JSON.stringify(parsed.problems).slice(0, 200)) };
         }
         const callId = `${prefix}-${toolKind}-${String(++callSeq)}`;
         const result = await runToolCall({
-            request: { realmId: assembly.realmId, callId, parsedArgs: parsed.value },
+            request: {
+                realmId: assembly.realmId,
+                callId,
+                parsedArgs: parsed.value,
+                // B3: the host's cancel signal rides the call untouched. This face
+                // only CARRIES it — the cancelled fact belongs to the row that can
+                // actually stop a payload (the shell arm), never to the presentation.
+                ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+            },
             decide: assembly.decide,
             backend,
             ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),

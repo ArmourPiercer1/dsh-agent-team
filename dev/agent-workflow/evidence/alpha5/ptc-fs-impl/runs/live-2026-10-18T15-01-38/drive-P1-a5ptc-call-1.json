@@ -1,0 +1,27 @@
+{
+  "seq": 1,
+  "agentSessionId": "session-team-child-4eb54038d9531c42b76f4d59ccbe5d40",
+  "callId": "a5ptc-call-1",
+  "requestSeen": {
+    "requestId": "ctrl-0f55wh906ssr1s13hmvlj1di",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "parameter-permission",
+    "summary": "a5ptc escalation: bash -> workspace-write (call a5ptc-call-1)",
+    "correlation": "a5ptc-call-1"
+  },
+  "result": {
+    "seq": 1,
+    "callId": "a5ptc-call-1",
+    "ok": true,
+    "mode": "workspace-write",
+    "wrote": {
+      "path": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5ptc-stack/tests/homes/a5ptc-T-2026-10-18T15-01-38/forbidden/ptc-positive.txt",
+      "bytes": 24
+    },
+    "sha256": "85a86d5b3a82b0cbef76cbcd491f5ca148222926d418e5fcabbcc2b5bd5ffcaf",
+    "agentId": "session-team-child-4eb54038d9531c42b76f4d59ccbe5d40",
+    "at": "2026-10-18T15:01:45.245Z"
+  },
+  "elapsedMs": 817
+}
