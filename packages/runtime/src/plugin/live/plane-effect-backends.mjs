@@ -557,6 +557,64 @@ const SYSTEM_RX = (path) => ({ path, accessBits: { execute: true, readFile: true
  * streaming handle back into a `ShellOutcome` (streaming raw bytes into the
  * pipeline's spill sink while the lease is ACTIVE, per the spill law).
  */
+/**
+ * THE SETTLE RACE (B3; pinned by a5b3-cancel-leg.test.ts C8/C9 with DETERMINISTIC
+ * injection — a controlled deferred for `exited`, an injected fake `sleep` for the
+ * timeout leg — never a timing bet). The race's registration order is a CLOSED TIE
+ * LAW — `exited > timedOut > aborted`: when several facts already exist at setup,
+ * Promise.race settles on the FIRST registered leg, so
+ *  - a payload that reported its own end OUTRANKS a cancel that arrived in the
+ *    same window (the measured code is the truth; 根②: no dual truth), and
+ *  - the timeout leg OUTRANKS the abort leg registered after it (根③: the
+ *    timed-out form owns the answer; the `!timedOut` guard in `shellCancelled`
+ *    keeps that law even if a late abort lands while the timeout arm is still
+ *    terminating the payload).
+ * The first settlement is FINAL (Promise semantics): a later fact can never
+ * rewrite the winner — exactly one of {exit code, timed-out, aborted} is ever
+ * observed for one call. `sleep` is injectable so the legs pin THIS function
+ * instead of a spec-side reimplementation; production calls pass no sleep.
+ */
+export function raceShellSettle({ exited, timeoutMs, signal, sleep = sleepTimer }) {
+  let onAbort = null
+  const abortLeg = signal === undefined
+    ? null
+    : new Promise((r) => {
+      onAbort = () => { r({ aborted: true }) }
+      if (signal.aborted === true) onAbort() // 根①: already fired before the call — settles at setup, deterministically
+      else signal.addEventListener('abort', onAbort, { once: true })
+    })
+  return Promise.race([
+    exited,
+    new Promise((r) => sleep(() => r({ timedOut: true }), timeoutMs)),
+    ...(abortLeg === null ? [] : [abortLeg]),
+  ]).then((winner) => {
+    if (signal !== undefined && onAbort !== null) signal.removeEventListener('abort', onAbort)
+    return winner
+  })
+}
+
+/**
+ * THE CLOSED CANCELLED LAW (B3; table-pinned by C10, exercised end to end by
+ * C1-C6): `cancelled` is minted ONLY for the two arms of the host's closed
+ * AgentCancelCause union that mean "someone asked this call to stop" — `user` and
+ * `parent`. The range is MEASURED, not imagined (根⑤): the union is exactly
+ * user|parent|hook|disposed at the baseline (host
+ * packages/core/session/src/types.ts:189-193; C10 re-reads the declaration from
+ * the baseline checkout when it is on this machine, so a source-side change trips
+ * the leg before the law ever ships). `hook`/`disposed` HONOR the abort — the
+ * payload is still terminated through the frozen arm — but keep the death shape
+ * (`exit=not-observed`, cancelled false): a hook firing or a teardown is not
+ * someone pressing cancel, and the renderer must never claim it was. A cause
+ * outside the union's shape (no object, no EXACT discriminator) is not a cause at
+ * all. `timedOut` owns its own form (根③); a signal that never fired is not a
+ * cancel. The settlement vocabulary is untouched: the six closed names, an
+ * aborted body being exactly a `dispatcher-call-terminated-after-body-start`.
+ */
+export function shellCancelled({ timedOut, aborted, reason }) {
+  const kind = reason !== null && typeof reason === 'object' ? /** @type {{ kind?: unknown }} */ (reason).kind : undefined
+  return !timedOut && aborted === true && (kind === 'user' || kind === 'parent')
+}
+
 export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {} }) {
   const scratchRoot = confined.scratchRoot ?? cwdRoot ?? confined.workingDir
   const provider = createConfinedProcessProvider({
@@ -663,19 +721,34 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
       h.stdout.on('data', (c) => { const s = String(c); stdout += s; if (io.sink) io.sink.write(s) })
       h.stderr.on('data', (c) => { const s = String(c); stderr += s; if (io.sink) io.sink.write(s) })
       const timeoutMs = typeof parsed.timeoutMs === 'number' && parsed.timeoutMs > 0 ? parsed.timeoutMs : 60_000
-      const exit = await Promise.race([
-        h.exited,
-        new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs)),
-      ])
+      // B3 CANCEL LEG — the shell row's ONE cancel input: the host's
+      // cooperative signal, carried on the call (register.ts forwards
+      // `exec?.signal`; the host's public ToolExecutionInput law makes async
+      // work observe it). Additive in both directions: NO signal, NO leg (the
+      // pre-B3 rows and B2's X6 keep exactly what they had), and a signal that
+      // never fires cannot move the outcome either. The settle race, its tie
+      // law, and the cancelled law are the two module-level exports above
+      // (`raceShellSettle`, `shellCancelled` — pinned leg-for-leg by
+      // a5b3-cancel-leg.test.ts C8/C9/C10 with deterministic injection); the
+      // terminate below is the SAME frozen C-PROC arm every stop uses, and
+      // terminate itself carries no cancel meaning (A4 measured it; leg C6
+      // keeps the conflation out of the rendering).
+      const signal = call.signal
+      const exit = await raceShellSettle({ exited: h.exited, timeoutMs, signal })
+      let aborted = false
       if (exit.timedOut === true) {
         timedOut = true
         await h.terminate()
+      } else if (exit.aborted === true) {
+        aborted = true
+        await h.terminate() // the host ended the call; the payload leaves through the same frozen arm
       } else {
         await h.terminate() // normal end: the lease settles through the SAME frozen arm (terminated state)
       }
       trace = ['probe', 'prepare', 'execute', 'terminate']
-      lastRuns.push({ callId: call.callId, pid: h.pid, exit: exit.code ?? null, timedOut, stdoutBytes: stdout.length, stderrBytes: stderr.length })
-      observe(`confined-shell ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} exit=${String(exit.code ?? 'not-observed')} timedOut=${String(timedOut)}`)
+      const cancelled = shellCancelled({ timedOut, aborted, reason: aborted ? signal?.reason : undefined })
+      lastRuns.push({ callId: call.callId, pid: h.pid, exit: exit.code ?? null, timedOut, cancelled, stdoutBytes: stdout.length, stderrBytes: stderr.length })
+      observe(`confined-shell ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} exit=${String(exit.code ?? 'not-observed')} timedOut=${String(timedOut)} cancelled=${String(cancelled)}`)
       return {
         ok: true,
         outcome: {
@@ -686,14 +759,16 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
           // 128+signum is produced by the launcher for signal death, so anything
           // negative reaching here would be a bug on the way up, and a bug is
           // reported as "not observed" rather than as a number nobody measured.
+          // B3 adds no new null case: an aborted run reaches the same not-observed
+          // reading (the payload never reported an end to this race).
           exitCode: timedOut ? null : (typeof exit.code === 'number' && exit.code >= 0 ? exit.code : null),
           stdout,
           stderr,
           timedOut,
-          cancelled: false,
+          cancelled,
           truncated: false,
         },
-        settlement: timedOut
+        settlement: timedOut || aborted
           ? { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' }
           : { kind: 'completed' },
       }

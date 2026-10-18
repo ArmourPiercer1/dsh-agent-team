@@ -27,7 +27,7 @@
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
 import type { ToolContractProblem } from '../../../domain/tool-governance/src/parse-util.js'
 import { deepFreezeContracts } from '../../../domain/tool-governance/src/parse-util.js'
-import { UNREADABLE_SETTLEMENT, type BackendFailure, type ToolEffectBackend } from './backend-contract.js'
+import { UNREADABLE_SETTLEMENT, type BackendFailure, type ToolCancelSignal, type ToolEffectBackend } from './backend-contract.js'
 import { deriveToolEffectSet } from './effects-schema.js'
 import { RenderClosedValueViolation, renderSearchResult, renderShellResult } from './render.js'
 import { createSpillLease, type LeaseSettlement, type SpillRefusal, type SpillSink, type SpillStore } from './spill.js'
@@ -40,6 +40,8 @@ export interface ToolCallRequest {
   readonly realmId: string
   readonly callId: string
   readonly parsedArgs: ParsedToolArgs
+  /** B3 ADDITIVE: the host cancel signal, carried to the backend untouched (the pipeline itself acts on NOTHING — cancel is the row's fact, not a second authorization here). */
+  readonly signal?: ToolCancelSignal
 }
 
 export interface RunToolCallDeps {
@@ -88,7 +90,15 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
     sink = opened.sink
   }
 
-  const result = await deps.backend.run({ realmId: request.realmId, callId: request.callId, parsedArgs: request.parsedArgs }, { lease, sink })
+  const result = await deps.backend.run(
+    {
+      realmId: request.realmId,
+      callId: request.callId,
+      parsedArgs: request.parsedArgs,
+      ...(request.signal === undefined ? {} : { signal: request.signal }),
+    },
+    { lease, sink },
+  )
 
   const settlement: LeaseSettlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT
   const settled = lease.settle(settlement)

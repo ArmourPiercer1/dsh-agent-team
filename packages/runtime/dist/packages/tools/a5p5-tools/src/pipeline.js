@@ -47,7 +47,12 @@ export async function runToolCall(deps) {
             return deepFreezeContracts({ kind: 'refused-spill', refusal: opened.refusal });
         sink = opened.sink;
     }
-    const result = await deps.backend.run({ realmId: request.realmId, callId: request.callId, parsedArgs: request.parsedArgs }, { lease, sink });
+    const result = await deps.backend.run({
+        realmId: request.realmId,
+        callId: request.callId,
+        parsedArgs: request.parsedArgs,
+        ...(request.signal === undefined ? {} : { signal: request.signal }),
+    }, { lease, sink });
     const settlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT;
     const settled = lease.settle(settlement);
     if (!settled.ok)

@@ -6,9 +6,12 @@
  * `..` refusal) → effect derivation → the injected admission verdict → the
  * ONE pipeline (deny-before-backend) → renderer-only presentation. This file
  * packages exactly that body into plain tool DEFINITIONS — name, description,
- * closed parameter schema, and an `execute(raw)` closure returning
+ * closed parameter schema, and an `execute(raw, exec?)` closure returning
  * `{ text }` — the shape every public assembly seam's `tools.register` takes
  * (the measured W5 row form, `evidence/alpha5/wiring/w5/a5w5-assembly-row.mjs`).
+ * Since B3 the optional second argument is READ, not dropped: it carries the
+ * host's cooperative cancel signal, which this face forwards onto the backend
+ * call and nothing else (see GovernedToolExecContext).
  *
  * What this file deliberately does NOT do (the mount ruling is GLUE-4's, not
  * this lane's): it names no host module, knows no Agent/session scope, never
@@ -30,7 +33,7 @@
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
 import type { ParseResult } from '../../../domain/tool-governance/src/parse-util.js'
 import { parseBashArgs, parseGlobArgs, parseGrepArgs } from './args.js'
-import type { ToolEffectBackend } from './backend-contract.js'
+import type { ToolCancelSignal, ToolEffectBackend } from './backend-contract.js'
 import { runToolCall, type AdmissionVerdict } from './pipeline.js'
 import { GREP_OUTPUT_MODES } from './types.js'
 import type { SpillStore } from './spill.js'
@@ -76,12 +79,25 @@ const BASH_PARAMETERS: Record<string, unknown> = {
   additionalProperties: false,
 }
 
+/**
+ * The execution context the host's dispatch hands as the SECOND argument
+ * (`tool.execute(exec.arguments, exec)` — public ToolExecutionInput, whose
+ * cooperative `signal` the host's own law says async work must observe).
+ * B3: this is the lane's cancel INPUT — optional, so every pre-B3 single-arg
+ * caller stays exact, and an absent signal means "never asked to cancel"
+ * (the fact B2's X6 books). The lane names it structurally (ToolCancelSignal):
+ * no host type, no node type, lane purity untouched.
+ */
+export interface GovernedToolExecContext {
+  readonly signal?: ToolCancelSignal
+}
+
 /** One registrable tool definition (the measured `tools.register` row shape). */
 export interface GovernedToolDefinition {
   readonly name: string
   readonly description: string
   readonly parameters: Record<string, unknown>
-  readonly execute: (raw: unknown) => Promise<{ readonly text: string }>
+  readonly execute: (raw: unknown, exec?: GovernedToolExecContext) => Promise<{ readonly text: string }>
 }
 
 /** The assembly inputs one governed tool family needs. `decide` is REQUIRED: no admission face, no definition. */
@@ -125,14 +141,22 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
       parse: (raw: unknown) => ParseResult<T>,
       backend: ToolEffectBackend,
     ) =>
-    async (raw: unknown): Promise<{ readonly text: string }> => {
+    async (raw: unknown, exec?: GovernedToolExecContext): Promise<{ readonly text: string }> => {
       const parsed = parse(raw)
       if (!parsed.ok) {
         return { text: refusalText('refused-schema', parsed.problems[0]?.code ?? 'unknown', JSON.stringify(parsed.problems).slice(0, 200)) }
       }
       const callId = `${prefix}-${toolKind}-${String(++callSeq)}`
       const result = await runToolCall({
-        request: { realmId: assembly.realmId, callId, parsedArgs: parsed.value },
+        request: {
+          realmId: assembly.realmId,
+          callId,
+          parsedArgs: parsed.value,
+          // B3: the host's cancel signal rides the call untouched. This face
+          // only CARRIES it — the cancelled fact belongs to the row that can
+          // actually stop a payload (the shell arm), never to the presentation.
+          ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+        },
         decide: assembly.decide,
         backend,
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),

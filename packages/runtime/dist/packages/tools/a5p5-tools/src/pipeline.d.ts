@@ -25,7 +25,7 @@
  */
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js';
 import type { ToolContractProblem } from '../../../domain/tool-governance/src/parse-util.js';
-import { type BackendFailure, type ToolEffectBackend } from './backend-contract.js';
+import { type BackendFailure, type ToolCancelSignal, type ToolEffectBackend } from './backend-contract.js';
 import { type LeaseSettlement, type SpillRefusal, type SpillStore } from './spill.js';
 import type { ParsedToolArgs, RenderedPresentation } from './types.js';
 /** The admission verdict this lane consumes (the decision lives elsewhere — no second authorization fact). */
@@ -39,6 +39,8 @@ export interface ToolCallRequest {
     readonly realmId: string;
     readonly callId: string;
     readonly parsedArgs: ParsedToolArgs;
+    /** B3 ADDITIVE: the host cancel signal, carried to the backend untouched (the pipeline itself acts on NOTHING — cancel is the row's fact, not a second authorization here). */
+    readonly signal?: ToolCancelSignal;
 }
 export interface RunToolCallDeps {
     readonly request: ToolCallRequest;
