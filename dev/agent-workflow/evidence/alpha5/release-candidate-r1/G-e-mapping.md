@@ -21,7 +21,7 @@
 | C | **10-17 07:53Z R-1/R-2 批准**（LSP 方向=同意，独立 streaming 启动方法） | COORD:88 |
 | D | **10-17 18:15Z deny-lane 定性为安全实现缺陷→修复令**；19:5xZ **G1（#315）=MERGED**（单点原生命名空间，deny 先于 backend） | COORD:98/:100（`28d31f2a`） |
 | E | **#329 放行入 master**（接管形 native 审批后执行+Gate 0b；此前根 06:43Z 暂不放行→漏洞处置→合入 `1fb14c4d`，双 CI 全绿收口注见 COORD:141） | COORD:132/:134-:137/:141+commit `1fb14c4d`（在 5885e46e 祖先链，merge-base 实证） |
-| F | **10-18 20:12Z #337 方向=根准（R1+rc-first）**；**20:31Z 裁决轮**：glob 独立关断键已裁实施中、C-16 已裁修复中、E3≠承诺候选 | COORD:190/:193 |
+| F | **10-18 20:12Z #337 方向=根准（R1+rc-first；后续=双独审回+收口单 merge-sync 中，见 §B 台账）**；**20:31Z 裁决轮**：glob 独立关断键已裁（闭包头 `27f70457` 交付候门）、C-16 已裁（13 名钉 `c8ad9c4a`+证据笔 `b7deacbc` 已落，预防钉轮进行中）、E3≠承诺候选 | COORD:190/:193+尾行实况（未提交尾源如实） |
 | G | **#334 先批后升放行、#340 根放行**（合并节奏逐 PR 根确认制 04:13Z；#326 CI 最小方案保留不回滚） | COORD:124/:183/:186 系 |
 | H | **T-1=v3 退役窗口=唯一待用户裁（20:2xZ 根口径）**；scoped visibility=三选项材料按根 21:15Z 令**呈根评估**（`scoped-visibility-options.md`，非呈用户）；GLUE-4 Q 单本体 10-17 已 RESOLVED（Q4 准/Q2 拒/Q1 降级/Q3 拒，见该文件） | COORD 20:2xZ 行+GLUE-4 #302=`79f82441` README「Adjudication questions (root) — RESOLVED 2026-10-17」节 |
 
