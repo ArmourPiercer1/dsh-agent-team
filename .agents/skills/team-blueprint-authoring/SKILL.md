@@ -103,6 +103,14 @@ Structural rules (all fail loudly with a classified reason):
     retirement: the window's duration/exit is the T-1 pending ruling and is
     NOT pre-set anywhere; formal Schema ADR:
     `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`).
+    **Provenance of that run set** (doc-sync 2026-10-18): the `{3, 4}` face is
+    the **flip candidate `a7a1cfd2` (PR #324, pending)**; on master
+    (`7ab56dbf`) the constant is still `[3]`
+    (`packages/domain/blueprint/src/schema.ts:75`) and a v4 document is refused
+    `SCHEMA_VERSION_MISMATCH` — the dormant grammar ships unwired there
+    (`382e5fb6`). Read the v4 lines of this file as *what the candidate
+    accepts* until the flip merges; adjudication (1) at the end of this file
+    holds the full per-generation table.
     v3 = v2 shape + the two REQUIRED authority documents, and a document that
     omits either does not parse; v4 = the SAME frozen core face (validated by
     the same frozen v3 validator — the fourth parser delegates) plus the ONE
@@ -402,7 +410,7 @@ Rules (closed vocabulary; anything else is a `MALFORMED_DTO`):
     rule still resolves to `policy.default`. `any` in the `ask` / `deny`
     lanes stays legal in every role (the minimal shell permission).
 
-### 5.2 Interaction with the host preset (live-verified on a 0.1.5-rc.2 host, 2026-09-14)
+### 5.2 Interaction with the host preset (measured live on a **0.1.5-rc.2** host, 2026-09-14 — ERA-FLAGGED: read the era note at the end of this section)
 
 The agent's tool surface is composed by the **host preset** (e.g. the shipped
 `standard`) plus this blueprint's capabilities. Three host-contract facts
@@ -435,7 +443,25 @@ LEADER template — the §5.1 leader exception, dual-gated by the mutation
 envelope — and stays ask/deny-only on members), or keep `subagent_fork` in
 `builtinToolDeny` and accept
 that the model will still see `subagent` post-gate (open P1 finding as of
-2026-09-14; no shipped fix yet).
+2026-09-14; no shipped fix yet — the own-layer surface-shrink line is tracked
+as **SG-C2** in `docs/plans/memo/post-alpha4-debt-register.md`, status 延期).
+
+**Era note for items 1–2 (doc-sync 2026-10-18, no re-verification claimed).**
+These three facts were measured live on a **0.1.5-rc.2** host on 2026-09-14.
+The pinned host generation of this repo has since moved twice — the canonical
+pin is now **0.2.0-rc.2 @ `639ed01539`** (`tests/paths.mjs`:
+`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA`, the single source for the
+generation; per `AGENTS.md` no kit may hardcode a generation). **No live
+re-verification of items 1–2 on the current pin is on record in this repo** —
+the only post-upgrade record naming this surface is the fixture-side
+`dev/agent-workflow/evidence/dsh-020rc2-upgrade/03-team-tool-deny-least-privilege.md`,
+which measures the `team_*` deny-name round, not the preset's spawn-subagent
+install order. So: item 3 is enforced by **this repo's own** coverage gate
+(closed known-sensitive registry,
+`packages/runtime/operation-permission/permission-coverage.ts:154`) and stays
+generation-independent; items 1–2 are host-behavior claims carrying a
+0.1.5-rc.2 measurement date — re-check them on the pin before you design
+anything that depends on the gate having (or not having) seen `subagent`.
 
 **C2 (subagent descendant governance) — open backlog, temporary risk.**
 DSH subagent descendants do not inherit the Team member's agent-local
@@ -516,7 +542,12 @@ capabilities:
   required; neither implies the other.**
 - **legacy templates are unaffected**: a blueprint WITHOUT a
   `capabilities` field stays in legacy mode and inherits the FULL
-  thirteen-tool catalog — `team_archive_member` is part of it.
+  catalog — today **fifteen** tools (the thirteen static specs plus
+  `team_grant_permission` / `team_revoke_permission`, materialised together at
+  `packages/tools/src/tools.ts:1524-1541`; legacy mode = `[...catalog]`,
+  `packages/runtime/src/plugin/live/agent-bindings.mjs:2391-2394`).
+  `team_archive_member` is part of it, and so is anything a later round adds to
+  the catalog — a legacy template follows the catalog, it does not pin a count.
 - **already-created Teams use the frozen Blueprint snapshot**: the bound
   blueprint source is snapshotted into the TeamSession at creation. A
   plugin upgrade that adds a NEW tool to the catalog does NOT inject it
@@ -620,8 +651,10 @@ already bound to in place (frozen revisions replay their stored source).
   token or the call downgrades to human approval — §5.1 dual gate).
 - Denying the preset's own-layer spawn `subagent` in `builtinToolDeny`
   (setup fails with `unknown global tool "subagent"`), or assuming its
-  absence from the gate surface means the model never sees it (on 0.1.5-rc.2
-  standard-preset agents it is installed post-gate — §5.2).
+  absence from the gate surface means the model never sees it (on the
+  0.1.5-rc.2 standard-preset agents that were measured it is installed
+  post-gate — §5.2, era-flagged: not re-verified on the pinned
+  0.2.0-rc.2 host).
 - Leaving `subagent_fork` undecided on a strict standard-preset agent
   (known-sensitive unmanaged → coverage gate FATAL — §5.2).
 - Expecting an edited file to change an already-created team — it does not.
@@ -631,7 +664,7 @@ already bound to in place (frozen revisions replay their stored source).
 
 ## Alpha.4 adjudications affecting what you may author (2026-10-08)
 
-**(1) Blueprint document versions — v3 only after the Alpha.4 PR7 §7.3 cutover.**
+**(1) Blueprint document versions — the §7.3 cutover, and what actually RUNS.**
 The sections above describe the **v1** and **v2** document shapes; they remain
 correct for reading and diagnosing existing blueprints. Once §7.3 lands,
 `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS = [3]`: a v1/v2 blueprint is **not
@@ -643,6 +676,41 @@ migration is a manual authoring task, and the field-by-field semantics live in
 `docs/plans/active/alpha4-permission-governance/` (ADR + spec), not here. When
 authoring anything new, author the current supported version and declare the
 hard envelope explicitly — do not rely on a pre-v3 default.
+
+_Which run set "the current supported version" names moved after Alpha.4, and
+this file said nothing about it until now (doc-sync 2026-10-18; every line below
+was read off the code at the SHA it names):_
+
+- **On master today (`7ab56dbf`) the run set is `[3]`.**
+  `packages/domain/blueprint/src/schema.ts:75` reads
+  `SUPPORTED_BLUEPRINT_DOCUMENT_VERSIONS: readonly number[] = [3]`, so a
+  `schemaVersion: 4` document is refused `SCHEMA_VERSION_MISMATCH`. On master,
+  **v3 is the only version to author against.**
+- **The v4 GRAMMAR already exists — DORMANT** (`382e5fb6`, PR #316, the
+  reversible half): the fourth parser ships **unwired**
+  (`packages/domain/blueprint/src/blueprint-v4.ts`, whose header section is
+  titled "WHY THIS FILE IS NOT WIRED": *"NOTHING shipped reaches the functions
+  below"*), alongside the v4 authoring maps and the migration report. The §4.4
+  closed grammar is machine-pinned by `packages/domain/test/a5sr1-…` through
+  `a5sr5-…` (NEG 33/33). Dormant = it parses in tests, it runs nowhere.
+- **The enablement route is public** (`71af4f64`, PR #320, doc-only): a
+  4-stage table; stages 1–3 are ADR-gate-normal (no user ruling needed),
+  stage 4 is gated **only** on T-1.
+- **The flip is a CANDIDATE, not a delivered fact**: `a7a1cfd2`
+  (`alpha5-v4-flip`, **PR #324 — pending, not on master**) is the stroke that
+  moves the constant to `[3, 4]`; it is what makes the `{3, 4}` wording of §2,
+  §4.4 and `docs/blueprint-authoring.md` literally true on the tree that carries
+  it. Read those sections as **what the candidate accepts** until it merges. The
+  ADR (`docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`)
+  carries the window law either way: **翻档 ≠ 退役** — the flip is not a
+  retirement, and its duration/exit is the T-1 pending ruling, pre-set nowhere.
+- **Effect posture, both generations**: a v4 document's `toolBindings` is
+  parsed, frozen and hash-bound; the runtime effect plane does not yet EXECUTE
+  those lanes. Authoring v4 is safe-but-dark for effects and irreversible for
+  identity.
+- **Retired set is generation-stable**: **1** and **2** stay defined-but-retired
+  (`migration-required`, operator owns the migration); a never-defined version
+  keeps its typed parse refusal.
 
 **(2) A shell-class rule narrowed below `allow` is a one-way door in Alpha.4.**
 If an envelope or member overlay caps a shell-class command at `ask`, executing

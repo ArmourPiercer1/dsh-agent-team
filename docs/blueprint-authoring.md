@@ -146,6 +146,18 @@ Author-facing facts since the v4 flip (formal Schema ADR:
 `docs/plans/memo/alpha5-tool-io-governance/ADR-vnext-blueprint-schema-v4.md`;
 every claim below is machine-pinned by `packages/domain/test/a5fl1-blueprint-v4-flip.test.ts`):
 
+> **Provenance (doc-sync 2026-10-18).** Everything in this section describes the
+> **v4 flip candidate** `a7a1cfd2` (`alpha5-v4-flip`, **PR #324 — pending**, and
+> its pin file `a5fl1` exists only on that line). On master (`7ab56dbf`) the run
+> set is still `[3]` (`packages/domain/blueprint/src/schema.ts:75`), a
+> `schemaVersion: 4` document is refused `SCHEMA_VERSION_MISMATCH`, and the v4
+> grammar ships **dormant and unwired** (the fourth parser's own header: "WHY
+> THIS FILE IS NOT WIRED … NOTHING shipped reaches the functions below",
+> `packages/domain/blueprint/src/blueprint-v4.ts` @ `382e5fb6`, PR #316). The
+> enablement route that decides when this section becomes a master fact is the
+> 4-stage table of `71af4f64` (PR #320) — stages 1–3 ADR-gate-normal, stage 4
+> gated **only** on T-1. No bullet below is a delivered-master claim.
+
 - **Two versions RUN.** `schemaVersion: 3` keeps its frozen branch with zero
   load-time deformation (the same document hashes exactly what it hashed
   before the flip). `schemaVersion: 4` now parses and hashes through the

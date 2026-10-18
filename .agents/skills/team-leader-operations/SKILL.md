@@ -8,7 +8,13 @@ description: Operate a DSH Agent Team as the Leader using the closed set of fift
 Operate a DSH Agent Team from the Leader session. The Leader is the only agent
 role that can create members, delegate work, and resolve leader-level
 approvals. Everything below is the production behavior of the closed fifteen
-`team_*` tools — there are no other team tools, and no hidden side channels.
+`team_*` **coordination** tools — there are no other coordination tools and no
+hidden side channels. They are NOT the whole `team_` namespace: a governed agent
+whose host row carries `teamToolPlane` is additionally given the three
+**effect-face** tools `team_grep` / `team_glob` / `team_bash` plus a
+takeover-placed `read` (§2.1). That face is separately mounted and separately
+lane-governed, none of the fifteen tools drives it, and its real-versus-refused
+shape is a fact you must know before you promise a member's work will run.
 
 ## 1. Preconditions
 
@@ -56,6 +62,24 @@ why this table shows them with the same required args. See the section at the en
 on why narrowing a shell-class rule below `allow` is the one mutation you should think twice
 about before issuing.
 
+**Fifteen is the closed count — and a mounted copy of this text can lag it.**
+The production factory materialises exactly fifteen definitions: thirteen static
+specs plus the `permissionSpec('grant')` / `permissionSpec('revoke')` pair
+(`packages/tools/src/tools.ts:1524-1541` — the pair is invisible to a
+`name: 'team_*'` grep, which is how the count drifted in the first place). The
+same count is recorded independently in the host-upgrade evidence
+`dev/agent-workflow/evidence/dsh-020rc2-upgrade/03-team-tool-deny-least-privilege.md`
+("the plugin registers **15** team tools … plus the pair a `name: 'team_*'` grep
+misses"). A copy of this skill that was **mounted into a host skill directory,
+or checked out on an older branch/tree, is a snapshot**: the Alpha.3-era copy
+still summarizes "the closed set of **thirteen** team tools" (it predates
+`team_grant_permission` / `team_revoke_permission`; e.g.
+`.worktrees/dsh-020rc2-upgrade/.agents/skills/team-leader-operations/SKILL.md:3`
+in this repo is exactly that stale copy). When the mounted text and your live
+session disagree, the **live registered `team_*` surface is the authority** and
+the text is stale — re-copy it from this repo file, and do not conclude from a
+thirteen-name summary that grant/revoke do not exist.
+
 Optional args worth knowing:
 
 - `team_delegate` / `team_follow_up`: `async` (boolean, **default true
@@ -91,6 +115,52 @@ Optional args worth knowing:
   mutations, it is guarded on the target: a pending control request for
   the scope blocks it. A member caller is rejected
   (`TEAM_TOOL_ARCHIVE_NOT_LEADER`) before any effect.
+
+### 2.1 The effect-face tools: what a governed agent can actually execute
+
+The fifteen tools above move **team state**. File / search / shell effects run
+through a different, separately governed plane, mounted per agent (Leader or
+member) ONLY when that agent's host row carries `teamToolPlane` in its config —
+an absent row means none of these tools exists at all (mount gate:
+`packages/runtime/src/plugin/live/agent-bindings.mjs`, the GLUE-5 row; assembly:
+`packages/runtime/src/plugin/live/team-tool-plane.mjs`). The names are
+`team_grep` / `team_glob` / `team_bash` (`DEFAULT_PLANE_NAMES`,
+`team-tool-plane.mjs:82` at `0e59140b`), plus the native `read`, which is
+takeover-placed with its placement-feed rows into the Guard.
+
+Production behavior of that face **as delivered on master** (backend assembly
+row `0e59140b`, PR #323, which carried the reviewed GLUE-7 work of the closed
+#321):
+
+- `team_grep` — a REAL anchored **read-only `grep(1)`** search over the row's
+  governed fs root (`grepArgv` = `-rIn --binary-files=without-match`;
+  multiline is refused by name, never reinterpreted:
+  `packages/runtime/src/plugin/live/plane-effect-backends.mjs:109,:177`), and
+  ONLY when the row configured `plane.fsInstance.rootDir`
+  (`createAnchoredSearchBackend`). Do not promise rg semantics (ignore/hidden
+  handling, binary shape, error shape) from this row — the plan's rg-parity
+  regression baseline is a separate open item.
+- `team_bash` — a REAL confined process provider (kernel-confined, launcher
+  double byte gate + `trustRoot` pairing), and ONLY when the row configured
+  `plane.confinedProvider`.
+- `team_glob` — **no production effect body at all**: every call lands on the
+  typed refusal `IO_POLICY_UNSUPPORTED` (`productionBackends.glob = shut`,
+  `team-tool-plane.mjs:403-408` at `0e59140b`). The anchored rg implementation
+  is the **candidate `04f72c1b`…`ee9b30d5` (PR #322, pending — not on master)**,
+  whose own re-review found a name-class leak and whose four merge gates are
+  open; until it lands, `team_glob` is honestly shut and must not be described
+  as working.
+- Any class whose row is unconfigured keeps that same typed shut landing —
+  the closed world invents no fallback. A shut landing is a LANDING, not
+  evidence of a policy denial.
+- The template lane denies **before** any backend runs (`28d31f2a`, G1): a
+  denied effect call executes nothing and leaves zero side effects.
+
+What that means for you: `IO_POLICY_UNSUPPORTED` from a member's `team_glob`, or
+from any unconfigured row, is a **missing-backend fact, not a pending approval**
+— no `team_resolve_control` answer unlocks it. Change the configuration (or wait
+for the candidate row to land), and report the refusal verbatim instead of
+retrying it.
 
 ## 3. Delegation: the standard loop
 
@@ -318,7 +388,7 @@ ships **no Human Admin resolver** (`CONTROL_UNRESOLVABLE_AUTHORITIES =
 its terminal deny (ADR A1-12). Consequences you will observe:
 
 - the member's affected command is **permanently unavailable at runtime** — no
-  pending approval appears, `team_list_pending_approvals` will not show it, and
+  pending approval appears, `team_list_pending_control` will not show it, and
   nothing retries or unblocks it;
 - there is **no UI affordance** to release it; `team_resolve_control` cannot
   answer a case whose reviewer cannot exist;
