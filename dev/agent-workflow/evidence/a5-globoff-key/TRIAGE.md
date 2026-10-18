@@ -34,3 +34,13 @@ createTeamToolPlaneAssembly + its docblock; zero diff lines in PLANE_RESERVED_NA
 or verifyPlaneNames (parallel 单 B territory, branch a5-pindir). agent-bindings.mjs
 untouched: planeCfg is passed through whole (`plane: planeCfg`), so the new key
 arrives at the assembly with zero binding-layer edit.
+
+Post-commit closures (same day):
+- a4p7-merge-gate re-run at the commit: the surface-freshness leg PASSES (the dist mirror rode
+  the commit); only the pre-existing base leg "is green, asserted by arm name" remains.
+- check-artifacts-committed: verdict=ok, 1748 files, glue=9 (working tree == index).
+- check-artifacts-at-head (scratch-build of HEAD, transcript `check-artifacts-at-head.log`):
+  verdict=ok, drift=0 - "HEAD carries its own build: the committed surface IS a fresh
+  build of itself (1748 compared file(s))".
+- a5-globoff-key spec re-run at the commit: 7/7 green (real rg glob leg + real
+  Landlock matrix leg included).
