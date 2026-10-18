@@ -283,16 +283,30 @@ describe('B2 X — the shipped shell row, end to end (real plane, real kernel re
     expect(res.text).toContain('bash · exit=not-observed · timed-out')
   }, SLOW)
 
-  it('X6 disclosed, NOT fixed: this row always reports cancelled false, so the renderer cancelled branch has no path here', async () => {
-    // Pinned so the gap stays a KNOWN gap rather than an implied guarantee. The
-    // shell row has no cancel input: the only way it stops a payload is its own
-    // timeout, and that path reports timedOut with a null code (X5). So the
+  it('X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel', async () => {
+    // The fact in two layers, per the root's 15:14Z ① (this prose is the only
+    // thing updated; the judgment below is byte-identical to B2's pin).
+    // LAYER 1 — what B2 booked: at that time the shell row genuinely had no
+    // cancel input — its only stop was its own timeout (X5) — so the
     // `bash · cancelled` line in `renderShellResult` (packages/tools/a5p5-tools/
-    // src/render.ts:183-184) is unreachable through this row, and the
-    // `cancelled: false` the row returns is not a lie — it is "this row was never
-    // asked to cancel". Whether cancellation should exist at all on the effect
-    // face is a different semantic, owned by that face (A4 measures the provider
-    // terminate arm, which is a different thing again). Recorded here, unchanged.
+    // src/render.ts:183-184) was unreachable through this row, and the
+    // `cancelled: false` the row returned was not a lie but "never asked".
+    // LAYER 2 — what B3 changed and what it did not: B3 wired the row's cancel
+    // channel (the host's cooperative signal, carried on the TWO-argument
+    // execute path — `a5b3-cancel-leg.test.ts` pins it end to end). So the
+    // B2-era wording "the shell row has no cancel input" is superseded prose:
+    // the row HAS a signal surface now. What this leg still pins, load-bearing
+    // and unchanged, is the other half: the ONE-argument caller path — this
+    // very call, no exec argument, no signal — is NOT a cancellation path.
+    // No signal, no leg (`register.ts`'s optional second parameter keeps it
+    // byte-identical; `raceShellSettle` grows no abort leg it was never given),
+    // so the honest report stays the honest report: `cancelled: false`, the
+    // cancelled word out of this wire. "This leg injects no signal" is the
+    // pinned fact; "the row has no signal surface" was stale prose — the two
+    // must not be conflated. Whether non-user stops (hook/disposed, provider
+    // terminate) should ever RENDER as cancellation is owned elsewhere (A4
+    // measures the terminate arm; B3's C3 pins the death form). Recorded
+    // here, judgment UNCHANGED: a register single-arg compatibility pin.
     const plane = buildPlane()
     const res = await def(plane, 'team_bash').execute({ command: 'sleep 15', timeout: 1 })
     expect(metaOf(res.text).cancelled).toBe(false)

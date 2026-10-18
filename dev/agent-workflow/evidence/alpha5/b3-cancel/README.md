@@ -168,11 +168,15 @@ regardless of the host clock, and the suite re-ran 11/11.
 
 ## 6. Disclosures
 
-* **B2's X6 comment is now stale-but-green.** `a5b2-exit-code-fidelity.test.ts` X6 still says the
-  shell row "has no cancel input"; the row does now, and X6 passes unchanged precisely because it
-  calls `execute` with ONE argument (`cancelled:false` pinned there). Rewriting another round's
-  spec comment is a docs follow-up for the root, not a B3 edit — B3's rule was zero motion in
-  B2's files, and it holds.
+* **B2's X6 comment: CLOSED per the root's 15:14Z order (①), forward commit on this branch.**
+  The B2-era wording ("the shell row has no cancel input") was superseded by this round, and the
+  root ruled the prose may be corrected directly: X6's title and comment now state the fact in
+  two layers — the LEG injects no signal (the one-argument caller path is not a cancellation
+  path: no signal, no leg, `cancelled:false` honestly), while the ROW now has a cancel channel
+  (B3, two-argument path, pinned by `a5b3-cancel-leg.test.ts`) — explicitly separating "this
+  leg injects no signal" from the stale "the row has no signal surface". **X6's judgment and
+  call bytes are byte-identical to B2's pin** (the register single-arg compatibility pin, green
+  shape unchanged); that commit's diff surface is comments + this README only.
 * **The 18 full-suite reds are environment, not this round** — proved by the BASE twin: an
   identical tree (`fee982d2`, byte-identical `a5b2-rc` worktree, same host, same command) fails
   the SAME 18 tests in the SAME 7 files. HEAD's only delta is +7 passes.
