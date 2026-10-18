@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-45-02Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-346cfe28>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash] realm=a5g7-realm-preassembly
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash] realm=a5g7-realm-preassembly
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash] realm=a5g7-realm-preassembly

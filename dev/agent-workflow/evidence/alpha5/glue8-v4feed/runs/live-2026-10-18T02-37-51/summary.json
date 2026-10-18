@@ -1,0 +1,5 @@
+{
+  "runStamp": "2026-10-18T02-37-51",
+  "fatal": "test-use not pristine-at-baseline: HEAD=undefined dirty=undefined",
+  "criteria": []
+}

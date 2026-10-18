@@ -1,0 +1,12 @@
+{
+  "runStamp": "2026-10-18T02-42-52",
+  "fatal": "row setup failed — setupError: the glue module (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs) could not be loaded: Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs\n--- tail ---\n[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3185/?token=REDACTED-c9b49e40\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs) could not be loaded: Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs\n    at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt/packages/runtime/dist/packages/runtime/src/plugin/host.js:1269:19)\n",
+  "criteria": [
+    {
+      "id": "A0.0",
+      "name": "test-use pristine at the paths.mjs baseline",
+      "ok": true,
+      "detail": "sha=639ed015397290b3745d163aafe02ffee4aa3f84"
+    }
+  ]
+}

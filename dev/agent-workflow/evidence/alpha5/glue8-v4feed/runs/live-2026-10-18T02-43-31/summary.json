@@ -1,0 +1,125 @@
+{
+  "runStamp": "2026-10-18T02-43-31",
+  "hostBaseline": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPort": 3185,
+  "mockPort": 3495,
+  "worktree": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5int-mnt",
+  "criteria": [
+    {
+      "id": "A0.0",
+      "name": "test-use pristine at the paths.mjs baseline",
+      "ok": true,
+      "detail": "sha=639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    {
+      "id": "A1.0",
+      "name": "real host booted on the production row (profile-patch seam; v3 anchor team alive)",
+      "ok": true,
+      "detail": "origin=http://127.0.0.1:3185"
+    },
+    {
+      "id": "A1.1",
+      "name": "boot root surface captured (bash present; unmanaged remainder computed)",
+      "ok": true,
+      "detail": "surface=20 deny=0"
+    },
+    {
+      "id": "A2.0",
+      "name": "catalog.list carries the v4 saved source",
+      "ok": true,
+      "detail": "row={\"blueprintId\":\"team.a5fl-v4\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":4,\"migrationState\":\"current\"}]}"
+    },
+    {
+      "id": "A2.1",
+      "name": "the v4 row RUNS (schemaVersion 4 stamped, migrationState=current — not migration-required, not unsupported)",
+      "ok": true,
+      "detail": "state={\"revision\":1,\"schemaVersion\":4,\"migrationState\":\"current\"}"
+    },
+    {
+      "id": "A2.3",
+      "name": "v3 zero-drift witness at the wire: the v3 anchor row still lists RUNS (3/current) alongside",
+      "ok": true,
+      "detail": "state={\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}"
+    },
+    {
+      "id": "A4.1",
+      "name": "the v4 team member ask opened a DURABLE leader-approval request (real runtime governance on a v4-bound team)",
+      "ok": true,
+      "detail": "ledger={\"requests\":[{\"requestId\":\"ctrl-10cpv1h0gmdtuy1argeyb1gv\",\"kind\":\"leader-approval\",\"toolName\":\"bash\"}],\"decisions\":[],\"consumptions\":[],\"error\":null}"
+    },
+    {
+      "id": "C5",
+      "name": "refuse-before-side-effect, live: with the leader-approval request OPEN, the ask-gated native bash produced ZERO side effect in the world (no marker file anywhere under HOME; the tool body had not been reached)",
+      "ok": true,
+      "detail": "preAllowSideEffect=false requestId=ctrl-10cpv1h0gmdtuy1argeyb1gv"
+    },
+    {
+      "id": "A4.2",
+      "name": "team.resolveControl (v4 wire) ACCEPTS the allow on the v4 team (durable decision)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5flres-edvrun0wy9\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-10cpv1h0gmdtuy1argeyb1gv\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-a5fl-v4team-2026-10-18T02-43-31\"},\"scope\":{\"rootSessionId\":\"session-a5fl-v4team-2026-10-"
+    },
+    {
+      "id": "A3.0",
+      "name": "team.create ACCEPTS the v4 blueprint on a fresh root (production parse-once→validate→snapshot ran the fourth parser)",
+      "ok": true,
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"a5flc-1sqdfhhqbe\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5fl-v4team-2026-10-18T02-43-31\",\"blueprint\":{\"blueprintId\":\"team.a5fl-v4\",\"revision\":\"1\",\"contentHash\":\"sha256:2812bc350"
+    },
+    {
+      "id": "A2.2",
+      "name": "catalog.get returns the v4 identity (schemaVersion 4 + contentHash, blueprintId match)",
+      "ok": true,
+      "detail": "status=200 hash=sha256:2812bc350df9c334"
+    },
+    {
+      "id": "A4.3",
+      "name": "the human allow is DURABLE (control-decision-recorded on the team ledger)",
+      "ok": true,
+      "detail": "decisions=[{\"requestId\":\"ctrl-10cpv1h0gmdtuy1argeyb1gv\",\"decision\":\"allow\"}]"
+    },
+    {
+      "id": "A4.0",
+      "name": "the v4 team leader ran create_member + team_delegate and the executed work-admitted receipt landed in the leader context",
+      "ok": true,
+      "detail": "final=A5FL_LEAD_DONE_DELEGATED"
+    },
+    {
+      "id": "A4.4",
+      "name": "RED-FIRST fail-closed pin: the allow was CONSUMED and the member bash dispatch reached the Tool Binding verification gate (unfed plane = refusal, the exact refusal text)",
+      "ok": true,
+      "detail": "consumed=true guardFace=true memberText=\"A5FL_MEM_DONE :: [{\\\"type\\\":\\\"tool_result\\\",\\\"tool_use_id\\\":\\\"call-a5fl-mhkbyesn\\\",\\\"content\\\":[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"bash\\\\\\\" cannot be verified at dispatch time (no fallback to th\""
+    },
+    {
+      "id": "A5.0",
+      "name": "the unverified binding executed NOTHING: no marker file on disk (closed world, no fallback to the native body)",
+      "ok": true,
+      "detail": "markerExists=false"
+    }
+  ],
+  "passed": 15,
+  "total": 15,
+  "failed": [],
+  "stable": {
+    "pre": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    },
+    "post": {
+      "p3080": {
+        "url": "http://127.0.0.1:3080/",
+        "status": 401
+      },
+      "p3180": {
+        "url": "http://127.0.0.1:3180/",
+        "status": "unreachable"
+      }
+    }
+  },
+  "verdict": "PASS"
+}

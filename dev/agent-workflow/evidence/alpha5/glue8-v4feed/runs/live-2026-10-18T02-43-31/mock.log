@@ -1,0 +1,11 @@
+mock: listening on 127.0.0.1:3495
+mock: 1 [messages] text reply (14 chars): "A5FL_DISC_DONE"
+mock: 2 [messages] text reply (17 chars): "a5fl live session"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] text reply (17 chars): "a5fl live session"
+mock: 5 [messages] tool-call reply: team_delegate
+mock: 6 [messages] tool-call reply: bash
+mock: 7 [messages] text reply (17 chars): "a5fl live session"
+mock: 8 [messages] text reply (217 chars): "A5FL_MEM_DONE :: [{\"type\":\"tool_result\",\"tool_use_id\":\"call-a5fl-mhkbyesn\",\"cont"
+mock: 9 [messages] text reply (24 chars): "A5FL_LEAD_DONE_DELEGATED"
+mock: 10 [messages] text reply (10 chars): "A5FL_NOTED"

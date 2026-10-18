@@ -1,0 +1,21 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-37-15Z/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 16 entries did not activate
+user-questions (@deepseek-ai/dsh-user-questions): failed to import
+deepseek-account (@deepseek-ai/dsh-deepseek-account-platform): failed to import
+otel (@deepseek-ai/dsh-otel): failed to import
+session-telemetry-otel (@deepseek-ai/dsh-session-telemetry-otel): pending (waiting for service: otel)
+sandbox (@deepseek-ai/dsh-sandbox-local): failed to import
+bash-sandbox (@deepseek-ai/dsh-bash-sandbox): pending (waiting for service: sandbox)
+permission (@deepseek-ai/dsh-permission-presets): pending (waiting for service: shell)
+ptc-runtime (@deepseek-ai/dsh-ptc-runtime-node): pending (waiting for service: sandbox)
+llm-deepseek (@deepseek-ai/dsh-llm-deepseek-api-key): failed to import
+llm-deepseek-account (@deepseek-ai/dsh-llm-deepseek-account): failed to import
+session-controller (@deepseek-ai/dsh-api-session-controller): failed to import
+account-controller (@deepseek-ai/dsh-api-account-controller): failed to import
+shortcuts (@deepseek-ai/dsh-client-shortcuts): failed to import
+ui-shortcuts (@deepseek-ai/dsh-client-ui-shortcuts): failed to import
+ui-deliverables (@deepseek-ai/dsh-client-ui-deliverables): pending (waiting for service: sessionController)
+ui-settings-session-log (@deepseek-ai/dsh-client-ui-settings-session-log): failed to import
+dsh web: http://127.0.0.1:3183/?token=<REDACTED-ea157a8c>
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the glue module (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-37-15Z/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs) could not be loaded: Error: Cannot find module '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-37-15Z/packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs' imported from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-37-15Z/packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs
+    at bootstrap (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-18T02-37-15Z/packages/runtime/dist/packages/runtime/src/plugin/host.js:1269:19)
