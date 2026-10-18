@@ -31,7 +31,7 @@
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -73,7 +73,20 @@ const C16_NAMES: readonly string[] = [
 // `subagent_fork is a live shipped registration...` re-verifies that presence
 // at the host tree every run, so a future harvest change REDs here instead of
 // silently deleting the pin.
-const REVERSE_DISPOSITIONS: Readonly<Record<string, string>> = Object.freeze({})
+// Current entries (root ruling 21:15Z, (b)+(c)): the two shipped-disabled
+// subagent route names — shipped native names whose real registration source
+// the pin carries (route config tool-subagent index.ts:108; route instances
+// web-app presets cordis :107/:115, ptc :108/:116, standard :108/:116 with
+// `disabled: true` in the same blocks); the catalog artifact does NOT list
+// them (boot harvest skips disabled routes, shippedNames only carries
+// subagent/subagent_fork), so they enter this table by law, keep-with-
+// rationale: "shipped native names, default-disabled is not an impersonation
+// licence" — preventive claim-denial reservation, zero enablement, tested for
+// flip-drift in a5-pindir-subagent-flip.test.ts.
+const REVERSE_DISPOSITIONS: Readonly<Record<string, string>> = Object.freeze({
+  subagent_codex: 'kept (root 21:15Z): shipped native route name, disabled in every shipped preset; real registration source at the pin; preventive claim-denial, enables nothing',
+  subagent_claude_code: 'kept (root 21:15Z): shipped native route name, disabled in every shipped preset; real registration source at the pin; preventive claim-denial, enables nothing',
+})
 
 const UNSUPPORTED = 'PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED'
 
@@ -199,6 +212,44 @@ describe('a5-pindir C-16 reserved-native registry vs the authoritative catalog h
     const reverse = [...pinned].filter((n) => !catalog.has(n)).sort()
     const unexplained = reverse.filter((n) => REVERSE_DISPOSITIONS[n] === undefined)
     expect(unexplained, `REVERSE drift without an explicit disposition (kept-with-rationale or retired — never silent): ${JSON.stringify(unexplained)}`).toEqual([])
+  })
+
+  it('PROVENANCE of every pin: a guessed name is RED — each pinned name must carry a real registration source at the host tree (root 21:15Z)', () => {
+    // A name enters the deny table only with a REAL registration source at the
+    // pinned host release: a quoted literal ('name'/"name"), a `toolName: name`
+    // bundle route, or a NAMED template loop (stagehand only — the template is
+    // listed explicitly, it is not a wildcard). "guessed name = red": a pin
+    // that no host source produces is a hallucinated entry, RED by law.
+    const paths = PATHS
+    const hostRoot = paths.findTestRepoRoot(REPO) as string
+    const tree = join(hostRoot, paths.TEST_USE_REL)
+    const sha = execFileSync('git', ['-C', tree, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+    expect(sha, `host tree moved (${sha}) — re-derive sources before consuming this check`).toBe(paths.TEST_USE_BASELINE_SHA)
+    const files: string[] = []
+    const walk = (dir: string, depth: number): void => {
+      if (depth > 6) return
+      for (const e of readdirSync(dir)) {
+        if (e === 'node_modules' || e === '.git' || e === 'lib' || e === 'dist' || e === 'out') continue
+        const p = join(dir, e)
+        if (statSync(p).isDirectory()) walk(p, depth + 1)
+        else if (/\.(ts|mjs|yml|yaml)$/.test(e) && !/\.(spec|test)\./.test(e) && !/(^|\/)tests?\//.test(p.slice(tree.length + 1))) files.push(p)
+      }
+    }
+    walk(join(tree, 'packages'), 1)
+    expect(files.length, 'host source enumeration ran').toBeGreaterThan(500)
+    const blobs = files.map((f) => readFileSync(f, 'utf8'))
+    const TEMPLATES: Readonly<Record<string, string>> = {
+      stagehand_act: 'stagehand_${method}', stagehand_extract: 'stagehand_${method}',
+      stagehand_navigate: 'stagehand_${method}', stagehand_observe: 'stagehand_${method}',
+      stagehand_screenshot: 'stagehand_${method}', stagehand_tabs: 'stagehand_${method}',
+    }
+    const missing: string[] = []
+    for (const name of row.PLANE_RESERVED_NATIVE as unknown as string[]) {
+      const direct = blobs.some((t) => t.includes(`'${name}'`) || t.includes(`"${name}"`) || t.includes(`toolName: ${name}`))
+      const tmpl = TEMPLATES[name] !== undefined && blobs.some((t) => t.includes(TEMPLATES[name] as string))
+      if (!direct && !tmpl) missing.push(name)
+    }
+    expect(missing, `pins WITHOUT a real registration source at the pin (guessed names are RED): ${JSON.stringify(missing)}`).toEqual([])
   })
 
   it('the host baseline pin matches tests/paths.mjs (drift pin reds when the host moves)', () => {

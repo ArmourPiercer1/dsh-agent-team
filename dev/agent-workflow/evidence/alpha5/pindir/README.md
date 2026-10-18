@@ -91,3 +91,26 @@ provider 路由名，**在每个 shipped preset 均 `disabled: true`**
 - 满跑套件在 cwd 留过 `packages/runtime/out|plans` 运行残渣（非 gitignore 覆盖），已按名删除两轮；
   若 CI/他单满跑再现，属既有残渣模式，非本单文件。
 - 测试世界 `tests/homes/a5pindir-unit-*` 由 afterAll 自删；端口/mock LLM 位未用（纯装配级）。
+
+## 附记：根 21:15Z 裁决轮（(b)+(c)，正向第二笔）
+
+- **两名补钉**：`subagent_codex`/`subagent_claude_code` 入 PLANE_RESERVED_NATIVE（现 68 名）。
+  注释=真实注册来源（宿主 index.ts:108 路由名 + presets cordis :107/:115、ptc :108/:116、
+  standard :108/:116，disabled 同块 standard :105/:113）+"默认 disabled 不构成冒名许可"。
+  **零启用**：spec 腿断言两路由在全部 bundle/preset 仍无 enabled 块；工具本体保持 shipped 禁用。
+- **翻转漂移**：新 spec `a5-pindir-subagent-flip.test.ts`（4 腿：事实+fixture 精准性、
+  逐名双向往返（钉态不变×4 面×verify+assembly、两向 verdict 字符串恒等）、零启用）。
+  双向原文=flip-drift-raw.txt（含完整拒绝 message 与 assembly verdict；fixture 纯内存，
+  宿主 bundle porcelain="" 自证）。fixture 修注：split 吞换行需 join('\n')（首轮红即此，已修）。
+- **来源反查**：双向机检新增"钉名须有真实注册来源"腿（字面量/`toolName:` 路由/命名模板三类，
+  stagehand 六名走显式命名模板；猜名=红）。现场 census=source-provenance-census.txt：
+  66 名全过（两名入表后 spec 腿现场重跑亦过）。
+- **REVERSE_DISPOSITIONS 首次启用**：两名以 root 21:15Z 理由入表（catalog 不含 disabled 路由名，
+  属合法反向，须显式理由——正是该机制的用武示例）。
+- **stagehand 六名销案**（根 21:15Z ③）："现装才钉"口径撤回后无冲突悬案，维持已钉不动；
+  ADVERSARIAL-SWEEP.md 附记同步销案。
+- **p4t6 重 tie**：新增第二 spec → 现场 scanner 亲数 MEASURED_TOTAL=1202
+  （p4t6-anchor-1202.txt），名册 SCANNED_PATHS_A5PINDIR 具名两条、tie `toBe(1202-1200)`、
+  覆盖标题字面=1202。p4t6 10/10 绿。
+- 邻居矩阵 4 文件 **48/48**（natexe-glue7-pindir-flip-green.log）；tsc 双包 0；
+  全套复跑=runtime-full-suite-r2.log（判读按 PREEXISTING-ENV-FAILURES.md，同法重锚）。

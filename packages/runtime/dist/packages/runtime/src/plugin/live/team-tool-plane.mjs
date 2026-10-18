@@ -229,7 +229,7 @@ const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
 // present/send_message mountable — the same own-mask + verified-abstain
 // impostor face. The list below is the full registry (fs 6, shells 2,
 // str_replace_editor, lsp, present, skill 2, todo, ask, web 2, goal 3, jobs
-// 3, plan, subagent family 6, terminal 6, session-query 5, mcp-resource 3,
+// 3, plan, subagent family 8, terminal 6, session-query 5, mcp-resource 3,
 // ralph, experimental agent-team 6, cordis preset 2 — plus the C-16 second
 // derivation (a5-pindir round): ptc reserved transport 1, plugin-manager 1,
 // schedule 4, workflow 1, experimental browser-use stagehand 6), plus the dynamic
@@ -249,7 +249,12 @@ const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
 // schedule_*/plugin_manager via tools.ts maps, workflow/stagehand via the
 // toolName-config route). A pinned name NOT in the catalog needs an explicit
 // reason entry in the drift test — never silent (retire or keep-with-rationale,
-// both lawful; the subagent-fork disposition below is the worked example).
+// both lawful; the subagent_codex/subagent_claude_code reservations below are
+// the worked examples: shipped native names, disabled by default, kept with
+// the root 21:15Z rationale). Every pinned name must ALSO carry a real
+// registration source at the pin (literal quote, `toolName:` route, or a
+// named template loop) — a guessed name with no source is RED (root 21:15Z:
+// "新增名都须真实注册来源，不能猜名扩表").
 export const PLANE_RESERVED_NATIVE_HOST_PIN = '0.2.0-rc.2@639ed01539'
 export const PLANE_RESERVED_NATIVE = Object.freeze([
   'read', 'read_image', 'write', 'edit', 'glob', 'grep',
@@ -274,11 +279,21 @@ export const PLANE_RESERVED_NATIVE = Object.freeze([
   // mounts it ENABLED (packages/bundle/base/cordis.patch.yml tool-subagent-fork
   // + web-app presets cordis/ptc/standard `toolName: subagent_fork`, no
   // disabled flag). The sibling routes subagent_codex / subagent_claude_code
-  // are `disabled: true` in every shipped preset (cordis/ptc/standard) — not
-  // model-visible at any shipped default, absent from the catalog artifact,
-  // therefore NOT pinned here; reported to root for a separate ruling (a
-  // one-line flip makes them mountable — the impersonor face would be identical).
-  'subagent', 'subagent_fork', 'list_subagent_models', 'list_agents', 'send_message', 'interrupt_agent',
+  // are PINNED TOO (root ruling 21:15Z, option (b)+(c)): they are shipped
+  // native tool names — real route registrations at the pin (the same
+  // tool-subagent toolName route, host packages/subagent/tool-subagent/src/
+  // index.ts:108 `toolName: z.string().default('subagent')`; route instances
+  // web-app presets cordis.patch.yml:107/:115, ptc.patch.yml:108/:116,
+  // standard.patch.yml:108/:116) — and a shipped-default `disabled: true`
+  // (standard :105/:113, cordis/ptc same-block) is NOT an impersonation
+  // licence: one preset flip makes them mountable, the impostor face would be
+  // identical. Preventive reservation only — this denies plane CLAIMS of the
+  // two names, it enables nothing and widens no model permission (the tools
+  // stay disabled exactly as shipped). The flip itself is drift-tested
+  // (a5-pindir-subagent-flip): a disabled->enabled flip changes no pin state,
+  // injections refuse in both directions.
+  'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code',
+  'list_subagent_models', 'list_agents', 'send_message', 'interrupt_agent',
   'terminal_open', 'terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal',
   'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace',
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',

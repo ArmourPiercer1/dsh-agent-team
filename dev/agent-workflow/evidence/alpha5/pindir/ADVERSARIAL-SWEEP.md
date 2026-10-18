@@ -63,3 +63,10 @@ subagent-inheritance-snapshot.patch.yml、apps/web/tests/auto-review-child.overl
    `stagehand` 型（catalog 发货但 bundle 默认不挂）说明"现装"存在 **catalog 发货口径** vs
    **shipped-default 挂载口径** 两读法；A3/A4 的裁决与机检腿加否，等根裁后另笔。
 4. 本件为纯证据 commit（无代码/测试改动）；p4t6 扫描面不含 dev/ 证据，无需重 tie。
+
+## 附记（根 21:15Z 裁决落地后销案）
+
+③ 处置已裁：subagent_codex/subagent_claude_code = **补钉**（shipped 原生名，默认 disabled
+不构成冒名许可；预防性拒绝声明面，零启用零权限变化）。本件"未置可否"段就此关闭；
+钉名注释携带本件全部行号核据。stagehand 六名=**维持已钉**，"现装才钉"撤回后无冲突悬案（销案）。
+"enabled 路由未钉=红"泛化腿未加（本件时点口径）；现行机检=双向漂移+来源反查+flip 漂移三件套。
