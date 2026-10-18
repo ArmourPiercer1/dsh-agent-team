@@ -15,35 +15,35 @@ stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plan
 [dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G3 shell positive (REAL Landlock): with plane.confinedProvider the team_bash call RUNS confined on this host
-[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8236 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8419 exit=0 timedOut=false cancelled=false
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
 [dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G4 shell confinement (REAL): reading a file outside every allowPath is refused by the kernel inside the child
-[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8246 exit=1 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8429 exit=1 timedOut=false cancelled=false
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
 [dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5g7-unit-realm legs=6
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G6 CURRENT FORM (int-r3 flip): the glob row is live-anchored — inside matches answer, outside bytes never do
-[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob-1 pid=8257 files=22 capped=false
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5g7-unit-realm call=team-a5g7-instance-glob-1 pid=8440 files=2 capped=false
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G7 read placement + feed rows: the governed read is PLACED, executes over the governed root, and the placement identity rides the §6 feed
-[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/homes/a5g7-unit-mvealshz/root/data/needle.txt
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=49 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/homes/a5g7-unit-mvee50gq/root/data/needle.txt
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
 [dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5g7-unit-realm rows=6
 
 stdout | packages/runtime/test/alpha5-glue7-plane-backends.test.ts > GLUE-7 plane backends assembly > G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)
-[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8279 exit=0 timedOut=false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-unit-realm call=team-a5g7-instance-bash-1 pid=8462 exit=0 timedOut=false cancelled=false
 
- ✓ packages/runtime/test/alpha5-glue7-plane-backends.test.ts (12 tests) 2070ms
+ ✓ packages/runtime/test/alpha5-glue7-plane-backends.test.ts (12 tests) 2133ms
 
  Test Files  1 passed (1)
       Tests  12 passed (12)
-   Start at  20:43:21
-   Duration  2.25s (transform 447ms, setup 0ms, import 40ms, tests 2.07s, environment 0ms)
+   Start at  22:22:17
+   Duration  2.31s (transform 494ms, setup 0ms, import 42ms, tests 2.13s, environment 0ms)
 
 npm notice
 npm notice New major version of npm available! 11.19.0 -> 12.2.0

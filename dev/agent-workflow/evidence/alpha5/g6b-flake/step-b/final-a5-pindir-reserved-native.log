@@ -1,0 +1,17 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+ ✓ packages/runtime/test/a5-pindir-reserved-native.test.ts (20 tests) 1470ms
+     ✓ PROVENANCE of every pin: a guessed name is RED — each pinned name must carry a real registration source at the host tree (root 21:15Z)  866ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  22:22:35
+   Duration  1.65s (transform 466ms, setup 0ms, import 41ms, tests 1.47s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
