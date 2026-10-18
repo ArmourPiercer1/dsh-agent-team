@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-abort-cause
+
+ ✓ packages/runtime/test/a5r-cause-relay.test.ts (9 tests) 12ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  22:17:29
+   Duration  666ms (transform 387ms, setup 0ms, import 518ms, tests 12ms, environment 0ms)
+
