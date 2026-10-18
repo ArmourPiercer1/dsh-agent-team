@@ -64,6 +64,20 @@ async function loadVerifyPlaneNames(): Promise<
   return row.verifyPlaneNames
 }
 
+/** The row module face the drift pin reads (exports shipped by the 06:43Z
+ *  exhaustion round): the pinned host baseline + the reserved-native registry. */
+async function loadPlaneNamesModule(): Promise<{
+  PLANE_RESERVED_NATIVE: readonly string[]
+  PLANE_RESERVED_NATIVE_PREFIXES: readonly string[]
+  PLANE_RESERVED_NATIVE_HOST_PIN: string
+}> {
+  return (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as {
+    PLANE_RESERVED_NATIVE: readonly string[]
+    PLANE_RESERVED_NATIVE_PREFIXES: readonly string[]
+    PLANE_RESERVED_NATIVE_HOST_PIN: string
+  }
+}
+
 /** The refusal the GLUE-8 assembled A4.4 pinned for native bash, byte-for-byte. */
 const VERBATIM_BASH_REFUSAL =
   'team tool guard: the Tool Binding for "bash" cannot be verified at dispatch time (no fallback to the native body)'
@@ -279,6 +293,12 @@ describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root
       ['reader row as the image reader (readName=read_image)', D, 'read_image', UNSUPPORTED, "reserved native name 'read_image'"],
       ['reader row as the lsp (readName=lsp)', D, 'lsp', UNSUPPORTED, "reserved native name 'lsp'"],
       ['grep row claiming its own native (no assembled pairing)', { ...D, grep: 'grep' }, 'read', UNSUPPORTED, "reserved native name 'grep'"],
+      ['grep row under web_search (host native, exhaustive face)', { ...D, grep: 'web_search' }, 'read', UNSUPPORTED, "reserved native name 'web_search'"],
+      ['glob row under todo_write', { ...D, glob: 'todo_write' }, 'read', UNSUPPORTED, "reserved native name 'todo_write'"],
+      ['bash row under present', { ...D, bash: 'present' }, 'read', UNSUPPORTED, "reserved native name 'present'"],
+      ['read row under send_message', D, 'send_message', UNSUPPORTED, "reserved native name 'send_message'"],
+      ['grep row under skill', { ...D, grep: 'skill' }, 'read', UNSUPPORTED, "reserved native name 'skill'"],
+      ['mcp dynamic family (prefix law)', { ...D, grep: 'mcp__host__read' }, 'read', UNSUPPORTED, "reserved native name 'mcp__host__read'"],
       ['empty-string mount', { ...D, bash: '' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
       ['prototype-ish mount', { ...D, bash: '__proto__' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
       ['foreign class key', { ...D, foo: 'x' }, 'read', 'PLANE_NAMES_INVALID', 'closed to its own classes'],
@@ -300,5 +320,27 @@ describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root
     // Non-reserved custom aliases are always mountable (no native identity claimed):
     expect(verify({ ...D, bash: 'myshell' }, 'read').ok).toBe(true)
     expect(verify({ grep: 'mygrep', glob: 'myglob', bash: 'myshell' }, 'myread').ok).toBe(true)
+  })
+  it('the reserved-native surface is pinned to the host release (drift pin reds when the host baseline moves)', async () => {
+    const mod = await loadPlaneNamesModule()
+    const paths = (await import('../../../tests/paths.mjs')) as unknown as { DSH_BASELINE_VERSION: string; TEST_USE_BASELINE_SHA: string }
+    const live = `${paths.DSH_BASELINE_VERSION}@${paths.TEST_USE_BASELINE_SHA.slice(0, 10)}`
+    expect(mod.PLANE_RESERVED_NATIVE_HOST_PIN, 'host baseline moved: re-derive the reserved-native registry from the new host release, then move the pin').toBe(live)
+    for (const n of ['read', 'write', 'edit', 'read_image', 'glob', 'grep', 'bash', 'pwsh', 'web_search', 'web_fetch', 'todo_write', 'skill', 'present', 'send_message', 'subagent_fork', 'team_task_create', 'exit_plan_mode']) {
+      expect(mod.PLANE_RESERVED_NATIVE, `host native '${n}' must stay reserved`).toContain(n)
+    }
+    expect(mod.PLANE_RESERVED_NATIVE_PREFIXES).toContain('mcp__')
+  })
+  it('mixed defects hit FIRST-HIT by check order (shape -> reserved claim -> collision)', async () => {
+    const verify = await loadVerifyPlaneNames()
+    // reserved claim AND a lurking collision on the same shape: the reserved
+    // check fires first, so the code is UNSUPPORTED, not the collision INVALID
+    // (docs/INSTALL.md 3.5 states the precedence; 'PLANE_NAMES_INVALID for
+    // the rest' holds only of PURE single-defect shapes):
+    const v = verify({ grep: 'bash', glob: 'bash', bash: 'team_bash' }, 'read')
+    expect(v.ok).not.toBe(true)
+    expect(v.code).toBe('PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED')
+    // pure single-defect collision still reports INVALID:
+    expect(verify({ ...D, bash: 'team_grep' }, 'read').code).toBe('PLANE_NAMES_INVALID')
   })
 })

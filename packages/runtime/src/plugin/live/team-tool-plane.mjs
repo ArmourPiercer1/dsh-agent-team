@@ -187,8 +187,14 @@ export function verifyConfinedProviderPairing(confined) {
  *    row — the supported pairs are the bash row at 'bash' (live-verified
  *    takeover) and the read row at 'read' (the shipped `readName`
  *    default). Every other reserved pairing (write/edit/read_image/lsp/
- *    pwsh/grep/glob spellings on any row) is refused as
- *    PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED before any construction.
+ *    pwsh/grep/glob spellings on any row — and EVERY other host native
+ *    spelling (the exhaustive pinned-release registry + the mcp__ prefix
+ *    family) — is refused as PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED before
+ *    any construction. Mixed defects hit FIRST-HIT by check order
+ *    (shape -> reserved claim -> collision): a shape-valid reserved claim on
+ *    a colliding name reports UNSUPPORTED, not the collision INVALID.
+ *    PLANE_RESERVED_NATIVE is pinned to PLANE_RESERVED_NATIVE_HOST_PIN; a
+ *    unit drift pin reds when the host baseline in tests/paths.mjs moves.
  * Legitimate configs are untouched: DEFAULT_PLANE_NAMES + readName 'read'
  * pass, and every takeover spelling already live-verified passes.
  */
@@ -209,16 +215,47 @@ const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
 // effect CLASS while the durable permission-lifecycle face keys the
 // DISPATCHED name (permission-lifecycle/decision-lane.ts:174-184) — one
 // call, two verdict identities.
-const PLANE_RESERVED_NATIVE = Object.freeze(['bash', 'pwsh', 'read', 'read_image', 'write', 'edit', 'lsp', 'grep', 'glob'])
-// The supported takeover pairs, each with its shipped/verified lineage:
-//   bash row -> 'bash': the confined-shell placement under the native bash
-//              spelling, live-verified on both blueprint eras (natexe live
-//              kit) — the row's body IS a bash implementation under bash
-//              semantics (same name, same meaning);
-//   read row -> 'read': the shipped `readName` default (GLUE-7), a governed
-//              reader over the row's fs instance (same name, same meaning).
-// grep/glob rows keep the alias mount (GLUE-5 alias ruling): their own
-// native spellings have no verified assembled pairing on this surface.
+// The exhaustive reserved-native name surface of the pinned host release,
+// derived from the host RELEASE registry — the tests/deepseek-harness-test-use
+// tool-* package registrations at the baseline pin — NOT from any
+// assembly-time face: the plane's row-config assembly input is exactly
+// {backends, fs, instanceId, plane} (createTeamToolPlaneAssembly below), so
+// the host tool face is unreachable where mount names harden, and the
+// mounted instance's dispatch face is empty for natives in the web profile
+// (the very BINDING_UNVERIFIED world this plane rides) — derivation there
+// would be vacuous (empty face = nothing reserved). Solo-review 06:43Z
+// follow-up: the first static cut (9 names) left web_search/skill/todo_write/
+// present/send_message mountable — the same own-mask + verified-abstain
+// impostor face. The list below is the full registry (fs 6, shells 2,
+// str_replace_editor, lsp, present, skill 2, todo, ask, web 2, goal 3, jobs
+// 3, plan, subagent family 6, terminal 6, session-query 5, mcp-resource 3,
+// ralph, experimental agent-team 6), plus the dynamic `mcp__` family by
+// prefix. Drift law: PLANE_RESERVED_NATIVE_HOST_PIN is pinned to the host
+// baseline; the unit drift pin compares it against tests/paths.mjs — when
+// the host baseline moves, the pin test goes RED and this list must be
+// re-derived from the new host release before the pin moves with it.
+export const PLANE_RESERVED_NATIVE_HOST_PIN = '0.2.0-rc.2@639ed01539'
+export const PLANE_RESERVED_NATIVE = Object.freeze([
+  'read', 'read_image', 'write', 'edit', 'glob', 'grep',
+  'bash', 'pwsh',
+  'str_replace_editor',
+  'lsp',
+  'present',
+  'skill', 'load_workspace_dependencies',
+  'todo_write',
+  'ask_user_question',
+  'web_search', 'web_fetch',
+  'create_goal', 'get_goal', 'update_goal',
+  'job_kill', 'job_list', 'job_output',
+  'exit_plan_mode',
+  'subagent', 'subagent_fork', 'list_subagent_models', 'list_agents', 'send_message', 'interrupt_agent',
+  'terminal_open', 'terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal',
+  'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace',
+  'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
+  'ralph',
+  'spawn_teammate', 'wait_agent', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+])
+export const PLANE_RESERVED_NATIVE_PREFIXES = Object.freeze(['mcp__'])
 const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   bash: Object.freeze(['bash']),
   read: Object.freeze(['read']),
@@ -237,7 +274,8 @@ export function verifyPlaneNames(names, readName) {
     if (typeof spelling !== 'string' || !PLANE_NAME_SHAPE.test(spelling)) {
       return { ok: false, code: 'PLANE_NAMES_INVALID', message: `plane mount name for '${cls}' must match ^[a-z][a-z0-9_]{0,63}$ — got ${JSON.stringify(spelling) ?? 'undefined'}` }
     }
-    if (PLANE_RESERVED_NATIVE.includes(spelling) && !(PLANE_SUPPORTED_NATIVE_TAKEOVERS[cls] ?? []).includes(spelling)) {
+    const reserved = PLANE_RESERVED_NATIVE.includes(spelling) || PLANE_RESERVED_NATIVE_PREFIXES.some((pf) => spelling.startsWith(pf))
+    if (reserved && !(PLANE_SUPPORTED_NATIVE_TAKEOVERS[cls] ?? []).includes(spelling)) {
       return { ok: false, code: 'PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED', message: `plane row '${cls}' cannot mount under reserved native name '${spelling}' — this install surface assembles no same-name, same-meaning implementation for that pair (supported: bash row at 'bash', read row at 'read'); coarse permission class is not tool-implementation equivalence` }
     }
     if (seen.has(spelling)) {

@@ -451,9 +451,16 @@ config:
   `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`，独审 06:43Z 裁决：粗权限类别 ≠
   工具实现等价）——受支持的对仅有 **shell 行 @ `"bash"`**（live 双时代实测
   的 confined-shell 接管）与 **read 行 @ `"read"`**（shipped `readName`
-  默认）；`write`/`edit`/`read_image`/`lsp`/`pwsh`/`grep`/`glob` 等其余保留
-  拼写在任何行上一律拒（全 36 格矩阵见
-  `dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native.mjs`）。
+  默认）；**其余一切宿主原生拼写**在任何行上一律拒。保留名 = **宿主发布面
+  穷尽表**：51 个精确注册名 + `mcp__` 前缀族，钉宿主
+  `0.2.0-rc.2@639ed01539`——装配面输入仅 `{backends, fs, instanceId,
+  plane}`，宿主工具面在挂载名固化处不可得，且治理世界 web profile 的原生
+  派发面实测为空（派生即空表 = 不设防），故取静态超集 + **漂移钉测**（宿主
+  基线一动，钉测即 RED，强制按新宿主发布面重导出后才可移 pin）。
+  **混合缺陷按 形状→保留名声明→互异 的检查序先命中者拒**（保留名与互异并存
+  时报 UNSUPPORTED 而非互异 INVALID；"其余违规保持 INVALID"仅对纯单类缺陷
+  成立）。全矩阵（全宿主名 × 4 行，可执行重放）见
+  `dev/agent-workflow/evidence/alpha5/natexe/matrix-reserved-native.mjs`。
   非保留的自定义别名任意可挂（不冒充原生身份）。缺省 = `team_grep` /
   `team_glob` / `team_bash` 别名形态。
 - **审批后执行**（takeover 形态 + 模板 `permissions.ask` 的 `{ tool: bash,
