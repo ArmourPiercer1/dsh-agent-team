@@ -111,7 +111,14 @@ describe('a5p4 lane purity and dormancy', () => {
     expect(text).toBe('')
   })
 
-  it('DORMANT: no production file outside the lane imports the lane', () => {
+  it('WIRED (GLUE-7): exactly ONE production consumer imports the lane — the assembly row (no accretion)', () => {
+    // PR0 froze this lane DORMANT; GLUE-7 (alpha5-glue7-backend) is the
+    // instruction-backed end of that state: the production Team tool plane
+    // now ASSEMBLES the confined provider behind the shell row. The ledger
+    // law survives in the same form — the consumer set is a NAMED SET: a
+    // second production importer is a design change that must appear here,
+    // and a vanished one is a broken wire. Booking evidence:
+    // dev/agent-workflow/evidence/alpha5/glue7/ (inventory table, row 1).
     const offenders: string[] = []
     const walk = (dir: string): void => {
       let entries: string[]
@@ -145,7 +152,7 @@ describe('a5p4 lane purity and dormancy', () => {
       }
     }
     walk(PACKAGES_DIR)
-    expect(offenders).toEqual([])
+    expect(offenders).toEqual(['runtime/src/plugin/live/plane-effect-backends.mjs'])
   })
 
   it('hard-profile enablement is compiled OFF and no source turns it on', () => {

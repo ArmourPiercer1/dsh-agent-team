@@ -1,0 +1,175 @@
+{
+  "runStamp": "2026-10-17T22-01-32Z",
+  "ports": [
+    3183,
+    3184
+  ],
+  "expansion": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T22-01-32Z",
+  "head": "e58ebcb240c88c74e7193f7003ecf1b2dddf5609",
+  "files": 1733,
+  "launcherSha": "e66a8cf77fb74701",
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine 0.2.0-rc.2 runtime @639ed01539, porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H2",
+      "claim": "ports 3183 AND 3184 self-proved free before the run + a mock port from the 349x family free",
+      "pass": true,
+      "observed": "mock=3491"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "E1",
+      "claim": "STRICT public-manifest face: git archive HEAD of dist + package.json ONLY (GLUE-6 shipped the entry runtime .mjs INSIDE the mirror; the 4th glue placement plane-effect-backends.mjs present); nothing backfilled from the source tree",
+      "pass": true,
+      "observed": "files=1733 a5p5=44 key={\"host\":true,\"packageJson\":true,\"resolverInMirror\":true,\"seamInMirror\":true,\"backendsRow\":true}"
+    },
+    {
+      "id": "E2",
+      "claim": "the repo drift gate grades the committed dist at HEAD: exit 0 (this face is what the commit carries)",
+      "pass": true,
+      "observed": "status=0"
+    },
+    {
+      "id": "E3",
+      "claim": "the STRICT face + declared dependency closure imports the production rows clean (plane row, GLUE-7 backends row, bindings row, host entry) — the shipped face carries its own runtime",
+      "pass": true,
+      "observed": "probe=OK miss=none"
+    },
+    {
+      "id": "H3",
+      "claim": ":3080 stable instance untouched (read-only probe before/after) and the test-use host porcelain 0 after",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    },
+    {
+      "id": "W1",
+      "claim": "all worlds booted from the STRICT face row name and swept",
+      "pass": true,
+      "observed": "assembled:ok/swept preassembly:ok/swept baseline:ok/swept"
+    },
+    {
+      "id": "P1",
+      "claim": "RED POSTURE (pre-assembly row, teamToolPlane WITHOUT fsInstance/confinedProvider): the member read dispatch answers the VERBATIM int-a5b T5 refusal — no fallback to the native body",
+      "pass": true,
+      "observed": "r0=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"read\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}]\""
+    },
+    {
+      "id": "P2",
+      "claim": "RED POSTURE: team_grep lands the VERBATIM IO_POLICY_UNSUPPORTED typed shut face (a landing, never a capability)",
+      "pass": true,
+      "observed": "r1=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the re"
+    },
+    {
+      "id": "P3",
+      "claim": "RED POSTURE: team_bash lands the VERBATIM IO_POLICY_UNSUPPORTED (the same typed shut for the shell class)",
+      "pass": true,
+      "observed": "r2=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=IO_POLICY_UNSUPPORTED detail=the production effect-face adapter for this backend is the re"
+    },
+    {
+      "id": "L1",
+      "claim": "POSITIVE 1 (read): the takeover-placed governed read RAN through the production mount — the member tool result carries the REAL governed file bytes (A5G7-READ-TOKEN-77) over the wire; the int-a5b T5 refusal is GONE on this row",
+      "pass": true,
+      "observed": "r0=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"line one\\\\nA5G7-READ-TOKEN-77\\\\nline three\\\\nA5G7-GREP-TOK lives here\\\\n\\\"}]\""
+    },
+    {
+      "id": "L2",
+      "claim": "POSITIVE 2 (search): team_grep ran the REAL anchored read-only search — the hit line with the token rides the wire result (grep:file:line form), no IO_POLICY anywhere near it",
+      "pass": true,
+      "observed": "r1=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"search · content · 1 matches\\\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-assembled-2026-10-17T22-01-32Z/workspace/governed/no"
+    },
+    {
+      "id": "L3",
+      "claim": "POSITIVE 3 (shell, REAL Landlock): team_bash RAN CONFINED — the echo token + exit=0 render AND a write inside the governed root landed on disk (fs-probed pre-sweep bash-wrote.txt)",
+      "pass": true,
+      "observed": "r2=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=0\\\\n> A5G7-BASH-TOK\\\\n> A5G7-WROTE-9\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":0,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"cancelled\\\\\\\":false,\\\\\\\"trun wrote=true"
+    },
+    {
+      "id": "L4",
+      "claim": "CONFINEMENT WITNESS: the confined child reading a file OUTSIDE every allowPath answers the kernel refusal (Permission denied) and the secret bytes NEVER appear on the wire",
+      "pass": true,
+      "observed": "r3=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"bash · exit=0\\\\n> (empty stdout)\\\\nstderr:\\\\n> cat: ../outside/secret.txt: Permission denied\\\\n> \\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"shell\\\\\\\",\\\\\\\"exitCode\\\\\\\":0,\\\\\\\"timedOut\\\\\\\":false,\\\\\\\"canc"
+    },
+    {
+      "id": "L6",
+      "claim": "POSITIVE 4 (glob, REAL rg INSIDE the confined sandbox): the assembled team_glob hit rides the wire (g7-hit.g7glob from the rg --files walk under Landlock), no IO_POLICY near it",
+      "pass": true,
+      "observed": "r4=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"search · files_with_matches · 1 matches\\\\n> g7-hit.g7glob\\\\na5p5-meta {\\\\\\\"kind\\\\\\\":\\\\\\\"search\\\\\\\",\\\\\\\"outputMode\\\\\\\":\\\\\\\"files_with_matches\\\\\\\",\\\\\\\"totalMatches\\\\\\\":1,\\\\\\\"truncated\\\\\\\":fa"
+    },
+    {
+      "id": "L7",
+      "claim": "OUTPUT BOUND on the wire: 105 seeded *.g7cap files over the host public-root cap GLOB_MAX_RESULTS=100 — the truncation marker is honest, the walk was never silently cut",
+      "pass": false,
+      "observed": "r5=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"search · files_with_matches · 105 matches\\\\n> cap-010.g7cap\\\\n> cap-006.g7cap\\\\n> cap-014.g7cap\\\\n> cap-005.g7cap\\\\n> cap-008.g7cap\\\\n> cap-011.g7cap\\\\n> cap-009.g7cap\\\\n> cap-013.g7cap\\\\n> cap-015.g7cap\\\\n> cap-016.g7cap\\\\n> ca"
+    },
+    {
+      "id": "L8",
+      "claim": "INVALID-GLOB SHAPE: the typed walker failure surfaces on the wire (rg-walker-error: the streaming arm read rg's hard exit as 0 on this host and the walker's stderr carried it — disclosed in glue7/glob/probes), never a crash, never a fake-empty",
+      "pass": true,
+      "observed": "r6=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=rg-walker-error detail=rg: error parsing glob '[unclosed': unclosed character class; missing ']'\\\"}]\""
+    },
+    {
+      "id": "L9",
+      "claim": "ANCHOR ADVERSARIAL (symlink-final): team_glob at path=escape-link — a symlink inside the governed root whose FINAL target is the outside secret dir — is refused symlink-alias before any spawn and the secret bytes NEVER ride the wire",
+      "pass": true,
+      "observed": "r7=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=backend-failed code=symlink-alias detail=target resolves outside the governed root through a symlink — refused, never followed\\\"}]\""
+    },
+    {
+      "id": "L5",
+      "claim": "the assembled world logged the assembly rows in the host log: the placement feed row list (team_grep,team_glob,team_bash,read), the confined capability OK probe, ≥1 confined-shell RAN line and a governed-read RAN line",
+      "pass": true,
+      "observed": "rows=[\"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm\",\"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5g7-realm\",\"[dsh-agent-team] a5g7-read: governed-read RAN bytes=64 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-assembled-2026-10-17T22-01-32Z/workspace/governed/notes.txt\",\"[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5g7-realm call=team-inst-13ee93u0awtq-bash-2 pid=220 exit=0 timedOut=false\"]"
+    },
+    {
+      "id": "N1",
+      "claim": "DENY-BEFORE-BACKEND with the PRODUCTION shell backend: the bash-DENYING member answered template-deny-lane and the sentinel was NEVER created (zero side effects on the fs; backend execCount stays 0 by the lane order)",
+      "pass": true,
+      "observed": "r0=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"a5p5-refused kind=refused-admission code=template-deny-lane detail=sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\\\"}]\" sentinel=false"
+    },
+    {
+      "id": "Z1",
+      "claim": "control-of-controls: the BASELINE governed leader (same STRICT artifact, NO teamToolPlane config) shows zero plane aliases and zero plane/a5g7 observations — the assembly is config-scoped, not ambient",
+      "pass": true,
+      "observed": "aliases=[] obs=[]"
+    },
+    {
+      "id": "Z2",
+      "claim": "ZERO EXPANSION (same round): the standard NON-team session registry-vs-baseline Δ=[] AND wire-vs-baseline Δ=[] AND zero team_ aliases — while the SAME assembled boot carries three live production backends",
+      "pass": true,
+      "observed": "regΔ=[] wireΔ=[]"
+    },
+    {
+      "id": "Z3",
+      "claim": "the assembled world shows NO IO_POLICY_UNSUPPORTED landing anywhere on the driven legs (the shut face was truly replaced) and host log shows NO module/bootstrap failure",
+      "pass": true,
+      "observed": "noIo=true hostErrors=[]"
+    },
+    {
+      "id": "Z4",
+      "claim": "leader wire on the assembled world still speaks the team tools (placement reached the model-facing wire on BOTH governed agents incl. the read takeover)",
+      "pass": true,
+      "observed": "member team_*=[\"read\",\"team_bash\",\"team_glob\",\"team_grep\"]"
+    },
+    {
+      "id": "C1",
+      "claim": "world cleanup: no a5g7-* DSH_HOME remains under tests/homes and the strict expansion is swept (its per-file sha256 manifest is the retained evidence)",
+      "pass": true,
+      "observed": "exp=true homes=[]"
+    },
+    {
+      "id": "C2",
+      "claim": "launch-token hygiene: raw instance logs deleted after redaction at capture",
+      "pass": true,
+      "observed": "rawLeft=[]"
+    }
+  ]
+}

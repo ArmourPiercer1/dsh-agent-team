@@ -49,6 +49,9 @@ describe('the tool-governance lane audit', () => {
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
+      // GLUE-7 (alpha5-glue7-backend): placement-feed wiring via the
+      // tool-dispatch §6 face (see the audit script entry for provenance).
+      'runtime/src/plugin/live/team-tool-plane.mjs',
       'runtime/tool-admission/admission-kernel.ts',
       'runtime/tool-admission/approval-case.ts',
       'runtime/tool-admission/assurance-runtime.ts',

@@ -57,6 +57,13 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
   },
+  // GLUE-7 production backend assembly row (byte-copied: tsc never emits
+  // .mjs; the plane row imports it by a relative in-face specifier, so the
+  // shipped face must carry it exactly like the plane row itself).
+  {
+    src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

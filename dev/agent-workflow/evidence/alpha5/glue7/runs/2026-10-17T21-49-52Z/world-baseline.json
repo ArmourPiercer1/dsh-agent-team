@@ -1,0 +1,174 @@
+{
+  "mode": "baseline",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-baseline-2026-10-17T21-49-52Z",
+  "ok": true,
+  "face": "strict (files:[\"dist\"] + declared deps)",
+  "bootLine": "dsh web: http://127.0.0.1:3184/?token=<REDACTED-7485201e>",
+  "discPrompt": {
+    "attempts": 2,
+    "status": 200
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "denyList": [],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true,
+    "getStatus": 200
+  },
+  "catalogPreflightOk": true,
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5g7-baseline-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-49-52Z\",\"blueprint\":{\"blueprintId\":\"a5g7-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:30769c441c2bf7b4dda8ca546f3b5fde0522f56384a997d0c2adad981263f553\"},\"createdAt\":\"2026-10-17T21:51:17.873Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5g7-backend/tests/homes/a5g7-baseline-2026-10-17T21-49-52Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5g7-team-2026-10-17T21-49-52Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-49-52Z\",\"instanceId\":\"inst-leader\",\"templateId\":\"leader\",\"label\":\"leader\",\"createdAt\":\"2026-10-17T21:51:17.880Z\",\"activityVersion\":1}},\"bind\":{\"requested\":\"fresh-root\",\"bound\":true,\"installed\":true,\"identity\":{\"kind\":\"root\",\"sessionId\":\"session-a5g7-team-2026-10-17T21-49-52Z\",\"rootSessionId\":\"session-a5g7-team-2026-10-17T21-49-52Z\"},\"admitted\":true,\"admissionCode\":\"ADMISSION_OPEN\",\"emittedEvents\":[{\"name\":\"agent-setup/overlay-installed\",\"detail\""
+  },
+  "leaderWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_collect",
+    "team_delegate",
+    "write"
+  ],
+  "standard": {
+    "sessionId": "session-cc148737-41b9-4550-84d6-c85a907b0d56",
+    "createStatus": 200,
+    "promptAttempts": 1,
+    "wireCatalog": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ],
+    "scopedNames": [
+      "ask_user_question",
+      "bash",
+      "create_goal",
+      "edit",
+      "exit_plan_mode",
+      "get_goal",
+      "glob",
+      "grep",
+      "interrupt_agent",
+      "job_kill",
+      "job_list",
+      "job_output",
+      "list_agents",
+      "present",
+      "read",
+      "read_image",
+      "send_message",
+      "skill",
+      "subagent",
+      "subagent_fork",
+      "todo_write",
+      "update_goal",
+      "web_fetch",
+      "web_search",
+      "workflow",
+      "write"
+    ]
+  },
+  "globalNames": [],
+  "planeObservations": [],
+  "ownLayerCarrierCount": 0,
+  "leader": {
+    "session": "session-a5g7-team-2026-10-17T21-49-52Z",
+    "scopedNames": [
+      "bash",
+      "edit",
+      "read",
+      "read_image",
+      "team_collect",
+      "team_delegate",
+      "write"
+    ],
+    "perName": {
+      "team_grep": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_glob": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "team_bash": {
+        "globalPresent": false,
+        "scopedPresent": false,
+        "sameDefinition": false
+      },
+      "read": {
+        "globalPresent": false,
+        "scopedPresent": true,
+        "sameDefinition": false
+      }
+    }
+  },
+  "sessions": [
+    {
+      "s": "a5g7-root",
+      "run": false
+    },
+    {
+      "s": "6-c85a907b0d56",
+      "run": false
+    },
+    {
+      "s": "0-17T21-49-52Z",
+      "run": false
+    }
+  ],
+  "hostExit": {
+    "code": 0,
+    "signal": null
+  },
+  "logObservations": [
+    "[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/.a5g7-expansion/2026-10-17T21-49-52Z/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)"
+  ],
+  "hostErrors": [],
+  "swept": true
+}
