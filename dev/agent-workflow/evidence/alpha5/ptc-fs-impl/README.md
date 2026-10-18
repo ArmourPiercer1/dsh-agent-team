@@ -77,3 +77,96 @@ fingerprint→expiry→consumption-LAST，expiry 在 consumption 之前——内
 p4t6 measured ON THIS TREE (pre-booking run): `expected 1196 to be 1194` → booked
 1194 → 1196, five pieces (named array / both chains / spread / tie `toBe(1196 - 1194)` /
 title clause). No chain value copied.
+
+## 生命周期修复轮（lifecycle-fix round，parent 工单 2026-10-18；分支头基点 `45717a9f`）
+
+### 三红原文引用（live-kit run `live-2026-10-18T12-55-53`，不改写；receipts 在
+### `.worktrees/a5ptc-stack/dev/agent-workflow/evidence/alpha5/ptc-fs-impl/runs/live-2026-10-18T12-55-53/`，KIT_EXIT=2）
+
+- **U-1**：`FAIL [T] U-1: UNLOAD SYMMETRY (close/drop face): after dropResidency the row NEVER sees a new ask (no observation delta, no durable request — the mount unregistered); the ask rides the pre-round host chain and lands fail-closed as measured — dropped={"sessionId":"session-team-child-dc0683b406c60ff31e8dac06d19dd73b","dropped":true} seenByRow=true outcome={"ok":false,"error":"timeout waiting for: U1: emitter result 6","outcome":"drive-timeout"} obsDelta=[]`
+- **U-1b**：`FAIL [T] U-1b: UNLOAD SYMMETRY (archive face): after the LEADER archives the member (the production LifecycleService procedure, quiesce + archive + live effects), re-driving an escalation ask — the row NEVER sees it; the ask rides the pre-round host chain and lands fail-closed as measured — archived=true e1=session-team-child-f5920664a92f21dbc107ccabe972a7d9 instance=inst-1ez8xku1os7x seenByRow=true outcome={"ok":false,"error":"timeout waiting for: U1B: emitter result 8","outcome":"drive-timeout"} quote="[object Object]" obsDelta=[]`
+- **U-2**：`FAIL [T] U-2: RE-MOUNT: the cold-resumed member re-registers cleanly through the mount gate (one face per session — no duplicate-face throw, the router resolves the NEW agent) and a NEW callId lands allowed-once writing its OWN artifact — resume=422/{"error":"no live agent for 'session-team-child-dc0683b406c60ff31e8dac06d19dd73b': ptc-escalation-row: member 'session-team-child-dc0683b406 regs=5->5 result={"seq":7,"callId":"a5ptc-call-r2","ok":true,"mode":"workspace-write","wrote":{"path":"…forbidden r2="A5PTC-REMOUNT-ARTIFACT\n"}`
+
+**四度复现声明**：三红在 rounds 4–8 四次独立测量中逐字同形复现（上一节已入账），
+判据未弯；本轮修复由这四度复现驱动，不在合成世界里重设判据。
+
+### 根因（读码行号，`45717a9f` 树）
+
+- 登记：`live/agent-bindings.mjs` `agentSetup` 的 PTC 门（:2489 区，S6 门 =
+  `permissionPolicy !== undefined && config?.teamToolPlane != null` :2423）内
+  `ptcRow.registerMember(...)`（:2538）+ `ptcRouter.registerAgent(runtimeAgent,
+  ptcMember.memberKey, ptcRow)`（:2558）；摘除只有 `toolDisposers.push(...)`
+  （:2562-2565），而 `toolDisposers` 是 createAgentBindings 的 **row 级**数组
+  （:763），唯一 drain 点在 row stop（:5140）→ 驻留生命周期事件（dropResidency/
+  archive/冷启）不触任何 drain ⇒
+  **U-1/U-1b**：router 的 `byAgent`/`byAgentId` 与 assembly `members` 图项永存，
+  旧 Agent 对象仍被 `route()` 命中并开耐久审批（`seenByRow=true`）。
+- 冷启 re-mount：`registerMember` 对同 `(root, session)` 键直接
+  `throw new Error("…already registered (one face per session)")`（旧 :182）→
+  resume 面 422。**U-2**。
+- 驻留/归档路径的处置事实：sync 驻留端口 `residency.dropResidency` 先
+  `liveAgents.delete(sid)` 再 fire-and-forget `handle.dispose()`
+  （agent-bindings :4949-4963）；async 面 `dropResidency` await dispose（:5032-5052）；
+  archive/dispose 程序的 release-residency 走 **sync boolean 端口**
+  （`packages/runtime/lifecycle/quiesce.ts:143`，不 await dispose）。宿主公开
+  `agent/disposed` 事件在每次已发布 Agent 的 registry detach 时发出
+  （pinned-host `packages/core/agent/src/index.ts` `detachEntered→emitDisposed`；
+  api-catalog :3793 "An agent left the registry"；`agent.id === agent.session.id`
+  同文件 :460-463 强验），activation fence 已以此面为治理挂点先例
+  （本仓 `plugin/host.ts` :1153-1169 的 global `agent/created`/`agent/disposed` 监听）。
+
+### 修法（跟随成员驻留生命周期；挂点选择=公开 `agent/disposed` + ask-time 驻留门）
+
+1. **router 镜像 `agent/disposed`**（`ptc-escalation-row.mjs` `onAgentDisposed`；
+   host.ts PTC 安装块内 `ctx.on('agent/disposed', …, { global: true })`，fence
+   :1164 先例）：被 dispose 的 Agent 对象的路由图项**同步**摘除并 `revoke()` 成员面
+   ——幂等（entry 身份守卫：迟到事件只摘自己的旧项，绝不碰 re-mount 后的新图项/新成员），
+   永不外抛。row 级 drain 保留为 row-stop 兜底。
+2. **ask-time 驻留门**（修 U-1/U-1b 的竞态半）：sync 端口 drop 是
+   `liveAgents.delete` 同步 + dispose 异步，`agent/disposed` 可能晚于下一次 ask——
+   所以 `route()` 在裁决前查询成员 handle 的 `isRoutable()`（live + 注入的
+   `isResident` 谓词；glue 传 `() => residency.has(sessionId)`，读的就是 drop
+   同步删掉的那张 `liveAgents` 表）。不可路由 = **不 OWN**：原样 `next()` 委托，
+   零观测、零耐久请求、零 adjudication 计数——正是红里量到的"骑 pre-round 宿主链
+   fail-closed"落点。挂点选择理由：这是宿主公开面 + 驻留端口同步事实，不依赖宿主
+   内部事件次序；disposed 监听是状态清理面，不是行权依赖。
+3. **re-mount 替换语义**（修 U-2）：同 `(root, session)` 再入先 `previous.revoke()`
+   （旧面死亡、其未消费 grant 记 `revoked-before-use`、观测 `member-replaced`）再登记
+   新面——"one face per session" 不变式保留其本意=**任一时刻一活面**，不是永不可恢复。
+   router 改以**成员 handle**（registerMember 返回物）为身份载体（不再是共享 memberKey），
+   旧 Agent 对象在替换后、其 dispose 事件抵达前也永不路由进新世代；revoke 身份加固
+   （`members.get(key)===member` 才删、facts 按 `memberGeneration` 身份清算），
+   迟到的旧 revoke/旧 drain/旧 dispose 三连都不会误杀新面。
+   一次性语义跨 re-mount 保持：consumed fact 留在 `byKey`（同 instanceId+callId 的
+   旧 callId 重放仍撞 CONSUMED 标、绝不开新审批）。
+
+### RED→绿实录（合成腿进 a5ptc-escalation-row.test.ts：L-U1/L-U1b/L-U2）
+
+- RED（腿先于修，对 `45717a9f` 现树）：`RED-vitest-a5ptc.log` = `Tests 3 failed | 7
+  passed (10)`（生命周期契约不存在，`route()` 对不可解析登记 fail-closed
+  `unavailable`）；`RED-semantics.mjs`/`RED-semantics.log` = 用**出货 API** 在
+  **dist 镜像**（生产安装加载面）上重演生产症状本身：
+  `post-drop drive (U-1/1b) -> allowed-once (controls=2) seenByRow=true`；
+  `re-mount (U-2) -> THREW: ptc-escalation-row: member 's-u1' is already registered
+  (one face per session)`（与 422 面逐字同源）。
+- 绿：`GREEN-vitest-a5ptc.log` = `Tests 10 passed (10)`；`GREEN-semantics.log` =
+  `disposed mirror -> onAgentDisposed=true liveCount=0 seenByRow=false` +
+  `re-mount (U-2) -> registered (no throw); membersLive=1`。
+- 腿清单：L-U1（drop 后 drive→原样 next() 零状态；disposed 面幂等摘除+revoke；
+  重复 disposed/迟到 drain 零抛零观测）；L-U1b（archive 同路径：leader 型、
+  归档后 drive 不再开第二条耐久审批、teardown 三面任意序幂等）；L-U2（冷启
+  re-mount 替换不抛、新 Agent 恢复 allowed-once 且仍一次性、旧 callId 重放仍拒、
+  旧 Agent 对象永不漏进新世代、迟到 dispose/revoke 不伤新面）。
+
+### 修后腿清单（本树实测，`runs/lifecycle-fix-2026-10-18/`）
+
+| 腿 | 结果 |
+| --- | --- |
+| a5ptc-escalation-row.test.ts（含 L-U1/L-U1b/L-U2） | `10 passed (10)` GREEN（GREEN-vitest-a5ptc.log；RED 腿先对 45717a9f 现树 `3 failed \| 7 passed`） |
+| 语义见证（dist 镜像、出货 API） | RED `seenByRow=true` + `already registered` 逐字 → GREEN `onAgentDisposed=true liveCount=0 seenByRow=false` + `registered (no throw)` |
+| a5p0 消费者集（domain 六 suite） | `104 passed (104)`——**集不动**：本轮零新增 lane import（row 仍只 :65 grant-mint + :66 parseRequestedEffectSet 两条已入账边） |
+| p4t6-session-event-scan + a5p7-lane-hygiene | `15 passed (15)`——**文件集不变**（三腿进既有 spec，零新文件），booking 的总数由 scanner 本跑亲验通过（未抄链值）；hygiene 例外表未加宽 |
+| drift（check-artifacts-committed，含提交后 :head 复跑） | `verdict=ok compared=1748 glue=9`（GREEN-check-artifacts.log） |
+| typecheck（pnpm -r） | EXIT=0 全包 Done |
+| eslint | 四改动文件定向 = 仅 host.ts 已披露 2 错（:112 unused、空块 :3228→**位移 :3251**，同 site 非新增）；row/glue/test 三文件 0；全仓 `161 problems (129 errors, 32 warnings)`（eslint-full-repo.log），把修复 stash 回出货字节复跑 = **同样 161 problems、逐规则分布 diff 相同**（eslint-base-stashed.log），本轮新增 **0** |
+| 全库 battery（runtime+domain+tools+testkit，6062 tests） | `18 failed \| 6044 passed`——**18 红与本修复无关**：把修复 stash 回出货字节重跑同 7 文件集，失败测试名集合 `diff` **完全相同**（IDENTICAL-FAIL-SETS，full-run/base 两份 log 入账）。既有红集 = p6t3-mediation×5 / p6t3-restart×2 / rc2-persona-probe×3 / plugin-dsh-compat×5 / a4p7-merge-gate×1 / t2-blueprint-hash×1 / p6t6-actions×1（相对上轮 README 披露行有漂移——rc2-persona-probe 1→3、plugin-dsh-compat 等 4 文件新入红——但**均已在 45717a9f 出货面复现**，属分支/环境既有态，非本轮引入；如实入账不代上游圆场） |

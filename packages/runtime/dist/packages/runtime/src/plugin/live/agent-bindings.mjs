@@ -2540,14 +2540,27 @@ export function createAgentBindings(deps) {
             instanceId,
             realmId: a5PlaneRealmId,
             isLeader: sessionId === String(teamRoot),
+            // LIFECYCLE-FIX ROUND (U-1/U-1b): the SYNC residency port is
+            // the ask-time oracle — `has` reads liveAgents, and BOTH drop
+            // faces delete the handle SYNCHRONOUSLY before their (possibly
+            // fire-and-forget) dispose runs: the sync residency port above
+            // (dropResidency → liveAgents.delete, dispose() in flight) and
+            // the archive/dispose procedure's release-residency step
+            // (runtime/lifecycle/quiesce.ts, the boolean sync port). A
+            // torn-down member therefore stops routing AT THE DROP; the
+            // row-level drain below and the host's agent/disposed mirror
+            // (host.ts) stay as the idempotent state-cleanup faces behind
+            // the gate.
+            isResident: () => residency.has(sessionId),
           })
           // S5: the member face dies with the mount — router unregister +
           // roster revoke through the SAME drain as every tool disposer
-          // (idempotent, order-free). Routing needs the materialized
-          // Agent object (the host projects it as `req.agent`); without
-          // one (legacy setup shape) the member stays UNROUTED — its asks
-          // keep the pre-round host path, a disclosed non-adjudication,
-          // never a silent half-governance.
+          // (idempotent, order-free; the row-stop BACKSTOP, not the member
+          // lifecycle, which rides residency — see the row header). Routing
+          // needs the materialized Agent object (the host projects it as
+          // `req.agent`); without one (legacy setup shape) the member stays
+          // UNROUTED — its asks keep the pre-round host path, a disclosed
+          // non-adjudication, never a silent half-governance.
           const ptcRouter = ptcEscalationRef !== undefined && ptcEscalationRef !== null ? ptcEscalationRef.current : undefined
           let ptcUnregister = null
           if (
@@ -2555,7 +2568,10 @@ export function createAgentBindings(deps) {
             typeof ptcRouter.registerAgent === 'function' &&
             runtimeAgent !== undefined && runtimeAgent !== null
           ) {
-            ptcUnregister = ptcRouter.registerAgent(runtimeAgent, ptcMember.memberKey, ptcRow)
+            // The member HANDLE (not the shared memberKey) is the router's
+            // identity carrier: a cold re-mount's stale Agent can never
+            // route into the new generation (lifecycle-fix round).
+            ptcUnregister = ptcRouter.registerAgent(runtimeAgent, ptcMember, ptcRow)
           } else {
             observations.push(`a5ptc: member-UNROUTED session=${sessionId} (no router or no materialized Agent)`)
           }

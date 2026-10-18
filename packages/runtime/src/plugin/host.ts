@@ -312,10 +312,15 @@ interface GlueModule {
    *  `approval/request` escalation router (live/ptc-escalation-row.mjs,
    *  re-exported by the glue). The listener installed by this file routes
    *  THROUGH it; membership is registered by the agent-bindings gate only
-   *  under the S6 scope gate, so an empty router is the non-Team world. */
+   *  under the S6 scope gate, so an empty router is the non-Team world.
+   *  LIFECYCLE-FIX ROUND: `onAgentDisposed` mirrors the host's public
+   *  `agent/disposed` event (the fence-listener face below) into the
+   *  router — the disposed Agent's routing entry and member face die with
+   *  the event (idempotent, never throws outward). */
   createPtcEscalationRouter?: () => {
     readonly route: (req: unknown, next: () => Promise<TeamApprovalOutcome>) => Promise<TeamApprovalOutcome>
     readonly liveCount: () => number
+    readonly onAgentDisposed: (agent: unknown) => boolean
   }
   createAgentBindings(deps: {
     readonly agents: unknown
@@ -2206,6 +2211,17 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // membership lives behind the agent-bindings scope gate (S6), so a
   // non-Team install sees every request delegate verbatim through an
   // empty map: zero expansion by construction, not by a runtime branch.
+  // LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53, U-1/U-1b/U-2):
+  // the router ALSO mirrors the public `agent/disposed` event (the same
+  // fire-and-forget fence face above) — a disposed Agent drops its routing
+  // entry and revokes its member face synchronously with the event, so
+  // residency teardown (dropResidency, the archive/dispose live effects)
+  // never leaves a torn-down member routable, and a cold re-mount
+  // re-registers cleanly (the row replaces the stale face). The ask-time
+  // routability gate in the router closes the window the fire-and-forget
+  // sync residency port leaves open (quiesce.ts release-residency does not
+  // await the dispose); this listener is the state-cleanup face, never a
+  // race the row depends on.
   const ptcEscalationRef: { current: unknown } = { current: null }
   if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
     const ptcRouter = glue.createPtcEscalationRouter()
@@ -2214,6 +2230,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
       'approval/request',
       (req, next) => ptcRouter.route(req, next) as Promise<TeamApprovalOutcome>,
       { global: true, prepend: true },
+    )
+    ctx.on(
+      'agent/disposed',
+      (payload) => {
+        ptcRouter.onAgentDisposed(payload.agent)
+      },
+      { global: true },
     )
   }
 

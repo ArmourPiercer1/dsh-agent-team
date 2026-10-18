@@ -41,6 +41,15 @@
  *  S5 zero 0600 channel, zero HTTP: in-process registration, idempotent
  *     disposers on the caller's drain list; an unregistered member is not
  *     routable, and its unconsumed grants die with the roster entry.
+ *     LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53): the drain
+ *     is the ROW-STOP BACKSTOP only — the member lifecycle itself rides the
+ *     RESIDENCY lifecycle: the router mirrors the host's public
+ *     `agent/disposed` event (drop entry + revoke face, idempotent), every
+ *     ask is gated on the member handle's routability (live + the injected
+ *     residency oracle), and a same-session re-mount REPLACES the stale
+ *     face instead of throwing (one LIVE face per session; the shipped
+ *     "already registered" refusal made the production entry unrecoverable
+ *     — U-2's 422).
  *  S6 the scope gate lives in the CALLER (agent-bindings :2412 — the
  *     `permissionPolicy !== undefined && config.teamToolPlane` face): a
  *     non-Team install never registers anything, the router is then an
@@ -94,25 +103,53 @@ function fingerprintOf(member, callId, toolName, mode, reason) {
  * agent-bindings gate registers/unregisters AGENT identities into it.
  * An empty router (the non-Team world, S6) delegates EVERY request to
  * next() without touching state.
+ *
+ * LIFECYCLE-FIX ROUND (live run live-2026-10-18T12-55-53, U-1/U-1b/U-2):
+ * the member lifecycle rides the RESIDENCY lifecycle, not the row-stop
+ * drain. (a) {@link onAgentDisposed} mirrors the host's public
+ * `agent/disposed` event (the same fire-and-forget face the activation
+ * fence consumes, host.ts :1164): the disposed Agent's routing entry dies
+ * with it AND its member face is revoked — idempotent, entry-identity
+ * guarded (a late event for a replaced generation drops ONLY the stale
+ * entry). (b) {@link route} asks the registered member HANDLE whether it
+ * is still routable (live + resident) BEFORE adjudicating: a residency
+ * drop is synchronous at the port (liveAgents.delete precedes the async
+ * dispose), so the very next ask delegates through next() with zero state
+ * — the pre-round host chain owns it (the measured fail-closed landing).
+ * The entries key on the member HANDLE (the registerMember result), not
+ * the shared memberKey, so a re-mounted session's stale Agent can never
+ * route into the new generation.
  */
 export function createPtcEscalationRouter() {
   const byAgent = new Map()
   const byAgentId = new Map()
+  /** Drop one EXACT entry from every key that still maps to it (identity-
+   *  guarded: an id re-registered by a newer generation is never touched). */
+  const dropEntry = (entry) => {
+    if (entry.agent !== null && byAgent.get(entry.agent) === entry) byAgent.delete(entry.agent)
+    if (entry.id !== null && byAgentId.get(entry.id) === entry) byAgentId.delete(entry.id)
+  }
   return {
-    /** Register one governed member's agent identity → its row. Returns an
+    /** Register one governed member's agent identity → its row. `member` is
+     *  the {@link createPtcEscalationRowAssembly} registerMember HANDLE (the
+     *  identity carrier: memberKey + revoke + isRoutable). Returns an
      *  IDEMPOTENT unregister. Identity joins on the Agent object AND its id
      *  (when the host supplies one); an agent neither key knows is NOT us. */
-    registerAgent(agent, memberKey, assembly) {
-      const entry = { memberKey, assembly }
-      if (agent !== null && typeof agent === 'object') byAgent.set(agent, entry)
-      const id = agent !== null && typeof agent === 'object' && agent.id !== undefined ? String(agent.id) : null
-      if (id !== null) byAgentId.set(id, entry)
+    registerAgent(agent, member, assembly) {
+      const hasAgent = agent !== null && typeof agent === 'object'
+      const entry = {
+        member,
+        assembly,
+        agent: hasAgent ? agent : null,
+        id: hasAgent && agent.id !== undefined ? String(agent.id) : null,
+      }
+      if (entry.agent !== null) byAgent.set(entry.agent, entry)
+      if (entry.id !== null) byAgentId.set(entry.id, entry)
       let done = false
       return () => {
         if (done) return
         done = true
-        if (agent !== null && typeof agent === 'object' && byAgent.get(agent) === entry) byAgent.delete(agent)
-        if (id !== null && byAgentId.get(id) === entry) byAgentId.delete(id)
+        dropEntry(entry)
       }
     },
     resolve(reqAgent) {
@@ -125,14 +162,40 @@ export function createPtcEscalationRouter() {
     },
     /** The waterfall listener body. Never throws: any adjudication crash
      *  fails CLOSED as 'unavailable' (a governed ask must never fall
-     *  through to a UI answerer because the row broke). */
+     *  through to a UI answerer because the row broke). A member that is
+     *  not routable (torn-down face, dropped residency) is NOT owned: the
+     *  ask delegates through next() UNTOUCHED — zero state, zero durable
+     *  request, exactly the pre-round chain's territory (U-1/U-1b). */
     async route(req, next) {
       const hit = this.resolve(req?.agent)
       if (hit === null) return await next()
       try {
-        return await hit.assembly.adjudicate(hit.memberKey, req, next)
+        if (typeof hit.member.isRoutable === 'function' && hit.member.isRoutable() !== true) return await next()
+        return await hit.assembly.adjudicate(hit.member.memberKey, req, next)
       } catch {
         return 'unavailable'
+      }
+    },
+    /** The public `agent/disposed` mirror (host.ts installs the listener,
+     *  the activation-fence :1164 precedent; fire-and-forget — this face
+     *  NEVER throws outward). Drops the disposed Agent's entry and revokes
+     *  its member face (unconsumed grants die with it, the census stays
+     *  honest). Returns true only when THIS agent's own entry was dropped;
+     *  every repeat is a false no-op (idempotent by entry identity). */
+    onAgentDisposed(agent) {
+      try {
+        if (agent === null || typeof agent !== 'object') return false
+        const entry = byAgent.get(agent)
+        if (entry === undefined || entry.agent !== agent) return false
+        dropEntry(entry)
+        try {
+          if (typeof entry.member.revoke === 'function') entry.member.revoke()
+        } catch {
+          /* the disposal mirror never fails the host's teardown */
+        }
+        return true
+      } catch {
+        return false
       }
     },
     liveCount: () => byAgent.size,
@@ -177,9 +240,28 @@ export function createPtcEscalationRowAssembly(deps) {
   })
 
   return {
-    registerMember({ sessionId, instanceId, realmId, isLeader }) {
+    /**
+     * Register one governed member's face for this root.
+     * LIFECYCLE-FIX ROUND (U-2): the same (root, session) re-entering is a
+     * RESIDENCY re-entry (cold resume / re-mount after a teardown), and it
+     * REPLACES the stale face instead of throwing — the invariant
+     * "one face per session" means one LIVE face per session at every
+     * instant, never a permanent lock-out of a recoverable member. The
+     * stale face dies first through its own idempotent revoke (roster entry
+     * gone, minted-but-unused grants marked revoked-before-use).
+     * `isResident` (optional): the injected residency oracle — the glue
+     * passes the SYNC `residency.has` port, the synchronous fact behind
+     * dropResidency (the sync port / the archive quiesce step do not await
+     * the Agent dispose, so the ask-time gate, not the disposed event, is
+     * what makes the drop race-free). Absent = pure row, always resident.
+     */
+    registerMember({ sessionId, instanceId, realmId, isLeader, isResident }) {
       const memberKey = `${rootSessionId}\u0000${String(sessionId)}`
-      if (members.has(memberKey)) throw new Error(`ptc-escalation-row: member '${String(sessionId)}' is already registered (one face per session)`)
+      const previous = members.get(memberKey)
+      if (previous !== undefined && typeof previous.revoke === 'function') {
+        previous.revoke()
+        onObserve({ event: 'member-replaced', root: rootSessionId, session: String(sessionId) })
+      }
       const member = {
         memberKey,
         ref: Object.freeze({ teamSessionId: rootSessionId, instanceId: String(instanceId) }),
@@ -192,20 +274,39 @@ export function createPtcEscalationRowAssembly(deps) {
       const revoke = () => {
         if (!member.live) return
         member.live = false
-        members.delete(memberKey)
+        // IDENTITY-guarded (lifecycle-fix round): a LATE revoke for a
+        // replaced generation must never evict the NEW member under the
+        // shared key — only the member that still OWNS the key is deleted.
+        if (members.get(memberKey) === member) members.delete(memberKey)
         // S5: an unregistered member's unconsumed grants die with it — the
         // mirror records the death; the ledger keeps its one durable fact.
+        // Facts die by GENERATION identity (same instanceId across resumes
+        // shares the byKey spelling; the generations do not share fates).
         for (const [k, fact] of byKey.entries()) {
-          if (fact.memberKey === memberKey && grantStates.get(fact.grantId) === 'minted') {
+          if (fact.memberGeneration === member && grantStates.get(fact.grantId) === 'minted') {
             grantStates.set(fact.grantId, 'revoked-before-use')
             byKey.delete(k)
           }
         }
         onObserve({ event: 'member-revoked', root: rootSessionId, session: String(sessionId) })
       }
+      // The roster entry carries its own revoke (the replace path of a
+      // re-mount reaches the stale GENERATION's closure through the map;
+      // the closure itself stays identity-guarded, so a late revoke of a
+      // replaced face can never evict the new one).
+      member.revoke = revoke
       return {
         memberKey,
         revoke,
+        /** ROUTABILITY (lifecycle-fix round, the U-1/U-1b gate): this face
+         *  routes only while it is the live generation AND the injected
+         *  residency oracle still claims the session. Read-only, never
+         *  writes state. */
+        isRoutable() {
+          if (!member.live) return false
+          if (typeof isResident === 'function' && isResident() !== true) return false
+          return true
+        },
         /** Scoped install face: `ctxLike.on('approval/request', h)` must
          *  return a disposer; production installs through the global
          *  router — this face serves scoped hosts and the synthetic leg. */
@@ -352,7 +453,7 @@ export function createPtcEscalationRowAssembly(deps) {
         return 'rejected'
       }
       grantStates.set(grantId, 'minted')
-      byKey.set(key, { grantId, memberKey, callId, toolName, bindingId: `a5ptc-esc:${member.ref.instanceId}`, effects: effects.value })
+      byKey.set(key, { grantId, memberKey, memberGeneration: member, callId, toolName, bindingId: `a5ptc-esc:${member.ref.instanceId}`, effects: effects.value })
       // the approval in hand is consumed by THIS ask exactly once:
       const out = ledger.consume(grantId, callContext(member, { callId, toolName, bindingId: `a5ptc-esc:${member.ref.instanceId}`, effects: effects.value }, mode, req?.reason))
       const okOnce = out.ok === true
