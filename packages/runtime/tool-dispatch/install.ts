@@ -866,7 +866,13 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
    *  1. ONLY `exec.signal` is touched — no veto, the native execute chain runs;
    *  2. the signal that was already there (an outer wrapper's deadline, e.g. the
    *     Host's own timeout policy) is FORWARDED into ours, so replacing it never
-   *     silently disarms somebody else's cancellation;
+   *     silently disarms somebody else's cancellation — and since A5-CAUSE the
+   *     forwarding carries the abort CAUSE verbatim (repair ticket
+   *     `repair-ticket-install-signal-cause.md`): whatever `incoming.reason` is
+   *     (a host `AgentCancelCause`, a timeout DOMException, nothing) is what
+   *     ours aborts with, because a Definition's own closed laws read the cause
+   *     off the signal they are handed, and a marker of ours in that seat is a
+   *     fact this lane invented;
    *  3. the original signal is restored on the way out, and the watch is dropped
    *     at the settled edge — quiescence, not a leaked controller.
    *
@@ -883,9 +889,22 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
     const forward = (): void => {
       if (record.state === 'watched') {
         try {
-          record.controller.abort({ reason: 'inherited-signal', tool: record.name })
+          // A5-CAUSE (repair-ticket-install-signal-cause.md): relay the CAUSE
+          // we were given, verbatim — the same law the Host's own fuse applies
+          // (`abortFrom` forwards `source.reason`, tools/lib @639ed01539
+          // :3652-3656). `abort(reason)` carries the reason object (Node
+          // >=17.3), so an incoming `{kind:'user'}` reaches the Definition as
+          // THAT object; a reason-less abort lands on a plain AbortError,
+          // never on a marker of ours — the measured failure of the pre-fix
+          // byte was exactly a marker replacing the caller's cause, which the
+          // row's closed cancelled law then correctly (and correctly visibly)
+          // refused (DIAGNOSIS §②③, three independent runs).
+          record.controller.abort(incoming?.reason ?? new DOMException('inherited-signal', 'AbortError'))
         } catch {
-          // the abort itself never carries the reason object
+          // The relay is best-effort: a controller that refused this reason
+          // call still has its cancellation reached by the registry's own
+          // re-fused caller signal (`:155-159`), so forwarding never holds
+          // the stop mechanism hostage to the cause object.
         }
       }
     }
