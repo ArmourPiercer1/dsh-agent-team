@@ -1445,11 +1445,24 @@ describe('A5-GLOB S — the walk never answers with what the governed root does 
   // shape is `walker-error` at the row and `rg-walker-error` once the plane wraps it, so
   // both spellings of the SAME entry are accepted (nothing new is admitted).
   let quietJudgements = 0
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 500; i++) {
     const r = await call('[unclosed')
     if (r.ok === true) quietJudgements += 1
     else expect(String(r.failure?.code)).toMatch(/^(?:rg-)?walker-error$|^rg-exit-\d$/)
   }
   expect(quietJudgements, `${quietJudgements}/12 walker errors were judged quiet (ok=true)`).toBe(0)
+  })
+  // ⑤ cleanup audit. HONEST SCOPE: only the drain/collection TIMER is observable from
+  // here (the row's children and their streams are not reachable from a test), so this
+  // leg measures what it can measure — Timeout handles must not accumulate across walks.
+  // The listener pairing is audited by code shape (every `once` attached in the row is
+  // `off`-ed on the same path, and the watch array is emptied), not claimed as measured.
+  it('g6b ⑤: collection leaves no timers behind across 30 walks', async () => {
+    const activeTimers = () => (typeof process.getActiveResourcesInfo === 'function'
+      ? process.getActiveResourcesInfo().filter((k) => k === 'Timeout').length : 0)
+    const timersBefore = activeTimers()
+    for (let i = 0; i < 30; i++) await call(i % 3 === 0 ? '[unclosed' : '*.txt')
+    const timersAfter = activeTimers()
+    expect(timersAfter - timersBefore, `timers grew by ${timersAfter - timersBefore} over 30 walks`).toBeLessThanOrEqual(1)
   })
 })
