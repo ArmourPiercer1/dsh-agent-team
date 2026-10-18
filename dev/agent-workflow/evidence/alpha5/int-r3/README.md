@@ -117,3 +117,28 @@ merge 干净、零冲突。**本笔是声明式预演：若 #330 最终头变化
   G6/L6 的所有者各自持有）。本轮作者上下文预算耗尽 ⇒ **不产出半成品派生件、不声称四工具全链已过**；
   glob 的 live 正反控（世界内 pattern 命中 / 跨 root 越界零结果或具名拒）**仍是开口项**。
 - `a5rbn-live-kit.mjs` L6（"GLOB ROW IS TYPED-SHUT ON THE WIRE"）**未动未跑**，待 owner 轮重 tie。
+
+## 派生 live-kit（收尾单，本 lane 自有 criteria）
+
+`a5intr3-plane-mount-kit.mjs`（本目录）+ 驱动 shim `packages/runtime/test/a5intr3-kit-runner.test.ts`。
+装配底 = natexe `run-natexe-live.mjs`:382/:427 的 plane 挂载形制，criteria 形制 = glue7 `a5g7-live-kit.mjs`；
+**两个 kit 的 criteria 一字未用未改**，下列判据属 alpha5-int-r3。**跑的形制如实声明**：驱动**生产挂载函数**
+`createTeamToolPlaneAssembly` + **真实 confined provider/launcher**（rg/bash 子进程真被内核约束），
+但**不启宿主、不走成员 wire**——Team 入口/wire 面仍未闭合（wire 侧现有证据 = natexe 26/26 的 E8.1）。
+驱动方式亦如实记：仓库源码图（`team-tool-plane.mjs` → a5p5-tools `src/index.js`→`.ts`）**裸 node 载不动**
+（`ERR_MODULE_NOT_FOUND`），离线也装不了 tsx（`EROFS ~/.npm`），故 kit 导出 `runKit()`、由 vitest shim 驱动，
+PASS/FAIL 行与 KIT_EXIT 语义同独立 kit。
+
+**实测 14/14 全 PASS**（判据行原文在提交说明与运行日志）：
+A1 read 正=世界内真字节；A2 read 负 ×2（相对 `../outside/…` 与绝对外路径）=
+`refused-schema target-outside-governed-root`，外泄 secret 从不上线；
+B1 search 正=真 rg 命中行；B2 两形都记：绝对越界 `a5p5-refused kind=backend-failed code=target-outside-governed-root`
+（执行前拒）、相对逃逸 `code=locator-rejected`（`$.path`）；
+**C1 glob 正=`search · files_with_matches · 2 matches > data/needle.txt > data/other.txt`（翻转后的新面真命中）**；
+**C2 glob 负（跨 root pattern `../outside/*`）实测形=ZERO-RESULTS（`0 matches > (no matches)`）——按父单"记实测形不改判据迁就"如实记**，
+另加 C2b 绝对外路径=`target-outside-governed-root`；
+D1 shell 正=世界内写真落（host 侧文件存在 + wire exit=0）；
+**D2 shell 负 host 侧文件未创建，但 wire 是 `exit=0` + stderr `cannot create …`**——受治面的完成律不回报子进程 rc，
+拒证在 stderr 与"文件不存在"，故判据按 host 侧验（此形制如实呈报，待裁）；
+E non-team Δ=[]：无 plane 时三行恒 `a5-effect-face-pending`，执行后世界清单哈希不变；
+F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，零变更）。
