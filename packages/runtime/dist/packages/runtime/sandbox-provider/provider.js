@@ -300,6 +300,15 @@ export function createConfinedProcessProvider(opts) {
             argv: [...request.argv],
             cwd: request.cwd,
             env: request.env.map(([k, v]) => [k, v]),
+            // runtime-base-narrow (bug fix, root 22:43Z): the flag requests the
+            // launcher's EXPLICIT base enumeration (architecture.md:77 interpreter/
+            // libraries/devices face = /usr, /etc, /proc — see build_ruleset in
+            // landlock-prelauncher.py), NOT whole-tree READ_DIR. The former '/'
+            // READ_DIR reading had no authorizing sentence (glue7 runtime-base-probe)
+            // and was the name-class leak's load-bearing piece (glue7 §4b; witness
+            // dev/agent-workflow/evidence/alpha5/runtime-base-narrow/). Beyond this
+            // enumeration only the per-call `allow` grants below apply — a row's
+            // governed anchor root rides `allowPaths` per invocation, never "/".
             runtime_base: true,
             allow: (request.allowPaths ?? []).map((a) => ({
                 path: a.path,
