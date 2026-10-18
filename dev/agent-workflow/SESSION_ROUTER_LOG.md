@@ -6822,3 +6822,27 @@ verdict 不变、probe 9/9、kit 双时代 26/26、tsc/eslint 净、drift 门终
 216 格 GREEN（2 accepted / 214 具名子类拒），matrix 头注旧文案改实数
 （备注级②），N5 +2 拒行、漂移钉关键子集 +2（pin 不变），INSTALL §3.5 与
 README §6.8 同步。unit 12/12、probe 9/9、truth table verdict 不变 3/8。
+
+## 2026-10-18 PTC fs 半臂实施轮（工单 10:04Z，owner 1ef62fcd，分支 `alpha5-ptc-pr` 自 master 1962f879）
+
+冻结契约履行：只动 host.ts（install 行 = `ctx.on('approval/request', …, {global:true, prepend:true})`，
+activation-fence :1115 先例；结构镜像 TeamApprovalOutcome 封闭词表，不 import 上游类型）+
+agent-bindings :2412 门内登记（每 root 一装配 = jobs-gateway Map 先例，成员登记/摘除进
+toolDisposers，census-boot 行 selectedRunner/enforcement = confinedProvider 三元组的
+CONFIG-DECLARED 值，明文披露非 OS 探针）+ 新文件 live/ptc-escalation-row.mjs。
+grant.ts/grant-mint.ts 零改：mintOperationGrant/createGrantLedger 逐字复用，effects 走域内
+parseRequestedEffectSet 裸数组臂（对象臂需自带 fingerprint，实测）。S2 理由前缀实测钉死于
+pinned host lib/index.js:109（`escalate sandbox to <mode>: …`，工单 :122 为同源不同偏移）；
+S3 用 pre-execute-adapter.ts:1822-1868 的在产 requestControl/awaitControlDecision 形状
+（leader=user-approval / member=leader-approval，actionName 'parameter-permission'，
+decision==='allow' 唯一铸权触发，abort=cancelled）。一次性：批准即被本 ask 消费，消费事实
+留存为回放检测面（重放撞内核 CONSUMED 标记，零二次 durable 请求；mirror 不降级已消费事实）。
+测试腿 RED-first：a5ptc-escalation-row.test.ts 先落（RED 实录 Cannot find module，7 fail），
+GREEN 7/7=五负控（重放/过期/他队闭world/撤销先于用零铸/mode 指纹不符）+S1 零状态直通+S4/S5
+对称 + 无 ControlService fail-closed 'unavailable'。装配腿：runtime typecheck 净；vitest 全量
+394 文件绿，4 文件（p6t3×2/rc2-persona-probe/a4pr0a）在 clean HEAD 同命令同样失败 = 链上既有
+红基线（本 diff stash 对照实测），非本轮引入；host.ts eslint 2 错同为预存。p4t6 亲数重锚
+1194→1196（预入账实测 `expected 1196 to be 1194`），五件套入账，扫描器 10/10；a5p7 文本扫描
+卫生保持绿且其 reviewed-edge 例外表零加宽（row 头注释刻意不用 lane 词）。生产入口真跑配方落
+evidence/alpha5/ptc-fs-impl/（正反控+五负控+non-team 零差+unload 对称，可等 int-r3 合并面）。
+net 半臂不在本单。
