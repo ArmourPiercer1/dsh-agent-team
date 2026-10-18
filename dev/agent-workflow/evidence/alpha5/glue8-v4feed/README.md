@@ -43,3 +43,32 @@ final run `23-27-09`）已把 fail-closed 打到**精确落点**：
 本就 era-agnostic；差③（authoring family 消费）是本轮的诚实申报点：Guard
 binding identity = **placement 时刻的运行时对象指纹**，文档 family 是声明面，
 本轮在装配侧做**一致性读验**（执行事实冲突即 refuse mount），不新造身份代数。
+
+## 2. live 轮真实抓到并钉下的装配/披露面（GREEN 迭代全录）
+
+* **placement 行属于 team-tool 家族**（agent-bindings:2575 `teamToolNames =
+  selected + a5PlaneOwnNames`）：v4 BP member `teamTools: {kind: deny}` 会
+  **显式拒掉治理行**（GLUE-7 世界的 member 面是 allow-空集——原生 team_* 目录
+  靠缺席关闭，plane 行走自身治理）。v4-flip 14/14 的 RED 世界用 kind deny
+  无碍（无 plane 行），fed 世界必须 allow-空集。preassembly RED 保留逐字形。
+* **permissions lane 家族闭集 = read|read_image|write|edit|lsp|bash|pwsh**
+  （create MALFORMED_DTO 实测）：grep/glob **不在** lane 词汇——搜索族不归
+  permission lane 管（#321 同面）。**实测披露面**：lane 的 `bash` 家族匹配
+  **不覆盖 placement 名 team_bash**——fed 世界 placement-row dispatch 的治理
+  = plane 自身（Guard binding identity + confined provider + 行 schema），
+  durable leader-approval 面**不为其开请求**（A4.1/A4.3 按此事实钉，
+  ledger 空=一致而非旁路）。此面如实上线，是否扩 lane 归根裁。
+* **shell 行闭集 schema = {command}**：多余 `timeoutMs` 落行自身
+  `refused-schema code=unknown-field`（行内治理在工作，非缺陷）。
+* **mock 面的 rc.2 wire 教训**（kit 自身，非产品）：tool 结果以 user-message
+  tool_result 形回（lastUser 判据在 turn2+ 失效——用 trigger-消息判据）；
+  toolCall 包装是 2 参（3 参错位产 MALFORMED_RESPONSE 被宿主拒）。
+
+## 3. 正控终态（assembled 面）
+
+C0 placement-feed 行过 #313 同一 feed（realm a5g8-v4-realm）· C1 **read 真
+字节**（A5G8-V4-REAL-BYTES-42 上线）· C2 **grep 真命中**（真 rg/grep over
+governed root）· C3 **glob 诚实 shut**（IO_POLICY 上线，无名单）·
+C4 **team_bash confined 真执行**（exit=0 + TOK + sentinel 真写入 governed
+root）。RED 面对照（preassembly）：A4.4 fail-closed 原文 + A5.0 零执行，
+14/14 逐字重跑绿。
