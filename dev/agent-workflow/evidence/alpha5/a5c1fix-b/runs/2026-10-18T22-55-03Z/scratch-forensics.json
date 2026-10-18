@@ -1,0 +1,16 @@
+[
+  {
+    "path": "/workspace/governed/out/plan-mvefcvzb-igkb1h/exit.json",
+    "mtimeMs": 1792364184589.3364,
+    "size": 21,
+    "content": "{\"pid\": 213, \"rc\": 0}",
+    "deltaVsFiredMs": -4059.66357421875
+  },
+  {
+    "path": "/workspace/governed/out/plan-mvefcw2h-shhei5/exit.json",
+    "mtimeMs": 1792364188656.3364,
+    "size": 23,
+    "content": "{\"pid\": 215, \"rc\": -15}",
+    "deltaVsFiredMs": 7.33642578125
+  }
+]

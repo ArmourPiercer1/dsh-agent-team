@@ -1,0 +1,59 @@
+{
+  "armedAt": 1792364854026,
+  "firedAt": 1792364854026,
+  "fireCount": 1,
+  "nudgedAt": 1792364859046,
+  "httpStatus": 200,
+  "httpBody": "{\"type\":\"server-response\",\"rpcId\":\"c1sw--1792364854026\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+  "nudgeStatus": 200,
+  "mitArmedAt": 0,
+  "mitFiredAt": 0,
+  "mitNudgedAt": 0,
+  "mitHttp": 0,
+  "armedNote": "armed when the sleep-90 tool_call was scripted (fires 4s in)",
+  "FireCount": 1,
+  "FiredAt": 1792364854026,
+  "HttpStatus": 200,
+  "HttpBody": "{\"type\":\"server-response\",\"rpcId\":\"c1sw--1792364854026\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+  "nudgeStatuses": [
+    200
+  ],
+  "memberSession": "session-team-child-74f10903c34aa223da435af92a137a22",
+  "settleWatch": {
+    "legs": {
+      "team-inst-18u8aj2015ay-bash-1": {
+        "firstSeenAt": 1792364850083,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-18u8aj2015ay-bash-1 pid=213 exit=0 timedOut=false cancelled=false"
+      },
+      "team-inst-18u8aj2015ay-bash-2": {
+        "firstSeenAt": 1792364854088,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-18u8aj2015ay-bash-2 pid=215 exit=not-observed timedOut=false cancelled=true"
+      }
+    },
+    "probeAborts": [
+      {
+        "call": "call-c1sw-0-k13tfe",
+        "firstSeenAt": 1792364854088,
+        "line": "[c1sw-probe] ABORT call=call-c1sw-0-k13tfe gen=entry t=1792364854033 reason-ctor=Object reason-kind=user reason-keys=[\"kind\"] reason-json={\"kind\":\"user\"}"
+      },
+      {
+        "call": "call-c1sw-1-fi1uwv",
+        "firstSeenAt": 1792364854088,
+        "line": "[c1sw-probe] ABORT call=call-c1sw-1-fi1uwv gen=entry t=1792364854033 reason-ctor=Object reason-kind=user reason-keys=[\"kind\"] reason-json={\"kind\":\"user\"}"
+      }
+    ],
+    "probeEnters": [
+      {
+        "call": "call-c1sw-0-k13tfe",
+        "firstSeenAt": 1792364849782,
+        "line": "[c1sw-probe] enter call=call-c1sw-0-k13tfe t=1792364849769 sig-present=true ctor=AbortSignal aborted-at-entry=false"
+      },
+      {
+        "call": "call-c1sw-1-fi1uwv",
+        "firstSeenAt": 1792364850083,
+        "line": "[c1sw-probe] enter call=call-c1sw-1-fi1uwv t=1792364850032 sig-present=true ctor=AbortSignal aborted-at-entry=false"
+      }
+    ],
+    "startedAt": 1792364787972
+  }
+}

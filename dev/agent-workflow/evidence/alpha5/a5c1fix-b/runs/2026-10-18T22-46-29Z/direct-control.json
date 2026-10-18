@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "landing": "bash · cancelled\n> (empty stdout)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":null,\"timedOut\":false,\"cancelled\":true,\"truncated\":false}",
+  "elapsedMs": 426,
+  "cause": {
+    "kind": "user"
+  },
+  "delayMs": 400
+}

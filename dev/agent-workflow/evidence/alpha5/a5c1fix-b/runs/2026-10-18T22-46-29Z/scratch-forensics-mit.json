@@ -1,0 +1,30 @@
+[
+  {
+    "path": "/workspace/governed/out/plan-mvef1vwn-rzkzmn/exit.json",
+    "mtimeMs": 1792363671276.1738,
+    "size": 21,
+    "content": "{\"pid\": 204, \"rc\": 0}",
+    "deltaVsFiredMs": -44167.826171875
+  },
+  {
+    "path": "/workspace/governed/out/plan-mvef1vym-20njwg/exit.json",
+    "mtimeMs": 1792363675310.263,
+    "size": 23,
+    "content": "{\"pid\": 206, \"rc\": -15}",
+    "deltaVsFiredMs": -40133.737060546875
+  },
+  {
+    "path": "/workspace/governed/out/plan-mvef234o-u5pjqn/exit.json",
+    "mtimeMs": 1792363680820.1157,
+    "size": 23,
+    "content": "{\"pid\": 245, \"rc\": -15}",
+    "deltaVsFiredMs": -34623.88427734375
+  },
+  {
+    "path": "/workspace/governed/out/plan-mvef2rm8-rp4z87/exit.json",
+    "mtimeMs": 1792363712372.5476,
+    "size": 22,
+    "content": "{\"pid\": 248, \"rc\": -9}",
+    "deltaVsFiredMs": -3071.452392578125
+  }
+]

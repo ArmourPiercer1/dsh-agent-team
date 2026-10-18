@@ -1,0 +1,25 @@
+=== B RUN 3-retry 2026-10-18T23:05:55Z
+PASS H1 — test-use host @639ed01539 porcelain clean before [head=639ed01539 porcelain=true]
+PASS H1b — live a5-abort-cause ls-remote == the pinned fix SHA a1bf18fa995f (the fix under reverification) [ls-remote=a1bf18fa995fd61f5168b19bdc49600c934b1d46]
+PASS H2 — port 3189 self-proved free + a mock port free [mock=3498]
+PASS H0 — stable :3080 answers read-only before the run (probe only, never touched) [status=401]
+PASS I1 — REAL install of the pinned face (public plugin face, bounded retry per r5 TLS-flake precedent) [exit=0 tail=+ dsh-agent-team github:ArmourPiercer1/dsh-agent-team#a1bf18fa995fd61f5168b19bdc49600c934b1d46 | Packages: +1 | + | Progress: resolved 1, reused 1, downloaded 0, added 1, done | Done in 3.]
+PASS I1b — the BOOT world carries the REAL installed face (install into the boot home before layer+boot) [exit=0 deps=["dsh-agent-team"]]
+PASS I9 — launcher blob materialized (git-show bytes) + --abi-probe measures a real landlock ABI [sha=1264ea584e3438d6 abi=4]
+PASS R1 — RED reproduces: the cancelled sleep leg lands the scheduler death form on the model wire (verbatim "Error: tool call aborted") [wire=["[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelle]
+PASS R3 — GREEN control reproduces: the SAME team_bash definition, lane-direct with cause {kind:user}, lands `bash · cancelled` + "cancelled":true [landing=bash · cancelled
+> (empty stdout)
+a5p5-meta {"kind":"shell","exitCode":null,"timedOut":false,"cancelled":true,"truncated":false}]
+BOOK R6 — MIT phase: post-execute accept-decision (public seam, content-only) on a fresh cancelled leg — does the cancelled form reach the wire after the host replacement? [mit-wire=["[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":f]
+PASS F1 — cond-1 abort-hit: cancel RPC accepted AND probe saw gen-entry abort kind=user [fired=1792364854026 http=200]
+PASS F2 — cond-2 process-terminated: exit.json rc in {-15,-9} within 5s after FiredAt [rc=[-15] deltas=[7]]
+PASS F3 — cond-3 no-continuation-side-effect: no natural (rc=0) completion of a cancelled plan near the cancel [naturalNearCancel=[]]
+PASS F4 — cond-4 model-history-sees-interruption-not-success: final member history carries the death form [tail=["[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelle]
+PASS F3b — cond-3b out-of-band attributed seed watch v3: seed frozen <=+2s AND pre-existing files never touched after +2s AND zero new files other than next-leg boundary kinds (probe-/plan-) [seedΔ=-955ms preViol=[] newNonBoundary=[] samples=83]
+PASS F5 — fix-witness: row-held (gen1) signal now aborts with the RELAYED user cause (kind=user) [gen-aborts=["{\"kind\":\"user\"}"]]
+PASS F-W — KEY FLIP: member-lane witness prints cancelled=true (pre-fix 5/5 false on 5885e46e) [witness=[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1sw-realm call=team-inst-18u8aj2015ay-bash-2 pid=215 exit=not-observed timedOut=false cancelled=true]
+BOOK F-N — host-law negative assertion stays: the cancelled leg STILL lands the unified death form on the model wire (R1 above must remain PASS) [r1=true]
+PASS T1 — exact-name home sweep (no c1sw-diag-* world remains unless --keep) [left=0]
+PASS T2 — raw instance log deleted after redaction (token hygiene) [redacted copy kept, raw gone]
+PASS H3 — test-use porcelain 0 after [porcelain=0]
+KIT_DONE evidence=/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/alpha5/a5c1fix-b/runs/2026-10-18T23-05-55Z

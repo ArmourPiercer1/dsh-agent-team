@@ -1,0 +1,303 @@
+{
+  "runStamp": "2026-10-18T22-46-29Z",
+  "installSpec": "github:ArmourPiercer1/dsh-agent-team#a1bf18fa995fd61f5168b19bdc49600c934b1d46",
+  "hostBin": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+  "clientCommitHash": "639ed01539",
+  "ports": {
+    "host": 3189,
+    "mock": 3496
+  },
+  "launcher": {
+    "path": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5c1fix-b-2026-10-18T22-46-29Z/deployment/landlock-prelauncher.py",
+    "sha": "1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "bytes": 26992
+  },
+  "abi": {
+    "rc": 0,
+    "answer": "{\"kind\":\"abi-available\",\"abi_version\":4,\"raw\":[\"[SC] create_ruleset(NULL,0,GET_VERSION): rc=4 errno=0 strerror='Success'\"]}",
+    "abiVersion": 4
+  },
+  "rootDisc": {
+    "attempts": 2
+  },
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"c1sw-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-c1sw-team-2026-10-18T22-46-29Z\",\"blueprint\":{\"blueprintId\":\"c1sw-main-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:78f67864641ec33a545ea599dc2dacdc25cffe3df4ca1feca4924fe8996a8860\"},\"createdAt\":\"2026-10-18T22:46:50.640Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5c1fix-b-2026-10-18T22-46-29Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-c1sw-team-20"
+  },
+  "quoteWait": "ok",
+  "memberSession": "session-team-child-6415ec53fcaede4db82b53daa47f16b2",
+  "memberAToolResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: tool call aborted\"}]"
+  ],
+  "memberAToolCallOrder": [
+    "team_bash",
+    "team_bash"
+  ],
+  "cancel": {
+    "armedAt": 1792363675304,
+    "firedAt": 1792363675303,
+    "fireCount": 1,
+    "nudgedAt": 1792363680341,
+    "httpStatus": 200,
+    "httpBody": "{\"type\":\"server-response\",\"rpcId\":\"c1sw--1792363675303\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+    "nudgeStatus": 200,
+    "mitArmedAt": 0,
+    "mitFiredAt": 0,
+    "mitNudgedAt": 0,
+    "mitHttp": 0,
+    "armedNote": "armed when the sleep-90 tool_call was scripted (fires 4s in)",
+    "FireCount": 1,
+    "FiredAt": 1792363675303,
+    "HttpStatus": 200,
+    "HttpBody": "{\"type\":\"server-response\",\"rpcId\":\"c1sw--1792363675303\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+    "nudgeStatuses": [
+      200
+    ]
+  },
+  "directControl": {
+    "ok": true,
+    "landing": "bash · cancelled\n> (empty stdout)\na5p5-meta {\"kind\":\"shell\",\"exitCode\":null,\"timedOut\":false,\"cancelled\":true,\"truncated\":false}",
+    "elapsedMs": 426,
+    "cause": {
+      "kind": "user"
+    },
+    "delayMs": 400
+  },
+  "mitPromptStatuses": [
+    200
+  ],
+  "mitWait": "timeout-continued",
+  "mitResWait": "timeout-continued",
+  "mit": {
+    "cancel": {
+      "armedAt": 1792363715444,
+      "firedAt": 1792363715444,
+      "http": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"c1sw-mit-1792363715444\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}",
+      "nudgedAt": 1792363920930
+    },
+    "lastToolResults": [
+      "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+      "[{\"type\":\"text\",\"text\":\"Error: tool call aborted\"}]",
+      "[{\"type\":\"text\",\"text\":\"bash · exit=137\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":137,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+      "[{\"type\":\"text\",\"text\":\"c1sw · cancelled a5meta {\\\"cancelled\\\":true,\\\"probe\\\":\\\"post-execute-accept\\\"}\"}]"
+    ]
+  },
+  "probe": {
+    "applied": true,
+    "enter": [
+      {
+        "t": 1792363671049,
+        "call": "call-c1sw-0-mbz7mt",
+        "sig-present": true,
+        "sig-ctor": "AbortSignal",
+        "sig-aborted": false
+      },
+      {
+        "t": 1792363671310,
+        "call": "call-c1sw-1-939sft",
+        "sig-present": true,
+        "sig-ctor": "AbortSignal",
+        "sig-aborted": false
+      },
+      {
+        "t": 1792363712336,
+        "call": "call-c1sw-2-bervot",
+        "sig-present": true,
+        "sig-ctor": "AbortSignal",
+        "sig-aborted": false
+      }
+    ],
+    "abort": [
+      {
+        "call": "call-c1sw-0-mbz7mt",
+        "gen": "entry",
+        "t": 1792363675309,
+        "ctor": "Object",
+        "kind": "user",
+        "keys": [
+          "kind"
+        ],
+        "json": "{\"kind\":\"user\"}"
+      },
+      {
+        "call": "call-c1sw-1-939sft",
+        "gen": "entry",
+        "t": 1792363675309,
+        "ctor": "Object",
+        "kind": "user",
+        "keys": [
+          "kind"
+        ],
+        "json": "{\"kind\":\"user\"}"
+      },
+      {
+        "call": "call-c1sw-1-939sft",
+        "gen": "gen1",
+        "t": 1792363675309,
+        "ctor": "Object",
+        "kind": "user",
+        "keys": [
+          "kind"
+        ],
+        "json": "{\"kind\":\"user\"}"
+      }
+    ],
+    "swap": [
+      {
+        "call": "call-c1sw-0-mbz7mt",
+        "t": 1792363671245,
+        "toCtor": "AbortSignal",
+        "abortedNow": false,
+        "reasonNow": "undefined"
+      },
+      {
+        "call": "call-c1sw-1-939sft",
+        "t": 1792363671330,
+        "toCtor": "AbortSignal",
+        "abortedNow": false,
+        "reasonNow": "undefined"
+      },
+      {
+        "call": "call-c1sw-2-bervot",
+        "t": 1792363712356,
+        "toCtor": "AbortSignal",
+        "abortedNow": false,
+        "reasonNow": "undefined"
+      }
+    ],
+    "post": [
+      {
+        "t": 1792363671287,
+        "call": "call-c1sw-0-mbz7mt",
+        "isError": false,
+        "err": "",
+        "content": "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+      },
+      {
+        "t": 1792363675336,
+        "call": "call-c1sw-1-939sft",
+        "isError": true,
+        "err": "tool call aborted",
+        "content": "[{\"type\":\"text\",\"text\":\"Error: tool call aborted\"}]"
+      },
+      {
+        "t": 1792363712381,
+        "call": "call-c1sw-2-bervot",
+        "isError": false,
+        "err": "",
+        "content": "[{\"type\":\"text\",\"text\":\"bash · exit=137\\n> (empty stdout)\\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":137,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+      },
+      {
+        "t": 1792363744412,
+        "call": "call-c1sw-mit-fpg8y7",
+        "isError": true,
+        "err": "tool call aborted before dispatch",
+        "content": "[{\"type\":\"text\",\"text\":\"Error: tool call aborted before dispatch\"}]"
+      }
+    ],
+    "mitigate": [
+      {
+        "t": 1792363744412,
+        "call": "call-c1sw-mit-fpg8y7",
+        "action": "accept-content"
+      }
+    ]
+  },
+  "settleWatch": {
+    "legs": {
+      "team-inst-0s8efoz1ce2v-bash-1": {
+        "firstSeenAt": 1792363671383,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-1 pid=204 exit=0 timedOut=false cancelled=false"
+      },
+      "team-inst-0s8efoz1ce2v-bash-2": {
+        "firstSeenAt": 1792363675396,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-2 pid=206 exit=not-observed timedOut=false cancelled=true"
+      },
+      "team-inst-leader-bash-1": {
+        "firstSeenAt": 1792363680922,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-leader-bash-1 pid=245 exit=not-observed timedOut=false cancelled=true"
+      },
+      "team-inst-0s8efoz1ce2v-bash-3": {
+        "firstSeenAt": 1792363712394,
+        "line": "confined-shell ran realm=c1sw-realm call=team-inst-0s8efoz1ce2v-bash-3 pid=248 exit=137 timedOut=false cancelled=false"
+      }
+    },
+    "probeAborts": [
+      {
+        "call": "call-c1sw-0-mbz7mt",
+        "firstSeenAt": 1792363675396,
+        "line": "[c1sw-probe] ABORT call=call-c1sw-0-mbz7mt gen=entry t=1792363675309 reason-ctor=Object reason-kind=user reason-keys=[\"kind\"] reason-json={\"kind\":\"user\"}"
+      },
+      {
+        "call": "call-c1sw-1-939sft",
+        "firstSeenAt": 1792363675396,
+        "line": "[c1sw-probe] ABORT call=call-c1sw-1-939sft gen=entry t=1792363675309 reason-ctor=Object reason-kind=user reason-keys=[\"kind\"] reason-json={\"kind\":\"user\"}"
+      }
+    ],
+    "probeEnters": [
+      {
+        "call": "call-c1sw-0-mbz7mt",
+        "firstSeenAt": 1792363671083,
+        "line": "[c1sw-probe] enter call=call-c1sw-0-mbz7mt t=1792363671049 sig-present=true ctor=AbortSignal aborted-at-entry=false"
+      },
+      {
+        "call": "call-c1sw-1-939sft",
+        "firstSeenAt": 1792363671383,
+        "line": "[c1sw-probe] enter call=call-c1sw-1-939sft t=1792363671310 sig-present=true ctor=AbortSignal aborted-at-entry=false"
+      },
+      {
+        "call": "call-c1sw-2-bervot",
+        "firstSeenAt": 1792363712394,
+        "line": "[c1sw-probe] enter call=call-c1sw-2-bervot t=1792363712336 sig-present=true ctor=AbortSignal aborted-at-entry=false"
+      }
+    ],
+    "startedAt": 1792363609034
+  },
+  "seedWatch": {
+    "firedAtRef": 1792363675304,
+    "sampleCount": 78,
+    "lastSize": 28,
+    "lastMtimeDeltaMs": -951,
+    "growthAfter2s": 0,
+    "newFiles": [
+      "/workspace/governed/plans/plan-mvef234o-u5pjqn.json",
+      "/workspace/governed/probe-mvef230g-hffb2c/badhandled/allowed/ok.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/badhandled/other/outside.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/badhandled/private/secret.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/denyall/allowed/ok.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/denyall/other/outside.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/denyall/private/secret.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/selective/allowed/exec-leg.out",
+      "/workspace/governed/probe-mvef230g-hffb2c/selective/allowed/new.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/selective/allowed/ok.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/selective/other/outside.txt",
+      "/workspace/governed/probe-mvef230g-hffb2c/selective/private/secret.txt"
+    ]
+  },
+  "hostExit": null,
+  "keep": false
+}
