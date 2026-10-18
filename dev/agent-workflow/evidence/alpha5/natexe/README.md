@@ -266,3 +266,25 @@ pwsh→bash）导致 `readName="write"/"edit"/"lsp"/"read_image"`、
   其中 3 行 code 换为具名子类（工件注记+receipt 重打）；unit N5 拒形清单扩至
   14 形并逐形钉 code；探针 A2 现报新 code（REFUSED 语义不变，9/9）。
   INSTALL §3.5 挂载名规则同步改写。
+
+## 6.7 独审必办轮（#329 PASS 后三必办，head 1d3b4e81 续笔）
+
+- **① 保留名边界穷尽**：首刀 9 名静态表留下 web_search/skill/todo_write/
+  present/send_message 等真实宿主原生名可挂（同一 own-mask+verified-abstain
+  面）。修法 = 支持对白名单穷尽：`PLANE_RESERVED_NATIVE` 扩为**宿主发布面
+  穷尽表**（51 精确注册名，逐一取自 pinned host 的 tool-* 包注册面 +
+  `mcp__` 前缀族），来源二选一核码后定案 = **静态超集 + 宿主版本 pin +
+  漂移钉测**（依据：`createTeamToolPlaneAssembly` 输入恰为
+  `{backends, fs, instanceId, plane}`，宿主工具面在挂载名固化处不可得；
+  治理世界 web profile 原生派发面实测为空——派生即空表 = 不设防）；
+  `PLANE_RESERVED_NATIVE_HOST_PIN='0.2.0-rc.2@639ed01539'` 与 tests/paths.mjs
+  比对，基线一动 unit 漂移钉 RED。unit 12/12（新增漂移钉 + 混合缺陷优先序
+  钉，N5 扩 6 形宿主名拒钉）；矩阵重放 = **208 格**（51+前缀 × 4 行，
+  receipt GREEN：2 accepted / 206 refused）。
+- **② 引用精度（追加不改写）**：decision-lane 名键裁决位精确 = :242/:332/
+  :370（原引 :174-184 为投影段；measure log 尾部注记，本文件与 ROUTER_LOG
+  以本节为准）。
+- **③ 混合缺陷优先序**：形状→保留名声明→互异，先命中者拒（"其余保持
+  INVALID"仅纯单类缺陷成立）；INSTALL §3.5 与门注记同步，unit 钉之。
+- **回归**：truth table 11 行 verdict 不变（3/8，子类披露同前）、probe 9/9、
+  natexe kit 双时代 26/26、drift 门终 HEAD、tsc/eslint 净。

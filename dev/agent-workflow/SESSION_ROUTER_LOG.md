@@ -6794,3 +6794,21 @@ effect CLASS、durable 面按 DISPATCHED 名（decision-lane.ts:174-184）——
 （N5 扩至 14 拒形逐形钉 code）、probe 9/9、truth table 11 行 verdict 不变
 （3 行 code 换具名子类，口径披露于 README §6.6 + 工件注记）、INSTALL §3.5
 同步、kit 时代腿与 drift 门见后续 receipt。typecheck/eslint 净。
+
+## 2026-10-18 natexe 独审必办轮（#329 PASS 后 ①②③，1d3b4e81 线续笔）
+
+① 保留名边界穷尽：首刀 9 名静态表实测可被 web_search/skill/todo_write/
+present/send_message 绕过（同一 own-mask+verified-abstain 弃权面）。支持对
+白名单穷尽化：`PLANE_RESERVED_NATIVE` = 宿主发布面穷尽表（51 精确注册名，
+逐一取自 pinned host tool-* 包注册面；+`mcp__` 前缀族）。法源二选一核码定案
+= **静态超集 + pin + 漂移钉测**：`createTeamToolPlaneAssembly` 输入仅
+`{backends, fs, instanceId, plane}`（宿主工具面不可得），且治理世界 web
+profile 原生派发面实测为空（派生即空表 = 不设防）；
+`PLANE_RESERVED_NATIVE_HOST_PIN='0.2.0-rc.2@639ed01539'` vs tests/paths.mjs
+漂移钉入 unit（基线一动即 RED）。unit 10→12（漂移钉 + 混合优先序钉，N5 扩
+6 形）；矩阵重放 208 格 GREEN（2 accepted / 206 具名子类拒）。② 引用精度
+追加注记：decision-lane 名键裁决位精确 = **:242/:332/:370**（原 :174-184
+为投影段；历史条目不改写，measure log 尾注 + README §6.7 为准）。③ 混合
+缺陷优先序 = 形状→保留名声明→互异 先命中者拒（"其余保持 INVALID"仅纯单类
+缺陷成立），INSTALL §3.5 + 门注记 + unit 三处同步。回归：truth table 3/8
+verdict 不变、probe 9/9、kit 双时代 26/26、tsc/eslint 净、drift 门终 HEAD。

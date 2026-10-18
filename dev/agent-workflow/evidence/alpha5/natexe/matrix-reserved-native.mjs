@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 /**
- * natexe solo-review 06:43Z ruling, leg ③: the FULL reserved-native × row
+ * natexe solo-review 06:43Z ruling, leg ③ (REPLAYED at the exhaustion round:
+ * the reserved list is now the FULL pinned-host-release registry — 51 exact
+ * names imported live from the shipped module + the mcp__ prefix family —
+ * replacing the first 9-name cut that left web_search/skill/todo_write/
+ * present/send_message mountable): the FULL reserved-native × row
  * matrix as an executable, replayable artifact. Every reserved host/native
  * spelling × every plane row (grep/glob/bash via `names`, the read row via
  * `readName`), mounted in isolation against the shipped defaults — each
@@ -22,9 +26,9 @@ import path from 'node:path'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ROW = path.resolve(HERE, '../../../../../packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs')
-const { verifyPlaneNames, DEFAULT_PLANE_NAMES: D } = await import(ROW)
+const { verifyPlaneNames, DEFAULT_PLANE_NAMES: D, PLANE_RESERVED_NATIVE, PLANE_RESERVED_NATIVE_PREFIXES } = await import(ROW)
 
-const RESERVED = ['bash', 'pwsh', 'read', 'read_image', 'write', 'edit', 'lsp', 'grep', 'glob']
+const RESERVED = [...PLANE_RESERVED_NATIVE, ...PLANE_RESERVED_NATIVE_PREFIXES.map((pf) => `${pf}host__tool`)]
 const ROWS = [
   ['grep', (sp) => ({ ...D, grep: sp })],
   ['glob', (sp) => ({ ...D, glob: sp })],
@@ -46,7 +50,9 @@ const WHY = {
   grep: 'the grep row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing on this surface; other rows are not grep at all',
   glob: 'the glob row keeps the alias mount (GLUE-5 alias ruling) — no verified assembled same-name pairing; other rows are not glob at all',
   bash: 'rows other than the confined shell are not bash implementations',
+  mcp__host__tool: 'the dynamic mcp__ family by prefix — mounting a plane row under an mcp tool name masks a dynamic mcp placement with the same verified-abstain face',
 }
+const FALLBACK_WHY = 'host native registry of the pinned release (PLANE_RESERVED_NATIVE) — the row carries no same-name, same-meaning implementation; mounting here is the own-mask + verified-abstain impostor face'
 
 let bad = 0
 for (const [row, build] of ROWS) {
@@ -59,10 +65,10 @@ for (const [row, build] of ROWS) {
     const codeOk = supported ? true : res.code === UNSUPPORTED
     const ok = got === want && codeOk
     if (!ok) bad++
-    const basis = supported ? BASIS[supported] : WHY[sp]
+    const basis = supported ? BASIS[supported] : (WHY[sp] ?? FALLBACK_WHY)
     console.log(`${ok ? 'ok' : 'MISMATCH'} ${row} @ '${sp}' ${got}${supported ? '' : ` (${res.code})`} — basis: ${basis}`)
   }
 }
 const cells = RESERVED.length * ROWS.length
-console.log(bad === 0 ? `MATRIX GREEN: ${cells} cells, 2 accepted (bash@bash, read@read), ${cells - 2} refused with the named subtype ${UNSUPPORTED}` : `MATRIX RED: ${bad} mismatches`)
+console.log(bad === 0 ? `MATRIX GREEN: ${cells} cells (${PLANE_RESERVED_NATIVE.length} exact reserved names + ${PLANE_RESERVED_NATIVE_PREFIXES.length} prefix probe x 4 rows), 2 accepted (bash@bash, read@read), ${cells - 2} refused with the named subtype ${UNSUPPORTED}` : `MATRIX RED: ${bad} mismatches`)
 process.exit(bad === 0 ? 0 : 1)

@@ -1,0 +1,39 @@
+{
+  "era": "v4",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe-pr/tests/homes/a5natexe-v4-2026-10-18T07-13-35",
+  "ok": true,
+  "denyList": [],
+  "memResults": [
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5natexe-pr/tests/homes/a5natexe-v4-2026-10-18T07-13-35/governed\\n> A5NX-BASH-TOK\\n> SENTINEL-WROTE\\n> A5NX-SENTINEL-WROTE\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]",
+    "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"truncated\\\":false}\"}]"
+  ],
+  "denyResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: exec fingerprint sha256:b7e40f4cecdf0f17a60a86503deea0c2e0b2205d93a5a287ba254e86727351b1 answered deny from the layer\"}]"
+  ],
+  "askWitnesses": [
+    {
+      "requestId": "ctrl-0cpztvk0im3rcv1sxxpy60qu",
+      "toolName": "bash",
+      "preSentinel": false,
+      "preEscape": false,
+      "at": "2026-10-18T07:13:48.709Z"
+    },
+    {
+      "requestId": "ctrl-1yjbd8p0ym7re61qygdgn0yn",
+      "toolName": "bash",
+      "preSentinel": true,
+      "preEscape": false,
+      "at": "2026-10-18T07:13:49.433Z"
+    }
+  ],
+  "escapeCheck": {
+    "escapeAnywhere": false,
+    "r1Head": "[{\"type\":\"text\",\"text\":\"bash · exit=0\\n> (empty stdout)\\nstderr:\\n> /bin/sh: 1: cannot create ../natexe-escape.txt: Permission denied\\n> ls: cannot access '../natexe-escape.txt': No such file or directory\\n> \\na5p5-meta {\\\"kind\\\":\\\"shell\\\",\\\"exitCode\\\":0,\\\"timedOut\\\":false,\\\"cancelled\\\":false,\\\"trun"
+  },
+  "v4Identity": {
+    "schemaVersion": 4,
+    "contentHash": "sha256:f447170aa1724d30f62dde6848579ddc25cbcee0d96944e0a2090a4e54ca32ee"
+  },
+  "leaderDone": true,
+  "memberFinalSeen": true
+}
