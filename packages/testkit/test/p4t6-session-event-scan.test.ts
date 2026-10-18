@@ -2480,6 +2480,15 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       'packages/domain/test/a5fl2-envelope-scope-mirror.test.ts',
       'packages/runtime/test/a5fl3-kernel-scope-mirror.test.ts',
     ]
+    // alpha5-glue8-v4feed (GLUE-8 v4 EXECUTION FEED assembly): the v4-era
+    // assembly units — the authoring-family stop pin (no implementation-
+    // identity field), the placement-identity algebra, the era-agnostic
+    // pb-section-6 feed pairing and the live-kit anti-drift witness. The
+    // live kit itself lives under dev/agent-workflow/evidence/** (outside
+    // the packages/** scan), as every prior wiring round.
+    const SCANNED_PATHS_A5G8: readonly string[] = [
+      'packages/runtime/test/a5g8-v4feed-units.test.ts',
+    ]
     // alpha5-glue7-backend (GLUE-7 production backend assembly): the TWO
     // scannable files of the round — the live-row .mjs that ASSEMBLES the
     // real effect backends onto the plane (confined Process provider for
@@ -2549,7 +2558,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5SCHEMAREV.length +
         SCANNED_PATHS_A5GLUE7.length +
         SCANNED_PATHS_A5RBN.length +
-        SCANNED_PATHS_A5FLIP.length,
+        SCANNED_PATHS_A5FLIP.length +
+        SCANNED_PATHS_A5G8.length,
     )
     expect(scanResult.files.length).toBe(
       983 +
@@ -2595,7 +2605,8 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5SCHEMAREV.length +
         SCANNED_PATHS_A5GLUE7.length +
         SCANNED_PATHS_A5RBN.length +
-        SCANNED_PATHS_A5FLIP.length,
+        SCANNED_PATHS_A5FLIP.length +
+        SCANNED_PATHS_A5G8.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
     // from the total: a total that moves for the wrong reason (one file added, one
