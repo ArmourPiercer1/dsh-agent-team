@@ -64,7 +64,15 @@ merge 干净、零冲突。**本笔是声明式预演：若 #330 最终头变化
   a5p5 tools `register.ts` 的 closed barrel / 零全局挂载审计与 a5glb parity spec 的**路径引用**
   （:103-105、:121、:185），**不引用 plane 挂载行**，故对 ① 的翻转天然免疫；无红即无重 tie——
   不为凑"红→改→绿"三步去动别的腿（其余断言一字未动）。
-- **宿主 checkout 已入本 worktree**：`tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84`
+### 更正（同一轮内，撤回一处过早声称）
+
+上一笔提交正文写了"以 `git status --porcelain` + HEAD 双验其 pristine"——**该验证当时没有完成，声称作废**。
+实测经过如实记：第一次 `cp -a` 的目标停在 265 MB 且 `ps` 里已无 cp 进程 ⇒ 拷贝**中途死亡**，
+那份副本 `status --porcelain` = 10131（未复制完），**已 `rm -rf` 清除**；随后以
+`setsid + 完成标记`（`.scratch-logs/host-done.mark`）重新分离式复制，完成与 pristine 双验
+**待下轮读标记后补记**。在此之前，本文件与提交历史里任何"宿主 checkout 已就位且 pristine"的话都不成立。
+
+- **宿主 checkout（进行中）**：`tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84`
   （0.2.0-rc.2 pin）。**方法与 §2 的差别如实写明**：不是重新 `clone --local` + install/build，而是整目录
   复制本仓另一 worktree 里**已备好且 pristine 的同 pin 副本**（`a5natexe`）——省去重装的磁盘/时间，
   代价是依赖"源副本 pristine"这一条，已用 `git -C ... status --porcelain` 与 HEAD 双验（数字见提交说明）。
