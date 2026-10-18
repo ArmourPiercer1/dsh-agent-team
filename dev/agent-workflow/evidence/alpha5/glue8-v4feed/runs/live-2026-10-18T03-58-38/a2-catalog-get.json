@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 4,
+  "blueprintId": "team.a5fl-v4",
+  "revision": "1",
+  "contentHash": "sha256:45747ca98cb8156c740d5911cfac3f1d25a721d9ef7d3095c69ef1b6f48dd72c",
+  "leader": {
+    "templateId": "leader",
+    "persona": "You are the leader of the a5fl v4 team. A5FLMK_LEAD_2026-10-18T03-58-38"
+  },
+  "members": [
+    {
+      "templateId": "worker",
+      "persona": "You are worker-v4 of the a5fl v4 team. A5FLMK_MEM_2026-10-18T03-58-38"
+    }
+  ],
+  "requirements": [],
+  "policyStates": []
+}
