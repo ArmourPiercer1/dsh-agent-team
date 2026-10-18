@@ -1,0 +1,151 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b3-cancel
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=72 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1b abort ALREADY fired before the call (根①): a pre-aborted signal cancels at once, no race with the payload
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1b abort ALREADY fired before the call (根①): a pre-aborted signal cancels at once, no race with the payload
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=101 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=122 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=false settled-in=248ms abort-at=1792352296778
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=143 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X1 THE RECORDED SHAPE, CLOSED: the outside secret now answers exit 1 with the kernel sentence verbatim
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-1 pid=168 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=161 exit=not-observed timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X2 positive control: a command that succeeds still settles as exit 0
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-1 pid=182 exit=0 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-2 pid=175 exit=not-observed timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-1 pid=194 exit=1 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-2 pid=197 exit=7 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-3 pid=201 exit=126 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-4 pid=205 exit=127 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=211 exit=7 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b2-realm legs=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b2-realm call=team-a5b2-instance-grep-1 records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=237 exit=not-observed timedOut=true cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b2-realm legs=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b2-realm call=team-a5b2-instance-glob-2 pid=252 files=31 capped=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X5 the timeout leg is unchanged: no code was ever seen, so null and not-observed plus timed-out stay on the wire
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-1 pid=265 exit=not-observed timedOut=true cancelled=false
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b2-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b2-exit-code-fidelity.test.ts > B2 X — the shipped shell row, end to end (real plane, real kernel refusal) > X6 re-scoped by B3, judgment and bytes unchanged: the ONE-argument caller path injects no signal, so this leg stays cancelled-false — while the row itself now HAS a cancel channel
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b2-realm call=team-a5b2-instance-bash-1 pid=283 exit=not-observed timedOut=true cancelled=false
+
+ ✓ packages/runtime/test/a5b2-exit-code-fidelity.test.ts (11 tests) 4002ms
+     ✓ A4 the terminate path lands on a signal death too: the code stays a 128-range number, never a fabricated 0  489ms
+     ✓ X3 negative controls: 1, 7, 126 and 127 come back as exactly those numbers, each from its own waitpid status  400ms
+     ✓ X4 anti-collateral in the same round: the glob and search rows still carry no exit code anywhere on their wire  522ms
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=285 exit=143 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=team-a5b3-instance-grep-1 records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob-2 pid=311 files=81 capped=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=team-a5b3-instance-grep-3 records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob-4 pid=321 files=81 capped=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false)
+[a5b3 C10] baseline union read: path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b3-cancel/tests/deepseek-harness-test-use/packages/core/session/src/types.ts git-blob-sha=593c86d52a5c26d531913ffaff9aac651732c2da
+
+ ✓ packages/runtime/test/a5b3-cancel-leg.test.ts (12 tests) 4731ms
+     ✓ C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)  435ms
+     ✓ C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)  427ms
+     ✓ C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`  855ms
+     ✓ C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word  723ms
+     ✓ C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted  694ms
+
+ Test Files  2 passed (2)
+      Tests  23 passed (23)
+   Start at  19:38:15
+   Duration  5.03s (transform 1.16s, setup 0ms, import 287ms, tests 8.73s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

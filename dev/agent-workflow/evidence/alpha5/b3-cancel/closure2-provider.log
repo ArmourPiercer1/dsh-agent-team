@@ -1,0 +1,46 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b3-cancel
+
+ ✓ packages/runtime/test/a5p4-phases.test.ts (10 tests) 6ms
+ ✓ packages/runtime/test/a5p4-assembly-config.test.ts (10 tests) 22ms
+ ✓ packages/runtime/test/a5p4-fd-inheritance.test.ts (7 tests) 52ms
+ ✓ packages/runtime/test/a5p4-network-closure.test.ts (7 tests) 4ms
+ ✓ packages/runtime/test/a5p4-provider.test.ts (9 tests) 272ms
+ ✓ packages/runtime/test/a5int-r3-mount-integration.test.ts (6 tests) 654ms
+
+ Test Files  6 passed (6)
+      Tests  49 passed (49)
+   Start at  19:38:22
+   Duration  865ms (transform 867ms, setup 0ms, import 509ms, tests 1.01s, environment 1ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5b3-cancel
+
+ ✓ packages/runtime/test/a5lsp2-assembly.test.ts (7 tests) 2302ms
+     ✓ two members → two isolated pids, each answering; hot re-ensure reuses the SAME instance  511ms
+     ✓ policyChange A g0→g1: old pid exits bounded, new instance answers, sibling untouched, zero handles on the old root  465ms
+     ✓ policyChange again A g1→g2: the ledger shows dispose,create,dispose,create and the world stays net-zero  460ms
+     ✓ failure cleanup (b): a mid-change failure (readiness never comes) leaves ZERO residual pids/handles  494ms
+     ✓ disposeAll: every instance terminates, every pid is gone, the world scan is empty  303ms
+ ✓ packages/runtime/test/a5lsp2-streaming.test.ts (15 tests) 3391ms
+     ✓ a consumed plan never streams twice — the second executeStreaming is the second-spawn-without-a-grant refusal  2005ms
+     ✓ a handshake that never answers times out BOUNDED and kills the launcher  301ms
+     ✓ a child that cannot be confirmed settles termination-unconfirmed, never silently terminated  304ms
+
+ Test Files  2 passed (2)
+      Tests  22 passed (22)
+   Start at  19:42:22
+   Duration  3.70s (transform 189ms, setup 0ms, import 314ms, tests 5.69s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

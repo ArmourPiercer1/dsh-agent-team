@@ -127,7 +127,19 @@ const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-sess
   // and the launcher it spawns) and imports nothing from the lane
   // (`../sandbox-provider/index.js` only). Zero barrel, zero mount, zero glue; the
   // barrel, the mount and the per-scope judgement keep every tooth.
-  'runtime/test/a5b2-exit-code-fidelity.test.ts']
+  'runtime/test/a5b2-exit-code-fidelity.test.ts',
+   // Eighth entry (A5-B3 cancel leg, branch `alpha5-b3-cancel-pr`): this spec names
+   // the lane in TWO comment lines of its header — the pre-B3 `makeExecute` shape at
+   // `packages/tools/a5p5-tools/src/register.ts` and the renderer branch at
+   // `packages/tools/a5p5-tools/src/render.ts:183-184` whose reachability through the
+   // shipped shell row is exactly what its legs measure. Both citations ARE the leg
+   // content, not decoration. Weaker than entries five through seven, not stronger:
+   // it reads NO lane source from disk (readFileSync opens only the launcher it
+   // spawns) and imports nothing from the lane (`../sandbox-provider/index.js`, and
+   // the plane row `../src/plugin/live/team-tool-plane.mjs` dynamically — reached
+   // through the same reviewed edge GLUE-5 booked). Zero barrel, zero mount, zero
+   // glue; the barrel, the mount and the per-scope judgement keep every tooth.
+   'runtime/test/a5b3-cancel-leg.test.ts']
 
 /**
  * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly
