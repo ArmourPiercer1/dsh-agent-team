@@ -2499,6 +2499,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
     // prior kit round.
     const SCANNED_PATHS_A5RBN: readonly string[] = [
       'packages/runtime/test/a5rbn-runtime-base-narrow.test.ts',
+    ]
     // alpha5-v4-flip (#324) flip-round test trio (measured on this tree):
     const SCANNED_PATHS_A5FLIP: readonly string[] = [
       'packages/domain/test/a5fl1-blueprint-v4-flip.test.ts',
@@ -2663,7 +2664,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5G1,
       ...SCANNED_PATHS_A5SCHEMAREV,
       ...SCANNED_PATHS_A5GLUE7,
-      ...SCANNED_PATHS_A5RBN +
+      ...SCANNED_PATHS_A5RBN,
       ...SCANNED_PATHS_A5FLIP,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
