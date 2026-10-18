@@ -152,7 +152,15 @@ describe('a5p4 lane purity and dormancy', () => {
       }
     }
     walk(PACKAGES_DIR)
-    expect(offenders).toEqual(['runtime/src/plugin/live/plane-effect-backends.mjs'])
+    // int-mnt INTEGRATION ROUND booking (round-7 condition (a) mount): the
+    // #322 FINAL anchored glob backend is the SECOND named production
+    // consumer — it builds its own confined provider for the anchored rg
+    // walk (request allowPaths anchor.rootReal READ-ONLY). Evidence:
+    // dev/agent-workflow/evidence/alpha5/int-mnt/README.md §1(a) + §2.
+    expect(offenders.sort()).toEqual([
+      'runtime/src/plugin/live/glob-backend.mjs',
+      'runtime/src/plugin/live/plane-effect-backends.mjs',
+    ])
   })
 
   it('hard-profile enablement is compiled OFF and no source turns it on', () => {

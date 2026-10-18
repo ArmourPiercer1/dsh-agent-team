@@ -155,7 +155,14 @@ describe('a5w compile surface', () => {
       }
     }
     walk(join(RUNTIME, 'src'))
-    expect(offenders).toEqual([join(RUNTIME, 'src/plugin/live/plane-effect-backends.mjs')])
+    // int-mnt INTEGRATION ROUND booking: the anchored glob backend row is
+    // the second live-glue file wired to the provider factory — the mount
+    // (round-7 condition (a)) builds the provider behind its own anchored
+    // request. Evidence: dev/agent-workflow/evidence/alpha5/int-mnt/README.md.
+    expect(offenders.sort()).toEqual([
+      join(RUNTIME, 'src/plugin/live/glob-backend.mjs'),
+      join(RUNTIME, 'src/plugin/live/plane-effect-backends.mjs'),
+    ])
   })
 })
 

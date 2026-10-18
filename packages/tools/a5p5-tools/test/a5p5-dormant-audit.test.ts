@@ -99,7 +99,13 @@ function* walk(dir: string): Generator<string> {
  * form. The live row's REAL edge is NOT here — it is the REVIEWED_EDGE
  * exception below, separately pinned and separately disclosed.
  */
-const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json']
+// int-mnt INTEGRATION ROUND booking: the a5glb suite FORM-PINS the lane's
+// register.ts (reads the source to pin the closed barrel shape) — a
+// bookkeeping mention in a test, not an import edge; the row itself imports
+// the lane's PUBLIC package name (@deepseek-ai/dsh-tool-fs-search), which is
+// the REVIEWED edge of the mount (int-mnt README §1). Evidence:
+// dev/agent-workflow/evidence/alpha5/int-mnt/README.md.
+const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-session-event-scan.test.ts', 'domain/test/a5p0-layer-audit.test.ts', 'tools/tsconfig.build.json', 'runtime/tsconfig.build.json', 'runtime/test/alpha5-glob-backend.test.ts']
 
 /**
  * The REVIEWED-EDGE exception (alpha5-glue5-entry, GLUE-5 production-assembly
