@@ -1,0 +1,178 @@
+{
+  "runStamp": "2026-10-18T20-01-51Z",
+  "masterSha": "b6d7c48a9730d230758749dc05abad87cea5e41f",
+  "pass": 22,
+  "fail": 6,
+  "book": 0,
+  "exitCode": 2,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "test-use host is the pinned pristine runtime (master tests/paths.mjs TEST_USE_BASELINE_SHA=639ed01539) and porcelain 0 before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the install spec pins THIS round's live ls-remote master SHA and the audit worktree equals it",
+      "pass": true,
+      "observed": "master=b6d7c48a9730d230758749dc05abad87cea5e41f worktree=b6d7c48a9730d230758749dc05abad87cea5e41f"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before the run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "H2",
+      "claim": "ports 3183 AND 3184 AND the mock port 3491 self-proved free before the run",
+      "pass": true,
+      "observed": "3183=true 3184=true mock=true"
+    },
+    {
+      "id": "I1",
+      "claim": "REAL install through the pinned host's own public package face — plugin --profile web add github:ArmourPiercer1/dsh-agent-team#b6d7c48a9730d230758749dc05abad87cea5e41f",
+      "pass": true,
+      "observed": "exit=0 in 4s tail=Progress: resolved 1, reused 1, downloaded 0, added 1, done | Done in 3.5s using pnpm v11.7.0 | dsh: initialized profile web at /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/rc-trial-1/profiles/web"
+    },
+    {
+      "id": "I2",
+      "claim": "STRICT profile face: the profile declares EXACTLY this repo's one plugin and node_modules top level holds nothing else; the reconciler appended the bundle rows",
+      "pass": true,
+      "observed": "deps=[\"dsh-agent-team\"] nm=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "id": "I3a",
+      "claim": "INSTALL THREE-ZEROS (1/4 count): the installed tree holds exactly the declared face — one file per declared entry (face RECOUNTED at this commit; no hard-coded expectation)",
+      "pass": true,
+      "observed": "installed=1773 declared-files-face=1773 (files: entries=1771 + pack-always=2)"
+    },
+    {
+      "id": "I3b",
+      "claim": "INSTALL THREE-ZEROS (2/4 missing = 0): every declared file materialized in the install dir",
+      "pass": true,
+      "observed": "missing=0 []"
+    },
+    {
+      "id": "I3c",
+      "claim": "INSTALL THREE-ZEROS (3/4 extra = 0): nothing outside the declared face landed",
+      "pass": true,
+      "observed": "extra=0 []"
+    },
+    {
+      "id": "I3d",
+      "claim": "INSTALL THREE-ZEROS (4/4 sha-mismatch = 0): every installed file is BYTE-IDENTICAL to that path at the installed commit",
+      "pass": true,
+      "observed": "mismatch=0 rootSha=9e421d239f6b99a6"
+    },
+    {
+      "id": "I3e",
+      "claim": "the two bytes beyond the declared files: list are exactly the pack rules' always-included pair (disclosed, not folded into the count)",
+      "pass": true,
+      "observed": "alwaysIncluded=[\"README.md\",\"package.json\"]"
+    },
+    {
+      "id": "I4",
+      "claim": "the installed bundle layer is machine-agnostic (the bundle rows reference the package by name; no file: URL landed in the profile manifest)",
+      "pass": true,
+      "observed": "bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"] hostJsBytes=157099"
+    },
+    {
+      "id": "I8",
+      "claim": "DISCLOSED FACE GAP (honest, not worked around): the Landlock pre-launcher is NOT on the published face (packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py ∉ files:) — the installer supplies it as a deployment input, byte-pinned from the SAME commit",
+      "pass": true,
+      "observed": "launcherInFace=false launcherSha=1264ea584e3438d6… bytes=26992"
+    },
+    {
+      "id": "I9",
+      "claim": "the deployment input is the RIGHT BYTES before any host exists: commit blob == worktree blob, starts with \"#!\", and the launcher itself answers the ABI probe",
+      "pass": true,
+      "observed": "sha=1264ea584e3438d6… abi=abi-available/4"
+    },
+    {
+      "id": "I5",
+      "claim": "the pinned host composes the INSTALLED bundle row through the public profile seam: --dump-config carries id dsh-agent-team / name dsh-agent-team/host with THIS round's teamToolPlane (realmId + fsInstance + confinedProvider launcher pin) and the client/spill-local rows, no skipped bundle",
+      "pass": true,
+      "observed": "exit=0 teamRow=true plane=true confine=true subRows=true skipped=false"
+    },
+    {
+      "id": "B1",
+      "claim": "the installed face boots (boot marker + token gate): 303 with a set-cookie on /?token= (GET / without token answers 401 first)",
+      "pass": true,
+      "observed": "noToken401=true authStatus=303"
+    },
+    {
+      "id": "B2",
+      "claim": "catalog preflight over /team-remote finds the draft blueprint (catalog.list + catalog.get)",
+      "pass": true,
+      "observed": "list=200 get=200"
+    },
+    {
+      "id": "B3",
+      "claim": "team.create is accepted on the installed face (governed Leader turn starts)",
+      "pass": true,
+      "observed": "status=200"
+    },
+    {
+      "id": "M1",
+      "claim": "LEADER create-member leg: team_create_member + team_list_members rode the Leader wire and an instance id came back (explicit member creation)",
+      "pass": false,
+      "observed": "leaderTools=[\"team_create_member\",\"team_list_members\",\"team_delegate\",\"team_collect\"] listHead=\"[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"{\\\\\\\"status\\\\\\\":\\\\\\\"executed\\\\\\\",\\\\\\\"action\\\\\\\":\\\\\\\"create-member\\\\\\\",\\\\\\\"rootSessionId\\\\\\\":\\\\\\\"session-rc-trial-team-2026-10-18T20-01-51Z\\\\\\\",\\\\\\\"callerRole\\\\\\\":\\\\\\\"\""
+    },
+    {
+      "id": "M2",
+      "claim": "team_delegate ran on the created INSTANCE (delegationInstanceId addressing) and settled with a collect (async:false + team_collect read-back)",
+      "pass": true,
+      "observed": "leaderTools=[\"team_create_member\",\"team_list_members\",\"team_delegate\",\"team_collect\"]"
+    },
+    {
+      "id": "M3",
+      "claim": "team_bash POSITIVE on the installed face (REAL Landlock confined provider): the command RAN inside the governed root and the shell row rendered bash · exit=0 with the token bytes",
+      "pass": false,
+      "observed": "r_pos=\"LEG-MISSING\""
+    },
+    {
+      "id": "M4",
+      "claim": "the positive write really landed on disk under the governed root (not a rendered fiction)",
+      "pass": false,
+      "observed": "bashWrote=false bytes=n/a"
+    },
+    {
+      "id": "M5",
+      "claim": "team_bash OUT-OF-BOUNDS renders the TRUE exit code (#336 exit-passthrough on the installed face): bash · exit=1 over the kernel Permission denied stderr, presentationMeta exitCode=1",
+      "pass": false,
+      "observed": "r_out=\"LEG-MISSING\""
+    },
+    {
+      "id": "M6",
+      "claim": "zero disclosure + honest render: the outside marker never rides the wire in ANY request of this world, and the cancelled text stays unreachable pre-#340 (cancelled:false renders verbatim — the booked current state, not a mis-render)",
+      "pass": false,
+      "observed": "markerOnWire=0 cancelledFalse=false"
+    },
+    {
+      "id": "M7",
+      "claim": "host-log witnesses on the installed face: placement-feed row list, the confined-shell ran line, and the a5ptc boot census row (PTC escalation row composed at boot — CONFIG-DECLARED census, no OS probe claimed)",
+      "pass": false,
+      "observed": "placement=true shell=false ptcCensus=\"[dsh-agent-team] a5ptc: census-boot root=session-rc-trial-team-2026-10-18T20-01-51Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/rc-trial-1/deployment/landl\""
+    },
+    {
+      "id": "M8",
+      "claim": "no assembly-level surprises in the host log (no bootstrap failure / trust-root / placement refusal / BINDING_UNVERIFIED)",
+      "pass": true,
+      "observed": "[]"
+    },
+    {
+      "id": "C1",
+      "claim": "named teardown: the recorded world names are gone (exact-name sweep listed in sweep-list.json — no glob deletes), ports released, launch-token residue in the retained log = 0",
+      "pass": true,
+      "observed": "left=[] portsFree=true residue=0"
+    },
+    {
+      "id": "C2",
+      "claim": "the stable :3080 instance is untouched (read-only probe before/after) and the test-use host porcelain stayed 0",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    }
+  ]
+}
