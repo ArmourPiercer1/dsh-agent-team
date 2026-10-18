@@ -54,6 +54,16 @@ async function loadCreateLaneDecide(): Promise<
   return row.createLaneDecide
 }
 
+type PlaneNamesVerdict = { ok?: boolean; code?: string; message?: string }
+async function loadVerifyPlaneNames(): Promise<
+  (names: Record<string, string>, readName: string) => PlaneNamesVerdict
+> {
+  const row = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as {
+    verifyPlaneNames: (names: Record<string, string>, readName: string) => PlaneNamesVerdict
+  }
+  return row.verifyPlaneNames
+}
+
 /** The refusal the GLUE-8 assembled A4.4 pinned for native bash, byte-for-byte. */
 const VERBATIM_BASH_REFUSAL =
   'team tool guard: the Tool Binding for "bash" cannot be verified at dispatch time (no fallback to the native body)'
@@ -246,5 +256,35 @@ describe('natexe N4 — the lane re-check speaks the native spelling of the take
     )
     expect(decide({ effects: [{ kind: 'tool-invoke', toolName: 'team_bash', resource: { kind: 'any' } }] }))
       .toEqual({ kind: 'deny', code: 'template-deny-lane' })
+  })
+})
+
+describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root 04:34Z)', () => {
+  const D = { grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' }
+  it('every adversarial names shape is REFUSED with the typed code, never mounted', async () => {
+    const verify = await loadVerifyPlaneNames()
+    const refused: Array<[string, Record<string, string>, string, string?]> = [
+      ['row-name collision (shell row under the grep row)', { ...D, bash: 'team_grep' }, "both mount under 'team_grep'"],
+      ['native-spelling impersonation (shell row under read)', { ...D, bash: 'read' }, "belongs to row 'read'"],
+      ['empty-string mount', { ...D, bash: '' }, 'must match'],
+      ['prototype-ish mount', { ...D, bash: '__proto__' }, 'must match'],
+      ['foreign class key', { ...D, foo: 'x' }, "closed to its own classes"],
+      ['file row claiming the shell native', { ...D, grep: 'bash' }, "belongs to row 'bash'"],
+      ['shell row claiming a file-tool native', { ...D, bash: 'write' }, "belongs to row 'read'"],
+      ['readName colliding with a mounted row', D, "both mount under 'team_grep'", 'team_grep'],
+    ]
+    for (const [id, names, messageNeedle, read] of refused) {
+      const v = verify(names, read ?? 'read')
+      expect(v.ok, id).not.toBe(true)
+      expect(v.code, id).toBe('PLANE_NAMES_INVALID')
+      expect(v.message ?? '', id).toContain(messageNeedle)
+    }
+  })
+  it('every legitimate shape stays accepted (zero-regression: defaults, takeover, custom alias)', async () => {
+    const verify = await loadVerifyPlaneNames()
+    expect(verify(D, 'read').ok).toBe(true)
+    expect(verify({ ...D, bash: 'bash' }, 'read').ok).toBe(true)
+    expect(verify({ ...D, bash: 'myshell' }, 'read').ok).toBe(true)
+    expect(verify({ grep: 'grep', glob: 'glob', bash: 'bash' }, 'read').ok).toBe(true)
   })
 })
