@@ -298,6 +298,8 @@ describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root
       ['bash row under present', { ...D, bash: 'present' }, 'read', UNSUPPORTED, "reserved native name 'present'"],
       ['read row under send_message', D, 'send_message', UNSUPPORTED, "reserved native name 'send_message'"],
       ['grep row under skill', { ...D, grep: 'skill' }, 'read', UNSUPPORTED, "reserved native name 'skill'"],
+      ['grep row under cordis_inspect_list (preset-gated native)', { ...D, grep: 'cordis_inspect_list' }, 'read', UNSUPPORTED, "reserved native name 'cordis_inspect_list'"],
+      ['glob row under cordis_inspect_query', { ...D, glob: 'cordis_inspect_query' }, 'read', UNSUPPORTED, "reserved native name 'cordis_inspect_query'"],
       ['mcp dynamic family (prefix law)', { ...D, grep: 'mcp__host__read' }, 'read', UNSUPPORTED, "reserved native name 'mcp__host__read'"],
       ['empty-string mount', { ...D, bash: '' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
       ['prototype-ish mount', { ...D, bash: '__proto__' }, 'read', 'PLANE_NAMES_INVALID', 'must match'],
@@ -326,7 +328,7 @@ describe('natexe N5 — the mount-name domain is CLOSED (③ anti-spoofing, root
     const paths = (await import('../../../tests/paths.mjs')) as unknown as { DSH_BASELINE_VERSION: string; TEST_USE_BASELINE_SHA: string }
     const live = `${paths.DSH_BASELINE_VERSION}@${paths.TEST_USE_BASELINE_SHA.slice(0, 10)}`
     expect(mod.PLANE_RESERVED_NATIVE_HOST_PIN, 'host baseline moved: re-derive the reserved-native registry from the new host release, then move the pin').toBe(live)
-    for (const n of ['read', 'write', 'edit', 'read_image', 'glob', 'grep', 'bash', 'pwsh', 'web_search', 'web_fetch', 'todo_write', 'skill', 'present', 'send_message', 'subagent_fork', 'team_task_create', 'exit_plan_mode']) {
+    for (const n of ['read', 'write', 'edit', 'read_image', 'glob', 'grep', 'bash', 'pwsh', 'web_search', 'web_fetch', 'todo_write', 'skill', 'present', 'send_message', 'subagent_fork', 'team_task_create', 'exit_plan_mode', 'cordis_inspect_list', 'cordis_inspect_query']) {
       expect(mod.PLANE_RESERVED_NATIVE, `host native '${n}' must stay reserved`).toContain(n)
     }
     expect(mod.PLANE_RESERVED_NATIVE_PREFIXES).toContain('mcp__')

@@ -288,3 +288,13 @@ pwsh→bash）导致 `readName="write"/"edit"/"lsp"/"read_image"`、
   INVALID"仅纯单类缺陷成立）；INSTALL §3.5 与门注记同步，unit 钉之。
 - **回归**：truth table 11 行 verdict 不变（3/8，子类披露同前）、probe 9/9、
   natexe kit 双时代 26/26、drift 门终 HEAD、tsc/eslint 净。
+
+## 6.8 增量复核收口一笔（3f36a9ef 续笔：穷尽表 51→53）
+
+独审全 tool-* defineTool 精确枚举比对：漏 `cordis_inspect_list` /
+`cordis_inspect_query`（tool-cordis/src/index.ts:23，cordis preset 门控——
+同门控类的 experimental agent-team 6 名已收录，准据一致故必收；cordis-preset
+世界本可 own-mask+verified-abstain）。修 = 注册表 53 名（src+dist 镜像），
+矩阵重放 **216 格**（53 精确名 + 1 前缀探针，各 × 4 行；2 accepted /
+214 具名子类拒），matrix 头注旧文案（36 格/34 拒）改实数，N5 +2 拒行、
+漂移钉关键子集 +2，INSTALL §3.5 计数同步；漂移 pin 不变。

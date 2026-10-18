@@ -13,13 +13,14 @@
  * install surface assembles a same-name, same-meaning implementation for
  * that row; the coarse permission class is NOT the criterion.
  *
- * Expected matrix (34 refused-with-NATIVE_CLAIM + 2 accepted + the grep/glob
- * self-spellings also refused — GLUE-5 alias law: their rows carry no
- * verified assembled pairing):
+ * Expected matrix at the current registry (214 refused-with-NATIVE_CLAIM +
+ * 2 accepted = 216 cells: 53 exact names + 1 prefix probe, each x 4 rows;
+ * the grep/glob self-spellings are also refused — GLUE-5 alias law: their
+ * rows carry no verified assembled pairing):
  *   bash row  @ 'bash'      ACCEPTED — live-verified confined-shell takeover (natexe kit, both eras)
  *   read row  @ 'read'      ACCEPTED — shipped readName default (GLUE-7 governed reader)
  *   every other cell        REFUSED  — PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
- * Exit 0 only when all 36 cells land on their recorded verdict and code.
+ * Exit 0 only when every cell lands on its recorded verdict and code.
  */
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'

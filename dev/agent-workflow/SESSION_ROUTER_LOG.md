@@ -6812,3 +6812,13 @@ profile 原生派发面实测为空（派生即空表 = 不设防）；
 缺陷优先序 = 形状→保留名声明→互异 先命中者拒（"其余保持 INVALID"仅纯单类
 缺陷成立），INSTALL §3.5 + 门注记 + unit 三处同步。回归：truth table 3/8
 verdict 不变、probe 9/9、kit 双时代 26/26、tsc/eslint 净、drift 门终 HEAD。
+
+## 2026-10-18 natexe 增量复核收口一笔（穷尽表 51→53，3f36a9ef 续笔）
+
+独审全 tool-* defineTool 精确枚举比对发现穷尽表漏 `cordis_inspect_list`/
+`cordis_inspect_query`（tool-cordis/src/index.ts:23，cordis preset 门控；
+同门控类 experimental agent-team 6 名已收录 ⇒ 准据一致必收，cordis-preset
+世界本可 own-mask+verified-abstain）。注册表 53 名（src+dist），矩阵重放
+216 格 GREEN（2 accepted / 214 具名子类拒），matrix 头注旧文案改实数
+（备注级②），N5 +2 拒行、漂移钉关键子集 +2（pin 不变），INSTALL §3.5 与
+README §6.8 同步。unit 12/12、probe 9/9、truth table verdict 不变 3/8。

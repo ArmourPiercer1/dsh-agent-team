@@ -229,7 +229,8 @@ const PLANE_NAME_SHAPE = /^[a-z][a-z0-9_]{0,63}$/
 // impostor face. The list below is the full registry (fs 6, shells 2,
 // str_replace_editor, lsp, present, skill 2, todo, ask, web 2, goal 3, jobs
 // 3, plan, subagent family 6, terminal 6, session-query 5, mcp-resource 3,
-// ralph, experimental agent-team 6), plus the dynamic `mcp__` family by
+// ralph, experimental agent-team 6, cordis preset 2), plus the dynamic
+// `mcp__` family by
 // prefix. Drift law: PLANE_RESERVED_NATIVE_HOST_PIN is pinned to the host
 // baseline; the unit drift pin compares it against tests/paths.mjs — when
 // the host baseline moves, the pin test goes RED and this list must be
@@ -254,6 +255,7 @@ export const PLANE_RESERVED_NATIVE = Object.freeze([
   'list_mcp_resources', 'list_mcp_resource_templates', 'read_mcp_resource',
   'ralph',
   'spawn_teammate', 'wait_agent', 'team_task_create', 'team_task_get', 'team_task_list', 'team_task_update',
+  'cordis_inspect_list', 'cordis_inspect_query',
 ])
 export const PLANE_RESERVED_NATIVE_PREFIXES = Object.freeze(['mcp__'])
 const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
