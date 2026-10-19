@@ -5,3 +5,11 @@
 - 卷间不可并跑：`a5c1fix-b-` 前缀被 base kit sweep（前缀 `a5c1fix-`）包含；全部串行执行。
 
 - **K11** v3 补丁splice换行缺陷致 run 3 首启即语法死（kit-side，零世界副作用，run 戳未生成前死亡）：python splice 拼接 newc 末行缺 \n，`check(F3b)` 与 `const relayed` 粘连。修复后同 run 名重跑（kit-b3.out）。
+
+## K12 — external mid-run killer (shared host), two victims on the fixed face
+- rv2 (23-12Z, harness job): job evaporated from the registry mid-chain; kit+host dead, run dir left at direct-control stage. HARVESTED (disclosed, not a graded run): rc=-15@+3.95ms, gen1={"kind":"user"}, witness bash-2 **cancelled=true**, death-form in member history — raw log redacted at harvest.
+- rv2b (23-43Z, detached setsid kit): survived call boundaries but was killed in the pnpm-install phase (peak memory; concurrent foreign agent worlds visible in tests/homes → OOM/reaper suspected, unprovable from sandbox).
+- Mitigation posture: harvest-on-death + immediate redact; distribution may legitimately count the harvested sample WITH the label; detached launch is not immunity.
+
+## K13 — rv3 install-phase hang (discarded, no graded run)
+- `dsh plugin add` attempt hung ~25min > the kit's 900s spawnSync timeout (timeout not firing = killed-holder stdio pattern, same host instability family as K12). Kit terminated by hand; worlds swept; `kit-rv3.stalled-install-discarded.out` kept. Distribution finalized 2 KIT_DONE + 1 HARVEST.

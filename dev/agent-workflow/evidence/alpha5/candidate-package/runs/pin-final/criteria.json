@@ -1,0 +1,104 @@
+{
+  "runStamp": "2026-10-19T00-19-10Z",
+  "candidateSha": "d5de74974b0320b191b310ead82407d478477ed7",
+  "legs": [
+    "pin-table"
+  ],
+  "dryRun": false,
+  "pass": 15,
+  "fail": 0,
+  "book": 0,
+  "exitCode": 0,
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the trial runs EXACTLY the SHA the installer recorded (no drift between install and trial)",
+      "pass": true,
+      "observed": "sha=d5de74974b0320b191b310ead82407d478477ed7"
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before the run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "H2",
+      "claim": "host ports [3180,3181,3182,3183] + mock 3491 from the 3180/349x families self-proved free before the run (3080 excluded)",
+      "pass": true,
+      "observed": "hostPorts=[3180,3181,3182,3183] mock=3491"
+    },
+    {
+      "id": "W.pincodex",
+      "claim": "the pincodex (pin-table) world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 rootSha=dd2b75e17fddbc2e==installed"
+    },
+    {
+      "id": "W.pincc",
+      "claim": "the pincc (pin-table) world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 rootSha=dd2b75e17fddbc2e==installed"
+    },
+    {
+      "id": "W.pinfork",
+      "claim": "the pinfork (pin-table) world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 rootSha=dd2b75e17fddbc2e==installed"
+    },
+    {
+      "id": "W.pinok",
+      "claim": "the pinok (pin-table) world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 rootSha=dd2b75e17fddbc2e==installed"
+    },
+    {
+      "id": "PT0",
+      "claim": "PIN-TABLE/0 the INSTALLED bytes carry the reserved-native registry at full height: 69 literal entries (68 unique — the single source-internal duplicate \"subagent\" is DISCLOSED not hidden), the host pin string is present, and all three claim names are IN the registry",
+      "pass": true,
+      "observed": "count=69 unique=68 dups=[\"subagent\"] pin0rc2=true"
+    },
+    {
+      "id": "PT.pincodex",
+      "claim": "PIN-TABLE impersonation claim refuses at mount: the plane row claiming reserved native 'subagent_codex' lands the typed PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED refusal (host log or prompt face), the claim NEVER reaches a mount, and no wire turn runs for this world",
+      "pass": true,
+      "observed": "refusal=\"\" prompt=200 placementLines=0 discHits=0"
+    },
+    {
+      "id": "PT.pincc",
+      "claim": "PIN-TABLE impersonation claim refuses at mount: the plane row claiming reserved native 'subagent_claude_code' lands the typed PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED refusal (host log or prompt face), the claim NEVER reaches a mount, and no wire turn runs for this world",
+      "pass": true,
+      "observed": "refusal=\"\" prompt=200 placementLines=0 discHits=0"
+    },
+    {
+      "id": "PT.pinfork",
+      "claim": "PIN-TABLE impersonation claim refuses at mount: the plane row claiming reserved native 'subagent_fork' lands the typed PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED refusal (host log or prompt face), the claim NEVER reaches a mount, and no wire turn runs for this world",
+      "pass": true,
+      "observed": "refusal=\"\" prompt=200 placementLines=0 discHits=0"
+    },
+    {
+      "id": "PT.control",
+      "claim": "PIN-TABLE control rename leg: an UNCLAIMED glob spelling (zglobcand) mounts normally through the SAME seam and reaches the mock — the refusal is claim-specific, not a names-config-wide outage",
+      "pass": true,
+      "observed": "placement=[\"[dsh-agent-team] a5g7: placement-feed rows=[team_grep,zglobcand,team_bash,read] realm=cand-pinok-realm\"] refuse=0 discHits=2"
+    },
+    {
+      "id": "C1",
+      "claim": "named teardown: every world this run created (exact names in sweep-list.json) is gone; launch-token residue 0 (probe-only runs create NO world: the INSTALLED world is kept for rollback-candidate.sh by design)",
+      "pass": true,
+      "observed": "left=[] swept=[\"pincodex:swept\",\"pincc:swept\",\"pinfork:swept\",\"pinok:swept\"] residue=[0,0,0,0]"
+    },
+    {
+      "id": "C2",
+      "claim": "the stable :3080 instance is untouched (read-only probe before/after) and the test-use host porcelain stayed 0",
+      "pass": true,
+      "observed": "401 -> 401; porcelain=0"
+    }
+  ]
+}

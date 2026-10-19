@@ -60,7 +60,7 @@ const STATE = resolve(argValue('state', join(HOMES_ROOT, 'candidate-INSTALLED.js
 const RUN_STAMP = new Date().toISOString().slice(0, 19).replace(/:/g, '-') + 'Z'
 const EVIDENCE_DIR = resolve(argValue('evidence-dir', join(HERE, 'runs', RUN_STAMP)))
 const LEGS = (() => {
-  let l = (argValue('legs', 'pos,bash-b2,glob-off')).split(',').map((x) => x.trim()).filter((x) => ['probe', 'pos', 'bash-b2', 'glob-off'].includes(x))
+  let l = (argValue('legs', 'pos,bash-b2,glob-off')).split(',').map((x) => x.trim()).filter((x) => ['probe', 'pos', 'bash-b2', 'glob-off', 'pin-table'].includes(x))
   if (l.includes('bash-b2') && !l.includes('pos')) l = ['pos', ...l] // LEG C is graded from the pos world's second bash step
   const seen = new Set(); l = l.filter((x) => (seen.has(x) ? false : seen.add(x)))
   return l
@@ -74,6 +74,9 @@ const TOK_BASH = 'CAND-BASH-TOK'
 const WRITE_TOK = 'CAND-WROTE-9'
 const OUTSIDE_MARKER = 'CAND-OUTSIDE-ONLY-MARKER-4417'
 const GPOS_SEEDS = ['zzcand-alpha.txt', 'zzcand-beta.txt']
+const PIN_CLAIMS = [['pincodex', 'subagent_codex'], ['pincc', 'subagent_claude_code'], ['pinfork', 'subagent_fork']]
+const PIN_CONTROL = 'zglobcand'
+const modeFor = (leg) => leg === 'glob-off' ? 'globoff' : leg
 const IO_TEXT = 'IO_POLICY_UNSUPPORTED'
 const REFUSAL_PREFIX = 'a5p5-refused'
 const MK = `CAND_${RUN_STAMP.replace(/[^A-Za-z0-9]/g, '')}`
@@ -566,6 +569,148 @@ async function runWorld ({ mode, state, srcHome, mock, port }) {
   }
 }
 
+// ─── PIN-TABLE leg: reserved native names must refuse to mount ──────────────
+// Three impersonation claims (subagent_codex / subagent_claude_code / subagent_fork
+// mounted via teamToolPlane.names) must land the EXISTING typed refusal
+// (PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED, agent-bindings mount REFUSED) with the
+// claim never reaching a mount or a wire turn; the control world renames the
+// glob row to an unclaimed spelling and MUST mount normally (claim-specific,
+// not a names-config-wide outage). The registry itself is graded statically from
+// the INSTALLED bytes (PT0) — live claims only prove the refusal face.
+async function runPinWorld ({ mode, claim, state, srcHome, mock, port }) {
+  const HOME = join(HOMES_ROOT, `${WORLD_PREFIX}-${mode}-${RUN_STAMP}`)
+  const rootIds = { root: `cand-${mode}-root`, createRoot: `session-cand-${mode}-team-${RUN_STAMP}`, bpId: `cand-${mode}-main-bp`, anchorId: `cand-${mode}-anchor-bp`, tkCm: 'x', tkLm: 'x', tkD1: 'x' }
+  const world = { governedRoot: join(HOME, 'workspace', 'governed'), blueprintDir: join(HOME, 'blueprints'), deployment: join(HOME, 'deployment') }
+  const facts = { mode, home: HOME, claim, ok: false }
+  let host = null
+  let hostExit = null
+  try {
+    if (existsSync(HOME)) die(`world ${HOME} already exists — trial worlds must be FRESH`)
+    mkdirSync(join(HOME, 'workspace', 'governed'), { recursive: true })
+    mkdirSync(world.blueprintDir, { recursive: true })
+    const profileDir = join(HOME, 'profiles', 'web')
+    mkdirSync(profileDir, { recursive: true })
+    writeFileSync(join(profileDir, 'pnpm-workspace.yaml'), `packages:\n  - .\n\nnodeLinker: hoisted\nautoInstallPeers: false\nstoreDir: ${STORE_DIR}\n`)
+    const spec = `github:ArmourPiercer1/dsh-agent-team#${state.sha}`
+    const t0 = Date.now()
+    const install = spawnSync(process.execPath, [HOST_BIN, 'plugin', '--profile', 'web', 'add', spec], { cwd: join(HOME, 'workspace'), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 900_000, env: { ...process.env, DSH_HOME: HOME } })
+    const installedDir = join(profileDir, 'node_modules', 'dsh-agent-team')
+    const m = measureInstalledFace(installedDir, faceRef.face, faceRef.mirror)
+    facts.install = { exit: install.status, seconds: Math.round((Date.now() - t0) / 1000), actualCount: m.actualCount, missing: m.missing.length, extra: m.extra.length, shaMismatch: m.shaMismatch.length, rootSha: m.rootSha }
+    check(`W.${mode}`, `the ${mode} (pin-table) world re-installed the recorded face through the public package face with THREE ZEROS and rootSha == INSTALLED.json rootSha`,
+      install.status === 0 && m.missing.length === 0 && m.extra.length === 0 && m.shaMismatch.length === 0 && m.rootSha === state.rootSha,
+      `exit=${String(install.status)} n=${String(m.actualCount)}/${String(m.expectedCount)} rootSha=${m.rootSha.slice(0, 16)}${m.rootSha === state.rootSha ? '==installed' : '!=installed'}`)
+    const launcherRel = 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py'
+    const blob = spawnSync('git', ['-C', srcHome, 'show', `${state.sha}:${launcherRel}`], { maxBuffer: 64 * 1024 * 1024 })
+    if (blob.status !== 0) die(`git show of the launcher blob failed in ${srcHome}`)
+    mkdirSync(world.deployment, { recursive: true })
+    const launcherPath = join(world.deployment, 'landlock-prelauncher.py')
+    writeFileSync(launcherPath, blob.stdout)
+    const launcher = { path: launcherPath, sha: sha256Text(blob.stdout) }
+    const cfg = rowConfig(mode, rootIds, world, launcher)
+    cfg.teamToolPlane.names = { glob: claim } // the CLAIM under test (or the control rename)
+    const basePlugins = smokePresetPlugins({ personaText: 'You are a coding agent powered by the {{model}} model.', cwdSuffix: 'Your working directory is {{cwd}}.', bashDescription: 'Run commands in a bash shell.' })
+    const layerLines = [
+      `# candidate pin-table layer (run ${RUN_STAMP}, mode ${mode}): plane mount-name claim '${claim}' — a reserved-native claim must refuse at mount (public profile-patch seam only).`,
+      '- id: dsh-agent-team', '  name: dsh-agent-team/host', '  config:',
+      ...Object.entries(cfg).flatMap(([k, v]) => yamlEmit(k, v, 2)),
+      ...['- insert:', ...yamlEmitItem(presetDeclarationRow({ id: PRESET_ID, displayName: 'candidate base', description: 'pin-table preset', plugins: basePlugins }), 1)],
+      '',
+    ].join('\n')
+    writeFileSync(join(HOME, 'profiles', 'web', 'cordis.patch.yml'), layerLines)
+    writeEvidence(`profile-layer-${mode}.yml`, redact(layerLines))
+    // governed blueprint: capabilities.permissions present = governed template = plane binds at the
+    // TEAM session (the mount point under test). Leader persona calls NO tools — the mount either
+    // REFUSES (claim worlds) or FEEDS (control) at bind time, before any dispatch.
+    const pinBp = [
+      '---', 'schemaVersion: 3', `blueprintId: ${rootIds.bpId}`, 'revision: "1"',
+      `displayName: "candidate pin-table probe (${mode})"`,
+      'description: "pin-table: reserved-native mount-name claim refuses at the team-session bind (public seam install face)."',
+      'leader:', '  templateId: leader', '  persona: "You are the leader of a probe team. Reply with one line: CAND_PIN_OK. Never call any tool."',
+      '  capabilities:', '    teamTools:', '      kind: allow', '      items: []', '    builtinToolDeny: []',
+      '    skills:', '      kind: allow', '      items: []', '    mcp:', '      kind: allow', '      items: []',
+      '    permissions:', '      default: ask', '      allow: []', '      ask: []', '      deny: []',
+      'members:', '  - templateId: wa', '    persona: "Probe member. Never called."',
+      '    capabilities:', '      teamTools:', '        kind: allow', '        items: []', '      builtinToolDeny: []',
+      '      skills:', '        kind: allow', '        items: []', '      mcp:', '        kind: allow', '        items: []',
+      '      permissions:', '        default: ask', '        allow: []', '        ask: []', '        deny: []',
+      'memberEnvelopes: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
+      'requirements: []', 'policyStates: []', 'metadata: {}', '---', '',
+    ].join('\n')
+    writeFileSync(join(world.blueprintDir, 'main.yaml'), pinBp)
+    writeEvidence(`blueprint-${mode}.yaml`, pinBp)
+    const INSTANCE_RAW = join(EVIDENCE_DIR, `instance-${mode}.raw.log`)
+    const outFd = openSync(INSTANCE_RAW, 'a')
+    host = spawn(process.execPath, [HOST_BIN, 'web', '--port', String(port), '--no-open'], {
+      cwd: join(HOME, 'workspace'), stdio: ['ignore', outFd, outFd],
+      env: { ...process.env, DSH_HOME: HOME, DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH, DEEPSEEK_BASE_URL: `http://127.0.0.1:${mock.port}`, DEEPSEEK_API_KEY: 'cand-mock-key' },
+    })
+    host.on('exit', (code, signal) => { hostExit = { code, signal }; console.log(`[${mode}] host exited code=${String(code)} signal=${String(signal)}`) })
+    const boot = await waitFor(180_000, () => {
+      try { const mm = BOOT_MARKER.exec(readFileSync(INSTANCE_RAW, 'utf8')); return mm === null ? false : mm } catch { return false }
+    }, `${mode} boot marker`)
+    const origin = `http://127.0.0.1:${boot[1]}`
+    const auth = await fetch(`${origin}/?token=${boot[2]}`, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })
+    const cookie = auth.headers.get('set-cookie')
+    const MKD = `${MK}_${mode.toUpperCase()}_DISC`
+    const RAWP = () => { try { return readFileSync(join(EVIDENCE_DIR, `instance-${mode}.raw.log`), 'utf8') } catch { return '' } }
+    const refusalInLog = () => /NATIVE_CLAIM|refused the mount|mount-REFUSED|team tool plane refused/i.test(RAWP())
+    // catalog must carry the blueprint, then team.create binds the TEAM leader session —
+    // THE mount point (agent-bindings a5-plane block). The refusal (claims) or the feed
+    // (control) must appear on this face.
+    let createRes = null
+    for (let k = 1; k <= 10; k += 1) {
+      const cl = await fetchJson(`${origin}/team-remote/catalog.list`, {
+        method: 'POST', headers: { 'content-type': 'application/json', cookie: cookie ?? '' },
+        body: JSON.stringify({ type: 'client-request', rpcId: `cand-${mode}-pre${String(k)}`, method: 'catalog.list', payload: { version: 4, params: {} } }),
+      }, 30_000)
+      if (JSON.stringify(cl.body ?? '').includes(rootIds.bpId)) break
+      await new Promise((r) => setTimeout(r, 2000))
+    }
+    // the live boot readies the team runtime asynchronously ("state: starting" refuses in the
+    // window; runWorld gets past it via its discovery ladder's elapsed time) — retry until ready
+    for (let k = 1; k <= 30; k += 1) {
+      try {
+        createRes = await fetchJson(`${origin}/team-remote/team.create`, {
+          method: 'POST', headers: { 'content-type': 'application/json', cookie: cookie ?? '' },
+          body: JSON.stringify({ type: 'client-request', rpcId: `cand-${mode}-tc${String(k)}`, method: 'team.create', payload: { version: 1, params: { rootSessionId: rootIds.createRoot, blueprintId: rootIds.bpId, initialWork: { prompt: `${MKD} mount-claim probe: begin.` } } } }),
+        }, 120_000)
+      } catch (error) {
+        facts.promptError = redact(String(error?.message ?? error)).slice(0, 300)
+      }
+      if (!JSON.stringify(createRes?.body ?? '').includes('team runtime is not ready')) break
+      if (refusalInLog()) break // refusal during the runtime's own bind attempts is decisive
+      await new Promise((r) => setTimeout(r, 3000))
+    }
+    facts.prompt = { status: createRes?.status ?? null, body: redact(JSON.stringify(createRes?.body ?? null)).slice(0, 700), error: facts.promptError ?? null }
+    // grace poll: the mount attempt (refusal or placement) lands in the host log
+    try {
+      await waitFor(mode === 'pinok' ? 90_000 : 45_000, () => (mode === 'pinok'
+        ? (/a5g7: placement-feed rows=/.test(RAWP()) && (mock.requests ?? []).some((r) => r.digest?.markerHits.includes(MKD)))
+        : (refusalInLog() || /a5g7: placement-feed rows=/.test(RAWP()))), `${mode} mount face`)
+    } catch { /* graded below from log + facts */ }
+    facts.discHits = (mock.requests ?? []).filter((r) => r.digest?.markerHits.includes(MKD)).length
+    facts.ok = true
+    return facts
+  } finally {
+    writeEvidence(`pin-${mode}.partial.json`, facts)
+    try { if (host !== null) host.kill() } catch { /* gone */ }
+    await new Promise((r) => setTimeout(r, 3000))
+    facts.hostExit = hostExit
+    try {
+      const raw = readFileSync(join(EVIDENCE_DIR, `instance-${mode}.raw.log`), 'utf8')
+      facts.refuseLines = raw.split('\n').filter((l) => /mount-REFUSED|refused the mount|NATIVE_CLAIM/i.test(l)).slice(0, 8).map((l) => redact(l).slice(0, 400))
+      facts.placementLines = raw.split('\n').filter((l) => /a5g7: placement-feed rows=/.test(l)).slice(-4).map((l) => redact(l).slice(0, 300))
+      writeFileSync(join(EVIDENCE_DIR, `instance-${mode}.log`), redact(raw))
+      rmSync(join(EVIDENCE_DIR, `instance-${mode}.raw.log`))
+      facts.logTokenResidue = (redact(raw).match(/token=[A-Za-z0-9_-]{8,}/g) ?? []).length
+    } catch { /* no log */ }
+    if (!KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
+    facts.swept = !existsSync(HOME)
+    worldsSwept.push({ mode, home: HOME, swept: facts.swept })
+  }
+}
+
 // ═══════════════════════════════════ MAIN ════════════════════════════════════
 let exitCode = 0
 try {
@@ -586,7 +731,8 @@ try {
     const planHost = await pickFreePort([3180, 3181, 3182, 3183, 3184, 3185, 3186], taken0)
     const planMock = await pickFreePort([3491, 3492, 3493, 3494, 3495, 3496, 3497, 3498, 3499, 3500], taken0)
     console.log(`  planned host/mock ports (free-probed): ${String(planHost)}/${String(planMock)} (3080 excluded; family per TEST_METHODS §1)`)
-    console.log(`  worlds planned: ${LEGS.filter((l) => l !== 'probe' && l !== 'bash-b2').map((l) => `${WORLD_PREFIX}-${l === 'glob-off' ? 'globoff' : l}-${RUN_STAMP}`).join(', ') || '(probe reuses the installed world)'} (LEG bash-b2 grades inside the pos world); teardown by EXACT names only`)
+    const planned = LEGS.flatMap((l) => l === 'pin-table' ? ['pincodex', 'pincc', 'pinfork', 'pinok'] : (l === 'probe' || l === 'bash-b2' ? [] : [modeFor(l)])).map((m) => `${WORLD_PREFIX}-${m}-${RUN_STAMP}`)
+    console.log(`  worlds planned: ${planned.join(', ') || '(probe reuses the installed world)'} (LEG bash-b2 grades inside the pos world; LEG pin-table = 3 impersonation claims + control rename); teardown by EXACT names only`)
     check('D1', 'dry-run wiring: state sha matches CANDIDATE_SHA; src clone present; helpers importable (this line runs after all top-level imports succeeded)', true, `sha=${state.sha.slice(0, 10)} host-bin=${String(existsSync(HOST_BIN))}`)
     check('D2', 'dry-run: a host port and a mock port from the 3180/349x families are free right now', planHost > 0 && planMock > 0, `host=${String(planHost)} mock=${String(planMock)}`)
     throw { __dryDone: true }
@@ -610,7 +756,8 @@ try {
 
   // ports self-proved free + auto-picked
   const taken = []
-  const need = LEGS.length // one host port per leg world
+  // ports: one per world actually booted (bash-b2 grades inside pos; pin-table = 3 claims + control)
+  const need = LEGS.reduce((a, l) => a + (l === 'bash-b2' ? 0 : l === 'pin-table' ? PIN_CLAIMS.length + 1 : 1), 0)
   const hostPorts = []
   for (let i = 0; i < need; i += 1) {
     const p = await pickFreePort([3180, 3181, 3182, 3183, 3184, 3185, 3186], taken)
@@ -623,8 +770,8 @@ try {
   // mock at the LLM slot (scripted per world)
   const markers = []
   for (const leg of LEGS) {
-    const mu = (leg === 'glob-off' ? 'GLOBOFF' : leg.toUpperCase())
-    markers.push(`${MK}_${mu}_DISC`, `${MK}_${mu}_L0`, `${MK}_${mu}_TASK`)
+    const modes = leg === 'pin-table' ? PIN_CLAIMS.map((x) => x[0]).concat(['pinok']) : [modeFor(leg)]
+    for (const m of modes) { const mu = m.toUpperCase(); markers.push(`${MK}_${mu}_DISC`, `${MK}_${mu}_L0`, `${MK}_${mu}_TASK`) }
   }
   markers.push('CAND_MEMBER_RESULT', 'CAND_LEADER_DONE')
   const mockDecide = ({ req }) => {
@@ -639,6 +786,7 @@ try {
       }
     }
     const text = digest._text
+    for (const pm of ['PINCODEX', 'PINCC', 'PINFORK', 'PINOK']) if (text.includes(`${MK}_${pm}_DISC`)) return { kind: 'text', content: 'CAND_DISC_OK' }
     for (const leg of LEGS) {
       if (leg === 'probe') continue
       const mode = leg === 'glob-off' ? 'globoff' : 'pos'
@@ -758,6 +906,15 @@ try {
         }
         continue
       }
+      if (leg === 'pin-table') {
+        for (const [pm, claim] of PIN_CLAIMS.concat([['pinok', PIN_CONTROL]])) {
+          const hostPort = hostPorts[portIdx]
+          if (hostPort === undefined) die(`no free host port left for pin-table leg ${pm}`)
+          portIdx += 1
+          worldResults[pm] = await runPinWorld({ mode: pm, claim, state, srcHome, mock, port: hostPort })
+        }
+        continue
+      }
       if (leg === 'bash-b2') continue // graded from the pos world below
       const hostPort = hostPorts[portIdx]
       if (hostPort === undefined) { die(`no free host port left for leg ${leg}`) }
@@ -788,6 +945,33 @@ try {
       check('G2', 'LEG B typed shut: team_glob lands the EXISTING refusal face verbatim (a5p5-refused / IO_POLICY_UNSUPPORTED, detail sentence taken from the INSTALLED bytes) — and the refusal is a refusal, not a truncated answer', rGlob.includes(String(w.expectedRefusalVerbatim ?? ' ')) && rGlob.includes(IO_TEXT) && !/^> .*zzcand-/m.test(rGlob), `landing=${JSON.stringify(rGlob.slice(0, 320))}`)
       const seedWire = (w.seedNamesOnWire ?? []).reduce((a, x) => a + x.hits, 0)
       check('G4', 'LEG B no fallback: the glob fixture seed names (zzcand-*) appear in NO wire byte of the off world — after the refusal nothing listed out', seedWire === 0, `perSeed=${JSON.stringify(w.seedNamesOnWire)}`)
+    }
+    // ─── LEG D grading (pin-table: reserved-name impersonation refuses; control mounts) ───
+    if (LEGS.includes('pin-table')) {
+      const distPlaneRel = 'packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs'
+      const distPath = join(String(state.installHome), 'profiles', 'web', 'node_modules', 'dsh-agent-team', distPlaneRel)
+      const distPlane = existsSync(distPath) ? readFileSync(distPath, 'utf8') : ''
+      const regM = /PLANE_RESERVED_NATIVE = Object\.freeze\(\[([\s\S]*?)\]\)/.exec(distPlane)
+      const names = regM === null ? [] : [...regM[1].matchAll(/'([a-z_0-9]+)'/g)].map((x) => x[1])
+      const uniq = [...new Set(names)]
+      const dups = names.filter((n, i) => names.indexOf(n) !== i)
+      check('PT0', 'PIN-TABLE/0 the INSTALLED bytes carry the reserved-native registry at full height: 69 literal entries (68 unique — the single source-internal duplicate "subagent" is DISCLOSED not hidden), the host pin string is present, and all three claim names are IN the registry',
+        names.length === 69 && uniq.length === 68 && dups.length === 1 && dups[0] === 'subagent' && distPlane.includes("PLANE_RESERVED_NATIVE_HOST_PIN = '0.2.0-rc.2@639ed01539'") && ['subagent_codex', 'subagent_claude_code', 'subagent_fork'].every((n) => uniq.includes(n)),
+        `count=${String(names.length)} unique=${String(uniq.length)} dups=${JSON.stringify(dups)} pin0rc2=${String(distPlane.includes('0.2.0-rc.2@639ed01539'))}`)
+      for (const [pm, claim] of PIN_CLAIMS) {
+        const w = worldResults[pm]
+        const joined = (w?.refuseLines ?? []).join(' | ')
+        const refusalSeen = joined.includes('NATIVE_CLAIM') && joined.includes(claim)
+        const viaHttp = String(w?.prompt?.body ?? '').includes(claim) && String(w?.prompt?.body ?? '').toUpperCase().includes('NATIVE_CLAIM')
+        const neverMounted = !(w?.placementLines ?? []).some((l) => l.includes(claim))
+        check(`PT.${pm}`, `PIN-TABLE impersonation claim refuses at mount: the plane row claiming reserved native '${claim}' lands the typed PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED refusal (host log or prompt face), the claim NEVER reaches a mount, and no wire turn runs for this world`,
+          w?.ok === true && (refusalSeen === true || viaHttp === true) && neverMounted === true && w.discHits === 0,
+          `refusal=${JSON.stringify(joined.slice(0, 320))} prompt=${String(w?.prompt?.status)} placementLines=${String((w?.placementLines ?? []).length)} discHits=${String(w?.discHits)}`)
+      }
+      const wok = worldResults.pinok
+      check('PT.control', 'PIN-TABLE control rename leg: an UNCLAIMED glob spelling (zglobcand) mounts normally through the SAME seam and reaches the mock — the refusal is claim-specific, not a names-config-wide outage',
+        wok?.ok === true && (wok.placementLines ?? []).some((l) => l.includes(PIN_CONTROL)) && (wok.refuseLines ?? []).length === 0 && wok.discHits > 0,
+        `placement=${JSON.stringify((wok?.placementLines ?? []).slice(0, 1)).slice(0, 240)} refuse=${String((wok?.refuseLines ?? []).length)} discHits=${String(wok?.discHits)}`)
     }
   } finally {
     try { await mock.close() } catch { /* gone */ }

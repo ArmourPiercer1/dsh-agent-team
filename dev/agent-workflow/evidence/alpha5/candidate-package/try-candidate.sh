@@ -13,6 +13,7 @@
 # Modes:
 #   ./try-candidate.sh --dry-run    syntax + wiring + plan only (no boot, no worlds)
 #   ./try-candidate.sh --probe      fastest leg only (pre-assembly smoke)
+#   ./try-candidate.sh --pin        PIN-TABLE receipt leg (3 reserved-name claims + control)
 #   ./try-candidate.sh              ALL THREE LEGS — run at FINAL assembly only
 #
 # LAW: CANDIDATE_SHA must equal tests/homes/candidate-INSTALLED.json (recorded
@@ -32,8 +33,9 @@ for a in "$@"; do
   case "$a" in
     --dry-run) MODE="dry" ;;
     --probe) MODE="probe" ;;
+    --pin) MODE="pin" ;;
     --keep) EXTRA+=("--keep") ;;
-    *) echo "FATAL: unknown arg: $a (allowed: --dry-run | --probe | --keep)" >&2; exit 1 ;;
+    *) echo "FATAL: unknown arg: $a (allowed: --dry-run | --probe | --pin | --keep)" >&2; exit 1 ;;
   esac
 done
 
@@ -56,11 +58,16 @@ RC=0
 case "$MODE" in
   dry)
     node "$PKG_DIR/try-candidate-kit.mjs" --repo "$Toplevel" --sha "$SHA" --state "$STATE" \
-      --legs=probe,pos,bash-b2,glob-off --dry-run --testuse "$TEST_USE" --evidence-dir "$EVIDENCE_DIR" "${EXTRA[@]+"${EXTRA[@]}"}" || RC=$?
+      --legs=probe,pos,bash-b2,glob-off,pin-table --dry-run --testuse "$TEST_USE" --evidence-dir "$EVIDENCE_DIR" "${EXTRA[@]+"${EXTRA[@]}"}" || RC=$?
     ;;
   probe)
     node "$PKG_DIR/try-candidate-kit.mjs" --repo "$Toplevel" --sha "$SHA" --state "$STATE" \
       --legs=probe --testuse "$TEST_USE" --evidence-dir "$EVIDENCE_DIR" "${EXTRA[@]+"${EXTRA[@]}"}" || RC=$?
+    ;;
+  pin)
+    echo "[try-candidate] PIN-TABLE RECEIPT — reserved-native impersonation claims + control rename."
+    node "$PKG_DIR/try-candidate-kit.mjs" --repo "$Toplevel" --sha "$SHA" --state "$STATE" \
+      --legs=pin-table --testuse "$TEST_USE" --evidence-dir "$EVIDENCE_DIR" "${EXTRA[@]+"${EXTRA[@]}"}" || RC=$?
     ;;
   full)
     echo "[try-candidate] FULL THREE-LEG CHAIN — this is the FINAL-ASSEMBLY receipt run."

@@ -1,0 +1,81 @@
+# candidate pin-table layer (run 2026-10-19T00-19-10Z, mode pincc): plane mount-name claim 'subagent_claude_code' — a reserved-native claim must refuse at mount (public profile-patch seam only).
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    rootSessionId: cand-pincc-root
+    bootPhase: create
+    blueprintSource: "---\nschemaVersion: 3\nblueprintId: cand-pincc-anchor-bp\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the candidate trial team.\"\nmembers:\n  - templateId: wa\n    persona: \"You are a worker of the candidate trial team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    blueprintDir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincc-2026-10-19T00-19-10Z/blueprints
+    rootPresetId: cand-base
+    memberPresetId: cand-base
+    seedMembers: []
+    generation: 1
+    staticModel:
+      provider: deepseek-official
+      model: cand-model
+    deniedSelection: null
+    mcpServers: []
+    mcpServer: null
+    environmentFacts:
+      - domain: tool
+        subject: web
+        available: true
+        generation: 1
+      - domain: skill
+        subject: base
+        available: true
+        generation: 1
+      - domain: persona
+        subject: standard
+        available: true
+        generation: 1
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+    teamToolPlane:
+      realmId: cand-pincc-realm
+      fsInstance:
+        fs: cand-pincc-ctl
+        rootDir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincc-2026-10-19T00-19-10Z/workspace/governed
+        realmId: cand-pincc-realm
+        kind: absolute-path
+      confinedProvider:
+        trustRoot: "sha256:1264ea584e3438d6#/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincc-2026-10-19T00-19-10Z/deployment/landlock-prelauncher.py"
+        assembly:
+          launcherPath: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/tests/homes/candidate-pincc-2026-10-19T00-19-10Z/deployment/landlock-prelauncher.py
+          launcherSha256: 1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3
+          minAbiVersion: 3
+      names:
+        glob: subagent_claude_code
+- insert:
+  - id: preset-cand-base
+    name: "@deepseek-ai/dsh-agent-preset"
+    config:
+      id: cand-base
+      name: "candidate base"
+      description: "pin-table preset"
+      order: 900
+      plugins:
+        - id: persona
+          name: "@deepseek-ai/dsh-persona"
+          config:
+            prefix: "You are a coding agent powered by the {{model}} model."
+            suffix: "Your working directory is {{cwd}}."
+        - id: tool-fs
+          name: "@deepseek-ai/dsh-tool-fs"
+        - id: persistent-shell
+          name: "cordis:group"
+          group: true
+          isolate:
+            terminals: true
+          config:
+            - id: pty
+              name: "@deepseek-ai/dsh-terminal"
+            - id: terminal-bash
+              name: "@deepseek-ai/dsh-terminal-bash"
+              config:
+                timeoutMs: 300000
+            - id: persistent-bash
+              name: "@deepseek-ai/dsh-tool-bash-persistent"
+              config:
+                timeoutMs: 300000
