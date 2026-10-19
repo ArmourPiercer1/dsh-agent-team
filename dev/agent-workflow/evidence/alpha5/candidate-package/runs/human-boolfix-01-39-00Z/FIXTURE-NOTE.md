@@ -1,0 +1,1 @@
+fixture-world-nolauncher/ was the 17MB `cp -a` world of the configured human world minus deployment/landlock-prelauncher.py — reproducible in one command (cp -a $W ... && rm launcher); removed from the commit for size; repro-red.out + green-fixed.out are the paired evidence (rc 0 -> 2 on the same fixture).

@@ -1,0 +1,10 @@
+  PASS human sentinel present (this gate only runs on human worlds)
+  PASS no REPLACE_ME placeholders
+  PASS no mock residue
+  PASS no references to swept trial worlds
+  PASS shape gate: validateTeamPluginConfig (INSTALLED dist) ACCEPTS the config row
+  FAIL launcherPath missing: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-boolfix-01-39-00Z/fixture-world-nolauncher/deployment/landlock-prelauncher.py
+  PASS plugin trust root present: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-boolfix-01-39-00Z/fixture-world-nolauncher/profiles/web/node_modules/dsh-agent-team (name=dsh-agent-team version=0.1.1-alpha.2)
+  PASS DSH_HOME exists and is writable: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-boolfix-01-39-00Z/fixture-world-nolauncher
+CHECK-CONFIG: PASS — safe to boot (README §3b order: config -> check -> boot)
+REPRO(现网代码) rc=0  (红洞=rc0 假PASS)

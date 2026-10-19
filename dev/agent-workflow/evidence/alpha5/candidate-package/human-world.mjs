@@ -15,9 +15,9 @@
  *  - check is a fast gate only: paths exist / no template placeholders / no
  *    mock residue / no references to swept trial worlds. It never starts a host.
  */
-import { existsSync, cpSync, readFileSync, writeFileSync, accessSync, constants, statSync } from 'node:fs'
+import { existsSync, cpSync, readFileSync, writeFileSync, accessSync, constants, statSync, readdirSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { join } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 
 const argv = process.argv.slice(2)
 const MODE = argv[0]
@@ -34,7 +34,9 @@ const STATE = JSON.parse(readFileSync(STATE_FILE, 'utf8'))
 function verify3(world) {
   let pass = true
   const launcher = join(world, 'deployment', 'landlock-prelauncher.py')
-  if (!existsSync(launcher)) { pass = bad(`launcherPath missing: ${launcher}`) | pass }
+  // (root 01:33Z item 1: was `bad(...) | pass` — bitwise OR kept a MISSING launcher
+  // truthy (false|true === 1); the red fixture run runs/human-boolfix-*/ proves it.)
+  if (!existsSync(launcher)) { pass = bad(`launcherPath missing: ${launcher}`) && pass }
   else {
     const sha = createHash('sha256').update(readFileSync(launcher)).digest('hex')
     pass = (sha === STATE.launcher?.sha256 ? ok(`launcher sha256 == INSTALLED record (${sha.slice(0, 16)}…)`) : bad(`launcher sha256 ${sha.slice(0, 16)}… != record ${String(STATE.launcher?.sha256).slice(0, 16)}…`)) && pass
@@ -119,7 +121,30 @@ if (MODE === 'init') {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-')
   const dst = join(homes, `candidate-human-${stamp}`)
   existsSync(dst) && die(`refusing to overwrite: ${dst}`)
-  cpSync(src, dst, { recursive: true }) // copy the VERIFIED install face byte-for-byte (no network, no moving ref)
+  cpSync(src, dst, { recursive: true }) // copy the VERIFIED install face (no network, no moving ref)
+  // (root 01:33Z item 2: cpSync PRESERVES symlinks; a live link into the install face or
+  // the pnpm store would hang the human world off automatable-cleanup territory. Policy:
+  // dereference EVERY link to byte copies; fail closed on anything unresolvable.)
+  const { readlinkSync, unlinkSync } = await import('node:fs')
+  const linksDereferenced = []
+  const links = []
+  const walkLinks = (dir) => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const q = join(dir, e.name)
+      if (e.isSymbolicLink()) links.push(q)
+      else if (e.isDirectory()) walkLinks(q)
+    }
+  }
+  walkLinks(dst)
+  for (const l of links) {
+    const target = resolve(dirname(l), readlinkSync(l))
+    if (!existsSync(target)) die(`dangling symlink in the install face, refusing to init: ${l} -> ${target}`)
+    const isDir = statSync(target).isDirectory()
+    unlinkSync(l)
+    cpSync(target, l, isDir ? { recursive: true, dereference: true } : { dereference: true })
+    console.log(`  dereferenced symlink -> bytes: ${l.slice(dst.length + 1)} (was -> ${target})`)
+    linksDereferenced.push(`${l.slice(dst.length + 1)} -> ${target}`)
+  }
   // an inherited active layer would smuggle trial/mock config into the human path:
   const active = join(dst, 'profiles', 'web', 'cordis.patch.yml')
   let note = 'no inherited active layer (clean)'
@@ -141,6 +166,7 @@ if (MODE === 'init') {
     `origin_sha=${STATE.sha}`,
     `origin_rootSha=${STATE.rootSha}`,
     `copied_at=${new Date().toISOString()}`,
+    ...(linksDereferenced.length ? ['dereferenced-symlinks(at init):', ...linksDereferenced.map((x) => '  ' + x)] : ['dereferenced-symlinks(at init): none']),
     'protection: candidate-human-* prefix is excluded from all state/history records AND from',
     'the sweep case gates (rollback-candidate.sh negative gate); the kit refuses any sentinel.',
   ].join('\n'))
@@ -155,6 +181,7 @@ if (MODE === 'init') {
     const b = sha(join(dst, 'deployment', 'landlock-prelauncher.py'))
     pass = (a === b ? ok('copied launcher bytes identical to source world') : bad('launcher copy differs from source!')) && pass
   } catch { pass = bad('launcher compare failed') && pass }
+  console.log(`WORLD=${dst}`) // exact machine-readable path; README takes W from HERE, never from ls globbing
   console.log(pass ? 'START-CHECKLIST' : 'START-CHECKLIST (NOT READY — fix FAILs first)')
   console.log([
     ` 1) cp ${join(dst, 'profiles', 'web', 'cordis.patch.TEMPLATE.yml')} ${active}`,

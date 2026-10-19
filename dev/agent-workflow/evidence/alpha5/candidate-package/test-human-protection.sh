@@ -53,6 +53,32 @@ SL="$(ls "$R3"/ev/rollback-*/sweep-list.json 2>/dev/null | head -1)"; human_list
 check P1 "recorded automation worlds deleted on --uninstall (rc=0)" "$([ $rc -eq 0 ] && [ ! -e "$R3/homes/candidate-install-fake" ] && [ ! -e "$R3/homes/candidate-src-fake" ] && echo true || echo false)" "rc=$rc"
 check N3 "human world survives uninstall AND is reported (humanPresent)" "$([ "$human_survives" = true ] && [ "$human_listed" -ge 1 ] && echo true || echo false)" "sentinel_intact=$([ -f "$R3/homes/candidate-human-keep/.CANDIDATE-HUMAN-USE" ] && echo true) humanPresent_listed=$human_listed"
 
+# ── N4: launcher-less world is REFUSED by the three-path verify (root 01:33Z ①;
+#    permanent regression for the `bad(...) | pass` boolean hole — red/green pair
+#    lives at runs/human-boolfix-*/ on the real check path; this pins the shared verify3) ──
+R4="$RUN/n4"; mk_scratch "$R4"
+LAUNCH_SHA4=$(sha256sum "$R4/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
+node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R4/homes/candidate-INSTALLED.json" "$LAUNCH_SHA4"
+rm -f "$R4/homes/candidate-install-fake/deployment/landlock-prelauncher.py"
+out="$(node "$PKG_DIR/human-world.mjs" init --state "$R4/homes/candidate-INSTALLED.json" --homes "$R4/homes" --template "$PKG_DIR/human-config-template.yml" 2>&1)"; rc=$?
+echo "$out" > "$RUN/n4-init.out"
+check N4 "launcher-less world refused by verify3 (rc!=0, launcherPath named) — boolean-hole regression" "$([ $rc -ne 0 ] && printf '%s' "$out" | grep -q 'launcherPath missing' && echo true || echo false)" "rc=$rc"
+
+# ── N5: init dereferences planted symlinks — no live link into cleanup territory ──
+R5="$RUN/n5"; mk_scratch "$R5"
+LAUNCH_SHA=$(sha256sum "$R5/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
+node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R5/homes/candidate-INSTALLED.json" "$LAUNCH_SHA"
+ln -s "$R5/homes/candidate-src-fake" "$R5/homes/candidate-install-fake/link-abs-into-cleanup-face"
+ln -s "$R5/homes/candidate-install-fake/deployment/landlock-prelauncher.py" "$R5/homes/candidate-install-fake/link-file-abs"
+out="$(node "$PKG_DIR/human-world.mjs" init --state "$R5/homes/candidate-INSTALLED.json" --homes "$R5/homes" --template "$PKG_DIR/human-config-template.yml" 2>&1)"; rc=$?
+H5="$(printf '%s\n' "$out" | awk -F= '/^WORLD=/{print $2}')"
+nlinks=$([ -d "$H5" ] && find "$H5" -type l | wc -l || echo -1)
+deref_logged=$(printf '%s' "$out" | grep -c 'dereferenced symlink -> bytes')
+content_ok=false; [ -f "$H5/link-file-abs" ] && grep -q x "$H5/link-file-abs" && content_ok=true
+echo "$out" > "$RUN/n5-init.out"
+check N5 "init dereferences ALL symlinks (no live link into cleanup territory; ③ WORLD= capture works)" "$([ -d "$H5" ] && [ "$nlinks" -eq 0 ] && [ "$deref_logged" -ge 2 ] && [ "$content_ok" = true ] && echo true || echo false)" "links=$nlinks derefed=$deref_logged content=$content_ok rc=$rc"
+
 echo "SUMMARY pass=$PASS fail=$FAIL (evidence: runs/human-guard-$STAMP)"
+
 cp "$SL" "$RUN/n3-sweep-list.json" 2>/dev/null || true
 [ $FAIL -eq 0 ] || exit 2; exit 0

@@ -127,10 +127,12 @@ PKG=dev/agent-workflow/evidence/alpha5/candidate-package   # checkout 根执行
 # 1) 安装（同 §2；已装可跳——查 tests/homes/candidate-INSTALLED.json）
 CANDIDATE_SHA=d5de74974b0320b191b310ead82407d478477ed7 ./$PKG/install-candidate.sh
 
-# 2) 从"已验证安装面"初始化真人世界（cp 同一字节面，不重跑网络安装链；
-#    现场核三路径：launcher sha==记录 / 插件信任根在 / DSH_HOME 可写；继承的 probe 层会被移开留档）
-./$PKG/install-candidate.sh --init-human-world
-W=$(ls -d tests/homes/candidate-human-* | tail -1)      # init 打印的确切目录
+# 2) 从"已验证安装面"初始化真人世界（同字节复制、不重跑网络安装链；现场核三路径；
+#    一切符号链接 dereference 成字节副本——真人世界自含、不吊在可清理面上，根 01:33Z ②；
+#    继承的 probe 层移开留档）。W 取 init 输出的 WORLD= 行，不用 ls 通配挑选（避免误选他人世界）：
+INIT_OUT=$(./$PKG/install-candidate.sh --init-human-world)
+echo "$INIT_OUT"
+W=$(printf '%s\n' "$INIT_OUT" | awk -F= '/^WORLD=/{print $2}')
 
 # 3) 先配置：复制无秘密模板为活动层，替换全部大写占位值
 cp "$W/profiles/web/cordis.patch.TEMPLATE.yml" "$W/profiles/web/cordis.patch.yml"
@@ -153,6 +155,14 @@ kill "$(cat /tmp/candidate-human.pid)"
 #    …下次：重复 5)（配置改过就先重跑 4)）——本包任何脚本永不删此世界；手动清理=你自己 rm。
 ```
 
+**安全审红单收口（根 01:33Z）**：①verify3 布尔洞（`bad(…) | pass` 位或留真值）——红实录
+`runs/human-boolfix-*/repro-red.out`（缺 launcher 仍 rc=0 假 PASS）→ 修 `&& pass` 后同负例
+rc=2（`green-fixed.out`）；负例永久入 spec（N4=缺 launcher 拒，与 check 门共享代码路径）。
+②cpSync 保留符号链接→init 现全量 dereference 成字节副本（悬空链接 fail-closed 拒 init）；
+负例 N5（植 2 枚绝对链接→init 后 `find -type l`=0、哨兵记 deref 清单）+
+**清源可 boot 收据** `runs/human-boot-01-21-27Z/clearsrc/CLEAR-SRC-BOOT-RECEIPT.md`
+（删源安装世界后 check rc=0 + 真 boot 401/303）——真人世界自含、源可删。
+③W 取 init 的 `WORLD=` 行（不再 `ls|tail`，避免误选他人世界）。
 冒烟账（本包装配轮实跑，`runs/human-smoke-*/`）：init 三路径 PASS + 复制字节一致；
 check 门 **configured→PASS(rc=0)**、**inert 占位层→FAIL(rc=2)**、**占位未换→FAIL(rc=2)**。
 **真 boot 收据 = `runs/human-boot-*/BOOT-RECEIPT.md`**：boot 行（token 脱敏）+ 无鉴权 401/401 +
