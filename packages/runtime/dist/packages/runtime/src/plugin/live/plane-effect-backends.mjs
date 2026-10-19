@@ -938,7 +938,14 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
   if (viewer === undefined || typeof viewer.rootSessionId !== 'string' || typeof viewer.instanceId !== 'string') {
     throw new Error('jobs bridge: viewer must carry the durable member pair {rootSessionId, instanceId}')
   }
-  const registered = new Set()
+  // ROOT③ (review, round B): name -> LAST REGISTERED identity. A one-way
+  // Set pinned the FIRST feed identity forever, so a REPLACED lane (a
+  // definition swap / remount that mints a new def identity) left a stale
+  // pin behind for every later admit. The row-local store is last-write-
+  // wins, so the honest shape is: register whenever the feed identity
+  // MOVED (the laziness law stands: an identity that has not minted is
+  // still never registered as undefined).
+  const registered = new Map()
   const refuse = (code, detail) => {
     observe(`a5jobs: refused ${code}`)
     return { text: `refused: ${code} — ${String(detail).slice(0, 200)}` }
@@ -947,14 +954,16 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
     const plane = typeof planeRow === 'function' ? planeRow() : null
     if (plane === null || plane === undefined || typeof plane.placementFeed !== 'function') return
     for (const name of ['bash', 'job_output', 'job_list', 'job_kill']) {
-      if (registered.has(name)) continue
       const entry = plane.placementFeed(name)
       // Not minted yet: retry on the next call — never register an
       // undefined identity (the closed world has no guessed pins).
       if (entry === undefined || entry === null || entry.definitionIdentity === undefined) continue
-      asm.definitions.register(scopeKey, name, entry.definitionIdentity)
-      registered.add(name)
-      observe(`a5jobs: definition-registered name=${name} scope=${scopeKey}`)
+      const identity = String(entry.definitionIdentity)
+      if (registered.get(name) === identity) continue
+      const moved = registered.has(name)
+      asm.definitions.register(scopeKey, name, identity)
+      registered.set(name, identity)
+      observe(`a5jobs: ${moved ? 'definition-re-registered' : 'definition-registered'} name=${name} scope=${scopeKey}`)
     }
   }
   const resolve = () => {
@@ -1016,15 +1025,24 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
         return refuse('host-jobs-refused', error?.message ?? error)
       }
     },
-    /** job_list names no job: the Team layer contributes only the caller
-     *  identity it hands the host — the fence invents no per-job gate. */
+    /** job_list: ROOT① (review, round B) — the host caller fence scopes the
+     *  rows to the DISPATCH caller, but the caller is dispatch-provided: a
+     *  routing shape that ever presents the SAME caller to two governed
+     *  members must NOT let the Team layer surface rows ALREADY attributed
+     *  to a foreign member scope. So the list consults the gateway PER ROW:
+     *  attributed rows follow the same owner fence job_output/job_kill
+     *  answer to (a foreign row is HIDDEN — the layer that knows, declines
+     *  silently and echoes no identity, C-GW law); rows with no team record
+     *  pass as the disclosed corded:false host jurisdiction — the fence
+     *  still invents nothing. */
     async jobList(caller) {
       if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
       const r = resolve()
       if (r.refusal !== undefined) return r.refusal
       try {
         const jobs = await r.svc.list(caller)
-        return { text: jobs.length === 0 ? '(no background jobs)' : jobs.map((j) => `${j.id} [${j.kind}] ${j.status} — ${j.label}`).join('\n') }
+        const visible = jobs.filter((j) => r.asm.checkManagementAccess({ jobId: j.id, viewer }).ok === true)
+        return { text: visible.length === 0 ? '(no background jobs)' : visible.map((j) => `${j.id} [${j.kind}] ${j.status} — ${j.label}`).join('\n') }
       } catch (error) {
         return refuse('host-jobs-refused', error?.message ?? error)
       }

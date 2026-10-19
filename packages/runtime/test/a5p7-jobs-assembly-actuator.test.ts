@@ -72,16 +72,35 @@ function world() {
  *  two native forms, and EVERY touched call is counted so the non-reach of
  *  the host layer under a team refusal is measured. */
 function fakeJobRegistry() {
-  const jobs = new Map<string, { ownerSession: string; killed: boolean }>()
+  const jobs = new Map<string, { ownerSession: string; killed: boolean; finished: boolean }>()
   const calls: string[] = []
+  const waiters = new Map<string, () => void>()
   return {
     calls,
-    seed: (jobId: string, ownerSession: string) => jobs.set(jobId, { ownerSession, killed: false }),
+    seed: (jobId: string, ownerSession: string) => jobs.set(jobId, { ownerSession, killed: false, finished: false }),
+    /** The SETTLING EDGE standing in for async process death after a kill
+     *  request (host law: wait resolves at the terminal state, never at the
+     *  request). ROOT④ boundary construction. */
+    settleWait: (jobId: string) => {
+      const w = waiters.get(jobId)
+      if (w === undefined) return
+      waiters.delete(jobId)
+      const j = jobs.get(jobId)
+      if (j !== undefined) j.finished = true
+      w()
+    },
     list: (caller?: string) => {
       calls.push(`list:${caller ?? '*'}`)
       return [...jobs.entries()]
         .filter(([, j]) => caller === undefined || j.ownerSession === caller)
-        .map(([id]) => ({ id, kind: 'bash', status: 'running', label: 'background command' }))
+        .map(([id, j]) => ({ id, kind: 'bash', status: j.finished ? (j.killed ? 'killed' : 'completed') : 'running', label: 'background command' }))
+    },
+    wait: (id: string, _ms: number, caller?: string) => {
+      calls.push(`wait:${id}:${caller ?? '*'}`)
+      const j = jobs.get(id)
+      if (j === undefined) throw new Error('unknown job')
+      if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
+      return new Promise<void>((resolve) => { waiters.set(id, resolve) })
     },
     readAt: (id: string, caller?: string) => {
       calls.push(`readAt:${id}:${caller ?? '*'}`)
@@ -95,7 +114,11 @@ function fakeJobRegistry() {
       const j = jobs.get(id)
       if (j === undefined) throw new Error('unknown job')
       if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
-      return { chunks: [{ at: 0, text: 'output-bytes' }], lossy: false }
+      return {
+        chunks: [{ at: 0, text: 'output-bytes' }],
+        lossy: false,
+        ...(j.finished ? { result: j.killed ? '(job cancelled by request)' : '(job completed)' } : {}),
+      }
     },
     kill: (id: string, caller?: string): 'requested' | 'already-finished' => {
       calls.push(`kill:${id}:${caller ?? '*'}`)
@@ -167,10 +190,10 @@ describe('a5p7 actuator — management-path owner fence (job_output/job_list/job
     expect(host.calls.length).toBeGreaterThan(0)
   })
 
-  it('job_list stays a pure identity read: it consults no record and refuses nobody it cannot see', () => {
-    // LIST has no jobId: the Team layer contributes only the caller identity
-    // it hands the host (`list(caller)`); this pin keeps the fence from
-    // inventing a per-job gate where no job is named.
+  it('the ASSEMBLY row for list stays a pure per-job owner read (review ROOT① re-home: the per-ROW list law lives at the BRIDGE — see the C2 shared-caller negative control; the former pin of this line predated the review and is superseded)', () => {
+    // This pin now covers what the assembly level can honestly say: the
+    // owner fence answers PER jobId; it names no job it cannot see. The
+    // bridge APPLIES it per row over the host's caller-scoped list.
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'session-of-A')
@@ -332,5 +355,82 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const r = await bridge.jobOutput({ job_id: 'legacy' }, 'agent-x')
     expect(r.text).toContain('gateway-not-active')
     expect(host.calls).toEqual([])
+  })
+
+  // ── review ROOT① ③ ④ (round B): the measured answers, not assertions ────
+
+  type BridgeFace = {
+    jobList: (caller: string) => Promise<{ text: string }>
+    jobOutput: (a: Record<string, unknown>, c: string) => Promise<{ text: string }>
+    jobKill: (a: Record<string, unknown>, c: string) => Promise<{ text: string }>
+    ensureRegistered: () => void
+  }
+  const mkRawBridge = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner, plane: unknown = null): BridgeFace =>
+    backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs', viewer, gatewayRow: () => asm, planeRow: () => plane, jobsService: () => host,
+    }) as BridgeFace
+
+  it('ROOT① NEGATIVE CONTROL (same caller, two members): job_list hides a row attributed to the FOREIGN member and shows the unattributed ones — the Team layer speaks per row even where the host caller fence cannot tell members apart', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb-team', 'caller-shared') // host-owned by the SHARED caller, team-attributed to A
+    host.seed('jb-legacy', 'caller-shared') // no team record at all
+    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb-team', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    const a = await mkRawBridge(asm, host, OWNER_A).jobList('caller-shared')
+    const b = await mkRawBridge(asm, host, OWNER_B).jobList('caller-shared')
+    expect(a.text).toContain('jb-team')
+    expect(a.text).toContain('jb-legacy')
+    expect(b.text).not.toContain('jb-team') // HIDDEN, not echoed: the row is not named at all
+    expect(b.text).not.toContain('owner-mismatch') // silent decline, no owner identity leak (C-GW)
+    expect(b.text).toContain('jb-legacy') // corded:false host jurisdiction passes, disclosed
+    expect(host.calls).toEqual(['list:caller-shared', 'list:caller-shared']) // ONE host query per bridge
+  })
+
+  it('ROOT③ REPLACEMENT SHAPE: a MOVED lane definition re-registers (no stale pin) and the next admit pins the MOVED identity; the management path consumed no definition gate before or after', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    let bashIdentity = 'bash@v1'
+    const plane = { placementFeed: (name: string) => ({ definitionIdentity: name === 'bash' ? bashIdentity : `${name}@v1`, realmId: 'realm-jobs' }) }
+    const bridge = mkRawBridge(asm, host, OWNER_A, plane)
+    host.seed('jb1', 'caller-1')
+    await bridge.jobList('caller-1') // the lazy first-use registration
+    const t1 = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' })
+    expect(t1.ok === true && t1.job.pinnedIdentity).toBe('bash@v1')
+    // A REPLACED lane (definition swap / remount): the feed now mints a NEW identity.
+    bashIdentity = 'bash@v2-replacement'
+    bridge.ensureRegistered()
+    host.seed('jb2', 'caller-1')
+    const t2 = asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: 'realm-jobs' })
+    expect(t2.ok === true && t2.job.pinnedIdentity).toBe('bash@v2-replacement') // the stale pin is GONE
+    // The honest half of the answer: checkManagementAccess consults ONLY the
+    // owner law (assembly code: records + jobOwnerKey), never the definition
+    // store — a stale pin could only ever mislead ADMISSIONS, and admissions
+    // now track the moved definition (the C-BIND re-read law).
+    const read = await bridge.jobOutput({ job_id: 'jb2' }, 'caller-1')
+    expect(read.text).toBe('output-bytes')
+  })
+
+  it('ROOT④ wait boundary: kill DURING a pending wait — the wait resolves at the SETTLING edge, the read answers the TERMINAL shape, and the kill request stays a request (lease token outstanding)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'agent-of-A')
+    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    const bridge = mkRawBridge(asm, host, OWNER_A)
+    const pending = bridge.jobOutput({ job_id: 'jb1', wait: true }, 'agent-of-A')
+    await Promise.resolve()
+    expect(host.calls).toEqual(['wait:jb1:agent-of-A']) // parked in the wait, read NOT reached
+    const killed = await bridge.jobKill({ job_id: 'jb1' }, 'agent-of-A')
+    expect(killed.text).toBe('requested cancellation of job jb1')
+    expect(asm.gateway.job('jb1')[0]!.cancelRequested).toBe(true)
+    // The SETTLING EDGE (async process death AFTER the request) resolves the wait:
+    host.settleWait('jb1')
+    const read = await pending
+    expect(read.text).toContain('output-bytes')
+    expect(read.text).toContain('(job cancelled by request)') // TERMINAL shape visible, not invented pre-edge
+    expect(host.calls).toEqual(['wait:jb1:agent-of-A', 'kill:jb1:agent-of-A', 'read:jb1:agent-of-A'])
+    // Request ≠ settlement (PR1 Gate R4): the token stands until the plane's settle event.
+    expect(asm.gateway.lease.outstanding().map((t) => t.callId)).toEqual(['jb1'])
   })
 })
