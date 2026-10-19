@@ -17,7 +17,7 @@
 > | INSTALL_RECEIPT | **已跑 = `runs/install-final/`**：face-check 10 PASS（三零 1773/1773，missing=extra=sha≠=0）；rootSha=`dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af`；launcher `1264ea584e3438d6…`/26 992 B/`abi-available`/4；INSTALLED.json 已写。活动 `candidate-INSTALLED.history.jsonl` 现状=**自终装起账（空）**——演练卷曾依法把旧状态文件（含旧 history）移入回执目录，当前树内无旧链续账；52d73534→d5de7497 迁移事实由 `runs/reinstall-*/`+rollback 回执承载（与 ROLLBACK 条同口径） |
 > | TRIAL_RECEIPT | **已跑 = `runs/trial-final/` KIT_EXIT=0（24/24）**：LEG A 委派正例（L2a/b/c）、LEG B `globEnabled:false` typed 关断（G0-G4，拒语原文取自 INSTALLED 字节）、LEG C 越界负控 exit=1 零泄露（L3a/b）；W 腿两世界重装 rootSha==INSTALLED；C1 具名扫净 |
 > | PIN_TABLE_RECEIPT | **已跑 = `runs/pin-final/` KIT_EXIT=0（15/15）**：PT0=INSTALLED 字节现场计数 **69 条字面/68 唯一（源内一处 `subagent` 重复，披露不掩）**+pin 串 `0.2.0-rc.2@639ed01539` 在体+三冒名 ∈ 表；PT.pincodex/pincc/pinfork=`team.create` 面 typed 拒（`PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED` 原文消息含冒名，claim 未达挂载、零 wire 轮）；PT.control=改名形 `zglobcand` 同缝正常挂载 `rows=[team_grep,zglobcand,team_bash,read]`。**边界**：本回执=冒名 typed 拒+registry 现场计数；a5-pindir 双向漂移机检与 codex/claude_code 启停翻转测试仍在 a5-pindir 卷账，本包不代签 |
-> | C1_INSTALL_RECEIPT | **按终装令直接引用既有卷不重跑** = `../a5c1fix-b/runs/2026-10-18T23-05-55Z`（F3b v3 全账）+ `F3B-EVIDENCE-INDEX.md`（12 项边界逐项归因）+ `../a5c1fix-reverify/DISTRIBUTION.md`（定档 2×KIT_DONE+1×HARVEST 标签样本，K12/K13 披露）。**面标注**：卷自述=commit-pin `a5-abort-cause@a1bf18fa` 装面；`#343`（head=`097fccf9…`）已将修复字节带入 master——**字节级证**：`tool-dispatch/install.ts` + dist `install.{js,d.ts.map,js.map}` 在 `a1bf18fa`↔`d5de7497` 逐文件 SAME_BYTES（`git diff --quiet` 过；`a1bf18fa` 非祖先=squash 语义如实），修复面⊂冻结面 → 语义等价链成立。四条件 ①②③=F3b 卷在账（abort 命中/rc=-15≤8ms/25s 窗口零继续副作用+逐项归因）；**④模型可见性 = 真实模型 wire 的死亡形 verbatim `Error: tool call aborted`**——原文字段路径：`../a5c1fix-reverify/runs/2026-10-18T22-31-18Z/world.json` 之 `memberAToolResults[1]` / `mit.lastToolResults[1]` / `probe.post[1].content`（三处同文 `[{"type":"text","text":"Error: tool call aborted"}]`），配套该 run `instance.log:21` `post-exec … isError=true err=tool call aborted`；对应判据 R1/F4 PASS 录于 `../a5c1fix-reverify/kit-rv1.out`/`kit-rv3.out` 与 `../a5c1fix-b/kit-b3.out`。**行 witness `cancelled=true`+gen1 `kind:user` 降级标注：仅证插件内部分类位翻转，不得充当模型可见性证据**。**负断言保留**：wire 死亡形=统一调度器死亡形而非带因中止叙述（CORE_SEAM_BLOCKER **#1 渲染层限制保留在册**）——④按"模型明确见中止且非成功"成立，"见中止之因果细节"仍属 #1 限制；红不销案、不宣称修复 |
+> | C1_INSTALL_RECEIPT | **按终装令直接引用既有卷不重跑** = `../a5c1fix-b/runs/2026-10-18T23-05-55Z`（F3b v3 全账）+ `F3B-EVIDENCE-INDEX.md`（12 项边界逐项归因）+ `../a5c1fix-reverify/DISTRIBUTION.md`（定档 2×KIT_DONE+1×HARVEST 标签样本，K12/K13 披露）。**面标注**：卷自述=commit-pin `a5-abort-cause@a1bf18fa` 装面；`#343`（head=`097fccf9…`）已将修复字节带入 master——**字节级证**：`tool-dispatch/install.ts` + dist `install.{js,d.ts.map,js.map}` 在 `a1bf18fa`↔`d5de7497` 逐文件 SAME_BYTES（`git diff --quiet` 过；`a1bf18fa` 非祖先=squash 语义如实），修复面⊂冻结面 → 语义等价链成立。四条件 ①②③=F3b 卷在账（abort 命中/rc=-15≤8ms/25s 窗口零继续副作用+逐项归因）；**④模型可见性 = 真实模型 wire 的死亡形 verbatim `Error: tool call aborted`**——原文字段路径落**包内已跟踪卷**：`../a5c1fix-b/runs/2026-10-18T23-05-55Z/world.json:53` / `:104` / `:205`（三处同文 `[{"type":"text","text":"Error: tool call aborted"}]`；:219 另存 `…before dispatch` 变体如实注），配套同目录 `instance.log:21` `post-exec … isError=true err=tool call aborted`（本包装配轮逐字复核同文，独审亦已核）；对应判据 R1/F4 PASS 录于同卷包内 `../a5c1fix-b/kit-b3.out`。reverify 系（`../a5c1fix-reverify/runs/2026-10-18T22-31-18Z/world.json` 同文三字段 + kit-rv1/rv3.out）为旁证链，非主引用。**行 witness `cancelled=true`+gen1 `kind:user` 降级标注：仅证插件内部分类位翻转，不得充当模型可见性证据**。**负断言保留**：wire 死亡形=统一调度器死亡形而非带因中止叙述（CORE_SEAM_BLOCKER **#1 渲染层限制保留在册**）——④按"模型明确见中止且非成功"成立，"见中止之因果细节"仍属 #1 限制；红不销案、不宣称修复 |
 > | ROLLBACK_REHEARSAL_RECEIPT | **引用制演练**（根载）= `runs/rollback-2026-10-18T22-56-57Z`（`--to-last`：重装上一记录 SHA 重过三零、`foreign=[]`）+ `runs/rollback-2026-10-18T22-57-23Z`（`--uninstall`：全记录名扫净、状态文件依法移入回执目录留痕）——演练于 52d73534 轮（同脚本同律）。**如实注**：演练的 `--uninstall` 已把当时的状态文件（含 history）依法移入回执，故终装后的**活动 history.jsonl 从空开始**——52d73534→d5de7497 的迁移事实由 `runs/reinstall-*/`+`runs/install-final/`+rollback 回执账承载；此后每次真安装自然续账，`--to-last` 自第二次真安装起可用（当前单状态=fail-closed 拒绝，属正确行为） |
 
 装配双源记（预装配历史，非终值）：`git ls-remote origin master` = `git rev-parse origin/master` =
@@ -145,6 +145,7 @@ cp -a "$W" "$W.bak-$(date -u +%Y%m%dT%H%M%SZ)"
 ## 4. 回滚步骤
 
 ```bash
+PKG=dev/agent-workflow/evidence/alpha5/candidate-package   # 单块自足，可独立粘贴
 ./$PKG/rollback-candidate.sh --to-last              # 恢复上一候选=重装上一记录 SHA（三零重验才算完成）
 ./$PKG/rollback-candidate.sh --uninstall            # 卸载本包自建世界/源克隆/锁（状态文件移入证据目录留痕）
 ./$PKG/rollback-candidate.sh --uninstall --purge-store   # 连本包自建工作区 pnpm store 一并删（仍按精确名）
@@ -177,7 +178,7 @@ cp -a "$W" "$W.bak-$(date -u +%Y%m%dT%H%M%SZ)"
    [../c1-swallow-diag/core-seam-blocker.md](../c1-swallow-diag/core-seam-blocker.md)（CORE PATCH BUDGET = 0，
    不改宿主、不用私有 API、不做文案改写绕行；post-execute 改写路线已被政策否决）。
    装面现状 = a5ie-r5 在册 RED（`c44f51e4`，runs `2026-10-18T20-36-13Z`）。
-   **真 RPC 四条件装面复验 = 引用制入账**（`runs/` 引用链见顶部占位表：a5c1fix-b F3b v3 + INDEX + DISTRIBUTION；修复字节 SAME_BYTES 入冻结面；①②③+④行级 witness 在账，四缺一不算过与"换文案不算修复"两律不变——**wire 死亡形红不销案**）。
+   **真 RPC 四条件装面复验 = 引用制入账**（引用链见顶部占位表：a5c1fix-b F3b v3 + INDEX + DISTRIBUTION；修复字节 SAME_BYTES 入冻结面；**①②③=F3b 带外监视在账；④=真实模型 wire verbatim；行 witness 仅内部分类位**——按 :20 同口径，四缺一不算过与"换文案不算修复"两律不变，**wire 死亡形红不销案**）。
 2. **glob 行 rc-first 判据线 = #343 已 MERGED @ `d5de7497…`**（入头实证+复验绿两面分列：本包 trial-final G 族 + glob-off ⑤ 轮 23-39-12Z；见顶部占位表）。
    stderr 非空=walker-error 的**代理判据洞**在 rc-first 判据（步骤 B `178bea59…`，双独审回：A GO / B 投机通过[必办五项在册]）
    经 #343 入头 + 装面复验绿之前**未闭**；stdout 完整性门 `203cac85` 同线。独立关断键本身已由
@@ -201,7 +202,7 @@ cp -a "$W" "$W.bak-$(date -u +%Y%m%dT%H%M%SZ)"
 
 - **占位未填不得发布**；不得把本包或其中任何"可跑"外观当发布候选宣称。
 - 不得用「最新 master」/移动 ref 安装；`CANDIDATE_SHA` 之外的安装对象一律非法。
-- **取消腿未验收**：不得在任何回执/文档写"取消端到端已通"；C1 四条件=引用制入账（行级 witness+kind:user），**wire 死亡形红保持原文在册**（#1 渲染层限制保留），"端到端已通"仍属未验收禁止项。
+- **取消腿未验收**：不得在任何回执/文档写"取消端到端已通"；C1 四条件=引用制入账（①②③=F3b 带外监视；④=真实 wire verbatim；行 witness+kind:user 仅内部分类位），**wire 死亡形红保持原文在册**（#1 渲染层限制保留），"端到端已通"仍属未验收禁止项。
 - 不得依赖模型侧 PTC 感知（未接入）；不得声称 v4 执行面可用（延期）；不得给非接管原生名配置期望行为（fail-closed）。
 - 不得把 master alpha 线直接推进 `stable`（分支策略红线）；不得移动冻结锚点。
 - 不得触 `:3080` 稳定实例及其 DSH_HOME；不得在世界命名/清理上用宽 glob（只按记录名删）。
