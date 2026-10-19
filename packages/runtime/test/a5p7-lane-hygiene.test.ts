@@ -99,12 +99,23 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
         'runtime/jobs-gateway/web-projection.ts',
         'runtime/test/a5p7-cproc-fixture.ts',
         'runtime/test/a5p7-job-owner.test.ts',
+        // A5-JOBS-ISO (branch a5-jobs-isolation, B-route jobs closure round):
+        // the live-row BEHAVIOR spec (two-member durable-identity legs) and
+        // its round-2 ACTUATOR spec (creation attribution, the management-
+        // path owner fence with the corded:false pass-through, the two
+        // native kill forms). Test-edge files in the lane's own `a5p7-`
+        // naming; this round added NEITHER a new lane source file NOR a new
+        // production edge — the C2 mount rides the pinned GLUE-5 pair
+        // below (the entry's new bridge import names plane-effect-backends,
+        // never the lane).
+        'runtime/test/a5p7-jobs-assembly.test.ts',
+        'runtime/test/a5p7-jobs-assembly-actuator.test.ts',
         'runtime/test/a5p7-lane-hygiene.test.ts',
         'runtime/test/a5p7-lease-cancellation.test.ts',
         'runtime/test/a5p7-mcp-rebind-chain.test.ts',
       ].sort(),
     )
-    expect(LANE_SOURCE_FILES.length).toBe(15)
+    expect(LANE_SOURCE_FILES.length).toBe(17)
   })
 
   // Reviewed NAMES-ONLY exception — the G-d integration wiring round paid
@@ -206,7 +217,12 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
     const row = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'jobs-gateway-assembly.mjs'), 'utf8')
     const rowEdges = row.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))
     expect(rowEdges.map((l) => l.trim())).toEqual([
-      `import { createJobsGateway, createLeaseWindow } from '../../../jobs-gateway/index.js'`,
+      // A5-JOBS-ISO round 2 (C1): the pure-read owner fence reuses the
+      // lane's OWN owner-key law, so the row also pulls `jobOwnerKey` —
+      // still the exact ONE barrel import line, same dist-mirror relative
+      // form, zero deep imports. The edge shape (the contract) did not
+      // move; the imported-name list grew by one lane-exported symbol.
+      `import { createJobsGateway, createLeaseWindow, jobOwnerKey } from '../../../jobs-gateway/index.js'`,
     ])
     const entry = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
     const entryEdges = entry.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))

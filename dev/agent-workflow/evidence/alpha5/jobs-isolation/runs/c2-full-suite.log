@@ -1,0 +1,28 @@
+START 2026-10-19T07:43:35Z
++     "hits": 1,
++     "rel": "packages/runtime/member-residency/harness/plugin.mjs",
++   },
++   {
++     "hits": 1,
++     "rel": "packages/runtime/member-residency/harness/slots-t6.mjs",
++   },
++ ]
+
+ ❯ packages/runtime/test/rc2-persona-probe.test.ts:151:21
+    149|       .map((rel) => ({ rel, hits: (pluginFile(rel).match(/sections\.fi…
+    150|       .filter((entry) => entry.hits > 0)
+    151|     expect(inlined).toEqual([])
+       |                     ^
+    152|   })
+    153| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/23]⎯
+
+
+ Test Files  8 failed | 584 passed (592)
+      Tests  23 failed | 7444 passed (7467)
+   Start at  07:43:35
+   Duration  299.17s (transform 32.18s, setup 0ms, import 218.33s, tests 542.20s, environment 99ms)
+
+SUITE_DONE rc=0
+END 2026-10-19T07:48:35Z

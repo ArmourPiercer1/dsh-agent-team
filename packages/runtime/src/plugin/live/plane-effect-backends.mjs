@@ -905,3 +905,149 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
   executor.execCount = () => executed
   return executor
 }
+
+/**
+ * B-ACT-1-PR C2 — the governed jobs-management bridge (the effect body
+ * behind the plane's fixed `job_output`/`job_list`/`job_kill` takeover
+ * row). Adapter-first by construction: the effect face is the host
+ * `JobRegistry` PUBLIC service (`ctx.get('jobs')` @639ed01539, every
+ * management op caller-scopable); nothing is forked.
+ *
+ * THE FENCE ORDER IS THE LAW (pc-CONTRACT §1 jobs row, PR7):
+ *  1. the gateway row (`checkManagementAccess`, member-scope owner fence over
+ *     the durable attribution ledger) answers FIRST; a team-layer refusal
+ *     NEVER reaches the host layer (the two fences answer only for
+ *     themselves — the measured non-reach is pinned in
+ *     test/a5p7-jobs-assembly-actuator.test.ts);
+ *  2. an un-attributed jobId passes CORDed:false — the host's caller fence
+ *     (`exec.agent?.id`, the dispatch-provided caller the host tool itself
+ *     passes) stays authoritative and the bridge never invents ownership;
+ *  3. `kill` answers the host's two native forms — 'requested' marks the
+ *     REQUEST on the gateway (noteKillRequested), 'already-finished' settles
+ *     nothing new. Cancel requested ≠ terminated (PR1 Gate R4).
+ *
+ * The gateway definition store is fed LAZILY at first use from the live
+ * placement feed (the def#N identities mint only after the seam's install
+ * pass — the pb §6 laziness law), and every refusal answers in the plane's
+ * closed { text } envelope. A caller the dispatch did not name
+ * (`exec.agent?.id` absent) is refused — an absent caller would query the
+ * host UNFILTERED and this bridge never un-fences.
+ */
+export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRow, jobsService, observe = () => {}, waitDefaultMs = 30_000, waitCapMs = 600_000 }) {
+  if (typeof scopeKey !== 'string' || scopeKey === '') throw new Error('jobs bridge: scopeKey is required')
+  if (viewer === undefined || typeof viewer.rootSessionId !== 'string' || typeof viewer.instanceId !== 'string') {
+    throw new Error('jobs bridge: viewer must carry the durable member pair {rootSessionId, instanceId}')
+  }
+  const registered = new Set()
+  const refuse = (code, detail) => {
+    observe(`a5jobs: refused ${code}`)
+    return { text: `refused: ${code} — ${String(detail).slice(0, 200)}` }
+  }
+  const ensureDefinitions = (asm) => {
+    const plane = typeof planeRow === 'function' ? planeRow() : null
+    if (plane === null || plane === undefined || typeof plane.placementFeed !== 'function') return
+    for (const name of ['bash', 'job_output', 'job_list', 'job_kill']) {
+      if (registered.has(name)) continue
+      const entry = plane.placementFeed(name)
+      // Not minted yet: retry on the next call — never register an
+      // undefined identity (the closed world has no guessed pins).
+      if (entry === undefined || entry === null || entry.definitionIdentity === undefined) continue
+      asm.definitions.register(scopeKey, name, entry.definitionIdentity)
+      registered.add(name)
+      observe(`a5jobs: definition-registered name=${name} scope=${scopeKey}`)
+    }
+  }
+  const resolve = () => {
+    const asm = typeof gatewayRow === 'function' ? gatewayRow() : null
+    if (asm === null || asm === undefined) {
+      return { refusal: refuse('gateway-not-active', 'the Team jobs gateway live row is not mounted for this root') }
+    }
+    let svc
+    try {
+      svc = typeof jobsService === 'function' ? jobsService() : undefined
+    } catch (error) {
+      return { refusal: refuse('jobs-service-unavailable', error?.message ?? error) }
+    }
+    if (svc === undefined || svc === null) {
+      return { refusal: refuse('jobs-service-unavailable', 'the host jobs registry service is absent from the global store') }
+    }
+    ensureDefinitions(asm)
+    return { asm, svc }
+  }
+  const checked = (jobId, r) => {
+    const gate = r.asm.checkManagementAccess({ jobId, viewer })
+    return gate.ok === true ? null : refuse(gate.code, gate.detail)
+  }
+  return {
+    bridgeId: 'a5-jobs-bridge',
+    /** Attribution-producer hook: feed the gateway definition store from
+     *  the live placement feed BEFORE any `attributeBackgroundJob` admit,
+     *  so a receipt born before the first management call still finds its
+     *  creating-lane pin (the laziness law holds: an identity that has not
+     *  minted is never registered as undefined). */
+    ensureRegistered: () => {
+      const asm = typeof gatewayRow === 'function' ? gatewayRow() : null
+      if (asm !== null && asm !== undefined) ensureDefinitions(asm)
+    },
+    /** job_output: gate -> (wait) -> svc.read(caller); the delta composition
+     *  mirrors the host readBody (chunks in offset order, the lossy notice,
+     *  the once-only result tail) in the plane's text envelope. */
+    async jobOutput(args, caller) {
+      if (typeof args?.job_id !== 'string' || args.job_id === '') return refuse('job-id-required', 'job_id is required')
+      if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
+      const r = resolve()
+      if (r.refusal !== undefined) return r.refusal
+      const denied = checked(args.job_id, r)
+      if (denied !== null) return denied
+      try {
+        if (args.wait === true) {
+          const ms = typeof args.timeout_ms === 'number' ? args.timeout_ms : waitDefaultMs
+          await r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller)
+        }
+        const read = await r.svc.read(args.job_id, caller)
+        const delta = (read.chunks ?? []).map((c) => String(c?.text ?? '')).join('')
+        const lossy = read.lossy === true ? `${delta.length > 0 ? '\n' : ''}(older output is no longer retained)` : ''
+        const joined = `${delta}${lossy}`
+        const body = read.result === undefined
+          ? joined
+          : `${joined}${joined.length > 0 && !joined.endsWith('\n') ? '\n' : ''}${read.result}`
+        return { text: body.length > 0 ? body : '(no new output)' }
+      } catch (error) {
+        return refuse('host-jobs-refused', error?.message ?? error)
+      }
+    },
+    /** job_list names no job: the Team layer contributes only the caller
+     *  identity it hands the host — the fence invents no per-job gate. */
+    async jobList(caller) {
+      if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
+      const r = resolve()
+      if (r.refusal !== undefined) return r.refusal
+      try {
+        const jobs = await r.svc.list(caller)
+        return { text: jobs.length === 0 ? '(no background jobs)' : jobs.map((j) => `${j.id} [${j.kind}] ${j.status} — ${j.label}`).join('\n') }
+      } catch (error) {
+        return refuse('host-jobs-refused', error?.message ?? error)
+      }
+    },
+    /** job_kill: gate -> svc.kill(caller, reason); 'requested' marks the
+     *  gateway REQUEST (never a settlement), the two forms never collapse. */
+    async jobKill(args, caller) {
+      if (typeof args?.job_id !== 'string' || args.job_id === '') return refuse('job-id-required', 'job_id is required')
+      if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
+      const r = resolve()
+      if (r.refusal !== undefined) return r.refusal
+      const denied = checked(args.job_id, r)
+      if (denied !== null) return denied
+      try {
+        const outcome = await r.svc.kill(args.job_id, caller, typeof args.reason === 'string' ? args.reason : undefined)
+        if (outcome === 'requested') {
+          r.asm.noteKillRequested(args.job_id)
+          return { text: `requested cancellation of job ${args.job_id}` }
+        }
+        return { text: `job ${args.job_id} had already finished` }
+      } catch (error) {
+        return refuse('host-jobs-refused', error?.message ?? error)
+      }
+    },
+  }
+}

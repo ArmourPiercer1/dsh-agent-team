@@ -79,7 +79,9 @@ function fakeJobRegistry() {
     seed: (jobId: string, ownerSession: string) => jobs.set(jobId, { ownerSession, killed: false }),
     list: (caller?: string) => {
       calls.push(`list:${caller ?? '*'}`)
-      return [...jobs.entries()].filter(([, j]) => caller === undefined || j.ownerSession === caller).map(([id]) => id)
+      return [...jobs.entries()]
+        .filter(([, j]) => caller === undefined || j.ownerSession === caller)
+        .map(([id]) => ({ id, kind: 'bash', status: 'running', label: 'background command' }))
     },
     readAt: (id: string, caller?: string) => {
       calls.push(`readAt:${id}:${caller ?? '*'}`)
@@ -87,6 +89,13 @@ function fakeJobRegistry() {
       if (j === undefined) throw new Error('unknown job')
       if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
       return 'output-bytes'
+    },
+    read: (id: string, caller?: string) => {
+      calls.push(`read:${id}:${caller ?? '*'}`)
+      const j = jobs.get(id)
+      if (j === undefined) throw new Error('unknown job')
+      if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
+      return { chunks: [{ at: 0, text: 'output-bytes' }], lossy: false }
     },
     kill: (id: string, caller?: string): 'requested' | 'already-finished' => {
       calls.push(`kill:${id}:${caller ?? '*'}`)
@@ -166,8 +175,8 @@ describe('a5p7 actuator — management-path owner fence (job_output/job_list/job
     const host = fakeJobRegistry()
     host.seed('jb1', 'session-of-A')
     host.seed('jb2', 'session-of-B')
-    expect(host.list('session-of-A')).toEqual(['jb1'])
-    expect(host.list('session-of-B')).toEqual(['jb2'])
+    expect(host.list('session-of-A').map((j: { id: string }) => j.id)).toEqual(['jb1'])
+    expect(host.list('session-of-B').map((j: { id: string }) => j.id)).toEqual(['jb2'])
     // Team-layer records are visible to their owner only, exactly as above.
     asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
     const okA = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_A })
@@ -209,5 +218,119 @@ describe('a5p7 actuator — kill is a REQUEST (the two native forms never collap
     const unknown = asm.noteKillRequested('never-admitted')
     expect(unknown.ok === false && unknown.code === 'unknown-job').toBe(true)
     expect(asm.checkManagementAccess({ jobId: 'never-admitted', viewer: OWNER_A }).ok).toBe(true) // corded pass-through
+  })
+})
+
+// ── C2: the plane row + the governed bridge (the mount-level proof) ──────
+const planeRow = (await import(
+  new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href
+)) as {
+  createTeamToolPlaneAssembly: (input: Record<string, unknown>) =>
+    | { ok: true; value: {
+        ownNames: readonly string[]
+        placementNames: readonly string[]
+        placementFeed: (name: string) => { definitionIdentity: string; realmId: string } | undefined
+        definitions: ReadonlyArray<{ name: string; execute?: (args: unknown, exec?: { agent?: { id?: string } }) => Promise<{ text: string }> }>
+      } }
+    | { ok: false; code: string; message: string }
+}
+const backendsRow = (await import(
+  new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href
+)) as { createGovernedJobsBridge: (input: Record<string, unknown>) => unknown }
+
+const PLANE_POLICY = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
+const planeBase = { permissionPolicy: PLANE_POLICY, realmId: 'realm-jobs', templateId: 'tpl-1', role: 'member', instanceId: 'inst-1' }
+
+describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () => {
+  it('key ABSENT mounts no job row at all (the zero-flip law by absence)', () => {
+    const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase })
+    expect(built.ok).toBe(true)
+    if (built.ok) expect(built.value.ownNames.filter((n) => n.startsWith('job_'))).toEqual([])
+  })
+
+  it('a non-boolean key is a config defect: the mount refuses typed, never defaults', () => {
+    const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: 'yes' } })
+    expect(!built.ok && built.code).toBe('PLANE_CONFIG_INCOMPLETE')
+  })
+
+  it('enabled WITHOUT a bridge lands the trio on the honest typed shut face (config is law, not wiring)', async () => {
+    const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: true } })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const trio = ['job_output', 'job_list', 'job_kill']
+    expect(built.value.ownNames.filter((n) => n.startsWith('job_')).sort()).toEqual([...trio].sort())
+    const def = built.value.definitions.find((d) => d.name === 'job_kill')
+    const r = await def!.execute!({ job_id: 'x' }, { agent: { id: 'agent-1' } })
+    expect(r.text).toContain('IO_POLICY_UNSUPPORTED')
+  })
+
+  it('enabled WITH the real bridge: placement feed covers the trio and the dispatch caller (exec.agent.id) flows to the fence', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'agent-of-A')
+    const plane = {
+      placementFeed: (name: string) => ({ definitionIdentity: `${name}@v1`, realmId: 'realm-jobs' }),
+    }
+    const mkBridge = (viewer: JobOwner) => backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs',
+      viewer,
+      gatewayRow: () => asm,
+      planeRow: () => plane,
+      jobsService: () => host,
+    })
+    const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: true }, backends: { jobs: mkBridge(OWNER_A) } })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    // Member B's mount carries its OWN bridge with its OWN durable viewer —
+    // one bridge, one member; the viewer is never taken from the call args.
+    const builtB = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: true }, backends: { jobs: mkBridge(OWNER_B) } })
+    expect(builtB.ok).toBe(true)
+    if (!builtB.ok) return
+    for (const n of ['job_output', 'job_list', 'job_kill']) expect(built.value.placementNames).toContain(n)
+    // Creation attribution, then the mount-level owner fence END TO END.
+    // The creating-lane pin rides the SAME store the bridge feeds lazily
+    // (a future attribution producer calls bridge.ensureRegistered() first;
+    // here the registration stands in for that hook having run — same
+    // store, same law, no privileged path).
+    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    const outputDef = built.value.definitions.find((d) => d.name === 'job_output')!
+    const outputDefB = builtB.value.definitions.find((d) => d.name === 'job_output')!
+    const denied = await outputDefB.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-B' } })
+    expect(denied.text).toContain('owner-mismatch')
+    expect(host.calls).toEqual([]) // the team refusal never touched the host
+    expect(denied.text).not.toContain('inst-1') // static detail, no owner echo
+    const granted = await outputDef.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-A' } })
+    expect(granted.text).toBe('output-bytes')
+    expect(host.calls).toEqual(['read:jb1:agent-of-A']) // the caller the DISPATCH named
+    const killDef = built.value.definitions.find((d) => d.name === 'job_kill')!
+    const killed = await killDef.execute!({ job_id: 'jb1', reason: 'done' }, { agent: { id: 'agent-of-A' } })
+    expect(killed.text).toBe('requested cancellation of job jb1')
+    expect(asm.gateway.job('jb1')[0]!.cancelRequested).toBe(true) // requested, NOT settled
+    const listDef = built.value.definitions.find((d) => d.name === 'job_list')!
+    const listed = await listDef.execute!({}, { agent: { id: 'agent-of-A' } })
+    expect(listed.text).toContain('jb1')
+  })
+
+  it('an unnamed caller is refused — the bridge never queries the host unfiltered', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const bridge = backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
+    }) as { jobList: (caller: unknown) => Promise<{ text: string }> }
+    const r = await bridge.jobList(undefined)
+    expect(r.text).toContain('caller-unresolved')
+    expect(host.calls).toEqual([])
+  })
+
+  it('no gateway row mounted = typed refusal, the host face untouched', async () => {
+    const host = fakeJobRegistry()
+    host.seed('legacy', 'agent-x')
+    const bridge = backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => null, planeRow: () => null, jobsService: () => host,
+    }) as { jobOutput: (a: unknown, c: unknown) => Promise<{ text: string }> }
+    const r = await bridge.jobOutput({ job_id: 'legacy' }, 'agent-x')
+    expect(r.text).toContain('gateway-not-active')
+    expect(host.calls).toEqual([])
   })
 })
