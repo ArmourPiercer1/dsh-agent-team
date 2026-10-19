@@ -1526,8 +1526,25 @@ describe('A4-PR7 §7.6 — the code merge gate, driven by real commands', () => 
         return { r, files: m === null ? -1 : Number(m[1]) }
       }
       // Same shape as the scratch probes, one file each, so the control moves the universe by
-      // the same number of files the scratch would have.
-      const controlDir = join(REPO_ROOT, 'packages', 'testkit', 'test')
+      // the same number of files the scratch would have. The location is the REPO ROOT, and
+      // that is as load-bearing as the non-ignored property: these probes exist only while
+      // this leg runs, and everything under a package directory is a concurrent instrument's
+      // census surface. Measured: with the controls at `packages/testkit/test/`, the p4t6
+      // session-event scanner — which enumerates every .ts/.mts/.mjs under `packages` once at
+      // module load — counted transient controls when its load landed in this planting window
+      // (census red `expected 1206 to be 1204`, 1 of 10 captures, g6b-flake README attribution;
+      // deterministic re-capture `dev/agent-workflow/evidence/a5-p4t6-race/repro-RED-1206.log`),
+      // and the same window sits inside the testkit tsconfig `include: ["test"]` typecheck
+      // surface. The repo root keeps every property this control exists for: it is NOT under
+      // an eslint-ignored prefix, so a planted probe still moves the universe (root-level
+      // scratch files are linted and named on the `universe:` line — measured in
+      // eslint.config.mjs's case (d)), and it still fails the same porcelain scope (the
+      // scratch-leg's `git status` assertion is scoped to the scratch, not to the root). What
+      // the root is outside of is every package-walking instrument: no tsconfig includes root
+      // sources, and the census scanners walk `packages` subtrees only. A move back under any
+      // package path reintroduces the cross-instrument count race this leg's placement note
+      // exists to prevent.
+      const controlDir = REPO_ROOT
       const controls = [join(controlDir, 'lint-scratch-control-a.mts'), join(controlDir, 'lint-scratch-control-b.mts')]
       try {
         const before = await universe('lint universe, scratch absent')

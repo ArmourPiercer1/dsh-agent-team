@@ -1,0 +1,11 @@
+# census-shape round: 10 p4t6 captures while a4p7 suite runs (control planting windows active)
+capture-1:       Tests  10 passed (10) | root-controls-present=0
+capture-2:       Tests  10 passed (10) | root-controls-present=0
+capture-3:       Tests  10 passed (10) | root-controls-present=0
+capture-4:       Tests  10 passed (10) | root-controls-present=0
+capture-5:       Tests  10 passed (10) | root-controls-present=0
+capture-6:       Tests  10 passed (10) | root-controls-present=0
+capture-7:       Tests  10 passed (10) | root-controls-present=0
+capture-8:       Tests  10 passed (10) | root-controls-present=0
+capture-9:       Tests  10 passed (10) | root-controls-present=2
+capture-10:       Tests  10 passed (10) | root-controls-present=0

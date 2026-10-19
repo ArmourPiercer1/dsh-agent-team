@@ -1,0 +1,39 @@
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs
+place-dist-glue: packages/runtime/src/plugin/live/agent-bindings.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/team-tool-plane.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/team-tool-plane.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/ptc-escalation-row.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/ptc-escalation-row.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/glob-backend.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/glob-backend.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/search-backend.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/search-backend.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/live/plane-effect-backends.mjs -> packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs (byte-identical)
+place-dist-glue: packages/runtime/src/plugin/upstream-resolver.mjs -> packages/runtime/dist/packages/runtime/src/plugin/upstream-resolver.mjs (byte-identical)
+place-dist-glue: packages/runtime/root-binding/harness/seam.mjs -> packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs (byte-identical)
+place-dist-glue: done (9 placement(s))
+build-client-composition: 96 modules, 12 css files
+build-client-composition: entry=plugin/client.js
+build-client-composition: externals=[react, react/jsx-runtime, @deepseek-ai/dsh-client-store, @deepseek-ai/dsh-client-ui-primitives]
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-p4t6-race/packages/client/composition-shim/client-bundle.js (1305188 B)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-p4t6-race/packages/client/composition-shim/index.js (node half)
+build-client-composition: wrote /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-p4t6-race/packages/client/composition-shim/package.json
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1748 glue=9
+[check-artifacts-committed] OK: 1748 files — working tree equals the git INDEX for both install surfaces (incl. 9 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
