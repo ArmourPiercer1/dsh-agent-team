@@ -54,10 +54,12 @@ C 路；取证 2026-10-19T08:0x–08:5xZ。每项=延期时点精确技术原因
 **层一：真实浏览器渲染验收维**（历史延期→已闭带限制）
 - 原文（根 README 快照行，`a5-candidate-pkg:README.md:117-118`）：「the main session has stopped environment probing; **browser-rendering dimension: no browser binaries in this environment**」；后（同文件 :197 段 2026-10-02 CURRENT）：「**Browser lane CLOSED (2026-10-02): stage-2 LIVE run-7** … kit **VERDICT PASS 16/16 criteria (59/0)** … **DoD #20 (b) real-browser-rendering dimension = CLOSED**」+限制原文「DoD-20 **E4 remains historical unit/E2E — no new browser run of E4 and none claimed**」。中间态披露（同段 superseded 14:30Z）：「Chromium-1228 + headless-shell present … **two sandbox:true probes failed (observed: AppArmor unprivileged_userns DENIED CAP_SYS_ADMIN)**」。
 - **今日判定**：能（受限）——二进制在位+CLOSED 先例在账；障碍=环境（AppArmor userns 属宿主/OS 动作，非仓内代码）；最小步=若需新跑：独立环境 session 按 run-7 配方复驱（仓内最小步=0）。
-**层二：browser 工具面（宿主词表）**
-- 原文：`ALPHA5-CURRENT-STATE.md:69`：「旧代词表『…+ browser』=宿主 **pre-rc.2 代**词表（**@639ed01539 全树 0 命中**；'browser' 仅作为平台字符串出现在测试）；旧代仓本环境不存在，无法现场对表——不代释，请根给旧代 SHA」；COORDINATION.md:199（21:1xZ）C-16 补钉：「**stagehand×6**（现装=browser-use skill SKILL.md:3 声明注入+宿主 guarantee spec 钉其工具面）…**待裁呈根：stagehand 的 catalog-shipped vs bundle-mounted 口径裂缝（两读法事实并呈，不含倾向）**」。
-- **精确技术原因（一句）**：现宿主（0.2.0-rc.2）无 `browser` 工具名；插件面能钉的是**现装 stagehand/browser-use 注入形**，其口径（catalog-shipped vs bundle-mounted）=待根裁，插件侧无权造宿主工具名（CORE=0）。
-- **今日判定**：不能（按原架构单方面补）——闭合前置=根对口径裂缝的裁决 + （若要真 browser 工具）宿主发布面出现该名（上游公开面事件）。最小步=0（等裁），仓内可做的只有既有 C-16 双向漂移机检保持常跑（已在跑）。
+**层二：browser 工具面（宿主词表）——「口径裂缝」已按根 07:46Z 令降级为事实核对并自主收口（本目录 `FACT-CHECK-browser.md`）**
+- 事实（核对单钉死）：宿主 0.2.0-rc.2 全树无 `browser` 工具名（`ALPHA5-CURRENT-STATE.md:69`，@639ed01539 0 命中）；stagehand_*×6=**宿主侧注册**（实验包 `packages/experimental/browser-use-stagehand-native/src/index.ts:176-180` `stagehand_${method}` 命名模板工厂，BrowserMethod 六键；**非我方装配**），我方仅在 `team-tool-plane.mjs:318` PLANE_RESERVED_NATIVE **防冒名钉名**（pre-fix 装配曾 ACCEPTED 该名=负控在 pindir/）；「现装」两读法=catalog-shipped（catalog schemas boot 解析+宿主 docs/tool-catalog.md 逐名成节）vs bundle-mounted（base/preset **不显式挂载**，需 profile patch）——`pindir/ADVERSARIAL-SWEEP.md:34,63-64`。
+- **裁决状态更正（不再挂"候用户裁"）**：口径裂缝**已销案**——根 21:15Z ③「**'现装才钉'口径撤回后无冲突悬案，维持已钉不动（销案）**」（`pindir/README.md:110`；`ADVERSARIAL-SWEEP.md:69-71` 附记）。HANDOFF 所引「待裁」语境=COORDINATION.md:199，**该行已被 :200 撤回行作废**（虚构"根 21:05Z 并集口径"，补钉轮未发生）；实况=:201（21:1xZ 实况版，两读法作事实呈供参考不含倾向）→ :207（**根 21:15Z (b)+(c) 真令**落地：codex/claude_code 补钉、stagehand 维持已钉）。来源反查腿（钉名须有真实注册来源，猜名=红）66 名全过（`pindir/README.md:106-108`）。
+- **计划条款对账**：PR #249 文档集（`docs/plans/memo/alpha5-tool-io-governance/` 六件）+ 阶段计划 WIRING-PHASE-PLAN grep `browser|stagehand` **零命中**——**browser 条目冻结措辞不存在** ⇒ 条款语义冲突无从构成（四联不成立）。
+- **精确技术原因（一句）**：真"browser"工具名不存在于现宿主发布面（上游公开面事件位）；插件侧不能造宿主名（CORE=0）。stagehand 面=已钉已裁，非待办。
+- **今日判定**：browser 工具名本身=**不能单方面补**（等宿主发布面出现该名，上游事件）；stagehand 口径维度=**已闭**（销案在案）。仓内既有 C-16 三件套机检（双向漂移+来源反查+flip 漂移）常跑中。最小步=0。
 
 ---
 
