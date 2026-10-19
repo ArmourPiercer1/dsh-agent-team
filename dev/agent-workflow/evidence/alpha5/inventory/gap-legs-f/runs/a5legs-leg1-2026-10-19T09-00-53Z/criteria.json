@@ -1,0 +1,85 @@
+{
+  "leg": "leg1",
+  "status": "RED",
+  "stamp": "2026-10-19T09-00-53",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3497 mock=3493"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3497"
+    },
+    {
+      "id": "L-ROW",
+      "claim": "the production team row bound the anchor team at boot (bootPhase create)",
+      "pass": true,
+      "observed": "root=session-a5legs-leg1-boot"
+    },
+    {
+      "id": "L-SURFACE",
+      "claim": "the live tool surface was captured on the boot root (bash present)",
+      "pass": true,
+      "observed": "surface=20 deny=0"
+    },
+    {
+      "id": "L1-MOUNT",
+      "claim": "the explicit tool-lsp rows put lsp on the live tool surface",
+      "pass": false,
+      "observed": "surfaceHasLsp=false"
+    },
+    {
+      "id": "L-BP-LISTED",
+      "claim": "the main saved blueprint is listed through the wire catalog",
+      "pass": true,
+      "observed": "bp=team.a5legs-leg1-main"
+    },
+    {
+      "id": "L-TURN",
+      "claim": "the scripted leader chain reached its terminal reply",
+      "pass": false,
+      "observed": "termination=false mockRequests=2"
+    },
+    {
+      "id": "L1-DENY",
+      "claim": "the lsp call on the runtime/ deny lane returned a typed permission deny (verbatim in leader-tool-results.json)",
+      "pass": false,
+      "observed": "null"
+    },
+    {
+      "id": "L1-ALLOW",
+      "claim": "the lsp call on the team/ allow lane EXECUTED (landing recorded verbatim; clangd answer or typed host landing)",
+      "pass": false,
+      "observed": "null"
+    },
+    {
+      "id": "L1-TRACE-CANON",
+      "claim": "host log carries the R-draft trace string (observe stage=canonicalized tool=lsp)",
+      "pass": false,
+      "observed": "matchingLogLines=0 — onObserve NOT wired at the pinned baseline (static-vs-runtime deviation, see F-RESULTS)"
+    },
+    {
+      "id": "L-STABLE",
+      "claim": "stable :3080/:3180 probed read-only, status unchanged (401 invariant)",
+      "pass": true,
+      "observed": "3080 401->401 3180 unreachable->unreachable"
+    },
+    {
+      "id": "L-PRISTINE",
+      "claim": "host runtime stayed pristine (porcelain 0, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+[2026-10-19T08:59:24.324Z] a5legs runner leg=leg1 stamp=2026-10-19T08-59-24 world=a5legs-leg1-2026-10-19T08-59-24Z
+[2026-10-19T08:59:24.514Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T08:59:24.522Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3497 mock=3493]
+[2026-10-19T08:59:24.544Z] [mock] mock: listening on 127.0.0.1:3493
+[2026-10-19T08:59:26.355Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3497]
+[2026-10-19T08:59:26.364Z] Error: FATAL: row setup failed: {"ok":false,"boot":1,"rootSessionId":"session-a5legs-leg1-boot","setupError":"Cannot find package '@deepseek-ai/dsh-storage-domain' imported from /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/__resolver__.js"}
+    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:98:30)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:462:90
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:144:15)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:460:3)

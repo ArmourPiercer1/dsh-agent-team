@@ -1,0 +1,80 @@
+# a5legs leg1 patch (run 2026-10-19T09-10-55): production row + p6t6 + preset + explicit lsp/tool-lsp rows — public profile-patch seam only.
+- insert:
+  - id: dsh-agent-team
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+    config:
+      rootSessionId: session-a5legs-leg1-boot
+      bootPhase: create
+      blueprintSource: "---\nschemaVersion: 3\nblueprintId: team.a5legs-leg1-anchor\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5legs boot team. A5LEGS_LEG1_20261019T091055_DISC is the discovery marker.\"\nmembers: []\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+      blueprintDir: /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-10-55Z/blueprints
+      rootPresetId: a5legs-smoke
+      memberPresetId: a5legs-smoke
+      seedMembers: []
+      generation: 1
+      staticModel:
+        provider: deepseek-official
+        model: a5legs-live-model
+      deniedSelection: null
+      mcpServers: []
+      mcpServer: null
+      environmentFacts:
+        - domain: tool
+          subject: web
+          available: true
+          generation: 1
+        - domain: skill
+          subject: base
+          available: true
+          generation: 1
+        - domain: persona
+          subject: standard
+          available: true
+          generation: 1
+      externalPolicyFacts:
+        hard: {}
+        capabilityExists: {}
+      glueUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+      seamUrl: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/packages/runtime/root-binding/harness/seam.mjs"
+  - id: p6t6-team-tools
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/packages/tools/harness/plugin.mjs"
+  - id: preset-a5legs-smoke
+    name: "@deepseek-ai/dsh-agent-preset"
+    config:
+      id: a5legs-smoke
+      name: a5legs a5legs-smoke
+      description: "a5legs leg1 preset (run 2026-10-19T09-10-55)"
+      order: 900
+      plugins:
+        - id: persona
+          name: "@deepseek-ai/dsh-persona"
+          config:
+            prefix: "You are a coding agent powered by the {{model}} model."
+            suffix: "Your working directory is {{cwd}}."
+        - id: tool-fs
+          name: "@deepseek-ai/dsh-tool-fs"
+        - id: persistent-shell
+          name: "cordis:group"
+          group: true
+          isolate:
+            terminals: true
+          config:
+            - id: pty
+              name: "@deepseek-ai/dsh-terminal"
+            - id: terminal-bash
+              name: "@deepseek-ai/dsh-terminal-bash"
+              config:
+                timeoutMs: 300000
+            - id: persistent-bash
+              name: "@deepseek-ai/dsh-tool-bash-persistent"
+              config:
+                timeoutMs: 300000
+  - id: lsp
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/lsp/lsp/lib/index.js"
+  - id: lsp-stdio
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/lsp/lsp-stdio/lib/index.js"
+    config:
+      servers:
+        clangd:
+          command: clangd
+  - id: tool-lsp
+    name: "file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/lsp/tool-lsp/lib/index.js"

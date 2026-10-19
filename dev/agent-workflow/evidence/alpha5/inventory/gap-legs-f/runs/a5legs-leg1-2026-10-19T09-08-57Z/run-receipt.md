@@ -1,0 +1,18 @@
+# a5legs leg1 run 2026-10-19T09-08-57Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3497 mock=3493 mcp=0
+- world deleted at teardown · criteria 13/15
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3497 mock=3493
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3497
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg1-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=21 deny=0
+- [x] L1-MOUNT: the explicit tool-lsp rows put lsp on the live tool surface — surfaceHasLsp=true
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg1-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=7
+- [x] L1-FAILCLOSED: probe 1 (shipped tool-lsp `filePath` spelling): typed permission fail-closed deny recorded verbatim (finding F-1: canonicalizer reads `file_path`) — fail-closed is DENY, never passthrough — [{"type":"text","text":"Error: permission denied: canonicalization failed for tool \"lsp\": file-path-missing"}]
+- [x] L1-DENY: probe 2: lsp on the runtime/ deny lane returns a typed LANE permission deny (verbatim in leader-tool-results.json) — [{"type":"text","text":"Error: permission denied: lsp[/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/runtime/secret.c]: effective deny; decided by template(leader) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: non
+- [x] L1-ALLOW: probe 3: lsp on the team/ allow lane got PAST the permission layer (landing recorded verbatim: clangd answer or tool-body validation landing) — [{"type":"text","text":"Error: no LSP provider handles \"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/team/hello.c\""}]
+- [ ] L1-CLANGD: the allow-lane landing is a real clangd-server answer (clangd present on this host: /usr/bin/clangd) — [{"type":"text","text":"Error: no LSP provider handles \"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/team/hello.c\""}]
+- [ ] L1-TRACE-CANON: host log carries the R-draft trace string (observe stage=canonicalized tool=lsp) — matchingLogLines=0 — onObserve NOT wired at the pinned baseline (static-vs-runtime deviation, see F-RESULTS)
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

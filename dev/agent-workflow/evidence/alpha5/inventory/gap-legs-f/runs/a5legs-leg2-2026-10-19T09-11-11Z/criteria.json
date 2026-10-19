@@ -1,0 +1,25 @@
+{
+  "leg": "leg2",
+  "status": "FATAL",
+  "stamp": "2026-10-19T09-11-11",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3499 mock=3492"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3499"
+    }
+  ]
+}

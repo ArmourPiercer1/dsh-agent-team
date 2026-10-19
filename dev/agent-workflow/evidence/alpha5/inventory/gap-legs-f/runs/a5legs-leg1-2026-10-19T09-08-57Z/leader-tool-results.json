@@ -1,0 +1,5 @@
+[
+  "[{\"type\":\"text\",\"text\":\"Error: permission denied: canonicalization failed for tool \\\"lsp\\\": file-path-missing\"}]",
+  "[{\"type\":\"text\",\"text\":\"Error: permission denied: lsp[/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/runtime/secret.c]: effective deny; decided by template(leader) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}]",
+  "[{\"type\":\"text\",\"text\":\"Error: no LSP provider handles \\\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/team/hello.c\\\"\"}]"
+]

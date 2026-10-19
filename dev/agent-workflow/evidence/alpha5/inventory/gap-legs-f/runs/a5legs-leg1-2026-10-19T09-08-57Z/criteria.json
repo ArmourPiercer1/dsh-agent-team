@@ -1,0 +1,97 @@
+{
+  "leg": "leg1",
+  "status": "RED",
+  "stamp": "2026-10-19T09-08-57",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3497 mock=3493"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3497"
+    },
+    {
+      "id": "L-ROW",
+      "claim": "the production team row bound the anchor team at boot (bootPhase create)",
+      "pass": true,
+      "observed": "root=session-a5legs-leg1-boot"
+    },
+    {
+      "id": "L-SURFACE",
+      "claim": "the live tool surface was captured on the boot root (bash present)",
+      "pass": true,
+      "observed": "surface=21 deny=0"
+    },
+    {
+      "id": "L1-MOUNT",
+      "claim": "the explicit tool-lsp rows put lsp on the live tool surface",
+      "pass": true,
+      "observed": "surfaceHasLsp=true"
+    },
+    {
+      "id": "L-BP-LISTED",
+      "claim": "the main saved blueprint is listed through the wire catalog",
+      "pass": true,
+      "observed": "bp=team.a5legs-leg1-main"
+    },
+    {
+      "id": "L-TURN",
+      "claim": "the leader chain terminated (terminal reply, or the leg2 typed setup FATAL)",
+      "pass": true,
+      "observed": "termination=replied mockRequests=7"
+    },
+    {
+      "id": "L1-FAILCLOSED",
+      "claim": "probe 1 (shipped tool-lsp `filePath` spelling): typed permission fail-closed deny recorded verbatim (finding F-1: canonicalizer reads `file_path`) — fail-closed is DENY, never passthrough",
+      "pass": true,
+      "observed": "[{\"type\":\"text\",\"text\":\"Error: permission denied: canonicalization failed for tool \\\"lsp\\\": file-path-missing\"}]"
+    },
+    {
+      "id": "L1-DENY",
+      "claim": "probe 2: lsp on the runtime/ deny lane returns a typed LANE permission deny (verbatim in leader-tool-results.json)",
+      "pass": true,
+      "observed": "[{\"type\":\"text\",\"text\":\"Error: permission denied: lsp[/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/runtime/secret.c]: effective deny; decided by template(leader) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}]"
+    },
+    {
+      "id": "L1-ALLOW",
+      "claim": "probe 3: lsp on the team/ allow lane got PAST the permission layer (landing recorded verbatim: clangd answer or tool-body validation landing)",
+      "pass": true,
+      "observed": "[{\"type\":\"text\",\"text\":\"Error: no LSP provider handles \\\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/team/hello.c\\\"\"}]"
+    },
+    {
+      "id": "L1-CLANGD",
+      "claim": "the allow-lane landing is a real clangd-server answer (clangd present on this host: /usr/bin/clangd)",
+      "pass": false,
+      "observed": "[{\"type\":\"text\",\"text\":\"Error: no LSP provider handles \\\"/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg1-2026-10-19T09-08-57Z/ws/team/hello.c\\\"\"}]"
+    },
+    {
+      "id": "L1-TRACE-CANON",
+      "claim": "host log carries the R-draft trace string (observe stage=canonicalized tool=lsp)",
+      "pass": false,
+      "observed": "matchingLogLines=0 — onObserve NOT wired at the pinned baseline (static-vs-runtime deviation, see F-RESULTS)"
+    },
+    {
+      "id": "L-STABLE",
+      "claim": "stable :3080/:3180 probed read-only, status unchanged (401 invariant)",
+      "pass": true,
+      "observed": "3080 401->401 3180 unreachable->unreachable"
+    },
+    {
+      "id": "L-PRISTINE",
+      "claim": "host runtime stayed pristine (porcelain 0, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    }
+  ]
+}

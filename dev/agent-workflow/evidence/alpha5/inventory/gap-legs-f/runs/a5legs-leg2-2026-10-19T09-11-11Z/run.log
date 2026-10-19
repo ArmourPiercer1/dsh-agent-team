@@ -1,0 +1,11 @@
+[2026-10-19T09:11:11.457Z] a5legs runner leg=leg2 stamp=2026-10-19T09-11-11 world=a5legs-leg2-2026-10-19T09-11-11Z
+[2026-10-19T09:11:11.661Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T09:11:11.669Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3499 mock=3492]
+[2026-10-19T09:11:11.689Z] [mock] mock: listening on 127.0.0.1:3492
+[2026-10-19T09:11:13.802Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3499]
+[2026-10-19T09:11:13.807Z] Error: FATAL: row setup failed: {"ok":false,"boot":1,"rootSessionId":"session-a5legs-leg2-boot","setupError":"binder overlay effect 'persona' failed during 'fresh-root' bind of session 'session-a5legs-leg2-boot': the mounted root preset 'a5legs-sub' has an UNRESOLVED persona observation (source: none) — the preset seam cannot express the failure (fail closed); preset 'a5legs-sub' is broken: subagent (@deepseek-ai/dsh-subagent): service \"subagents\" has been registered at <SubagentRuntime>\nsubagent-spawn-in-process (@deepseek
+    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:98:30)
+    at file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:479:90
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:144:15)
+    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/run-a5-legs-live.mjs:477:3)

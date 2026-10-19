@@ -1,0 +1,21 @@
+{
+  "status": 200,
+  "body": {
+    "type": "server-response",
+    "rpcId": "a5legs-wire-wgxpkwmdv7",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "unknown-method",
+        "message": "endpoint 'team.createMember' is not a method of the closed Remote contract v1 catalog",
+        "details": {
+          "method": "team.createMember",
+          "endpoint": "team.createMember",
+          "contractVersion": 1,
+          "requestToken": null,
+          "reason": "unknown-endpoint"
+        }
+      }
+    }
+  }
+}

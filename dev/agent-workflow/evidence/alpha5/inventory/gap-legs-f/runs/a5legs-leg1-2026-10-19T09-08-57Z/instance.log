@@ -1,0 +1,9 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 1 entry did not activate
+lsp-stdio (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/lsp/lsp-stdio/lib/index.js): ValidationError: invalid config:
+  - $.servers.clangd.extensionToLanguage missing required value (at servers.clangd.extensionToLanguage)
+    at resolveConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:960:27)
+    at Fiber._resolveConfig (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1347:25)
+    at Fiber._reload (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1355:24)
+dsh web: http://127.0.0.1:3497/?token=REDACTED-39aac023
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

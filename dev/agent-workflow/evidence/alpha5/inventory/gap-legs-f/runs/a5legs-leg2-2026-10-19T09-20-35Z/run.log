@@ -1,0 +1,20 @@
+[2026-10-19T09:20:35.614Z] a5legs runner leg=leg2 stamp=2026-10-19T09-20-35 world=a5legs-leg2-2026-10-19T09-20-35Z
+[2026-10-19T09:20:35.802Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T09:20:35.814Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3497 mock=3493]
+[2026-10-19T09:20:35.834Z] [mock] mock: listening on 127.0.0.1:3493
+[2026-10-19T09:20:37.704Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3497]
+[2026-10-19T09:20:38.018Z] PASS L-ROW — the production team row bound the anchor team at boot (bootPhase create) [root=session-a5legs-leg2-boot]
+[2026-10-19T09:20:38.137Z] [mock] mock: 1 [messages] text reply (37 chars): "A5LEGS_LEG2_20261019T092035_DISC_DONE"
+[2026-10-19T09:20:38.139Z] [mock] mock: 2 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:20:38.341Z] PASS L-SURFACE — the live tool surface was captured on the boot root (bash present) [surface=22 deny=2]
+[2026-10-19T09:20:38.341Z] PASS L2-PRESET — the leg2 preset row put a KNOWN_SENSITIVE tool (web_fetch/web_search; subagent lane unreachable on this host build — recorded) on the live root surface [web_fetch=true web_search=true subagent=false]
+[2026-10-19T09:20:38.365Z] PASS L-BP-LISTED — the main saved blueprint is listed through the wire catalog [bp=team.a5legs-leg2-main]
+[2026-10-19T09:20:38.431Z] team.create -> status=200
+[2026-10-19T09:20:38.432Z] PASS L-TURN — the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) [termination=fatal mockRequests=2]
+[2026-10-19T09:20:40.937Z] wire team.createMember -> status=200 ok=false
+[2026-10-19T09:20:42.939Z] PASS L2-FATAL-TYPED — MemberInstance setup typed FATAL alpha2-permission-coverage-unmanaged-tools (host log or wire reply) [hostLog=false wire=true observed=alpha2-permission-coverage-unmanaged-tools)]
+[2026-10-19T09:20:42.939Z] PASS L2-NAMES — the FATAL detail names the unmanaged known-sensitive tool (web_fetch/web_search; subagent lane recorded unreachable) [window=]
+[2026-10-19T09:20:42.939Z] FAIL L2-PHRASE — runtime witness carries the registry reason string "escapes MemberInstance governance" [present=false; deviation recorded: the string lives in buildPermissionCoverageErrorDetail's unmanagedTools[].reason (detail STRUCTURE); the closed Remote DTO serializes code+message only and the host log carries no entry — static source of truth holds, wire-visible witness stops at code+message+per-tool classification (see F-RESULTS leg2).]
+[2026-10-19T09:20:42.942Z] PASS L-STABLE — stable :3080/:3180 probed read-only, status unchanged (401 invariant) [3080 401->401 3180 unreachable->unreachable]
+[2026-10-19T09:20:43.135Z] PASS L-PRISTINE — host runtime stayed pristine (porcelain 0, HEAD unmoved) [porcelain=0]
+[2026-10-19T09:20:43.138Z] RED — 12/13 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/runs/a5legs-leg2-2026-10-19T09-20-35Z

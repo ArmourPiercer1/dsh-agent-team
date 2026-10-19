@@ -1,0 +1,23 @@
+[2026-10-19T09:06:36.644Z] a5legs runner leg=leg1 stamp=2026-10-19T09-06-36 world=a5legs-leg1-2026-10-19T09-06-36Z
+[2026-10-19T09:06:36.830Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T09:06:36.839Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3497 mock=3493]
+[2026-10-19T09:06:36.859Z] [mock] mock: listening on 127.0.0.1:3493
+[2026-10-19T09:06:38.735Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3497]
+[2026-10-19T09:06:39.050Z] PASS L-ROW — the production team row bound the anchor team at boot (bootPhase create) [root=session-a5legs-leg1-boot]
+[2026-10-19T09:06:39.175Z] [mock] mock: 1 [messages] text reply (37 chars): "A5LEGS_LEG1_20261019T090636_DISC_DONE"
+[2026-10-19T09:06:39.176Z] [mock] mock: 2 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:06:39.371Z] PASS L-SURFACE — the live tool surface was captured on the boot root (bash present) [surface=21 deny=0]
+[2026-10-19T09:06:39.372Z] PASS L1-MOUNT — the explicit tool-lsp rows put lsp on the live tool surface [surfaceHasLsp=true]
+[2026-10-19T09:06:39.400Z] PASS L-BP-LISTED — the main saved blueprint is listed through the wire catalog [bp=team.a5legs-leg1-main]
+[2026-10-19T09:06:39.577Z] [mock] mock: 3 [messages] tool-call reply: lsp
+[2026-10-19T09:06:39.577Z] [mock] mock: 4 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:07:09.558Z] [mock] mock: 5 [messages] tool-call reply: lsp
+[2026-10-19T09:07:09.574Z] [mock] mock: 6 [messages] text reply (32 chars): "A5LEGS_LEG1_20261019T090636_DONE"
+[2026-10-19T09:07:09.589Z] team.create -> status=200
+[2026-10-19T09:07:09.589Z] PASS L-TURN — the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) [termination=replied mockRequests=6]
+[2026-10-19T09:07:12.092Z] PASS L1-DENY — the lsp call on the runtime/ deny lane returned a typed permission deny (verbatim in leader-tool-results.json) [[{"type":"text","text":"Error: permission denied: canonicalization failed for tool \"lsp\": file-path-missing"}]]
+[2026-10-19T09:07:12.093Z] FAIL L1-ALLOW — the lsp call on the team/ allow lane EXECUTED (landing recorded verbatim; clangd answer or typed host landing) [null]
+[2026-10-19T09:07:12.093Z] FAIL L1-TRACE-CANON — host log carries the R-draft trace string (observe stage=canonicalized tool=lsp) [matchingLogLines=0 — onObserve NOT wired at the pinned baseline (static-vs-runtime deviation, see F-RESULTS)]
+[2026-10-19T09:07:12.096Z] PASS L-STABLE — stable :3080/:3180 probed read-only, status unchanged (401 invariant) [3080 401->401 3180 unreachable->unreachable]
+[2026-10-19T09:07:12.280Z] PASS L-PRISTINE — host runtime stayed pristine (porcelain 0, HEAD unmoved) [porcelain=0]
+[2026-10-19T09:07:12.283Z] RED — 11/13 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/runs/a5legs-leg1-2026-10-19T09-06-36Z

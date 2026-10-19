@@ -1,0 +1,5 @@
+[
+  "[{\"type\":\"text\",\"text\":\"echo:A5LEG3-DYN#call1\"}]",
+  "[{\"type\":\"text\",\"text\":\"Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg3-2026-10-19T09-11-03Z/ws/runtime/secret.txt]: effective deny; decided by template(leader) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}]",
+  "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]"
+]

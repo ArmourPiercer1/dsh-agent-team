@@ -1,0 +1,16 @@
+# a5legs leg2 run 2026-10-19T09-14-34Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3497 mock=3493 mcp=0
+- world deleted at teardown · criteria 9/13
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3497 mock=3493
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3497
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg2-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=20 deny=0
+- [ ] L2-PRESET: the leg2 profile-patch subagent row put subagent/subagent_fork on the live root surface — subagent=false subagent_fork=false
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg2-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=5
+- [ ] L2-FATAL-TYPED: MemberInstance setup typed FATAL alpha2-permission-coverage-unmanaged-tools (host log or wire reply) — hostLog=false wire=false observed=
+- [ ] L2-NAMES: the FATAL detail names subagent (the unmanaged known-sensitive tool) — window=
+- [ ] L2-PHRASE: runtime witness carries the registry reason string "escapes MemberInstance governance" — present=false
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

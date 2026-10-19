@@ -1,0 +1,18 @@
+# a5legs leg3 run 2026-10-19T09-11-03Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3498 mock=3496 mcp=3494
+- world deleted at teardown · criteria 14/15
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3498 mock=3496
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3498
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg3-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=20 deny=0
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg3-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=7
+- [x] L3-MOUNT: the mcp__a5probe__echo tool is on the leader wire roster (supply face in place) — leaderToolNames=true
+- [x] L3-DYNRED: GAP RECEIPT (PLAN:74 H6 first-run): the mcp__a5probe__echo call EXECUTED under the silent lane (dynRan=true) — server-side count + wire echo — wireEcho=true serverCounted=true
+- [x] L3-READ-DENY: positive control A: same world, read on the runtime/ deny lane still returns a typed permission deny — [{"type":"text","text":"Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg3-2026-10-19T09-11-03Z/ws/runtime/secret.txt]: effective deny; decided by template(leader) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: 
+- [x] L3-READ-ALLOW: positive control C: read on the team/ allow lane PASSES the permission layer (sentinel if reachable; on this UNFED world the landing is the recorded plane-guard dispatch landing — verbatim, proving the deny lane is lane-specific, not a global block) — sentinel=false planeGuardLanding=true :: [{"type":"text","text":"Error: team tool guard: the Tool Binding for \"read\" cannot be verified at dispatch time (no fallback to the native body)"}]
+- [x] L3-TRACE-ABSENT: structural-absence witness: NO per-call governance trace line for mcp__a5probe__echo (canonicalize/resolve/guard never entered) — matchingLogLines=0
+- [ ] L3-POS-B: positive control B (team_grep alias row) — plane-fed world required — NOT_RUN: unfed world; plane placement (natexe teamToolPlane form) out of this runner budget — recorded, not faked
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

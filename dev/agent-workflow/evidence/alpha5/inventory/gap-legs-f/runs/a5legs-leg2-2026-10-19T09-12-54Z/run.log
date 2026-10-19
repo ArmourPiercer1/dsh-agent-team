@@ -1,0 +1,23 @@
+[2026-10-19T09:12:54.938Z] a5legs runner leg=leg2 stamp=2026-10-19T09-12-54 world=a5legs-leg2-2026-10-19T09-12-54Z
+[2026-10-19T09:12:55.133Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T09:12:55.140Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3497 mock=3493]
+[2026-10-19T09:12:55.162Z] [mock] mock: listening on 127.0.0.1:3493
+[2026-10-19T09:12:57.035Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3497]
+[2026-10-19T09:12:57.348Z] PASS L-ROW — the production team row bound the anchor team at boot (bootPhase create) [root=session-a5legs-leg2-boot]
+[2026-10-19T09:12:57.474Z] [mock] mock: 1 [messages] text reply (37 chars): "A5LEGS_LEG2_20261019T091254_DISC_DONE"
+[2026-10-19T09:12:57.475Z] [mock] mock: 2 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:12:57.671Z] PASS L-SURFACE — the live tool surface was captured on the boot root (bash present) [surface=20 deny=0]
+[2026-10-19T09:12:57.671Z] FAIL L2-PRESET — the leg2 profile-patch subagent row put subagent/subagent_fork on the live root surface [subagent=false subagent_fork=false]
+[2026-10-19T09:12:57.714Z] PASS L-BP-LISTED — the main saved blueprint is listed through the wire catalog [bp=team.a5legs-leg2-main]
+[2026-10-19T09:12:57.903Z] [mock] mock: 3 [messages] tool-call reply: team_create_member
+[2026-10-19T09:12:57.904Z] [mock] mock: 4 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:13:27.875Z] [mock] mock: 5 [messages] text reply (32 chars): "A5LEGS_LEG2_20261019T091254_DONE"
+[2026-10-19T09:13:27.895Z] team.create -> status=200
+[2026-10-19T09:13:27.895Z] PASS L-TURN — the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) [termination=replied mockRequests=5]
+[2026-10-19T09:13:30.407Z] wire team.createMember -> status=200 ok=false
+[2026-10-19T09:13:32.409Z] FAIL L2-FATAL-TYPED — MemberInstance setup typed FATAL alpha2-permission-coverage-unmanaged-tools (host log or wire reply) [hostLog=false wire=false observed=]
+[2026-10-19T09:13:32.410Z] FAIL L2-NAMES — the FATAL detail names subagent (the unmanaged known-sensitive tool) [window=]
+[2026-10-19T09:13:32.410Z] FAIL L2-PHRASE — runtime witness carries the registry reason string "escapes MemberInstance governance" [present=false]
+[2026-10-19T09:13:32.414Z] PASS L-STABLE — stable :3080/:3180 probed read-only, status unchanged (401 invariant) [3080 401->401 3180 unreachable->unreachable]
+[2026-10-19T09:13:32.599Z] PASS L-PRISTINE — host runtime stayed pristine (porcelain 0, HEAD unmoved) [porcelain=0]
+[2026-10-19T09:13:32.601Z] RED — 9/13 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/runs/a5legs-leg2-2026-10-19T09-12-54Z

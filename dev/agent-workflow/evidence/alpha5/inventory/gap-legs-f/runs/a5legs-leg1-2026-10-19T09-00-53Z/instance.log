@@ -1,0 +1,7 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh: warning: 3 entries did not activate
+lsp (@deepseek-ai/dsh-lsp): failed to import
+lsp-stdio (@deepseek-ai/dsh-lsp-stdio): failed to import
+tool-lsp (@deepseek-ai/dsh-tool-lsp): failed to import
+dsh web: http://127.0.0.1:3497/?token=REDACTED-e97b7482
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote

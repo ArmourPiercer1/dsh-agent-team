@@ -1,0 +1,84 @@
+---
+schemaVersion: 3
+blueprintId: team.a5legs-leg3-main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5legs leg3 team. A5LEGS_LEG3_20261019T090905_L0 is your directive marker. Follow it exactly."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_follow_up
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items:
+        - a5probe
+    permissions:
+      default: deny
+      allow:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      ask: []
+      deny:
+        - tool: read
+          resource:
+            kind: subtree
+            path: runtime
+members:
+  - templateId: wa
+    displayName: "a5legs worker A"
+    persona: "You are worker A of the a5legs leg3 team. A5LEGS_LEG3_20261019T090905_TASK_A"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow:
+          - tool: read
+            resource:
+              kind: subtree
+              path: team
+        ask: []
+        deny:
+          - tool: read
+            resource:
+              kind: subtree
+              path: runtime
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow: [send-message, report-progress]
+      deny: []
+teamEnvelope:
+  allow: [create-member, assign-task, send-message, report-progress]
+  deny: []
+requirements:
+  - domain: persona
+    name: standard
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

@@ -1,0 +1,16 @@
+# a5legs leg1 run 2026-10-19T09-06-36Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3497 mock=3493 mcp=0
+- world deleted at teardown · criteria 11/13
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3497 mock=3493
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3497
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg1-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=21 deny=0
+- [x] L1-MOUNT: the explicit tool-lsp rows put lsp on the live tool surface — surfaceHasLsp=true
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg1-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=6
+- [x] L1-DENY: the lsp call on the runtime/ deny lane returned a typed permission deny (verbatim in leader-tool-results.json) — [{"type":"text","text":"Error: permission denied: canonicalization failed for tool \"lsp\": file-path-missing"}]
+- [ ] L1-ALLOW: the lsp call on the team/ allow lane EXECUTED (landing recorded verbatim; clangd answer or typed host landing) — null
+- [ ] L1-TRACE-CANON: host log carries the R-draft trace string (observe stage=canonicalized tool=lsp) — matchingLogLines=0 — onObserve NOT wired at the pinned baseline (static-vs-runtime deviation, see F-RESULTS)
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

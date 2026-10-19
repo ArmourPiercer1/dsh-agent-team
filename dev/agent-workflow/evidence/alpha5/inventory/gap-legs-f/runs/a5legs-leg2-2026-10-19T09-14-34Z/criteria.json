@@ -1,0 +1,85 @@
+{
+  "leg": "leg2",
+  "status": "RED",
+  "stamp": "2026-10-19T09-14-34",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3497 mock=3493"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3497"
+    },
+    {
+      "id": "L-ROW",
+      "claim": "the production team row bound the anchor team at boot (bootPhase create)",
+      "pass": true,
+      "observed": "root=session-a5legs-leg2-boot"
+    },
+    {
+      "id": "L-SURFACE",
+      "claim": "the live tool surface was captured on the boot root (bash present)",
+      "pass": true,
+      "observed": "surface=20 deny=0"
+    },
+    {
+      "id": "L2-PRESET",
+      "claim": "the leg2 profile-patch subagent row put subagent/subagent_fork on the live root surface",
+      "pass": false,
+      "observed": "subagent=false subagent_fork=false"
+    },
+    {
+      "id": "L-BP-LISTED",
+      "claim": "the main saved blueprint is listed through the wire catalog",
+      "pass": true,
+      "observed": "bp=team.a5legs-leg2-main"
+    },
+    {
+      "id": "L-TURN",
+      "claim": "the leader chain terminated (terminal reply, or the leg2 typed setup FATAL)",
+      "pass": true,
+      "observed": "termination=replied mockRequests=5"
+    },
+    {
+      "id": "L2-FATAL-TYPED",
+      "claim": "MemberInstance setup typed FATAL alpha2-permission-coverage-unmanaged-tools (host log or wire reply)",
+      "pass": false,
+      "observed": "hostLog=false wire=false observed="
+    },
+    {
+      "id": "L2-NAMES",
+      "claim": "the FATAL detail names subagent (the unmanaged known-sensitive tool)",
+      "pass": false,
+      "observed": "window="
+    },
+    {
+      "id": "L2-PHRASE",
+      "claim": "runtime witness carries the registry reason string \"escapes MemberInstance governance\"",
+      "pass": false,
+      "observed": "present=false"
+    },
+    {
+      "id": "L-STABLE",
+      "claim": "stable :3080/:3180 probed read-only, status unchanged (401 invariant)",
+      "pass": true,
+      "observed": "3080 401->401 3180 unreachable->unreachable"
+    },
+    {
+      "id": "L-PRISTINE",
+      "claim": "host runtime stayed pristine (porcelain 0, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    }
+  ]
+}
