@@ -15,5 +15,12 @@
 
 诚实注：本次 `DEEPSEEK_BASE_URL` 指向关闭端口（boot/鉴权面不触模型；真模型对话轮**不在本收据范围**，
 本收据覆盖=独审点名的"boot 行+token 门 401/303+按 PID kill+同目录重开可用"四面）。
-门收据同目录：`check-oldlayer.out`（旧 7 键缺形被真 validator 连爆，含 realmId 键名门）、
-`check-newlayer.out`（全键形 PASS rc=0）、`human-config-configured.yml`（所用配置）。
+门收据同目录：`check-newlayer.out`（全键形 PASS rc=0）、`human-config-configured.yml`（所用配置）。
+**缺键形连爆的引用改注（文面尾单①，e87373a8）**：本目录旧文件 `check-oldlayer.out` 当时以**相对路径**
+跑 check、真校验器在该次并未真正执行（其 FAIL 行为路径层/键名门产物）——**不再引它作"真 validator
+连爆"证**。真证两处：(a) `runs/human-boolfix-01-39-00Z/check-missingkeys-real.out`——绝对路径、
+配置态真人世界副本剥去 generation/seedMembers/deniedSelection/environmentFacts/mcpServer/staticModel
+子键后，真 `validateTeamPluginConfig` **逐项 fail-closed 首拒**（实录行：`generation must be a
+positive integer`，rc=2；validator 为逐项律，"连爆"= round-1 独审留档的逐键修复过程，其判据行见
+round-1 红单原文"bootPhase→blueprintSource→七键连爆"）；(b) 同目录 realmId 键名门 FAIL 行仍有效
+（该门是包内自研键名检查，与真 validator 无关，本就不该记在 validator 名下）。

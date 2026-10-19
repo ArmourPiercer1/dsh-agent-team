@@ -1,0 +1,8 @@
+.CANDIDATE-HUMAN-USE — HUMAN-RETAINED DATA. Automated tooling must never delete this directory.
+origin_installHome=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-candidate-pkg/dev/agent-workflow/evidence/alpha5/candidate-package/runs/human-guard-2026-10-19T01-54-14Z/n4/homes/candidate-install-fake
+origin_sha=d5de74974b0320b191b310ead82407d478477ed7
+origin_rootSha=undefined
+copied_at=2026-10-19T01:54:16.797Z
+dereferenced-symlinks(at init): none
+protection: candidate-human-* prefix is excluded from all state/history records AND from
+the sweep case gates (rollback-candidate.sh negative gate); the kit refuses any sentinel.

@@ -78,7 +78,32 @@ content_ok=false; [ -f "$H5/link-file-abs" ] && grep -q x "$H5/link-file-abs" &&
 echo "$out" > "$RUN/n5-init.out"
 check N5 "init dereferences ALL symlinks (no live link into cleanup territory; ③ WORLD= capture works)" "$([ -d "$H5" ] && [ "$nlinks" -eq 0 ] && [ "$deref_logged" -ge 2 ] && [ "$content_ok" = true ] && echo true || echo false)" "links=$nlinks derefed=$deref_logged content=$content_ok rc=$rc"
 
+# ── N6: relative and absolute invocations of --check-config give the SAME verdict
+#    (doc-trail order ②; uses the retained configured human world if present —
+#    environment-conditional like the live-smoke runs, skipped-not-failed if absent) ──
+ROOT4="$(cd "$PKG_DIR/../../../../.." && pwd)"   # up to the checkout root
+HW="$(ls -d "$ROOT4"/tests/homes/candidate-human-* 2>/dev/null | tail -1)"
+if [ -n "$HW" ] && [ -f "$ROOT4/tests/homes/candidate-INSTALLED.json" ]; then
+  node "$PKG_DIR/human-world.mjs" check --state "$ROOT4/tests/homes/candidate-INSTALLED.json" "$HW" > "$RUN/n6-abs.out" 2>&1; rca=$?
+  ( cd "$ROOT4" && node "dev/agent-workflow/evidence/alpha5/candidate-package/human-world.mjs" check --state "tests/homes/candidate-INSTALLED.json" "${HW#"$ROOT4"/}" > "$RUN/n6-rel.out" 2>&1 ); rcb=$?
+  check N6 "rel==abs same verdict on the same world (both rc=$rca/$rcb)" "$([ $rca -eq $rcb ] && echo true || echo false)" "abs=$rca rel=$rcb"
+else
+  echo "SKIP N6 — no retained human world in this environment (env-conditional, like live-smoke)"
+fi
+
+# ── N7: dangling symlink at init -> fail-closed AND the half-created world is
+#    removed by us (doc-trail order ④) ──
+R7="$RUN/n7"; mk_scratch "$R7"
+LAUNCH_SHA7=$(sha256sum "$R7/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
+node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha25256=undefined;j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R7/homes/candidate-INSTALLED.json" "$LAUNCH_SHA7"
+ln -s "$R7/homes/nowhere-dangling" "$R7/homes/candidate-install-fake/dangling-link"
+out="$(node "$PKG_DIR/human-world.mjs" init --state "$R7/homes/candidate-INSTALLED.json" --homes "$R7/homes" --template "$PKG_DIR/human-config-template.yml" 2>&1)"; rc=$?
+echo "$out" > "$RUN/n7-init.out"
+partial_left="$(ls -d "$R7"/homes/candidate-human-* 2>/dev/null | grep -v -- "-keep$" | wc -l)"   # the -keep fixture is mk_scratch's, not a partial init
+check N7 "dangling link refuses init (rc!=0) and partial world is cleaned by init itself" "$([ $rc -ne 0 ] && printf '%s' "$out" | grep -q 'dangling symlink' && [ "$partial_left" -eq 0 ] && echo true || echo false)" "rc=$rc partial_left=$partial_left"
+
 echo "SUMMARY pass=$PASS fail=$FAIL (evidence: runs/human-guard-$STAMP)"
+
 
 cp "$SL" "$RUN/n3-sweep-list.json" 2>/dev/null || true
 [ $FAIL -eq 0 ] || exit 2; exit 0

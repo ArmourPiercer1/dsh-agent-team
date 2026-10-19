@@ -15,7 +15,7 @@
  *  - check is a fast gate only: paths exist / no template placeholders / no
  *    mock residue / no references to swept trial worlds. It never starts a host.
  */
-import { existsSync, cpSync, readFileSync, writeFileSync, accessSync, constants, statSync, readdirSync } from 'node:fs'
+import { existsSync, cpSync, readFileSync, writeFileSync, accessSync, constants, statSync, readdirSync, rmSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { join, dirname, resolve } from 'node:path'
 
@@ -106,6 +106,7 @@ function parseYamlSubset(text) {
     }
     return obj
   }
+  if (lines.length === 0) throw new Error('YAML subset parse: document is empty or comments-only — if this is the inert placeholder left by init, copy the TEMPLATE over it and configure (README §3b)')
   const out = parseBlock(indentOf(lines[0]))
   if (pos !== lines.length) throw new Error('YAML subset parse: trailing unparsed content')
   return out
@@ -138,7 +139,12 @@ if (MODE === 'init') {
   walkLinks(dst)
   for (const l of links) {
     const target = resolve(dirname(l), readlinkSync(l))
-    if (!existsSync(target)) die(`dangling symlink in the install face, refusing to init: ${l} -> ${target}`)
+    if (!existsSync(target)) {
+      // fail-closed, but do not litter: this directory is OURS (created moments
+      // ago by this very init), so removing it here is exact-path, never a sweep.
+      rmSync(dst, { recursive: true, force: true })
+      die(`dangling symlink in the install face, refusing to init (partial world ${dst} removed by us; nothing else touched): ${l} -> ${target}`)
+    }
     const isDir = statSync(target).isDirectory()
     unlinkSync(l)
     cpSync(target, l, isDir ? { recursive: true, dereference: true } : { dereference: true })
@@ -198,7 +204,10 @@ if (MODE === 'init') {
 }
 
 if (MODE === 'check') {
-  const world = argv[argv.length - 1]
+  // (doc-trail order ②: normalize ONCE — relative and absolute invocations must
+  // produce the identical verdict; before this, a relative world made the dist
+  // import URL malformed and the gate misreported a validator refusal.)
+  const world = resolve(argv[argv.length - 1])
   existsSync(world) || die(`world path does not exist: ${world}`)
   statSync(world).isDirectory() || die(`not a directory: ${world}`)
   let pass = true
