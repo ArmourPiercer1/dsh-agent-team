@@ -2500,9 +2500,21 @@ export function createAgentBindings(deps) {
           }
           planeFs = {
             subtreeContains: (rulePath, childKey) => {
-              const root = planeSubtreeRoots.get(String(rulePath))
+              // The kernel's matcher hands the RULE RESOURCE through this seam
+              // (an `{ kind: 'subtree', path }` object for subtree matchers,
+              // canonical-operation.ts A2 form), not the bare string the plane
+              // fast-path passes. Both spellings normalize to the SAME map key
+              // collected above; an unknown resource is still refused
+              // (never-guess), and an object without a usable path string is
+              // refused too - the seam never guesses a containment root.
+              const seamKey = String(
+                rulePath !== null && typeof rulePath === 'object' && typeof rulePath.path === 'string'
+                  ? rulePath.path
+                  : rulePath,
+              )
+              const root = planeSubtreeRoots.get(seamKey)
               if (root === undefined) {
-                throw new Error(`agent-bindings: subtree rule resource '${String(rulePath)}' is not covered by the mounted containment law - never guessed`)
+                throw new Error(`agent-bindings: subtree rule resource '${seamKey}' is not covered by the mounted containment law - never guessed`)
               }
               const backend = fsBackend(agentCtx)
               if (typeof backend.contains !== 'function') {
