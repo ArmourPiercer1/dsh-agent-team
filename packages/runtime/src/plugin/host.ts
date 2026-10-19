@@ -531,6 +531,14 @@ interface GlueModule {
       readonly source?: string
       readonly reason?: string
     }>
+    /**
+     * B-ACT-1-DEP (C2 window — the SAME one-line dep as its factory-call
+     * site, in typed form): the LAZY host jobs registry accessor for the
+     * governed `job_*` management row (D1 agentPresets shape; optional,
+     * never hard-injected — an absent/unusable service stays the bridge's
+     * per-call typed refusal, never a setup failure).
+     */
+    readonly jobs?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2257,6 +2265,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // legacy binding, not a fallback).
     resolveBoundBlueprint,
     subagents: ctx.get('subagents'),
+    // B-ACT-1-DEP (C2 window, one line): the LAZY host jobs registry
+    // accessor for the governed `job_*` management row — the same D1
+    // agentPresets shape, additive optional, NEVER in the hard inject
+    // array: worlds without the jobs service stay byte-identical and the
+    // bridge answers a typed refusal per call, never a setup failure.
+    jobs: () => ctx.get('jobs'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
     // service is absent). Additive optional dep: never in the hard inject
