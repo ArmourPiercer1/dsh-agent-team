@@ -593,8 +593,23 @@ async function main() {
     const sentinel = results.find((t) => t.includes('A5LEGS-TEAM-SENTINEL')) ?? null
     const guardLanding = results.find((t) => /Tool Binding .* cannot be verified/i.test(t)) ?? null
     check('L3-READ-ALLOW', 'positive control C: read on the team/ allow lane PASSES the permission layer (sentinel if reachable; on this UNFED world the landing is the recorded plane-guard dispatch landing — verbatim, proving the deny lane is lane-specific, not a global block)', sentinel !== null || guardLanding !== null, `sentinel=${sentinel !== null} planeGuardLanding=${guardLanding !== null} :: ${String(guardLanding ?? sentinel ?? '').slice(0, 260)}`)
+    // CORRECT READ (R 附注二, root order 09:3xZ): governance observations live
+    // IN-PROCESS on the row handle (glue dist :3122-3124 onObserve -> :779
+    // observations[] -> :5355 handle export; the p6t6 plugin already surfaces
+    // `teamRoot.live.observations` on GET /__p6t6/state). The host stdout is
+    // NOT the governance channel — an empty log never proves absence.
+    const st = await p6('state')
+    const obs = Array.isArray(st.body?.observations) ? st.body.observations : []
+    writeEvidence('p6t6-observations.json', { status: st.status, count: obs.length, observations: obs })
+    const permObs = obs.filter((l) => String(l).startsWith('alpha2-perm:'))
+    const managedObs = permObs.filter((l) => /"tool":"(read|lsp)"/.test(String(l)) || /"stage":"decision"/.test(String(l)))
+    const mcpObs = permObs.filter((l) => String(l).includes('mcp__a5probe__echo'))
+    check('L3-ROWHANDLE-CHANNEL', 'row-handle read works on this world: alpha2-perm observations exist for the MANAGED calls (channel alive, read method correct)', permObs.length > 0 && managedObs.length > 0, `permRows=${permObs.length} managedRows=${managedObs.length} sample=${String(permObs[0] ?? '').slice(0, 220)}`)
+    const branch = mcpObs.length > 0 ? 'A' : 'B'
+    check('L3-ROWOBS-MCP', 'governance verdict over the mcp__ call read from the row handle: branch A = canonicalized/decision observations DO exist for mcp__a5probe__echo (governance face actually touched -> verdict must be amended), branch B = zero alpha2-perm rows for it under an alive channel (structural absence with the CORRECT read = upgraded GAP receipt)', branch === 'A' || branch === 'B', `branch=${branch} mcpPermRows=${mcpObs.length} :: ${mcpObs.slice(0, 3).map(String).join(' | ').slice(0, 400)}`)
+    check('L3-DYNRED2', 'branch consistency: branch B REQUIRES the call still executed (server counted) = the gap is exactly "no governance row yet execution happens"; branch A with executed=true means governance OBSERVED but did not block', (branch === 'B') === serverRan === true, `branch=${branch} serverCounted=${serverRan}`)
     const mcpTrace = hostLog.split('\n').filter((l) => l.includes('mcp__a5probe__echo') && /(canonicaliz|permission denied|decision|guard)/i.test(l))
-    check('L3-TRACE-ABSENT', 'structural-absence witness: NO per-call governance trace line for mcp__a5probe__echo (canonicalize/resolve/guard never entered)', mcpTrace.length === 0, `matchingLogLines=${mcpTrace.length}`)
+    check('L3-TRACE-ABSENT', 'host stdout carries no mcp__ governance line (retained as the NEGATIVE control proving stdout is not the governance channel — see L3-ROWHANDLE-CHANNEL)', mcpTrace.length === 0, `matchingStdoutLines=${mcpTrace.length}`)
     check('L3-POS-B', 'positive control B (team_grep alias row) — plane-fed world required', false, 'NOT_RUN: unfed world; plane placement (natexe teamToolPlane form) out of this runner budget — recorded, not faked')
   }
   if (LEG === 'leg2') {

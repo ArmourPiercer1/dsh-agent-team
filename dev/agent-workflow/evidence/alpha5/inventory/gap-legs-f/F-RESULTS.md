@@ -75,3 +75,21 @@
 - 宿主 `tests/deepseek-harness-test-use` porcelain=0、HEAD=`639ed01539…` 未动（L-PRISTINE 每腿）。
 - 主检出 HEAD `6259cf4b…` 未动；工作树脏项=开工前既存在他路内容，未触碰。
 - R 草案原件（`.worktrees/a5-inventory/…/gap-legs/`）零改动；执行映射副本+全部产物在 `gap-legs-f/`。
+
+---
+
+## 复跑附注（根单 09:3xZ ③前半）— leg3 治理证据判定改读 in-process row-handle observations
+
+终值 run=`runs/a5legs-leg3-2026-10-19T09-33-13Z/`（17/18；红仍=POS-B NOT_RUN）。
+
+**读法修正（R 附注二，运行时确证）**：治理观察的正当通道=**in-process row handle**——glue dist `live/agent-bindings.mjs:3122-3124` 处 `installParameterPermissionListener` **确已传** `onObserve: (row) => observations.push('alpha2-perm: '+JSON.stringify(row))` → `:779` 世界级 `observations[]` → `:5355` handle 导出；p6t6 插件已把 `teamRoot.live.observations` 上挂 `GET /__p6t6/state`（`plugin.mjs:636`）。**宿主 stdout 从来不是治理通道，日志空 ≠ 无治理**。
+
+**F-1 归因更正**：原文「glue 未传 onObserve」不成立（那是我对 stdout 判定的错误归因）；修正为「观察存在且落 row handle，stdout 不落」。L1-TRACE-CANON 的 FAIL 作为「stdout 读法下零出现」的事实保留，deviation 归因以本附注为准。
+
+**两种预期之实测裁决=分支 (b)（GAP 收据证据升级）**：
+- `L3-ROWHANDLE-CHANNEL` PASS：通道活——同世界 read 调用产出 6 条 `alpha2-perm:` 行（`{"stage":"canonicalized","callId":"call-leg3-1-…","tool":"read","resourceKind":"file",…}` 起 sample 在 p6t6-observations.json 逐字）。
+- `L3-ROWOBS-MCP` PASS branch=B：`mcp__a5probe__echo` 在活通道下 **0 条** alpha2-perm 观察（canonicalize/decision/guard 零进入）。
+- `L3-DYNRED2` PASS：branch=B ∧ fixture 服务端计数在场 = 缺口精确形态「**治理行零、执行照跑**」——首跑 GAP 收据（L3-DYNRED）由「stdout 空 + 执行」升级为「**正确读法下结构缺席 + 执行**」，与 `classifyPermissionTool` 闭集外直通（pre-execute-adapter.ts:1240-1242）静态钉死完全一致。
+- `L3-TRACE-ABSENT` 保留为负控（stdout 非治理通道的对照）。
+
+（无判定翻案：分支 (a) 未出现=治理面确未触 mcp__ 调用；若 PR7 收口后复跑应见 branch=A + decision:deny 行，本 runner 判据已就绪。）
