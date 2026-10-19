@@ -1,0 +1,6 @@
+{
+  "staleHomes": [],
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/.a5tools-gov-store",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov"
+}

@@ -1,0 +1,11 @@
+{
+  "mode": "wide",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-19T07-30-00Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-wide-2026-10-19T07-30-00Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-66bb5ba9>"
+}

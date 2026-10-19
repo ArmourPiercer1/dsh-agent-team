@@ -1,0 +1,63 @@
+{
+  "mode": "lanes",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-19T07-59-11Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-lanes-2026-10-19T07-59-11Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-QPvYFU/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:248d8cf896493b7b945d86a2ea63e7615aa86134624870ce7adf722c5476ac95",
+    "profiles/web/package.json:d43c95242d6281fddeef1ea6753bb2874927106755e537db686fda883a5315c5",
+    "profiles/web/pnpm-lock.yaml:4d2752b1f52cb8d5ce3c0628902815699d1074f6931091235160cef002c0f48d",
+    "profiles/web/pnpm-workspace.yaml:9670f8c1829bbc3020bdfbf51d5098869823b4bd821239faaf9c0b177c6daafb",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:6f57ea845c5e4037db808afd68e4a2c354dba6d896c70f4aab1c41c93344136a"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-19T07-59-11Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-9d2b8de0>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-lanes-tc\",\"result\":{\"ok\":false,\"error\":{\"code\":\"MALFORMED_DTO\",\"message\":\"$.members[0].capabilities.permissions.allow[0].resource (permission resource) has unknown fields: value (source: main.yaml)\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"MALFORMED_DTO\",\"message\":\"$.members[0].capabilities.permissions.allow[0].resource (permission resource) has unknown fields: value (source: main.yaml)\",\"details\":{\"unknownFields\":[\"value\"],\"sourceName\":\"main.yaml\"}}}}}}"
+  }
+}

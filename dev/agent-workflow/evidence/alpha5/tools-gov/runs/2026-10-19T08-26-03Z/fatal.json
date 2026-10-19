@@ -1,0 +1,4 @@
+{
+  "fatal": "Error: FATAL: timeout waiting for: lanes member completed its ladder\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/code/a5tools-gov-kit.mjs:113:30)\n    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/code/a5tools-gov-kit.mjs:145:11)\n    at async runWorld (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/code/a5tools-gov-kit.mjs:690:19)\n    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/code/a5tools-gov-kit.mjs:883:24)\n    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/code/a5tools-gov-kit.mjs:1059:14",
+  "stamp": "2026-10-19T08-26-03Z"
+}

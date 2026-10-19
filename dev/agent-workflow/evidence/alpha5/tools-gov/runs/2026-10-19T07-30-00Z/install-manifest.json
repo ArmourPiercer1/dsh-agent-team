@@ -1,0 +1,23 @@
+{
+  "spec": "github:ArmourPiercer1/dsh-agent-team#d5de74974b0320b191b310ead82407d478477ed7",
+  "sha": "d5de74974b0320b191b310ead82407d478477ed7",
+  "exit": 0,
+  "seconds": 25,
+  "dependencies": {
+    "dsh-agent-team": "github:ArmourPiercer1/dsh-agent-team#d5de74974b0320b191b310ead82407d478477ed7"
+  },
+  "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-agent-team"
+  ],
+  "nodeModulesTop": [
+    "dsh-agent-team"
+  ],
+  "fileCount": 1773,
+  "expectedCount": 1773,
+  "missing": [],
+  "extra": [],
+  "shaMismatch": [],
+  "rootSha": "dd2b75e17fddbc2efe3356439cb990dda8a97f01317b30a201efcd67cd16f7af"
+}

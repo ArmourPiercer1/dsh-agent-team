@@ -1,0 +1,2 @@
+AssertionError: expected 1207 to be 1206 // Object.is equality
+    2656|     expect(scanResult.filesScanned).toBe(

@@ -1,0 +1,49 @@
+{
+  "mode": "wide",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-19T07-37-14Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-wide-2026-10-19T07-37-14Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-05360aee>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-wide-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-wide-2026-10-19T07-37-14Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-wide-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:0ea68c0ef34a4b584797637f2438c62812b54a267d53a3ab1747113c535546be\"},\"createdAt\":\"2026-10-19T07:37:57.426Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-19T07-37-14Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-wide-2026-10-19T07-37-14Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-wide-2026-10-19T07-37-14Z\","
+  }
+}

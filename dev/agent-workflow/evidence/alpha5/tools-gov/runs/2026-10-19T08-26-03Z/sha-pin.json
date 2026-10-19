@@ -1,0 +1,9 @@
+{
+  "expected": "d5de74974b0320b191b310ead82407d478477ed7",
+  "lsRemoteRaw": [
+    "cad5cf03ef9bea80fd9093087e4be597eebaf11b\trefs/heads/master",
+    ""
+  ],
+  "srcWorktreeHead": "d5de74974b0320b191b310ead82407d478477ed7",
+  "note": "the graded SHA is either origin/master (the frozen candidate) or the a5-tools-gov branch tip; install spec references it directly"
+}
