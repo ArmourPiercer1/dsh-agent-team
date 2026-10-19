@@ -59,9 +59,10 @@
  * against `dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` as the
  * authority and the exit code as evidence only. The same discipline governs the census: the
  * root suite has 22 disclosed failing identities, so its exit code says nothing and the
- * **identity set** against `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-319a60d7.md`
- * is the verdict (pointer restated 2026-10-17 at 319a60d7, MERGE-TREE caliber — the CI grades the
- * merge-ref; the 067225df and 2162f6a7 documents stay unedited as history). Neither leg may "fix" a standing condition: this script never writes a
+ * **identity set** against `dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-2b1099d7.md`
+ * is the verdict (pointer restated 2026-10-18 at 2b1099d7 — the GLUE-2 same-tree capture, MERGE-TREE
+ * caliber: the CI grades the merge-ref; the 319a60d7, 067225df and 2162f6a7 documents stay unedited
+ * as history, their tolerance sections byte-identical across every restatement). Neither leg may "fix" a standing condition: this script never writes a
  * baseline, and a lane that wants one re-recorded has to do it in the open (the coordinator
  * duty in the plan's Baseline Verification Discipline), not from inside a gate.
  *
@@ -432,8 +433,9 @@ function readLineBaseline(path) {
 }
 
 /**
- * Parse the published nine-root baseline (`…/population-baseline/nine-root-319a60d7.md`, the
-  * merge-tree restatement; tolerance section verified byte-identical to the 2162f6a7 predecessor) into
+ * Parse the published nine-root baseline (`…/population-baseline/nine-root-2b1099d7.md`, the
+ * pointer of record since 2026-10-18; tolerance section byte-identical to its 319a60d7 and
+ * 2162f6a7 predecessors) into
  * `scripts/fail-set.mjs` identity grammar. It parses the COMMITTED document rather than reading
  * a second machine copy because a second copy is a second source of truth, and this file's own
  * subject is what happens to gates whose sources of truth drift.
