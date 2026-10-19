@@ -1,12 +1,13 @@
 # MCP-WIRING-PROPOSAL.md — `mcp__*` per-call 治理接线修复提案（design-only，R 路，根 09:3xZ ③后半）
 
-状态=**提案/未实施**（R 无代码 writer 面；本文件=design 交付）。运行级收据=F leg3（`gap-legs-f/`，F 并行复跑读数到后再追注，占位）。
+状态=**提案/未实施**（R 无代码 writer 面；本文件=design 交付；选项 B 例外见其归属行）。运行级收据=F leg3 首跑（`gap-legs-f/runs/a5legs-leg3-2026-10-19T09-11-03Z`）+ **F 复跑裁决收据（回填）**：run=`a5legs-leg3-2026-10-19T09-33-13Z`（17/18，唯一红=正控B NOT_RUN）· 裁决=**branch=B 坐实** · 证据=分支 `a5-legs-runner` @ `ab464b69`（叠 `c099ddc0`）。
 
 ## 0. 问题陈述（两层直过，比 leg③ 更精确——guard 层新细化）
 
 - **车道层缺席（leg③ 已钉）**：`pre-execute-adapter.ts:1240-1242`——`classifyPermissionTool` 闭集=7 名（`canonical-operation.ts:260-268`），`mcp__*` → `unsupported` → `return await next()`，canonicalize/规则 resolve/last-mile guard 全不进。setup 门 class-3（`permission-coverage.ts:304-306`+`mcpIntroducedToolNames :388-394`）只做**归因**不做判定。
 - **guard 层=以 verified-native 身份直过（本轮现场新增）**：Team 装配面的 closed-world guard（PR1 tool-dispatch：`tool-dispatch/index.ts:8-15` 自述其覆盖对象明含 "an MCP hot mount"）取 `nativeNames = agentCtx.tools.schemas()` 全局面（`glue:2298-2309`），**未对 `mcp__` 前缀做任何过滤** ⇒ mcp__ 名被绑成 verified-native（binding 稳定性受 guard 管，但**永不进 UNVERIFIED-refuse 道**）。F leg3 世界同场自证=guard 在位（read allow 落点撞 `Tool Binding … cannot be verified … no fallback to the native body`），而 mcp 调用照常执行=其绑定形为 native。
 - 合起来的准确缺口句：**mcp__ 名 = guard-native + lane-out**；ADR:69（T_dispatchable⊆T_governed，MCP 在列）与 PLAN:70（未知工具 deny，除可信/显式 Binding）在 per-call 面未兑现；PLAN:74 H6 收据已由 F leg3 落成现状红账（dynRan=true）。
+- **运行级三证齐（静态直通/采信任继承/活通道零观察）**【F 复跑回填，run=`a5legs-leg3-2026-10-19T09-33-13Z`，branch=B】：同一 row-handle 活通道下 6 条 `alpha2-perm` 治理观察在场（read 腿，`p6t6-observations.json` 逐字）而 `mcp__a5probe__echo` 治理观察=**0** 且服务端计数照记=「治理行零、执行照跑」——排除"读法不对"的分支 A 假说，结构缺席升级为活通道收据。R 复核注：同文件内 mcp__ 名仅见于 `a5p1-guard: dispatcher-call-begin/end` **生命周期观察行**（guard-native 采信的又一次在场自证，非治理判定行），与 §0 两层直过模型逐字吻合；分支 A 判据已就绪待 PR7 收口复跑。
 
 ## 1. PR249 已批路线边界（本提案全部落点在此内）
 
@@ -19,7 +20,7 @@
 - **落点**：`glue:2302-2306` 的 `nativeNames` 采集处加一条前缀滤除（`mcp__` 不继承 native 信任）；其余全部复用现机制——UNVERIFIED→dispatch 拒（`no fallback to the native body` 形，F leg3 read 落点已录 verbatim）+「可信/显式 Tool Binding」放行=PR0 冻结代数（`domain/tool-governance`）原语义。
 - **性质**：这不是新行为，是**兑现 PLAN:70 已批语义**（"除可信/显式 Binding 外未知工具 deny"——mcp__ 恰是"非可信绑定"类）；语义=二元（拒/放），无 ask。
 - **改动面**：一处装配过滤 + 单测（mcp 名 bound→放 / unbound→拒 + 热挂载 monotonic 复用既有 NEG 套件）+ 一条负控（F leg3 目标态翻正：typed 拒且 fixture 计数不 +1）。**风险**：低；影响面=Team agent-scoped（非 Team 宿主会话不受 touch，PR1 不变量原文）；既有世界若隐式依赖 mcp 原生直过会被响亮拒——正是 ENFORCE 方向。
-- **与 PR7 关系**：正交且互补——PR7 管 server 侧效应边界（ConfinedProcess/remote provider 强制），B 只管"未绑不信"。**归属**：plane/glue 装配路（a5p7/glue 线，持 installScopedToolGuard 语境）；负控复跑=F runner。
+- **与 PR7 关系**：正交且互补——PR7 管 server 侧效应边界（ConfinedProcess/remote provider 强制），B 只管"未绑不信"。**归属**：plane/glue 装配路（a5p7/glue 线，持 installScopedToolGuard 语境）；负控复跑=F runner。**状态注（根 09:4xZ）：实施中@A（独立小 PR `a5-mcp-binding`）**。
 
 ### 选项 C（推荐第二步）：MCP governed-alias 挂载 = grep/glob 先例同族（adapter-first 正文）
 - **形**：不救原生名的车道，而是**以别名受治理行挂载**——grep/glob takeover=空→`team_grep/team_glob` 别名行中介的先例（`DEFAULT_PLANE_NAMES:83`+search/glob backends）平移到 MCP：新 plane backend 行按 server 枚举工具（供给面已有：`mcp-supply.ts` + `tools/change` 观测 + glue 前缀跟踪 `:1467`），模型面只出别名名，lane/guard/fingerprint 全走 plane 行现成治理链。
@@ -35,7 +36,7 @@
 
 ## 3. 推荐路线与验收形
 
-1. **B 先行**（兑现 PLAN:70 原文，最小面，无 schema 触碰）→ F leg3 套件目标态翻正=主收据（typed 拒 + fixture 计数不增 + `mcp-fixture-calls.log` 零增量），H6 台账（PLAN:74）由现状红改收口注。
+1. **B 先行**（兑现 PLAN:70 原文，最小面，无 schema 触碰；**实施中@A=`a5-mcp-binding`**）→ F leg3 套件目标态翻正=主收据（typed 拒 + fixture 计数不增 + `mcp-fixture-calls.log` 零增量），H6 台账（PLAN:74）由现状红改收口注；现状基线=复跑收据 run=`a5legs-leg3-2026-10-19T09-33-13Z`（branch=B，§0 末条）。
 2. **C 随后**（adapter-first 正文，给"可用治理"非仅二元拒）；acceptance=别名行上 allow/ask/deny 三腿（shell 类先例形）+ 热挂载负控（新 server 后到名=未绑即拒，复用 B 的红）。
 3. A 挂 schema 裁决队列，不排期。
 4. 全程禁表述：B 落地后不得写"MCP 治理已覆盖"——只可写"未绑 mcp__ 名 per-call 拒（决策层）；效应边界=PR7 延期行在册（M31 关联）"。
