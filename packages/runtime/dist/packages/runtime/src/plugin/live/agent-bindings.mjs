@@ -336,6 +336,7 @@
  *                                 touched; idempotent)
  */
 import { createHash } from 'node:crypto'
+import { isAbsolute } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
@@ -2423,6 +2424,94 @@ export function createAgentBindings(deps) {
       if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
         const planeCfg = config.teamToolPlane
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
+        // alpha.5 (A-route live defect, run 2026-10-19T08-26-03Z; root
+        // assembly-obstacle route 07:30Z + coordinator approval 09:0xZ): the
+        // plane's projection guard fails closed when the template policy
+        // carries ANY subtree rule without an injected SubtreeContains seam
+        // (admission-kernel `projection-subtree-seam-missing` - the coverage
+        // question is never guessed), and this mount point never supplied the
+        // seam the assembly accepts (team-tool-plane `fs` input) - every
+        // strict template with subtree rules was a loud, correct, UNMOUNTABLE
+        // refusal. This is the injection leg. The law keeps never-guess in
+        // BOTH directions:
+        //  - every subtree rule resource is pre-canonicalized HERE through
+        //    the SAME lazy fs backend the operation canonicalizer uses
+        //    (`resolveTarget`: the provider's own `resolve(path, {cwd})` with
+        //    the live session-header cwd basis), producing the provider's own
+        //    target handle. A resource the provider cannot canonicalize is a
+        //    typed setup refusal with its own reason code - never a silent
+        //    true/false flip, never a mount-time guess;
+        //  - the SYNC seam (the shape authority-envelope pins:
+        //    (root, child) => boolean) answers on the pinned public
+        //    `FileSystem.contains` over provider handles - the byte-identical
+        //    basis of `containsTargets`/`containOverlayKeys` (same
+        //    `fsBackend(agentCtx)`, per call, no key parsing, no path
+        //    arithmetic). A provider without the seam THROWS through the seam
+        //    (the frozen lane asymmetry maps a fault to fail-closed, never to
+        //    a silent match); an unmapped rule path (the policy changed under
+        //    a mounted plane - not expressible today) also throws.
+        const planeSubtreeRulePaths = []
+        for (const laneRules of [permissionPolicy?.allow, permissionPolicy?.ask, permissionPolicy?.deny]) {
+          for (const rule of Array.isArray(laneRules) ? laneRules : []) {
+            const resource = rule?.resource
+            if (resource !== null && typeof resource === 'object' && resource.kind === 'subtree'
+              && typeof resource.path === 'string'
+              && !planeSubtreeRulePaths.includes(resource.path)) planeSubtreeRulePaths.push(resource.path)
+          }
+        }
+        let planeFs
+        if (planeSubtreeRulePaths.length > 0) {
+          if (typeof fsBackend !== 'function') {
+            const error = new Error(
+              `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': the template policy carries subtree rules but this install has no fs provider accessor - subtree coverage is never guessed (code: alpha5-team-tool-plane-subtree-provider-absent)`,
+            )
+            error.code = 'alpha5-team-tool-plane-subtree-provider-absent'
+            observations.push(`a5-plane: subtree-seam-REFUSED for ${sessionId} (provider-absent)`)
+            throw error
+          }
+          const planeCwd = runtimeAgent !== null && runtimeAgent !== undefined
+            ? runtimeAgent.session?.header?.cwd
+            : undefined
+          const planeSubtreeRoots = new Map()
+          for (const rulePath of planeSubtreeRulePaths) {
+            if (!isAbsolute(rulePath) && !(typeof planeCwd === 'string' && planeCwd !== '')) {
+              const error = new Error(
+                `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': the subtree rule resource '${rulePath}' is relative but no session cwd exists yet - a subtree root is never guessed against a default cwd (code: alpha5-team-tool-plane-subtree-resource-unresolvable)`,
+              )
+              error.code = 'alpha5-team-tool-plane-subtree-resource-unresolvable'
+              observations.push(`a5-plane: subtree-seam-REFUSED for ${sessionId} (relative-resource-without-cwd)`)
+              throw error
+            }
+            let rootHandle
+            try {
+              rootHandle = await fsBackend(agentCtx).resolve(
+                rulePath,
+                typeof planeCwd === 'string' && planeCwd !== '' ? { cwd: planeCwd } : {},
+              )
+            } catch (cause) {
+              const error = new Error(
+                `agent-bindings: alpha.5 Team tool plane refused the mount for '${sessionId}': the subtree rule resource '${rulePath}' could not be canonicalized by the fs provider (${String(cause?.message ?? cause)}) - subtree coverage is never guessed (code: alpha5-team-tool-plane-subtree-resource-unresolvable)`,
+              )
+              error.code = 'alpha5-team-tool-plane-subtree-resource-unresolvable'
+              observations.push(`a5-plane: subtree-seam-REFUSED for ${sessionId} (resource-unresolvable)`)
+              throw error
+            }
+            planeSubtreeRoots.set(rulePath, rootHandle)
+          }
+          planeFs = {
+            subtreeContains: (rulePath, childKey) => {
+              const root = planeSubtreeRoots.get(String(rulePath))
+              if (root === undefined) {
+                throw new Error(`agent-bindings: subtree rule resource '${String(rulePath)}' is not covered by the mounted containment law - never guessed`)
+              }
+              const backend = fsBackend(agentCtx)
+              if (typeof backend.contains !== 'function') {
+                throw new Error('the fs provider does not expose a public contains() seam (plane subtree containment undeterminable)')
+              }
+              return backend.contains(root, { targetKey: String(childKey) }) === true
+            },
+          }
+        }
         const built = createTeamToolPlaneAssembly({
           permissionPolicy,
           realmId: a5PlaneRealmId,
@@ -2430,6 +2519,7 @@ export function createAgentBindings(deps) {
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
           plane: planeCfg,
+          ...(planeFs === undefined ? {} : { fs: planeFs }),
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
