@@ -1,0 +1,14 @@
+    135|   expect(capture.typed).toBe(true)
+       |                         ^
+    136|   expect(capture.code).toBe(OPERATION_PERMISSION_ERROR_CODES.OPERATION…
+    137|   expect(capture.reason).toBe(reason)
+ ❯ packages/runtime/test/a5lsp-keyshape.test.ts:123:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 2 passed (8)
+   Start at  09:38:01
+   Duration  1.67s (transform 1.22s, setup 0ms, import 1.51s, tests 13ms, environment 0ms)
+

@@ -292,25 +292,57 @@ function asArgumentRecord(tool: string, arguments_: unknown, reasonMissing: Cano
 }
 
 /**
- * Extract + validate the primary `file_path` of a file tool. Mirrors the
- * upstream tools' own checks (a missing/non-string/blank path is
- * rejected by every file tool before execution) — fail-closed here, so
- * a path the tool would never resolve is never authorized.
+ * Extract + validate the primary path of a file-path-class tool, over BOTH
+ * schema spellings, with one deterministic law:
+ *  - exactly one of `file_path` / `filePath` present → that value is THE path;
+ *  - both present, byte-identical → ONE object, decidable, proceed;
+ *  - both present, differing → `file-path-key-conflict`: the canonicalizer
+ *    NEVER picks a winner between two candidate targets (never-guess);
+ *  - a present-but-malformed value (non-string / blank) fails closed under
+ *    EITHER spelling BEFORE the conflict question (a typed wrong value never
+ *    reaches the choice);
+ *  - neither present → the unchanged `file-path-missing` refusal.
+ * Why both spellings: the upstream schema authorities differ —
+ * the tool-fs file tools spell it `file_path`, while the shipped
+ * `tool-lsp` schema spells it `filePath`
+ * (`packages/lsp/tool-lsp/src/index.ts` in the pinned baseline; the A5-LEG
+ * finding: reading only `file_path` made every schema-shaped lsp call die
+ * fail-closed at canonicalization — safe, but the lsp lane was de facto
+ * unusable). The canonicalizer MIRRORS what a call carries; the body stays
+ * the schema authority: authorizing a path the body's own schema would drop
+ * executes nothing, while the dangerous direction (the body reads a path
+ * governance never saw) cannot exist once both spellings are extracted.
+ * The key SPELLING is not a security fact: same bytes under either spelling
+ * project to one resource key and one fingerprint.
  */
 function extractFilePath(tool: string, args: Record<string, unknown>): string {
-  const value = args['file_path']
-  if (value === undefined) {
+  const snake = args['file_path']
+  const camel = args['filePath']
+  if (snake === undefined && camel === undefined) {
     throw canonicalizationFailed(tool, 'file-path-missing')
   }
-  if (typeof value !== 'string') {
-    throw canonicalizationFailed(tool, 'file-path-not-a-string', {
-      valueType: toRemoteSafeDetail(typeof value),
-    })
+  const present: string[] = []
+  for (const spelling of [
+    { key: 'file_path', value: snake },
+    { key: 'filePath', value: camel },
+  ] as const) {
+    if (spelling.value === undefined) continue
+    if (typeof spelling.value !== 'string') {
+      throw canonicalizationFailed(tool, 'file-path-not-a-string', {
+        spelling: spelling.key,
+        valueType: toRemoteSafeDetail(typeof spelling.value),
+      })
+    }
+    if (spelling.value.trim().length === 0) {
+      throw canonicalizationFailed(tool, 'file-path-empty', { spelling: spelling.key })
+    }
+    present.push(spelling.value)
   }
-  if (value.trim().length === 0) {
-    throw canonicalizationFailed(tool, 'file-path-empty')
+  if (present.length === 2 && present[0] !== present[1]) {
+    // The values are candidate targets — their bytes never ride the wire.
+    throw canonicalizationFailed(tool, 'file-path-key-conflict')
   }
-  return value
+  return present[0] as string
 }
 
 /** Positive-integer check (the upstream tools' `oneBased`/`parsePositiveInteger`). */

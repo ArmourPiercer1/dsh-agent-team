@@ -43,6 +43,7 @@ export const CANONICALIZATION_FAILURE_REASONS = [
     'file-path-missing',
     'file-path-not-a-string',
     'file-path-empty',
+    'file-path-key-conflict',
     'read-offset-invalid',
     'read-limit-invalid',
     'write-content-missing',
