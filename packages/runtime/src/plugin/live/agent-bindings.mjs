@@ -2500,18 +2500,29 @@ export function createAgentBindings(deps) {
           }
           planeFs = {
             subtreeContains: (rulePath, childKey) => {
-              // The kernel's matcher hands the RULE RESOURCE through this seam
-              // (an `{ kind: 'subtree', path }` object for subtree matchers,
-              // canonical-operation.ts A2 form), not the bare string the plane
-              // fast-path passes. Both spellings normalize to the SAME map key
-              // collected above; an unknown resource is still refused
-              // (never-guess), and an object without a usable path string is
-              // refused too - the seam never guesses a containment root.
-              const seamKey = String(
-                rulePath !== null && typeof rulePath === 'object' && typeof rulePath.path === 'string'
-                  ? rulePath.path
-                  : rulePath,
-              )
+              // Three live caller shapes answer through this ONE seam:
+              //  (a) the plane fast-path passes positional STRINGS -
+              //      subtreeContains(rule.resource.path, locator)
+              //      (team-tool-plane.mjs:400);
+              //  (b) the governed effect backend passes ONE ARGUMENT OBJECT -
+              //      subtreeContains({ realmId, parent: rule.resource.path,
+              //      child: locator }) (plane-effect-backends.mjs:826);
+              //  (c) defensive: a rule-resource object ({ kind, path }) handed
+              //      straight through (the A2 canonical matcher form).
+              // All shapes normalize to the SAME roots-map key collected
+              // above; anything unresolvable is REFUSED, never guessed - the
+              // seam never widens coverage by picking a root it did not pin.
+              let seamKey
+              let seamChild
+              if (rulePath !== null && typeof rulePath === 'object') {
+                if (typeof rulePath.parent === 'string') seamKey = rulePath.parent
+                else if (typeof rulePath.path === 'string') seamKey = rulePath.path
+                else seamKey = String(rulePath)
+                seamChild = typeof rulePath.child === 'string' ? rulePath.child : childKey
+              } else {
+                seamKey = String(rulePath)
+                seamChild = childKey
+              }
               const root = planeSubtreeRoots.get(seamKey)
               if (root === undefined) {
                 throw new Error(`agent-bindings: subtree rule resource '${seamKey}' is not covered by the mounted containment law - never guessed`)
@@ -2520,7 +2531,7 @@ export function createAgentBindings(deps) {
               if (typeof backend.contains !== 'function') {
                 throw new Error('the fs provider does not expose a public contains() seam (plane subtree containment undeterminable)')
               }
-              return backend.contains(root, { targetKey: String(childKey) }) === true
+              return backend.contains(root, { targetKey: String(seamChild) }) === true
             },
           }
         }
