@@ -91,7 +91,7 @@
 - **归属**：c7886d5f（列单移交）。
 
 ### C3. 「四条 workflow 不复跑 test-human-protection.sh」
-- **现状**：**修复件已在途**——本 D 路交付 `.github/workflows/candidate-protection.yml`：master 侧 CI 检出**具名 pin** `CANDIDATE_EVIDENCE_SHA=090b87b5…`（更新须根批），跑全 spec（CI 形断言 `SUMMARY pass=9 fail=0` + `SKIP N6`；本地实证 07:21:44Z 逐项吻合）。合并候根放行。
+- **现状**：**修复件已在树且 CI 首跑绿**——`.github/workflows/candidate-protection.yml`：master 侧 CI 检出**具名 pin** `CANDIDATE_EVIDENCE_SHA=090b87b5…`（更新须根批），跑全 spec（CI 形断言 `SUMMARY pass=9 fail=0` + `SKIP N6`；本地实证 07:21:44Z；**CI 首跑 success=run 39217185943，PR #348 pull_request 事件，head 1c38de07…，日志原文含 `pinned evidence head verified: 090b87b5…`+P1/N1a/N1b/N2/N3/N4/N5/N7 全 PASS 行，parent 注②定口径**）。合并候根放行。
 - **证据**：本分支 `.github/workflows/candidate-protection.yml`；本地运行原文（`.worktrees/a5d-verify-090b` 内 runs/human-guard-2026-10-19T07-21-42Z，验后清）。
 - **建议处置**：随本路 PR 审→放行；放行前该小账状态=「修复件候批」，不宣称已闭。
 - **归属**：D（交付）→ 根（放行）。
@@ -155,7 +155,7 @@
 
 ### G3. 「AGENTS.md 宿主基线行陈旧」= **协调误报已撤**（parent 08:0xZ 撤回更正；append-only 留痕，附复核行号）
 - **撤回复核（D，07:4xZ 独立先行完成，与 parent 结论一致）**：分支 `AGENTS.md` **无陈旧行**——现行基线行 `AGENTS.md:11`（TEST_METHODS 摘要行）与 `AGENTS.md:38`（tests/ 行）均已 = **0.2.0-rc.2 @ `639ed01539`（2026-10-03 起）**；文内 `0.1.7-rc.1 @ 46a7f68b09` 命中仅以历史沿革形出现（「此前 0.1.7-rc.1 @ 46a7f68b09（2026-09-24 … 2026-10-03）」，同在第 11/38 行内）；`tests/paths.mjs:68 DSH_BASELINE_VERSION='0.2.0-rc.2'` 恒等。误报成因=parent 自记：会话注入旧快照当文件现状 + grep 命中历史沿革引用；**「R-D-AGENTS-align」件作废，AGENTS.md 未动一字（git diff 零 AGENTS.md 条目可证）**。
-- **残余事实（与误报区分，保留）**：主检出工作树 `/srv/workspace/dsh-plugins/dsh-agent-team/AGENTS.md` 显示 0.1.7-rc.1 为当前，原因=该工作树 HEAD=`6259cf4b`（早于升级轮）；属检出面陈旧非 master 内容陈旧，处置=协调者刷新主检出（排队项 6）。
+- **残余事实与处置（协调裁定 07:5xZ）**：主检出工作树 `/srv/workspace/dsh-plugins/dsh-agent-team/AGENTS.md` 显示 0.1.7-rc.1 为当前，原因=该工作树 HEAD=`6259cf4b`（早于升级轮）。**协调裁定：主检出=协调者 ledger 工作面（COORDINATION/HANDOFF append-only 连续体+自有 scratch），本会话周期内故意不刷新不重置；一切代码/宿主读取走 lane worktree 与主检出 `tests/deepseek-harness-test-use`（其自身 @639ed01539 正确），主检出顶层代码文件面禁作现状依据**（训已入账）。OPEN-ITEMS 项就此关闭——无待办动作，勿动协调面。
 - **教训沿记（parent 自记，D 附议）**：文档判定必须现场读文件，不读注入快照。
 
 ---
@@ -166,5 +166,5 @@
 3. A4 钉名两口径 → 根裁后 68e8d70f。
 4. E1 延期精确原因终版 → **C 路已交付**（`guard-schema/FIX-QUEUE.md` R-C-07..13 + DEFERRALS 五项，a5-guard-schema @ 0bede36e）→ 协调者并入 CURRENT-STATE。
 5. A7 census-runtime required-check 现值复核与推进 → 协调者。
-6. G3 主检出刷新（陈旧 AGENTS.md 读源）→ 协调者。
+6. ~~G3 主检出刷新~~ → **协调裁定已闭**：周期内故意不刷新（ledger 工作面），主检出顶层代码面禁作现状依据（G3 正文载全文）。
 7. R-C-07（install.ts settle 1 行硬化，可做不可需）/R-C-09（p7t6 dirty-class 裁决行）/R-C-10（shape-18 补跑两趟）→ C 路 FIX-QUEUE 在册，派单归协调者（非 D writer 面）。
