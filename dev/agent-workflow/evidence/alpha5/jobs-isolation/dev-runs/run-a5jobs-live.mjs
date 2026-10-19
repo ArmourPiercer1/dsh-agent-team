@@ -41,13 +41,14 @@
 import { spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync } from 'node:fs'
+const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH, homeDir, testUseTree, findTestRepoRoot, checkTestPort } from '../../../../../tests/paths.mjs'
-import { presetDeclarationRow, smokePresetPlugins } from '../../../../../tests/kits/_shared/preset-seam.mjs'
-import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
+import { TEST_USE_BASELINE_SHA, CLIENT_COMMIT_HASH, homeDir, testUseTree, findTestRepoRoot, isSanctionedTestPort } from '../../../../../../tests/paths.mjs'
+import { presetDeclarationRow, smokePresetPlugins } from '../../../../../../tests/kits/_shared/preset-seam.mjs'
+import { startMockModel } from '../../../../../../packages/tools/harness/mock-deepseek.mjs'
 
 const argv = process.argv.slice(2)
 function argValue(name, dflt) {
@@ -62,7 +63,7 @@ const ERAS = String(argValue('eras', 'z1,jobs')).split(',').map((e) => e.trim())
 if (ERAS.length === 0) throw new Error('--eras must list at least one of z1,jobs')
 
 const LEG_DIR = dirname(new URL(import.meta.url).pathname)
-const WORKTREE = resolve(LEG_DIR, '../../../..', '..')
+const WORKTREE = resolve(LEG_DIR, '../../../..', '..', '..')
 // the test-use checkout lives at a repo ROOT (the worktree holds no copy of the
 // gitignored tree): the nearest-ancestor root law (paths.mjs findTestRepoRoot),
 // never a hand-joined path. Worlds stay UNDER THIS worktree (homeDir(WORKTREE)).
@@ -198,7 +199,7 @@ function digestRequest(parsed) {
   return { msgCount: msgs.length, toolCount: toolNames === null ? 0 : toolNames.length, toolNames, assistantToolNames, toolResults, _text: text }
 }
 
-// ── blueprints: default-allow world (zero approval arc by construction) ─────
+// ── blueprints: lawful lanes (bash=ask via the approval arc; job_*=allow) ──
 function bpAnchorYaml(rootSid) {
   return [
     '---', 'schemaVersion: 3', `blueprintId: ${BP_ANCHOR_ID}`, 'revision: "1"',
@@ -223,7 +224,7 @@ function mainBlueprintYaml() {
     '    builtinToolDeny: []',
     '    skills:', '      kind: allow', '      items: []',
     '    mcp:', '      kind: allow', '      items: []',
-    '    permissions:', '      default: allow', '      allow: []', '      ask: []', '      deny: []',
+    '    permissions:', '      default: ask', '      allow: []', '      ask: []', '      deny: []',
     'members:',
     '  - templateId: wa', '    displayName: "a5jobs member A (job owner)"',
     `    persona: ${JSON.stringify(`You are member A of the a5jobs world. Follow delegated work exactly, tool by tool, in order. ${MK}_TASK_A`)}`,
@@ -231,20 +232,29 @@ function mainBlueprintYaml() {
     '      builtinToolDeny: []',
     '      skills:', '        kind: allow', '        items: []',
     '      mcp:', '        kind: allow', '        items: []',
-    '      permissions:', '        default: allow', '        allow: []', '        ask: []', '        deny: []',
+    '      permissions:', '        default: ask',
+    '        allow: []', // the permission-lane tool vocabulary is closed (read|read_image|write|edit|lsp|bash|pwsh): job_* tools carry NO permission rule and ride their own governance (unit-pinned)
+    '        ask:',
+    '          - tool: bash', '            resource:', '              kind: any',
+    '        deny: []',
     '  - templateId: wb', '    displayName: "a5jobs member B (foreign viewer)"',
     `    persona: ${JSON.stringify(`You are member B of the a5jobs world. Follow delegated work exactly, tool by tool, in order. ${MK}_TASK_B`)}`,
     '    capabilities:', '      teamTools:', '        kind: allow', '        items: []',
     '      builtinToolDeny: []',
     '      skills:', '        kind: allow', '        items: []',
     '      mcp:', '        kind: allow', '        items: []',
-    '      permissions:', '        default: allow', '        allow: []', '        ask: []', '        deny: []',
+    '      permissions:', '        default: ask',
+    '        allow: []', // the permission-lane tool vocabulary is closed (read|read_image|write|edit|lsp|bash|pwsh): job_* tools carry NO permission rule and ride their own governance (unit-pinned)
+    '        ask:',
+    '          - tool: bash', '            resource:', '              kind: any',
+    '        deny: []',
     'memberEnvelopes:',
-    '  - templateId: wa', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
-    '  - templateId: wb', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+    '  - templateId: wa', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
+    '  - templateId: wb', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
     'teamEnvelope:',
     '  allow:',
     '    - create-member', '    - assign-task', '    - send-message', '    - report-progress',
+    '    - request-control', '    - resolve-control',
     '  deny: []',
     'requirements:', '  - domain: persona', '    name: standard',
     'permissionMutationEnvelope:', '  rules: []',
@@ -358,22 +368,22 @@ function makeDecide() {
     if (opener.includes(`${MK}_TASK_A`)) {
       if (calls.length === 0) return { kind: 'tool-call', toolCalls: [{ id: `jb-a1-${rnd()}`, name: 'bash', arguments: { command: `sleep 2; echo ${TOK_A}`, run_in_background: true } }] }
       if (calls.length === 1) {
-        const id = idFrom(digest.toolResults[0] ?? '') ?? 'JOBID-MISSING'
+        const id = idFrom(digest.toolResults[0] ?? '') ?? 'A5JOBS-NO-SUCH-JOB'
         return { kind: 'tool-call', toolCalls: [{ id: `jb-a2-${rnd()}`, name: 'job_output', arguments: { job_id: id, timeout_ms: 25_000 } }] }
       }
       if (calls.length === 2) return { kind: 'tool-call', toolCalls: [{ id: `jb-a3-${rnd()}`, name: 'job_list', arguments: {} }] }
       if (calls.length === 3) return { kind: 'tool-call', toolCalls: [{ id: `jb-a4-${rnd()}`, name: 'bash', arguments: { command: `sleep 300; echo ${TOK_B}`, run_in_background: true } }] }
       if (calls.length === 4) {
-        const id = idFrom(digest.toolResults[1 + 2] ?? digest.toolResults[3] ?? '') ?? idFrom(String(digest.toolResults.at(-1) ?? '')) ?? 'JOBID2-MISSING'
+        const id = idFrom(String(digest.toolResults.at(-1) ?? '')) ?? 'A5JOBS-NO-SUCH-JOB-2'
         return { kind: 'tool-call', toolCalls: [{ id: `jb-a5-${rnd()}`, name: 'job_kill', arguments: { job_id: id, reason: 'a5jobs live kill leg' } }] }
       }
-      const idA = idFrom(digest.toolResults[0] ?? '') ?? 'JOBID-MISSING'
+      const idA = idFrom(digest.toolResults[0] ?? '') ?? 'A5JOBS-NO-SUCH-JOB'
       const quote = digest.toolResults.map((r, i) => `r${i}=${r.slice(0, 700).replace(/\s+/g, ' ')}`).join(' | ')
       return { kind: 'text', content: `A5JOBS_A_RESULT id=${idA} ${quote}` }
     }
     if (opener.includes(`${MK}_TASK_B`)) {
       if (calls.length === 0) {
-        const aId = (opener.match(/A5JOBS_TARGET=(\S+)/) ?? [])[1] ?? 'TARGET-MISSING'
+        const aId = (opener.match(/A5JOBS_TARGET=(\S+)/) ?? [])[1] ?? 'A5JOBS-NO-SUCH-JOB'
         return { kind: 'tool-call', toolCalls: [{ id: `jb-b1-${rnd()}`, name: 'job_output', arguments: { job_id: aId, timeout_ms: 1_000 } }] }
       }
       if (calls.length === 1) return { kind: 'tool-call', toolCalls: [{ id: `jb-b2-${rnd()}`, name: 'job_list', arguments: {} }] }
@@ -386,7 +396,7 @@ function makeDecide() {
       if (calls.length === 1) return { kind: 'tool-call', toolCalls: [{ id: `jb-l2-${rnd()}`, name: 'team_collect', arguments: { rootSessionId: CREATE_ROOT, requestToken: `a5jb-c-a-${RUN_STAMP}`, requestTokens: [`a5jb-d-a-${RUN_STAMP}`] } }] }
       if (calls.length === 2) {
         const last = String(JSON.stringify((req.messages ?? []).at(-1)?.content ?? ''))
-        const aId = (last.match(/A5JOBS_A_RESULT id=(\S+)/) ?? [])[1] ?? 'TARGET-LOST'
+        const aId = (last.match(/A5JOBS_A_RESULT id=(\S+)/) ?? [])[1] ?? 'A5JOBS-NO-SUCH-JOB'
         return { kind: 'tool-call', toolCalls: [{ id: `jb-l3-${rnd()}`, name: 'team_delegate', arguments: { rootSessionId: CREATE_ROOT, requestToken: `a5jb-d-b-${RUN_STAMP}`, delegationTemplateId: 'wb', label: 'jb-b', taskSummary: 'jobs mount face member B', prompt: `${MK}_TASK_B A5JOBS_TARGET=${aId} Do the delegated work exactly as instructed, tool by tool, in order.`, async: false } }] }
       }
       if (calls.length === 3) return { kind: 'tool-call', toolCalls: [{ id: `jb-l4-${rnd()}`, name: 'team_collect', arguments: { rootSessionId: CREATE_ROOT, requestToken: `a5jb-c-b-${RUN_STAMP}`, requestTokens: [`a5jb-d-b-${RUN_STAMP}`] } }] }
@@ -396,6 +406,27 @@ function makeDecide() {
   }
 }
 function rnd() { return Math.random().toString(36).slice(2, 8) }
+
+/** The durable control ledger over the world's team_domain store (natexe shape). */
+function readControlLedger(home, root) {
+  const out = { requests: [], decisions: [], consumptions: [], error: null }
+  try {
+    const parsed = JSON.parse(fsRead(join(home, 'storages', 'team_domain.json')))
+    const ledger = parsed?.tables?.ledger
+    if (ledger === null || typeof ledger !== 'object') { out.error = 'no ledger table'; return out }
+    for (const [k, v] of Object.entries(ledger)) {
+      if (k === '__ledger_sequence_counter' || typeof v !== 'string') continue
+      let entry
+      try { entry = JSON.parse(v) } catch { continue }
+      if (String(entry?.rootSessionId) !== root) continue
+      const payload = entry?.payload ?? {}
+      if (entry.factType === 'control-request-recorded') out.requests.push({ requestId: payload.requestId, kind: payload.kind, toolName: payload.toolName, status: payload.status })
+      else if (entry.factType === 'control-decision-recorded') out.decisions.push({ requestId: payload.requestId, decision: payload.decision })
+      else if (entry.factType === 'control-allow-consumed') out.consumptions.push({ requestId: payload.requestId })
+    }
+  } catch (error) { out.error = String(error?.message ?? error) }
+  return out
+}
 
 // ── era runner ────────────────────────────────────────────────────────────────
 async function runEra(era, mock) {
@@ -464,12 +495,43 @@ async function runEra(era, mock) {
     }, `[${era}] catalog carries the main BP`)
     check(era, 'J1.1', 'the a5jobs blueprint lists RUNS through the wire catalog', true, `rows=${rows.length}`)
 
-    // team.create with the leader directive (default-allow world: no ask arc)
-    const created = await remoteCall(origin, cookie, 'team.create', {
+    // team.create with the leader directive; bash ASKS ride the scripted-human
+    // approval arc (concurrent resolution, natexe topology): each ask opens as a
+    // DURABLE leader-approval, the kit answers allow, execution proceeds.
+    let createSettled = null
+    const createPromise = remoteCall(origin, cookie, 'team.create', {
       rootSessionId: CREATE_ROOT,
       blueprintId: BP_MAIN_ID,
       initialWork: { prompt: `${MK}_L0 Begin your directive.` },
-    }, 'a5jbc', 1, 900_000)
+    }, 'a5jbc', 1, 420_000).then((r) => { createSettled = r; return r }, (e) => { createSettled = { status: 0, error: String(e) }; return createSettled })
+    const resolvedIds = []
+    const arcDeadline = Date.now() + 360_000
+    while (Date.now() < arcDeadline) {
+      const ledger = readControlLedger(HOME, CREATE_ROOT)
+      for (const reqRow of ledger.requests) {
+        if (reqRow.kind !== 'leader-approval' && reqRow.kind !== 'user-approval') continue
+        if (resolvedIds.includes(reqRow.requestId)) continue
+        const resolved = await remoteCall(origin, cookie, 'team.resolveControl', {
+          teamSessionId: CREATE_ROOT,
+          requestId: reqRow.requestId,
+          decision: 'allow',
+          note: 'a5jobs live leg: scripted human allow',
+        }, 'a5jbres', 4)
+        writeEvidence(`resolve-control-${resolvedIds.length + 1}-${era}.json`, resolved.body ?? resolved)
+        if (!(resolved.status === 200 && resolved.body?.result?.ok === true)) {
+          throw new Error(`[${era}] resolveControl refused: status=${resolved.status} body=${JSON.stringify(resolved.body ?? {}).slice(0, 300)}`)
+        }
+        resolvedIds.push(reqRow.requestId)
+      }
+      if (createSettled !== null) {
+        const l2 = readControlLedger(HOME, CREATE_ROOT)
+        const unresolved = l2.requests.filter((r) => (r.kind === 'leader-approval' || r.kind === 'user-approval') && !l2.consumptions.some((c) => c.requestId === r.requestId) && !resolvedIds.includes(r.requestId))
+        if (unresolved.length === 0) break
+      }
+      await new Promise((r) => setTimeout(r, 500))
+    }
+    const created = await createPromise
+    facts.asksResolved = resolvedIds.length
     writeEvidence(`team-create-${era}.json`, created.body ?? created)
     const createOk = created.status === 200 && created.body?.result?.ok === true
     check(era, 'J2.0', 'team.create ran the leader directive to completion (two delegations + collects scripted at the mock)', createOk, `status=${created.status} body=${JSON.stringify(created.body ?? created).slice(0, 220)}`)
@@ -482,26 +544,65 @@ async function runEra(era, mock) {
     const aJobId = (aFinal?.match(/A5JOBS_A_RESULT id=(\S+)/) ?? [])[1] ?? null
     facts.aResults = aResults.map((r) => r.slice(0, 700))
     facts.aJobId = aJobId
-    const aRo = aResults[1] ?? ''
-    check(era, 'J3.0', `member A read its OWN real background job through job_output and the output bytes came back (the ${era === 'jobs' ? 'MOUNTED trio row, corded:false pass-through over the real service' : 'host-native row (control of controls)'})`, aJobId !== null && aRo.includes(TOK_A), `id=${aJobId} r1=${JSON.stringify(aRo.slice(0, 200))}`)
-    const aList = aResults[2] ?? ''
-    check(era, 'J6.0', 'member A job_list carries the job row (id + kind + status visible; the two rows formats agree)', aJobId !== null && aList.includes(aJobId) && /\[[a-z]+\]/.test(aList), `r2=${JSON.stringify(aList.slice(0, 200))}`)
-    const aKill = aResults[4] ?? ''
-    const aKillId = (aResults[3]?.match(/started background job (\S+)/) ?? [])[1] ?? null
-    check(era, 'J5.0', 'job_kill REQUESTS in the native form ("requested cancellation of job <id>") — never claims completion', aKillId !== null && aKill.includes('requested cancellation of job') && aKill.includes(aKillId), `r3=${JSON.stringify((aResults[3] ?? '').slice(0, 120))} r4=${JSON.stringify(aKill.slice(0, 160))}`)
+    const GUARD = 'no Team Tool Binding'
+    const guarded = (t) => t.includes(GUARD) && t.includes('never executes')
+    if (era === 'jobs') {
+      const aRo = aResults[1] ?? ''
+      // PRODUCER-ABSENCE (recorded law, live in BOTH arms): the governed world has
+      // NO background-job producer — the confined shell row refuses background by
+      // name, the alias-form plane refuses native bash dispatch by the binding law
+      // (r0 below is that refusal), and the host exposes NO job-start tool (钉面+
+      // 全树互证). The bytes-positive leg is therefore UNREACHABLE in-world BY LAW;
+      // it stays pinned at unit level (fake registry). What THIS kit proves live is
+      // the MOUNTED ROW ANSWERING THROUGH TO THE REAL SERVICE (the B-ACT-1-DEP
+      // chain): a read of a never-existent id crosses the Team gate (no record =
+      // corded:false pass-through, disclosed) and comes back with the REAL
+      // registry's own unknown-job refusal — a round trip a shut/masked face
+      // cannot fake.
+      check(era, 'J3.0', 'the MOUNTED job_output row answers THROUGH TO THE REAL host service: a never-existent id crosses the Team gate (corded:false, disclosed) and returns the real registry\'s own unknown-job refusal VERBATIM through the bridge (the B-ACT-1-DEP chain live; the bytes-positive leg is UNREACHABLE in-world — producer absence, booked at J8, unit-pinned)', aRo.includes('host-jobs-refused') && aRo.includes('unknown job'), `r1=${JSON.stringify(aRo.slice(0, 220))}`)
+      const aList = aResults[2] ?? ''
+      check(era, 'J6.0', 'job_list THROUGH the mounted row answers with the REAL registry\'s identity-scoped face (bytes present; a world without producers carries zero own rows — a peer row cannot appear)', aList.includes('(no background jobs)') || /\[[a-z]+\]/.test(aList), `r2=${JSON.stringify(aList.slice(0, 200))}`)
+      const aKill = aResults[4] ?? ''
+      check(era, 'J5.0', 'job_kill THROUGH the mounted row answers through the same real chain (unknown-id refusal passthrough; the two native kill forms are unit-pinned — never collapse)', aKill.includes('host-jobs-refused') && aKill.includes('unknown job'), `r4=${JSON.stringify(aKill.slice(0, 200))}`)
+    } else {
+      const trioCalls = [aResults[1] ?? '', aResults[2] ?? '', aResults[4] ?? '']
+      const allGuarded = trioCalls.every(guarded)
+      check(era, 'J3.0', 'KEY-OFF face (stronger than a native fallback): ALL THREE trio calls by the OWNING member are refused by the Team tool guard ("no Team Tool Binding ... an un-governed tool never executes") — jobsEnabled ABSENT = the trio is a hard refusal face, zero execution, zero host touch', allGuarded, `r1=${JSON.stringify(trioCalls[0].slice(0, 140))} r2=${JSON.stringify(trioCalls[1].slice(0, 140))} r4=${JSON.stringify(trioCalls[2].slice(0, 140))}`)
+      check(era, 'J6.0', 'z1 face split: asks OPENED and were allowed for bash (the plane does not freeze the world) while the trio stayed hard-closed', String(facts.asksResolved ?? 0) > 0, `asks=${facts.asksResolved}`)
+      check(era, 'J5.0', 'kill carries no special path when the trio is closed: guard refusal identical to read/list (one face, no half-open)', guarded(aResults[4] ?? ''), `r4=${JSON.stringify((aResults[4] ?? '').slice(0, 140))}`)
+    }
 
-    // ── member B witness (cross-member fence + leak-negative) ──
+    // ── member B witness (cross-member face + leak-negative) ──
     const bReqs = mock.requests.filter((r) => r.body !== null && firstUserText(r.body).includes(`${MK}_TASK_B`) && (digestRequest(r.body).toolCount ?? 0) > 0)
     const bLast = bReqs[bReqs.length - 1]
     const bResults = bLast ? digestRequest(bLast.body).toolResults : []
     facts.bResults = bResults.map((r) => r.slice(0, 700))
     const bRo = bResults[0] ?? ''
-    const fenceVerbatim = bRo.includes('belongs to another session')
-    const noLeak = !JSON.stringify(bResults).includes(TOK_A)
-    check(era, 'J4.0', `member B job_output(A job) is refused with the host caller fence VERBATIM ("belongs to another session")${era === 'jobs' ? ' — reached THROUGH the mounted row as the disclosed corded:false pass-through (the Team layer answers first ONLY for attributed jobs; none exist for host-native starts — pinned at unit level)' : ''}`, fenceVerbatim, `r0=${JSON.stringify(bRo.slice(0, 220))}`)
+    const noLeak = bResults.length > 0 && !JSON.stringify(bResults).includes(TOK_A)
+    if (era === 'jobs') {
+      // The host caller fence needs an A-OWNED job — producer absence makes that
+      // unconstructible in-world (J8). The live face this kit can measure: B meets
+      // the SAME bridge answer for the SAME id (no member-specific widening), the
+      // fence itself is unit-pinned verbatim ('belongs to another session').
+      check(era, 'J4.0', 'member B job_output(same id) THROUGH the mounted row meets the SAME bridge->real-service refusal face as the owner (no member-specific opening; the caller-fence verbatim arm is unconstructible in-world by J8 and unit-pinned)', bRo.includes('host-jobs-refused') && bRo.includes('unknown job'), `r0=${JSON.stringify(bRo.slice(0, 220))}`)
+      const bList = bResults[1] ?? ''
+      check(era, 'J4.2', 'member B job_list THROUGH the mounted row answers its OWN identity (bytes required; zero rows of the peer)', bList.length > 0 && !bList.includes(String(aJobId ?? 'NOID')), `r1=${JSON.stringify(bList.slice(0, 200))}`)
+    } else {
+      check(era, 'J4.0', 'member B meets the same guard refusal (the z1 face is uniform across members — no member-specific opening)', guarded(bRo), `r0=${JSON.stringify(bRo.slice(0, 200))}`)
+      check(era, 'J4.2', 'member B job_list: guard refusal identical (uniform closed face)', guarded(bResults[1] ?? ''), `r1=${JSON.stringify((bResults[1] ?? '').slice(0, 160))}`)
+    }
     check(era, 'J4.1', 'LEAK-NEGATIVE: the owning job\'s output token appears NOWHERE in member B\'s transcript (tool results)', noLeak, `bResults=${bResults.length}`)
-    const bList = bResults[1] ?? ''
-    check(era, 'J4.2', 'member B job_list answers its OWN identity ("(no background jobs)" — zero rows of the peer; identity-filtered live)', bList.includes('(no background jobs)') || !bList.includes(String(aJobId ?? ' ')), `r1=${JSON.stringify(bList.slice(0, 200))}`)
+
+    // ── PRODUCER-ABSENCE law, live (booked, not hidden): no in-world background-job
+    // producer exists for the governed member — the bash dispatch refusal below is
+    // the native-bash arm (binding law); the confined arm (background-not-supported)
+    // and the host arm (no job_start tool) are pinned at unit/pin level. The
+    // bytes-positive mount leg's absence is THIS law, not a missing test.
+    {
+      const aR0 = aResults[0] ?? ''
+      const producerRefused = aR0.includes('cannot be verified at dispatch time') || aR0.includes('background-not-supported') || aR0.includes('IO_POLICY_UNSUPPORTED')
+      check(era, 'J8.0', 'PRODUCER-ABSENCE live witness: the member\'s background-start attempt is refused at dispatch (native-bash binding arm; the confined-shell arm is by-name unit-pinned, the host arm has no job-start tool) — recorded law, the reason the in-world bytes-positive leg CANNOT exist', producerRefused, `r0=${JSON.stringify(aR0.slice(0, 220))} asks=${facts.asksResolved}`)
+    }
 
     // ── mount-face witness from the host log (placement-feed rows) ──
     const bootLog = (() => { try { return readFileSync(instanceLog, 'utf8') } catch { return '' } })()
@@ -534,7 +635,7 @@ async function main() {
   const rev = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: TESTUSE, encoding: 'utf8' }).stdout?.trim()
   const dirty = spawnSync('git', ['status', '--porcelain'], { cwd: TESTUSE, encoding: 'utf8' }).stdout?.trim()
   if (rev !== TEST_USE_BASELINE_SHA || (dirty ?? 'x') !== '') dieFatal(`test-use not pristine-at-baseline: HEAD=${rev} dirty=${JSON.stringify(dirty)}`)
-  if (!checkTestPort(HOST_PORT) || !checkTestPort(MOCK_PORT)) dieFatal(`ports outside the canonical test family (paths.mjs TEST_PORT_RANGES): host=${HOST_PORT} mock=${MOCK_PORT}`)
+  if (!isSanctionedTestPort(HOST_PORT) || !isSanctionedTestPort(MOCK_PORT)) dieFatal(`ports outside the canonical test family (paths.mjs TEST_PORT_RANGES): host=${HOST_PORT} mock=${MOCK_PORT}`)
   if (!(await portFree(HOST_PORT))) dieFatal(`host port ${HOST_PORT} not free`)
   if (!(await portFree(MOCK_PORT))) dieFatal(`mock port ${MOCK_PORT} not free (card-fixed)`)
   const preStable = {

@@ -1,0 +1,19 @@
+---
+schemaVersion: 3
+blueprintId: team.a5jobs-anchor
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5jobs boot team. A5JOBS_20261019T081807_DISC is the discovery marker."
+members:
+  - templateId: worker
+    persona: "You are a worker of the a5jobs boot team."
+memberEnvelopes: []
+requirements: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

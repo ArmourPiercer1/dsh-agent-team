@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "a5jbres-k8bdztq022",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-1oxitc602q343z0yaliyo1fc",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-a5jobs-team-z1-2026-10-19T08-18-07"
+          },
+          "scope": {
+            "rootSessionId": "session-a5jobs-team-z1-2026-10-19T08-18-07",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-0cwimh41nhpm"
+            },
+            "targetInstanceId": "inst-0cwimh41nhpm",
+            "actionName": "parameter-permission",
+            "correlation": "jb-a1-gj0f6n",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:d40cd59bd62a62f145e75fc13b7df13cb0ea18c0b6e3b486bcb3a81c8026382c",
+            "authorityScope": {
+              "operationClass": "bash",
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              }
+            }
+          },
+          "requestSequence": 5,
+          "decisionSequence": 6,
+          "createdAt": "2026-10-19T08:18:10.874Z",
+          "note": "a5jobs live leg: scripted human allow"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

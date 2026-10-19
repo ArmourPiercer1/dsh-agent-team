@@ -1,0 +1,152 @@
+{
+  "runStamp": "2026-10-19T08-16-23",
+  "eras": [
+    "z1",
+    "jobs"
+  ],
+  "hostPort": 3186,
+  "mockPort": 3496,
+  "total": 22,
+  "failed": [
+    "z1/J6.0",
+    "jobs/J3.0",
+    "jobs/J6.0",
+    "jobs/J5.0",
+    "jobs/J4.0"
+  ],
+  "kept": [],
+  "criteria": [
+    {
+      "era": "*",
+      "id": "H0.0",
+      "ok": true,
+      "name": "stable :3080/:3180 probed read-only before the run (probe only, never touched)"
+    },
+    {
+      "era": "z1",
+      "id": "J1.0",
+      "ok": true,
+      "name": "real host booted on the production row with the era plane shape (profile-patch seam only)"
+    },
+    {
+      "era": "z1",
+      "id": "J1.1",
+      "ok": true,
+      "name": "the a5jobs blueprint lists RUNS through the wire catalog"
+    },
+    {
+      "era": "z1",
+      "id": "J2.0",
+      "ok": true,
+      "name": "team.create ran the leader directive to completion (two delegations + collects scripted at the mock)"
+    },
+    {
+      "era": "z1",
+      "id": "J3.0",
+      "ok": true,
+      "name": "KEY-OFF face (stronger than a native fallback): ALL THREE trio calls by the OWNING member are refused by the Team tool guard (\"no Team Tool Binding ... an un-governed tool never executes\") — jobsEnabled ABSENT = the trio is a hard refusal face, zero execution, zero host touch"
+    },
+    {
+      "era": "z1",
+      "id": "J6.0",
+      "ok": false,
+      "name": "z1 face split: the bash ASK->allow->EXECUTE arc still RAN for real (the plane does not freeze the world; only the un-mounted trio is closed)"
+    },
+    {
+      "era": "z1",
+      "id": "J5.0",
+      "ok": true,
+      "name": "kill carries no special path when the trio is closed: guard refusal identical to read/list (one face, no half-open)"
+    },
+    {
+      "era": "z1",
+      "id": "J4.0",
+      "ok": true,
+      "name": "member B meets the same guard refusal (the z1 face is uniform across members — no member-specific opening)"
+    },
+    {
+      "era": "z1",
+      "id": "J4.2",
+      "ok": true,
+      "name": "member B job_list: guard refusal identical (uniform closed face)"
+    },
+    {
+      "era": "z1",
+      "id": "J4.1",
+      "ok": true,
+      "name": "LEAK-NEGATIVE: the owning job's output token appears NOWHERE in member B's transcript (tool results)"
+    },
+    {
+      "era": "z1",
+      "id": "J7.0",
+      "ok": true,
+      "name": "Z1 control witness: the placement-feed rows list does NOT carry the trio names (jobsEnabled ABSENT = zero rows by absence)"
+    },
+    {
+      "era": "jobs",
+      "id": "J1.0",
+      "ok": true,
+      "name": "real host booted on the production row with the era plane shape (profile-patch seam only)"
+    },
+    {
+      "era": "jobs",
+      "id": "J1.1",
+      "ok": true,
+      "name": "the a5jobs blueprint lists RUNS through the wire catalog"
+    },
+    {
+      "era": "jobs",
+      "id": "J2.0",
+      "ok": true,
+      "name": "team.create ran the leader directive to completion (two delegations + collects scripted at the mock)"
+    },
+    {
+      "era": "jobs",
+      "id": "J3.0",
+      "ok": false,
+      "name": "member A read its OWN real background job THROUGH the MOUNTED trio row and the output bytes came back (corded:false pass-through over the REAL host service = the B-ACT-1-DEP chain end to end)"
+    },
+    {
+      "era": "jobs",
+      "id": "J6.0",
+      "ok": false,
+      "name": "member A job_list THROUGH the mounted row carries its own job (id + kind/status row form)"
+    },
+    {
+      "era": "jobs",
+      "id": "J5.0",
+      "ok": false,
+      "name": "job_kill THROUGH the mounted row REQUESTS in the native form (\"requested cancellation of job <id>\") — never claims completion"
+    },
+    {
+      "era": "jobs",
+      "id": "J4.0",
+      "ok": false,
+      "name": "member B job_output(A job) THROUGH the mounted row is refused with the host caller fence VERBATIM (\"belongs to another session\") — the disclosed two-fence law live: the Team layer answers FIRST only for attributed jobs (none exist for host-native starts; unit-pinned), the host fence then speaks for itself"
+    },
+    {
+      "era": "jobs",
+      "id": "J4.2",
+      "ok": true,
+      "name": "member B job_list THROUGH the mounted row answers its OWN identity (bytes required; zero rows of the peer)"
+    },
+    {
+      "era": "jobs",
+      "id": "J4.1",
+      "ok": true,
+      "name": "LEAK-NEGATIVE: the owning job's output token appears NOWHERE in member B's transcript (tool results)"
+    },
+    {
+      "era": "jobs",
+      "id": "J7.0",
+      "ok": true,
+      "name": "MOUNT witness: the placement-feed rows list carries the fixed trio names (the jobsEnabled row rode the assembly; the trio is Team-claimed on this world)"
+    },
+    {
+      "era": "*",
+      "id": "H3.0",
+      "ok": true,
+      "name": "stable instances unchanged; test-use pristine AFTER (HEAD==baseline, porcelain 0); every world swept"
+    }
+  ]
+}

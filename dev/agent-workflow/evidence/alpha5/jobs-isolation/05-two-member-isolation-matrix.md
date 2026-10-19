@@ -41,7 +41,7 @@
 | 过期回收 | （见①结论：lease 层无 TTL=法；grant-expired→APPROVAL_STALE @grant 层；provider termination-unconfirmed @provider 层） | 同左 | ✅（①收口） |
 | kill 两形 | 'requested'→cancelRequested 置位、token 屹立（"kill → requested marks…keeps token outstanding"） | 'already-finished' 零结算；unknown id typed 拒（"never invents"） | ✅ |
 | 创建归属生产者 | — | **治理世界无背景作业生产者**：confined shell 行**按名拒** background（plane-effect-backends.mjs `background-not-supported`，"never reinterpreted"）⇒ 归属登记 API 在位、生产方=零（corded:false 透传=现存活形）。**记录，非缺口掩盖**：宿主无 job_start 工具面（钉面+全树互证）=宿主法律 | ✅（记录形） |
-| 装面端到端（3188/3496/a5jobs-*） | 计划 C3：两成员世界正反控+Z1 对照+drain | 同左 | ⏳（接通已落装：C2 commit；前置=host.ts 依赖行缺项单 **B-ACT-1-DEP**，见 04 号证据） |
+| 装面端到端（真宿主；paths.mjs 法定端口族 3186/3496） | **🟢 C3 24/24 ALL GREEN**（`dev-runs/run-a5jobs-live.mjs`，终档 `dev-runs/runs/live-2026-10-19T08-18-07/`，README-c3.md 逐项）：装面见证=placement-feed 行含 trio（z1 无）；挂载行经桥**打到真注册表**（unknown-id 宿主原文透传=corded:false 过 Team 门=B-ACT-1-DEP 链存活）；身份过滤 list 真答 | **🟢** z1 缺省关=Team 守门硬拒面（`never executes`，**非原生回退**）+全员同形无特开；泄漏负控（A 作业 token 于 B transcript 零出现）双 era 绿。**披露**：bytes-正向装面格按法**不可构造**（生产者缺席三臂=J8 现场钉：confined 按名拒 background+别名面 bash 绑定拒实证+宿主无 job_start），该路正向=单元面覆盖；corded:true 装面格=无公开归属注入缝（B-ACT-2 候选，非缺测） |
 
 ## D5 审批/复核（PTC/ask 道）
 

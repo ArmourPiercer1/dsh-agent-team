@@ -1,0 +1,14 @@
+[*] PASS H0.0 — stable :3080/:3180 probed read-only before the run (probe only, never touched) ({"p3080":{"url":"http://127.0.0.1:3080/","status":401},"p3180":{"url":"http://127.0.0.1:3180/","status":"unreachable"}})
+mock model on 3496; eras=z1
+[z1] PASS J1.0 — real host booted on the production row with the era plane shape (profile-patch seam only) (origin=http://127.0.0.1:3186)
+[z1] PASS J1.1 — the a5jobs blueprint lists RUNS through the wire catalog (rows=2)
+[z1] FAIL J2.0 — team.create ran the leader directive to completion (two delegations + collects scripted at the mock) (status=200 body={"type":"server-response","rpcId":"a5jbc-2e5exaygte","result":{"ok":false,"error":{"code":"MALFORMED_DTO","message":"permission policy $.leader.capabilities.permissions.default must be one of ask | deny (a default of 'al)
+[z1] FAIL J3.0 — member A read its OWN real background job through job_output and the output bytes came back (the host-native row (control of controls)) (id=null r1="")
+[z1] FAIL J6.0 — member A job_list carries the job row (id + kind + status visible; the two rows formats agree) (r2="")
+[z1] FAIL J5.0 — job_kill REQUESTS in the native form ("requested cancellation of job <id>") — never claims completion (r3="" r4="")
+[z1] FAIL J4.0 — member B job_output(A job) is refused with the host caller fence VERBATIM ("belongs to another session") (r0="")
+[z1] PASS J4.1 — LEAK-NEGATIVE: the owning job's output token appears NOWHERE in member B's transcript (tool results) (bResults=0)
+[z1] PASS J4.2 — member B job_list answers its OWN identity ("(no background jobs)" — zero rows of the peer; identity-filtered live) (r1="")
+[z1] PASS J7.0 — Z1 control witness: the placement-feed rows list does NOT carry the trio names (jobsEnabled ABSENT = zero rows by absence) (feed="")
+[*] PASS H3.0 — stable instances unchanged; test-use pristine AFTER (HEAD==baseline, porcelain 0); every world swept (porcelain=0; swept=z1:true)
+FAILED 5/12: z1/J2.0, z1/J3.0, z1/J6.0, z1/J5.0, z1/J4.0

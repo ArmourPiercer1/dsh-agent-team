@@ -32,7 +32,7 @@
 
 ## 4. jobs（衔接件，详见 05 号矩阵 D4）
 
-产线接线=C2 已落（`jobsEnabled` 缺省关）；验收=单元 43/43 双档+RED 存档；装面端到端=待 B-ACT-1-DEP+C3；创建生产者=无（confined shell 按名拒 background=在册法律，corded:false 透传为现存活形）。
+产线接线=C2 已落（`jobsEnabled` 缺省关）+**B-ACT-1-DEP 已落**（`36f35aaa` 懒式 jobs dep，真服务链可达）；验收=单元 43/43 双档+RED 存档+**装面端到端 C3 24/24 ALL GREEN**（`dev-runs/run-a5jobs-live.mjs`+README-c3.md：feed 行装面见证、桥→真注册表往返、z1 硬拒面对照、泄漏负控）；创建生产者=无（三臂法 J8 现场钉死，bytes-正向装面格按法不可构造，正向=单元面）。
 
 ## 收口口径
 

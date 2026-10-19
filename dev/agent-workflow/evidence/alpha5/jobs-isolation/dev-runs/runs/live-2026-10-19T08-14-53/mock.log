@@ -1,0 +1,18 @@
+mock: listening on 127.0.0.1:3496
+mock: 1 [messages] tool-call reply: team_delegate
+mock: 2 [messages] text reply (19 chars): "a5jobs live session"
+mock: 3 [messages] tool-call reply: bash
+mock: 4 [messages] text reply (19 chars): "a5jobs live session"
+mock: 5 [messages] tool-call reply: job_output
+mock: 6 [messages] tool-call reply: job_list
+mock: 7 [messages] tool-call reply: bash
+mock: 8 [messages] tool-call reply: job_kill
+mock: 9 [messages] text reply (986 chars): "A5JOBS_A_RESULT id=JOBID-MISSING r0=[{\"type\":\"text\",\"text\":\"Error: permission re"
+mock: 10 [messages] tool-call reply: team_collect
+mock: 11 [messages] tool-call reply: team_delegate
+mock: 12 [messages] tool-call reply: job_output
+mock: 13 [messages] text reply (19 chars): "a5jobs live session"
+mock: 14 [messages] tool-call reply: job_list
+mock: 15 [messages] text reply (379 chars): "A5JOBS_B_RESULT r0=[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"job_output\\"
+mock: 16 [messages] tool-call reply: team_collect
+mock: 17 [messages] text reply (18 chars): "A5JOBS_LEADER_DONE"
