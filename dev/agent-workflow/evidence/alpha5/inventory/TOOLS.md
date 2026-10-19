@@ -1,6 +1,6 @@
 # TOOLS.md — Alpha.5 逐工具对账清单（R 路）
 
-- 写者/时刻 = 同 `MECHANISMS.md`（R 路，2026-10-19 ≈07:5xZ；**rev2=根 07:30Z 校准令四条已落**；**rev3=收口小笔：宿主树改走主检出 `tests/deepseek-harness-test-use`@639ed01539 亲核——str_replace_editor 注册源+opt-in 零 preset 行坐实、fs/shell 族注册行落地、同族 opt-in 包复核无漏行**）；基线 = `d5de7497`（现场 `git log -1` 亲验）。
+- 写者/时刻 = 同 `MECHANISMS.md`（R 路，2026-10-19 ≈07:5xZ；**rev2=根 07:30Z 校准令四条已落**；**rev3=宿主树主检出亲核（str_replace_editor 注册源+opt-in 零 preset 行坐实、fs/shell 族注册行落地、同族 opt-in 包复核无漏行）**；**rev4/4b=str_replace_editor 三重亲核（宿主官方文档自证+零 preset+注册面）**；**rev5=根 07:46Z 交叉核验令：新增 C2 三层钉表（钉/检查/中介逐名 file:line），managed 词表 7 名由"只有钉表/未纳管"修正为"检查层链在码、消费点可指；中介层 C-FS 逐名指认"，分歧统一列「待 A 真装判定」**）；基线 = `d5de7497`（现场 `git log -1` 亲验）。
 - **枚举源=真实注册面，非文档**：
   ① 原生全集 = `packages/runtime/src/plugin/live/team-tool-plane.mjs:258-324 PLANE_RESERVED_NATIVE`（**现场重数=68 名** + `mcp__` 前缀族穷尽 `:324`）——该表钉宿主 `0.2.0-rc.2@639ed01539`（`PLANE_RESERVED_NATIVE_HOST_PIN :257`），由双向漂移机检对宿主权威目录 harvest（宿主保证测试 `packages/core/tools/tests/gen-tool-catalog.spec.ts`：boot 全部 shipped tool 包=70 entry/65 唯一名）强制同步，且每名须真实注册来源（猜名=RED，a5-pindir 律）；
   ② Team 协调面 = `packages/tools/src/tools.ts` 13 名逐行（:498-1197）；
@@ -40,19 +40,36 @@
 
 ## C. 原生工具全集（68 名 + `mcp__` 前缀族，现场枚举）
 
-共性——**注册处**=宿主 shipped 包 @`639ed01539`（每名真实注册来源在钉表注释具名：registry/tools.ts/toolName-config/boot 包；fs/shell 族已按**主检出宿主树** `tests/deepseek-harness-test-use` 亲核（worktree 内该树 gitignored 不在）：read/write/edit/read_image=`packages/fs/tool-fs/src/{read,write,edit,read-image}.ts:78/73/85/210`，glob/grep=`packages/fs/tool-fs-search/src/{glob,grep}.ts:307/285`，bash=`packages/shell/tool-bash/src/index.ts:374`）；**配置面**=宿主 preset/profile（team 蓝图不可达，除 takeover 两对）；**治理面=三分类（§C 头律，逐行不再重复）**：strict 面 setup 响亮拒（不可跑）/ plane CLAIM 钉拒装配 / 非 strict 普通挂载宿主原样；Team allow/ask/deny 车道不可执行触达；四形状行为=REWORK §④(b)（preset 全拒 dispatch 形 / host-plane 原生执行形 / RC 形=request-control 包络前 fail-closed / pr1shape 拒形）；**durable grant 消费通路 runtime consumer=0**（`grant.ts:84,134` 闭码无消费者，现场 grep）⇒ 除标注外本组主标签从严=**未测（治理车道腿）**，三层行为本身已实测非未知。**同族 opt-in 复核（主检出亲 grep `packages/bundle/**/*.yml`）**：shipped 但**缺省 preset 零挂载行**的 tool 包=`tool-str-replace-editor`（示例仅在 `snapshots/sdk/persistent-tools/cordis.yml:6-7`）、`tool-lsp`、`tool-terminal`、`tool-session-query`、`tool-agent-team`(experimental)；条件挂载=`tool-workspace-dependencies`（仅 sdk-app）、persistent bash/pwsh（仅 minimal/sdk-minimal 形）；缺省已挂=present（`presets/{cordis,ptc,standard}.patch.yml`）、ask-user（`presets/cordis.patch.yml:130`）。C 表 lsp/terminal_*/present 行注记与此一致，**无漏行需另立**。
+共性——**注册处**=宿主 shipped 包 @`639ed01539`（每名真实注册来源在钉表注释具名：registry/tools.ts/toolName-config/boot 包；fs/shell 族已按**主检出宿主树** `tests/deepseek-harness-test-use` 亲核（worktree 内该树 gitignored 不在）：read/write/edit/read_image=`packages/fs/tool-fs/src/{read,write,edit,read-image}.ts:78/73/85/210`，glob/grep=`packages/fs/tool-fs-search/src/{glob,grep}.ts:307/285`，bash=`packages/shell/tool-bash/src/index.ts:374`）；**配置面**=宿主 preset/profile（team 蓝图不可达，除 takeover 两对）；**治理面=三分类（§C 头律）+ managed 词表分层（07:46Z 交叉核验令修正，与 A 三层矩阵同分类法）**：① **managed 词表 7 名**（read/read_image/write/edit/lsp/bash/pwsh=`packages/domain/blueprint/src/schema.ts:421-429 PERMISSION_TOOL_NAMES` 闭集）在 strict 面=class-1 MANAGED_OPERATION_PERMISSION（`packages/runtime/operation-permission/permission-coverage.ts:28-36` 优先序第 1 级）——**per-call 车道判定有可指消费点**（canonical-operation case 群 + `installParameterPermissionListener` 装配 `glue:3019`；三层钉表见 C2）；② KNOWN_SENSITIVE 名单（grep/glob/subagent*/web_*/job_*/send_message/interrupt_agent/list_agents/ralph/workflow+`job_` 前缀=`permission-coverage.ts:143-176`）在 strict 面=setup FATAL typed 拒（门本身=检查层，无 per-call 车道）；③ 其余名 strict 面 UNKNOWN=FATAL / 非 strict=宿主原样。钉（plane CLAIM 拒装配）=另一层，见各行钉列；四形状行为=REWORK §④(b)；**Alpha.5 durable grant 消费通路 runtime consumer=0**（`grant.ts:84,134` 闭码无消费者，现场 grep——指 PR2 代际通路，非①的 alpha.2/3 per-call 车道）。**同族 opt-in 复核（主检出亲 grep `packages/bundle/**/*.yml`）**：shipped 但**缺省 preset 零挂载行**的 tool 包=`tool-str-replace-editor`（示例仅在 `snapshots/sdk/persistent-tools/cordis.yml:6-7`）、`tool-lsp`、`tool-terminal`、`tool-session-query`、`tool-agent-team`(experimental)；条件挂载=`tool-workspace-dependencies`（仅 sdk-app）、persistent bash/pwsh（仅 minimal/sdk-minimal 形）；缺省已挂=present（`presets/{cordis,ptc,standard}.patch.yml`）、ask-user（`presets/cordis.patch.yml:130`）。C 表 lsp/terminal_*/present 行注记与此一致，**无漏行需另立**。
+
+## C2. managed 词表三层钉表（钉 / 检查=per-call 消费点 / 中介=执行路径是否经 Controlled FS；07:46Z 根令，与 A 矩阵对账）
+
+判定法=每层独立问「有无**可指** file:line」；检查层=strict 面 per-call 车道判定链（A3 静态判定+A5 pre-execute 监听 `glue:3019`+artifact-grant 梯=`operation-permission/pre-execute-adapter.ts:20-32` 图）；中介层=PR249-PR3 受控 FS 后端是否在**该工具执行路径**上（=plane 装配 `team-tool-plane.mjs:552 createProductionControlledFsProvider`→`:760 fsProvider`→仅 plane 行后端消费）。
+
+| 名 | 钉（plane 冒名拒） | 检查（per-call 消费点 file:line） | 中介（C-FS 在执行路径？） | 待 A 真装判定 | 标签（R 判定） |
+|---|---|---|---|---|---|
+| read | `team-tool-plane.mjs:260` | `operation-permission/canonical-operation.ts:669` case 'read'+listener `glue:3019`+artifact-grant 梯（strict-read/spill） | **部分是**：受治理 read 行经 C-FS（`:552/:760`+read 行后端 gateCall，`E/a5ie-r2b` 正控）；host read 本体=车道判定后原生体（不经 C-FS） | strict 面逐次 ask/deny 端到端收据 | 检查链生产在码；中介仅受治理形 |
+| write | `:260` | `canonical-operation.ts:683` case 'write'+`glue:3019` | **无**（host write 体不在 C-FS 路径；write plane 行未挂=REWORK 行 6） | 同上 | 检查在码/中介无/收据待 A |
+| edit | `:260` | `:688` case 'edit'+`glue:3019` | **无**（同 write；c0405 kit=Team Definition 形非 host edit 体） | 同上 | 检查在码/中介无/收据待 A |
+| read_image | `:260` | `:679` case 'read_image'+`glue:3019` | **无** | 同上 | 检查在码/中介无/收据待 A |
+| lsp | `:263` | `:699` case 'lsp'+`glue:3019` | realm 形 confined launcher（`#304`）非 C-FS；host 共享池形=无 | 装面挂 lsp 腿 | 检查在码/realm 有真实验收（`#306`） |
+| bash | `:261` | `canonical-operation.ts:100,207`（bash/pwsh resource-key）+`glue:3019`+LEADER exec-class token 梯（`pre-execute-adapter.ts:32`） | **takeover 形经 confined provider（B 表真 Landlock）**；非 takeover strict=车道判定后 host 体；非 strict=原生 | 未接管 strict 形状腿 | 接管形有真实验收/其余待 A |
+| pwsh | `:261` | 同 bash 族（resource-key `pwsh`）+shell-class fingerprint 声明（permission-plane `:1137` 注记） | **无**（无 pwsh plane 行） | 本机 Windows 维度不可测 | 检查在码/中介无 |
+| grep / glob | `:260` | **检查层=coverage 门本身**：class-5 KNOWN_SENSITIVE（`permission-coverage.ts:146-149`）strict setup FATAL typed——**无 per-call 车道可指=钉无 per-call 消费点** | 别名行经 confined rg/walker（B 表 team_grep/team_glob=中介真）；host 名 native 仅非 strict 形 | 无需（strict 面不可跑） | strict=setup 拒（门消费点可指）；效应走别名行 |
+
+**与 A 的口径调和**：A 线「公开治理链完整仅缺收据」对 managed 词表 7 名成立的对象=**检查层**（链在码+消费点可指）；R 表原「只有钉表」低估了这 7 名（钉=第三层反冒名，另有其层），已按本表分层修正；**分歧统一入右列「待 A 真装判定」**，R 不代判真装结果。todo_write 等 SAFE_UNMANAGED 与 stagehand/schedule_* 等 UNKNOWN 行不受本表改判（前者设计内、后者 strict FATAL/非 strict 原样，维持 C 表原行）。
 
 | 原生名 | 生产接线（=host 原生） | 治理覆盖实况 | 正/负验收 | 未测面/阻塞·延期 | 标签 |
 |---|---|---|---|---|---|
-| bash | 是（host dsh-tool-bash） | **接管对 supported**（takeover 时=治理行，见 B 行） | `#329` runs；**C1 修复面=证据@090b87b5:`a5c1fix-b/runs/2026-10-18T23-05-55Z/`（四条件引用制：①②③ F3b v3 带外监视+④真 wire verbatim；字节级 SAME_BYTES 链入冻结面）** | 无 takeover 配置世界 A4.4 拒存续 verbatim；wire 死亡形红不销案（#1 渲染层限制） | 有真实验收（接管形+C1 修复面）/未测（未接管形状腿） |
-| read | 是 | **接管对 supported** | `E/a5ie-r2b` | 同上 B 行 | 有真实验收（接管形） |
-| grep | 是 | **takeover=空，仅别名覆盖**（team_grep）；原生名本身未纳管 | parity 表在 team_grep 侧 | 原生 grep 名在治理世界的车道触达=无 | 未测 |
-| glob | 是 | 同上（team_glob；关断键 `#342`） | 五控 50/50 在 team_glob 侧 | 同上 | 未测 |
-| write | 是 | **无任何治理行**（write 行未挂，REWORK 行 6） | 无 Team 面正/负 | write 治理=计划内未装（C-FS 写半壁） | 只有模块（C-FS 本体）/未测（write 效应） |
-| edit | 是（**亲核宿主树@639ed01539**：`packages/fs/tool-fs/src/edit.ts:85` `name:'edit'`） | 无；定义在公开 seam 不可读（W-E2 差距在册） | 仅 c0405 kit 治理链（Team Definition 材料化，undo 逐字节复原；delete/undo_all typed `IO_POLICY_UNSUPPORTED`） | 生产注册边无（kit-only，矩阵 M-04 TRANSITIONED-LIVE=判据级） | 只有模块 |
+| bash | 是（host dsh-tool-bash，`src/index.ts:374` 亲核） | **三层见 C2 行**：钉 `:261`；检查=resource-key `:100/:207`+`glue:3019`+LEADER exec-class 梯；中介=**takeover 形经 confined provider（真 Landlock）** | `#329` runs；**C1 修复面=证据@090b87b5:`a5c1fix-b/runs/2026-10-18T23-05-55Z/`（四条件引用制：①②③ F3b v3 带外监视+④真 wire verbatim；字节级 SAME_BYTES 链入冻结面）** | 无 takeover 配置世界 A4.4 拒存续 verbatim；wire 死亡形红不销案（#1 渲染层限制）；未接管 strict 形状腿=待 A | 有真实验收（接管形+C1 修复面）/未测（未接管形状腿） |
+| read | 是 | 见 C2 行：钉 `:260`；检查=`canonical-operation.ts:669`+`glue:3019`+artifact-grant 梯；中介=**受治理 read 行经 C-FS**（`:552/:760`），host read 本体=车道判定后原生 | `E/a5ie-r2b`（接管形 C-FS 正控）；strict 逐次收据=待 A | 同上 B 行 | 有真实验收（接管形）/检查层在码 |
+| grep | 是 | **三层见 C2**：strict=class-5 KNOWN_SENSITIVE **setup FATAL**（`permission-coverage.ts:146-149`，门=检查层，**无 per-call 车道可指**）；效应治理经别名行 team_grep；非 strict=原生 | parity 表在 team_grep 侧 | host grep 名在 strict 面不可跑（门拒），非 strict 未纳管 | strict=setup 拒实测 / 效应走别名行 |
+| glob | 是 | 同上（team_glob 别名中介；关断键 `#342`） | 五控 50/50 在 team_glob 侧 | 同上 | 同 grep |
+| write | 是 | **三层见 C2 行**：钉 `:260`；检查层=**有可指消费点**（`canonical-operation.ts:683`+listener `glue:3019`）；中介（C-FS）=**无**（write plane 行未挂，REWORK 行 6） | 检查链在码；端到端 ask/deny 收据=待 A 真装判定（A3/A5 域级测在 alpha.2/3 轮在册） | write C-FS 中介=计划内未装（写半壁） | 检查层生产已接线/中介无/端到端待 A（原"只有模块"低估，07:46Z 修正） |
+| edit | 是（**亲核宿主树@639ed01539**：`packages/fs/tool-fs/src/edit.ts:85` `name:'edit'`） | 见 C2 行：钉 `:260`；检查=`canonical-operation.ts:688`+`glue:3019`；中介=无（c0405 kit 是 Team Definition 形，非 host edit 体；W-E2 不可读差距在册） | c0405 kit（判据级 M-04 TRANSITIONED-LIVE）；strict 逐次收据=待 A | 同 write | 检查层生产已接线/中介无/端到端待 A |
 | str_replace_editor | **opt-in 独立包** `@deepseek-ai/dsh-tool-str-replace-editor`（根 07:30Z 令②：与 edit **两行两注册源**，不得并成同一注册形）。**亲核**（宿主树=主检出 `tests/deepseek-harness-test-use` @`639ed01539`；worktree 内该树 gitignored 不在，来源限定注此）：注册名=`packages/fs/tool-str-replace-editor/src/index.ts:430`（`name: 'str_replace_editor'`），包导出名=`:502`；发行=workspace 依赖 `apps/cli/package.json:84`；**preset 挂载面=零行**：`packages/bundle/**` 全部 cordis/patch yml 亲 grep 无该包行（示例形仅在 `snapshots/sdk/persistent-tools/cordis.yml:6-7`）——"preset 不含、须显式装行"由亲核坐实；**且宿主官方文档自证**（`packages/bundle/base/README.md:52`+`README.zh.md:52`（陈述行；启用条目形两文各 `:54-60`，主检出亲验）：「The `str_replace_editor` tool remains available as an explicit opt-in」+给出 `id: tool-str-replace-editor` 显式启用条目形）⇒ **opt-in 定性=宿主文档+零 preset 挂载+注册面三重亲核** | 无（定义在公开 seam 不可读，同 edit）；挂载与否由宿主 profile 显式行决定，team 蓝图不可达 | 同 edit 行（kit 治理链为 Team Definition 形，非该包本体） | 同 edit | 只有模块（钉+opt-in 面；注册源已亲核） |
-| read_image | 是 | 同上（M-05 kit-LIVE 判据级） | c0405+c08 双 kit | 生产面=host 原生未纳管 | 只有模块 |
-| pwsh | 是 | shell-class 规则在权限面声明（fingerprint 形，permission-plane `:1137` 注记）；无 plane 行 | 无装面腿 | Windows 宿主维度本机不可测 | 未测 |
+| read_image | 是 | 见 C2 行：钉 `:260`；检查=`canonical-operation.ts:679`+`glue:3019`；中介=无 | c0405+c08 双 kit（判据级）；strict 收据=待 A | — | 检查层生产已接线/中介无/端到端待 A |
+| pwsh | 是 | shell-class 规则在权限面声明（fingerprint 形，permission-plane `:1137` 注记）；检查层同 C2 bash 族（resource-key+`glue:3019`）；无 plane 行=中介无 | 无装面腿 | Windows 宿主维度本机不可测 | 检查层在码/中介无/未测（本机） |
 | lsp | 是（host 共享池） | Team 侧 realm 装配在码（`#304`），试用 profile 未挂 | REAL-LSP `#306` 30/30×2（kit/CI receipts `E/prod-lsp/ci-304/`） | 装面挂 lsp 腿未驱动（preset 即测）；原生 lsp 名车道=不可触达 | 有真实验收（realm 形）/未测（装面）；sub-realm 全键池=上游阻塞（M29） |
 | present | 是 | 钉 only | 无 | 车道触达无 | 只有模块（钉）→未测 |
 | skill / load_workspace_dependencies | 是（宿主 skill 面） | skills 注入面见 M11（Team 提供方注册） | boot/mount 级 | 技能调用端到端未测 | 生产已接线（注入）/未测（调用） |
@@ -80,7 +97,7 @@
 
 ## D. 汇总（禁美化声明）
 
-- **真治理效应覆盖（生产+验收）的工具 = 4 行面**：team_bash/bash@bash、team_grep、team_glob、read@read；外加 PTC run_code 的 fs 半臂审批梯。
+- **真治理效应覆盖（生产+验收）的工具 = 4 行面**：team_bash/bash@bash、team_grep、team_glob、read@read；外加 PTC run_code 的 fs 半臂审批梯。**managed 词表 7 名（read/read_image/write/edit/lsp/bash/pwsh）检查层链在码、消费点可指（C2 表），其中介层（C-FS）仅 read 受治理形与 bash 接管形为真；strict 逐次端到端收据=统一待 A 真装判定（07:46Z 交叉核验令分层，与 A「链完整仅缺收据」不互斥：那句说的是检查层，"只有钉表"原口径低估了这 7 名，已修）。**
 - 13 team_* = 生产装配+协调面验收，但**每个工具的纵深负控未成矩阵**（A 表逐行未测面）。
 - 其余 ~60 原生名按**三分类律**分层陈述（根 07:30Z 令④，禁泛称"全可执行绕过"）：① strict `capabilities.permissions` 蓝图下=UNKNOWN_UNMANAGED **setup 响亮拒**（typed，跑不起来）；② plane CLAIM=钉拒于装配；③ 非 strict 普通挂载=宿主原样执行（设计域，含 todo_write 等 SAFE_UNMANAGED 既定设计）。Team 审批→放行原生行=0 消费者通路；「治理覆盖 68/68」与"全部可跑绕过"两个口径**都不成立**。
 - 枚举完整性自证：钉表 68 名 + 前缀族 = 宿主权威 harvest（65 唯一名 + toolName 路由名 subagent_fork/codex/claude_code + 注释具名的 registry/boot/config 路由名）经双向漂移机检强制；若宿主换 pin，漂移测试先 RED 逼重导出——本表数与机检同源，无文档抄写。
