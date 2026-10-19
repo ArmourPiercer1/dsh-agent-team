@@ -1,0 +1,110 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=64 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1b abort ALREADY fired before the call (根①): a pre-aborted signal cancels at once, no race with the payload
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C1b abort ALREADY fired before the call (根①): a pre-aborted signal cancels at once, no race with the payload
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=75 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=85 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=95 exit=not-observed timedOut=false cancelled=true
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=106 exit=not-observed timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-2 pid=109 exit=not-observed timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive)
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=120 exit=7 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=130 exit=not-observed timedOut=true cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5b3-realm rows=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5b3-realm call=team-a5b3-instance-bash-1 pid=151 exit=143 timedOut=false cancelled=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=team-a5b3-instance-grep-1 records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5b3-realm legs=6
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob-2 pid=177 files=1 capped=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5b3-realm call=team-a5b3-instance-grep-3 records=1 total=1 truncated=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5b3-realm call=team-a5b3-instance-glob-4 pid=187 files=1 capped=false
+
+stdout | packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false)
+[a5b3 C10] baseline union read: path=/srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/session/src/types.ts git-blob-sha=593c86d52a5c26d531913ffaff9aac651732c2da
+
+ ❯ packages/runtime/test/a5b3-cancel-leg.test.ts (12 tests | 1 failed) 4906ms
+     ✓ C1 user cancel: mid-run abort with cause {kind:'user'} renders `bash · cancelled` and settles fast (covers 根①-input; the dedicated PRE-aborted leg is C1b)  433ms
+     ✓ C1b abort ALREADY fired before the call (根①): a pre-aborted signal cancels at once, no race with the payload 266ms
+     × C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet 276ms
+     ✓ C2 parent cancel: cause {kind:'parent'} is the same cancelled shape (a parent tearing down its child's call IS a cancel)  426ms
+     ✓ C3 hook/disposed: the abort is HONORED (payload terminated) but the death form stands — never `bash · cancelled`  855ms
+     ✓ C4 positive control with a LIVE signal: a normal run still reports the code it measured (the wiring is additive) 230ms
+     ✓ C5 the timeout leg keeps its recorded form past a live signal: exit=not-observed · timed-out, cancelled false 246ms
+     ✓ C6 provider terminate is NOT a cancel (根 13:50Z booked this as its own leg): terminate carries the waitpid death, never the cancelled word  749ms
+     ✓ C7 zero-motion next door, in B2 X4's own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted  590ms
+     ✓ C8 根② exit-vs-cancel, deterministic: whichever fact settles the race is the SINGLE truth; if both already exist, the payload's own end OUTRANKS the cancel (tie law exited > timedOut > aborted) 4ms
+     ✓ C9 根③ timeout-vs-cancel, deterministic: a same-tick timeout OUTRANKS the abort (timedOut > aborted); an abort with the timer held is an abort — no timing luck 2ms
+     ✓ C10 根⑤ cause range, measured not imagined: the union has EXACTLY user|parent|hook|disposed at the baseline, and the cancelled law maps ONLY the first two to true (every other input, junk included, is false) 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5b3-cancel-leg.test.ts > B3 C — the shell row honors the host cancel signal, and only for the causes that mean it > C11 根①-boundary witness (root 16:30Z ③): a pre-aborted call reaches this row AFTER the provider spawned; the row acts by immediate controlled termination; whether the payload executed any statement is RECORDED, never bet
+AssertionError: this very call must have reached spawn — the provider mkdir's a fresh per-plan outDir during stream-spawn prep (provider.ts:496-497), so a pre-aborted call reaching THIS row was spawned first, by construction: expected 0 to be greater than or equal to 1
+ ❯ packages/runtime/test/a5b3-cancel-leg.test.ts:270:237
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  21:26:30
+   Duration  5.30s (transform 817ms, setup 0ms, import 229ms, tests 4.91s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

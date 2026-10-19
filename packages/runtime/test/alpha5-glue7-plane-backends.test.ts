@@ -88,6 +88,10 @@ const REALM = 'a5g7-unit-realm'
 const fsInstance = () => ({ fs: 'a5g7-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' })
 const confinedProvider = () => ({
   trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+  // closing round (review-B item 5): the fixture carried no scratchRoot; the
+  // provider now REFUSES that shape (scratch would land in the process cwd),
+  // so the key is a law, not an option. Product face unchanged.
+  scratchRoot: join(WORLD, 'scratch-plane'),
   assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
 })
 

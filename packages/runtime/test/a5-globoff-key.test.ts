@@ -63,6 +63,13 @@ const ALLOW_ALL = Object.freeze({
 const fsInstance = () => ({ fs: 'a5globoff-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' })
 const confinedProvider = () => ({
   trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+  // #337 closing round (review-B item 5 law): provider scratch is a LAW, not an
+  // option — the provider refuses an absent/relative scratchRoot (the plans/out/
+  // probe trees would otherwise land in the process cwd; the glob row's own
+  // comment "it is refused here" made that the intent, the gate made it real).
+  // Fixture-side key inside the gitignored test world; every row this leg pins
+  // stays zero-motion.
+  scratchRoot: join(WORLD, 'scratch-confined'),
   assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
 })
 function buildPlane(plane: Record<string, unknown> = {}, extra: Record<string, unknown> = {}, policy: unknown = ALLOW_ALL) {

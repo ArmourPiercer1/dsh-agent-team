@@ -1,0 +1,65 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+2026-10-18T22:18:52.395Z MOUNT definitions=[team_grep,team_glob,bash,read] backends=[glob:a5glb-anchored-confined-rg-glob,search:a5srgp-anchored-confined-rg-grep,shell:a5g7-confined-exec-shell]
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=52 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/homes/a5intr3-kit-20261018T221851/root/data/needle.txt
+
+2026-10-18T22:18:52.400Z PASS A1 read POS: inside bytes came back: first line A5INTR3-INSIDE-20261018T221851 last line 
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-search: anchored-search capability OK realm=a5intr3-kit-20261018T221851 legs=6
+
+2026-10-18T22:18:52.400Z PASS A2 read NEG: target="../outside/secret.txt" -> refused-schema target-outside-governed-root — target lexically escapes the governed root (workspace: ../outside/secret.txt)
+2026-10-18T22:18:52.400Z PASS A2 read NEG: target="/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/homes/a5intr3-kit-20261018T221851/outside/secret.txt" -> refused-schema target-outside-governed-root — target lexically escapes the governed root (absolute-path: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/homes/a5intr3-kit-20261018
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-search: anchored-search OK realm=a5intr3-kit-20261018T221851 call=team-a5intr3-kit-20261018T221851-grep-1 records=1 total=1 truncated=false
+
+2026-10-18T22:18:52.637Z PASS B1 search POS: hit line: search · content · 1 matches > /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake/tests/
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-search: anchored-search refused code=target-outside-governed-root call=team-a5intr3-kit-20261018T221851-grep-2 realm=a5intr3-kit-20261018T221851
+
+2026-10-18T22:18:52.639Z PASS B2a search NEG (absolute out-of-root): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target lexically escapes the governed root
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5glb-glob: anchored-glob capability OK realm=a5intr3-kit-20261018T221851 legs=6
+
+2026-10-18T22:18:52.639Z PASS B2b search NEG (relative escaping locator): measured: a5p5-refused kind=refused-schema code=locator-rejected detail=[{"code":"locator-rejected","path":"$.path","detail":"relative `..` segments are refused"}]
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5intr3-kit-20261018T221851 call=team-a5intr3-kit-20261018T221851-glob-3 pid=1590 files=2 capped=false
+
+2026-10-18T22:18:52.875Z PASS C1 glob POS: measured: search · files_with_matches · 2 matches > data/needle.txt > data/other.txt a5p5-meta {"kind":"search","outputMode":"files_with_matches","totalMatches":2,"truncated":false}
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5glb-glob: anchored-glob ran realm=a5intr3-kit-20261018T221851 call=team-a5intr3-kit-20261018T221851-glob-4 pid=1592 files=0 capped=false
+
+2026-10-18T22:18:52.926Z PASS C2 glob NEG (cross-root pattern; shape RECORDED): shape=ZERO-RESULTS (recorded as measured, not bent): search · files_with_matches · 0 matches > (no matches) a5p5-meta {"kind":"search","outputMode":"files_with_matches","totalMatches":0,"truncated":false}
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5glb-glob: anchored-glob refused code=target-outside-governed-root family=a5glb-refused/request call=team-a5intr3-kit-20261018T221851-glob-5 realm=a5intr3-kit-20261018T221851
+
+2026-10-18T22:18:52.927Z PASS C2b glob NEG (absolute out-of-root path): measured: a5p5-refused kind=backend-failed code=target-outside-governed-root detail=the target is outside the governed root
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=a5intr3-kit-20261018T221851 rows=6
+
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5intr3-kit-20261018T221851 call=team-a5intr3-kit-20261018T221851-bash-6 pid=1602 exit=0 timedOut=false cancelled=false
+
+2026-10-18T22:18:53.148Z PASS D1 shell POS (inside write): host-side file=true; wire: bash · exit=0 > SHELL-WROTE > a5p5-meta {"kind":"shell","exitCode":0,"timedOut":
+stdout | packages/runtime/test/a5intr3-kit-runner.test.ts > a5int-r3 plane-mount kit (four tools x pos/neg + delta=[] + homes + :3080) > KIT: every criterion PASSes on the flipped mount
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=a5intr3-kit-20261018T221851 call=team-a5intr3-kit-20261018T221851-bash-7 pid=1604 exit=2 timedOut=false cancelled=false
+
+2026-10-18T22:18:53.192Z PASS D2 shell NEG (out-of-root write refused): outside file created=false (must be false); wire: bash · exit=2 > (empty stdout) stderr: > /bin/sh: 1: cannot create /srv/workspace/dsh-plugins/dsh-agent-team/.
+2026-10-18T22:18:53.193Z PASS E non-team delta=[]: shut rows=[a5-effect-face-pending,a5-effect-face-pending,a5-effect-face-pending] listing 303de9443fbb07ee -> 303de9443fbb07ee
+2026-10-18T22:18:53.196Z PASS G :3080 probe (read-only, unchanged): http-401 -> http-401 (GET only)
+2026-10-18T22:18:53.200Z PASS F homes=[]: surviving a5intr3-kit-* worlds: 0
+ ✓ packages/runtime/test/a5intr3-kit-runner.test.ts (1 test) 1409ms
+     ✓ KIT: every criterion PASSes on the flipped mount  1408ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  22:18:51
+   Duration  1.57s (transform 463ms, setup 0ms, import 26ms, tests 1.41s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

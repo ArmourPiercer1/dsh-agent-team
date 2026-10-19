@@ -121,6 +121,11 @@ function buildPlane() {
       fsInstance: { fs: 'a5b3-ctl', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' },
       confinedProvider: {
         trustRoot: `sha256:${LAUNCHER_SHA.slice(0, 16)}#${LAUNCHER}`,
+        // #337 closing round (review-B item 5 law): provider scratch is a LAW,
+        // not an option — the provider refuses an absent/relative scratchRoot
+        // (it would otherwise land the plans/out/probe trees in the process
+        // cwd). Fixture-side key; the rows this leg pins stay zero-motion.
+        scratchRoot: join(WORLD, 'scratch-confined'),
         assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
       },
     },
@@ -229,7 +234,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     // assumption before it could ship. This arm SPAWNS, THEN races — the row
     // cannot un-spawn. The spawn-side witness is deterministic and asserted:
     // the provider mkdir's the per-plan outDir during stream spawn
-    // (provider.ts:496-497), so `WORLD/out` existing proves this call really
+    // (provider.ts:607-608), so the scratchRoot's out/ existing proves this call really
     // reached spawn, payload timing irrelevant. What the PAYLOAD manages to
     // execute before the kill is NOT row-determined: measured, terminate's
     // first-tick SIGTERM (provider.ts:400-412) landed BEFORE the payload's
@@ -248,7 +253,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     // this seam is the belt for direct/non-host callers.
     const plane = buildPlane()
     const witness = join(ROOT_DIR, `c11-witness-${Date.now().toString(36)}`)
-    const outs = join(ROOT_DIR, 'out') // the shell row's scratchRoot falls back to cwdRoot = the governed root (plane-effect-backends.mjs:649)
+    const outs = join(WORLD, 'scratch-confined', 'out') // the fixture's explicit scratchRoot (added by the #337 closing round); the provider's out tree rides the scratchRoot it was given (provider.ts:607-608)
     const outCount = () => (existsSync(outs) ? readdirSync(outs).length : 0)
     const outBefore = outCount()
     const done = new AbortController()
@@ -262,7 +267,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     const elapsed = nowMs() - started
     expect(res.text).toContain('bash · cancelled')
     expect(metaOf(res.text).cancelled).toBe(true)
-    expect(outCount(), 'this very call must have reached spawn — the provider mkdir\'s a fresh per-plan outDir during stream-spawn prep (provider.ts:496-497), so a pre-aborted call reaching THIS row was spawned first, by construction').toBeGreaterThanOrEqual(outBefore + 1)
+    expect(outCount(), 'this very call must have reached spawn — the provider mkdir\'s a fresh per-plan outDir during stream-spawn prep (provider.ts:607-608), so a pre-aborted call reaching THIS row was spawned first, by construction').toBeGreaterThanOrEqual(outBefore + 1)
     const landed = existsSync(witness)
     console.info(`[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=${String(landed)} settled-in=${String(Math.round(elapsed))}ms abort-at=${String(abortAt)}`)
     if (landed) {
