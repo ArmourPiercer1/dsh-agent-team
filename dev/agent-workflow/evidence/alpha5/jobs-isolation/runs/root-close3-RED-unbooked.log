@@ -1,0 +1,6 @@
+     × zero process-level unhandledRejection/uncaughtException across EVERY leg of this file (the unconsumed-rejection shape must not exist) 58ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts > a5p7 process hygiene (ROOT④b-close(3), root risk order) > zero process-level unhandledRejection/uncaughtException across EVERY leg of this file (the unconsumed-rejection shape must not exist)
+AssertionError: expected [ 'unhandledRejection: wait aborted' ] to deeply equal []
++   "unhandledRejection: wait aborted",
+      Tests  1 failed | 24 passed (25)

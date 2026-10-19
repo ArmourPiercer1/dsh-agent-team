@@ -19,7 +19,22 @@
  *
  * @module test/a5p7-jobs-assembly-actuator
  */
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
+
+// ROOT-close(3) (root 10:0xZ risk order): PROCESS-LEVEL collection - returning
+// green text is NOT the bar; an unconsumed rejected promise (early-return
+// paths of the abort race) must not exist at all. Registered at import time,
+// before any test body runs; asserted zero-hit by the LAST test of this file
+// and removed in afterAll so nothing leaks to sibling suites in the worker.
+const processSmell: string[] = []
+const onUnhandled = (reason: unknown) => processSmell.push(`unhandledRejection: ${String((reason as Error)?.message ?? reason)}`)
+const onUncaught = (error: Error) => processSmell.push(`uncaughtException: ${String(error?.message ?? error)}`)
+process.on('unhandledRejection', onUnhandled)
+process.on('uncaughtException', onUncaught)
+afterAll(() => {
+  process.off('unhandledRejection', onUnhandled)
+  process.off('uncaughtException', onUncaught)
+})
 import { jobOwnerKey } from '../jobs-gateway/index.js'
 import type { GatewayJobRecord, JobOwner } from '../jobs-gateway/index.js'
 
@@ -571,5 +586,14 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const fresh = await def.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-A' }, signal: new AbortController().signal })
     expect(fresh.text).toBe('output-bytes') // un-aborted no-wait reads exactly as before
     expect(host.calls).toEqual(['read:jb1:agent-of-A'])
+  })
+})
+
+
+describe('a5p7 process hygiene (ROOT④b-close(3), root risk order)', () => {
+  it('zero process-level unhandledRejection/uncaughtException across EVERY leg of this file (the unconsumed-rejection shape must not exist)', async () => {
+    // one macrotask of settle so any late-reporting rejection surfaces first
+    await new Promise((r) => setTimeout(r, 50))
+    expect(processSmell).toEqual([])
   })
 })

@@ -1055,7 +1055,18 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
                 onAbort = () => reject(new Error('wait aborted'))
                 signal.addEventListener('abort', onAbort, { once: true })
               })
+              // ROOT-close(3) (root 10:0xZ risk order): a REJECTED promise
+              // that no path consumes is a process-level unhandledRejection.
+              // Every early return below (sync abort during the service
+              // call, the catch arm) can leave abortPromise/waitPromise
+              // rejected-but-unconsumed, so BOTH are pre-consumed with a
+              // no-op handler AT CONSTRUCTION - race keeps its own
+              // subscription and still sees the rejection. The listener is
+              // removed on EVERY exit: the finally covers the early
+              // returns, and the pre-construction returns own no listener.
+              abortPromise.catch(() => {})
               const waitPromise = r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller, signal)
+              waitPromise.catch(() => {}) // same law for the service promise on the early-return paths
               if (signal.aborted === true) return abortReturn() // fired DURING the service call: listener armed first, the re-check catches it
               await Promise.race([waitPromise, abortPromise])
             } catch (error) {
