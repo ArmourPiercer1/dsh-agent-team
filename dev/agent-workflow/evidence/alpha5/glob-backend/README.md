@@ -485,3 +485,11 @@ across **three** consecutive runs, zero leftover `tests/homes/a5glb-*` worlds.
 `@vscode/ripgrep` → the measured binary is **ripgrep 15.0.0 (rev 3a612f88b8)**
 (`@vscode/ripgrep-linux-x64@1.18.0`, 5 728 032 bytes), resolved through the package's own
 `resolveRgPath()` and never hardcoded.
+
+## rc-first 段指针（#337 步骤 B 收口，本行的现行判据）
+
+GLOB 行的完成判据自 `g6b-flake` 步骤 B 起为 **rc-first**：streaming 臂的
+`recordCapable`/`payloadExit`（provider 侧 R1 记录）决定 verdict，SPEECH 降为
+辅助观测；本 README 中凡述"SPEECH 为判据"之处以步骤 B 文档为准：
+判据规则、能力盘点、翻转对照表、残留清单与收口账 =
+`dev/agent-workflow/evidence/alpha5/g6b-flake/step-b/README.md`。

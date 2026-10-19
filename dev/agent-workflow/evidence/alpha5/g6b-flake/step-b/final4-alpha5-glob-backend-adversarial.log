@@ -1,0 +1,18 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+ ✓ packages/runtime/test/alpha5-glob-backend-adversarial.test.ts (8 tests) 202068ms
+     ✓ A4 rename→symlink RACE LOOP: 5000 iterations, zero leak  10451ms
+     ✓ A5 the REAL confined rg walk under the same swap race (6600 walks), zero leak  190232ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  23:04:50
+   Duration  202.28s (transform 118ms, setup 0ms, import 74ms, tests 202.07s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

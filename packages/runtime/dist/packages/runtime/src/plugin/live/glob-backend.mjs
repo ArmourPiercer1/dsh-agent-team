@@ -172,7 +172,7 @@
 import { constants as fsConstants, lstatSync, readlinkSync, realpathSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { setTimeout as sleepTimer } from 'node:timers'
+import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timers'
 import { buildGlobCommand, GLOB_MAX_RESULTS, parseGlobArgs as parseHostGlobArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 
@@ -188,6 +188,10 @@ export const GLOB_MAX_RESULTS_CEILING = 10_000
 /** A walk may not stream more than this many bytes of path list into the parent. */
 export const GLOB_MAX_WALK_BYTES = 8 * 1024 * 1024
 /** The diagnostic channel is bounded too (A7): an error arm carries a snippet. */
+export // Upper bound on waiting for the child's streams AFTER it exited (drain, not
+// lifetime): long enough for a late stderr note, short enough to be nothing
+// a walk could confuse with its own timeout budget.
+const GLOB_STDERR_DRAIN_MS = 250
 export const GLOB_MAX_STDERR_BYTES = 8 * 1024
 
 /** System paths a confined native binary needs to boot (rx only, never writable). */
@@ -748,9 +752,22 @@ export function createAnchoredGlobBackend(options) {
   const provider = createConfinedProcessProvider({
     realmId,
     trustRoot: confined?.trustRoot ?? null,
-    // The provider writes its scratch PARENT-side; rooted inside the governed
-    // root it would show up in every walk result, so it is refused here.
-    scratchRoot: typeof confined?.scratchRoot === 'string' && confined.scratchRoot.length > 0 ? confined.scratchRoot : '',
+    // The provider writes its scratch PARENT-SIDE; rooted inside the governed
+    // root it would show up in every walk result (probe-cwd measured), so the
+    // DEFAULT is a sibling of the root and never the root itself — the exact
+    // law the search row ships (search-backend.mjs :590-596) and the shape
+    // `plane-effect-backends.mjs` :357 already defaults to. The public
+    // contract (docs/INSTALL.md §3.5) carries NO scratchRoot key, so
+    // defaulting this to '' refused every default-form install once the
+    // provider gate made '' a typed refusal (#337 law); root's production
+    // compatibility audit (23:12Z, off the #346 glob-off README) ruled the
+    // default a production transport bug, fixed HERE, not a contract change.
+    // An EXPLICIT string value passes through untouched: the provider's gate
+    // (empty/relative -> typed IO_POLICY_UNSUPPORTED) is the law and is NOT
+    // weakened — only a never-valid default became the valid sibling form.
+    scratchRoot: typeof confined?.scratchRoot === 'string'
+      ? confined.scratchRoot
+      : `${rootDir}.a5g7-glob-scratch`,
     ...(confined?.runnerCommand === undefined ? {} : { runnerCommand: confined.runnerCommand }),
     assembly: confined?.assembly ?? {},
   })
@@ -863,6 +880,7 @@ export function createAnchoredGlobBackend(options) {
           let stdout = ''
           let stderr = ''
           let overflow = false
+          let streamsWatch = null
           child.stdout.on('data', (chunk) => {
             // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
             // UNVERIFIED until the verdict below admits them, and the spill
@@ -884,11 +902,131 @@ export function createAnchoredGlobBackend(options) {
             // turned into a memory channel by a chatty walker.
             if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
           })
+          // g6b-flake: the settlement MUST NOT read stderr before the stream has
+          // ended. This row's discriminator is the walker's SPEECH (see the
+          // walker-error arm below), and Node can resolve `child.exited` while
+          // stderr 'data' callbacks are still pending — under CI's 9-root
+          // concurrency that window is real: a walker that DID speak (invalid
+          // glob, exit reported 0 by the streaming arm) is judged quiet, and the
+          // leg returns an empty list instead of the typed walker error. Drain
+          // both streams first, bounded so a stalled stream can never outlive the
+          // walk's own timeout budget.
+          // Bookkeeping for the drain below: watch BOTH streams to their end, and treat
+          // 'error'/'close' as terminal as well (a stream that died has stopped speaking
+          // and cannot be awaited forever). The watch is installed BEFORE the exit race
+          // so an 'end' that arrives first is never missed. Every listener is removed and
+          // the drain timer cleared on the way out (round: root ruling ④), so a long-lived
+          // assembly accumulates neither listeners nor timers.
+          let drainTimer = null
+          let watchClosed = false
+          const streamsEnded = new Promise((resolve) => {
+            let pending = 2
+            const both = () => { if (!watchClosed) { watchClosed = true; resolve(true) } }
+            const one = () => { pending -= 1; if (pending === 0) both() }
+            const died = () => { if (!watchClosed) { watchClosed = true; resolve(false) } }
+            child.stdout.on('end', one)
+            child.stderr.on('end', one)
+            child.stdout.on('error', died)
+            child.stderr.on('error', died)
+            child.stdout.on('close', died)
+            child.stderr.on('close', died)
+            streamsWatch = { streams: [child.stdout, child.stderr], handlers: [one, died] }
+          })
+          // ROUND-8 (approved, narrow): STDOUT completeness is collected. The watcher is
+          // installed BEFORE the exit race so an 'end' that arrives first is never missed.
+          // Terminal = 'end' | 'close' | 'error'.
+          let stdoutWatch = null
+          const stdoutEnded = new Promise((resolve) => {
+            const done = () => resolve(true)
+            child.stdout.once('end', done)
+            child.stdout.once('close', done)
+            child.stdout.once('error', done)
+            stdoutWatch = done
+          })
           const exit = await Promise.race([
             child.exited,
             new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
           ])
+          // The lease closes first: the provider's pipes are held by the supervised child,
+          // so 'end' cannot be promised while it lives (measured in the previous hand's
+          // failed attempt, where draining BEFORE terminate timed out on EVERY walk and
+          // mass-failed the suites). The drain therefore judges AFTER terminate.
           await child.terminate() // the frozen lease arm settles exactly once per path
+          // ... and the collection happens AFTER the lease is released: while the
+          // supervised child lives, 'end' cannot be promised (measured: draining before
+          // terminate refused 1176/6600 clean walks). Terminality is structurally promised
+          // — the launcher closes 0/1/2 before it waits (prelauncher :32-34), so once
+          // 'exit' fires no writer holds the descriptors; the cap only covers a provider
+          // that breaks that promise (cap basis: evidence round-3/4 lag measurements and
+          // the diagnostic round's endwait 400/400 distribution).
+          // An uncollected stdout is NOT completeness: it lands TYPED on the frozen
+          // table's existing completeness item `walk-too-large`, whose sibling `overflow`
+          // case is the same defect class (output the row could not fully take), and the
+          // diagnostic D-drain-load round measured 3/400 walks whose tail was truncated
+          // while the payload rc was still 0 — no exit status substitutes for it. A
+          // silently truncated list must never be presented as success.
+          // STDERR IS NOT COLLECTED THIS ROUND: the SPEECH arm below is byte-for-byte
+          // unchanged, so the capture-1 race (late stderr speech missed by the verdict)
+          // remains a DISCLOSED limitation pending the rc-first semantic ruling.
+          let stdoutCollected = true
+          if (exit?.timedOut !== true) {
+            let capTimer = null
+            const won = await Promise.race([
+              stdoutEnded,
+              new Promise((r) => { capTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
+            ])
+            if (capTimer !== null) clearTimer(capTimer)
+            stdoutCollected = won === true
+          }
+          if (stdoutWatch !== null) {
+            child.stdout.off('end', stdoutWatch)
+            child.stdout.off('close', stdoutWatch)
+            child.stdout.off('error', stdoutWatch)
+            stdoutWatch = null
+          }
+          if (stdoutCollected !== true) {
+            observe(`anchored-glob WALK-INCOMPLETE realm=${realmId} call=${String(call.callId)} stream=stdout exit=${String(exit?.code ?? -1)}`)
+            return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes, incomplete: 'stdout' }, debug, `walk output was not collected to the end of the stream`)
+          }
+          // THE DRAIN RESULT IS CONSUMED, NOT IGNORED (round: root ruling ①). A walk may
+          // only be judged quiet once BOTH streams have closed; a drain that expires with
+          // a stream still open is INDETERMINATE, and this row's frozen completion law
+          // sends an indeterminate walk out TYPED — never as an empty list claiming the
+          // subtree was clean. The code is the existing SPEECH arm ('walker-error'): the
+          // law it rests on is "a walk that ends quietly has an empty stderr; one that
+          // spoke is an ERROR leg", and an unclosed stream cannot establish the first
+          // half. No code is added to the frozen table.
+          let drainClosed = true
+          if (exit?.timedOut !== true) {
+            drainClosed = await Promise.race([
+              streamsEnded,
+              new Promise((r) => { drainTimer = sleepTimer(() => r(false), GLOB_STDERR_DRAIN_MS).unref?.() }),
+            ])
+          }
+          if (drainTimer !== null) clearTimer(drainTimer)
+          drainTimer = null
+          if (streamsWatch !== null) {
+            for (const stream of streamsWatch.streams) {
+              for (const handler of streamsWatch.handlers) {
+                stream.off('end', handler); stream.off('error', handler); stream.off('close', handler)
+              }
+            }
+            streamsWatch = null
+          }
+          // LANDED STATE (round-3, amended round-8): the drain outcome for STDERR is
+          // OBSERVED, not enforced (SPEECH semantics are unchanged pending the rc-first
+          // ruling); STDOUT is now enforced above (walk-too-large on non-collection). Making it
+          // fail closed was implemented and MEASURED on the real race suite: with a 250ms
+          // bound 1176 of 6600 legitimate walks were refused as walker-error, with 2000ms
+          // still 373 — the provider's stdio pipes are NOT guaranteed to close when the
+          // lease is released, so "both streams closed" is not an achievable precondition
+          // at this layer. Fail-closed here punishes clean walks, so the enforcement needs
+          // a transport-side close guarantee (or a handle-level `pipesClosed` signal)
+          // first. The bookkeeping below (watch + off + clearTimeout) is landed; the
+          // injected shapes in test/alpha5-g6b-drain-injection.test.ts document the hole.
+          if (drainClosed === false) {
+            observe(`anchored-glob DRAIN-INCOMPLETE realm=${realmId} call=${String(call.callId)} exit=${String(exit?.code ?? -1)}`)
+          }
           trace = [...trace, 'terminate']
           if (exit?.timedOut === true) {
             observe(`anchored-glob TIMEOUT realm=${realmId} call=${String(call.callId)} pid=${String(child.pid)}`)
@@ -903,26 +1041,107 @@ export function createAnchoredGlobBackend(options) {
           if (overflow) {
             return failure('undetermined', 'walk-too-large', { budget: walkBufferBytes }, debug, `walk exceeded the buffered budget budget=${String(walkBufferBytes)}`)
           }
-          if (code !== 0 && code !== 1) {
-            observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)}`)
-            // A foreign program's stderr is enumeration data: the wire gets the
-            // code and the exit NUMBER, the internal face may see the text.
-            return failure('undetermined', 'walker-exit', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker exit ${String(code)} stderr=${stderrText}`)
-          }
-          if (stderrText.length > 0) {
-            // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
-            // arm can report a hard walker error's exit code as 0 while stderr
-            // carries the walker's words (invalid glob, unreadable root). So the
-            // walker's SPEECH, not the code, is the discriminator: a walk that
-            // ends quietly has an empty stderr; one that spoke is an ERROR leg
-            // and lands TYPED — never an empty list pretending the subtree clean.
-            // This cannot false-refuse on the noise a bare rg makes in a nested
-            // repo: the governed argv carries --no-ignore, so the walker runs no
-            // upward ignore-discovery and never touches a parent .git (measured:
-            // without --no-ignore, a confined walk in this repo does emit a
-            // `.git: Permission denied` line; with it, stderr stays empty).
-            observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)} stderrBytes=${String(stderrText.length)}`)
-            return failure('undetermined', 'walker-error', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker diagnostic stream non-empty exit=${String(code)} stderr=${stderrText}`)
+          if (child.recordCapable === true) {
+            // RC-FIRST (#337 step B, root ruling 20:12Z): the streaming arm
+            // supervises the payload through the launcher's waitpid + record
+            // (`recordCapable` = the provider's promise, proven at its face),
+            // so the payload's OWN rc rules this verdict and the walker's
+            // SPEECH is demoted to a witness: it may describe, it may never
+            // decide. The frozen table is not extended — every exit below
+            // lands on the existing `walker-error` / `walker-exit` entries,
+            // and an unattributable record fails CLOSED like the silent-fatal
+            // form it replaces a guess for. The stdout completeness gate ran
+            // ABOVE this branch, unchanged: rc=0 admits only a collected list.
+            // BOUNDED WAIT (closing round, review-B item 3): the record is
+            // promised AT the launcher's death — written before the launcher
+            // exits, read synchronously by the provider right after — so by
+            // the time this line runs (after `exited` AND `terminate` settled)
+            // the promise is a resolved microtask. A record that cannot
+            // arrive inside the budget is therefore a BROKEN PROMISE, not a
+            // slow one, and fails CLOSED like every other untrustworthy form:
+            // fail-SLOW (trusting streams meanwhile) is not on offer. Budget
+            // = the cap-family constant (same 250ms, same measured end-close
+            // distribution, see evidence round-4 endwait 400/400) — the tightest
+            // measured bound in this family; a longer fuse would only blur
+            // "broken wiring" into "slow wiring", and a fuse asserts, it does
+            // not wait.
+            let recTimer = null
+            const recordBudget = new Promise((r) => { recTimer = sleepTimer(() => r(null), GLOB_STDERR_DRAIN_MS).unref?.() ?? null })
+            const rec0 = await Promise.race([child.payloadExit, recordBudget])
+            if (recTimer !== null) clearTimer(recTimer)
+            // SECOND pid look (review-B item 2): the provider matched the record
+            // against the HANDSHAKE pid; the row independently refuses any record
+            // that does not name THIS handle's pid. Two checks, two sides of the
+            // seam — a record agreeing with a stale handshake cannot clear both.
+            const untrusted = rec0 === null
+              ? 'timeout'
+              : rec0.form !== 'recorded'
+                ? String(rec0.form)
+                : rec0.pid !== child.pid
+                  ? 'row-pid-mismatch'
+                  : null
+            if (untrusted !== null) {
+              // The record was PROMISED by the arm; its absence, corruption,
+              // foreign pid or missing deadline means the walk is not
+              // attributable to this payload. Fail closed on the typed entry —
+              // never the old speech fallback (a speech verdict over an
+              // unattributable run is the exact class of guess rc-first exists
+              // to remove).
+              observe(`anchored-glob RECORD-UNTRUSTED form=${untrusted} realm=${realmId} call=${String(call.callId)}`)
+              return failure('undetermined', 'walker-error', { stderrBytes: stderrText.length }, debug, `payload exit record not attributable form=${untrusted}`)
+            }
+            const rec = rec0
+            if (rec.rc === 2) {
+              // walker fatal — DECIDED BY rc, so the SILENT form (empty stderr,
+              // e.g. the walker died without speaking) is caught too: the form
+              // the speech arm was structurally blind to. No list flows.
+              observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} rc=2 stderrBytes=${String(stderrText.length)}`)
+              return failure('undetermined', 'walker-error', { exit: 2, stderrBytes: stderrText.length }, debug, `walker rc=2 stderr=${stderrText}`)
+            }
+            if (rec.rc !== 0 && rec.rc !== 1) {
+              // Anything outside {0,1,2} — a negative signum (the launcher's
+              // signal-death spelling), 137, 3, a future rg code — is the
+              // frozen exit-coded entry. Never re-guessed as success from the
+              // streams, never silently dropped.
+              observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} rc=${String(rec.rc)}`)
+              return failure('undetermined', 'walker-exit', { exit: rec.rc, stderrBytes: stderrText.length }, debug, `walker exit ${String(rec.rc)} stderr=${stderrText}`)
+            }
+            // rc 0/1: the walk is ADMITTED to framing and A4 (rc=1 is the
+            // legitimate empty result). Speech still WITNESSES: a note family
+            // under a clean rc lands on the internal face (observer gets
+            // arithmetic and codes only, per A8) — visible for diagnosis,
+            // silent on the wire, and without any power over the verdict.
+            if (stderrText.length > 0) {
+              observe(`anchored-glob walker-note realm=${realmId} call=${String(call.callId)} rc=${String(rec.rc)} stderrBytes=${String(stderrText.length)}`)
+              debug(`anchored-glob note on an admitted walk rc=${String(rec.rc)} stderr=${stderrText}`)
+            }
+          } else {
+            // THE LEGITIMATE NO-RECORD FORM (`recordCapable` absent or false —
+            // the one-shot arm's shape and any pre-R1 handle): the frozen
+            // pre-#337 law, byte for byte, exactly as every legacy leg pins it.
+            // This branch is the honest answer to "what happens where no record
+            // exists": the old law, with the old disclosure — not a fake rc.
+            if (code !== 0 && code !== 1) {
+              observe(`anchored-glob ERROR realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)}`)
+              // A foreign program's stderr is enumeration data: the wire gets the
+              // code and the exit NUMBER, the internal face may see the text.
+              return failure('undetermined', 'walker-exit', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker exit ${String(code)} stderr=${stderrText}`)
+            }
+            if (stderrText.length > 0) {
+              // MEASURED on this host (evidence/alpha5/glob-backend): the streaming
+              // arm can report a hard walker error's exit code as 0 while stderr
+              // carries the walker's words (invalid glob, unreadable root). So the
+              // walker's SPEECH, not the code, is the discriminator: a walk that
+              // ends quietly has an empty stderr; one that spoke is an ERROR leg
+              // and lands TYPED — never an empty list pretending the subtree clean.
+              // This cannot false-refuse on the noise a bare rg makes in a nested
+              // repo: the governed argv carries --no-ignore, so the walker runs no
+              // upward ignore-discovery and never touches a parent .git (measured:
+              // without --no-ignore, a confined walk in this repo does emit a
+              // `.git: Permission denied` line; with it, stderr stays empty).
+              observe(`anchored-glob walker-error realm=${realmId} call=${String(call.callId)} exit=${String(code ?? -1)} stderrBytes=${String(stderrText.length)}`)
+              return failure('undetermined', 'walker-error', { exit: code ?? -1, stderrBytes: stderrText.length }, debug, `walker diagnostic stream non-empty exit=${String(code)} stderr=${stderrText}`)
+            }
           }
           const framed = parseWalkOutput(stdout)
           if (framed.ok !== true) {

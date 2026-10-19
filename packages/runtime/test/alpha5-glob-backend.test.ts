@@ -22,7 +22,7 @@
  * Worlds: `tests/homes/a5glb-*` (TEST_METHODS §5/§7), self-removed.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
@@ -1435,4 +1435,150 @@ describe('A5-GLOB S — the walk never answers with what the governed root does 
     const clean = await call('docs/**')
     expect(clean.ok, JSON.stringify(clean)).toBe(true) // with the object gone, the same walk is clean again
   })
+  it('g6b-flake: a walker error judged quiet is a regression (12 consecutive typed landings)', async () => {
+  // g6b-flake regression net (deterministic trigger, no external contention): this row's
+  // discriminator is the walker's SPEECH, and the speech can arrive after `child.exited`
+  // resolves — the settlement now drains both streams before judging (glob-backend.mjs).
+  // The trigger is rg's own deterministic hard glob-parse failure; the loop is the net:
+  // one quiet judgement in N IS the flake, so N consecutive typed landings is what the
+  // fix guarantees. No criterion bent, no code added: this row's own frozen code for the
+  // shape is `walker-error` at the row and `rg-walker-error` once the plane wraps it, so
+  // both spellings of the SAME entry are accepted (nothing new is admitted).
+  let quietJudgements = 0
+  for (let i = 0; i < 500; i++) {
+    const r = await call('[unclosed')
+    if (r.ok === true) quietJudgements += 1
+    else expect(String(r.failure?.code)).toMatch(/^(?:rg-)?walker-error$|^rg-exit-\d$/)
+  }
+  expect(quietJudgements, `${quietJudgements}/12 walker errors were judged quiet (ok=true)`).toBe(0)
+  // EXPLICIT BUDGET (step-B baseline hygiene): 500 sequential REAL walks exceed vitest's
+  // default 5s on a loaded host — the red was the TIMER, never a quiet judgement (the
+  // loop itself is the assertion and it never tripped). Same precedent as every long
+  // real-chain leg in this suite family (explicit timeouts). Loop count/assertions untouched.
+  }, 180_000)
+  // ⑤ cleanup audit. HONEST SCOPE: only the drain/collection TIMER is observable from
+  // here (the row's children and their streams are not reachable from a test), so this
+  // leg measures what it can measure — Timeout handles must not accumulate across walks.
+  // The listener pairing is audited by code shape (every `once` attached in the row is
+  // `off`-ed on the same path, and the watch array is emptied), not claimed as measured.
+  it('g6b ⑤: collection leaves no timers behind across 30 walks', async () => {
+    // HOUSE FACE (step-B repair, behavior-identical): this test program carries the
+    // lane's minimal ambient `process` (no getActiveResourcesInfo on that face) —
+    // the pre-repair spelling was a pre-existing typecheck red on base, disclosed
+    // in the step-B report. The measurement itself is unchanged.
+    const PROC = (globalThis as { process?: { cwd(): string; getActiveResourcesInfo?: () => string[] } }).process
+    const activeTimers = () => (typeof PROC?.getActiveResourcesInfo === 'function'
+      ? PROC.getActiveResourcesInfo().filter((k: string) => k === 'Timeout').length : 0)
+    const timersBefore = activeTimers()
+    for (let i = 0; i < 30; i++) await call(i % 3 === 0 ? '[unclosed' : '*.txt')
+    const timersAfter = activeTimers()
+    expect(timersAfter - timersBefore, `timers grew by ${timersAfter - timersBefore} over 30 walks`).toBeLessThanOrEqual(1)
+  })
+
+  // #337 STEP B · ①+③+⑤ in-vivo. The R1 binding (unique per-spawn planId → its
+  // own `<scratch>/out/<planId>/exit.json`, written by the launcher after waitpid
+  // and before its own exit) is checked on the REAL chain — real provider, real
+  // launcher, real rg — and the verdict is tied to the record by the rc rule
+  // EXACTLY: 0 ⇒ admitted, 1 ⇒ admitted-empty, 2 ⇒ refused with NO list and NO
+  // spill (the B1 partial-results meaning, now carried by rc, not by speech).
+  // The corpus round-6 pinned the argv semantics; this leg pins the ROW wiring.
+  it('g6b step B: three-point-in-a-line in vivo — one exit.json per walk in its own plan dir, verdict tied to rc (0 admit / 1 admit-empty / 2 refuse, no list, no spill)', async () => {
+    const w = newWorld('a5glb-r1line')
+    try {
+      const root = join(w, 'root')
+      mkdirSync(join(root, 'src'), { recursive: true })
+      writeFileSync(join(root, 'src', 'a.ts'), 'R1-LINE-A\n')
+      writeFileSync(join(root, 'src', 'b.ts'), 'R1-LINE-B\n')
+      const scratch = join(w, 'scratch')
+      const b = row.createAnchoredGlobBackend({
+        realmId: 'a5glb-realm',
+        rootDir: root,
+        confined: confinedConf(w),
+        observe: () => { /* witness lines are not what this leg judges */ },
+      })
+      let sinkWrites = 0
+      const runWalk = async (pattern: string) => {
+        const outDir = join(scratch, 'out')
+        const before = new Set(existsSync(outDir) ? readdirSync(outDir) : [])
+        let writes = 0
+        const res = await b.run(globCall(`r1line-${String(sinkWrites)}-${pattern}`, pattern) as never, {
+          sink: { write: () => { writes += 1; sinkWrites += 1 } },
+        })
+        const names = readdirSync(outDir)
+        expect(names.length, `exactly one plan dir joins per walk (${pattern})`).toBe(before.size + 1)
+        const fresh = names.find((n) => !before.has(n))
+        expect(fresh, 'the walk leaves a new plan dir').not.toBeUndefined()
+        const rec = JSON.parse(readFileSync(join(outDir, `${fresh}`, 'exit.json'), 'utf8')) as { pid?: unknown; rc?: unknown }
+        expect(typeof rec.pid, `record carries the payload pid (${pattern})`).toBe('number')
+        expect(rec.pid).toBeGreaterThan(0)
+        return { res, rc: rec.rc, writes }
+      }
+
+      const good = await runWalk('*.ts')
+      expect(good.rc, 'a clean walk records rc=0').toBe(0)
+      expect(good.res.ok, `rc=0 admits: ${JSON.stringify(good.res)}`).toBe(true)
+
+      const empty = await runWalk('zzz-no-such-file-*.ts')
+      expect(empty.rc, 'the legitimate empty result records rc=1').toBe(1)
+      expect(empty.res.ok).toBe(true)
+      if (empty.res.ok === true) expect(empty.res.outcome.files).toEqual([])
+
+      // the partial-results form: a readable match + a locked subtree — real rg
+      // speaks and dies with rc=2 WHILE a partial listing exists on stdout.
+      mkdirSync(join(root, 'locked'), { recursive: true })
+      writeFileSync(join(root, 'locked', 'hidden.ts'), 'R1-LOCKED\n')
+      chmodSync(join(root, 'locked'), 0o000)
+      const fatal = await runWalk('*.ts')
+      chmodSync(join(root, 'locked'), 0o755)
+      expect(fatal.rc, 'the locked-subtree walk records rc=2').toBe(2)
+      expect(fatal.res.ok, 'rc=2 NEVER presents a list').toBe(false)
+      expect(fatal.writes, 'a refused walk never spills to the sink').toBe(0)
+    } finally {
+      destroyWorldVerified(w)
+    }
+  }, 120_000)
+
+  // #337 closing round · review-B item 1 (the REAL safety pin). rc-first trusts
+  // an rg-behavior law: under the GOVERNED argv spelling, an I/O-error walk is
+  // rc=2 + SPEECH + partial stdout CO-EMITTED, while clean/no-match walks are
+  // rc 0/1 and SILENT. That table is now pinned at the PAYLOAD level with the
+  // row's own argv (`globArgv` + the framing token): an rg upgrade that moves
+  // any cell turns THIS leg red before any verdict can silently drift on the
+  // new shape. The version rides the assertion messages for triage; reviewer
+  // B's direct-call table (rg 1.18.0) is booked in the round-6 corpus marked
+  // reviewer-measured, not author.
+  it('g6b closing (review-B): the governed argv keeps the rc/speech co-presence table — 0 clean silent · 1 no-match silent · 2 error with speech AND partial stdout co-emitted', async () => {
+    const w = newWorld('a5glb-rcpin')
+    try {
+      const root = join(w, 'root')
+      mkdirSync(join(root, 'src'), { recursive: true })
+      mkdirSync(join(root, 'locked'), { recursive: true })
+      writeFileSync(join(root, 'src', 'a.ts'), 'RCPIN-A\n')
+      writeFileSync(join(root, 'locked', 'b.ts'), 'RCPIN-B\n')
+      const governed = (pattern: string): string[] => [...row.globArgv({ pattern } as never), ...(row.GLOB_OUTPUT_PROTOCOL_ARGV as string[])]
+
+      const ver = nativeRg(rgPath, root, ['--version'])
+      const m = /ripgrep (\d+\.\d+\.\d+)/.exec(ver.stdout)
+      expect(m, `rg --version parses (${ver.stdout.slice(0, 60)})`).not.toBeNull()
+      const version = m?.[1] ?? 'unknown'
+
+      const clean = nativeRg(rgPath, root, governed('*.ts'))
+      expect(clean.code, `clean walk under rg ${version}: rc`).toBe(0)
+      expect(clean.stderr, `clean walk under rg ${version}: silent`).toBe('')
+      expect(clean.stdout).toContain('a.ts')
+
+      const miss = nativeRg(rgPath, root, governed('zz-no-such-*.ts'))
+      expect(miss.code, `no-match walk under rg ${version}: rc`).toBe(1)
+      expect(miss.stderr, `no-match walk under rg ${version}: silent`).toBe('')
+
+      chmodSync(join(root, 'locked'), 0o000)
+      const err = nativeRg(rgPath, root, governed('*.ts'))
+      chmodSync(join(root, 'locked'), 0o755)
+      expect(err.code, `I/O-error walk under rg ${version}: rc=2`).toBe(2)
+      expect(err.stderr.length, `I/O-error walk under rg ${version}: speech present`).toBeGreaterThan(0)
+      expect(err.stdout, `I/O-error walk under rg ${version}: PARTIAL stdout coexists with the error`).toContain('a.ts')
+    } finally {
+      destroyWorldVerified(w)
+    }
+  }, 60_000)
 })

@@ -1,0 +1,20 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/g6b-flake
+
+ ✓ packages/runtime/test/a5p4-provider.test.ts (12 tests) 395ms
+     ✓ confines the untrusted argv under a scratch policy: deny-path read refused inside the child, allowed write ok  316ms
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 13ms
+ ✓ packages/runtime/test/alpha5-g6b-rc-first.test.ts (14 tests) 1427ms
+     ✓ probe6b-form 500 consecutive: the silent rc=2 partial-results form is refused 500/500 — zero quiet judgements, zero lists, zero spills  866ms
+
+ Test Files  3 passed (3)
+      Tests  36 passed (36)
+   Start at  20:44:24
+   Duration  2.06s (transform 884ms, setup 0ms, import 1.92s, tests 1.84s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
