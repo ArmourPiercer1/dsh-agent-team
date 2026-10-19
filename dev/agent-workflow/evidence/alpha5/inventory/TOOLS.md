@@ -1,6 +1,6 @@
 # TOOLS.md — Alpha.5 逐工具对账清单（R 路）
 
-- 写者/时刻 = 同 `MECHANISMS.md`（R 路，2026-10-19 ≈07:5xZ；**rev2 = 根 07:30Z 校准令四条已落**：todo_write 设计内 / str_replace_editor 独立行 / 证据分层律 / 三分类律）；基线 = `d5de7497`（现场 `git log -1` 亲验）。
+- 写者/时刻 = 同 `MECHANISMS.md`（R 路，2026-10-19 ≈07:5xZ；**rev2=根 07:30Z 校准令四条已落**；**rev3=收口小笔：宿主树改走主检出 `tests/deepseek-harness-test-use`@639ed01539 亲核——str_replace_editor 注册源+opt-in 零 preset 行坐实、fs/shell 族注册行落地、同族 opt-in 包复核无漏行**）；基线 = `d5de7497`（现场 `git log -1` 亲验）。
 - **枚举源=真实注册面，非文档**：
   ① 原生全集 = `packages/runtime/src/plugin/live/team-tool-plane.mjs:258-324 PLANE_RESERVED_NATIVE`（**现场重数=68 名** + `mcp__` 前缀族穷尽 `:324`）——该表钉宿主 `0.2.0-rc.2@639ed01539`（`PLANE_RESERVED_NATIVE_HOST_PIN :257`），由双向漂移机检对宿主权威目录 harvest（宿主保证测试 `packages/core/tools/tests/gen-tool-catalog.spec.ts`：boot 全部 shipped tool 包=70 entry/65 唯一名）强制同步，且每名须真实注册来源（猜名=RED，a5-pindir 律）；
   ② Team 协调面 = `packages/tools/src/tools.ts` 13 名逐行（:498-1197）；
@@ -40,7 +40,7 @@
 
 ## C. 原生工具全集（68 名 + `mcp__` 前缀族，现场枚举）
 
-共性——**注册处**=宿主 shipped 包 @`639ed01539`（每名真实注册来源在钉表注释具名：registry/tools.ts/toolName-config/boot 包）；**配置面**=宿主 preset/profile（team 蓝图不可达，除 takeover 两对）；**治理面=三分类（§C 头律，逐行不再重复）**：strict 面 setup 响亮拒（不可跑）/ plane CLAIM 钉拒装配 / 非 strict 普通挂载宿主原样；Team allow/ask/deny 车道不可执行触达；四形状行为=REWORK §④(b)（preset 全拒 dispatch 形 / host-plane 原生执行形 / RC 形=request-control 包络前 fail-closed / pr1shape 拒形）；**durable grant 消费通路 runtime consumer=0**（`grant.ts:84,134` 闭码无消费者，现场 grep）⇒ 除标注外本组主标签从严=**未测（治理车道腿）**，三层行为本身已实测非未知。
+共性——**注册处**=宿主 shipped 包 @`639ed01539`（每名真实注册来源在钉表注释具名：registry/tools.ts/toolName-config/boot 包；fs/shell 族已按**主检出宿主树** `tests/deepseek-harness-test-use` 亲核（worktree 内该树 gitignored 不在）：read/write/edit/read_image=`packages/fs/tool-fs/src/{read,write,edit,read-image}.ts:78/73/85/210`，glob/grep=`packages/fs/tool-fs-search/src/{glob,grep}.ts:307/285`，bash=`packages/shell/tool-bash/src/index.ts:374`）；**配置面**=宿主 preset/profile（team 蓝图不可达，除 takeover 两对）；**治理面=三分类（§C 头律，逐行不再重复）**：strict 面 setup 响亮拒（不可跑）/ plane CLAIM 钉拒装配 / 非 strict 普通挂载宿主原样；Team allow/ask/deny 车道不可执行触达；四形状行为=REWORK §④(b)（preset 全拒 dispatch 形 / host-plane 原生执行形 / RC 形=request-control 包络前 fail-closed / pr1shape 拒形）；**durable grant 消费通路 runtime consumer=0**（`grant.ts:84,134` 闭码无消费者，现场 grep）⇒ 除标注外本组主标签从严=**未测（治理车道腿）**，三层行为本身已实测非未知。**同族 opt-in 复核（主检出亲 grep `packages/bundle/**/*.yml`）**：shipped 但**缺省 preset 零挂载行**的 tool 包=`tool-str-replace-editor`（示例仅在 `snapshots/sdk/persistent-tools/cordis.yml:6-7`）、`tool-lsp`、`tool-terminal`、`tool-session-query`、`tool-agent-team`(experimental)；条件挂载=`tool-workspace-dependencies`（仅 sdk-app）、persistent bash/pwsh（仅 minimal/sdk-minimal 形）；缺省已挂=present（`presets/{cordis,ptc,standard}.patch.yml`）、ask-user（`presets/cordis.patch.yml:130`）。C 表 lsp/terminal_*/present 行注记与此一致，**无漏行需另立**。
 
 | 原生名 | 生产接线（=host 原生） | 治理覆盖实况 | 正/负验收 | 未测面/阻塞·延期 | 标签 |
 |---|---|---|---|---|---|
@@ -49,8 +49,8 @@
 | grep | 是 | **takeover=空，仅别名覆盖**（team_grep）；原生名本身未纳管 | parity 表在 team_grep 侧 | 原生 grep 名在治理世界的车道触达=无 | 未测 |
 | glob | 是 | 同上（team_glob；关断键 `#342`） | 五控 50/50 在 team_glob 侧 | 同上 | 未测 |
 | write | 是 | **无任何治理行**（write 行未挂，REWORK 行 6） | 无 Team 面正/负 | write 治理=计划内未装（C-FS 写半壁） | 只有模块（C-FS 本体）/未测（write 效应） |
-| edit | 是（host builtin，`@deepseek-ai/dsh-tool-fs` 系） | 无；定义在公开 seam 不可读（W-E2 差距在册） | 仅 c0405 kit 治理链（Team Definition 材料化，undo 逐字节复原；delete/undo_all typed `IO_POLICY_UNSUPPORTED`） | 生产注册边无（kit-only，矩阵 M-04 TRANSITIONED-LIVE=判据级） | 只有模块 |
-| str_replace_editor | **opt-in 独立包** `@deepseek-ai/dsh-tool-str-replace-editor`（根 07:30Z 令②：与 edit 是**两行两注册源**，不得并成同一注册形；**preset 不含，须显式装行**才挂载；宿主树在本环境缺位（test-use checkout 缺失）故注册源细节取钉表 a5-pindir 每名真实来源律+根口径，如实注） | 无（同上不可读）；且挂载与否由宿主 profile 显式行决定，team 蓝图不可达 | 同 edit 行（kit 治理链为 Team Definition 形，非该包本体） | 同 edit | 只有模块（钉+opt-in 面） |
+| edit | 是（**亲核宿主树@639ed01539**：`packages/fs/tool-fs/src/edit.ts:85` `name:'edit'`） | 无；定义在公开 seam 不可读（W-E2 差距在册） | 仅 c0405 kit 治理链（Team Definition 材料化，undo 逐字节复原；delete/undo_all typed `IO_POLICY_UNSUPPORTED`） | 生产注册边无（kit-only，矩阵 M-04 TRANSITIONED-LIVE=判据级） | 只有模块 |
+| str_replace_editor | **opt-in 独立包** `@deepseek-ai/dsh-tool-str-replace-editor`（根 07:30Z 令②：与 edit **两行两注册源**，不得并成同一注册形）。**亲核**（宿主树=主检出 `tests/deepseek-harness-test-use` @`639ed01539`；worktree 内该树 gitignored 不在，来源限定注此）：注册名=`packages/fs/tool-str-replace-editor/src/index.ts:430`（`name: 'str_replace_editor'`），包导出名=`:502`；发行=workspace 依赖 `apps/cli/package.json:84`；**preset 挂载面=零行**：`packages/bundle/**` 全部 cordis/patch yml 亲 grep 无该包行（示例形仅在 `snapshots/sdk/persistent-tools/cordis.yml:6-7`）——"preset 不含、须显式装行"由亲核坐实 | 无（定义在公开 seam 不可读，同 edit）；挂载与否由宿主 profile 显式行决定，team 蓝图不可达 | 同 edit 行（kit 治理链为 Team Definition 形，非该包本体） | 同 edit | 只有模块（钉+opt-in 面；注册源已亲核） |
 | read_image | 是 | 同上（M-05 kit-LIVE 判据级） | c0405+c08 双 kit | 生产面=host 原生未纳管 | 只有模块 |
 | pwsh | 是 | shell-class 规则在权限面声明（fingerprint 形，permission-plane `:1137` 注记）；无 plane 行 | 无装面腿 | Windows 宿主维度本机不可测 | 未测 |
 | lsp | 是（host 共享池） | Team 侧 realm 装配在码（`#304`），试用 profile 未挂 | REAL-LSP `#306` 30/30×2（kit/CI receipts `E/prod-lsp/ci-304/`） | 装面挂 lsp 腿未驱动（preset 即测）；原生 lsp 名车道=不可触达 | 有真实验收（realm 形）/未测（装面）；sub-realm 全键池=上游阻塞（M29） |
