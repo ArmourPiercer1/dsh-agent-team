@@ -1,6 +1,0 @@
-candidate-human-keep
-candidate-human-keep.lock
-candidate-src-fake
-candidate-src-fake.lock
-candidate-install-fake
-candidate-install-fake.lock

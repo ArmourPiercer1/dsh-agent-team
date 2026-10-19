@@ -1,4 +1,0 @@
-candidate-install-fake
-candidate-install-fake.lock
-candidate-src-fake
-candidate-src-fake.lock

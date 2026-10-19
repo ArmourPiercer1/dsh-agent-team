@@ -10,6 +10,14 @@ set -uo pipefail
 PKG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 RUN="$PKG_DIR/runs/human-guard-$STAMP"; mkdir -p "$RUN"
+# fixture scratch (stub worlds, planted links) lives OUTSIDE the package tree —
+# a committed fixture body/symlink once broke master's wording-lint walker
+# (dangling statSync). Only small .out/JSON receipts are copied back into $RUN.
+SCRATCH="$(mktemp -d "${TMPDIR:-/tmp}/a5-human-guard-$STAMP.XXXX")"
+trap 'rm -rf "$SCRATCH"' EXIT
+copyout () { # copyout <file...> — pull small receipts from scratch into $RUN
+  local f; for f in "$@"; do [ -e "$f" ] && cp "$f" "$RUN/$(basename "$f")" 2>/dev/null; done; true
+}
 PASS=0; FAIL=0
 check () { # check <id> <desc> <cond:true|false> <detail>
   if [ "$3" = true ]; then echo "PASS $1 — $2 [$4]"; PASS=$((PASS+1)); else echo "FAIL $1 — $2 [$4]"; FAIL=$((FAIL+1)); fi
@@ -28,25 +36,25 @@ mk_scratch () { # mk_scratch <root> — recorded install+src+lock dirs, recorded
 }
 
 # ── N1a: candidate-human-* as the CURRENT recorded world -> earliest gate refuses ──
-R1="$RUN/n1"; mk_scratch "$R1"
+R1="$SCRATCH/n1"; mk_scratch "$R1"
 node -e 'const fs=require("fs");const p=process.argv[1]+"/homes/candidate-INSTALLED.json";const j=JSON.parse(fs.readFileSync(p));j.installHome=process.argv[1]+"/homes/candidate-human-keep";fs.writeFileSync(p,JSON.stringify(j))' "$R1"
 out="$(CANDIDATE_BASE="$R1/homes" EVIDENCE_DIR="$R1/ev" "$PKG_DIR/rollback-candidate.sh" --uninstall 2>&1)"; rc=$?
 check N1a "human name as current record refused at the shape gate (fail-closed)" "$([ $rc -ne 0 ] && [ -d "$R1/homes/candidate-src-fake" ] && echo true || echo false)" "rc=$rc gate=$(echo "$out" | grep -c 'name shape')"
 
 # ── N1b: human name arriving through the HISTORY record -> the sweep PREFIX GATE ──
-R1b="$RUN/n1b"; mk_scratch "$R1b"
+R1b="$SCRATCH/n1b"; mk_scratch "$R1b"
 node -e 'const fs=require("fs");const A=process.argv[1];const j=JSON.parse(fs.readFileSync(A+"/homes/candidate-INSTALLED.json"));j.installHome=A+"/homes/candidate-human-keep";fs.writeFileSync(A+"/homes/candidate-INSTALLED.history.jsonl",JSON.stringify(j)+"\n")' "$R1b"
 out="$(CANDIDATE_BASE="$R1b/homes" EVIDENCE_DIR="$R1b/ev" "$PKG_DIR/rollback-candidate.sh" --uninstall 2>&1)"; rc=$?
 check N1b "human name via history hits the sweep negative gate (nothing deleted)" "$([ $rc -ne 0 ] && [ -d "$R1b/homes/candidate-human-keep" ] && [ -d "$R1b/homes/candidate-install-fake" ] && echo true || echo false)" "rc=$rc gate=$(echo "$out" | grep -c 'human-retained')"
 
 # ── N2: sentinel inside a recorded world -> refusal, nothing deleted ──────────
-R2="$RUN/n2"; mk_scratch "$R2"
+R2="$SCRATCH/n2"; mk_scratch "$R2"
 printf 'sentinel\n' > "$R2/homes/candidate-install-fake/.CANDIDATE-HUMAN-USE"
 out="$(CANDIDATE_BASE="$R2/homes" EVIDENCE_DIR="$R2/ev" "$PKG_DIR/rollback-candidate.sh" --uninstall 2>&1)"; rc=$?
 check N2 "recorded world with .CANDIDATE-HUMAN-USE is refused" "$([ $rc -ne 0 ] && [ -d "$R2/homes/candidate-src-fake" ] && echo true || echo false)" "rc=$rc sentinel_gate=$(echo "$out" | grep -c 'sentinel-protected')"
 
 # ── P1 + N3: clean state -> recorded worlds swept, human world survives/reported
-R3="$RUN/n3"; mk_scratch "$R3"
+R3="$SCRATCH/n3"; mk_scratch "$R3"
 out="$(CANDIDATE_BASE="$R3/homes" EVIDENCE_DIR="$R3/ev" "$PKG_DIR/rollback-candidate.sh" --uninstall 2>&1)"; rc=$?
 human_survives=$([ -d "$R3/homes/candidate-human-keep" ] && echo true || echo false)
 SL="$(ls "$R3"/ev/rollback-*/sweep-list.json 2>/dev/null | head -1)"; human_listed=$(grep -c 'candidate-human-keep' "$SL" 2>/dev/null || echo 0)
@@ -56,7 +64,7 @@ check N3 "human world survives uninstall AND is reported (humanPresent)" "$([ "$
 # ── N4: launcher-less world is REFUSED by the three-path verify (root 01:33Z ①;
 #    permanent regression for the `bad(...) | pass` boolean hole — red/green pair
 #    lives at runs/human-boolfix-*/ on the real check path; this pins the shared verify3) ──
-R4="$RUN/n4"; mk_scratch "$R4"
+R4="$SCRATCH/n4"; mk_scratch "$R4"
 LAUNCH_SHA4=$(sha256sum "$R4/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
 node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R4/homes/candidate-INSTALLED.json" "$LAUNCH_SHA4"
 rm -f "$R4/homes/candidate-install-fake/deployment/landlock-prelauncher.py"
@@ -65,7 +73,7 @@ echo "$out" > "$RUN/n4-init.out"
 check N4 "launcher-less world refused by verify3 (rc!=0, launcherPath named) — boolean-hole regression" "$([ $rc -ne 0 ] && printf '%s' "$out" | grep -q 'launcherPath missing' && echo true || echo false)" "rc=$rc"
 
 # ── N5: init dereferences planted symlinks — no live link into cleanup territory ──
-R5="$RUN/n5"; mk_scratch "$R5"
+R5="$SCRATCH/n5"; mk_scratch "$R5"
 LAUNCH_SHA=$(sha256sum "$R5/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
 node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R5/homes/candidate-INSTALLED.json" "$LAUNCH_SHA"
 ln -s "$R5/homes/candidate-src-fake" "$R5/homes/candidate-install-fake/link-abs-into-cleanup-face"
@@ -93,7 +101,7 @@ fi
 
 # ── N7: dangling symlink at init -> fail-closed AND the half-created world is
 #    removed by us (doc-trail order ④) ──
-R7="$RUN/n7"; mk_scratch "$R7"
+R7="$SCRATCH/n7"; mk_scratch "$R7"
 LAUNCH_SHA7=$(sha256sum "$R7/homes/candidate-install-fake/deployment/landlock-prelauncher.py" | cut -d' ' -f1)
 node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p));j.launcher.sha25256=undefined;j.launcher.sha256=process.argv[2];fs.writeFileSync(p,JSON.stringify(j))' "$R7/homes/candidate-INSTALLED.json" "$LAUNCH_SHA7"
 ln -s "$R7/homes/nowhere-dangling" "$R7/homes/candidate-install-fake/dangling-link"
@@ -102,8 +110,14 @@ echo "$out" > "$RUN/n7-init.out"
 partial_left="$(ls -d "$R7"/homes/candidate-human-* 2>/dev/null | grep -v -- "-keep$" | wc -l)"   # the -keep fixture is mk_scratch's, not a partial init
 check N7 "dangling link refuses init (rc!=0) and partial world is cleaned by init itself" "$([ $rc -ne 0 ] && printf '%s' "$out" | grep -q 'dangling symlink' && [ "$partial_left" -eq 0 ] && echo true || echo false)" "rc=$rc partial_left=$partial_left"
 
-echo "SUMMARY pass=$PASS fail=$FAIL (evidence: runs/human-guard-$STAMP)"
+# ── N8 (gate): the package evidence tree must contain NO symlinks and NO fixture
+#    worlds ever (recurrence-red order ③) ──
+nlinks="$(find "$PKG_DIR/runs" -type l | wc -l)"
+nhomes="$(find "$PKG_DIR/runs" -path '*/n*/homes*' | wc -l)"
+check N8 "package runs/ tree: zero symlinks, zero fixture-world paths (anti-recurrence gate)" "$([ "$nlinks" -eq 0 ] && [ "$nhomes" -eq 0 ] && echo true || echo false)" "links=$nlinks fixture_paths=$nhomes"
+
+echo "SUMMARY pass=$PASS fail=$FAIL (evidence: runs/human-guard-$STAMP; fixture scratch: /tmp, reproduced and discarded by this run)"
 
 
-cp "$SL" "$RUN/n3-sweep-list.json" 2>/dev/null || true
+copyout "$SL"
 [ $FAIL -eq 0 ] || exit 2; exit 0
