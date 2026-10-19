@@ -35,3 +35,17 @@
 ## 汇总（对账用一句话）
 
 三腿同源判据=ADR:69 dispatchable⊆governed：LSP=检查链完备只差装面收据（最薄）；subagent=strict 响亮拒/非 strict 直通+drain，缺一条端到端链；MCP=per-call 治理面**结构性缺席**（监听器 unsupported 直通，`:1240-1242`），属 PR7 延期行+H6 负控未跑。三草案脚本均为**未执行草案**（R 禁真装），执行即由归属路落各自 evidence。
+
+## 附注一 · F-6 复核（E 续，根 09:3xZ；现场=主检出宿主树+F runs 只读）
+
+**裁定=口径差+误查（三层叠加），「本宿主构建无模型面 subagent 工具」不成立；F 腿②实质账（typed FATAL 点名 web_fetch/web_search）仍立。**
+- (a) **grep 面错**：`subagent_fork` 的注册名是 **config 路由**——`@deepseek-ai/dsh-tool-subagent` 同包两次挂行，`src/index.ts:323` `const toolName = config.toolName ?? 'subagent'` → `:380` `name: toolName`；包源码/lib 零字面（F 全包 grep=0 在源码面为真，但名只在 bundle yml 配置+目录脚本：base `cordis.patch.yml:375` `toolName: subagent`、`:387` `toolName: subagent_fork`；`scripts/gen-tool-catalog.ts:538 shippedNames:['subagent','subagent_fork']`——父抽查两处现场亲验）。
+- (b) **挂载形错**：F 世界 leg2 行挂的是**服务包** `packages/subagent/subagent/lib/index.js`（终值 run `cordis.patch.yml:73-74` 亲读），非 tool 行形；服务包无模型工具且与 boot 已注册服务冲突=响亮 fail-closed（F-6 原文）——正确行为，但那是服务面不是工具面。
+- (c) **preset 形**：`a5legs-sub` 自建 preset（"production row + p6t6 + preset + 显式 subagent 行"）未含 base 的 tool-subagent 两行 ⇒ 活体面无 subagent/subagent_fork（F-5 面 20-21 名+leg2 门只点名 web 对=自洽）。
+⇒ 修正路径（给 A/F 续跑）：与 F-2 同款 **file-URL tool 行** + `config: {provider: spawn|fork, toolName: subagent|subagent_fork, backgroundMode}` 两行，即上活体面；npm 裸名行形在 F runner 不可解析（F-2 先例）。F 的「构建不可达」措辞应收窄为「F 世界挂载形不可达」。
+
+## 附注二 · F-1/leg1 trace 判定读一致性（与 §C2 静态注对账）
+
+- §C2 检查层结论**不受影响且获运行级背书**：消费点=决策链本身（`glue:3019` listener + `canonical-operation.ts:699`），F 腿① deny verbatim（`effective deny; decided by template(leader) deny[lane index 0]`）+ fail-closed 原文即检查层为真的运行时收据。
+- **F-1 因果句修正**：glue **有接** onObserve——listener options 内 `glue:3122-3124`（`onObserve: (row) => observations.push('alpha2-perm: '+JSON.stringify(row))`）；`observe()` 非短路（`pre-execute-adapter.ts:914` 判的是"未传"，生产传了）。真相=**sink 不是宿主日志**：行闭包数组 `observations`（声明 `glue:779`，挂出 `glue:5355` row handle）在生产装配中无 log sink（全仓 `.observations` 消费者仅 `s6-remote.ts:2618`=environmentFacts 另一观察集，非此数组）。⇒ F「host 日志零出现」观测成立、判据 L1-TRACE-CANON 红可保留，但归因应从"未接 onObserve"改"接了、sink=row handle"。
+- **leg1 判定读口径修订**：`canonicalized` 行第三形态=**in-process row-handle `observations` 数组**（kit/runner 直读，前缀 `alpha2-perm:`），或 F 的替代 wire 读；**宿主日志读法无效**（已无 sink）。本文件草案 leg1 §[4a] 的"读 session trace"按此收窄。
