@@ -441,6 +441,7 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'
+import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
@@ -2423,6 +2424,28 @@ export function createAgentBindings(deps) {
       if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
         const planeCfg = config.teamToolPlane
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
+        // B-ACT-1-PR C2: the governed jobs bridge for the fixed `job_*`
+        // management trio. Built ONLY when the closed `jobsEnabled` key says
+        // on (absent = no rows, byte-for-byte zero flip). Everything it
+        // touches resolves LAZILY per call: the per-root gateway row (its
+        // `instanceId`-keyed creation rides just below), the plane handle
+        // (the def#N identities mint only AFTER the seam's install pass —
+        // the pb §6 laziness law the placementFeed already obeys), and the
+        // host jobs service through the additive LAZY deps accessor
+        // (absent accessor = honest per-call typed refusal, never a setup
+        // failure). The viewer is the routed mount's DURABLE member pair —
+        // the gateway's identity source confirms it against the row store;
+        // nothing here vouches for an identity it did not read.
+        const a5JobsBridge = planeCfg.jobsEnabled === true
+          ? createGovernedJobsBridge({
+            scopeKey: a5PlaneRealmId,
+            viewer: { rootSessionId: String(teamRoot), instanceId: String(instanceId) },
+            gatewayRow: () => liveJobsGatewayAssemblies.get(String(teamRoot)) ?? null,
+            planeRow: () => a5PlaneValue,
+            jobsService: typeof deps.jobs === 'function' ? deps.jobs : () => undefined,
+            observe: (row) => observations.push(String(row)),
+          })
+          : null
         const built = createTeamToolPlaneAssembly({
           permissionPolicy,
           realmId: a5PlaneRealmId,
@@ -2430,6 +2453,7 @@ export function createAgentBindings(deps) {
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
           plane: planeCfg,
+          ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),
         })
         if (built.ok !== true) {
@@ -2463,9 +2487,14 @@ export function createAgentBindings(deps) {
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
-        // mirror + owner fence are live; the actuator leg (`ctx.jobs.start`)
-        // stays the disclosed `job_*` coverage gap — this row never fakes a
-        // host jobs capability.
+        // mirror + owner fence are live; as of B-ACT-1-PR the MANAGEMENT
+        // actuator face is mounted too (the fixed `job_output`/`job_list`/
+        // `job_kill` trio → the bridge above → the host `ctx.get('jobs')`
+        // public face). CREATION attribution has NO producer in the
+        // governed world yet (the confined shell row refuses background by
+        // name — `background-not-supported`), so un-attributed jobs ride
+        // the disclosed corded:false pass-through to the host caller fence;
+        // this row never fakes a host jobs capability.
         const gatewayRootKey = String(teamRoot)
         if (!liveJobsGatewayAssemblies.has(gatewayRootKey)) {
           try {
