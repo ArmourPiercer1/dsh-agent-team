@@ -14,7 +14,12 @@
  *  3. the PENDING-GATES clause is proven on fixtures and reports its engagement
  *     state honestly: `absent` (the file is not on this baseline) is stated, not
  *     silently passed; when the file lands, the G-g row and the G-a row may not
- *     be judged closed in the same revision.
+ *     be judged closed in the same revision;
+ *  4. (a5-docs-matrix hardening, census 458/459/460 class) the WALKER survives
+ *     dangling symlinks: a missing-target link is skipped and DISCLOSED (named,
+ *     counted), resolving links are still followed, and removing the dangling
+ *     links from the same tree leaves the verdict surface byte-identical —
+ *     the hardening alone can neither add a violation nor lose a file.
  *
  * Zero product-code change; static text scan only.
  *
@@ -22,7 +27,9 @@
  */
 import { describe, expect, it } from 'vitest'
 import { fileURLToPath } from 'node:url'
-import { dirname, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import {
   lintMarkdownText,
   lintPendingGatesText,
@@ -69,5 +76,44 @@ describe('a5p1r G-g probe G-5 — wording lint for the silent-channel posture', 
     // Honest engagement state (this baseline has no PENDING-GATES.md; the
     // integration owner's landing of the file engages the second clause).
     expect(['absent', 'checked']).toContain(results.pendingGates)
+    // On a clean tree the skip lane is VACUOUS AND SAYS SO (empty list, not a
+    // missing field): the hardening is disclosed as unused, never assumed.
+    expect(results.skippedDangling).toEqual([])
+  })
+
+  it('survives dangling symlinks: skips are disclosed by name, resolving links still walk, verdict surface unchanged', () => {
+    // Reproduction of the census 458/459/460 shape in a scratch tree (the
+    // candidate-package fixture-escape incident: a committed dangling symlink
+    // made the walker's statSync throw an uncaught ENOENT and the lint
+    // process CRASHED instead of reporting). Scratch lives outside the repo
+    // tree (TMPDIR + trap-delete, same convention as test-human-protection.sh
+    // after its 090b87b5 closure) — nothing is planted inside dev/agent-workflow.
+    const scratch = mkdtempSync(join(tmpdir(), 'a5d-walker-dangling-'))
+    try {
+      const aw = join(scratch, 'dev', 'agent-workflow', 'evidence')
+      mkdirSync(aw, { recursive: true })
+      writeFileSync(join(aw, 'clean.md'), 'ordinary words, no claim here.\n')
+      writeFileSync(join(scratch, 'outside.md'), 'a second ordinary file.\n')
+      symlinkSync(join(scratch, 'outside.md'), join(aw, 'resolving.md')) // must STILL be scanned
+      symlinkSync('no-such-target', join(aw, 'dangling.md')) // .md dangling — the crash shape
+      symlinkSync(join(scratch, 'no-such-dir'), join(aw, 'dangling-dir')) // dir dangling — same class
+      const withDangling = lintRepo(scratch)
+      expect(withDangling.violations).toEqual([])
+      expect(withDangling.filesScanned).toBe(2) // clean.md + resolving.md — no silent loss
+      expect([...withDangling.skippedDangling].sort()).toEqual([
+        'dev/agent-workflow/evidence/dangling-dir',
+        'dev/agent-workflow/evidence/dangling.md',
+      ])
+      // Same tree, dangling links removed: counts and verdict are IDENTICAL —
+      // only the disclosure changes. The hardening cannot alter the rule.
+      unlinkSync(join(aw, 'dangling.md'))
+      unlinkSync(join(aw, 'dangling-dir'))
+      const clean = lintRepo(scratch)
+      expect(clean.filesScanned).toBe(withDangling.filesScanned)
+      expect(clean.violations).toEqual(withDangling.violations)
+      expect(clean.skippedDangling).toEqual([])
+    } finally {
+      rmSync(scratch, { recursive: true, force: true })
+    }
   })
 })
