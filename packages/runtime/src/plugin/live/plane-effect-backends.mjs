@@ -998,20 +998,60 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
       const asm = typeof gatewayRow === 'function' ? gatewayRow() : null
       if (asm !== null && asm !== undefined) ensureDefinitions(asm)
     },
-    /** job_output: gate -> (wait) -> svc.read(caller); the delta composition
-     *  mirrors the host readBody (chunks in offset order, the lossy notice,
-     *  the once-only result tail) in the plane's text envelope. */
-    async jobOutput(args, caller) {
+    /** job_output: gate -> (wait, ROOT④b abort-aware) -> svc.read(caller);
+     *  the delta composition mirrors the host readBody (chunks in offset
+     *  order, the lossy notice, the once-only result tail) in the plane's
+     *  text envelope. ROOT④b (root ruling option a — minimal forwarding, no
+     *  recorded divergence, zero core): the dispatch's `exec?.signal`
+     *  cancels the WAIT on the host's OWN public surface
+     *  (`wait(id, timeoutMs, caller?, signal?)` @639ed01539). Three ordered
+     *  arms, each MEASURED: a pre-aborted signal never touches svc.wait; a
+     *  mid-wait abort is caught by the local race leg (the service also
+     *  honours the forwarded signal — belt AND braces); an abort landing as
+     *  wait settles — or one the service swallows — is caught by the
+     *  re-check BEFORE any read. The typed `wait-aborted` return carries the
+     *  abort REASON verbatim (never swallowed) and the host read is never
+     *  reached on an abort (call count zero, zero output leak). Un-aborted
+     *  waits are untouched: timed-out-then-read and killed-then-readable
+     *  keep their old positive controls. */
+    async jobOutput(args, caller, signal) {
       if (typeof args?.job_id !== 'string' || args.job_id === '') return refuse('job-id-required', 'job_id is required')
       if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
       const r = resolve()
       if (r.refusal !== undefined) return r.refusal
       const denied = checked(args.job_id, r)
       if (denied !== null) return denied
+      const abortReason = () => {
+        const raw = signal?.reason
+        if (typeof raw === 'string' && raw !== '') return raw
+        if (raw?.message !== undefined && raw.message !== '') return String(raw.message)
+        return signal?.aborted === true ? 'aborted' : 'not-aborted'
+      }
+      const abortReturn = () => refuse('wait-aborted', `the wait was cancelled: ${abortReason()}`)
       try {
         if (args.wait === true) {
+          if (signal?.aborted === true) return abortReturn() // a dead signal never touches the service
           const ms = typeof args.timeout_ms === 'number' ? args.timeout_ms : waitDefaultMs
-          await r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller)
+          if (signal !== null && signal !== undefined && typeof signal.addEventListener === 'function') {
+            let onAbort
+            try {
+              await Promise.race([
+                r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller, signal),
+                new Promise((_resolve, reject) => {
+                  onAbort = () => reject(new Error('wait aborted'))
+                  signal.addEventListener('abort', onAbort, { once: true })
+                }),
+              ])
+            } catch (error) {
+              if (signal.aborted === true) return abortReturn() // the abort owns the outcome, whatever the wait rejected with
+              throw error
+            } finally {
+              if (typeof onAbort === 'function') signal.removeEventListener('abort', onAbort)
+            }
+          } else {
+            await r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller, signal)
+          }
+          if (signal?.aborted === true) return abortReturn() // race/re-check BEFORE any read: an abort as wait settles still never reads
         }
         const read = await r.svc.read(args.job_id, caller)
         const delta = (read.chunks ?? []).map((c) => String(c?.text ?? '')).join('')

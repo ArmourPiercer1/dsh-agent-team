@@ -70,3 +70,20 @@ dist 镜像同 commit（#338 律）。**未动 git 历史、未动凭据**。
 actuator 17/17（14→+3 新负控）+ 同链 jobs-assembly 14 + hygiene 14 + p4t6 1（**文件 census 不变=1208**，
 新增测试全在既有档内）=46/46；runtime typecheck rc=0；check-artifacts ok 1748/glue9
 （桥 .mjs 的 dist placement 镜像**同 commit**）。
+
+
+---
+
+## ④b 选项 a 开工（root ruling，round-B 追加 commit）— abort 转发实现补全
+
+**面**：`team-tool-plane.mjs:774` **仅参数转发**（`exec?.signal` 第三参）；桥 `jobOutput(args,
+caller, signal)`：预 abort 不进 `svc.wait`；挂起中=本地 race leg 与服务方 signal 双臂（belt AND
+braces，宿主公开签名 `wait(id, timeoutMs, caller?, signal?)` @639ed01539 = **转发，无记录分歧，
+零 Core**）；wait 返回竞态=**read 前重检**兜底。typed `wait-aborted` 携 abort **原因原文**（string/
+Error 双形，不吞）。**RED→GREEN 点名矩阵全落**（RED 档 `runs/root4b-RED-unbooked.log`=旧码 4 红
+`4 failed | 18 passed`；修后 22/22）：
+②a 预取消（host calls ZERO）/②b 挂起中/②c 恰 wait 返回竞态（settling edge 已终态仍不读）/
+② 定义替换·卸载形（Error reason 原文）/② 织入每腿：**svc.read 计数=0 + 零字节**/
+② 正控：未取消 timed-out→read 照旧（`wait→read` 序钉）+ 被 kill 终态可读=ROOT④ 原测在场不回退。
+门禁：家族+hygiene+p4t6=51/51、typecheck rc=0、**artifacts drift=0**（桥+plane 两 .mjs 的 dist
+placement 镜像**同 commit**）。census 不变（无新文件）。

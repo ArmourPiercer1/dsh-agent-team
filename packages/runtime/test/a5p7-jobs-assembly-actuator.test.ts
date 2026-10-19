@@ -75,6 +75,7 @@ function fakeJobRegistry() {
   const jobs = new Map<string, { ownerSession: string; killed: boolean; finished: boolean }>()
   const calls: string[] = []
   const waiters = new Map<string, () => void>()
+  const listeners = new Map<string, () => void>()
   return {
     calls,
     seed: (jobId: string, ownerSession: string) => jobs.set(jobId, { ownerSession, killed: false, finished: false }),
@@ -85,6 +86,7 @@ function fakeJobRegistry() {
       const w = waiters.get(jobId)
       if (w === undefined) return
       waiters.delete(jobId)
+      listeners.delete(jobId)
       const j = jobs.get(jobId)
       if (j !== undefined) j.finished = true
       w()
@@ -95,12 +97,30 @@ function fakeJobRegistry() {
         .filter(([, j]) => caller === undefined || j.ownerSession === caller)
         .map(([id, j]) => ({ id, kind: 'bash', status: j.finished ? (j.killed ? 'killed' : 'completed') : 'running', label: 'background command' }))
     },
-    wait: (id: string, _ms: number, caller?: string) => {
+    /** The host's OWN public signature `wait(id, timeoutMs, caller?, signal?)`
+     *  @639ed01539 (ROOT④b): settles at the timeout, early-resolves via
+     *  settleWait, and HONOURS the signal (the service-side arm; the bridge
+     *  races it too - belt AND braces, both arms measured). */
+    wait: (id: string, timeoutMs: number, caller?: string, signal?: AbortSignal) => {
       calls.push(`wait:${id}:${caller ?? '*'}`)
       const j = jobs.get(id)
       if (j === undefined) throw new Error('unknown job')
       if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
-      return new Promise<void>((resolve) => { waiters.set(id, resolve) })
+      return new Promise<void>((resolve, reject) => {
+        if (signal?.aborted === true) { reject(new Error('wait aborted (service arm, pre)')); return }
+        const timer = setTimeout(() => { waiters.delete(id); listeners.delete(id); resolve() }, timeoutMs)
+        waiters.set(id, () => { clearTimeout(timer); resolve() })
+        if (signal !== undefined && signal !== null) {
+          const onAbort = () => {
+            clearTimeout(timer)
+            waiters.delete(id)
+            listeners.delete(id)
+            reject(new Error('wait aborted (service arm)'))
+          }
+          listeners.set(id, onAbort)
+          signal.addEventListener('abort', onAbort, { once: true })
+        }
+      })
     },
     readAt: (id: string, caller?: string) => {
       calls.push(`readAt:${id}:${caller ?? '*'}`)
@@ -253,7 +273,7 @@ const planeRow = (await import(
         ownNames: readonly string[]
         placementNames: readonly string[]
         placementFeed: (name: string) => { definitionIdentity: string; realmId: string } | undefined
-        definitions: ReadonlyArray<{ name: string; execute?: (args: unknown, exec?: { agent?: { id?: string } }) => Promise<{ text: string }> }>
+        definitions: ReadonlyArray<{ name: string; execute?: (args: unknown, exec?: { agent?: { id?: string }; signal?: AbortSignal }) => Promise<{ text: string }> }>
       } }
     | { ok: false; code: string; message: string }
 }
@@ -361,7 +381,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
 
   type BridgeFace = {
     jobList: (caller: string) => Promise<{ text: string }>
-    jobOutput: (a: Record<string, unknown>, c: string) => Promise<{ text: string }>
+    jobOutput: (a: Record<string, unknown>, c: string, s?: AbortSignal) => Promise<{ text: string }>
     jobKill: (a: Record<string, unknown>, c: string) => Promise<{ text: string }>
     ensureRegistered: () => void
   }
@@ -432,5 +452,86 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     expect(host.calls).toEqual(['wait:jb1:agent-of-A', 'kill:jb1:agent-of-A', 'read:jb1:agent-of-A'])
     // Request ≠ settlement (PR1 Gate R4): the token stands until the plane's settle event.
     expect(asm.gateway.lease.outstanding().map((t) => t.callId)).toEqual(['jb1'])
+  })
+
+  // ── ROOT④b (root ruling option a): the abort-forward matrix. Driven through
+  // the PLANE ROW definition (exec?.signal forwarding proven at :774, not
+  // just the bridge), every leg asserts the ③ pair: svc.read call count 0
+  // and zero output bytes in the returned text.
+  function abortWorld(viewer: JobOwner) {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'agent-of-A')
+    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: viewer, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    const bridge = mkRawBridge(asm, host, viewer)
+    const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: true }, backends: { jobs: bridge } })
+    expect(built.ok).toBe(true)
+    if (!built.ok) throw new Error('unreachable')
+    const def = built.value.definitions.find((d) => d.name === 'job_output')!
+    return { asm, host, def }
+  }
+  const noRead = (host: ReturnType<typeof fakeJobRegistry>) =>
+    expect(host.calls.filter((c) => c.startsWith('read:'))).toEqual([])
+
+  it('ROOT④b-②a PRE-CANCELLED: a signal already aborted at execute entry never touches svc.wait (host calls ZERO), typed wait-aborted carries the string reason verbatim', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const ac = new AbortController()
+    ac.abort('caller-cancel-pre')
+    const r = await def.execute!({ job_id: 'jb1', wait: true }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
+    expect(r.text).toContain('wait-aborted')
+    expect(r.text).toContain('caller-cancel-pre') // ⑤ reason fidelity (string form)
+    expect(host.calls).toEqual([]) // svc.wait NEVER entered, read ③ zero
+    expect(r.text).not.toContain('output-bytes') // ③ no leak
+  })
+
+  it('ROOT④b-②b MID-SUSPENSION: abort while the wait is parked → typed wait-aborted with the reason; wait entered ONCE, svc.read call count 0, zero bytes', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const ac = new AbortController()
+    const pending = def.execute!({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
+    await Promise.resolve()
+    expect(host.calls).toEqual(['wait:jb1:agent-of-A']) // parked
+    ac.abort('caller-cancel-mid')
+    const r = await pending
+    expect(r.text).toContain('wait-aborted')
+    expect(r.text).toContain('caller-cancel-mid') // ⑤
+    noRead(host) // ③
+    expect(r.text).not.toContain('output-bytes')
+  })
+
+  it('ROOT④b-②c RACE AT SETTLE: the settling edge fires and the abort lands before the re-check → the read leg is NEVER reached (re-check BEFORE read is the arm that holds)', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const ac = new AbortController()
+    const pending = def.execute!({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
+    await Promise.resolve()
+    host.settleWait('jb1') // wait resolves (job now terminal)...
+    ac.abort('race-at-settle') // ...and the abort lands in the same tick, before any read
+    const r = await pending
+    expect(r.text).toContain('wait-aborted')
+    expect(r.text).toContain('race-at-settle') // ⑤
+    noRead(host) // ③ even though the job IS terminal now, the aborted call never reads
+    expect(r.text).not.toContain('output-bytes')
+  })
+
+  it('ROOT④b-② DEFINITION-REPLACEMENT/UNLOAD abort shape: an Error-reason abort (what the plane mints when the lane definition moves under the call) answers typed with the CAUSE verbatim, read ③ zero', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const ac = new AbortController()
+    const pending = def.execute!({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
+    await Promise.resolve()
+    ac.abort(new Error('definition-moved: replaced under this call'))
+    const r = await pending
+    expect(r.text).toContain('wait-aborted')
+    expect(r.text).toContain('definition-moved: replaced under this call') // ⑤ Error-reason fidelity, nothing swallowed
+    noRead(host)
+    expect(r.text).not.toContain('output-bytes')
+  })
+
+  it('ROOT④b-④ POSITIVE CONTROLS, no regression: an UN-aborted timed-out wait still READS (the old timed-out→read law, host semantics untouched)', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const r = await def.execute!({ job_id: 'jb1', wait: true, timeout_ms: 5 }, { agent: { id: 'agent-of-A' }, signal: new AbortController().signal })
+    expect(r.text).toBe('output-bytes') // timeout expired, job still running: bytes, no result tail
+    expect(host.calls).toEqual(['wait:jb1:agent-of-A', 'read:jb1:agent-of-A'])
+    // and the killed-then-readable host law (pinned at ROOT④ above) rides the SAME un-aborted path — the
+    // ROOT④ test IS that control and must stay green with this suite.
   })
 })

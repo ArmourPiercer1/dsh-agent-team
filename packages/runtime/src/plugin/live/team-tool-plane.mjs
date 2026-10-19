@@ -771,7 +771,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         },
         required: ['job_id'],
       },
-      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id) : await shutJobsText()),
+      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id, exec?.signal) : await shutJobsText()),
       output: PLANE_PRESENTATION_FACE,
     }),
     Object.freeze({
