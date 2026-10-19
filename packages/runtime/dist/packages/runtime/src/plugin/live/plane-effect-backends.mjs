@@ -1009,11 +1009,14 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
      *  mid-wait abort is caught by the local race leg (the service also
      *  honours the forwarded signal — belt AND braces); an abort landing as
      *  wait settles — or one the service swallows — is caught by the
-     *  re-check BEFORE any read. The typed `wait-aborted` return carries the
-     *  abort REASON verbatim (never swallowed) and the host read is never
-     *  reached on an abort (call count zero, zero output leak). Un-aborted
-     *  waits are untouched: timed-out-then-read and killed-then-readable
-     *  keep their old positive controls. */
+     *  re-check BEFORE any read. The typed `wait-aborted` return carries a
+     *  BOUNDED slice of the abort reason's message/string form (the plane
+     *  envelope's 200-char cap applies) - stated at that honest strength,
+     *  NOT as full-reason-object identity fidelity (root wording ruling).
+     *  The host read is never reached on an abort (call count zero, zero
+     *  output leak). Un-aborted calls are untouched in BOTH arms:
+     *  timed-out-then-read and killed-then-readable keep their positive
+     *  controls, and the no-wait read path is unchanged. */
     async jobOutput(args, caller, signal) {
       if (typeof args?.job_id !== 'string' || args.job_id === '') return refuse('job-id-required', 'job_id is required')
       if (typeof caller !== 'string' || caller === '') return refuse('caller-unresolved', 'dispatch did not name the calling agent; the bridge never queries unfiltered')
@@ -1027,7 +1030,13 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
         if (raw?.message !== undefined && raw.message !== '') return String(raw.message)
         return signal?.aborted === true ? 'aborted' : 'not-aborted'
       }
-      const abortReturn = () => refuse('wait-aborted', `the wait was cancelled: ${abortReason()}`)
+      const abortReturn = () => refuse('wait-aborted', `the call was cancelled: ${abortReason()}`)
+      // ROOT-close(2) (root, round-B addendum): the SAME cancellation contract
+      // governs the NO-wait arm too - a pre-cancelled call never reaches
+      // svc.read. The entry check is arm-independent; in the no-wait path
+      // there is no await between entry and read, so it doubles as the
+      // pre-read re-check the structural allowance permits.
+      if (signal?.aborted === true) return abortReturn()
       try {
         if (args.wait === true) {
           if (signal?.aborted === true) return abortReturn() // a dead signal never touches the service
@@ -1035,13 +1044,20 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
           if (signal !== null && signal !== undefined && typeof signal.addEventListener === 'function') {
             let onAbort
             try {
-              await Promise.race([
-                r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller, signal),
-                new Promise((_resolve, reject) => {
-                  onAbort = () => reject(new Error('wait aborted'))
-                  signal.addEventListener('abort', onAbort, { once: true })
-                }),
-              ])
+              // ROOT-close(1) (root, round-B addendum) NO-LOST-EVENT shape:
+              // the abort listener goes in BEFORE svc.wait is even called,
+              // and a re-check runs AFTER the call - so an abort that fires
+              // SYNCHRONOUSLY during the service call (and a service that
+              // returns a never-settling promise) can neither outrun the
+              // listener nor hang the race. The service ALSO honours the
+              // forwarded signal (public surface) - belt AND braces.
+              const abortPromise = new Promise((_resolve, reject) => {
+                onAbort = () => reject(new Error('wait aborted'))
+                signal.addEventListener('abort', onAbort, { once: true })
+              })
+              const waitPromise = r.svc.wait(args.job_id, Math.min(ms, waitCapMs), caller, signal)
+              if (signal.aborted === true) return abortReturn() // fired DURING the service call: listener armed first, the re-check catches it
+              await Promise.race([waitPromise, abortPromise])
             } catch (error) {
               if (signal.aborted === true) return abortReturn() // the abort owns the outcome, whatever the wait rejected with
               throw error

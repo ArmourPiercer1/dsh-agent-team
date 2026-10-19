@@ -474,13 +474,13 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
   const noRead = (host: ReturnType<typeof fakeJobRegistry>) =>
     expect(host.calls.filter((c) => c.startsWith('read:'))).toEqual([])
 
-  it('ROOT④b-②a PRE-CANCELLED: a signal already aborted at execute entry never touches svc.wait (host calls ZERO), typed wait-aborted carries the string reason verbatim', async () => {
+  it('ROOT④b-②a PRE-CANCELLED: a signal already aborted at execute entry never touches svc.wait (host calls ZERO), typed wait-aborted carries a BOUNDED slice of the string reason (200-char envelope cap)', async () => {
     const { host, def } = abortWorld(OWNER_A)
     const ac = new AbortController()
     ac.abort('caller-cancel-pre')
     const r = await def.execute!({ job_id: 'jb1', wait: true }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
     expect(r.text).toContain('wait-aborted')
-    expect(r.text).toContain('caller-cancel-pre') // ⑤ reason fidelity (string form)
+    expect(r.text).toContain('caller-cancel-pre') // ⑤ reason fidelity, bounded (string form)
     expect(host.calls).toEqual([]) // svc.wait NEVER entered, read ③ zero
     expect(r.text).not.toContain('output-bytes') // ③ no leak
   })
@@ -513,7 +513,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     expect(r.text).not.toContain('output-bytes')
   })
 
-  it('ROOT④b-② DEFINITION-REPLACEMENT/UNLOAD abort shape: an Error-reason abort (what the plane mints when the lane definition moves under the call) answers typed with the CAUSE verbatim, read ③ zero', async () => {
+  it('ROOT④b-② DEFINITION-REPLACEMENT/UNLOAD abort shape: an Error-reason abort (what the plane mints when the lane definition moves under the call) answers typed with a BOUNDED slice of the CAUSE message (no full-object fidelity claimed), read ③ zero', async () => {
     const { host, def } = abortWorld(OWNER_A)
     const ac = new AbortController()
     const pending = def.execute!({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
@@ -521,7 +521,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     ac.abort(new Error('definition-moved: replaced under this call'))
     const r = await pending
     expect(r.text).toContain('wait-aborted')
-    expect(r.text).toContain('definition-moved: replaced under this call') // ⑤ Error-reason fidelity, nothing swallowed
+    expect(r.text).toContain('definition-moved: replaced under this call') // ⑤ Error.message form, bounded slice (wording narrowed per root: no verbatim/identity claim)
     noRead(host)
     expect(r.text).not.toContain('output-bytes')
   })
@@ -533,5 +533,43 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     expect(host.calls).toEqual(['wait:jb1:agent-of-A', 'read:jb1:agent-of-A'])
     // and the killed-then-readable host law (pinned at ROOT④ above) rides the SAME un-aborted path — the
     // ROOT④ test IS that control and must stay green with this suite.
+  })
+
+  it('ROOT-close(1) NO-LOST-EVENT race: an abort fired SYNCHRONOUSLY inside the svc.wait call (service returns a NEVER-SETTLING promise) cannot outrun the listener nor hang the race — listener goes in FIRST, post-call re-check answers typed; svc.read count 0', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'caller-1')
+    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    const ac = new AbortController()
+    const svc = {
+      ...host,
+      wait: (id: string, _ms: number, caller?: string) => {
+        host.calls.push(`wait:${id}:${caller ?? '*'}`)
+        ac.abort('sync-abort-inside-wait') // the hostile shape: abort DURING the call, before any listener could be armed after it
+        return new Promise<void>(() => {}) // and a promise that NEVER settles
+      },
+    }
+    const bridge = backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => svc,
+    }) as BridgeFace
+    const r = await bridge.jobOutput({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, 'caller-1', ac.signal)
+    expect(r.text).toContain('wait-aborted')
+    expect(r.text).toContain('sync-abort-inside-wait') // bounded reason slice
+    expect(host.calls).toEqual(['wait:jb1:caller-1']) // never settled, NEVER read — and the test itself PROVES non-hang by returning
+  })
+
+  it('ROOT-close(2) SAME CANCELLATION CONTRACT ON THE NO-WAIT ARM: a pre-cancelled no-wait call never reaches svc.read (typed, bounded reason, zero bytes); the un-aborted no-wait read stays as before (positive control, same world)', async () => {
+    const { host, def } = abortWorld(OWNER_A)
+    const ac = new AbortController()
+    ac.abort('pre-cancel-no-wait')
+    const r = await def.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-A' }, signal: ac.signal })
+    expect(r.text).toContain('wait-aborted') // one contract, both arms (typed code stays stable vocabulary)
+    expect(r.text).toContain('pre-cancel-no-wait')
+    expect(r.text).not.toContain('output-bytes')
+    expect(host.calls).toEqual([]) // read count ZERO on the no-wait arm too
+    const fresh = await def.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-A' }, signal: new AbortController().signal })
+    expect(fresh.text).toBe('output-bytes') // un-aborted no-wait reads exactly as before
+    expect(host.calls).toEqual(['read:jb1:agent-of-A'])
   })
 })

@@ -79,11 +79,24 @@ actuator 17/17（14→+3 新负控）+ 同链 jobs-assembly 14 + hygiene 14 + p4
 **面**：`team-tool-plane.mjs:774` **仅参数转发**（`exec?.signal` 第三参）；桥 `jobOutput(args,
 caller, signal)`：预 abort 不进 `svc.wait`；挂起中=本地 race leg 与服务方 signal 双臂（belt AND
 braces，宿主公开签名 `wait(id, timeoutMs, caller?, signal?)` @639ed01539 = **转发，无记录分歧，
-零 Core**）；wait 返回竞态=**read 前重检**兜底。typed `wait-aborted` 携 abort **原因原文**（string/
-Error 双形，不吞）。**RED→GREEN 点名矩阵全落**（RED 档 `runs/root4b-RED-unbooked.log`=旧码 4 红
+零 Core**）；wait 返回竞态=**read 前重检**兜底。typed `wait-aborted` 携 abort 原因 **message/字符串形有界片段**（string/
+Error 双形；平面信封 200 字截断在册——**不称 identity/verbatim 完整保真**，root 措辞令）。**RED→GREEN 点名矩阵全落**（RED 档 `runs/root4b-RED-unbooked.log`=旧码 4 红
 `4 failed | 18 passed`；修后 22/22）：
 ②a 预取消（host calls ZERO）/②b 挂起中/②c 恰 wait 返回竞态（settling edge 已终态仍不读）/
 ② 定义替换·卸载形（Error reason 原文）/② 织入每腿：**svc.read 计数=0 + 零字节**/
 ② 正控：未取消 timed-out→read 照旧（`wait→read` 序钉）+ 被 kill 终态可读=ROOT④ 原测在场不回退。
 门禁：家族+hygiene+p4t6=51/51、typecheck rc=0、**artifacts drift=0**（桥+plane 两 .mjs 的 dist
 placement 镜像**同 commit**）。census 不变（无新文件）。
+
+### ④b 收口三点（root round-B 追加单，本 commit）
+
+1. **监听先行无丢事件形**：abort listener 在 `svc.wait` **调用之前**装入，调用之后再复查
+   `signal.aborted`——服务在调用期内**同步触发 abort 且返回永不 settle 的 Promise** 的敌形既越不过
+   监听也吊不死 race（旧序=race 可挂）。负控 `ROOT-close(1)` 构造该敌形（never-settling+先 abort），
+   **测试返回本身=不挂证明**，typed 返回+read 计数 0。RED 旧码=5s 超时挂形（`runs/root-close-RED-unbooked.log`）。
+2. **无 wait 臂同一取消契约**：入口预检改**臂无关**——预取消的无 wait 调用同样 **svc.read=0**
+   （typed `wait-aborted` 稳定词表，无扩协议对象面）；未取消无 wait 照旧读=同测正控。RED 旧码
+   无 wait 臂 read>0 红（同上档）。
+3. **reason 措辞如实收窄**：实现只提 message/字符串且有 200 字截断 ⇒ 文档/测试名/注释一律降为
+   "**有界片段**"级措辞，不称 identity/verbatim 完整保真；不扩协议对象面。
+既有五要件腿零回归（22→**24** 全绿）；镜像同提交；门禁全跑见 commit。

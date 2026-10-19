@@ -1,0 +1,4 @@
+     × ROOT-close(1) NO-LOST-EVENT race: an abort fired SYNCHRONOUSLY inside the svc.wait call (service returns a NEVER-SETTLING promise) cannot outrun the listener nor hang the race — listener goes in FIRST, post-call re-check answers typed; svc.read count 0 5011ms
+     × ROOT-close(2) SAME CANCELLATION CONTRACT ON THE NO-WAIT ARM: a pre-cancelled no-wait call never reaches svc.read (typed, bounded reason, zero bytes); the un-aborted no-wait read stays as before (positive control, same world) 5ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+      Tests  2 failed | 22 skipped (24)
