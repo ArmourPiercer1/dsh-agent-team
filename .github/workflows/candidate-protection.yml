@@ -1,0 +1,101 @@
+# a5-docs-matrix — automatic regression leg for the CANDIDATE HUMAN-WORLD PROTECTION spec.
+#
+# WHY THIS FILE EXISTS. The trial candidate's evidence package (branch `a5-candidate-pkg`) carries
+# `test-human-protection.sh`: the positive/negative spec for the human-world deletion protections
+# (recorded-worlds swept / `candidate-human-*` refused at three gates / sentinel refusal / partial
+# init cleaned / the `find runs -type l` N8 anti-recurrence gate). Until now that spec only ever ran
+# locally on the evidence branch — the root's own release note records "spec 10/10 属本地非 CI 复跑".
+# The protections are the only thing standing between a future rollback run and a HUMAN user's
+# persistent data, so "passed once, locally, by its author" is the wrong durability claim. This job
+# re-runs the spec against the PINNED evidence head on every master-side change, from a detached
+# checkout — the master tree is never the thing under test here, and the candidate package itself is
+# never modified by this leg (read-only: `permissions: contents: read`, nothing writes into the
+# checkout beyond the script's own `runs/human-guard-*` receipts inside the throwaway runner copy).
+#
+# THE PIN IS A NAME, AND MOVING IT IS A ROOT DECISION. `CANDIDATE_EVIDENCE_SHA` below is the
+# evidence head of record (trial-candidate package, root 02:52Z limited-trial release note covers
+# exactly this pairing: evidence 090b87b5… with product d5de7497…). Updating this constant REQUIRES
+# ROOT RATIFICATION ("更新须根批") — the same rule the census-runtime job applies to its host pin:
+# a moved ref must never silently retarget what the protection leg grades. If the evidence branch
+# tip ever moves without this file moving with it, the assertion below FAILS BY NAME, which is the
+# correct alarm, not a flake to re-run.
+#
+# WHAT A GREEN MEANS HERE, exactly: the pinned spec's own verdict lines — `fail=0` with every
+# env-conditional leg accounted. On a hosted runner there is no retained `tests/homes/candidate-human-*`
+# world, so N6 prints its declared `SKIP` (the spec's own skipped-not-failed shape) and the summary
+# reads `SUMMARY pass=9 fail=0`; this job asserts that exact summary line, so a leg that vanished
+# (collection error) or turned red both fail, and a future summary-shape change fails loudly instead
+# of grepping nothing. N8 — the anti-recurrence gate (zero symlinks, zero fixture-world paths under
+# runs/) — runs as part of the spec, closing the loop with the walker hardening in
+# `scripts/lint-g-g-wording.mjs` (the census 458/459/460 class: a committed dangling symlink once
+# crashed the master-side wording lint; the fixture escape is now guarded from BOTH ends).
+#
+# WHY A SEPARATE WORKFLOW. `pr-gate.yml` is a shell for `scripts/ci-pr-gate.mjs` and its verdict is
+# the merge gate; this leg grades an external pinned evidence tree, not this checkout, so folding it
+# in would put a second authority inside the merge verdict (and let an evidence-side red block an
+# unrelated product PR). Separate file, separate check name, no branch protection implication.
+name: candidate-protection
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate-protection-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-protection:
+    name: candidate-protection
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # THE PIN — trial-candidate evidence head (branch a5-candidate-pkg). Updating this value
+      # requires root ratification ("更新须根批"); the assertion below fails any drift by name.
+      CANDIDATE_EVIDENCE_SHA: 090b87b57e06da3854ddd9a36646ed8700fa4eef
+    steps:
+      - name: Checkout the evidence tree AT THE PIN (detached, shallow)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_EVIDENCE_SHA }}
+          fetch-depth: 1
+
+      - name: Assert HEAD is exactly the pinned SHA (moved pin fails by name)
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$(git rev-parse HEAD)"
+          if [ "$head_sha" != "$CANDIDATE_EVIDENCE_SHA" ]; then
+            echo "::error::evidence checkout is $head_sha, not the pinned $CANDIDATE_EVIDENCE_SHA — moving the pin requires root ratification (更新须根批)"
+            exit 1
+          fi
+          echo "pinned evidence head verified: $head_sha"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run the human-protection spec at the pinned head (P1/N1a/N1b/N2/N3/N4/N5/N6/N7 + N8 gate)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dev/agent-workflow/evidence/alpha5/candidate-package
+          bash ./test-human-protection.sh 2>&1 | tee "$RUNNER_TEMP/human-protection.log"
+          # Graded by the summary line, not by the pipeline's tee status (pr-gate FINDINGS F2 law).
+          grep -q '^SUMMARY pass=9 fail=0' "$RUNNER_TEMP/human-protection.log"
+          grep -q '^SKIP N6' "$RUNNER_TEMP/human-protection.log"
+
+      - name: Upload spec receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: human-protection-${{ github.run_number }}
+          path: ${{ runner.temp }}/human-protection.log
+          if-no-files-found: warn
