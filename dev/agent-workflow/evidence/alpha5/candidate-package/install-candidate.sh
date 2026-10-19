@@ -40,6 +40,19 @@
 #   EVIDENCE_DIR=<dir>           receipts root (default: <toplevel>/dev/agent-workflow/evidence/alpha5/candidate-package/runs)
 set -euo pipefail
 
+# ── 0a. human persistent-world subcommands (root 00:57Z closure; no install) ──
+# These run WITHOUT CANDIDATE_SHA — they operate on the already-verified state.
+HW_TOP="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+HW_PKG="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HW_HOMES="${CANDIDATE_BASE:-${HW_TOP:-$HW_PKG/../../../..}/tests/homes}"
+case "${1:-}" in
+  --init-human-world)
+    exec node "$HW_PKG/human-world.mjs" init --state "$HW_HOMES/candidate-INSTALLED.json" \
+      --homes "$HW_HOMES" --template "$HW_PKG/human-config-template.yml" ;;
+  --check-config)
+    exec node "$HW_PKG/human-world.mjs" check --state "$HW_HOMES/candidate-INSTALLED.json" "${2:?usage: --check-config <human-world-dir>}" ;;
+esac
+
 # ── 0. CANDIDATE_SHA: required, 40-hex, NEVER defaulted ───────────────────────
 if [ -z "${CANDIDATE_SHA:-}" ]; then
   echo "FATAL: CANDIDATE_SHA is REQUIRED (full 40-hex commit to install)." >&2

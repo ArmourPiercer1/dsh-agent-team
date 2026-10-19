@@ -107,7 +107,16 @@ sweep_exact () { # $@ = exact paths; removals are EXACT names only (repo law: NO
   for p in "$@"; do
     if [ -e "$p" ]; then
       case "$p" in
-        */candidate-install-*|*/candidate-src-*|*/candidate-*.lock) rm -rf -- "$p" && swept+=("$(basename "$p")") ;;
+        # HUMAN-RETENTION NEGATIVE GATE (root 00:57Z, double insurance with the
+        # state-record exclusion): the candidate-human-* prefix is NEVER swept,
+        # even if a broken record ever named it; a .CANDIDATE-HUMAN-USE
+        # sentinel inside any otherwise-allowed path also refuses (fail-closed).
+        */candidate-human-*) fail "refusing to sweep a human-retained world (candidate-human-* prefix gate): $p" ;;
+        */candidate-install-*|*/candidate-src-*|*/candidate-*.lock)
+          if [ -e "$p/.CANDIDATE-HUMAN-USE" ]; then
+            fail "refusing to sweep sentinel-protected world (.CANDIDATE-HUMAN-USE): $p"
+          fi
+          rm -rf -- "$p" && swept+=("$(basename "$p")") ;;
         *) fail "refusing to sweep non-candidate path: $p" ;;
       esac
     fi
@@ -118,8 +127,10 @@ sweep_exact () { # $@ = exact paths; removals are EXACT names only (repo law: NO
     const { existsSync, readdirSync, readFileSync } = require("fs")
     const recorded = existsSync(recordedFile) ? readFileSync(recordedFile, "utf8").split("\n") : []
     const ours = existsSync(parent) ? readdirSync(parent).filter((n) => n.startsWith("candidate-install-") || n.startsWith("candidate-src-") || (n.startsWith("candidate-") && n.endsWith(".lock"))) : []
+    const all = existsSync(parent) ? readdirSync(parent) : []
+    const humanPresent = all.filter((n) => n.startsWith("candidate-human-") || (n.startsWith("candidate-") && existsSync(parent + "/" + n + "/.CANDIDATE-HUMAN-USE")))
     const left = ours.filter((n) => !swept.includes(n))
-    console.log(JSON.stringify({ parent, swept, leftButRecorded: left.filter((n) => recorded.includes(n)), foreign: left.filter((n) => !recorded.includes(n)), policy: "exact recorded names only — NO glob deletes" }))
+    console.log(JSON.stringify({ parent, swept, leftButRecorded: left.filter((n) => recorded.includes(n)), foreign: left.filter((n) => !recorded.includes(n)), humanPresent, policy: "exact recorded names only — NO glob deletes; candidate-human-*/sentinel worlds are NEVER deletable here" }))
   ' "$BASE" "$RECORDED_BASENAMES_TXT" ${swept[@]+"${swept[@]}"} | tee "$EVIDENCE_DIR/sweep-list.json"
   LEFT_LIST="$(node -e '
     const [parent, recordedFile, ...swept] = process.argv.slice(1)

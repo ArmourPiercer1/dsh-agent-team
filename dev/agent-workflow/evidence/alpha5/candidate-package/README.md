@@ -35,7 +35,10 @@ launcher 部署输入 = `sha256 1264ea584e3438d6…`（26 992 B，`--exit-passth
 | [install-candidate.sh](./install-candidate.sh) | SHA-pin 安装脚本（CANDIDATE_SHA **必填无默认**；缺则报错退出） |
 | [face-check.mjs](./face-check.mjs) | 安装面度量件：三零对照清单 + rootSha + launcher 字节/ABI + `--dump-config` 装配树 |
 | [rollback-candidate.sh](./rollback-candidate.sh) | 回滚：`--to-last`（重装上一 INSTALLED 状态）/ `--uninstall`（完全卸载）；**按名清理，禁宽 glob** |
-| [try-candidate.sh](./try-candidate.sh) | 试用编排器（`--dry-run` / `--probe` 最快腿 / 全三腿） |
+| [try-candidate.sh](./try-candidate.sh) | 试用编排器（`--dry-run` / `--probe` 最快腿 / 全三腿）——**仅自动验收** |
+| [human-world.mjs](./human-world.mjs) | 真人世界：`install-candidate.sh --init-human-world` / `--check-config <world>` 的实现（初始化自已验证安装面 + 无秘密校验门） |
+| [human-config-template.yml](./human-config-template.yml) | 真人配置层无秘密模板（大写占位值；provider 三行进 env 不进文件） |
+| [test-human-protection.sh](./test-human-protection.sh) | 正/负删除保护 spec（真 rollback 入口 × scratch 根；P1/N1a/N1b/N2/N3） |
 | [try-candidate-kit.mjs](./try-candidate-kit.mjs) | 试用驱动：三最小试用链 + 世界/端口自证 + 具名清理（mock 仅在 LLM 位） |
 | [helpers/](./helpers/HELPROOT.sha256) | mock-deepseek / preset-seam / paths 的**同 commit 字节副本**（HELPROOT.sha256 记 pin） |
 | runs/ | 各跑证据目录（install-<stamp> / trial-<stamp> / rollback-<stamp>） |
@@ -112,35 +115,44 @@ CANDIDATE_SHA=d5de74974b0320b191b310ead82407d478477ed7 ./$PKG/install-candidate.
 ## 3b. 自动验收 vs 真人试用（两个入口，勿混）
 
 **`try-candidate.sh` / `try-candidate-kit.mjs` = 自动验收专用**：mock 占 LLM 位、判据自动评分、
-**跑完即按精确名清世界**——它是验收机器，**不是用户日常入口，也不该当日常入口用**。
+**跑完即按精确名清自己建的 `candidate-<mode>-<stamp>` 世界**——它是验收机器，**不是用户日常入口**。
 
-真人试用（真模型、真浏览器、零自动清理）走 INSTALL.md 正常路径，命令组（checkout 根执行）：
+真人试用走**持久真人世界**（根 00:57Z 收口令）：目录前缀 `candidate-human-` **被排除在一切自动清理
+记录与删除门外**（三重：不进 state/history 记录 + rollback 负门前缀门/哨兵门 + 世界根哨兵
+`.CANDIDATE-HUMAN-USE`），正/负行为测试见 `test-human-protection.sh`（P1/N1a/N1b/N2/N3 实跑绿，
+`runs/human-guard-*/`）。**法：先配置、后启动——启动之后再改配置不生效**（重启同目录才生效）。
 
 ```bash
-PKG=dev/agent-workflow/evidence/alpha5/candidate-package
+PKG=dev/agent-workflow/evidence/alpha5/candidate-package   # checkout 根执行
 # 1) 安装（同 §2；已装可跳——查 tests/homes/candidate-INSTALLED.json）
 CANDIDATE_SHA=d5de74974b0320b191b310ead82407d478477ed7 ./$PKG/install-candidate.sh
 
-# 2) 手工起宿主（保留世界；端口在 3180-3186 自选一个空闲的，禁 3080；profile=web 即所装）
-W=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("tests/homes/candidate-INSTALLED.json","utf8")).installHome)')
+# 2) 从"已验证安装面"初始化真人世界（cp 同一字节面，不重跑网络安装链；
+#    现场核三路径：launcher sha==记录 / 插件信任根在 / DSH_HOME 可写；继承的 probe 层会被移开留档）
+./$PKG/install-candidate.sh --init-human-world
+W=$(ls -d tests/homes/candidate-human-* | tail -1)      # init 打印的确切目录
+
+# 3) 先配置：复制无秘密模板为活动层，替换全部大写占位值
+cp "$W/profiles/web/cordis.patch.TEMPLATE.yml" "$W/profiles/web/cordis.patch.yml"
+#    （真实 provider 三行只进启动 env——密钥绝不写文件；模板无 mock、不引用任何会被清理的试验世界）
+
+# 4) 校验门（不启动任何东西）：占位未换/mock 残留/引用已清世界/三路径失配 → 拒（rc=2）
+./$PKG/install-candidate.sh --check-config "$W"
+
+# 5) 启动（端口 3180-3186 自选空闲，禁 3080）；boot 行含一次性 token，浏览器打开即用
 DSH_HOME="$W" DSH_CLIENT_COMMIT_HASH=639ed01539 \
+  DEEPSEEK_BASE_URL=<real-base> DEEPSEEK_API_KEY=<real-key> \
   node tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3182 --no-open &
-echo $! > /tmp/candidate-host.pid    # boot 行含一次性登录 token，浏览器打开即用
+echo $! > /tmp/candidate-human.pid
 
-# 3) team 配置面：以 $W/profiles/web/cordis.patch.yml 为底——可直接抄用
-#    runs/trial-final/profile-layer-pos.yml 的行形（public seam 层），但把
-#    staticModel 的 mock 位换成真实 provider/model，并按 INSTALL §4 给真凭据；
-#    DEEPSEEK_BASE_URL/API_KEY 只在你自己的启动环境里设（勿写进 profile）。
-
-# 4) 停机 = 按 PID 停，不删任何文件
-kill "$(cat /tmp/candidate-host.pid)"
-
-# 5) 数据保留：世界目录 $W 一步不动；要重装/升级同 SHA 前先自行备份：
-cp -a "$W" "$W.bak-$(date -u +%Y%m%dT%H%M%SZ)"
+# 6) 停机 = 按 PID 停，不删任何文件；重开 = 同目录再次启动（会话/数据都在世界里保留）
+kill "$(cat /tmp/candidate-human.pid)"
+#    …下次：重复 5)（配置改过就先重跑 4)）——本包任何脚本永不删此世界；手动清理=你自己 rm。
 ```
 
-真人路径的清理 = 人工决定（本包任何脚本**不会**在真人路径上自动删任何东西；
-`try-candidate` 的清世界只作用于它自建的 `candidate-<mode>-<stamp>` 世界）。
+冒烟账（本包装配轮实跑，`runs/human-smoke-*/`）：init 三路径 PASS + 复制字节一致；
+check 门 **configured→PASS(rc=0)**、**inert 占位层→FAIL(rc=2)**、**占位未换→FAIL(rc=2)**。
+真人路径**零自动清理**：数据保留由前缀排除+负门+哨兵三保险承担。
 
 ## 4. 回滚步骤
 
@@ -160,6 +172,9 @@ PKG=dev/agent-workflow/evidence/alpha5/candidate-package   # 单块自足，可�
 - **删除只认 `candidate-INSTALLED.json` / `.history.jsonl` 记录的精确名**。目录里任何未被记录的
   `candidate-*` 条目只报告、不删除（本仓纪律：gitignore 不能防误删 tracked 文件；宽 glob 清理已三次撞坑）。
 - `--to-last` 只有在重装**重新通过三零**后才算完成；重装红 = 什么都不扫。
+- **真人世界删除保护（根 00:57Z，三重负门）**：`candidate-human-*` 前缀（即便被写进记录也拒）+
+  任何允许路径内的 `.CANDIDATE-HUMAN-USE` 哨兵 = **fail-closed 拒删**；未记录的 `candidate-human-*`
+  在 `sweep-list.json.humanPresent` **只报告**。行为证 = `test-human-protection.sh`（5/5 绿，`runs/human-guard-*/`）。
 - 演练记录 = **引用制入账** `runs/rollback-2026-10-18T22-56-57Z`（`--to-last`）+ `runs/rollback-2026-10-18T22-57-23Z`（`--uninstall`），52d73534 轮同脚本同律；冻结 SHA 后的活动 history 自空起账（uninstall 演练依法移旧账，见顶部占位表如实注）。
 
 ## 5. 已知限制页
@@ -224,5 +239,7 @@ FINAL_CANDIDATE_SHA 纪律的现场价值又一例；终装冻结=d5de7497…，
 | **事故①（如实）**：`argValue` 不识别 `--legs=<v>` 单 token 形 → 首条 `--probe` 误按默认腿集**实跑了三腿全链** | 结果 **24/24 全绿**（A：create-member→list→delegate(实例形)→collect + bash 正写落盘；B：glob-off typed 拒原文 + seed 0 上 wire；C：越界 exit=1 + 内核拒原文 + 零泄露；W 腿两世界重装 rootSha==INSTALLED；C1 具名扫净）= `runs/trial-2026-10-18T22-51-56Z`（KIT_EXIT=0）。**该全绿不替代终装轮按令重跑**——终装 TRIAL_RECEIPT 已按令在全新 runs/trial-final/ 重跑（24/24，见顶部占位表）；解析缺陷已修（双 token 形均支持）并重跑 probe-only 干净回执 |
 | 回滚演练（后按终装令升格为 ROLLBACK_REHEARSAL_RECEIPT 引用制入账，标注见顶部占位表） | ①单状态 `--to-last` 正确拒绝（无历史=fail-closed）；②tip 前移拒装（上）；③`--to-last`：重装上一记录 SHA 重过三零→按名扫被替换世界→`foreign=[]`；④`--uninstall`：扫全部记录名（当前+历史 4 世界）→`tests/homes/` 零 `candidate-*` 残留，状态文件移 `runs/rollback-2026-10-18T22-57-23Z/` 留痕，store 按精确名留给处置。演练中修两处：history pretty-JSON 尾空行解析、recorded-set 须含重装后的新世界（`foreign` 与 `leftButRecorded` 分列可见） |
 | **终装轮（23:59Z 令，00:04-00:22Z 执行）** | 双源核=gh 三源核冻结 SHA=d5de7497…（PR#343 squash，head=097fccf9）；**INSTALL_RECEIPT** `runs/install-final/`（face-check 10 PASS，rootSha `dd2b75e17fddbc2e…`，INSTALLED.json 写；活动 history 自空起账，52d73534→d5de7497 迁移事实由 runs/reinstall-*/+rollback 回执承载，如实注见顶部占位表）；**TRIAL_RECEIPT** `runs/trial-final/` KIT_EXIT=0 24/24；**PIN_TABLE_RECEIPT** `runs/pin-final/` KIT_EXIT=0 15/15（过程中如实记两跑缺陷：pin 腿首版把挂载探针发到普通 root 会话——挂载实际发生在 **team 会话 bind**，team.create 面出 typed 拒；第二版撞 bootPhase `state: starting` 窗口加就绪重试；两修均在 kit。**红跑账**：两次失败尝试的目录当时被同路径重跑覆盖（旧做法），原始日志不可得——**仅摘要留存**于 `runs/pin-final-attempt-1/ATTEMPT-SUMMARY.md` 与 `runs/pin-final-attempt-2/ATTEMPT-SUMMARY.md`（会话内控制台摘录逐字+定因）。**此后新规（根 00:33Z ④）：红跑目录只增不覆，重跑一律新时间戳目录**）；C1/回滚=引用制入账（顶部占位表）|
+
+| **真人数据保留收口（00:57Z 令）** | §3b 改为"真人持久世界"：`--init-human-world`（复制已验证安装面+三路径核+哨兵+START-CHECKLIST）、无秘密模板+`--check-config`（inert/占位/mock/引用四拒门，正/负实跑 rc=0/2/2）、删除三重负门（前缀/哨兵/记录排除）、`test-human-protection.sh` 5/5 绿（真 rollback 入口，scratch 根，**未触活体状态**）；kit 两处清理加哨兵拒删守卫；活体真人世界 `tests/homes/candidate-human-2026-10-19T01-01-46-640Z` 留存（配置态，gitignored） |
 
 残留足迹（供清理对照）：本 worktree `.worktrees/a5-candidate-pkg`（本分支）+ `.pnpm-store-candidate`（工作区 pnpm store；预装配轮收尾已按精确名删除，终装轮自会重热）+ 上列 `runs/` 证据。稳定 `:3080` 全程只读 401，其 DSH_HOME 未触；宿主 `tests/deepseek-harness-test-use` 跑前/跑后 porcelain 均 0。

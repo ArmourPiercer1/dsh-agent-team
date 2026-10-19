@@ -563,7 +563,7 @@ async function runWorld ({ mode, state, srcHome, mock, port }) {
       rmSync(join(EVIDENCE_DIR, `instance-${mode}.raw.log`))
       facts.logTokenResidue = (redact(raw).match(/token=[A-Za-z0-9_-]{8,}/g) ?? []).length
     } catch { /* no log */ }
-    if (!KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
+    if (!KEEP) { if (existsSync(join(HOME, '.CANDIDATE-HUMAN-USE'))) { facts.swept = 'REFUSED-HUMAN-SENTINEL (never swept by the kit)'; } else { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } } }
     facts.swept = !existsSync(HOME)
     worldsSwept.push({ mode, home: HOME, swept: facts.swept })
   }
@@ -705,7 +705,7 @@ async function runPinWorld ({ mode, claim, state, srcHome, mock, port }) {
       rmSync(join(EVIDENCE_DIR, `instance-${mode}.raw.log`))
       facts.logTokenResidue = (redact(raw).match(/token=[A-Za-z0-9_-]{8,}/g) ?? []).length
     } catch { /* no log */ }
-    if (!KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
+    if (!KEEP) { if (existsSync(join(HOME, '.CANDIDATE-HUMAN-USE'))) { facts.swept = 'REFUSED-HUMAN-SENTINEL (never swept by the kit)'; } else { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } } }
     facts.swept = !existsSync(HOME)
     worldsSwept.push({ mode, home: HOME, swept: facts.swept })
   }
