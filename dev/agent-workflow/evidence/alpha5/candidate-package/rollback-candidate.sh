@@ -9,6 +9,15 @@
 # tests/homes that is NOT exactly named by the state files is REPORTED, never
 # deleted — it belongs to someone else's world.
 #
+# DELETION SCOPE (narrowed per root 00:33Z item 6): this script deletes ONLY
+# package-self-created, regenerable test directories recorded by the state
+# files — candidate-install-*/candidate-src-*/their .lock, plus (with
+# --purge-store, exact name) the package's OWN workspace pnpm store.
+# Real user sessions and data are NOT in the deletion face and are NEVER
+# touched. This script does NOT offer and does NOT claim general lossless
+# rollback: restoring the previous candidate = REINSTALLING the recorded SHA
+# (completed only when the three-zero re-check passes).
+#
 # Modes:
 #   --to-last      Roll back to the previous INSTALLED state: reinstall the
 #                  previous recorded CANDIDATE_SHA through the same public
@@ -23,9 +32,10 @@
 #                  evidence dir as receipts. Worlds are gone; the pnpm store
 #                  STAYS unless --purge-store (exact name, operator eyes).
 #
-# Rehearsal record: {{ROLLBACK_REHEARSAL_RECEIPT}} (README「演练记录」— to be
-# filled at final assembly together with the final install receipt; the
-# rehearsal must be re-run against the FINAL SHA, not the pre-assembly pin).
+# Rehearsal record (final assembly, 引用制入账): runs/rollback-2026-10-18T22-56-57Z
+# (--to-last) + runs/rollback-2026-10-18T22-57-23Z (--uninstall), rehearsed on
+# the 52d73534 round with the same scripts and the same laws — annotation in
+# README top placeholder table (root order 23:59Z: reference form, not re-run).
 set -euo pipefail
 
 MODE="${1:-}"
@@ -40,6 +50,7 @@ STAMP="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 EVIDENCE_DIR="${EVIDENCE_DIR:-$PKG_DIR/runs}/rollback-$STAMP"
 mkdir -p "$EVIDENCE_DIR"
 PURGE_STORE=0
+PURGE_NOTE_KEEP=" + store only with --purge-store"
 for a in "$@"; do case "$a" in --purge-store) PURGE_STORE=1 ;; *) echo "FATAL: unknown arg: $a" >&2; exit 1 ;; esac; done
 log () { printf '[rollback-candidate %s] %s\n' "$(date -u +%H:%M:%SZ)" "$*"; }
 fail () { echo "FATAL: $*" >&2; exit 1; }
@@ -155,13 +166,14 @@ case "$MODE" in
       require("fs").writeFileSync(ev + "/ROLLBACK-RECEIPT.json", JSON.stringify({
         at: new Date().toISOString(), mode: "to-last", fromSha: curSha, toSha: prevSha,
         note: "public-face reinstall of the previous recorded SHA; three-zero re-graded by install-candidate.sh",
-        rehearsalPlaceholder: "{{ROLLBACK_REHEARSAL_RECEIPT}}",
+        rehearsalRecord: "runs/rollback-2026-10-18T22-56-57Z (--to-last) + runs/rollback-2026-10-18T22-57-23Z (--uninstall), 52d73534-round rehearsal, reference form per root 23:59Z order",
       }, null, 2) + "\n")
     ' "$EVIDENCE_DIR" "$CUR_SHA" "$PREV_SHA"
     log "rollback complete: INSTALLED.json now points at $PREV_SHA (receipt: $EVIDENCE_DIR)"
     ;;
   --uninstall)
     log "uninstalling: current=$CUR_SHA; sweeping ALL recorded names (current + history) + moving state files to receipts"
+    log "scope law: ONLY package-self-created regenerable test dirs (candidate-install-*/candidate-src-*/locks${PURGE_NOTE_KEEP}); real user sessions/data are never in this face; no general lossless rollback is offered or implied"
     ALL_RECORDED_PATHS=()
     while IFS= read -r n; do [ -n "$n" ] && ALL_RECORDED_PATHS+=("$BASE/$n"); done <<< "$RECORDED_BASENAMES"
     sweep_exact ${ALL_RECORDED_PATHS[@]+"${ALL_RECORDED_PATHS[@]}"}
@@ -180,7 +192,7 @@ case "$MODE" in
       require("fs").writeFileSync(ev + "/UNINSTALL-RECEIPT.json", JSON.stringify({
         at: new Date().toISOString(), mode: "uninstall", lastSha: JSON.parse(cur).sha,
         stateFilesMoved: true,
-        rehearsalPlaceholder: "{{ROLLBACK_REHEARSAL_RECEIPT}}",
+        rehearsalRecord: "runs/rollback-2026-10-18T22-56-57Z (--to-last) + runs/rollback-2026-10-18T22-57-23Z (--uninstall), 52d73534-round rehearsal, reference form per root 23:59Z order",
       }, null, 2) + "\n")
     ' "$EVIDENCE_DIR" "$CURRENT_STATE"
     log "uninstall complete (receipts: $EVIDENCE_DIR)"

@@ -11,6 +11,10 @@
 #          boot marker + 401/303 token gate + --dump-config composition.
 #
 # Modes:
+# AUTO-ACCEPTANCE ONLY (根 00:33Z ⑤): this kit mocks the LLM slot, grades criteria,
+# and SWEEPS its own candidate-<mode>-<stamp> worlds by exact name — it is the
+# acceptance machine, NOT the human day-to-day entry (human path = README §3b,
+# zero automatic cleanup there).
 #   ./try-candidate.sh --dry-run    syntax + wiring + plan only (no boot, no worlds)
 #   ./try-candidate.sh --probe      fastest leg only (pre-assembly smoke)
 #   ./try-candidate.sh --pin        PIN-TABLE receipt leg (3 reserved-name claims + control)
