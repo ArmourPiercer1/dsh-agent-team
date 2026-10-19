@@ -64,7 +64,8 @@ Why the root keeps every property the control exists for:
 
 No judgement-threshold, baseline, or census-serialization changes; the p4t6
 scanner and its 1204 pin are byte-identical (scanned surface unchanged → no
-re-anchor required by the booking rule).
+re-anchor required by the booking rule). (The chain pin later moved to 1206
+by master's own #343 booking, below — not this lane's doing.)
 
 ## Regression battery (post-fix, this worktree)
 
@@ -87,6 +88,27 @@ case). Built from the untouched committed sources; the tracked
 | eslint (repo) | `pnpm lint` | exit 1 = the disclosed baseline state (76 distinct identities); identity gate below |
 | identity set, no-new check | `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | **new 0, resolved 0**, universe 1292 (`regression-lint-identity-diff.log`) — the same gate also runs inside the a4p7 suite |
 | red-shape honesty | pre-fix `repro-window.mjs` against the OLD location after the fix | still `1206` (the reproduction instrument is untouched; the leg no longer writes there) |
+
+## Merge-sync round (root 00:57Z): origin/master `d5de74974b0320b191b310ead82407d478477ed7`
+
+Dual-source recorded (`git ls-remote origin master` + `git rev-parse
+origin/master`, both `d5de7497…` = #343 squash). Merged as `40068fa…`; the
+merge face against master is exactly this lane's 12 files (a4p7 leg +
+evidence) — master's testkit delta (p4t6 G6B STEP B booking, pin 1206) is
+DISJOINT from the fix (master never touched the a4p7 leg's control region);
+no conflict, no re-tie owed by this lane (no scanner and no booked path
+changed; the 1206 tie is master's own measured booking and this lane's
+scanned surface is unchanged by it and by the fix).
+
+Merged-tree battery (all `mergesync-*.log` here): build + composition exit 0
+(`check-artifacts-committed` ok 1748/9); p4t6 **10/10** with the scanner
+direct-measured at **1206** files / 2 self-exclusions / 15 quarantine hits
+(re-counted on this tree, nothing copied); a4p7-merge-gate **35/35** (the
+relocated-control leg measures its own root-placement before/+2 inside the
+merge); census-shape **3/3** green concurrent with the scratch-isolation leg;
+`pnpm -r typecheck` exit 0; lint-identities vs `lint-identities-0237d487.txt`
+**new 0, resolved 0** (universe 1294 = 1292 + master's two new specs).
+Porcelain 0 before and after. Not pushed.
 
 ## Files
 
