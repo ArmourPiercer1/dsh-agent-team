@@ -1,0 +1,20 @@
+# a5legs leg2full run 2026-10-19T09-59-28Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3497 mock=3493 mcp=0
+- world deleted at teardown · criteria 15/17
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3497 mock=3493
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3497
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg2full-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=22 deny=2
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg2full-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=11
+- [ ] L2F-SURFACE: the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works) — memberRosterHas=false/false rootSurface=true
+- [ ] L2F-SPAWN: member subagent spawn executed end-to-end (child model requests + PONG back in member transcript) — childReqs=0 pongInMember=false unknownToolLanding=false :: [{"type":"text","text":"Error: unknown tool \"subagent\""}]
+- [x] L2F-MEMBERFACE-GAP: INVENTORY FINDING (recorded, not an operation red): on this baseline MemberInstance faces do NOT take the subagent tool through the public seams tried (preset file-URL rows dropped verbatim; npm-name preset rows silently absent; profile-patch rows land boot-root global face only) — member roster verbatim + unknown-tool landing = the E-grade gap receipt — memberRoster=["bash","edit","read","read_image","write"] unknownToolLanding=false (rootSurfaceHadBoth=true — mounting works at profile/global level)
+- [x] L2F-CHAIN: team-chain mechanics receipt: delegate activated a real MemberInstance child session, collect delivered its report, archive committed, drain zero (each verbatim in leader/member transcripts + p6t6 state) — delegate+collect+archive executed; see L2F-COLLECT/ARCHIVE/DRAIN
+- [x] L2F-COLLECT: team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results) — [{"type":"text","text":"{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0rcz99f1fz69\",\"templateId\":\"wa\",\"childSessionId\":\"session-team-child-17894ad88
+- [x] L2F-ARCHIVE: team_archive_member committed durably (status:executed verbatim + target no longer in the active member set on final /__p6t6/state) — archiveResult=[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0rcz99f1fz69\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"i goneFromActive=true
+- [x] L2F-DRAIN: drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive) — pending={"recovered":[],"skipped":[]} stable=true members=inst-leader:?
+- [x] L2F-GOV-READ: row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3's) — branch=B permRows=0 subagentRows=0 (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

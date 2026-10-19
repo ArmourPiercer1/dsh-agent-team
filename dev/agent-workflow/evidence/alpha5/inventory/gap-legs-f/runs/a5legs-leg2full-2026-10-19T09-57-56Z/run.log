@@ -1,0 +1,30 @@
+[2026-10-19T09:57:56.111Z] a5legs runner leg=leg2full stamp=2026-10-19T09-57-56 world=a5legs-leg2full-2026-10-19T09-57-56Z
+[2026-10-19T09:57:56.408Z] PASS L-PIN — the host runtime is the pinned pristine baseline [head=639ed01539 porcelain=0]
+[2026-10-19T09:57:56.425Z] PASS L-PORTS — host + mock ports from the legal 3491-3500 family are free [host=3497 mock=3493]
+[2026-10-19T09:57:56.471Z] [mock] mock: listening on 127.0.0.1:3493
+[2026-10-19T09:57:58.923Z] PASS L-BOOT — the test Host booted with the token gate live (auth 303 + cookie) [origin=http://127.0.0.1:3497]
+[2026-10-19T09:57:59.235Z] PASS L-ROW — the production team row bound the anchor team at boot (bootPhase create) [root=session-a5legs-leg2full-boot]
+[2026-10-19T09:57:59.362Z] [mock] mock: 1 [messages] text reply (41 chars): "A5LEGS_LEG2FULL_20261019T095756_DISC_DONE"
+[2026-10-19T09:57:59.364Z] [mock] mock: 2 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:57:59.557Z] PASS L-SURFACE — the live tool surface was captured on the boot root (bash present) [surface=22 deny=2]
+[2026-10-19T09:57:59.584Z] PASS L-BP-LISTED — the main saved blueprint is listed through the wire catalog [bp=team.a5legs-leg2full-main]
+[2026-10-19T09:57:59.776Z] [mock] mock: 3 [messages] tool-call reply: team_delegate
+[2026-10-19T09:57:59.777Z] [mock] mock: 4 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:58:29.885Z] [mock] mock: 5 [messages] tool-call reply: subagent
+[2026-10-19T09:58:29.885Z] [mock] mock: 6 [messages] text reply (19 chars): "a5legs live session"
+[2026-10-19T09:58:59.855Z] [mock] mock: 7 [messages] text reply (43 chars): "A5LEGS_LEG2FULL_20261019T095756_TASK_A_DONE"
+[2026-10-19T09:58:59.890Z] [mock] mock: 8 [messages] tool-call reply: team_collect
+[2026-10-19T09:58:59.910Z] [mock] mock: 9 [messages] tool-call reply: team_list_members
+[2026-10-19T09:58:59.929Z] [mock] mock: 10 [messages] tool-call reply: team_archive_member
+[2026-10-19T09:59:00.545Z] [mock] mock: 11 [messages] text reply (36 chars): "A5LEGS_LEG2FULL_20261019T095756_DONE"
+[2026-10-19T09:59:00.561Z] team.create -> status=200
+[2026-10-19T09:59:00.561Z] PASS L-TURN — the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) [termination=replied mockRequests=11]
+[2026-10-19T09:59:03.064Z] FAIL L2F-SURFACE — the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works) [memberRosterHas=false/false rootSurface=true]
+[2026-10-19T09:59:03.064Z] FAIL L2F-SPAWN — member REALLY spawned a subagent: child session reached the model (child requests) and its PONG answer came back into the member transcript [childReqs=0 pongInMember=false sample=]
+[2026-10-19T09:59:03.064Z] PASS L2F-COLLECT — team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results) [[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0uy54o81w9kk\",\"templateId\":\"wa\",\"childSessionId\":\"session-team-child-527ae29bd]
+[2026-10-19T09:59:03.069Z] FAIL L2F-ARCHIVE — team_archive_member committed durably (status:executed verbatim + target no longer in the active member set on final /__p6t6/state) [archiveResult=[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-0uy54o81w9kk\",\"effect\":{\"kind\":\"lifecycle-changed\",\"instanceId\":\"i goneFromActive=true]
+[2026-10-19T09:59:06.076Z] PASS L2F-DRAIN — drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive) [pending={"recovered":[],"skipped":[]} stable=true members=inst-leader:?]
+[2026-10-19T09:59:06.080Z] PASS L2F-GOV-READ — row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3's) [branch=B permRows=0 subagentRows=0 (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)]
+[2026-10-19T09:59:06.082Z] PASS L-STABLE — stable :3080/:3180 probed read-only, status unchanged (401 invariant) [3080 401->401 3180 unreachable->unreachable]
+[2026-10-19T09:59:06.265Z] PASS L-PRISTINE — host runtime stayed pristine (porcelain 0, HEAD unmoved) [porcelain=0]
+[2026-10-19T09:59:06.266Z] RED — 12/15 · evidence /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-legs-runner/dev/agent-workflow/evidence/alpha5/inventory/gap-legs-f/runs/a5legs-leg2full-2026-10-19T09-57-56Z

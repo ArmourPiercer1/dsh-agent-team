@@ -1,0 +1,18 @@
+# a5legs leg2full run 2026-10-19T09-54-49Z
+- host /srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 · ports host=3497 mock=3493 mcp=0
+- world KEPT /srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg2full-2026-10-19T09-54-49Z · criteria 12/15
+- [x] L-PIN: the host runtime is the pinned pristine baseline — head=639ed01539 porcelain=0
+- [x] L-PORTS: host + mock ports from the legal 3491-3500 family are free — host=3497 mock=3493
+- [x] L-BOOT: the test Host booted with the token gate live (auth 303 + cookie) — origin=http://127.0.0.1:3497
+- [x] L-ROW: the production team row bound the anchor team at boot (bootPhase create) — root=session-a5legs-leg2full-boot
+- [x] L-SURFACE: the live tool surface was captured on the boot root (bash present) — surface=22 deny=2
+- [x] L-BP-LISTED: the main saved blueprint is listed through the wire catalog — bp=team.a5legs-leg2full-main
+- [x] L-TURN: the leader chain terminated (terminal reply, or the leg2 typed setup FATAL) — termination=replied mockRequests=11
+- [ ] L2F-SURFACE: the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works) — memberRosterHas=false/false rootSurface=true
+- [ ] L2F-SPAWN: member REALLY spawned a subagent: child session reached the model (child requests) and its PONG answer came back into the member transcript — childReqs=0 pongInMember=false sample=
+- [x] L2F-COLLECT: team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results) — [{"type":"text","text":"{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-19rq8v10khy5\",\"templateId\":\"wa\",\"childSessionId\":\"session-team-child-f443ea04f
+- [ ] L2F-ARCHIVE: team_archive_member committed (result verbatim + final /__p6t6/state member row reflects archived lifecycle) — archiveResult=[{"type":"text","text":"{\"status\":\"executed\",\"action\":\"archive-member\",\"rootSessionId\":\"session-a5legs-leg2full-main\",\"callerRole\":\"leader\",\"targetInstanceId\":\"inst-19rq8v10khy5\",\ stateHasArchived=false
+- [x] L2F-DRAIN: drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive) — pending={"recovered":[],"skipped":[]} stable=true members=inst-leader:?
+- [x] L2F-GOV-READ: row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3's) — branch=B permRows=0 subagentRows=0 (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)
+- [x] L-STABLE: stable :3080/:3180 probed read-only, status unchanged (401 invariant) — 3080 401->401 3180 unreachable->unreachable
+- [x] L-PRISTINE: host runtime stayed pristine (porcelain 0, HEAD unmoved) — porcelain=0

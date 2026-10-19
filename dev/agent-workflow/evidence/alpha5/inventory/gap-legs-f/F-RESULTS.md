@@ -93,3 +93,19 @@
 - `L3-TRACE-ABSENT` 保留为负控（stdout 非治理通道的对照）。
 
 （无判定翻案：分支 (a) 未出现=治理面确未触 mcp__ 调用；若 PR7 收口后复跑应见 branch=A + decision:deny 行，本 runner 判据已就绪。）
+
+---
+
+## leg2full 全链附注（根令续跑二，预算 40 分钟内）— 成员真起 subagent→collect→archive→drain
+
+终值 run=`runs/a5legs-leg2full-2026-10-19T09-59-28Z/`（**15/17**；红=L2F-SURFACE / L2F-SPAWN，同一根因，见下）。世界=非 strict 模板（strict 负控已另腿收账，未重跑）。
+
+**team 链机制=全绿收据**（本基线首次端到端）：
+- delegate `status:executed` → MemberInstance 真起（`member-activated`, `inst-…`, `childSessionId=session-team-child-…` 原文在 leader 结果 + 成员会话真实到 mock）。
+- collect `executed`（成员报告送达 leader）；archive `executed`（`lifecycle-changed` + 终态 active 集除名）；**drain 归零**（pendingDeliveries recovered/skipped=空数组 + activity 3s 稳定）。
+- 治理行读（row-handle，leg3 方法）：非 strict 装配零 alpha2-perm 观察=per-call listener 不挂（记录级对照；活通道证明在 leg3）。
+
+**subagent 步=未达成 → E 级装面发现（两红根因同一）**：
+- R 附注一修正形在**全局/boot-root 面成立**：file-URL tool 行 + `config:{provider:spawn|fork, toolName:subagent|subagent_fork}` → `subagent`/`subagent_fork` 双双上 boot-root 活体面（rootSurface 亲验，附注一 `:323/:380` config 路由真相运行级确证）。
+- 但 **MemberInstance 面不吃**（本基线）：preset 内 file-URL 行被静默弃（成员 roster 原文=`["bash","edit","read","read_image","write"]`）；npm 名 preset 行亦静默缺席（无 import 报错）；profile-patch 行只落 boot-root。成员工具调用逐字落点=`Error: unknown tool "subagent"`（member-transcript.json）。
+- 判定：链机制与装面是两件事——**链=达成；「成员真起」=未达成，卡在成员面装面缺口（公共 seam 三面皆试过）**。「成员面如何取得 subagent 工具」=移交为 inventory E 级缺口项（与 mcp 治理缺口并列），非 F 路预算内可修。

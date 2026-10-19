@@ -1,0 +1,62 @@
+---
+schemaVersion: 3
+blueprintId: team.a5legs-leg2full-main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5legs leg2full team. A5LEGS_LEG2FULL_20261019T095623_L0 is your directive marker. Follow it exactly."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_follow_up
+        - team_archive_member
+    builtinToolDeny:
+      - subagent
+      - subagent_fork
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+members:
+  - templateId: wa
+    displayName: "a5legs worker A"
+    persona: "You are worker A of the a5legs leg2full team. A5LEGS_LEG2FULL_20261019T095623_TASK_A"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny:
+        - subagent
+        - subagent_fork
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow: [send-message, report-progress]
+      deny: []
+teamEnvelope:
+  allow: [create-member, assign-task, send-message, report-progress, archive-member]
+  deny: []
+requirements:
+  - domain: persona
+    name: standard
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

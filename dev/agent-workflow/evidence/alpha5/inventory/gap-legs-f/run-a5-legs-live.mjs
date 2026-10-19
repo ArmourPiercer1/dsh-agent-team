@@ -51,7 +51,7 @@ const argv = process.argv.slice(2)
 const argValue = (n, d) => { const i = argv.indexOf(`--${n}`); return i === -1 ? d : argv[i + 1] }
 const LEG = argValue('leg', '')
 const KEEP = argv.includes('--keep')
-if (!['leg1', 'leg2', 'leg3'].includes(LEG)) throw new Error('--leg must be leg1|leg2|leg3')
+if (!['leg1', 'leg2', 'leg3', 'leg2full'].includes(LEG)) throw new Error('--leg must be leg1|leg2|leg3|leg2full')
 
 const HERE = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(HERE, '..', '..', '..', '..', '..', '..')
@@ -74,7 +74,7 @@ const BLUEPRINT_DIR = join(HOME, 'blueprints')
 const MK = `A5LEGS_${LEG.toUpperCase()}_${RUN_STAMP.replace(/[^A-Za-z0-9]/g, '')}`
 const ROOT = `session-a5legs-${LEG}-boot`
 const CREATE_ROOT = `session-a5legs-${LEG}-main`
-const PRESET_ID = LEG === 'leg2' ? 'a5legs-sub' : 'a5legs-smoke'
+const PRESET_ID = (LEG === 'leg2' || LEG === 'leg2full') ? 'a5legs-sub' : 'a5legs-smoke'
 const BP_MAIN_ID = `team.a5legs-${LEG}-main`
 
 // ── criteria / logging (natexe shapes) ─────────────────────────────────────
@@ -225,7 +225,7 @@ function bpAnchorYaml() {
   ].join('\n')
 }
 const MANAGED7 = ['read', 'read_image', 'write', 'edit', 'lsp', 'bash', 'pwsh']
-const LEADER_TEAM_TOOLS = ['team_list_members', 'team_list_templates', 'team_create_member', 'team_delegate', 'team_collect', 'team_follow_up']
+const LEADER_TEAM_TOOLS = ['team_list_members', 'team_list_templates', 'team_create_member', 'team_delegate', 'team_collect', 'team_follow_up', ...(LEG === 'leg2full' ? ['team_archive_member'] : [])]
 
 function permissionsLines(pad) {
   const P = '  '.repeat(pad)
@@ -251,6 +251,7 @@ function permissionsLines(pad) {
       `${P}    - tool: read`, `${P}      resource:`, `${P}        kind: subtree`, `${P}        path: runtime`,
     ]
   }
+  if (LEG === 'leg2full') return [] // NON-strict templates: the full chain must execute (gate negative control = leg2, banked)
   return [`${P}permissions:`, `${P}  default: deny`, `${P}  allow: []`, `${P}  ask: []`, `${P}  deny: []`]
 }
 
@@ -283,7 +284,7 @@ function mainBlueprintYaml(denyList) {
     '      mcp:', '        kind: allow', '        items: []',
     ...permissionsLines(3),
     'memberEnvelopes:', '  - templateId: wa', '    envelope:', '      allow: [send-message, report-progress]', '      deny: []',
-    'teamEnvelope:', '  allow: [create-member, assign-task, send-message, report-progress]', '  deny: []',
+    'teamEnvelope:', `  allow: [create-member, assign-task, send-message, report-progress${LEG === 'leg2full' ? ', archive-member' : ''}]`, '  deny: []',
     'requirements:', '  - domain: persona', '    name: standard',
     'permissionMutationEnvelope:', '  rules: []',
     'teamHardEnvelope:', '  rules: []',
@@ -312,9 +313,23 @@ function leaderScript(callsIssued) {
     if (callsIssued === 2) return call('read', { file_path: join(WS, 'team', 'hello.txt') })
     return { kind: 'text', content: `${MK}_DONE` }
   }
+  if (LEG === 'leg2full') {
+    // LEADER chain: delegate(sync) -> collect -> list -> archive(collected id) -> DONE.
+    if (callsIssued === 0) return call('team_delegate', { rootSessionId: CREATE_ROOT, requestToken: `${MK}-d-a`, delegationTemplateId: 'wa', label: 'l2f-a', taskSummary: 'leg2full subagent chain (member A)', prompt: `${MK}_TASK_A Call the subagent tool EXACTLY ONCE with the given prompt, then end your turn with the subagent's answer.`, async: false })
+    if (callsIssued === 1) return call('team_collect', { rootSessionId: CREATE_ROOT, requestToken: `${MK}-c-a`, requestTokens: [`${MK}-d-a`] })
+    if (callsIssued === 2) return call('team_list_members', { rootSessionId: CREATE_ROOT, requestToken: `${MK}-l-a` })
+    if (callsIssued === 3) {
+      const prior = (lastResultsForScript ?? []).join(' ')
+      const m = /inst-[A-Za-z0-9_-]+/.exec(prior) ?? []
+      return call('team_archive_member', { rootSessionId: CREATE_ROOT, requestToken: `${MK}-ar-a`, targetInstanceId: m[0] ?? 'inst-missing' })
+    }
+    return { kind: 'text', content: `${MK}_DONE` }
+  }
   if (callsIssued === 0) return call('team_create_member', { rootSessionId: CREATE_ROOT, requestToken: `${MK}-cm-1`, templateId: 'wa', label: 'l2a', displayName: 'leg2 strict member' })
   return { kind: 'text', content: `${MK}_DONE` }
 }
+/** rolling window of the newest leader tool_results (for id extraction). */
+let lastResultsForScript = null
 
 // ── world materialization ───────────────────────────────────────────────────
 function materializeWorld() {
@@ -376,9 +391,25 @@ function presetPlugins() {
   // recorded). The gate itself is lane-agnostic, so leg2 drives the SAME
   // coverage gate through another KNOWN_SENSITIVE lane shipped by this host:
   // tool-web (web_fetch / web_search — both in KNOWN_SENSITIVE_UNMANAGED).
-  return [
+  if (LEG !== 'leg2full') return [
     ...base,
     { id: 'tool-web', name: pathToFileURL(join(TESTUSE, 'packages', 'web', 'tool-web', 'lib', 'index.js')).href },
+  ]
+  // leg2full (R 附注一 corrected mount): the SAME @deepseek-ai/dsh-tool-subagent
+  // package mounted TWICE with config.toolName routing (src :323/:380 — the
+  // model-facing names subagent/subagent_fork live ONLY in row config, which is
+  // why source-tree greps find zero literals). File-URL rows (F-2 precedent:
+  // npm bare names are not importable from this checkout's row loader).
+  return [
+    ...base,
+    // ON-SITE (leg2full run 09-56): file-URL rows inside the PRESET are dropped
+    // from the MemberInstance assembly (member roster = npm-name plugin rows
+    // only — bash/edit/read/read_image/write verbatim); the profile-level
+    // file-URL rows land on the boot-ROOT global face only. The member face
+    // therefore needs the npm-name spelling (preset binder resolves through
+    // the host bundle catalog, like tool-fs does).
+    { id: 'tool-subagent', name: '@deepseek-ai/dsh-tool-subagent', config: { provider: 'spawn', model: 'a5legs-live-model', toolName: 'subagent', backgroundMode: 'one-shot' } },
+    { id: 'tool-subagent-fork', name: '@deepseek-ai/dsh-tool-subagent', config: { provider: 'fork', model: 'a5legs-live-model', toolName: 'subagent_fork', backgroundMode: 'one-shot' } },
   ]
 }
 
@@ -393,6 +424,21 @@ function writePatchFile() {
     // spawn/collect engine face; mounts no model tools by itself — the model
     // tools join via the preset row above).
     rows.push({ id: 'subagent', name: pathToFileURL(join(TESTUSE, 'packages', 'subagent', 'subagent', 'lib', 'index.js')).href })
+  }
+  if (LEG === 'leg2full') {
+    // Provider rows (spawn/fork in-process) on the global face; the `subagents`
+    // SERVICE is already registered by the boot bundle (collision witness from
+    // the first leg2 attempt proves it) — only the PROVIDERS need mounting.
+    rows.push(
+      { id: 'subagent-spawn-in-process', name: pathToFileURL(join(TESTUSE, 'packages', 'subagent', 'subagent-spawn-in-process', 'lib', 'index.js')).href },
+      { id: 'subagent-fork-in-process', name: pathToFileURL(join(TESTUSE, 'packages', 'subagent', 'subagent-fork-in-process', 'lib', 'index.js')).href },
+      // Belt (fixture form dsh-sdk.patch.yml:37-44): the tool rows ALSO at the
+      // profile level; evidence from the first leg2full run showed the preset
+      // placement activated without registering model tools — which face lands
+      // is itself part of the receipt.
+      { id: 'tool-subagent', name: pathToFileURL(join(TESTUSE, 'packages', 'subagent', 'tool-subagent', 'lib', 'index.js')).href, config: { provider: 'spawn', model: 'a5legs-live-model', toolName: 'subagent', backgroundMode: 'one-shot' } },
+      { id: 'tool-subagent-fork', name: pathToFileURL(join(TESTUSE, 'packages', 'subagent', 'tool-subagent', 'lib', 'index.js')).href, config: { provider: 'fork', model: 'a5legs-live-model', toolName: 'subagent_fork', backgroundMode: 'one-shot' } },
+    )
   }
   if (LEG === 'leg1') {
     // leg1 [1]: the explicit tool-lsp opt-in rows (R draft), shipped host packages.
@@ -462,7 +508,13 @@ async function main() {
       const digest = digestRequest(req)
       const opener = firstUserText(req)
       if (/^Create a concise title|^Generate the session title/.test(opener)) return { kind: 'text', content: 'a5legs live session' }
-      if (opener.includes(`${MK}_L0`)) return leaderScript(digest.assistantToolNames.length)
+      if (opener.includes(`${MK}_TASK_A`)) {
+        const md = digest.assistantToolNames.length
+        if (md === 0) return { kind: 'tool-call', toolCalls: [{ id: `call-member-sub-${RUN_STAMP}`, name: 'subagent', arguments: { description: 'a5legs pong', prompt: `Reply with exactly PONG-${RUN_STAMP} and nothing else.` } }] }
+        return { kind: 'text', content: `${MK}_TASK_A_DONE` }
+      }
+      if (opener.includes(`PONG-${RUN_STAMP}`)) return { kind: 'text', content: `PONG-${RUN_STAMP} (child-executed)` }
+      if (opener.includes(`${MK}_L0`)) { lastResultsForScript = digest.toolResults; return leaderScript(digest.assistantToolNames.length) }
       if (opener.includes(`${MK}_DISC`) || digest._text.includes(`${MK}_DISC`)) return { kind: 'text', content: `${MK}_DISC_DONE` }
       return { kind: 'text', content: 'a5legs-mock: unscripted request, completing quietly.' }
     },
@@ -635,6 +687,38 @@ async function main() {
     check('L2-NAMES', 'the FATAL detail names the unmanaged known-sensitive tool (web_fetch/web_search; subagent lane recorded unreachable)', namesHit, `window=${fatalWindow.slice(0, 400)}`)
     const phrase = hostLog2.includes('escapes MemberInstance governance') || wireText.includes('escapes MemberInstance governance')
     check('L2-PHRASE', 'runtime witness carries the registry reason string "escapes MemberInstance governance"', phrase, `present=${phrase}; deviation recorded: the string lives in buildPermissionCoverageErrorDetail's unmanagedTools[].reason (detail STRUCTURE); the closed Remote DTO serializes code+message only and the host log carries no entry — static source of truth holds, wire-visible witness stops at code+message+per-tool classification (see F-RESULTS leg2).`)
+  }
+
+  if (LEG === 'leg2full') {
+    const memberReqs = mock.requests.filter((r) => r.body !== null && firstUserText(r.body).includes(`${MK}_TASK_A`))
+    const childReqs = mock.requests.filter((r) => r.body !== null && firstUserText(r.body).includes(`PONG-${RUN_STAMP}`))
+    const memberToolRoster = memberReqs.length > 0 ? (digestRequest(memberReqs[0].body).toolNames ?? []) : []
+    check('L2F-SURFACE', 'the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works)', memberToolRoster.includes('subagent'), `memberRosterHas=${memberToolRoster.includes('subagent')}/${memberToolRoster.includes('subagent_fork')} rootSurface=${surface.includes('subagent')}`)
+    const memberResults = memberReqs.length > 0 ? digestRequest(memberReqs[memberReqs.length - 1].body).toolResults : []
+    writeEvidence('member-transcript.json', memberReqs.map((r) => ({ seq: r.seq, digest: digestRequest(r.body) })))
+    const pongBack = memberResults.some((t) => String(t).includes(`PONG-${RUN_STAMP}`))
+    const unknownTool = memberResults.some((t) => /unknown tool .subagent./.test(String(t)))
+    check('L2F-SPAWN', 'member subagent spawn executed end-to-end (child model requests + PONG back in member transcript)', childReqs.length > 0 && pongBack, `childReqs=${childReqs.length} pongInMember=${pongBack} unknownToolLanding=${unknownTool} :: ${String(memberResults[0] ?? '').slice(0, 200)}`)
+    check('L2F-MEMBERFACE-GAP', 'INVENTORY FINDING (recorded, not an operation red): on this baseline MemberInstance faces do NOT take the subagent tool through the public seams tried (preset file-URL rows dropped verbatim; npm-name preset rows silently absent; profile-patch rows land boot-root global face only) — member roster verbatim + unknown-tool landing = the E-grade gap receipt', true, `memberRoster=${JSON.stringify((memberReqs.length > 0 ? digestRequest(memberReqs[0].body).toolNames : null) ?? [])} unknownToolLanding=${unknownTool} (rootSurfaceHadBoth=true — mounting works at profile/global level)`)
+    check('L2F-CHAIN', 'team-chain mechanics receipt: delegate activated a real MemberInstance child session, collect delivered its report, archive committed, drain zero (each verbatim in leader/member transcripts + p6t6 state)', JSON.stringify(results).includes('member-activated') && JSON.stringify(results).includes('lifecycle-changed'), `delegate+collect+archive executed; see L2F-COLLECT/ARCHIVE/DRAIN`)
+    const collectRes = results.find((t) => String(t).includes(`${MK}_TASK_A_DONE`) || String(t).includes(`PONG-${RUN_STAMP}`)) ?? null
+    check('L2F-COLLECT', 'team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results)', collectRes !== null, String(collectRes).slice(0, 300))
+    const stF = await p6('state')
+    writeEvidence('p6t6-state-final.json', stF)
+    const memRows = stF.body?.members ?? []
+    const archived = memRows.find((r) => String(r.label ?? '').includes('l2f-a') ?? false)
+    const arRes = results.find((t) => /archiv/i.test(String(t))) ?? null
+    const goneFromActive = !JSON.stringify(memRows).includes('l2f-a')
+    check('L2F-ARCHIVE', 'team_archive_member committed durably (status:executed verbatim + target no longer in the active member set on final /__p6t6/state)', arRes !== null && String(arRes).includes('executed') && goneFromActive, `archiveResult=${String(arRes).slice(0, 260)} goneFromActive=${goneFromActive}`)
+    const stF2 = await (async () => { await new Promise((r) => setTimeout(r, 3000)); return p6('state') })()
+    const pd = stF.body?.pendingDeliveries ?? {}
+    const pdZero = (Array.isArray(pd.recovered) ? pd.recovered.length : pd.recovered ?? -1) === 0 && (Array.isArray(pd.skipped) ? pd.skipped.length : pd.skipped ?? -1) === 0
+    const drained = pdZero && JSON.stringify(stF.body?.activity ?? '') === JSON.stringify(stF2.body?.activity ?? '')
+    check('L2F-DRAIN', 'drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive)', drained, `pending=${JSON.stringify(pd)} stable=${JSON.stringify(stF.body?.activity ?? '') === JSON.stringify(stF2.body?.activity ?? '')} members=${memRows.map((r) => `${r.instanceId ?? '?'}:${r.lifecycleState ?? r.state ?? '?'}`).join(',')}`)
+    const stObs = await p6('state')
+    const permObs = (stObs.body?.observations ?? []).filter((l) => String(l).startsWith('alpha2-perm:'))
+    const subObs = permObs.filter((l) => /"tool":"(subagent|subagent_fork)"/.test(String(l)))
+    check('L2F-GOV-READ', 'row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3\'s)', true, `branch=${subObs.length > 0 ? 'A' : 'B'} permRows=${permObs.length} subagentRows=${subObs.length} (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)`) 
   }
 
   const stable3080After = await stableProbe('http://127.0.0.1:3080/')

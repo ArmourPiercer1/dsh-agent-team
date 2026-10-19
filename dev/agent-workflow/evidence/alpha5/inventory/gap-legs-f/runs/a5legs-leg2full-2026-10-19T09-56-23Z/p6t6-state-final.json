@@ -1,0 +1,110 @@
+{
+  "status": 200,
+  "body": {
+    "boot": 1,
+    "phase": "create",
+    "rootSessionId": "session-a5legs-leg2full-boot",
+    "teamSession": {
+      "rootSessionId": "session-a5legs-leg2full-boot",
+      "blueprintId": "team.a5legs-leg2full-anchor",
+      "revision": "1",
+      "contentHash": "sha256:66c8ab1986379f88fac7a4fddc408e9514c1765fb0db21b0ddff7adfa1236f75",
+      "defaultWorkspace": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5legs-leg2full-2026-10-19T09-56-23Z/ws",
+      "createdAt": "2026-10-19T09:56:25.875Z",
+      "generation": 2
+    },
+    "members": [
+      {
+        "instanceId": "inst-leader",
+        "templateId": "leader",
+        "label": "leader",
+        "childSessionId": "undefined",
+        "lifecycle": "undefined",
+        "activityVersion": 1
+      }
+    ],
+    "control": {
+      "requests": [],
+      "decisions": [],
+      "consumptions": [],
+      "abandonments": []
+    },
+    "activity": [],
+    "pendingDeliveries": {
+      "recovered": [],
+      "skipped": []
+    },
+    "governance": {
+      "overrides": [],
+      "sessions": {
+        "session-a5legs-leg2full-boot": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        },
+        "session-a5legs-leg2full-main": {
+          "instanceId": "inst-leader",
+          "model": {
+            "current": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "assembled": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "selection": {
+              "provider": "deepseek-official",
+              "model": "a5legs-live-model"
+            },
+            "source": {
+              "layer": "unspecified",
+              "origin": "static",
+              "recordId": null
+            },
+            "suppressed": [],
+            "unavailable": false,
+            "deniedBy": {
+              "by": "team",
+              "reason": "unspecifiedFailClosed"
+            },
+            "pendingNextBoundary": [],
+            "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+          },
+          "mcp": {
+            "servers": {}
+          }
+        }
+      }
+    },
+    "observations": []
+  }
+}

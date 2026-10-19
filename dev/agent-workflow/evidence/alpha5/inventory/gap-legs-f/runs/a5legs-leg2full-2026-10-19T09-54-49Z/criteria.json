@@ -1,0 +1,97 @@
+{
+  "leg": "leg2full",
+  "status": "RED",
+  "stamp": "2026-10-19T09-54-49",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3497 mock=3493"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3497"
+    },
+    {
+      "id": "L-ROW",
+      "claim": "the production team row bound the anchor team at boot (bootPhase create)",
+      "pass": true,
+      "observed": "root=session-a5legs-leg2full-boot"
+    },
+    {
+      "id": "L-SURFACE",
+      "claim": "the live tool surface was captured on the boot root (bash present)",
+      "pass": true,
+      "observed": "surface=22 deny=2"
+    },
+    {
+      "id": "L-BP-LISTED",
+      "claim": "the main saved blueprint is listed through the wire catalog",
+      "pass": true,
+      "observed": "bp=team.a5legs-leg2full-main"
+    },
+    {
+      "id": "L-TURN",
+      "claim": "the leader chain terminated (terminal reply, or the leg2 typed setup FATAL)",
+      "pass": true,
+      "observed": "termination=replied mockRequests=11"
+    },
+    {
+      "id": "L2F-SURFACE",
+      "claim": "the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works)",
+      "pass": false,
+      "observed": "memberRosterHas=false/false rootSurface=true"
+    },
+    {
+      "id": "L2F-SPAWN",
+      "claim": "member REALLY spawned a subagent: child session reached the model (child requests) and its PONG answer came back into the member transcript",
+      "pass": false,
+      "observed": "childReqs=0 pongInMember=false sample="
+    },
+    {
+      "id": "L2F-COLLECT",
+      "claim": "team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results)",
+      "pass": true,
+      "observed": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5legs-leg2full-main\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-19rq8v10khy5\\\",\\\"templateId\\\":\\\"wa\\\",\\\"childSessionId\\\":\\\"session-team-child-f443ea04f"
+    },
+    {
+      "id": "L2F-ARCHIVE",
+      "claim": "team_archive_member committed (result verbatim + final /__p6t6/state member row reflects archived lifecycle)",
+      "pass": false,
+      "observed": "archiveResult=[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5legs-leg2full-main\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-19rq8v10khy5\\\",\\ stateHasArchived=false"
+    },
+    {
+      "id": "L2F-DRAIN",
+      "claim": "drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive)",
+      "pass": true,
+      "observed": "pending={\"recovered\":[],\"skipped\":[]} stable=true members=inst-leader:?"
+    },
+    {
+      "id": "L2F-GOV-READ",
+      "claim": "row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3's)",
+      "pass": true,
+      "observed": "branch=B permRows=0 subagentRows=0 (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)"
+    },
+    {
+      "id": "L-STABLE",
+      "claim": "stable :3080/:3180 probed read-only, status unchanged (401 invariant)",
+      "pass": true,
+      "observed": "3080 401->401 3180 unreachable->unreachable"
+    },
+    {
+      "id": "L-PRISTINE",
+      "claim": "host runtime stayed pristine (porcelain 0, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    }
+  ]
+}

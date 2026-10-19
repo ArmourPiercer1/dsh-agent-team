@@ -1,0 +1,109 @@
+{
+  "leg": "leg2full",
+  "status": "RED",
+  "stamp": "2026-10-19T09-59-28",
+  "criteria": [
+    {
+      "id": "L-PIN",
+      "claim": "the host runtime is the pinned pristine baseline",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "L-PORTS",
+      "claim": "host + mock ports from the legal 3491-3500 family are free",
+      "pass": true,
+      "observed": "host=3497 mock=3493"
+    },
+    {
+      "id": "L-BOOT",
+      "claim": "the test Host booted with the token gate live (auth 303 + cookie)",
+      "pass": true,
+      "observed": "origin=http://127.0.0.1:3497"
+    },
+    {
+      "id": "L-ROW",
+      "claim": "the production team row bound the anchor team at boot (bootPhase create)",
+      "pass": true,
+      "observed": "root=session-a5legs-leg2full-boot"
+    },
+    {
+      "id": "L-SURFACE",
+      "claim": "the live tool surface was captured on the boot root (bash present)",
+      "pass": true,
+      "observed": "surface=22 deny=2"
+    },
+    {
+      "id": "L-BP-LISTED",
+      "claim": "the main saved blueprint is listed through the wire catalog",
+      "pass": true,
+      "observed": "bp=team.a5legs-leg2full-main"
+    },
+    {
+      "id": "L-TURN",
+      "claim": "the leader chain terminated (terminal reply, or the leg2 typed setup FATAL)",
+      "pass": true,
+      "observed": "termination=replied mockRequests=11"
+    },
+    {
+      "id": "L2F-SURFACE",
+      "claim": "the corrected file-URL tool rows put subagent/subagent_fork on the member wire roster (R 附注一 form works)",
+      "pass": false,
+      "observed": "memberRosterHas=false/false rootSurface=true"
+    },
+    {
+      "id": "L2F-SPAWN",
+      "claim": "member subagent spawn executed end-to-end (child model requests + PONG back in member transcript)",
+      "pass": false,
+      "observed": "childReqs=0 pongInMember=false unknownToolLanding=false :: [{\"type\":\"text\",\"text\":\"Error: unknown tool \\\"subagent\\\"\"}]"
+    },
+    {
+      "id": "L2F-MEMBERFACE-GAP",
+      "claim": "INVENTORY FINDING (recorded, not an operation red): on this baseline MemberInstance faces do NOT take the subagent tool through the public seams tried (preset file-URL rows dropped verbatim; npm-name preset rows silently absent; profile-patch rows land boot-root global face only) — member roster verbatim + unknown-tool landing = the E-grade gap receipt",
+      "pass": true,
+      "observed": "memberRoster=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] unknownToolLanding=false (rootSurfaceHadBoth=true — mounting works at profile/global level)"
+    },
+    {
+      "id": "L2F-CHAIN",
+      "claim": "team-chain mechanics receipt: delegate activated a real MemberInstance child session, collect delivered its report, archive committed, drain zero (each verbatim in leader/member transcripts + p6t6 state)",
+      "pass": true,
+      "observed": "delegate+collect+archive executed; see L2F-COLLECT/ARCHIVE/DRAIN"
+    },
+    {
+      "id": "L2F-COLLECT",
+      "claim": "team_collect delivered the member report (TASK_A_DONE / PONG verbatim in leader results)",
+      "pass": true,
+      "observed": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5legs-leg2full-main\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-0rcz99f1fz69\\\",\\\"templateId\\\":\\\"wa\\\",\\\"childSessionId\\\":\\\"session-team-child-17894ad88"
+    },
+    {
+      "id": "L2F-ARCHIVE",
+      "claim": "team_archive_member committed durably (status:executed verbatim + target no longer in the active member set on final /__p6t6/state)",
+      "pass": true,
+      "observed": "archiveResult=[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"archive-member\\\",\\\"rootSessionId\\\":\\\"session-a5legs-leg2full-main\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"targetInstanceId\\\":\\\"inst-0rcz99f1fz69\\\",\\\"effect\\\":{\\\"kind\\\":\\\"lifecycle-changed\\\",\\\"instanceId\\\":\\\"i goneFromActive=true"
+    },
+    {
+      "id": "L2F-DRAIN",
+      "claim": "drain-to-zero: pendingDeliveries {recovered:0,skipped:0} and activity set stable across 3s (no stragglers after archive)",
+      "pass": true,
+      "observed": "pending={\"recovered\":[],\"skipped\":[]} stable=true members=inst-leader:?"
+    },
+    {
+      "id": "L2F-GOV-READ",
+      "claim": "row-handle governance read: in this NON-strict full-chain world the record is what it is — A = observations exist over the subagent call; B = zero alpha2-perm rows (no per-call listener mounted in non-strict assemblies: scoped contrast, not an alive-channel proof — that proof is leg3's)",
+      "pass": true,
+      "observed": "branch=B permRows=0 subagentRows=0 (record only; alive-channel control lives in leg3 L3-ROWHANDLE-CHANNEL)"
+    },
+    {
+      "id": "L-STABLE",
+      "claim": "stable :3080/:3180 probed read-only, status unchanged (401 invariant)",
+      "pass": true,
+      "observed": "3080 401->401 3180 unreachable->unreachable"
+    },
+    {
+      "id": "L-PRISTINE",
+      "claim": "host runtime stayed pristine (porcelain 0, HEAD unmoved)",
+      "pass": true,
+      "observed": "porcelain=0"
+    }
+  ]
+}
