@@ -97,9 +97,13 @@ function log(line) {
   try { writeFileSync(join(RUN_DIR, 'run.log'), s + '\n', { flag: 'a' }) } catch { /* pre-dir */ }
 }
 function redactTokens(text) {
-  // the run token family is the MK stamp; the job OUTPUT tokens are the
-  // measurement bytes themselves and stay (they are world fixtures, not creds)
-  return String(text).split(MK).join('MK')
+  // M1 (reviewer-caught, follow-up commit): the ORIGINAL version only masked
+  // the MK stamp and the committed tails were byte-identical raw logs WITH the
+  // one-shot :3186 boot token in plaintext - the "redacted tails" claim was
+  // FALSE. The tails are scrubbed in the follow-up; from HERE capture is real:
+  // every boot/auth token (?token=... and &token=...) is masked at capture,
+  // next to the MK stamp. Job OUTPUT tokens stay (world fixtures, not creds).
+  return String(text).split(MK).join('MK').replace(/([?&]token=)[A-Za-z0-9_-]+/g, '$1REDACTED')
 }
 function check(era, id, name, ok, detail) {
   criteria.push({ era, id, name, ok: ok === true, detail: redactTokens(String(detail ?? '')) })

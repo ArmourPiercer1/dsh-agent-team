@@ -1,7 +1,14 @@
 # C3 — 装面端到端 live kit（run-a5jobs-live.mjs）
 
 **问题**：`jobsEnabled` 三管理行经**公开 profile-patch 缝**装进真宿主的两成员治理世界后，行为是否=单元面所声称。
-**答案**：**ALL GREEN 24/24**（双 era；终档 `runs/live-2026-10-19T08-18-07/`，全程 token 捕获即脱敏、世界扫净、test-use porcelain 前后 0、:3080/:3180 只读探针不变）。
+**答案**：**ALL GREEN 24/24**（双 era；终档 `runs/live-2026-10-19T08-18-07/`；世界扫净、test-use porcelain 前后 0、:3080/:3180 只读探针不变）。
+
+> **M1 更正（审稿 e4475d9e 判，如实在册）**：本 README 初版与 commit message 中"token 捕获即脱敏 / redacted
+> tails kept"为**假陈述**——初版 `redactTokens` 只打码 MK 戳，两份已 commit 的 `instance-*.tail.log` 与原始
+> boot 日志**逐字节相同**，含一次性 `?token=…` 启动行（:3186 回环、世界已扫净=缓释非免罪）。处置（选项 c 并做）：
+> (a) 跟进 commit 对终档全部工件的 `?token=`/`&token=` 追加打码（append-only，无 force）；(b) 本段=口径更正；
+> (c) kit 的 `redactTokens` 自此**真正**在捕获点打码 boot/auth token（代码内注记本教训）；两份未 commit 的重复
+> 原始 log **已删除**（与打码后 tails 逐字节等价，明文 token 无留存价值）。
 
 ## 世界形状（刻意最小）
 
