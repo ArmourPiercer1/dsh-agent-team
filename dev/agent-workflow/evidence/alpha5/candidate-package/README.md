@@ -139,10 +139,13 @@ cp "$W/profiles/web/cordis.patch.TEMPLATE.yml" "$W/profiles/web/cordis.patch.yml
 # 4) 校验门（不启动任何东西）：占位未换/mock 残留/引用已清世界/三路径失配 → 拒（rc=2）
 ./$PKG/install-candidate.sh --check-config "$W"
 
-# 5) 启动（端口 3180-3186 自选空闲，禁 3080）；boot 行含一次性 token，浏览器打开即用
+# 5) 启动（端口 3180-3186 自选空闲，禁 3080）；boot 行含一次性 token，浏览器打开即用。
+#    宿主路径自桥 INSTALLED 记录（worktree/主检出逐字粘贴不断链；等价写法：
+#    在"安装发生的那个 checkout 根"粘贴本节）：
+TEST_USE=$(node -e 'console.log(JSON.parse(require("fs").readFileSync("tests/homes/candidate-INSTALLED.json","utf8")).testUse)')
 DSH_HOME="$W" DSH_CLIENT_COMMIT_HASH=639ed01539 \
   DEEPSEEK_BASE_URL=<real-base> DEEPSEEK_API_KEY=<real-key> \
-  node tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3182 --no-open &
+  node "$TEST_USE/apps/cli/lib/bin.js" web --port 3182 --no-open &
 echo $! > /tmp/candidate-human.pid
 
 # 6) 停机 = 按 PID 停，不删任何文件；重开 = 同目录再次启动（会话/数据都在世界里保留）
@@ -152,6 +155,10 @@ kill "$(cat /tmp/candidate-human.pid)"
 
 冒烟账（本包装配轮实跑，`runs/human-smoke-*/`）：init 三路径 PASS + 复制字节一致；
 check 门 **configured→PASS(rc=0)**、**inert 占位层→FAIL(rc=2)**、**占位未换→FAIL(rc=2)**。
+**真 boot 收据 = `runs/human-boot-*/BOOT-RECEIPT.md`**：boot 行（token 脱敏）+ 无鉴权 401/401 +
+**token 面 303** + 按 PID kill（世界零动）+ **同目录重开再现 401/303**；形状门=直调已装 dist
+`validateTeamPluginConfig`（模板=其必填全套最小形，`mcpServer` 显式 null 为其隐性必填、由门实跑抓出补齐；
+`realm:`→契约键 `realmId` 同轮修正）。
 真人路径**零自动清理**：数据保留由前缀排除+负门+哨兵三保险承担。
 
 ## 4. 回滚步骤

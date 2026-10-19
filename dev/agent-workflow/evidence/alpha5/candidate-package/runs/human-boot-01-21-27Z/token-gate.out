@@ -1,0 +1,7 @@
+GET / no-auth -> 401
+POST /api/session/list no-cookie -> 401
+GET /?token=[given] -> 303 (token auth face)
+GET /sessions no-auth -> 404
+killed pid=15 exit=0 (files untouched: 5 top entries after kill)
+reopen GET / no-auth -> 401
+reopen GET /?token=[given] -> 303

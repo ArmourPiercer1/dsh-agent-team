@@ -49,6 +49,66 @@ function verify3(world) {
   return pass
 }
 
+
+// ── minimal block-YAML subset (template shape only): maps, seqs, inline [] {},
+//    scalars (null/int/quoted/bare), whole-line comments. Anything fancier is a
+//    parse failure — the gate then says so rather than guessing. ──
+function parseYamlSubset(text) {
+  const lines = text.split('\n').map((l, i) => ({ raw: l, i })).filter((l) => !/^\s*#/.test(l.raw) && l.raw.trim() !== '')
+  let pos = 0
+  const indentOf = (l) => l.raw.match(/^ */)[0].length
+  function parseScalar(v) {
+    v = v.trim()
+    if (v === '[]') return []
+    if (v === '{}') return {}
+    if (v === 'null' || v === '~') return null
+    if (v === 'true') return true
+    if (v === 'false') return false
+    if (/^-?\d+$/.test(v)) return Number(v)
+    if (v.startsWith('"') && v.endsWith('"')) return v.slice(1, -1).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"').replace(/\\\\/g, '\\')
+    if (v.startsWith("'") && v.endsWith("'")) return v.slice(1, -1)
+    return v
+  }
+  function parseBlock(indent) {
+    if (pos >= lines.length) return null
+    if (lines[pos].raw.slice(indent, indent + 1) === '-' || /^\s*-\s/.test(lines[pos].raw)) {
+      const arr = []
+      while (pos < lines.length && indentOf(lines[pos]) === indent && lines[pos].raw.trimStart().startsWith('- ')) {
+        const rest = lines[pos].raw.trimStart().slice(2)
+        const m = rest.match(/^([A-Za-z_][\w.-]*):(.*)$/)
+        if (m) {
+          const obj = {}
+          const inline = m[2].trim()
+          lines[pos] = { raw: ' '.repeat(indent + 2) + rest, i: lines[pos].i }
+          Object.assign(obj, parseMap(indent + 2))
+          if (inline === '' && undefined === obj[m[1]]) { /* noop */ }
+          arr.push(obj)
+        } else { pos += 1; arr.push(parseScalar(rest)) }
+      }
+      return arr
+    }
+    return parseMap(indent)
+  }
+  function parseMap(indent) {
+    const obj = {}
+    while (pos < lines.length && indentOf(lines[pos]) === indent) {
+      const t = lines[pos].raw.trimStart()
+      if (t.startsWith('- ') || t === '-') break
+      const m = t.match(/^([A-Za-z_][\w.-]*):(.*)$/)
+      if (!m) throw new Error(`YAML subset parse: line ${lines[pos].i + 1} is not "key: value": ${t.slice(0, 60)}`)
+      const key = m[1]; const inline = m[2].trim()
+      pos += 1
+      if (inline !== '') { obj[key] = parseScalar(inline); continue }
+      if (pos < lines.length && indentOf(lines[pos]) > indent) obj[key] = parseBlock(indentOf(lines[pos]))
+      else obj[key] = null
+    }
+    return obj
+  }
+  const out = parseBlock(indentOf(lines[0]))
+  if (pos !== lines.length) throw new Error('YAML subset parse: trailing unparsed content')
+  return out
+}
+
 const sha = (f) => createHash('sha256').update(readFileSync(f)).digest('hex')
 
 if (MODE === 'init') {
@@ -130,6 +190,27 @@ if (MODE === 'check') {
     pass = (mock ? bad('mock residue in the active layer (a human world must point at a real provider)') : ok('no mock residue')) && pass
     const sweptRef = /candidate-pos-|candidate-globoff-|candidate-pin(ok|codex|cc|fork)?-|candidate-install-/.test(body)
     pass = (sweptRef ? bad('reference to a trial/automation world (those get cleaned; do not reference them)') : ok('no references to swept trial worlds')) && pass
+    if (/teamToolPlane:/.test(body) && /^\s+realm:/m.test(body) && !/realmId:/.test(body)) {
+      pass = bad('teamToolPlane uses `realm:` — the contract key is `realmId` (dist agent-bindings reads config.teamToolPlane.realmId)') && pass
+    }
+    // SHAPE GATE: call the INSTALLED validator itself (root 01:20Z item 1:
+    // "门的判据=能过 validateTeamPluginConfig 形状面" — so the gate IS that function,
+    // imported from the verified install face; the final word stays the real boot).
+    try {
+      const rows = parseYamlSubset(body)
+      const row = Array.isArray(rows) && rows.find((r) => r && r.id === 'dsh-agent-team')
+      if (!row) pass = bad('no dsh-agent-team row found in the active layer') && pass
+      else {
+        const hostMod = join(world, 'profiles', 'web', 'node_modules', 'dsh-agent-team', 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js')
+        existsSync(hostMod) || die(`installed host.js not found: ${hostMod}`)
+        const { validateTeamPluginConfig } = await import('file://' + hostMod)
+        validateTeamPluginConfig(row.config)
+        ok('shape gate: validateTeamPluginConfig (INSTALLED dist) ACCEPTS the config row')
+      }
+    } catch (e) {
+      if (e && e.code === undefined && /YAML subset parse/.test(String(e?.message))) pass = bad(`YAML shape: ${String(e.message).slice(0, 140)}`) && pass
+      else pass = bad(`validateTeamPluginConfig REFUSES the config: ${String(e?.message ?? e).slice(0, 180)}`) && pass
+    }
   }
   pass = verify3(world) && pass
   console.log(pass ? 'CHECK-CONFIG: PASS — safe to boot (README §3b order: config -> check -> boot)' : 'CHECK-CONFIG: FAIL — fix above, do not boot yet')

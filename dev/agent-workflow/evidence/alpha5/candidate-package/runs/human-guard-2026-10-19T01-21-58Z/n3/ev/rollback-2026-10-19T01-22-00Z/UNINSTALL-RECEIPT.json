@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-19T01:22:00.731Z",
+  "mode": "uninstall",
+  "lastSha": "d5de74974b0320b191b310ead82407d478477ed7",
+  "stateFilesMoved": true,
+  "rehearsalRecord": "runs/rollback-2026-10-18T22-56-57Z (--to-last) + runs/rollback-2026-10-18T22-57-23Z (--uninstall), 52d73534-round rehearsal, reference form per root 23:59Z order"
+}
