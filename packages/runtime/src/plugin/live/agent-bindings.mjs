@@ -689,6 +689,32 @@ function readDeliveredWorkTurn(session, requestToken) {
 }
 
 /**
+ * G2-MCP-B (branch `a5-mcp-binding`, MCP-WIRING-PROPOSAL option B): the
+ * `mcp__` prefix family NEVER inherits `dsh-native` trust at the Guard's
+ * trusted-native-list harvest. The Host's MCP manager registers the
+ * model-facing `mcp__<server>__<tool>` tools on the GLOBAL registry layer,
+ * so the raw global view (the harvest below) DOES carry them — inheriting
+ * them unfiltered bound every MCP tool as a verified native while the
+ * per-call permission lane never takes the family (the closed
+ * `classifyPermissionTool` set returns `unsupported` -> passthrough), the
+ * ungoverned-execution channel the F leg3 receipts pinned (ADR:69
+ * per-call face / PLAN:70). Excluded here, an `mcp__` name binds UNVERIFIED
+ * (governed, visible to the Coverage diff) and is refused at dispatch with
+ * the existing typed no-fallback refusal until a trusted assembly binds it
+ * explicitly (PR0 Binding algebra, untouched). This delivers the
+ * already-approved PLAN:70 semantics at the DECISION layer only; the
+ * server-side effect boundary is NOT covered by this (PR7 deferred line
+ * booked). Same prefix contract as the mount tracking below
+ * (`mcp__${serverName}__`) and the plane's PLANE_RESERVED_NATIVE_PREFIXES.
+ * Exported for the collection-shape unit test; the Guard assembly applies
+ * it where it harvests `nativeNames`.
+ */
+export const GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX = 'mcp__'
+export function guardNativeTrustExcludedMcpName(name) {
+  return typeof name === 'string' && name.startsWith(GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX)
+}
+
+/**
  * Create the bindings closure over one row instance's deps.
  * @param {object} deps - see the module header.
  * @returns {object} the bindings (see the module header).
@@ -2295,13 +2321,21 @@ export function createAgentBindings(deps) {
         // An unreadable global list is the fail-closed direction: an EMPTY
         // list binds nothing as native, so every inherited name is governed,
         // unverified and refused rather than waved through.
+        // G2-MCP-B amends the sentence above with the one family it got
+        // backwards in practice: the Host's MCP manager contributes its
+        // `mcp__<server>__<tool>` tools THROUGH the global layer, so the raw
+        // global view carries them and they are NOT trusted natives. The
+        // harvest below excludes the `mcp__` prefix (see
+        // guardNativeTrustExcludedMcpName): MCP names bind UNVERIFIED and
+        // are refused at dispatch — decision-layer refusal per PLAN:70;
+        // effect-boundary coverage stays on the PR7 deferred line.
         let nativeNames = []
         try {
           const globalSchemas = typeof agentCtx.tools?.schemas === 'function' ? agentCtx.tools.schemas() : undefined
           if (Array.isArray(globalSchemas)) {
             nativeNames = globalSchemas
               .map((row) => row?.name)
-              .filter((name) => typeof name === 'string' && name.length > 0)
+              .filter((name) => typeof name === 'string' && name.length > 0 && !guardNativeTrustExcludedMcpName(name))
           } else {
             observations.push(`a5p1-guard: native-list-unavailable for ${sessionId} (tools.schemas() with no scope returned no array) — no name is inherited as native; every inherited tool is bound UNVERIFIED and refused at dispatch`)
           }
