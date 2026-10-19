@@ -29,11 +29,17 @@ import { afterAll, describe, expect, it } from 'vitest'
 const processSmell: string[] = []
 const onUnhandled = (reason: unknown) => processSmell.push(`unhandledRejection: ${String((reason as Error)?.message ?? reason)}`)
 const onUncaught = (error: Error) => processSmell.push(`uncaughtException: ${String(error?.message ?? error)}`)
-process.on('unhandledRejection', onUnhandled)
-process.on('uncaughtException', onUncaught)
+// the node-min ambient 'process' const is a typed shim (cwd/stderr only);
+// the REAL runner process object lives on globalThis - typed locally here,
+// zero new ambient vocabulary.
+const proc = (globalThis as unknown as {
+  process: { on: (event: string, listener: (arg: never) => void) => void; off: (event: string, listener: (arg: never) => void) => void }
+}).process
+proc.on('unhandledRejection', onUnhandled as (arg: never) => void)
+proc.on('uncaughtException', onUncaught as (arg: never) => void)
 afterAll(() => {
-  process.off('unhandledRejection', onUnhandled)
-  process.off('uncaughtException', onUncaught)
+  proc.off('unhandledRejection', onUnhandled as (arg: never) => void)
+  proc.off('uncaughtException', onUncaught as (arg: never) => void)
 })
 import { jobOwnerKey } from '../jobs-gateway/index.js'
 import type { GatewayJobRecord, JobOwner } from '../jobs-gateway/index.js'
