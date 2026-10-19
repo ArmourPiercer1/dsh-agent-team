@@ -27,6 +27,8 @@
 | (b) 既存零触碰 | 监视起点在场全部文件（15 个，exit.json 监督簿除外）此后任何 mtime > FiredAt+2s = violation | **preViolators=[]** |
 | (c) 新文件归因 | 新文件仅允许「后续腿边界种类」= `probe-*`（launcher 逐 exec access 探针）与 `plans/plan-*.json`（宿主逐请求 plan 簿）；**任何其他新文件=violation**；且 (b) 已封「改既存」型续写 | **newNonBoundary=[]**，boundarySeen=12 |
 
+**规则(c)限定**：`probe-`/`plans/plan-` 类别豁免**仅由本跑逐项归因表（③节，12 项各自五重依据）支撑**，**不构成「任意同名新文件均安全」的一般化规则**——其它世界/其它跑使用规则(c)必须自带逐项归因，不得引用本表豁免同名文件。
+
 kit 判词行（kit-b3.out verbatim）：
 > `PASS F3b — cond-3b out-of-band attributed seed watch v3: seed frozen <=+2s AND pre-existing files never touched after +2s AND zero new files other than next-leg boundary kinds (probe-/plan-) [seedΔ=-955ms preViol=[] newNonBoundary=[] samples=83]`
 
@@ -44,11 +46,11 @@ kit 判词行（kit-b3.out verbatim）：
 | 12 | `plans/plan-mvefrcny-sddfjb.json` | +4974ms | `plans/plan-*.json` = 宿主逐 bash 请求 plan 簿 | 同上 | 同上②③④ |
 | （13） | `out/plan-mvefrcny-sddfjb/exit.json` | +4974ms | 监督簿（launcher waitpid 落笔） | 同上 | watcher 按名排除（(c) 则明文）；列此完整性。内容 `{pid:254,rc:-15}` = 直控腿被 `{kind:'user'}` 有意终止 |
 
-**pid 维度总账（最强归因）**：被取消 payload=**pid 215**（`out/plan-mvefr5gx-bx0k83/exit.json` = `{pid:215,rc:-15}`，mtime=FiredAt+7.2ms）——窗口内 **pid215 未出现在任何 exit.json/探针/plan 中**；窗口内唯一新 pid 足迹=254=leader 直控腿。bash-3 的 pid257/exit.json（Δmit=-3082≈绝对 +35s）在窗口外。
+**pid 维度总账（最强归因）**：被取消 payload=**pid 215**（`out/plan-mvefr5gx-bx0k83/exit.json` = `{pid:215,rc:-15}`，mtime=FiredAt+7.2ms）——**除 pid215 自身 +7.2ms 的 rc=-15 终止记录（其 exit.json）外，窗口内无任何新的 pid215 足迹**（无探针、无 plan、无第二份 exit.json、无既存文件 mtime 变动）；窗口内唯一新 pid 足迹=254=leader 直控腿。bash-3 的 pid257/exit.json（Δmit=-3082≈绝对 +35s）在窗口外。
 
 ## ④ 窗口边界如实声明（根原话口径）
 
-**监视=取消后 25s 窗口内的带外实测**（300ms×83 采样）；它证明的是「被取消 payload 在该窗口内无继续副作用」，**不外推为无限期保证**。旁证增强但不改变声明：进程级 rc=-15@+7.2ms（SIGTERM 完成）与 1Hz 通道冻结 -955ms 表明终止在毫秒级发生；25s 已覆盖同世界后续三条腿（直控/RESUME/MIT）的完整启动而无 pid215 足迹。
+**监视=取消后 25s 窗口内的带外实测**（300ms×83 采样）；它证明的是「被取消 payload 在该窗口内无继续副作用」，**不外推为无限期保证**。窗口的覆盖边界如实：窗内**仅覆盖到直控腿 leader-bash-1 的启动**（Δ+4974ms 在窗内）；**RESUME 腿（+35035ms）与 MIT 腿（~+38s）均在窗口之外**——它们的归属依据是**窗口外独立记录**（plan 簇 / exit.json pid 链 / instance.log 时刻），不属本监视的覆盖面。进程级旁证（rc=-15@+7.2ms SIGTERM 完成、1Hz 通道 -955ms 冻结）表明终止在毫秒级发生，但同样只是旁证，不改变窗口声明。
 
 ---
 v1/v2/v3 kit 源码演进在 `a5c1fix-b-kit.mjs`（git 未跟踪目录内以本索引+TRIAGE 披露）；三跑判定文件=各 `runs/<stamp>/world.json` `seedWatch` 字段 + `kit-b{1,2,3}.out` 账目行。快照复现命令见③表头。
