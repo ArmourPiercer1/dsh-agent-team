@@ -535,7 +535,7 @@ async function runEra(era, mock, lifecycle = {}) {
     // credential rides this record; unknown stays 'unconfirmed'.
     facts.hostPid = child?.pid ?? null
     try {
-      const ssRun = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+      const ssRun = execFileSync('ss', ['-ltn', `sport = :${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
       const line = ssRun.split('\n').find((l) => l.includes(String(HOST_PORT)))
       facts.hostBind = line ? line.trim().split(/\s+/).slice(3, 5).join(' <- ') : 'no-listen-line-while-running'
     } catch { facts.hostBind = 'unconfirmed' }
@@ -708,7 +708,7 @@ async function runEra(era, mock, lifecycle = {}) {
       check(era, 'JSK.0', 'the stream sinks captured the child output with zero redaction/write failures', sinkErrors.length === 0 && facts.spawnError === null, `sinkErrors=${sinkErrors.length} spawnError=${facts.spawnError ?? 'none'}`)
       let postStopListen = 'unconfirmed'
       try {
-        const ssStop = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+        const ssStop = execFileSync('ss', ['-ltn', `sport = :${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
         postStopListen = ssStop.split('\n').some((l) => l.includes(String(HOST_PORT))) ? 'STILL-LISTENING' : 'no-listener'
       } catch { /* ss unavailable */ }
       const stop = evaluateStopOutcome({ drained, postStopListen })
