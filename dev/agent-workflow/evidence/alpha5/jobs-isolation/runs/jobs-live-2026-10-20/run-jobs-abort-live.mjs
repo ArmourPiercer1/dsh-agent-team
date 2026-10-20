@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * run-jobs-abort-live.mjs — #349 merge-release LIVE receipts for the FOUR
- * jobs abort boundaries, re-issued AT THE EXACT HEAD 515b3805 (2026-10-20
+ * jobs abort boundaries, re-issued AT THE EXACT HEAD 96e199b9 (2026-10-20
  * batch; the earlier live round rode a0187704, and live receipts must ride
  * the exact head to count). Reviewer-executed; run by the #349 auditor.
  *
@@ -145,7 +145,7 @@ async function main() {
   mkdirSync(RUN_DIR, { recursive: true })
   SHARED = await import(pathToFileURL(join(WORKTREE, 'tests', 'kits', '_shared', 'preset-seam.mjs')).href)
   const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: WORKTREE, encoding: 'utf8' }).stdout?.trim()
-  if (head !== '515b3805b11db9986ced7d0577942e0669ffe5dd') dieFatal(`worktree HEAD is ${head}, not the audited 515b3805…`)
+  if (head !== '96e199b9e61089f495b23b5a371555c0a8766770') dieFatal(`worktree HEAD is ${head}, not the audited 96e199b9…`)
   const tu0 = testUseState()
   if (tu0.rev !== TEST_USE_BASELINE_SHA || (tu0.dirty ?? 'x') !== '') dieFatal(`test-use not pristine: ${JSON.stringify(tu0)}`)
   if (!isSanctionedTestPort(HOST_PORT) || !isSanctionedTestPort(MOCK_PORT)) dieFatal(`ports outside canonical family: ${HOST_PORT}/${MOCK_PORT}`)
@@ -154,7 +154,7 @@ async function main() {
   const dfBefore = dfNow(); writeEvidence('df-before.txt', dfBefore)
   const preStable = { p3080: await probeStable('http://127.0.0.1:3080/'), p3180: await probeStable('http://127.0.0.1:3180/') }
   writeEvidence('pre-stable-probe.json', preStable)
-  check('A0.0', 'pre-flight: head=515b3805, test-use pristine-at-baseline, sanctioned free ports, df recorded, stable :3080/:3180 probed read-only', true, `ports=${HOST_PORT}/${MOCK_PORT} stable=${JSON.stringify(preStable)}`)
+  check('A0.0', 'pre-flight: head=96e199b9, test-use pristine-at-baseline, sanctioned free ports, df recorded, stable :3080/:3180 probed read-only', true, `ports=${HOST_PORT}/${MOCK_PORT} stable=${JSON.stringify(preStable)}`)
 
   const mock = await startMockModel({
     port: MOCK_PORT,
@@ -217,6 +217,7 @@ async function main() {
     for (const leg of receipt?.legs ?? []) {
       check(`L:${leg.id}`, `${leg.boundary} — counts=${JSON.stringify(leg.countsDelta)} checks=${JSON.stringify(leg.checks)}`, leg.ok === true, `text=${JSON.stringify(leg.text.slice(0, 200))}`)
     }
+    check('A1.3', 'whole-feed-disappearance OBSERVATION recorded in receipt (observation-only, root round-D finding; no correctness asserted)', receipt?.observationWholeFeed !== undefined && receipt?.observationWholeFeed !== null, JSON.stringify(receipt?.observationWholeFeed ?? null).slice(0, 220))
     check('A2.0', 'process-level collectors: unhandledRejection=0 AND uncaughtException=0 over the whole batch', (receipt?.collector?.unhandled ?? [1]).length === 0 && (receipt?.collector?.uncaught ?? [1]).length === 0, JSON.stringify(receipt?.collector))
     check('A2.1', 'reap: every REAL spawned job exited (killed through the real svc cancel path)', receipt?.aliveAfter === 0, `reap=${JSON.stringify(receipt?.reap)} aliveAfter=${receipt?.aliveAfter}`)
   } catch (error) {
@@ -245,7 +246,7 @@ async function main() {
   const failed = criteria.filter((c) => !c.ok)
   writeEvidence('summary.json', { runStamp: RUN_STAMP, head, hostPort: HOST_PORT, mockPort: MOCK_PORT, total: criteria.length, failed: failed.map((c) => c.id), criteria: criteria.map(({ id, ok, name }) => ({ id, ok, name })), receiptOk: receipt?.ok ?? null })
   if (failed.length > 0) { log(`FAILED ${failed.length}/${criteria.length}: ${failed.map((c) => c.id).join(', ')}`); process.exit(2) }
-  log(`ALL GREEN: ${criteria.length}/${criteria.length} criteria — jobs four-boundary LIVE receipts at 515b3805`)
+  log(`ALL GREEN: ${criteria.length}/${criteria.length} criteria — jobs four-boundary LIVE receipts at the pinned audited head`)
   process.exit(0)
 }
 

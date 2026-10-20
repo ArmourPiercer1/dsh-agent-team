@@ -110,7 +110,7 @@ async function runLegs(ctx, unhandled, uncaught) {
   if (typeof worktree !== 'string' || worktree === '') throw new Error('DSH_A5JOBS_WORKTREE is required')
   const distLive = join(worktree, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'live')
   const { createGovernedJobsBridge } = await import(pathToFileURL(join(distLive, 'plane-effect-backends.mjs')).href)
-  const { createLiveJobsGatewayAssembly } = await import(pathToFileURL(join(distLive, 'jobs-gateway-assembly.mjs')).href)
+  const { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } = await import(pathToFileURL(join(distLive, 'jobs-gateway-assembly.mjs')).href)
 
   const svc = ctx.get('jobs')
   if (svc === null || svc === undefined) throw new Error('the host jobs registry service is absent')
@@ -122,7 +122,10 @@ async function runLegs(ctx, unhandled, uncaught) {
 
   const ROOT = 'a5jobs-abort-probe-root'
   const VIEWER = { rootSessionId: ROOT, instanceId: 'a5jobs-abort-probe-inst' }
-  const scopeKey = 'agent:a5jobs-abort-probe'
+  // RULING-X consumer law (96e199b9): the probe consumes the lane's ONE
+  // derivation through the row re-export (the same edge the production entry
+  // rides) - the kit's 515b-era raw literal migrated in this one line.
+  const scopeKey = jobsBridgeScopeKey({ realmId: 'a5jobs-abort-probe-realm', rootSessionId: ROOT, instanceId: VIEWER.instanceId })
   // PROBE-LOCAL identity rows (disclosed): the viewer pair this batch declares.
   const teamRoot = { repositories: { memberInstances: { list: (k) => (k === ROOT ? [{ instanceId: VIEWER.instanceId }] : []) } } }
   const asm = createLiveJobsGatewayAssembly({ teamRoot, rootSessionId: ROOT })
@@ -332,6 +335,36 @@ async function runLegs(ctx, unhandled, uncaught) {
     }))
   }
 
+  // ── OBSERVATION-ONLY (root round-D finding, cited not asserted):
+  // whole-feed disappearance (plane.placementFeed missing ENTIRELY) takes
+  // ensureDefinitions' early return (plane-effect-backends.mjs:960) BEFORE
+  // the withdrawal-invalidate loop - the registered map and the store rows
+  // survive. This leg OBSERVES that residual (no assertion of correctness,
+  // no fix attempted): after the whole feed vanishes, does a fresh admit
+  // still pin through the stale truth? Recorded verbatim into the receipt.
+  let wholeFeedObservation = null
+  try {
+    const feed = plane.placementFeed
+    await bridge.jobList(CALLER) // baseline: pins alive through the real feed
+    const probeJobId = 'a5abort-observe-wholefeed'
+    delete plane.placementFeed
+    await bridge.jobList(CALLER) // ensureDefinitions now early-returns
+    const took = asm.attributeBackgroundJob({ hostJobId: probeJobId, owner: VIEWER, scopeKey })
+    wholeFeedObservation = {
+      finding: 'whole-feed disappearance vs per-entry withdrawal - root-classed: WITHDRAWAL-CLAIM INCOMPLETENESS / future-producer HARDENING, NOT a live exploit (a5PlaneValue assigns once at agent-bindings:2487, never nulled at teardown; production reachability UNPROVEN)',
+      cite: 'plane-effect-backends.mjs:960 early return precedes the :966-:975 invalidate loop',
+      attributedAfterWholeFeedGone: took.ok === true,
+      stalePinnedIdentity: took && took.ok === true ? (took.job?.pinnedIdentity ?? null) : null,
+      interpretation: took.ok === true
+        ? 'withdrawal claim incomplete: in this synthetic whole-feed-gone shape a fresh admit still rides the pre-disappearance pin (pin/admission assertion ONLY - explicitly NOT a C-BIND cancellation proof)'
+        : 'fail-closed observed: the whole-feed-disappeared path refused the fresh admit',
+      observationOnly: true, asserted: false,
+    }
+    plane.placementFeed = feed // restore (observation must not perturb teardown)
+  } catch (error) {
+    wholeFeedObservation = { error: String(error?.message ?? error), observationOnly: true, asserted: false }
+  }
+
   // ── reap: kill every live job through the REAL svc, SIGKILL stragglers ───
   const reap = []
   for (const jobId of createdJobs) {
@@ -346,6 +379,7 @@ async function runLegs(ctx, unhandled, uncaught) {
     ok: legsOk && unhandled.length === 0 && uncaught.length === 0,
     head: process.env.DSH_A5JOBS_HEAD ?? null,
     world: { pid: process.pid, home: process.env.DSH_HOME ?? null, node: process.version },
+    observationWholeFeed: wholeFeedObservation,
     assembly: { realBridge: 'committed-dist plane-effect-backends.mjs', realAssembly: 'committed-dist jobs-gateway-assembly.mjs', realSvc: 'ctx.get(jobs) @639ed01539', controllerAttached, probeLocal: 'fresh assembly over probe-local identity rows; every leg crosses via disclosed corded:false pass-through (zero Team records)' },
     calls: counts,
     legs,

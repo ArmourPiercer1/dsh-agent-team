@@ -955,9 +955,28 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
     observe(`a5jobs: refused ${code}`)
     return { text: `refused: ${code} — ${String(detail).slice(0, 200)}` }
   }
+  // ROOT residual order (round E): the WHOLE feed disappearing (planeRow null
+  // or the placementFeed field gone) is the SAME revocation law as one entry
+  // going missing - it invalidates EVERY name this scope had registered
+  // (same store + local-pin machinery, no new gateway semantics, no API
+  // growth). A silent early return used to KEEP the stale identities alive,
+  // so admission after a teardown answered on pins of a plane that no longer
+  // exists; fail-closed until the feed returns is the honest shape.
+  const invalidateAll = (asm) => {
+    for (const name of registered.keys()) {
+      if (typeof asm.definitions.unregister === 'function') {
+        asm.definitions.unregister(scopeKey, name)
+        observe(`a5jobs: definition-invalidated name=${name} scope=${scopeKey}`)
+      }
+    }
+    registered.clear()
+  }
   const ensureDefinitions = (asm) => {
     const plane = typeof planeRow === 'function' ? planeRow() : null
-    if (plane === null || plane === undefined || typeof plane.placementFeed !== 'function') return
+    if (plane === null || plane === undefined || typeof plane.placementFeed !== 'function') {
+      invalidateAll(asm)
+      return
+    }
     for (const name of ['bash', 'job_output', 'job_list', 'job_kill']) {
       const entry = plane.placementFeed(name)
       // Not minted yet: retry on the next call — never register an

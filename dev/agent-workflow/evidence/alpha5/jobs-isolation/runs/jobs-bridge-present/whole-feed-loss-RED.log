@@ -1,0 +1,6 @@
+     × REPRO-1 planeRow null after registration: admission must NOT keep answering on stale pins 10ms
+     × REPRO-2 placementFeed field gone (plane object remains): same fail-closed law 1ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected false to be true // Object.is equality
+AssertionError: expected false to be true // Object.is equality
+      Tests  2 failed | 37 skipped (39)

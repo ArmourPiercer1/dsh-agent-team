@@ -38,3 +38,26 @@ fed side-by-side to the host's own render code and our dist-mirror bridge -
 RENDER-BOUNDARY coverage over synthetic reads ONLY; NOT live-registry, NOT
 model-cursor, NOT wait-timeout coverage. Basename spill redaction = recorded
 sanctioned divergence; fine newline difference noted as non-blocking.
+
+## Round E residual: WHOLE-FEED loss (fail-closed negative controls)
+- RED (whole-feed-loss-RED.log): the early-return arm at ensureDefinitions
+  (planeRow null / placementFeed field gone) KEPT this scope's registered
+  identities alive; admission after such a teardown answered on stale pins.
+  The round-D negative control covered only ONE entry missing, not the
+  whole feed disappearing.
+- FIX (simplest consistent fail-closed, root-qualified shape): the early
+  return now runs invalidateAll for THAT member scope (same unregister
+  machinery as the single-entry law; no new gateway semantics, no API
+  growth). Subsequent admits fail-close at never-registered until the feed
+  returns; a RETURNED feed re-registers (fail-closed, not fail-forever -
+  third leg proves recovery).
+- PRODUCTION REACHABILITY (fact, file:line): agent-bindings.mjs:2245
+  `let a5PlaneValue = null` is nulled only at INIT; :2487
+  `a5PlaneValue = built.value` is the ONLY assignment; :2449 planeRow reads
+  the closed-over variable. No teardown/dispose path sets it back to null.
+  QUALIFICATION (root ruling): whole-feed-missing after registration is
+  UNPROVEN-reachable in production - this is withdrawal-claim hardening for
+  the future producer, NOT a live exploit; neither "already exploited" nor
+  "impossible forever" is claimed.
+- Wording law self-audit: pin/admission assertions are NOT called a C-BIND
+  cancellation proof anywhere in this lane's tests or notes (grep zero).

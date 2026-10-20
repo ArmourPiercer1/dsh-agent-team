@@ -1,0 +1,91 @@
+{
+  "runStamp": "2026-10-20T07-14-02",
+  "head": "96e199b9e61089f495b23b5a371555c0a8766770",
+  "hostPort": 3186,
+  "mockPort": 3496,
+  "total": 16,
+  "failed": [],
+  "criteria": [
+    {
+      "id": "A0.0",
+      "ok": true,
+      "name": "pre-flight: head=96e199b9, test-use pristine-at-baseline, sanctioned free ports, df recorded, stable :3080/:3180 probed read-only"
+    },
+    {
+      "id": "A1.0",
+      "ok": true,
+      "name": "real pristine host booted on the production row, jobsEnabled plane, probe row (public seam only)"
+    },
+    {
+      "id": "A1.1",
+      "ok": true,
+      "name": "the probe row is mounted INSIDE the world and the REAL host jobs registry is present (ctx.get(jobs))"
+    },
+    {
+      "id": "A1.2",
+      "ok": true,
+      "name": "the four-boundary batch returned a machine receipt (receipt.json)"
+    },
+    {
+      "id": "L:L1",
+      "ok": true,
+      "name": "entry-precheck-early-exit — counts={\"wait\":0,\"read\":0,\"kill\":0,\"list\":0} checks={\"typedWaitAborted\":true,\"zeroWait\":true,\"zeroRead\":true,\"zeroHostCallsAll\":true,\"listenerNeverAdded\":true,\"collectorZeroDelta\":true}"
+    },
+    {
+      "id": "L:L2",
+      "ok": true,
+      "name": "construction-sync-abort — counts={\"wait\":1,\"read\":0,\"kill\":0,\"list\":0} checks={\"typedWaitAborted\":true,\"svcWaitActuallyCalled\":true,\"zeroRead\":true,\"bridgeListenerRemovedOnEarlyReturn\":true,\"preConsumedRealRejections\":true}"
+    },
+    {
+      "id": "L:L3",
+      "ok": true,
+      "name": "abort-mid-wait — counts={\"wait\":1,\"read\":0,\"kill\":0,\"list\":0} checks={\"typedWaitAborted\":true,\"svcWaitCalled\":true,\"zeroRead\":true,\"bridgeListenerRemovedOnRaceExit\":true,\"collectorZeroDelta\":true}"
+    },
+    {
+      "id": "L:L3b",
+      "ok": true,
+      "name": "abort-at-wait-settled-read-before — counts={\"wait\":1,\"read\":0,\"kill\":0,\"list\":0} checks={\"typedWaitAborted\":true,\"svcWaitCalled\":true,\"zeroRead\":true,\"collectorZeroDelta\":true}"
+    },
+    {
+      "id": "L:L3c",
+      "ok": true,
+      "name": "positive-control-wait-read — counts={\"wait\":1,\"read\":1,\"kill\":0,\"list\":0} checks={\"notRefused\":true,\"svcWaitCalled\":true,\"readHappened\":true,\"bytesObserved\":true}"
+    },
+    {
+      "id": "L:L4",
+      "ok": true,
+      "name": "no-wait-arm-preabort — counts={\"wait\":0,\"read\":0,\"kill\":0,\"list\":0} checks={\"typedWaitAborted\":true,\"zeroWait\":true,\"zeroRead\":true,\"listenerNeverAdded\":true}"
+    },
+    {
+      "id": "L:L4b",
+      "ok": true,
+      "name": "no-wait-positive-read — counts={\"wait\":0,\"read\":1,\"kill\":0,\"list\":0} checks={\"notRefused\":true,\"zeroWait\":true,\"readHappened\":true,\"bytesObserved\":true}"
+    },
+    {
+      "id": "A1.3",
+      "ok": true,
+      "name": "whole-feed-disappearance OBSERVATION recorded in receipt (observation-only, root round-D finding; no correctness asserted)"
+    },
+    {
+      "id": "A2.0",
+      "ok": true,
+      "name": "process-level collectors: unhandledRejection=0 AND uncaughtException=0 over the whole batch"
+    },
+    {
+      "id": "A2.1",
+      "ok": true,
+      "name": "reap: every REAL spawned job exited (killed through the real svc cancel path)"
+    },
+    {
+      "id": "A3.0",
+      "ok": true,
+      "name": "teardown to zero: world swept, no straggler producer processes"
+    },
+    {
+      "id": "A4.0",
+      "ok": true,
+      "name": "stable :3080/:3180 unchanged (same probe outcome before/after); test-use pristine AFTER; df recorded before and after"
+    }
+  ],
+  "receiptOk": true
+}

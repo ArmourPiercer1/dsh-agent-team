@@ -868,3 +868,54 @@ describe('a5p7 scope identity matrix (root checklist round D)', () => {
     expect(() => { (bridge as { scopeKey: string }).scopeKey = 'x' }).toThrow() // read-only
   })
 })
+
+describe('a5p7 WHOLE-FEED loss negative controls (root residual order round E; RED pre-fix: whole-feed-loss-RED.log)', () => {
+  const mount = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, planeBox: { current: unknown }) =>
+    backendsRow.createGovernedJobsBridge({
+      scopeKey: scopeOf(OWNER_A), viewer: OWNER_A, gatewayRow: () => asm,
+      planeRow: () => planeBox.current as never, jobsService: () => host,
+    }) as { jobList: (c: string) => Promise<{ text: string }> }
+
+  const staleTruthRepro = async (planeShape: 'null' | 'no-feed') => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const planeBox: { current: unknown } = { current: { placementFeed: (name: string) => ({ definitionIdentity: `${name}@A-def`, realmId: 'realm-jobs' }) } }
+    const bridge = mount(asm, host, planeBox)
+    host.seed('jb1', 'caller-1')
+    await bridge.jobList('caller-1') // A registers under its own key
+    planeBox.current = planeShape === 'null' ? null : { realmId: 'realm-jobs' } // WHOLE plane / feed withdrawn
+    host.seed('jb2', 'caller-1')
+    await bridge.jobList('caller-1') // the early-return arm runs: nothing invalidates
+    host.seed('jb3', 'caller-1')
+    return asm.attributeBackgroundJob({ hostJobId: 'jb3', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+  }
+  it('planeRow null after registration fail-closes the scope (negative control 1; the silent-early-return arm kept stale pins pre-fix)', async () => {
+    const admit = await staleTruthRepro('null')
+    expect(admit.ok === false).toBe(true) // fail-closed until the feed returns
+  })
+  it('placementFeed field gone with the plane object still present fail-closes the scope (negative control 2)', async () => {
+    const admit = await staleTruthRepro('no-feed')
+    expect(admit.ok === false).toBe(true)
+    // And the recovery law: when the feed returns, ensure re-registers and
+    // admission answers again - fail-CLOSED, not fail-forever.
+  })
+  it('a RETURNED feed re-registers the scope (fail-closed, not fail-forever)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const planeBox: { current: unknown } = { current: { placementFeed: (name: string) => ({ definitionIdentity: `${name}@A-def`, realmId: 'realm-jobs' }) } }
+    const bridge = mount(asm, host, planeBox)
+    host.seed('jb1', 'caller-1')
+    await bridge.jobList('caller-1')
+    planeBox.current = null
+    host.seed('jb2', 'caller-1')
+    await bridge.jobList('caller-1')
+    host.seed('jb3', 'caller-1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb3', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(false)
+    planeBox.current = { placementFeed: (name: string) => ({ definitionIdentity: `${name}@A-def-v2`, realmId: 'realm-jobs' }) }
+    host.seed('jb4', 'caller-1')
+    await bridge.jobList('caller-1')
+    host.seed('jb5', 'caller-1')
+    const back = asm.attributeBackgroundJob({ hostJobId: 'jb5', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+    expect(back.ok === true && back.job.pinnedIdentity).toBe('bash@A-def-v2')
+  })
+})
