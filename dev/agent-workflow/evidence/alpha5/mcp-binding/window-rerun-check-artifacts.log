@@ -1,0 +1,18 @@
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=1748 glue=9
+[check-artifacts-committed] OK: 1748 files — working tree equals the git INDEX for both install surfaces (incl. 9 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+check:artifacts EXIT=0
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /srv/workspace/dsh-plugins/dsh-agent-team/.pnpm-store-a5ie-r5
+[check-artifacts-at-head] NOT-RUN: `git worktree add --detach <scratch> HEAD` failed:
+Preparing worktree (detached HEAD 8827b5ba)
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-census-after-2.json
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-census-base-built.json
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-census-before.json
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-ids-after-1.txt
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-ids-after-2.txt
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-ids-base-built.txt
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/root-ids-before.txt
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/scan-list-during-census.txt
+error: unable to write file dev/agent-workflow/evidence/a4-pr7/7-6-closure/scratch/scan-list.mjs
+fatal: cannot create directory at 'dev/agent-workflow/evidence/a4-pr7/7-6-closure/transcripts': No space left on device
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=not-run reason=worktree-add
+check:artifacts:head EXIT=3
