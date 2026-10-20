@@ -156,3 +156,25 @@ in-memory exact fake-token handoff, redacted-only disk, immediate discard;
 CASE9 early destroy; CASE10 sticky write failure, never raw; CASE11 stop
 verdict fail-closed). Fake credentials only; launcher remains FROZEN,
 unrun.
+
+Fifth pass (root ced3 review, two launcher lifecycle BLOCKs closed):
+1. NO process.exit inside the owned-resource scope: the boot timeout was
+   dieFatal INSIDE the try - it skipped the finally and orphaned the child
+   + listener. Boot now uses raceBoot (kit-lifecycle.mjs): boot marker vs
+   async spawn error vs early exit vs budget - every failure THROWS into
+   the era finally, where stop + verified drain always run (fail fast, no
+   orphans).
+2. FAIL-CLOSED LOOP with preserved lifecycle facts: runEra fills a shared
+   lifecycle box from its finally (stop/drain survive even when the era
+   throws or the stop path itself throws - recorded then rethrown);
+   runEraLoop halts the round on ANY era exception and refuses a next era
+   unless the previous era carries a POSITIVE confirmed stop (.stop.ok ===
+   true). No phantom green, no silent continuation.
+3. The boot token is cleared in a FINALLY via consumeOnceSecret - a FAILED
+   authenticate no longer leaves it on the object.
+4. Duplicate criteria id renamed: sink hygiene is JSK.0 (the producer-
+   absence leg keeps J8.0).
+Tests 14/14 (CASE12 boot-timeout throws into finally: stop called, child
+confirmed dead, no orphan; CASE13 thrown era preserves lifecycle facts and
+the next era never starts; CASE14 failed auth leaves no token, success
+path also nulls). Fake credentials only; launcher remains FROZEN, unrun.

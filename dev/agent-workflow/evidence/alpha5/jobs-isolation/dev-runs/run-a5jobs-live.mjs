@@ -42,6 +42,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync, closeSync, writeSync } from 'node:fs'
 import { createSanitizingLineSink, evaluateStopOutcome, waitForDrain } from './line-sanitizer.mjs'
+import { consumeOnceSecret, raceBoot, runEraLoop } from './kit-lifecycle.mjs'
 const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
@@ -434,7 +435,7 @@ function readControlLedger(home, root) {
 }
 
 // ── era runner ────────────────────────────────────────────────────────────────
-async function runEra(era, mock) {
+async function runEra(era, mock, lifecycle = {}) {
   const HOME = homeDir(WORKTREE, `a5jobs-${era}-${RUN_STAMP}`)
   const WORKSPACE = join(HOME, 'workspace')
   const BLUEPRINT_DIR = join(RUN_DIR, `blueprints-${era}`)
@@ -511,11 +512,22 @@ async function runEra(era, mock) {
     // The ONLY bootstrap source: the in-memory line capture above (a
     // timeout here means the CURRENT child never printed the marker - a
     // hard era failure; there is no file fallback to stale or redacted data).
-    const booted = await Promise.race([bootSeen, new Promise((res) => setTimeout(() => res(null), 360_000))])
-    if (booted === null) dieFatal(`[${era}] boot marker never appeared on the current child's stdout`)
+    // ROOT fifth-pass (1): fail FAST by THROWING into the era finally - the
+    // old dieFatal here was process.exit INSIDE the try: it skipped the
+    // finally and orphaned the child + listener. process.exit is banned in
+    // the owned-resource scope. The race also carries the async spawn
+    // error and an early child exit, so a doomed era ends at once.
+    const booted = await raceBoot({
+      bootSeen,
+      errorSeen: new Promise((res) => child.once('error', res)),
+      exitSeen: new Promise((res) => child.once('exit', res)),
+      budgetMs: 360_000,
+      label: `[${era}] boot`,
+    })
     const origin = `http://127.0.0.1:${booted.port}`
-    const cookie = await authenticate(origin, booted.token)
-    booted.token = null // discarded immediately after authenticate (in-memory only)
+    // ROOT fifth-pass (3): the boot token is cleared in a FINALLY - a
+    // FAILED authenticate must not leave it sitting on the object either.
+    const cookie = await consumeOnceSecret(booted, 'token', (tok) => authenticate(origin, tok))
     check(era, 'J1.0', 'real host booted on the production row with the era plane shape (profile-patch seam only)', true, `origin=${origin}`)
     // ROOT third-pass fix (2): the ACTUAL bind + PID are captured while the
     // host is ALIVE (a post-stop ss only proves post-stop absence, and a
@@ -693,7 +705,7 @@ async function runEra(era, mock) {
       } catch { /* no log */ }
       // (5) sink capture failures are criteria, not silence
       const sinkErrors = sinks.flatMap((sk) => sk.errors)
-      check(era, 'J8.0', 'the stream sinks captured the child output with zero redaction/write failures', sinkErrors.length === 0 && facts.spawnError === null, `sinkErrors=${sinkErrors.length} spawnError=${facts.spawnError ?? 'none'}`)
+      check(era, 'JSK.0', 'the stream sinks captured the child output with zero redaction/write failures', sinkErrors.length === 0 && facts.spawnError === null, `sinkErrors=${sinkErrors.length} spawnError=${facts.spawnError ?? 'none'}`)
       let postStopListen = 'unconfirmed'
       try {
         const ssStop = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
@@ -706,7 +718,14 @@ async function runEra(era, mock) {
       facts.homesRetained = true // (4) no-delete hold: homes stay COMPLETELY; this kit deletes NOTHING
       writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
       writeEvidence(`stop-receipt-${era}.json`, { era, hostPid: facts.hostPid ?? null, drain: facts.drain, stop, postStopListen, sinkErrors: sinkErrors.length, stopStamp: new Date().toISOString() })
+    } catch (stopErr) {
+      // A stop/teardown failure is recorded, then rethrown: the loop halts
+      // fail-closed and the lifecycle box still carries what we know.
+      lifecycle.stop = { ok: false, reasons: [`stop path threw: ${String(stopErr?.message ?? stopErr).slice(0, 200)}`] }
+      throw stopErr
     } finally {
+      lifecycle.stop = lifecycle.stop ?? facts.stop ?? { ok: false, reasons: ['no stop verdict was reached'] }
+      lifecycle.drain = facts.drain ?? null
       // The fd closes even if everything above threw (nested finally).
       try { closeSync(outFd) } catch { /* already closed */ }
     }
@@ -758,21 +777,25 @@ async function main() {
 
   const worlds = {}
   try {
-    for (const era of ERAS) {
-      try {
-        worlds[era] = await runEra(era, mock)
-      } catch (eraError) {
-        worlds[era] = worlds[era] ?? { era, ok: false }
-        worlds[era].eraError = String(eraError?.message ?? eraError).slice(0, 900)
-        check(era, 'EX.0', 'the era completed (an era-level throw fails the round verbatim)', false, worlds[era].eraError)
-        log(redactTokens(`[${era}] era error: ${String(eraError?.stack ?? eraError).slice(0, 1200)}`))
-      }
-      // ROOT batch (3): an incomplete stop does not open the next era.
-      if (worlds[era]?.stop && worlds[era].stop.ok === false) {
-        check(era, 'EX.1', 'a proven-incomplete stop halts the round (no next era on an unproven stop)', false, 'stop not proven; halting before the next era')
-        break
-      }
+    // ROOT fifth-pass (2): ONE fail-closed loop - an era that THROWS keeps
+    // its lifecycle facts (the shared lifecycle box the era finally fills)
+    // and halts the round; ANY era without a positively confirmed stop
+    // (.stop.ok===true) never opens a next era.
+    const runEraWrapped = async (era, lifecycle) => {
+      const facts = await runEra(era, mock, lifecycle)
+      Object.assign(lifecycle, facts)
+      return facts
     }
+    const loopResults = await runEraLoop({
+      eras: ERAS,
+      runFn: runEraWrapped,
+      onEraError: (era, entry) => {
+        check(era, 'EX.0', 'the era completed (an era-level throw fails the round verbatim)', false, entry.eraError)
+        log(redactTokens(`[${era}] era error: ${entry.eraError}`))
+      },
+      onHalt: (era, why) => check(era, 'EX.1', 'no next era without a positively confirmed stop (throws and unproven stops halt fail-closed)', false, why),
+    })
+    Object.assign(worlds, loopResults)
   } finally {
     clearInterval(digestLane)
     try { await mock.close() } catch { /* gone */ }

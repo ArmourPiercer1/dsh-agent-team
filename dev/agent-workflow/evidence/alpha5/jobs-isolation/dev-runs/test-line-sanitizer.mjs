@@ -6,6 +6,7 @@
 import assert from 'node:assert/strict'
 import { PassThrough } from 'node:stream'
 import { createSanitizingLineSink, evaluateStopOutcome, waitForDrain } from './line-sanitizer.mjs'
+import { consumeOnceSecret, raceBoot, runEraLoop } from './kit-lifecycle.mjs'
 import { spawn } from 'node:child_process'
 
 const redact = (t) => t.replace(/([?&]token=)[A-Za-z0-9_-]+/g, '$1REDACTED-AUTH-URL')
@@ -199,5 +200,72 @@ const lines = (out) => out.join('\n')
   const bad3 = evaluateStopOutcome({ drained: undefined, postStopListen: 'unconfirmed' })
   assert.equal(bad3.ok, false, 'C11 unconfirmed fails closed')
   console.log('CASE11 stop verdict: incomplete stop can never be ok (reasons explicit): PASS')
+}
+// CASE 12: boot timeout must THROW into the caller's finally (stop called,
+// NO orphan child), never process.exit past the teardown.
+{
+  const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000);'], { stdio: ['ignore', 'pipe', 'pipe'] })
+  let stopCalled = false
+  let drainedAfterThrow = null
+  try {
+    try {
+      await raceBoot({
+        bootSeen: new Promise(() => {}),
+        errorSeen: new Promise(() => {}),
+        exitSeen: new Promise((res) => child.once('exit', res)),
+        budgetMs: 150,
+        label: 'C12 boot',
+      })
+      assert.fail('C12 should have thrown')
+    } finally {
+      // this inner finally mirrors the era finally: stop + drain ALWAYS run
+      stopCalled = true
+      try { child.kill() } catch { /* gone */ }
+      drainedAfterThrow = await waitForDrain(child, [child.stdout, child.stderr], 3000)
+    }
+  } catch (err) {
+    assert.ok(String(err.message).includes('C12 boot'), 'C12 timeout threw the labeled error into the finally')
+  }
+  assert.equal(stopCalled, true, 'C12 stop ran despite the timeout throw')
+  assert.equal(drainedAfterThrow, true, 'C12 child actually died (no orphan, listener gone with it)')
+  assert.ok(child.exitCode !== null || child.signalCode !== null, 'C12 child confirmed dead')
+  console.log('CASE12 boot-timeout throws into finally: stop called, no orphan child: PASS')
+}
+// CASE 13: thrown era body with stop.ok=false - lifecycle facts PRESERVED
+// and NO next era runs (fail-closed loop).
+{
+  const ran = []
+  const halts = []
+  const results = await runEraLoop({
+    eras: ['alpha', 'beta'],
+    runFn: async (era, lifecycle) => {
+      ran.push(era)
+      lifecycle.stop = { ok: false, reasons: ['simulated unproven stop'] }
+      throw new Error(`${era}: body threw mid-era`)
+    },
+    onEraError: (era, entry) => halts.push([era, entry.eraError]),
+    onHalt: (era, why) => halts.push([era, why]),
+  })
+  assert.deepEqual(ran, ['alpha'], 'C13 the second era NEVER starts after a throw')
+  assert.equal(results.alpha.ok, false, 'C13 failed era recorded')
+  assert.equal(results.alpha.stop.ok, false, 'C13 lifecycle facts PRESERVED through the throw')
+  assert.equal(results.beta, undefined, 'C13 no phantom entry for the era that never ran')
+  assert.ok(halts.length >= 2, 'C13 error AND halt both recorded')
+  assert.ok(halts.some(([, w]) => String(w).includes('no next era') || String(w).includes('halt')), 'C13 halt reason explicit')
+  console.log('CASE13 era throw preserves lifecycle facts and opens no next era: PASS')
+}
+// CASE 14: authenticate FAILURE must not leave the boot token anywhere.
+{
+  const session = { token: 'FAKEBOOT-tok-fail-auth' }
+  await assert.rejects(
+    consumeOnceSecret(session, 'token', async () => { throw new Error('fake authenticate failed') }),
+    /fake authenticate failed/,
+    'C14 failure propagates')
+  assert.equal(session.token, null, 'C14 token nulled by the finally even on FAILED auth')
+  const session2 = { token: 'FAKEBOOT-tok-ok' }
+  const got = await consumeOnceSecret(session2, 'token', async (tok) => `authed:${tok}`)
+  assert.equal(got, 'authed:FAKEBOOT-tok-ok', 'C14 success path hands the token once')
+  assert.equal(session2.token, null, 'C14 token nulled after success too')
+  console.log('CASE14 failed auth leaves no token (finally-cleared both ways): PASS')
 }
 console.log('SANITIZER-GUARD-VERDICT all-cases-passed (fake credentials only; launcher NOT run)')
