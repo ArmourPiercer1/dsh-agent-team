@@ -1,18 +1,40 @@
-# EXCLUDE-FROM-PUBLISH - boot auth tokens in captured live logs (root urgent security order)
+# EXCLUDE-FROM-PUBLISH - boot auth URLs in captured live logs (root urgent security order)
 
-- TRacked copies at HEAD are now FORWARD-COMMIT REDACTED (same-shape
-  `?token=<value>` -> `?token=REDACTED-AUTH-URL`; structure stays auditable).
-  No force-push, no history rewrite, no file deletion (root law).
-- The captured value = the host's BOOT-ONLY auth URL for the loopback test
-  world (127.0.0.1:3186). Every recorded world is STOPPED (probe: connection
-  refused on every port in every summary.json); boot tokens die with their
-  instance and are never reused (each boot mints fresh) -> NOT usable.
-  Repo visibility = private (parent-verified line).
-- RAW VALUES persist ONLY in git HISTORY BLOBS (pre-redaction commits,
-  incl. the local .git objects; per root order history is NOT rewritten).
-  The homes/ raw copies were already gone under the TEST_METHODS §7 world
-  cleanup protocol - this note records that the working tree contains zero
-  raw values after this commit and history retains them by decision.
+EXECUTIVE SUMMARY (root-corrected in place; values never printed):
+- REPO = PUBLIC. Anything pushed here is exposed; this ledger bounds the
+  sanitized lane face and names what remains exposed (history blobs).
+- Tracked copies at HEAD are FORWARD-COMMIT REDACTED (same-shape
+  `?token=<value>` -> `?token=REDACTED-AUTH-URL`; structure stays
+  auditable). No force-push, no history rewrite, no file deletion (root
+  law). RAW VALUES PERSIST IN GIT HISTORY BLOBS (pre-redaction commits,
+  local and remote) - nothing here claims history is cleared; the scope
+  certified is the 34-file sanitized face + this lane's subtree scan,
+  NOT "the repo/history is clean".
+- TOKEN SEMANTICS (root same-source review): the URL boot token lives in a
+  WeakMap root-context (not written to disk) and is **reusable within the
+  same root context - NOT one-shot**. The session cookie rides a **durable
+  signing secret (default 30 days)** held in the world home. Therefore a
+  STOPPED process is **NOT a universal revocation**: stopping removes only
+  the live listener; material validity is scoped to its home/context, and
+  for the historical runs that context's validity state is UNKNOWN.
+- LIVE-STATE EVIDENCE (current reality only, no revocation claims): the
+  only distinct port across recorded runs is 3186; ss shows NO listener;
+  recorded-PID alive checks are silent; no matching process exists in this
+  container's process space. The effective SOCKET BIND of the historical
+  runs is UNKNOWN (a 127.0.0.1 boot URL is not proof of the bind; host
+  webserver takes host as REQUIRED config - '127.0.0.1' | '0.0.0.0'
+  closed union, packages/host/webserver/src/index.ts:61,:127, listen :295;
+  the kit never set it). Future kit runs record child PID + the ACTUAL
+  listen line (address only) into metadata; unknown stays 'unconfirmed'.
+- HOMES = RETIRED, with LIMITED historical proof: the 13 recorded homes no
+  longer exist (tombstone/absence is a CURRENT-STATE fact, NOT proof of
+  runtime isolation while they lived - runtime isolation status is
+  UNKNOWN; isolated-launch is source-supported only, not runtime-proven
+  for those past runs). Paths are retired below; future runs use FRESH
+  homes.
+- EXPOSURE WINDOWS are per-head (f739 approx 07:15Z per root; earlier
+  heads per reflog/CI where evidenced, else UNKNOWN - no blanket
+  minute-counts).
 - ANY export / package / attachment / public paste must exclude the tracked paths below
   (pre-redaction blobs in history are equally in scope):
 - dev/agent-workflow/evidence/alpha5/jobs-isolation/dev-runs/runs/live-2026-10-19T08-12-57/instance-z1.log (L2)
@@ -42,28 +64,9 @@
 - dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/jobs-live-2026-10-20/live-2026-10-20T06-46-55/instance.log (L2)
 - dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/jobs-live-2026-10-20/live-2026-10-20T07-14-02/instance.log (L2)
 
-S2 WORDING (iron law, root round F): forward sanitization does NOT erase
-history tokens - the pre-redaction blobs REMAIN in git history (local; and in
-remote history for pushed heads). NOTHING here claims history is cleared.
-The three load-bearing facts, PENDING until each is evidenced per root order:
-(1) boot-only token, (2) world stopped, (3) bind scope. EVIDENCE STATE NOW:
-(2) STOPPED = evidenced for the CURRENT reality (zero LISTEN on the recorded
-port 3186 via ss; every summary-recorded port probes connection-refused; no
-matching process in this container's process space) - stated as observed
-now, not as a historical claim. (1) boot-only = PENDING source-level proof
-(host token generation site not yet pinned file:line in this lane's records).
-(3) BIND SCOPE = UNKNOWN for the historical runs: the boot URL says
-127.0.0.1 but a URL is NOT proof of the socket bind; the host webserver takes
-host as REQUIRED config ('127.0.0.1' | '0.0.0.0' closed union,
-packages/host/webserver/src/index.ts:61,:127; listen at :295) and the kit's
-spawn args never set it - the effective bind of past runs is therefore
-unconfirmed. The kit NOW records child PID + the ACTUAL listen line
-(address only) into run metadata for every future run (round F addition).
-EXPOSURE WINDOWS (root-corrected, per-head, no blanket minutes): f7390f7f
-pushed approx 07:15Z per root (minute-level); earlier heads (515b3805,
-eff55c87, 96e199b9 and the 2026-10-19 dev-runs heads) = per-head push times
-per reflog/CI evidence where available, else UNKNOWN - this lane records:
-UNKNOWN except where the root's ledger evidences them.
+SCAN LAW (S2 iron wording): forward sanitization does NOT erase history
+tokens; "history cleared" wording is BANNED in this lane's ledgers and
+commit messages (repo is PUBLIC - history exposure is real exposure).
 - dev-runs/runs/live-2026-10-19T08-18-07/instance-jobs.log (L2)
 - dev-runs/runs/live-2026-10-19T08-18-07/instance-z1.log (L2)
 
@@ -96,3 +99,14 @@ Round-F supplements (root merge-order, path-level only):
 - runs/jobs-live-2026-10-20/live-2026-10-20T06-46-10/instance.tail.log (L2)
 - runs/jobs-live-2026-10-20/live-2026-10-20T06-46-55/instance.tail.log (L2)
 - runs/jobs-live-2026-10-20/live-2026-10-20T07-14-02/instance.tail.log (L2)
+
+Guard correction (root sanitizer source-review BLOCK, recorded): the first
+guard commit shipped an unwired sink (writeRedactedLine defined, pipes
+never consumed = empty logs + full-pipe stall risk; "redact-before-write"
+was NOT true of that interim shape - claim corrected here and there). The
+RECOVERED shape (this head): line-sanitizer.mjs - one independent
+line-buffered sink PER STREAM, cross-chunk split credentials buffered until
+line completion, trailing partial flushed REDACTED at close; unit-tested
+with FAKE credentials only (5 cases: stdout, stderr, split-token,
+close-flush, per-stream isolation) without ever running the launcher or
+touching real raws. The launcher remains FROZEN per the jobs-live HOLD.

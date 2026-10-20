@@ -41,6 +41,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync, writeSync } from 'node:fs'
+import { createSanitizingLineSink } from './line-sanitizer.mjs'
 const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
@@ -455,9 +456,16 @@ async function runEra(era, mock) {
   // outFd and only redacted the tail copy, leaking the boot auth URL at L2
   // of the captured logs). The fd stays open for the append path below.
   const outFd = openSync(instanceLog, 'a')
-  const writeRedactedLine = (chunk) => {
-    try { writeSync(outFd, redactTokens(String(chunk)).split('\n').map((l) => l + '\n').join('')) } catch { /* best-effort */ }
-  }
+  // ROOT guard-review fix: ONE independent line-buffered sink PER STREAM
+  // (cross-chunk split credentials stay in the per-stream carry until the
+  // line completes; the trailing partial is redacted and flushed on
+  // close). The previously shipped block defined a sink but never consumed
+  // the pipes - empty logs and a full-pipe stall; it is RECOVERED here and
+  // the behavior is unit-tested with fake credentials only (never raw).
+  const mkSink = () => createSanitizingLineSink({
+    write: (line) => { writeSync(outFd, line + '\n') },
+    redact: redactTokens,
+  })
   let child
   try {
     child = spawn(process.execPath, [HOST_BIN, 'web', '--port', String(HOST_PORT), '--no-open'], {
@@ -475,6 +483,10 @@ async function runEra(era, mock) {
     closeSync(outFd)
     dieFatal(`[${era}] host spawn failed: ${error.message}`)
   }
+  // The pipes MUST have consumers the instant the child exists (an
+  // unconsumed pipe stalls a chatty child - the exact root BLOCK).
+  mkSink().attach(child.stdout)
+  mkSink().attach(child.stderr)
   const stopOnce = () => { try { child.kill() } catch { /* gone */ } }
   try {
     const boot = await waitFor(360_000, () => {
@@ -628,8 +640,16 @@ async function runEra(era, mock) {
     return facts
   } finally {
     stopOnce()
+    // fd lifecycle (root BLOCK weight item): the fd STAYS OPEN for the
+    // child's whole life - streams close on kill, sinks flush their
+    // trailing partial through it, the tail is read AFTER the drain, and
+    // only then does the fd close. (The pre-fix shape's only closeSync sat
+    // in the spawn-FAILURE catch next to dieFatal's process.exit, so the
+    // normal path never reached it; the real normal-path breakage was the
+    // unconsumed pipes stalling a chatty child, fixed by the sinks above.)
     await new Promise((r) => setTimeout(r, 2500))
     writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
+    try { closeSync(outFd) } catch { /* already closed */ }
     try {
       const raw = readFileSync(instanceLog, 'utf8')
       writeFileSync(join(RUN_DIR, `instance-${era}.tail.log`), redactTokens(raw.split('\n').slice(-400).join('\n')))
