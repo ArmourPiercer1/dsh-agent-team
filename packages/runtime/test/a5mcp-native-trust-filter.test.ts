@@ -1,28 +1,47 @@
 /**
  * a5mcp-native-trust-filter.test.ts — G2-MCP-B (branch `a5-mcp-binding`,
  * MCP-WIRING-PROPOSAL option B, root 09:5xZ ②): the Guard's trusted-native
- * harvest EXCLUDES the `mcp__` prefix family, so an unbound MCP tool lands
- * in the UNVERIFIED lane and is refused at dispatch with the existing
- * typed no-fallback refusal — PLAN:70's already-approved semantics at the
- * DECISION layer. The wording law applies throughout: this is unbound
- * `mcp__` per-call refusal (decision layer); the server-side effect
- * boundary is NOT covered (PR7 deferred line booked).
+ * harvest EXCLUDES the `mcp__` prefix family, so an unbound MCP tool binds
+ * UNVERIFIED instead of verified-native — the DEFAULT direction at the
+ * DECISION layer flips, and the existing typed no-fallback refusal is what
+ * an unverified entry already yields in this algebra.
+ *
+ * CLAIM SCOPE (root ruling 2026-10-20; wording law): decision layer /
+ * DEFENSE IN DEPTH only. Legs 4-6 below drive `guardDecision` DIRECTLY on a
+ * fixture surface — they are statements about the Guard's algebra, NOT a
+ * demonstrated live-path fix. On the installed host shape this family has no
+ * reachable dynamic observation face: the row's own mount is bound explicitly
+ * at STEP 5 (`bindMcpTools`), a global-face unbound `mcp__` name is refused at
+ * setup by the Permission Coverage Gate, and `revalidateSurface` never binds a
+ * late-added name. Evidence: `dev/agent-workflow/evidence/alpha5/mcp-binding/`
+ * `live-and-assembly/mcp-live-RESULTS.md` (six installed-host worlds, the two
+ * faces refusing identically) and `live-and-assembly/mcp-live-assembly-VERDICT.md`
+ * (real harvest + real guard install; every observable record diffs empty
+ * across the two faces). Server-side effect boundary NOT covered (PR7
+ * deferred line booked).
  *
  * Three shapes, per the root brief:
  *  1. COLLECTION — `mcp__` names never enter `nativeNames` (the harvest
  *     shape), non-`mcp__` names are untouched (non-mcp 不扰);
  *  2. UNBOUND — with the filtered list, an `mcp__` name binds UNVERIFIED
- *     and every call denies TOOL_BINDING_UNVERIFIED with the verbatim
- *     no-fallback message (the F leg3 read-landing form, now as the
- *     mcp__ name's own verdict);
+ *     and a fixture-driven call on it denies TOOL_BINDING_UNVERIFIED with the
+ *     verbatim no-fallback message (the algebra's existing behaviour for any
+ *     unverified entry — see the baseline note below);
  *  3. BOUND — a trusted assembly that binds the name EXPLICITLY (PR0
  *     Binding algebra, before the inherited-surface sweep) still passes:
  *     the filter changes nothing on the explicit-Binding lane.
  *
- * The live flip of this lane on the pinned Host is F leg3's suite (its
- * criteria live in the a5-legs-runner F-RESULTS notes; the row-handle
- * decision rows + the non-increasing fixture counter are ITS receipts,
- * not this file's).
+ * CONTROLS AND BASELINE LIMIT (keep, do not delete): the positive controls
+ * are leg 6 (an EXPLICIT Binding survives the inherited sweep) and leg 7 (a
+ * non-`mcp__` native on the same filtered list is untouched); the negative
+ * control is leg 4 (the `mcp__` name is governed-UNVERIFIED, visible to the
+ * Coverage diff). BASELINE LIMIT: legs 4-6 are GREEN on the UNPATCHED glue too
+ * (the machinery pre-exists — the RED-FIRST log in `alpha5/mcp-binding/`
+ * records exactly that shape), so they are NOT causal evidence for this patch.
+ * Only the three collection legs (1-3), which import the REAL glue module, can
+ * speak to the filter itself — and they observe the COLLECTION shape, not a
+ * dispatch. This file invents no causal RED: no assertion here claims a live
+ * escape was blocked by this patch.
  *
  * @module test/a5mcp-native-trust-filter
  */
@@ -146,7 +165,7 @@ describe('G2-MCP-B collection — the trusted-native harvest excludes the mcp__ 
   })
 })
 
-describe('G2-MCP-B unbound — an mcp__ name lands UNVERIFIED and every call is refused', () => {
+describe("G2-MCP-B unbound — an mcp__ name binds UNVERIFIED in the Guard's algebra (fixture-driven decision layer; no live-path claim)", () => {
   it('the filtered native list binds bash verified and the mcp__ name unverified', () => {
     const surface = createGovernedSurface({
       agentScopeKey: 'session-m1',
@@ -162,7 +181,7 @@ describe('G2-MCP-B unbound — an mcp__ name lands UNVERIFIED and every call is 
     expect(entry!.binding.bindingId).toBe(`unbound-observed:session-m1:${MCP_NAME}`)
   })
 
-  it('dispatch refuses the unbound mcp__ name with the verbatim no-fallback refusal', () => {
+  it('a fixture-driven call on the unbound mcp__ name denies the verbatim no-fallback refusal (existing unverified-entry path)', () => {
     const surface = createGovernedSurface({ agentScopeKey: 'session-m1', nativeNames: ['bash'] })
     surface.bindInheritedSurface([MCP_NAME, 'bash'], pin([MCP_NAME, 'bash']), pin([MCP_NAME, 'bash']))
     const exec: GuardExecView = { name: MCP_NAME, agentIdentity: 'session-m1' }

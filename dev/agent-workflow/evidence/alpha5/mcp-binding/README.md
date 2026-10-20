@@ -1,12 +1,16 @@
 # a5-mcp-binding — MCP 选项 B（G2 路）patch-ready 证据
 
 任务=根 09:5xZ ②（COORDINATION 10:0xZ 条 **G2=b8fe9b21 MCP 选项 B**）：Team guard 装配面 `nativeNames` 采集处滤 `mcp__` 前缀 →
-mcp__ 名不继承 `dsh-native` 信任 → 绑 UNVERIFIED → dispatch 拒（拒语机制现成，F leg3 已录 verbatim）；可信显式 Tool
-Binding 放行路径零扰动 = PLAN:70 已批语义在 per-call 决策层的兑现。设计=分支 `a5-inventory` @ `5bb460e3` 的
+mcp__ 名不继承 `dsh-native` 信任，在 Guard 代数里落 UNVERIFIED 道（拒语机制=既有件，非本补丁新增）；可信显式 Tool
+Binding 放行路径零扰动 = PLAN:70 已批语义在**决策层**的兑现。
+**口径（根裁 2026-10-20，详见下「口径修正轮」）= 决策层/纵深防御**：装配面 harvest 排除；live 面三形各有**先行把关者**，
+本装配形**无可达动态观察面**，supported seams 上**无 demonstrated live fix**。
 `dev/agent-workflow/evidence/alpha5/inventory/gap-legs/MCP-WIRING-PROPOSAL.md` **选项 B**（选项 C/A 不做）。零宿主改动（CORE=0）。
 
-**表述律（全程遵守）**：本改动=「未绑 `mcp__` 名 per-call 拒（决策层）」；效应边界=「PR7 延期行在册（M31 关联）」。
-任何本目录/commit 文案不写「MCP 治理已覆盖」形。
+**表述律（全程遵守）**：本改动=「装配面 harvest 把 `mcp__` 族从可信 native 表剔除（决策层/纵深防御）」；
+效应边界=「PR7 延期行在册（M31 关联）」。任何本目录/commit 文案不写「MCP 治理已覆盖」形；
+**自 2026-10-20 起同禁**：「live escape 被本补丁阻止/修掉」「本补丁修复了 live 无治理执行」「F leg3 的 read 由本补丁翻正」
+「本补丁在 live 面被 demonstrated 修好」（live 面实测=有界负结果，见「口径修正轮」）。
 
 ## 状态 = PATCH-READY（未应用共享面）
 
@@ -30,6 +34,11 @@ Team strict-policy agent scope 的 guard 安装路径）。
 
 ## 机制链现场核（cad5cf03 逐字）
 
+> **行锚纪律（abf7fabf 必办④）**：本节与全 README 出现的 glue 行号一律 = **base 树 `cad5cf03`** 行号，**不是**打补丁后的行号。
+> 补丁在 `:688` 前插入 26 行 ⇒ 补丁后同内容 = base 行号 +26。例：`glue :1467`（挂载跟踪
+> `const prefix = "mcp__" + serverName + "__"`）在补丁后树上为 **`:1493`**（实测）；采集点 base `:2298-2310`
+> 在补丁后树上为 **`:2324-2336`**。窗口重锚一律以**文本锚**为准，不以行号锚为准。
+
 1. 采集=`agent-bindings.mjs:2298-2310`（`tools.schemas()` 无 scope 全局视图→`nativeNames`）→ `installScopedToolGuard({nativeNames})`。
 2. `nativeNames`→`createGovernedSurface`（`packages/runtime/tool-dispatch/closed-world-guard.ts:363`）；
    `bindInheritedSurface` 四案判定 `:445-453`：`claimsNative=false` ⇒ `unbound-observed:*` 绑定 + `verified:false`（`:483-502`），
@@ -37,6 +46,8 @@ Team strict-policy agent scope 的 guard 安装路径）。
 3. `guardDecision`：`!entry.verified` ⇒ deny `TOOL_BINDING_UNVERIFIED` + `BINDING_UNVERIFIED` 道
    （`:577-592`），消息=「`team tool guard: the Tool Binding for "<name>" cannot be verified at dispatch time
    (no fallback to the native body)`」（`:199`）=F leg3 read 落点 verbatim 同源。
+   **限定**：本链 3-5 步=**代码路径事实 + 单测 fixture 内驱动事实**；在已安装宿主形状上 `mcp__` 族**无可达动态观察面**
+   （三形各有先行把关者，见「口径修正轮」），故本链**不得**读作「live 上由本补丁拦住」。
 4. 显式绑定放行腿=`install.ts` bindingFeed/team-own 路（`:1092-1164`，bind verified:true 先于 inherited sweep；
    `bindInheritedSurface` 对已绑名 `entries.has(name) continue` 跳过，`:438`）——本改动零触。
 5. 拒道观察行进 row-handle：`install.ts` `onObserve`→glue `:2341` `observations` sink（F-1 纠归因后唯一有效读法通道）。
@@ -54,6 +65,13 @@ RED 先档（旧 glue，stash 对照）：**3 采集腿红**（predicate 缺失/
   消息逐字=F leg3 录形。
 - 显式绑定：team-own 显式 Binding 先绑→inherited sweep 跳过不降级→abstain（放行路径不扰）。
 - 非 mcp 不扰：同列表 bash 绑 verified native，dispatch abstain `governed-and-verified`。
+
+正负控与 **baseline 限制**（明写，勿删）：
+- 正控=显式 Binding 腿（先绑→sweep 跳过→abstain 放行）+ 非 mcp native 腿（`bash` verified native）；
+  负控=`mcp__` 名在滤后列表下绑 `unbound-observed` UNVERIFIED（治理在场、Coverage diff 可见）。
+- **baseline 限制**：4 条机制腿在**未打补丁**的旧 glue 上同样绿（机制现成，RED 先档已录该形态）⇒ 它们**不是**本补丁的
+  因果证据；可作本补丁因果证据的只有 3 条采集腿（predicate / 源码见证 / 采集形），且采集腿驱动的是**真 glue 模块的采集形**，
+  **不是** live 派发路径。装配面复算另证：两面全部可观察记录 diff = 空（引文见「口径修正轮」）。
 
 ## 门禁面（本树实测；窗口时在合并树全数重跑）
 
@@ -76,14 +94,48 @@ RED 先档（旧 glue，stash 对照）：**3 采集腿红**（predicate 缺失/
   `check-artifacts-at-head.log`/`check-artifacts-at-head-full.log`；预备态首跑的 dist drift 提示=未提交态预期门语义，同
   commit 后已消）。窗口 commit 后须再各跑一次。
 
-## 活体主收据（不归本路，引用设计）
+## 活体面实测（G2 路，2026-10-20；原「活体主收据=F leg3 目标态翻正」设计已撤）
 
-主收据=F leg3 套件**目标态翻正**（`gap-legs-f/leg3-mcp-governance-posneg.exec.sh` + F-RESULTS.md 判据注）：
-row-handle 出现 mcp__ 名的决策/拒绝行、`mcp__a5probe__echo` 治理判定行非零、fixture 服务端计数**不增**
-（`mcp-fixture-calls.log` 零增量）；H6 台账（PLAN:74）由现状红改收口注。F-RESULTS 现判据原文（复跑 run
-`a5legs-leg3-2026-10-19T09-33-13Z`，branch=B 段）：branch=B=「治理行零、执行照跑」；翻正=同通道出现拒绝判定行且服务端计数不增。
-**真跑归 F/A 后轮**（本路=单测+门禁+patch-ready；世界/端口段/runner 归 F 资产）。
+**撤除理由**：原设计把「F leg3 套件目标态翻正」当本补丁的活体主收据。G2 路 installed-host 六世界实测
+（3 世界 @ PR 面 `648996ed` + 3 世界 @ control 面 `cad5cf03`；同一安装面 913 可比文件中仅 glue 与其 dist 镜像
+共 2 文件不同）给出**有界负结果**：pre-PR 面在同一通道上拒得一模一样 ⇒ **任何 live 拒语都不是本补丁的因果证据**。
+live 面三形各有**先行把关者**（均在本补丁之前把关）：
 
+| live 形 | 先行把关者 | 实测（逐字/码） |
+| --- | --- | --- |
+| 装配 mount（本行自己的 MCP 被 mount） | STEP-5 `bindMcpTools(names,'team-mcp')` 显式 Binding ⇒ verified，两面同放行 | fixture 服务端计数 `0→1`（正控形态，非负控） |
+| host 全局层携带未绑定 `mcp__` 名 | Permission Coverage Gate 在 **setup** 层拒（publish 之前） | `…1 unmanaged tool(s) on the final model-facing surface: mcp__a5probe__echo (unknown-unmanaged)…`；code=`alpha2-permission-coverage-unmanaged-tools`（两面逐字同） |
+| 晚注册名 | `revalidateSurface` 对 added 名**永不绑**（`scoped-dispatcher.ts:632-660`） | per-call `TEAM_TOOL_UNGOVERNED`：`has no Team Tool Binding on this Agent (closed world…`（两面同） |
+
+⇒ 本补丁在 live 面**无 demonstrated fix**（supported seams 内），其价值=**决策层/纵深防御**：把「若某形先到 dispatch
+且无显式 Binding」时的默认方向从 verified-native 改为 UNVERIFIED，并使该族对 Coverage diff 可见；
+F leg3 的 pre-patch read（治理行零、执行照跑）在 pre-PR 面同样成立，**不得**再作「由本补丁翻正」的收据引用。
+
+**证据副本随本 commit 入库**（`live-and-assembly/`；原始记录在主检出 untracked 同路径，含六世界 run 目录与 183 项
+sha256 manifest，不入本 commit）：
+- `live-and-assembly/mcp-live-RESULTS.md` — 六世界逐世界收据 + 因果纪律条
+  （原件 `dev/agent-workflow/evidence/alpha5/mcp-live/RESULTS.md`）；
+- `live-and-assembly/mcp-live-assembly-VERDICT.md` — 装配面复算（真 harvest + 真 guard 安装、惰性 fixture 先于
+  installation 入全局面、六项记录、**两面全部可观察记录 diff = 空**）
+  （原件 `dev/agent-workflow/evidence/alpha5/mcp-live/assembly/VERDICT.md`）。
+
+## 口径修正轮（根裁 2026-10-20；本 commit 只改文档与注释，产品字节零语义改动）
+
+**裁定**：#351 = **决策层 / 纵深防御**；supported seams 上**无 demonstrated live fix**。据此，本目录 README、
+glue 两处注释、新单测标题/头注释中原有的「→ dispatch 拒」「every call is refused」「live flip = F leg3 翻正」
+一类读起来像「live escape 被本补丁阻止/修掉」的表述，一律改为下面这个准口径：
+
+> **决策层/纵深防御：装配面 harvest 把 `mcp__` 族从可信 native 表排除；live 面三形各有先行把关者
+> （STEP-5 显式 Binding / coverage setup 拒 / `revalidateSurface` 对 added 名永不绑），本装配形无可达动态观察面。**
+
+装配面复算的结构闭合（详 `live-and-assembly/mcp-live-assembly-VERDICT.md`）：harvest 的**输入**两面相同
+（无 scope 全局视图确含 `mcp__a5probe__echo`，顺序可证）；其**输出**（滤后 `nativeNames`）不经任何公开 seam 暴露
+（guard handle 留在 setup 闭包，binding 只暴露 `observations`）；要让输出可观察必须走到 publish，而 strict Agent 上
+「全局面带未绑定 `mcp__` 名」必被 Coverage Gate 先拒 ⇒ 无可达观察面。两面全部可观察记录 diff = 空。
+
+不发明因果 RED：本轮**不**新增任何「打了补丁才红」的 live 型断言；既有 4 条机制腿的 baseline 同绿形态已在「测试面」
+明写为非因果证据。产品字节侧本轮只动注释文本（src+dist 镜像同 commit，`node scripts/place-dist-glue.mjs` 重生成），
+判定逻辑一字节未改。
 ## 窗口应用清单（母代理开窗时执行序）
 
 1. 在 A（及先合者）落完后的合并树 worktree 上：`git checkout a5-mcp-binding` 内容以 patch 应用

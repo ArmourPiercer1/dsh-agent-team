@@ -696,16 +696,24 @@ function readDeliveredWorkTurn(session, requestToken) {
  * so the raw global view (the harvest below) DOES carry them — inheriting
  * them unfiltered bound every MCP tool as a verified native while the
  * per-call permission lane never takes the family (the closed
- * `classifyPermissionTool` set returns `unsupported` -> passthrough), the
- * ungoverned-execution channel the F leg3 receipts pinned (ADR:69
- * per-call face / PLAN:70). Excluded here, an `mcp__` name binds UNVERIFIED
- * (governed, visible to the Coverage diff) and is refused at dispatch with
- * the existing typed no-fallback refusal until a trusted assembly binds it
- * explicitly (PR0 Binding algebra, untouched). This delivers the
- * already-approved PLAN:70 semantics at the DECISION layer only; the
- * server-side effect boundary is NOT covered by this (PR7 deferred line
- * booked). Same prefix contract as the mount tracking below
- * (`mcp__${serverName}__`) and the plane's PLANE_RESERVED_NATIVE_PREFIXES.
+ * `classifyPermissionTool` set returns `unsupported` -> passthrough) — the
+ * read F leg3 recorded on the PRE-PR face (ADR:69 per-call face / PLAN:70).
+ * Excluded here, an `mcp__` name binds UNVERIFIED (governed, visible to the
+ * Coverage diff) instead of verified-native, which flips the DEFAULT
+ * direction at the decision layer from "trusted native" to "not trusted
+ * unless a trusted assembly binds it explicitly" (PR0 Binding algebra,
+ * untouched). CLAIM SCOPE (root ruling 2026-10-20, measured on the installed
+ * host): decision layer / DEFENSE IN DEPTH only — this family has NO
+ * reachable dynamic observation face there, because every live shape meets an
+ * EARLIER gatekeeper: the row's own mount is bound explicitly at STEP 5
+ * (`bindMcpTools`), a global-face unbound `mcp__` name is refused at setup by
+ * the Permission Coverage Gate (`alpha2-permission-coverage-unmanaged-tools`),
+ * and a late-registered name is never bound by `revalidateSurface`. NO live
+ * refusal is therefore this filter's causal evidence. The server-side effect
+ * boundary is NOT covered here either (PR7 deferred line booked). Same prefix
+ * contract as the mount tracking below (`mcp__${serverName}__`; base-tree
+ * anchor `:1467` = patched-tree `:1493`) and the plane's
+ * PLANE_RESERVED_NATIVE_PREFIXES.
  * Exported for the collection-shape unit test; the Guard assembly applies
  * it where it harvests `nativeNames`.
  */
@@ -2321,14 +2329,19 @@ export function createAgentBindings(deps) {
         // An unreadable global list is the fail-closed direction: an EMPTY
         // list binds nothing as native, so every inherited name is governed,
         // unverified and refused rather than waved through.
-        // G2-MCP-B amends the sentence above with the one family it got
-        // backwards in practice: the Host's MCP manager contributes its
+        // G2-MCP-B amends the sentence above with the one family it treated
+        // backwards: the Host's MCP manager contributes its
         // `mcp__<server>__<tool>` tools THROUGH the global layer, so the raw
         // global view carries them and they are NOT trusted natives. The
         // harvest below excludes the `mcp__` prefix (see
-        // guardNativeTrustExcludedMcpName): MCP names bind UNVERIFIED and
-        // are refused at dispatch — decision-layer refusal per PLAN:70;
-        // effect-boundary coverage stays on the PR7 deferred line.
+        // guardNativeTrustExcludedMcpName): MCP names bind UNVERIFIED rather
+        // than verified-native — the decision-layer / defense-in-depth default
+        // direction per PLAN:70. Claim scope (root ruling 2026-10-20): on the
+        // installed host shape this family has no reachable dynamic
+        // observation face — STEP-5 explicit Binding, the Coverage Gate's setup
+        // refusal, and `revalidateSurface` (never binds added names) all gate
+        // earlier — so no live refusal is caused by this filter.
+        // Effect-boundary coverage stays on the PR7 deferred line.
         let nativeNames = []
         try {
           const globalSchemas = typeof agentCtx.tools?.schemas === 'function' ? agentCtx.tools.schemas() : undefined
