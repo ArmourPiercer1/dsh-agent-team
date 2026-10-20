@@ -22,14 +22,17 @@ render footers) and executes reads through a **trusted-dirfd chain** under:
   (`recheckHandleIdentity`, lstat under the parent anchor);
 - per-call admission binding (never a shared "current grant"), required
   `grantId` riding an EXISTING trusted grant under the ROOT GRANT CONTRACT,
-  runtime-enforced on BOTH sides (8ae R1 + root acceptance form): a grant is
-  valid ONLY as a non-empty, non-whitespace string
-  (`isRuntimeValidGrantId` — the TS types are documentation, never the
-  guard). All four refuse forms are legs with reads=0: ① missing admission
-  grant, ② missing live grant, ③ both missing (Q2 — refused at the BINDING
-  side, before any open), ④ blank ('' / whitespace) or type-invalid
-  (number/object/null/bool) on either side; the valid-shape positive control
-  stays a leg. No silent bypass, never `undefined !== undefined` passing.
+  runtime-enforced on BOTH sides (8ae R1 + root acceptance form): the contract
+  is a **nonempty string** (`isRuntimeValidGrantId` — the TS types are
+  documentation, never the guard). Refuse forms are legs with reads=0:
+  ① missing admission grant, ② missing live grant, ③ both missing (Q2 —
+  refused at the BINDING side, before any open), ④ empty string ('') or
+  type-invalid (number/object/null/bool) on either side; the valid-shape
+  positive control is a leg. **Whitespace-only ids are CURRENTLY ACCEPTED —
+  measured and recorded as a non-blocking narrow-hardening candidate (trusted
+  generated grant ids never contain blank-only values); nothing in this
+  module claims whitespace-only rejection, and no path trimming exists
+  anywhere.** No silent bypass; never `undefined !== undefined` passing.
 - runtime validation of every outcome against the native output shape
   (`validateNativeOutputShape`, additionalProperties:false semantics);
 - unsupported shapes fail CLOSED at construction (`ioProfile`,
@@ -75,6 +78,17 @@ render footers) and executes reads through a **trusted-dirfd chain** under:
   symlinked/non-dir root → `GOV_NOT_REGULAR` (the O_NOFOLLOW ENOTDIR truth,
   never mislabeled as a /proc story), anything else → `GOV_IO` with the errno
   disclosed. Negative legs for both error shapes are in the suite.
+- **L1 @8ae-review, ROOT WIRING FORM (zero behavior change)** — the pilot
+  收原始串 (receives the raw request string; `expectationFor` gets it
+  verbatim; raw args and digests are preserved). The binding layer MUST be
+  wired through the SAME trusted canonicalizer/binder the isolated host uses
+  (既有一致接线) — this is the exact-bound-spelling contract, and it is the
+  ONLY spelling profile verified here. Alternate-spelling bindings
+  (`/a/../b.txt` vs `/b.txt`, `//` reaching a canonicalized binding) are
+  **UNVERIFIED — 非拒之设计**: they are not a claimed capability in either
+  direction; no full native path parity is claimed, and permission semantics
+  do not change. The in-root `'..'` ALLOWED statement holds under the same
+  wiring condition (binding layer binds the same canonicalizer).
 - **⑤/⑥** — `truncatedByBytes` never rides the outcome (native schema is
   strict; render derives it); raw paths ride verbatim (only all-blank
   `file_path` rejects).

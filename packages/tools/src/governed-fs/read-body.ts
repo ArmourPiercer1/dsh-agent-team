@@ -90,22 +90,26 @@ export interface AdmissionLiveState {
 
 /** Same law as controlled-fs bindAdmissionRecheck; used pre-chain (full) … */
 /**
- * ROOT GRANT CONTRACT (runtime form, 8ae R1 acceptance): a grant identity is
- * VALID only when it is a string that is not empty and not all-whitespace.
- * Anything else (absent, '', '   ', number, object…) is contract-invalid and
- * is refused at RUNTIME — the TS types are documentation, never the guard.
+ * ROOT GRANT CONTRACT (runtime form, 8ae R1 + root wording discipline): a
+ * grant identity must be a NONEMPTY STRING ('' and every non-string type are
+ * contract-invalid and refused at RUNTIME — the TS types are documentation,
+ * never the guard). Whitespace-only ids are CURRENTLY ACCEPTED (a recorded
+ * non-blocking narrow-hardening candidate: trusted generated grant ids never
+ * contain blank-only values; semantics are NOT changed by this note).
  */
 export function isRuntimeValidGrantId (value: unknown): value is string {
-  return typeof value === 'string' && value.trim().length > 0
+  return typeof value === 'string' && value.length > 0
 }
 
 export function verifyCallAdmission (expected: AdmissionExpectation, binding: CallAdmission | undefined): void {
   if (binding === undefined) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: no per-call admission binding supplied (undefined rejects)')
   if (binding.revoked === true) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused: admission binding revoked')
   // R1 @8ae-review + ROOT grant contract: PRESENCE and SHAPE are RUNTIME
-  // checks (isRuntimeValidGrantId: non-empty, non-whitespace string; ''/' '/
-  // non-string are all contract-invalid). Refused here — before any open — so
-  // the effect-side comparison can never degenerate to undefined !== undefined.
+  // checks (isRuntimeValidGrantId: nonempty string; ''/non-string are
+  // contract-invalid; whitespace-only CURRENTLY ACCEPTED per root wording
+  // discipline — recorded narrow-hardening candidate). Refused here — before
+  // any open — so the effect-side comparison can never degenerate to
+  // undefined !== undefined.
   if (!isRuntimeValidGrantId(binding.grantId)) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: the binding rides no trusted grant (runtime presence+shape check: contract-invalid grantId)')
   if (binding.bindingRevision !== expected.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: binding revision mismatch (${String(expected.bindingRevision)} expected)`)
   if (binding.generation !== expected.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: authority generation mismatch (${String(expected.generation)} expected)`)

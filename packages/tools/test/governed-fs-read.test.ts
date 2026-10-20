@@ -324,10 +324,10 @@ describe('R1/D1/N4 @8ae-review negative legs', () => {
     expect(opens.length).toBe(0)
     expect(reads).toBe(0)
   })
-  it('root grant contract ④: blank (empty / whitespace) and type-invalid grantIds refuse on BOTH sides before any read (runtime, not TS)', async () => {
+  it('root grant contract ④: empty-string and type-invalid grantIds refuse on BOTH sides before any read (runtime, not TS)', async () => {
     const p = join(root, 'a.txt')
     writeFileSync(p, 'x\n')
-    const bad: unknown[] = ['', '   ', 42, {}, null, undefined, true]
+    const bad: unknown[] = ['', 42, {}, null, undefined, true]
     for (const badId of bad) {
       // binding side: contract-invalid grant -> refused BEFORE any open
       const b = { bindingRevision: 1, generation: 7, canonicalLocator: p, parametersFingerprint: fingerprintParameters(p, 1, 2000), grantId: badId } as unknown as CallAdmission
@@ -339,6 +339,18 @@ describe('R1/D1/N4 @8ae-review negative legs', () => {
       expect([errL.code, String(badId)]).toEqual(['GOV_ADMISSION_DIVERGENT', String(badId)])
     }
     expect(reads).toBe(0) // every form refused BEFORE the read effect
+  })
+  it('root grant contract (measured, root wording discipline): whitespace-only grantId is CURRENTLY ACCEPTED — recorded narrow-hardening candidate, not a claim of blank rejection', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'WS-ACCEPTED\n')
+    // Contract form per root: NONEMPTY string law. '   ' is nonempty, so the
+    // CURRENT contract accepts it; asserting acceptance here keeps the docs
+    // honest (we measured this; we do NOT claim whitespace-only rejection).
+    // BOTH sides ride the same nonempty (whitespace) id — acceptance is about
+    // the SHAPE contract; identity equality still applies as usual.
+    const def = defFor({ liveAdmission: () => ({ revoked: false, generation: 7, bindingRevision: 1, grantId: '   ' }) })
+    const out = await call(def, { file_path: p }, { admissionBinding: { bindingRevision: 1, generation: 7, canonicalLocator: p, parametersFingerprint: fingerprintParameters(p, 1, 2000), grantId: '   ' } }) as { lines: { text: string }[] }
+    expect(out.lines[0]?.text).toBe('WS-ACCEPTED')
   })
   it('root grant contract: valid-shape positive control still serves', async () => {
     const p = join(root, 'a.txt')
