@@ -110,3 +110,20 @@ line completion, trailing partial flushed REDACTED at close; unit-tested
 with FAKE credentials only (5 cases: stdout, stderr, split-token,
 close-flush, per-stream isolation) without ever running the launcher or
 touching real raws. The launcher remains FROZEN per the jobs-live HOLD.
+
+Third-pass corrections (root d35 review, wording held to evidence):
+- DRAIN IS VERIFIED, NOT TIMED: stop -> await child EXIT + BOTH stream
+  CLOSES (bounded 15s); budget expiry is recorded as an EXPLICIT
+  DRAIN-INCOMPLETE (late output possibly missing) before the fd closes.
+  No fixed sleep stands anywhere as a "clean close" - that phrasing is
+  removed; the honest names are 'verified drain' and 'DRAIN-INCOMPLETE'.
+- RUNTIME BIND IS RUNTIME: hostPid + the ACTUAL listen line are captured
+  while the host is ALIVE (post-stop ss only proves post-stop absence) and
+  ride facts-<era>.json written AFTER those values exist; the stop receipt
+  (stop-receipt-<era>.json: pid, drain verdict, post-stop listener state)
+  is a SEPARATE artifact.
+- Test face extended to lifecycle truth: CASE6 real spawned child through
+  attach -> split writes -> DELAYED partial -> exit -> close (fully
+  redacted, verified drain true); CASE7 non-draining child -> bounded
+  timeout -> explicit incomplete. 7/7 PASS, fake credentials only; the
+  launcher remains FROZEN and unrun.

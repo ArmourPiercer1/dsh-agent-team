@@ -41,7 +41,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync, writeSync } from 'node:fs'
-import { createSanitizingLineSink } from './line-sanitizer.mjs'
+import { createSanitizingLineSink, waitForDrain } from './line-sanitizer.mjs'
 const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
@@ -495,6 +495,16 @@ async function runEra(era, mock) {
     const origin = `http://127.0.0.1:${boot[1]}`
     const cookie = await authenticate(origin, boot[2])
     check(era, 'J1.0', 'real host booted on the production row with the era plane shape (profile-patch seam only)', true, `origin=${origin}`)
+    // ROOT third-pass fix (2): the ACTUAL bind + PID are captured while the
+    // host is ALIVE (a post-stop ss only proves post-stop absence, and a
+    // boot URL's 127.0.0.1 is not proof of the bind). Address only - no
+    // credential rides this record; unknown stays 'unconfirmed'.
+    facts.hostPid = child?.pid ?? null
+    try {
+      const ssRun = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+      const line = ssRun.split('\n').find((l) => l.includes(String(HOST_PORT)))
+      facts.hostBind = line ? line.trim().split(/\s+/).slice(3, 5).join(' <- ') : 'no-listen-line-while-running'
+    } catch { facts.hostBind = 'unconfirmed' }
     await waitFor(240_000, async () => {
       const hb = await p6t6Get(HOST_PORT, 'health')
       if (hb.status === 200 && hb.body?.ok === false && hb.body?.setupError !== undefined) {
@@ -640,32 +650,35 @@ async function runEra(era, mock) {
     return facts
   } finally {
     stopOnce()
-    // fd lifecycle (root BLOCK weight item): the fd STAYS OPEN for the
-    // child's whole life - streams close on kill, sinks flush their
-    // trailing partial through it, the tail is read AFTER the drain, and
-    // only then does the fd close. (The pre-fix shape's only closeSync sat
-    // in the spawn-FAILURE catch next to dieFatal's process.exit, so the
-    // normal path never reached it; the real normal-path breakage was the
-    // unconsumed pipes stalling a chatty child, fixed by the sinks above.)
-    await new Promise((r) => setTimeout(r, 2500))
-    writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
-    try { closeSync(outFd) } catch { /* already closed */ }
+    // ROOT third-pass fix (1): VERIFIED drain, not a fixed sleep - observe
+    // child exit + BOTH stream closes (sinks flush their trailing partial
+    // through the still-open fd); when the bounded budget elapses the
+    // record says DRAIN-INCOMPLETE EXPLICITLY (late output may be missing)
+    // before the fd closes. No silent loss, and a fixed sleep is not a
+    // clean close and is not called one anywhere in this kit.
+    const drained = await waitForDrain(child, [child.stdout, child.stderr], 15_000)
+    facts.drain = drained
+      ? { ok: true, note: 'verified drain: child exit + both stream closes observed before closeSync' }
+      : { ok: false, note: 'DRAIN-INCOMPLETE: child/stream close not observed within 15000ms of stopOnce; late output may be missing; fd closed after recording this' }
     try {
       const raw = readFileSync(instanceLog, 'utf8')
       writeFileSync(join(RUN_DIR, `instance-${era}.tail.log`), redactTokens(raw.split('\n').slice(-400).join('\n')))
       facts.logObservations = raw.split('\n').filter((l) => /placement-feed|a5-plane|a5-jobs|jobs-bridge|governed/i.test(l)).slice(0, 60).map((l) => redactTokens(l).slice(0, 240))
-    // ROOT security metadata (round F): PID + the ACTUAL socket bind for our
-    // port (address only - no credential rides this line), recorded AT RUN
-    // TIME because a boot URL's 127.0.0.1 is not proof of a loopback-only
-    // bind. Unknown-at-record stays 'unconfirmed' rather than a claim.
-    facts.hostPid = child?.pid ?? null
-    try {
-      const ss = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
-      const line = ss.split('\n').find((l) => l.includes(String(HOST_PORT)))
-      facts.hostBind = line ? line.trim().split(/\s+/).slice(3, 5).join(' <- ') : 'no-listen-line'
-    } catch { facts.hostBind = 'unconfirmed' }
       writeEvidence(`observations-${era}.json`, facts.logObservations)
     } catch { /* no log */ }
+    // (2) facts carry the runtime-captured hostPid/hostBind: written AFTER
+    // their values exist (runtime facts file)...
+    writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
+    try { closeSync(outFd) } catch { /* already closed */ }
+    // ...and the STOP RECEIPT is a SEPARATE artifact (root third-pass fix
+    // (2)): post-stop listener absence belongs to the receipt, not to the
+    // runtime facts.
+    let postStopListen = 'unconfirmed'
+    try {
+      const ssStop = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+      postStopListen = ssStop.split('\n').some((l) => l.includes(String(HOST_PORT))) ? 'STILL-LISTENING' : 'no-listener'
+    } catch { /* ss unavailable */ }
+    writeEvidence(`stop-receipt-${era}.json`, { era, hostPid: facts.hostPid ?? null, drain: facts.drain, postStopListen, stopStamp: new Date().toISOString() })
     if (!FLAG_KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
     facts.swept = !existsSync(HOME)
   }
