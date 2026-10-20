@@ -11,9 +11,14 @@ mkdirSync(dirname(HITS), { recursive: true })
 appendFileSync(HITS, `# hooks loaded pid=${String(process.pid)}\n`)
 
 export async function resolve (specifier, context, next) {
-  if (NATIVE_RE.test(specifier)) appendFileSync(HITS, `NATIVE-HIT ${specifier}\n`)
-  if ((specifier.startsWith('./') || specifier.startsWith('../')) && specifier.endsWith('.js')) {
-    try { return await next(specifier.slice(0, -3) + '.ts', context) } catch { /* fall through */ }
-  }
-  return next(specifier, context)
+  // CLAIM SURFACE (8ae ①): specifier-substring match, ESM resolve path, THIS pid only.
+  if (NATIVE_RE.test(specifier)) appendFileSync(HITS, `NATIVE-HIT pid=${String(process.pid)} specifier=${specifier}\n`)
+  const hit = (specifier.startsWith('./') || specifier.startsWith('../')) && specifier.endsWith('.js')
+    ? await next(specifier.slice(0, -3) + '.ts', context).catch(() => null)
+    : null
+  const resolved = hit ?? await next(specifier, context)
+  // additionally match the RESOLVED URL (post-resolution surface), same substring law
+  const url = String(resolved?.url ?? '')
+  if (NATIVE_RE.test(url) && !url.includes('/governed-fs/')) appendFileSync(HITS, `NATIVE-HIT pid=${String(process.pid)} resolved=${url}\n`)
+  return resolved
 }

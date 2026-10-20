@@ -1,0 +1,36 @@
+{
+  "phase": "forms",
+  "records": [
+    {
+      "id": "form-allow",
+      "ok": true,
+      "envelopeLen": 237,
+      "fdDelta": 0,
+      "opens": 2,
+      "reads": 1
+    },
+    {
+      "id": "form-deny",
+      "code": "GOV_ABANDONED_REVOKED",
+      "message": "read refused at effect boundary: admission revoked before the read effect",
+      "fdDelta": 0,
+      "opens": 2,
+      "reads": 0
+    },
+    {
+      "id": "form-ask-pending",
+      "code": "GOV_ADMISSION_MISSING",
+      "fdDelta": 0,
+      "opens": 0,
+      "reads": 0
+    },
+    {
+      "id": "form-ask-resolved",
+      "ok": true,
+      "lines": 3,
+      "fdDelta": 0,
+      "opens": 2,
+      "reads": 1
+    }
+  ]
+}

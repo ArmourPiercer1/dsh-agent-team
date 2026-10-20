@@ -1,0 +1,60 @@
+{
+  "issued": {
+    "v1-plain": "rd-v1-plain-mm6it9dq",
+    "v2-window": "rd-v2-window-1funp2jg",
+    "v3-empty": "rd-v3-empty-tiqtih05",
+    "v4-longline": "rd-v4-longline-y8pynpmk",
+    "v5-tail": "rd-v5-tail-2ouh6wo0",
+    "v6-unicode": "rd-v6-unicode-g92k55rc",
+    "v7-notrailing": "rd-v7-notrailing-gqg94inz",
+    "v8-pastEOF": "rd-v8-pastEOF-czbtnuzf",
+    "v9-crlf": "rd-v9-crlf-6d7ny2zl"
+  },
+  "capturedBy": {
+    "v1-plain": {
+      "callId": "rd-v1-plain-mm6it9dq",
+      "resultId": "rd-v1-plain-mm6it9dq",
+      "bytes": 272
+    },
+    "v2-window": {
+      "callId": "rd-v2-window-1funp2jg",
+      "resultId": "rd-v2-window-1funp2jg",
+      "bytes": 264
+    },
+    "v3-empty": {
+      "callId": "rd-v3-empty-tiqtih05",
+      "resultId": "rd-v3-empty-tiqtih05",
+      "bytes": 244
+    },
+    "v4-longline": {
+      "callId": "rd-v4-longline-y8pynpmk",
+      "resultId": "rd-v4-longline-y8pynpmk",
+      "bytes": 2295
+    },
+    "v5-tail": {
+      "callId": "rd-v5-tail-2ouh6wo0",
+      "resultId": "rd-v5-tail-2ouh6wo0",
+      "bytes": 337
+    },
+    "v6-unicode": {
+      "callId": "rd-v6-unicode-g92k55rc",
+      "resultId": "rd-v6-unicode-g92k55rc",
+      "bytes": 271
+    },
+    "v7-notrailing": {
+      "callId": "rd-v7-notrailing-gqg94inz",
+      "resultId": "rd-v7-notrailing-gqg94inz",
+      "bytes": 275
+    },
+    "v8-pastEOF": {
+      "callId": "rd-v8-pastEOF-czbtnuzf",
+      "resultId": "rd-v8-pastEOF-czbtnuzf",
+      "bytes": 211
+    },
+    "v9-crlf": {
+      "callId": "rd-v9-crlf-6d7ny2zl",
+      "resultId": "rd-v9-crlf-6d7ny2zl",
+      "bytes": 261
+    }
+  }
+}

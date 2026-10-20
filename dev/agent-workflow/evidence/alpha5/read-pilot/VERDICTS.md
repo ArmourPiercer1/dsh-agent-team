@@ -42,3 +42,67 @@ Every run = FRESH DIR (non-symlink) tests/homes/a5rp-<own-stamp> + own pin clone
 an in-memory HTTP stand-in with NO home/credentials; pnpm storeDir=.a5rp-store (lane-owned,
 created by this lane). Retired/DO-NOT-REUSE dirs: never touched. No raw token ever lands
 (RP-EVID-CLEAN hits=[] every run); token parsed in-memory only, stored as tokenHash.
+
+---
+# APPENDIX A (2026-10-20, root correction orders + 8ae PASS wording list — append-only; run dirs NOT rewritten; NO new runs for these corrections)
+
+## A0 run governance of this package
+- Reference run = runs/2026-10-20T08-22-06Z (run12). It began BEFORE the "no re-runs" order arrived
+  and completed after; adopted as-is (same pinned bytes c515b064cbbe… + added ledger/hashes/read-only
+  check). Earlier run10 remains on record (its criteria.json still says 21 checks). No re-runs
+  are or will be done for the wording corrections below.
+- runs/2026-10-20T08-21-28Z (run11) = PRODUCT-SIDE BOOT FLAKE, recorded: plugin `bootstrap FAILED:
+  TeamDomainError: store 'session_bindings' get rejected: the TeamDomain is closed` at bootPhase-create
+  (bindFreshRoot), MOUNTED then dead → session/not-found. Same recipe passed runs 6-10,12: flake
+  observation booked for the plugin lane (a5-tools-gov plane), NOT caused by harness or by the pilot.
+
+## A1 (root ③ / 8ae ⑤) denominator & positive-control precision
+- Parity denominator = ALL 9 vectors: **8/9 strict byte equality**; v8-pastEOF is a RECORDED
+  MISMATCH inside the denominator — no red hidden by exclusion.
+- Positive control law: "v1 true equality" means WITHIN a single run the native wire envelope
+  equals the pilot render — NOT identical bytes across runs (paths carry per-run home stamps).
+- run9 self-attestation harmony: its 9 "native" captures hashed to ONE identical value
+  (811a5b94) = the recapture signature; three-way consistent with the harness-failure ledger.
+
+## A2 (8ae ②) v8 machine entry (parity-diff.v8 completed)
+- nativeLen=182; pilot typed-message length=175; DELTA = 7 = exactly the `"Error: "` envelope
+  prefix that the HOST tool runtime wrapper prepends when it stringifies a thrown error — that
+  prefix layer lives in the host adapter, which the isolated pilot (no production assembly) does
+  not own. pilotLen/pilotHead are now machine-filled for error vectors by the kit (future runs).
+- v8 full item: expected = native typed out-of-range; observed native = `Error: offset 9999 is
+  out of range for "<run home>/rpdata/plain.txt" (3 lines)`; observed pilot = typed
+  GOV_NOT_FOUND with byte-identical message law (`offset 9999 is out of range for "…plain.txt"
+  (3 lines)`); path = same fixture file, same caps; support-status: typed-refusal parity SUPPORTED;
+  wire-envelope byte parity for error paths UNSUPPORTED-AT-PILOT-LAYER (host adapter owns the
+  "Error: " prefix) — recorded, not pass-ized.
+
+## A3 (8ae ①) native-body=0 claim narrowed to the mechanism-provable surface
+- Exact claim: the ESM **resolve hook** observed ZERO resolution whose **specifier string**
+  matched /tool-fs|read-render/ inside the instrumented pilot PID. That is all the instrument
+  proves: specifier-substring only (pre-resolution), ESM-resolve path only, single PID. It is
+  NOT a whole-process proof; the host world legitimately EXECUTES the native body (that is
+  mount N). Kit hardened for future runs: hit lines now carry pid= and the hook additionally
+  matches the RESOLVED URL, not just the specifier.
+
+## A4 (8ae ④) DENY-form semantics mapping (registered)
+- RP-DENY tests **revoked-AFTER-grant**: a live view flipping revoked before the effect ⇒
+  GOV_ABANDONED_REVOKED, reads=0. The "NEVER granted" shape is carried by RP-ASK-pending
+  (no binding ⇒ GOV_ADMISSION_MISSING, opens=0, reads=0). The two refuse faces are distinct
+  and both legged; neither substitutes for the other.
+
+## A5 (8ae ③) counting caliber (package body rules)
+- criteria.json body = **23 checks (all pass) + 3 note(null) = 26 lines**; KIT_SUMMARY
+  {"total":23,"pass":23,"fail":0}. Earlier "21 PASS" and the interim "22/22" order are void —
+  the package body is authoritative, as ordered.
+
+## A6 (ledger provenance, root)
+- callid-ledger.json + src-dist-hashes.json exist ONLY in run12 (live-recorded there; issued
+  per-turn + capturedBy {callId,resultId,bytes} × 9; dist face 1773 files aggregate sha256
+  36474497c49b…; pin src 4 files). For run10 the pairing ledger was NOT persisted ⇒ marked
+  UNVERIFIED for run10; nothing is back-filled or reconstructed after the fact.
+
+## A7 PENDING ROOT RULINGS (do not self-modify)
+- P1: whether the unauthenticated GET probe of :3080 (H0 before / T3 after, 401-identity law)
+  is within the authorized probe surface — awaiting root.
+- P2: whether the cancel leg needs an additional terminal-attribution requirement beyond
+  accepted:true + turn-settled receipt — awaiting root.

@@ -186,6 +186,7 @@ function writeFixtures (dir) {
 let MOCK_REQUESTS = []
 const NATIVE = {}
 const ISSUED = {} // vecId -> issued tool_use id (per-turn capture anchor)
+const CAPTURED_BY = {} // vecId -> {callId, resultId, len} — the pairing ledger (root ③)
 async function startWorld () {
   const handle = await startMockModel({
     port: MOCK_PORT,
@@ -213,7 +214,10 @@ async function startWorld () {
           return toolCall(cid, 'read', a)
         }
         const hit = digest.toolResults.find((r) => r.id === ISSUED[id])
-        if (hit !== undefined && NATIVE[id] === undefined) NATIVE[id] = hit.text
+        if (hit !== undefined && NATIVE[id] === undefined) {
+          NATIVE[id] = hit.text
+          CAPTURED_BY[id] = { callId: ISSUED[id], resultId: hit.id, bytes: hit.text.length }
+        }
         return { kind: 'text', content: `A5RP_DONE_${id}` }
       }
       if (text.includes(`${MK}_BIGC`) && !text.includes('A5RP_BIGC_DONE')) {
@@ -502,14 +506,18 @@ async function main () {
     for (const v of VECTORS) {
       const nat = nativeEnvelope(v.id)
       const pil = v.id === 'v8-pastEOF' ? null : (byId[v.id]?.envelope ?? null)
-      const rec = { id: v.id, nativeLen: nat.length, pilotLen: pil === null ? null : pil.length, strictEqual: pil !== null && pil === nat, nativeHead: nat.slice(0, 80), pilotHead: pil === null ? null : pil.slice(0, 80), nativeIsError: /^Error|out of range/i.test(nat), pilotIsError: pil === null }
+      // error vectors: fill pilot-side machine fields with the typed message (the
+      // 7-byte delta to native is exactly the host adapter's "Error: " prefix).
+      const pilotErr = pil === null ? `Error: ${String(byId[v.id]?.message ?? '')}` : null
+      const pilotText = pil ?? pilotErr
+      const rec = { id: v.id, nativeLen: nat.length, pilotLen: pilotText === null ? null : pilotText.length, strictEqual: pil !== null && pil === nat, nativeHead: nat.slice(0, 80), pilotHead: pilotText === null ? null : pilotText.slice(0, 80), nativeIsError: /^Error|out of range/i.test(nat), pilotIsError: pil === null, errorFormNote: pil === null ? 'pilotLen = "Error: " + typed message; delta to native is the host-adapter prefix (VERDICTS A2)' : undefined }
       parity.push(rec)
     }
     writeEvidence('parity-diff.json', parity)
     const parityFails = parity.filter((p) => !p.strictEqual)
     const contentParityOk = parity.filter((p) => p.id !== 'v8-pastEOF').every((p) => p.strictEqual)
     const errControlOk = (() => { const p = parity.find((x) => x.id === 'v8-pastEOF'); return p.nativeIsError === true && p.pilotIsError === true })()
-    check('RP-PARITY', 'STRICT byte equality between the native wire envelope and the pilot render for all 8 content vectors (same files, same caps, same host version law; zero normalization), plus the v8 typed-error control on both mounts',
+    check('RP-PARITY', 'STRICT byte equality 8/9 vectors (DENOMINATOR INCLUDES v8 as a recorded mismatch — no red hidden by exclusion; root ①): the 8 content vectors are byte-equal native-wire vs pilot-render (same files/caps/host law, zero normalization); v8 keeps its full item entry (expected/observed/error/path/support-status table in VERDICTS)',
       contentParityOk && errControlOk, `mismatches=${JSON.stringify(parityFails.map((p) => p.id))}`)
     if (parityFails.length > 0) note('RP-PARITY.delta', 'per-vector heads recorded for honest delta analysis', JSON.stringify(parityFails.map((p) => ({ id: p.id, nativeHead: p.nativeHead, pilotHead: p.pilotHead }))).slice(0, 900))
 
@@ -532,6 +540,29 @@ async function main () {
     const cm = Object.fromEntries(cancelP.map((r) => [r.id, r]))
     check('RP-CANCEL-PILOT', 'cancellation on the pilot face is typed at BOTH points: pre-abort refuses before any open; mid-abort at the effect boundary refuses with reads=0 and net fd delta 0 (descriptors closed)',
       cm['cancel-pre']?.code === 'GOV_ABORTED' && cm['cancel-pre'].opens === 0 && cm['cancel-mid']?.code === 'GOV_ABORTED' && cm['cancel-mid'].reads === 0 && cm['cancel-mid'].fdDelta === 0, JSON.stringify([cm['cancel-pre'] ?? null, cm['cancel-mid'] ?? null]))
+
+    // ④ READ-ONLY ladder: every tool call the ladder made across the world is
+    // 'read' (no write/edit ever invoked; write enable stays forbidden).
+    const nonReadTools = [...new Set(MOCK_REQUESTS.flatMap((r) => (r.digest?.assistantToolNames ?? []).filter((n) => n !== 'read')))]
+    check('RP-READ-ONLY', 'the verification ladder invoked NO write/edit/other tool on the world — every assistant tool call on the wire is read (read-only shape, write enable forbidden and unexercised)',
+      nonReadTools.length === 0, `nonReadTools=${JSON.stringify(nonReadTools)}`)
+
+    // ③ callId ledger + src/dist hashes into the evidence package
+    writeEvidence('callid-ledger.json', { issued: ISSUED, capturedBy: CAPTURED_BY })
+    const distHashes = (() => {
+      const acc = createHash('sha256')
+      let n = 0
+      const walk = (d, rel) => {
+        for (const e of readdirSync(d, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+          if (e.name === '.git' || e.name === 'node_modules') continue
+          if (e.isDirectory()) walk(join(d, e.name), `${rel}${e.name}/`)
+          else { acc.update(`${rel}${e.name} ${sha256File(join(d, e.name))}\n`); n += 1 }
+        }
+      }
+      walk(faceDir, '')
+      return { faceFiles: n, aggregateSha256: acc.digest('hex') }
+    })()
+    writeEvidence('src-dist-hashes.json', { pinSrcFiles: facts.pin.files, distFace: distHashes, testedSha: EXPECTED_SHA })
 
     facts.ok = true
     return 0
