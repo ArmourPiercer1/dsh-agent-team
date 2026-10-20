@@ -143,67 +143,52 @@ row `0e59140b`, PR #323, which carried the reviewed GLUE-7 work of the closed
 - `team_bash` — a REAL confined process provider (kernel-confined, launcher
   double byte gate + `trustRoot` pairing), and ONLY when the row configured
   `plane.confinedProvider`.
-- `team_glob` — **no production effect body at all on master**: every call lands
-  on the typed refusal `IO_POLICY_UNSUPPORTED` (`productionBackends.glob = shut`,
-  `team-tool-plane.mjs:403-408` at `0e59140b`; still `shut` on the current
-  master line). The candidate behind that row has **three distinct states** —
-  writing them as one is wrong in both directions:
-  - **(a) Historical failures on the candidate line, each closed by a named
-    fix stroke.** *Spill round*: before `c0714492` the backend wrote to
-    `io.sink` from the stdout callback, so a walk refused later had already put
-    unverified rows on the spill channel (R2 register §6.2, root 23:05Z
-    correction: results before the verdict **184/5100** = safety FAIL) — closed
-    by law **A7** in `c0714492` (exactly one `sink.write`, positioned after the
-    verdict, its source can only be the admitted array; a refused walk writes
-    **0 bytes**, leg X1 induces it deterministically). *Detail/echo round*:
-    before `ee9b30d5`, **7** source×sink cells were genuinely reachable (entry
-    names → spill and → detail, rg stderr → detail, provider and host-parser
-    messages → detail, verification-time resolved path → detail, exception
-    string → throw; the root 23:48Z register measured the detail echo at
-    **351/3600**, and the in-repo witness is the `pre:` column of
-    `dev/agent-workflow/evidence/alpha5/glob-backend/channel-matrix.json`) —
-    closed by law **A8** in `ee9b30d5` (`failure(...)` carries **no**
-    string→`detail` parameter; wording comes from the frozen
-    `GLOB_REFUSAL_TEXT` table; the `internalLog` face is default-OFF and is
-    never wired to io / result / observe). The **name-class 3/10700** figure is
-    a DIFFERENT subject: the ARCHIVED GLUE-7 inline attempt
-    (`a5g7-confined-rg-glob`, wiring removed, factory 未入产) whose
-    verify→launcher string-chdir window plus the then-present provider
-    `runtime_base` `'/'` READ_DIR grant could surface outside NAMES (bytes
-    never); the `runtime_base` half is closed on master at `0e59140b` (PR #323).
-  - **(b) The module fix IS verified — on the candidate line.** At `ee9b30d5`
-    the same live attacker re-ran **6600 real-rg races with probes on every
-    exoteric channel**: `allChannelProbe {walks 6600, auditLines 6601,
-    internalLines 3300, spillBytes 49500, exceptionStrings 0, detailsFromTable
-    3300 == the refusal count, wireTokenHits 0}`
-    (`dev/agent-workflow/evidence/alpha5/glob-backend/adversarial-counters.json`),
-    suites 57/57 three times byte-stable, and the **round-7 independent review
-    of that head is PASS** (root review register; the committed witness of that
-    pass is its residual integration conditions being pinned — not fixed away —
-    at the integration mount as INT-a (`allowPaths` same-shape), INT-b
-    (`internalLog` never passed by the assembly), INT-c (the name-enumeration
-    template re-run **on the connected row**) — see `34e59098` and its ledger
-    `46454f99` on `alpha5-int-mnt`). Candidate-line records: `ee9b30d5` is an
-    ancestor of the (still-moving, reviewed-pending) PR head — `1257963e` at the
-    fetch of this note, `b78aef3f` at its re-check — and is **not** an ancestor
-    of master.
-  - **(c) The production mount is still unverified.** PR #322 is open
-    (unmerged), the `alpha5-int-mnt` mount is an integration-tree mount (未产),
-    and no terminal acceptance ruling at the real production entry is on record.
-    So on master `team_glob` is honestly shut and must not be described as
-    working — and the fixed rounds above must not be re-reported as open bugs
-    either.
+- `team_glob` — **LIVE on the current master line** (product freeze `d5de7497…`,
+  #343): the row runs the real confined-rg walker, verdict **rc-first** on a
+  trusted exit record, with the scratch law — plan/record files live in a
+  sibling of the governance root (assembly default engaged by the compatibility
+  fix at `097fccf9…`; an explicit empty or relative `scratchRoot` is a typed
+  refusal, never a cwd fallback). The mount expression is
+  `globDisabledShut ?? realGlob ?? shut` (`team-tool-plane.mjs:672`), so the
+  typed refusal `IO_POLICY_UNSUPPORTED` still exists and means exactly one of:
+  the realm config set `plane.globEnabled: false` (kill switch, PR #342 @
+  `46e48218…` — explicit `false` routes to the shut landing with **no**
+  fallback, renamed plane names do not recover the row, and a non-boolean
+  `globEnabled` refuses the whole mount as a config defect), the row is
+  unconfigured, or a scratch-law violation. Do not describe the row as "shut on
+  master": that claim expired with #343. Mount evidence, kept separate from the
+  module story: default-form install-face positive control **GREEN 32/32
+  (+4 booked, 18 shape-N/A honestly excluded)** at `097fccf9`
+  (`dev/agent-workflow/evidence/alpha5/a5ie-r5/`, run 23-39-12Z), kill-switch
+  install-face acceptance in `dev/agent-workflow/evidence/alpha5/glob-off-install/`
+  (7407 root-readable files), and the r5 full install battery 40/41 whose one
+  red is the C1 wire-render law (host-side, registered as CORE_SEAM_BLOCKER #1 —
+  not a glob defect). The module's own closed laws — **A7** (exactly one
+  `sink.write`, positioned after the verdict; a refused walk writes **0**
+  bytes) and **A8** (no string→`detail` echo; wording from the frozen
+  `GLOB_REFUSAL_TEXT` table; `internalLog` default-OFF and never wired to
+  io / result / observe) — carry the adversarial record of **6600 real-rg
+  races** with zero exoteric-channel leaks
+  (`dev/agent-workflow/evidence/alpha5/glob-backend/adversarial-counters.json`).
+  The two historical failure rounds stay on record as CLOSED — the spill round
+  (results before the verdict, measured **184/5100**, closed by A7 at
+  `c0714492`) and the detail-echo round (7 source×sink cells, measured
+  **351/3600**, closed by A8 at `ee9b30d5`) — and the archived GLUE-7 inline
+  attempt's **name-class 3/10700** figure is a DIFFERENT subject (factory
+  never entered production; its `runtime_base` `'/'` READ_DIR half was closed
+  at `0e59140b`, PR #323). None of these may be re-reported as an open bug.
 - Any class whose row is unconfigured keeps that same typed shut landing —
   the closed world invents no fallback. A shut landing is a LANDING, not
   evidence of a policy denial.
 - The template lane denies **before** any backend runs (`28d31f2a`, G1): a
   denied effect call executes nothing and leaves zero side effects.
 
-What that means for you: `IO_POLICY_UNSUPPORTED` from a member's `team_glob`, or
-from any unconfigured row, is a **missing-backend fact, not a pending approval**
-— no `team_resolve_control` answer unlocks it. Change the configuration (or wait
-for the candidate row to land), and report the refusal verbatim instead of
-retrying it.
+What that means for you: `IO_POLICY_UNSUPPORTED` from a member's `team_glob`
+means the kill switch (`plane.globEnabled: false`), an unconfigured row, or a
+scratch-law violation — and from `team_grep` / `team_bash` a missing backend;
+in every case it is a **configuration fact, not a pending approval** — no
+`team_resolve_control` answer unlocks it. Change the configuration, and report
+the refusal verbatim instead of retrying it.
 
 ## 3. Delegation: the standard loop
 

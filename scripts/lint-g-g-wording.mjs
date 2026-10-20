@@ -30,13 +30,29 @@
  * The file is not on this baseline yet; the check engages when it lands, and says
  * so in the output meanwhile — it never vacuously passes without saying so.
  *
+ * Walker robustness (a5-docs-matrix hardening, 2026-10-19): the census runs
+ * 458/459/460 went red on the evidence branch because an accidentally
+ * committed DANGLING symlink in a fixture tree made the walker's `statSync`
+ * throw an uncaught ENOENT — the lint process crashed instead of reporting
+ * (dangling-link × statSync, root-cause registered in COORDINATION 2026-10-19
+ * 02:0xZ/02:2xZ). The walker now lstats first: a symlink whose target is
+ * missing (ENOENT) is SKIPPED and disclosed — named on stdout and counted in
+ * `skippedDangling` — never silently swallowed, and never a crash. Anything
+ * else (ELOOP, EACCES, a plain file that vanished mid-walk, …) still throws:
+ * hardening the known failure shape must not launder other walker errors into
+ * skips. Symlinks that RESOLVE are followed exactly as before, so the verdict
+ * surface of the wording rule on any given tree is unchanged (same tree with
+ * and without dangling links: identical violations and filesScanned; the only
+ * delta is the honest `skipped=` disclosure).
+ *
  * Usage:  node scripts/lint-g-g-wording.mjs [repoRoot]
  * EXIT:   0 = clean (violations printed as `file:line:` — none), 1 = violations.
+ *         Dangling-link skips do NOT set the exit code; they are disclosed.
  *
  * @module scripts/lint-g-g-wording
  */
 import { existsSync, readFileSync } from 'node:fs'
-import { readdirSync, statSync } from 'node:fs'
+import { lstatSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 const CLAIM_RE = /fail[-\s]?closed|silent[-\s]?safe|已合规|\bcompliant\b/i
@@ -100,11 +116,22 @@ export function lintPendingGatesText (text) {
   return violations
 }
 
-function walkMarkdown (dir, out) {
+function walkMarkdown (dir, out, skipped) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name)
-    const st = statSync(p)
-    if (st.isDirectory()) walkMarkdown(p, out)
+    let st = lstatSync(p)
+    if (st.isSymbolicLink()) {
+      try {
+        st = statSync(p)
+      } catch (err) {
+        // Only a missing target (ENOENT) is a dangling link: skip + disclose.
+        // Every other lstat/stat error rethrows — the skip lane is for the one
+        // shape we characterised (census 458/459/460), not a general muffle.
+        if (err.code === 'ENOENT') { skipped.push(p); continue }
+        throw err
+      }
+    }
+    if (st.isDirectory()) walkMarkdown(p, out, skipped)
     else if (name.endsWith('.md')) out.push(p)
   }
   return out
@@ -112,9 +139,10 @@ function walkMarkdown (dir, out) {
 
 export function lintRepo (repoRoot) {
   const root = join(repoRoot, 'dev', 'agent-workflow')
-  const results = { violations: [], filesScanned: 0, pendingGates: 'absent' }
+  const results = { violations: [], filesScanned: 0, pendingGates: 'absent', skippedDangling: [] }
   if (!existsSync(root)) return results
-  for (const file of walkMarkdown(root, [])) {
+  const dangling = []
+  for (const file of walkMarkdown(root, [], dangling)) {
     const rel = relative(repoRoot, file).split(/[\\/]/).join('/')
     if (rel.endsWith('PENDING-GATES.md')) {
       results.pendingGates = 'checked'
@@ -128,6 +156,8 @@ export function lintRepo (repoRoot) {
       results.violations.push({ file: rel, ...v })
     }
   }
+  results.skippedDangling = dangling.map(
+    (p) => relative(repoRoot, p).split(/[\\/]/).join('/'))
   return results
 }
 
@@ -136,6 +166,7 @@ if (isMain) {
   const repoRoot = process.argv[2] ?? process.cwd()
   const results = lintRepo(repoRoot)
   for (const v of results.violations) console.log(`VIOLATION ${v.file}:${String(v.line)}: ${v.text}`)
-  console.log(`scanned=${String(results.filesScanned)} md files; PENDING-GATES=${results.pendingGates}; violations=${String(results.violations.length)}`)
+  for (const p of results.skippedDangling) console.log(`SKIPPED-DANGLING ${p}`)
+  console.log(`scanned=${String(results.filesScanned)} md files; PENDING-GATES=${results.pendingGates}; skipped=${String(results.skippedDangling.length)}; violations=${String(results.violations.length)}`)
   process.exitCode = results.violations.length === 0 ? 0 : 1
 }

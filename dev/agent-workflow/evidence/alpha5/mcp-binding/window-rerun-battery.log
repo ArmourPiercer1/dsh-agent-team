@@ -1,0 +1,449 @@
+### PATTERN=a5mcp-native-trust-filter
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5mcp-native-trust-filter.test.ts (7 tests) 2912ms
+     ✓ the exported predicate excludes exactly the mcp__ prefix family  2902ms
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  10:06:15
+   Duration  3.66s (transform 2.48s, setup 0ms, import 506ms, tests 2.91s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p1-closed-world-guard
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p1-closed-world-guard.test.ts (27 tests) 23ms
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  10:06:20
+   Duration  802ms (transform 451ms, setup 0ms, import 566ms, tests 23ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p1-guard-install
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p1-guard-install.test.ts (23 tests) 22ms
+
+ Test Files  1 passed (1)
+      Tests  23 passed (23)
+   Start at  10:06:21
+   Duration  759ms (transform 447ms, setup 0ms, import 542ms, tests 22ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p1-scoped-dispatcher
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p1-scoped-dispatcher.test.ts (16 tests) 12ms
+
+ Test Files  1 passed (1)
+      Tests  16 passed (16)
+   Start at  10:06:23
+   Duration  476ms (transform 254ms, setup 0ms, import 322ms, tests 12ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p1r-change-abort
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p1r-change-abort.test.ts (18 tests) 23ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  10:06:24
+   Duration  509ms (transform 270ms, setup 0ms, import 341ms, tests 23ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p1r-gg-probes
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p1r-gg-probes.test.ts (2 tests) 11ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  10:06:25
+   Duration  456ms (transform 249ms, setup 0ms, import 310ms, tests 11ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p2-composition
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p2-composition.test.ts (12 tests) 25ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  10:06:26
+   Duration  628ms (transform 371ms, setup 0ms, import 466ms, tests 25ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5pbr2-binding-feed
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5pbr2-binding-feed.test.ts (10 tests) 12ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  10:06:27
+   Duration  460ms (transform 252ms, setup 0ms, import 309ms, tests 12ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5natexe-native-takeover
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5natexe-native-takeover.test.ts (12 tests) 318ms
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  10:06:28
+   Duration  749ms (transform 464ms, setup 0ms, import 300ms, tests 318ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5r-cause-relay
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5r-cause-relay.test.ts (9 tests) 12ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  10:06:30
+   Duration  682ms (transform 409ms, setup 0ms, import 533ms, tests 12ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a3p5-glue-permission-receipt
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a3p5-glue-permission-receipt.test.ts (11 tests) 1684ms
+     ✓ positive seeded member with a non-derived boot seed childSessionId resolves through the durable row, identity row-derived  1636ms
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  10:06:31
+   Duration  2.17s (transform 1.45s, setup 0ms, import 354ms, tests 1.68s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a3p3-governance-lane-hygiene
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a3p3-governance-lane-hygiene.test.ts (21 tests) 3393ms
+     ✓ the ceiling adapter and the PR2 evaluator each have ONE audited consumer set per name  3133ms
+
+ Test Files  1 passed (1)
+      Tests  21 passed (21)
+   Start at  10:06:34
+   Duration  4.90s (transform 1.08s, setup 0ms, import 1.37s, tests 3.39s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a4p3-intervention-lane-hygiene
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a4p3-intervention-lane-hygiene.test.ts (9 tests) 33ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  10:06:40
+   Duration  275ms (transform 22ms, setup 0ms, import 102ms, tests 33ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p4-lane-hygiene
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+a5p4 law(4) live named provider mounts on this tree: runtime/src/plugin/live/glob-backend.mjs , runtime/src/plugin/live/plane-effect-backends.mjs , runtime/src/plugin/live/search-backend.mjs
+ ✓ packages/runtime/test/a5p4-lane-hygiene.test.ts (8 tests) 1050ms
+     ✓ self-typechecks with strict settings (in-process; the shared tsconfig stays untouched)  982ms
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  10:06:40
+   Duration  1.83s (transform 361ms, setup 0ms, import 641ms, tests 1.05s, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a5p7-lane-hygiene
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a5p7-lane-hygiene.test.ts (5 tests) 158ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  10:06:43
+   Duration  521ms (transform 31ms, setup 0ms, import 216ms, tests 158ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a3p5-permission-notification-lane-hygiene
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a3p5-permission-notification-lane-hygiene.test.ts (9 tests) 53ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  10:06:44
+   Duration  459ms (transform 193ms, setup 0ms, import 259ms, tests 53ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=alpha2-explicit-agent-setup
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/alpha2-explicit-agent-setup.test.ts (5 tests) 6ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  10:06:45
+   Duration  2.26s (transform 1.50s, setup 0ms, import 2.10s, tests 6ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=a3p4-pr4-decision-routing-regression
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts (13 tests) 476ms
+     ✓ exact: the member install creates the durable approval row (leader-approval), waits, and a human allow executes  304ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  10:06:48
+   Duration  2.47s (transform 1.47s, setup 0ms, import 1.86s, tests 476ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=rc2a1-fs-containment
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stdout | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] durable permission authority ACTIVE for row session-rc2a1-a: anchor templates declaring capabilities.permissions = ["leader"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor rc2a1.bp@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/rc2a1-fs-containment.test.ts
+[dsh-agent-team] bootstrap FAILED: Error: agent-bindings: alpha.2 permission fs containment unavailable for 'session-rc2a1-b' (the fs provider exposes no public contains() seam while the template declares exact/subtree file permission (the containment authority is incomplete), instanceId=inst-leader) (code: alpha2-permission-fs-containment-unavailable)
+    at permissionFsContainmentUnavailable (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:4861:19)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:2884:19
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:1051:18
+    at makeHandle (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/test/t12a-live-bridge.mjs:900:7)
+    at Object.create (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/test/t12a-live-bridge.mjs:932:22)
+    at Object.runOwned (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/team-session-activation.ts:571:16)
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:1084:16
+    at /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:875:14
+    at singleFlightTeamActivation (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:879:14)
+    at runOwnedActivation (/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding/packages/runtime/src/plugin/live/agent-bindings.mjs:1082:12)
+
+ ✓ packages/runtime/test/rc2a1-fs-containment.test.ts (6 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  10:06:51
+   Duration  3.37s (transform 2.16s, setup 0ms, import 3.22s, tests 4ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=mcp
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/runtime/test/u6-mcp-017-regression.test.ts (5 tests) 114ms
+ ✓ packages/runtime/test/required-mcp-live-outage-recovery.test.ts (3 tests) 62ms
+ ✓ packages/runtime/test/optional-mcp-live-outage-degraded.test.ts (3 tests) 63ms
+ ✓ packages/runtime/test/a5p7-mcp-rebind-chain.test.ts (7 tests) 11ms
+ ✓ packages/runtime/test/a5mcp-native-trust-filter.test.ts (7 tests) 1769ms
+     ✓ the exported predicate excludes exactly the mcp__ prefix family  1760ms
+ ✓ packages/runtime/test/multi-mcp-wiring.test.ts (49 tests) 14ms
+ ✓ packages/runtime/test/mcp-supply-config.test.ts (39 tests) 18ms
+ ✓ packages/runtime/test/mcp-live-readiness-to-requirement-fact.test.ts (10 tests) 8ms
+ ✓ packages/runtime/test/mcp-blueprint-initial-grant.test.ts (32 tests) 11ms
+ ✓ packages/runtime/test/p8s4b-mcp-facet.test.ts (25 tests) 13ms
+ ✓ packages/runtime/test/mcp-target-materialization-unit.test.ts (5 tests) 5ms
+ ✓ packages/runtime/test/f15-mcp-live-loss.test.ts (10 tests) 18ms
+ ✓ packages/runtime/test/t3-skills-mcp-adapter.test.ts (11 tests) 12ms
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/t12a-h1-nullable-mcp.test.ts (7 tests) 7ms
+ ✓ packages/runtime/test/f15-mcp-live-loss-characterization.test.ts (2 tests) 4ms
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+stderr | packages/runtime/test/mcp-target-materialization.test.ts
+[dsh-agent-team] the "skills" public service is absent (or malformed) at apply time — the bundled team skills are NOT registered (composition without the skill row); the team core proceeds
+
+ ✓ packages/runtime/test/mcp-target-materialization.test.ts (16 tests) 7ms
+
+ Test Files  16 passed (16)
+      Tests  231 passed (231)
+   Start at  10:06:55
+   Duration  4.90s (transform 7.40s, setup 0ms, import 14.54s, tests 2.13s, environment 2ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+### PATTERN=p4t6-session-event-scan
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-mcp-binding
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (10 tests) 8ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  10:07:01
+   Duration  593ms (transform 107ms, setup 0ms, import 439ms, tests 8ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+
+### POST-LOG FIX (window round): tsc caught two type-surface errors in the test file (DOM/node URL object vs href; no narrowing on some()) — product files untouched; fix re-runs:
+runtime tsc -p tsconfig.json --noEmit = clean; full pnpm -r typecheck = clean (window-rerun-typecheck.log); a5mcp-native-trust-filter 7/7 green post-fix (FULL_TYPECHECK_EXIT=0).
