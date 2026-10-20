@@ -21,8 +21,12 @@ render footers) and executes reads through a **trusted-dirfd chain** under:
   (`verifyLiveAdmission`) + a NO-OPEN dir-entry retarget guard
   (`recheckHandleIdentity`, lstat under the parent anchor);
 - per-call admission binding (never a shared "current grant"), required
-  `grantId` riding an EXISTING trusted grant; a live view that omits the
-  grant diverges (root F1 ruling — no silent bypass);
+  `grantId` riding an EXISTING trusted grant; grant PRESENCE is enforced at
+  RUNTIME on BOTH sides (8ae R1): a binding without a string grant refuses
+  before any open (`GOV_ADMISSION_MISSING`, the Q2 both-sides-missing probe
+  is a negative leg with reads=0), and a live view that omits the grant
+  diverges (root F1 ruling — no silent bypass, and never
+  `undefined !== undefined` passing);
 - runtime validation of every outcome against the native output shape
   (`validateNativeOutputShape`, additionalProperties:false semantics);
 - unsupported shapes fail CLOSED at construction (`ioProfile`,
@@ -60,9 +64,14 @@ render footers) and executes reads through a **trusted-dirfd chain** under:
 - **G8** — "zero opens after verify" is re-anchored to: **no leaf-target open
   after verify**; the effect-boundary recheck is a NO-OPEN dir-entry
   inspection (lstat = readlinkat family). Live T-L5 counts by this law.
-- **G9** — `GOV_NO_PROC` (no `/proc`, no string fallback) is a code path with
-  an UNREACHABLE probe on Linux: recorded as untested-by-environment, never
-  as passing.
+- **G9 (rewritten per 8ae D1, measured)** — `GOV_NO_PROC` now has its honest
+  home: a CONSTRUCTION-TIME probe (`probeAnchorSupport()` opens
+  `/proc/self/fd/.` once; a genuine absence refuses the definition there —
+  on this Linux host it passes, and the leg proves the probe runs). Per-call
+  root-anchor opens answer BY errno (D1): missing root → `GOV_NOT_FOUND`,
+  symlinked/non-dir root → `GOV_NOT_REGULAR` (the O_NOFOLLOW ENOTDIR truth,
+  never mislabeled as a /proc story), anything else → `GOV_IO` with the errno
+  disclosed. Negative legs for both error shapes are in the suite.
 - **⑤/⑥** — `truncatedByBytes` never rides the outcome (native schema is
   strict; render derives it); raw paths ride verbatim (only all-blank
   `file_path` rejects).

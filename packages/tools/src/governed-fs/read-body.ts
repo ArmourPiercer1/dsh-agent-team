@@ -92,6 +92,10 @@ export interface AdmissionLiveState {
 export function verifyCallAdmission (expected: AdmissionExpectation, binding: CallAdmission | undefined): void {
   if (binding === undefined) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: no per-call admission binding supplied (undefined rejects)')
   if (binding.revoked === true) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused: admission binding revoked')
+  // R1 @8ae-review: grant PRESENCE is a RUNTIME check (the TS type is not the
+  // guard): a call that does not ride a string grant identity is refused here,
+  // so the effect-side comparison can never degenerate to undefined !== undefined.
+  if (typeof binding.grantId !== 'string' || binding.grantId.length === 0) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: the binding rides no trusted grant (runtime presence check, R1)')
   if (binding.bindingRevision !== expected.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: binding revision mismatch (${String(expected.bindingRevision)} expected)`)
   if (binding.generation !== expected.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: authority generation mismatch (${String(expected.generation)} expected)`)
   if (binding.canonicalLocator !== expected.canonicalLocator) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused: canonical locator mismatch')
@@ -101,10 +105,13 @@ export function verifyCallAdmission (expected: AdmissionExpectation, binding: Ca
 /** … and AGAIN at the effect boundary against the CURRENT state (BLOCK ②). */
 export function verifyLiveAdmission (binding: CallAdmission, live: AdmissionLiveState): void {
   // Order: revocation first (strongest), then the CURRENT-GRANT identity —
-  // F1 @8ae8c445-review: the binding always carries a grantId, so a live view
-  // that FAILS TO RETURN one is divergence, never a silent skip of the check.
+  // F1 @8ae8c445-review + R1 @8ae-review: presence is RUNTIME-enforced on the
+  // LIVE side too: a live view that fails to return a string grant is
+  // divergence (the binding side is guaranteed by verifyCallAdmission above),
+  // never a silent skip.
   if (live.revoked) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused at effect boundary: admission revoked before the read effect')
-  if (live.grantId !== binding.grantId) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the current grant is not the grant this call rides (a live view that omits grantId diverges)')
+  if (typeof live.grantId !== 'string' || live.grantId.length === 0) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the live view reports no string grant identity (presence is runtime-enforced, R1)')
+  if (live.grantId !== binding.grantId) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the current grant is not the grant this call rides')
   if (live.generation !== binding.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused at effect boundary: generation moved (${String(binding.generation)} bound, ${String(live.generation)} current)`)
   if (live.bindingRevision !== binding.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: binding revision moved before the read effect')
 }
@@ -203,7 +210,14 @@ export function openVerifiedChain (rootDir: string, requestedPath: string, caps:
   observer?.onOpen(rootDir, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_DIRECTORY)
   let rootFd = -1
   try { rootFd = openSync(rootDir, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_DIRECTORY) } catch (e) {
-    throw new GovernedFsError('GOV_NO_PROC', `read refused: cannot anchor on the trusted root dirfd (${String((e as NodeJS.ErrnoException).code ?? 'ERR')}) — no string-path fallback exists`)
+    // D1 @8ae-review: answer BY errno — GOV_NO_PROC is reserved for a genuine
+    // /proc absence (caught at the CONSTRUCTOR probe); the root open's own
+    // failures are labeled truthfully (a symlinked root is ENOTDIR here, not
+    // a /proc story, and must not be mislabeled).
+    const code = String((e as NodeJS.ErrnoException).code ?? 'ERR')
+    if (code === 'ENOENT') throw new GovernedFsError('GOV_NOT_FOUND', 'read refused: the trusted root does not exist')
+    if (code === 'ENOTDIR') throw new GovernedFsError('GOV_NOT_REGULAR', 'read refused: the trusted root is not a plain directory (symlinked or non-dir anchor; O_NOFOLLOW answers ENOTDIR)')
+    throw new GovernedFsError('GOV_IO', `read refused: cannot anchor on the trusted root dirfd (${code}) — no string-path fallback exists`)
   }
   const opened: number[] = [rootFd]
   try {
@@ -244,6 +258,15 @@ export function openVerifiedChain (rootDir: string, requestedPath: string, caps:
   }
 }
 
+/** D1 @8ae-review: probe /proc/self/fd ONCE at construction; a genuine /proc
+ * absence (which DOES break the dirfd chain) refuses the definition there. */
+export function probeAnchorSupport (): void {
+  let fd = -1
+  try { fd = openSync('/proc/self/fd/.', O_RDONLY | O_DIRECTORY) } catch (e) {
+    throw new GovernedFsError('GOV_NO_PROC', `governed-read is unsupported here: /proc/self/fd is not openable (${String((e as NodeJS.ErrnoException).code ?? 'ERR')}) — the dirfd chain has no anchor mechanism and no string-path fallback exists`)
+  } finally { if (fd >= 0) { try { closeSync(fd) } catch { /* noop */ } } }
+}
+
 export function closeHandle (handle: VerifiedHandle): void {
   try { closeSync(handle.fd) } catch { /* already closed */ }
   try { closeSync(handle.parentFd) } catch { /* same fd or already closed */ }
@@ -270,6 +293,15 @@ export function recheckHandleIdentity (handle: VerifiedHandle, observer?: OpenOb
   }
   if (!st.isFile() || st.dev !== handle.dev || st.ino !== handle.ino) {
     throw new GovernedFsError('GOV_STALE_HANDLE', 'read refused at effect boundary: the verified handle no longer matches the directory entry (retarget)')
+  }
+  // N4 @8ae-review (zero-cost hardening): the HELD fd itself is re-checked —
+  // a closed/reused descriptor cannot sneak past an entry-only comparison.
+  let held
+  try { held = fstatSync(handle.fd) } catch {
+    throw new GovernedFsError('GOV_STALE_HANDLE', 'read refused at effect boundary: the held descriptor is no longer open (fd reuse guard, N4)')
+  }
+  if (!held.isFile() || held.dev !== handle.dev || held.ino !== handle.ino) {
+    throw new GovernedFsError('GOV_STALE_HANDLE', 'read refused at effect boundary: the held descriptor no longer denotes the verified file (fd reuse guard, N4)')
   }
 }
 

@@ -294,9 +294,14 @@ describe('native contract shapes (review r2 ⑤/⑥)', () => {
   it('⑤ in-root \'..\' bounded traversal is ALLOWED exactly as native (not banned)', async () => {
     mkdirSync(join(root, 'a'))
     writeFileSync(join(root, 'b.txt'), 'B-CONTENT\n')
-    const p = join(root, 'a', '..', 'b.txt')
-    const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(join(root, 'b.txt')) }) as { lines: { text: string }[] }
-    // the expectation layer canonicalizes; the read answers b.txt's bytes.
+    // RAW traversal vector per root note ④: the string handed to the tool is
+    // the LITERAL bytes (never path.join'd — join would normalize the vector
+    // away and the assertion would then prove nothing about traversal).
+    const raw = `${join(root, 'a')}/../b.txt`
+    expect(raw).toContain('/../')
+    const out = await call(defFor(), { file_path: raw }, { admissionBinding: bindingFor(raw) }) as { lines: { text: string }[] }
+    // in-root bounded traversal rides through (native contract); the read
+    // answers b.txt's bytes. NO new ban invented.
     expect(out.lines[0]?.text).toBe('B-CONTENT')
   })
   it('⑥ raw path with in-name whitespace rides verbatim (only all-blank rejects)', async () => {
@@ -305,6 +310,61 @@ describe('native contract shapes (review r2 ⑤/⑥)', () => {
     const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(p) }) as { lines: { text: string }[] }
     expect(out.lines[0]?.text).toBe('WS-CONTENT')
     await expect(call(defFor(), { file_path: '   ' })).rejects.toThrow('file_path must be a non-empty string')
+  })
+})
+
+describe('R1/D1/N4 @8ae-review negative legs', () => {
+  it('Q2: BOTH sides omitting grantId refuses BEFORE any open with reads=0 (never undefined!==undefined)', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'x\n')
+    const bare = { bindingRevision: 1, generation: 7, canonicalLocator: p, parametersFingerprint: fingerprintParameters(p, 1, 2000) } as unknown as CallAdmission
+    const def = defFor({ liveAdmission: () => { const l = { revoked: false, generation: 7, bindingRevision: 1 }; return l as unknown as AdmissionLiveState } })
+    const err = await def.execute({ file_path: p }, { admissionBinding: bare }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_ADMISSION_MISSING')
+    expect(opens.length).toBe(0)
+    expect(reads).toBe(0)
+  })
+  it('D1: a symlinked trusted root answers GOV_NOT_REGULAR (ENOTDIR truth), never a mislabeled NO_PROC', async () => {
+    const outer = mkdtempSync(join(tmpdir(), 'a5-read-pilot-rootlink-'))
+    console.log(`[fixture retained (HOLD)] ${outer}`)
+    const realDir = join(outer, 'real'); mkdirSync(realDir)
+    writeFileSync(join(realDir, 'a.txt'), 'x\n')
+    const link = join(outer, 'link')
+    symlinkSync(realDir, link)
+    const st = statSync(realDir)
+    const def = createGovernedReadDefinition({
+      rootDir: link, // absolute path IS a symlink: O_NOFOLLOW answers ENOTDIR at the anchor open
+      rootIdentity: { dev: st.dev, ino: st.ino },
+      ioProfile: 'pinned-trusted-root',
+      liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1, grantId: 'g' }),
+      expectationFor (fp, o, l) { return { bindingRevision: 1, generation: 1, canonicalLocator: fp, parametersFingerprint: fingerprintParameters(fp, o, l) } },
+    })
+    const err = await def.execute({ file_path: join(link, 'a.txt') }, { admissionBinding: { bindingRevision: 1, generation: 1, canonicalLocator: join(link, 'a.txt'), parametersFingerprint: fingerprintParameters(join(link, 'a.txt'), 1, 2000), grantId: 'g' } }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_NOT_REGULAR')
+  })
+  it('D1: a missing root answers GOV_NOT_FOUND (errno-truthful labeling)', async () => {
+    const gone = join(root, 'nope-dir')
+    const st = statSync(root)
+    const def = createGovernedReadDefinition({
+      rootDir: gone,
+      rootIdentity: { dev: st.dev, ino: st.ino },
+      ioProfile: 'pinned-trusted-root',
+      liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1, grantId: 'g' }),
+      expectationFor (fp, o, l) { return { bindingRevision: 1, generation: 1, canonicalLocator: fp, parametersFingerprint: fingerprintParameters(fp, o, l) } },
+    })
+    const err = await def.execute({ file_path: join(gone, 'a.txt') }, { admissionBinding: { bindingRevision: 1, generation: 1, canonicalLocator: join(gone, 'a.txt'), parametersFingerprint: fingerprintParameters(join(gone, 'a.txt'), 1, 2000), grantId: 'g' } }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_NOT_FOUND')
+  })
+  it('N4: a closed/reused held descriptor is caught at the effect boundary (fd-reuse guard)', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'x\n')
+    const { closeSync } = await import('node:fs')
+    const def = defFor({
+      effectBoundarySeam: (handle) => { closeSync(handle.fd) }, // deterministic descriptor loss
+    })
+    const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p) }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_STALE_HANDLE')
+    expect(reads).toBe(0)
   })
 })
 

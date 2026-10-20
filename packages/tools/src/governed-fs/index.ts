@@ -19,7 +19,7 @@
  */
 import { createHash } from 'node:crypto'
 import { GovernedFsError } from './errors.js'
-import { closeHandle, FLAGS_SUPPORTED, openVerifiedChain, readFdBytes, recheckHandleIdentity, verifyCallAdmission, verifyLiveAdmission, type AdmissionExpectation, type AdmissionLiveState, type CallAdmission, type DirIdentity, type GovernedReadCaps, type OpenObserver } from './read-body.js'
+import { closeHandle, FLAGS_SUPPORTED, openVerifiedChain, probeAnchorSupport, readFdBytes, recheckHandleIdentity, verifyCallAdmission, verifyLiveAdmission, type AdmissionExpectation, type AdmissionLiveState, type CallAdmission, type DirIdentity, type GovernedReadCaps, type OpenObserver, type VerifiedHandle } from './read-body.js'
 
 export { GovernedFsError } from './errors.js'
 export * from './read-body.js'
@@ -44,7 +44,7 @@ export interface GovernedReadConfig {
    * verified chain is built and BEFORE the effect-boundary recheck, so a
    * retarget/revoke injected here is caught by the recheck without racing.
    */
-  readonly effectBoundarySeam?: () => void
+  readonly effectBoundarySeam?: (handle: VerifiedHandle) => void
   /** Assembles the expectation for THIS call from the caller's binding layer. */
   expectationFor (filePath: string, offset: number, limit: number): AdmissionExpectation
 }
@@ -189,6 +189,9 @@ export interface GovernedReadDefinition {
 export function createGovernedReadDefinition (config: GovernedReadConfig): GovernedReadDefinition {
   // PoC3 law: the arbitrary mutable-tree profile is NOT published
   // (controlled-fs ARBITRARY_TREE_PROFILE_PUBLISHED=false) — fail closed HERE.
+  // D1 @8ae-review — genuine /proc absence refuses HERE (construction), which
+  // is the honest home of the GOV_NO_PROC code; per-call opens answer by errno.
+  probeAnchorSupport()
   // BLOCK ⑧ — a platform missing any resolve-law flag is unsupported, loudly.
   if (!FLAGS_SUPPORTED) {
     throw new GovernedFsError('GOV_PROFILE_UNSUPPORTED', 'this platform lacks O_NOFOLLOW/O_DIRECTORY/O_NONBLOCK; the pilot refuses to run with defaulted (0) flags')
@@ -245,7 +248,7 @@ export function createGovernedReadDefinition (config: GovernedReadConfig): Gover
       try {
         // BLOCK ③ determinism seam: retarget/revoke injected here is caught
         // by the effect-boundary recheck below (synchronous, non-racing).
-        config.effectBoundarySeam?.()
+        config.effectBoundarySeam?.(handle)
         // BLOCK ② — re-read CURRENT policy state at the effect boundary.
         verifyLiveAdmission(exec?.admissionBinding as CallAdmission, config.liveAdmission())
         // BLOCK ③ — verified handle must still match the directory entry.
