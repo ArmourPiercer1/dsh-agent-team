@@ -89,13 +89,24 @@ export interface AdmissionLiveState {
 }
 
 /** Same law as controlled-fs bindAdmissionRecheck; used pre-chain (full) … */
+/**
+ * ROOT GRANT CONTRACT (runtime form, 8ae R1 acceptance): a grant identity is
+ * VALID only when it is a string that is not empty and not all-whitespace.
+ * Anything else (absent, '', '   ', number, object…) is contract-invalid and
+ * is refused at RUNTIME — the TS types are documentation, never the guard.
+ */
+export function isRuntimeValidGrantId (value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
 export function verifyCallAdmission (expected: AdmissionExpectation, binding: CallAdmission | undefined): void {
   if (binding === undefined) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: no per-call admission binding supplied (undefined rejects)')
   if (binding.revoked === true) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused: admission binding revoked')
-  // R1 @8ae-review: grant PRESENCE is a RUNTIME check (the TS type is not the
-  // guard): a call that does not ride a string grant identity is refused here,
-  // so the effect-side comparison can never degenerate to undefined !== undefined.
-  if (typeof binding.grantId !== 'string' || binding.grantId.length === 0) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: the binding rides no trusted grant (runtime presence check, R1)')
+  // R1 @8ae-review + ROOT grant contract: PRESENCE and SHAPE are RUNTIME
+  // checks (isRuntimeValidGrantId: non-empty, non-whitespace string; ''/' '/
+  // non-string are all contract-invalid). Refused here — before any open — so
+  // the effect-side comparison can never degenerate to undefined !== undefined.
+  if (!isRuntimeValidGrantId(binding.grantId)) throw new GovernedFsError('GOV_ADMISSION_MISSING', 'read refused: the binding rides no trusted grant (runtime presence+shape check: contract-invalid grantId)')
   if (binding.bindingRevision !== expected.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: binding revision mismatch (${String(expected.bindingRevision)} expected)`)
   if (binding.generation !== expected.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused: authority generation mismatch (${String(expected.generation)} expected)`)
   if (binding.canonicalLocator !== expected.canonicalLocator) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused: canonical locator mismatch')
@@ -110,7 +121,7 @@ export function verifyLiveAdmission (binding: CallAdmission, live: AdmissionLive
   // divergence (the binding side is guaranteed by verifyCallAdmission above),
   // never a silent skip.
   if (live.revoked) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused at effect boundary: admission revoked before the read effect')
-  if (typeof live.grantId !== 'string' || live.grantId.length === 0) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the live view reports no string grant identity (presence is runtime-enforced, R1)')
+  if (!isRuntimeValidGrantId(live.grantId)) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the live view reports a contract-invalid grant identity (presence+shape are runtime-enforced, R1)')
   if (live.grantId !== binding.grantId) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the current grant is not the grant this call rides')
   if (live.generation !== binding.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused at effect boundary: generation moved (${String(binding.generation)} bound, ${String(live.generation)} current)`)
   if (live.bindingRevision !== binding.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: binding revision moved before the read effect')

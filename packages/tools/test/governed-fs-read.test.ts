@@ -324,6 +324,30 @@ describe('R1/D1/N4 @8ae-review negative legs', () => {
     expect(opens.length).toBe(0)
     expect(reads).toBe(0)
   })
+  it('root grant contract ④: blank (empty / whitespace) and type-invalid grantIds refuse on BOTH sides before any read (runtime, not TS)', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'x\n')
+    const bad: unknown[] = ['', '   ', 42, {}, null, undefined, true]
+    for (const badId of bad) {
+      // binding side: contract-invalid grant -> refused BEFORE any open
+      const b = { bindingRevision: 1, generation: 7, canonicalLocator: p, parametersFingerprint: fingerprintParameters(p, 1, 2000), grantId: badId } as unknown as CallAdmission
+      const errB = await defFor().execute({ file_path: p }, { admissionBinding: b }).catch((e: unknown) => e) as GovernedFsError
+      expect([errB.code, String(badId)]).toEqual(['GOV_ADMISSION_MISSING', String(badId)])
+      // live side: contract-invalid live grant -> refused at the effect boundary
+      const def = defFor({ liveAdmission: () => ({ revoked: false, generation: 7, bindingRevision: 1, grantId: badId } as unknown as AdmissionLiveState) })
+      const errL = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p) }).catch((e: unknown) => e) as GovernedFsError
+      expect([errL.code, String(badId)]).toEqual(['GOV_ADMISSION_DIVERGENT', String(badId)])
+    }
+    expect(reads).toBe(0) // every form refused BEFORE the read effect
+  })
+  it('root grant contract: valid-shape positive control still serves', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'GOOD-CONTROL\n')
+    const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(p) }) as { lines: { text: string }[] }
+    expect(out.lines[0]?.text).toBe('GOOD-CONTROL')
+    expect(reads).toBeGreaterThan(0)
+  })
+
   it('D1: a symlinked trusted root answers GOV_NOT_REGULAR (ENOTDIR truth), never a mislabeled NO_PROC', async () => {
     const outer = mkdtempSync(join(tmpdir(), 'a5-read-pilot-rootlink-'))
     console.log(`[fixture retained (HOLD)] ${outer}`)

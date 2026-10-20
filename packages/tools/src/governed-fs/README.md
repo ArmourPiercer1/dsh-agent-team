@@ -21,12 +21,15 @@ render footers) and executes reads through a **trusted-dirfd chain** under:
   (`verifyLiveAdmission`) + a NO-OPEN dir-entry retarget guard
   (`recheckHandleIdentity`, lstat under the parent anchor);
 - per-call admission binding (never a shared "current grant"), required
-  `grantId` riding an EXISTING trusted grant; grant PRESENCE is enforced at
-  RUNTIME on BOTH sides (8ae R1): a binding without a string grant refuses
-  before any open (`GOV_ADMISSION_MISSING`, the Q2 both-sides-missing probe
-  is a negative leg with reads=0), and a live view that omits the grant
-  diverges (root F1 ruling — no silent bypass, and never
-  `undefined !== undefined` passing);
+  `grantId` riding an EXISTING trusted grant under the ROOT GRANT CONTRACT,
+  runtime-enforced on BOTH sides (8ae R1 + root acceptance form): a grant is
+  valid ONLY as a non-empty, non-whitespace string
+  (`isRuntimeValidGrantId` — the TS types are documentation, never the
+  guard). All four refuse forms are legs with reads=0: ① missing admission
+  grant, ② missing live grant, ③ both missing (Q2 — refused at the BINDING
+  side, before any open), ④ blank ('' / whitespace) or type-invalid
+  (number/object/null/bool) on either side; the valid-shape positive control
+  stays a leg. No silent bypass, never `undefined !== undefined` passing.
 - runtime validation of every outcome against the native output shape
   (`validateNativeOutputShape`, additionalProperties:false semantics);
 - unsupported shapes fail CLOSED at construction (`ioProfile`,
