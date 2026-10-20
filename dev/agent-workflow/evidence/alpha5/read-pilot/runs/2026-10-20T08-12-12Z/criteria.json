@@ -1,0 +1,152 @@
+[
+  {
+    "id": "RP-PIN",
+    "claim": "the pinned pilot tree is a dedicated clone detached at the exact approved SHA c515b064cb with porcelain clean (immutable profile form; the clone is NEVER a work branch)",
+    "pass": true,
+    "observed": "head=c515b064cb porcelain=true cloneStatus=0"
+  },
+  {
+    "id": "H1",
+    "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+    "pass": true,
+    "observed": "head=639ed01539"
+  },
+  {
+    "id": "H1b",
+    "claim": "the graded SHA c515b064cbbe3e97a8c66babc39aaa316953d766 exists in the repository and the approved push equals it",
+    "pass": true,
+    "observed": "exists=true"
+  },
+  {
+    "id": "H0",
+    "claim": "the stable :3080 instance answers read-only before this run (probe only)",
+    "pass": true,
+    "observed": "status=401"
+  },
+  {
+    "id": "I1",
+    "claim": "REAL install through the host public package face exits 0",
+    "pass": true,
+    "observed": "exit=0 in 5s"
+  },
+  {
+    "id": "I2",
+    "claim": "the profile face is strict-single-plugin",
+    "pass": true,
+    "observed": "deps=[\"dsh-agent-team\"]"
+  },
+  {
+    "id": "I3-lite",
+    "claim": "the installed plugin face carries >1500 files (face probe)",
+    "pass": true,
+    "observed": "files=1773"
+  },
+  {
+    "id": "RP-LAUNCHER",
+    "claim": "launcher blob placed + sha-pinned into the layer config; the kit NEVER executes it (root order); this world is clangd-free and does not ride landlock confinement (disclosed form)",
+    "pass": null,
+    "observed": "sha=1264ea584e3438d6"
+  },
+  {
+    "id": "RP-MOUNT",
+    "claim": "the NATIVE side of the parity pair is the REAL host surface (read tool present on the live world surface; host booted from pristine runtime with the installed face)",
+    "pass": true,
+    "observed": "surfaceHasRead=true surface=[\"bash\",\"edit\",\"glob\",\"grep\",\"read\",\"read_image\",\"str_replace_editor\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"write\"]"
+  },
+  {
+    "id": "RP-NATIVE",
+    "claim": "the NATIVE mount produced real envelopes for the 8 content vectors on the wire (v8 past-EOF is the typed-error control)",
+    "pass": true,
+    "observed": "contentOk=8 v8=Error: offset 9999 is out of range for \"/srv/workspace/dsh-p"
+  },
+  {
+    "id": "RP-CANCEL-WORLD",
+    "claim": "the live host admits a typed session.cancel while the turn is in flight (accepted:true receipt) and the turn terminates (no half-open state)",
+    "pass": true,
+    "observed": "receipt={\"type\":\"server-response\",\"rpcId\":\"session/cancel-traqjuu7\",\"result\":{\"ok\":true, settled=true"
+  },
+  {
+    "id": "RP-PILOT",
+    "claim": "the PINNED pilot mount served 8/8 content vectors through the verified fd-chain (schema-validated outcomes) and v8 past-EOF is a typed refusal",
+    "pass": true,
+    "observed": "pilotOk=8 v8code=GOV_NOT_FOUND"
+  },
+  {
+    "id": "RP-FD-LAW",
+    "claim": "every pilot serve has NET fd delta 0 (chain closed, no leak, no fixture substitution); bytes read for content vectors (the empty-file vector legitimately reads 0 bytes — native law, not a violation)",
+    "pass": true,
+    "observed": "per-record fdDelta/reads/totalLines in pilot-serve.json"
+  },
+  {
+    "id": "RP-PARITY",
+    "claim": "STRICT byte equality between the native wire envelope and the pilot render for all 8 content vectors (same files, same caps, same host version law; zero normalization), plus the v8 typed-error control on both mounts",
+    "pass": true,
+    "observed": "mismatches=[\"v8-pastEOF\"]"
+  },
+  {
+    "id": "RP-PARITY.delta",
+    "claim": "per-vector heads recorded for honest delta analysis",
+    "pass": null,
+    "observed": "[{\"id\":\"v8-pastEOF\",\"nativeHead\":\"Error: offset 9999 is out of range for \\\"/srv/workspace/dsh-plugins/dsh-agent-tea\",\"pilotHead\":null}]"
+  },
+  {
+    "id": "RP-NO-NATIVE-BODY.structural",
+    "claim": "structural law: the pilot mount is a SEPARATE node process from the host world; it imports ONLY the pinned pilot tree (loader-hook-monitored); the host world serves native reads in its own PID",
+    "pass": null,
+    "observed": "separate PIDs; hook file is the witness"
+  },
+  {
+    "id": "RP-NO-NATIVE-BODY",
+    "claim": "ZERO resolutions touching the native read implementation (tool-fs / read-render) occurred in the pilot mount process during all three phases (loader-hook count = 0)",
+    "pass": true,
+    "observed": "hookHits=0 witness=native-body-hooks.log"
+  },
+  {
+    "id": "RP-ALLOW",
+    "claim": "ALLOW form: valid admission binding serves bytes; net fd delta 0; opens>0; reads>0",
+    "pass": true,
+    "observed": "{\"id\":\"form-allow\",\"ok\":true,\"envelopeLen\":237,\"fdDelta\":0,\"opens\":2,\"reads\":1}"
+  },
+  {
+    "id": "RP-DENY",
+    "claim": "DENY form: revoked live state refuses with a typed code and reads=0 (bytes NEVER cross the effect boundary)",
+    "pass": true,
+    "observed": "{\"id\":\"form-deny\",\"code\":\"GOV_ABANDONED_REVOKED\",\"message\":\"read refused at effect boundary: admission revoked before the read effect\",\"fdDelta\":0,\"opens\":2,\"reads\":0}"
+  },
+  {
+    "id": "RP-ASK",
+    "claim": "ASK form: pending (no admission binding) refuses BEFORE any open (opens=0, reads=0); RESOLVED (binding rides) serves with net fd delta 0",
+    "pass": true,
+    "observed": "[{\"id\":\"form-ask-pending\",\"code\":\"GOV_ADMISSION_MISSING\",\"fdDelta\":0,\"opens\":0,\"reads\":0},{\"id\":\"form-ask-resolved\",\"ok\":true,\"lines\":3,\"fdDelta\":0,\"opens\":2,\"reads\":1}]"
+  },
+  {
+    "id": "RP-CANCEL-PILOT",
+    "claim": "cancellation on the pilot face is typed at BOTH points: pre-abort refuses before any open; mid-abort at the effect boundary refuses with reads=0 and net fd delta 0 (descriptors closed)",
+    "pass": true,
+    "observed": "[{\"id\":\"cancel-pre\",\"code\":\"GOV_ABORTED\",\"fdDelta\":0,\"opens\":0,\"reads\":0},{\"id\":\"cancel-mid\",\"code\":\"GOV_ABORTED\",\"fdDelta\":0,\"opens\":2,\"reads\":0}]"
+  },
+  {
+    "id": "T1",
+    "claim": "the pristine test-use tree is STILL byte-clean at the pinned baseline",
+    "pass": true,
+    "observed": "porcelain=true"
+  },
+  {
+    "id": "T2 (HOLD form)",
+    "claim": "host port released; a5rp-* worlds RETAINED per root cleanup HOLD (retention is law, not a failure)",
+    "pass": true,
+    "observed": "released=true retained=[\"a5rp-2026-10-20T07-55-19Z\",\"a5rp-2026-10-20T07-58-48Z\",\"a5rp-2026-10-20T08-04-06Z\",\"a5rp-2026-10-20T08-04-53Z\",\"a5rp-2026-10-20T08-05-42Z\",\"a5rp-2026-10-20T08-06-21Z\",\"a5rp-2026-10-20T08-07-10Z\",\"a5rp-2026-10-20T08-09-38Z\",\"a5rp-2026-10-20T08-12-12Z\",\"a5rp-pin-2026-10-20T07-55-19Z\",\"a5rp-pin-2026-10-20T07-58-48Z\",\"a5rp-pin-2026-10-20T08-04-06Z\",\"a5rp-pin-2026-10-20T08-04-53Z\",\"a5rp-pin-2026-10-20T08-05-42Z\",\"a5rp-pin-2026-10-20T08-06-21Z\",\"a5rp-pin-2026-10-20T08-07-10Z\",\"a5rp-pin-2026-10-20T08-09-38Z\",\"a5rp-pin-2026-10-20T08-12-12Z\",\"a5rp-sanity-fixtures\"]"
+  },
+  {
+    "id": "T3",
+    "claim": "the stable :3080 probe answers the SAME as before",
+    "pass": true,
+    "observed": "before=401 after=401"
+  },
+  {
+    "id": "RP-EVID-CLEAN",
+    "claim": "redact-before-write self-proof: ZERO token-shaped strings in ANY evidence file written by this run",
+    "pass": true,
+    "observed": "hits=[]"
+  }
+]

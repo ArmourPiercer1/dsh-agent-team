@@ -1,0 +1,25 @@
+{
+  "failedVector": "v1-plain",
+  "probe": [
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC"
+      ],
+      "toolCount": 23,
+      "assistantToolNames": [],
+      "nToolResults": 0,
+      "tailText": "lot/tests/homes/a5rp-2026-10-20T08-06-21Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+    },
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC"
+      ],
+      "toolCount": 0,
+      "assistantToolNames": [],
+      "nToolResults": 0,
+      "tailText": "is allowed.\nUse the language of the messages.\nAim for about 5 words in non-CJK languages or 10 CJK characters.\u0001Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"A5RP_DISC barrier 1: setup turn, do not call tools, reply OK.\"}]"
+    }
+  ]
+}

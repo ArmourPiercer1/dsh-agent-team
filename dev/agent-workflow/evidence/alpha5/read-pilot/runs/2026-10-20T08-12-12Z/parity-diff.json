@@ -1,0 +1,92 @@
+[
+  {
+    "id": "v1-plain",
+    "nativeLen": 237,
+    "pilotLen": 237,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v2-window",
+    "nativeLen": 230,
+    "pilotLen": 230,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v3-empty",
+    "nativeLen": 213,
+    "pilotLen": 213,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v4-longline",
+    "nativeLen": 2261,
+    "pilotLen": 2261,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v5-tail",
+    "nativeLen": 299,
+    "pilotLen": 299,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v6-unicode",
+    "nativeLen": 236,
+    "pilotLen": 236,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v7-notrailing",
+    "nativeLen": 242,
+    "pilotLen": 242,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  },
+  {
+    "id": "v8-pastEOF",
+    "nativeLen": 182,
+    "pilotLen": null,
+    "strictEqual": false,
+    "nativeHead": "Error: offset 9999 is out of range for \"/srv/workspace/dsh-plugins/dsh-agent-tea",
+    "pilotHead": null,
+    "nativeIsError": true,
+    "pilotIsError": true
+  },
+  {
+    "id": "v9-crlf",
+    "nativeLen": 227,
+    "pilotLen": 227,
+    "strictEqual": true,
+    "nativeHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "pilotHead": "<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/h",
+    "nativeIsError": false,
+    "pilotIsError": false
+  }
+]

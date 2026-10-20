@@ -1,0 +1,73 @@
+{
+  "ok": true,
+  "stamp": "2026-10-20T08-12-12Z",
+  "expectedSha": "c515b064cbbe3e97a8c66babc39aaa316953d766",
+  "pin": {
+    "head": "c515b064cbbe3e97a8c66babc39aaa316953d766",
+    "porcelain": "",
+    "node": "v24.21.0",
+    "files": [
+      {
+        "f": "/packages/tools/src/governed-fs/errors.ts",
+        "sha256": "e7cf88b1d323111c5600ecd2b4337665a9d4e51ff8920aa626a45a172a265928"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/read-body.ts",
+        "sha256": "8e84b7ca1e601627512cf69c4b37b0680a9b3935d743ab16880adb7640f6239e"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/index.ts",
+        "sha256": "cb0efa595a5cd25cd47e24d75744449e7d833e35f603e2b62f5b09f5c491313a"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/README.md",
+        "sha256": "f9a3d61dde138c27d5009ec62cea5600506d8d3610ada898007a643ce4e7e668"
+      }
+    ]
+  },
+  "probeBefore": 401,
+  "fixtures": [
+    "crlf.txt",
+    "empty.txt",
+    "long.txt",
+    "many.txt",
+    "notrailing.txt",
+    "plain.txt",
+    "unicode.txt"
+  ],
+  "tokenHash": "7805e4cf",
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "nativeCaptured": 9,
+  "worldCancel": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"session/cancel-traqjuu7\",\"result\":{\"ok\":true,\"value\":{\"accepted\":true}}}"
+  },
+  "bigSettled": {
+    "settled": true,
+    "status": 200
+  }
+}

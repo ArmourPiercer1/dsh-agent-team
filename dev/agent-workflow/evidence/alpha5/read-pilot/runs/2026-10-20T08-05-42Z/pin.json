@@ -1,0 +1,23 @@
+{
+  "head": "ebeb3b231a4d187cf5201f7863fe63f5b3a3e686",
+  "porcelain": "",
+  "node": "v24.21.0",
+  "files": [
+    {
+      "f": "/packages/tools/src/governed-fs/errors.ts",
+      "sha256": "e7cf88b1d323111c5600ecd2b4337665a9d4e51ff8920aa626a45a172a265928"
+    },
+    {
+      "f": "/packages/tools/src/governed-fs/read-body.ts",
+      "sha256": "8d7ef13291f29954d6ac758b7e3ee16a97aa9d7c6018e74d0e6938e88f5d84ed"
+    },
+    {
+      "f": "/packages/tools/src/governed-fs/index.ts",
+      "sha256": "c98c4832391b3aeb287e91196fd64aaeb31e434c39d7af235fc4dc168b221b01"
+    },
+    {
+      "f": "/packages/tools/src/governed-fs/README.md",
+      "sha256": "9ce6c0251ed87ff9f80e1c7d63348bca7a30de875fcfe10259f90d655863280e"
+    }
+  ]
+}

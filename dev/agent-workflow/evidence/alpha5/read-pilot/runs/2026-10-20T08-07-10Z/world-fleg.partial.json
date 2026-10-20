@@ -1,0 +1,123 @@
+{
+  "ok": false,
+  "stamp": "2026-10-20T08-07-10Z",
+  "expectedSha": "c515b064cbbe3e97a8c66babc39aaa316953d766",
+  "pin": {
+    "head": "c515b064cbbe3e97a8c66babc39aaa316953d766",
+    "porcelain": "",
+    "node": "v24.21.0",
+    "files": [
+      {
+        "f": "/packages/tools/src/governed-fs/errors.ts",
+        "sha256": "e7cf88b1d323111c5600ecd2b4337665a9d4e51ff8920aa626a45a172a265928"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/read-body.ts",
+        "sha256": "8e84b7ca1e601627512cf69c4b37b0680a9b3935d743ab16880adb7640f6239e"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/index.ts",
+        "sha256": "cb0efa595a5cd25cd47e24d75744449e7d833e35f603e2b62f5b09f5c491313a"
+      },
+      {
+        "f": "/packages/tools/src/governed-fs/README.md",
+        "sha256": "f9a3d61dde138c27d5009ec62cea5600506d8d3610ada898007a643ce4e7e668"
+      }
+    ]
+  },
+  "probeBefore": 401,
+  "fixtures": [
+    "crlf.txt",
+    "empty.txt",
+    "long.txt",
+    "many.txt",
+    "notrailing.txt",
+    "plain.txt",
+    "unicode.txt"
+  ],
+  "tokenHash": "7563fc0b",
+  "surface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "mockProbe": [
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC"
+      ],
+      "toolCount": 23,
+      "assistantToolNames": [],
+      "nToolResults": 0,
+      "tailText": "lot/tests/homes/a5rp-2026-10-20T08-07-10Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+    },
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC"
+      ],
+      "toolCount": 0,
+      "assistantToolNames": [],
+      "nToolResults": 0,
+      "tailText": "is allowed.\nUse the language of the messages.\nAim for about 5 words in non-CJK languages or 10 CJK characters.\u0001Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"A5RP_DISC barrier 1: setup turn, do not call tools, reply OK.\"}]"
+    },
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC",
+        "A5RP_VECTURN"
+      ],
+      "toolCount": 23,
+      "assistantToolNames": [],
+      "nToolResults": 0,
+      "tailText": " platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\u0001A5RP_DISC_OK\u0001A5RP_VECTURN#v1-plain tool turn for v1-plain"
+    },
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC",
+        "A5RP_VECTURN"
+      ],
+      "toolCount": 23,
+      "assistantToolNames": [
+        "read"
+      ],
+      "nToolResults": 1,
+      "tailText": "xt\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-read-pilot/tests/homes/a5rp-2026-10-20T08-07-10Z/workspace/rpdata/plain.txt</path>\\n<type>file</type>\\n<content>\\n1: one\\n2: two\\n3: three\\n\\n(End of file - total 3 lines)\\n</content>\"}]"
+    },
+    {
+      "hasDigest": true,
+      "markers": [
+        "A5RP_DISC",
+        "A5RP_VECTURN"
+      ],
+      "toolCount": 23,
+      "assistantToolNames": [
+        "read"
+      ],
+      "nToolResults": 1,
+      "tailText": "rees/a5-read-pilot/tests/homes/a5rp-2026-10-20T08-07-10Z/workspace/rpdata/plain.txt</path>\\n<type>file</type>\\n<content>\\n1: one\\n2: two\\n3: three\\n\\n(End of file - total 3 lines)\\n</content>\"}]\u0001A5RP_DONE_v1-plain\u0001A5RP_VECTURN#v2-window tool turn for v2-window"
+    }
+  ]
+}

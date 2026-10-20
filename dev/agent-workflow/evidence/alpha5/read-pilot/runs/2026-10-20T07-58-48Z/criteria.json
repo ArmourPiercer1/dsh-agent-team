@@ -1,0 +1,68 @@
+[
+  {
+    "id": "RP-PIN",
+    "claim": "the pinned pilot tree is a dedicated clone detached at the exact approved SHA ebeb3b231a with porcelain clean (immutable profile form; the clone is NEVER a work branch)",
+    "pass": true,
+    "observed": "head=ebeb3b231a porcelain=true cloneStatus=0"
+  },
+  {
+    "id": "H1",
+    "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+    "pass": true,
+    "observed": "head=639ed01539"
+  },
+  {
+    "id": "H1b",
+    "claim": "the graded SHA ebeb3b231a4d187cf5201f7863fe63f5b3a3e686 exists in the repository and the approved push equals it",
+    "pass": true,
+    "observed": "exists=true"
+  },
+  {
+    "id": "H0",
+    "claim": "the stable :3080 instance answers read-only before this run (probe only)",
+    "pass": true,
+    "observed": "status=401"
+  },
+  {
+    "id": "I1",
+    "claim": "REAL install through the host public package face exits 0",
+    "pass": true,
+    "observed": "exit=0 in 36s"
+  },
+  {
+    "id": "I2",
+    "claim": "the profile face is strict-single-plugin",
+    "pass": true,
+    "observed": "deps=[\"dsh-agent-team\"]"
+  },
+  {
+    "id": "I3-lite",
+    "claim": "the installed plugin face carries >1500 files (face probe)",
+    "pass": true,
+    "observed": "files=1773"
+  },
+  {
+    "id": "T1",
+    "claim": "the pristine test-use tree is STILL byte-clean at the pinned baseline",
+    "pass": true,
+    "observed": "porcelain=true"
+  },
+  {
+    "id": "T2 (HOLD form)",
+    "claim": "host port released; a5rp-* worlds RETAINED per root cleanup HOLD (retention is law, not a failure)",
+    "pass": true,
+    "observed": "released=true retained=[\"a5rp-2026-10-20T07-55-19Z\",\"a5rp-2026-10-20T07-58-48Z\",\"a5rp-pin-2026-10-20T07-55-19Z\",\"a5rp-pin-2026-10-20T07-58-48Z\",\"a5rp-sanity-fixtures\"]"
+  },
+  {
+    "id": "T3",
+    "claim": "the stable :3080 probe answers the SAME as before",
+    "pass": true,
+    "observed": "before=401 after=401"
+  },
+  {
+    "id": "RP-EVID-CLEAN",
+    "claim": "redact-before-write self-proof: ZERO token-shaped strings in ANY evidence file written by this run",
+    "pass": true,
+    "observed": "hits=[]"
+  }
+]
