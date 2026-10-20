@@ -1,0 +1,4 @@
+     × two members, two definitions: the SECOND member's mount overwrites the FIRST under the shared scopeKey, and the first bridge's unchanged-identity skip leaves A attribution pinned to B 10ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+AssertionError: expected 'bash@B-def' to be 'bash@A-def' // Object.is equality
+      Tests  1 failed | 29 skipped (30)

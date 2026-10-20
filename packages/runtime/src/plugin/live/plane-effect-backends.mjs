@@ -1081,13 +1081,43 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
           if (signal?.aborted === true) return abortReturn() // race/re-check BEFORE any read: an abort as wait settles still never reads
         }
         const read = await r.svc.read(args.job_id, caller)
-        const delta = (read.chunks ?? []).map((c) => String(c?.text ?? '')).join('')
-        const lossy = read.lossy === true ? `${delta.length > 0 ? '\n' : ''}(older output is no longer retained)` : ''
-        const joined = `${delta}${lossy}`
-        const body = read.result === undefined
-          ? joined
-          : `${joined}${joined.length > 0 && !joined.endsWith('\n') ? '\n' : ''}${read.result}`
-        return { text: body.length > 0 ? body : '(no new output)' }
+        // ROOT final contract, ALIGNED TO THE PINNED HOST (tool-jobs
+        // render.ts:75-84 + index.ts:330-335): `log` chunks are OBSERVER-ONLY
+        // producer narration and NEVER reach the model; stdout (+ unlabelled)
+        // in order, then every stderr chunk in ONE [stderr] section; a lossy
+        // read or a model-visible gapBefore ends the delta with the
+        // dropped-output notice naming the spill - SCOPED: the host carries
+        // absolute spill paths, this governed face presents the file name
+        // only (a Team member must not read the host's world layout); then
+        // the ONE-TIME result tail (the service hands it out on the first
+        // post-settlement read only); then the status line LAST - the host's
+        // statusLine(publicJob(job)) semantics (detail = progress ?? detail).
+        // With the status line, a timed-out wait on a RUNNING job and a
+        // finished job with no new bytes are DISTINGUISHABLE - the collapse
+        // the root BLOCK named (and native wait settlement suppresses a
+        // follow-up completion notice, so this is substance, not cosmetics).
+        const visible = (read.chunks ?? []).filter((c) => c?.channel !== 'log')
+        const out = visible.filter((c) => c?.channel !== 'stderr').map((c) => String(c?.text ?? '')).join('')
+        const err = visible.filter((c) => c?.channel === 'stderr').map((c) => String(c?.text ?? '')).join('')
+        const errSep = out.length > 0 && !out.endsWith('\n') ? '\n' : ''
+        let delta = out + (err.length > 0 ? `${errSep}[stderr]\n${err}` : '')
+        if (read.lossy === true || visible.some((c) => c?.gapBefore === true)) {
+          const spill = (read.job?.output?.spillPaths ?? []).map((p) => String(p).split(/[\\/]/).pop() ?? String(p))
+          const notice = `[some output was dropped from memory; full output: ${spill.length > 0 ? `job spill file(s): ${spill.join(', ')}` : '(unavailable)'}]`
+          delta = `${delta}${delta.length > 0 && !delta.endsWith('\n') ? '\n' : ''}${notice}`
+        }
+        const joined = read.result === undefined
+          ? delta
+          : `${delta}${delta.length > 0 && !delta.endsWith('\n') ? '\n' : ''}${read.result}`
+        const body = joined.length > 0 ? joined : '(no new output)'
+        const job = read.job
+        // A read whose service carries no job view (a thinner face than the
+        // host JobRead contract) keeps the OLD body verbatim - the status
+        // line is added exactly when the read offers a host-shaped job view.
+        const statusLine = job === undefined || job === null || typeof job.status !== 'string'
+          ? ''
+          : `\n[status: ${job.status}${(() => { const d = job.progress ?? job.detail; return d === undefined || d === null ? '' : `, ${String(d)}` })()}]`
+        return { text: `${body}${statusLine}` }
       } catch (error) {
         return refuse('host-jobs-refused', error?.message ?? error)
       }

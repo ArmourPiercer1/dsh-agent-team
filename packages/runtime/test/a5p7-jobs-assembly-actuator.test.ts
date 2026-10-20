@@ -97,6 +97,7 @@ function fakeJobRegistry() {
   const calls: string[] = []
   const waiters = new Map<string, () => void>()
   const listeners = new Map<string, () => void>()
+  let readOverride: { chunks?: unknown[]; lossy?: boolean; result?: string; job?: unknown } | null = null
   return {
     calls,
     seed: (jobId: string, ownerSession: string) => jobs.set(jobId, { ownerSession, killed: false, finished: false }),
@@ -155,12 +156,15 @@ function fakeJobRegistry() {
       const j = jobs.get(id)
       if (j === undefined) throw new Error('unknown job')
       if (caller !== undefined && j.ownerSession !== caller) throw new Error('job belongs to another session')
+      if (readOverride !== null) { const o = readOverride; readOverride = null; return { chunks: [], lossy: false, ...o } }
       return {
         chunks: [{ at: 0, text: 'output-bytes' }],
         lossy: false,
         ...(j.finished ? { result: j.killed ? '(job cancelled by request)' : '(job completed)' } : {}),
       }
     },
+    /** One-shot host-shaped JobRead override (channels, lossy, gapBefore, job, result). */
+    armRead: (r: { chunks?: unknown[]; lossy?: boolean; result?: string; job?: unknown }) => { readOverride = r },
     kill: (id: string, caller?: string): 'requested' | 'already-finished' => {
       calls.push(`kill:${id}:${caller ?? '*'}`)
       const j = jobs.get(id)
@@ -601,5 +605,91 @@ describe('a5p7 process hygiene (ROOT④b-close(3), root risk order)', () => {
     // one macrotask of settle so any late-reporting rejection surfaces first
     await new Promise((r) => setTimeout(r, 50))
     expect(processSmell).toEqual([])
+  })
+})
+
+describe('a5p7 bridge output contract (root final contract: channel filter + stderr + gap/spill + status + one-time result)', () => {
+  // THE CONTRACT SOURCE: pinned host render.ts:75-84 (renderModelDelta) and
+  // tool-jobs index.ts:330-335 (body -> one-time result tail -> statusLine
+  // last). `log` chunks are OBSERVER-ONLY producer narration - NEVER
+  // model-visible (render.ts:65-66 comment, verbatim). The old bridge body
+  // joined ALL chunks raw: a contract the old fake (no channel, no read.job)
+  // could not see - the fake masked it; the fakes here carry the host
+  // JobRead fields (channel, gapBefore, lossy, spillPaths, job).
+  const jb1View = (over: Record<string, unknown> = {}) => ({ id: 'jb1', kind: 'bash', label: 'l', startedAt: 0, status: 'running', ...over })
+  // The SAME raw-bridge construction the round-B legs use (that helper is
+  // scoped inside its describe; this file's contract legs rebuild it here).
+  const rawBridge = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner) =>
+    backendsRow.createGovernedJobsBridge({
+      scopeKey: 'realm-jobs', viewer, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
+    }) as { jobOutput: (a: Record<string, unknown>, c: string, s?: AbortSignal) => Promise<{ text: string }> }
+
+  it('MIXED-CHANNEL (the BLOCK core): log narration NEVER reaches the model; stdout and the [stderr] section stay complete', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'caller-1')
+    const bridge = rawBridge(asm, host, OWNER_A)
+    host.armRead({
+      chunks: [
+        { at: 0, channel: 'stdout', text: 'hi\n' },
+        { at: 3, channel: 'log', text: 'PRODUCER-NARRATION-42' },
+        { at: 9, channel: 'stderr', text: 'bad\n' },
+      ],
+      job: jb1View({ progress: 'step 2' }),
+    })
+    const r = await bridge.jobOutput({ job_id: 'jb1' }, 'caller-1')
+    expect(r.text).toContain('hi\n')
+    expect(r.text).toContain('[stderr]\nbad')
+    expect(r.text).not.toContain('PRODUCER-NARRATION-42') // log NEVER reaches the model
+    expect(r.text).toContain('[status: running, step 2]') // host detail = progress ?? detail
+  })
+
+  it('GAP/SPILL: a model-visible gapBefore (and lossy) ends the read with the dropped-output notice, the spill named WITHOUT leaking host absolute paths', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'caller-1')
+    const bridge = rawBridge(asm, host, OWNER_A)
+    host.armRead({
+      chunks: [{ at: 5, channel: 'stdout', text: 'tail-bytes', gapBefore: true }],
+      job: jb1View({ output: { total: 4096, earliest: 5, spillPaths: ['/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5p3-w/controlled/spill/job-1.log'] } }),
+    })
+    const r = await bridge.jobOutput({ job_id: 'jb1' }, 'caller-1')
+    expect(r.text).toContain('tail-bytes')
+    expect(r.text).toContain('[some output was dropped from memory; full output: ')
+    expect(r.text).toContain('job-1.log') // the spill EXISTS, scoped to its file name
+    expect(r.text).not.toContain('/srv/workspace') // NO host root
+    expect(r.text).not.toContain('tests/homes') // NO world layout
+    expect(r.text).not.toContain('controlled') // NO instance structure
+  })
+
+  it('RUNNING-TIMEDOUT vs FINISHED-EMPTY are DISTINGUISHABLE once more (the incident: both collapsed to one empty body)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'caller-1')
+    const bridge = rawBridge(asm, host, OWNER_A)
+    host.armRead({ chunks: [], job: jb1View({ progress: 'still going' }) }) // the timed-out window: no new bytes, still running
+    const running = await bridge.jobOutput({ job_id: 'jb1' }, 'caller-1')
+    host.armRead({ chunks: [], job: jb1View({ status: 'completed', detail: 'exit 0', finishedAt: 7 }), result: '(job completed)' })
+    const finished = await bridge.jobOutput({ job_id: 'jb1' }, 'caller-1')
+    expect(running.text).toContain('[status: running, still going]')
+    expect(finished.text).toContain('[status: completed, exit 0]')
+    expect(finished.text).toContain('(job completed)') // the one-time result tail rides the terminal read
+    expect(finished.text.indexOf('(job completed)')).toBeLessThan(finished.text.indexOf('[status: completed')) // tail order: result, then status LAST (host order)
+    expect(running.text).not.toBe(finished.text)
+  })
+
+  it('EVERY status is its own shape (running/stopping/completed/killed/failed on an empty read): five distinguishable outputs', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    host.seed('jb1', 'caller-1')
+    const bridge = rawBridge(asm, host, OWNER_A)
+    const seen = new Set<string>()
+    for (const status of ['running', 'stopping', 'completed', 'killed', 'failed'] as const) {
+      host.armRead({ chunks: [], job: jb1View({ status }) })
+      const r = await bridge.jobOutput({ job_id: 'jb1' }, 'caller-1')
+      expect(r.text).toContain(`[status: ${status}]`)
+      seen.add(r.text)
+    }
+    expect(seen.size).toBe(5)
   })
 })
