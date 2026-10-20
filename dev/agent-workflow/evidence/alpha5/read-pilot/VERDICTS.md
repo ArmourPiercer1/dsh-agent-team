@@ -106,3 +106,45 @@ created by this lane). Retired/DO-NOT-REUSE dirs: never touched. No raw token ev
   is within the authorized probe surface — awaiting root.
 - P2: whether the cancel leg needs an additional terminal-attribution requirement beyond
   accepted:true + turn-settled receipt — awaiting root.
+
+---
+# APPENDIX B (root P1/P2 rulings + 8ae wording core PASS with 4 fixes — append-only; zero reruns)
+
+## B1 (root P1) :3080 probe = WITHIN the authorized surface
+Unauthenticated GET health/root probe of the existing local instance, STATUS recorded only,
+zero secrets; no login/config/deploy/session actions ever. P1 RESOLVED "within authorized
+surface"; never an approval blocker.
+
+## B2 (root P2) cancel terminal-attribution leg = **PENDING**, missing elements named
+Required three: (a) exact call/run identity of the canceled in-flight effect, (b) observed
+terminal outcome of the turn, (c) post-cancel NO content-read/effect witness.
+run12 artifacts: (a) MISSING — callid-ledger shows NO issued call for the bigc turn (see B3);
+(b) PARTIAL — accepted:true receipt (request ack only) + queue-receipt settled:true; NO turn-
+terminal observation; (c) MISSING — no post-cancel witness ledger. The leg stays PENDING with
+exactly (a)(c) missing and (b) downgraded to request-ack per root wording. Not run-polished.
+
+## B3 harness-fidelity observation (new, run12): the BIGC turn was HIJACKED by the last-marker
+law — prior-turn VECTURN markers in history matched first, so the bigc turn answered a DONE text
+and issued NO read call. RP-CANCEL-WORLD therefore honestly supports ONLY: "typed session.cancel
+accepted (accepted:true) while SOME root-session turn was in flight; queue receipt settled" —
+NOT "a read was canceled mid-flight". Scope corrected here, not re-gated.
+
+## B4 (8ae ①) native-body claim text + PID count corrected
+Kit criterion now reads the narrowed claim (specifier-substring + ESM resolve, per instrumented
+PID) — future runs carry it; old run texts untouched. CORRECTION to A3: the package instrumented
+THREE PIDs (serve/forms/cancel phase processes), not "single PID"; the claim per PID is unchanged
+and strictly narrower.
+
+## B5 (8ae ②) v8 field semantics for future runs
+pilotLen for error vectors = the RAW typed-message length (175), with a separate
+hostPrefixBytes:7 field — never a synthesized 182 masquerading as pilot output. run12's shipped
+null stays as shipped.
+
+## B6 (8ae ③) erratum to A0
+run10's criteria body = 22 checks / 25 lines, KIT_SUMMARY 22/22. The "21" in A0 quoted the then
+live order text, not run10's body — corrected; A5's caliber (package body rules) stands.
+
+## B7 (8ae ④) instrument provenance
+run12 ran with the hooks blob sha 647fa2eb (pre-hardening instrument, as shipped in 2ddc6180).
+The hardened kit/hook (456c2e1d, pid= lines + resolved-URL matching) has NOT been exercised by
+any run — stated plainly; no run may cite it as evidence.

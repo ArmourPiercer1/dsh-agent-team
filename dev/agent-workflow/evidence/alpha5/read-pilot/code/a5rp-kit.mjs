@@ -508,9 +508,10 @@ async function main () {
       const pil = v.id === 'v8-pastEOF' ? null : (byId[v.id]?.envelope ?? null)
       // error vectors: fill pilot-side machine fields with the typed message (the
       // 7-byte delta to native is exactly the host adapter's "Error: " prefix).
-      const pilotErr = pil === null ? `Error: ${String(byId[v.id]?.message ?? '')}` : null
-      const pilotText = pil ?? pilotErr
-      const rec = { id: v.id, nativeLen: nat.length, pilotLen: pilotText === null ? null : pilotText.length, strictEqual: pil !== null && pil === nat, nativeHead: nat.slice(0, 80), pilotHead: pilotText === null ? null : pilotText.slice(0, 80), nativeIsError: /^Error|out of range/i.test(nat), pilotIsError: pil === null, errorFormNote: pil === null ? 'pilotLen = "Error: " + typed message; delta to native is the host-adapter prefix (VERDICTS A2)' : undefined }
+      // B5 field law: pilotLen for error vectors = the RAW typed-message length ONLY
+      // (never the synthesized host-prefixed string); the prefix is its own field.
+      const rawMsg = pil === null ? String(byId[v.id]?.message ?? '') : null
+      const rec = { id: v.id, nativeLen: nat.length, pilotLen: pil !== null ? pil.length : (rawMsg === null ? null : rawMsg.length), hostPrefixBytes: pil === null ? 7 : undefined, strictEqual: pil !== null && pil === nat, nativeHead: nat.slice(0, 80), pilotHead: pil !== null ? pil.slice(0, 80) : (rawMsg === null ? null : rawMsg.slice(0, 80)), nativeIsError: /^Error|out of range/i.test(nat), pilotIsError: pil === null, errorFormNote: pil === null ? 'B5: pilotLen = raw typed message; native delta = hostPrefixBytes (the adapter "Error: " prefix, VERDICTS A2/B5)' : undefined }
       parity.push(rec)
     }
     writeEvidence('parity-diff.json', parity)
@@ -524,7 +525,7 @@ async function main () {
     // NATIVE BODY = 0: hook-count + structural law
     const hookHits = readFileSync(HOOKS_LOG, 'utf8').split('\n').filter((l) => l.startsWith('NATIVE-HIT')).length
     note('RP-NO-NATIVE-BODY.structural', 'structural law: the pilot mount is a SEPARATE node process from the host world; it imports ONLY the pinned pilot tree (loader-hook-monitored); the host world serves native reads in its own PID', 'separate PIDs; hook file is the witness')
-    check('RP-NO-NATIVE-BODY', 'ZERO resolutions touching the native read implementation (tool-fs / read-render) occurred in the pilot mount process during all three phases (loader-hook count = 0)',
+    check('RP-NO-NATIVE-BODY', 'narrow claim (A3/B4): the ESM resolve hook of each instrumented pilot phase PID observed ZERO specifier-string (and, hardened kit only, resolved-URL) matches of /tool-fs|read-render/ — specifier-substring + ESM-resolve surface per instrumented PID; NOT a whole-process proof',
       hookHits === 0, `hookHits=${String(hookHits)} witness=native-body-hooks.log`)
 
     // THREE FORMS on pilot control faces, with FD/read witnesses
