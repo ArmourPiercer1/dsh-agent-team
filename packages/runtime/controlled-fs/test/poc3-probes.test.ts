@@ -18,8 +18,10 @@
  *
  * @module packages/runtime/controlled-fs/test/poc3-probes
  */
+import { execFileSync } from 'node:child_process'
 import { closeSync, mkdirSync, openSync, readlinkSync, readSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import {
@@ -267,9 +269,6 @@ describe('PoC3-E fd continued-use after close', () => {
   const FD_RESERVE_SLOTS = 64
   /** Presentations the closed-fd leg will make before it calls the law unseen. */
   const FD_CLOSED_SIGHTINGS = 12
-  /** Cap on fds the recycling leg may hold at once (EMFILE politeness). */
-  const FD_HOLD_CAP = 128
-
   /** Who owns this fd NUMBER in this process, right now. */
   const fdOwner = (fd: number): string => {
     try {
@@ -332,61 +331,59 @@ describe('PoC3-E fd continued-use after close', () => {
   })
 
   it('GUARDED: fd-number RECYCLING — raw fd trust silently misreads (naive); the lane refuses (guarded)', async () => {
-    let captured = -1
-    const l = lane({
-      onFdOpened: (info) => {
-        if (info.locator.endsWith('/public/a.txt')) captured = info.fd
-      },
-    })
-    const ref = fileRef(world, 'public/a.txt', ['read'])
-    const grant = makeGrant({ member: MEM_A, effects: [{ kind: 'read', resource: ref }] })
-    await l.fs.readText(grant, ref, FULL)
-    // The fd number is now free; the OS hands out the LOWEST free number. The
-    // nine-root census runs this file's process alongside other files' tests
-    // (worker threads share the fd table), so the number may be momentarily
-    // held elsewhere — a single open could then miss the recycling and report
-    // a false race. Retry the open until recycling is OBSERVED. This keeps the
-    // leg's claim exact: the law was seen to happen, never assumed; if no
-    // attempt observes it within the bound, the leg stays RED.
-    // RULE 3 — A MISS IS HELD OPEN, NOT CLOSED. Each held miss removes one free
-    // slot below the leg's number, so the free set below it shrinks
-    // monotonically and an open must land on `captured`. Closing each miss
-    // (the previous shape) handed the same slot back every iteration, so a
-    // thread that momentarily owns the number could starve the probe for all
-    // 500 attempts — measured 6/96 suite rounds under the same-process hammer,
-    // 0/96 held open. FD_HOLD_CAP keeps the leg inside the fd limit.
-    let recycled = -1
-    const heldMisses: number[] = []
+    // #349 ROOT ROUND C: this leg runs its LAW IN A CHILD PROCESS
+    // (./poc3-fd-recycling-leg.mjs). WHY: the nine-root census runs every
+    // test file as worker_threads of ONE process and the fd table is
+    // PROCESS-WIDE, so the old in-process "wait until the OS hands my number
+    // back" is starvable BY LAW - one long-lived holder of the captured
+    // number makes every held-open attempt land ABOVE it (deterministic
+    // repro: dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/
+    // fd-recycling/repro-starvation.mjs: STARVED every run, first probes
+    // 22,23,24,... while 21 is held; census run 39235428022 is the incident,
+    // twin run 39235441274 green = the holder was luck). A fresh child owns
+    // a fresh single-threaded fd table whose ONLY opener is the script:
+    // after the lane closes its read, POSIX lowest-free gives the SAME
+    // number back on the very next open - recycling stays OBSERVED (a miss
+    // exits 1 naming the stage), never assumed, and no waiting is involved.
+    // The claim is byte-for-byte the original one: naive raw trust of the
+    // recycled number silently reads the NEW owner's bytes; the lane refuses
+    // the same stale descriptor and the refusal body never leaks them.
+    // CENSUS-CONDITION NEGATIVE CONTROL: a long-lived holder is held in
+    // THIS process's shared table for the child's whole run - exactly the
+    // shape that starved the old leg. The child cannot see it; the leg must
+    // stay green regardless, which is precisely what determinism buys.
+    const hogPath = join(world.outside, 'hog.txt')
+    writeFileSync(hogPath, 'LONG-LIVED HOLDER (census shape)\n')
+    const hog = openSync(hogPath, 'r')
     try {
-      for (let attempt = 0; attempt < 500 && recycled !== captured; attempt += 1) {
-        const probe = openSync(join(world.outside, 'recycled-victim.txt'), 'r')
-        if (probe === captured) {
-          recycled = probe
-          break
-        }
-        heldMisses.push(probe)
-        if (heldMisses.length >= FD_HOLD_CAP) closeSync(heldMisses.shift() as number)
+      const legPath = join(dirname(fileURLToPath(import.meta.url)), 'poc3-fd-recycling-leg.mjs')
+      const out = execFileSync(
+        (globalThis as unknown as { process: { execPath: string } }).process.execPath,
+        [legPath, world.world],
+        { encoding: 'utf8', timeout: 30000 },
+      )
+      const result = JSON.parse(out.trim().split('\n').at(-1) as string) as {
+        ok: boolean
+        stage?: string
+        captured: number
+        recycled: number
+        naiveBytes: string
+        guardOk: boolean
+        cfClass?: string
+        cfReason?: string
+        leak: boolean
       }
+      expect(result.stage ?? 'none', `leg failed at stage; full result: ${JSON.stringify(result)}`).toBe('none')
+      expect(result.ok).toBe(true)
+      expect(result.recycled).toBe(result.captured) // recycling OBSERVED in the child's own table
+      expect(result.naiveBytes).toBe('RECYCLED-BYTES\n') // the naive hazard misreads - SEEN
+      expect(result.guardOk).toBe(false)
+      expect(result.cfClass).toBe('denied')
+      expect(result.cfReason).toBe('fd-recycled')
+      expect(result.leak).toBe(false) // the refusal body never carries the new owner's bytes
     } finally {
-      for (const fd of heldMisses) closeSync(fd)
-    }
-    expect(recycled).toBe(captured) // recycling OBSERVED, not assumed
-    try {
-      // NAIVE hazard: raw continued use of the old number reads the NEW owner.
-      const buf = Buffer.alloc(64)
-      const n = readSync(recycled, buf, 0, 64, null)
-      expect(buf.toString('utf8', 0, n)).toBe('RECYCLED-BYTES\n')
-      // GUARDED: the same stale descriptor through the lane is refused, and
-      // the refusal body never carries the new owner's bytes.
-      const stale: FsResourceDescriptor = { fs: 'ctl', path: 'public/a.txt', fd: captured }
-      const res = await l.fs.readDescriptor(grant, stale, FULL)
-      expect(res.ok).toBe(false)
-      if (res.ok) throw new Error('recycled fd must never be trusted')
-      expect(res.error.details?.['cfClass']).toBe('denied')
-      expect(res.error.details?.['cfReason']).toBe('fd-recycled')
-      expect(JSON.stringify(res)).not.toContain('RECYCLED-BYTES')
-    } finally {
-      closeSync(recycled)
+      closeSync(hog)
+      rmSync(hogPath, { force: true })
     }
   })
 })
