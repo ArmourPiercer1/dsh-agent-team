@@ -10,11 +10,7 @@
   (file name only - the governed face never echoes the host's absolute world path;
   recorded as the sanctioned divergence in the receipt), one-time result tail,
   status line LAST (detail = progress ?? detail). dist mirror + glue IN THE SAME COMMIT.
-- `host-receipt.mjs` / `host-receipt-output.log` - machine check @639ed01539: runs the
-  HOST'S OWN BUILT installed code (tool-jobs/lib/types/render.js) over the SAME
-  mixed-channel and two-shape reads side by side with our DIST-MIRROR bridge; every
-  check ok, verdict RECEIPT-VERDICT all-checks-passed. (Receipt instruments only -
-  no runtime import of host internals anywhere in our plugin.)
+- `host-receipt.mjs` / `host-receipt-output.log` - machine check @639ed01539: SYNTHETIC JobRead VECTORS fed side by side to the HOST'S OWN render code (tool-jobs/lib/types/render.js, the built installed face) and our DIST-MIRROR bridge; every check ok, verdict RECEIPT-VERDICT all-checks-passed. SCOPE OF THE RECEIPT (root accounting, precise): it covers the RENDER BOUNDARY over synthetic reads ONLY - it is NOT coverage of the live registry, model cursors, or wait timeouts (those need a native-bash producer world; J8). (Receipt instruments only - no runtime import of host internals anywhere in our plugin.)
 - Honest limit: live background-job two-shape needs a native-bash producer world
   (host has no job_start; the governed world has no producer - J8 law on record);
   the receipt covers the installed render face + bridge parity over identical reads.
@@ -33,3 +29,5 @@
   site (realm + instanceId) - gateway indexing untouched, each member's bridge owns
   its definition rows; test pins re-home with it.
   Y: re-key inside jobs-gateway-assembly (wider blast radius).
+
+Root accounting note (round D): the basename spill redaction = RECORDED sanctioned divergence (kept); the fine newline difference vs the host body is non-blocking and honestly noted here.

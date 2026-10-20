@@ -440,7 +440,7 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // edges those contracts drafted (P-A/P-B/P-C stayed DORMANT at this layer on
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
-import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'
+import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
@@ -2438,7 +2438,12 @@ export function createAgentBindings(deps) {
         // nothing here vouches for an identity it did not read.
         const a5JobsBridge = planeCfg.jobsEnabled === true
           ? createGovernedJobsBridge({
-            scopeKey: a5PlaneRealmId,
+            // ROOT identity ruling (X, qualified): the definition scope key is
+            // the BRIDGE-SPECIFIC opaque key from the ONE derivation helper
+            // (realm + durable member pair) - per-member mounts can no longer
+            // overwrite each other's rows in the row-local definition store.
+            // The plane realmId itself is untouched (key input, not a face).
+            scopeKey: jobsBridgeScopeKey({ realmId: a5PlaneRealmId, rootSessionId: String(teamRoot), instanceId: String(instanceId) }),
             viewer: { rootSessionId: String(teamRoot), instanceId: String(instanceId) },
             gatewayRow: () => liveJobsGatewayAssemblies.get(String(teamRoot)) ?? null,
             planeRow: () => a5PlaneValue,

@@ -222,12 +222,20 @@ describe('a5p7 lane hygiene — DORMANT means DORMANT', () => {
       // still the exact ONE barrel import line, same dist-mirror relative
       // form, zero deep imports. The edge shape (the contract) did not
       // move; the imported-name list grew by one lane-exported symbol.
-      `import { createJobsGateway, createLeaseWindow, jobOwnerKey } from '../../../jobs-gateway/index.js'`,
+      // ROOT ruling X (bridge-specific scope keys): the ONE barrel import
+      // line grew by one more lane-exported symbol (jobsBridgeScopeKey, the
+      // single derivation helper the row RE-EXPORTS below so the entry can
+      // ride the row and never touch the barrel). Same shape law as the C1
+      // jobOwnerKey precedent above: list grew, edge shape did not move.
+      `import { createJobsGateway, createLeaseWindow, jobOwnerKey, jobsBridgeScopeKey } from '../../../jobs-gateway/index.js'`,
     ])
     const entry = readFileSync(join(REPO_PACKAGES, 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
     const entryEdges = entry.split('\n').filter((line) => /^\s*import\b.*jobs-gateway/.test(line))
     expect(entryEdges.map((l) => l.trim())).toEqual([
-      `import { createLiveJobsGatewayAssembly } from './jobs-gateway-assembly.mjs'`,
+      // Same law on the entry edge: still EXACTLY ONE line importing the
+      // live row (never the barrel - pinned below again); the line grew by
+      // the row-re-exported jobsBridgeScopeKey helper, not by an edge.
+      `import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'`,
     ])
     expect(entry).not.toContain("jobs-gateway/index.js'")
   })

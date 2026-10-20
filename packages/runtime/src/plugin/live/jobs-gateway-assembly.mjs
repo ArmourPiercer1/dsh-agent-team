@@ -49,7 +49,13 @@
  *
  * @module runtime/plugin/live/jobs-gateway-assembly
  */
-import { createJobsGateway, createLeaseWindow, jobOwnerKey } from '../../../jobs-gateway/index.js'
+import { createJobsGateway, createLeaseWindow, jobOwnerKey, jobsBridgeScopeKey } from '../../../jobs-gateway/index.js'
+
+// THE ONE scope-key derivation, re-exported for the production entry: the
+// entry reaches the lane ONLY through this row (GLUE-5 edge law), so the
+// helper rides the row import, never a direct barrel edge. Mount sites and
+// future creation producers import THIS and never recompute the tuple.
+export { jobsBridgeScopeKey }
 
 /**
  * The durable-identity source over ONE team root's MemberInstance rows
@@ -86,6 +92,9 @@ function createRowLocalDefinitionStore() {
   return {
     register: (scopeKey, name, identity) => {
       store.set(key(scopeKey, name), String(identity))
+    },
+    unregister: (scopeKey, name) => {
+      store.delete(key(scopeKey, name))
     },
     resolveDefinition: (scopeKey, name) => {
       const k = key(scopeKey, name)

@@ -934,6 +934,11 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
  * host UNFILTERED and this bridge never un-fences.
  */
 export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRow, jobsService, observe = () => {}, waitDefaultMs = 30_000, waitCapMs = 600_000 }) {
+  // scopeKey = the BRIDGE-SPECIFIC opaque definition key, produced ONLY by
+  // the lane's single derivation helper (jobsBridgeScopeKey, re-exported by
+  // the live assembly row this bridge is handed): the member dimension rides
+  // the key, the root dimension rides the per-root live assembly - two
+  // member bridges can no longer share a definition row.
   if (typeof scopeKey !== 'string' || scopeKey === '') throw new Error('jobs bridge: scopeKey is required')
   if (viewer === undefined || typeof viewer.rootSessionId !== 'string' || typeof viewer.instanceId !== 'string') {
     throw new Error('jobs bridge: viewer must carry the durable member pair {rootSessionId, instanceId}')
@@ -957,7 +962,17 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
       const entry = plane.placementFeed(name)
       // Not minted yet: retry on the next call — never register an
       // undefined identity (the closed world has no guessed pins).
-      if (entry === undefined || entry === null || entry.definitionIdentity === undefined) continue
+      // ROOT checklist (1): a WITHDRAWN or unreadable definition that this
+      // scope had ALREADY registered invalidates that exact member scope's
+      // row (store + local pin) - a stale pin never masquerades as a closed
+      // revocation; the next admit fail-closes at 'never-registered'.
+      if (entry === undefined || entry === null || entry.definitionIdentity === undefined) {
+        if (registered.delete(name) && typeof asm.definitions.unregister === 'function') {
+          asm.definitions.unregister(scopeKey, name)
+          observe(`a5jobs: definition-invalidated name=${name} scope=${scopeKey}`)
+        }
+        continue
+      }
       const identity = String(entry.definitionIdentity)
       if (registered.get(name) === identity) continue
       const moved = registered.has(name)
@@ -1143,6 +1158,11 @@ export function createGovernedJobsBridge({ scopeKey, viewer, gatewayRow, planeRo
       } catch (error) {
         return refuse('host-jobs-refused', error?.message ?? error)
       }
+    },
+    /** The mount's computed definition scope (helper output, read-only): the
+     *  future creation producer consumes THIS - it never recomputes the tuple. */
+    get scopeKey() {
+      return scopeKey
     },
     /** job_kill: gate -> svc.kill(caller, reason); 'requested' marks the
      *  gateway REQUEST (never a settlement), the two forms never collapse. */

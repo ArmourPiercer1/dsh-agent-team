@@ -58,10 +58,12 @@ type ActuatorAssembly = {
     | { ok: true; corded: false; record: null }
     | { ok: false; code: string; detail: string }
   noteKillRequested: (jobId: string) => { ok: true } | { ok: false; code: string }
-  definitions: { register: (scopeKey: string, name: string, identity: string) => void }
+  definitions: { register: (scopeKey: string, name: string, identity: string) => void; unregister?: (scopeKey: string, name: string) => void; resolveDefinition?: (scopeKey: string, name: string) => { ok: boolean; identity: string } }
   drain: () => { ok: boolean }
   release: () => { ok: boolean }
 }
+
+import { jobsBridgeScopeKey } from '../jobs-gateway/index.js'
 
 const row = (await import(
   new URL('../src/plugin/live/jobs-gateway-assembly.mjs', import.meta.url).href
@@ -70,6 +72,11 @@ const row = (await import(
 const ROOT = 'root-act'
 const OWNER_A: JobOwner = { rootSessionId: ROOT, instanceId: 'inst-1' }
 const OWNER_B: JobOwner = { rootSessionId: ROOT, instanceId: 'inst-2' }
+
+// ROOT identity ruling (X): EVERY definition-scope key in this file derives
+// from the ONE helper production uses (jobsBridgeScopeKey) - the old shared
+// realm-wide literal is retired as a KEY (the realm itself is unchanged).
+const scopeOf = (viewer: JobOwner) => jobsBridgeScopeKey({ realmId: 'realm-jobs', rootSessionId: viewer.rootSessionId, instanceId: viewer.instanceId })
 
 function world() {
   const domain = {
@@ -83,8 +90,8 @@ function world() {
   const asm = row.createLiveJobsGatewayAssembly({ teamRoot: domain, rootSessionId: ROOT })
   // The mount-time registration the C2 glue will do from the placement feed:
   // the creating lane's definition identity is readable ⇒ attribution admits.
-  asm.definitions.register('agent:wa', 'bash', 'bash@v1')
-  asm.definitions.register('agent:wb', 'bash', 'bash@v1')
+  asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+  asm.definitions.register(scopeOf(OWNER_B), 'bash', 'bash@v1')
   return asm
 }
 
@@ -180,7 +187,7 @@ function fakeJobRegistry() {
 describe('a5p7 actuator — creation attribution (bash-lane pin)', () => {
   it('a bash-background receipt lands as a durable-attributed record pinned to the CREATING lane definition', () => {
     const asm = world()
-    const took = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
+    const took = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     expect(took.ok).toBe(true)
     if (took.ok) {
       expect(took.job.ownerKey).toBe(jobOwnerKey(OWNER_A))
@@ -192,8 +199,8 @@ describe('a5p7 actuator — creation attribution (bash-lane pin)', () => {
 
   it('a cross-member attribution attempt on the SAME host jobId is the owner-mismatch alarm (never a swap)', () => {
     const asm = world()
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' }).ok).toBe(true)
-    const clash = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_B, scopeKey: 'agent:wb' })
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(true)
+    const clash = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
     expect(!clash.ok && clash.code === 'owner-mismatch').toBe(true)
     expect(asm.gateway.job('jb1')[0]!.ownerKey).toBe(jobOwnerKey(OWNER_A))
     expect(asm.gateway.lease.outstanding()).toHaveLength(1)
@@ -201,7 +208,7 @@ describe('a5p7 actuator — creation attribution (bash-lane pin)', () => {
 
   it('an unreadable creating-lane definition refuses attribution (closed world, zero delta)', () => {
     const asm = world()
-    const refused = asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: 'agent:no-def' })
+    const refused = asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: jobsBridgeScopeKey({ realmId: 'realm-jobs', rootSessionId: ROOT, instanceId: 'inst-no-def' }) })
     expect(!refused.ok && refused.code === 'mapping-rejected').toBe(true)
     expect(asm.gateway.job('jb2')).toHaveLength(0)
     expect(asm.gateway.lease.outstanding()).toHaveLength(0)
@@ -213,7 +220,7 @@ describe('a5p7 actuator — management-path owner fence (job_output/job_list/job
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'session-of-A')
-    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
+    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     const mine = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_A })
     expect(mine.ok === true && mine.corded === true && mine.record?.jobId).toBe('jb1')
     const theirs = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_B })
@@ -246,7 +253,7 @@ describe('a5p7 actuator — management-path owner fence (job_output/job_list/job
     expect(host.list('session-of-A').map((j: { id: string }) => j.id)).toEqual(['jb1'])
     expect(host.list('session-of-B').map((j: { id: string }) => j.id)).toEqual(['jb2'])
     // Team-layer records are visible to their owner only, exactly as above.
-    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
+    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     const okA = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_A })
     const noB = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_B })
     expect(okA.ok === true && okA.corded === true).toBe(true)
@@ -259,7 +266,7 @@ describe('a5p7 actuator — kill is a REQUEST (the two native forms never collap
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'session-of-A')
-    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
+    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     const gate = asm.checkManagementAccess({ jobId: 'jb1', viewer: OWNER_A })
     expect(gate.ok === true && gate.corded === true).toBe(true)
     expect(host.kill('jb1', 'session-of-A')).toBe('requested')
@@ -280,7 +287,7 @@ describe('a5p7 actuator — kill is a REQUEST (the two native forms never collap
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'session-of-A')
-    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'agent:wa' })
+    asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     host.kill('jb1', 'session-of-A')
     expect(host.kill('jb1', 'session-of-A')).toBe('already-finished')
     const unknown = asm.noteKillRequested('never-admitted')
@@ -340,7 +347,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
       placementFeed: (name: string) => ({ definitionIdentity: `${name}@v1`, realmId: 'realm-jobs' }),
     }
     const mkBridge = (viewer: JobOwner) => backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs',
+      scopeKey: scopeOf(viewer),
       viewer,
       gatewayRow: () => asm,
       planeRow: () => plane,
@@ -360,8 +367,8 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     // (a future attribution producer calls bridge.ensureRegistered() first;
     // here the registration stands in for that hook having run — same
     // store, same law, no privileged path).
-    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(true)
     const outputDef = built.value.definitions.find((d) => d.name === 'job_output')!
     const outputDefB = builtB.value.definitions.find((d) => d.name === 'job_output')!
     const denied = await outputDefB.execute!({ job_id: 'jb1' }, { agent: { id: 'agent-of-B' } })
@@ -384,7 +391,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const asm = world()
     const host = fakeJobRegistry()
     const bridge = backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
+      scopeKey: scopeOf(OWNER_A), viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
     }) as { jobList: (caller: unknown) => Promise<{ text: string }> }
     const r = await bridge.jobList(undefined)
     expect(r.text).toContain('caller-unresolved')
@@ -395,7 +402,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const host = fakeJobRegistry()
     host.seed('legacy', 'agent-x')
     const bridge = backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => null, planeRow: () => null, jobsService: () => host,
+      scopeKey: scopeOf(OWNER_A), viewer: OWNER_A, gatewayRow: () => null, planeRow: () => null, jobsService: () => host,
     }) as { jobOutput: (a: unknown, c: unknown) => Promise<{ text: string }> }
     const r = await bridge.jobOutput({ job_id: 'legacy' }, 'agent-x')
     expect(r.text).toContain('gateway-not-active')
@@ -412,7 +419,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
   }
   const mkRawBridge = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner, plane: unknown = null): BridgeFace =>
     backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs', viewer, gatewayRow: () => asm, planeRow: () => plane, jobsService: () => host,
+      scopeKey: scopeOf(viewer), viewer, gatewayRow: () => asm, planeRow: () => plane, jobsService: () => host,
     }) as BridgeFace
 
   it('ROOT① NEGATIVE CONTROL (same caller, two members): job_list hides a row attributed to the FOREIGN member and shows the unattributed ones — the Team layer speaks per row even where the host caller fence cannot tell members apart', async () => {
@@ -420,8 +427,8 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const host = fakeJobRegistry()
     host.seed('jb-team', 'caller-shared') // host-owned by the SHARED caller, team-attributed to A
     host.seed('jb-legacy', 'caller-shared') // no team record at all
-    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb-team', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb-team', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(true)
     const a = await mkRawBridge(asm, host, OWNER_A).jobList('caller-shared')
     const b = await mkRawBridge(asm, host, OWNER_B).jobList('caller-shared')
     expect(a.text).toContain('jb-team')
@@ -440,13 +447,13 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const bridge = mkRawBridge(asm, host, OWNER_A, plane)
     host.seed('jb1', 'caller-1')
     await bridge.jobList('caller-1') // the lazy first-use registration
-    const t1 = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' })
+    const t1 = asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     expect(t1.ok === true && t1.job.pinnedIdentity).toBe('bash@v1')
     // A REPLACED lane (definition swap / remount): the feed now mints a NEW identity.
     bashIdentity = 'bash@v2-replacement'
     bridge.ensureRegistered()
     host.seed('jb2', 'caller-1')
-    const t2 = asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: 'realm-jobs' })
+    const t2 = asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
     expect(t2.ok === true && t2.job.pinnedIdentity).toBe('bash@v2-replacement') // the stale pin is GONE
     // The honest half of the answer: checkManagementAccess consults ONLY the
     // owner law (assembly code: records + jobOwnerKey), never the definition
@@ -460,8 +467,8 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'agent-of-A')
-    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(true)
     const bridge = mkRawBridge(asm, host, OWNER_A)
     const pending = bridge.jobOutput({ job_id: 'jb1', wait: true }, 'agent-of-A')
     await Promise.resolve()
@@ -487,8 +494,8 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'agent-of-A')
-    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: viewer, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: viewer, scopeKey: scopeOf(viewer) }).ok).toBe(true)
     const bridge = mkRawBridge(asm, host, viewer)
     const built = planeRow.createTeamToolPlaneAssembly({ ...planeBase, plane: { jobsEnabled: true }, backends: { jobs: bridge } })
     expect(built.ok).toBe(true)
@@ -564,8 +571,8 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
     const asm = world()
     const host = fakeJobRegistry()
     host.seed('jb1', 'caller-1')
-    asm.definitions.register('realm-jobs', 'bash', 'bash@v1')
-    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: 'realm-jobs' }).ok).toBe(true)
+    asm.definitions.register(scopeOf(OWNER_A), 'bash', 'bash@v1')
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb1', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) }).ok).toBe(true)
     const ac = new AbortController()
     const svc = {
       ...host,
@@ -576,7 +583,7 @@ describe('a5p7 C2 plane row — the fixed jobs trio behind the closed key', () =
       },
     }
     const bridge = backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs', viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => svc,
+      scopeKey: scopeOf(OWNER_A), viewer: OWNER_A, gatewayRow: () => asm, planeRow: () => null, jobsService: () => svc,
     }) as BridgeFace
     const r = await bridge.jobOutput({ job_id: 'jb1', wait: true, timeout_ms: 5000 }, 'caller-1', ac.signal)
     expect(r.text).toContain('wait-aborted')
@@ -621,7 +628,7 @@ describe('a5p7 bridge output contract (root final contract: channel filter + std
   // scoped inside its describe; this file's contract legs rebuild it here).
   const rawBridge = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner) =>
     backendsRow.createGovernedJobsBridge({
-      scopeKey: 'realm-jobs', viewer, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
+      scopeKey: scopeOf(viewer), viewer, gatewayRow: () => asm, planeRow: () => null, jobsService: () => host,
     }) as { jobOutput: (a: Record<string, unknown>, c: string, s?: AbortSignal) => Promise<{ text: string }> }
 
   it('MIXED-CHANNEL (the BLOCK core): log narration NEVER reaches the model; stdout and the [stderr] section stay complete', async () => {
@@ -691,5 +698,173 @@ describe('a5p7 bridge output contract (root final contract: channel filter + std
       seen.add(r.text)
     }
     expect(seen.size).toBe(5)
+  })
+})
+
+describe('a5p7 bridge scope identity (ROOT ruling X: bridge-specific opaque keys, member-scoped)', () => {
+  // THE SHARED-KEY BUG, now closed (the round-C repro: identity-RED-repro.log):
+  // every member bridge mounted with the SHARED realm-wide key; the row-local
+  // definition store keys (scopeKey, name) - so member B's mount last-write-won
+  // over member A's, and A's bridge-local unchanged-identity skip never
+  // re-registered. The key is now the helper's opaque tuple [realmId,
+  // instanceId] (jobsBridgeScopeKey - the ONE derivation), and the root
+  // dimension rides the per-root assembly (GLUE-5 map), not a key field.
+  const planeWith = (tag: string) => ({ placementFeed: (name: string) => ({ definitionIdentity: `${name}@${tag}`, realmId: 'realm-jobs' }) })
+  const mountBridge = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner, tag: string) =>
+    backendsRow.createGovernedJobsBridge({
+      scopeKey: scopeOf(viewer), viewer, gatewayRow: () => asm, planeRow: () => planeWith(tag), jobsService: () => host,
+    }) as { jobList: (c: string) => Promise<{ text: string }>; ensureRegistered: () => void }
+
+  it('A -> B -> A with DISTINCT member definition identities: no cross-member overwrite, and A STILL A after B mounted (the bug sequence, now green)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const bridgeA = mountBridge(asm, host, OWNER_A, 'A-def')
+    const bridgeB = mountBridge(asm, host, OWNER_B, 'B-def')
+    host.seed('jb1', 'caller-1')
+    await bridgeA.jobList('caller-1') // A mounts first under its OWN key
+    host.seed('jb2', 'caller-2')
+    await bridgeB.jobList('caller-2') // B mounts under ITS key - no shared row touched
+    host.seed('jb3', 'caller-3')
+    await bridgeA.jobList('caller-3') // third call back at A: local skip or re-register, key unchanged
+    host.seed('jb4', 'caller-4')
+    host.seed('jb5', 'caller-5')
+    const aAdmit = asm.attributeBackgroundJob({ hostJobId: 'jb4', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+    const bAdmit = asm.attributeBackgroundJob({ hostJobId: 'jb5', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
+    expect(aAdmit.ok === true && aAdmit.job.pinnedIdentity).toBe('bash@A-def') // A pins A - the old bug pinned B
+    expect(bAdmit.ok === true && bAdmit.job.pinnedIdentity).toBe('bash@B-def')
+  })
+
+  it('OLD-JOB RECHECK stays self-consistent under the new key law: records read the STORED scope (never a re-derivation)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    // An OLD row admitted under the pre-ruling shared key: its stored scope is
+    // historical data; nothing re-derives it - owner fence and definition
+    // resolve ride the STORED scopeKey verbatim.
+    host.seed('jb-old', 'caller-old')
+    asm.definitions.register('realm-jobs', 'bash', 'bash@legacy')
+    const old = asm.attributeBackgroundJob({ hostJobId: 'jb-old', owner: OWNER_A, scopeKey: 'realm-jobs' })
+    expect(old.ok === true && old.job.pinnedIdentity).toBe('bash@legacy')
+    expect(old.ok === true && old.job.scopeKey).toBe('realm-jobs') // stored, verbatim
+    const fence = asm.checkManagementAccess({ jobId: 'jb-old', viewer: OWNER_A })
+    expect(fence.ok === true && fence.corded === true).toBe(true) // the owner law never touches the key law
+    // The legacy row keeps resolving its OWN stored scope; new mounts under
+    // helper keys live in different rows and cannot disturb it.
+    const bridgeA = mountBridge(asm, host, OWNER_A, 'A-def')
+    await bridgeA.jobList('caller-old')
+    expect(asm.checkManagementAccess({ jobId: 'jb-old', viewer: OWNER_A }).ok).toBe(true)
+  })
+
+  it('a REMOUNT/re-register of B never moves A: B re-registers (definition replacement) and A rows stand untouched', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const bridgeA = mountBridge(asm, host, OWNER_A, 'A-def')
+    host.seed('jb1', 'caller-1')
+    await bridgeA.jobList('caller-1')
+    host.seed('jb2', 'caller-2')
+    asm.attributeBackgroundJob({ hostJobId: 'jb2', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+    const bridgeB = mountBridge(asm, host, OWNER_B, 'B-def')
+    await bridgeB.jobList('caller-2')
+    host.seed('jb3', 'caller-2')
+    asm.attributeBackgroundJob({ hostJobId: 'jb3', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
+    // B REPLACES its lane (remount mints a new identity) and re-registers repeatedly.
+    const bridgeB2 = mountBridge(asm, host, OWNER_B, 'B-def-v2')
+    await bridgeB2.jobList('caller-2')
+    host.seed('jb4', 'caller-2')
+    const b2 = asm.attributeBackgroundJob({ hostJobId: 'jb4', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
+    expect(b2.ok === true && b2.job.pinnedIdentity).toBe('bash@B-def-v2') // B's replacement rides B's rows only
+    const a1 = asm.gateway.job('jb2')[0]!
+    expect(a1.pinnedIdentity).toBe('bash@A-def') // A's existing record untouched
+    expect(asm.attributeBackgroundJob({ hostJobId: 'jb5', owner: OWNER_A, scopeKey: scopeOf(OWNER_A), toolName: 'bash' }).ok === true).toBe(true)
+  })
+})
+
+describe('a5p7 scope identity matrix (root checklist round D)', () => {
+  const planeWith = (tag: string | null) => ({
+    placementFeed: (name: string) => (tag === null ? undefined : { definitionIdentity: `${name}@${tag}`, realmId: 'realm-jobs' }),
+  })
+  const mountB = (asm: ActuatorAssembly, host: ReturnType<typeof fakeJobRegistry>, viewer: JobOwner, tag: string | null) =>
+    backendsRow.createGovernedJobsBridge({
+      scopeKey: scopeOf(viewer), viewer, gatewayRow: () => asm, planeRow: () => planeWith(tag), jobsService: () => host,
+    }) as { jobList: (c: string) => Promise<{ text: string }>; scopeKey: string }
+
+  it('WITHDRAWN feed invalidates the EXACT member scope (no stale pin as fake revocation): after withdrawal a fresh admit fail-closes at never-registered, while the OTHER member keeps its own pin', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    let tagA: string | null = 'A-def'
+    const bridgeA = backendsRow.createGovernedJobsBridge({
+      scopeKey: scopeOf(OWNER_A), viewer: OWNER_A, gatewayRow: () => asm,
+      planeRow: () => ({ placementFeed: (name: string) => (tagA === null ? undefined : { definitionIdentity: `${name}@${tagA}`, realmId: 'realm-jobs' }) }),
+      jobsService: () => host,
+    }) as { jobList: (c: string) => Promise<{ text: string }> }
+    const bridgeB = mountB(asm, host, OWNER_B, 'B-def')
+    host.seed('jb1', 'caller-1')
+    await bridgeA.jobList('caller-1')
+    host.seed('jb2', 'caller-2')
+    await bridgeB.jobList('caller-2')
+    tagA = null // A's lane is WITHDRAWN (feed goes unreadable for A)
+    host.seed('jb3', 'caller-1')
+    await bridgeA.jobList('caller-1') // the invalidate pass runs here
+    host.seed('jb4', 'caller-1')
+    const afterWithdraw = asm.attributeBackgroundJob({ hostJobId: 'jb4', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+    expect(afterWithdraw.ok === false).toBe(true) // no stale truth: the row is GONE, admit fail-closes
+    host.seed('jb5', 'caller-2')
+    const bStill = asm.attributeBackgroundJob({ hostJobId: 'jb5', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
+    expect(bStill.ok === true && bStill.job.pinnedIdentity).toBe('bash@B-def') // invalidation is scope-exact, not global
+  })
+
+  it('REPLACING A leaves B untouched (the symmetric direction): A remounts with a new identity, B rows and future admits ride B unchanged', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const bridgeA1 = mountB(asm, host, OWNER_A, 'A-def')
+    const bridgeB = mountB(asm, host, OWNER_B, 'B-def')
+    host.seed('jb1', 'caller-1')
+    await bridgeA1.jobList('caller-1')
+    host.seed('jb2', 'caller-2')
+    await bridgeB.jobList('caller-2')
+    const bridgeA2 = mountB(asm, host, OWNER_A, 'A-def-v2')
+    host.seed('jb3', 'caller-1')
+    await bridgeA2.jobList('caller-3')
+    host.seed('jb4', 'caller-1')
+    const a2 = asm.attributeBackgroundJob({ hostJobId: 'jb4', owner: OWNER_A, scopeKey: scopeOf(OWNER_A) })
+    expect(a2.ok === true && a2.job.pinnedIdentity).toBe('bash@A-def-v2')
+    host.seed('jb5', 'caller-2')
+    const bAfter = asm.attributeBackgroundJob({ hostJobId: 'jb5', owner: OWNER_B, scopeKey: scopeOf(OWNER_B) })
+    expect(bAfter.ok === true && bAfter.job.pinnedIdentity).toBe('bash@B-def') // B unmoved by A's replacement
+  })
+
+  it('different ROOTS, SAME instanceId: the tuples differ and the per-root assemblies stay disjoint (no cross-root reach)', async () => {
+    const otherRoot = 'root-other'
+    const otherViewer: JobOwner = { rootSessionId: otherRoot, instanceId: 'inst-1' }
+    expect(scopeOf(otherViewer)).not.toBe(scopeOf(OWNER_A)) // the tuple carries the root dimension
+    const domain2 = { repositories: { memberInstances: { list: (k: string) => (k === otherRoot ? [{ instanceId: 'inst-1' }] : []) } } }
+    const asm2 = row.createLiveJobsGatewayAssembly({ teamRoot: domain2, rootSessionId: otherRoot })
+    const asm1 = world()
+    const host = fakeJobRegistry()
+    const bridge1 = mountB(asm1, host, OWNER_A, 'root1-def')
+    host.seed('jb1', 'caller-1')
+    await bridge1.jobList('caller-1')
+    host.seed('jb2', 'caller-2')
+    // root2's store never saw root1's registration: admit on asm2 for the SAME
+    // instanceId fail-closes at never-registered.
+    const foreign = asm2.attributeBackgroundJob({ hostJobId: 'jb2', owner: otherViewer, scopeKey: scopeOf(otherViewer) })
+    expect(foreign.ok === false).toBe(true)
+    expect(scopeOf(OWNER_A)).toContain('root-act')
+    expect(scopeOf(otherViewer)).toContain(otherRoot)
+  })
+
+  it('DELIMITER-BEARING ids cannot collide: the JSON-array tuple escapes, the naive concat would not', () => {
+    const injectA = jobsBridgeScopeKey({ realmId: 'realm-a","realm-b', rootSessionId: ROOT, instanceId: 'inst-c' })
+    const injectB = jobsBridgeScopeKey({ realmId: 'realm-a', rootSessionId: `${ROOT}","realm-b`, instanceId: 'inst-c' })
+    expect(injectA).not.toBe(injectB) // a colon-comma concat WOULD collapse these; the tuple cannot
+    const injectC = jobsBridgeScopeKey({ realmId: 'realm\u0000a', rootSessionId: ROOT, instanceId: 'inst-c' })
+    expect(injectC).not.toBe(jobsBridgeScopeKey({ realmId: 'realma', rootSessionId: ROOT, instanceId: 'inst-c' }))
+  })
+
+  it('the mount EXPOSES its computed scope read-only (future producers consume it, never recompute)', async () => {
+    const asm = world()
+    const host = fakeJobRegistry()
+    const bridge = mountB(asm, host, OWNER_A, 'A-def')
+    expect(bridge.scopeKey).toBe(scopeOf(OWNER_A))
+    expect(() => { (bridge as { scopeKey: string }).scopeKey = 'x' }).toThrow() // read-only
   })
 })
