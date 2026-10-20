@@ -19,7 +19,7 @@
  * @module packages/runtime/controlled-fs/test/poc3-probes
  */
 import { execFileSync } from 'node:child_process'
-import { closeSync, mkdirSync, openSync, readlinkSync, readSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, mkdirSync, openSync, readlinkSync, readFileSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'

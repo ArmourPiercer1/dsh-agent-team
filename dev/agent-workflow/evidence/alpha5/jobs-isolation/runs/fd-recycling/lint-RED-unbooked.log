@@ -1,0 +1,13 @@
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation/packages/runtime/controlled-fs/test/poc3-fd-recycling-leg.mjs
+   37:15  error  'process' is not defined  no-undef
+   39:3   error  'process' is not defined  no-undef
+   40:3   error  'process' is not defined  no-undef
+   98:15  error  'Buffer' is not defined   no-undef
+  114:3   error  'process' is not defined  no-undef
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation/packages/runtime/controlled-fs/test/poc3-probes.test.ts
+  22:56  error  'readSync' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 6 problems (6 errors, 0 warnings)
+

@@ -24,9 +24,11 @@
  * the law; any miss exits 1 with the failing stage named (never silently
  * "assumed").
  */
+import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
 import { closeSync, openSync, readSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import process from 'node:process'
 import { parseOperationGrant, parseRequestedEffectSet, parseResourceRef } from '../../dist/packages/domain/tool-governance/src/index.js'
 import { createControlledFsLane } from '../../dist/packages/runtime/controlled-fs/src/index.js'
 
