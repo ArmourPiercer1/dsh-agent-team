@@ -112,6 +112,7 @@ export type CanonicalizationFailureReason =
   | 'file-path-missing'
   | 'file-path-not-a-string'
   | 'file-path-empty'
+  | 'file-path-key-conflict'
   | 'read-offset-invalid'
   | 'read-limit-invalid'
   | 'write-content-missing'
@@ -150,6 +151,7 @@ export const CANONICALIZATION_FAILURE_REASONS: readonly CanonicalizationFailureR
   'file-path-missing',
   'file-path-not-a-string',
   'file-path-empty',
+  'file-path-key-conflict',
   'read-offset-invalid',
   'read-limit-invalid',
   'write-content-missing',
