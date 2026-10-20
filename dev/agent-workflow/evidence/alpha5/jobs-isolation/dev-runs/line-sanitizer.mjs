@@ -15,11 +15,24 @@
  * running the launcher or touching real credentials.
  * @module dev-runs/line-sanitizer
  */
-export function createSanitizingLineSink({ write, redact }) {
+export function createSanitizingLineSink({ write, redact, onLine }) {
   let carry = ''
   let closed = false
+  const errors = [] // STICKY capture failures: explicit, never silent.
   const emit = (line) => {
-    try { write(redact(line)) } catch { /* best-effort: never crash the child's pipe */ }
+    // The RAW line is offered to onLine strictly IN MEMORY (the kit
+    // extracts the bootstrap marker here and never lets the raw form touch
+    // disk). A line whose redaction or write FAILS is recorded and dropped
+    // as an explicit marker - NEVER written raw as a fallback.
+    if (onLine !== undefined) {
+      try { onLine(line) } catch (err) { errors.push(`onLine: ${String(err?.message ?? err).slice(0, 120)}`) }
+    }
+    try {
+      write(redact(line))
+    } catch (err) {
+      errors.push(`write: ${String(err?.message ?? err).slice(0, 120)}`)
+      try { write('[REDACTION-FAILED: line dropped, never written raw]') } catch { /* fd is gone */ }
+    }
   }
   const onData = (chunk) => {
     if (closed) return
@@ -44,6 +57,7 @@ export function createSanitizingLineSink({ write, redact }) {
       return this
     },
     get pending() { return carry },
+    get errors() { return errors.slice() },
   }
 }
 
@@ -60,7 +74,10 @@ export function createSanitizingLineSink({ write, redact }) {
  */
 export function waitForDrain(child, streams, budgetMs) {
   const closedOf = (stream) => new Promise((res) => {
-    if (stream === null || stream === undefined || stream.destroyed || stream.writableEnded === true || stream.readableEnded === true) { res(); return }
+    // destroyed / readableEnded are NOT closed: only the actual 'close'
+    // (after the final flush) counts, so the fd closes strictly after the
+    // sink's trailing partial has been written.
+    if (stream === null || stream === undefined || stream.closed === true) { res(); return }
     stream.once('close', res)
   })
   const exited = new Promise((res) => {
@@ -71,4 +88,18 @@ export function waitForDrain(child, streams, budgetMs) {
     Promise.all([exited, ...streams.map(closedOf)]).then(() => true),
     new Promise((res) => setTimeout(() => res(false), budgetMs)),
   ])
+}
+
+/**
+ * The era-stop verdict - ONE place, so 'ALL GREEN' can never survive an
+ * incomplete stop: verified drain AND post-stop listener absence are both
+ * required; every failure names its reason (never silent).
+ * @param state - { drained, postStopListen } from the kit run.
+ * @returns { ok, reasons } ok=false lists every unmet condition.
+ */
+export function evaluateStopOutcome({ drained, postStopListen }) {
+  const reasons = []
+  if (drained !== true) reasons.push('drain not verified (child exit + both stream closes unobserved; late output may be missing)')
+  if (postStopListen !== 'no-listener') reasons.push(`post-stop listener state '${String(postStopListen)}' is not a proven stop`)
+  return { ok: reasons.length === 0, reasons }
 }

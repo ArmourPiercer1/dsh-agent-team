@@ -127,3 +127,32 @@ Third-pass corrections (root d35 review, wording held to evidence):
   redacted, verified drain true); CASE7 non-draining child -> bounded
   timeout -> explicit incomplete. 7/7 PASS, fake credentials only; the
   launcher remains FROZEN and unrun.
+
+Full-lifecycle batch (root 9abd review, six items, this head):
+1. BOOTSTRAP: the boot line is parsed ONLY from the CURRENT child's
+   complete stdout lines IN MEMORY (sink onLine hook), exact expected
+   127.0.0.1 + our port; the old file re-read is GONE - it could only ever
+   hand authenticate a REDACTED value. The parsed token feeds
+   authenticate and is nulled immediately; it never touches disk or the
+   log face.
+2. DRAIN closes strictly on ACTUAL stream 'close' (destroyed/readableEnded
+   no longer count), so the fd closes after the sink's final flush.
+3. FAILURE SEMANTICS: J8.0 (sink/spawn errors) and J9.0 (stop verdict via
+   the single evaluateStopOutcome) land in criteria; any failure sets
+   facts.ok=false, and an unproven stop HALTS the round (EX.1, no next
+   era). An incomplete stop cannot ride an ALL GREEN.
+4. NO-DELETE HOLD: the finally-block rmSync(HOME) cleanup CODE is removed
+   (deleting code, not data). Every world home is RETAINED (facts
+   .homesRetained; summary verdict H3.0 restated accordingly); the kit
+   deletes nothing. The fd closes in a NESTED finally so even receipt-write
+   failure cannot strand it; async spawn errors are captured.
+5. SINK ERRORS are sticky and explicit (sink.errors), criteria-fed, with a
+   '[REDACTION-FAILED: line dropped, never written raw]' marker - no
+   silent swallow, no raw fallback, ever.
+6. J7 now requires the feed-rows WITNESS LINE TO EXIST before any
+   presence/absence claim; an empty log can never PASS either era.
+Tests: 11/11 (added CASE8 synthetic bootstrap->auth->streams->exit -
+in-memory exact fake-token handoff, redacted-only disk, immediate discard;
+CASE9 early destroy; CASE10 sticky write failure, never raw; CASE11 stop
+verdict fail-closed). Fake credentials only; launcher remains FROZEN,
+unrun.

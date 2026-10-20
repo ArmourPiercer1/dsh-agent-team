@@ -33,15 +33,15 @@
  *
  * Invariants (TEST_METHODS/ROUTER_RULES): test-use stays pristine
  * (HEAD==baseline, porcelain 0 before/after); worlds live under
- * tests/homes/a5jobs-<era>-<stamp> and are swept; :3080/:3180 probed
+ * tests/homes/a5jobs-<era>-<stamp> and are RETAINED (no-delete hold); :3080/:3180 probed
  * read-only only; mock model only, tokens redacted at capture.
  * Ports per the B-route task card: host 3188, mock 3496.
  * Exit: 0 all criteria green; 2 any red; 1 fatal.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync, writeSync } from 'node:fs'
-import { createSanitizingLineSink, waitForDrain } from './line-sanitizer.mjs'
+import { existsSync, mkdirSync, openSync, readFileSync, writeFileSync, closeSync, writeSync } from 'node:fs'
+import { createSanitizingLineSink, evaluateStopOutcome, waitForDrain } from './line-sanitizer.mjs'
 const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
@@ -462,10 +462,27 @@ async function runEra(era, mock) {
   // close). The previously shipped block defined a sink but never consumed
   // the pipes - empty logs and a full-pipe stall; it is RECOVERED here and
   // the behavior is unit-tested with fake credentials only (never raw).
-  const mkSink = () => createSanitizingLineSink({
-    write: (line) => { writeSync(outFd, line + '\n') },
-    redact: redactTokens,
-  })
+  const sinks = []
+  let bootResolve
+  const bootSeen = new Promise((res) => { bootResolve = res })
+  const mkSink = () => {
+    const sink = createSanitizingLineSink({
+      write: (line) => { writeSync(outFd, line + '\n') },
+      redact: redactTokens,
+      onLine: (line) => {
+        // ROOT batch (1): the bootstrap line is parsed ONLY from the CURRENT
+        // child's COMPLETE stdout lines, IN MEMORY - never by re-reading the
+        // already-redacted log file (that whole path could only ever hand
+        // authenticate a REDACTED value). Exact expected 127.0.0.1 + our
+        // port; the parsed pair feeds authenticate and is discarded right
+        // after - never written to disk, never printed.
+        const m = BOOT_MARKER.exec(line)
+        if (m !== null && m[1] === String(HOST_PORT)) bootResolve({ port: m[1], token: m[2] })
+      },
+    })
+    sinks.push(sink)
+    return sink
+  }
   let child
   try {
     child = spawn(process.execPath, [HOST_BIN, 'web', '--port', String(HOST_PORT), '--no-open'], {
@@ -487,13 +504,18 @@ async function runEra(era, mock) {
   // unconsumed pipe stalls a chatty child - the exact root BLOCK).
   mkSink().attach(child.stdout)
   mkSink().attach(child.stderr)
+  facts.spawnError = null
+  child.on('error', (err) => { facts.spawnError = String(err?.message ?? err).slice(0, 300) })
   const stopOnce = () => { try { child.kill() } catch { /* gone */ } }
   try {
-    const boot = await waitFor(360_000, () => {
-      try { return BOOT_MARKER.exec(readFileSync(instanceLog, 'utf8')) ?? false } catch { return false }
-    }, `[${era}] boot marker`)
-    const origin = `http://127.0.0.1:${boot[1]}`
-    const cookie = await authenticate(origin, boot[2])
+    // The ONLY bootstrap source: the in-memory line capture above (a
+    // timeout here means the CURRENT child never printed the marker - a
+    // hard era failure; there is no file fallback to stale or redacted data).
+    const booted = await Promise.race([bootSeen, new Promise((res) => setTimeout(() => res(null), 360_000))])
+    if (booted === null) dieFatal(`[${era}] boot marker never appeared on the current child's stdout`)
+    const origin = `http://127.0.0.1:${booted.port}`
+    const cookie = await authenticate(origin, booted.token)
+    booted.token = null // discarded immediately after authenticate (in-memory only)
     check(era, 'J1.0', 'real host booted on the production row with the era plane shape (profile-patch seam only)', true, `origin=${origin}`)
     // ROOT third-pass fix (2): the ACTUAL bind + PID are captured while the
     // host is ALIVE (a post-stop ss only proves post-stop absence, and a
@@ -642,45 +664,52 @@ async function runEra(era, mock) {
     const bootLog = (() => { try { return readFileSync(instanceLog, 'utf8') } catch { return '' } })()
     const feedLine = bootLog.split('\n').find((l) => l.includes('placement-feed rows=')) ?? ''
     const feedHasTrio = /rows=\[[^\]]*job_output[^\]]*\]/.test(feedLine)
+    // ROOT batch (6): the feed-row WITNESS must EXIST first - an empty log
+    // or an absent witness line can never PASS either era (absence of
+    // evidence proved nothing before; now it fails).
+    const feedWitness = feedLine.includes('placement-feed rows=')
     check(era, 'J7.0', era === 'jobs'
-      ? 'MOUNT witness: the placement-feed rows list carries the fixed trio names (the jobsEnabled row rode the assembly; the trio is Team-claimed on this world)'
-      : 'Z1 control witness: the placement-feed rows list does NOT carry the trio names (jobsEnabled ABSENT = zero rows by absence)', feedHasTrio === (era === 'jobs'), `feed=${JSON.stringify(feedLine.slice(0, 260))}`)
+      ? 'MOUNT witness: the placement-feed rows witness line EXISTS and carries the fixed trio names (the jobsEnabled row rode the assembly; the trio is Team-claimed on this world)'
+      : 'Z1 control witness: the placement-feed rows witness line EXISTS and does NOT carry the trio names (jobsEnabled ABSENT = zero rows by absence - but the witness itself must be present)',
+      feedWitness && feedHasTrio === (era === 'jobs'), `witness=${feedWitness} feed=${JSON.stringify(feedLine.slice(0, 260))}`)
     facts.leaderDone = mock.requests.some((r) => JSON.stringify(r.reply ?? '').includes('A5JOBS_LEADER_DONE'))
     facts.ok = true
     return facts
   } finally {
     stopOnce()
-    // ROOT third-pass fix (1): VERIFIED drain, not a fixed sleep - observe
-    // child exit + BOTH stream closes (sinks flush their trailing partial
-    // through the still-open fd); when the bounded budget elapses the
-    // record says DRAIN-INCOMPLETE EXPLICITLY (late output may be missing)
-    // before the fd closes. No silent loss, and a fixed sleep is not a
-    // clean close and is not called one anywhere in this kit.
-    const drained = await waitForDrain(child, [child.stdout, child.stderr], 15_000)
-    facts.drain = drained
-      ? { ok: true, note: 'verified drain: child exit + both stream closes observed before closeSync' }
-      : { ok: false, note: 'DRAIN-INCOMPLETE: child/stream close not observed within 15000ms of stopOnce; late output may be missing; fd closed after recording this' }
     try {
-      const raw = readFileSync(instanceLog, 'utf8')
-      writeFileSync(join(RUN_DIR, `instance-${era}.tail.log`), redactTokens(raw.split('\n').slice(-400).join('\n')))
-      facts.logObservations = raw.split('\n').filter((l) => /placement-feed|a5-plane|a5-jobs|jobs-bridge|governed/i.test(l)).slice(0, 60).map((l) => redactTokens(l).slice(0, 240))
-      writeEvidence(`observations-${era}.json`, facts.logObservations)
-    } catch { /* no log */ }
-    // (2) facts carry the runtime-captured hostPid/hostBind: written AFTER
-    // their values exist (runtime facts file)...
-    writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
-    try { closeSync(outFd) } catch { /* already closed */ }
-    // ...and the STOP RECEIPT is a SEPARATE artifact (root third-pass fix
-    // (2)): post-stop listener absence belongs to the receipt, not to the
-    // runtime facts.
-    let postStopListen = 'unconfirmed'
-    try {
-      const ssStop = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
-      postStopListen = ssStop.split('\n').some((l) => l.includes(String(HOST_PORT))) ? 'STILL-LISTENING' : 'no-listener'
-    } catch { /* ss unavailable */ }
-    writeEvidence(`stop-receipt-${era}.json`, { era, hostPid: facts.hostPid ?? null, drain: facts.drain, postStopListen, stopStamp: new Date().toISOString() })
-    if (!FLAG_KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
-    facts.swept = !existsSync(HOME)
+      // ROOT batch (3): VERIFIED drain then the stop verdict; every failure
+      // lands in criteria AND in facts.ok - an incomplete stop can never
+      // ride an ALL GREEN, and the era loop refuses the next era on it.
+      const drained = await waitForDrain(child, [child.stdout, child.stderr], 15_000)
+      facts.drain = drained
+        ? { ok: true, note: 'verified drain: child exit + both stream closes observed before closeSync' }
+        : { ok: false, note: 'DRAIN-INCOMPLETE: child/stream close not observed within 15000ms of stopOnce; late output may be missing' }
+      try {
+        const raw = readFileSync(instanceLog, 'utf8')
+        writeFileSync(join(RUN_DIR, `instance-${era}.tail.log`), redactTokens(raw.split('\n').slice(-400).join('\n')))
+        facts.logObservations = raw.split('\n').filter((l) => /placement-feed|a5-plane|a5-jobs|jobs-bridge|governed/i.test(l)).slice(0, 60).map((l) => redactTokens(l).slice(0, 240))
+        writeEvidence(`observations-${era}.json`, facts.logObservations)
+      } catch { /* no log */ }
+      // (5) sink capture failures are criteria, not silence
+      const sinkErrors = sinks.flatMap((sk) => sk.errors)
+      check(era, 'J8.0', 'the stream sinks captured the child output with zero redaction/write failures', sinkErrors.length === 0 && facts.spawnError === null, `sinkErrors=${sinkErrors.length} spawnError=${facts.spawnError ?? 'none'}`)
+      let postStopListen = 'unconfirmed'
+      try {
+        const ssStop = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+        postStopListen = ssStop.split('\n').some((l) => l.includes(String(HOST_PORT))) ? 'STILL-LISTENING' : 'no-listener'
+      } catch { /* ss unavailable */ }
+      const stop = evaluateStopOutcome({ drained, postStopListen })
+      facts.stop = stop
+      check(era, 'J9.0', 'the era host actually stopped: verified drain + post-stop listener absence', stop.ok, stop.reasons.join('; ') || 'drain verified; listener absent')
+      if (!stop.ok || sinkErrors.length > 0 || facts.spawnError !== null) facts.ok = false
+      facts.homesRetained = true // (4) no-delete hold: homes stay COMPLETELY; this kit deletes NOTHING
+      writeEvidence(`facts-${era}.json`, { ...facts, home: HOME })
+      writeEvidence(`stop-receipt-${era}.json`, { era, hostPid: facts.hostPid ?? null, drain: facts.drain, stop, postStopListen, sinkErrors: sinkErrors.length, stopStamp: new Date().toISOString() })
+    } finally {
+      // The fd closes even if everything above threw (nested finally).
+      try { closeSync(outFd) } catch { /* already closed */ }
+    }
   }
 }
 
@@ -738,6 +767,11 @@ async function main() {
         check(era, 'EX.0', 'the era completed (an era-level throw fails the round verbatim)', false, worlds[era].eraError)
         log(redactTokens(`[${era}] era error: ${String(eraError?.stack ?? eraError).slice(0, 1200)}`))
       }
+      // ROOT batch (3): an incomplete stop does not open the next era.
+      if (worlds[era]?.stop && worlds[era].stop.ok === false) {
+        check(era, 'EX.1', 'a proven-incomplete stop halts the round (no next era on an unproven stop)', false, 'stop not proven; halting before the next era')
+        break
+      }
     }
   } finally {
     clearInterval(digestLane)
@@ -751,18 +785,18 @@ async function main() {
   writeEvidence('post-stable-probe.json', postStable)
   const revAfter = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: TESTUSE, encoding: 'utf8' }).stdout?.trim()
   const dirtyAfter = spawnSync('git', ['status', '--porcelain'], { cwd: TESTUSE, encoding: 'utf8' }).stdout?.trim()
-  check('*', 'H3.0', 'stable instances unchanged; test-use pristine AFTER (HEAD==baseline, porcelain 0); every world swept',
+  check('*', 'H3.0', 'stable instances unchanged; test-use pristine AFTER (HEAD==baseline, porcelain 0); every world home RETAINED (no-delete hold)',
     String(preStable.p3080.status) === String(postStable.p3080.status)
     && String(preStable.p3180.status) === String(postStable.p3180.status)
     && revAfter === TEST_USE_BASELINE_SHA && (dirtyAfter ?? 'x') === ''
-    && ERAS.every((e) => worlds[e]?.swept === true || FLAG_KEEP),
-    `porcelain=${dirtyAfter === '' ? 0 : 'DIRTY'}; swept=${ERAS.map((e) => `${e}:${String(worlds[e]?.swept)}`).join(',')}`)
+    && ERAS.every((e) => worlds[e]?.homesRetained === true), // no-delete hold: retention is the law, not a flag
+    `porcelain=${dirtyAfter === '' ? 0 : 'DIRTY'}; retained=${ERAS.map((e) => `${e}:${String(worlds[e]?.homesRetained)}`).join(',')}`)
 
   const failed = criteria.filter((c) => !c.ok)
   writeEvidence('summary.json', {
     runStamp: RUN_STAMP, eras: ERAS, hostPort: HOST_PORT, mockPort: MOCK_PORT,
     total: criteria.length, failed: failed.map((c) => `${c.era}/${c.id}`),
-    kept: FLAG_KEEP ? ERAS.map((e) => worlds[e]?.home) : [],
+    homesRetained: ERAS.map((e) => worlds[e]?.home), // all homes retained (no-delete hold)
     criteria: criteria.map(({ era, id, ok, name }) => ({ era, id, ok, name })),
   })
   if (failed.length > 0) { log(`FAILED ${failed.length}/${criteria.length}: ${failed.map((c) => `${c.era}/${c.id}`).join(', ')}`); process.exit(2) }

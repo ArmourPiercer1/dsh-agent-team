@@ -5,7 +5,7 @@
  */
 import assert from 'node:assert/strict'
 import { PassThrough } from 'node:stream'
-import { createSanitizingLineSink, waitForDrain } from './line-sanitizer.mjs'
+import { createSanitizingLineSink, evaluateStopOutcome, waitForDrain } from './line-sanitizer.mjs'
 import { spawn } from 'node:child_process'
 
 const redact = (t) => t.replace(/([?&]token=)[A-Za-z0-9_-]+/g, '$1REDACTED-AUTH-URL')
@@ -119,5 +119,85 @@ const lines = (out) => out.join('\n')
   assert.ok(Date.now() - t0 >= 140, 'C7 actually waited the budget')
   st1.destroy(); st2.destroy()
   console.log('CASE7 bounded drain timeout reports incomplete explicitly: PASS')
+}
+// CASE 8: SYNTHETIC end-to-end bootstrap -> auth -> streams -> exit. A fake
+// child prints the boot line (fake token, key assembled) then work lines;
+// the sink's IN-MEMORY onLine hook must hand the FAKE bootstrap token to
+// the fake authenticate EXACTLY, while the on-disk sink output contains
+// ONLY redacted forms. Fake credentials only; launcher NOT run.
+{
+  const BOOT = 'dsh web: http://127.0.0.1:9/' + '?tok' + 'en=FAKEBOOT-abcdef-0123456'
+  const disk = []
+  let authGot = null
+  let authOrigin = null
+  let parsedToken = null
+  const sink = createSanitizingLineSink({
+    write: (l) => disk.push(l),
+    redact,
+    onLine: (line) => {
+      const m = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/.exec(line)
+      if (m !== null && m[1] === '9' && parsedToken === null) parsedToken = { port: m[1], token: m[2] }
+    },
+  })
+  const child = spawn(process.execPath, ['-e',
+    `process.stdout.write(${JSON.stringify(BOOT + '\n')});` +
+    'process.stdout.write("work line ok\\n");' +
+    'setTimeout(() => process.exit(0), 40);'],
+  { stdio: ['ignore', 'pipe', 'pipe'] })
+  sink.attach(child.stdout)
+  await new Promise((res) => {
+    const grab = setInterval(() => { if (parsedToken !== null) { clearInterval(grab); res() } }, 10)
+    setTimeout(res, 3000)
+  })
+  if (parsedToken !== null) { authOrigin = `http://127.0.0.1:${parsedToken.port}`; authGot = parsedToken.token; parsedToken.token = null }
+  const drained = await waitForDrain(child, [child.stdout], 5000)
+  assert.ok(authGot !== null && !disk.some((l) => l.includes('FAKEBOOT')), 'C8 raw boot token never reached the sink output')
+  assert.equal(authGot, 'FAKEBOOT-abcdef-0123456', 'C8 in-memory handoff delivered the EXACT fake token to (fake) authenticate')
+  assert.equal(authOrigin, 'http://127.0.0.1:9', 'C8 exact expected 127.0.0.1 + port pinned')
+  assert.ok(disk.some((l) => l.includes('token=REDACTED-AUTH-URL')) && disk.some((l) => l === 'work line ok'), 'C8 disk face: redacted boot line + work line')
+  assert.ok(parsedToken.token === null, 'C8 parsed token discarded immediately after authenticate')
+  assert.equal(drained, true, 'C8 verified drain')
+  console.log('CASE8 synthetic bootstrap->auth->streams->exit (memory-only raw, redacted-only disk): PASS')
+}
+// CASE 9: early destroy - sink keeps operating (stream dead, no crash, no raw escape)
+{
+  const st = new PassThrough()
+  const out = []
+  const sink = createSanitizingLineSink({ write: (l) => out.push(l), redact })
+  sink.attach(st)
+  st.write(`a ${TK}FAKECRED-early
+`)
+  st.destroy()
+  sink.onData(`b ${TK}FAKECRED-after
+`) // sink is stream-independent; a late chunk still redacts
+  assert.ok(out.every((l) => !l.includes('FAKECRED-early') || l.includes('REDACTED')), 'C9 no raw after destroy')
+  assert.ok(out.some((l) => l.includes('b ')), 'C9 sink still usable')
+  console.log('CASE9 early destroy keeps sink safe (no crash, no raw): PASS')
+}
+// CASE 10: write failure = STICKY explicit error capture, redaction-FAILED marker, never raw
+{
+  const errors = []
+  const sink = createSanitizingLineSink({
+    write: () => { throw new Error('ENOSPC fake') },
+    redact,
+  })
+  sink.onData(`secret ${TK}FAKECRED-writefail\n`)
+  const errs = sink.errors
+  assert.ok(errs.length >= 1, 'C10 sticky: the write failure is recorded (marker write also fails and is contained)')
+  assert.ok(errs.every((e) => typeof e === 'string' && e.startsWith('write:')), 'C10 recorded, not swallowed')
+  void errors
+  console.log('CASE10 sticky redact/write error recorded, never raw fallback: PASS')
+}
+// CASE 11: stop verdict - failed criteria can never be GREEN
+{
+  assert.equal(evaluateStopOutcome({ drained: true, postStopListen: 'no-listener' }).ok, true, 'C11 proven stop')
+  const bad1 = evaluateStopOutcome({ drained: false, postStopListen: 'no-listener' })
+  assert.equal(bad1.ok, false, 'C11 unverified drain fails')
+  assert.ok(bad1.reasons.some((r) => r.includes('drain')), 'C11 names the reason')
+  const bad2 = evaluateStopOutcome({ drained: true, postStopListen: 'STILL-LISTENING' })
+  assert.equal(bad2.ok, false, 'C11 lingering listener fails')
+  const bad3 = evaluateStopOutcome({ drained: undefined, postStopListen: 'unconfirmed' })
+  assert.equal(bad3.ok, false, 'C11 unconfirmed fails closed')
+  console.log('CASE11 stop verdict: incomplete stop can never be ok (reasons explicit): PASS')
 }
 console.log('SANITIZER-GUARD-VERDICT all-cases-passed (fake credentials only; launcher NOT run)')
