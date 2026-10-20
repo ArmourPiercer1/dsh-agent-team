@@ -148,3 +148,23 @@ live order text, not run10's body — corrected; A5's caliber (package body rule
 run12 ran with the hooks blob sha 647fa2eb (pre-hardening instrument, as shipped in 2ddc6180).
 The hardened kit/hook (456c2e1d, pid= lines + resolved-URL matching) has NOT been exercised by
 any run — stated plainly; no run may cite it as evidence.
+
+---
+# APPENDIX C (root three rulings on the A-report — append-only, zero reruns)
+
+## C1 native-body=0: recorded GAP (root ②, acceptance standard defined)
+The acceptance standard for this dimension is an **exact tooldef/call execute-entry counter
+with a positive control** (proving the counter can fire). A module **import hook can be
+bypassed by cached imports** and therefore does NOT constitute body-call evidence.
+GAP: execute-entry counting is NOT implemented; the import hook of this package is
+**downgraded to corroboration (佐证) only**. Positive-control form is mandatory in any
+future kit that claims this dimension. No whole-process universal proof is demanded here;
+this report publishes ACCURATELY WITH THIS GAP STATED — it is not a production acceptance,
+and no rerun is done for it.
+
+## C2 v8 (root ①): wire-envelope parity GAP — content/permission semantics NOT implicated
+v8 = wire-envelope parity gap (host adapter prefix layer), to be handled at a future
+adapter-integration point; never faked into 8/8. Current recorded form is the correct one.
+
+## C3 cancel (root ③): unchanged — P2 form stands (B2): with terminal+read-counter
+association it closes; without, PENDING. B2 marks it PENDING with (a)(c) missing.
