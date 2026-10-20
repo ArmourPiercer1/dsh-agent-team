@@ -15,7 +15,7 @@
  * @module @dsh-agent-team/runtime/jobs-gateway
  */
 export {
-  jobOwnerKey,
+  jobOwnerKey, jobsBridgeScopeKey,
   gatewayRefusal,
 } from './types.js'
 export type {

@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "fatal": "TypeError: ac.signal.listenerCount is not a function\n    at runLegs (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation/dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/jobs-live-2026-10-20/probe-jobs-abort-row.mjs:197:34)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async Object.handler (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation/dev/agent-workflow/evidence/alpha5/jobs-isolation/runs/jobs-live-2026-10-20/probe-jobs-abort-row.mjs:91:23)\n    at async handle (file:///srv/workspace/dsh-plugins/dsh-agent-team/tests/deepseek-harness-test-use/packages/host/webserver/lib/index.js:235:5)",
+  "legs": [],
+  "collector": {
+    "unhandled": [],
+    "uncaught": []
+  }
+}

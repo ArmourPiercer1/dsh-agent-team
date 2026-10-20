@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "a5jbc-2e5exaygte",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "MALFORMED_DTO",
+      "message": "permission policy $.leader.capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \"allow\" (source: a5jobs-main.yaml)",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "MALFORMED_DTO",
+          "message": "permission policy $.leader.capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \"allow\" (source: a5jobs-main.yaml)",
+          "details": {
+            "path": "$.leader.capabilities.permissions.default",
+            "sourceName": "a5jobs-main.yaml"
+          }
+        }
+      }
+    }
+  }
+}

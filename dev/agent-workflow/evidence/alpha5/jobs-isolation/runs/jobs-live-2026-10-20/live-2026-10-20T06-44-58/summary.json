@@ -1,0 +1,55 @@
+{
+  "runStamp": "2026-10-20T06-44-58",
+  "head": "515b3805b11db9986ced7d0577942e0669ffe5dd",
+  "hostPort": 3186,
+  "mockPort": 3496,
+  "total": 8,
+  "failed": [
+    "A1.2",
+    "A2.1",
+    "A3.0"
+  ],
+  "criteria": [
+    {
+      "id": "A0.0",
+      "ok": true,
+      "name": "pre-flight: head=515b3805, test-use pristine-at-baseline, sanctioned free ports, df recorded, stable :3080/:3180 probed read-only"
+    },
+    {
+      "id": "A1.0",
+      "ok": true,
+      "name": "real pristine host booted on the production row, jobsEnabled plane, probe row (public seam only)"
+    },
+    {
+      "id": "A1.1",
+      "ok": true,
+      "name": "the probe row is mounted INSIDE the world and the REAL host jobs registry is present (ctx.get(jobs))"
+    },
+    {
+      "id": "A1.2",
+      "ok": false,
+      "name": "the four-boundary batch returned a machine receipt (receipt.json)"
+    },
+    {
+      "id": "A2.0",
+      "ok": true,
+      "name": "process-level collectors: unhandledRejection=0 AND uncaughtException=0 over the whole batch"
+    },
+    {
+      "id": "A2.1",
+      "ok": false,
+      "name": "reap: every REAL spawned job exited (killed through the real svc cancel path)"
+    },
+    {
+      "id": "A3.0",
+      "ok": false,
+      "name": "teardown to zero: world swept, no straggler producer processes"
+    },
+    {
+      "id": "A4.0",
+      "ok": true,
+      "name": "stable :3080/:3180 unchanged (same probe outcome before/after); test-use pristine AFTER; df recorded before and after"
+    }
+  ],
+  "receiptOk": false
+}

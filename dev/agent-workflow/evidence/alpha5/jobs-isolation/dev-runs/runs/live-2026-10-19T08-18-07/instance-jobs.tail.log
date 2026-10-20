@@ -1,0 +1,7 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-isolation/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3186/?token=REDACTED-AUTH-URL
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-19
+[dsh-agent-team] a5ptc: census-boot root=session-a5jobs-team-jobs-2026-10-19T08-18-07 selectedRunner=none enforcement=confine-unset (host sandbox default)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-19
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-19

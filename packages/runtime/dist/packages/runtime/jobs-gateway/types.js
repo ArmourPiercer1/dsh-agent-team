@@ -40,6 +40,30 @@ export function jobOwnerKey(owner) {
     // changes the key (cross-TeamSession confusion impossible at string level).
     return `{"instanceId":${JSON.stringify(owner.instanceId)},"rootSessionId":${JSON.stringify(owner.rootSessionId)}}`;
 }
+/**
+ * The BRIDGE-SPECIFIC opaque definition-scope key: one governed bridge mount
+ * is (plane realm, durable root session, durable member instance) - the key
+ * carries the member dimension so two members' bridges never share a row in
+ * the row-local definition store (the shared realm-wide shape let a second
+ * member's mount overwrite the first's pin under an unchanged-identity skip).
+ * Canonical (fixed-field-order array, JSON-escaped) like jobOwnerKey above,
+ * never a colon concat: the key is opaque to the store and only ever
+ * produced by this helper, so every consumer - register, ensure, admission,
+ * recheck, resolveDefinition - provably reads and writes the same row. The
+ * triple tuple [realmId, rootSessionId, instanceId] per the ROOT ruling: the
+ * rootSessionId is the durable team-root ID the mount site already holds
+ * (never an invented field), taken even though the live gateway assembly is
+ * per-root today - belt AND braces against an explicit blueprint realm shared
+ * across roots. The helper is the ONE derivation: production mounts, tests,
+ * and (via the bridge's read-only scopeKey accessor) any future creation
+ * producer consume it; no caller recomputes the tuple. Records and rechecks
+ * read the STORED scope, never re-derive.
+ * @param scope - the mount's realm plus the durable member pair.
+ * @returns the opaque scope key.
+ */
+export function jobsBridgeScopeKey(scope) {
+    return JSON.stringify([String(scope.realmId), String(scope.rootSessionId), String(scope.instanceId)]);
+}
 export function gatewayRefusal(code, detail) {
     return { ok: false, code, detail };
 }

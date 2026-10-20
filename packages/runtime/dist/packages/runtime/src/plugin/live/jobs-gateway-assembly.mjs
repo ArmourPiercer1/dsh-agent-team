@@ -33,18 +33,29 @@
  *
  * Effect-face honesty (pc-CONTRACT §1 `jobs` row): the host `jobs` registry
  * coverage for `job_*` is OUT OF PLAN and the operations adapter is missing
- * (w7m2 缺项 1, on the register). This assembly therefore does NOT fake an
- * actuator: `admitTeamJob` runs the TeamPermit gate (gateway.admitJob) and
- * returns its verdict; the actuator leg (`ctx.jobs.start`, owner = the child
- * session) stays a disclosed gap — the governed team's user-facing jobs
- * capability today remains the HOST public face, never a claim of this row.
+ * (w7m2 缺项 1, on the register). As of B-ACT-1-PR C1 this row carries the
+ * ACTUATOR-SHAPE legs — `attributeBackgroundJob` (creation attribution,
+ * creating-lane pin), `checkManagementAccess` (pure owner fence over
+ * job_output/job_list/job_kill, with the disclosed `corded:false` pass-
+ * through for jobs the Team lane never attributed) and `noteKillRequested`
+ * ('requested' marks the request, never a settlement). The GLUE mount that
+ * drives them (placement flip + `ctx.get('jobs')` bridge, `jobsLaneEnabled`
+ * default-off) is C2; until it lands, no production caller exists and the
+ * governed team's user-facing jobs capability remains the HOST public face.
+ * This row never fakes a host jobs capability.
  *
  * `final_declaration` stays null; this file makes no production-readiness
  * claim.
  *
  * @module runtime/plugin/live/jobs-gateway-assembly
  */
-import { createJobsGateway, createLeaseWindow } from '../../../jobs-gateway/index.js'
+import { createJobsGateway, createLeaseWindow, jobOwnerKey, jobsBridgeScopeKey } from '../../../jobs-gateway/index.js'
+
+// THE ONE scope-key derivation, re-exported for the production entry: the
+// entry reaches the lane ONLY through this row (GLUE-5 edge law), so the
+// helper rides the row import, never a direct barrel edge. Mount sites and
+// future creation producers import THIS and never recompute the tuple.
+export { jobsBridgeScopeKey }
 
 /**
  * The durable-identity source over ONE team root's MemberInstance rows
@@ -81,6 +92,9 @@ function createRowLocalDefinitionStore() {
   return {
     register: (scopeKey, name, identity) => {
       store.set(key(scopeKey, name), String(identity))
+    },
+    unregister: (scopeKey, name) => {
+      store.delete(key(scopeKey, name))
     },
     resolveDefinition: (scopeKey, name) => {
       const k = key(scopeKey, name)
@@ -122,6 +136,53 @@ export function createLiveJobsGatewayAssembly({ teamRoot, rootSessionId, onObser
     lease,
     /** The TeamPermit leg only — see the effect-face honesty note above. */
     admitTeamJob: (input) => gateway.admitJob(input),
+    /**
+     * CREATION ATTRIBUTION (B-ACT-1-PR C1; PR7 row: "创建时 Grant/
+     * ExecutionLease"). The bash background arm registers the receipt's
+     * host jobId here so the job gains a durable member owner BEFORE any
+     * management call. The definition pinned is the CREATING lane's own
+     * (default 'bash') — the C-BIND re-read tracks the lane the job was
+     * born under; with no readable creating-lane definition the closed
+     * world refuses (`mapping-rejected`) and attribution inventes NOTHING
+     * (admitJob's zero-state-delta stands).
+     */
+    attributeBackgroundJob: ({ hostJobId, owner, scopeKey, toolName = 'bash' }) =>
+      gateway.admitJob({ jobId: hostJobId, owner, scopeKey, toolName }),
+    /**
+     * MANAGEMENT-PATH OWNER FENCE (job_output/job_list/job_kill). A PURE
+     * read over the owner law — no lease moves: a record owned by the
+     * viewer passes CORDed with the record; a record owned by another
+     * member scope is the same typed `owner-mismatch` refusal the Web
+     * fence gives (static detail, never the owner's identity — C-GW);
+     * a jobId with NO team record is the DISCLOSED pass-through
+     * `corded: false` — the host's caller-session fence is authoritative
+     * for jobs the Team lane never attributed, and this row never invents
+     * ownership after the fact (pc-CONTRACT two-fence law, each layer
+     * answering only for itself).
+     */
+    checkManagementAccess: ({ jobId, viewer }) => {
+      const records = gateway.job(jobId)
+      if (records.length === 0) return { ok: true, corded: false, record: null }
+      const record = records[0]
+      if (record.ownerKey !== jobOwnerKey({ rootSessionId: viewer.rootSessionId, instanceId: viewer.instanceId })) {
+        return { ok: false, code: 'owner-mismatch', detail: 'this viewer is not the owning member scope of the job' }
+      }
+      return { ok: true, corded: true, record }
+    },
+    /**
+     * KILL IS A REQUEST (PR7 row: "Cancel requested vs terminated"; host
+     * JobRegistry.kill answers 'requested' | 'already-finished' @639ed01539).
+     * Marking the request never settles anything: the lease token stands
+     * until the plane's settlement edge (PR1 Gate R4). Reuses the frozen
+     * `gateway-cancel-requested` observation name — no new vocabulary.
+     */
+    noteKillRequested: (jobId) => {
+      const records = gateway.job(jobId)
+      if (records.length === 0) return { ok: false, code: 'unknown-job' }
+      records[0].cancelRequested = true
+      emit({ event: 'gateway-cancel-requested', jobId, reason: 'host-kill-requested' })
+      return { ok: true }
+    },
     /** The disclosed row-local store; `register` is the host-seam slot. */
     definitions: definitionStore,
     observations: () => ledger.slice(),

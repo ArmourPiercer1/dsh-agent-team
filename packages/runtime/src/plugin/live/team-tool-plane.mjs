@@ -323,6 +323,15 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   read: Object.freeze(['read']),
   grep: Object.freeze([]),
   glob: Object.freeze([]),
+  // B-ACT-1-PR C2: the jobs management trio mounts at FIXED native spellings
+  // under the closed `jobsEnabled` consumption key (never the configurable
+  // `names` map — no config-driven spelling, no Gate 0b surface). The
+  // same-name, same-meaning implementation this ledger exists to record is
+  // now ASSEMBLED (createGovernedJobsBridge over the host JobRegistry
+  // public face @639ed01539 — caller fence preserved, Team owner fence
+  // layered above); recording the claim here keeps the natexe ledger the
+  // complete truth of what this install may mount.
+  jobs: Object.freeze(['job_output', 'job_list', 'job_kill']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -523,6 +532,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const globEnabled = globEnabledRaw !== false
 
+  // Gate 0c (jobs variant, B-ACT-1-PR C2): `planeCfg.jobsEnabled` is the
+  // SAME-shaped CLOSED CONSUMPTION KEY. ABSENT = FALSE here (a NEW lane has
+  // no existing world to keep enabled — the zero-flip law holds by absence:
+  // every shipped world keeps the pre-C2 mount shape byte-for-byte); a
+  // non-boolean value is a config defect and fails closed on the SAME
+  // existing PLANE_CONFIG_INCOMPLETE refusal — never silently coerced.
+  const jobsEnabledRaw = input.plane?.jobsEnabled
+  if (jobsEnabledRaw !== undefined && typeof jobsEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CONFIG_INCOMPLETE',
+      message: `planeCfg.jobsEnabled must be a boolean when present — got ${JSON.stringify(jobsEnabledRaw) ?? String(jobsEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const jobsEnabled = jobsEnabledRaw === true
+
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
     permissionPolicy,
@@ -714,7 +739,65 @@ export function createTeamToolPlaneAssembly(input = {}) {
       observe: logBackend('a5g7-read'),
     })
     : null
-  const allDefs = readExecutor === null ? defs : Object.freeze([
+  // GLUE-5/C2 JOBS-MANAGEMENT ROW (B-ACT-1-PR): the three host `job_*`
+  // management tools, takeover-mounted at FIXED native spellings behind the
+  // closed `jobsEnabled` key (ABSENT = no rows at all — zero flip). The
+  // effect body is the INJECTED bridge (glue wires gateway fence → host
+  // `ctx.get('jobs')` public face; see plane-effect-backends.mjs); with no
+  // bridge the rows land on the honest typed shut face (existing
+  // IO_POLICY_UNSUPPORTED grammar, zero new error surface — the mount gate
+  // is config law, not wiring). The descriptions/schemas below are the host
+  // tool-jobs spellings AT THE PIN (packages/jobs/tool-jobs/src/index.ts
+  // :311-400 @639ed01539) — same-name SAME-MEANING is the natexe claim law
+  // this row satisfies; the dispatch-provided caller (`exec.agent?.id`,
+  // exactly what the host tool passes) never gets invented: an unnamed
+  // caller is refused by the bridge, never queried unfiltered.
+  const jobsBridge = input.backends?.jobs ?? null
+  const jobsShut = createShutBackend('a5-jobs-bridge-pending')
+  const shutJobsText = async () => {
+    const r = await jobsShut.run({})
+    return { text: `refused: ${String(r.failure.code)} — ${String(r.failure.detail)}` }
+  }
+  const jobsDefs = jobsEnabled === true ? [
+    Object.freeze({
+      name: 'job_output',
+      description: 'Read a background job: output since the previous read for stream jobs, or the result of a finished final-output job.',
+      parameters: {
+        type: 'object',
+        properties: {
+          job_id: { type: 'string', description: 'Job id returned by the tool that started the background work.' },
+          wait: { type: 'boolean', description: 'Block until the job finishes or the timeout expires; a timed-out wait leaves the job running. Defaults to false.' },
+          timeout_ms: { type: 'number', description: 'Max wait in milliseconds with wait: true.' },
+        },
+        required: ['job_id'],
+      },
+      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobOutput(args ?? {}, exec?.agent?.id, exec?.signal) : await shutJobsText()),
+      output: PLANE_PRESENTATION_FACE,
+    }),
+    Object.freeze({
+      name: 'job_list',
+      description: 'List your background jobs (running and finished) with their ids, kinds, and statuses.',
+      parameters: { type: 'object', properties: {} },
+      execute: async (_args, exec) => (jobsBridge !== null ? jobsBridge.jobList(exec?.agent?.id) : await shutJobsText()),
+      output: PLANE_PRESENTATION_FACE,
+    }),
+    Object.freeze({
+      name: 'job_kill',
+      description: 'Request cancellation of a running background job.',
+      parameters: {
+        type: 'object',
+        properties: {
+          job_id: { type: 'string', description: 'Job id returned by the tool that started the background work.' },
+          reason: { type: 'string', description: 'Optional short reason, recorded in the log and forwarded to the job.' },
+        },
+        required: ['job_id'],
+      },
+      execute: async (args, exec) => (jobsBridge !== null ? jobsBridge.jobKill(args ?? {}, exec?.agent?.id) : await shutJobsText()),
+      output: PLANE_PRESENTATION_FACE,
+    }),
+  ] : []
+
+  const baseDefs = readExecutor === null ? defs : Object.freeze([
     ...defs,
     Object.freeze({
       name: readName,
@@ -733,6 +816,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
       output: PLANE_PRESENTATION_FACE,
     }),
   ])
+  // The jobs rows ride the SAME placement/feed/dispose machinery as every
+  // other row (their def#N identities mint through the seam's install pass
+  // like the rest); zero-flip law: with the key off this is byte-identical
+  // to `allDefs = baseDefs`.
+  const allDefs = jobsDefs.length === 0 ? baseDefs : Object.freeze([...baseDefs, ...jobsDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount

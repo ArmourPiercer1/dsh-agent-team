@@ -1,0 +1,6 @@
+[
+  "[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-jobs-iso-guard/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)",
+  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-20",
+  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-20",
+  "[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,job_output,job_list,job_kill] realm=a5jobs-realm-2026-10-20"
+]

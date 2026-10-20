@@ -14,7 +14,7 @@
  *
  * @module @dsh-agent-team/runtime/jobs-gateway
  */
-export { jobOwnerKey, gatewayRefusal, } from './types.js';
+export { jobOwnerKey, jobsBridgeScopeKey, gatewayRefusal, } from './types.js';
 export { createLeaseWindow } from './lease-window.js';
 export { classifyDispatchEvent } from './cancellation-boundary.js';
 export { createJobsGateway } from './jobs-gateway.js';
