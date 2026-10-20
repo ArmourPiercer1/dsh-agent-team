@@ -15,5 +15,14 @@
     // this round). The kit switches from its lane-local ESM build to this
     // dist as the lane's own follow-up (queue note).
     "a5p5-tools/src"
+  ],
+  // A5 READ PILOT (a5-read-pilot branch): the bounded read fork is an ISOLATED
+  // pilot — it is deliberately NOT on the production compile face (zero
+  // production assembly change, root release-order constraint ①). The lane
+  // typechecks on the dev config (`tsc -p tsconfig.json`, src+test, noEmit,
+  // where node builtins resolve) and runs under vitest; mounting happens only
+  // in pilot worlds (profile rows / kit harnesses), never here.
+  "exclude": [
+    "src/governed-fs"
   ]
 }
