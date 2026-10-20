@@ -23,11 +23,16 @@ F-leg probe (`a5-legs-runner` worktree, `.../gap-legs-f/runs/a5legs-leg1-2026-10
 L1-FAILCLOSED verbatim): the probe itself sent the path under **`filePath`** — its own assumption of
 the "shipped spelling" — and received `permission denied: canonicalization failed for tool "lsp":
 file-path-missing`. The refusal at the canonicalizer layer was CORRECT under the then-law (only
-`file_path` is a known key). No real-install lsp call was ever demonstrated failing: the probe's key
-shape manufactured the symptom. F-leg is therefore a **probe artifact**, and #350 does not fix, and
-does not need to fix, any installed-channel defect. (What has NOT been run, disclosed: an
-end-to-end installed `schema → authorization → host parser → real LSP body` leg; heavy live deferred
-to after the G4 space audit.)
+`file_path` is a known key). Deeper read of the SAME run's wire transcript (F-LEG-DIAGNOSIS.md): F
+ALSO probed the true `file_path` spelling — the allow-lane probe passed canonicalization AND the lane
+layer and landed at `Error: no LSP provider handles …` (that world mounts no LSP provider; REWORK:82
+`preset 不挂 lsp；profile 缺项`). So a real installed end-to-end lsp failure DOES exist in evidence,
+but its layer is **provider-mount (world configuration), not canonicalization / lanes / guards** —
+the original F report mis-layered it onto the canonicalizer because probe 1 answered first. No product
+defect is established; #350 fixes, and needs to fix, nothing here. Disclosed/not claimed: the
+installed `schema → authorization → host parser → real LSP body` positive form with a mounted
+provider — five-leg diagnostic plan (P-pos/P-camel/P-strict/P-deny/P-symlink; clangd-18 pre-checked
+present) booked in F-LEG-DIAGNOSIS.md, deferred to after the G4 space audit.
 
 ## What this branch mechanically contains (kept on the branch, value/cost booked for a SEPARATE product decision — see ALIAS-DECISION.md)
 

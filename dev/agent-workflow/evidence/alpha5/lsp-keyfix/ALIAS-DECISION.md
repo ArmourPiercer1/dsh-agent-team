@@ -1,7 +1,11 @@
 # ALIAS-DECISION — keep the canonicalizer camel alias? (product decision, root 候裁; #350 HOLD 不依赖此件)
 
-Framing per root 终态令: the alias is NOT required by any demonstrated defect (F-leg = probe
-artifact; the shipped form always canonicalized). Its retention is a STANDALONE product choice.
+**根终口径 @2026-10-20：alias 产品裁="此时不索取"——本件转为可选/延期项留档，不催；PR #350 HOLD 继续、不关、分支不删。**
+
+Framing per root 终态令: the alias is NOT required by any demonstrated defect (the shipped `file_path`
+form always canonicalized; the real installed lsp end-to-end failure is at the provider-mount layer —
+world configuration, see F-LEG-DIAGNOSIS.md — not canonicalization). Its retention is a STANDALONE
+product choice.
 
 ## Value (measured/bounded)
 - Governance VISIBILITY on drifted calls: today a camel-drifted file-path call is a key-less
