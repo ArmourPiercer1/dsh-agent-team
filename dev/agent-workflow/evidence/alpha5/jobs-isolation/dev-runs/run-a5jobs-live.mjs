@@ -38,9 +38,9 @@
  * Ports per the B-route task card: host 3188, mock 3496.
  * Exit: 0 all criteria green; 2 any red; 1 fatal.
  */
-import { spawnSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync, closeSync, writeSync } from 'node:fs'
 const fsRead = (p) => readFileSync(p, 'utf8')
 import { dirname, join, resolve } from 'node:path'
 import path from 'node:path'
@@ -449,12 +449,20 @@ async function runEra(era, mock) {
     boot: 1, phase: 'create', reportDir: RUN_DIR, runStamp: RUN_STAMP, rootSessionId: ROOT,
   }, null, 2))
   writeFileSync(join(BLUEPRINT_DIR, 'a5jobs-anchor.yaml'), bpAnchorYaml(ROOT))
+  // SECURITY (root urgent order, raw-leak fix): the instance stdio NO LONGER
+  // rides a raw fd - every LINE passes redactTokens BEFORE it touches the
+  // log file (redact-before-write; the earlier shape wrote raw bytes to
+  // outFd and only redacted the tail copy, leaking the boot auth URL at L2
+  // of the captured logs). The fd stays open for the append path below.
   const outFd = openSync(instanceLog, 'a')
+  const writeRedactedLine = (chunk) => {
+    try { writeSync(outFd, redactTokens(String(chunk)).split('\n').map((l) => l + '\n').join('')) } catch { /* best-effort */ }
+  }
   let child
   try {
     child = spawn(process.execPath, [HOST_BIN, 'web', '--port', String(HOST_PORT), '--no-open'], {
       cwd: WORKSPACE,
-      stdio: ['ignore', outFd, outFd],
+      stdio: ['ignore', 'pipe', 'pipe'],
       env: {
         ...process.env,
         DSH_HOME: HOME,
@@ -626,6 +634,16 @@ async function runEra(era, mock) {
       const raw = readFileSync(instanceLog, 'utf8')
       writeFileSync(join(RUN_DIR, `instance-${era}.tail.log`), redactTokens(raw.split('\n').slice(-400).join('\n')))
       facts.logObservations = raw.split('\n').filter((l) => /placement-feed|a5-plane|a5-jobs|jobs-bridge|governed/i.test(l)).slice(0, 60).map((l) => redactTokens(l).slice(0, 240))
+    // ROOT security metadata (round F): PID + the ACTUAL socket bind for our
+    // port (address only - no credential rides this line), recorded AT RUN
+    // TIME because a boot URL's 127.0.0.1 is not proof of a loopback-only
+    // bind. Unknown-at-record stays 'unconfirmed' rather than a claim.
+    facts.hostPid = child?.pid ?? null
+    try {
+      const ss = execFileSync('ss', ['-ltn', `sport = : ${HOST_PORT}`], { encoding: 'utf8', timeout: 3000 })
+      const line = ss.split('\n').find((l) => l.includes(String(HOST_PORT)))
+      facts.hostBind = line ? line.trim().split(/\s+/).slice(3, 5).join(' <- ') : 'no-listen-line'
+    } catch { facts.hostBind = 'unconfirmed' }
       writeEvidence(`observations-${era}.json`, facts.logObservations)
     } catch { /* no log */ }
     if (!FLAG_KEEP) { try { rmSync(HOME, { recursive: true, force: true }) } catch { /* best effort */ } }
