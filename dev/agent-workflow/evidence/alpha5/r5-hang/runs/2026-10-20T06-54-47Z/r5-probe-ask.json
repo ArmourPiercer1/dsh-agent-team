@@ -1,0 +1,153 @@
+{
+  "mode": "ask",
+  "startedAt": "2026-10-20T06:55:02.730Z",
+  "steps": [
+    {
+      "label": "P0-catalog-list-baseline",
+      "atMs": 1,
+      "atIso": "2026-10-20T06:55:02.731Z",
+      "tookMs": 27,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0-catalog-list-baseline-kbh38f6l\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"prov"
+    },
+    {
+      "label": "P0b-human-v4-bogus-id-before-park",
+      "atMs": 28,
+      "atIso": "2026-10-20T06:55:02.758Z",
+      "tookMs": 6,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0b-human-v4-bogus-id-before-park-66jrcuwt\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-before-park' in team 'session-a5tools-gov-team-ask-2026-10-20T06-54-47Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\","
+    },
+    {
+      "label": "P2-human-v4-allow",
+      "atMs": 35,
+      "atIso": "2026-10-20T06:55:02.765Z",
+      "tookMs": 11,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P2-human-v4-allow-owjcpaoq\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1sh2u0e0ljn68l1fht6nc0ws\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\"},\"scope\":{\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0se6l4"
+    },
+    {
+      "label": "P4-human-v4-bogus-id-during",
+      "atMs": 2037,
+      "atIso": "2026-10-20T06:55:04.767Z",
+      "tookMs": 18,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P4-human-v4-bogus-id-during-ctqy3zcw\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-does-not-exist' in team 'session-a5tools-gov-team-ask-2026-10-20T06-54-47Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"co"
+    },
+    {
+      "label": "P3-catalog-list-during",
+      "atMs": 2036,
+      "atIso": "2026-10-20T06:55:04.766Z",
+      "tookMs": 19,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P3-catalog-list-during-mkdjpbt4\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"proven"
+    },
+    {
+      "label": "P5-durable-state-after-probe",
+      "atMs": 2056,
+      "atIso": "2026-10-20T06:55:04.786Z",
+      "tookMs": 8,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P5-durable-state-after-probe-owkde6hc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\""
+    }
+  ],
+  "done": false,
+  "parked": {
+    "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+    "from": "wire-only"
+  },
+  "ledgerAfter": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0se6l4m0ati0"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-0b2m42y1hmoelx09mwmr81un",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0se6l4m0ati0"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 8,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws"
+      }
+    ],
+    "error": null
+  },
+  "ledgerEnd": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0se6l4m0ati0"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-0b2m42y1hmoelx09mwmr81un",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0se6l4m0ati0"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+        "decision": "allow"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 8,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws"
+      }
+    ],
+    "error": null
+  },
+  "allowLanded": true,
+  "p1WaitedMs": 1,
+  "p1FromLedger": null,
+  "p1FromWire": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+  "pendingFromLedgerRightBeforeCall": true,
+  "ledgerRightBeforeCall": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0se6l4m0ati0"
+      }
+    ],
+    "decisions": [],
+    "consumptions": [],
+    "error": null
+  }
+}

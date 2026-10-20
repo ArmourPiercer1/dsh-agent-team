@@ -1,0 +1,37 @@
+[
+  {
+    "url": "<origin>/team-remote/team.create",
+    "timeoutMs": 300000,
+    "atIso": "2026-10-20T06:48:08.715Z",
+    "waitedMs": 299973,
+    "diagnostics": {
+      "machine": {
+        "loadavg": [
+          0.31,
+          0.53,
+          0.84
+        ],
+        "memFreeMb": 9475
+      },
+      "channel": [
+        {
+          "name": "catalog.list",
+          "settled": "HTTP",
+          "status": 200,
+          "ms": 33
+        },
+        {
+          "name": "catalog.list-again",
+          "settled": "HTTP",
+          "status": 200,
+          "ms": 32
+        }
+      ]
+    },
+    "shadowRetry": {
+      "settled": "NO_RESPONSE",
+      "ms": 300642,
+      "error": "fetch failed"
+    }
+  }
+]

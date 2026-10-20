@@ -1,0 +1,215 @@
+{
+  "mode": "ask",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-16-26Z",
+  "ok": true,
+  "createRoot": "session-a5tools-gov-team-ask-2026-10-20T06-16-26Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-OarU5h/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:dc156ef5756b8f2ba1f6bf897a88a308701ce672cbd6f678c5fa66f946af788d",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:049c44e694ad5bea128e3403a64772911d5ce76dbff09188beb02909c28133d3",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:6c415b0f6baa0b489138a8fe2a95b074931e2ca7ca4ca63d4852e1eeed22f4ae"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-16-26Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3191/?token=<REDACTED-3d997e10>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-ask-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-16-26Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:bbd18fa71af9b069ee3c3503e77aa4c493997a62fb18fb6d52f17ca5bc72ed71\"},\"createdAt\":\"2026-10-20T06:17:14.193Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-16-26Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-16-26Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-16-26Z\",\"instanceId\":\""
+  },
+  "r5Probe": {
+    "mode": "ask",
+    "startedAt": "2026-10-20T06:17:16.116Z",
+    "steps": [
+      {
+        "label": "P0-catalog-list-baseline",
+        "atMs": 0,
+        "tookMs": 14,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0-catalog-list-baseline-g9b4r3b3\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"prov"
+      },
+      {
+        "label": "P0b-human-v4-bogus-id-before-park",
+        "atMs": 14,
+        "tookMs": 6,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0b-human-v4-bogus-id-before-park-uakl0tbo\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-before-park' in team 'session-a5tools-gov-team-ask-2026-10-20T06-16-26Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\","
+      },
+      {
+        "label": "P6-human-v4-after-leader-decided",
+        "atMs": 29,
+        "tookMs": 6,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P6-human-v4-after-leader-decided-zzlivsxa\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-0q8j1tl071osty0dimhkv1g1' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":nul"
+      }
+    ],
+    "done": true,
+    "parked": {
+      "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1",
+      "from": "wire-only"
+    },
+    "ledgerAfter": null,
+    "ledgerEnd": {
+      "requests": [
+        {
+          "sequence": 5,
+          "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1ewud8v1ouj9"
+        },
+        {
+          "sequence": 8,
+          "requestId": "ctrl-0pvf55403wbi2v0bjomyy1nh",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1ewud8v1ouj9"
+        }
+      ],
+      "decisions": [
+        {
+          "sequence": 6,
+          "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1",
+          "decision": "allow"
+        },
+        {
+          "sequence": 9,
+          "requestId": "ctrl-0pvf55403wbi2v0bjomyy1nh",
+          "decision": "deny"
+        }
+      ],
+      "consumptions": [
+        {
+          "sequence": 7,
+          "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1"
+        }
+      ],
+      "error": null
+    },
+    "allowLanded": null,
+    "fatal": "Cannot read properties of null (reading 'requestId')",
+    "p1WaitedMs": 9,
+    "p1FromLedger": null,
+    "p1FromWire": "ctrl-0q8j1tl071osty0dimhkv1g1"
+  },
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "write",
+    "write"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"write\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: the approval was denied\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"A5TOOLS_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"write\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}] | r1=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: the approval was denied\\\"}]\"}",
+  "fs": {
+    "writeTxt": null,
+    "sreTxt": null,
+    "bashWrote": null,
+    "allowedTxt": null,
+    "outsideGovWrite": false,
+    "sreDeniedTxt": false,
+    "bashDeniedSide": false,
+    "askAllowedTxt": null,
+    "askDeniedTxt": false
+  },
+  "forbiddenMarkerOnWire": 0,
+  "wideOutsideWrite": null,
+  "factsControlLedger": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1ewud8v1ouj9"
+      },
+      {
+        "sequence": 8,
+        "requestId": "ctrl-0pvf55403wbi2v0bjomyy1nh",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1ewud8v1ouj9"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 6,
+        "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1",
+        "decision": "allow"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-0pvf55403wbi2v0bjomyy1nh",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-0q8j1tl071osty0dimhkv1g1"
+      }
+    ],
+    "error": null
+  },
+  "askActions": []
+}

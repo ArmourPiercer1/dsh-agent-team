@@ -1,0 +1,4 @@
+{
+  "fatal": "Error: FATAL: mock port 3491 busy\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:113:30)\n    at main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:983:37)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:1246:14",
+  "stamp": "2026-10-20T06-35-04Z"
+}

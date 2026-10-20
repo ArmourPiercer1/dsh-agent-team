@@ -1,0 +1,4 @@
+{
+  "fatal": "Error: FATAL: timeout waiting for: ask member completed its ladder\n    at die (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:113:30)\n    at waitFor (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:145:11)\n    at async runWorld (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:795:19)\n    at async main (file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:1007:24)\n    at async file:///srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/dev/agent-workflow/evidence/alpha5/r5-hang/code/a5r5-r5-probe-kit.mjs:1233:14",
+  "stamp": "2026-10-20T06-34-22Z"
+}

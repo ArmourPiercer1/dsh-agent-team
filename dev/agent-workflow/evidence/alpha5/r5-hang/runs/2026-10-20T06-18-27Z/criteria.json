@@ -1,0 +1,109 @@
+{
+  "stamp": "2026-10-20T06-18-27Z",
+  "sha": "bc97ad0c33f96d1aabab5fd4d4e799c385a16af1",
+  "modes": [
+    "ask"
+  ],
+  "install": {
+    "rootSha": "20b6ffcd9c8e4ea0024cb947507f22171c6db06fc17cf0ec8833d48f20ab613b",
+    "files": 1773
+  },
+  "summary": {
+    "total": 15,
+    "pass": 15,
+    "fail": 0,
+    "booked": 0
+  },
+  "criteria": [
+    {
+      "id": "H1",
+      "claim": "the test-use host is the pinned pristine runtime @639ed01539 with porcelain clean before",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "H1b",
+      "claim": "the graded SHA bc97ad0c33f96d1aabab5fd4d4e799c385a16af1 exists in the pinned source repo and the source worktree is on branch a5-tools-gov OR detached at it",
+      "pass": true,
+      "observed": "exists=true branch="
+    },
+    {
+      "id": "H0",
+      "claim": "the stable :3080 instance answers read-only before this run (probe only, never touched)",
+      "pass": true,
+      "observed": "status=401"
+    },
+    {
+      "id": "I1",
+      "claim": "REAL install through the host public package face — `dsh plugin --profile web add github:…#<sha>` — exits 0",
+      "pass": true,
+      "observed": "exit=0 in 5s tail=[WARN] Issues with peer dependencies found. Run \"pnpm peers check\" to list them. | dependencies: | + dsh-agent-team github:ArmourPiercer1/dsh-agent-team#bc97ad0"
+    },
+    {
+      "id": "I2",
+      "claim": "the profile face is strict-single-plugin and the reconciler appended the dsh-agent-team bundle row",
+      "pass": true,
+      "observed": "deps=[\"dsh-agent-team\"] bundles=[\"@deepseek-ai/dsh-base\",\"@deepseek-ai/dsh-web-app\",\"dsh-agent-team\"]"
+    },
+    {
+      "id": "I3",
+      "claim": "INSTALL THREE-ZEROS: missing=0, extra=0, sha≠=0 against the commit mirror; rootSha recorded",
+      "pass": true,
+      "observed": "n=1773/1773 miss=0 extra=0 sha≠=0 rootSha=20b6ffcd9c8e4ea0024cb947507f22171c6db06fc17cf0ec8833d48f20ab613b"
+    },
+    {
+      "id": "W.ask.install",
+      "claim": "the ask world boots on a REAL installed face with three zeros and the probe rootSha",
+      "pass": true,
+      "observed": "exit=0 n=1773/1773 rootSha=20b6ffcd9c8e4ea0==probe"
+    },
+    {
+      "id": "S.ask.surface",
+      "claim": "the ask root-agent wire surface really carries the preset-native tools under test (read/write/edit/read_image/glob/grep/bash/str_replace_editor — governance reaches the REAL surface)",
+      "pass": true,
+      "observed": "surface=[\"bash\",\"edit\",\"glob\",\"grep\",\"read\",\"read_image\",\"str_replace_editor\",\"team_archive_member\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_follow_up\",\"team_grant_permission\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"team_list_templates\",\"team_report_progress\",\"team_request_control\",\"team_resolve_control\",\"team_revoke_permission\",\"team_send_message\",\"write\"]"
+    },
+    {
+      "id": "A1.pending-ask",
+      "claim": "ask lane: the member write parked as a DURABLE control request (ledger row control-request-recorded exists)",
+      "pass": true,
+      "observed": "requests=2"
+    },
+    {
+      "id": "A2.allow-consumed-binding-refusal",
+      "claim": "ask→allow: durable allow decision + the one-shot grant CONSUMED at the guard; the un-bound native write then refuses at dispatch (closed-world binding law, no native fallback, no silent execute)",
+      "pass": true,
+      "observed": "consumed=1 res0=[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"write\\\" cannot be v"
+    },
+    {
+      "id": "A3.deny-refuses-zero-effect",
+      "claim": "ask→deny: the second write is REFUSED after the human deny and NEVER executes (file absent)",
+      "pass": true,
+      "observed": "askDeniedExists=false"
+    },
+    {
+      "id": "A4.resolutions-recorded",
+      "claim": "both resolutions are durable decision rows (allow + deny) against the same requestIds",
+      "pass": true,
+      "observed": "[\"allow\",\"deny\"]"
+    },
+    {
+      "id": "T1",
+      "claim": "the pristine test-use tree is STILL byte-clean and at the pinned baseline after every world",
+      "pass": true,
+      "observed": "head=639ed01539 porcelain=0"
+    },
+    {
+      "id": "T2",
+      "claim": "host port 3187 released after teardown and no a5tools-gov-* home survives (unless --keep); :3080 never touched",
+      "pass": true,
+      "observed": "released=true leftovers=[]"
+    },
+    {
+      "id": "T3",
+      "claim": "the stable :3080 probe answers the SAME as before (read-only before/after, never touched)",
+      "pass": true,
+      "observed": "before=401 after=401"
+    }
+  ]
+}

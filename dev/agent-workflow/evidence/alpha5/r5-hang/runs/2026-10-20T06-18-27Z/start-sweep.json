@@ -1,0 +1,8 @@
+{
+  "staleHomes": [
+    "a5r5-ask-2026-10-20T06-16-26Z"
+  ],
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/.a5tools-gov-store",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe"
+}

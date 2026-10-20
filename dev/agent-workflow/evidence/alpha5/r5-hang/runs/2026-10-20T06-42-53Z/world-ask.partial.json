@@ -1,0 +1,96 @@
+{
+  "mode": "ask",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-ask-2026-10-20T06-42-53Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-k2Rnln/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:920a6bf637f1971d23ece72ad94a03c366503e6ed38e69c28002aced4d532ac7",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:049c44e694ad5bea128e3403a64772911d5ce76dbff09188beb02909c28133d3",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:4e97a4152a2601c0cfef52e56d2aa7de22aa9c7a6c68b134c105b14d2d05f5c3"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-42-53Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3191/?token=<REDACTED-9bdd52cc>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "r5Watchdog": [
+    {
+      "url": "<origin>/team-remote/team.create",
+      "timeoutMs": 300000,
+      "atIso": "2026-10-20T06:48:08.715Z",
+      "waitedMs": 299973,
+      "diagnostics": {
+        "machine": {
+          "loadavg": [
+            0.31,
+            0.53,
+            0.84
+          ],
+          "memFreeMb": 9475
+        },
+        "channel": [
+          {
+            "name": "catalog.list",
+            "settled": "HTTP",
+            "status": 200,
+            "ms": 33
+          },
+          {
+            "name": "catalog.list-again",
+            "settled": "HTTP",
+            "status": 200,
+            "ms": 32
+          }
+        ]
+      },
+      "shadowRetry": {
+        "settled": "NO_RESPONSE",
+        "ms": 300642,
+        "error": "fetch failed"
+      }
+    }
+  ]
+}

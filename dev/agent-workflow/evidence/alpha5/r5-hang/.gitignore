@@ -1,0 +1,4 @@
+# bulky per-run material: reproducible by re-running the kit, never committed
+runs/**/declared-face-mirror/
+runs/**/install-manifest.json
+runs/**/*.raw.log

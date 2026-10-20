@@ -1,0 +1,187 @@
+{
+  "mode": "ask",
+  "startedAt": "2026-10-20T06:18:46.212Z",
+  "steps": [
+    {
+      "label": "P0-catalog-list-baseline",
+      "atMs": 0,
+      "atIso": "2026-10-20T06:18:46.212Z",
+      "tookMs": 10,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0-catalog-list-baseline-zaeu2ohx\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"prov"
+    },
+    {
+      "label": "P0b-human-v4-bogus-id-before-park",
+      "atMs": 10,
+      "atIso": "2026-10-20T06:18:46.222Z",
+      "tookMs": 6,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0b-human-v4-bogus-id-before-park-naczkn4u\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-before-park' in team 'session-a5tools-gov-team-ask-2026-10-20T06-18-27Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\","
+    },
+    {
+      "label": "P2-human-v4-allow",
+      "atMs": 25,
+      "atIso": "2026-10-20T06:18:46.237Z",
+      "tookMs": 11,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P2-human-v4-allow-3pebg13l\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-11mpyik1ntsamv03tbp3e00w' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":null,\"reason\":\"dom"
+    },
+    {
+      "label": "P4-human-v4-bogus-id-during",
+      "atMs": 2027,
+      "atIso": "2026-10-20T06:18:48.239Z",
+      "tookMs": 14,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P4-human-v4-bogus-id-during-snaq6z06\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-does-not-exist' in team 'session-a5tools-gov-team-ask-2026-10-20T06-18-27Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"co"
+    },
+    {
+      "label": "P3-catalog-list-during",
+      "atMs": 2026,
+      "atIso": "2026-10-20T06:18:48.238Z",
+      "tookMs": 15,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P3-catalog-list-during-9qtfsnml\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"proven"
+    },
+    {
+      "label": "P6-human-v4-after-leader-decided",
+      "atMs": 2042,
+      "atIso": "2026-10-20T06:18:48.254Z",
+      "tookMs": 5,
+      "settled": "HTTP",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P6-human-v4-after-leader-decided-7alo00gl\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-11mpyik1ntsamv03tbp3e00w' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"contractVersion\":4,\"requestToken\":nul"
+    }
+  ],
+  "done": true,
+  "parked": {
+    "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+    "from": "wire-only"
+  },
+  "ledgerAfter": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      },
+      {
+        "sequence": 8,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 6,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "decision": "allow"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w"
+      }
+    ],
+    "error": null
+  },
+  "ledgerEnd": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      },
+      {
+        "sequence": 8,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 6,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "decision": "allow"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w"
+      }
+    ],
+    "error": null
+  },
+  "allowLanded": true,
+  "p1WaitedMs": 9,
+  "p1FromLedger": null,
+  "p1FromWire": "ctrl-11mpyik1ntsamv03tbp3e00w",
+  "pendingFromLedgerRightBeforeCall": false,
+  "ledgerRightBeforeCall": {
+    "requests": [
+      {
+        "sequence": 5,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      },
+      {
+        "sequence": 8,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "kind": "leader-approval",
+        "toolName": "write",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-13nxx2g16186"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 6,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w",
+        "decision": "allow"
+      },
+      {
+        "sequence": 9,
+        "requestId": "ctrl-11rsnpi11f83cx15j8phs09n",
+        "decision": "deny"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-11mpyik1ntsamv03tbp3e00w"
+      }
+    ],
+    "error": null
+  }
+}

@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3191/?token=<REDACTED-9bdd52cc>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5tools-gov-ask-realm
+[dsh-agent-team] a5ptc: census-boot root=session-a5tools-gov-team-ask-2026-10-20T06-42-53Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/deployment/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5tools-gov-ask-realm

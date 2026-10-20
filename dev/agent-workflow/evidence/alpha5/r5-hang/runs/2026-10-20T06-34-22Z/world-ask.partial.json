@@ -1,0 +1,63 @@
+{
+  "mode": "ask",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-34-22Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-ask-2026-10-20T06-34-22Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-rCvuxL/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:eee676d8fd24b99a303387ccb31b1e04baae395c30ebdf23433c68e7a2198c66",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:049c44e694ad5bea128e3403a64772911d5ce76dbff09188beb02909c28133d3",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:26cdc56a2ae774e38a23dcf021e8556f4cec3a12107e02fdc3fdee0b6bc6a315"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-34-22Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3191/?token=<REDACTED-f4aa4675>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-ask-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-34-22Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:b31176cfc6e335d8fe689e947c7b7baf1d4a13c9132c2037d390630cc08d1b8b\"},\"createdAt\":\"2026-10-20T06:34:36.626Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-34-22Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-34-22Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-34-22Z\",\"instanceId\":\""
+  }
+}

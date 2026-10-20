@@ -1,0 +1,102 @@
+{
+  "capturedAt": "2026-10-20T06:51:46.042Z",
+  "root": "session-a5tools-gov-team-ask-2026-10-20T06-42-53Z",
+  "requestRow": {
+    "seq": 5,
+    "factType": "control-request-recorded",
+    "payload": {
+      "actionName": "parameter-permission",
+      "approvalCaseId": "case-1x9ug8c056fueh0dbshwu0sy",
+      "authorityScope": {
+        "matcher": {
+          "kind": "exact",
+          "resource": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/workspace/governed/ask-allowed.txt"
+        },
+        "operationClass": "write"
+      },
+      "beneficiaryAuthority": "member",
+      "correlation": "a5t-step-0-vcrlyvhh",
+      "executionCoupling": "guarded",
+      "kind": "leader-approval",
+      "legOrdinal": 1,
+      "operationFingerprint": "sha256:2688710a4ad0e96bcee4758aa0b003a6895820cdf42c770e90598968913d2b1e",
+      "requestId": "ctrl-1rgtfos0eioazz1tzuf2209d",
+      "requestedEffect": "allow",
+      "requester": {
+        "instanceId": "inst-0lzgjfi146wz",
+        "kind": "instance",
+        "role": "member"
+      },
+      "requiredAuthorityAtCreation": "leader",
+      "reviewAuthority": "leader",
+      "subject": {
+        "instanceId": "inst-0lzgjfi146wz",
+        "kind": "instance"
+      },
+      "summary": "write /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/workspace/governed/ask-allowed.txt",
+      "targetInstanceId": "inst-0lzgjfi146wz",
+      "toolName": "write"
+    }
+  },
+  "decisionRow": {
+    "seq": 6,
+    "factType": "control-decision-recorded",
+    "payload": {
+      "decider": {
+        "humanId": "session-a5tools-gov-team-ask-2026-10-20T06-42-53Z",
+        "kind": "human"
+      },
+      "decision": "allow",
+      "note": "a5r5 external human allow on PENDING leg",
+      "requestId": "ctrl-1rgtfos0eioazz1tzuf2209d",
+      "requestSequence": 5,
+      "scope": {
+        "actionName": "parameter-permission",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/workspace/governed/ask-allowed.txt"
+          },
+          "operationClass": "write"
+        },
+        "correlation": "a5t-step-0-vcrlyvhh",
+        "operationFingerprint": "sha256:2688710a4ad0e96bcee4758aa0b003a6895820cdf42c770e90598968913d2b1e",
+        "rootSessionId": "session-a5tools-gov-team-ask-2026-10-20T06-42-53Z",
+        "subject": {
+          "instanceId": "inst-0lzgjfi146wz",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-0lzgjfi146wz",
+        "toolName": "write"
+      }
+    }
+  },
+  "consumedRow": {
+    "seq": 7,
+    "factType": "control-allow-consumed",
+    "payload": {
+      "consumedAt": "2026-10-20T06:48:17.766Z",
+      "decisionSequence": 6,
+      "requestId": "ctrl-1rgtfos0eioazz1tzuf2209d",
+      "scope": {
+        "actionName": "parameter-permission",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-42-53Z/workspace/governed/ask-allowed.txt"
+          },
+          "operationClass": "write"
+        },
+        "correlation": "a5t-step-0-vcrlyvhh",
+        "operationFingerprint": "sha256:2688710a4ad0e96bcee4758aa0b003a6895820cdf42c770e90598968913d2b1e",
+        "rootSessionId": "session-a5tools-gov-team-ask-2026-10-20T06-42-53Z",
+        "subject": {
+          "instanceId": "inst-0lzgjfi146wz",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-0lzgjfi146wz",
+        "toolName": "write"
+      }
+    }
+  }
+}

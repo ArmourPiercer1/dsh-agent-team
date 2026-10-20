@@ -1,0 +1,7 @@
+{"seq":1,"status":200,"digest":{"toolCount":23,"markerHits":["A5TOOLS_20261020T064253Z_ASK_DISC"],"assistantToolNames":[],"toolResults":[],"_text":"4817 chars"}}
+{"seq":2,"status":200,"digest":{"toolCount":0,"markerHits":["A5TOOLS_20261020T064253Z_ASK_DISC"],"assistantToolNames":[],"toolResults":[],"_text":"558 chars"}}
+{"seq":3,"status":200,"digest":{"toolCount":12,"markerHits":["A5TOOLS_20261020T064253Z_ASK_L0"],"assistantToolNames":[],"toolResults":[],"_text":"5870 chars"}}
+{"seq":4,"status":200,"digest":{"toolCount":0,"markerHits":["A5TOOLS_20261020T064253Z_ASK_L0"],"assistantToolNames":[],"toolResults":[],"_text":"632 chars"}}
+{"seq":5,"status":200,"digest":{"toolCount":8,"markerHits":["A5TOOLS_20261020T064253Z_ASK_TASK_A"],"assistantToolNames":[],"toolResults":[],"_text":"6068 chars"}}
+{"seq":6,"status":200,"digest":{"toolCount":0,"markerHits":["A5TOOLS_20261020T064253Z_ASK_TASK_A"],"assistantToolNames":[],"toolResults":[],"_text":"1153 chars"}}
+{"seq":7,"status":200,"digest":{"toolCount":8,"markerHits":["A5TOOLS_20261020T064253Z_ASK_TASK_A"],"assistantToolNames":["write"],"toolResults":["[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"write\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]"],"_text":"6438 chars"}}

@@ -1,0 +1,8 @@
+{
+  "expected": "bc97ad0c33f96d1aabab5fd4d4e799c385a16af1",
+  "lsRemoteRaw": [
+    ""
+  ],
+  "srcWorktreeHead": "bc97ad0c33f96d1aabab5fd4d4e799c385a16af1",
+  "note": "the graded SHA is either origin/master (the frozen candidate) or the a5-tools-gov branch tip; install spec references it directly"
+}

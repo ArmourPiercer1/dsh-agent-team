@@ -1,0 +1,226 @@
+{
+  "mode": "ask",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-54-47Z",
+  "ok": false,
+  "createRoot": "session-a5tools-gov-team-ask-2026-10-20T06-54-47Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-6iYyt0/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:62f6c5e82fa3ae8d4bcab529f908b38848e3d6effd086378ef0ff39d79b813d8",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:049c44e694ad5bea128e3403a64772911d5ce76dbff09188beb02909c28133d3",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:87016b6628f4f1157890d2dc3d01d821c2eb65476ab252c0b9d0a28b16b0d4e5"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-54-47Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3192/?token=<REDACTED-4edeb50b>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-ask-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:a9805816b3a132b0a897c9ee1639b91b56476c5428aa9df1c12cca52aa27c0f7\"},\"createdAt\":\"2026-10-20T06:55:01.312Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-r5-probe/tests/homes/a5r5-ask-2026-10-20T06-54-47Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\",\"instanceId\":\""
+  },
+  "machineAtCreate": {
+    "loadavg": [
+      1.89,
+      0.95,
+      0.86
+    ],
+    "memFreeMb": 9610,
+    "stamp": "2026-10-20T06:55:02.730Z"
+  },
+  "r5Watchdog": [],
+  "r5Probe": {
+    "mode": "ask",
+    "startedAt": "2026-10-20T06:55:02.730Z",
+    "steps": [
+      {
+        "label": "P0-catalog-list-baseline",
+        "atMs": 1,
+        "atIso": "2026-10-20T06:55:02.731Z",
+        "tookMs": 27,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0-catalog-list-baseline-kbh38f6l\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"prov"
+      },
+      {
+        "label": "P0b-human-v4-bogus-id-before-park",
+        "atMs": 28,
+        "atIso": "2026-10-20T06:55:02.758Z",
+        "tookMs": 6,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P0b-human-v4-bogus-id-before-park-66jrcuwt\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-before-park' in team 'session-a5tools-gov-team-ask-2026-10-20T06-54-47Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\","
+      },
+      {
+        "label": "P2-human-v4-allow",
+        "atMs": 35,
+        "atIso": "2026-10-20T06:55:02.765Z",
+        "tookMs": 11,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P2-human-v4-allow-owjcpaoq\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"decision\":{\"requestId\":\"ctrl-1sh2u0e0ljn68l1fht6nc0ws\",\"decision\":\"allow\",\"decider\":{\"kind\":\"human\",\"humanId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\"},\"scope\":{\"rootSessionId\":\"session-a5tools-gov-team-ask-2026-10-20T06-54-47Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0se6l4"
+      },
+      {
+        "label": "P4-human-v4-bogus-id-during",
+        "atMs": 2037,
+        "atIso": "2026-10-20T06:55:04.767Z",
+        "tookMs": 18,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P4-human-v4-bogus-id-during-ctqy3zcw\",\"result\":{\"ok\":false,\"error\":{\"code\":\"CONTROL_REQUEST_NOT_FOUND\",\"message\":\"ControlService: no durable control request 'ctrl-a5r5-bogus-does-not-exist' in team 'session-a5tools-gov-team-ask-2026-10-20T06-54-47Z' (a decision without a request)\",\"details\":{\"method\":\"team.resolveControl\",\"endpoint\":\"team.resolveControl\",\"co"
+      },
+      {
+        "label": "P3-catalog-list-during",
+        "atMs": 2036,
+        "atIso": "2026-10-20T06:55:04.766Z",
+        "tookMs": 19,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P3-catalog-list-during-mkdjpbt4\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\"proven"
+      },
+      {
+        "label": "P5-durable-state-after-probe",
+        "atMs": 2056,
+        "atIso": "2026-10-20T06:55:04.786Z",
+        "tookMs": 8,
+        "settled": "HTTP",
+        "status": 200,
+        "body": "{\"type\":\"server-response\",\"rpcId\":\"a5r5-P5-durable-state-after-probe-owkde6hc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"blueprints\":[{\"blueprintId\":\"a5tools-gov-anchor-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]},{\"blueprintId\":\"a5tools-gov-ask-bp\",\"revisions\":[1],\"revisionStates\":[{\"revision\":1,\"schemaVersion\":3,\"migrationState\":\"current\"}]}]},\""
+      }
+    ],
+    "done": false,
+    "parked": {
+      "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+      "from": "wire-only"
+    },
+    "ledgerAfter": {
+      "requests": [
+        {
+          "sequence": 5,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0se6l4m0ati0"
+        },
+        {
+          "sequence": 9,
+          "requestId": "ctrl-0b2m42y1hmoelx09mwmr81un",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0se6l4m0ati0"
+        }
+      ],
+      "decisions": [
+        {
+          "sequence": 7,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+          "decision": "allow"
+        }
+      ],
+      "consumptions": [
+        {
+          "sequence": 8,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws"
+        }
+      ],
+      "error": null
+    },
+    "ledgerEnd": {
+      "requests": [
+        {
+          "sequence": 5,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0se6l4m0ati0"
+        },
+        {
+          "sequence": 9,
+          "requestId": "ctrl-0b2m42y1hmoelx09mwmr81un",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0se6l4m0ati0"
+        }
+      ],
+      "decisions": [
+        {
+          "sequence": 7,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+          "decision": "allow"
+        }
+      ],
+      "consumptions": [
+        {
+          "sequence": 8,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws"
+        }
+      ],
+      "error": null
+    },
+    "allowLanded": true,
+    "p1WaitedMs": 1,
+    "p1FromLedger": null,
+    "p1FromWire": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+    "pendingFromLedgerRightBeforeCall": true,
+    "ledgerRightBeforeCall": {
+      "requests": [
+        {
+          "sequence": 5,
+          "requestId": "ctrl-1sh2u0e0ljn68l1fht6nc0ws",
+          "kind": "leader-approval",
+          "toolName": "write",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0se6l4m0ati0"
+        }
+      ],
+      "decisions": [],
+      "consumptions": [],
+      "error": null
+    }
+  }
+}
