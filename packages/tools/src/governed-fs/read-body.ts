@@ -100,8 +100,11 @@ export function verifyCallAdmission (expected: AdmissionExpectation, binding: Ca
 
 /** … and AGAIN at the effect boundary against the CURRENT state (BLOCK ②). */
 export function verifyLiveAdmission (binding: CallAdmission, live: AdmissionLiveState): void {
-  if (live.grantId !== undefined && live.grantId !== binding.grantId) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the grant consumed is not the current grant')
+  // Order: revocation first (strongest), then the CURRENT-GRANT identity —
+  // F1 @8ae8c445-review: the binding always carries a grantId, so a live view
+  // that FAILS TO RETURN one is divergence, never a silent skip of the check.
   if (live.revoked) throw new GovernedFsError('GOV_ABANDONED_REVOKED', 'read refused at effect boundary: admission revoked before the read effect')
+  if (live.grantId !== binding.grantId) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: the current grant is not the grant this call rides (a live view that omits grantId diverges)')
   if (live.generation !== binding.generation) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', `read refused at effect boundary: generation moved (${String(binding.generation)} bound, ${String(live.generation)} current)`)
   if (live.bindingRevision !== binding.bindingRevision) throw new GovernedFsError('GOV_ADMISSION_DIVERGENT', 'read refused at effect boundary: binding revision moved before the read effect')
 }
@@ -132,9 +135,13 @@ function openBeneath (parentFd: number, comp: string, observer: OpenObserver | u
   // symlinks refuse as links, and special files (fifo/socket/device) refuse
   // BEFORE any O_RDONLY open could touch them (order self-evidence: the
   // observer records onStat strictly before onOpen for each component).
-  // Residual window (lstat→open swap to a special file) is bounded by
-  // O_NONBLOCK + the post-open fstat law; a full close needs openat2, which
-  // node lacks — disclosed here, never claimed closed.
+  // Race posture (root review ② @1b6221ec-r2, narrow-profile form): under the
+  // ONLY published profile (pinned-trusted-root: a tree no other principal
+  // mutates between verify and effect) the lstat→open window has no adversary,
+  // and the effect-boundary lstat + post-open fstat catch any drift. NO
+  // guarantee is offered for an arbitrary MUTABLE tree — that profile is
+  // unsupported and fails closed; a full mutable-tree close needs openat2,
+  // which node lacks. O_NONBLOCK is a hang-guard, not a race defense.
   try {
     observer?.onStat?.(via)
     const lst = lstatSync(via)
@@ -248,14 +255,21 @@ export function closeHandle (handle: VerifiedHandle): void {
  * (dev,ino) as the verified snapshot before any byte read.
  */
 export function recheckHandleIdentity (handle: VerifiedHandle, observer?: OpenObserver): void {
-  const probe = openBeneath(handle.parentFd, handle.finalComponent, observer, true)
+  // Root review ① @1b6221ec-r2: the recheck opens NOTHING — it inspects the
+  // DIRECTORY ENTRY (lstat = no file open) under the parent anchor fd, so the
+  // "the target is never reopened after verify" claim stays literally true.
+  const via = `/proc/self/fd/${String(handle.parentFd)}/${handle.finalComponent}`
+  observer?.onStat?.(via)
+  let st
   try {
-    const st = fstatSync(probe)
-    if (st.dev !== handle.dev || st.ino !== handle.ino) {
-      throw new GovernedFsError('GOV_STALE_HANDLE', 'read refused at effect boundary: the verified handle no longer matches the directory entry (retarget)')
-    }
-  } finally {
-    try { closeSync(probe) } catch { /* noop */ }
+    st = lstatSync(via)
+  } catch (e) {
+    const code = String((e as NodeJS.ErrnoException).code ?? 'ERR')
+    // the entry vanished (renamed away/unlinked) = retargeted away from us
+    throw new GovernedFsError('GOV_STALE_HANDLE', `read refused at effect boundary: the verified directory entry is gone (${code})`)
+  }
+  if (!st.isFile() || st.dev !== handle.dev || st.ino !== handle.ino) {
+    throw new GovernedFsError('GOV_STALE_HANDLE', 'read refused at effect boundary: the verified handle no longer matches the directory entry (retarget)')
   }
 }
 

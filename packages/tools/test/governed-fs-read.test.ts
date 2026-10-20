@@ -38,7 +38,7 @@ function defFor (over: Partial<DefConfig> = {}): GovernedReadDefinition {
       onStat (path) { stats.push(path) },
       onRead () { reads += 1 },
     },
-    liveAdmission: () => ({ revoked: false, generation: 7, bindingRevision: 1 }),
+    liveAdmission: () => ({ revoked: false, generation: 7, bindingRevision: 1, grantId: 'g-test-1' }),
     expectationFor (filePath, offset, limit) {
       const abs = filePath.startsWith('/') ? filePath : join(root, filePath)
       return { bindingRevision: 1, generation: 7, canonicalLocator: abs, parametersFingerprint: fingerprintParameters(abs, offset, limit) }
@@ -218,7 +218,7 @@ describe('BLOCK ②/③ effect-boundary rechecks (deterministic seams)', () => {
         rootDir: rr,
         rootIdentity: { dev: st.dev, ino: st.ino },
         ioProfile: 'pinned-trusted-root',
-        liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1 }),
+        liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1, grantId: 'g' }),
         effectBoundarySeam: () => { renameSync(p, join(rr, 'f.gone')); writeFileSync(p, 'NEW\n') },
         expectationFor (fp, o, l) { return { bindingRevision: 1, generation: 1, canonicalLocator: fp, parametersFingerprint: fingerprintParameters(fp, o, l) } },
       })
@@ -232,7 +232,7 @@ describe('BLOCK ②/③ effect-boundary rechecks (deterministic seams)', () => {
     let live: AdmissionLiveState = { revoked: false, generation: 7, bindingRevision: 1 }
     const def = defFor({
       liveAdmission: () => live,
-      effectBoundarySeam: () => { live = { revoked: true, generation: 7, bindingRevision: 1 } },
+      effectBoundarySeam: () => { live = { revoked: true, generation: 7, bindingRevision: 1, grantId: 'g-test-1' } },
     })
     const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p) }).catch((e: unknown) => e) as GovernedFsError
     expect(err.code).toBe('GOV_ABANDONED_REVOKED')
@@ -244,7 +244,7 @@ describe('BLOCK ②/③ effect-boundary rechecks (deterministic seams)', () => {
     let live: AdmissionLiveState = { revoked: false, generation: 7, bindingRevision: 1 }
     const def = defFor({
       liveAdmission: () => live,
-      effectBoundarySeam: () => { live = { revoked: false, generation: 8, bindingRevision: 1 } },
+      effectBoundarySeam: () => { live = { revoked: false, generation: 8, bindingRevision: 1, grantId: 'g-test-1' } },
     })
     const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p) }).catch((e: unknown) => e) as GovernedFsError
     expect(err.code).toBe('GOV_ADMISSION_DIVERGENT')
@@ -260,6 +260,51 @@ describe('BLOCK ②/③ effect-boundary rechecks (deterministic seams)', () => {
     })
     const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p) }).catch((e: unknown) => e) as GovernedFsError
     expect(err.code).toBe('GOV_ADMISSION_DIVERGENT')
+  })
+  it('root-F1 ③ replayed grant: a consumed OLD grant under a rotated current grant refuses with reads=0', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'x\n')
+    let live: AdmissionLiveState = { revoked: false, generation: 7, bindingRevision: 1, grantId: 'g-rotated-new' }
+    const def = defFor({ liveAdmission: () => live })
+    const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p, 1, 2000, { grantId: 'g-consumed-old' }) }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_ADMISSION_DIVERGENT')
+    expect(reads).toBe(0)
+  })
+  it('root-F1 ③ valid grant positive control: the served read rides reads>0 and answers content', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'VALID-GRANT-CONTENT\n')
+    const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(p) }) as { lines: { text: string }[] }
+    expect(out.lines[0]?.text).toBe('VALID-GRANT-CONTENT')
+    expect(reads).toBeGreaterThan(0)
+  })
+  it('F1 @8ae8c445-review: a live view that omits grantId DIVERGES — never a silent skip', async () => {
+    const p = join(root, 'a.txt')
+    writeFileSync(p, 'x\n')
+    const def = defFor({
+      liveAdmission: () => ({ revoked: false, generation: 7, bindingRevision: 1 }),
+      effectBoundarySeam: () => { /* live view simply never reports a grant */ },
+    })
+    const err = await def.execute({ file_path: p }, { admissionBinding: bindingFor(p, 1, 2000, { grantId: 'grant-nobody-has' }) }).catch((e: unknown) => e) as GovernedFsError
+    expect(err.code).toBe('GOV_ADMISSION_DIVERGENT')
+    expect(reads).toBe(0)
+  })
+})
+
+describe('native contract shapes (review r2 ⑤/⑥)', () => {
+  it('⑤ in-root \'..\' bounded traversal is ALLOWED exactly as native (not banned)', async () => {
+    mkdirSync(join(root, 'a'))
+    writeFileSync(join(root, 'b.txt'), 'B-CONTENT\n')
+    const p = join(root, 'a', '..', 'b.txt')
+    const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(join(root, 'b.txt')) }) as { lines: { text: string }[] }
+    // the expectation layer canonicalizes; the read answers b.txt's bytes.
+    expect(out.lines[0]?.text).toBe('B-CONTENT')
+  })
+  it('⑥ raw path with in-name whitespace rides verbatim (only all-blank rejects)', async () => {
+    const p = join(root, 'sp ace.txt')
+    writeFileSync(p, 'WS-CONTENT\n')
+    const out = await call(defFor(), { file_path: p }, { admissionBinding: bindingFor(p) }) as { lines: { text: string }[] }
+    expect(out.lines[0]?.text).toBe('WS-CONTENT')
+    await expect(call(defFor(), { file_path: '   ' })).rejects.toThrow('file_path must be a non-empty string')
   })
 })
 
@@ -286,7 +331,7 @@ describe('BLOCK ④ root anchor identity + platform law', () => {
       rootDir: swap, // caller opens swap but pinned the anchor identity of `real`
       rootIdentity: { dev: pinned.dev, ino: pinned.ino },
       ioProfile: 'pinned-trusted-root',
-      liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1 }),
+      liveAdmission: () => ({ revoked: false, generation: 1, bindingRevision: 1, grantId: 'g' }),
       expectationFor (fp, o, l) { return { bindingRevision: 1, generation: 1, canonicalLocator: fp, parametersFingerprint: fingerprintParameters(fp, o, l) } },
     })
     const err = await def.execute({ file_path: join(swap, 'a.txt') }, { admissionBinding: { bindingRevision: 1, generation: 1, canonicalLocator: join(swap, 'a.txt'), parametersFingerprint: fingerprintParameters(join(swap, 'a.txt'), 1, 2000), grantId: 'g' } }).catch((e: unknown) => e) as GovernedFsError
@@ -350,8 +395,11 @@ describe('per-call admission + flags discipline (T-L7/L8/L9 unit arms)', () => {
   })
 })
 
-describe('T-L10 unit arm — concurrent two-member negative control (review ⑫)', () => {
-  it('two members sharing one process never cross bindings/grants/roots under concurrency', async () => {
+describe('T-L10 unit arm — two-member negative control (review ⑫/⑦)', () => {
+  // HONEST LABEL (root review r2 ⑦): the three calls are ISSUED SEQUENTIALLY
+  // within one tick via Promise.all — this proves assembly-level isolation
+  // (per-definition expectation/grant/root binding), NOT scheduler interleaving.
+  it('two members sharing one process never cross bindings/grants/roots (sequential issue, assembly isolation)', async () => {
     const rootA = mkdtempSync(join(tmpdir(), 'a5-member-a-'))
     const rootB = mkdtempSync(join(tmpdir(), 'a5-member-b-'))
     console.log(`[fixture retained (HOLD)] ${rootA} ${rootB}`)

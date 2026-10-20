@@ -143,6 +143,8 @@ function parseReadArgs (args: Record<string, unknown>, maxLimit: number): { file
     if (!ALLOWED_FIELDS.has(key)) throw new GovernedFsError('GOV_FIELD_UNSUPPORTED', `read pilot does not accept field "${key}" (refused, not stripped)`)
   }
   const filePath = args.file_path
+  // native law: a value that is entirely blank rejects; otherwise the raw
+  // string rides VERBATIM (root review ⑥ — in-name whitespace is legal).
   if (typeof filePath !== 'string' || filePath.trim().length === 0) throw new GovernedFsError('GOV_BAD_ARGS', 'file_path must be a non-empty string')
   const posInt = (v: unknown, name: string, dflt: number): number => {
     if (v === undefined) return dflt
