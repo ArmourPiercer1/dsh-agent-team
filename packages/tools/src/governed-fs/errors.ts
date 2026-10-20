@@ -20,6 +20,7 @@ export type GovernedFsErrorCode =
   | 'GOV_FOREIGN_ROOT'
   | 'GOV_NO_PROC'
   | 'GOV_REOPEN_FORBIDDEN'
+  | 'GOV_STALE_HANDLE'
   | 'GOV_ADMISSION_MISSING'
   | 'GOV_ADMISSION_DIVERGENT'
   | 'GOV_ABANDONED_REVOKED'
@@ -27,6 +28,7 @@ export type GovernedFsErrorCode =
   | 'GOV_FIELD_UNSUPPORTED'
   | 'GOV_ABORTED'
   | 'GOV_BAD_ARGS'
+  | 'GOV_SCHEMA_REJECT'
   | 'GOV_IO'
 
 export class GovernedFsError extends Error {

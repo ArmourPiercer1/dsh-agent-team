@@ -17,10 +17,9 @@
  *
  * @module evidence-governed-fs
  */
-import { closeSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { GovernedFsError } from './errors.js'
-import { openVerifiedChain, readFdBytes, verifyCallAdmission, type AdmissionExpectation, type CallAdmission, type GovernedReadCaps, type OpenObserver } from './read-body.js'
+import { closeHandle, FLAGS_SUPPORTED, openVerifiedChain, readFdBytes, recheckHandleIdentity, verifyCallAdmission, verifyLiveAdmission, type AdmissionExpectation, type AdmissionLiveState, type CallAdmission, type DirIdentity, type GovernedReadCaps, type OpenObserver } from './read-body.js'
 
 export { GovernedFsError } from './errors.js'
 export * from './read-body.js'
@@ -28,6 +27,8 @@ export * from './read-body.js'
 /** Default caps: line/byte law mirrors tool-fs read-render defaults (READ_LIMIT 2000). */
 export interface GovernedReadConfig {
   readonly rootDir: string
+  /** BLOCK ④ — pinned identity of the trusted root dir (dev+ino). */
+  readonly rootIdentity: DirIdentity
   /** 'pinned-trusted-root' is the ONLY published profile (PoC3 fail-closed). */
   readonly ioProfile: 'pinned-trusted-root' | 'arbitrary-tree'
   readonly maxSizeBytes?: number
@@ -36,6 +37,14 @@ export interface GovernedReadConfig {
   readonly maxLineLength?: number
   readonly maxBytes?: number
   readonly observer?: OpenObserver
+  /** BLOCK ② — CURRENT live policy view, re-read at the effect boundary. */
+  readonly liveAdmission: () => AdmissionLiveState
+  /**
+   * TEST-ONLY seam (BLOCK ③ determinism): runs synchronously AFTER the
+   * verified chain is built and BEFORE the effect-boundary recheck, so a
+   * retarget/revoke injected here is caught by the recheck without racing.
+   */
+  readonly effectBoundarySeam?: () => void
   /** Assembles the expectation for THIS call from the caller's binding layer. */
   expectationFor (filePath: string, offset: number, limit: number): AdmissionExpectation
 }
@@ -43,6 +52,30 @@ export interface GovernedReadConfig {
 const DEFAULT_CAPS = { lineLimit: 2000, maxLineLength: 2000, maxBytes: 50 * 1024, maxSizeBytes: 16 * 1024 * 1024 }
 
 /** PR1-style fingerprint over the canonical call parameters (caller uses the same). */
+/**
+ * BLOCK ⑤ (root review @f13707e8): RUNTIME validation of every outcome against
+ * the NATIVE output schema shape (additionalProperties:false semantics) —
+ * the outcome object itself is checked, not a widened cast.
+ */
+export function validateNativeOutputShape (value: unknown): void {
+  const shapeError = (msg: string): never => { throw new GovernedFsError('GOV_SCHEMA_REJECT', `read outcome violates the native output schema: ${msg}`) }
+  if (value === null || typeof value !== 'object') shapeError('not an object')
+  const v = value as Record<string, unknown>
+  const keys = Object.keys(v).sort().join(',')
+  if (keys !== 'lines,offset,path,totalLines') shapeError(`unexpected key set "${keys}" (native allows exactly offset/lines/path/totalLines)`)
+  if (typeof v.path !== 'string') shapeError('path must be a string')
+  if (!Number.isInteger(v.offset)) shapeError('offset must be an integer')
+  if (!Number.isInteger(v.totalLines)) shapeError('totalLines must be an integer')
+  if (!Array.isArray(v.lines)) shapeError('lines must be an array')
+  for (const l of v.lines as unknown[]) {
+    if (l === null || typeof l !== 'object') shapeError('line entry must be an object')
+    const e = l as Record<string, unknown>
+    const lks = Object.keys(e).sort().join(',')
+    if (lks !== 'number,text') shapeError(`line entry key set "${lks}" (native allows exactly number/text)`)
+    if (!Number.isInteger(e.number) || typeof e.text !== 'string') shapeError('line entry types')
+  }
+}
+
 export function fingerprintParameters (canonicalLocator: string, offset: number, limit: number): string {
   return createHash('sha256').update(`governed-read/v1\u0000${canonicalLocator}\u0000${String(offset)}\u0000${String(limit)}`).digest('hex')
 }
@@ -154,11 +187,16 @@ export interface GovernedReadDefinition {
 export function createGovernedReadDefinition (config: GovernedReadConfig): GovernedReadDefinition {
   // PoC3 law: the arbitrary mutable-tree profile is NOT published
   // (controlled-fs ARBITRARY_TREE_PROFILE_PUBLISHED=false) — fail closed HERE.
+  // BLOCK ⑧ — a platform missing any resolve-law flag is unsupported, loudly.
+  if (!FLAGS_SUPPORTED) {
+    throw new GovernedFsError('GOV_PROFILE_UNSUPPORTED', 'this platform lacks O_NOFOLLOW/O_DIRECTORY/O_NONBLOCK; the pilot refuses to run with defaulted (0) flags')
+  }
   if (config.ioProfile !== 'pinned-trusted-root') {
     throw new GovernedFsError('GOV_PROFILE_UNSUPPORTED', 'io profile "arbitrary-tree" is not published; the governed read pilot refuses to serve it (PoC3 fail-closed)')
   }
   const caps: GovernedReadCaps = {
     rootDir: config.rootDir,
+    expectedRootIdentity: config.rootIdentity,
     maxSizeBytes: config.maxSizeBytes ?? DEFAULT_CAPS.maxSizeBytes,
     rejectHardlinks: config.rejectHardlinks ?? true,
   }
@@ -184,9 +222,14 @@ export function createGovernedReadDefinition (config: GovernedReadConfig): Gover
           totalLines: { type: 'integer', required: true },
         },
       },
-      render (_args: unknown, value: unknown) {
-        const v = value as GovernedReadOutcome & { truncatedByBytes?: true }
-        return [{ type: 'text' as const, text: formatReadOutput(v.path, { offset: v.offset, lines: v.lines, totalLines: v.totalLines, ...(v.truncatedByBytes === true ? { truncatedByBytes: true as const } : {}) }) }]
+      render (args: unknown, value: unknown) {
+        // native law (read.ts render): parse args, DERIVE truncatedByBytes —
+        // the flag never rides on the outcome object (BLOCK ⑤).
+        const input = parseReadArgs((args ?? {}) as Record<string, unknown>, lineLimit)
+        const v = value as GovernedReadOutcome
+        const endLine = v.lines.at(-1)?.number ?? Math.max(0, v.offset - 1)
+        const truncatedByBytes = v.lines.length < input.limit && endLine < v.totalLines
+        return [{ type: 'text' as const, text: formatReadOutput(v.path, { offset: v.offset, lines: v.lines, totalLines: v.totalLines, ...(truncatedByBytes ? { truncatedByBytes: true as const } : {}) }) }]
       },
     },
     async execute (args: Record<string, unknown>, exec?: GovernedToolExec): Promise<GovernedReadOutcome> {
@@ -198,12 +241,21 @@ export function createGovernedReadDefinition (config: GovernedReadConfig): Gover
       verifyCallAdmission(expectation, exec?.admissionBinding)
       const handle = openVerifiedChain(caps.rootDir, input.filePath, caps, signal, config.observer)
       try {
+        // BLOCK ③ determinism seam: retarget/revoke injected here is caught
+        // by the effect-boundary recheck below (synchronous, non-racing).
+        config.effectBoundarySeam?.()
+        // BLOCK ② — re-read CURRENT policy state at the effect boundary.
+        verifyLiveAdmission(exec?.admissionBinding as CallAdmission, config.liveAdmission())
+        // BLOCK ③ — verified handle must still match the directory entry.
+        recheckHandleIdentity(handle, config.observer)
         const bytes = readFdBytes(handle, signal, config.observer)
         const text = bytes.toString('utf8')
         const window = buildWindow(text, { offset: input.offset, limit: input.limit, maxLineLength: config.maxLineLength ?? DEFAULT_CAPS.maxLineLength, maxBytes: config.maxBytes ?? DEFAULT_CAPS.maxBytes }, expectation.canonicalLocator)
-        return { path: expectation.canonicalLocator, offset: input.offset, lines: window.lines, totalLines: window.totalLines, ...(window.truncatedByBytes ? { truncatedByBytes: true as const } : {}) } as GovernedReadOutcome
+        const outcome: GovernedReadOutcome = { path: expectation.canonicalLocator, offset: input.offset, lines: window.lines, totalLines: window.totalLines }
+        validateNativeOutputShape(outcome)
+        return outcome
       } finally {
-        try { closeSync(handle.fd) } catch { /* already closed by the chain error path */ }
+        closeHandle(handle)
       }
     },
   }
