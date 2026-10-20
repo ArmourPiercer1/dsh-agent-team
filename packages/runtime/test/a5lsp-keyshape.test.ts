@@ -1,11 +1,23 @@
 /**
  * a5lsp-keyshape.test.ts — the `filePath` vs `file_path` key-shape law for the
- * canonicalizer (route A / F-leg finding: the shipped upstream `tool-lsp`
- * schema authoritatively spells the path `filePath` —
- * `tests/deepseek-harness-test-use/packages/lsp/tool-lsp/src/index.ts:131` —
- * while the canonicalizer's extractor read ONLY `file_path`, so every
- * schema-shaped lsp call died fail-closed at canonicalization: safe, but the
- * lsp lane was de facto unusable).
+ * canonicalizer (route A; RETRACTED premise, reviewer fe2d6cf7 measured: the
+ * shipped `tool-lsp` schema spells the path `file_path` at
+ * `tests/deepseek-harness-test-use/packages/lsp/tool-lsp/src/index.ts:120` —
+ * the earlier "shipped schema = filePath @ index.ts:131" citation in this
+ * round's first commit was false and is retracted here; camelCase lives only
+ * in the host's internal LSP-seam vocabulary). What this round ACTUALLY pins:
+ * model camelCase DRIFT is tolerated as a fail-safe SUPERSET — a drifted call
+ * used to die fail-closed (`file-path-missing`, the A5-LEG probe receipt) and
+ * now becomes decidable. The installed lsp channel finding from the A5-LEG
+ * report is NOT closed by this file and stays booked with its own root cause
+ * (the pre-PR canonicalizer accepts the shipped form; measured 3/3).
+ *
+ * SCOPE (root 终态令): the alias is canonicalizer-layer tolerance ONLY — it
+ * does not rewrite or forward args, so a camel-only call still fails at the
+ * host parser (parseLspArgs reads `args.file_path`); execution is zero either
+ * way and only the answering layer moves. Every test below is the
+ * fake-resolver/direct-canonicalizer UNIT level; none of them is installed-
+ * chain verification, and no installed lsp-channel finding is claimed fixed.
  *
  * The pinned semantics (root directive, small-PR scope):
  *  - ONE key present → its value is THE path (either spelling, any file tool);
@@ -83,8 +95,8 @@ async function fail(name: string, args: unknown): Promise<FailCapture> {
   }
 }
 
-describe('a5lsp-keyshape — the lsp lane canonicalizes its OWN schema spelling', () => {
-  it('single `filePath` (the shipped tool-lsp schema form) canonicalizes (RED→GREEN leg)', async () => {
+describe('a5lsp-keyshape — canonicalizer camel-drift tolerance law (unit level)', () => {
+  it('single `filePath` (a camelCase model-drift shape; the shipped schema is file_path) canonicalizes', async () => {
     const c = await op('lsp', { operation: 'goToDefinition', filePath: '/a/b.ts', line: 10, character: 4 })
     expect(c.resource.key).toBe('fskey:/a/b.ts')
     expect(c.fingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)

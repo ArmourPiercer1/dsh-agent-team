@@ -1,38 +1,60 @@
-# lsp-keyfix — `filePath` vs `file_path` key-shape law (small PR, branch `a5-lsp-keyfix` @ cad5cf03)
+# lsp-keyfix — canonicalizer camel-drift alias (#350: HOLD; premise retracted)
 
-Finding (F leg, real-install): the shipped upstream `tool-lsp` schema authoritatively spells the
-path **`filePath`** (`tests/deepseek-harness-test-use/packages/lsp/tool-lsp/src/index.ts:131`,
-JSON-schema `required: ['operation','filePath', ...]` (tool schema surface); read-only pinned in the main checkout; my extractor accepts BOTH spellings uniformly across the file-path class - see the law below), while our canonicalizer's
-extractor (`packages/runtime/operation-permission/canonical-operation.ts` `extractFilePath`) read
-ONLY `file_path` — so every schema-shaped lsp call died fail-closed at canonicalization
-(`file-path-missing`) BEFORE any policy decision: safe direction, but the lsp governance lane was
-de facto unusable.
+## RETRACTION (root independently verified @639ed01539; reviewer fe2d6cf7 measured — governs this file)
 
-Fix (canonicalizer side; the host schema is the authority and stays untouched — CORE budget 0):
-one deterministic law over both spellings, all file-path-class tools:
-- exactly one of `file_path` / `filePath` present → that value is THE path (`file_path`-only
-  behaves EXACTLY as before — zero regression);
-- both present, byte-identical → ONE object, decidable, proceed;
-- both present, differing → **deterministic refusal with its OWN reason code
-  `file-path-key-conflict`** (added to the closed `CanonicalizationFailureReason` union + array in
-  `errors.ts`); the canonicalizer never picks a winner between two candidate targets (never-guess);
-- a present-but-malformed value (non-string/blank) fails closed under EITHER spelling BEFORE the
-  conflict question;
-- neither → the unchanged `file-path-missing`.
-Fingerprint corollary: the key SPELLING is not a security fact — same bytes under either spelling
-project to one resource key and one fingerprint (spec-tested; a lane can never be spelled around).
+The FIRST commit of this round (2cb7169e) claimed the shipped upstream `tool-lsp` schema spells the
+path **`filePath`** at `tool-lsp/src/index.ts:131`, that our canonicalizer's snake-only read made
+every schema-shaped lsp call die at canonicalization, and that this PR fixed the installed lsp
+channel. **All three claims are false and are retracted here:**
 
-Dist: `tsc -p tsconfig.build.json` rebuilt; emitted dist diff = exactly the semantic delta
-(verified by `git diff` — union member + array entry + extractor body/doc).
+- the shipped **input** schema spells `file_path` — `index.ts:120` (`required: true`); `:131` is the
+  OUTPUT schema; the body reads `args.file_path` (`render.ts:46-58`) into the host's INTERNAL
+  camelCase seam vocabulary (`index.ts:183-191` parser call, `types.ts:42`); the schema compiler
+  keeps keys verbatim (`core/tools/src/schema.ts:295-301`); full-history pickaxe for a `filePath`
+  input key: empty; old baselines identical (`46a7f68b09` / `fb2c4b9e69` / `a66e470204`);
+- the pre-PR canonicalizer accepts the shipped `file_path` form (measured 3/3 on cad5cf03 dist);
+  "the lsp governance lane is de facto unusable for schema-shaped calls" was FALSE;
+- the pushed commit message cannot be rewritten (no-force-push rule) — this README, the follow-up
+  commit message, and the corrected PR body are the retraction carriers.
 
-RED (append-only): `RED-unbooked.log` (6 failed / 2 passed pre-fix on the new spec; the 2 passes =
-the unchanged `file_path`-only and neither-key legs), `p4t6-RED-unbooked.log` (pre-booking
-`expected 1207 to be 1206`).
+## True root cause of the F-leg observation (re-diagnosed from run receipts — no new requirement invented)
 
-GREEN: `a5lsp-keyshape.test.ts` 8/8; regression `a2-canonical-operation` + `a5a-pre-execute` 81/81;
-p4t6 10/10 with the measured pin continuation **1206 → 1207** (ONE new spec; production edits ride
-already-counted files; constant named `SCANNED_PATHS_A5LSPKEY` — the pre-existing `SCANNED_PATHS_A5LSP`
-is a different round's booking, untouched).
+F-leg probe (`a5-legs-runner` worktree, `.../gap-legs-f/runs/a5legs-leg1-2026-10-19T09-10-55Z/run-receipt.md`,
+L1-FAILCLOSED verbatim): the probe itself sent the path under **`filePath`** — its own assumption of
+the "shipped spelling" — and received `permission denied: canonicalization failed for tool "lsp":
+file-path-missing`. The refusal at the canonicalizer layer was CORRECT under the then-law (only
+`file_path` is a known key). No real-install lsp call was ever demonstrated failing: the probe's key
+shape manufactured the symptom. F-leg is therefore a **probe artifact**, and #350 does not fix, and
+does not need to fix, any installed-channel defect. (What has NOT been run, disclosed: an
+end-to-end installed `schema → authorization → host parser → real LSP body` leg; heavy live deferred
+to after the G4 space audit.)
 
-p4t6 quote chain: master's g6b-step-b booking 1206 (`alpha5/g6b-flake/step-b/compat2-p4t6-red-measure.log`)
-→ A5-LSP-KEYFIX 1207 (this round's `p4t6-RED-unbooked.log`; MEASURED, no chain value copied).
+## What this branch mechanically contains (kept on the branch, value/cost booked for a SEPARATE product decision — see ALIAS-DECISION.md)
+
+The extractor reads both `file_path` and `filePath` for the file-path class, one deterministic law:
+one key → its value; both keys byte-identical → ACCEPT (root 11:0xZ ruling; fingerprint/key equal to
+the single-key form); both keys differing → typed refusal `file-path-key-conflict` (closed union);
+malformed under either spelling fails closed before the conflict question; neither → unchanged
+`file-path-missing`.
+
+**Scope honesty (root 终态令 incremental fact): the alias does NOT rewrite or forward the args.** A
+camel-only call that governance now accepts at the canonicalizer layer **still fails at the host's
+own parser** (`parseLspArgs` reads `args.file_path`) — execution stays zero either way; the alias
+changes only WHICH layer answers (canonicalizer refusal → host body failure) and makes the drifted
+path visible/fingerprintable to governance. It is a canonicalizer-layer tolerance, not an
+end-to-end fix, and it is not required by any demonstrated defect.
+
+## Mechanism tests (unit level only, disclosed)
+
+`a5lsp-keyshape.test.ts` 8/8 — ALL fake-resolver/direct-canonicalizer unit level; they pin the
+closed-world law only and do NOT constitute installed-chain verification (installed
+schema→authorization→LSP-body chain leg = not scheduled yet, no claim). Regression
+`a2-canonical-operation` + `a5a-pre-execute` 81/81. p4t6 10/10, measured pin 1206 → 1207 (ONE new
+spec; production edits ride already-counted files; constant `SCANNED_PATHS_A5LSPKEY` is distinct
+from the pre-existing different-round `SCANNED_PATHS_A5LSP`). Forward note: this branch and the MCP
+branch each book 1206→1207 independently; on a MERGED tree carrying both new specs the scanner is
+re-anchored MEASURED (expected 1208 — never copy the chain value).
+
+RED (append-only): `RED-unbooked.log` (the law's RED-first reading pre-implementation; its test
+NAMES carry the retracted attribution wording — names kept for evidence integrity, the retraction
+lives here), `p4t6-RED-unbooked.log` (`expected 1207 to be 1206`).

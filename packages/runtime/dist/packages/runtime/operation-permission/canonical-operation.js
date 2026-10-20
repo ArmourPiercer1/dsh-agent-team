@@ -257,13 +257,24 @@ function asArgumentRecord(tool, arguments_, reasonMissing) {
  *    EITHER spelling BEFORE the conflict question (a typed wrong value never
  *    reaches the choice);
  *  - neither present → the unchanged `file-path-missing` refusal.
- * Why both spellings: the upstream schema authorities differ —
- * the tool-fs file tools spell it `file_path`, while the shipped
- * `tool-lsp` schema spells it `filePath`
- * (`packages/lsp/tool-lsp/src/index.ts` in the pinned baseline; the A5-LEG
- * finding: reading only `file_path` made every schema-shaped lsp call die
- * fail-closed at canonicalization — safe, but the lsp lane was de facto
- * unusable). The canonicalizer MIRRORS what a call carries; the body stays
+ * Why both spellings: canonicalizer-layer MODEL-DRIFT TOLERANCE, not a schema
+ * claim and not an end-to-end fix — every shipped tool schema in the pinned
+ * baseline (the fs file tools AND `tool-lsp`, whose INPUT schema spells
+ * `file_path` at `packages/lsp/tool-lsp/src/index.ts:120`; `:131` is the
+ * OUTPUT schema; the body reads `args.file_path` (render.ts:46-58) and the
+ * camelCase spelling exists ONLY in the host's internal LSP-seam vocabulary,
+ * index.ts:183-191 / types.ts:42 — root verified @639ed01539, reviewer
+ * fe2d6cf7 measured, full-history pickaxe empty) spells the path
+ * `file_path`, yet models demonstrably emit camelCase (the A5-LEG probe did).
+ * SCOPE HONESTY: the alias does NOT rewrite or forward the args — a
+ * camel-only call that this layer accepts STILL fails at the host's own
+ * parser (parseLspArgs reads `args.file_path`); execution is zero either way
+ * and only the answering layer moves (canonicalizer refusal → host body
+ * failure). What the alias buys: the drifted path becomes visible to
+ * governance (resource key + fingerprint, lane-decidable at this layer)
+ * instead of dying as a key-less `file-path-missing`. It closes NO installed
+ * lsp-channel finding: the pre-PR extractor already accepted the shipped form.
+ * The canonicalizer MIRRORS what a call carries; the body stays
  * the schema authority: authorizing a path the body's own schema would drop
  * executes nothing, while the dangerous direction (the body reads a path
  * governance never saw) cannot exist once both spellings are extracted.
