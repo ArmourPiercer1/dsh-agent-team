@@ -1,0 +1,85 @@
+# a5tools-gov live layer (run 2026-10-20T06-32-54Z, mode lanes): config override on the INSTALLED bundle row + preset — public profile-patch seam only.
+- id: dsh-agent-team
+  name: dsh-agent-team/host
+  config:
+    rootSessionId: a5tools-gov-root
+    bootPhase: create
+    blueprintSource: "---\nschemaVersion: 3\nblueprintId: a5tools-gov-anchor-bp\nrevision: \"1\"\nleader:\n  templateId: leader\n  persona: \"You are the leader of the a5tools-gov team.\"\nmembers:\n  - templateId: wa\n    persona: \"You are a worker of the a5tools-gov team.\"\nmemberEnvelopes: []\nrequirements: []\npermissionMutationEnvelope:\n  rules: []\nteamHardEnvelope:\n  rules: []\npolicyStates: []\nmetadata: {}\n---\n"
+    blueprintDir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/dev/agent-workflow/evidence/alpha5/tools-gov/runs/2026-10-20T06-32-54Z/blueprints/lanes
+    rootPresetId: a5tools-gov-base
+    memberPresetId: a5tools-gov-base
+    seedMembers: []
+    generation: 1
+    staticModel:
+      provider: deepseek-official
+      model: deepseek-flash
+    deniedSelection: null
+    mcpServers: []
+    mcpServer: null
+    environmentFacts:
+      - domain: tool
+        subject: web
+        available: true
+        generation: 1
+      - domain: skill
+        subject: base
+        available: true
+        generation: 1
+      - domain: persona
+        subject: standard
+        available: true
+        generation: 1
+    externalPolicyFacts:
+      hard: {}
+      capabilityExists: {}
+    teamToolPlane:
+      realmId: a5tools-gov-lanes-realm
+      fsInstance:
+        fs: a5tools-gov-lanes-ctl
+        rootDir: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/governed
+        realmId: a5tools-gov-lanes-realm
+        kind: absolute-path
+      confinedProvider:
+        trustRoot: "sha256:1264ea584e3438d6#/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/deployment/landlock-prelauncher.py"
+        assembly:
+          launcherPath: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/deployment/landlock-prelauncher.py
+          launcherSha256: 1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3
+          minAbiVersion: 3
+- insert:
+  - id: preset-a5tools-gov-base
+    name: "@deepseek-ai/dsh-agent-preset"
+    config:
+      id: a5tools-gov-base
+      name: "a5tools-gov base"
+      description: "a5tools-gov base preset (run 2026-10-20T06-32-54Z) = smoke preset + tool-fs-search + tool-str-replace-editor"
+      order: 900
+      plugins:
+        - id: persona
+          name: "@deepseek-ai/dsh-persona"
+          config:
+            prefix: "You are a coding agent powered by the {{model}} model."
+            suffix: "Your working directory is {{cwd}}."
+        - id: tool-fs
+          name: "@deepseek-ai/dsh-tool-fs"
+        - id: persistent-shell
+          name: "cordis:group"
+          group: true
+          isolate:
+            terminals: true
+          config:
+            - id: pty
+              name: "@deepseek-ai/dsh-terminal"
+            - id: terminal-bash
+              name: "@deepseek-ai/dsh-terminal-bash"
+              config:
+                timeoutMs: 300000
+            - id: persistent-bash
+              name: "@deepseek-ai/dsh-tool-bash-persistent"
+              config:
+                timeoutMs: 300000
+        - id: tool-fs-search
+          name: "@deepseek-ai/dsh-tool-fs-search"
+          config:
+            sampleOverCapGlobResults: false
+        - id: tool-str-replace-editor
+          name: "@deepseek-ai/dsh-tool-str-replace-editor"

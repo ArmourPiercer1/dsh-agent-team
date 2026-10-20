@@ -1,0 +1,8 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3187/?token=<REDACTED-f85bd04f>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5tools-gov-unmanaged-realm
+[dsh-agent-team] a5ptc: census-boot root=session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z selectedRunner=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/deployment/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:1264ea584e3438d6)
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5tools-gov-unmanaged-realm
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,team_bash,read] realm=a5tools-gov-unmanaged-realm
+[dsh-agent-team] a5g7-read: governed-read RAN bytes=37 path=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace/governed/notes.txt

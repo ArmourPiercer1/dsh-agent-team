@@ -88,6 +88,7 @@ Node 公开面依据：`fs.constants.O_NOFOLLOW` 存在（Linux）；`/proc/self
 - **T-L7（补②）pin 连续性不得放行**：fd 已开且对象在场，但 binding revision 落后 / gen 换代 / identity drift / 撤销 lease 命中——任一=**typed reject**（四变体各一腿）；断言零字节读出、错误码逐变体名。
 - **T-L8（补③）未定义情形矩阵**：缺 flag 组合/未知资源 kind/空 path/相对 path 越根/未知错误码——一律**先 reject**（typed），并断言 write 相关面保持禁用（无隐式降级）。
 - **T-L9（补④）不吞 flags/模态**：调用携带 `sandbox_permissions`/image 类参数→fork **类型化拒答或如实披露**，断言错误载荷**点名被拒字段**（不得静默剥离后照常执行；亦不得返回与 native 不同的静默成功形）。
+- **T-L10（相邻面自证，根 07:3xZ 通报）scope identity member-scoped 依赖声明 + 双成员负控**：试点 fork 的 realm/binding/effect-boundary 键**必须 member-scoped**；若其装配经 gateway-assembly 层（`#349` producer bug 面：所有 member bridges 同 root realm+gateway、按 `scopeKey+toolName` 索引 ⇒ 跨成员定义覆盖，B 在修），则**立双成员负控腿**——两 member 各绑各自 def/rev，A 的调用不得命中 B 的注册（定义身份、gen、grant 三面各自独立）；与 B 修复方向对齐、**不互等**（B 未修前该腿=预期 RED 或绕过该层的装配形，如实落账不 pass 化）。
 - **试点验收总门**：pinnedHost 下 **allow/deny/ask 三形态→实际 bytes + FD witness**（读时 fd 号 + `/proc/self/fd` readlink + fstat 快照入档）；**original native body 调用计数=0**（宿主 tool-fs read 入口 wrapper 观察 + 装配面定义身份比对，两法互证）；native **schema/output/errors/cancel 四 parity** 对拍；每条判据=机器档（criteria.json + 原始 wire/proc 档，含精确头）。
 - lanes 全链复跑（L1-L9 全绿为**下一阶段 write 门**，read pilot 期 write 面保持禁用，此处仅确认 read 腿不因试点回归）。
 

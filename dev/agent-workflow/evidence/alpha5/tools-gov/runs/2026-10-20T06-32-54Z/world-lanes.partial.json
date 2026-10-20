@@ -1,0 +1,113 @@
+{
+  "mode": "lanes",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z",
+  "ok": true,
+  "createRoot": "session-a5tools-gov-team-lanes-2026-10-20T06-32-54Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-1jlMFt/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:cadd1595d8299cfef04c713787d0d0fa9689474b03d2c259a85398be6afe7974",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:9670f8c1829bbc3020bdfbf51d5098869823b4bd821239faaf9c0b177c6daafb",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:3293a185e128e3d239fb0636fe2a44b7d8bf0a616ede61cd3276a3d464562bcb"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-32-54Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-ba5370ac>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-lanes-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-lanes-2026-10-20T06-32-54Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-lanes-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:4ee0a293dcf8636967d5de38180f38c91064fbe0c0314b4af96655173cc5db2e\"},\"createdAt\":\"2026-10-20T06:33:23.376Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-lanes-2026-10-20T06-32-54Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-lanes-2026-10-20T06-32"
+  },
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "write",
+    "read",
+    "write",
+    "read_image",
+    "bash",
+    "str_replace_editor",
+    "write",
+    "read"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"write\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/governed/forbidden.txt]: effective deny; decided by template(wa) deny[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/outside/gov-write.txt]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: the Tool Binding for \\\"read_image\\\" cannot be verified at dispatch time (no fallback to the native body)\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: exec fingerprint sha256:5ea2f0e9b321fa986ebd70e61530ba9724df60229049eb3358bf2ffce5f6eaf5 answered deny from the fallback\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: team tool guard: \\\"str_replace_editor\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/outside/victim.txt]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match\"}]",
+    "[{\"type\":\"text\",\"text\":\"Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/outside/victim.txt]: effective deny; no layer matched; template fallback; layers (highest first): template=no-match\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"A5TOOLS_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"write\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}] | r1=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: permission denied: read[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/governed/forbidden.txt]: effective deny; decided by template(wa) deny[lane ind | r2=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/outside/gov-write.txt]: effective deny; no layer matched; template fallback;  | r3=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: the Tool Binding for \\\\\\\"read_image\\\\\\\" cannot be verified at dispatch time (no fallback to the native body)\\\"}] | r4=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: permission denied: exec fingerprint sha256:5ea2f0e9b321fa986ebd70e61530ba9724df60229049eb3358bf2ffce5f6eaf5 answered deny from the fallback\\\"}] | r5=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: team tool guard: \\\\\\\"str_replace_editor\\\\\\\" has no Team Tool Binding on this Agent (closed world: an un-governed tool never executes; declare it or bind it)\\\"}] | r6=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Error: permission denied: write[/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-lanes-2026-10-20T06-32-54Z/workspace/outside/victim.txt]: effective deny; no layer matched; template fallback; lay | r",
+  "fs": {
+    "writeTxt": null,
+    "sreTxt": null,
+    "bashWrote": null,
+    "allowedTxt": null,
+    "outsideGovWrite": false,
+    "sreDeniedTxt": false,
+    "bashDeniedSide": false,
+    "askAllowedTxt": null,
+    "askDeniedTxt": false
+  },
+  "forbiddenMarkerOnWire": 0,
+  "wideOutsideWrite": null,
+  "factsControlLedger": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "error": null
+  }
+}

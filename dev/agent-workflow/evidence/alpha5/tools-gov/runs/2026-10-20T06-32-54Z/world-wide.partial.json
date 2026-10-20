@@ -1,0 +1,132 @@
+{
+  "mode": "wide",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z",
+  "ok": true,
+  "createRoot": "session-a5tools-gov-team-wide-2026-10-20T06-32-54Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-OBgc55/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:4718433a88f87bb5270c45d2af9cd668c427a895157a0e0baf4eaa5eed461d95",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:9670f8c1829bbc3020bdfbf51d5098869823b4bd821239faaf9c0b177c6daafb",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:3293a185e128e3d239fb0636fe2a44b7d8bf0a616ede61cd3276a3d464562bcb"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-32-54Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-e8092a3f>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-wide-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-wide-2026-10-20T06-32-54Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-wide-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:67bcac3b6ddf00ca314bfd8adee2ca2e544f5eb0cc434e9111c717b0e781e35b\"},\"createdAt\":\"2026-10-20T06:33:10.468Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-wide-2026-10-20T06-32-54Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-wide-2026-10-20T06-32-54Z\","
+  },
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "write",
+    "edit",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "glob",
+    "grep",
+    "bash",
+    "read",
+    "write"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\"}]",
+    "[{\"type\":\"text\",\"text\":\"The file /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt has been updated successfully.\"}]",
+    "[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt</path>\\n<type>file</type>\\n<content>\\n1: line one\\n2: A5TOOLS-EDITED-TOK-B2 replaced it\\n3: line three\\n\\n(End of file - total 3 lines)\\n</content>\"}]",
+    "[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/seed.png</path>\\n<type>image</type>\\n<content>\\nimage/png image, 1x1 px, 69 bytes\\n</content>\"},{\"type\":\"text\",\"text\":\"Image \\\"seed.png\\\" (sha256:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640); request preview 1x1px. Normalized copy (read-only; may be resized or re-encoded): \\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/attachments/v1/objects/b1/b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640\\\" (1x1px, image/png). Source dimensions, format, and byte size may differ. Copy to a writable path ending in .png before editing.\"},{\"type\":\"image\",\"source\":{\"type\":\"base64\",\"media_type\":\"image/png\",\"data\":\"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC\"}}]",
+    "[{\"type\":\"text\",\"text\":\"New file created successfully at: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_sre.txt\"}]",
+    "[{\"type\":\"text\",\"text\":\"governed/a5tools_write.txt\\ngoverned/a5tools_sre.txt\"}]",
+    "[{\"type\":\"text\",\"text\":\"Found 1 match\\n\\ngoverned/notes.txt\\nLine 2: A5TOOLS-GREP-TOK lives here\"}]",
+    "[{\"type\":\"text\",\"text\":\"A5TOOLS-BASH-TOK-H8\\nA5TOOLS-BASH-TOK-H8\\n[Command finished with exit code 0]\"}]",
+    "[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/outside/secret.txt</path>\\n<type>file</type>\\n<content>\\n1: A5TOOLS-OUTSIDE-ONLY-7332\\n\\n(End of file - total 1 lines)\\n</content>\"}]",
+    "[{\"type\":\"text\",\"text\":\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/outside/a5tools_wide_outside.txt</path>\\n<type>file</type>\\n<content>\\nCreated file\\n</content>\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"A5TOOLS_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt</path>\\\\n<type>file</type>\\\\n<content>\\\\nCreated file\\\\n</content>\\\"}] | r1=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"The file /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt has been updated successfully.\\\"}] | r2=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_write.txt</path>\\\\n<type>file</type>\\\\n<content>\\\\n1: line one\\\\n2: A5TOOLS-EDITED-TOK-B2 r | r3=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"<path>/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/seed.png</path>\\\\n<type>image</type>\\\\n<content>\\\\nimage/png image, 1x1 px, 69 bytes\\\\n</content>\\\"} | r4=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"New file created successfully at: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-wide-2026-10-20T06-32-54Z/workspace/governed/a5tools_sre.txt\\\"}] | r5=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"governed/a5tools_write.txt\\\\ngoverned/a5tools_sre.txt\\\"}] | r6=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"Found 1 match\\\\n\\\\ngoverned/notes.txt\\\\nLine 2: A5TOOLS-GREP-TOK lives here\\\"}] | r7=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"A5TOOLS-BASH-TOK-H8\\\\nA5TOOLS",
+  "fs": {
+    "writeTxt": "line one\nA5TOOLS-EDITED-TOK-B2 replaced it\nline three\n",
+    "sreTxt": "sre create\nA5TOOLS-SRE-TOK-E5\n",
+    "bashWrote": "A5TOOLS-BASH-TOK-H8\n",
+    "allowedTxt": null,
+    "outsideGovWrite": false,
+    "sreDeniedTxt": false,
+    "bashDeniedSide": true,
+    "askAllowedTxt": null,
+    "askDeniedTxt": false
+  },
+  "forbiddenMarkerOnWire": 0,
+  "wideOutsideWrite": "A5TOOLS-WRITE-TOK-OUTSIDE\n",
+  "factsControlLedger": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "error": null
+  }
+}

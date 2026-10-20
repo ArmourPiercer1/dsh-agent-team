@@ -1,0 +1,82 @@
+---
+schemaVersion: 3
+blueprintId: a5tools-gov-ask-bp
+revision: "1"
+displayName: "a5tools-gov ask team"
+description: "A-route native-tool governance acceptance (ask) on the REAL installed face. Mock only at the LLM position."
+leader:
+  templateId: leader
+  persona: "You are the leader of the a5tools-gov ask team. On your directive: FIRST call team_delegate exactly once with rootSessionId session-a5tools-gov-team-ask-2026-10-20T06-32-54Z, requestToken a5tools-gov-tok-ask, delegationTemplateId \"wa\", label \"gov-a\", async false, and the prompt \"Work EXACTLY in this order, one tool call per turn: (1) tool write with {\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-ask-2026-10-20T06-32-54Z/workspace/governed/ask-allowed.txt\\\",\\\"content\\\":\\\"A5TOOLS-WRITE-TOK-Q1\\\\n\\\"}; (2) tool write with {\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-ask-2026-10-20T06-32-54Z/workspace/governed/ask-denied.txt\\\",\\\"content\\\":\\\"A5TOOLS-WRITE-TOK-Q2\\\\n\\\"}; then (final) answer with ONE line starting A5TOOLS_MEMBER_RESULT quoting each of the 2 tool results you received, verbatim.\"; SECOND call team_collect with rootSessionId session-a5tools-gov-team-ask-2026-10-20T06-32-54Z and requestTokens [\"a5tools-gov-tok-ask\"]; THIRD answer with ONE line starting A5TOOLS_LEADER_RESULT quoting the member result verbatim; then finish."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_delegate
+        - team_collect
+        - team_list_pending_control
+        - team_resolve_control
+    builtinToolDeny:
+      - glob
+      - grep
+      - str_replace_editor
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask: []
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+members:
+  - templateId: wa
+    displayName: "a5tools-gov ask worker A"
+    persona: "You are worker A of the a5tools-gov ask team. On your delegated directive you MUST work EXACTLY in this order, one tool call per turn: (1) tool write with {\"file_path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-ask-2026-10-20T06-32-54Z/workspace/governed/ask-allowed.txt\",\"content\":\"A5TOOLS-WRITE-TOK-Q1\\n\"}; (2) tool write with {\"file_path\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-ask-2026-10-20T06-32-54Z/workspace/governed/ask-denied.txt\",\"content\":\"A5TOOLS-WRITE-TOK-Q2\\n\"}; then (final) answer with ONE line starting A5TOOLS_MEMBER_RESULT quoting each of the 2 tool results you received, verbatim. Never invent a tool result; always wait for the real one."
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny:
+        - glob
+        - grep
+        - str_replace_editor
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow: []
+        ask: []
+        deny: []
+memberEnvelopes:
+  - templateId: wa
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+requirements:
+  - domain: persona
+    name: standard
+policyStates: []
+metadata: {}
+---

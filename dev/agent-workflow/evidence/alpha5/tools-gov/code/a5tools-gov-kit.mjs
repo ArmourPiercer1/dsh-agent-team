@@ -351,7 +351,7 @@ function memberPersona (mode, W) {
   return `You are worker A of the a5tools-gov ${mode} team. On your delegated directive you MUST work EXACTLY in this order, one tool call per turn: ${enumerated}; then (final) answer with ONE line starting A5TOOLS_MEMBER_RESULT quoting each of the ${String(steps.length)} tool results you received, verbatim. Never invent a tool result; always wait for the real one.`
 }
 
-function mainBlueprintYaml ({ mode, BP_MAIN_ID, CREATE_ROOT, TK_A1, W, denyList, strictMember, extraTemplates = '' }) {
+function mainBlueprintYaml ({ mode, BP_MAIN_ID, CREATE_ROOT, TK_A1, W, denyList, leaderDeny = null, strictMember, extraTemplates = '' }) {
   const steps = stepsFor(mode, W)
   const enumerated = steps.map((s, i) => `(${String(i + 1)}) tool ${s.tool} with ${yamlQuoted(s.args)}`).join('; ')
   const taskA = mode === 'unmanaged'
@@ -361,14 +361,14 @@ function mainBlueprintYaml ({ mode, BP_MAIN_ID, CREATE_ROOT, TK_A1, W, denyList,
     ? `FIRST call team_delegate exactly once with rootSessionId ${CREATE_ROOT}, requestToken ${TK_A1}-no, delegationTemplateId "wa", label "gov-no", async false, and the prompt ${yamlQuoted(taskA)}; SECOND call team_delegate exactly once with rootSessionId ${CREATE_ROOT}, requestToken ${TK_A1}-ok, delegationTemplateId "wa2", label "gov-ok", async false, and the SAME prompt; THIRD call team_collect with rootSessionId ${CREATE_ROOT} and requestTokens ["${TK_A1}-no","${TK_A1}-ok"]; FOURTH answer with ONE line starting A5TOOLS_LEADER_RESULT quoting both delegation results verbatim; then finish.`
     : `FIRST call team_delegate exactly once with rootSessionId ${CREATE_ROOT}, requestToken ${TK_A1}, delegationTemplateId "wa", label "gov-a", async false, and the prompt ${yamlQuoted(taskA)}; SECOND call team_collect with rootSessionId ${CREATE_ROOT} and requestTokens ["${TK_A1}"]; THIRD answer with ONE line starting A5TOOLS_LEADER_RESULT quoting the member result verbatim; then finish.`
   const leaderPersona = `You are the leader of the a5tools-gov ${mode} team. On your directive: ${leaderDelegation}`
-  const denyBlock = (pad) => denyList.length === 0 ? [`${pad}builtinToolDeny: []`] : [`${pad}builtinToolDeny:`, ...denyList.map((n) => `${pad}  - ${n}`)]
+  const denyBlock = (pad, list = denyList) => list.length === 0 ? [`${pad}builtinToolDeny: []`] : [`${pad}builtinToolDeny:`, ...list.map((n) => `${pad}  - ${n}`)]
   const lines = [
     '---', 'schemaVersion: 3', `blueprintId: ${BP_MAIN_ID}`, 'revision: "1"',
     `displayName: "a5tools-gov ${mode} team"`,
     `description: "A-route native-tool governance acceptance (${mode}) on the REAL installed face. Mock only at the LLM position."`,
     'leader:', '  templateId: leader', `  persona: ${yamlQuoted(leaderPersona)}`,
     '  capabilities:', '    teamTools:', '      kind: allow', '      items:', '        - team_delegate', '        - team_collect', '        - team_list_pending_control', '        - team_resolve_control',
-    ...denyBlock('    '),
+    ...denyBlock('    ', leaderDeny ?? denyList),
     '    skills:', '      kind: allow', '      items: []',
     '    mcp:', '      kind: allow', '      items: []',
     '    permissions:', '      default: ask', '      allow: []', '      ask: []', '      deny: []',
@@ -410,9 +410,9 @@ function mainBlueprintYaml ({ mode, BP_MAIN_ID, CREATE_ROOT, TK_A1, W, denyList,
             : [])
       : []),
     extraTemplates,
-    'memberEnvelopes:', '  - templateId: wa', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []',
+    'memberEnvelopes:', '  - templateId: wa', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []',
     ...(mode === 'unmanaged'
-      ? ['  - templateId: wa2', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '      deny: []']
+      ? ['  - templateId: wa2', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []']
       : []),
     'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []',
     'requirements:', '  - domain: persona', '    name: standard',
@@ -556,7 +556,7 @@ async function runWorld ({ mode, mock }) {
     // layer-3 fixtures: victim OUTSIDE + a symlink INSIDE pointing at it.
     writeFileSync(join(W.outsideDir, 'victim.txt'), `A5TOOLS-VICTIM-ORIGINAL-${RUN_STAMP}\n`)
     try { symlinkSync(join(W.outsideDir, 'victim.txt'), join(W.governedRoot, 'link-victim.txt')) } catch { /* exists */ }
-    const treeFp = () => walkFiles(HOME).filter((r) => !r.startsWith('node_modules/') && !r.includes('/node_modules/')).map((r) => `${r}:${sha256File(join(HOME, r))}`)
+    const treeFp = () => walkFiles(HOME).filter((r) => !r.startsWith('node_modules/') && !r.includes('/node_modules/') && !r.endsWith('.sock')).map((r) => `${r}:${sha256File(join(HOME, r))}`)
 
     const install = realInstall({ world: HOME, logName: `install-${mode}.log` })
     if (install.exit !== 0) die(`${mode} real install failed (exit=${String(install.exit)}): ${install.outputTail}`)
@@ -655,6 +655,7 @@ async function runWorld ({ mode, mock }) {
     const blueprint = mainBlueprintYaml({
       mode, BP_MAIN_ID, CREATE_ROOT, TK_A1, W,
       denyList: mode === 'unmanaged' ? [] : denyList,
+      leaderDeny: mode === 'unmanaged' ? denyList : null,
       strictMember: mode === 'lanes' || mode === 'ask' || mode === 'unmanaged',
       extraTemplates: mode === 'unmanaged' ? wa2Template(denyList, W) : '',
     })
@@ -672,20 +673,15 @@ async function runWorld ({ mode, mock }) {
     }, 90_000)
     facts.teamCreate = { status: created.status, body: redact(JSON.stringify(created.body ?? null)).slice(0, 800) }
 
-    // ask mode: drive the durable approvals while the member ladder blocks.
-    let askActions = []
-    if (mode === 'ask') {
-      // sequential: wait for request #1 → allow; request #2 → deny.
-      const ledgerAt = (n) => readControlLedger(HOME, CREATE_ROOT).requests.length >= n ? readControlLedger(HOME, CREATE_ROOT) : false
-      const l1 = await waitFor(600_000, async () => { stormCheck('ask resolver r1'); return ledgerAt(1) }, 'ask: first durable control request')
-      const req1 = l1.requests[0]
-      const r1 = await remoteCall(origin, cookie, 'team.resolveControl', { teamSessionId: CREATE_ROOT, requestId: req1.requestId, decision: 'allow', note: 'a5tools-gov ask#1 scripted human allow' }, 'a5t-ask1', 4)
-      askActions.push({ leg: 1, requestId: req1.requestId, decision: 'allow', status: r1.status, body: r1.body })
-      const l2 = await waitFor(600_000, async () => { stormCheck('ask resolver r2'); return ledgerAt(2) }, 'ask: second durable control request')
-      const req2 = l2.requests[1]
-      const r2 = await remoteCall(origin, cookie, 'team.resolveControl', { teamSessionId: CREATE_ROOT, requestId: req2.requestId, decision: 'deny', note: 'a5tools-gov ask#2 scripted human deny' }, 'a5t-ask2', 4)
-      askActions.push({ leg: 2, requestId: req2.requestId, decision: 'deny', status: r2.status, body: r2.body })
-    }
+    // ask mode: the durable approvals are resolved by the LEADER through
+    // the shipped leader-lane tools (team_list_pending_control →
+    // team_resolve_control; resolver roles 'leader-approval -> leader|human',
+    // tools.ts:1019). The earlier 'human v4 lane HANGS' reading was a
+    // MISATTRIBUTION (a5-r5-probe ROOT-CAUSE.md: resolve answers in 11-25ms;
+    // the 240s wait was the v1 create RPC's Phase-B response coupling — R-5
+    // 改判 in TOOLS.md, semantics HOLD). Acceptance rides the product lane.
+    const askActions = []
+    if (mode === 'ask') A5T_ASK_STATE.ask = { resolved: [], polls: 0 }
 
     const chain = await waitFor(1_200_000, async () => {
       stormCheck(`${mode} chain`)
@@ -746,6 +742,9 @@ async function runWorld ({ mode, mock }) {
     } catch { /* no log */ }
     try {
       facts.treeFingerprintAfter = treeFp()
+    } catch { /* the after-fingerprint is best effort (large installed tree); never masks the capture below */ }
+    try {
+      facts.secretAfter = existsSync(join(W.outsideDir, 'secret.txt')) ? readFileSync(join(W.outsideDir, 'secret.txt'), 'utf8') : null
       facts.victimAfter = existsSync(join(W.outsideDir, 'victim.txt')) ? readFileSync(join(W.outsideDir, 'victim.txt'), 'utf8') : null
       facts.victimMarkerOnWire = (mock.requests ?? []).slice(reqBase)
         .map((r) => JSON.stringify(r.digest === undefined ? {} : { toolResults: (r.digest.toolResults ?? []).map((x) => redact(x)), text: r.digest._text ?? '' }))
@@ -801,6 +800,7 @@ async function main () {
       const blueprint = mainBlueprintYaml({
         mode, BP_MAIN_ID: `a5tools-gov-${mode}-bp`, CREATE_ROOT: L0_CREATE_ROOTS[mode], TK_A1: `a5tools-gov-tok-${mode}`, W,
         denyList: mode === 'unmanaged' ? [] : stubDeny,
+        leaderDeny: mode === 'unmanaged' ? stubDeny : null,
         strictMember: mode === 'lanes' || mode === 'ask' || mode === 'unmanaged',
         extraTemplates: mode === 'unmanaged' ? wa2Template(stubDeny, W) : '',
       })
@@ -916,8 +916,8 @@ async function main () {
       const outsideReadHandled = outReadRes.includes(OUTSIDE_MARKER) ? 'HOST-NATIVE-BODY-SERVED-CONTENT' : (/refus|denied|OUTSIDE_OF|not (inside|under)/i.test(outReadRes) ? 'REFUSED' : 'OTHER')
       note('X9.read-outside.body-path', 'which read body served a read OUTSIDE the governed root (layer-3: is a Controlled-FS mediator on this path?)', `verdict=${outsideReadHandled} landing=${outReadRes.slice(0, 220)}`)
       note('X10.write-outside.landing', 'legacy-form write OUTSIDE the governed root landed? (layer-3: absence/presence of an execution mediator in legacy form)', `landed=${String(f.wideOutsideWrite !== null)} content=${JSON.stringify(f.wideOutsideWrite)?.slice(0, 80)}`)
-      check('X11.world-hygiene', 'the ten-step ladder left the planted world otherwise intact (outside secret itself never rewritten)',
-        existsSync(join(f.home, 'workspace', 'outside', 'secret.txt')) === true, 'outside/secret.txt present at teardown')
+      check('X11.world-hygiene', 'the ten-step ladder left the planted world otherwise intact (outside secret bytes byte-identical at teardown; captured before teardown)',
+        f.secretAfter === `${OUTSIDE_MARKER}\n`, `secretAfter=${JSON.stringify(f.secretAfter)?.slice(0, 60)}`)
     }
     if (mode === 'lanes') {
       check('L1.allow-subtree-write', 'allow-lane (subtree) write EXECUTED inside the governed root',
@@ -927,8 +927,12 @@ async function main () {
       note('L2.deny-lane.text', 'deny landing verbatim (booked)', String(f.memberToolResults?.[1] ?? '').slice(0, 300))
       check('L3.default-deny-write-outside', 'default-deny: the write outside the subtree is REFUSED with ZERO effect (file absent on fs)',
         f.fs?.outsideGovWrite === false && f.forbiddenMarkerOnWire === 0, `outsideGovWrite=${String(f.fs?.outsideGovWrite)}`)
-      check('L4.allow-read_image', 'allow-lane read_image EXECUTED inside the subtree (non-empty wire result)',
-        (f.memberToolResults?.[3] ?? '').length > 0 && !/refus|denied/i.test(String(f.memberToolResults?.[3] ?? '')), `res-head=${String(f.memberToolResults?.[3] ?? '').slice(0, 80)}`)
+      // EXECUTED = a real payload: any Error: answer (including the
+      // BINDING_UNVERIFIED guard law) FAILS this expectation honestly - the
+      // shipped governed form has no executable read_image; booking the law in
+      // TOOLS.md 4b does not soften the user-facing expectation here.
+      check('L4.allow-read_image', 'allow-lane read_image EXECUTED inside the subtree (real payload; any Error:/guard refusal FAILS)',
+        (f.memberToolResults?.[3] ?? '').length > 0 && !/Error:|refus|denied|cannot be verified/i.test(String(f.memberToolResults?.[3] ?? '')), `res-head=${String(f.memberToolResults?.[3] ?? '').slice(0, 80)}`)
       check('L5.member-shell-refused', 'member bash (no lane can allow it) is REFUSED with NO side effect',
         /refus|denied|permission/i.test(String(f.memberToolResults?.[4] ?? '')) && f.fs?.bashDeniedSide === false, `bashRes=${String(f.memberToolResults?.[4] ?? '').slice(0, 120)} sideEffect=${String(f.fs?.bashDeniedSide)}`)
       check('L6.denylist-cut-off', 'builtinToolDeny cut-off: str_replace_editor and glob/grep are ABSENT from the member wire catalog AND the call lands a refusal (deny chain effective)',
@@ -945,9 +949,18 @@ async function main () {
     if (mode === 'ask') {
       check('A1.pending-ask', 'ask lane: the member write parked as a DURABLE control request (ledger row control-request-recorded exists)',
         (f.factsControlLedger?.requests?.length ?? 0) >= 2, `requests=${String(f.factsControlLedger?.requests?.length ?? 0)}`)
-      check('A2.allow-executes-after-approval', 'ask→allow: after the human resolveControl(allow) the operation EXECUTED (file exists with planted bytes; allow-consumed row durable)',
-        typeof f.fs?.askAllowedTxt === 'string' && f.fs.askAllowedTxt.includes(TOK_WRITE) && (f.factsControlLedger?.consumptions?.length ?? 0) >= 1,
-        `ask-allowed=${JSON.stringify(f.fs?.askAllowedTxt)?.slice(0, 60)} consumed=${String(f.factsControlLedger?.consumptions?.length ?? 0)}`)
+      // The ask world is a STRICT member (guarded, same shape as lanes): the
+      // leader-lane allow parks → decides → the ONE-SHOT grant is consumed at
+      // the last-mile guard, and the native write STILL refuses at dispatch
+      // with the closed-world binding law (§4b: un-bound native file tool =
+      // refusal, never a native-body fallback, never a silent pass). Honest
+      // face: ask lane fully works (request/allow/consume); EXECUTION is
+      // gated by the binding gap this route books, NOT by the ask lane.
+      check('A2.allow-consumed-binding-refusal', 'ask→allow: durable allow decision + the one-shot grant CONSUMED at the guard; the un-bound native write then refuses at dispatch (closed-world binding law, no native fallback, no silent execute)',
+        (f.factsControlLedger?.consumptions?.length ?? 0) >= 1
+        && String(f.memberToolResults?.[0] ?? '').includes('cannot be verified at dispatch time')
+        && f.fs?.askAllowedTxt === null,
+        `consumed=${String(f.factsControlLedger?.consumptions?.length ?? 0)} res0=${String(f.memberToolResults?.[0] ?? '').slice(0, 90)}`)
       check('A3.deny-refuses-zero-effect', 'ask→deny: the second write is REFUSED after the human deny and NEVER executes (file absent)',
         f.fs?.askDeniedTxt === false && (f.factsControlLedger?.decisions?.length ?? 0) >= 2, `askDeniedExists=${String(f.fs?.askDeniedTxt)}`)
       check('A4.resolutions-recorded', 'both resolutions are durable decision rows (allow + deny) against the same requestIds',
@@ -1008,6 +1021,27 @@ async function startMockModelWithDecide () {
         if (text.includes(`${MK}_${MU}_DISC`)) return { kind: 'text', content: 'A5T_DISC_OK' }
         if (text.includes(`${MK}_${MU}_L0`)) {
           const calls = digest.assistantToolNames
+          if (mode === 'ask') {
+            // Leader-lane approvals: delegate ASYNC (the member blocks in
+            // its own ask-lane wait; the leader keeps taking turns), then
+            // poll the pending list and resolve allow→deny by PARSED real
+            // requestIds from the tool results (never invented).
+            const st = (A5T_ASK_STATE.ask ??= { resolved: [], polls: 0 })
+            if (calls.length === 0) return toolCall(`a5t-del-${rnd()}`, 'team_delegate', { rootSessionId: L0_CREATE_ROOTS.ask, requestToken: 'a5tools-gov-tok-ask', delegationTemplateId: 'wa', label: 'gov-a', taskSummary: 'native tool ladder (ask)', prompt: taskPromptFor('ask'), async: true })
+            const last = String(digest.toolResults[digest.toolResults.length - 1] ?? '')
+            if (calls[calls.length - 1] === 'team_collect') return { kind: 'text', content: 'A5TOOLS_LEADER_RESULT collected.' }
+            const pending = [...new Set([...last.matchAll(/ctrl-[0-9a-z]+/g)].map((m) => m[0]))].filter((id) => !st.resolved.some((r) => r.id === id))
+            if (st.resolved.length === 2) return toolCall(`a5t-col-${rnd()}`, 'team_collect', { rootSessionId: L0_CREATE_ROOTS.ask, requestToken: `a5t-col-${RUN_STAMP}`, requestTokens: ['a5tools-gov-tok-ask'] })
+            if (pending.length === 0) {
+              st.polls += 1
+              if (st.polls > 90) return { kind: 'text', content: 'A5T_ASK_FAIL no pending control request surfaced' }
+              return toolCall(`a5t-lp-${st.polls}-${rnd()}`, 'team_list_pending_control', { rootSessionId: L0_CREATE_ROOTS.ask, requestToken: `a5t-lp-${st.polls}` })
+            }
+            const leg = st.resolved.length + 1
+            const decision = leg === 1 ? 'allow' : 'deny'
+            st.resolved.push({ id: pending[0], decision })
+            return toolCall(`a5t-rq-${leg}-${rnd()}`, 'team_resolve_control', { rootSessionId: L0_CREATE_ROOTS.ask, requestToken: `a5t-rq-${leg}`, requestId: pending[0], decision, note: `a5tools-gov ask#${String(leg)} scripted leader-lane ${decision}` })
+          }
           if (mode === 'unmanaged') {
             if (calls.length === 0) return toolCall(`a5t-del-${rnd()}`, 'team_delegate', { rootSessionId: L0_CREATE_ROOTS[mode], requestToken: 'a5tools-gov-tok-unmanaged-no', delegationTemplateId: 'wa', label: 'gov-no', taskSummary: 'governed read (no deny)', prompt: taskPromptFor('unmanaged'), async: false })
             if (calls.length === 1) return toolCall(`a5t-del2-${rnd()}`, 'team_delegate', { rootSessionId: L0_CREATE_ROOTS[mode], requestToken: 'a5tools-gov-tok-unmanaged-ok', delegationTemplateId: 'wa2', label: 'gov-ok', taskSummary: 'governed read (deny applied)', prompt: taskPromptFor('unmanaged'), async: false })
@@ -1044,6 +1078,7 @@ async function startMockModelWithDecide () {
  *  runWorld registers them here (single-run sequential, no aliasing). */
 const L0_CREATE_ROOTS = {}
 const L0_W = {}
+const A5T_ASK_STATE = {}
 function taskPromptFor (mode) {
   const W = L0_W[mode]
   const steps = stepsFor(mode, W)

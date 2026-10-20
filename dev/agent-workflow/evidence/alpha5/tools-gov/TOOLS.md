@@ -25,17 +25,17 @@ Pre-execute 管线（strict）：`ctx.on('tools/pre-execute')` → canonicalize�
 
 | 工具 | 治理类 | 车道能力 | 装配收据 | 正验收（真执行） | 负验收 |
 | --- | --- | --- | --- | --- | --- |
-| write | 受管 file | allow(exact/subtree)/ask/deny | ①链已核（§0） | PENDING wide.P1 / lanes.L1 | PENDING lanes.L3 default-deny 零效果 + ask A3 |
-| edit | 受管 file | 同上（projection 含 old/new） | ①链已核 | PENDING wide.P2 | 同上（共享 canonical/lane 面） |
-| read | 受管 file | 同上 + artifact-read grant 端口 | ①链已核 | PENDING wide.P3 | PENDING lanes.L2 deny-lane exact 拒+不外泄 |
-| read_image | 受管 file | 同 read | ①链已核 | PENDING wide.P4（形状 BOOK） | PENDING lanes.L4（allow 腿）/L3 |
-| lsp | 受管 file | 4 操作枚举 | ①链已核（枚举 `canonical-operation.ts:198-203`） | 本 kit 不排（preset 无 tool-lsp）；B 路 LSP 矩阵承接 | — |
-| bash | 受管 shell | 成员仅 ask/deny any；leader allow any 双门（envelope exec token bash） | ①链已核 | PENDING wide.P8 | PENDING lanes.L5 成员无道拒+零副作用 |
+| write | 受管 file | allow(exact/subtree)/ask/deny | ①链已核（§0） | **PASS wide**（07-59 'Created file' 信封+edit 交叉证；08-58 复跑事实齐）；**lanes allow 道=Guard UNVERIFIED 法律形**（§4b L1，非车道红）；ask=grant 消费+同法拦（09-43 A2） | **PASS** lanes.L3 越 subtree 拒+**零落盘**；ask A3 deny 零效果；X10 宽形落盘对照（归属注 §4） |
+| edit | 受管 file | 同上（projection 含 old/new） | ①链已核 | **PASS wide**（TOK_EDITED 复读实文） | 共享 canonical/lane 面（write 行覆盖） |
+| read | 受管 file | 同上 + artifact-read grant 端口 | ①链已核 | **PASS wide**（内容回文）+**X9 宽形越界由宿主原生服务（对照正证）** | **PASS lanes.L2** deny-lane exact 拒+**forbiddenWire=0** |
+| read_image | 受管 file | 同 read | ①链已核 | **PASS wide**（deepseek-flash 模态门正形；首形 R-3 在档） | **lanes allow 道=Guard UNVERIFIED**（§4b L4 同 L1 法） |
+| lsp | 受管 file | 4 操作枚举 | ①链已核（枚举 `canonical-operation.ts:198-203`） | 本 kit 不排（preset 无 tool-lsp）；**运行级发现：宿主 schema=`filePath` 我方只读 `file_path`⇒lsp 车道事实不可用（fail-closed 向）——修复已另枝 a5-lsp-keyfix（2cb7169e，RED→GREEN 8/8+回归 81/81+p4t6 1206→1207）** | 修复形含双键歧义独立 reason 码拒 |
+| bash | 受管 shell | 成员仅 ask/deny any；leader allow any 双门（envelope exec token bash） | ①链已核 | **PASS wide**（echo+落盘+复读三段实文） | **PASS lanes.L5** exec fingerprint 拒+**零副作用** |
 | pwsh | 受管 shell | 同 bash（POSIX 宿主 disabled；≠bash 权威） | ①链已核（disabled 行实测注记） | N/A（Linux 宿主 preset disabled） | 注记：bash authority≠pwsh authority（types.ts A2C-1） |
-| glob | KNOWN_SENSITIVE(fsSearch) | 无（strict 须 deny） | ①链已核 | PENDING wide.P6 | PENDING lanes.L6 关断 absent + unmanaged U1 拒 setup |
-| grep | KNOWN_SENSITIVE(fsSearch) | 无 | ①链已核 | PENDING wide.P7 | 同上 |
-| str_replace_editor | **UNKNOWN_UNMANAGED（零治理条目）** | 无；opt-in 独立包（与 edit 两注册形） | ①链已核（独立包注册名实核 `tool-str-replace-editor/src/index.ts:430`） | PENDING wide.P5 | PENDING lanes.L6 + **unmanaged U1/U2 响亮 FATAL 实拍** |
-| task 系（subagent/subagent_fork/workflow/ralph/job_*/send_message/interrupt_agent/list_agents） | KNOWN_SENSITIVE（orchestration/jobs/agentControl） | 无 | ①链已核（含 §5.2 own-layer subagent 披露） | 本 kit 不跑正验收（C2 已披露面）；负=strict 须 deny（派生 denyList 实测含之，L6 catalog absent 收据覆盖 subagent_fork 等） | PENDING L6/S.surface 派生账 |
+| glob | KNOWN_SENSITIVE(fsSearch) | 无（strict 须 deny） | ①链已核 | **PASS wide**（preset config 缺形 R-1 后正形） | **PASS lanes** catalog-absent+Guard UNGOVERNED；unmanaged U1（终跑落账） |
+| grep | KNOWN_SENSITIVE(fsSearch) | 无 | ①链已核 | **PASS wide**（TOK_GREP 实文） | 同 glob 行 |
+| str_replace_editor | **UNKNOWN_UNMANAGED（零治理条目）** | 无；opt-in 独立包（与 edit 两注册形） | ①链已核（独立包注册名实核 `tool-str-replace-editor/src/index.ts:430`） | **PASS wide**（sre create 实文落盘） | **PASS lanes.L6** `no Team Tool Binding…closed world` 拒；unmanaged U1/U2 FATAL 正控（终跑落账） |
+| task 系（subagent/subagent_fork/workflow/ralph/job_*/send_message/interrupt_agent/list_agents） | KNOWN_SENSITIVE（orchestration/jobs/agentControl） | 无 | ①链已核（含 §5.2 own-layer subagent 披露） | 本 kit 不跑正验收（C2 已披露面）；负=strict 须 deny（派生 denyList 实测含之，L6 catalog absent 收据覆盖 subagent_fork 等） | **PASS L6/S.surface 派生账**（四世界 derivedDenyList 一致含之） |
 | todo_write | SAFE_UNMANAGED | 无（source-reviewed） | ①链已核 | 不在 smoke preset（注记） | — |
 
 ## 2. 逐工具节
@@ -94,6 +94,11 @@ Pre-execute 管线（strict）：`ctx.on('tools/pre-execute')` → canonicalize�
 
 **R-4 @2026-10-19T08:52Z（环境红，非本分支引入，不修面）**：`packages/runtime/test/a3p5-glue-permission-receipt.test.ts`（经 `t12a-live-bridge.mjs`）在本环境 **11/11 红**（先于本分支编辑存在：stash 对照同红）；且需手工补 `node_modules/@deepseek-ai/{dsh-scope,dsh-tool-fs-search}` → test-use 包软链（与既有 5 链同型，gitignored 基础设施，主检出内）才能 collect。本地 typecheck 同理缺 @types/node（typecheck 门历来经 CI）。CI 门（pr-gate @ head_sha）为准。
 
+**R-5 @2026-10-19T09:4xZ（运行级产品发现·人类车道对 leader-rung 案例=挂死非 typed 拒，不修面）**：ask 世界首形——成员写 parked 出真 durable 行（`control-request-recorded`，carrier=`leader-approval`、`reviewAuthority=leader`、`executionCoupling=guarded`、payload 全字段逐字在 runs 09-36-46Z team_domain seq5），kit 以 boot-root 人类身份打 `team.resolveControl` v4：HTTP **240s 无响应 fetch-abort**（`TimeoutError: The operation was aborted due to timeout`），期间/之后**无任何决策行**（ledger 仍只有 request 行；零副作用零决策=安全向），宿主日志无该 RPC 痕迹。对照=同案例走**领队工具道**（team_list_pending_control→team_resolve_control）全链通（09-43 跑 15/15）。tools.ts:1019 明言 resolver roles `leader-approval -> leader|human`——**人类 remote 车道对该rung 应可作**；现形=既不裁决也不 typed 拒=**挂起形**（最坏形：等待方无信号）。定界：s6-remote `TEAM_RESOLVE_CONTROL_UNAVAILABLE` 是 typed 拒词表在位证明；缺口=该臂未达/未及裁决前的等待形。转产品小账（候独立单），本 kit 收口改走领队工具道（产品正车道）。
+> **R-5 改判 @2026-10-20T07:1xZ（探针单终果，a5-r5-probe@6d96724a ROOT-CAUSE.md §2；根口径）**：**观测真（create 响应耦合等待），归因伪（非 resolve 挂）**——真挂点=v1 `team.create` 内嵌 initialWork 时响应路径同步 await Phase-B 领队首回合（root-initial-work.ts:758-770 行号链在 ROOT-CAUSE.md §2）；resolve 实测 **11-25ms** 落 durable 决策（两独立捕获+装配级 4/4）。本 kit `world-ask.partial.json` 的 240s 挂=**create 的 fetch abort**（事实链停在 catalogPreflight，无 teamCreate 记录）。时序语义=**HOLD 候根 supersession 审查**（原计划 §15.4/§15.6 明文=v1 initialWork RPC 返回前投递属冻结 compat 时序+新 client 走 v2 两阶段；§5 选项②"最贴§15.4字面"系**误引作废**，见 a5-r5-probe@bc40648d CORRECTION-15-4.md，**②不得写成候选修复**）。**回归实操=ask 世界用 async 委派或 v2 两阶段避开 compat 耦合**。回归预算注记：本 kit create 超时预算按 Phase-B-coupled 现实设置（该单 90s→300s 教训，仍有效），直至根裁 create 响应语义（候根立案，勿自裁）。
+
+**R-6 @2026-10-19T09:4xZ（层3 第三活体形态，法律形非缺陷红，入终判）**：ask→allow 后**一次性 grant 在 guard 正常消费**（`control-allow-consumed`=1），原生写随后在 **dispatch 层**被闭世界 Guard 拒：`Error: team tool guard: the Tool Binding for "write" cannot be verified at dispatch time (no fallback to the native body)`（与 lanes L1/L4 同法，`closed-world-guard.ts:199`）——**批准≠可执行**：治理成员的授权车道全通，执行仍卡在无绑定铸造路径的原生文件工具（层3"缺 I/O 执行中介"**第三形态**：宽形可越界 / 治理形允许道不可执行 / ask 批准后 grant 被消费仍不可执行——grant 消费意味着授权一次性烧掉而操作未跑，语义空洞，选型单 §B 直接相关）。判据 A2 已按实形重写（consumed≥1 + BINDING 拒文 + 文件不落）。
+
 ## 4. wide 逐工具三层记录（根 08:47Z ①令；run 2026-10-19T07-59-11Z；证据=`runs/2026-10-19T07-59-11Z/world-wide.partial.json`+`wire-digests-wide.jsonl` seq 号）
 
 wide=**无治理对照世界**（legacy 成员：无 capabilities.permissions ⇒ 层1 车道/层2 检查链**按设计不运行**——该两层的正负验收世界=lanes/ask/unmanaged）。wide 角色=**层3 真实执行收据 + 无中介对照**。逐工具（成员阶梯 seq7-16，每步成员会话新起、按 toolResults 计数推进）：
@@ -113,6 +118,46 @@ wide=**无治理对照世界**（legacy 成员：无 capabilities.permissions �
 
 阶梯序 P9 PASS（10 步全序=[write,edit,read,read_image,str_replace_editor,glob,grep,bash,read,write]）；leader 收尾 seq17-18（delegate 执行+collect）。**首轮两处判据缺陷（RED，不修面）**：P1 谓词曾要求 write 结果含内容 marker（write 设计=不回显内容）——已改信封+互证式；P4 首形=mock 模态缺口（上表注）。X11 卫生 PASS（outside/secret.txt 未被改写；victim 在 wide 世界 before==after、wire 零泄漏）。
 
+## 4b. lanes 逐工具三层记录（注入腿修复后；run 2026-10-19T08-58-04Z @sha 095204a6；证据=`world-lanes.partial.json`+`wire-digests-lanes.jsonl`）
+
+**RED→GREEN 双向成立**：同世界（strict 成员，subtree allow+deny 规则）在 d5de7497 于挂载响亮拒（R-2 原文），在 095204a6（注入腿）**挂载成功、成员全阶梯执行到 final**（memberFinal 含 A5TOOLS_MEMBER_RESULT；callOrder=[write,read,write,read_image,bash,str_replace_editor,write,read]）。
+
+| 腿 | 结果 | 治理层归因（逐字收据首段） |
+| --- | --- | --- |
+| L1 write **allow-lane** | **层3 大发现（非层1红）**：`Error: team tool guard: the Tool Binding for "write" cannot be verified at dispatch time (no fallback to the native body)` | **闭世界 Guard 法**（`closed-world-guard.ts:199 BINDING_UNVERIFIED`）：governed 成员的 native 文件工具**无绑定铸造路径**（placement feed 只带 plane 行名，`agent-bindings:2327 bindingFeed`）⇒ governed 成员对 write/edit/read_image **无合法原生执行道**（Guard 宁拒不放）。这不是缺陷，是已发货法律的活体首证——同时=层3"缺执行中介"的第二形态：治理形下允许道也跑不起来 |
+| L2 read forbidden.txt（deny exact） | **PASS 拒**：`permission denied: read[…forbidden.txt]`（pre-execute 车道拒） | 层2 检查链（canonical→A3 deny）+ **forbiddenWire=0** 不外泄 |
+| L3 write 越 subtree | **PASS 拒 + 零落盘**：`permission denied: write[…outside/gov-write.txt]`，`fs.outsideGovWrite=false` | 层1/2 + **落盘计数=0**（层3 副作用计数正证） |
+| L4 read_image allow | 同 L1 形：Guard UNVERIFIED（read_image） | 同 L1 法律 |
+| L5 bash（成员无正允许道） | **PASS 拒 + 零副作用**：`permission denied: exec fingerprint sha256:fe24… answered deny from the fallback`，`fs.bashDeniedSide=false` | shell class tool-level 指纹拒（层2 活体首证）；echo 未跑=**副作用计数=0** |
+| L6 str_replace_editor（deny 后） | **PASS 拒**：`no Team Tool Binding on this Agent (closed world: an un-governed tool never executes…)` | Guard UNGOVERNED（`closed-world-guard.ts:197`）——UNKNOWN_UNMANAGED 关断后的执行面法律；wire catalog absent 另证（L6 catalog 腿） |
+| A7 write via 内链→外链 victim（symlink 换靶决定论形） | **PASS 拒**：`permission denied: write[…link-victim.txt]` | canonicalizer 经 `ctx.fs.resolve`=**realpath 身份键**（fsio.ts:154-165）⇒ 检查时链接已跟到 outside ⇒ 车道拒；**victim 文件未被改写**（fs 计数腿；本跑 victimAfter 遥测缺陷同 R-2a 更正类，fail 路径未达 facts——下跑 finally 修复版生效） |
+| A8 read via 内链 | **PASS 拒**：`permission denied: read[…link-victim.txt]`，**victimMarkerOnWire=0** | 同 A7；无泄漏 |
+
+**lanes 层3 结论（行为级）**：deny 道=零落盘/零副作用/零泄漏（检查层有效）；allow 道=**Guard 拒 native 文件工具执行**——governed 成员在 write/edit/read_image 上**当前不存在合法执行中介**（既无 C-FS 行，Guard 又拒 native）。⇒ **层3 终判=「缺 I/O 执行中介」实锤（两形：宽形无中介可越界；治理形允许道不可执行）** → 选型单（§6）。
+
+## 4c. ask 逐工具三层记录（run 2026-10-19T09-43-04Z @sha 095204a6，**KIT_SUMMARY 15/15**；证据=`world-ask.partial.json`+`wire-digests-ask.jsonl`）
+
+车道=strict 成员 `default: ask`（无 allow/ask/deny 规则）；审批车道=**领队工具道**（产品正车道，pr-d C1 发货形；人类 remote v4 形=R-5，已改判=观测真/归因伪，见 R-5 条目改注）。
+
+| 腿 | 结果 | 逐字/计数据 |
+| --- | --- | --- |
+| A1 成员 write → 车道 ask | **PASS 停车×2** | durable 行 `control-request-recorded`×2（carrier=leader-approval、reviewAuthority=leader、authorityScope.matcher=写目标 exact、operationFingerprint 在位） |
+| 审批 allow#1（领队 team_resolve_control，requestId 从 team_list_pending_control 真结果解析） | **PASS 决议落耐久** | `control-decision-recorded[allow]`；resolver=leader 实例 |
+| A2 allow 后执行 | **grant 消费+Guard 拒执行**（层3 第三形态 R-6） | `control-allow-consumed`=1；工具结果=`Error: team tool guard: the Tool Binding for "write" cannot be verified at dispatch time…`；`askAllowedTxt=null`（无偷跑） |
+| A3 deny#2 后执行 | **PASS 拒+零效果** | `Error: the approval was denied`；文件不存在 |
+| A4 双决议耐久行 | **PASS** | decisions=[allow,deny] 对同 requestIds 逐字 |
+
+层3 注：ask 世界证明**授权链（停车/裁决/消费）与执行面（绑定铸造）完全解耦**——车道层无缺陷；全部执行缺口归"无 I/O 执行中介"同因（选型单）。信封交集法活体首证（首两轮红因，kit 侧已修在档）：成员 mutation 操作须 `memberEnvelopes[templateId].envelope.allow` 逐字给出（envelope.ts:113 成员形=模板条目硬交集，无条目=空集 fail-closed）——request-control 不在其中时**车道停车即 typed 错**（`outside the caller's mutation envelope` 逐字在 08-58/09-21 wire），不挂起不误放。
+
+## 4d. 四世界收口跑（run 2026-10-20T06-32-54Z @sha **bc97ad0c**，`KIT_SUMMARY {"total":49,"pass":41,"fail":2}`；证据=`runs/2026-10-20T06-32-54Z/`）
+
+诚实判据套件（criteria.json 全量+U3 活体绿）下的正式收口：
+- **两条 FAIL=法律形红非套件缺陷**：L1/L4=allow-lane write/read_image 落 `BINDING_UNVERIFIED`（层3 形态2 的正证；L4 谓词已收紧可捕获 `Error:` 形）。红字不修面，如实保红。
+- **U3.deny-remediation-works PASS**=bc97ad0c 接缝修复端到端活体回执（wa2 read 携 `A5TOOLS-GREP-TOK`）。
+- wide P1-P9+X9/X10/X11 全真执行绿；ask A1-A4 全绿（15/15 形不变）；unmanaged U1/U2/U3 绿；T1/T2/T3 绿（:3080 只读探针 401 不变）。
+- 矩阵增注：四世界 @bc97ad0c 之 41/2 为该 SHA 的正式账；此前 10-19 系列跑为 095204a6/5e8db4ac 账，不覆盖。
+
 ## 5. 与 B 路接口注记
 
-三面（team-tool-plane.mjs / agent-bindings.mjs:2470 邻域 / plane-effect-backends.mjs）A 路当前零 hand 编辑（原生治理链在其外，2026-10-19T07:38Z 回报）；C2 窗口制已确认让行。
+三面（team-tool-plane.mjs / agent-bindings.mjs:2470 邻域 / plane-effect-backends.mjs）A 路当前零 hand 编辑（原生治理链在其外，2026-10-19T07:38Z 回报）；C2 窗口制已确认让行。**agent-bindings 自身编辑（subtree 注入腿）已落定于 095204a6，三面恢复零占用**。**追加一项（10:1xZ）**：注入腿 seam 双形归一修复（内核 matcher 递资源对象形，Map 失配误触 never-guess=allow 道假拒；RED 逐字 `RED-seam-object-resource.log` run 10-04-58Z；修复 @**5e8db4ac** src+dist 镜像）——lanes 世界此前不可见（allow 道更早死在 UNVERIFIED），unmanaged wa2 正控首见。**此后 agent-bindings 再零占用**（MCP writer 接窗区 :2298-2309 与此区 :2501-2520 不重叠）。
+**p4t6 续链前瞻（协调 09:4xZ 两令并正）**：本分支 pin=**1207**（对现 master `cad5cf03` 之 1206+1，现值正确）；**#349（B 1206→1208）候审中**——其落地 master=1208 后，**forward-merge（master→a5-tools-gov）时按合并树实测重钉**（预期 1208+1=1209，MEASURED，禁抄链值），commit message 引先例；本分支终报按"forward-merge 后重钉"形态表述，1207 不可直接落 master 的读解以该令为准。

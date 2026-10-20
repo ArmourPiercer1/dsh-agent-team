@@ -1,0 +1,100 @@
+{
+  "mode": "unmanaged",
+  "home": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z",
+  "ok": true,
+  "createRoot": "session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z",
+  "launcher": {
+    "sha": "1264ea584e3438d6",
+    "match": true
+  },
+  "treeFingerprintBefore": [
+    "deployment/landlock-prelauncher.py:1264ea584e3438d6d831c0c8426f5663579f638556af9376d3a6e3617e9736e3",
+    "profiles/web/.plugin-manager/logs/operation-FHu5iG/pnpm.log:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profiles/web/cordis.patch.yml:4e603605323fc652f2b794bb5c845976f8f4d5185e583f34e92f58a55abc3db0",
+    "profiles/web/package.json:56b612639c40b1fd29340936d4414572c70aed4da595a9f7323a1c07fdde2661",
+    "profiles/web/pnpm-lock.yaml:3fe20d7addfaea3a0b8a279530647d3292a11f310ac7ca05eb8f036d2ebe4814",
+    "profiles/web/pnpm-workspace.yaml:9670f8c1829bbc3020bdfbf51d5098869823b4bd821239faaf9c0b177c6daafb",
+    "workspace/governed/forbidden.txt:f4e9fdbe3d900187797412f6941098e5eba561ff7a0b97292d7bb662e531b42b",
+    "workspace/governed/notes.txt:6dbf11005d7b516f1736272cd9ccbcd06a109dff91316ca249164b6b854572e9",
+    "workspace/governed/seed.png:b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640",
+    "workspace/outside/secret.txt:71b64b065f18442bd1498b4a1d73f4106754504f84dea7335ccc54b5d4c4df74",
+    "workspace/outside/victim.txt:3293a185e128e3d239fb0636fe2a44b7d8bf0a616ede61cd3276a3d464562bcb"
+  ],
+  "victimBefore": "A5TOOLS-VICTIM-ORIGINAL-2026-10-20T06-32-54Z\n",
+  "bootLine": "dsh web: http://127.0.0.1:3187/?token=<REDACTED-f85bd04f>",
+  "discoverySurface": [
+    "bash",
+    "edit",
+    "glob",
+    "grep",
+    "read",
+    "read_image",
+    "str_replace_editor",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "write"
+  ],
+  "derivedDenyList": [
+    "glob",
+    "grep",
+    "str_replace_editor"
+  ],
+  "catalogPreflight": {
+    "listStatus": 200,
+    "listed": true
+  },
+  "teamCreate": {
+    "status": 200,
+    "body": "{\"type\":\"server-response\",\"rpcId\":\"a5t-unmanaged-tc\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\",\"blueprint\":{\"blueprintId\":\"a5tools-gov-unmanaged-bp\",\"revision\":\"1\",\"contentHash\":\"sha256:3408c01fb23757891bd0d62fdd485e59fded7e39baae8b40ea3cc15463189afa\"},\"createdAt\":\"2026-10-20T06:34:18.353Z\",\"generation\":1,\"defaultWorkspace\":\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"rootSessionId\":\"session-a5tools-gov-team-un"
+  },
+  "memberAWireCatalog": [
+    "bash",
+    "edit",
+    "read",
+    "read_image",
+    "team_bash",
+    "team_glob",
+    "team_grep",
+    "write"
+  ],
+  "memberToolCallOrder": [
+    "read"
+  ],
+  "memberToolResults": [
+    "[{\"type\":\"text\",\"text\":\"line one\\nA5TOOLS-GREP-TOK lives here\\n\"}]"
+  ],
+  "memberFinal": "{\"kind\":\"text\",\"content\":\"A5TOOLS_MEMBER_RESULT r0=[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"line one\\\\nA5TOOLS-GREP-TOK lives here\\\\n\\\"}]\"}",
+  "leaderFinalText": "d DSH itself.\n\nYou are interacting with the user through the DeepSeek Harness Web GUI at http://127.0.0.1:3187. When the user refers to \"this page\", \"this GUI\", or \"this app\" without naming another target, they mean this GUI. The browser provides no implicit DOM, route, or screenshot context. The client-plugin HMR receiver is active, but client-plugin changes reload without a refresh only while `pnpm run dev:web` is also running from this same checkout to rebuild their bundles; verify that watcher before promising automatic updates. Every other change — the apps/web shell and plain packages — requires rebuilding the affected Web artifacts and verifying this existing URL after a page refresh. Starting another server does not update this GUI. The apps/web Vite entry builds the shell but is not a standalone application because only dsh web injects window.__DSH_BOOT__. Do not start a replacement server unless the user asks; if one is needed, use a managed background job and verify its exact URL.\n\nYour working directory is /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace.\u0001[team-root-work requestToken=team-create:initial-work:sha256:1cc64350133b071f527961bd923a10f9a4b446f6e375b31d4514ae3ebc7fd441] A5TOOLS_20261020T063254Z_UNMANAGED_L0 Begin your directive.\u0001Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.\u0001tool_use:team_delegate{\"rootSessionId\":\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\",\"requestToken\":\"a5tools-gov-tok-unmanaged-no\",\"delegationTemplateId\":\"wa\",\"label\":\"gov-no\",\"taskSummary\":\"governed read (no deny)\",\"prompt\":\"A5TOOLS_20261020T063254Z_UNMANAGED_TASK_A Work EXACTLY in this order, one tool call per turn: (1) tool read with {\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace/governed/notes.txt\\\"}; then (final) answer with ONE line starting A5TOOLS_MEMBER_RESULT quoting each of the 1 tool results you received, verbatim.\",\"async\":false}\u0001tool_result:[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\\\",\\\"message\\\":\\\"activation: child-session creation failed for member 'inst-15thy3c1uabz': PermissionCoverageUnmanagedError: permission coverage gate failed for instance 'inst-15thy3c1uabz': 3 unmanaged tool(s) on the final model-facing surface: glob (known-sensitive-unmanaged), grep (known-sensitive-unmanaged), str_replace_editor (unknown-unmanaged) (code: alpha2-permission-coverage-unmanaged-tools)\\\",\\\"details\\\":{\\\"source\\\":\\\"activation-provider\\\",\\\"providerCode\\\":\\\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\\\",\\\"rootSessionId\\\":\\\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\\\",\\\"instanceId\\\":\\\"inst-15thy3c1uabz\\\"}}\"}]\u0001tool_use:team_delegate{\"rootSessionId\":\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\",\"requestToken\":\"a5tools-gov-tok-unmanaged-ok\",\"delegationTemplateId\":\"wa2\",\"label\":\"gov-ok\",\"taskSummary\":\"governed read (deny applied)\",\"prompt\":\"A5TOOLS_20261020T063254Z_UNMANAGED_TASK_A Work EXACTLY in this order, one tool call per turn: (1) tool read with {\\\"file_path\\\":\\\"/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/a5tools-gov-unmanaged-2026-10-20T06-32-54Z/workspace/governed/notes.txt\\\"}; then (final) answer with ONE line starting A5TOOLS_MEMBER_RESULT quoting each of the 1 tool results you received, verbatim.\",\"async\":false}\u0001tool_result:[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"delegate\\\",\\\"rootSessionId\\\":\\\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"member-activated\\\",\\\"instanceId\\\":\\\"inst-1ft0hkd1katf\\\",\\\"templateId\\\":\\\"wa2\\\",\\\"childSessionId\\\":\\\"session-team-child-d08142afb918f06b45af6a0da6028ad8\\\",\\\"operationId\\\":\\\"op-020ar2h1xdqv5y0ihwn4f07n\\\",\\\"replayed\\\":false,\\\"ledgerSequence\\\":2,\\\"admissionCode\\\":\\\"ADMISSION_OPEN\\\",\\\"workSequence\\\":3,\\\"workSettled\\\":true,\\\"memberResult\\\":{\\\"requestToken\\\":\\\"a5tools-gov-tok-unmanaged-ok\\\",\\\"status\\\":\\\"succeeded\\\",\\\"body\\\":\\\"A5TOOLS_MEMBER_RESULT r0=[{\\\\\\\"type\\\\\\\":\\\\\\\"text\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"line one\\\\\\\\nA5TOOLS-GREP-TOK lives here\\\\\\\\n\\\\\\\"}]\\\"}},\\\"requestToken\\\":\\\"a5tools-gov-tok-unmanaged-ok\\\"}\"}]\u0001tool_use:team_collect{\"rootSessionId\":\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\",\"requestToken\":\"a5t-col-2026-10-20T06-32-54Z\",\"requestTokens\":[\"a5tools-gov-tok-unmanaged-no\",\"a5tools-gov-tok-unmanaged-ok\"]}\u0001tool_result:[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-a5tools-gov-team-unmanaged-2026-10-20T06-32-54Z\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"a5tools-gov-tok-unmanaged-no\\\",\\\"status\\\":\\\"unavailable\\\",\\\"error\\\":{\\\"code\\\":\\\"WORK_TOKEN_UNKNOWN\\\",\\\"message\\\":\\\"no work-unit facts for token 'a5tools-gov-tok-unmanaged-no' in this root (never admitted, or a Root initial-work fact this read does not own)\\\"}},{\\\"requestToken\\\":\\\"a5tools-gov-tok-unmanaged-ok\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-1ft0hkd1katf\\\",\\\"admittedSequence\\\":3,\\\"settledSequence\\\":6,\\\"memberResult\\\":{\\\"body\\\":\\\"A5TOOLS_MEMBER_RESULT r0=[{\\\\\\\"type\\\\\\\":\\\\\\\"text\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"line one\\\\\\\\nA5TOOLS-GREP-TOK lives here\\\\\\\\n\\\\\\\"}]\\\",\\\"requestToken\\\":\\\"a5tools-gov-tok-unmanaged-ok\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"a5t-col-2026-10-20T06-32-54Z\\\"}\"}]",
+  "fs": {
+    "writeTxt": null,
+    "sreTxt": null,
+    "bashWrote": null,
+    "allowedTxt": null,
+    "outsideGovWrite": false,
+    "sreDeniedTxt": false,
+    "bashDeniedSide": false,
+    "askAllowedTxt": null,
+    "askDeniedTxt": false
+  },
+  "forbiddenMarkerOnWire": 0,
+  "wideOutsideWrite": null,
+  "factsControlLedger": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "error": null
+  }
+}

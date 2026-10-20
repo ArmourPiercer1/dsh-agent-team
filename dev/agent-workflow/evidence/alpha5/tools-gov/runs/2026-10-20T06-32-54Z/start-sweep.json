@@ -1,0 +1,8 @@
+{
+  "staleHomes": [
+    "a5tools-gov-unmanaged-2026-10-20T06-01-17Z"
+  ],
+  "homesRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes",
+  "storeDir": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov/tests/homes/.a5tools-gov-store",
+  "srcRoot": "/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-tools-gov"
+}
