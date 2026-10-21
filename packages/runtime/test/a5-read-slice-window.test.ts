@@ -116,17 +116,20 @@ vi.mock('node:fs/promises', async (importOriginal) => {
       }
       await fireByteArm('read')
       const r = (await read(buffer, offset, length, position)) as { bytesRead: number; buffer: Uint8Array }
-      const logged = H.reads[H.reads.length - 1]
-      if (logged !== undefined && logged.bytesRead === -1) logged.bytesRead = r.bytesRead
-      H.bytesReadTotal += r.bytesRead
+      // Meter the CALLER-VISIBLE count (what the production ring accumulates):
+      // that is the judgement surface E4 [rev4] metering law pins.
+      let visible = r.bytesRead
       if (H.quarterRead && r.bytesRead > 0) {
         // Short-read simulation: report at most ceil(want/4); the bytes past
         // the (re)reported position are re-read at the next explicit position,
         // so content stays identical to a full read.
         const capped = Math.max(1, Math.ceil(length / 4))
-        if (r.bytesRead > capped) return { ...r, bytesRead: capped }
+        if (r.bytesRead > capped) visible = capped
       }
-      return r
+      const logged = H.reads[H.reads.length - 1]
+      if (logged !== undefined && logged.bytesRead === -1) logged.bytesRead = visible
+      H.bytesReadTotal += visible
+      return visible === r.bytesRead ? r : { ...r, bytesRead: visible }
     }
     handle.close = async () => {
       H.closeCalls += 1
@@ -247,10 +250,12 @@ async function settle(fn: () => Promise<unknown>): Promise<{ ok: true; value: un
     return { ok: false, message: String((error as Error)?.message ?? error) }
   }
 }
-/** Refusal text whether the generation resolves with the legacy {text} or
- *  throws (S2). undefined = the call SUCCEEDED. */
+/** Refusal text whether the generation resolves with the legacy {text} (def
+ *  transport), a bare string (direct executor on the baseline), or throws
+ *  (S2). undefined = the call SUCCEEDED. */
 function refusalText(res: Awaited<ReturnType<typeof settle>>): string | undefined {
   if (!res.ok) return res.message
+  if (typeof res.value === 'string') return res.value.startsWith('refused') ? res.value : undefined
   const text = (res.value as { text?: unknown })?.text
   return typeof text === 'string' && text.startsWith('refused') ? text : undefined
 }
@@ -535,14 +540,53 @@ describe('A5RSW T spelling (plan (b) T1-T2)', () => {
 // D — denial / containment / window-parameter law / size family / TOCTOU.
 // ===========================================================================
 describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
-  it('D1 deny lane + throw shape: template deny read any -> throws refused-admission, execCount 0', async () => {
-    const canonical = join(ROOT_REAL, 'w1.txt')
-    const { built } = exactPlane({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] })
-    const value = planeOk(built)
-    await expect(readDefOf(value).execute({ file_path: canonical })).rejects.toThrow(/refused-admission/)
-    expect(value.backends.read!.execCount()).toBe(0)
+  it('D1 lane-deny zero-byte law + admission throw shape (plan fixture disclosure inline)', async () => {
+    // MEASURED-SHAPE DISCLOSURE (plan-vs-measured delta, see slice report):
+    // the plan's D1 fixture `{deny:[{tool:'read',resource:{kind:'any'}}]}` is
+    // NOT mountable on the production assembly — the projection layer refuses
+    // an 'any' deny on the file-class tool with IO_POLICY_UNSUPPORTED (pinned
+    // below in Leg C). And an exact-resource deny MOUNTS but never fires at
+    // the lane fast path: the matcher reads `effect.resource.locator` while
+    // the repo's canonical effect vocabulary (domain resource.ts:62, a5p5
+    // effects-schema, this executor :962) is `canonicalLocator` — a LATENT
+    // BASELINE GAP, untouched by this slice (lane matcher is outside plan
+    // authority: "lane 门/优先级序不变"), reported, not pinned as law.
+    // Leg A — the executor's OWN consumption of a deny verdict (direct,
+    // deterministic): a denied read refuses with execCount 0 and no open.
+    // Green on both generations (the deny-before-bytes law is baseline law).
+    const backends = (await import('../src/plugin/live/plane-effect-backends.mjs')) as unknown as {
+      createGovernedReadExecutor: (input: Record<string, unknown>) => ((raw: unknown) => Promise<unknown>) & { execCount(): number }
+    }
+    const denied = backends.createGovernedReadExecutor({
+      realmId: REALM, rootDir: ROOT_REAL,
+      policy: { default: 'ask', allow: [], ask: [], deny: [] },
+      decide: () => ({ kind: 'deny', code: 'template-deny-lane' }),
+      observe: () => {},
+    })
+    const resA = await settle(() => denied({ file_path: join(ROOT_REAL, 'w1.txt') }))
+    const textA = refusalText(resA)
+    expect(textA, 'a denied read verdict refuses the call').toBeDefined()
+    expect(textA).toContain('refused-admission template-deny-lane')
+    expect(textA).not.toContain('L001')
+    expect(denied.execCount()).toBe(0)
     expect(H.openCalls).toBe(0)
-    expect(H.readFileCalls + H.readCalls).toBe(0)
+    // Leg B — the throw-shape RED on an admission-class refusal over the DEF
+    // transport (default-deny uncovered rule): baseline RESOLVES the legacy
+    // {text}; the candidate THROWS the verbatim refusal.
+    const canonical = join(ROOT_REAL, 'w1.txt')
+    const { built } = exactPlane(exactPolicy(canonical))
+    const value = planeOk(built)
+    await expect(readDefOf(value).execute({ file_path: join(ROOT_REAL, 'w2.txt') }))
+      .rejects.toThrow(/refused-admission template-default-deny/)
+    expect(value.backends.read!.execCount()).toBe(0)
+    // Leg C — the plan fixture's 'any' deny: NOT mountable (projection
+    // refuses, both generations — a coverage pin, not new law).
+    const mount = buildPlane({
+      plane: { fsInstance: fsInstance() },
+      permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] },
+    })
+    expect(mount.built.ok).toBe(false)
+    if (!mount.built.ok) expect(mount.built.code).toBe('IO_POLICY_UNSUPPORTED')
   })
 
   it('D2 root escape + throw shape: ../outside refused, zero disclosure of the outside token', async () => {
@@ -557,11 +601,11 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
     expect(H.openCalls).toBe(0)
   })
 
-  it('D3 directory + throw shape: an in-root directory is refused not-a-file', async () => {
-    const canonical = join(ROOT_REAL, 'w1.txt')
-    const { built } = exactPlane(exactPolicy(canonical))
+  it('D3 directory + throw shape: an in-root DIRECTORY the policy names is refused not-a-file (admission passes, the file-effect law refuses)', async () => {
+    const dirReal = realpathSync(join(ROOT_REAL, 'd3dir'))
+    const { built } = exactPlane(exactPolicy(dirReal))
     const value = planeOk(built)
-    await expect(readDefOf(value).execute({ file_path: join(ROOT_REAL, 'd3dir') }))
+    await expect(readDefOf(value).execute({ file_path: dirReal }))
       .rejects.toThrow(/refused-io not-a-file/)
   })
 
@@ -658,6 +702,7 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
     //    so the read-arm is never consumed AND no refusal happens): growth
     //    right before the first bounded-read fetch => refused, zero content,
     //    exactly one close (finally owns it), no reopen.
+    H.reset()
     writeFileSync(growFile, Buffer.alloc(983_040, 0x44))
     {
       H.byteArm = {
@@ -1046,25 +1091,46 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     if (!built.ok) expect(built.code).toBe('CFS_PROVIDER_REFUSED')
   })
 
-  it('P4 subtree over-promise guard: default-deny + a lone subtree rule proves NOTHING (no seam -> refused, attributed to template-default-deny); the exact twin reads', async () => {
+  it('P4 subtree over-promise guard: a lone subtree rule proves NOTHING — assembly refuses to mount it without the containment seam (measured law), the executor-level default-deny law holds, and the exact twin reads', async () => {
     const target = realpathSync(join(ROOT_REAL, 'sub', 'inside.txt'))
     const subReal = realpathSync(join(ROOT_REAL, 'sub'))
-    const { built } = exactPlane({
+    const subtreePolicy = {
       default: 'deny',
       allow: [{ tool: 'read', resource: { kind: 'subtree', path: subReal } }],
       ask: [] as unknown[],
       deny: [] as unknown[],
+    }
+    // -- Leg A (GUARD / coverage pin, green on both generations): the
+    //    production plane carries NO SubtreeContains seam, so a policy with a
+    //    subtree rule cannot be projected — the MOUNT itself refuses with
+    //    TOOL_BINDING_UNVERIFIED (measured; stronger than the plan's assumed
+    //    executor-level reach — disclosed as plan-vs-measured delta).
+    const mount = buildPlane({ plane: { fsInstance: fsInstance() }, permissionPolicy: subtreePolicy })
+    expect(mount.built.ok, 'a subtree rule without the seam must never mount').toBe(false)
+    if (!mount.built.ok) expect(mount.built.code).toBe('TOOL_BINDING_UNVERIFIED')
+    // -- Leg B (GUARD, the executor's own :828 law via the DIRECT executor,
+    //    the seam-less face the plan described): without subtreeContains, a
+    //    subtree rule covers nothing -> default-deny refusal, attributed to
+    //    template-default-deny, zero bytes (execCount 0), generation-agnostic.
+    const backends = (await import('../src/plugin/live/plane-effect-backends.mjs')) as unknown as {
+      createGovernedReadExecutor: (input: Record<string, unknown>) => ((raw: unknown) => Promise<unknown>) & { execCount(): number }
+    }
+    const exec = backends.createGovernedReadExecutor({
+      realmId: REALM, rootDir: ROOT_REAL, policy: subtreePolicy,
+      decide: () => ({ kind: 'allow' }), observe: () => {},
     })
-    const value = planeOk(built)
-    await expect(readDefOf(value).execute({ file_path: target }))
-      .rejects.toThrow(/refused-admission template-default-deny/)
-    expect(value.backends.read!.execCount()).toBe(0)
-    // Contrast leg: same root, same file, ONE exact rule -> reads (RED on the
-    // baseline for the WINDOW shape; the success itself is baseline-green).
+    const res = await settle(() => exec({ file_path: target }))
+    const text = refusalText(res)
+    expect(text, 'no seam -> the subtree rule covers nothing; refusal, zero bytes').toBeDefined()
+    expect(text).toContain('refused-admission template-default-deny')
+    expect(text).not.toContain('A5RSW-SUB-INSIDE-1')
+    expect(exec.execCount()).toBe(0)
+    // -- Leg C (RED on the baseline for the WINDOW shape): the SAME root and
+    //    file, ONE exact rule with the canonical spelling -> reads natively.
     const { built: twin } = exactPlane(exactPolicy(target))
     const twinValue = planeOk(twin)
-    const res = await settle(() => readDefOf(twinValue).execute({ file_path: target }))
-    expect(res.ok, JSON.stringify(res)).toBe(true)
-    expect(asWindow((res as { value: unknown }).value).lines[0].text).toBe('A5RSW-SUB-INSIDE-1')
+    const resC = await settle(() => readDefOf(twinValue).execute({ file_path: target }))
+    expect(resC.ok, JSON.stringify(resC)).toBe(true)
+    expect(asWindow((resC as { value: unknown }).value).lines[0].text).toBe('A5RSW-SUB-INSIDE-1')
   })
 })

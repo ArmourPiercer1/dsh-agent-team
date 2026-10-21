@@ -67,6 +67,107 @@ import { createAnchoredRgSearchBackend } from './search-backend.mjs'
 /** Bounded single-file read (no silent truncation: over-bound refuses). */
 export const MAX_READ_BYTES = 1024 * 1024
 
+// ── Governed `read` row deployment constants (Alpha.5 READ slice, plan E1) ──
+// pin639 (`@639ed01539`) mirror: the native row's deployment-default caps are
+// packages/tools/tool-fs read.ts:15 `DEFAULT_READ_LIMIT = 2000` /
+// `DEFAULT_MAX_LINE_LENGTH = 2000` and read-render.ts:11/14
+// `MAX_OUTPUT_BYTES = 50 * 1024` / `READ_DEFAULTS.limit = 2000`. The governed
+// row carries these SAME numbers explicitly (same-name SAME-meaning: the
+// row's omitted-limit IS the native window), exported so team-tool-plane.mjs
+// and the presentation face consume ONE set of numbers.
+export const READ_ROW_LINE_CAP = 2000
+export const READ_ROW_MAX_LINE_LENGTH = 2000
+export const READ_ROW_MAX_OUTPUT_BYTES = 50 * 1024
+/** Chunk bound of the byte-fetch ring — NEVER a second file cap (the only
+ *  file bound is MAX_READ_BYTES, plan E4 [rev3] ②). */
+export const READ_ROW_CHUNK_BYTES = 64 * 1024
+
+/**
+ * The governed row's OWN window-parameter law (plan E2 — the third source
+ * does NOT enter: this is the local mirror of the pin639 `parseReadArgs`
+ * positive-integer + cap checks, applied BEFORE any locator resolution).
+ * An illegal window is a schema refusal (`refused-schema read-window-invalid`)
+ * — the baseline silently IGNORED these values and read the whole file, so a
+ * wrong window is now refused, never reinterpreted. Returns a tagged pair so
+ * the refusal carries its class verbatim.
+ */
+function parseGovernedReadWindow(rawOffset, rawLimit) {
+  const isPosInt = (v) => typeof v === 'number' && Number.isFinite(v) && Number.isInteger(v) && v >= 1
+  const describeValue = (v) => {
+    let s
+    try { s = JSON.stringify(v) ?? String(v) } catch { s = String(v) }
+    return s.slice(0, 80)
+  }
+  if (rawOffset !== undefined && !isPosInt(rawOffset)) {
+    return { ok: false, refusal: { kind: 'refused', refusalClass: 'schema', code: 'read-window-invalid', text: `refused-schema read-window-invalid — offset must be a positive integer (got ${describeValue(rawOffset)})` } }
+  }
+  if (rawLimit !== undefined && !isPosInt(rawLimit)) {
+    return { ok: false, refusal: { kind: 'refused', refusalClass: 'schema', code: 'read-window-invalid', text: `refused-schema read-window-invalid — limit must be a positive integer (got ${describeValue(rawLimit)})` } }
+  }
+  if (rawLimit !== undefined && rawLimit > READ_ROW_LINE_CAP) {
+    // The pin639 detail spelling VERBATIM (read.ts:79), pinned by test D5:
+    // `limit must be less than or equal to ${cap}`.
+    return { ok: false, refusal: { kind: 'refused', refusalClass: 'schema', code: 'read-limit-over-cap', text: `refused-schema read-limit-over-cap — limit must be less than or equal to ${String(READ_ROW_LINE_CAP)}` } }
+  }
+  return { ok: true, offset: rawOffset ?? 1, limit: rawLimit ?? READ_ROW_LINE_CAP }
+}
+
+/**
+ * The governed row's line-window builder — a LOCAL, dependency-free mirror of
+ * the pin639 display law (read-render.ts `buildWindow`/`consumeLine`/`finish`
+ * :111-144/:75-88/:95-99): strip a single trailing `\r`; a line longer than
+ * READ_ROW_MAX_LINE_LENGTH truncates to that many chars + the VERBATIM ASCII
+ * suffix `... (line truncated to ${n} chars)` (read-render.ts:69-71, three
+ * ASCII dots, never `…`); the output byte bound (READ_ROW_MAX_OUTPUT_BYTES,
+ * utf8 + 1 separator per following line, :73-76) switches the window to the
+ * capped state and NEVER truncates a single line to fit; the EOF rule mirrors
+ * `finish` (offset past the end is refused — EXCEPT empty-file + offset 1).
+ * Returns `{ ok, lines, totalLines }` or `{ ok:false, refusal }`. Bytes arrive
+ * as the ONE decoded whole (decode happens on the complete buffer, never a
+ * byte-slice — plan E4); this function itself is pure string arithmetic.
+ */
+function buildGovernedReadWindow(text, displayPath, offset, limit) {
+  let totalLines = 0
+  let outputBytes = 0
+  let truncatedByBytes = false
+  const lines = []
+  const flushLine = (rawLine) => {
+    totalLines += 1
+    if (truncatedByBytes || totalLines < offset || lines.length >= limit) return
+    const stripped = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
+    const lineText = stripped.length > READ_ROW_MAX_LINE_LENGTH
+      ? `${stripped.substring(0, READ_ROW_MAX_LINE_LENGTH)}... (line truncated to ${String(READ_ROW_MAX_LINE_LENGTH)} chars)`
+      : stripped
+    const bytes = Buffer.byteLength(lineText, 'utf8') + (lines.length > 0 ? 1 : 0)
+    if (outputBytes + bytes > READ_ROW_MAX_OUTPUT_BYTES) {
+      truncatedByBytes = true
+      return
+    }
+    outputBytes += bytes
+    lines.push({ number: totalLines, text: lineText })
+  }
+  let startPos = 0
+  for (;;) {
+    const newlinePos = text.indexOf('\n', startPos)
+    if (newlinePos === -1) break
+    flushLine(text.slice(startPos, newlinePos))
+    startPos = newlinePos + 1
+  }
+  if (startPos < text.length) flushLine(text.slice(startPos))
+  if (!truncatedByBytes && offset > totalLines && !(totalLines === 0 && offset === 1)) {
+    return {
+      ok: false,
+      refusal: {
+        kind: 'refused',
+        refusalClass: 'window',
+        code: 'offset-out-of-range',
+        text: `refused-window offset-out-of-range — offset ${String(offset)} is out of range for "${displayPath}" (${String(totalLines)} lines)`,
+      },
+    }
+  }
+  return { ok: true, lines, totalLines }
+}
+
 /**
  * Anchor a parsed target (`{placement, locator}`) at the governed root and
  * prove containment TWICE: lexically before touching the fs, and again
@@ -829,25 +930,42 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
     }
     return false
   })
+  const refused = (refusalClass, code, detail) => ({
+    kind: 'refused', refusalClass, code, text: `refused-${refusalClass} ${String(code)} — ${detail}`,
+  })
   const executor = async (raw) => {
     const record = (raw !== null && typeof raw === 'object') ? raw : {}
     // file_path = the canonical spelling the frozen operation-permission
     // layer resolves for `read`; `path` stays accepted for placement-direct
     // callers (unit legs).
     const rawPath = record.file_path ?? record.path
-    const parsed = resolveAnchoredPath(rootDir, typeof rawPath === 'string' ? rawPath.trim() : rawPath)
+    // E2 [rev2 前置]: the window law runs FIRST — pure parameter arithmetic,
+    // ZERO fs access (resolveAnchoredPath below already does realpathSync/
+    // existsSync metadata I/O). The projection has carried offset/limit since
+    // canonical-operation.ts:674-675; the executor now truly CONSUMES them.
+    const window = parseGovernedReadWindow(record.offset, record.limit)
+    if (!window.ok) {
+      observe(`governed-read window-refused code=${window.refusal.code}`)
+      return window.refusal
+    }
+    // E3 (A3 single-point fix): the RAW locator goes to the resolver — the
+    // baseline's `.trim()` here diverged the EFFECT path from the authorized
+    // fingerprint. A whitespace-only locator is still refused, one layer
+    // down, by resolveAnchoredPath's own law (:105 mirror of pin639
+    // read.ts:56); relative workspace placement stays untouched.
+    const parsed = resolveAnchoredPath(rootDir, rawPath)
     if (!parsed.ok) {
-      return `refused-schema ${String(parsed.code)} — ${parsed.detail}`
+      return refused('schema', parsed.code, parsed.detail)
     }
     const effects = [
       { kind: 'tool-invoke', toolName: 'read', resource: null },
       { kind: 'read', resource: { realmId, kind: 'file', canonicalLocator: parsed.path, rights: ['read'] } },
     ]
     const verdict = decide({ effects })
-    if (verdict.kind === 'deny') return `refused-admission ${String(verdict.code)} — the template lane denies this read effect`
+    if (verdict.kind === 'deny') return refused('admission', verdict.code, 'the template lane denies this read effect')
     if (policy?.default === 'deny' && !ruleCovers([...(policy?.allow ?? []), ...(policy?.ask ?? [])], parsed.path)) {
       observe(`governed-read default-deny refusal call path=${parsed.path}`)
-      return 'refused-admission template-default-deny — the policy defaults to DENY and no rule covers this read effect'
+      return refused('admission', 'template-default-deny', 'the policy defaults to DENY and no rule covers this read effect')
     }
     // TOCTOU fix (independent security review ①(c) leg C1: an external
     // rename->symlink swap in the realpath->read window leaked at iteration
@@ -862,44 +980,77 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
     try {
       stat = statSync(parsed.path)
     } catch {
-      return 'refused-io target-unreadable — the anchored target could not be stat-ed'
+      return refused('io', 'target-unreadable', 'the anchored target could not be stat-ed')
     }
-    if (!stat.isFile()) return 'refused-io not-a-file — the governed read is a file effect, never a directory walk'
+    if (!stat.isFile()) return refused('io', 'not-a-file', 'the governed read is a file effect, never a directory walk')
     let handle
     try {
       handle = await fsOpen(parsed.path, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW)
     } catch (error) {
       const code = String(error?.code ?? '')
-      if (code === 'ELOOP') return 'refused-io symlink-alias — the OS refused the open (ELOOP): symlink alias'
-      if (code === 'ENOENT') return 'refused-io target-unreadable — the object does not exist at open time'
-      if (code === 'EISDIR') return 'refused-io not-a-file — the governed read is a file effect, never a directory walk'
-      return `refused-io open-failed — ${code.slice(0, 80)}`
+      if (code === 'ELOOP') return refused('io', 'symlink-alias', 'the OS refused the open (ELOOP): symlink alias')
+      if (code === 'ENOENT') return refused('io', 'target-unreadable', 'the object does not exist at open time')
+      if (code === 'EISDIR') return refused('io', 'not-a-file', 'the governed read is a file effect, never a directory walk')
+      return refused('io', 'open-failed', code.slice(0, 80))
     }
-    const snapshot = { dev: Number(stat.dev), ino: Number(stat.ino), size: stat.size, mtimeMs: stat.mtimeMs }
-    const recheck = await verifyOpenedHandle(handle, parsed.rootReal, snapshot)
-    if (recheck.verdict !== 'confirmed') {
-      await handle.close().catch(() => undefined)
-      const detail = recheck.verdict === 'escape'
-        ? `exec-time re-read: the fd resolved to ${recheck.resolvedPath} — OUTSIDE the governed anchor`
-        : recheck.verdict === 'drift'
-          ? `snapshot ${String(recheck.snapshot.dev)}:${String(recheck.snapshot.ino)} != opened ${String(recheck.actual.dev)}:${String(recheck.actual.ino)}`
-          : recheck.detail
-      observe(`governed-read exec-refused:${recheck.verdict} path=${parsed.path}`)
-      return `refused-io exec-time-${recheck.verdict} — ${String(detail).slice(0, 200)}; zero bytes disclosed`
-    }
-    if (recheck.identity.size > MAX_READ_BYTES) {
-      await handle.close().catch(() => undefined)
-      return `refused-io read-too-large — ${String(recheck.identity.size)} bytes exceeds the ${String(MAX_READ_BYTES)} governed read bound (refused, never truncated)`
-    }
-    executed += 1
+    // ONE close owner from here on: every post-open path (exec-time refusal,
+    // size gate, ring, window refusal) exits through the SAME finally, so
+    // the real handle closes exactly once on every outcome.
     try {
-      const text = await handle.readFile({ encoding: 'utf8' })
-      await handle.close().catch(() => undefined)
+      const snapshot = { dev: Number(stat.dev), ino: Number(stat.ino), size: stat.size, mtimeMs: stat.mtimeMs }
+      const recheck = await verifyOpenedHandle(handle, parsed.rootReal, snapshot)
+      if (recheck.verdict !== 'confirmed') {
+        const detail = recheck.verdict === 'escape'
+          ? `exec-time re-read: the fd resolved to ${recheck.resolvedPath} — OUTSIDE the governed anchor`
+          : recheck.verdict === 'drift'
+            ? `snapshot ${String(recheck.snapshot.dev)}:${String(recheck.snapshot.ino)} != opened ${String(recheck.actual.dev)}:${String(recheck.actual.ino)}`
+            : recheck.detail
+        observe(`governed-read exec-refused:${recheck.verdict} path=${parsed.path}`)
+        return refused('io', `exec-time-${recheck.verdict}`, `${String(detail).slice(0, 200)}; zero bytes disclosed`)
+      }
+      // Verified-size PRE-GATE (kept VERBATIM, plan E4 [rev3]): a static
+      // over-cap file is refused here, before a single byte is fetched.
+      if (recheck.identity.size > MAX_READ_BYTES) {
+        return refused('io', 'read-too-large', `${String(recheck.identity.size)} bytes exceeds the ${String(MAX_READ_BYTES)} governed read bound (refused, never truncated)`)
+      }
+      executed += 1
+      // E4 [rev3]: bounded ring on the SAME verified FD (guards post-verify
+      // GROWTH the pre-gate cannot see). Refusal judgement = cumulative
+      // ACTUAL bytesRead (plan E4 [rev4] metering law); each request is
+      // bounded by cap+1 minus what was ACTUALLY read, so the buffer stays
+      // ≤ cap+1 bytes. Legitimate short reads / EOF probes may push the
+      // cumulative REQUESTED past cap+1 — probes, not overshoot, never a
+      // refusal trigger. No partial window, no reopen, no Grant handoff.
+      let lines
+      let totalLines
+      try {
+        const chunk = Buffer.alloc(READ_ROW_CHUNK_BYTES)
+        const parts = []
+        let total = 0
+        while (total < MAX_READ_BYTES + 1) {
+          const want = Math.min(READ_ROW_CHUNK_BYTES, MAX_READ_BYTES + 1 - total)
+          const { bytesRead } = await handle.read(chunk, 0, want, total)
+          if (bytesRead === 0) break
+          parts.push(Buffer.from(chunk.subarray(0, bytesRead)))
+          total += bytesRead
+        }
+        if (total > MAX_READ_BYTES) {
+          // Reachable ONLY via post-verify growth (the pre-gate proved the
+          // verified size ≤ cap): refuse the WHOLE call, zero content.
+          return refused('io', 'read-too-large', `${String(total)} bytes exceeds the ${String(MAX_READ_BYTES)} governed read bound (refused, never truncated)`)
+        }
+        const decoded = Buffer.concat(parts, total).toString('utf8')
+        const win = buildGovernedReadWindow(decoded, parsed.path, window.offset, window.limit)
+        if (!win.ok) return win.refusal
+        lines = win.lines
+        totalLines = win.totalLines
+      } catch (error) {
+        return refused('io', 'read-failed', String(error?.message ?? error).slice(0, 200))
+      }
       observe(`governed-read RAN bytes=${String(recheck.identity.size)} path=${parsed.path}`)
-      return text
-    } catch (error) {
+      return { kind: 'ok', path: parsed.path, offset: window.offset, lines, totalLines }
+    } finally {
       await handle.close().catch(() => undefined)
-      return `refused-io read-failed — ${String(error?.message ?? error).slice(0, 200)}`
     }
   }
   executor.execCount = () => executed

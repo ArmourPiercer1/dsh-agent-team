@@ -76,7 +76,7 @@ import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/
 import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
-import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor } from './plane-effect-backends.mjs'
+import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
@@ -131,6 +131,145 @@ const PLANE_PRESENTATION_FACE = Object.freeze({
     text: typeof value?.text === 'string' ? value.text : '',
   }],
 })
+
+// ── The read row's OWN presentation face (Alpha.5 READ slice, plan T1) ─────
+// The trio face above is untouched; the `read` row moves to the pin639
+// native result contract, mirrored LOCALLY (no host import — the same law the
+// host `read` tool carries at packages/fs/tool-fs/src/read.ts:86-105 (schema),
+// :107-120 (render-state recomputation), :173-192 (presentResult), :230-245
+// (readMetaFromMeta) and read-render.ts:152-170 (formatReadOutput footers)).
+// Mirror, not import: the host module sits behind its own public tool, and
+// the governed row's face must stay a plugin-local artifact.
+const READ_ROW_ENVELOPE = /^<path>[^\n]*<\/path>\n<type>file<\/type>\n<content>\n([\s\S]*)\n<\/content>$/u
+
+/** Mirror of formatReadOutput (read-render.ts:152-170), byte-verbatim
+ *  footers: the capped state carries NO "of Z"; partial shows "of T"; EOF
+ *  says "End of file - total T lines". */
+function formatReadRowOutput(displayPath, outcome) {
+  const endLine = outcome.lines.at(-1)?.number ?? Math.max(0, outcome.offset - 1)
+  let footer
+  if (outcome.truncatedByBytes === true) {
+    footer = `(Output capped. Showing lines ${String(outcome.offset)}-${String(endLine)}. Use offset=${String(endLine + 1)} to continue.)`
+  } else if (endLine < outcome.totalLines) {
+    footer = `(Showing lines ${String(outcome.offset)}-${String(endLine)} of ${String(outcome.totalLines)}. Use offset=${String(endLine + 1)} to continue.)`
+  } else {
+    footer = `(End of file - total ${String(outcome.totalLines)} lines)`
+  }
+  const body = outcome.lines.length > 0
+    ? `${outcome.lines.map((line) => `${String(line.number)}: ${line.text}`).join('\n')}\n\n${footer}`
+    : footer
+  return `<path>${displayPath}</path>\n<type>file</type>\n<content>\n${body}\n</content>`
+}
+
+/** The render-side effective limit (replay-tolerant mirror of the executor's
+ *  E2 law clamped to the cap; NEVER throws on a hostile replay — the refusal
+ *  law was the executor's at call time; the face only re-derives display
+ *  state). */
+function readRowEffectiveLimit(args) {
+  const raw = args?.limit
+  if (typeof raw === 'number' && Number.isFinite(raw) && Number.isInteger(raw) && raw >= 1 && raw <= READ_ROW_LINE_CAP) return raw
+  return READ_ROW_LINE_CAP
+}
+
+/** Mirror of readMetaFromMeta (read.ts:230-245): every malformed shape —
+ *  non-object, bad scalars, non-increasing or out-of-range line numbers, a
+ *  non-string lang — DECLINES to undefined. Never throws. */
+function readRowMetaFromMeta(meta) {
+  if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) return undefined
+  const { path, offset, lines, totalLines, lang } = meta
+  if (typeof path !== 'string' || typeof offset !== 'number' || typeof totalLines !== 'number') return undefined
+  if (!Number.isInteger(offset) || offset < 1) return undefined
+  if (!Number.isInteger(totalLines) || totalLines < 0) return undefined
+  if (!Array.isArray(lines) || !lines.every((line) => typeof line === 'object' && line !== null && !Array.isArray(line)
+    && typeof line.number === 'number' && Number.isInteger(line.number) && line.number >= 1
+    && typeof line.text === 'string')) return undefined
+  if (lang !== undefined && typeof lang !== 'string') return undefined
+  let previous = offset - 1
+  for (const { number } of lines) {
+    if (number <= previous || number > totalLines) return undefined
+    previous = number
+  }
+  return { path, offset, lines, totalLines, ...(lang === undefined ? {} : { lang }) }
+}
+
+const READ_ROW_PRESENTATION_FACE = Object.freeze({
+  schema: Object.freeze({
+    type: 'object',
+    properties: Object.freeze({
+      path: Object.freeze({ type: 'string' }),
+      offset: Object.freeze({ type: 'integer' }),
+      lines: Object.freeze({
+        type: 'array',
+        items: Object.freeze({
+          type: 'object',
+          properties: Object.freeze({
+            number: Object.freeze({ type: 'integer' }),
+            text: Object.freeze({ type: 'string' }),
+          }),
+          required: Object.freeze(['number', 'text']),
+          additionalProperties: false,
+        }),
+      }),
+      totalLines: Object.freeze({ type: 'integer' }),
+    }),
+    required: Object.freeze(['path', 'offset', 'lines', 'totalLines']),
+    additionalProperties: false,
+  }),
+  /** Render the four-field window into the pin639 read envelope. The
+   *  capped/partial/EOF state is RECOMPUTED here exactly as the host render
+   *  does (read.ts:107-120): `truncatedByBytes = lines.length <
+   *  effectiveLimit && endLine < totalLines` — the executor's result never
+   *  carries the flag (S6), so a stale flag can never lie. */
+  render: (args, value) => {
+    const lines = Array.isArray(value?.lines) ? value.lines : []
+    const offset = typeof value?.offset === 'number' ? value.offset : 1
+    const totalLines = typeof value?.totalLines === 'number' ? value.totalLines : 0
+    const path = typeof value?.path === 'string' ? value.path : ''
+    const effectiveLimit = readRowEffectiveLimit(args)
+    const endLine = lines.length > 0 ? Number(lines[lines.length - 1]?.number ?? offset) : Math.max(0, offset - 1)
+    const truncatedByBytes = lines.length < effectiveLimit && endLine < totalLines
+    return [{
+      type: 'text',
+      text: formatReadRowOutput(path, {
+        offset, lines, totalLines, ...(truncatedByBytes ? { truncatedByBytes: true } : {}),
+      }),
+    }]
+  },
+  /** The card meta (read.ts presentationMeta): exactly the four fields —
+   *  NO lang (the governed row never sniffs a language; honest elision,
+   *  plan S7). */
+  presentationMeta: (_args, value) => ({
+    path: value.path,
+    offset: value.offset,
+    lines: value.lines.map(({ number, text }) => ({ number, text })),
+    totalLines: value.totalLines,
+  }),
+})
+
+/** The read row's presentResult (mirror of read.ts:173-192): declines
+ *  (undefined) on an error result, a malformed meta, anything but ONE text
+ *  content block, or text outside the read envelope — so legacy `{text}`
+ *  refusals and foreign replays fall back to the generic card instead of a
+ *  lying read card. Never throws. */
+function readRowPresentResult(_args, result) {
+  if (result?.isError === true) return undefined
+  const meta = readRowMetaFromMeta(result?.meta)
+  if (meta === undefined) return undefined
+  const only = Array.isArray(result.content) && result.content.length === 1 ? result.content[0] : undefined
+  const text = only?.type === 'text' && typeof only.text === 'string' ? only.text : undefined
+  if (text === undefined) return undefined
+  const body = READ_ROW_ENVELOPE.exec(text)?.[1]
+  if (body === undefined) return undefined
+  return {
+    card: 'read',
+    path: meta.path,
+    offset: meta.offset,
+    lines: meta.lines,
+    totalLines: meta.totalLines,
+    ...(meta.lang === undefined ? {} : { lang: meta.lang }),
+    content: [{ type: 'text', text: body }],
+  }
+}
 
 /**
  * pb-CONTRACT §1.3 fail-closed pairing check. Returns { ok: true } when the
@@ -809,11 +948,33 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // measured 'canonicalization failed for tool "read":
         // file-path-missing' on a {path} schema — the takeover row must
         // satisfy the same canonical law the native name carries).
-        properties: { file_path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' } },
+        // offset/limit ride the SAME canonical projection
+        // (canonical-operation.ts:674-675) and are now truly CONSUMED by the
+        // executor (plan T2/E2); descriptions mirror the pin639 read schema.
+        properties: {
+          file_path: { type: 'string', description: 'path relative to the governed root, or an absolute path inside it' },
+          offset: { type: 'number', description: 'The line number to start reading from. Only provide if the file is too large to read at once.' },
+          limit: { type: 'number', description: `The number of lines to read. Only provide if the file is too large to read at once. Defaults to ${String(READ_ROW_LINE_CAP)}.` },
+        },
         required: ['file_path'],
       },
-      execute: async (raw) => ({ text: await readExecutor(raw) }),
-      output: PLANE_PRESENTATION_FACE,
+      // S2 transfer law: SUCCESS hands the native four-field window through
+      // untouched; a refusal (the executor's tagged union object) becomes a
+      // THROW of its verbatim refusal text — the same transport the host
+      // read row uses, so the envelope/decline contract downstream stays
+      // honest. The trio rows keep their `{ text }` face unchanged.
+      execute: async (raw) => {
+        const outcome = await readExecutor(raw)
+        if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') {
+          return { path: outcome.path, offset: outcome.offset, lines: outcome.lines, totalLines: outcome.totalLines }
+        }
+        const text = outcome !== null && typeof outcome === 'object' && typeof outcome.text === 'string'
+          ? outcome.text
+          : 'refused-io executor-unavailable — the governed read executor produced no outcome'
+        throw new Error(text)
+      },
+      output: READ_ROW_PRESENTATION_FACE,
+      presentResult: readRowPresentResult,
     }),
   ])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
