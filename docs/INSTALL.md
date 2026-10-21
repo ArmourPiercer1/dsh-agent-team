@@ -438,11 +438,14 @@ config:
 ```
 
 **read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
-含 shell 行的完整形态；只挂**受治 `read` 行**（grep/glob/bash 不挂 shell
-信任对）时，按下面两个真实块配置——载体不同、各自照抄：块 A 是**插件 row
-config 的增量**（§3.2 完整 row 的必填 config 全部保留，本块只增不改），块 B
-是 **blueprint 的 `capabilities.permissions`**（与 row config 是不同载体，
-装配时分别喂入）。read 行不需要 `confinedProvider`/launcher 的任何字段。
+含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置
+shell 信任对**（不配 `confinedProvider`/launcher 字段）；**grep/glob/bash 行
+仍按装配既有门禁处理——defs 照常创建、逐字节不变（Z1 快照钉死），其余行按
+既有门禁处理，本配方不承诺任何工具消失**。按下面两个真实块配置——载体不同、
+各自照抄：块 A 是**插件 row config 的增量**（§3.2 完整 row 的必填 config
+全部保留，本块只增不改），块 B 是 **blueprint 的 `capabilities.permissions`**
+（与 row config 是不同载体，装配时分别喂入）。read 行不需要
+`confinedProvider`/launcher 的任何字段。
 
 <!-- a5-read-only-row -->
 ```yaml
@@ -487,10 +490,12 @@ capabilities:
   不承诺未注入的 subtreeContains。
 - **read 行窗口语义（本切片落地后的完整披露）**：`offset` 1-based、省略=1；
   `limit` 省略=本行部署上限（固定常数 **2000**，= pin639 read 工具
-  `DEFAULT_READ_LIMIT` 缺省）；显式 `limit > 2000` 拒
+  `READ_LIMIT` 缺省，read.ts:15）；显式 `limit > 2000` 拒
   （detail `limit must be less than or equal to 2000`）；非法窗口参数
   （非正整数/字符串/小数/NaN/布尔）一律 `refused-schema read-window-invalid`
-  且**不发生任何 resolve/open/read**。**省略 limit 与显式 2000 是两个不同的
+  且**本 executor 路径零 open、零取字节**（窗口校验位于路径解析之前：
+  plane-effect-backends.mjs 中窗口 parse 先于 resolveAnchoredPath 调用；
+  措辞限于本 executor，不涉整个 Host）。**省略 limit 与显式 2000 是两个不同的
   授权身份**（effect 指纹按投影逐字段 canonical 化，
   `canonical-operation.ts:332-356`/:669-678；a2c5 T1/T6/T7 钉死）。**单文件
   1 MiB（1048576 字节）上限拒读、从不截断**（`MAX_READ_BYTES`）；已验证

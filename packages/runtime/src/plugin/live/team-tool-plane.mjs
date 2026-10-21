@@ -540,7 +540,16 @@ export function createLaneDecide(permissionPolicy, planeNames, subtreeContains) 
   const ruleMatchesResource = (rule, effect) => {
     const res = rule?.resource
     if (res === undefined || res === null || res.kind === 'any') return true
-    const locator = typeof effect?.resource?.locator === 'string' ? effect.resource.locator : undefined
+    // Authoritative locator (root mustfix ruling): `canonicalLocator` is the
+    // domain's canonical field (domain/tool-governance/src/resource.ts:62;
+    // a5p5 effects-schema; the read executor) — it decides the compare. A
+    // legacy `locator` shape is read ONLY as a fallback when no canonical is
+    // carried; when BOTH are present (even pointing apart), canonical wins
+    // and the legacy spelling can never override it. No policy semantics
+    // change: this only repairs the backend depth-check's blind spot where
+    // canonical-vocabulary effects made an exact rule unmatchable.
+    const canonical = typeof effect?.resource?.canonicalLocator === 'string' ? effect.resource.canonicalLocator : undefined
+    const locator = canonical ?? (typeof effect?.resource?.locator === 'string' ? effect.resource.locator : undefined)
     if (locator === undefined) return res.kind === 'any'
     if (res.kind === 'exact') return locator === res.path
     if (typeof subtreeContains === 'function') {

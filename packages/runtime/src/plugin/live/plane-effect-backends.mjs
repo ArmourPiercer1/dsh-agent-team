@@ -69,9 +69,9 @@ export const MAX_READ_BYTES = 1024 * 1024
 
 // ── Governed `read` row deployment constants (Alpha.5 READ slice, plan E1) ──
 // pin639 (`@639ed01539`) mirror: the native row's deployment-default caps are
-// packages/tools/tool-fs read.ts:15 `DEFAULT_READ_LIMIT = 2000` /
-// `DEFAULT_MAX_LINE_LENGTH = 2000` and read-render.ts:11/14
-// `MAX_OUTPUT_BYTES = 50 * 1024` / `READ_DEFAULTS.limit = 2000`. The governed
+// packages/fs/tool-fs/src/read.ts:15 `READ_LIMIT = 2000` and
+// packages/fs/tool-fs/src/read-render.ts:11/14
+// `READ_MAX_LINE_LENGTH = 2000` / `READ_MAX_BYTES = 50 * 1024`. The governed
 // row carries these SAME numbers explicitly (same-name SAME-meaning: the
 // row's omitted-limit IS the native window), exported so team-tool-plane.mjs
 // and the presentation face consume ONE set of numbers.

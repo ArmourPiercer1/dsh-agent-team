@@ -51,7 +51,7 @@ import { parse as parseYaml } from 'yaml'
 // ---------------------------------------------------------------------------
 // Injection state (hoisted above vi.mock — the factory closes over this).
 // ---------------------------------------------------------------------------
-interface ReadLog { want: number; bytesRead: number }
+interface ReadLog { want: number; delegated: number; bytesRead: number }
 interface ByteArm {
   entries: Set<'read' | 'readFile'>
   action: () => void | Promise<void>
@@ -64,6 +64,7 @@ const H = vi.hoisted(() => ({
   readCalls: 0,
   closeCalls: 0,
   requestedBytes: 0,
+  delegatedBytes: 0,
   bytesReadTotal: 0,
   reads: [] as ReadLog[],
   preOpenAction: null as null | ((args: unknown[]) => void | Promise<void>),
@@ -76,6 +77,7 @@ const H = vi.hoisted(() => ({
     this.readCalls = 0
     this.closeCalls = 0
     this.requestedBytes = 0
+    this.delegatedBytes = 0
     this.bytesReadTotal = 0
     this.reads = []
     this.preOpenAction = null
@@ -110,26 +112,32 @@ vi.mock('node:fs/promises', async (importOriginal) => {
     }
     handle.read = async (buffer: Uint8Array, offset: number, length: number, position: number | null) => {
       H.readCalls += 1
-      if (typeof length === 'number') {
-        H.requestedBytes += length
-        H.reads.push({ want: length, bytesRead: -1 })
+      // mustfix #3 — TRUE short delegation (NO full-read-then-fabricate).
+      // In quarter mode the REAL underlying read is invoked with a SHORT
+      // length (ceil(want/4)); we never fetch `want` bytes and relabel the
+      // count. The production ring advances by the EXPLICIT position, so the
+      // remainder is fetched on the next call at the correct offset — content
+      // stays byte-identical to a full read while the ring really runs more
+      // times. Three meters are recorded per call:
+      //   want      = bytes the ring ASKED for (caller-visible),
+      //   delegated = length we ACTUALLY passed to the real read,
+      //   bytesRead = bytes the real read ACTUALLY returned.
+      const want = length
+      const delegated = H.quarterRead && typeof want === 'number' && want > 0
+        ? Math.max(1, Math.ceil(want / 4))
+        : want
+      if (typeof want === 'number') {
+        H.requestedBytes += want
+        H.delegatedBytes += delegated
+        H.reads.push({ want, delegated, bytesRead: -1 })
       }
       await fireByteArm('read')
-      const r = (await read(buffer, offset, length, position)) as { bytesRead: number; buffer: Uint8Array }
-      // Meter the CALLER-VISIBLE count (what the production ring accumulates):
-      // that is the judgement surface E4 [rev4] metering law pins.
-      let visible = r.bytesRead
-      if (H.quarterRead && r.bytesRead > 0) {
-        // Short-read simulation: report at most ceil(want/4); the bytes past
-        // the (re)reported position are re-read at the next explicit position,
-        // so content stays identical to a full read.
-        const capped = Math.max(1, Math.ceil(length / 4))
-        if (r.bytesRead > capped) visible = capped
-      }
+      const r = (await read(buffer, offset, delegated, position)) as { bytesRead: number; buffer: Uint8Array }
+      // The REAL returned count is surfaced untouched — no re-clamping.
       const logged = H.reads[H.reads.length - 1]
-      if (logged !== undefined && logged.bytesRead === -1) logged.bytesRead = visible
-      H.bytesReadTotal += visible
-      return visible === r.bytesRead ? r : { ...r, bytesRead: visible }
+      if (logged !== undefined && logged.bytesRead === -1) logged.bytesRead = r.bytesRead
+      H.bytesReadTotal += r.bytesRead
+      return r
     }
     handle.close = async () => {
       H.closeCalls += 1
@@ -491,10 +499,25 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
       .toEqual({ offset: full.offset, lines: full.lines, totalLines: full.totalLines })
     const legReads = H.reads.slice(readsBefore)
     expect(legReads.length).toBeGreaterThan(1) // the short-read ring really ran
+    // mustfix #3 — three separate meters, each recorded where it happens:
+    // caller-requested / ACTUALLY delegated (short) / really returned.
     const requested = legReads.reduce((s, r) => s + r.want, 0)
+    const delegated = legReads.reduce((s, r) => s + r.delegated, 0)
     const delivered = legReads.reduce((s, r) => s + Math.max(0, r.bytesRead), 0)
-    expect(requested).toBeGreaterThan(MAX_READ_BYTES + 1) // requested exceeded the bound...
-    expect(delivered).toBeLessThanOrEqual(MAX_READ_BYTES) // ...bytes read never did
+    // the delegation really was short (quarter), never a full fetch relabeled:
+    expect(legReads.every((r) => r.delegated === Math.max(1, Math.ceil(r.want / 4)) && r.delegated < r.want)).toBe(true)
+    expect(delegated).toBeLessThan(requested)
+    expect(delivered).toBeLessThanOrEqual(delegated)
+    // requested exceeded the bound...
+    expect(requested).toBeGreaterThan(MAX_READ_BYTES + 1)
+    // ...bytes DELIVERED never did (the refusal judgement metering law):
+    expect(delivered).toBeLessThanOrEqual(MAX_READ_BYTES)
+    // and the ring's own per-request bound held against ACTUAL progress:
+    let running = 0
+    for (const r of legReads) {
+      expect(r.want).toBeLessThanOrEqual(MAX_READ_BYTES + 1 - running)
+      running += r.bytesRead
+    }
     expect(H.openCalls - opensAfterFull).toBe(1) // no reopen
   })
 })
@@ -539,21 +562,23 @@ describe('A5RSW T spelling (plan (b) T1-T2)', () => {
 // ===========================================================================
 // D — denial / containment / window-parameter law / size family / TOCTOU.
 // ===========================================================================
-describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
+describe('A5RSW D denial and size (plan (b) D family)', () => {
   it('D1 lane-deny zero-byte law + admission throw shape (plan fixture disclosure inline)', async () => {
     // MEASURED-SHAPE DISCLOSURE (plan-vs-measured delta, see slice report):
     // the plan's D1 fixture `{deny:[{tool:'read',resource:{kind:'any'}}]}` is
     // NOT mountable on the production assembly — the projection layer refuses
     // an 'any' deny on the file-class tool with IO_POLICY_UNSUPPORTED (pinned
-    // below in Leg C). And an exact-resource deny MOUNTS but never fires at
-    // the lane fast path: the matcher reads `effect.resource.locator` while
-    // the repo's canonical effect vocabulary (domain resource.ts:62, a5p5
-    // effects-schema, this executor :962) is `canonicalLocator` — a LATENT
-    // BASELINE GAP, untouched by this slice (lane matcher is outside plan
-    // authority: "lane 门/优先级序不变"), reported, not pinned as law.
+    // below in Leg C). The exact-resource deny shape used to be a BACKEND
+    // DEPTH-CHECK DEFECT (既有后端纵深检查缺陷: the lane matcher read
+    // `effect.resource.locator` while the repo's canonical effect vocabulary
+    // is `canonicalLocator` — domain resource.ts:62, a5p5 effects-schema,
+    // this executor) — there was NEVER evidence of an actual Host bypass
+    // (尚无实际 Host 绕过证据; host-chain scope stays NOT VERIFIED). It is
+    // REPAIRED in this commit (canonical-first, legacy fallback only, no
+    // policy-semantics change) and its contract is pinned by D8 below.
     // Leg A — the executor's OWN consumption of a deny verdict (direct,
-    // deterministic): a denied read refuses with execCount 0 and no open.
-    // Green on both generations (the deny-before-bytes law is baseline law).
+    // deterministic; a verdict-consumption unit, NOT matcher evidence —
+    // D8 carries the matcher legs). Green on both generations.
     const backends = (await import('../src/plugin/live/plane-effect-backends.mjs')) as unknown as {
       createGovernedReadExecutor: (input: Record<string, unknown>) => ((raw: unknown) => Promise<unknown>) & { execCount(): number }
     }
@@ -589,6 +614,66 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
     if (!mount.built.ok) expect(mount.built.code).toBe('IO_POLICY_UNSUPPORTED')
   })
 
+  it('D8 lane matcher contract (mustfix 6): canonical-first depth check — real-chain conflict denies at ZERO bytes, two layers distinguished, legacy shape kept, dual-field conflict follows canonical', async () => {
+    const canonical = join(ROOT_REAL, 'w1.txt')
+    const other = join(ROOT_REAL, 'w2.txt')
+    const planeRow = row as unknown as PlaneRow & {
+      createLaneDecide: (policy: unknown, planeNames: Record<string, string>, subtreeContains?: unknown) =>
+        (effectSet: unknown) => { kind: string; code?: string }
+    }
+    const names = { grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' }
+    // G1-style effect set, exactly as deriveToolEffectSet builds it (native
+    // tool-invoke + file effect in the CANONICAL locator vocabulary).
+    const readEffects = (resource: Record<string, unknown>) => ({ effects: [
+      { kind: 'tool-invoke', toolName: 'read', resource: null },
+      { kind: 'read', resource: { realmId: REALM, kind: 'file', ...resource, rights: ['read'] } },
+    ] })
+    const exactRule = (path: string) => ({ tool: 'read', resource: { kind: 'exact', path } })
+    // -- Leg (a): backend exact allow+deny CONFLICT, over the REAL
+    //    production lane decider (createLaneDecide is production code —
+    //    no stub decide anywhere in this test). The deny fast path wins.
+    const conflictPolicy = { default: 'ask', allow: [exactRule(canonical)], ask: [] as unknown[], deny: [exactRule(canonical)] }
+    const lane = planeRow.createLaneDecide(conflictPolicy, names, undefined)
+    expect(lane(readEffects({ canonicalLocator: canonical }))).toEqual({ kind: 'deny', code: 'template-deny-lane' })
+    const allowOnly = planeRow.createLaneDecide(
+      { default: 'ask', allow: [exactRule(canonical)], ask: [], deny: [] }, names, undefined)
+    expect(allowOnly(readEffects({ canonicalLocator: canonical }))).toEqual({ kind: 'allow' })
+    // Backward compat: the legacy `locator`-only shape keeps matching.
+    expect(lane(readEffects({ locator: canonical }))).toEqual({ kind: 'deny', code: 'template-deny-lane' })
+    // -- Dual-field conflict negative control (AUTHORITY ORDER pinned):
+    // canonical=other, legacy=denied path -> the legacy spelling NEVER
+    // overrides the canonical: ALLOW.
+    expect(lane(readEffects({ canonicalLocator: other, locator: canonical }))).toEqual({ kind: 'allow' })
+    // canonical=denied path, legacy=decoy -> canonical decides: DENY.
+    expect(lane(readEffects({ canonicalLocator: canonical, locator: other }))).toEqual({ kind: 'deny', code: 'template-deny-lane' })
+    // -- Leg (b): the SAME conflict through the REAL permission chain to the
+    //    SAME read def (mounted assembly wires the production lane decide;
+    //    nothing mocked). ACCEPTANCE CRITERION = body/bytes ZERO: the body
+    //    never ran (pre-fetch counter), no open, no fetch, no content.
+    H.reset()
+    const value = planeOk(exactPlane(conflictPolicy).built)
+    await expect(readDefOf(value).execute({ file_path: canonical }))
+      .rejects.toThrow(/refused-admission template-deny-lane/)
+    expect(value.backends.read!.execCount()).toBe(0) // body ran ZERO
+    expect(H.openCalls).toBe(0) // ...zero opens...
+    expect(H.reads.length).toBe(0) // ...and zero bytes
+    // -- TWO LAYERS distinguished on one production face: a DENIED path is
+    //    answered by the LANE fast path (`template-deny-lane`) while an
+    //    UNCOVERED path is answered by the executor's own coverage gate
+    //    (`template-default-deny`) — different code, different layer, both
+    //    refuse at zero bytes.
+    const gateValue = planeOk(buildPlane({
+      plane: { fsInstance: fsInstance() },
+      permissionPolicy: { default: 'deny', allow: [exactRule(canonical)], ask: [], deny: [exactRule(canonical)] },
+    }).built)
+    await expect(readDefOf(gateValue).execute({ file_path: canonical }))
+      .rejects.toThrow(/refused-admission template-deny-lane/) // lane layer, first
+    await expect(readDefOf(gateValue).execute({ file_path: other }))
+      .rejects.toThrow(/refused-admission template-default-deny/) // coverage-gate layer
+    expect(gateValue.backends.read!.execCount()).toBe(0) // both layers: zero bytes
+    expect(H.openCalls).toBe(0)
+  })
+
   it('D2 root escape + throw shape: ../outside refused, zero disclosure of the outside token', async () => {
     const canonical = join(ROOT_REAL, 'w1.txt')
     const { built } = exactPlane(exactPolicy(canonical))
@@ -609,7 +694,7 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
       .rejects.toThrow(/refused-io not-a-file/)
   })
 
-  it('D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid with the executor path doing no resolve/open/read', async () => {
+  it('D4 illegal window family: 6 shapes x {offset,limit} each refused-schema read-window-invalid; this executor opens no handle and fetches no bytes', async () => {
     const canonical = join(ROOT_REAL, 'w1.txt')
     const bad: unknown[] = [0, -1, 2.5, '100', Number.NaN, true]
     const { built } = exactPlane(exactPolicy(canonical))
@@ -623,8 +708,11 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
         const msg = (res as { message: string }).message
         expect(msg).toContain('refused-schema read-window-invalid')
         expect(msg).not.toContain('L001') // zero content
-        // LOCAL-spy wording (plan judgement rule 4): THIS executor path never
-        // reached resolve-open-read for an illegal window.
+        // mustfix #4 — LOCAL-spy claim, scoped to THIS executor only: zero
+        // open, zero bytes (openCalls/read spies + pre-fetch execCount), on
+        // a path source-pinned to run BEFORE any path resolution
+        // (plane-effect-backends.mjs: window parse :946 precedes
+        // resolveAnchoredPath :956). No Host-wide I/O claim is made here.
         expect(value.backends.read!.execCount(), `key=${key} value=${String(v)}`).toBe(0)
         expect(H.openCalls).toBe(0)
       }
@@ -722,6 +810,20 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
       expect(text).not.toContain('DDDD')
       expect(H.openCalls).toBe(1)
       expect(H.closeCalls).toBe(1) // exactly one close
+      // mustfix #1 — the GROWTH leg carries its OWN metering evidence (the
+      // static D6b legs prove nothing about the ring; this leg ran it):
+      // every request is bounded by cap+1 minus what was ACTUALLY read, and
+      // the cumulative ACTUAL bytesRead (the refusal judgement itself) stays
+      // ≤ cap+1 — the ring read exactly cap+1 bytes before refusing.
+      expect(H.reads.length).toBeGreaterThan(1)
+      let running = 0
+      for (const r of H.reads) {
+        expect(r.want, 'per-request bound: want ≤ cap+1 − already-read')
+          .toBeLessThanOrEqual(MAX_READ_BYTES + 1 - running)
+        running += r.bytesRead
+      }
+      expect(running, 'cumulative ACTUAL bytesRead at refusal').toBeLessThanOrEqual(MAX_READ_BYTES + 1)
+      expect(running).toBe(MAX_READ_BYTES + 1) // refused exactly at the bound
     }
   })
 
@@ -736,23 +838,37 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
     expect(H.openCalls).toBe(1)
   })
 
-  it('D7a GUARD (deterministic pre-open swap): symlink-to-outside -> ELOOP refusal; same-path new inode -> exec-time drift; zero disclosure', async () => {
-    const canonical = join(ROOT_REAL, 'w1.txt')
-    const link = join(LINKS_DIR, 'alias-out')
-    if (!existsSync(link)) symlinkSync(join(OUTSIDE_DIR, 'secret.txt'), link)
+  it('D7a GUARD (deterministic pre-open swap): same-path swap to an outside symlink -> ELOOP refusal; same-path new inode -> exec-time drift; zero disclosure', async () => {
     {
-      // ① open the SWAPPED PATH (a symlink wearing the target slot): O_NOFOLLOW
-      //    refuses the alias before a byte exists.
-      H.preOpenAction = (args) => { args[0] = link }
-      const { built } = exactPlane(exactPolicy(canonical))
-      const value = planeOk(built)
-      const res = await settle(() => readDefOf(value).execute({ file_path: canonical }))
-      expect(H.preOpenConsumed, 'INJECTION SELF-PROOF: the open arm was consumed').toBe(true)
-      const text = refusalText(res)
-      expect(text, 'swapped-to-symlink open must refuse').toBeDefined()
-      expect(text).toMatch(/symlink-alias|exec-time-/)
-      expect(text).not.toContain(OUTSIDE_TOKEN)
-      expect(value.backends.read!.execCount()).toBe(0)
+      // ① mustfix #2 — the swap acts on the ORIGINAL TARGET itself (open
+      //    arguments stay byte-for-byte untouched): after the pre-open
+      //    snapshot the file is renamed away and the SAME PATH is replaced
+      //    by a symlink pointing OUTSIDE the root. The open then hits the
+      //    lane's own O_NOFOLLOW law on the very path it was given -> ELOOP
+      //    refusal before a byte exists. Scene restored in finally.
+      const swap = join(ROOT_REAL, 'd7a.bin')
+      writeFileSync(swap, 'D7A-ORIGINAL-66\n')
+      const canonical = realpathSync(swap)
+      H.preOpenAction = () => {
+        renameSync(swap, join(BACKUP_DIR, 'd7a-orig'))
+        symlinkSync(join(OUTSIDE_DIR, 'secret.txt'), swap) // same path, outside alias
+      }
+      try {
+        const { built } = exactPlane(exactPolicy(canonical))
+        const value = planeOk(built)
+        const res = await settle(() => readDefOf(value).execute({ file_path: canonical }))
+        expect(H.preOpenConsumed, 'INJECTION SELF-PROOF: the open arm was consumed (args untouched)').toBe(true)
+        const text = refusalText(res)
+        expect(text, 'same-path outside symlink must refuse the open (ELOOP law)').toBeDefined()
+        expect(text).toMatch(/symlink-alias|exec-time-/)
+        expect(text).not.toContain(OUTSIDE_TOKEN)
+        expect(value.backends.read!.execCount()).toBe(0)
+        expect(H.openCalls).toBe(1) // the refusal came from the ONE opened path
+      } finally {
+        rmSync(swap, { force: true })
+        renameSync(join(BACKUP_DIR, 'd7a-orig'), swap)
+        rmSync(swap, { force: true })
+      }
     }
     {
       // ② same PATH, different INODE: after the pre-open snapshot, before the
@@ -764,17 +880,20 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
         renameSync(swap, join(BACKUP_DIR, 'd7b-orig'))
         writeFileSync(swap, `D7B-DECOY-55 ${OUTSIDE_TOKEN}\n`) // new inode, inside root
       }
-      const { built } = exactPlane(exactPolicy(canonical2))
-      const value = planeOk(built)
-      const res = await settle(() => readDefOf(value).execute({ file_path: canonical2 }))
-      expect(H.preOpenConsumed, 'INJECTION SELF-PROOF: the open arm was consumed').toBe(true)
-      const text = refusalText(res)
-      expect(text, 'inode swap before open must refuse (drift)').toBeDefined()
-      expect(text).toMatch(/exec-time-drift|exec-time-escape/)
-      expect(text).not.toContain('D7B-DECOY-55')
-      expect(value.backends.read!.execCount()).toBe(0)
-      rmSync(swap, { force: true })
-      renameSync(join(BACKUP_DIR, 'd7b-orig'), swap)
+      try {
+        const { built } = exactPlane(exactPolicy(canonical2))
+        const value = planeOk(built)
+        const res = await settle(() => readDefOf(value).execute({ file_path: canonical2 }))
+        expect(H.preOpenConsumed, 'INJECTION SELF-PROOF: the open arm was consumed').toBe(true)
+        const text = refusalText(res)
+        expect(text, 'inode swap before open must refuse (drift)').toBeDefined()
+        expect(text).toMatch(/exec-time-drift|exec-time-escape/)
+        expect(text).not.toContain('D7B-DECOY-55')
+        expect(value.backends.read!.execCount()).toBe(0)
+      } finally {
+        rmSync(swap, { force: true })
+        renameSync(join(BACKUP_DIR, 'd7b-orig'), swap)
+      }
     }
   })
 
@@ -793,15 +912,18 @@ describe('A5RSW D denial and size (plan (b) D1-D7)', () => {
     }
     const { built } = exactPlane(exactPolicy(canonical))
     const value = planeOk(built)
-    const res = await settle(() => readDefOf(value).execute({ file_path: canonical }))
-    expect(H.byteArm.consumed, 'INJECTION SELF-PROOF: the byte-fetch arm was consumed').toBe(true)
-    expect(refusalText(res), 'fd-bound read of the verified inode must SUCCEED').toBeUndefined()
-    const serialized = JSON.stringify((res as { value: unknown }).value)
-    expect(serialized).toContain('A5RSW-FD-BOUND-ORIG-13') // the verified handle's content
-    expect(serialized).not.toContain(OUTSIDE_TOKEN) // the path swap never leaked in
-    expect(H.openCalls).toBe(1) // never reopened by path
-    rmSync(target, { force: true })
-    renameSync(join(BACKUP_DIR, 'd7c-moved'), target)
+    try {
+      const res = await settle(() => readDefOf(value).execute({ file_path: canonical }))
+      expect(H.byteArm.consumed, 'INJECTION SELF-PROOF: the byte-fetch arm was consumed').toBe(true)
+      expect(refusalText(res), 'fd-bound read of the verified inode must SUCCEED').toBeUndefined()
+      const serialized = JSON.stringify((res as { value: unknown }).value)
+      expect(serialized).toContain('A5RSW-FD-BOUND-ORIG-13') // the verified handle's content
+      expect(serialized).not.toContain(OUTSIDE_TOKEN) // the path swap never leaked in
+      expect(H.openCalls).toBe(1) // never reopened by path
+    } finally {
+      rmSync(target, { force: true })
+      renameSync(join(BACKUP_DIR, 'd7c-moved'), target)
+    }
   })
 
   it('D7c GUARD (supplementary): 200 random-race rename->symlink rounds — every outcome is safe, zero outside disclosure, never asserts "must catch"', async () => {
