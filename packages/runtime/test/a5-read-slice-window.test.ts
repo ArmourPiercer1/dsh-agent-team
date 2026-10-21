@@ -286,6 +286,14 @@ function asWindow(value: unknown): ReadWindowOk {
   return v
 }
 
+/** Harness indexing narrowing (noUncheckedIndexedAccess): a missing entry
+ *  is a LOUD red (shape violation fails the test), never a swallow. */
+function mustFirst<T>(entries: readonly T[], what: string): T {
+  const value = entries[0]
+  if (value === undefined) throw new Error(`a5rsw harness: ${what} produced no first entry`)
+  return value
+}
+
 function lineFile(path: string, count: number, width = 3): string {
   const out: string[] = []
   for (let i = 1; i <= count; i += 1) out.push(`L${String(i).padStart(width, '0')}`)
@@ -380,14 +388,14 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
     const w = asWindow((res as { value: unknown }).value)
     expect(w.path).toBe(canonical)
     expect(w.offset).toBe(20)
-    expect(w.lines[0]).toEqual({ number: 20, text: 'L020' })
+    expect(mustFirst(w.lines, 'the window lines')).toEqual({ number: 20, text: 'L020' })
     expect(w.lines.at(-1)).toEqual({ number: 34, text: 'L034' })
     expect(w.lines.length).toBe(15)
     expect(w.totalLines).toBe(40)
     expect(Object.keys(w).sort()).toEqual(['lines', 'offset', 'path', 'totalLines'])
     const rendered = readDefOf(value).output!.render({ file_path: canonical, offset: 20, limit: 15 }, w)
     expect(rendered).toHaveLength(1)
-    expect(rendered[0].text).toContain('(Showing lines 20-34 of 40. Use offset=35 to continue.)')
+    expect(mustFirst(rendered, 'the render face').text).toContain('(Showing lines 20-34 of 40. Use offset=35 to continue.)')
   })
 
   it('W2 default window: omitted offset/limit -> lines 1..2000 of 2050 (deployment cap 2000)', async () => {
@@ -399,11 +407,11 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
     const w = asWindow((res as { value: unknown }).value)
     expect(w.offset).toBe(1)
     expect(w.lines.length).toBe(2000)
-    expect(w.lines[0].number).toBe(1)
+    expect(mustFirst(w.lines, 'the window lines').number).toBe(1)
     expect(w.lines.at(-1)!.number).toBe(2000)
     expect(w.totalLines).toBe(2050)
     const rendered = readDefOf(value).output!.render({ file_path: canonical }, w)
-    expect(rendered[0].text).toContain('Use offset=2001 to continue.')
+    expect(mustFirst(rendered, 'the render face').text).toContain('Use offset=2001 to continue.')
   })
 
   it('W3 offset past EOF is refused (mirror of finish(): offset 21 of 20 lines), zero content', async () => {
@@ -427,7 +435,7 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
     expect(w.lines).toEqual([])
     expect(w.totalLines).toBe(0)
     const rendered = readDefOf(value).output!.render({ file_path: canonical }, w)
-    expect(rendered[0].text).toContain('(End of file - total 0 lines)')
+    expect(mustFirst(rendered, 'the render face').text).toContain('(End of file - total 0 lines)')
     await expect(readDefOf(value).execute({ file_path: canonical, offset: 2 })).rejects.toThrow(/offset 2 is out of range/)
   })
 
@@ -466,7 +474,7 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
     expect(res.ok, JSON.stringify(res)).toBe(true)
     const w = asWindow((res as { value: unknown }).value)
     const suffix = '... (line truncated to 2000 chars)'
-    const only = w.lines[0]
+    const only = mustFirst(w.lines, 'the window lines')
     expect(only.number).toBe(1)
     expect(only.text.endsWith(suffix)).toBe(true)
     expect(only.text).not.toContain('\u2026') // ASCII dots, not U+2026
@@ -486,8 +494,8 @@ describe('A5RSW W window (plan (b) W1-W9)', () => {
     expect(w.totalLines).toBe(300)
     const last = w.lines.at(-1)!.number
     const rendered = readDefOf(value).output!.render({ file_path: canonical, limit: 300 }, w)
-    expect(rendered[0].text).toContain(`(Output capped. Showing lines 1-${last}. Use offset=${last + 1} to continue.)`)
-    expect(rendered[0].text).not.toContain(` of ${w.totalLines}. Use offset=${last + 1}`)
+    expect(mustFirst(rendered, 'the render face').text).toContain(`(Output capped. Showing lines 1-${last}. Use offset=${last + 1} to continue.)`)
+    expect(mustFirst(rendered, 'the render face').text).not.toContain(` of ${w.totalLines}. Use offset=${last + 1}`)
   })
 
   // W9 is the CANDIDATE-side short-read CHARACTERIZATION (plan E4 [rev4]
@@ -591,9 +599,9 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
     // Leg A — the executor's OWN consumption of a deny verdict (direct,
     // deterministic; a verdict-consumption unit, NOT matcher evidence —
     // D8 carries the matcher legs). Green on both generations.
-    const backends = (await import('../src/plugin/live/plane-effect-backends.mjs')) as unknown as {
-      createGovernedReadExecutor: (input: Record<string, unknown>) => ((raw: unknown) => Promise<unknown>) & { execCount(): number }
-    }
+    // Typed via the adjacent plane-effect-backends.d.mts (the repo's
+    // `.mjs` + adjacent `.d.mts` pattern); runtime still loads the `.mjs`.
+    const backends = await import('../src/plugin/live/plane-effect-backends.mjs')
     const denied = backends.createGovernedReadExecutor({
       realmId: REALM, rootDir: ROOT_REAL,
       policy: { default: 'ask', allow: [], ask: [], deny: [] },
@@ -1031,19 +1039,19 @@ describe('A5RSW C face contract (plan (b) C1-C1c)', () => {
     expect(def.output!.schema.additionalProperties).toBe(false)
     const rendered = def.output!.render({ file_path: canonical }, w)
     expect(rendered).toHaveLength(1)
-    expect(ENVELOPE.test(rendered[0].text), 'render output is the read envelope').toBe(true)
-    expect(rendered[0].text).toContain('(End of file - total 3 lines)')
+    expect(ENVELOPE.test(mustFirst(rendered, 'the render face').text), 'render output is the read envelope').toBe(true)
+    expect(mustFirst(rendered, 'the render face').text).toContain('(End of file - total 3 lines)')
     const meta = def.output!.presentationMeta!({ file_path: canonical }, w)
     expect(Object.keys(meta).sort()).toEqual(['lines', 'offset', 'path', 'totalLines']) // NO lang (S7)
     expect(typeof def.presentResult).toBe('function')
     const card = def.presentResult!({ file_path: canonical }, {
       isError: false,
       meta,
-      content: [{ type: 'text', text: rendered[0].text }],
+      content: [{ type: 'text', text: mustFirst(rendered, 'the render face').text }],
     })
     expect(card?.card).toBe('read')
     expect(def.presentResult!({ file_path: canonical }, {
-      isError: true, meta, content: [{ type: 'text', text: rendered[0].text }],
+      isError: true, meta, content: [{ type: 'text', text: mustFirst(rendered, 'the render face').text }],
     })).toBeUndefined()
   })
 
@@ -1056,7 +1064,7 @@ describe('A5RSW C face contract (plan (b) C1-C1c)', () => {
     const res = await settle(() => def.execute({ file_path: canonical }))
     const w = asWindow((res as { value: unknown }).value)
     const goodMeta = def.output!.presentationMeta!({ file_path: canonical }, w)
-    const text = def.output!.render({ file_path: canonical }, w)[0].text
+    const text = mustFirst(def.output!.render({ file_path: canonical }, w), 'the render face').text
     const badMetas: unknown[] = [
       undefined,
       null,
@@ -1098,7 +1106,7 @@ describe('A5RSW C face contract (plan (b) C1-C1c)', () => {
       isError: false, meta: goodMeta, content: [{ type: 'text', text: 'plain prose, no envelope' }],
     })).toBeUndefined()
     // more than one content block
-    const text = def.output!.render({ file_path: canonical }, w)[0].text
+    const text = mustFirst(def.output!.render({ file_path: canonical }, w), 'the render face').text
     expect(def.presentResult!({}, {
       isError: false, meta: goodMeta,
       content: [{ type: 'text', text }, { type: 'text', text }],
@@ -1125,7 +1133,9 @@ describe('A5RSW Z zero-flip (plan (b) Z1-Z2)', () => {
     expect(value.ownNames).not.toContain('read')
     expect(trioSerialization(value)).toBe(TRIO_BASELINE_SNAPSHOT)
     const shut = await settle(() => value.definitions.find((d) => d.name === 'team_grep')!.execute({ pattern: 'x', path: '.', output_mode: 'content' }))
-    expect(shut.ok).toBe(true)
+    // Discriminated narrowing (tsc): the shut landing must RESOLVE on both
+    // generations — a rejection is a loud red carrying its message.
+    if (!shut.ok) throw new Error(`Z2: the shut face must resolve, got: ${shut.message}`)
     expect(JSON.stringify(shut.value)).toContain('IO_POLICY_UNSUPPORTED')
   })
 })
@@ -1163,13 +1173,14 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     const policy = policyDoc.capabilities.permissions
     expect(policy.default).toBe('deny')
     expect(policy.allow).toHaveLength(1)
-    expect(policy.allow[0].tool).toBe('read')
-    expect(policy.allow[0].resource.kind).toBe('exact')
+    const allowRule = mustFirst(policy.allow, 'the pinned INSTALL allow lane')
+    expect(allowRule.tool).toBe('read')
+    expect(allowRule.resource.kind).toBe('exact')
     // Only PLACEHOLDER VALUES are substituted (structure untouched): the doc
     // spellings -> this scratch world's canonical absolute values.
     rowCfg.fsInstance.rootDir = ROOT_REAL
     const target = join(ROOT_REAL, 'reports', 'status.txt')
-    policy.allow[0].resource.path = realpathSync(target)
+    allowRule.resource.path = realpathSync(target)
     // Fed separately: plane/realm from the ROW config, policy from the BLUEPRINT.
     const { built } = buildPlane({
       plane: { realmId: rowCfg.realmId, fsInstance: rowCfg.fsInstance },
@@ -1181,10 +1192,10 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     const feed = value.placementFeed?.('read')
     expect(feed?.definitionIdentity).toMatch(/^def#\d+$/)
     // The window itself is the new assertion (RED on the baseline).
-    const res = await settle(() => readDefOf(value).execute({ file_path: policy.allow[0].resource.path }))
+    const res = await settle(() => readDefOf(value).execute({ file_path: allowRule.resource.path }))
     expect(res.ok, JSON.stringify(res)).toBe(true)
     const w = asWindow((res as { value: unknown }).value)
-    expect(w.lines[0].text).toBe('STATUS-OK-L1')
+    expect(mustFirst(w.lines, 'the window lines').text).toBe('STATUS-OK-L1')
     expect(w.totalLines).toBe(3)
   })
 
@@ -1198,8 +1209,11 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     const rowDoc = parseYaml(rowYaml) as { config: { teamToolPlane: { realmId: string; fsInstance: Record<string, unknown> } } }
     const policyDoc = parseYaml(policyYaml) as { capabilities: { permissions: Record<string, unknown> } }
     rowDoc.config.teamToolPlane.fsInstance.rootDir = ROOT_REAL
-    ;(policyDoc.capabilities.permissions as { allow: Array<{ resource: { path: string } }> }).allow[0].resource.path
-      = realpathSync(join(ROOT_REAL, 'reports', 'status.txt'))
+    const twinAllow = mustFirst(
+      (policyDoc.capabilities.permissions as { allow: Array<{ resource: { path: string } }> }).allow,
+      'the pinned INSTALL allow lane',
+    )
+    twinAllow.resource.path = realpathSync(join(ROOT_REAL, 'reports', 'status.txt'))
     const { built } = buildPlane({
       plane: { realmId: rowDoc.config.teamToolPlane.realmId, fsInstance: rowDoc.config.teamToolPlane.fsInstance },
       permissionPolicy: policyDoc.capabilities.permissions,
@@ -1250,9 +1264,9 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     //    the seam-less face the plan described): without subtreeContains, a
     //    subtree rule covers nothing -> default-deny refusal, attributed to
     //    template-default-deny, zero bytes (execCount 0), generation-agnostic.
-    const backends = (await import('../src/plugin/live/plane-effect-backends.mjs')) as unknown as {
-      createGovernedReadExecutor: (input: Record<string, unknown>) => ((raw: unknown) => Promise<unknown>) & { execCount(): number }
-    }
+    // Typed via the adjacent plane-effect-backends.d.mts (the repo's
+    // `.mjs` + adjacent `.d.mts` pattern); runtime still loads the `.mjs`.
+    const backends = await import('../src/plugin/live/plane-effect-backends.mjs')
     const exec = backends.createGovernedReadExecutor({
       realmId: REALM, rootDir: ROOT_REAL, policy: subtreePolicy,
       decide: () => ({ kind: 'allow' }), observe: () => {},
@@ -1269,7 +1283,7 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     const twinValue = planeOk(twin)
     const resC = await settle(() => readDefOf(twinValue).execute({ file_path: target }))
     expect(resC.ok, JSON.stringify(resC)).toBe(true)
-    expect(asWindow((resC as { value: unknown }).value).lines[0].text).toBe('A5RSW-SUB-INSIDE-1')
+    expect(mustFirst(asWindow((resC as { value: unknown }).value).lines, 'the window lines').text).toBe('A5RSW-SUB-INSIDE-1')
   })
 })
 
