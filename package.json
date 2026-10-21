@@ -42,10 +42,19 @@
     "lint:identities": "node scripts/lint-identities.mjs",
     "test": "vitest run",
     "test:node": "node scripts/run-tests.mjs",
-    "smoke:composition": "node scripts/composition-smoke.mjs"
+    "smoke:composition": "node scripts/composition-smoke.mjs",
+    "check:install-manifest": "node scripts/check-install-manifest.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh": "0.2.0-rc.2"
+    "@deepseek-ai/dsh": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-mcp-client": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-spill-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-fs-search": "0.2.0-rc.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -54,5 +63,9 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.0.0",
     "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
   }
 }

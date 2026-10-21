@@ -65,6 +65,26 @@ const EXPECTED_RUNTIME = DSH_BASELINE_VERSION
 const PINNED_GENERATION_LITERAL = '0.2.0-rc.2'
 /** The review ruling: the exact RC peer, nothing broader. */
 const EXPECTED_PEER_RANGE = DSH_BASELINE_VERSION
+/**
+ * [PR #352 packaging round] The audited host-provides peer contract: exactly
+ * these nine names, each at the same exact RC. HARD-CODED on purpose — the
+ * expectation must never be derived from the manifest under test (that would
+ * be a self-proving assertion). The real evaluator iterates EVERY
+ * `@deepseek-ai/dsh`/`@deepseek-ai/dsh-*` peer, so this full set is what its
+ * `issue.peers` carries in all three negative cases below as well.
+ */
+const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
+  '@deepseek-ai/dsh': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-agent': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-llm': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-mcp-client': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-scope': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-session': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-spill-local': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-storage-domain': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tool-fs-search': EXPECTED_PEER_RANGE,
+})
+const EXPECTED_HOST_PEER_NAMES: readonly string[] = Object.freeze(Object.keys(EXPECTED_HOST_PEERS))
 /** The generation this plugin was pinned to before 2026-10-03 (older side). */
 const PREVIOUS_GENERATION = '0.1.7-rc.1'
 /** A later prerelease / later stable of the same line (newer side). */
@@ -130,15 +150,25 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
-  it('the root manifest declares the exact-RC DSH peer (and no other dsh* peer, no range)', () => {
+  it('the root manifest declares exactly the audited nine host-provided DSH peers (each exact-RC, no range) and none of them as a regular dependency', () => {
     const peers = manifest.peerDependencies ?? {}
     const dshPeers = Object.entries(peers).filter(([name]) => name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-'))
-    expect(dshPeers).toEqual([
-      ['@deepseek-ai/dsh', EXPECTED_PEER_RANGE],
-    ])
+    // Exact set: the nine audited names, each at the exact RC — nothing more,
+    // nothing less (an extra/missing dsh* peer fails here, loudly).
+    expect(Object.keys(peers).sort()).toEqual([...EXPECTED_HOST_PEER_NAMES].sort())
+    expect(dshPeers.length).toBe(EXPECTED_HOST_PEER_NAMES.length)
+    for (const name of EXPECTED_HOST_PEER_NAMES) {
+      expect(peers[name]).toBe(EXPECTED_PEER_RANGE)
+    }
     // Exact match, not a range: no comparator / wildcard / hygroscopic form.
     for (const [, requirement] of dshPeers) {
       expect(requirement).not.toMatch(/[\s|^~*><=]/)
+    }
+    // Host-provided contract: a declared peer must NOT also ship as a
+    // regular dependency of this manifest (9/9 stay out of `dependencies`).
+    const deps = (manifest as { readonly dependencies?: Record<string, string> }).dependencies ?? {}
+    for (const name of EXPECTED_HOST_PEER_NAMES) {
+      expect(deps).not.toHaveProperty(name)
     }
   })
 
@@ -155,7 +185,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     const { evaluatePluginCompatibility, pluginCompatibilityWarning } = await loadEvaluator()
     const issue = evaluatePluginCompatibility(manifest, {}, PREVIOUS_GENERATION)
     expect(issue).toBeDefined()
-    expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
+    expect(issue?.peers).toEqual(EXPECTED_HOST_PEERS)
     expect(issue?.runtimeVersion).toBe(PREVIOUS_GENERATION)
     expect(issue?.exempted).toBe(false)
     const warning = pluginCompatibilityWarning(issue!)
@@ -169,7 +199,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     for (const runtimeVersion of [LATER_PRERELEASE, LATER_STABLE]) {
       const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion)
       expect(issue).toBeDefined()
-      expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
+      expect(issue?.peers).toEqual(EXPECTED_HOST_PEERS)
       expect(issue?.runtimeVersion).toBe(runtimeVersion)
       expect(issue?.exempted).toBe(false)
       expect(pluginCompatibilityWarning(issue!)).toContain('not active')
@@ -193,7 +223,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     // The mismatch is still REPORTED (the exemption marks it, it does not
     // erase it) — and this repo never supplies the exemption: the real-host
     // smoke asserts no compatibility.json grant exists.
-    expect(issue?.peers).toEqual({ '@deepseek-ai/dsh': EXPECTED_PEER_RANGE })
+    expect(issue?.peers).toEqual(EXPECTED_HOST_PEERS)
     expect(issue?.exempted).toBe(true)
   })
 })
