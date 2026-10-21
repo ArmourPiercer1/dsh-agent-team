@@ -17,14 +17,19 @@
  */
 
 /**
- * The governed `read` executor: a callable transport (resolves the native
- * window value, or THROWS the verbatim refusal on every refusal path)
- * carrying the zero-I/O meter the slice pins (`execCount` — every refusal
- * path leaves it untouched).
+ * The governed `read` executor: a callable that RESOLVES a discriminated
+ * ok/refused outcome — refusals come back as VALUES from the executor;
+ * the THROW transport lives in the OUTER read def, not here.
  */
 export interface GovernedReadExecutor {
   (raw: unknown): Promise<unknown>
-  /** Successful-execution count (the admission-then-IO meter). */
+  /**
+   * BYTE-FETCH-STAGE ENTRY count: incremented when a call ENTERS the
+   * byte-reading stage (after admission); later in-stage refusals
+   * (over-cap once the fetch began, read errors) may still have
+   * incremented it. NOT a syscall meter, NOT a completion meter, and by
+   * itself NOT evidence of zero I/O.
+   */
   execCount(): number
 }
 
