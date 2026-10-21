@@ -614,7 +614,7 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
     if (!mount.built.ok) expect(mount.built.code).toBe('IO_POLICY_UNSUPPORTED')
   })
 
-  it('D8 lane matcher contract (mustfix 6): canonical-first depth check — real-chain conflict denies at ZERO bytes, two layers distinguished, legacy shape kept, dual-field conflict follows canonical', async () => {
+  it('D8 lane matcher contract (mustfix 6): canonical-first depth check — backend-layer conflict denies at ZERO bytes, backend two gates distinguished, legacy shape kept, dual-field conflict follows canonical', async () => {
     const canonical = join(ROOT_REAL, 'w1.txt')
     const other = join(ROOT_REAL, 'w2.txt')
     const planeRow = row as unknown as PlaneRow & {
@@ -646,10 +646,13 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
     expect(lane(readEffects({ canonicalLocator: other, locator: canonical }))).toEqual({ kind: 'allow' })
     // canonical=denied path, legacy=decoy -> canonical decides: DENY.
     expect(lane(readEffects({ canonicalLocator: canonical, locator: other }))).toEqual({ kind: 'deny', code: 'template-deny-lane' })
-    // -- Leg (b): the SAME conflict through the REAL permission chain to the
-    //    SAME read def (mounted assembly wires the production lane decide;
-    //    nothing mocked). ACCEPTANCE CRITERION = body/bytes ZERO: the body
-    //    never ran (pre-fetch counter), no open, no fetch, no content.
+    // -- Leg (b): the SAME conflict through the ASSEMBLED read def. SCOPE
+    //    (root ruling, honest wording): this exercises the BACKEND layer
+    //    (assembly-wired lane + executor gate — production code, nothing
+    //    mocked), NOT an outer durable permission listener/end-cap — that
+    //    claim is OPEN until the D9 leg below lands. ACCEPTANCE CRITERION
+    //    = body/bytes ZERO: the body never ran (pre-fetch counter), no
+    //    open, no fetch, no content.
     H.reset()
     const value = planeOk(exactPlane(conflictPolicy).built)
     await expect(readDefOf(value).execute({ file_path: canonical }))
@@ -657,11 +660,12 @@ describe('A5RSW D denial and size (plan (b) D family)', () => {
     expect(value.backends.read!.execCount()).toBe(0) // body ran ZERO
     expect(H.openCalls).toBe(0) // ...zero opens...
     expect(H.reads.length).toBe(0) // ...and zero bytes
-    // -- TWO LAYERS distinguished on one production face: a DENIED path is
-    //    answered by the LANE fast path (`template-deny-lane`) while an
-    //    UNCOVERED path is answered by the executor's own coverage gate
-    //    (`template-default-deny`) — different code, different layer, both
-    //    refuse at zero bytes.
+    // -- BACKEND two gates distinguished on one production face (backend
+    //    layers, not the outer permission layer): a DENIED path is answered
+    //    by the assembly-wired LANE fast path (`template-deny-lane`) while
+    //    an UNCOVERED path is answered by the executor's own coverage gate
+    //    (`template-default-deny`) — different code, different backend gate,
+    //    both refuse at zero bytes.
     const gateValue = planeOk(buildPlane({
       plane: { fsInstance: fsInstance() },
       permissionPolicy: { default: 'deny', allow: [exactRule(canonical)], ask: [], deny: [exactRule(canonical)] },
@@ -1254,5 +1258,185 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     const resC = await settle(() => readDefOf(twinValue).execute({ file_path: target }))
     expect(resC.ok, JSON.stringify(resC)).toBe(true)
     expect(asWindow((resC as { value: unknown }).value).lines[0].text).toBe('A5RSW-SUB-INSIDE-1')
+  })
+})
+
+// ===========================================================================
+// D9 — the OUTER durable permission layer (mustfix2, root ruling): the
+// PRODUCTION `installParameterPermissionListener` (operation-permission
+// pre-execute adapter — the same install the A6 glue performs per agent
+// lifecycle, agent-bindings.mjs :3100) is ACTUALLY CALLED here; its
+// composite install registers BOTH the `tools/pre-execute` waterfall
+// listener AND the monotonic end-cap guard over the public `tools.guard`
+// seam (R6/H1; the recording seam follows the t12a-live-bridge.mjs :576
+// H1 semantics — it RECORDS the production guard function, never
+// substitutes a verdict). Durable control plane: the real
+// createControlService over a real P6T4 world (issue2/a4p4 recipe). The
+// harness ctx follows the a4p4 makeFakeAgentCtx pattern (a pipeline
+// harness; every DECISION on the chain is production code). Upstream stage
+// order (dsh-tools prepareExecution, recorded in the i2 header):
+// waterfall -> monotonic guard -> dispatch; the dispatch edge here runs
+// the SAME real assembled read def.
+// ===========================================================================
+describe('A5RSW D9 outer permission layer (mustfix2)', () => {
+  it('D9 production permission listener + its recorded monotonic end-cap guard drive the SAME real read def: exact allow+deny conflict denies at body/bytes ZERO; the allow twin self-proves the wiring really reaches the def', async () => {
+    const opPerm = (await import('../operation-permission/index.js')) as unknown as {
+      installParameterPermissionListener: (agentCtx: unknown, params: unknown) => () => void
+    }
+    const controlMod = (await import('../control/index.js')) as unknown as {
+      createControlService: (input: unknown) => unknown
+    }
+    const p6 = (await import('./p6t4-helpers.js')) as unknown as {
+      P6T4_ROOT: string
+      P6T4_NOW: unknown
+      P6T4_SEEDS: { worker: { instanceId: string } }
+      createP6T4World: (basename: string, members: readonly string[]) => Promise<Record<string, unknown>>
+      destroyP6T1World: (world: Record<string, unknown>) => Promise<void>
+      memberCaller: (instanceId: string) => unknown
+    }
+    const canonical = join(ROOT_REAL, 'w1.txt')
+    const exactRule = (path: string) => ({ tool: 'read', resource: { kind: 'exact', path } })
+    const workerId = String(p6.P6T4_SEEDS.worker.instanceId)
+    // i2/a4p4 resolver: stable file:/// keys, same basis for operations AND rules.
+    const fakeResolve = async (path: string): Promise<{ key: string; display: string }> => ({
+      key: `file:///${path.replace(/\\/g, '/').replace(/^\.\//, '').replace(/\/{2,}/g, '/')}`,
+      display: path,
+    })
+    // Harness ctx: waterfall registration + RECORDING guard seam (t12a H1).
+    const listeners: Array<(exec: Record<string, unknown>, next: () => Promise<unknown>) => Promise<unknown>> = []
+    const guards: Array<{ fn: (exec: Record<string, unknown>) => string | undefined; active: boolean }> = []
+    const ctx = {
+      on: (_event: string, listener: (exec: Record<string, unknown>, next: () => Promise<unknown>) => Promise<unknown>) => {
+        listeners.push(listener)
+        return () => {
+          const i = listeners.indexOf(listener)
+          if (i >= 0) listeners.splice(i, 1)
+        }
+      },
+      tools: {
+        guard: (fn: (exec: Record<string, unknown>) => string | undefined) => {
+          const entry = { fn, active: true }
+          guards.push(entry)
+          return () => { entry.active = false }
+        },
+      },
+    }
+    const world = await p6.createP6T4World('a5rsw-d9', ['leader', 'worker'])
+    try {
+      const service = controlMod.createControlService({
+        teamDomain: world.domain,
+        blueprintCatalog: world.catalog,
+        externalPolicyFacts: (world.ports as { externalPolicyFacts: unknown }).externalPolicyFacts,
+        now: () => p6.P6T4_NOW,
+        waitPollIntervalMs: 10,
+      }) as { listControlState: (root: string) => Promise<{ requests: unknown[]; decisions: unknown[]; consumptions: unknown[] }> }
+      const controlRows = async (): Promise<number> => {
+        const state = await service.listControlState(p6.P6T4_ROOT)
+        return state.requests.length + state.decisions.length + state.consumptions.length
+      }
+      const makeExec = (callId: string): Record<string, unknown> => ({
+        callId,
+        name: 'read',
+        arguments: { file_path: canonical },
+        signal: new AbortController().signal,
+      })
+      /** One upstream-ordered drive: waterfall -> guard -> dispatch of the
+       *  SAME real def. Returns the stage evidence. */
+      const drive = async (
+        exec: Record<string, unknown>,
+        def: ReadDef,
+      ): Promise<{
+        decision: { kind?: string; reason?: string }
+        nextCalls: number
+        guardByHarness: string | undefined
+        dispatched: number
+        dispatchOutcome?: Awaited<ReturnType<typeof settle>>
+      }> => {
+        let nextCalls = 0
+        let guardByHarness: string | undefined
+        let dispatched = 0
+        let dispatchOutcome: Awaited<ReturnType<typeof settle>> | undefined
+        const next = async (): Promise<unknown> => {
+          nextCalls += 1
+          guardByHarness = guards[0] !== undefined ? guards[0]!.fn(exec) : undefined
+          if (typeof guardByHarness === 'string') return { kind: 'deny', reason: guardByHarness }
+          dispatched += 1
+          dispatchOutcome = await settle(() => def.execute(exec.arguments))
+          return { kind: 'allow' }
+        }
+        const decision = (await listeners[0]!(exec, next)) as { kind?: string; reason?: string }
+        return { decision, nextCalls, guardByHarness, dispatched, dispatchOutcome }
+      }
+      // -- CONFLICT leg: allow + deny on the SAME exact resource. Install
+      //    the PRODUCTION listener (the composite install registers the
+      //    end-cap guard through the recording seam — R6 refuses install
+      //    when the seam is absent).
+      const conflictPolicy = { default: 'deny', allow: [exactRule(canonical)], ask: [], deny: [exactRule(canonical)] }
+      const dispose = opPerm.installParameterPermissionListener(ctx, {
+        policy: conflictPolicy,
+        resolveTarget: fakeResolve,
+        controlService: service,
+        rootSessionId: p6.P6T4_ROOT,
+        caller: p6.memberCaller(workerId),
+        targetInstanceId: workerId,
+        isLeader: false,
+      })
+      expect(listeners.length, 'the production install registered the pre-execute listener').toBe(1)
+      expect(guards.length, 'the SAME install registered the monotonic end-cap guard').toBe(1)
+      const conflictValue = planeOk(exactPlane(conflictPolicy).built)
+      const conflictDef = readDefOf(conflictValue)
+      H.reset()
+      const conflict = await drive(makeExec('a5rsw-d9-conflict'), conflictDef)
+      // The OUTER production listener denies: the waterfall never reaches
+      // its tail, the harness never reaches dispatch, the def body is
+      // NEVER entered.
+      expect(JSON.stringify(conflict.decision), 'outer production verdict on the conflict').toMatch(/deny/)
+      expect(conflict.nextCalls, 'waterfall tail never reached').toBe(0)
+      expect(conflict.dispatched, 'dispatch of the read def never happened').toBe(0)
+      // ACCEPTANCE CRITERION — body/bytes ZERO on the same real def:
+      expect(conflictValue.backends.read!.execCount()).toBe(0)
+      expect(H.openCalls).toBe(0)
+      expect(H.reads.length).toBe(0)
+      // The deny lane never touches the durable control state...
+      expect(await controlRows()).toBe(0)
+      // ...and the recorded end-cap guard is the PRODUCTION monotonic one:
+      // a fresh, never-authorized exec object is DENIED by it (string
+      // verdict = deny on the upstream guard contract).
+      const hostileVerdict = guards[0]!.fn(makeExec('a5rsw-d9-hostile'))
+      expect(typeof hostileVerdict, 'unauthorized exec: the production end-cap guard denies').toBe('string')
+      dispose()
+      expect(guards[0]!.active, 'the composite disposer tears the guard down too').toBe(false)
+
+      // -- ALLOW-TWIN self-proof (the ONLY difference: no deny rule): the
+      //    same harness, same production install path, same REAL def — here
+      //    the chain MUST reach the def and READ. Without this twin the
+      //    zeros above could hide a dead harness.
+      const allowPolicy = { default: 'deny', allow: [exactRule(canonical)], ask: [], deny: [] }
+      listeners.splice(0, listeners.length)
+      guards.splice(0, guards.length)
+      const disposeTwin = opPerm.installParameterPermissionListener(ctx, {
+        policy: allowPolicy,
+        resolveTarget: fakeResolve,
+        controlService: service,
+        rootSessionId: p6.P6T4_ROOT,
+        caller: p6.memberCaller(workerId),
+        targetInstanceId: workerId,
+        isLeader: false,
+      })
+      const twinValue = planeOk(exactPlane(allowPolicy).built)
+      const twinDef = readDefOf(twinValue)
+      H.reset()
+      const twin = await drive(makeExec('a5rsw-d9-twin'), twinDef)
+      expect(twin.nextCalls, 'self-proof: the waterfall really passed the call downstream').toBe(1)
+      expect(twin.guardByHarness, 'self-proof: the end-cap guard ABSTAINS on the exec THIS install authorized').toBeUndefined()
+      expect(twin.dispatched, 'self-proof: dispatch reached the def').toBe(1)
+      expect(twin.dispatchOutcome?.ok, JSON.stringify(twin.dispatchOutcome)).toBe(true)
+      expect(JSON.stringify((twin.dispatchOutcome as { value: unknown }).value)).toContain('L001')
+      expect(H.openCalls).toBeGreaterThan(0) // bytes were really fetchable through this harness
+      expect(await controlRows(), 'the static allow lane touches no durable row').toBe(0)
+      disposeTwin()
+    } finally {
+      await p6.destroyP6T1World(world)
+    }
   })
 })
