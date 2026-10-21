@@ -261,7 +261,7 @@ function applyHandlers(relFile, graph, sf, pending, visit, at) {
         }
       });
       const same = specs.size === EXTERNALS_EXACT.size && [...specs].every((s) => EXTERNALS_EXACT.has(s));
-      if (bad === 0 && same) { for (const s of specs) { const fake = req[0].node; classify(s, `${relFile}:__extReq(${JSON.stringify(s)})`, 'value', 'browser'); } req[0].consumed = true; notes.push(`audited site S4 consumed: __extReq all-${refs}-refs direct-literal, set == browser table (4)`); }
+      if (bad === 0 && same) { for (const s of specs) { classify(s, `${relFile}:__extReq(${JSON.stringify(s)})`, 'value', 'browser'); } req[0].consumed = true; notes.push(`audited site S4 consumed: __extReq all-${refs}-refs direct-literal, set == browser table (4)`); }
       else if (bad > 0 || !same) errors.push(`S4 audited shape violated in ${relFile}: non-literal/aliased refs=${bad}, spec set ${JSON.stringify([...specs])} vs browser table`);
     }
   }
@@ -303,7 +303,6 @@ function scan(file, graph, key) {
     if (!existsSync(abs)) { errors.push(`missing local module: ${spec} (${at(node)})`); return; }
     enqueue(abs, graph);
   };
-  const exprOf = (a) => (a ? JSON.stringify(a.getText(sf).slice(0, 160)) : '<no-argument>');
   const walk = (node) => {
     if (ts.isImportDeclaration(node)) {
       visit(node.moduleSpecifier.text, node.importClause?.isTypeOnly ? 'type-only' : 'value', node);
