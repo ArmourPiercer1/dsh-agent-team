@@ -54,6 +54,7 @@
  * @module packages/runtime/src/plugin/live/plane-effect-backends
  */
 
+import { Buffer } from 'node:buffer'
 import { spawnSync } from 'node:child_process'
 import { constants as fsConstants, existsSync, realpathSync, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'

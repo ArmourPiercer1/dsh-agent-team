@@ -35,7 +35,6 @@
 import { describe, beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest'
 import {
   appendFileSync,
-  existsSync,
   mkdirSync,
   readFileSync,
   realpathSync,
@@ -101,10 +100,23 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   }
   // Instance-level wrappers on the REAL handle (never FileHandle.prototype):
   // save the real methods, delegate on the real receiver, keep the real FD.
-  const wrapHandle = (handle: Record<string, any>): Record<string, any> => {
-    const readFile = handle.readFile.bind(handle)
-    const read = handle.read.bind(handle)
-    const close = handle.close.bind(handle)
+  // Typed WITHOUT `any`: the handle is a bag of unknowns; each method is
+  // runtime-checked once (throwing loudly if a real FileHandle ever lacks
+  // it) and then carried under an explicit signature.
+  type ReadFileFn = (...args: unknown[]) => Promise<unknown>
+  type ReadFn = (buffer: Uint8Array, offset: number, length: number, position: number | null) =>
+    Promise<{ bytesRead: number; buffer: Uint8Array }>
+  type CloseFn = () => Promise<void>
+  const pickMethod = <T,>(value: unknown, label: string): T => {
+    if (typeof value !== 'function') {
+      throw new TypeError(`a5rsw harness: the real FileHandle is missing ${label}()`)
+    }
+    return value as T
+  }
+  const wrapHandle = (handle: Record<string, unknown>): Record<string, unknown> => {
+    const readFile = pickMethod<ReadFileFn>(handle.readFile, 'readFile').bind(handle)
+    const read = pickMethod<ReadFn>(handle.read, 'read').bind(handle)
+    const close = pickMethod<CloseFn>(handle.close, 'close').bind(handle)
     handle.readFile = async (...args: unknown[]) => {
       H.readFileCalls += 1
       await fireByteArm('readFile')
@@ -132,7 +144,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
         H.reads.push({ want, delegated, bytesRead: -1 })
       }
       await fireByteArm('read')
-      const r = (await read(buffer, offset, delegated, position)) as { bytesRead: number; buffer: Uint8Array }
+      const r = await read(buffer, offset, delegated, position)
       // The REAL returned count is surfaced untouched — no re-clamping.
       const logged = H.reads[H.reads.length - 1]
       if (logged !== undefined && logged.bytesRead === -1) logged.bytesRead = r.bytesRead
@@ -154,7 +166,7 @@ vi.mock('node:fs/promises', async (importOriginal) => {
       await act(args)
     }
     const handle = await actual.open(...args)
-    return wrapHandle(handle as Record<string, any>)
+    return wrapHandle(handle as Record<string, unknown>)
   }
   return { ...actual, open }
 })
