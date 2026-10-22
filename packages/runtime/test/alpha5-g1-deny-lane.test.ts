@@ -227,7 +227,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const built = row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
-      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -258,7 +258,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const built = row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
-      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -283,7 +283,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const built = row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
-      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: { default: 'deny', allow: [], ask: [], deny: [] },
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -310,7 +310,7 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const built = row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
       controlLeg: approvingControlLeg(),
-      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: askPolicy,
       realmId: 'a5g1-realm',
       templateId: 'wa',

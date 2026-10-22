@@ -59,6 +59,12 @@ export interface ToolCallRequest {
   readonly parametersFingerprint?: string
   /** B3 ADDITIVE: the host cancel signal, carried to the backend untouched (the pipeline itself acts on NOTHING — cancel is the row's fact, not a second authorization here). */
   readonly signal?: ToolCancelSignal
+  /** 9e-1 ADDITIVE: the host execution CONTEXT the caller carries — its
+   *  `tokenKey` is the ledger STRING standing for the real per-execution
+   *  token (the token identity itself never travels as text). Carried like
+   *  `signal`: consumers sit on the plane/backend side; the pipeline acts on
+   *  NOTHING from it. */
+  readonly exec?: { readonly tokenKey?: string; readonly [key: string]: unknown }
 }
 
 export interface RunToolCallDeps {

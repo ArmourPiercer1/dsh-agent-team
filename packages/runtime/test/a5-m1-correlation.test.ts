@@ -18,10 +18,10 @@ import { describe, expect, it } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
 const row = await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)
-const { approvingControlLeg } = await import('./a5-m1-control-legs.mjs')
+// (the trio face takes the PA edge directly; the C1 stand-in legs are not
+// needed on this leg — importing them unused was a leftover)
 
 const ASK_ALL = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
 
@@ -66,7 +66,7 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
   it('C3 cancel BEFORE consume: aborted signal at approval time => row-form cancelled, zero body, zero consumption', async () => {
     const sink: string[] = []
     const ac = new AbortController()
-    const legSpy = async (input: Record<string, unknown>) => {
+    const legSpy = async (_input: Record<string, unknown>) => {
       // honor the signal like the real bridge does: the cancellation lands
       // while the approval wait is in flight → the leg settles unsettled.
       ac.abort()
@@ -86,6 +86,9 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
   it('C1/C2 (a5p5 trio face, PR358-A1): REAL token allocates ONE hexec correlation; in-flight/terminal replays refuse; stringy tokens never anchor', async () => {
     const reg = await import('../../tools/a5p5-tools/src/index.js')
     const seen: string[] = []
+    // the fixture carries the SHIPPED backend shape (backend-contract.ts:
+    // run + execCount + lastStageTrace) — a partial fake is a type error on
+    // purpose, so the trio face is exercised against the real contract.
     const backend = {
       backendId: 'a5m1-corr-trio',
       run: async () => ({
@@ -93,8 +96,10 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
         settlement: { kind: 'completed' as const },
         outcome: { exitCode: 0, stdout: 'trio-body', stderr: '', timedOut: false, cancelled: false, truncated: false },
       }),
+      execCount: (): number => 0,
+      lastStageTrace: [],
     }
-    const decide = () => ({ kind: 'allow' })
+    const decide = (): { readonly kind: 'allow' } => ({ kind: 'allow' as const })
     const defs = reg.createGovernedToolDefinitions({
       realmId: 'a5m1-corr-realm',
       decide,
@@ -108,7 +113,9 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
         return req.signal?.aborted === true ? { kind: 'allow', cancelled: true } : { kind: 'allow' }
       },
     })
-    const bashDef = (defs as { name: string; execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> }[]).find((d) => d.name === 'team_bash' || d.name === 'bash')!
+    type GovernedDef = { readonly name: string; readonly execute: (raw: unknown, exec?: { readonly token?: unknown }) => Promise<{ readonly text: string }> }
+    const bashDef = (defs as readonly unknown[] as GovernedDef[]).find((d) => d.name === 'team_bash' || d.name === 'bash')
+    if (bashDef === undefined) throw new Error('no team_bash/bash definition in the governed trio')
     const TOK = Symbol('host-exec') // the identity IS the symbol; its description never rides a wire
     const first = bashDef.execute({ command: 'true' }, { token: TOK })
     const replay = await bashDef.execute({ command: 'true' }, { token: TOK })

@@ -16,9 +16,12 @@
 import { describe, expect, it } from 'vitest'
 
 const mod = await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)
+// 9e (identity law): publish HANDS BACK the mount identity and revoke
+// REQUIRES it — the test's binding states that contract, so the arity is
+// checked here rather than discovered at runtime.
 const { publishPaMount, revokePaMount, readPaCallFacts } = mod as {
-  publishPaMount: (root: string, id: string, entry: Record<string, unknown>) => void
-  revokePaMount: (root: string, id: string) => boolean
+  publishPaMount: (root: string, id: string, entry: Record<string, unknown>) => unknown
+  revokePaMount: (root: string, id: string, identity: unknown) => boolean
   readPaCallFacts: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
 }
 
@@ -54,10 +57,14 @@ function healthyMount() {
     },
     plane: {
       realmId: 'realm-x',
+      // 9e-2 (AUTH fact list): the generation reader lives on the PLANE
+      // FACE (the same `() => number` source the assembly config was built
+      // with) — the ProductionAdmissionAssembly face has no such getter and
+      // none may be invented.
+      authorityGeneration: () => 4,
       assembly: {
         policyDocument: () => ({ rules: [] }),
         denySources: () => ([]),
-        authorityGeneration: () => 4,
       },
       livePaPlan: new Map([[
         'call-1',
@@ -162,8 +169,8 @@ describe('A5M1-B — PA mount registry (named PaCallFacts contract)', () => {
       throw new Error('projection fault')
     }
     expect(await base(brokenDeny)).toBeUndefined()
-    const brokenGen = healthyMount() as ReturnType<typeof healthyMount> & { plane: { assembly: Record<string, unknown> } }
-    brokenGen.plane.assembly.authorityGeneration = () => {
+    const brokenGen = healthyMount() as ReturnType<typeof healthyMount> & { plane: { authorityGeneration: () => number } }
+    brokenGen.plane.authorityGeneration = () => {
       throw new Error('generation unanswerable')
     }
     expect(await base(brokenGen)).toBeUndefined()

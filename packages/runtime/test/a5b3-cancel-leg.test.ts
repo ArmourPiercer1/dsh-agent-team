@@ -440,7 +440,7 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     pre.abort({ kind: 'user' }) // already cancelled when the call arrives
     {
       const exec = realExec(pre.signal)
-      // eslint-disable-next-line no-console
+
       // PR358-A2 (root ruling post-f5): a PRE-ABORTED governed call answers
       // CANCELLED at the PA edge — zero backend, zero Control row. (The old
       // exit pinned the backend's call-aborted refusal; that refusal form

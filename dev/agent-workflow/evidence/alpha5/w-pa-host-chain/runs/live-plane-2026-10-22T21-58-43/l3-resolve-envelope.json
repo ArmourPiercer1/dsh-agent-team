@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "pahc-resolve-b-39ouftfyfb",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-0vstfs107um8sy0bzoa771ax",
+          "decision": "deny",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-pahc-pa-2026-10-22T21-58-43"
+          },
+          "scope": {
+            "rootSessionId": "session-pahc-pa-2026-10-22T21-58-43",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-059bt150tbzf"
+            },
+            "targetInstanceId": "inst-059bt150tbzf",
+            "actionName": "parameter-permission",
+            "correlation": "call-pahc-txbdon7k",
+            "toolName": "read",
+            "operationFingerprint": "sha256:c36fd5bab30f56e1cd780f9806bf8e3f5afc93a5cb5a26e0c765eb5712e4b153",
+            "authorityScope": {
+              "operationClass": "read",
+              "matcher": {
+                "kind": "exact",
+                "resource": "<ABSOLUTE_PATH>"
+              }
+            }
+          },
+          "requestSequence": 11,
+          "decisionSequence": 12,
+          "createdAt": "2026-10-22T21:58:54.607Z",
+          "note": "pahc L3 remote v4 deny"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

@@ -1,0 +1,333 @@
+{
+  "model": "pahc-live-model",
+  "stream": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "[team-work requestToken=pahc-delegate-a-2026-10-22T21-46-48] PAHCMK_MEMA_2026-10-22T21-46-48 Read the file <ABSOLUTE_PATH> with the read tool exactly once, then report its first line. Use no other tool."
+        },
+        {
+          "type": "text",
+          "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"<ABSOLUTE_PATH>\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "call-pahc-ysiwr8wi",
+          "name": "read",
+          "input": {
+            "file_path": "<ABSOLUTE_PATH>"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "call-pahc-ysiwr8wi",
+          "content": [
+            {
+              "type": "text",
+              "text": "<path><ABSOLUTE_PATH>\n<type>file</type>\n<content>\n1: PAHC-CONTENT-A-2026-10-22T21-46-48\n2: line-two-of-A\n\n(End of file - total 2 lines)\n</content>"
+            }
+          ],
+          "is_error": false
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "PAHC_MEMA_READ_OK"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "[team-work requestToken=pahc-delegate-b-2026-10-22T21-46-48] PAHCMK_MEMB_2026-10-22T21-46-48 Read the file <ABSOLUTE_PATH> with the read tool exactly once, then report its first line. Use no other tool."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "call-pahc-c0cper4y",
+          "name": "read",
+          "input": {
+            "file_path": "<ABSOLUTE_PATH>"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "call-pahc-c0cper4y",
+          "content": [
+            {
+              "type": "text",
+              "text": "Error: the approval was denied"
+            }
+          ],
+          "is_error": true
+        }
+      ]
+    }
+  ],
+  "max_tokens": 256000,
+  "thinking": {
+    "type": "enabled"
+  },
+  "output_config": {
+    "effort": "high"
+  },
+  "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are worker w1 of the pahc reference team. Follow the delegated task exactly, tool by tool, in order; use only the tools the task names. PAHCMK_MEMA_2026-10-22T21-46-48 PAHCMK_MEMB_2026-10-22T21-46-48\n\n[team-member-context rootSessionId=\"session-pahc-pa-2026-10-22T21-46-48\" instanceId=\"inst-0l3e2ih1ki7c\" role=\"member\"]\nEvery team_* tool call must include rootSessionId=\"session-pahc-pa-2026-10-22T21-46-48\" and a fresh unique requestToken; do not use another team's rootSessionId or another member's instanceId.\n\nYou are a coding agent powered by the pahc-live-model model.\n\nTokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use <TRUNCATED 3197 chars>",
+  "tools": [
+    {
+      "name": "bash",
+      "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The bash command to run. Relative path is preferred in the command."
+          }
+        },
+        "required": [
+          "command"
+        ]
+      }
+    },
+    {
+      "name": "edit",
+      "description": "Edit an existing UTF-8 text file by replacing literal text.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to edit, resolved by the filesystem backend."
+          },
+          "old_string": {
+            "type": "string",
+            "description": "Literal text to replace."
+          },
+          "new_string": {
+            "type": "string",
+            "description": "Literal replacement text. Use an empty string to delete the match."
+          },
+          "replace_all": {
+            "type": "boolean",
+            "description": "Replace all matches. Defaults to false; when false, old_string must appear exactly once."
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+            "enum": [
+              "workspace-write",
+              "danger-full-access"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+          }
+        },
+        "required": [
+          "file_path",
+          "old_string",
+          "new_string"
+        ]
+      }
+    },
+    {
+      "name": "read",
+      "description": "Read one governed text file inside this member's admitted file root. Paths resolve against that root; escaping targets are refused.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "path relative to the governed root, or an absolute path inside it"
+          },
+          "offset": {
+            "type": "number",
+            "description": "The line number to start reading from. Only provide if the file is too large to read at once."
+          },
+          "limit": {
+            "type": "number",
+            "description": "The number of lines to read. Only provide if the file is too large to read at once. Defaults to 2000."
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "read_image",
+      "description": "Read a PNG/JPEG/WebP/GIF file and return the image itself. Large images are downscaled automatically; do not install image libraries or create thumbnails to inspect an image.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to the image file, resolved by the filesystem backend."
+          }
+        },
+        "required": [
+          "file_path"
+        ]
+      }
+    },
+    {
+      "name": "team_bash",
+      "description": "Governed shell (a5p5 lane): opaque command text decided by admission + the confined backend; deny-before-backend.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string"
+          },
+          "cwd": {
+            "type": "string"
+          },
+          "timeout": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600000
+          },
+          "background": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "command"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "team_glob",
+      "description": "Governed filename traversal (a5p5 lane): pattern + target ONLY; admission-gated before any backend runs.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "team_grep",
+      "description": "Governed search (a5p5 lane): strict pattern search over the realm; effects derived read-time, admission-gated before any backend runs.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "glob": {
+            "type": "string"
+          },
+          "output_mode": {
+            "type": "string",
+            "enum": [
+              "content",
+              "files_with_matches",
+              "count"
+            ]
+          },
+          "fixed_string": {
+            "type": "boolean"
+          },
+          "ignore_case": {
+            "type": "boolean"
+          },
+          "multiline": {
+            "type": "boolean"
+          },
+          "context": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "max_results": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000
+          }
+        },
+        "required": [
+          "pattern"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "write",
+      "description": "Create or fully replace a UTF-8 text file.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file_path": {
+            "type": "string",
+            "description": "Path to write, resolved by the filesystem backend."
+          },
+          "content": {
+            "type": "string",
+            "description": "Full UTF-8 text content to write."
+          },
+          "sandbox_permissions": {
+            "type": "string",
+            "description": "The narrowest wider sandbox mode for a one-shot retry of the exact operation the sandbox just denied; the retry asks the user for approval.",
+            "enum": [
+              "workspace-write",
+              "danger-full-access"
+            ]
+          },
+          "justification": {
+            "type": "string",
+            "description": "Required with sandbox_permissions: one sentence for the user explaining why this exact file operation needs the wider access. Use the language of the user’s current request."
+          }
+        },
+        "required": [
+          "file_path",
+          "content"
+        ]
+      }
+    }
+  ],
+  "dsh_session_log": "<REDACTED:dsh_session_log presence=present chars=3311>",
+  "dsh_plugin_packages": "<REDACTED:dsh_plugin_packages presence=present chars=11028>"
+}

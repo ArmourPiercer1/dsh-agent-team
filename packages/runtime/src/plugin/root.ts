@@ -220,7 +220,9 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
-// @ts-ignore -- untyped center module (mjs, no declaration)
+import type { PaCallFacts } from '../../control/types.js'
+// untyped center module (.mjs source, no declaration file); bound through
+// the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs'
 import { createPaEffectsVerifier } from '../../operation-permission/pa-control-bridge.js'
 import type { ControlService } from '../../control/index.js'
@@ -2338,11 +2340,23 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // mount per call (no mount ⇒ undefined facts ⇒ authority-undetermined).
   // Lazy per-call readers, so the resolve gate and the guard gate
   // necessarily consult the SAME live mount authority.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // The registry is an untyped `.mjs` source module, so it is bound through
+  // ONE typed seam HERE instead of per-call casts (no `any`, no ts-ignores:
+  // the shapes below are the registry's real input/output contract, see
+  // live/pa-mount-registry.mjs).
+  type PaCallFactsInput = {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly manifest: unknown
+    readonly decider: unknown
+    readonly stage: string
+    readonly mount?: unknown
+  }
+  const readPaCallFactsPort = readPaCallFacts as unknown as (input: PaCallFactsInput) => Promise<PaCallFacts | undefined>
+  const resolvePaMountPort = resolvePaMount as unknown as (rootSessionId: string, memberInstanceId: string) => unknown
   const paEffectsVerifierPort = createPaEffectsVerifier({
     readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (readPaCallFacts as any)({
+      await readPaCallFactsPort({
         rootSessionId,
         requestId,
         manifest,
@@ -2350,9 +2364,17 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         stage,
         // 9e fix-2: the FLAT parsed manifest carries the member attribution
         // (manifest.member.instanceId); there is no `request` wrapper.
-        mount: (resolvePaMount as any)(rootSessionId, String((manifest as { member?: { instanceId?: string } })?.member?.instanceId ?? '')),
+        mount: resolvePaMountPort(rootSessionId, String((manifest as { member?: { instanceId?: string } })?.member?.instanceId ?? '')),
       }),
   })
+  // 9e-3: the SAME adapter the verifier consults is published as a shared
+  // ref (the controlServiceRef pattern) so the PLANE's final edge awaits the
+  // identical call-level facts at consumption — one adapter, one authority,
+  // no second getter path. agent-bindings threads it into the mount; the
+  // plane awaits it fresh at the consumption edge.
+  const paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined } = {
+    current: (input) => readPaCallFactsPort(input as PaCallFactsInput),
+  }
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
@@ -4287,6 +4309,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     catalog,
     blueprint,
     policyReader,
+    paReadCallFactsRef,
     leaderIdentity,
     intent,
     compatibility,

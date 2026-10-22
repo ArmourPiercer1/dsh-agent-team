@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { approvingControlLeg, denyingControlLeg } from './a5-m1-control-legs.mjs'
+import type { ControlLegInput, ControlLegResult } from './a5-m1-control-legs.mjs'
 
 const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -52,7 +53,7 @@ const POLICY_BASH_ALLOW = Object.freeze({
   ask: [] as unknown[],
   deny: [] as unknown[],
 })
-function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: Record<string, unknown>) => Promise<unknown>) {
+function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: ControlLegInput) => Promise<ControlLegResult>) {
   const built = row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: policy,
@@ -73,9 +74,12 @@ const def = (plane: ReturnType<typeof buildPlane>, name: string) => {
   if (!d) throw new Error(`no definition ${name}`)
   return d
 }
-async function runBash(plane: ReturnType<typeof buildPlane>, raw: Record<string, unknown>) {
-  try { return { threw: false, res: await def(plane, 'team_bash').execute(raw) } }
-  catch (e) { return { threw: true, msg: String((e as Error)?.message ?? e) } }
+// the discriminated union is DECLARED, so `if (!r.threw)` narrows for real
+// (a bare inferred union of two literals loses the discriminant).
+type BashRun = { readonly threw: false; readonly res: { readonly text?: string } } | { readonly threw: true; readonly msg: string }
+async function runBash(plane: ReturnType<typeof buildPlane>, raw: Record<string, unknown>): Promise<BashRun> {
+  try { return { threw: false as const, res: await def(plane, 'team_bash').execute(raw) } }
+  catch (e) { return { threw: true as const, msg: String((e as Error)?.message ?? e) } }
 }
 
 describe('a5-m1-bash-c1 — confined shell C1 refusal family + success positive (real landlock process)', () => {
@@ -100,7 +104,13 @@ describe('a5-m1-bash-c1 — confined shell C1 refusal family + success positive 
     const plane = buildPlane(POLICY_BASH_ALLOW)
     const r = await runBash(plane, { command: 'id', cwd: '../outside' })
     expect(r.threw).toBe(false)
-    if (!r.threw) expect(r.res.text).toMatch(/code=locator-rejected/); expect(r.res.text).toMatch(/\$\.cwd/); expect(r.res.text).toMatch(/`\.\.` segments are refused|segments are refused/)
+    if (!r.threw) {
+      // all three refusals are asserted INSIDE the narrowed branch (the
+      // statement-wise `if` covered only the first one before)
+      expect(r.res.text).toMatch(/code=locator-rejected/)
+      expect(r.res.text).toMatch(/\$\.cwd/)
+      expect(r.res.text).toMatch(/`\.\.` segments are refused|segments are refused/)
+    }
     const be = plane.backends.shell
     expect(be?.execCount?.()).toBe(0)
   })

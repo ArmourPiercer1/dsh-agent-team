@@ -20,10 +20,31 @@ import { describe, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const HERE = fileURLToPath(new URL('.', import.meta.url))
-const row = await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)
+// The plane is an untyped `.mjs` SOURCE module (no declaration file): bind
+// the dynamic import through the module's REAL shape once, then unwrap the
+// mount result fail-closed — the refusal path throws with the real code
+// instead of pretending the value exists.
+type SeamToolResult = { readonly text?: string; readonly message?: string; readonly kind?: string }
+type SeamToolDef = { readonly name: string; execute: (raw: Record<string, unknown>, exec?: unknown) => Promise<SeamToolResult> }
+type SeamMount =
+  | { readonly ok: true; readonly value: { readonly definitions: readonly SeamToolDef[] } }
+  | { readonly ok: false; readonly error?: { readonly code?: string; readonly message?: string } }
+// the annotation types every call site; the dynamic-import expression is
+// cast through `unknown` once (the `.mjs` source module carries no
+// declaration file).
+const row: { createTeamToolPlaneAssembly: (input: Record<string, unknown>) => SeamMount } =
+  await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as unknown as {
+    createTeamToolPlaneAssembly: (input: Record<string, unknown>) => SeamMount
+  }
+const mounted = (mount: SeamMount): { readonly definitions: readonly SeamToolDef[] } => {
+  if (mount.ok !== true) throw new Error(`mount refused: ${String(mount.error?.code ?? '?')} ${String(mount.error?.message ?? '')}`)
+  return mount.value
+}
+const definitionOf = (mount: { readonly definitions: readonly SeamToolDef[] }, name: string): SeamToolDef => {
+  const found = mount.definitions.find((d) => d.name === name)
+  if (found === undefined) throw new Error(`no definition named ${name}`)
+  return found
+}
 const { approvingControlLeg } = await import(new URL('./a5-m1-control-legs.mjs', import.meta.url).href)
 
 const ASK_ALL = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
@@ -48,7 +69,7 @@ function fixtureShell() {
 async function planeWith(leg: unknown) {
   const scratch = mkdtempSync(join(tmpdir(), 'a5m1-seam-'))
   const shell = fixtureShell()
-  const built = row.createTeamToolPlaneAssembly({
+  const built = mounted(row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: ASK_ALL,
     realmId: 'a5m1-seam-realm',
@@ -58,9 +79,8 @@ async function planeWith(leg: unknown) {
     ...(leg === undefined ? {} : { controlLeg: leg }),
     plane: { cwdRoot: scratch },
     backends: { shell },
-  })
-  expect(built.ok, JSON.stringify(built)).toBe(true)
-  const bash = built.value.definitions.find((d: { name: string }) => d.name === 'team_bash')
+  }))
+  const bash = definitionOf(built, 'team_bash')
   const run = async (command: string, exec?: unknown) => await bash.execute({ command }, exec)
   return { run, shell, done: () => rmSync(scratch, { recursive: true, force: true }) }
 }
@@ -136,15 +156,14 @@ describe('A5M1-SEAM — fix-5/A2 read row', () => {
     fsProbe.hits = 0
     fsProbe.armed = true
     try {
-      const built = row.createTeamToolPlaneAssembly({
+      const built = mounted(row.createTeamToolPlaneAssembly({
         teamSessionId: 'a5m1-test-team-root',
         permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
         realmId: 'a5m1-e6-realm', templateId: 'e6-tpl', role: 'member', instanceId: 'e6-instance',
         controlLeg: async () => { throw new Error('E6: a pre-aborted call must NEVER open an approval wait') },
         plane: { fsInstance: { fs: 'e6', rootDir: scratch, realmId: 'a5m1-e6-realm', kind: 'absolute-path' } },
-      })
-      expect(built.ok, JSON.stringify(built)).toBe(true)
-      const read = built.value.definitions.find((d: { name: string }) => d.name === 'read')
+      }))
+      const read = definitionOf(built, 'read')
       const ac = new AbortController()
       ac.abort()
       const r = await read.execute({ file_path: join(scratch, 'secret.txt') }, { token: Symbol('e6'), signal: ac.signal })
@@ -185,7 +204,7 @@ describe('A5M1-SEAM — fix-3 fresh current-facts', () => {
   const facts = { policy: undefined as unknown, epoch: undefined as unknown, gen: 0, rev: 1 }
   const build = async (controlLeg: unknown) => {
     const scratch = mkdtempSync(join(tmpdir(), 'a5m1-f3-'))
-    const built = row.createTeamToolPlaneAssembly({
+    const built = mounted(row.createTeamToolPlaneAssembly({
       teamSessionId: 'a5m1-test-team-root',
       permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
       realmId: 'a5m1-f3-realm', templateId: 'f3-tpl', role: 'member', instanceId: 'f3-instance',
@@ -200,9 +219,8 @@ describe('A5M1-SEAM — fix-3 fresh current-facts', () => {
         getBindingRevision: () => facts.rev,
       },
       plane: { fsInstance: { fs: 'f3', rootDir: scratch, realmId: 'a5m1-f3-realm', kind: 'absolute-path' } },
-    })
-    expect(built.ok, JSON.stringify(built)).toBe(true)
-    const bash = built.value.definitions.find((d: { name: string }) => d.name === 'team_bash')
+    }))
+    const bash = definitionOf(built, 'team_bash')
     return { bash, scratch }
   }
   it('F3a policy drift DURING the approval wait => GRANT_STALE, zero body, no re-approval', async () => {
@@ -237,8 +255,6 @@ describe('A5M1-SEAM — fix-3 fresh current-facts', () => {
     }
   })
 })
-function built_exec_zero(b: { backendExecCount?: () => number }) { return true }
-
 describe('A5M1-SEAM — fix-5 pending ordering', () => {
   it('E5 pending approval performs ZERO resolver/probe fs: realpath/stat/open happen only after consumption', async () => {
     const scratch = mkdtempSync(join(tmpdir(), 'a5m1-e5-'))
@@ -247,7 +263,7 @@ describe('A5M1-SEAM — fix-5 pending ordering', () => {
     fsProbe.hits = 0
     fsProbe.armed = true
     try {
-      const built = row.createTeamToolPlaneAssembly({
+      const built = mounted(row.createTeamToolPlaneAssembly({
         teamSessionId: 'a5m1-test-team-root',
         permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
         realmId: 'a5m1-e5-realm',
@@ -260,18 +276,15 @@ describe('A5M1-SEAM — fix-5 pending ordering', () => {
         },
         fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(`${parent}/`) },
         plane: { fsInstance: { fs: 'e5', rootDir: scratch, realmId: 'a5m1-e5-realm', kind: 'absolute-path' } },
-      })
-      expect(built.ok, JSON.stringify(built)).toBe(true)
-      const read = built.value.definitions.find((d: { name: string }) => d.name === 'read')
+      }))
+      const read = definitionOf(built, 'read')
       let refusal = 'UNSET'
       try {
-        const r = await read.execute({ file_path: join(scratch, 'secret.txt') })
-        refusal = `RES:${JSON.stringify(r).slice(0, 160)}`
-        void scratch
+        const outcome = await read.execute({ file_path: join(scratch, 'secret.txt') })
+        refusal = `RES:${JSON.stringify(outcome).slice(0, 160)}`
       } catch (error) {
         refusal = `THROWN:${String((error as Error)?.message ?? error)}`
       }
-      if (refusal === 'UNSET') refusal = `RESOLVED:${JSON.stringify(r).slice(0, 200)}`
       expect(refusal).toContain('APPROVAL_DENIED')
       expect(refusal).not.toContain('E5-NEVER-READ')
       // the denied call NEVER touched the resolver surface

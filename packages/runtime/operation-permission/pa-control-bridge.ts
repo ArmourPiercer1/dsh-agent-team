@@ -174,6 +174,9 @@ export type PaControlLegResult =
   | {
       readonly decision: 'approve'
       readonly requestId: string
+      /** 9e-3: the durable mint (the exact manifest the row carries), for
+       *  the plane's final-edge facts read — carriage only. */
+      readonly manifest?: PaControlManifest
       readonly approval: PresentedApproval
       readonly grant: OperationGrant
     }
@@ -576,7 +579,11 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     observe({ stage: 'guard-consumed', callId, requestId: record.requestId, grantId: issued.value.grantId })
 
     // ── 7. the frozen-A success shape (minted AND guard-consumed) ────────
-    return { decision: 'approve', requestId: record.requestId, approval, grant: issued.value }
+    // 9e-3 (CENTER request; AUTH-owned file): the approve leg carries the
+    // durable MINT — the exact manifest bytes the row holds — so the
+    // plane's final edge can re-read the SAME row's call-level facts
+    // through the ONE adapter. Carriage only; no semantics change.
+    return { decision: 'approve', requestId: record.requestId, manifest, approval, grant: issued.value }
   }
 }
 

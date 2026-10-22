@@ -77,16 +77,10 @@ const fsInstance = (realm: string) => ({ fs: 'a5m1-ctl', rootDir: ROOT_DIR, real
 const subtreeContains = ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/')
 const joined = (body: ReadOk) => body.lines.map((l) => l.text).join('\n')
 
-/** Refusal harness: resolves→ never-throw marker; rejects→ the real message. */
-async function attempt(fn: () => Promise<unknown>): Promise<{ resolved: boolean; msg: string }> {
-  try { return { resolved: true, msg: '' } } catch { return { resolved: false, msg: '' } }
-  // (replaced below — kept impossible-by-type; real impl:)
-}
 async function run(fn: () => Promise<unknown>): Promise<{ resolved: true; value: unknown } | { resolved: false; msg: string }> {
   try { return { resolved: true as const, value: await fn() } }
   catch (e) { return { resolved: false as const, msg: String((e as Error)?.message ?? e) } }
 }
-void attempt
 
 function mount(policy: unknown, extra: Record<string, unknown> = {}, observe: string[] = []) {
   const built = row.createTeamToolPlaneAssembly({

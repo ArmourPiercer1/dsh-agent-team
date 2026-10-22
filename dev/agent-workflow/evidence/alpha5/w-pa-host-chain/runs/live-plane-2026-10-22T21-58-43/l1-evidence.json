@@ -1,0 +1,45 @@
+{
+  "recorded": [
+    {
+      "sequence": 4,
+      "payload": {
+        "actionName": "parameter-permission",
+        "approvalCaseId": "case-0b0k33y0qt2euz0w0eim0099",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "<ABSOLUTE_PATH>"
+          },
+          "operationClass": "read"
+        },
+        "beneficiaryAuthority": "member",
+        "correlation": "call-pahc-cug19gb5",
+        "executionCoupling": "guarded",
+        "kind": "leader-approval",
+        "legOrdinal": 1,
+        "operationFingerprint": "sha256:869dffa392b6a9147d544905489d4443e79149c8378e50220800cb665c651ed5",
+        "requestId": "ctrl-0kwhw070y2463c0wuqc2l1pq",
+        "requestedEffect": "allow",
+        "requester": {
+          "instanceId": "inst-059bt150tbzf",
+          "kind": "instance",
+          "role": "member"
+        },
+        "requiredAuthorityAtCreation": "leader",
+        "reviewAuthority": "leader",
+        "subject": {
+          "instanceId": "inst-059bt150tbzf",
+          "kind": "instance"
+        },
+        "summary": "read <ABSOLUTE_PATH>",
+        "targetInstanceId": "inst-059bt150tbzf",
+        "toolName": "read"
+      }
+    }
+  ],
+  "derivedStatus": "pending",
+  "contentAObservedInModelRequests": [],
+  "memberContentRows": 0,
+  "memberDoneA": false,
+  "modelCallIdA": "call-pahc-cug19gb5"
+}

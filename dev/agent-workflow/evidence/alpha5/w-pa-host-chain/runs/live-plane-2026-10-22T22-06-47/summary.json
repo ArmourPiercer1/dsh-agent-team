@@ -1,0 +1,39 @@
+{
+  "runStamp": "2026-10-22T22-06-47",
+  "command": "node dev/agent-workflow/evidence/alpha5/w-pa-host-chain/run-pa-host-chain.mjs --plane (worktree /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel)",
+  "fatal": "team.create failed: {\"code\":\"MALFORMED_DTO\",\"message\":\"permission policy $.members[0].capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \\\"allow\\\" (source: pahc-main.yaml)\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"MALFORMED_DTO\",\"message\":\"permission policy $.members[0].capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \\\"allow\\\" (source: pahc-main.yaml)\",\"deta",
+  "criteria": [
+    {
+      "id": "H1.pre",
+      "name": "test-use pristine at the paths.mjs baseline BEFORE",
+      "ok": true,
+      "detail": "head=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+    },
+    {
+      "id": "A1.0",
+      "name": "real host booted on the production row (profile-patch seam; anchor team alive)",
+      "ok": true,
+      "detail": "origin=http://127.0.0.1:3181"
+    },
+    {
+      "id": "A1.1",
+      "name": "boot surface carries the native read tool (unmanaged remainder computed)",
+      "ok": true,
+      "detail": "surface=20 deny=0"
+    },
+    {
+      "id": "A2.0",
+      "name": "team.create over the real wire bound the strict PA blueprint on a fresh root",
+      "ok": false,
+      "detail": "{\"code\":\"MALFORMED_DTO\",\"message\":\"permission policy $.members[0].capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \\\"allow\\\" (source: pahc-main.yaml)\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"MALFORMED_DTO\",\"message\":\"pe"
+    }
+  ],
+  "firstFailure": {
+    "id": "A2.0",
+    "name": "team.create over the real wire bound the strict PA blueprint on a fresh root",
+    "detail": "{\"code\":\"MALFORMED_DTO\",\"message\":\"permission policy $.members[0].capabilities.permissions.default must be one of ask | deny (a default of 'allow' is rejected: no silent privilege expansion), got \\\"allow\\\" (source: pahc-main.yaml)\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"domain-error\",\"cause\":{\"code\":\"MALFORMED_DTO\",\"message\":\"pe",
+    "at": "2026-10-22T22:14:41.953Z"
+  },
+  "pass": false,
+  "exitCode": 1
+}
