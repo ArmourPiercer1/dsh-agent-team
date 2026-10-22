@@ -82,7 +82,7 @@
  * @module @dsh-agent-team/runtime/operation-permission/pa-control-bridge
  */
 
-import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js'
+import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../domain/tool-governance/src/index.js'
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'
 import type {
   AdmissionRequest,
@@ -96,6 +96,10 @@ import {
   CONTROL_REQUEST_KINDS,
   isControlError,
 } from '../control/index.js'
+// The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
+// module's types file directly (the barrel predates the additive surface;
+// the module declares the closed vocabulary and the strict parser there).
+import { PA_CONTROL_MANIFEST_SCHEMA, parsePaControlManifest } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlGuardVerdict,
@@ -104,7 +108,14 @@ import type {
   ControlRequestRecord,
   ControlWaitSignal,
 } from '../control/index.js'
-import { authorityRank } from '../governance/authority-ceiling.js'
+import type {
+  PaControlManifest,
+  PaEffectsVerifier,
+  PaEffectsVerifierInput,
+  PaEffectsVerifierVerdict,
+} from '../control/types.js'
+import { authorityRank, mayReview } from '../governance/authority-ceiling.js'
+import { effectApprovalScope } from '../tool-admission/approval-case.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js'
 
@@ -121,6 +132,20 @@ export interface PaControlLegInput {
   readonly plan: EffectSetApprovalPlan
   /** The plane's production admission assembly (the landing edges). */
   readonly assembly: PaLandingAssembly
+  /**
+   * A5-M1 item 4 (additive): the PARAMETER-LEVEL cancellation signal of
+   * THIS invocation (the center threads the host exec/token cancel facts
+   * through the seam). It joins the wiring-level `deps.signal` at every
+   * checkpoint: the wait (abort ⇒ `unsettled`, the durable rows untouched),
+   * AFTER the decision arrived and before anything is minted (⇒
+   * `unsettled`: the durable allow stays exactly as written — retained,
+   * never reclaimed, never faked as unconsumed later), and after the mint
+   * and before the guard (⇒ deny, the minted grant NOT handed back — zero
+   * PA consumption, zero body). A cancel that arrives AFTER the guard
+   * consumed changes nothing: the durable consumption fact stands (truthful
+   * retention — the center owns whether the body still runs).
+   */
+  readonly signal?: ControlWaitSignal
 }
 
 /** The landing edges the leg uses from the assembly (structural view — the
@@ -312,15 +337,30 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     if (plan.effectSetFingerprint !== effects.fingerprint) {
       return deny(`the plan's effect-set fingerprint ${plan.effectSetFingerprint} is not this request's ${effects.fingerprint} — the approval would cover a different set`)
     }
-    const toolName = effects.effects.find((effect) => effect.kind === 'tool-invoke')?.toolName
+    const toolInvokeEffect = effects.effects.find((effect) => effect.kind === 'tool-invoke')
+    const toolName = toolInvokeEffect?.toolName
     if (typeof toolName !== 'string' || toolName.length === 0) {
       return deny('the effect set names no tool-invoke tool — the guard scope would carry no tool identity')
     }
 
-    // ── the strict PA manifest — VERBATIM onto the durable row ──────────
+    // ── the strict PA operation manifest (PR358 fix, v2) — VERBATIM onto
+    //    the durable row, and COMPLETE by the service's own re-parse ─────
+    // A-class preservation: the approvalCaseId AND the A1-14 authority
+    // point ride the payload top level, the binding/member/request facts
+    // ride FIELD BY FIELD (the approval covers THIS binding, THIS member,
+    // THIS parameter identity — a summary that drops a field is not the
+    // approval), and the service RECOMPUTES the canonical digest: the row
+    // identity (`operationFingerprint`) IS that payload-integrity digest,
+    // while the EXECUTION-side `parametersFingerprint` rides the manifest
+    // as an independent field (parameters ≠ digest BY CONSTRUCTION — the
+    // two answer different questions: execution scope vs payload
+    // integrity, and the same scope key can only ever answer the SAME
+    // manifest bytes).
+    const authorityScope = effectApprovalScope(toolInvokeEffect, realmId)
     const manifest = deepLossless({
-      schema: 'a5m1.pa-control-manifest.v1',
+      schema: PA_CONTROL_MANIFEST_SCHEMA,
       approvalCaseId: plan.approvalCaseId,
+      authorityScope,
       requiredAuthority: plan.requiredAuthority,
       perEffectRequired: plan.perEffectRequired,
       deniedEffects: plan.deniedEffects,
@@ -330,6 +370,8 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
       callId,
       parametersFingerprint: request.parametersFingerprint,
       effects: effects.effects,
+      binding: request.binding,
+      member: { teamSessionId: member.teamSessionId, instanceId: member.instanceId },
     })
     const digest = canonicalJsonFingerprint(manifest)
     const correlation = paCorrelation(plan.approvalCaseId, callId)
@@ -345,7 +387,12 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
         actionName,
         toolName,
         correlation,
-        operationFingerprint: request.parametersFingerprint,
+        // A5-M1: the row identity binds the PAYLOAD-INTEGRITY digest (the
+        // service recomputes and enforces it; the parameters fingerprint
+        // rides the manifest as the separate execution-side fact). Same
+        // case replayed with ANY different manifest bytes = different
+        // scope key = a new row, never a silent reuse.
+        operationFingerprint: digest,
         summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
         // The manifest is a pure JSON round-trip (deepLossless), i.e. a
         // lossless JSON value BY CONSTRUCTION; the type carries that fact.
@@ -366,8 +413,12 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
 
     // ── 2. await the REAL durable decision ──────────────────────────────
     let decision: ControlDecisionRecord
-    const outerSignal = deps.signal?.()
-    if (outerSignal?.aborted === true) {
+    const signals: ControlWaitSignal[] = []
+    const wiringSignal = deps.signal?.()
+    if (wiringSignal !== undefined) signals.push(wiringSignal)
+    if (input.signal !== undefined) signals.push(input.signal)
+    const cancelled = (): boolean => signals.some((s) => s.aborted === true)
+    if (cancelled()) {
       // The row exists (durable, resolvable later); this invocation stops —
       // cancellation never decides, and it never mints.
       observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, detail: 'pre-aborted' })
@@ -376,14 +427,19 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     let controller: AbortController | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     try {
-      if (deps.waitTimeoutMs !== undefined && outerSignal === undefined) {
+      if (deps.waitTimeoutMs !== undefined) {
         controller = new AbortController()
         timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs)
+        signals.push(controller.signal as unknown as ControlWaitSignal)
       }
       decision = await deps.controlService.awaitControlDecision({
         rootSessionId: deps.rootSessionId,
         requestId: record.requestId,
-        ...(controller !== undefined ? { signal: controller.signal as unknown as ControlWaitSignal } : outerSignal !== undefined ? { signal: outerSignal } : {}),
+        ...(signals.length === 1
+          ? { signal: signals[0] as ControlWaitSignal }
+          : signals.length > 1
+            ? { signal: AbortSignal.any(signals.map((s) => s as unknown as AbortSignal)) as unknown as ControlWaitSignal }
+            : {}),
       })
     } catch (error: unknown) {
       if (isControlError(error)
@@ -403,6 +459,21 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     // request can never become an allow).
     if (decision.decision !== 'allow') {
       return deny(`the approval was denied (${decision.decision})`, record.requestId)
+    }
+
+    // A5-M1 item 4: the mint-time cancellation checkpoint. The arrived
+    // decision is DURABLE truth and stays exactly as the decider wrote it
+    // (retained — a later probe still sees the unspent allow; nothing is
+    // reclaimed, nothing is later reported as unconsumed that was
+    // consumed). What the cancel stops is everything downstream: zero
+    // mint, zero guard consumption, zero PA consumption, zero body.
+    if (cancelled()) {
+      observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, detail: 'cancelled-after-decision' })
+      return {
+        decision: 'unsettled',
+        requestId: record.requestId,
+        detail: 'the invocation was cancelled after the decision arrived and before any grant was minted (the durable allow stays exactly as written, unspent)',
+      }
     }
 
     // ── 3. the bridge-side A1-14 rung re-check (pre-execute-adapter (4c')) ─
@@ -451,6 +522,14 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     }
     observe({ stage: 'grant-minted', callId, requestId: record.requestId, grantId: issued.value.grantId })
 
+    // A5-M1 item 4: the consumption-point cancellation checkpoint. The
+    // minted one-shot grant stays behind the refusal (never handed back to
+    // a dead invocation); the durable Control state is untouched — no
+    // guard call, hence zero consumption.
+    if (cancelled()) {
+      return deny('the invocation was cancelled after the grant was minted and before the durable consumption; the minted grant is not returned (zero PA consumption, zero body)', record.requestId)
+    }
+
     // ── 6. the last-mile durable consumption (check-and-reserve, in-lock) ─
     const scope: ControlOperationScope = Object.freeze({
       rootSessionId: deps.rootSessionId,
@@ -458,7 +537,10 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
       actionName,
       toolName,
       correlation,
-      operationFingerprint: request.parametersFingerprint,
+      // The guard's exact scope identity is the SAME payload-integrity
+      // digest the row was created under (the parameters binding is
+      // inside the manifest the digest covers).
+      operationFingerprint: digest,
     })
     let verdict: ControlGuardVerdict
     try {
@@ -471,10 +553,132 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     if (!verdict.allowed) {
       return deny(`the last-mile guard blocked the operation (${verdict.reason}); the minted grant is not returned`, record.requestId)
     }
+    // A5-M1 (PR358 fix): an `allowed` verdict must PAIR to this exact
+    // request — the requestId AND the decision sequence of the decision
+    // this invocation waited on. A verdict that names any other row (or
+    // no row at all) is not an authorization of THIS operation, whatever
+    // it says; the minted grant stays behind the refusal.
+    if (verdict.requestId !== record.requestId || verdict.decisionSequence !== decision.decisionSequence) {
+      return deny(
+        `the last-mile guard answered with a foreign pairing (requestId=${String(verdict.requestId)} decisionSequence=${String(verdict.decisionSequence)}; this row: ${record.requestId}/${String(decision.decisionSequence)}) — a verdict not paired to this request authorizes nothing; the minted grant is not returned`,
+        record.requestId,
+      )
+    }
     observe({ stage: 'guard-consumed', callId, requestId: record.requestId, grantId: issued.value.grantId })
 
     // ── 7. the frozen-A success shape (minted AND guard-consumed) ────────
     return { decision: 'approve', requestId: record.requestId, approval, grant: issued.value }
+  }
+}
+
+// ── The third product: the ALL-EFFECTS verifier (the service's injected port) ──
+//
+// The PR358 review fix's PA-side half. The host wires this ONE pure port
+// into `createControlService({ paEffectsVerifier })`; the service then asks
+// the same question, INSIDE the per-team lock, at BOTH gates — before an
+// ALLOW is committed (decider = the real resolving caller) and before the
+// consumption fact is written (decider = the durable allow's decider). The
+// question is the seam's own landing law re-asked against the CURRENT
+// authority/policy facts, derived ONLY from the durable manifest's own
+// snapshots:
+//
+//  1. the binding/effect-set snapshots must still reconstruct the domain
+//     request (the domain's own parsers — a snapshot that no longer
+//     re-canonicalizes is UNDETERMINED, never covered);
+//  2. `planApproval` re-derived: a refusal, a moved case identity, or a
+//     moved effect-set fingerprint is DRIFT (the approved question no
+//     longer exists);
+//  3. per effect, `mayReview(decider, beneficiary, freshRequired[i])` —
+//     the fresh per-effect rung is the fused policy∧ceiling requirement
+//     (the walk's own law: a ceiling can raise the bar, never lower it),
+//     so this one legality test per effect walks the FULL set for the
+//     REAL decider (ADR A3-2; the ceiling half is already fused).
+//
+// THE LAW IT OBEYS (mirrors `PaEffectsVerifier` in the control types): it
+// is SYNCHRONOUS and PURE — zero mint, zero ledger touch, zero I/O, zero
+// re-entry into the control service; the two gates asking the same port
+// the same question is what makes a drift arriving between decision and
+// consumption refuse at the later gate with zero consumption.
+
+export interface PaEffectsVerifierDeps {
+  /** The landing assembly the manifest's realm re-derives through (trusted
+   *  wiring — the SAME facts the seam's leg used for this call). A realm
+   *  with no answer is undetermined, never covered. */
+  readonly assemblyFor: (manifest: PaControlManifest) => PaLandingAssembly | undefined
+  /** The trusted beneficiary rung of the manifest's case (assembly wiring,
+   *  never payload data). */
+  readonly beneficiaryOf: (manifest: PaControlManifest) => RuntimeAuthority | undefined
+  readonly onObserve?: (row: Readonly<Record<string, unknown>> & { readonly stage: string }) => void
+}
+
+export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsVerifier {
+  const observe = deps.onObserve ?? (((): void => {}) as NonNullable<PaEffectsVerifierDeps['onObserve']>)
+  return (input: PaEffectsVerifierInput): PaEffectsVerifierVerdict => {
+    const { manifest, decider } = input
+    const undetermined = (detail: string): PaEffectsVerifierVerdict => {
+      observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId })
+      return { ok: false, reason: 'authority-undetermined', detail }
+    }
+    const drifted = (detail: string): PaEffectsVerifierVerdict => {
+      observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId })
+      return { ok: false, reason: 'pa-authority-drift', detail }
+    }
+    const deciderRung = deciderAuthority(decider)
+    if (deciderRung === undefined) {
+      return undetermined('the durable decider is outside the closed ControlCallerRef vocabulary — its reach cannot be derived')
+    }
+    const assembly = deps.assemblyFor(manifest)
+    if (assembly === undefined || typeof assembly.planApproval !== 'function') {
+      return undetermined(`no landing assembly is wired for realm '${manifest.realmId}' — the all-Effects coverage cannot be answered`)
+    }
+    const beneficiary = deps.beneficiaryOf(manifest)
+    if (beneficiary === undefined) return undetermined('no trusted beneficiary rung is wired for this case')
+    const binding = parseToolBinding({ ...manifest.binding })
+    if (!binding.ok) {
+      return undetermined(`the manifest binding snapshot no longer reconstructs a domain ToolBinding (${JSON.stringify(binding.problems).slice(0, 160)})`)
+    }
+    const effectSet = parseRequestedEffectSet(manifest.effects)
+    if (!effectSet.ok) {
+      return undetermined(`the manifest effect set no longer reconstructs (${JSON.stringify(effectSet.problems).slice(0, 160)})`)
+    }
+    if (effectSet.value.fingerprint !== manifest.effects.fingerprint) {
+      return drifted(`the effect set re-canonicalizes to ${effectSet.value.fingerprint}, not the manifest's ${manifest.effects.fingerprint}`)
+    }
+    const request: AdmissionRequest = Object.freeze({
+      binding: binding.value,
+      member: Object.freeze({ teamSessionId: manifest.member.teamSessionId, instanceId: manifest.member.instanceId }),
+      callId: manifest.callId,
+      realmId: manifest.realmId,
+      parametersFingerprint: manifest.parametersFingerprint,
+      requestedEffects: effectSet.value,
+    })
+    let fresh: GovernanceResult<EffectSetApprovalPlan>
+    try {
+      fresh = assembly.planApproval(request)
+    } catch (error: unknown) {
+      return undetermined(`the authority plane refused to answer at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`)
+    }
+    if (!fresh.ok) {
+      return drifted(`the authority plane refused the re-derivation at the ${input.stage} gate (${fresh.error.message}) — the approved effect set no longer has an approvable path`)
+    }
+    if (fresh.value.approvalCaseId !== manifest.approvalCaseId) {
+      return drifted(`the approval case identity moved (${manifest.approvalCaseId} → ${fresh.value.approvalCaseId}) — this row approves a question that no longer exists`)
+    }
+    if (fresh.value.effectSetFingerprint !== manifest.effects.fingerprint) {
+      return drifted(`the effect-set fingerprint moved at re-derivation (${manifest.effects.fingerprint} → ${fresh.value.effectSetFingerprint})`)
+    }
+    if (fresh.value.perEffectRequired.length !== manifest.effects.effects.length) {
+      return undetermined('the fresh per-effect derivation does not cover every effect of the set')
+    }
+    for (let i = 0; i < fresh.value.perEffectRequired.length; i += 1) {
+      const required = fresh.value.perEffectRequired[i]
+      if (required === undefined) return undetermined(`the fresh per-effect derivation is missing entry ${String(i)}`)
+      if (!mayReview(deciderRung, beneficiary, required)) {
+        return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${beneficiary}'`)
+      }
+    }
+    observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(fresh.value.perEffectRequired.length) })
+    return { ok: true }
   }
 }
 
@@ -490,6 +694,11 @@ export interface PaGuardVerifyInput {
   readonly toolName?: string
   readonly correlation: string
   readonly operationFingerprint?: string
+  /** A5-M1: the EXECUTION-side fingerprint. For a PA manifest row the
+   *  probe must present it — a probe whose parameters disagree with the
+   *  approved manifest is a different invocation (`scope-mismatch`),
+   *  never a mirror hit. */
+  readonly parametersFingerprint?: string
 }
 
 export type PaGuardVerifyVerdict =
@@ -502,14 +711,21 @@ export interface PaGuardVerifyPort {
 
 /**
  * The pure-verify counterpart of `guardOperation` for the EXACT scope of one
- * PA-guarded plane execution (all Effects ride the one fingerprint-bound
- * scope). Read-only by construction: one fresh `listControlState` per call,
+ * PA-guarded plane execution (all Effects ride the one payload-bound
+ * manifest). Read-only by construction: one fresh `listControlState` per call,
  * zero durable writes, zero ledger touch. Mirrors the guard's closed refusal
- * vocabulary for the durable facts it can see; the AUTHORITATIVE last-mile
- * answer (including the live external recheck and the lock) stays with
- * `guardOperation`.
+ * vocabulary — and after the PR358 fix it mirrors the guard's VERIFICATION
+ * too: a PA operation-manifest row is answered `authority-undetermined`
+ * UNLESS the same `paEffectsVerifier` the service is wired with is passed
+ * here. That is deliberate: this port answers whether an unconsumed durable
+ * allow COVERS the exact scope; for a manifest row, coverage IS a verified
+ * fact and an unverified mirror is NOT a pre-submit green light. The
+ * AUTHORITATIVE check-and-reserve (the lock, the consumption fact) stays
+ * with `guardOperation` alone.
  */
-export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'controlService' | 'rootSessionId'>): PaGuardVerifyPort {
+export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'controlService' | 'rootSessionId'> & {
+  readonly verifier?: PaEffectsVerifier
+}): PaGuardVerifyPort {
   const problem = (() => {
     const svc = deps.controlService
     if (svc === null || typeof svc !== 'object' || typeof svc.listControlState !== 'function') return 'controlService.listControlState is required'
@@ -561,6 +777,40 @@ export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'control
       }
       const consumed = state.consumptions.some((c) => c.requestId === candidate.requestId && c.decisionSequence === decision.decisionSequence)
       if (consumed) return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED, requestId: candidate.requestId }
+      // A5-M1 (PR358 fix): the verification mirror. A PA operation-manifest
+      // row whose coverage nobody can answer is NOT reported as allowed —
+      // an `allowed: true` here without the service's own verifier would be
+      // exactly the pre-submit green light this port must never be. A
+      // corrupt manifest (marker present, strict parse fails) is
+      // undetermined the same way both service gates treat it.
+      const rawManifest = candidate.reviewPayload
+      if (
+        rawManifest !== undefined
+        && typeof rawManifest === 'object'
+        && rawManifest !== null
+        && (rawManifest as Record<string, unknown>)['schema'] === PA_CONTROL_MANIFEST_SCHEMA
+      ) {
+        const manifest = parsePaControlManifest(rawManifest)
+        if (manifest === undefined) {
+          return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId }
+        }
+        if (input.parametersFingerprint !== undefined && input.parametersFingerprint !== manifest.parametersFingerprint) {
+          return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.SCOPE_MISMATCH, requestId: candidate.requestId }
+        }
+        if (deps.verifier === undefined) {
+          return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId }
+        }
+        const verdict = deps.verifier({
+          stage: 'guard',
+          rootSessionId: root,
+          requestId: candidate.requestId,
+          manifest,
+          decider: decision.decider,
+        })
+        if (!verdict.ok) {
+          return { allowed: false, reason: verdict.reason, requestId: candidate.requestId }
+        }
+      }
       return { allowed: true, requestId: candidate.requestId, decisionSequence: decision.decisionSequence }
     },
   })

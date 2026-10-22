@@ -1,46 +1,46 @@
 /**
- * a5-m1-auth-bridge — the M1 AUTH leg: the FROZEN-A PA ⇄ Control bridge
+ * a5m1-auth-bridge — the M1 AUTH leg: the FROZEN-A PA ⇄ Control bridge
  * (`operation-permission/pa-control-bridge.ts`) driven over the REAL durable
  * control plane (packages/runtime/control — real ControlService, real
  * TeamDomain ledger rows; NO mocked service anywhere: the pass-through
- * wrapper in the guard-refusal leg only INTERLEAVES real service calls, it
- * fabricates nothing).
+ * wrappers only INTERLEAVE real service calls or drive real seams; the one
+ * explicitly-FORGED verdict (C4) is named as such and never reached the
+ * real service).
  *
- * Acceptance mapping (frozen A / PR355 thin center):
- *  - positive leg (direct): the seam creates a durable `leader-approval`
- *    request row keyed by the PA case + callId correlation, carrying the
- *    STRICT manifest verbatim (all Effects, requiredAuthority,
- *    perEffectRequired, deniedEffects, effectSetFingerprint,
- *    authorityGeneration) as the lossless reviewPayload + digest; a real
- *    resolve(allow, concrete decider) settles the wait; the bridge returns
- *    {approve, requestId, approval, grant} with the grant minted through
- *    `issueApprovedGrant` AND guardOperation-consumed (one durable
- *    consumption fact);
- *  - REUSE: a second call for the SAME invocation (same case + callId)
- *    reuses the SAME requestId (idempotent scope key — no second row),
- *    lands on the PA double-mint refusal, and never spends the allow twice;
- *  - deny leg: a durable deny denies, zero consumption, zero grant;
- *  - unsettled leg: a bounded wait that expires settles `unsettled` with the
- *    row still pending — zero decision, zero mint, zero consumption;
- *  - pure verify port (createPaGuardVerifyPort): read-only over the durable
- *    state — it answers allow/pending/allow-consumed/decision-deny WITHOUT
- *    consuming (consumption count is asserted unchanged across two calls);
- *  - guard-refusal leg: with the allow consumed by a competing real
- *    guardOperation (deterministic interleave), the bridge's own guard
- *    answers `allow-consumed` and the leg DENIES — the minted grant is
- *    never handed back;
- *  - rung-rise leg: after the allow, the authority plane is re-read (the
- *    pre-execute-adapter (4c') transcription); a risen required rung makes
- *    the old decision unusable — deny with ZERO consumption (the durable
- *    allow stays exactly as written, provable through the verify port);
- *  - no-row refuse: a caller the facade refuses never gets a row, and
- *    without a row the bridge never reaches a decision or a grant (no
- *    approved-by-default).
- *  - plane integration: through `createTeamToolPlaneAssembly({ controlLeg:
- *    createPaControlLeg({ controlService }) })`, one team_bash run reaches
- *    ONE body behind a real durable approval (real landlock launcher), and
- *    one governed read run reaches its body behind its own approval; a
- *    denied second bash run stays zero-body.
+ * PR358 review fix (root-approved 5-set, AUTH item 1 + item 4) — the added
+ * laws this suite pins, on top of the original frozen-A obligations:
+ *  - the durable row carries the COMPLETE strict PA operation manifest
+ *    (approvalCaseId + authorityScope + the binding/member/request facts
+ *    field by field); the SERVICE RECOMPUTES the canonical digest and binds
+ *    it to BOTH `reviewPayloadDigest` and `operationFingerprint` — the row
+ *    identity is the PAYLOAD-INTEGRITY digest while the PARAMETER
+ *    fingerprint rides the manifest as an independent execution-side field
+ *    (C1 pins every refusal direction — missing digest, digest drift,
+ *    fingerprint≠digest, an incomplete manifest — each with ZERO rows);
+ *  - resolve and guard answer the SAME all-Effects verification inside the
+ *    same per-team lock: one effect's ceiling drifting makes BOTH refuse —
+ *    the resolve gate denies durably (`pa-authority-drift`, A5/C2), the
+ *    guard gate blocks with ZERO consumption and does NOT burn the allow
+ *    (C3), and the bridge's own rung layer is the first-line catch when the
+ *    drift rides the leg (A5b);
+ *  - no verifier facts = no coverage: the verify port answers a manifest
+ *    row it cannot verify as `authority-undetermined` — never a pre-submit
+ *    green light;
+ *  - a guard verdict must PAIR to its row (requestId + decisionSequence):
+ *    a foreign pairing denies with zero consumption (C4);
+ *  - parameter-level cancellation (item 4): a cancel after the decision
+ *    settles `unsettled` with ZERO mint; a cancel between mint and durable
+ *    guard denies with the grant NOT handed back (zero PA consumption,
+ *    zero body); a consumption that DID happen is retained forever — never
+ *    reclaimed, never later reported as unconsumed (C5 + A1).
+ *
+ * Original frozen-A acceptance (all still here): durable row + verbatim
+ * manifest + real resolve/approve/deny/unsettled, REUSE under one scope key
+ * (no second row, no second spend), the guard-refusal last-mile deny with
+ * the grant withheld, the double-mint refusal on a repeat, the no-row
+ * refuse, the pure verify port, and the plane-integration legs (one real
+ * landlock team_bash body behind one durable approval; a denied run
+ * zero-body; one governed read body).
  *
  * World: `tests/homes/a5m1-auth-<ts>` (TEST_METHODS §7 temporary world,
  * workspace-internal, destroyed in `afterAll`).
@@ -69,20 +69,25 @@ import {
   parseRequestedEffectSet,
   parseToolBinding,
 } from '../../domain/tool-governance/src/index.js'
-import type { AdmissionRequest, GovernanceResult, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
+import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 import { createTeamDomain } from '../../storage/repositories/index.js'
 import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
 import {
   CONTROL_GUARD_BLOCK_REASONS,
+  ControlError,
   createControlService,
 } from '../control/index.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, parsePaControlManifest } from '../control/types.js'
 import type {
+  ControlDecisionRecord,
   ControlRequestRecord,
   ControlService,
+  ControlWaitSignal,
 } from '../control/index.js'
 import type { ActionCaller } from '../admission/index.js'
 import { authorityRank } from '../governance/authority-ceiling.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createProductionAdmissionAssembly } from '../tool-admission/index.js'
 import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
@@ -90,6 +95,7 @@ import type { EffectSetApprovalPlan } from '../tool-admission/approval-case.js'
 import {
   PA_CONTROL_ACTION_NAME,
   createPaControlLeg,
+  createPaEffectsVerifier,
   createPaGuardVerifyPort,
   paCorrelation,
 } from '../operation-permission/pa-control-bridge.js'
@@ -158,12 +164,23 @@ for (const name of ['leader', 'worker', 'scribe'] as const) {
   })
 }
 
+// The trusted wiring the ALL-EFFECTS verifier re-derives through: one
+// landing assembly per PA realm — exactly the facts the leg used. The
+// service's resolve gate and guard gate both ask THIS port, inside the
+// same per-team lock, before the decision and before the consumption.
+const assemblies = new Map<string, ProductionAdmissionAssembly>()
+const paVerifier = createPaEffectsVerifier({
+  assemblyFor: (manifest) => assemblies.get(manifest.realmId),
+  beneficiaryOf: (manifest) => (manifest.member.teamSessionId === P6T4_ROOT ? 'member' : undefined),
+})
+
 const service: ControlService = createControlService({
   teamDomain: domain,
   blueprintCatalog: catalog,
   externalPolicyFacts: async () => makeExternalPolicyFacts(),
   now: () => P6T4_NOW,
   waitPollIntervalMs: 5,
+  paEffectsVerifier: paVerifier,
 })
 
 const WORKER = P6T4_SEEDS.worker.instanceId
@@ -199,8 +216,8 @@ async function resolve(
   caller: ActionCaller,
   requestId: string,
   decision: 'allow' | 'deny',
-): Promise<void> {
-  await service.resolveControl({ rootSessionId: P6T4_ROOT, caller, requestId, decision })
+): Promise<ControlDecisionRecord> {
+  return service.resolveControl({ rootSessionId: P6T4_ROOT, caller, requestId, decision })
 }
 
 function makeLeg(extra: Partial<PaControlBridgeDeps> = {}) {
@@ -213,19 +230,40 @@ function makeLeg(extra: Partial<PaControlBridgeDeps> = {}) {
   })
 }
 
-// The direct fixture: a hand-built admission request over the REAL
-// production assembly (the same public edges the plane mounts).
-const REALM = 'a5m1-auth-realm'
 const DIRECT_POLICY: TemplatePermissionPolicy = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
 const EMPTY_DOCS: AuthorityEnvelopeDocuments = Object.freeze({
   teamHardEnvelope: Object.freeze({ rules: [] }),
   permissionMutationEnvelope: Object.freeze({ status: 'absent' as const }),
 })
 
-function directAssembly(documents?: () => AuthorityEnvelopeDocuments): ProductionAdmissionAssembly {
+/** A ceiling flip for ONE approval scope: `'tool-invoke|<realm>|tool:x'`
+ *  or `'read|<realm>|<locator>'` (the effectApprovalScope vocabularies). */
+function narrowDocs(scopedResource: string): AuthorityEnvelopeDocuments {
+  const cut = scopedResource.indexOf('|')
+  return {
+    teamHardEnvelope: {
+      rules: [{
+        operationClass: scopedResource.slice(0, cut),
+        matcher: { kind: 'exact' as const, resource: scopedResource.slice(cut + 1) },
+        maximumEffect: 'ask' as const,
+      }],
+    },
+    permissionMutationEnvelope: { status: 'absent' as const },
+  }
+}
+
+let realmSeq = 0
+
+/** Each fixture assembly gets its OWN realm (the verifier re-derives per
+ *  realm; unique realms keep every describe fully independent). */
+function directAssembly(
+  documents?: () => AuthorityEnvelopeDocuments,
+  realm?: string,
+): { assembly: ProductionAdmissionAssembly; realm: string } {
+  const realmId = realm ?? `a5m1-auth-r-${String(realmSeq++)}`
   const built = createProductionAdmissionAssembly({
     permissionPolicy: DIRECT_POLICY,
-    realmId: REALM,
+    realmId,
     templateId: 'a5m1-auth-tpl',
     definitionOwnerAuthority: 'human-user',
     role: 'member',
@@ -236,7 +274,8 @@ function directAssembly(documents?: () => AuthorityEnvelopeDocuments): Productio
     onObserve: () => {},
   })
   if (!built.ok) throw new Error(`assembly refused: ${built.error.message}`)
-  return built.value
+  assemblies.set(realmId, built.value)
+  return { assembly: built.value, realm: realmId }
 }
 
 interface DirectFixture {
@@ -245,7 +284,12 @@ interface DirectFixture {
   readonly correlation: string
 }
 
-function directFixture(assembly: ProductionAdmissionAssembly, callId: string, callerInstance = WORKER): DirectFixture {
+function directFixture(
+  ctx: { assembly: ProductionAdmissionAssembly; realm: string },
+  callId: string,
+  callerInstance = WORKER,
+  effectsClaim?: unknown,
+): DirectFixture {
   const bindingParsed = parseToolBinding({
     bindingId: `auth-row:${callId}`,
     agentScopeKey: `auth:${callId}`,
@@ -254,14 +298,14 @@ function directFixture(assembly: ProductionAdmissionAssembly, callId: string, ca
     providerId: 'a5p5-plane',
     implementationOrigin: 'team-trusted-extension',
     executionBoundary: 'confined-subprocess',
-    assurance: untestedAssurance('team-trusted-extension', 'confined-subprocess', REALM),
+    assurance: untestedAssurance('team-trusted-extension', 'confined-subprocess', ctx.realm),
     policyGeneration: 0,
     authorityGeneration: 0,
     revision: 1,
     status: 'ACTIVE',
   })
   if (!bindingParsed.ok) throw new Error(`binding refused: ${JSON.stringify(bindingParsed.problems)}`)
-  const effectsParsed: ReturnType<typeof parseRequestedEffectSet> = parseRequestedEffectSet([
+  const effectsParsed = parseRequestedEffectSet(effectsClaim ?? [
     { kind: 'tool-invoke', toolName: 'team_bash', resource: null },
   ])
   if (!effectsParsed.ok) throw new Error(`effects refused: ${JSON.stringify(effectsParsed.problems)}`)
@@ -270,50 +314,118 @@ function directFixture(assembly: ProductionAdmissionAssembly, callId: string, ca
     binding: bindingParsed.value,
     member,
     callId,
-    realmId: REALM,
+    realmId: ctx.realm,
     parametersFingerprint: canonicalJsonFingerprint({ command: `auth-${callId}` }),
     requestedEffects: effectsParsed.value as RequestedEffectSet,
   })
-  const planned = assembly.planApproval(request)
+  const planned = ctx.assembly.planApproval(request)
   if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
   return {
-    input: Object.freeze({ realmId: REALM, member, callId, request, plan: planned.value, assembly }),
+    input: Object.freeze({ realmId: ctx.realm, member, callId, request, plan: planned.value, assembly: ctx.assembly }),
     plan: planned.value,
     correlation: paCorrelation(planned.value.approvalCaseId, callId),
   }
 }
 
+/** The exact manifest BYTES the bridge puts on the row (mirrored here for
+ *  the service-boundary tests — C1/C3 forge on top of these). */
+function manifestBytes(fixture: DirectFixture): Record<string, unknown> {
+  const req = fixture.input.request
+  const plan = fixture.plan
+  const toolEffect = (req.requestedEffects as RequestedEffectSet).effects.find((e) => e.kind === 'tool-invoke')
+  return JSON.parse(JSON.stringify({
+    schema: PA_CONTROL_MANIFEST_SCHEMA,
+    approvalCaseId: plan.approvalCaseId,
+    authorityScope: {
+      operationClass: 'tool-invoke',
+      matcher: { kind: 'exact', resource: `${fixture.input.realmId}|tool:${String(toolEffect?.toolName ?? 'team_bash')}` },
+    },
+    requiredAuthority: plan.requiredAuthority,
+    perEffectRequired: plan.perEffectRequired,
+    deniedEffects: plan.deniedEffects,
+    effectSetFingerprint: plan.effectSetFingerprint,
+    authorityGeneration: plan.authorityGeneration,
+    realmId: fixture.input.realmId,
+    callId: req.callId,
+    parametersFingerprint: req.parametersFingerprint,
+    effects: (req.requestedEffects as RequestedEffectSet).effects,
+    binding: req.binding,
+    member: { teamSessionId: fixture.input.member.teamSessionId, instanceId: fixture.input.member.instanceId },
+  })) as Record<string, unknown>
+}
+
 const manifestOf = (row: ControlRequestRecord): Record<string, unknown> =>
   row.reviewPayload as Record<string, unknown>
 
+function probeFor(fixture: DirectFixture, row: ControlRequestRecord, parametersFingerprint?: string) {
+  return {
+    targetInstanceId: WORKER,
+    actionName: PA_CONTROL_ACTION_NAME,
+    toolName: 'team_bash',
+    correlation: fixture.correlation,
+    // A5-M1: the row identity is the PAYLOAD-INTEGRITY digest — the probe
+    // addresses the row by it; the parameter fingerprint rides separately.
+    operationFingerprint: String(row.operationFingerprint ?? row.reviewPayloadDigest),
+    ...(parametersFingerprint === undefined ? {} : { parametersFingerprint }),
+  }
+}
+
+function verifyPort() {
+  return createPaGuardVerifyPort({
+    controlService: service,
+    rootSessionId: P6T4_ROOT,
+    verifier: paVerifier,
+  })
+}
+
+const asSignal = (controller: AbortController): ControlWaitSignal =>
+  controller.signal as unknown as ControlWaitSignal
+
 // ── A. the bridge over the real durable control plane (direct drive) ────
 
-describe('A1 (positive leg + reuse): durable row → real allow → minted+guard-consumed grant', () => {
-  const assembly = directAssembly()
-  const fixture = directFixture(assembly, 'a1-call')
+describe('A1 (positive leg + reuse): durable row → verified real allow → minted+guard-consumed grant', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a1-call')
   let rowA: ControlRequestRecord
   let resA: PaControlLegResult
   let resB: PaControlLegResult
 
-  it('creates ONE durable row for the PA case, carrying the strict manifest verbatim', async () => {
+  it('creates ONE durable row for the PA case, carrying the COMPLETE strict manifest, identity-bound to the service-recomputed digest', async () => {
     expect(fixture.plan.requiredAuthority).toBe('leader')
     const leg = makeLeg()
     const pending = leg(fixture.input)
     rowA = await waitRow((r) => r.correlation === fixture.correlation)
     expect(rowA.kind).toBe('leader-approval')
     expect(rowA.targetInstanceId).toBe(WORKER)
-    expect(rowA.operationFingerprint).toBe(fixture.input.request.parametersFingerprint)
     expect(rowA.status).toBe('pending')
+    const digest = canonicalJsonFingerprint(manifestBytes(fixture))
+    // identity law: operationFingerprint === reviewPayloadDigest === the
+    // service-recomputed digest of the payload bytes; the parameters
+    // fingerprint is a SEPARATE manifest field.
+    expect(rowA.reviewPayloadDigest).toBe(digest)
+    expect(rowA.operationFingerprint).toBe(digest)
     const manifest = manifestOf(rowA)
-    expect(manifest.schema).toBe('a5m1.pa-control-manifest.v1')
+    expect(manifest.schema).toBe(PA_CONTROL_MANIFEST_SCHEMA)
     expect(manifest.approvalCaseId).toBe(fixture.plan.approvalCaseId)
+    expect(manifest.authorityScope).toEqual({
+      operationClass: 'tool-invoke',
+      matcher: { kind: 'exact', resource: `${fixture.input.realmId}|tool:team_bash` },
+    })
     expect(manifest.requiredAuthority).toBe('leader')
     expect(manifest.effectSetFingerprint).toBe(fixture.plan.effectSetFingerprint)
     expect(manifest.authorityGeneration).toBe(0)
     expect(manifest.deniedEffects).toEqual([])
     expect(manifest.perEffectRequired).toEqual(['leader'])
     expect((manifest.effects as unknown[]).length).toBe(1)
-    expect(typeof rowA.reviewPayloadDigest).toBe('string')
+    expect(manifest.parametersFingerprint).toBe(fixture.input.request.parametersFingerprint)
+    // binding/member snapshots, field by field
+    const binding = manifest.binding as Record<string, unknown>
+    expect(binding.bindingId).toBe(fixture.input.request.binding.bindingId)
+    expect(binding.definitionIdentity).toBe(fixture.input.request.binding.definitionIdentity)
+    expect(typeof binding.assurance).toBe('object')
+    expect(manifest.member).toEqual({ teamSessionId: P6T4_ROOT, instanceId: WORKER })
+    // the strict parser (the service's own re-read) accepts the row bytes
+    expect(parsePaControlManifest(rowA.reviewPayload)).not.toBeUndefined()
     await resolve(humanCaller(), rowA.requestId, 'allow')
     resA = await pending
   })
@@ -334,6 +446,9 @@ describe('A1 (positive leg + reuse): durable row → real allow → minted+guard
     const st = await state()
     expect(st.requests.filter((r) => r.correlation === fixture.correlation).length).toBe(1)
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(1)
+    // the durable allow carried NO special reason (the verifier COVERED)
+    const decision = st.decisions.find((d) => d.requestId === rowA.requestId)
+    expect(decision?.reason).toBeUndefined()
   })
 
   it('REUSES the same requestId on a repeat of the same invocation (no second row, no second spend)', async () => {
@@ -347,28 +462,22 @@ describe('A1 (positive leg + reuse): durable row → real allow → minted+guard
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(1)
   })
 
-  it('the pure verify port mirrors the spent allow WITHOUT touching the ledger', async () => {
-    const port = createPaGuardVerifyPort({ controlService: service, rootSessionId: P6T4_ROOT })
-    const probe = {
-      targetInstanceId: WORKER,
-      actionName: PA_CONTROL_ACTION_NAME,
-      toolName: 'team_bash',
-      correlation: fixture.correlation,
-      operationFingerprint: fixture.input.request.parametersFingerprint,
-    }
+  it('the verify port mirrors the SPENT allow (consumption outranks verification) and never touches the ledger', async () => {
+    const port = verifyPort()
+    const probe = probeFor(fixture, rowA, fixture.input.request.parametersFingerprint)
     const v1 = await port.verify(probe)
     const v2 = await port.verify(probe)
     expect(v1.allowed).toBe(false)
     if (v1.allowed === false) expect(v1.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
-    expect(v1).toEqual(v2)
+    expect(v2).toEqual(v1)
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(1)
   })
 })
 
 describe('A2 (deny leg): a durable deny denies with zero consumption and zero grant', () => {
-  const assembly = directAssembly()
-  const fixture = directFixture(assembly, 'a2-call')
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a2-call')
   let rowA: ControlRequestRecord
   let resA: PaControlLegResult
 
@@ -383,22 +492,15 @@ describe('A2 (deny leg): a durable deny denies with zero consumption and zero gr
     expect((resA as { grant?: unknown }).grant).toBeUndefined()
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
-    const port = createPaGuardVerifyPort({ controlService: service, rootSessionId: P6T4_ROOT })
-    const v = await port.verify({
-      targetInstanceId: WORKER,
-      actionName: PA_CONTROL_ACTION_NAME,
-      toolName: 'team_bash',
-      correlation: fixture.correlation,
-      operationFingerprint: fixture.input.request.parametersFingerprint,
-    })
+    const v = await verifyPort().verify(probeFor(fixture, rowA, fixture.input.request.parametersFingerprint))
     expect(v.allowed).toBe(false)
     if (v.allowed === false) expect(v.reason).toBe('decision-deny')
   })
 })
 
-describe('A3 (unsettled leg + pure-verify positive): an expired wait never decides, never mints', () => {
-  const assembly = directAssembly()
-  const fixture = directFixture(assembly, 'a3-call')
+describe('A3 (unsettled leg + verified positive): an expired wait never decides, never mints', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a3-call')
   let rowA: ControlRequestRecord
   let resA: PaControlLegResult
 
@@ -420,8 +522,8 @@ describe('A3 (unsettled leg + pure-verify positive): an expired wait never decid
   it('a pre-aborted signal still leaves the durable row (resolvable later) and answers unsettled', async () => {
     const aborted = new AbortController()
     aborted.abort()
-    const fixtureB = directFixture(assembly, 'a3b-call')
-    const leg = makeLeg({ signal: () => aborted.signal })
+    const fixtureB = directFixture(ctx, 'a3b-call')
+    const leg = makeLeg({ signal: () => asSignal(aborted) })
     const resB = await leg(fixtureB.input)
     expect(resB.decision).toBe('unsettled')
     expect(typeof resB.requestId).toBe('string')
@@ -429,16 +531,11 @@ describe('A3 (unsettled leg + pure-verify positive): an expired wait never decid
     expect(st.requests.filter((r) => r.correlation === fixtureB.correlation).length).toBe(1)
   })
 
-  it('the pure verify port answers the UNCONSUMED allow WITHOUT consuming (two calls, zero side effects)', async () => {
-    await resolve(leaderCaller(), rowA.requestId, 'allow')
-    const port = createPaGuardVerifyPort({ controlService: service, rootSessionId: P6T4_ROOT })
-    const probe = {
-      targetInstanceId: WORKER,
-      actionName: PA_CONTROL_ACTION_NAME,
-      toolName: 'team_bash',
-      correlation: fixture.correlation,
-      operationFingerprint: fixture.input.request.parametersFingerprint,
-    }
+  it('the VERIFIED port answers the UNCONSUMED allow WITHOUT consuming (two calls, zero side effects)', async () => {
+    const decisionRecord = await resolve(leaderCaller(), rowA.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('allow') // covered: the resolve gate let it through
+    const port = verifyPort()
+    const probe = probeFor(fixture, rowA, fixture.input.request.parametersFingerprint)
     const v1 = await port.verify(probe)
     const v2 = await port.verify(probe)
     expect(v1.allowed).toBe(true)
@@ -448,12 +545,17 @@ describe('A3 (unsettled leg + pure-verify positive): an expired wait never decid
     expect(v2).toEqual(v1)
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+    // the parameter fact is bound too: a probe with foreign parameters is
+    // a different invocation, never a mirror hit.
+    const foreign = await port.verify(probeFor(fixture, rowA, canonicalJsonFingerprint({ command: 'not-this-call' })))
+    expect(foreign.allowed).toBe(false)
+    if (foreign.allowed === false) expect(foreign.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.SCOPE_MISMATCH)
   })
 })
 
 describe('A4 (guard-refusal leg): the consumed allow cannot be spent twice — the grant is not returned', () => {
-  const assembly = directAssembly()
-  const fixture = directFixture(assembly, 'a4-call')
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a4-call')
   let resA: PaControlLegResult
   let rowA: ControlRequestRecord
 
@@ -462,14 +564,6 @@ describe('A4 (guard-refusal leg): the consumed allow cannot be spent twice — t
     // INTERLEAVES another REAL guardOperation at the decision point
     // (deterministic race: the allow gets consumed before the bridge
     // arrives). No fake authority exists anywhere on this path.
-    const exactScope = {
-      rootSessionId: P6T4_ROOT,
-      targetInstanceId: WORKER,
-      actionName: PA_CONTROL_ACTION_NAME,
-      toolName: 'team_bash',
-      correlation: fixture.correlation,
-      operationFingerprint: fixture.input.request.parametersFingerprint,
-    }
     let armed = true
     const hooked: PaControlServiceLike = {
       requestControl: (a) => service.requestControl(a),
@@ -477,7 +571,17 @@ describe('A4 (guard-refusal leg): the consumed allow cannot be spent twice — t
         const d = await service.awaitControlDecision(i)
         if (armed) {
           armed = false
-          const verdict = await service.guardOperation(exactScope)
+          const st = await service.listControlState(P6T4_ROOT)
+          const row = st.requests.find((r) => r.correlation === fixture.correlation)
+          if (row === undefined) throw new Error('fixture: the durable row vanished')
+          const verdict = await service.guardOperation({
+            rootSessionId: P6T4_ROOT,
+            targetInstanceId: WORKER,
+            actionName: PA_CONTROL_ACTION_NAME,
+            toolName: 'team_bash',
+            correlation: fixture.correlation,
+            operationFingerprint: row.operationFingerprint,
+          })
           if (!verdict.allowed) throw new Error(`fixture pre-consumption failed: ${verdict.reason}`)
         }
         return d
@@ -505,51 +609,39 @@ describe('A4 (guard-refusal leg): the consumed allow cannot be spent twice — t
   })
 })
 
-describe('A5 (rung-rise leg): a risen required rung makes the fresh allow unusable (zero consumption)', () => {
-  const fixture = (() => {
-    let narrowed = false
-    const assembly = directAssembly(() => (narrowed
-      ? {
-          teamHardEnvelope: {
-            rules: [{
-              operationClass: 'tool-invoke',
-              matcher: { kind: 'exact' as const, resource: `${REALM}|tool:team_bash` },
-              maximumEffect: 'ask' as const,
-            }],
-          },
-          permissionMutationEnvelope: { status: 'absent' as const },
-        }
-      : EMPTY_DOCS))
-    const captured = directFixture(assembly, 'a5-call')
-    return { ...captured, narrow: () => { narrowed = true } }
-  })()
+describe('A5 (resolve-gate drift): a risen requirement DENIES the allow durably at the decision gate', () => {
+  let narrowed = false
+  const holder = { realm: 'a5m1-auth-realm-a5' }
+  const ctx = directAssembly(
+    () => (narrowed ? narrowDocs(`tool-invoke|${holder.realm}|tool:team_bash`) : EMPTY_DOCS),
+    holder.realm,
+  )
+  const fixture = directFixture(ctx, 'a5-call')
   let rowA: ControlRequestRecord
   let resA: PaControlLegResult
 
-  it('after the allow the re-derived rung RISES → deny, the durable allow stays unspent', async () => {
+  it('flip AFTER the ask, resolve attempts allow → the verifier denies (reason pa-authority-drift), zero consumption', async () => {
     expect(fixture.plan.requiredAuthority).toBe('leader')
     const leg = makeLeg()
     const pending = leg(fixture.input)
     rowA = await waitRow((r) => r.correlation === fixture.correlation)
-    fixture.narrow()
-    await resolve(leaderCaller(), rowA.requestId, 'allow')
+    narrowed = true
+    const decisionRecord = await resolve(leaderCaller(), rowA.requestId, 'allow')
+    // The resolve gate refused the ALLOW: what stands durably is a DENY
+    // carrying the closed drift reason (never a fourth decision value).
+    expect(decisionRecord.decision).toBe('deny')
+    expect(decisionRecord.reason).toBe('pa-authority-drift')
     resA = await pending
     expect(resA.decision).toBe('deny')
     expect(resA.requestId).toBe(rowA.requestId)
-    if (resA.decision === 'deny') expect(String(resA.detail)).toMatch(/rose/)
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
-    // The rung law lives with the bridge/kernel, NOT with the durable plane:
-    // the verify port honestly reports the allow it can see as unspent.
-    const port = createPaGuardVerifyPort({ controlService: service, rootSessionId: P6T4_ROOT })
-    const v = await port.verify({
-      targetInstanceId: WORKER,
-      actionName: PA_CONTROL_ACTION_NAME,
-      toolName: 'team_bash',
-      correlation: fixture.correlation,
-      operationFingerprint: fixture.input.request.parametersFingerprint,
-    })
-    expect(v.allowed).toBe(true)
+    // No allow was ever written — the port mirrors the deny (there is no
+    // unspent allow to preserve: the drift arrived BEFORE the decision).
+    const v = await verifyPort().verify(probeFor(fixture, rowA, fixture.input.request.parametersFingerprint))
+    expect(v.allowed).toBe(false)
+    if (v.allowed === false) expect(v.reason).toBe('decision-deny')
+    // and the FRESH derivation really rose (the drift is a real fact):
     const freshPlan = fixture.input.assembly.planApproval(fixture.input.request)
     expect(freshPlan.ok).toBe(true)
     if (freshPlan.ok) {
@@ -558,10 +650,58 @@ describe('A5 (rung-rise leg): a risen required rung makes the fresh allow unusab
   })
 })
 
+describe('A5b (bridge rung layer at the guard moment): drift AFTER the allow → deny, allow retained unspent', () => {
+  let flipped = false
+  const holder = { realm: 'a5m1-auth-realm-a5b' }
+  const ctx = directAssembly(
+    () => (flipped ? narrowDocs(`tool-invoke|${holder.realm}|tool:team_bash`) : EMPTY_DOCS),
+    holder.realm,
+  )
+  const fixture = directFixture(ctx, 'a5b-call')
+  let rowA: ControlRequestRecord
+  let resA: PaControlLegResult
+
+  it('the authority rises between the decision and the bridge: the leg denies; the durable allow stays exactly as written', async () => {
+    // The flip rides the wrapper: it lands AFTER the real decision is
+    // durable and BEFORE the bridge resumes — the deterministic "drift
+    // during the lock-wait" interleave at the bridge's own rung layer.
+    const hooked: PaControlServiceLike = {
+      requestControl: (a) => service.requestControl(a),
+      awaitControlDecision: async (i) => {
+        const d = await service.awaitControlDecision(i)
+        flipped = true
+        return d
+      },
+      guardOperation: (s) => service.guardOperation(s),
+      listControlState: (r) => service.listControlState(r),
+    }
+    const leg = createPaControlLeg({
+      controlService: hooked,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+    })
+    const pending = leg(fixture.input)
+    rowA = await waitRow((r) => r.correlation === fixture.correlation)
+    await resolve(leaderCaller(), rowA.requestId, 'allow')
+    resA = await pending
+    expect(resA.decision).toBe('deny')
+    expect(resA.requestId).toBe(rowA.requestId)
+    if (resA.decision === 'deny') expect(String(resA.detail)).toMatch(/rose/)
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+    // The allow is RETAINED (never reclaimed); the verified port answers
+    // what the guard WOULD answer now: the coverage has drifted.
+    const v = await verifyPort().verify(probeFor(fixture, rowA, fixture.input.request.parametersFingerprint))
+    expect(v.allowed).toBe(false)
+    if (v.allowed === false) expect(v.reason).toBe('pa-authority-drift')
+  })
+})
+
 describe('A6 (no-row refuse): a refused requestControl means no row, no decision, no grant', () => {
   it('the scribe (no request-control) never gets a row; the leg denies without a requestId', async () => {
-    const assembly = directAssembly()
-    const fixture = directFixture(assembly, 'a6-call')
+    const ctx = directAssembly()
+    const fixture = directFixture(ctx, 'a6-call')
     const leg = createPaControlLeg({
       controlService: service,
       rootSessionId: P6T4_ROOT,
@@ -573,6 +713,334 @@ describe('A6 (no-row refuse): a refused requestControl means no row, no decision
     expect(res.requestId).toBeUndefined()
     const st = await state()
     expect(st.requests.filter((r) => r.correlation === fixture.correlation).length).toBe(0)
+  })
+})
+
+// ── C. the PR358 fix laws (manifest integrity + double gate + pairing + cancel) ──
+
+describe('C1 (manifest integrity): the service RECOMPUTES the digest; every defect writes ZERO rows', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'c1-call')
+
+  async function rowsFor(correlation: string): Promise<number> {
+    return (await state()).requests.filter((r) => r.correlation === correlation).length
+  }
+
+  async function expectMalformed(
+    label: string,
+    mode: { kind: 'drop-digest' } | { kind: 'drop-fingerprint' } | { kind: 'wrong-digest' } | { kind: 'fingerprint-not-digest' } | { kind: 'bytes'; bytes: Record<string, unknown> },
+  ): Promise<void> {
+    const before = await rowsFor(fixture.correlation)
+    const bytes = manifestBytes(fixture)
+    let digest: string | undefined = canonicalJsonFingerprint(bytes)
+    let payload: Record<string, unknown> = bytes
+    let fingerprint: string | undefined = digest
+    if (mode.kind === 'drop-digest') digest = undefined
+    else if (mode.kind === 'drop-fingerprint') fingerprint = undefined
+    else if (mode.kind === 'wrong-digest') digest = 'sha256-definitely-not-the-canonical-digest'
+    else if (mode.kind === 'fingerprint-not-digest') fingerprint = fixture.input.request.parametersFingerprint
+    else payload = mode.bytes
+    try {
+      await service.requestControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        kind: 'leader-approval',
+        targetInstanceId: WORKER,
+        actionName: PA_CONTROL_ACTION_NAME,
+        toolName: 'team_bash',
+        correlation: fixture.correlation,
+        ...(fingerprint === undefined ? {} : { operationFingerprint: fingerprint }),
+        reviewPayload: payload as never,
+        ...(digest === undefined ? {} : { reviewPayloadDigest: digest }),
+      })
+      throw new Error(`${label}: requestControl should have refused`)
+    } catch (error: unknown) {
+      expect(error, label).toBeInstanceOf(ControlError)
+      expect((error as ControlError).code, label).toBe('CONTROL_REQUEST_MALFORMED')
+    }
+    expect(await rowsFor(fixture.correlation), label).toBe(before)
+  }
+
+  it('the honest bytes ARE accepted (positive control), identity-bound to the recomputed digest', async () => {
+    const bytes = manifestBytes(fixture)
+    const digest = canonicalJsonFingerprint(bytes)
+    const row = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      kind: 'leader-approval',
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: fixture.correlation,
+      operationFingerprint: digest,
+      reviewPayload: bytes as never,
+      reviewPayloadDigest: digest,
+    })
+    expect(row.operationFingerprint).toBe(digest)
+    expect(row.reviewPayloadDigest).toBe(digest)
+  })
+
+  it('missing digest → malformed, zero rows', async () => {
+    await expectMalformed('missing-digest', { kind: 'drop-digest' })
+  })
+
+  it('digest drift → malformed, zero rows', async () => {
+    await expectMalformed('wrong-digest', { kind: 'wrong-digest' })
+  })
+
+  it('operationFingerprint ≠ the recomputed digest (e.g. the parameters fingerprint) → malformed, zero rows', async () => {
+    await expectMalformed('fingerprint-not-digest', { kind: 'fingerprint-not-digest' })
+    await expectMalformed('drop-fingerprint', { kind: 'drop-fingerprint' })
+  })
+
+  it('an INCOMPLETE manifest (no authorityScope / empty perEffectRequired / no member) → malformed, zero rows', async () => {
+    const { authorityScope: _omitScope, ...withoutScope } = manifestBytes(fixture)
+    await expectMalformed('no-authorityScope', { kind: 'bytes', bytes: withoutScope })
+    await expectMalformed('short-perEffectRequired', { kind: 'bytes', bytes: { ...manifestBytes(fixture), perEffectRequired: [] } })
+    const { member: _omitMember, ...withoutMember } = manifestBytes(fixture)
+    await expectMalformed('no-member', { kind: 'bytes', bytes: withoutMember })
+  })
+})
+
+describe('C2 (single-effect drift at the resolve gate): one drifted effect denies the WHOLE allow', () => {
+  let narrowed = false
+  const realm = 'a5m1-auth-realm-c2'
+  const locator = '/srv/a5m1-auth/notes.txt'
+  const ctx = directAssembly(
+    () => (narrowed ? narrowDocs(`read|${realm}|${locator}`) : EMPTY_DOCS),
+    realm,
+  )
+  const fixture = directFixture(ctx, 'c2-call', WORKER, [
+    { kind: 'tool-invoke', toolName: 'team_bash', resource: null },
+    { kind: 'read', resource: { realmId: realm, kind: 'absolute-path', canonicalLocator: locator, rights: ['read'] } },
+  ])
+  let rowA: ControlRequestRecord
+  let resA: PaControlLegResult
+
+  it('the FULL set starts leader-required; flipping ONE effect ceiling rises only that entry; the allow is denied durably', async () => {
+    expect(fixture.plan.perEffectRequired).toEqual(['leader', 'leader'])
+    const leg = makeLeg()
+    const pending = leg(fixture.input)
+    rowA = await waitRow((r) => r.correlation === fixture.correlation)
+    narrowed = true
+    // the drift is SINGLE-effect on the fresh derivation:
+    const fresh = fixture.input.assembly.planApproval(fixture.input.request)
+    expect(fresh.ok).toBe(true)
+    if (fresh.ok) {
+      // the effects array is CANONICALLY sorted (read < tool-invoke): the
+      // flipped READ effect is entry 0 and rose; the tool-invoke effect is
+      // entry 1 and stayed 'leader' — a genuinely single-effect drift.
+      expect(fresh.value.perEffectRequired[1]).toBe('leader')
+      expect(authorityRank(fresh.value.perEffectRequired[0] as RuntimeAuthority)).toBeGreaterThan(authorityRank('leader'))
+    }
+    const decisionRecord = await resolve(leaderCaller(), rowA.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('deny')
+    expect(decisionRecord.reason).toBe('pa-authority-drift')
+    resA = await pending
+    expect(resA.decision).toBe('deny')
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+  })
+})
+
+describe('C3 (drift during the lock-wait, service level): the guard gate refuses with ZERO consumption, the allow is not burned', () => {
+  let narrowed = false
+  const realm = 'a5m1-auth-realm-c3'
+  const ctx = directAssembly(
+    () => (narrowed ? narrowDocs(`tool-invoke|${realm}|tool:team_bash`) : EMPTY_DOCS),
+    realm,
+  )
+  const fixture = directFixture(ctx, 'c3-call')
+
+  it('requestControl(marker) → verified allow → drift → guard blocks (pa-authority-drift, zero consumption) → facts restored → guard allows ONCE', async () => {
+    const bytes = manifestBytes(fixture)
+    const digest = canonicalJsonFingerprint(bytes)
+    const rowA = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      kind: 'leader-approval',
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: fixture.correlation,
+      operationFingerprint: digest,
+      reviewPayload: bytes as never,
+      reviewPayloadDigest: digest,
+    })
+    const allowed = await resolve(leaderCaller(), rowA.requestId, 'allow')
+    expect(allowed.decision).toBe('allow')
+    narrowed = true
+    const scope = {
+      rootSessionId: P6T4_ROOT,
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: fixture.correlation,
+      operationFingerprint: digest,
+    }
+    const blocked = await service.guardOperation(scope)
+    expect(blocked.allowed).toBe(false)
+    if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.PA_AUTHORITY_DRIFT)
+    // the block PAIRS to the row (the verdict names the decision):
+    expect(blocked.requestId).toBe(rowA.requestId)
+    const st1 = await state()
+    expect(st1.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+    // the drift did NOT burn the one-shot: restore the facts, the SAME
+    // allow consumes (the refusal's zero-effect discipline, proven).
+    narrowed = false
+    const ok = await service.guardOperation(scope)
+    expect(ok.allowed).toBe(true)
+    if (ok.allowed) {
+      expect(ok.requestId).toBe(rowA.requestId)
+      expect(ok.decisionSequence).toBeGreaterThan(0)
+    }
+    const st2 = await state()
+    expect(st2.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(1)
+  })
+})
+
+describe('C4 (foreign guard verdict): an allowed verdict not PAIRED to the row authorizes nothing', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'c4-call')
+  let rowA: ControlRequestRecord
+  let resA: PaControlLegResult
+
+  it('a forged {allowed, requestId≠row} verdict (the real guard is never reached) → deny, zero consumption', async () => {
+    const forged: PaControlServiceLike = {
+      requestControl: (a) => service.requestControl(a),
+      awaitControlDecision: (i) => service.awaitControlDecision(i),
+      // FORGED on purpose: the bridge must not trust an `allowed` that
+      // names a different row — and must never hand the minted grant back.
+      guardOperation: async () => ({ allowed: true, requestId: 'ctrl-foreign-000', decisionSequence: 0 }),
+      listControlState: (r) => service.listControlState(r),
+    }
+    const leg = createPaControlLeg({
+      controlService: forged,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+    })
+    const pending = leg(fixture.input)
+    rowA = await waitRow((r) => r.correlation === fixture.correlation)
+    await resolve(leaderCaller(), rowA.requestId, 'allow')
+    resA = await pending
+    expect(resA.decision).toBe('deny')
+    if (resA.decision === 'deny') expect(String(resA.detail)).toMatch(/foreign pairing/)
+    expect((resA as { grant?: unknown }).grant).toBeUndefined()
+    const st = await state()
+    // the real guard was NEVER called: zero consumption, the allow stands.
+    expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+  })
+})
+
+describe('C5 (item 4: parameter-level cancellation): cancel before consume → zero PA consumption, zero body; consumed state retained', () => {
+  const ctx = directAssembly()
+  // ONE fixture per scenario: a scenario that reused a fixture would ride a
+  // row already DECIDED by the previous scenario (the first decision is
+  // authoritative) — separate callIds keep the rows independent.
+
+  it('a pre-aborted INPUT signal: unsettled, the row stays pending, zero decision zero mint', async () => {
+    const fixture = directFixture(ctx, 'c5a-call')
+    const ctrl = new AbortController()
+    ctrl.abort()
+    const res = await makeLeg()({ ...fixture.input, signal: asSignal(ctrl) })
+    expect(res.decision).toBe('unsettled')
+    expect(typeof res.requestId).toBe('string')
+    const st = await state()
+    const row = st.requests.find((r) => r.correlation === fixture.correlation)
+    expect(row).not.toBeUndefined()
+    expect(row?.status).toBe('pending')
+    expect(st.decisions.filter((d) => d.requestId === row?.requestId).length).toBe(0)
+  })
+
+  it('a cancel AFTER the decision: unsettled, zero mint (observe-proven), zero consumption; the allow is RETAINED unspent', async () => {
+    const fixture = directFixture(ctx, 'c5b-call')
+    const ctrl = new AbortController()
+    const rows: Record<string, unknown>[] = []
+    const hooked: PaControlServiceLike = {
+      requestControl: (a) => service.requestControl(a),
+      awaitControlDecision: async (i) => {
+        const d = await service.awaitControlDecision(i)
+        ctrl.abort() // the host exec/token cancel lands the moment the decision arrives
+        return d
+      },
+      guardOperation: (s) => service.guardOperation(s),
+      listControlState: (r) => service.listControlState(r),
+    }
+    const leg = createPaControlLeg({
+      controlService: hooked,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+      signal: () => asSignal(ctrl),
+      onObserve: (row) => { rows.push(row) },
+    })
+    const pending = leg(fixture.input)
+    const rowA = await waitRow((r) => r.correlation === fixture.correlation)
+    await resolve(leaderCaller(), rowA.requestId, 'allow')
+    const res = await pending
+    expect(res.decision).toBe('unsettled')
+    expect(res.requestId).toBe(rowA.requestId)
+    expect(rows.some((r) => r.stage === 'grant-minted')).toBe(false)
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+    expect(st.abandonments.filter((a) => a.requestId === rowA.requestId).length).toBe(0)
+    // truthful retention: the allow stands, unspent, verifiably.
+    const v = await verifyPort().verify(probeFor(fixture, rowA, fixture.input.request.parametersFingerprint))
+    expect(v.allowed).toBe(true)
+  })
+
+  it('a cancel AFTER the mint, before the durable guard: deny, the minted grant is NOT returned; consumption stays ZERO and the durable truth is untouched', async () => {
+    const fixture = directFixture(ctx, 'c5c-call')
+    const ctrl = new AbortController()
+    const rows: Record<string, unknown>[] = []
+    const leg = createPaControlLeg({
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+      signal: () => asSignal(ctrl),
+      onObserve: (row) => {
+        rows.push(row)
+        if (row.stage === 'grant-minted') ctrl.abort() // cancel inside the mint→guard window
+      },
+    })
+    const pending = leg(fixture.input)
+    const rowA = await waitRow((r) => r.correlation === fixture.correlation)
+    await resolve(leaderCaller(), rowA.requestId, 'allow')
+    const res = await pending
+    expect(rows.some((r) => r.stage === 'grant-minted')).toBe(true)
+    expect(rows.some((r) => r.stage === 'guard-consumed')).toBe(false)
+    expect(res.decision).toBe('deny')
+    if (res.decision === 'deny') expect(String(res.detail)).toMatch(/cancelled after the grant was minted/)
+    expect((res as { grant?: unknown }).grant).toBeUndefined()
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === rowA.requestId).length).toBe(0)
+    // NOTHING was consumed and nothing was faked: the row's durable truth
+    // is still an unspent allow (a later spend path is C3's proven law;
+    // the cancel itself changed no consumption fact).
+    const v = await verifyPort().verify(probeFor(fixture, rowA, fixture.input.request.parametersFingerprint))
+    expect(v.allowed).toBe(true)
+  })
+
+  it('a consumption that DID happen stays consumed — never later reported as unconsumed', async () => {
+    // The retention mirror of the above: A1's spent row answers
+    // ALLOW_CONSUMED on every re-probe, forever (never reclaimed) — pinned
+    // in A1 itself. The shared PORT law shown here: probes NEVER write, so
+    // any probe (even one for a scope with no row at all) leaves the
+    // consumption facts byte-identical.
+    const st = await state()
+    const consumedFacts = st.consumptions.length
+    const v = await verifyPort().verify({
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: 'pa:nonexistent-case:never',
+      operationFingerprint: 'sha256:never-written',
+    })
+    expect(v.allowed).toBe(false)
+    if (v.allowed === false) expect(v.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST)
+    expect((await state()).consumptions.length).toBe(consumedFacts)
   })
 })
 
@@ -592,6 +1060,11 @@ interface PlaneRow {
 
 const planeRow: PlaneRow = await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href) as PlaneRow
 const PLANE_REALM = 'a5m1-auth-plane-realm'
+
+// The verifier's mirror of the plane's OWN assembly (same trusted wiring:
+// same policy object, realm, template, role, generation, beneficiary) —
+// the resolve/guard gates re-derive coverage through EXACTLY these facts.
+directAssembly(undefined, PLANE_REALM)
 
 function buildPlane(controlLeg: (input: PaControlLegInput) => Promise<PaControlLegResult>) {
   const built = planeRow.createTeamToolPlaneAssembly({
@@ -647,9 +1120,13 @@ describe('B (plane integration): ask → durable approval → exactly one body',
     expect(row.targetInstanceId).toBe(WORKER)
     expect(String(row.correlation)).toMatch(/^pa:tadm:/)
     const manifest = manifestOf(row)
-    expect(manifest.schema).toBe('a5m1.pa-control-manifest.v1')
+    expect(manifest.schema).toBe(PA_CONTROL_MANIFEST_SCHEMA)
     expect(String(manifest.approvalCaseId)).toMatch(/^tadm:/)
+    expect(String(row.operationFingerprint)).toBe(String(row.reviewPayloadDigest))
     expect((manifest.effects as unknown[]).length).toBeGreaterThan(0)
+    // the binding snapshot is faithful: the plane's ToolBinding carries the
+    // BACKEND tool name ('bash'), the row's toolName the plane tool ('team_bash').
+    expect((manifest.binding as Record<string, unknown>).toolName).toBe('bash')
     await resolve(humanCaller(), row.requestId, 'allow')
     const outcome = await running
     expect(outcome.threw).toBe(false)

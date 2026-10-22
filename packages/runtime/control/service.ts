@@ -180,6 +180,7 @@ import type {
 import {
   CAPABILITY_NAME_VALUES,
 } from '../../domain/policy/src/index.js'
+import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js'
 import type {
   CapabilityName,
   ExternalPolicyFacts,
@@ -246,6 +247,8 @@ import {
   hasAuthorityResolver,
   isControlAuthorityScope,
   isProposalAuthorityPosition,
+  PA_CONTROL_MANIFEST_SCHEMA,
+  parsePaControlManifest,
 } from './types.js'
 import type {
   ApprovalCaseIdentity,
@@ -281,6 +284,9 @@ import type {
   ControlServiceOptions,
   ControlSubject,
   ControlWaitSignal,
+  PaControlManifest,
+  PaEffectsVerifierStage,
+  PaEffectsVerifierVerdict,
 } from './types.js'
 
 // --- closed fact vocabulary (kebab; p4t6-scanner safe by construction) -------------
@@ -2270,6 +2276,53 @@ export function createControlService(options: ControlServiceOptions): ControlSer
         'authorityScope must be {operationClass, matcher: {kind: exact|fingerprint, resource}} with every member a non-empty string (a region-shaped matcher is never persistable)',
       )
     }
+    // A5-M1 (PR358 review fix): the PA operation-manifest marker IS the
+    // contract. A row that DECLARES itself one must be a COMPLETE,
+    // digest-bound one, verified against the SERVICE's own recomputation:
+    //  - the payload must satisfy the strict manifest field-by-field
+    //    (approvalCaseId, authorityScope, rungs, per-effect coverage,
+    //    deniedEffects, realm/call identity, effect set with fingerprint,
+    //    the binding and member snapshots) — a half-manifest is the
+    //    costume of a full one;
+    //  - `reviewPayloadDigest` must equal the SERVICE-RECOMPUTED canonical
+    //    digest (missing digest or digest drift refuses; the review fact
+    //    can never drift from the bytes it claims to summarize);
+    //  - `operationFingerprint` must equal that SAME digest: the ROW
+    //    IDENTITY binds the PAYLOAD. The execution-side parameters
+    //    fingerprint is a MANIFEST FIELD — the two are independent by
+    //    construction, and a replay of the same case with ANY different
+    //    manifest (parameters included) is a different scope key: a new
+    //    row, never a silent reuse.
+    // Every defect is malformed input with NO row written. A payload
+    // without the marker keeps D.3's opaque-review semantics untouched.
+    if (
+      args.reviewPayload !== undefined
+      && typeof args.reviewPayload === 'object'
+      && (args.reviewPayload as Record<string, unknown>)['schema'] === PA_CONTROL_MANIFEST_SCHEMA
+    ) {
+      if (parsePaControlManifest(args.reviewPayload) === undefined) {
+        throw malformed(
+          'request',
+          'reviewPayload',
+          `a reviewPayload declaring schema ${PA_CONTROL_MANIFEST_SCHEMA} must satisfy the strict PA operation manifest field-by-field (approvalCaseId, authorityScope, per-effect rungs, deniedEffects, effectSetFingerprint, authorityGeneration, realmId, callId, parametersFingerprint, effects, binding snapshot, member snapshot)`,
+        )
+      }
+      const recomputedDigest = canonicalJsonFingerprint(args.reviewPayload)
+      if (args.reviewPayloadDigest !== recomputedDigest) {
+        throw malformed(
+          'request',
+          'reviewPayloadDigest',
+          `the PA manifest digest must equal the SERVICE-computed canonical digest (${recomputedDigest}); a missing digest or digest drift refuses with no row written`,
+        )
+      }
+      if (args.operationFingerprint !== recomputedDigest) {
+        throw malformed(
+          'request',
+          'operationFingerprint',
+          `a PA manifest row identity IS the payload-integrity digest: operationFingerprint must equal the service-computed digest (${recomputedDigest}) — the parameters fingerprint rides the manifest as a field, never as the row identity`,
+        )
+      }
+    }
 
     // Reused authority steps (the facade's typed codes surface as-is):
     // (1) caller identity/role; (2) team + target resolution (INSTANCE
@@ -2671,6 +2724,37 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           }
         }
       }
+      // A5-M1 (PR358 review fix): an ALLOW on a PA operation-manifest row
+      // passes the all-Effects gate HERE, inside this same per-team lock
+      // hold, with the REAL resolving caller as decider — the same pure
+      // port the consumption gate will consult before the consumption
+      // fact, so a drift that arrives between decision and consumption is
+      // caught by whichever gate sees it first. A refusal or an
+      // unanswerable verification is committed as a durable DENY carrying
+      // the closed reason (the external-policy pattern): never a silent
+      // skip, never an allow, never a fourth decision value (A2-1).
+      if (args.decision === 'allow') {
+        const paManifest = paManifestOf(request.payload)
+        if (paManifest !== undefined) {
+          const denyReason = paEffectsDenyReason(
+            'resolve',
+            root,
+            request.payload.requestId,
+            paManifest,
+            callerRefOf(caller),
+          )
+          if (denyReason !== undefined) {
+            return await commitDecision({
+              requestId: request.payload.requestId,
+              value: CONTROL_DECISION_VALUES.DENY,
+              decider: callerRefOf(caller),
+              reason: denyReason,
+              scope: scopeOf(request.entry, request.payload),
+              requestSequence: request.entry.sequence,
+            })
+          }
+        }
+      }
       return await commitDecision({
         requestId: request.payload.requestId,
         value: args.decision === 'allow' ? CONTROL_DECISION_VALUES.ALLOW : CONTROL_DECISION_VALUES.DENY,
@@ -3011,6 +3095,54 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * @param row - the matched durable request row that would be consumed.
    * @returns the block reason, or `undefined` when the re-confirmation holds.
    */
+  /**
+   * A5-M1 (PR358 review fix): the durable row's PA operation manifest,
+   * STRICTLY RE-PARSED from the row's own `reviewPayload` — the row, not a
+   * caller, is the source. A payload without the marker is not a manifest
+   * (undefined); a payload BEARING the marker that fails the strict parse
+   * is a corrupt row (also undefined) and BOTH gates treat it fail-closed:
+   * the resolve gate denies it (`authority-undetermined`), the guard gate
+   * blocks it (`authority-undetermined`). Nothing about such a row can be
+   * confirmed, and "could not confirm" is never "covered".
+   */
+  function paManifestOf(payload: RequestPayload): PaControlManifest | undefined {
+    const raw = payload.reviewPayload
+    if (raw === undefined || typeof raw !== 'object' || raw === null) return undefined
+    if ((raw as Record<string, unknown>)['schema'] !== PA_CONTROL_MANIFEST_SCHEMA) return undefined
+    return parsePaControlManifest(raw)
+  }
+
+  /**
+   * A5-M1: one gate's answer of the all-Effects verification, in DENY-reason
+   * shape (`undefined` = covered, allowed to proceed). Called ONLY inside
+   * the per-team lock, at BOTH gates, through the SAME port object. The
+   * port is SYNCHRONOUS and PURE by contract (see `PaEffectsVerifier`);
+   * every deviation — no port, a throw, a non-boolean `ok` — is
+   * `authority-undetermined`, never a pass. The verdict's reason rides the
+   * closed decision vocabulary, so the durable row and the guard block name
+   * the SAME fact.
+   */
+  function paEffectsDenyReason(
+    stage: PaEffectsVerifierStage,
+    root: string,
+    requestId: string,
+    manifest: PaControlManifest,
+    decider: ControlCallerRef,
+  ): ControlDecisionReason | undefined {
+    const port = options.paEffectsVerifier
+    if (port === undefined) return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
+    let verdict: PaEffectsVerifierVerdict
+    try {
+      verdict = port({ stage, rootSessionId: root, requestId, manifest, decider })
+    } catch {
+      return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
+    }
+    if (verdict.ok === true) return undefined
+    return verdict.reason === CONTROL_GUARD_BLOCK_REASONS.PA_AUTHORITY_DRIFT
+      ? CONTROL_DECISION_REASONS.PA_AUTHORITY_DRIFT
+      : CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
+  }
+
   async function recheckConsumedAuthority(
     root: string,
     row: RequestPayload,
@@ -3421,6 +3553,34 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             reason: authority,
             requestId: request.payload.requestId,
             decisionSequence: decision.entry.sequence,
+          }
+        }
+        // A5-M1 (PR358 review fix): the SAME all-Effects verifier the
+        // decision gate used, asked again HERE — this same lock hold, the
+        // DURABLE allow's decider, before the consumption fact. The
+        // decision-gate answer was true WHEN IT WAS WRITTEN; authority is
+        // not durable, so the only moment that matters is this one. A
+        // drift (or an unanswerable verification, or no port at all)
+        // refuses with ZERO consumption — the allow stays exactly as the
+        // decider wrote it, provable through the durable state.
+        const paManifest = paManifestOf(request.payload)
+        if (paManifest !== undefined) {
+          const denyReason = paEffectsDenyReason(
+            'guard',
+            root,
+            request.payload.requestId,
+            paManifest,
+            decision.payload.decider,
+          )
+          if (denyReason !== undefined) {
+            return {
+              allowed: false,
+              reason: denyReason === CONTROL_DECISION_REASONS.PA_AUTHORITY_DRIFT
+                ? CONTROL_GUARD_BLOCK_REASONS.PA_AUTHORITY_DRIFT
+                : CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+              requestId: request.payload.requestId,
+              decisionSequence: decision.entry.sequence,
+            }
           }
         }
         // A4 (ADR A2-9): the LAST look before the durable write. An unreadable

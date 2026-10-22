@@ -227,6 +227,26 @@ export const CONTROL_DECISION_REASONS = {
    * `a4p3-approval-escalation.test.ts` (preflight no-red finding 2).
    */
   ESCALATED: 'escalated',
+  /**
+   * A5-M1 (PR358 review fix): the allow was impossible at the DECISION gate —
+   * the row is a PA operation manifest (`reviewPayload.schema ===
+   * PA_CONTROL_MANIFEST_SCHEMA`) and the injected all-Effects verifier
+   * ({@link ControlServiceOptions.paEffectsVerifier}) answered that the REAL
+   * decider's fresh authority no longer covers EVERY effect of the covered
+   * set. Recorded as a `deny` (never a fourth value — A2-1); the drift is a
+   * fact about the moment of decision, and a re-ask re-presents the fresh
+   * plan. Nothing was consumed.
+   */
+  PA_AUTHORITY_DRIFT: 'pa-authority-drift',
+  /**
+   * A5-M1: an allow was attempted on a PA operation-manifest row but the
+   * all-Effects verification could not be answered at all — no verifier port
+   * is wired, the port threw, or its verdict left the closed vocabulary.
+   * "Could not confirm" is not "confirmed" (the ADR A5-16 polarity the
+   * guard's A1-14 recheck already carries): recorded as a `deny`, zero
+   * consumption; the reviewer may re-ask once the plane can answer.
+   */
+  AUTHORITY_UNDETERMINED: 'authority-undetermined',
 } as const
 
 /** One of the closed durable-decision reasons. */
@@ -938,6 +958,254 @@ export type ControlAuthorityRecheckPort = (
   input: ControlAuthorityRecheckInput,
 ) => Promise<ControlAuthorityRecheck>
 
+// --- A5-M1 (PR358 review fix): the PA operation manifest + the all-Effects verifier ----
+// The M1 AUTH bridge (packages/runtime/operation-permission/pa-control-bridge.ts)
+// rides a PLAIN requestControl row (no A4 case leg) whose `reviewPayload` is
+// this closed PA operation manifest. The marker is the schema id; the moment
+// a row carries it, THREE durable laws bind it:
+//  1. requestControl RECOMPUTES the canonical digest of the payload and
+//     requires BOTH `reviewPayloadDigest` and `operationFingerprint` to
+//     equal it — the parameter fingerprint is a MANIFEST FIELD (execution
+//     scope), the row identity is the PAYLOAD-INTEGRITY digest; a manifest
+//     missing any required member is malformed (no row written);
+//  2. resolveControl, before committing an ALLOW, calls the injected
+//     {@link PaEffectsVerifier} inside the per-team lock with the real
+//     decider; a refused or unanswered verification is committed as a
+//     durable `deny` (reason `pa-authority-drift` / `authority-undetermined`,
+//     the external-policy pattern) — never an allow, never a silent skip;
+//  3. guardOperation, inside the SAME lock hold and before the consumption
+//     fact, calls the SAME verifier with the durable allow's decider; a
+//     refusal blocks with ZERO consumption (`pa-authority-drift`; an
+//     unanswerable verification reuses `authority-undetermined`).
+// A row WITHOUT the marker is byte-identical legacy (every pre-M1 path is
+// untouched, including its `reviewPayload` as an opaque review aid).
+
+/** The closed marker of a PA operation manifest payload (v2: the PR358 fix
+ *  added the authority point and the binding/member snapshots). */
+export const PA_CONTROL_MANIFEST_SCHEMA = 'a5m1.pa-control-manifest.v2' as const
+
+/** The authority-rung vocabulary a manifest may name (the A4 ladder, closed;
+ *  typed loosely on purpose — membership is validated, the ladder type
+ *  itself lives in the governance layer the control plane must not import). */
+export const PA_CONTROL_MANIFEST_RUNGS: readonly string[] = ['member', 'leader', 'human-user', 'human-admin']
+
+/** One denied-effects provenance entry (mirrors the PA plan's pair shape). */
+export interface PaControlManifestDeniedEffect {
+  readonly effectIndex: number
+  readonly requiredAuthority: string
+}
+
+/** The strict PA operation manifest, as RE-READ from a durable row. Every
+ *  field is validated field-by-field at requestControl — see
+ *  {@link parsePaControlManifest}. */
+export interface PaControlManifest {
+  readonly schema: typeof PA_CONTROL_MANIFEST_SCHEMA
+  readonly approvalCaseId: string
+  /** A1-14 authority point of the covered operation (exact realm-scoped
+   *  tool-invoke point; a CONCRETE resource, never a region). */
+  readonly authorityScope: ControlAuthorityScope
+  readonly requiredAuthority: string
+  /** One rung per effect, SAME ORDER as `effects.effects` (per-effect
+   *  coverage is what the all-Effects verifier walks). */
+  readonly perEffectRequired: readonly string[]
+  readonly deniedEffects: readonly PaControlManifestDeniedEffect[]
+  readonly authorityGeneration: number
+  readonly realmId: string
+  readonly callId: string
+  /** The EXECUTION-side scope (canonical parameter fingerprint) — distinct
+   *  from and never equal-by-design to the payload digest that keys the
+   *  row. */
+  readonly parametersFingerprint: string
+  /** The exact covered effect set (the PA `RequestedEffectSet` snapshot,
+   *  fingerprint included). Elements are validated as closed-enough: a
+   *  non-empty `kind`, a `tool-invoke` element naming a non-empty
+   *  `toolName`; the authority truth is re-derived by the verifier, not
+   *  re-parsed here. */
+  readonly effects: {
+    readonly fingerprint: string
+    readonly effects: readonly Record<string, unknown>[]
+  }
+  /** The binding snapshot, field by field (the exact tool identity the
+   *  approval covers). */
+  readonly binding: {
+    readonly bindingId: string
+    readonly agentScopeKey: string
+    readonly toolName: string
+    readonly definitionIdentity: string
+    readonly providerId: string
+    readonly implementationOrigin: string
+    readonly executionBoundary: string
+    readonly status: string
+    readonly policyGeneration: number
+    readonly authorityGeneration: number
+    readonly revision: number
+    /** The binding's assurance cell, passed through (the verifier rebuilds
+     *  the domain binding through the domain's own parser — the snapshot
+     *  must survive that round trip or the re-derivation is a different
+     *  binding). */
+    readonly assurance: Record<string, unknown>
+  }
+  /** The trusted member attribution snapshot. */
+  readonly member: { readonly teamSessionId: string; readonly instanceId: string }
+}
+
+/** Strict field-by-field parse of a manifest candidate (the marker is the
+ *  entry; a present marker that fails the shape is NOT a manifest — the
+ *  request is malformed, no row). Returns undefined on ANY defect. */
+export function parsePaControlManifest(value: unknown): PaControlManifest | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const v = value as Record<string, unknown>
+  if (v.schema !== PA_CONTROL_MANIFEST_SCHEMA) return undefined
+  const str = (x: unknown, max: number): string | undefined =>
+    typeof x === 'string' && x.length > 0 && x.length <= max ? x : undefined
+  const rung = (x: unknown): string | undefined =>
+    typeof x === 'string' && PA_CONTROL_MANIFEST_RUNGS.includes(x) ? x : undefined
+  const nonNegInt = (x: unknown): number | undefined =>
+    typeof x === 'number' && Number.isInteger(x) && x >= 0 ? x : undefined
+  const approvalCaseId = str(v.approvalCaseId, 1024)
+  if (approvalCaseId === undefined) return undefined
+  if (!isControlAuthorityScope(v.authorityScope)) return undefined
+  const requiredAuthority = rung(v.requiredAuthority)
+  if (requiredAuthority === undefined) return undefined
+  const realmId = str(v.realmId, 512)
+  if (realmId === undefined) return undefined
+  const callId = str(v.callId, 512)
+  if (callId === undefined) return undefined
+  const parametersFingerprint = str(v.parametersFingerprint, 512)
+  if (parametersFingerprint === undefined) return undefined
+  const effectSetFingerprint = str(v.effectSetFingerprint, 512)
+  if (effectSetFingerprint === undefined) return undefined
+  const authorityGeneration = nonNegInt(v.authorityGeneration)
+  if (authorityGeneration === undefined) return undefined
+  if (!Array.isArray(v.effects)) return undefined
+  const effectItems = v.effects as unknown[]
+  if (effectItems.length === 0 || effectItems.length > 64) return undefined
+  const effects: Record<string, unknown>[] = []
+  for (const item of effectItems) {
+    if (typeof item !== 'object' || item === null) return undefined
+    const e = item as Record<string, unknown>
+    if (typeof e.kind !== 'string' || e.kind.length === 0) return undefined
+    if (e.kind === 'tool-invoke' && (typeof e.toolName !== 'string' || e.toolName.length === 0)) return undefined
+    effects.push(item as Record<string, unknown>)
+  }
+  if (!Array.isArray(v.perEffectRequired)) return undefined
+  const perEffect: string[] = []
+  for (const item of v.perEffectRequired as unknown[]) {
+    const r = rung(item)
+    if (r === undefined) return undefined
+    perEffect.push(r)
+  }
+  if (perEffect.length !== effects.length) return undefined
+  if (!Array.isArray(v.deniedEffects)) return undefined
+  const deniedEffects: PaControlManifestDeniedEffect[] = []
+  for (const item of v.deniedEffects as unknown[]) {
+    if (typeof item !== 'object' || item === null) return undefined
+    const d = item as Record<string, unknown>
+    const effectIndex = nonNegInt(d.effectIndex)
+    const req = rung(d.requiredAuthority)
+    if (effectIndex === undefined || req === undefined) return undefined
+    deniedEffects.push({ effectIndex, requiredAuthority: req })
+  }
+  if (typeof v.binding !== 'object' || v.binding === null) return undefined
+  const b = v.binding as Record<string, unknown>
+  const bindingId = str(b.bindingId, 1024)
+  const agentScopeKey = str(b.agentScopeKey, 1024)
+  const bindingToolName = str(b.toolName, 512)
+  const definitionIdentity = str(b.definitionIdentity, 1024)
+  const providerId = str(b.providerId, 512)
+  const implementationOrigin = str(b.implementationOrigin, 512)
+  const executionBoundary = str(b.executionBoundary, 512)
+  const status = str(b.status, 64)
+  const policyGeneration = nonNegInt(b.policyGeneration)
+  const bindingAuthorityGeneration = nonNegInt(b.authorityGeneration)
+  const revision = nonNegInt(b.revision)
+  if (
+    bindingId === undefined || agentScopeKey === undefined || bindingToolName === undefined
+    || definitionIdentity === undefined || providerId === undefined || implementationOrigin === undefined
+    || executionBoundary === undefined || status === undefined
+    || policyGeneration === undefined || bindingAuthorityGeneration === undefined || revision === undefined
+    || typeof b.assurance !== 'object' || b.assurance === null
+  ) return undefined
+  if (typeof v.member !== 'object' || v.member === null) return undefined
+  const m = v.member as Record<string, unknown>
+  const teamSessionId = str(m.teamSessionId, 512)
+  const instanceId = str(m.instanceId, 512)
+  if (teamSessionId === undefined || instanceId === undefined) return undefined
+  return {
+    schema: PA_CONTROL_MANIFEST_SCHEMA,
+    approvalCaseId,
+    authorityScope: v.authorityScope,
+    requiredAuthority,
+    perEffectRequired: perEffect,
+    deniedEffects,
+    authorityGeneration,
+    realmId,
+    callId,
+    parametersFingerprint,
+    effects: { fingerprint: effectSetFingerprint, effects },
+    binding: {
+      bindingId,
+      agentScopeKey,
+      toolName: bindingToolName,
+      definitionIdentity,
+      providerId,
+      implementationOrigin,
+      executionBoundary,
+      status,
+      policyGeneration,
+      authorityGeneration: bindingAuthorityGeneration,
+      revision,
+      assurance: b.assurance as Record<string, unknown>,
+    },
+    member: { teamSessionId, instanceId },
+  }
+}
+
+/** The stage at which the all-Effects verification is asked (both gates,
+ *  the same question, the same port object). */
+export type PaEffectsVerifierStage = 'resolve' | 'guard'
+
+/** Everything the verifier may read: the DURABLE row facts and the stage.
+ *  Nothing else — the verifier re-derives authority from the CURRENT plane
+ *  through its own wired synchronous readers; the service passes no
+ *  documents and walks no ladder (ADR A5-12: one reader per answer). */
+export interface PaEffectsVerifierInput {
+  readonly stage: PaEffectsVerifierStage
+  readonly rootSessionId: string
+  readonly requestId: string
+  readonly manifest: PaControlManifest
+  /** The REAL decider: the resolving caller (stage 'resolve') or the
+   *  durable allow's decider (stage 'guard'). Never a presented stand-in. */
+  readonly decider: ControlCallerRef
+}
+
+/** The closed verdict vocabulary. `authority-undetermined` = the fresh
+ *  authority question could not be answered (unreadable plane, unparseable
+ *  snapshot, decider outside the closed vocabulary); `pa-authority-drift` =
+ *  it was answered and at least one effect is no longer covered. */
+export type PaEffectsVerifierVerdict =
+  | { readonly ok: true }
+  | {
+      readonly ok: false
+      readonly reason: 'pa-authority-drift' | 'authority-undetermined'
+      readonly detail: string
+    }
+
+/**
+ * The injected all-Effects verifier (A5-M1, PR358 review fix). THE LAW:
+ *  - SYNCHRONOUS and PURE: called INSIDE the per-team lock at the resolve
+ *    gate and at the guard's consumption gate; no re-entry into the control
+ *    service, no minting, no I/O of any kind (a port that returns a promise
+ *    or throws is treated as `authority-undetermined`, never as a pass);
+ *  - ABSENT IS NOT "COVERED": a PA operation-manifest row is neither
+ *    allowable nor consumable by a composition that cannot answer for its
+ *    authority (the authorityRevalidation polarity, carried);
+ *  - one port answers BOTH gates — the resolve/guard double-gate against
+ *    the same current facts is what makes an in-lock drift between decision
+ *    and consumption refuse with zero consumption.
+ */
+export type PaEffectsVerifier = (input: PaEffectsVerifierInput) => PaEffectsVerifierVerdict
+
 // --- scope ----------------------------------------------------------------------------
 
 /**
@@ -1343,6 +1611,15 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
    * is what keeps a corrupt authority row from executing.
    */
   AUTHORITY_SCOPE_UNBOUND: 'authority-scope-unbound',
+  /**
+   * A5-M1 (PR358 review fix): the row is a PA operation manifest and the
+   * injected all-Effects verifier re-derived — from the durable decider and
+   * the CURRENT authority/policy facts — that at least one effect of the
+   * covered set is no longer inside that decider's reach. The allow was
+   * true when it was written; it is about an authority that no longer
+   * exists. ZERO consumption, the same discipline as `authority-risen`.
+   */
+  PA_AUTHORITY_DRIFT: 'pa-authority-drift',
 } as const
 
 /** One of the closed guard block reasons. */
@@ -1479,6 +1756,18 @@ export interface ControlServiceOptions {
    * they always did.
    */
   readonly authorityRevalidation?: ControlAuthorityRecheckPort
+  /**
+   * A5-M1 (PR358 review fix) — the all-Effects verifier binding PA operation
+   * manifest rows (`reviewPayload.schema === PA_CONTROL_MANIFEST_SCHEMA`) at
+   * BOTH gates: before an ALLOW is recorded (the real resolving caller as
+   * decider) and before the consumption fact is written (the durable
+   * allow's decider) — the same port object, the same question, the SAME
+   * per-team lock hold. ABSENT is a refusal for such rows (durable deny at
+   * the resolve gate, zero-consumption block at the guard), never a pass.
+   * Rows without the marker never consult it. See {@link PaEffectsVerifier}
+   * for the synchronous/pure law.
+   */
+  readonly paEffectsVerifier?: PaEffectsVerifier
 }
 
 /**
