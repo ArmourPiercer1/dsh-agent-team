@@ -1161,6 +1161,94 @@ export function parsePaControlManifest(value: unknown): PaControlManifest | unde
   }
 }
 
+// --- PR358 f5 review fix: the STRICT durable READ-BACK trichotomy ----------------------
+//
+// A durable row is read back at BOTH gates (resolve, guard) long after
+// `requestControl` wrote it, and the write path guarantees only about the
+// moment of writing. The read-back must therefore CLASSIFY the row it finds,
+// never collapse "old-world row" and "this-class row damaged after commit"
+// into one value: a damaged THIS-CLASS row silently re-reading as a legacy
+// row is the downgrade this trichotomy closes (the commit side has already
+// guaranteed every PA row was strict at write, so a row that still bears
+// this class's durable features but no longer parses is damage, full stop).
+//
+// THE CLASS CRITERION (the fields a PA row NECESSARILY bears, per the
+// requestControl laws above — this list is the pinned contract, mirrored by
+// `a5m1-auth-bridge.test.ts` describe D):
+//  1. the MARKER: `reviewPayload` is an object whose `schema` is exactly
+//     {@link PA_CONTROL_MANIFEST_SCHEMA}. Marker present ⇒ this class; the
+//     strict parse decides `valid` vs `corrupt`.
+//  2. the DIGEST BINDING (the marker-stripped tell): `reviewPayloadDigest`
+//     is a non-empty string AND `operationFingerprint` equals it.
+//     requestControl ENFORCES `operationFingerprint === reviewPayloadDigest
+//     === canonicalDigest(reviewPayload)` on a PA row and is the only writer
+//     required to create that pairing — a row still carrying it carries the
+//     PA row-identity law even when its marker was stripped. With the marker
+//     absent, the binding ALONE binds the class: the payload cannot then be
+//     a valid v2 manifest (the marker case would have caught that), so such
+//     a row is `corrupt` — payload missing/non-object/schema-moved/
+//     otherwise unparseable, all the same fact.
+// NOT this class (the compat surface, byte-identical legacy behaviour):
+// no marker AND no digest binding. This keeps legitimate D.3 rows intact —
+// an opaque `reviewPayload` with its own digest (no fingerprint, or a
+// fingerprint that is the OPERATION identity, ≠ the payload digest) is an
+// ordinary review-aid row, never a stripped manifest.
+//
+// DISCLOSED BOUNDARY (the RULING 5-B honest mirror again): a row stripped of
+// BOTH PA features (marker AND digest AND fingerprint) is indistinguishable
+// from a pre-M1 row by ANY reading — the classifier states nothing, exactly
+// as `corruptLegCouldGovern` refuses to invent candidacy the bytes do not
+// disclose.
+
+/** The strict read-back class of one durable request row against the PA
+ *  operation-manifest effect-set (PR358 f5). `not-effect-set` keeps today's
+ *  legacy behaviour at BOTH gates (skip); `valid` rides the verifier flow;
+ *  `corrupt` is a THIS-CLASS damaged row and NEVER skips: resolve commits a
+ *  durable DENY (`authority-undetermined`), guard blocks with ZERO
+ *  consumption (`authority-undetermined`) — fail closed, with or without an
+ *  injected verifier. */
+export type PaManifestReadBack =
+  | { readonly state: 'not-effect-set' }
+  | { readonly state: 'valid'; readonly manifest: PaControlManifest }
+  | { readonly state: 'corrupt' }
+
+/** The durable fields the read-back classification reads (structurally:
+ *  `RequestPayload` and {@link ControlRequestRecord} both satisfy it). */
+export interface PaManifestRowShape {
+  readonly reviewPayload?: RemoteSafeJsonValue
+  readonly reviewPayloadDigest?: string
+  readonly operationFingerprint?: string
+}
+
+const PA_MANIFEST_NOT_EFFECT_SET: PaManifestReadBack = Object.freeze({ state: 'not-effect-set' as const })
+const PA_MANIFEST_CORRUPT: PaManifestReadBack = Object.freeze({ state: 'corrupt' as const })
+
+/** Classify one durably read-back row against the PA effect-set class (see
+ *  the criterion block above). PURE and total: every row lands in exactly
+ *  one state; nothing is defaulted, nothing is guessed. */
+export function paManifestClassOf(row: PaManifestRowShape): PaManifestReadBack {
+  const raw = row.reviewPayload
+  const markerPresent =
+    typeof raw === 'object' && raw !== null
+    && (raw as Record<string, unknown>)['schema'] === PA_CONTROL_MANIFEST_SCHEMA
+  if (markerPresent) {
+    const manifest = parsePaControlManifest(raw)
+    return manifest === undefined ? PA_MANIFEST_CORRUPT : { state: 'valid', manifest }
+  }
+  const digest = row.reviewPayloadDigest
+  const fingerprint = row.operationFingerprint
+  if (
+    typeof digest === 'string' && digest.length > 0
+    && typeof fingerprint === 'string' && fingerprint === digest
+  ) {
+    // The PA row-identity pairing survives while the reviewPayload is not
+    // a valid v2 manifest: a stripped/moved marker on a row that was
+    // strict at commit. This class — damaged. Never "an ordinary old row".
+    return PA_MANIFEST_CORRUPT
+  }
+  return PA_MANIFEST_NOT_EFFECT_SET
+}
+
 /** The stage at which the all-Effects verification is asked (both gates,
  *  the same question, the same port object). */
 export type PaEffectsVerifierStage = 'resolve' | 'guard'
