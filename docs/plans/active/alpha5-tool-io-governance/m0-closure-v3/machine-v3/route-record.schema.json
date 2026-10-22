@@ -1,0 +1,422 @@
+{
+ "$id": "m0-closure-machine-v2/route-record",
+ "dialect": "m0-closure-checker-subset-2",
+ "status": "PURE-CANDIDATE v2; 中心合同=M0-A-LIFECYCLE-CONTRACT-v1.1(208ba98c…)，本件为其机器侧候选; NOT-FROZEN",
+ "fixedInputs": {
+  "matrix": "../../TOOL-CAPABILITY-MATRIX-9b2.md",
+  "matrixSha256": "b7062a9d7fb0d0366e5ceb19b99068ab869cf2355437f3c23a6877ce325aba0f",
+  "records": "../route-records-v3c.json",
+  "recordsSha256": "55233426a022531cb5049587ffb605c5e487608cdcc08004e68509c2e535c929"
+ },
+ "metaFieldsRequired": [
+  "id",
+  "status",
+  "axes",
+  "keyset",
+  "pins"
+ ],
+ "recordFields": {
+  "name": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "scope": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "alias",
+    "assembly",
+    "host-conditional",
+    "host-conditional-modelSelection",
+    "host-dynamic-mcp-scope",
+    "host-experimental-bundle-off",
+    "host-preset-conditional",
+    "host-preset-conditional-win32",
+    "host-preset-cordis-only",
+    "host-preset-off",
+    "host-preset-on",
+    "host-preset-on-setup-excluded-on-strict",
+    "host-sdk-app-env-only",
+    "host-unmounted-optin-package",
+    "host-unmounted-shipped",
+    "own-layer",
+    "plane-fixed",
+    "plane-host-impl",
+    "plane-takeover",
+    "surface"
+   ]
+  },
+  "fc": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "FC-JOB",
+    "FC-LSP",
+    "FC-MCP",
+    "FC-NEG4",
+    "FC-PTC",
+    "FC-RD",
+    "FC-RES",
+    "FC-SHL",
+    "FC-SHL-A",
+    "FC-SHL-P",
+    "FC-SRCH-A",
+    "FC-SRCH-N",
+    "FC-TEAM15",
+    "FC-TODO",
+    "FC-U",
+    "FC-WEB",
+    "FC-WR"
+   ]
+  },
+  "currentRoute": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "ASSEMBLY_STATIC",
+    "DOMAIN_INTERSECTION_SELF_DETERMINED",
+    "EXCLUDED_BY_SETUP",
+    "HOST_REALM_INHERITED",
+    "HOST_REALM_UNMOUNTED_OPTIN",
+    "ISOLATION_SURFACE",
+    "MCP_MOUNT_RECONCILE_CHAIN",
+    "NESTED_COMPOSITE_PTC",
+    "OWN_LAYER",
+    "PLANE_ALIAS",
+    "PLANE_FIXED_MOUNT",
+    "PLANE_TAKEOVER",
+    "PRODUCT_ARM_DORMANT_HOST_LIVE"
+   ]
+  },
+  "targetGovernedRoute": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "DOMAIN_INTERSECTION_SELF_DETERMINED",
+    "GOVERNED_ASSEMBLY_STATIC",
+    "GOVERNED_COMPOSITE_SECOND_LAYER",
+    "GOVERNED_MOUNT_RECONCILE",
+    "GOVERNED_ON_DECLARED_MOUNT",
+    "GOVERNED_OWN_LAYER",
+    "GOVERNED_PRODUCT_ARM_TO_LIVE",
+    "GOVERNED_TAKEOVER_HOST_BODY",
+    "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+    "ISOLATION_GUARANTEED"
+   ]
+  },
+  "targetCeiling": {
+   "type": "string",
+   "required": false,
+   "nonempty": true
+  },
+  "acc": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "F",
+    "W1",
+    "W2"
+   ]
+  },
+  "req": {
+   "type": "string",
+   "required": true,
+   "enum": [
+    "N-A-TOOL",
+    "REQ",
+    "REQ-COND",
+    "REQ-COND-win32"
+   ]
+  },
+  "reqSrc": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "eff": {
+   "type": "array",
+   "required": true,
+   "minItems": 1,
+   "items": {
+    "inVocabulary": "eff-vocabulary.json"
+   }
+  },
+  "prov": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "life": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "attr": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "idx": {
+   "type": "string",
+   "required": true,
+   "nonempty": true
+  },
+  "gap": {
+   "type": "string",
+   "required": false,
+   "enum": [
+    "A2C6_DEFERRAL_OPEN",
+    "MCP_GOVERNANCE_DORMANT",
+    "NONE_SHIPPED",
+    "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+    "NO_GOVERNED_EDIT_ARM@plane",
+    "NO_GOVERNED_WRITE_ARM@plane",
+    "OPTIN_UNMANAGED_IF_MOUNTED",
+    "OPTIN_UNMANAGED_IF_MOUNTED(REWORK-10-18:92)",
+    "OPTIN_UNMANAGED_IF_MOUNTED;cwd-scoped-xsession",
+    "OPTIN_UNMANAGED_IF_MOUNTED;secrets-in-raw-events",
+    "OPTIN_UNMANAGED_IF_MOUNTED;shell-rules-key-bash-pwsh-only(plane:519)",
+    "PERCALL_ESCALATION_ONLY",
+    "PERMCOV_SILENT_UNKNOWN",
+    "PERMCOV_SILENT_UNKNOWN;NAME_COLLISION",
+    "PRODUCT_WEB_ARM_DORMANT",
+    "READ_KIND_MASKS_WRITE(index.ts:275)",
+    "UNMANAGED_IF_ENABLED",
+    "UNMANAGED_INHERITED_LIVE"
+   ]
+  },
+  "routeFormPending": {
+   "type": "string",
+   "required": false
+  },
+  "openDeliverable": {
+   "type": "string",
+   "required": false
+  },
+  "note": {
+   "type": "string",
+   "required": false
+  }
+ },
+ "coverage": {
+  "source": "matrix-appendix-A-regex",
+  "appendix": {
+   "startLine": 49,
+   "endLine": 163,
+   "rowRegex": "^- \\*\\*([^*]+)\\*\\*"
+  },
+  "additionalImplNames": {
+   "aliases": [
+    "team_grep",
+    "team_glob",
+    "team_bash"
+   ],
+   "surface": [
+    "surface:domain_family",
+    "surface:mcp_http_dynamic",
+    "surface:mcp_stdio",
+    "surface:neg4_preset_selfregister"
+   ]
+  },
+  "duplicatePolicy": {
+   "allowedDuplicates": [
+    "interrupt_agent",
+    "list_agents",
+    "send_message"
+   ],
+   "eachExactlyTwoRowsDistinctScope": true
+  },
+  "rules": [
+   "set(recordNames) 必须 ⊇ matrix83 (E_COVERAGE_MISSING)",
+   "每条 name ∈ matrix83∪aliases∪surface (E_COVERAGE_NAME)",
+   "重复名集合=trio 且各恰 2 行不同 scope (E_UNIQUE_KEY)",
+   "行数=matrixUnique+3+4 (E_COVERAGE)"
+  ],
+  "matrixNameCount": 83
+ },
+ "invariants": {
+  "emptyString": "E_MISSING",
+  "nonStringRoute": "E_ROUTE",
+  "ownLayerBidirectional": "scope=own-layer ⇔ (fc=FC-TEAM15 ∧ target=GOVERNED_OWN_LAYER)，双向",
+  "naSurfaceOnly": "req=N-A-TOOL ⇒ name∈surface",
+  "ceilingOnTools": "非 surface 行必有 targetCeiling"
+ },
+ "lifecycleGraph": {
+  "states": [
+   "RECEIVED",
+   "CLASSIFIED",
+   "REJECTED",
+   "ALL_ADMITTED",
+   "ASK_WAIT",
+   "ASK_VERIFIED",
+   "ASK_RESERVED",
+   "PREPARING",
+   "PREPARED",
+   "PREPARE_FAILED",
+   "DISPATCHED",
+   "LEASE_UNCONFIRMED",
+   "SETTLED",
+   "UNCONFIRMED",
+   "STALE",
+   "CANCELLED"
+  ],
+  "edges": [
+   [
+    "RECEIVED",
+    "CLASSIFIED"
+   ],
+   [
+    "RECEIVED",
+    "REJECTED"
+   ],
+   [
+    "CLASSIFIED",
+    "ALL_ADMITTED"
+   ],
+   [
+    "CLASSIFIED",
+    "ASK_WAIT"
+   ],
+   [
+    "CLASSIFIED",
+    "REJECTED"
+   ],
+   [
+    "ALL_ADMITTED",
+    "PREPARING"
+   ],
+   [
+    "ASK_WAIT",
+    "ASK_VERIFIED"
+   ],
+   [
+    "ASK_WAIT",
+    "STALE"
+   ],
+   [
+    "ASK_WAIT",
+    "CANCELLED"
+   ],
+   [
+    "ASK_VERIFIED",
+    "ASK_RESERVED"
+   ],
+   [
+    "ASK_VERIFIED",
+    "STALE"
+   ],
+   [
+    "ASK_VERIFIED",
+    "CANCELLED"
+   ],
+   [
+    "ASK_RESERVED",
+    "PREPARING"
+   ],
+   [
+    "PREPARING",
+    "PREPARED"
+   ],
+   [
+    "PREPARING",
+    "PREPARE_FAILED"
+   ],
+   [
+    "PREPARING",
+    "STALE"
+   ],
+   [
+    "PREPARING",
+    "CANCELLED"
+   ],
+   [
+    "PREPARED",
+    "DISPATCHED"
+   ],
+   [
+    "PREPARED",
+    "STALE"
+   ],
+   [
+    "PREPARED",
+    "CANCELLED"
+   ],
+   [
+    "PREPARED",
+    "LEASE_UNCONFIRMED"
+   ],
+   [
+    "DISPATCHED",
+    "SETTLED"
+   ],
+   [
+    "DISPATCHED",
+    "UNCONFIRMED"
+   ]
+  ],
+  "finalStates": [
+   "REJECTED",
+   "PREPARE_FAILED",
+   "LEASE_UNCONFIRMED",
+   "SETTLED",
+   "UNCONFIRMED",
+   "STALE",
+   "CANCELLED"
+  ],
+  "terminalEqualsLastState": true,
+  "branchRules": {
+   "all-allow": [
+    "禁出现任何 ASK_* 状态或 trace.control（伪造批准=E_FORGED_APPROVAL）",
+    "CLASSIFIED→ALL_ADMITTED 无 planApproval 证据字段"
+   ],
+   "ask": [
+    "ASK_VERIFIED 必携 grant{logicalQuestionId,issuedTo.invocationCorrelation==trace,presenter.trustedFromDecider=true,grantId}",
+    "ASK_RESERVED 必携 consumptionProof{requestId==control.request.requestId,decisionSequence==control.decision.decisionSequence}",
+    "ASK_WAIT 必携 control.request{invocationCorrelation==trace}；不符=E_OWNERSHIP"
+   ]
+  },
+  "evidenceByState": {
+   "RECEIVED": [
+    "hostToken{fixtureRef,serialized:false}",
+    "invocationCorrelation",
+    "hostCallId",
+    "binding{bindingId,bindingRevisionCurrent:true,status:ACTIVE}",
+    "member{teamSessionId,instanceId}",
+    "realmId",
+    "requestedEffects{fingerprint}"
+   ],
+   "ALL_ADMITTED": [
+    "grant{grantId,paCallIdEqCorrelation:true}"
+   ],
+   "DISPATCHED": [
+    "paConsume{grantId==grant.grantId,ledgerChanged:true}",
+    "freshValidation{generationsRechecked:true,bindingRevisionCurrent:true,cancelRequested:false}"
+   ],
+   "LEASE_UNCONFIRMED": [
+    "paConsume.ledgerChanged==true",
+    "bodyStarted==false",
+    "refundClaimed==false"
+   ],
+   "PREPARE_FAILED": [
+    "bodyStarted==false",
+    "paConsumed==false",
+    "cleanupScoped==true",
+    "refundClaimed==false"
+   ],
+   "SETTLED": [
+    "leaseSettleEvidence"
+   ],
+   "STALE": [
+    "generationsOrScopeDriftObserved==true"
+   ]
+  },
+  "identityRules": [
+   "grant.issuedTo.invocationCorrelation==trace.invocationCorrelation (E_IDENTITY)",
+   "requestedEffects.fingerprint==grant.effectsFingerprint (E_IDENTITY)",
+   "hostToken.serialized!==false→E_IDENTITY",
+   "cancel.ledgerUnchanged==true 仅当 cancelPoint<PA_CONSUME (E_LEDGER_CLAIM)"
+  ],
+  "disclosure": "hostToken.fixtureRef 仅证明测试可信 fixture 引用，不证明真实 Host/不可伪造身份/OS 安全/C2"
+ }
+}
