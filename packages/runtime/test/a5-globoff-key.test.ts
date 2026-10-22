@@ -34,7 +34,17 @@ const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest(
 const WORLD = join(REPO, 'tests/homes', `a5globoff-unit-${Date.now().toString(36)}`)
 const ROOT_DIR = join(WORLD, 'root')
 
-type Exec = (raw: unknown) => Promise<{ text: string }>
+// Discriminated pair (READ slice A-6): trio rows keep `{ text }`; the read
+// row returns the native window object and THROWS on refusal. No `any`.
+type ReadWindowOk = {
+  path: string
+  offset: number
+  lines: Array<{ number: number; text: string }>
+  totalLines: number
+}
+type ExecText = (raw: unknown) => Promise<{ text: string }>
+type ExecRead = (raw: unknown) => Promise<ReadWindowOk>
+type Exec = ExecText | ExecRead
 interface PlaneValue {
   definitions: ReadonlyArray<{ name: string; execute: Exec }>
   ownNames: readonly string[]
@@ -84,10 +94,10 @@ function buildPlane(plane: Record<string, unknown> = {}, extra: Record<string, u
   })
   return built
 }
-function def(value: PlaneValue, name: string) {
+function def<E extends Exec = ExecText>(value: PlaneValue, name: string): { name: string; execute: E } {
   const d = value.definitions.find((x) => x.name === name)
   if (d === undefined) throw new Error(`no def named ${name} on the plane (ownNames=${value.ownNames.join(',')})`)
-  return d
+  return d as { name: string; execute: E }
 }
 
 beforeAll(async () => {
@@ -177,8 +187,8 @@ describe('a5-globoff: the closed globEnabled consumption key', () => {
     expect(grep.text).toContain('GLOBOFF-A')
     const bash = await def(built.value, 'team_bash').execute({ command: 'echo GLOBOFF-SHELL-TOK' })
     expect(bash.text).toContain('GLOBOFF-SHELL-TOK')
-    const read = await def(built.value, 'read').execute({ path: 'a.txt' })
-    expect(read.text).toContain('GLOBOFF-A')
+    const read = await def<ExecRead>(built.value, 'read').execute({ path: 'a.txt' })
+    expect(JSON.stringify(read.lines)).toContain('GLOBOFF-A')
     const glob = await def(built.value, 'team_glob').execute({ pattern: '*.txt' })
     expect(glob.text).toContain('IO_POLICY_UNSUPPORTED')
     expect(built.value.backends.search.execCount()).toBe(1)

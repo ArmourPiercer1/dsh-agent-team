@@ -43,7 +43,18 @@ const WORLD = join(REPO, 'tests/homes', `a5g7-unit-${Date.now().toString(36)}`)
 const ROOT_DIR = join(WORLD, 'root') // the governed controlled-fs instance root
 const OUTSIDE_DIR = join(WORLD, 'outside') // never inside any governed root
 
-type Exec = (raw: unknown) => Promise<{ text: string }>
+// Discriminated pair (READ slice A-6): the trio rows keep the `{ text }`
+// envelope; the read row returns the native window object and THROWS on
+// refusal. No `any` anywhere: each leg names its execution type explicitly.
+type ReadWindowOk = {
+  path: string
+  offset: number
+  lines: Array<{ number: number; text: string }>
+  totalLines: number
+}
+type ExecText = (raw: unknown) => Promise<{ text: string }>
+type ExecRead = (raw: unknown) => Promise<ReadWindowOk>
+type Exec = ExecText | ExecRead
 interface PlaneValue {
   definitions: ReadonlyArray<{ name: string; execute: Exec }>
   ownNames: readonly string[]
@@ -108,10 +119,10 @@ function buildPlane(extra: Record<string, unknown> = {}, policy: unknown = ALLOW
   })
   return { built, rows }
 }
-function def(value: PlaneValue, name: string) {
+function def<E extends Exec = ExecText>(value: PlaneValue, name: string): { name: string; execute: E } {
   const d = value.definitions.find((x) => x.name === name)
   if (d === undefined) throw new Error(`no def named ${name} on the plane (ownNames=${value.ownNames.join(',')})`)
-  return d
+  return d as { name: string; execute: E }
 }
 
 beforeAll(async () => {
@@ -290,17 +301,19 @@ describe('GLUE-7 plane backends assembly', () => {
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
     expect(built.value.ownNames).toContain('read')
-    const res = await def(built.value, 'read').execute({ path: 'data/needle.txt' })
-    expect(res.text).toContain('A5G7-INSIDE-TOK')
+    const res = await def<ExecRead>(built.value, 'read').execute({ path: 'data/needle.txt' })
+    expect(JSON.stringify(res.lines)).toContain('A5G7-INSIDE-TOK')
     const feed = built.value.placementFeed?.('read')
     expect(feed?.realmId).toBe(REALM)
     expect(feed?.definitionIdentity).toMatch(/^def#\d+$/)
     const placed = built.value.definitions.find((d) => d.name === 'read')
     expect(td.definitionIdentityOf(placed)).toBe(feed?.definitionIdentity)
-    // confinement + deny-first on the read row
-    const escape = await def(built.value, 'read').execute({ path: '../outside/secret.txt' })
-    expect(escape.text).not.toContain('A5G7-OUTSIDE-SECRET-42')
-    expect(escape.text).toContain('refused')
+    // confinement + deny-first on the read row (refusals now THROW, plan S2)
+    await expect(def<ExecRead>(built.value, 'read').execute({ path: '../outside/secret.txt' }))
+      .rejects.toThrow(/refused/)
+    const escapeMessage = await def<ExecRead>(built.value, 'read')
+      .execute({ path: '../outside/secret.txt' }).then(() => '', (error: unknown) => String((error as Error).message))
+    expect(escapeMessage).not.toContain('A5G7-OUTSIDE-SECRET-42')
   })
 
   it('G8 confined-only row (no fsInstance): shell is REAL, search and read keep the shut landing (no implicit root is invented)', async () => {

@@ -187,3 +187,14 @@ F homes=[] 自清；G `:3080` 只读探针 `http-401 -> http-401`（只 GET，�
   `alpha5-glue7-plane-backends.test.ts` 的 G6/G6b 注释同步（G6b 不再是"行恒 shut"，因 G6 已钉 live-anchored 现形）。
 - **登记为后续轮选项（不随本笔）**：给 `launcherIntegrityGate` 加"内容须含 narrowed 标记"的**具名拒绝**
   ——这是新语义，等根裁；本笔只把"pairing 不证收窄"这句话写进挂载行注释。
+
+## A5-READ-SLICE 面重接（2026-10-21，root 授权最小修；criteria 一条不少）
+
+A5-READ-SLICE（branch `a5-read-slice`）把 read def 的面改为：成功 **resolve native window**
+`{lines:[{number,text}],offset,path,totalLines}`、一切拒答 **THROW**（throw 传输）。kit 的 A2
+因此从"读返回文本"改为**显式 assert 抛**（capture 实证旧面无 catch → fatal）。重接内容：
+A1 正控按 native `lines[].text` 检查（不再 `String(rPos.text)` 旧面）；A2 两形目标（相对
+`../outside/…` 与绝对外路径）各自 assert **必须抛**、错误具名（`refused-schema
+target-outside-governed-root` 形状）且**错误文本不含 OUTSIDE_SECRET**。**criteria 全保留**
+（A1/A2×2/B1/B2a/B2b/C1/C2/C2b/D1/D2/E/F/G，id 与条数一字未动）。上方 14/14 历史条目为其当时
+面的实录，不改写；本轮实测行 = `consumerfix-kit-shim.raw`（vitest shim 驱动，判据行原文在卡内）。

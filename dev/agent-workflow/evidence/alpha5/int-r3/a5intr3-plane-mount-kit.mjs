@@ -15,8 +15,9 @@
  * 26/26 run (E8.1 placement-feed carries `bash`) is the wire-side evidence that exists.
  *
  * Criteria:
- *   A1 read POS / A2 read NEG      real inside bytes; cross-root named refusal with the
- *                                  outside secret never in the returned text
+ *   A1 read POS / A2 read NEG      real inside bytes in the NATIVE window shape; BOTH
+ *                                  escaping shapes must THROW the named refusal, the
+ *                                  outside secret never in the thrown text
  *   B1 search POS / B2 search NEG  inside hit line; BOTH escaping shapes recorded
  *                                  (absolute out-of-root path, relative `../outside`)
  *   C1 glob POS / C2 glob NEG      inside pattern really matches; cross-root shape is
@@ -133,14 +134,27 @@ try {
   log(`MOUNT definitions=[${built.value.definitions.map((d) => d.name).join(',')}] `
     + `backends=[glob:${built.value.backends.glob.backendId},search:${built.value.backends.search.backendId},shell:${built.value.backends.shell.backendId}]`)
 
-  // A — read row
+  // A — read row (A5-READ-SLICE face: the def RESOLVES the native window
+  // {lines:[{number,text}],offset,path,totalLines} and THROWS every refusal —
+  // the throw transport is the slice law. Checked on the REAL shapes, not the
+  // legacy {text} surface; criteria ids and count are unchanged.)
   const rPos = await def('read').execute({ file_path: 'data/needle.txt' })
-  check('A1 read POS', String(rPos.text).includes(INSIDE_TOK), `inside bytes came back: ${shapeOf(rPos).slice(0, 80)}`)
+  const a1Text = Array.isArray(rPos?.lines) ? rPos.lines.map((l) => String(l?.text ?? '')).join('\n') : ''
+  check('A1 read POS', a1Text.includes(INSIDE_TOK), `inside bytes came back: ${shapeOf(rPos).slice(0, 80)}`)
   for (const target of ['../outside/secret.txt', join(OUTSIDE_DIR, 'secret.txt')]) {
-    const rNeg = await def('read').execute({ file_path: target })
-    check('A2 read NEG', !String(rNeg.text).includes(OUTSIDE_SECRET)
-      && /UNSUPPORTED|DENIED|REFUS|ESC|INVALID|OUTSIDE|beneath|outside/i.test(String(rNeg.text)),
-    `target="${target}" -> ${shapeOf(rNeg)}`)
+    let a2ok = false
+    let a2detail
+    try {
+      const rNeg = await def('read').execute({ file_path: target })
+      a2detail = `target="${target}" -> EXPECTED A THROW, got: ${shapeOf(rNeg)}`
+    } catch (err) {
+      const errText = String(err?.message ?? err)
+      a2ok = errText.length > 0
+        && /UNSUPPORTED|DENIED|REFUS|ESC|INVALID|OUTSIDE|beneath|outside|schema/i.test(errText)
+        && !errText.includes(OUTSIDE_SECRET)
+      a2detail = `target="${target}" -> threw: ${errText.replace(/\s+/g, ' ').slice(0, 160)}`
+    }
+    check('A2 read NEG', a2ok, a2detail)
   }
 
   // B — search row (confined rg after flip 1)

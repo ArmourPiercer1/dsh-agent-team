@@ -437,6 +437,83 @@ config:
         minAbiVersion: 3
 ```
 
+**read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
+含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置
+shell 信任对**（不配 `confinedProvider`/launcher 字段）；**grep/glob/bash 行
+仍按装配既有门禁处理——defs 照常创建、逐字节不变（Z1 快照钉死），其余行按
+既有门禁处理，本配方不承诺任何工具消失**。按下面两个真实块配置——载体不同、
+各自照抄：块 A 是**插件 row config 的增量**（§3.2 完整 row 的必填 config
+全部保留，本块只增不改），块 B 是 **blueprint 的 `capabilities.permissions`**
+（与 row config 是不同载体，装配时分别喂入）。read 行不需要
+`confinedProvider`/launcher 的任何字段。
+
+<!-- a5-read-only-row -->
+```yaml
+config:
+  # … §3.2 必填字段全部保留（本块是 read-only 增量，非替代）…
+  teamToolPlane:
+    realmId: "my-team-realm"                # 装配 realm（feed 配对键；每世界唯一）
+    fsInstance:                             # 完整四字段（形状与 provider 校验逐字一致）
+      fs: "team-ctl"                        # 受治 fs 实例的稳定非空字符串身份（单 provider 内唯一）
+      rootDir: "/absolute/path/to/team-root"   # 替换：受治根绝对路径
+      realmId: "my-team-realm"              # 必须等于 teamToolPlane.realmId（失配 = CFS_PROVIDER_REFUSED）
+      kind: absolute-path                   # 类型面限定值；运行期不校验（如实披露）
+```
+
+<!-- a5-read-only-policy -->
+```yaml
+capabilities:
+  permissions:
+    default: deny                           # read-only 世界：默认关死
+    allow:
+      - tool: read
+        resource:
+          kind: exact
+          path: "/absolute/path/to/team-root/reports/status.txt"   # 替换：根内目标文件的 canonical 绝对拼写（= 该文件 realpath；symlink 别名拼写不配 exact 全等律）
+    ask: []
+    deny: []
+```
+
+- **fsInstance 负控与能力边界（如实写，均有回归钉）**：① 上节 shell 形态里
+  `fsInstance: { rootDir }` 的 **rootDir-only 两字段形状在 agent-bind 期即
+  `CFS_PROVIDER_REFUSED`**（provider 装配对 `fs` id / realm 配对做 TypeError
+  级校验；realmId 与 plane realmId 失配同码）——照抄上面块 A 的四字段完整
+  形状；② `kind` 值**无运行期校验**（由类型面限定，本切片不新加运行检查）；
+  ③ **exact 文件规则 + canonical 绝对路径（根内 realpath 形，executor 的
+  exact 全等律）零附加 seam 即可用**——**exact 规则必须写 canonical 拼写**
+  （symlink 别名拼写不配全等律）；④ **subtree 规则在生产装配（未注入
+  containment seam）下证明不了任何事**——且实测比"规则不覆盖"更强：**带
+  subtree 规则的 policy 连装配都拒**（`TOOL_BINDING_UNVERIFIED`，投影层
+  "never guessed" 律，与 C-FS 接线面同法）；executor 层的对应律是：无 seam
+  时 subtree 规则一律不覆盖，在 `default: deny` 下由 effect 粒度
+  default-deny 门触发拒（`refused-admission template-default-deny`）——
+  不承诺未注入的 subtreeContains。
+- **read 行窗口语义（本切片落地后的完整披露）**：`offset` 1-based、省略=1；
+  `limit` 省略=本行部署上限（固定常数 **2000**，= pin639 read 工具
+  `READ_LIMIT` 缺省，read.ts:15）；显式 `limit > 2000` 拒
+  （detail `limit must be less than or equal to 2000`）；非法窗口参数
+  （非正整数/字符串/小数/NaN/布尔）一律 `refused-schema read-window-invalid`
+  且**本 executor 路径零 open、零取字节**（窗口校验位于路径解析之前：
+  plane-effect-backends.mjs 中窗口 parse 先于 resolveAnchoredPath 调用；
+  措辞限于本 executor，不涉整个 Host）。**省略 limit 与显式 2000 是两个不同的
+  授权身份**（effect 指纹按投影逐字段 canonical 化，
+  `canonical-operation.ts:332-356`/:669-678；a2c5 T1/T6/T7 钉死）。**单文件
+  1 MiB（1048576 字节）上限拒读、从不截断**（`MAX_READ_BYTES`）；已验证
+  handle 上由同 FD bounded 读环强制——单次调用实际取字节 ≤ 1048576+1，
+  verify 之后才发生的文件增长同样整次拒（零内容返回、不 reopen）。行律：
+  单行 >2000 **字符**截断，后缀逐字 `... (line truncated to 2000 chars)`
+  （ASCII 三点）；输出另有 50 KiB 帽（UTF-8 文本字节 + 行间换行 + 后缀字节
+  计量；行号前缀不计），capped 态页脚为
+  `(Output capped. Showing lines X-Y. Use offset=Z to continue.)`（**无**
+  `of Z`）；部分窗页脚 `(Showing lines X-Y of T. Use offset=Z to continue.)`；
+  EOF 页脚 `(End of file - total T lines)`。卡片 `path` 是**根内 canonical
+  绝对路径**（= 授权 locator，exact 全等律同源）——它落在宿主的**目标身份**
+  代数上，**不等于**宿主 native `displayPath` 的 alias/cwd 完整 parity
+  （symlink 祖先、cwd 相对 display 两处形态会不同，如实披露）。成功返回为
+  native 四字段 `{path, offset, lines, totalLines}`；一切拒绝走 **throw**
+  （消息 = `refused-<class> <code> — <detail>` 原文，新增 class 词
+  `refused-window` = offset 越界），与宿主 read 行的传输形制一致。
+
 - **行 config 是唯一的配置面**。blueprint 语法是封闭字段集（未知字段直接
   `MALFORMED_DTO`），**没有任何 blueprint 字段可以挂载或影响工具面**——放置
   身份是装配期事实，作者字段不参与造身份（placement attribution 是 feed 的
