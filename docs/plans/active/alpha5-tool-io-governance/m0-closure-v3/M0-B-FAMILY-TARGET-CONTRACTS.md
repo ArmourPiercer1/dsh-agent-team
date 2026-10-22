@@ -214,9 +214,9 @@ E Host plugin-manager/src/index.ts:462–568完整install流程；:474 approveBu
 
 **ACTIVATION-TCB → USER_SCOPE_CLARIFIED（2026-10-23，用户产品边界，Sentinel_e08e9aeed9e08191bd7208454dca9323）**：用户原文『DSH Agent能通过 plugin manager 自行安装插件吗？使用的是什么工具？要想约束各种初始化代码是不可能的。我们只要能够让 Agent 安装插件的行为受到管控即可。』据此：Alpha5治理plugin_manager安装/启禁/移除等管理调用，**不做获准插件初始化代码的通用沙箱**；保留Team tool/action/target授权、参数绑定/单次/撤销；保留Host既有脚本/版本豁免审批；**Host full-access不得跳过Team准入**；不扩调用权限、不批准具体安装（具体安装逐次走Team授权）。原OPEN叙述（Sentinel_5606c190ded88191a4d9bd9990fda52e待裁，ACTIVATION-TCB=OPEN，含『不选可信插件例外/默认完整保证』口径）保留为历史；不再为此新增受控installer/activation引擎，复用现有manager仅必要adapter接线。本family保留安装/启禁/移除管理面功能义务与如实效果声明。
 
-E事务事实（非可调用private API）：Host plugin-manager/src/index.ts:715 selectBundle、:756 configure、:762 reload、:767 change均private；change:772使用withFileLock(profile/package.json)，configure在该阶段使用hmr.runExclusive，reload调用公开boot reconcileProfilePatches/readProfilePatches。公开setBundleEnabled:443会自行进入change/configure，不能在已持同profile锁时再次调用造成重入。P实现约束：受控installer必须与现profile共享同一文件锁协议；选定路线须固定文件锁→HMR提交次序、锁内重核profile版本与批准包字节/依赖/入口、避免反向取锁及private方法调用。可评估公开atomic-write/boot/HMR接点，但此处只列事实和约束，不提前决定activation安全例外或将mask当初始化I/O拦截器。
+E事务事实（非可调用private API）：Host plugin-manager/src/index.ts:715 selectBundle、:756 configure、:762 reload、:767 change均private；change:772使用withFileLock(profile/package.json)，configure在该阶段使用hmr.runExclusive，reload调用公开boot reconcileProfilePatches/readProfilePatches。公开setBundleEnabled:443会自行进入change/configure，不能在已持同profile锁时再次调用造成重入。P实现约束（USER_SCOPE_CLARIFIED修订）：原『受控installer必须…』P义务随installer新增要求的撤回而撤回为历史（见上段，与index record 52一致）；对调用manager写路径的adapter接线，锁事实仍是硬约束——与现profile共享同一文件锁协议、固定文件锁→HMR提交次序、锁内重核profile版本与批准包字节/依赖/入口、避免反向取锁及private方法调用。可评估公开atomic-write/boot/HMR接点，但此处只列事实和约束，不提前决定批准语义或将mask当初始化I/O拦截器。
 
-owner PLUGIN独占新增installer，CENTER独占注册代际。与Host原流程共享的业务语义须用8action正控及失败恢复差异测试，不能只复制happy path。固定源码没有现成受控installer，故这是明确Team实施差量而非Existing接口。
+owner PLUGIN独占插件family的adapter接线与插件族内文件（USER_SCOPE_CLARIFIED修订：原『PLUGIN独占新增installer』义务撤回为历史；插件面复用现有manager），CENTER独占注册代际。与Host原流程共享的业务语义须用8action正控及失败恢复差异测试，不能只复制happy path。『固定源码没有现成受控installer』一句保留为历史事实描述，不再构成P义务依据。
 
 ### 5.4 Team十五工具：精确复用口已落位
 

@@ -10,8 +10,8 @@
 | Host pin | `639ed015397290b3745d163aafe02ffee4aa3f84` |
 | P1 机器正本 v3c | `route-records-v3c.json` `55233426a022531cb5049587ffb605c5e487608cdcc08004e68509c2e535c929`（字节不改） |
 | M0-A 合同 v1.1 | `M0-A-LIFECYCLE-CONTRACT-v1.1.md` 17,609 B `208ba98cf0b9ddca91cb34d403f479b6994cf283f4fed04b75e1f40f3cdfb61c` |
-| M0-B 合同 v1.2（USER_SCOPE_CLARIFIED 版） | `M0-B-FAMILY-TARGET-CONTRACTS.md` 54,304 B `909bbb9ddffa0b9a06bfe398ba5358e71c86c4bd4a1137a3866c417be7f154f1`；历史版 53,923 B `4e744eaedbb0f0e1f0532cdc5f9e3d53a996734d13606b3167145e6eebbfd0ee` 保留引用（附件原件在盘） |
-| M0-B 索引（USER_SCOPE_CLARIFIED 版） | `M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json` 172,136 B `5d895a22181001f0e07664d12b8f28ee7885899703584a383524a77310b9dcbb`；93 records/90 唯一名/27 family；header sourceRecordsSha256=`55233426…`、contractSha256=`909bbb9d…`（新版互指）；历史版 171,307 B `a6717f26af78dfcdb6880790f2d586674920b2073b33fc56ea6a1a94b1ea6269` 保留引用（附件原件在盘） |
+| M0-B 合同 v1.2（USER_SCOPE_CLARIFIED 版） | `M0-B-FAMILY-TARGET-CONTRACTS.md` 54670 B `1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b`（PR357 审阅修复版：§5.3 installer 义务撤回历史，L217/219）；历史版 53,923 B `4e744eaedbb0f0e1f0532cdc5f9e3d53a996734d13606b3167145e6eebbfd0ee`（附件原件）与 54,304 B `909bbb9ddffa0b9a06bfe398ba5358e71c86c4bd4a1137a3866c417be7f154f1`（PR357 初版）保留引用 |
+| M0-B 索引（USER_SCOPE_CLARIFIED 版） | `M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json` 172136 B `e1b8b29aae79c5bdcb0ffbada6ab97f21301d446c8b210098e92480fa5b418f8`（header contractSha256 互指修复版 md）；93 records/90 唯一名/27 family；sourceRecordsSha256=`55233426…`；历史版 171,307 B `a6717f26af78dfcdb6880790f2d586674920b2073b33fc56ea6a1a94b1ea6269`（附件原件）与 172,136 B `5d895a22181001f0e07664d12b8f28ee7885899703584a383524a77310b9dcbb`（PR357 初版）保留引用 |
 | P3 机器件（已接纳） | `machine-v3/`（check.mjs `84d3fdcf2758a488b94489c058092b9641ee1a2ab85ed36d49464e0f50f416f4`，run4–7 回执 44/44 rc=0） |
 | 装配历史（保留不删） | `ASSEMBLY-INCOMPLETE-M0-B-INDEX-PREFIX-until-record31.json` 59,072 B `81e3b62ec786aa072b53f9e434d1c72edbdc244742785c75b168fe0ca57b899f`（其字节=权威附件前 59,072 B，逐字相同，实证 records 0–31 无损） |
 
@@ -136,8 +136,8 @@
 |---|---|---|
 | CLOSURE-ROUTES.md | `bc797fc6513fce054272763f90ac47b16bc85f101e37a63a3bae0bd018498bff` | `e36dbebdd06928c929514d9e72058b1b39ed87dec384ded3c97c43aa0b69fa0e`（正文未动，仅顶部指针行） |
 | P4-OWNER-SCHEDULE.md | `2f25cd4875fa9d8d584f8ff25eb126a30f780f48232fa4a5620b6e5aa6fddddd` | `e1c35610e8fa136840abb9fefb223bd46a22c62c17529e4ae8691243d9c7a8f5`（同上） |
-| M0-B 合同原件 | 53,923 B `4e744eae…`（附件历史版） | 54,304 B `909bbb9ddffa0b9a06bfe398ba5358e71c86c4bd4a1137a3866c417be7f154f1`（USER_SCOPE_CLARIFIED 版） |
-| M0-B 索引原件 | 171,307 B `a6717f26…`（附件历史版） | 172,136 B `5d895a22181001f0e07664d12b8f28ee7885899703584a383524a77310b9dcbb`（同上；header contractSha256 互指新版） |
+| M0-B 合同原件 | 53,923 B `4e744eae…`（附件历史版）→ 54,304 B `909bbb9ddffa0b9a06bfe398ba5358e71c86c4bd4a1137a3866c417be7f154f1`（PR357 初版） | 54670 B `1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b`（PR357 审阅修复版）
+| M0-B 索引原件 | 171,307 B `a6717f26…`（附件历史版）→ 172,136 B `5d895a22181001f0e07664d12b8f28ee7885899703584a383524a77310b9dcbb`（PR357 初版） | 172136 B `e1b8b29aae79c5bdcb0ffbada6ab97f21301d446c8b210098e92480fa5b418f8`（同上；header 互指修复版）
 
 ## 7. 传输通道纪律（2026-10-22 用户硬限制，本 writer 即刻生效）
 禁止"大文档粘对话→模型重建落盘"。文件入仓唯一通道=原文件上传（附件）或获授权 GitHub；落盘一律 `cp` 直通+bytes/SHA256 核对；组织/指导/审查仅短指令在会话内进行；不因此增加任何发布/push 权限。既有实例处置：`M0-B-…INDEX.json`=附件直通（`a6717f26…` 已核）；`ASSEMBLY-INCOMPLETE-…` 前缀与本次转写教训留档，不再发生。

@@ -1,7 +1,7 @@
 {
   "status": "PROPOSED_NOT_FROZEN",
   "sourceRecordsSha256": "55233426a022531cb5049587ffb605c5e487608cdcc08004e68509c2e535c929",
-  "contractSha256": "909bbb9ddffa0b9a06bfe398ba5358e71c86c4bd4a1137a3866c417be7f154f1",
+  "contractSha256": "1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b",
   "counts": {
     "records": 93,
     "uniqueNames": 90,
