@@ -2811,6 +2811,10 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     permissionOverlay,
     fsContainsKeys,
     permissionPlaneRef,
+    // PR358-B: the ONE host-built authority facts object; its call-level
+    // currentCallFacts read is published on the plane ref for the PA
+    // all-Effects adapter (same authority, a new read — root ruling 3).
+    permissionAuthorityFactsForRef: permissionFacts,
     // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding,
     // round 5 ceiling REMOVAL): the authority fact readers (the root
     // forwards them VERBATIM into the pure governance lane). The envelope +

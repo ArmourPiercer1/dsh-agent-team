@@ -148,7 +148,11 @@ describe('A5M1-SEAM — fix-5/A2 read row', () => {
       const ac = new AbortController()
       ac.abort()
       const r = await read.execute({ file_path: join(scratch, 'secret.txt') }, { token: Symbol('e6'), signal: ac.signal })
-      expect(JSON.stringify(r)).not.toContain('E6-NEVER-READ')
+      const wire = JSON.stringify(r)
+      expect(wire).not.toContain('E6-NEVER-READ')
+      expect(wire).not.toContain('"path":null') // no fabricated read-card fields
+      expect(wire).not.toContain('"lines":[]')
+      expect(wire).toContain('cancelled') // the honest word is carried
       expect(fsProbe.hits, 'resolver surface untouched').toBe(0)
     } finally {
       fsProbe.armed = false

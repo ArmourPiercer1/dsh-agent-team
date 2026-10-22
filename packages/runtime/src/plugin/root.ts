@@ -220,6 +220,11 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
+// PR358-B: the ONE PA all-Effects verification port (center registry).
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore -- untyped center module (mjs, no declaration): the port's
+// shape is asserted at the service boundary (ControlServiceOptions).
+import { createPaEffectsVerifierDispatcher } from './live/pa-mount-registry.mjs'
 import type { ControlService } from '../../control/index.js'
 import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js'
 import { createMessagingCoordinator } from '../../messaging/index.js'
@@ -822,6 +827,15 @@ export interface TeamProductionRootParams {
    * decision point; the root fills it, the entry calls `boot()` only after.
    */
   readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+  /** PR358-B: the ONE authority facts object (host-built); its
+   *  `currentCallFacts` read is published on the plane ref for the PA
+   *  call-level adapter. Absent = the face stays unpublished (old worlds
+   *  byte-compatible). */
+  readonly permissionAuthorityFactsForRef?: {
+    readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) =>
+      | { readonly tuple: unknown; readonly blueprintId: string; readonly healthy: boolean }
+      | undefined
+  }
   /**
    * pre-alpha3 PR4 (round 4, addressed-team binding) — the bound §6
    * expansion-ceiling reader for one ADDRESSED (team, target member),
@@ -910,6 +924,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     permissionOverlay,
     fsContainsKeys,
     permissionPlaneRef,
+    permissionAuthorityFactsForRef,
     permissionAuthorityCeiling,
     permissionEnvelope,
     permissionStaticLayers,
@@ -2312,7 +2327,28 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const operationApprovalFactsRef: { current: OperationApprovalFactsReader | undefined } = {
     current: undefined,
   }
+  // PR358-B (root ruling 2): the ONE PA all-Effects verification port. The
+  // dispatcher resolves the CURRENT published mount per call (the narrow
+  // (teamRoot, instanceId) index agentSetup publishes after bind+publish
+  // and revokes at teardown start) and reads call-level facts through it —
+  // lazy like operationApprovalFactsRef above, so the ask and the
+  // consumption point necessarily consult the SAME live mount. Until the
+  // AUTH pure verifier is wired at `paVerifierRef.current`, the port
+  // fail-closes `authority-undetermined` (never a silent covered).
+  const paVerifierRef: { current: undefined | ((input: Readonly<Record<string, unknown>>) => Promise<{ readonly ok: boolean; readonly reason?: string; readonly detail?: string }>) } = {
+    current: undefined,
+  }
+  const paEffectsVerifierPort = createPaEffectsVerifierDispatcher({
+    verify: async (input: Readonly<Record<string, unknown>>) => {
+      const verify = paVerifierRef.current
+      if (verify === undefined) {
+        return { ok: false, reason: 'authority-undetermined', detail: 'the pure PA effects verifier is not wired at the root injection point' }
+      }
+      return await verify(input as never)
+    },
+  })
   const control = createControlService({
+    paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,
@@ -3186,6 +3222,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             }),
           }
     permissionPlaneRef.current = planeForGlue ?? permissionPlane
+    // PR358-B: the CALL-LEVEL tuple read rides the SAME plane object the
+    // glue and the PA facts adapter read per call — the ONE authority
+    // (createPermissionAuthorityFacts' currentBinding source), published
+    // lazily like everything else on this ref.
+    if (permissionPlaneRef.current !== undefined && permissionAuthorityFactsForRef !== undefined) {
+      permissionPlaneRef.current = Object.freeze({
+        ...permissionPlaneRef.current,
+        currentCallFacts: permissionAuthorityFactsForRef.currentCallFacts as TeamPermissionPlane['currentCallFacts'],
+      })
+    }
     // A4-PR7 Task 7.0 (ADR A1-14): publish the SAME reader into the control
     // service's consumption-point recheck (whose declaration documents the ref).
     // It is assigned HERE — the one place that decides whether this process has

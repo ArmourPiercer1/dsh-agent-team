@@ -353,6 +353,7 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
+import { publishPaMount, revokePaMount } from './pa-mount-registry.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
@@ -2578,7 +2579,12 @@ export function createAgentBindings(deps) {
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
-        toolDisposers.push(placed.dispose)
+        toolDisposers.push(() => {
+          // PR358-B: teardown START revokes THIS mount (key-matched; a stale
+          // disposer never clears a newer mount for the same pair).
+          revokePaMount(String(teamRoot), String(instanceId))
+          return placed.dispose()
+        })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
@@ -2883,6 +2889,21 @@ export function createAgentBindings(deps) {
           }
         }
         const published = a5p1Guard.publish()
+        // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
+        // instanceId) index the root's ONE paEffectsVerifier reads per call.
+        // Published only AFTER bindOwnTools + publish succeeded; revoked at
+        // teardown START. Not an authority ledger: references only, facts
+        // are re-read fresh by the reader (see pa-mount-registry.mjs).
+        publishPaMount(String(teamRoot), String(instanceId), {
+          instanceId: String(instanceId),
+          guard: a5p1Guard,
+          plane: a5PlaneValue,
+          beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
+          readers: {
+            permissionPlane: () => permissionPlaneRef?.current,
+            policySnapshot: () => permissionPolicy,
+          },
+        })
         if (published.ok !== true) {
           const error = new Error(
             `agent-bindings: alpha.5 Tool Dispatcher could not be published for '${sessionId}': ${published.error.message} (code: ${published.error.code})`,

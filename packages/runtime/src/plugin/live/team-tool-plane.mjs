@@ -254,6 +254,10 @@ const READ_ROW_PRESENTATION_FACE = Object.freeze({
  *  lying read card. Never throws. */
 function readRowPresentResult(_args, result) {
   if (result?.isError === true) return undefined
+  // PR358-A2: the cancelled read carries NO path/line card — it is not a
+  // read result; the generic card renders its honest cancelled line instead
+  // of a lying zero-lines read card.
+  if (result?.cancelled === true) return undefined
   const meta = readRowMetaFromMeta(result?.meta)
   if (meta === undefined) return undefined
   const only = Array.isArray(result.content) && result.content.length === 1 ? result.content[0] : undefined
@@ -1204,7 +1208,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
           // PR358-A2: the cancelled read is a PRESENTED row-form fact, not
           // a refusal — zero byte read, honest word carried (mirrors the
           // shell row's own `· cancelled` law; no resolver ever ran).
-          return { path: null, offset: 1, lines: [], totalLines: 0, cancelled: true }
+          return { cancelled: true, content: [{ type: 'text', text: 'read · cancelled' }], meta: { cancelled: true } }
         }
         const text = outcome !== null && typeof outcome === 'object' && typeof outcome.text === 'string'
           ? outcome.text
