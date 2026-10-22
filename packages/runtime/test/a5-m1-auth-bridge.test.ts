@@ -32,7 +32,21 @@
  *    settles `unsettled` with ZERO mint; a cancel between mint and durable
  *    guard denies with the grant NOT handed back (zero PA consumption,
  *    zero body); a consumption that DID happen is retained forever — never
- *    reclaimed, never later reported as unconsumed (C5 + A1).
+ *    reclaimed, never later reported as unconsumed (C5 + A1);
+ *  - PR358 f5 (root ruling, AUTH short delta): the durable READ-BACK is a
+ *    TRICHOTOMY (`paManifestClassOf`, control/types.ts): old-world rows
+ *    (no marker, no digest binding) skip both gates byte-identically
+ *    (compat, never called PA coverage); valid rows ride the verifier;
+ *    THIS-CLASS damaged rows — marker present but the strict parse fails,
+ *    OR the PA digest binding (operationFingerprint ≡ a present
+ *    reviewPayloadDigest) surviving a stripped/moved marker — NEVER
+ *    re-read as legacy: resolve commits a durable DENY and guard blocks
+ *    with ZERO consumption, both `authority-undetermined`, with or
+ *    without an injected verifier (describe D);
+ *  - PR358 f5: `createPaGuardVerifyPort` is NON-PRODUCTION — a test-only
+ *    thin mirror with the SAME verifier REQUIRED and the class call
+ *    DELEGATED to the service's classifier; production's one entry is the
+ *    root injecting the one verifier into `createControlService`
  *
  * Original frozen-A acceptance (all still here): durable row + verbatim
  * manifest + real resolve/approve/deny/unsettled, REUSE under one scope key
@@ -77,7 +91,7 @@ import {
   ControlError,
   createControlService,
 } from '../control/index.js'
-import { PA_CONTROL_MANIFEST_SCHEMA, parsePaControlManifest } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, parsePaControlManifest } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlRequestRecord,
@@ -1041,6 +1055,380 @@ describe('C5 (item 4: parameter-level cancellation): cancel before consume → z
     expect(v.allowed).toBe(false)
     if (v.allowed === false) expect(v.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.NO_REQUEST)
     expect((await state()).consumptions.length).toBe(consumedFacts)
+  })
+})
+
+// ── D. PR358 f5: the STRICT durable READ-BACK trichotomy (fail closed) ────
+//
+// THE LAWS THIS DESCRIBE PINS (the criterion block in control/types.ts is
+// the field-level contract; the corrupt criterion fields are):
+//  (1) MARKER: `reviewPayload` object with `schema === v2` → this class;
+//      strict parse fails ⇒ corrupt, passes ⇒ valid;
+//  (2) DIGEST BINDING (the marker-stripped tell): marker absent but
+//      `reviewPayloadDigest` (non-empty string) ≡ `operationFingerprint` —
+//      the PA row-identity pairing requestControl alone enforces — while
+//      the reviewPayload is no longer a valid v2 manifest ⇒ corrupt;
+//  (3) NEITHER (no marker, no binding) → not-effect-set: BOTH gates skip,
+//      byte-identical legacy behaviour (COMPAT PIN — not PA coverage; the
+//      legitimate D.3 row: opaque payload + own digest, no/≠ fingerprint,
+//      stays old-world, pinned by a).
+// DISCLOSED BOUNDARY (g): a row bearing the digest binding fails closed
+// even when its payload holds no PA bytes at all — the pairing alone is
+// the PA row identity, indistinguishable from a stripped-marker PA row;
+// fail closed by law, never reported as PA coverage. Full erasure of ALL
+// three fields is indistinguishable from a pre-M1 row (RULING 5-B mirror)
+// and is NOT claimed detectable.
+//
+// THE TAMPER SIMULATION: the ledger is append-only (no rewrite exists), so
+// the forger APPENDS the exact bytes a tampered ledger would carry — the
+// request/decision payloads cloned from REAL service-written rows and then
+// damaged. This models "committed strict, re-read damaged" for the gates,
+// which see nothing but the durable rows anyway.
+
+const WORLD2 = join(REPO, 'tests/homes', `a5m1-auth-noverifier-${Date.now().toString(36)}`)
+mkdirSync(join(WORLD2, 'root'), { recursive: true })
+const seam2 = new FileStorageSeam(WORLD2)
+const domain2 = await createTeamDomain(seam2)
+const repos2 = domain2.repositories
+await repos2.teamSessions.put({
+  rootSessionId: P6T1_FIXTURE.rootSessionId,
+  blueprint: createBlueprintSnapshotRef({
+    blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
+    revision: parseBlueprintRevision(String(blueprint.revision)),
+    contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
+  }),
+  defaultWorkspace: P6T1_FIXTURE.defaultWorkspace,
+  createdAt: P6T1_FIXTURE.createdAt,
+  generation: 1,
+})
+await repos2.sessionBindings.put({
+  kind: 'team-root',
+  schemaVersion: 1,
+  sessionId: P6T1_FIXTURE.rootSessionId,
+})
+for (const name of ['leader', 'worker', 'scribe'] as const) {
+  const seed = p6t4Seed(name)
+  await repos2.memberInstances.put({
+    rootSessionId: P6T1_FIXTURE.rootSessionId,
+    instanceId: parseInstanceId(String(seed.instanceId)),
+    templateId: parseTemplateId(String(seed.templateId)),
+    label: String(seed.label),
+    childSessionId: parseChildSessionId(String(seed.childSessionId)),
+    lifecycle: 'RUNNING',
+    createdAt: P6T1_FIXTURE.createdAt,
+    activityVersion: 1,
+  })
+}
+// THE POINT OF WORLD 2: NO `paEffectsVerifier` is injected anywhere — the
+// corrupt-row fail-closed must not depend on a verifier existing.
+const serviceNoVerifier: ControlService = createControlService({
+  teamDomain: domain2,
+  blueprintCatalog: catalog,
+  externalPolicyFacts: async () => makeExternalPolicyFacts(),
+  now: () => P6T4_NOW,
+  waitPollIntervalMs: 5,
+})
+
+afterAll(async () => {
+  await domain2.close()
+  rmSync(WORLD2, { recursive: true, force: true })
+})
+
+const cloneJson = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
+
+const LEDGER_FACT_REQUEST = 'control-request-recorded'
+const LEDGER_FACT_DECISION = 'control-decision-recorded'
+
+function ledgerPayloadOf(
+  ledger: typeof repos.ledger,
+  factType: string,
+  requestId: string,
+): Record<string, unknown> {
+  for (const entry of ledger.list()) {
+    if (entry.factType !== factType) continue
+    if ((entry.payload as { requestId?: unknown }).requestId === requestId) {
+      return cloneJson(entry.payload as Record<string, unknown>)
+    }
+  }
+  throw new Error(`fixture: no durable ${factType} for ${requestId}`)
+}
+
+async function appendDurableFact(
+  ledger: typeof repos.ledger,
+  factType: string,
+  payload: Record<string, unknown>,
+): Promise<number> {
+  const sequence = await ledger.allocateSequence()
+  await ledger.put({
+    schemaVersion: 2,
+    sequence,
+    rootSessionId: P6T4_ROOT,
+    factType,
+    payload,
+    createdAt: P6T4_NOW,
+  })
+  return sequence
+}
+
+interface ForgedRow {
+  readonly requestId: string
+  readonly correlation: string
+  readonly digest: string
+  readonly paramsFp: string
+}
+
+async function forgeTamperedRow(
+  fixture: DirectFixture,
+  tag: string,
+  tamper: (rowPayload: Record<string, unknown>) => void,
+  opts: { readonly withAllow: boolean; readonly ledger: typeof repos.ledger },
+): Promise<ForgedRow> {
+  const bytes = manifestBytes(fixture)
+  const digest = canonicalJsonFingerprint(bytes)
+  const real = await service.requestControl({
+    rootSessionId: P6T4_ROOT,
+    caller: memberCaller(WORKER),
+    kind: 'leader-approval',
+    targetInstanceId: WORKER,
+    actionName: PA_CONTROL_ACTION_NAME,
+    toolName: 'team_bash',
+    correlation: fixture.correlation,
+    operationFingerprint: digest,
+    reviewPayload: bytes as never,
+    reviewPayloadDigest: digest,
+  })
+  const allow = await resolve(humanCaller(), real.requestId, 'allow')
+  // d) the VALID path is unchanged: the un-damaged strict row still rides
+  // the verifier flow to a real allow (and world 1 HAS the verifier).
+  expect(allow.decision, `forge(${tag}): the valid row must resolve allow`).toBe('allow')
+  const rowPayload = ledgerPayloadOf(repos.ledger, LEDGER_FACT_REQUEST, real.requestId)
+  const forgedId = `ctrl-d-forged-${tag}`
+  const forgedCorr = `${fixture.correlation}:tampered:${tag}`
+  rowPayload['requestId'] = forgedId
+  rowPayload['correlation'] = forgedCorr
+  tamper(rowPayload)
+  const seq = await appendDurableFact(opts.ledger, LEDGER_FACT_REQUEST, rowPayload)
+  if (opts.withAllow) {
+    const dec = ledgerPayloadOf(repos.ledger, LEDGER_FACT_DECISION, real.requestId)
+    dec['requestId'] = forgedId
+    dec['requestSequence'] = seq
+    ;(dec['scope'] as Record<string, unknown>)['correlation'] = forgedCorr
+    await appendDurableFact(opts.ledger, LEDGER_FACT_DECISION, dec)
+  }
+  return { requestId: forgedId, correlation: forgedCorr, digest, paramsFp: String(bytes.parametersFingerprint) }
+}
+
+const stripMarker = (rowPayload: Record<string, unknown>): void => {
+  delete (rowPayload['reviewPayload'] as Record<string, unknown>)['schema']
+}
+const breakManifestField = (rowPayload: Record<string, unknown>): void => {
+  delete (rowPayload['reviewPayload'] as Record<string, unknown>)['authorityScope']
+}
+
+async function guardForged(svc: ControlService, forged: ForgedRow) {
+  return svc.guardOperation({
+    rootSessionId: P6T4_ROOT,
+    targetInstanceId: WORKER,
+    actionName: PA_CONTROL_ACTION_NAME,
+    toolName: 'team_bash',
+    correlation: forged.correlation,
+    operationFingerprint: forged.digest,
+  })
+}
+
+describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a legacy row', () => {
+  const ctx = directAssembly()
+
+  it('a) old-world rows (no digest no marker; and the D.3 opaque shape) keep BOTH gates byte-identical — COMPAT pin, not PA coverage', async () => {
+    // The minimal old-world row: no reviewPayload, no digest, no marker.
+    const plainCorr = 'a5m1-d-plain-row'
+    const plain = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      kind: 'leader-approval',
+      targetInstanceId: WORKER,
+      actionName: 'a5m1-d-legacy-action',
+      correlation: plainCorr,
+    })
+    const d1 = await resolve(humanCaller(), plain.requestId, 'allow')
+    expect(d1.decision).toBe('allow')
+    expect(d1.reason).toBeUndefined()
+    const ok1 = await service.guardOperation({
+      rootSessionId: P6T4_ROOT,
+      targetInstanceId: WORKER,
+      actionName: 'a5m1-d-legacy-action',
+      correlation: plainCorr,
+    })
+    expect(ok1.allowed).toBe(true)
+    // The D.3 shape: opaque reviewPayload + its OWN digest; the row carries
+    // no operationFingerprint (or one that is the OPERATION identity, ≠ the
+    // payload digest). A legitimate review-aid row — NOT a stripped
+    // manifest. Both gates must skip it exactly as pre-M1.
+    const d3Corr = 'a5m1-d-d3-row'
+    const d3 = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      kind: 'leader-approval',
+      targetInstanceId: WORKER,
+      actionName: 'a5m1-d-legacy-action',
+      correlation: d3Corr,
+      operationFingerprint: 'sha256:operation-identity-not-the-payload-digest',
+      reviewPayload: { reviewedInvocation: { command: 'legacy-recovery-view' } } as never,
+      reviewPayloadDigest: 'sha256:opaque-view-digest',
+    })
+    const d2 = await resolve(humanCaller(), d3.requestId, 'allow')
+    expect(d2.decision).toBe('allow')
+    expect(d2.reason).toBeUndefined()
+    const ok2 = await service.guardOperation({
+      rootSessionId: P6T4_ROOT,
+      targetInstanceId: WORKER,
+      actionName: 'a5m1-d-legacy-action',
+      correlation: d3Corr,
+      operationFingerprint: 'sha256:operation-identity-not-the-payload-digest',
+    })
+    expect(ok2.allowed).toBe(true)
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === plain.requestId).length).toBe(1)
+    expect(st.consumptions.filter((c) => c.requestId === d3.requestId).length).toBe(1)
+  })
+
+  it('b) marker present + broken manifest field ⇒ corrupt ⇒ resolve DENIES durably, guard blocks ZERO consumption (fail-closed comes from the PA gate, not the row reader)', async () => {
+    // resolve gate: the pending damaged row + an ALLOW attempt.
+    const f1 = await forgeTamperedRow(directFixture(ctx, 'd-b1-call'), 'b1', breakManifestField, { withAllow: false, ledger: repos.ledger })
+    const decisionRecord = await resolve(humanCaller(), f1.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('deny')
+    expect(decisionRecord.reason).toBe('authority-undetermined')
+    const st1 = await state()
+    // the row is READABLE at the row level (it sits in `requests`, not
+    // `corruptLegs`) — the fail-closed is the PA gate's, not a parse skip:
+    expect(st1.requests.some((r) => r.requestId === f1.requestId)).toBe(true)
+    expect(st1.corruptLegs.some((l) => l.requestId === f1.requestId)).toBe(false)
+    // guard gate: a durable allow on the damaged row does NOT execute.
+    const f2 = await forgeTamperedRow(directFixture(ctx, 'd-b2-call'), 'b2', breakManifestField, { withAllow: true, ledger: repos.ledger })
+    const blocked = await guardForged(service, f2)
+    expect(blocked.allowed).toBe(false)
+    if (blocked.allowed === false) {
+      expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+      expect(blocked.requestId).toBe(f2.requestId)
+    }
+    const st2 = await state()
+    expect(st2.consumptions.filter((c) => c.requestId === f2.requestId).length).toBe(0)
+  })
+
+  it('c) marker STRIPPED while the digest binding survives ⇒ corrupt ⇒ BOTH gates fail closed — never an ordinary old row', async () => {
+    // resolve gate.
+    const f1 = await forgeTamperedRow(directFixture(ctx, 'd-c1-call'), 'c1', stripMarker, { withAllow: false, ledger: repos.ledger })
+    const st1 = await state()
+    const row1 = st1.requests.find((r) => r.requestId === f1.requestId)
+    expect(row1).not.toBeUndefined()
+    // the tamper is EXACTLY what the criterion names: schema moved away,
+    // reviewPayloadDigest present and ≡ operationFingerprint (the PA row
+    // identity binding left standing):
+    expect((row1?.reviewPayload as Record<string, unknown>)['schema']).toBeUndefined()
+    expect(row1?.reviewPayloadDigest).toBe(f1.digest)
+    expect(row1?.operationFingerprint).toBe(f1.digest)
+    const decisionRecord = await resolve(humanCaller(), f1.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('deny')
+    expect(decisionRecord.reason).toBe('authority-undetermined')
+    // guard gate + the NON-PRODUCTION test mirror answer undetermined too.
+    const f2 = await forgeTamperedRow(directFixture(ctx, 'd-c2-call'), 'c2', stripMarker, { withAllow: true, ledger: repos.ledger })
+    const blocked = await guardForged(service, f2)
+    expect(blocked.allowed).toBe(false)
+    if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+    expect((await state()).consumptions.filter((c) => c.requestId === f2.requestId).length).toBe(0)
+    const v = await verifyPort().verify({
+      targetInstanceId: WORKER,
+      actionName: PA_CONTROL_ACTION_NAME,
+      toolName: 'team_bash',
+      correlation: f2.correlation,
+      operationFingerprint: f2.digest,
+    })
+    expect(v.allowed).toBe(false)
+    if (v.allowed === false) expect(v.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+  })
+
+  it('d) the VALID path is unchanged: the un-damaged forged twin resolves allow and consumes exactly once', async () => {
+    const f = await forgeTamperedRow(directFixture(ctx, 'd-d1-call'), 'd1', () => {}, { withAllow: false, ledger: repos.ledger })
+    const decisionRecord = await resolve(humanCaller(), f.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('allow')
+    expect(decisionRecord.reason).toBeUndefined()
+    const ok = await guardForged(service, f)
+    expect(ok.allowed).toBe(true)
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === f.requestId).length).toBe(1)
+  })
+
+  it('e) no verifier anywhere: the corrupt row fails closed the same (the deny/block is not a verifier answer)', async () => {
+    const state2 = async () => serviceNoVerifier.listControlState(P6T4_ROOT)
+    const f1 = await forgeTamperedRow(directFixture(ctx, 'd-e1-call'), 'e1', stripMarker, { withAllow: false, ledger: repos2.ledger })
+    const denied = await serviceNoVerifier.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: humanCaller(),
+      requestId: f1.requestId,
+      decision: 'allow',
+    })
+    expect(denied.decision).toBe('deny')
+    expect(denied.reason).toBe('authority-undetermined')
+    const f2 = await forgeTamperedRow(directFixture(ctx, 'd-e2-call'), 'e2', breakManifestField, { withAllow: true, ledger: repos2.ledger })
+    const blocked = await guardForged(serviceNoVerifier, f2)
+    expect(blocked.allowed).toBe(false)
+    if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+    const st = await state2()
+    expect(st.consumptions.filter((c) => c.requestId === f2.requestId).length).toBe(0)
+    // the forged rows really are in WORLD 2 and readable there:
+    expect(st.requests.some((r) => r.requestId === f2.requestId)).toBe(true)
+  })
+
+  it('f) the classifier itself: the criterion fields, pinned field-by-field', () => {
+    const bytes = manifestBytes(directFixture(ctx, 'd-f-call'))
+    // (1) marker + strict parse passes → valid, manifest attached.
+    const valid = paManifestClassOf({ reviewPayload: bytes as never })
+    expect(valid.state).toBe('valid')
+    if (valid.state === 'valid') expect(valid.manifest.realmId).toBe(bytes.realmId)
+    // (1) marker + damaged field → corrupt (the marker alone binds the class).
+    const { authorityScope: _dropScope, ...damaged } = bytes
+    expect(paManifestClassOf({ reviewPayload: damaged as never }).state).toBe('corrupt')
+    // (2) marker stripped, digest binding survives → corrupt (all payload
+    // shapes that are not a valid v2 manifest are the same fact).
+    const binding = { reviewPayloadDigest: 'sha256:D', operationFingerprint: 'sha256:D' }
+    expect(paManifestClassOf({ ...binding, reviewPayload: damaged as never }).state).toBe('corrupt')
+    expect(paManifestClassOf({ ...binding, reviewPayload: { note: 'opaque' } as never }).state).toBe('corrupt')
+    expect(paManifestClassOf({ ...binding, reviewPayload: [1, 2] as never }).state).toBe('corrupt')
+    // (3) NOT this class: no marker, no binding (the legacy/D.3 surface).
+    expect(paManifestClassOf({}).state).toBe('not-effect-set')
+    expect(paManifestClassOf({ reviewPayload: { note: 'opaque' } as never }).state).toBe('not-effect-set')
+    expect(paManifestClassOf({ reviewPayload: { note: 'opaque' } as never, reviewPayloadDigest: 'sha256:D' }).state).toBe('not-effect-set')
+    expect(paManifestClassOf({
+      reviewPayload: { note: 'opaque' } as never,
+      reviewPayloadDigest: 'sha256:D',
+      operationFingerprint: 'sha256:OTHER-operation-identity',
+    }).state).toBe('not-effect-set')
+    // empty-string pairing binds nothing.
+    expect(paManifestClassOf({ reviewPayload: { note: 'opaque' } as never, reviewPayloadDigest: '', operationFingerprint: '' }).state).toBe('not-effect-set')
+  })
+
+  it('g) documented boundary: digest-bearing parity binds the class even with no PA bytes in the payload (fail closed by law; never PA coverage)', async () => {
+    // A row whose operationFingerprint ≡ its reviewPayloadDigest carries the
+    // PA row-identity pairing — indistinguishable FROM THE BYTES ALONE from
+    // a PA row whose marker was stripped after commit. The classifier binds
+    // it to this class and both gates fail closed. This is a DAMAGE
+    // classification, not a coverage claim: such a row is not "PA-approved
+    // old-world", it is unreadable-as-anything-else.
+    const pair = 'sha256:parity-pair-string'
+    const row = await service.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      kind: 'leader-approval',
+      targetInstanceId: WORKER,
+      actionName: 'a5m1-d-legacy-action',
+      correlation: 'a5m1-d-parity-row',
+      operationFingerprint: pair,
+      reviewPayload: { opaque: 'no PA bytes at all' } as never,
+      reviewPayloadDigest: pair,
+    })
+    const denied = await resolve(humanCaller(), row.requestId, 'allow')
+    expect(denied.decision).toBe('deny')
+    expect(denied.reason).toBe('authority-undetermined')
   })
 })
 

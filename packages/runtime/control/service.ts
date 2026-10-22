@@ -248,6 +248,7 @@ import {
   isControlAuthorityScope,
   isProposalAuthorityPosition,
   PA_CONTROL_MANIFEST_SCHEMA,
+  paManifestClassOf,
   parsePaControlManifest,
 } from './types.js'
 import type {
@@ -2724,23 +2725,37 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           }
         }
       }
-      // A5-M1 (PR358 review fix): an ALLOW on a PA operation-manifest row
-      // passes the all-Effects gate HERE, inside this same per-team lock
-      // hold, with the REAL resolving caller as decider — the same pure
-      // port the consumption gate will consult before the consumption
-      // fact, so a drift that arrives between decision and consumption is
-      // caught by whichever gate sees it first. A refusal or an
-      // unanswerable verification is committed as a durable DENY carrying
+      // A5-M1 (PR358 review fix; f5 trichotomy): an ALLOW on a PA
+      // operation-manifest row passes the all-Effects gate HERE, inside this
+      // same per-team lock hold, with the REAL resolving caller as decider —
+      // the same pure port the consumption gate will consult before the
+      // consumption fact, so a drift that arrives between decision and
+      // consumption is caught by whichever gate sees it first. A refusal or
+      // an unanswerable verification is committed as a durable DENY carrying
       // the closed reason (the external-policy pattern): never a silent
-      // skip, never an allow, never a fourth decision value (A2-1).
+      // skip, never an allow, never a fourth decision value (A2-1). The
+      // f5 fix: a THIS-CLASS corrupt row (see `paManifestClassOf` in
+      // types.ts) lands on the SAME durable-DENY pattern unconditionally —
+      // it is never skipped as an ordinary old row, and no verifier is
+      // consulted for it (undetermined is already the answer).
       if (args.decision === 'allow') {
-        const paManifest = paManifestOf(request.payload)
-        if (paManifest !== undefined) {
+        const paRead = paManifestClassOf(request.payload)
+        if (paRead.state === 'corrupt') {
+          return await commitDecision({
+            requestId: request.payload.requestId,
+            value: CONTROL_DECISION_VALUES.DENY,
+            decider: callerRefOf(caller),
+            reason: CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED,
+            scope: scopeOf(request.entry, request.payload),
+            requestSequence: request.entry.sequence,
+          })
+        }
+        if (paRead.state === 'valid') {
           const denyReason = paEffectsDenyReason(
             'resolve',
             root,
             request.payload.requestId,
-            paManifest,
+            paRead.manifest,
             callerRefOf(caller),
           )
           if (denyReason !== undefined) {
@@ -3096,21 +3111,26 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * @returns the block reason, or `undefined` when the re-confirmation holds.
    */
   /**
-   * A5-M1 (PR358 review fix): the durable row's PA operation manifest,
-   * STRICTLY RE-PARSED from the row's own `reviewPayload` — the row, not a
-   * caller, is the source. A payload without the marker is not a manifest
-   * (undefined); a payload BEARING the marker that fails the strict parse
-   * is a corrupt row (also undefined) and BOTH gates treat it fail-closed:
-   * the resolve gate denies it (`authority-undetermined`), the guard gate
-   * blocks it (`authority-undetermined`). Nothing about such a row can be
-   * confirmed, and "could not confirm" is never "covered".
+   * A5-M1 (PR358 review fix; f5 trichotomy): the durable row's class against
+   * the PA operation-manifest effect-set is decided by the SHARED read-back
+   * classifier `paManifestClassOf` (control/types.ts — the criterion block
+   * there is the pinned contract), NEVER by a collapsed undefined:
+   *  - `not-effect-set` — the row bears no PA trace at all (no marker, no
+   *    digest binding): old-world behaviour, BOTH gates skip, byte-identical
+   *    legacy compat;
+   *  - `valid` — marker present and the strict parse passes: the verifier
+   *    flow below, unchanged;
+   *  - `corrupt` — THIS-CLASS damage: marker present but the strict parse
+   *    fails, OR the PA digest binding (operationFingerprint ≡ a present
+   *    reviewPayloadDigest) survives while the reviewPayload is no longer a
+   *    valid v2 manifest (marker stripped/moved after commit — the commit
+   *    side guarantees strict-ness at write, so this can only be damage).
+   *    A corrupt row NEVER re-reads as a legacy row: the resolve gate
+   *    commits a durable DENY (`authority-undetermined`), the guard gate
+   *    blocks with ZERO consumption (`authority-undetermined`), and both do
+   *    so EVEN WITH NO verifier injected — nothing about such a row can be
+   *    confirmed, and "could not confirm" is never "covered".
    */
-  function paManifestOf(payload: RequestPayload): PaControlManifest | undefined {
-    const raw = payload.reviewPayload
-    if (raw === undefined || typeof raw !== 'object' || raw === null) return undefined
-    if ((raw as Record<string, unknown>)['schema'] !== PA_CONTROL_MANIFEST_SCHEMA) return undefined
-    return parsePaControlManifest(raw)
-  }
 
   /**
    * A5-M1: one gate's answer of the all-Effects verification, in DENY-reason
@@ -3555,21 +3575,36 @@ export function createControlService(options: ControlServiceOptions): ControlSer
             decisionSequence: decision.entry.sequence,
           }
         }
-        // A5-M1 (PR358 review fix): the SAME all-Effects verifier the
-        // decision gate used, asked again HERE — this same lock hold, the
-        // DURABLE allow's decider, before the consumption fact. The
-        // decision-gate answer was true WHEN IT WAS WRITTEN; authority is
-        // not durable, so the only moment that matters is this one. A
+        // A5-M1 (PR358 review fix; f5 trichotomy): the SAME all-Effects
+        // verifier the decision gate used, asked again HERE — this same lock
+        // hold, the DURABLE allow's decider, before the consumption fact.
+        // The decision-gate answer was true WHEN IT WAS WRITTEN; authority
+        // is not durable, so the only moment that matters is this one. A
         // drift (or an unanswerable verification, or no port at all)
         // refuses with ZERO consumption — the allow stays exactly as the
-        // decider wrote it, provable through the durable state.
-        const paManifest = paManifestOf(request.payload)
-        if (paManifest !== undefined) {
+        // decider wrote it, provable through the durable state. The f5 fix:
+        // a THIS-CLASS corrupt row (see `paManifestClassOf` in types.ts —
+        // marker damaged OR the PA digest binding surviving a stripped
+        // marker) blocks HERE with ZERO consumption and reason
+        // `authority-undetermined`, WITHOUT consulting any verifier: a row
+        // that was strict at commit and re-reads damaged can have no
+        // coverage answer, and an ordinary old row (no marker, no digest
+        // binding) still skips exactly as today.
+        const paRead = paManifestClassOf(request.payload)
+        if (paRead.state === 'corrupt') {
+          return {
+            allowed: false,
+            reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED,
+            requestId: request.payload.requestId,
+            decisionSequence: decision.entry.sequence,
+          }
+        }
+        if (paRead.state === 'valid') {
           const denyReason = paEffectsDenyReason(
             'guard',
             root,
             request.payload.requestId,
-            paManifest,
+            paRead.manifest,
             decision.payload.decider,
           )
           if (denyReason !== undefined) {

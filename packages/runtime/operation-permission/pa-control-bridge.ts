@@ -69,15 +69,17 @@
  *  - zero I/O of its own: no filesystem, no timers except the optional
  *    bounded-wait abort (the wait bridge owns its own poll cadence).
  *
- * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is the pure-verify
- * resolve/guard face for ALL Effects of the exact scope: read-only over the
- * durable state (`listControlState` is a fresh ledger read, invariant 45),
- * it answers whether an unconsumed durable allow covers the EXACT scope
- * without consuming anything and without minting anything. The AUTHORITATIVE
- * consumption stays `guardOperation`'s check-and-reserve under the per-team
- * lock; this port is the side-effect-free companion the resolve path may
- * consult, and it mirrors the guard's refusal vocabulary (no re-entry, no
- * second ledger).
+ * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is NON-PRODUCTION:
+ * a TEST-ONLY diagnostic mirror (see its own doc). PRODUCTION has ONE PA
+ * verification entry — the root wires the ONE {@link
+ * createPaEffectsVerifier} instance into `createControlService({
+ * paEffectsVerifier })`, and the service asks it inside the per-team lock at
+ * BOTH gates (resolve, guard). This module's leg never calls the verifier
+ * itself, and the mirror port answers NO coverage question of its own: it is
+ * REQUIRED to hold the SAME verifier instance the service was given, so a
+ * second verification path outside the service cannot exist. The root's real
+ * injection lands centrally with the B dependency table (this round does not
+ * touch root/agent-bindings).
  *
  * @module @dsh-agent-team/runtime/operation-permission/pa-control-bridge
  */
@@ -99,7 +101,7 @@ import {
 // The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
 // module's types file directly (the barrel predates the additive surface;
 // the module declares the closed vocabulary and the strict parser there).
-import { PA_CONTROL_MANIFEST_SCHEMA, parsePaControlManifest } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlGuardVerdict,
@@ -682,9 +684,18 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
   }
 }
 
-// ── The second product: the PURE verify resolve/guard port ───────────────
-// Pure read over the durable state: never consumes, never mints, never
-// writes. The authoritative check-and-reserve stays `guardOperation`.
+// ── The second product: the NON-PRODUCTION test mirror (thin shell) ──────
+// NON-PRODUCTION. Pure read over the durable state: never consumes, never
+// mints, never writes — a TEST-ONLY mirror that answers what `guardOperation`
+// WOULD answer, so tests can observe the durable truth without burning the
+// one-shot allow. It owns NO verification of its own: the ONLY PA coverage
+// answer comes from the SAME `createPaEffectsVerifier` instance the service
+// gates use (a REQUIRED constructor argument — this shell cannot be built
+// without it), and the class of a read-back row is decided by the service's
+// own `paManifestClassOf`, never by a second local reading. The AUTHORITATIVE
+// check-and-reserve (the lock, the consumption fact) stays `guardOperation`
+// alone; production's unique verification entry is the root injecting that
+// one verifier into `createControlService({ paEffectsVerifier })`.
 
 export interface PaGuardVerifyInput {
   /** Defaults to the bridge's root session. */
@@ -710,26 +721,43 @@ export interface PaGuardVerifyPort {
 }
 
 /**
- * The pure-verify counterpart of `guardOperation` for the EXACT scope of one
- * PA-guarded plane execution (all Effects ride the one payload-bound
- * manifest). Read-only by construction: one fresh `listControlState` per call,
- * zero durable writes, zero ledger touch. Mirrors the guard's closed refusal
- * vocabulary — and after the PR358 fix it mirrors the guard's VERIFICATION
- * too: a PA operation-manifest row is answered `authority-undetermined`
- * UNLESS the same `paEffectsVerifier` the service is wired with is passed
- * here. That is deliberate: this port answers whether an unconsumed durable
- * allow COVERS the exact scope; for a manifest row, coverage IS a verified
- * fact and an unverified mirror is NOT a pre-submit green light. The
+ * NON-PRODUCTION — a TEST-ONLY thin shell. The pure-verify counterpart of
+ * `guardOperation` for the EXACT scope of one PA-guarded plane execution
+ * (all Effects ride the one payload-bound manifest): read-only by
+ * construction — one fresh `listControlState` per call, zero durable writes,
+ * zero ledger touch — mirroring the guard's closed refusal vocabulary so a
+ * test can observe the durable truth without burning the one-shot allow.
+ *
+ * IT IS NOT A VERIFICATION PATH. It answers NO coverage question of its own:
+ *  - `verifier` is REQUIRED and must be the SAME `createPaEffectsVerifier`
+ *    instance the service was wired with — the mirror delegates its entire
+ *    PA verdict to that one verifier, so no second verification path can
+ *    exist outside the service;
+ *  - the read-back class of the candidate row comes from the service's own
+ *    `paManifestClassOf` (PR358 f5 trichotomy): `corrupt` (marker damaged,
+ *    or the PA digest binding surviving a stripped marker) answers
+ *    `authority-undetermined` exactly as BOTH service gates fail closed;
+ *    `valid` delegates to the verifier; `not-effect-set` mirrors the legacy
+ *    scope check untouched.
+ *
+ * The PRODUCTION single entry stays: the root injects the one verifier into
+ * `createControlService({ paEffectsVerifier })` and the service asks it
+ * inside the per-team lock at BOTH gates (the root's real injection lands
+ * centrally with the B dependency table — outside this module). The
  * AUTHORITATIVE check-and-reserve (the lock, the consumption fact) stays
  * with `guardOperation` alone.
  */
 export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'controlService' | 'rootSessionId'> & {
-  readonly verifier?: PaEffectsVerifier
+  /** THE verifier — the same instance wired into the service. REQUIRED:
+   *  this shell must not exist without the one verifier, because it owns no
+   *  coverage answer of its own (NON-PRODUCTION mirror, see the header). */
+  readonly verifier: PaEffectsVerifier
 }): PaGuardVerifyPort {
   const problem = (() => {
     const svc = deps.controlService
     if (svc === null || typeof svc !== 'object' || typeof svc.listControlState !== 'function') return 'controlService.listControlState is required'
     if (!isNonEmptyString(deps.rootSessionId)) return 'rootSessionId must be a non-empty string'
+    if (typeof deps.verifier !== 'function') return 'verifier is required (the SAME PaEffectsVerifier the service gates use — this mirror owns no coverage answer of its own)'
     return undefined
   })()
   if (problem !== undefined) throw new TypeError(`pa-control-bridge(verify-port): ${problem}`)
@@ -777,34 +805,27 @@ export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'control
       }
       const consumed = state.consumptions.some((c) => c.requestId === candidate.requestId && c.decisionSequence === decision.decisionSequence)
       if (consumed) return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED, requestId: candidate.requestId }
-      // A5-M1 (PR358 fix): the verification mirror. A PA operation-manifest
-      // row whose coverage nobody can answer is NOT reported as allowed —
-      // an `allowed: true` here without the service's own verifier would be
-      // exactly the pre-submit green light this port must never be. A
-      // corrupt manifest (marker present, strict parse fails) is
-      // undetermined the same way both service gates treat it.
-      const rawManifest = candidate.reviewPayload
-      if (
-        rawManifest !== undefined
-        && typeof rawManifest === 'object'
-        && rawManifest !== null
-        && (rawManifest as Record<string, unknown>)['schema'] === PA_CONTROL_MANIFEST_SCHEMA
-      ) {
-        const manifest = parsePaControlManifest(rawManifest)
-        if (manifest === undefined) {
-          return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId }
-        }
-        if (input.parametersFingerprint !== undefined && input.parametersFingerprint !== manifest.parametersFingerprint) {
+      // NON-PRODUCTION mirror (PR358 f5): the PA read-back class comes from
+      // the SERVICE's own classifier — a corrupt this-class row (marker
+      // damaged, or the PA digest binding surviving a stripped marker) is
+      // `authority-undetermined` exactly as both service gates fail closed;
+      // a valid manifest row's coverage answer is DELEGATED whole to the one
+      // verifier the service gates use; an ordinary old row (no marker, no
+      // digest binding) mirrors today's scope check untouched. The mirror
+      // itself decides no coverage question.
+      const paRead = paManifestClassOf(candidate)
+      if (paRead.state === 'corrupt') {
+        return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId }
+      }
+      if (paRead.state === 'valid') {
+        if (input.parametersFingerprint !== undefined && input.parametersFingerprint !== paRead.manifest.parametersFingerprint) {
           return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.SCOPE_MISMATCH, requestId: candidate.requestId }
-        }
-        if (deps.verifier === undefined) {
-          return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId }
         }
         const verdict = deps.verifier({
           stage: 'guard',
           rootSessionId: root,
           requestId: candidate.requestId,
-          manifest,
+          manifest: paRead.manifest,
           decider: decision.decider,
         })
         if (!verdict.ok) {
