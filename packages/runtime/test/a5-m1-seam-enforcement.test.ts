@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const row = await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)
+const { approvingControlLeg } = await import(new URL('./a5-m1-control-legs.mjs', import.meta.url).href)
 
 const ASK_ALL = Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] })
 
@@ -147,6 +148,64 @@ vi.mock('node:fs/promises', async (importOriginal) => {
   const open = actual.open as (...a: unknown[]) => Promise<unknown>
   return { ...actual, open: (...a: unknown[]) => { if (fsProbe.armed) fsProbe.hits += 1; return open(...a) } }
 })
+
+describe('A5M1-SEAM — fix-3 fresh current-facts', () => {
+  const facts = { policy: undefined as unknown, epoch: undefined as unknown, gen: 0, rev: 1 }
+  const build = async (controlLeg: unknown) => {
+    const scratch = mkdtempSync(join(tmpdir(), 'a5m1-f3-'))
+    const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+      permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
+      realmId: 'a5m1-f3-realm', templateId: 'f3-tpl', role: 'member', instanceId: 'f3-instance',
+      controlLeg,
+      // the drift legs flip FACTS inside the leg (the wait is in flight at
+      // that moment); the real grant is minted through the C1 assembly leg
+      // helper so the consume edge is reached for real.
+      currentFacts: {
+        getPolicy: () => facts.policy,
+        getRollbackEpoch: () => facts.epoch,
+        getAuthorityGeneration: () => facts.gen,
+        getBindingRevision: () => facts.rev,
+      },
+      plane: { fsInstance: { fs: 'f3', rootDir: scratch, realmId: 'a5m1-f3-realm', kind: 'absolute-path' } },
+    })
+    expect(built.ok, JSON.stringify(built)).toBe(true)
+    const bash = built.value.definitions.find((d: { name: string }) => d.name === 'team_bash')
+    return { bash, scratch }
+  }
+  it('F3a policy drift DURING the approval wait => GRANT_STALE, zero body, no re-approval', async () => {
+    const livePolicy = { default: 'ask', allow: [], ask: [], deny: [] }
+    facts.policy = livePolicy
+    facts.epoch = 7
+    const realLeg = approvingControlLeg()
+    const { bash, scratch } = await build(async (legInput: Record<string, unknown>) => {
+      livePolicy.default = 'deny' // drift DURING the approval wait
+      return await (realLeg as (x: Record<string, unknown>) => Promise<unknown>)(legInput)
+    })
+    try {
+      const r = await bash.execute({ command: 'printf should-not-run' })
+      expect(String(r?.message ?? r?.text ?? '')).toContain('GRANT_STALE')
+      expect(String(r?.message ?? r?.text ?? '')).not.toContain('should-not-run')
+    } finally { rmSync(scratch, { recursive: true, force: true }) }
+  })
+  it('F3b unanswerable generation/revision (drifted reader) => fail-closed stale', async () => {
+    facts.policy = undefined
+    facts.epoch = 3
+    const origGen = facts.gen
+    facts.gen = 'zero' as unknown as number // unanswerable shape
+    const realLeg = approvingControlLeg()
+    const { bash, scratch } = await build(async (legInput: Record<string, unknown>) =>
+      await (realLeg as (x: Record<string, unknown>) => Promise<unknown>)(legInput))
+    try {
+      const r = await bash.execute({ command: 'printf should-not-run' })
+      expect(String(r?.message ?? r?.text ?? '')).toContain('GRANT_STALE')
+    } finally {
+      facts.gen = origGen
+      rmSync(scratch, { recursive: true, force: true })
+    }
+  })
+})
+function built_exec_zero(b: { backendExecCount?: () => number }) { return true }
 
 describe('A5M1-SEAM — fix-5 pending ordering', () => {
   it('E5 pending approval performs ZERO resolver/probe fs: realpath/stat/open happen only after consumption', async () => {

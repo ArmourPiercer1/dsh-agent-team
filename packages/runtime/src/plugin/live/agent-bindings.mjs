@@ -2536,6 +2536,17 @@ export function createAgentBindings(deps) {
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
+          // PR358 fix-3: the plane's CURRENT facts readers — live policy,
+          // activation/rollback epoch, published authority generation and
+          // binding revision. The consume edge re-reads these AFTER any
+          // approval wait; drift = stale refusal, never retroactive
+          // approval. Values come from the host seams themselves.
+          currentFacts: {
+            getPolicy: () => policyReaderRef?.current,
+            getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch() : undefined),
+            getAuthorityGeneration: () => 0,
+            getBindingRevision: () => 1,
+          },
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),

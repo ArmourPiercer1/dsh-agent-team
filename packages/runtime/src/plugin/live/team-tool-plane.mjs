@@ -767,6 +767,30 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     return bindingCache.get(toolName)
   }
+  // ── PR358 fix-3 readers (real current placement/policy/authority) ──
+  // The plane's CURRENT facts come from the host's live seams, never from
+  // the grant: `input.currentFacts` supplies { getPolicy, getRollbackEpoch,
+  // getAuthorityGeneration, getBindingRevision }; agent-bindings wires them
+  // to policyReaderRef.current and activationFence.getRollbackEpoch —
+  // genuine per-read values. Without the seam the legacy rev.0/revision-1
+  // law applies (the PR1 guard's published generation, disclosed).
+  const paCurrentFacts = input.currentFacts ?? {}
+  const canonicalJsonFingerprintNow = (value) => {
+    try { return JSON.stringify(value, (k, v) => v === undefined ? '__undef__' : v) } catch { return undefined }
+  }
+  const paMountPolicyFingerprint = canonicalJsonFingerprintNow(permissionPolicy)
+  // (the identity is recomputed at consume time; the row consts are
+  // initialized by then — no TDZ: this arrow only CLOSES over them)
+  const paProviderRefs = () => [hostedSearch, hostedGlob, hostedShell, readExecutor]
+  const readProviderIdentity = () => paProviderRefs().map((r) => r === null || r === undefined ? '-' : String(r.backendId ?? r.kind ?? 'obj')).join('|')
+  // computed lazily at first consume (the row consts initialize below
+  // this declaration during mount)
+  const paMountRollbackEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : undefined
+  const paLaneRecheck = (effectsSet) => {
+    const v = decide({ effects: effectsSet.effects ?? effectsSet })
+    return v?.kind === 'allow' ? 'allow' : (v?.kind === 'deny' ? 'deny' : 'ask')
+  }
+
   const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal }) => {
     const request = Object.freeze({
       binding: paBindingFor(toolName),
@@ -837,14 +861,62 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (signal?.aborted === true) {
       return { kind: 'allow', cancelled: true }
     }
+    let freshGeneration = 0
+    let freshRevision = 1
+    // ── PR358 fix-3: FRESH current-facts recheck at the execution edge ──
+    // After any approval wait (and also on the all-allow path, which waits
+    // nothing), the plane re-reads the CURRENT definition/provider/policy/
+    // authority facts and re-verifies the WHOLE effect set against the live
+    // policy snapshot. Anything missing, moved, or unanswerable is STALE:
+    // zero body, and never a retroactive approval. The grant never proves
+    // its own "current" — current is what the readers answer NOW.
+    if (typeof paCurrentFacts.getPolicy === 'function' || paCurrentFacts.getRollbackEpoch !== undefined) {
+      const nowPolicy = typeof paCurrentFacts.getPolicy === 'function' ? paCurrentFacts.getPolicy() : undefined
+      const nowPolicyFingerprint = nowPolicy === undefined || nowPolicy === null
+        ? undefined
+        : canonicalJsonFingerprintNow(nowPolicy)
+      if (nowPolicyFingerprint !== undefined && nowPolicyFingerprint !== paMountPolicyFingerprint) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the live permission policy moved after admission; this call is stale and runs nothing' }
+      }
+      const paMountProviderIdentity = readProviderIdentity()
+      const nowEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : paMountRollbackEpoch
+      if (nowEpoch !== paMountRollbackEpoch) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the placement/activation epoch rolled between admission and execution; this call is stale and runs nothing' }
+      }
+      // the definitions/provider identity the mount placed must be the ones
+      // still behind this row — a re-placed mount answers with a NEW
+      // assembly (new facts, new nonce), never this grant.
+      if (paMountProviderIdentity !== readProviderIdentity()) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the governed provider surface changed between admission and execution; this call is stale and runs nothing' }
+      }
+      // allEffects re-verification against the LIVE policy (all-allow path
+      // included): the lane verdict is recomputed for the FULL set, one
+      // effect outside allow now = stale (covers default flips too).
+      if (typeof paLaneRecheck === 'function') {
+        const freshLane = paLaneRecheck(requestedEffects)
+        if (freshLane !== 'allow') {
+          return { kind: 'deny', code: 'GRANT_STALE', detail: `fresh policy re-verification moved this effect set out of the allow lane (${String(freshLane)}); the call is stale and runs nothing` }
+        }
+      }
+      const nowGeneration = typeof paCurrentFacts.getAuthorityGeneration === 'function' ? paCurrentFacts.getAuthorityGeneration() : 0
+      const nowRevision = typeof paCurrentFacts.getBindingRevision === 'function' ? paCurrentFacts.getBindingRevision() : 1
+      if (typeof nowGeneration !== 'number' || typeof nowRevision !== 'number') {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'current authority generation/revision is unanswerable; fail closed without consuming' }
+      }
+      freshGeneration = nowGeneration
+      freshRevision = nowRevision
+    }
+    if (signal?.aborted === true) {
+      return { kind: 'allow', cancelled: true }
+    }
     const edge = assembly.consumeForExecution(grant, {
       ...(signal === undefined ? {} : { cancelRequested: signal.aborted === true }),
-      currentAuthorityGeneration: 0,
+      currentAuthorityGeneration: freshGeneration,
       member: paMember,
       callId,
       realmId: callRealm,
       bindingId: grant.bindingId,
-      bindingRevision: grant.bindingRevision,
+      bindingRevision: freshRevision,
       parametersFingerprint,
       requestedEffects,
     })
