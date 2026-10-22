@@ -56,6 +56,10 @@
  *
  * Worlds live under `tests/homes/` and self-remove. The launcher is the REAL one.
  */
+// M1 carry: bash bodies now sit behind PA; these legs pin CANCEL semantics, not the
+// approval chain, so their worlds mount the disclosed C1 stand-in approving leg
+// (real kernel landing; durable Control row/guardOperation belong to a5-m1-auth-bridge).
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
@@ -120,6 +124,7 @@ const ALLOW_ALL = Object.freeze({
 
 function buildPlane() {
   const built = row.createTeamToolPlaneAssembly({
+    controlLeg: approvingControlLeg(),
     permissionPolicy: ALLOW_ALL,
     realmId: REALM,
     templateId: 'a5b3-tpl',
