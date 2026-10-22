@@ -352,6 +352,7 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // classifies a failed mcp server as REQUIRED/optional through the bound
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
+import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
@@ -2498,7 +2499,33 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(String(row)),
           })
           : null
+        // M1 PA→Control production wiring (frozen A): the plane's approval
+        // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
+        // (operation-permission/pa-control-bridge.ts) over the session's
+        // real ControlService — read lazily via the controlServiceRef seam
+        // (the ptc-row getControlService pattern). No control service
+        // mounted = every requires-approval settles as a refusal (pending
+        // never means allow; there is no fake-approval fallback here or in
+        // the plane).
+        const a5PaControlLeg = async (legInput) => {
+          const a5ControlService =
+            controlServiceRef !== undefined && controlServiceRef !== null ? controlServiceRef.current : undefined
+          if (a5ControlService === undefined || a5ControlService === null) {
+            observations.push(`a5-pa-bridge: no-control-service plane=${planeTemplateId ?? 'n/a'} -> refusal`)
+            return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
+          }
+          const a5IsLeaderPlane = sessionId === String(teamRoot)
+          const a5Leg = createPaControlLeg({
+            controlService: a5ControlService,
+            rootSessionId: String(teamRoot),
+            caller: { kind: 'instance', instanceId },
+            beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
+          })
+          return await a5Leg(legInput)
+        }
         const built = createTeamToolPlaneAssembly({
+          controlLeg: a5PaControlLeg,
           permissionPolicy,
           realmId: a5PlaneRealmId,
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
