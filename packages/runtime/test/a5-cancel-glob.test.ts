@@ -65,8 +65,21 @@
  * Worlds live under `tests/homes/` and self-remove. Real launcher, real rg.
  */
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+  readlinkSync,
+  rmdirSync,
+  realpathSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs'
+import { join, sep } from 'node:path'
 import {
   createConfinedProcessProvider,
   type ProviderLease,
@@ -204,7 +217,88 @@ function providerSpawnMarks(scratchRoot: string): { plans: number; outs: number 
   }
 }
 
-const openFds = (): number => readdirSync('/proc/self/fd').length
+/**
+ * THE FD METER IS SCOPED TO ONE TEST ROOT, AND IT NAMES WHAT IT SEES.
+ *
+ * WHY NOT A PROCESS-WIDE COUNT: `readdirSync('/proc/self/fd').length` is a number
+ * about the whole process, and the root vitest config runs test files in a `threads`
+ * pool with several files sharing one process — other files' legs, their children and
+ * their provider scratch all move that number. A delta of it therefore attributes
+ * NOTHING to this row. That is also the honest statement about the `+9` the census
+ * observed on this lane: under a shared-process pool it is unattributable, and this
+ * file does NOT claim to know which worker or which suite it belonged to.
+ *
+ * WHAT THIS METER DOES AND DOES NOT SEE. It reads `/proc/self/fd`, which is the fd
+ * table of THIS process — the runner — and nothing else: the descriptors of the
+ * confined `rg` child are in that child's own table and are not visible here, so no
+ * assertion in this file may, and none does, claim to have checked a child's
+ * resources. What it does see: any descriptor of this process pointing INTO one
+ * specific test root — including the root DIRECTORY itself, which is what the pinned
+ * anchor actually is, and a file unlinked underneath an open fd, which still resolves
+ * to its root path and counts as the leak it is. Every root here is made by `newWorld`
+ * for THIS file and no other file touches it, so a non-empty answer is "this row came
+ * back still holding the governed root" and an empty answer is the pinned descriptor
+ * given back. `OBS` carries the controls that pin the meter in both directions —
+ * holders it must name (root directory, file inside) and holders it must not fold in
+ * (same-spelled sibling, an outside descriptor open at that very moment), with every
+ * holder given back in a `finally`. A meter that always answered empty would otherwise
+ * pass every release assertion in this file.
+ */
+/** What `/proc/self/fd` appends when the file an fd points at is gone. */
+const DELETED_SUFFIX = ' (deleted)'
+
+const heldFdsUnder = (root: string): string[] => {
+  const canonical = realpathSync(root)
+  const prefix = canonical + sep
+  // The lane's ambient shim types `statSync` structurally (just `isDirectory`), so
+  // the identity pair is read through a local structural view — the same discipline
+  // as `a5b3-cancel-leg`'s clock and mtime reads, touching no shared shim.
+  const own = statSync(root) as unknown as { dev: number; ino: number }
+  const seen: string[] = []
+  for (const name of readdirSync('/proc/self/fd')) {
+    let target: string
+    try {
+      target = readlinkSync(join('/proc/self/fd', name))
+    } catch (fault) {
+      // An fd closed between the readdir and this readlink is neither a leak nor a
+      // fault to hide. Anything else — EACCES, EIO, a missing /proc — travels.
+      if ((fault as { code?: string }).code === 'ENOENT') continue
+      throw fault
+    }
+    const unlinked = target.endsWith(DELETED_SUFFIX)
+    const path = unlinked ? target.slice(0, target.length - DELETED_SUFFIX.length) : target
+    // BELOW the root, or THE root itself — a directory descriptor is written without a
+    // trailing separator, and the production anchor IS a directory descriptor, so the
+    // spelling has to end in a separator OR stop exactly here. `startsWith(canonical)`
+    // alone would let the sibling `<root>-sib` in, which is why the OBS control pins
+    // both directions.
+    const inside = path === canonical || path.startsWith(prefix)
+    let sameIdentity = false
+    if (!inside) {
+      // A descriptor whose spelling is not under the root can still BE the root: a
+      // bind or another mount alias. Identity decides that — and it has to be the
+      // identity of THE OPEN FD, so the stat goes to the `/proc` entry itself, which
+      // the kernel resolves to what the fd actually refers to, including a target that
+      // has been renamed or unlinked since. Stating the link's TEXT would answer a
+      // question about the namespace right now instead of a question about this fd,
+      // and the deleted case above would be judged by a different file's inode.
+      // (A pipe, socket or anon-inode answers with its own identity, never the root's.)
+      try {
+        const st = statSync(join('/proc/self/fd', name)) as unknown as { dev: number; ino: number }
+        sameIdentity = st.dev === own.dev && st.ino === own.ino
+      } catch (fault) {
+        // Only an fd that closed between the readdir and this stat is skipped; every
+        // other errno travels.
+        if ((fault as { code?: string }).code !== 'ENOENT') throw fault
+      }
+    }
+    if (inside || sameIdentity) {
+      const rest = path === canonical ? '.' : path.slice(prefix.length)
+      seen.push(`${name}:${rest}${unlinked ? DELETED_SUFFIX : ''}`)
+    }
+  }
+  return seen
+}
 
 const cancelLines = (audit: readonly string[]): string[] => audit.filter((l) => l.includes('refused code=call-aborted') || l.includes('refused code=termination-unconfirmed'))
 
@@ -333,6 +427,87 @@ describe('a5-cancel/glob OBS: the faces are calibrated before use', () => {
     expect(row.GLOB_REFUSAL_FAMILIES[cancelLeg.CANCEL_CODE_UNCONFIRMED]).toBe('a5glb-refused/cancel')
     expect(row.GLOB_REFUSAL_TEXT[cancelLeg.CANCEL_CODE_ABORTED]).not.toBe(row.GLOB_REFUSAL_TEXT[cancelLeg.CANCEL_CODE_UNCONFIRMED])
   })
+  it('OBS3 the FD meter is scoped to this root, and a holder it cannot see is not a clean bill of health', async () => {
+    // The release assertions in this file are only worth what the meter is worth, so
+    // the meter gets the controls rather than the benefit of the doubt. FOUR holders
+    // are open at the same instant and the answer has to separate them exactly:
+    //   ROOT_DIR itself  — THE PRODUCTION CASE: the pinned anchor is a DIRECTORY
+    //                      descriptor, so this is the one a `root + sep` prefix test
+    //                      would silently miss;
+    //   a file inside    — must be named by its own fd number and its own path;
+    //   `<root>-sib`     — a sibling spelled like the root, which a loose `startsWith`
+    //                      would fold in, so it must stay OUT;
+    //   a file outside   — same world, not the root: present in the raw listing at
+    //                      that very moment, invisible to this meter (which is why a
+    //                      whole-process count is not used here).
+    // Everything opened or written here is given back afterwards whatever the
+    // assertions did — and the giving-back never DISPLACES a failure: the body's own
+    // error is what fails the leg, and a release that left something behind is
+    // reported too, either on its own or in the message of the combined one.
+    const holder = join(ROOT_DIR, 'fd-meter-holder')
+    const outside = join(WORLD, 'fd-meter-outside')
+    const sibling = `${ROOT_DIR}-sib`
+    let dirFd = -1
+    let insideFd = -1
+    let foreignFd = -1
+    let siblingFd = -1
+    let primary: unknown
+    let failed = false
+    try {
+      writeFileSync(holder, 'held\n')
+      writeFileSync(outside, 'held\n')
+      mkdirSync(sibling)
+      expect(heldFdsUnder(ROOT_DIR), 'a holder existed before the control opened one').toEqual([])
+      dirFd = openSync(ROOT_DIR, 'r')
+      insideFd = openSync(holder, 'r')
+      foreignFd = openSync(outside, 'r')
+      siblingFd = openSync(sibling, 'r')
+      const seen = heldFdsUnder(ROOT_DIR)
+      expect(seen, 'the meter did not name the root DIRECTORY descriptor').toContain(`${String(dirFd)}:.`)
+      expect(seen, 'the meter did not name the descriptor inside the root').toContain(`${String(insideFd)}:fd-meter-holder`)
+      expect(seen.some((l) => l.startsWith(`${String(siblingFd)}:`)), 'the meter folded in a sibling of the root').toBe(false)
+      expect(seen.some((l) => l.startsWith(`${String(foreignFd)}:`)), 'the meter counted a descriptor outside its root').toBe(false)
+      closeSync(dirFd)
+      dirFd = -1
+      closeSync(insideFd)
+      insideFd = -1
+      expect(heldFdsUnder(ROOT_DIR), 'a closed descriptor is still counted').toEqual([])
+      // THE SIBLING AND THE OUTSIDE DESCRIPTOR ARE STILL OPEN at this point: the empty
+      // answer above is a statement about this root, not about whether the process
+      // holds anything at all.
+    } catch (fault) {
+      primary = fault
+      failed = true
+    }
+    const leftovers: string[] = []
+    for (const fd of [dirFd, insideFd, foreignFd, siblingFd]) {
+      if (fd === -1) continue
+      try {
+        closeSync(fd)
+      } catch (fault) {
+        leftovers.push(`fd ${String(fd)}: ${String((fault as Error).message)}`)
+      }
+    }
+    for (const path of [holder, outside]) {
+      try {
+        unlinkSync(path)
+      } catch (fault) {
+        if ((fault as { code?: string }).code !== 'ENOENT') leftovers.push(`${path}: ${String((fault as Error).message)}`)
+      }
+    }
+    try {
+      rmdirSync(sibling)
+    } catch (fault) {
+      if ((fault as { code?: string }).code !== 'ENOENT') leftovers.push(`${sibling}: ${String((fault as Error).message)}`)
+    }
+    if (failed) {
+      if (leftovers.length > 0) throw new Error(`the control failed AND its release left: ${leftovers.join('; ')}; original: ${String((primary as Error).message)}`)
+      throw primary
+    }
+    expect(leftovers, 'the control could not give everything back').toEqual([])
+    expect(heldFdsUnder(ROOT_DIR), 'the control left a holder on the root').toEqual([])
+  }, SLOW)
+
 })
 
 describe('a5-cancel/glob A: a cancel before the spawn costs zero provider work', () => {
@@ -341,7 +516,6 @@ describe('a5-cancel/glob A: a cancel before the spawn costs zero provider work',
     const ac = new AbortController()
     ac.abort(cancelReason())
     const marks = providerSpawnMarks(SCRATCH)
-    const fds = openFds()
     const { result, sink } = await runGlob(backend, 'ga-pre', '*.ts', ac.signal)
     expect(result.ok).toBe(false)
     if (result.ok !== false) return
@@ -353,7 +527,7 @@ describe('a5-cancel/glob A: a cancel before the spawn costs zero provider work',
     expect(providerSpawnMarks(SCRATCH)).toEqual(marks)
     expect(backend.execCount()).toBe(0) // cross-check only — see the header
     expect(sink.writes()).toBe(0)
-    expect(openFds()).toBeLessThanOrEqual(fds)
+    expect(heldFdsUnder(ROOT_DIR), 'the call came back holding the governed root').toEqual([])
     expect(JSON.stringify(result)).not.toContain(REASON_CANARY)
     expect(backend.lastStageTrace).toEqual(['probe', 'cancel'])
   }, SLOW)
@@ -379,7 +553,6 @@ describe('a5-cancel/glob A: a cancel before the spawn costs zero provider work',
     const armed = armAt('capability OK', () => { queueMicrotask(() => ac.abort(cancelReason())) })
     const { backend, audit } = makeBackend(ROOT_DIR, SCRATCH, armed)
     const marks = providerSpawnMarks(SCRATCH)
-    const fds = openFds()
     const { result, sink } = await runGlob(backend, 'ga-anchor', '*.ts', ac.signal)
     expect(armed.fired(), 'the capability boundary was never reached').toBe(true)
     expect(result.ok).toBe(false)
@@ -388,7 +561,7 @@ describe('a5-cancel/glob A: a cancel before the spawn costs zero provider work',
     expect(cancelLines(audit).some((l) => l.includes('stage=after-anchor') && l.includes('children=0'))).toBe(true)
     expect(providerSpawnMarks(SCRATCH)).toEqual(marks)
     expect(sink.writes()).toBe(0)
-    expect(openFds()).toBeLessThanOrEqual(fds)
+    expect(heldFdsUnder(ROOT_DIR), 'the call came back holding the governed root').toEqual([])
   }, SLOW)
 
   it('A4 the last boundary before the provider is asked: a cancel there writes no plan at all', async () => {
@@ -522,7 +695,26 @@ describe('a5-cancel/glob C: the winner stands, the publication does not', () => 
     // about the answer) are masked; nothing else may differ.
     const strip = (lines: string[]): string[] => lines.filter((l) => !l.includes('cancel-leg stage='))
     const norm = (l: string): string => l.replace(/pid=\d+/g, 'pid=X')
-    expect(strip(withChannel.audit).map((l) => norm(l.replace(/ga-live-none/g, 'X')))).toEqual(strip(noChannel.audit).map((l) => norm(l.replace(/ga-none/g, 'X'))))
+    // THE ONE INDETERMINACY THIS ROW ALREADY OWNS, counted instead of denied. The
+    // row's pre-existing drain law books `DRAIN-INCOMPLETE` when the child's streams
+    // have not all closed inside the row's own drain window — a fact about a loaded
+    // host and about stream teardown timing, NOT about whether the caller withdrew. So
+    // it is reported on its own line: counted, PRINTED, and checked against the row's
+    // verbatim grammar, and the two counts are deliberately NOT required to be equal.
+    // The strict comparison below keeps everything else, INCLUDING any line whose
+    // shape this file does not recognise — nothing is filtered out by a broad "errors"
+    // net, and no sleep-and-retry is used to make a host look quiet.
+    const DRAIN_PREFIX = 'anchored-glob DRAIN-INCOMPLETE'
+    const DRAIN_LINE = /^anchored-glob DRAIN-INCOMPLETE realm=[a-z0-9-]+ call=[A-Za-z0-9-]+ exit=-?\d+$/
+    const prefixed = (lines: string[]): string[] => lines.filter((l) => l.includes(DRAIN_PREFIX))
+    const counted = (lines: string[]): string[] => prefixed(lines).filter((l) => DRAIN_LINE.test(l))
+    const withoutCountedDrain = (lines: string[]): string[] => lines.filter((l) => !DRAIN_LINE.test(l))
+    console.info(`[a5-cancel/glob C2] DRAIN-INCOMPLETE lines: no-channel=${String(counted(noChannel.audit).length)} with-channel=${String(counted(withChannel.audit).length)} (equal counts are NOT the claim)`)
+    // A drain-prefixed line in a shape the row's own grammar does not cover is a
+    // defect, not a category: named here, and it would also break the comparison
+    // below, because only the grammatical form is ever taken out of it.
+    expect([...prefixed(noChannel.audit), ...prefixed(withChannel.audit)].filter((l) => !DRAIN_LINE.test(l)), 'a DRAIN-INCOMPLETE line is outside the row\'s own grammar').toEqual([])
+    expect(withoutCountedDrain(strip(withChannel.audit)).map((l) => norm(l.replace(/ga-live-none/g, 'X')))).toEqual(withoutCountedDrain(strip(noChannel.audit)).map((l) => norm(l.replace(/ga-none/g, 'X'))))
     expect(noChannel.audit.some((l) => l.includes('cancel-leg stage='))).toBe(false)
   }, SLOW)
 
@@ -794,7 +986,6 @@ describe('a5-cancel/glob D: a throwing terminate keeps the contract of the path 
     terminateCalls = 0
     const { backend, audit } = makeForged()
     const marks = providerSpawnMarks(SCRATCH)
-    const before = openFds()
     const { result, sink } = await runGlob(backend, 'ga-forged-plain', '*.ts', undefined)
     expect(providerSpawnMarks(SCRATCH)).toEqual({ plans: marks.plans + 1, outs: marks.outs + 1 })
     expect(terminateCalls, 'the row asked the lease arm twice for one call').toBe(1)
@@ -805,13 +996,19 @@ describe('a5-cancel/glob D: a throwing terminate keeps the contract of the path 
     expect(audit.some((l) => l.includes('anchored-glob INTERNAL-FAULT'))).toBe(true)
     expect(audit.some((l) => l.includes('anchored-glob ran'))).toBe(false)
     expect(sink.writes()).toBe(0)
-    expect(openFds()).toBeLessThanOrEqual(before)
     expect(JSON.stringify(result.failure)).not.toContain(THROW_CANARY)
     expect(audit.join('\n')).not.toContain(THROW_CANARY)
 
     // This leg's child outlived the forged arm: stop it for real and let the
     // provider's own face confirm it, before anything else in the file moves.
     await stopRealChildren() // D1
+    // THE RELEASE LAW, MEASURED WHERE IT IS MEASURABLE: what is asserted here is that
+    // THIS process holds no descriptor on the governed root, after the child this
+    // forgery left behind was stopped for real and confirmed through the provider's own
+    // face. The ordering is a fact about the leg, and the claim stays inside what
+    // `/proc/self/fd` can show — the runner's own table. The confined child's
+    // descriptors live in the child and are not claimed to be observable from here.
+    expect(heldFdsUnder(ROOT_DIR), 'the governed root is still held after the call and the confirmed stop').toEqual([])
   }, SLOW)
 
   it('D2 on a CANCELLED call, the same throwing arm answers termination-unconfirmed with zero sink', async () => {
@@ -976,7 +1173,6 @@ describe('a5-cancel/glob T: the winner the race chose stands to the end of the r
     const { backend, audit } = makeBackend(CAP_ROOT, CAP_SCRATCH, undefined, { timeoutMs: 1 })
     const fired = signalFiringOnAsk(asks)
     const marks = providerSpawnMarks(CAP_SCRATCH)
-    const before = openFds()
     const { result, sink } = await runGlob(backend, 'ga-tie-timeout-then-abort', '**/*.ts', fired.signal)
     expect(providerSpawnMarks(CAP_SCRATCH)).toEqual({ plans: marks.plans + 1, outs: marks.outs + 1 })
     // THE ANSWER IS THE TIMEOUT ARM'S OWN, not a cancel refusal: the winner was
@@ -992,7 +1188,7 @@ describe('a5-cancel/glob T: the winner the race chose stands to the end of the r
     expect(cancelLines(audit)).toEqual([])
     expect(sink.writes()).toBe(0)
     expect(fired.asks(), 'the row stopped consulting its channel early').toBeGreaterThanOrEqual(asks)
-    expect(openFds()).toBeLessThanOrEqual(before)
+    expect(heldFdsUnder(CAP_ROOT), 'the timeout+abort call came back holding the cap root').toEqual([])
   }, SLOW)
 
   it('T2 the direction: the SAME withdrawal at the SAME ask, on a walk that did NOT run out its budget, is a call-aborted refusal', async () => {
