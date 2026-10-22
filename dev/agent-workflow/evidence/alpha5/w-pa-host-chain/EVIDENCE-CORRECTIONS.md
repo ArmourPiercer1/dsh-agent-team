@@ -34,3 +34,16 @@
 ## 4. 停等
 未再启动 Host；不再做 fixture 变体。下一步方案（host-lane 与 PA-edge 双 Ask 的确切入口/政策报告，
 或根指定的其他入口）待根裁决。
+
+## 5. 状态口径更正（根令 2026-10-22，push 轮）
+先前的“porcelain/untracked = 0”表述**仅指 tracked 面与按 .gitignore 规则可见的未跟踪项**：
+- `git status --porcelain` 行数 = 0（tracked modified 0 / staged 0 / `^??` 0）；
+- **gitignored 且未跟踪的文件并非 0**：`git ls-files --others`（含 ignored）= **43148**
+  （node_modules、tests/homes 世界、deepseek-harness-test-use 等），这是既有环境基线，不是本轮产物。
+以后一律写“tracked 面 0 漂移”，不再写“全部 untracked 为 0”。
+
+## 6. 发布实况
+- 根准正常非 force push：`104c4eb62..c6accf371 → refs/heads/feat/a5-m1-center-kernel`（普通 fast-forward 推送，无 merge、无 force）。
+- 远端核验：`git ls-remote origin refs/heads/feat/a5-m1-center-kernel` = `c6accf3711d4b5bba799c3cbb3d022c7df102c3e` = 本地 HEAD。
+- 被拒的 CCR-358a 评论**未发布**、未读凭据/未换 curl 路径（保持本地 `.tmp-ccr-body.json`）。
+- :3080 仅只读探针（401，未改动）；无 host/mock 进程。
