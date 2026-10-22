@@ -1311,6 +1311,12 @@ const stripMarker = (rowPayload: Record<string, unknown>): void => {
 const breakManifestField = (rowPayload: Record<string, unknown>): void => {
   delete (rowPayload['reviewPayload'] as Record<string, unknown>)['authorityScope']
 }
+// item-4: a damage that STAYS schema-valid — the payload is swapped while
+// the row's digest fields keep pointing at the original bytes.
+const swapCallId = (rowPayload: Record<string, unknown>): void => {
+  const p = rowPayload['reviewPayload'] as Record<string, unknown>
+  p['callId'] = `${String(p['callId'])}:value-swapped-under-stale-digest`
+}
 
 async function guardForged(svc: ControlService, forged: ForgedRow) {
   return svc.guardOperation({
@@ -1468,10 +1474,32 @@ describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a 
 
   it('f) the classifier itself: the criterion fields, pinned field-by-field', () => {
     const bytes = manifestBytes(directFixture(ctx, 'd-f-call'))
-    // (1) marker + strict parse passes → valid, manifest attached.
-    const valid = paManifestClassOf({ reviewPayload: bytes as never })
+    // (1) marker + strict parse passes + the row's OWN value pairing
+    // re-computes → valid, manifest attached (item-4: a marker-bearing row
+    // without the pairing the write law creates is damage, not validity).
+    const fp = canonicalJsonFingerprint(bytes)
+    const pairing = { reviewPayloadDigest: fp, operationFingerprint: fp }
+    const valid = paManifestClassOf({ ...pairing, reviewPayload: bytes as never })
     expect(valid.state).toBe('valid')
     if (valid.state === 'valid') expect(valid.manifest.realmId).toBe(bytes.realmId)
+    // item-4 counter-examples: schema-valid payload, pairing NOT re-locked.
+    // (a) no pairing at all → corrupt (never went through the write law).
+    expect(paManifestClassOf({ reviewPayload: bytes as never }).state).toBe('corrupt')
+    // (b) a STALE digest — the payload was damaged while staying
+    // schema-valid, the digest was never recomputed → corrupt.
+    const { callId: _old, ...rest } = bytes
+    const restBytes = { ...rest, callId: 'd-f-call:payload-swapped-while-valid' }
+    expect(paManifestClassOf({
+      ...pairing,
+      reviewPayload: restBytes as never,
+    }).state).toBe('corrupt')
+    // (c) digest matches the payload, operationFingerprint diverges (the
+    // row identity is broken) → corrupt.
+    expect(paManifestClassOf({
+      reviewPayloadDigest: fp,
+      operationFingerprint: 'sha256:operation-identity-diverged',
+      reviewPayload: bytes as never,
+    }).state).toBe('corrupt')
     // (1) marker + damaged field → corrupt (the marker alone binds the class).
     const { authorityScope: _dropScope, ...damaged } = bytes
     expect(paManifestClassOf({ reviewPayload: damaged as never }).state).toBe('corrupt')
@@ -1516,6 +1544,28 @@ describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a 
     const denied = await resolve(humanCaller(), row.requestId, 'allow')
     expect(denied.decision).toBe('deny')
     expect(denied.reason).toBe('authority-undetermined')
+  })
+
+  it('h) item-4 VALUE check: a schema-VALID payload swap under a stale digest re-reads as damage at BOTH gates', async () => {
+    // The damage item-4 names: strict parse would happily PASS this row —
+    // only the digest VALUE re-computation sees it (a forged ledger write
+    // swapped the manifest while leaving the pairing fields pointing at
+    // the original bytes). The verifier is never consulted for it.
+    const f1 = await forgeTamperedRow(directFixture(ctx, 'd-h1-call'), 'h1', swapCallId, { withAllow: false, ledger: repos.ledger })
+    const row1 = (await state()).requests.find((r) => r.requestId === f1.requestId)
+    expect(row1).not.toBeUndefined()
+    // the tamper really is schema-valid:
+    expect((row1?.reviewPayload as Record<string, unknown>)['schema']).toBe(PA_CONTROL_MANIFEST_SCHEMA)
+    expect(row1?.reviewPayloadDigest).toBe(f1.digest)
+    const decisionRecord = await resolve(humanCaller(), f1.requestId, 'allow')
+    expect(decisionRecord.decision).toBe('deny')
+    expect(decisionRecord.reason).toBe('authority-undetermined')
+    // guard gate: a durable allow riding the swapped row does NOT execute.
+    const f2 = await forgeTamperedRow(directFixture(ctx, 'd-h2-call'), 'h2', swapCallId, { withAllow: true, ledger: repos.ledger })
+    const blocked = await guardForged(service, f2)
+    expect(blocked.allowed).toBe(false)
+    if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+    expect((await state()).consumptions.filter((c) => c.requestId === f2.requestId).length).toBe(0)
   })
 })
 

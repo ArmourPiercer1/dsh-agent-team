@@ -126,6 +126,14 @@ import type { ActionCaller } from '../admission/index.js'
 // names the durable owner, never the alias.
 import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
 import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
+// PR358 f5 item-4 (read-back VALUE check): the classifier recomputes the
+// payload digest EXACTLY as `requestControl` did at write (the same
+// canonicalizer over the RAW read-back payload — the PA row identity is
+// `operationFingerprint === reviewPayloadDigest === canonicalDigest(payload)`
+// there), so a payload that stayed schema-valid but no longer hashes to the
+// row's pairing re-reads as the damage it is. Runtime value import — the
+// control lane already rides this exact domain edge in `service.ts`.
+import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js'
 // PR358-B (root ruling 6, AUTH half): the CALL-FACTS contract is typed
 // against the DURABLE OWNERS of these vocabularies (ADR X7-R3 discipline —
 // `import type` only: erased at emit, the Control plane gains no runtime
@@ -1195,7 +1203,14 @@ export function parsePaControlManifest(value: unknown): PaControlManifest | unde
 // `a5m1-auth-bridge.test.ts` describe D):
 //  1. the MARKER: `reviewPayload` is an object whose `schema` is exactly
 //     {@link PA_CONTROL_MANIFEST_SCHEMA}. Marker present ⇒ this class; the
-//     strict parse decides `valid` vs `corrupt`.
+//     strict parse AND the row's own VALUE pairing decide `valid` vs
+//     `corrupt` (PR358 f5 item-4): `valid` only when
+//     `operationFingerprint === reviewPayloadDigest ===
+//     canonicalJsonFingerprint(reviewPayload)` re-computes on read-back —
+//     the same identity `requestControl` enforces at write, so a payload
+//     damaged WHILE STAYING schema-valid (digest not re-locked) is damage,
+//     never a pass. No marker-bearing row skips that pairing: one only
+//     exists legitimately through a writer that created it.
 //  2. the DIGEST BINDING (the marker-stripped tell): `reviewPayloadDigest`
 //     is a non-empty string AND `operationFingerprint` equals it.
 //     requestControl ENFORCES `operationFingerprint === reviewPayloadDigest
@@ -1251,7 +1266,27 @@ export function paManifestClassOf(row: PaManifestRowShape): PaManifestReadBack {
     && (raw as Record<string, unknown>)['schema'] === PA_CONTROL_MANIFEST_SCHEMA
   if (markerPresent) {
     const manifest = parsePaControlManifest(raw)
-    return manifest === undefined ? PA_MANIFEST_CORRUPT : { state: 'valid', manifest }
+    if (manifest === undefined) return PA_MANIFEST_CORRUPT
+    // PR358 f5 item-4 (the VALUE check, symmetric with the commit law): a
+    // schema-valid payload is `valid` ONLY when the row's own PA pairing
+    // re-computes: `operationFingerprint === reviewPayloadDigest ===
+    // canonicalJsonFingerprint(reviewPayload)` — the exact identity
+    // `requestControl` enforces at write (service.ts, same canonicalizer).
+    // A payload damaged while STAYING schema-valid (or a marker-bearing row
+    // that never went through that law) re-reads damaged: corrupt. No extra
+    // digest argument: both gates already pass the FULL row (`RequestPayload`
+    // / `ControlRequestRecord` satisfy {@link PaManifestRowShape}), so the
+    // pairing fields ride the very read the classifier already performs.
+    const digest = row.reviewPayloadDigest
+    const fingerprint = row.operationFingerprint
+    if (
+      typeof digest === 'string' && digest.length > 0
+      && typeof fingerprint === 'string' && fingerprint === digest
+      && canonicalJsonFingerprint(raw) === digest
+    ) {
+      return { state: 'valid', manifest }
+    }
+    return PA_MANIFEST_CORRUPT
   }
   const digest = row.reviewPayloadDigest
   const fingerprint = row.operationFingerprint
