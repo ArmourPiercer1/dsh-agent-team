@@ -245,6 +245,152 @@ export function checkStatePointers({ graphText, logText, isAncestor }) {
   return { findings, info }
 }
 
+/**
+ * Current-contract check — the Alpha.5 docs-realignment pointer checks, folded into the
+ * `state-freshness` leg (no new leg by root ruling). THE DIVISION OF LABOUR IS THE POINT:
+ * `checkStatePointers` above keeps its Alpha.4 s7-round historical-integrity job and its
+ * fixtures are LEGACY-ONLY (Alpha4 historical shape, not the production path); this function
+ * grades the top-level `current_contract` block, which is the ONLY current-phase authority.
+ * The production path never falls back: a graph without current_contract FAILS here even if
+ * the legacy block is pristine — "delete the current fields" must not reopen the old door.
+ *
+ * Grammar rules with reasons:
+ *  - baseline may EQUAL HEAD (a doc commit on the baseline line declares its own base; the
+ *    forbidden logic is *requiring* equality, not equality itself).
+ *  - a failed drift comparison is FAIL, never an empty diff — "we could not measure" graded
+ *    green is the census-leg lesson restated.
+ *  - the reference discipline (Q6) forbids a second *baseline-authority declaration*
+ *    (`baseline: <40hex>` keys in AGENTS/backlog/matrix); bare tested SHAs in matrix rows are
+ *    historical evidence and stay untouched.
+ *
+ * @param graphText - raw dev/agent-workflow/graph.yaml.
+ * @param readFile - (relPath) => string | null (null when absent/unreadable).
+ * @param fileExists - (relPath) => boolean.
+ * @param revExists - (sha) => boolean, whether the object resolves to a commit.
+ * @param baselineCurrent - (sha) => boolean, true when sha is HEAD or an ancestor of HEAD.
+ * @param driftProvider - (sha) => string[] | null, product-surface changed paths baseline..HEAD; null = comparison failed.
+ */
+export function checkCurrentContract({ graphText, readFile, fileExists, revExists, baselineCurrent, driftProvider }) {
+  const findings = []
+  const info = {}
+  const g = String(graphText)
+
+  // Q8 — the no-fallback rule, checked first because everything else depends on the block.
+  if (!/^current_contract:\s*$/m.test(g)) {
+    findings.push('Q8: current_contract block is absent — the production path fails; it never falls back to the Alpha.4 legacy state_pointers shape')
+    return { findings, info }
+  }
+  // Scope every field lookup to the current_contract BLOCK, not the whole graph: the Alpha.4
+  // history sections legitimately carry nested `baseline:` keys of their own (measured: two at
+  // L120/L262), and a check that scanned all two-space keys would grade history as a live
+  // duplicate. A guard narrower than the real state space is a false alarm, not a check.
+  const ccStart = g.search(/^current_contract:[ \t]*$/m)
+  const ccTail = g.slice(g.indexOf('\n', ccStart) + 1)
+  const nextTop = ccTail.match(/^(?!\s*#)[^\s#]/m)
+  const ccBlock = nextTop ? ccTail.slice(0, nextTop.index) : ccTail
+  const field = (name) => {
+    const m = new RegExp('^ {2}' + name + ':\\s*(.+?)\\s*$', 'm').exec(ccBlock)
+    if (!m) return null
+    const v = m[1].trim()
+    return v.startsWith('"') ? v.replace(/^"(.*)"$/, '$1') : v.replace(/\s+#.*$/, '').trim()
+  }
+  const phaseId = field('phase_id')
+  const activePlan = field('active_plan')
+  const backlogPath = field('backlog')
+  const matrixPath = field('matrix')
+  const baseline = field('baseline')
+  const collected = field('baseline_collected')
+  info.contract = { phase_id: phaseId, active_plan: activePlan, baseline, baseline_collected: collected }
+
+  // Q3 — one and only one set of active declarations at the top level.
+  const count = (re, text) => (String(text).match(re) ?? []).length
+  if (count(/^current_phase:/gm, g) !== 1) findings.push('Q3: expected exactly one top-level `current_phase:`')
+  if (count(/^current_contract:/gm, g) !== 1) findings.push('Q3: expected exactly one top-level `current_contract:`')
+  if (count(/^ {2}baseline:/gm, ccBlock) !== 1) findings.push('Q3: `baseline:` must appear exactly once inside current_contract (two active baseline claims in the contract block)')
+
+  // Q2 — fields and targets; active plan must be an ACTIVE plan, not a memo or an evidence file.
+  if (!phaseId) findings.push('Q2: current_contract.phase_id missing')
+  for (const [k, v] of [['active_plan', activePlan], ['backlog', backlogPath], ['matrix', matrixPath]]) {
+    if (!v) findings.push(`Q2: current_contract.${k} missing`)
+    else if (!fileExists(v)) findings.push(`Q2: current_contract.${k} target does not exist: ${v}`)
+  }
+  if (activePlan && !activePlan.startsWith('docs/plans/active/')) findings.push(`Q2: active_plan must live under docs/plans/active/ (got ${activePlan})`)
+  if (!collected || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(collected)) findings.push('Q2: baseline_collected must be an ISO8601Z timestamp')
+
+  // Q4 — grammar + git reality. Neither equality nor inequality with HEAD is required.
+  if (!baseline || !/^[0-9a-f]{40}$/.test(baseline)) findings.push('Q4: current_contract.baseline must be exactly 40 hex chars')
+  else if (!revExists(baseline)) findings.push(`Q4: baseline ${baseline} does not resolve to a commit object — FAIL, an unresolvable anchor is never green`)
+  else if (!baselineCurrent(baseline)) findings.push(`Q4: baseline ${baseline} is neither HEAD nor an ancestor of HEAD — the pointer names a revision this tree cannot produce`)
+
+  // Q1 — active wording must agree with the contract; retired blocks say RETIRED.
+  const phase = /^current_phase:\s*(.*)$/m.exec(g)
+  if (!phase) findings.push('Q1: current_phase missing')
+  else {
+    if (/ALPHA\.?4|A4-PR7/i.test(phase[1])) findings.push('Q1: current_phase still names the Alpha.4 phase — an old active pointer dressed as current')
+    const pm = /^alpha(\d+)/i.exec(phaseId ?? '')
+    if (pm && !new RegExp(`ALPHA\\.?${pm[1]}`, 'i').test(phase[1])) findings.push(`Q1: current_phase wording disagrees with phase_id ${phaseId}`)
+  }
+  const conv = /^state_convergence:\s*"?([^\n]*?)"?\s*$/m.exec(g)
+  if (conv && !/^HISTORICAL/i.test(conv[1])) findings.push('Q1: state_convergence still asserts current authority — mark it HISTORICAL (per-round truth lives in the log)')
+  const blocked = /^blocked:\s*\[([^\]]*)\]/m.exec(g)
+  if (blocked) for (const item of blocked[1].split(',').map((s) => s.trim()).filter(Boolean)) {
+    if (!/^B[LR]-\d+$/.test(item)) findings.push(`Q1: blocked item "${item}" is not a backlog ID (B[LR]-NN) — retired phase blockers must not survive as current instructions`)
+  }
+
+  // Q5 — matrix row contract. Claim levels carry evidence; statuses without a claim carry none.
+  // NOT_IMPLEMENTED and NOT_WIRED are separate statuses (root matrix ruling ⑨: no-implementation
+  // vs implementation-not-wired); the combined token is accepted only for rows that split both
+  // arms in one cell. Levels may carry a parenthetical scope — ASCII or full-width.
+  const ENUM = ['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL', 'PROBE-GATED', 'WIRED', 'WIRED-NOT-ACCEPTED', 'BOUNDED-DEFER', 'DEFERRED', 'UNSUPPORTED', 'NOT_IMPLEMENTED', 'NOT_WIRED', 'NOT_IMPLEMENTED/NOT_WIRED', 'NOT_VERIFIED', 'BLOCKED-FOR-RELEASE', 'NEEDS_REVALIDATION']
+  const CLAIM = new Set(['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL', 'BLOCKED-FOR-RELEASE'])
+  const matrixText = matrixPath ? readFile(matrixPath) : null
+  const claimedRows = []
+  let rowCount = 0
+  if (matrixText === null) findings.push('Q5: matrix file unreadable; row contract cannot be graded')
+  else {
+    for (const line of matrixText.split('\n')) {
+      if (!line.startsWith('| ') || line.startsWith('|---') || line.includes('①行ID')) continue
+      const cells = line.split('|').slice(1, -1).map((c) => c.trim())
+      if (cells.length !== 9) { findings.push(`Q5: matrix row "${cells[0] ?? '?'}" has ${String(cells.length)} cells, expected 9 (①-⑧ + V@B)`); continue }
+      rowCount += 1
+      const rowId = cells[0].replace(/\*/g, '')
+      const lvl = cells[7].replace(/\*/g, '').split(/[（(]/)[0].trim()
+      const vab = cells[8].replace(/\*/g, '').toLowerCase()
+      if (!ENUM.includes(lvl)) findings.push(`Q5: row ${rowId} acceptance level "${lvl}" is outside the closed enum`)
+      if (vab !== 'yes' && vab !== 'no') findings.push(`Q5: row ${rowId} V@B must be yes|no, got "${cells[8]}"`)
+      if (!cells[5]) findings.push(`Q5: row ${rowId} has an empty ⑥ verification column`)
+      const evid = /([0-9a-f]{7,40}\b|external\/untracked:)/.test(cells[5])
+      if ((CLAIM.has(lvl) || vab === 'yes') && !evid) findings.push(`Q5: row ${rowId} claims verification (${lvl}${vab === 'yes' ? ', V@B=yes' : ''}) but ⑥ carries no tested SHA or external/untracked disclosure`)
+      if (vab === 'yes') claimedRows.push(rowId)
+    }
+    if (rowCount === 0) findings.push('Q5: matrix holds no data rows; an empty matrix is not a filled one')
+  }
+  info.matrix_rows = rowCount
+  info.claimed_rows = claimedRows.length
+
+  // Q6 — reference discipline: AGENTS/backlog/matrix point at the contract, never re-declare it.
+  for (const [name, path] of [['AGENTS.md', 'AGENTS.md'], ['backlog', backlogPath], ['matrix', matrixPath]]) {
+    const text = path ? readFile(path) : null
+    if (text === null) { findings.push(`Q6: ${name} unreadable; reference discipline cannot be graded`); continue }
+    if (!/phase-baseline-ref:/.test(text)) findings.push(`Q6: ${name} lacks the phase-baseline-ref reference line`)
+    if (/^[^\n]*\bbaseline:\s*[0-9a-f]{40}/mi.test(text)) findings.push(`Q6: ${name} re-declares a baseline authority field with a 40-hex copy — reference current_contract instead (tested SHAs are unaffected)`)
+  }
+
+  // Q7 — conservative source drift. Unknown is FAIL; drifted product surface voids current claims.
+  if (baseline && /^[0-9a-f]{40}$/.test(baseline) && revExists(baseline)) {
+    const drift = driftProvider(baseline)
+    if (drift === null) findings.push('Q7: the baseline..HEAD product-drift comparison failed to run; FAIL — an unknown drift set is never treated as empty')
+    else {
+      info.drift_paths = drift.length
+      if (drift.length > 0 && claimedRows.length > 0) {
+        findings.push(`Q7: product surface moved since baseline (${String(drift.length)} path(s)) while rows still claim current verification: ${claimedRows.join(', ')} — mark NEEDS_REVALIDATION or re-verify against HEAD`)
+      }
+    }
+  }
+
+  return { findings, info }
+}
+
 export function findContinuationComments(script) {
   const lines = String(script).split('\n')
   const bad = []
@@ -881,14 +1027,34 @@ const LEGS = {
       return { verdict: 'refused', refuseReason: 'git-unavailable', detail: 'REFUSED: state freshness is graded against git and git did not run' }
     }
     const isAncestor = (sha) => runCommand('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], { cwd: REPO_ROOT }).code === 0
-    const { findings, info } = checkStatePointers({ graphText: readFileSync(gp, 'utf8'), logText: readFileSync(lp, 'utf8'), isAncestor })
+    const graphText = readFileSync(gp, 'utf8')
+    const { findings, info } = checkStatePointers({ graphText, logText: readFileSync(lp, 'utf8'), isAncestor })
     if (findings.length > 0) return { verdict: 'fail', detail: findings.join(' ; ') }
     const lagM = runCommand('git', ['rev-list', '--count', `${String(info.declared_sha)}..HEAD`], { cwd: REPO_ROOT })
     const lag = lagM.code === 0 ? `lag ${lagM.stdout.trim()} commits` : 'lag unknown'
+    // Folded-in current-contract grading (2026-10-22 docs realignment, root ruling: extend this
+    // leg, do not add one). The legacy check above keeps its Alpha.4 s7-round job; the
+    // production path additionally REQUIRES the top-level current_contract block (Q8: no
+    // fallback — a graph that satisfies only the legacy shape is not current) and grades Q1-Q7
+    // against it. Drift paths = product surface: packages, scripts, tests/paths.mjs,
+    // package.json, pnpm-lock.yaml; a failed comparison is a fail, never an empty diff.
+    const cc = checkCurrentContract({
+      graphText,
+      readFile: (rel) => { try { return readFileSync(resolve(REPO_ROOT, rel), 'utf8') } catch { return null } },
+      fileExists: (rel) => existsSync(resolve(REPO_ROOT, rel)),
+      revExists: (sha) => runCommand('git', ['cat-file', '-e', `${sha}^{commit}`], { cwd: REPO_ROOT }).code === 0,
+      baselineCurrent: (sha) => sha === head.stdout.trim() || isAncestor(sha),
+      driftProvider: (sha) => {
+        const r = runCommand('git', ['diff', '--name-only', sha, 'HEAD', '--', 'packages', 'scripts', 'tests/paths.mjs', 'package.json', 'pnpm-lock.yaml'], { cwd: REPO_ROOT })
+        return r.code === 0 ? r.stdout.split('\n').map((s) => s.trim()).filter(Boolean) : null
+      },
+    })
+    if (cc.findings.length > 0) return { verdict: 'fail', detail: cc.findings.join(' ; ') }
     return {
       verdict: 'pass',
       detail: `pointer agrees both ways (round ${String(info.declared_round)} = newest record = last log heading), records contiguous, ` +
-        `${String(info.declared_sha)} reachable (${lag}); code truth stays in git, orchestration state here, recovery read starts in the log`,
+        `${String(info.declared_sha)} reachable (${lag}); current contract ok (phase_id ${String(cc.info.contract.phase_id)}, ` +
+        `baseline ${String(cc.info.contract.baseline).slice(0, 12)}…, matrix rows ${String(cc.info.matrix_rows)} claimed ${String(cc.info.claimed_rows)}, drift ${String(cc.info.drift_paths)} path(s))`,
     }
   },
 
