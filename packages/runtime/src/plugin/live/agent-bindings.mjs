@@ -2580,9 +2580,11 @@ export function createAgentBindings(deps) {
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         toolDisposers.push(() => {
-          // PR358-B: teardown START revokes THIS mount (key-matched; a stale
-          // disposer never clears a newer mount for the same pair).
-          revokePaMount(String(teamRoot), String(instanceId))
+          // PR358-B (9e review): teardown START revokes THIS mount by its
+          // publication IDENTITY — the live entry is removed only when it is
+          // still the one this setup published; a stale disposer clears
+          // nothing (the newer mount stays published).
+          revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
           return placed.dispose()
         })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
@@ -2894,7 +2896,7 @@ export function createAgentBindings(deps) {
         // Published only AFTER bindOwnTools + publish succeeded; revoked at
         // teardown START. Not an authority ledger: references only, facts
         // are re-read fresh by the reader (see pa-mount-registry.mjs).
-        publishPaMount(String(teamRoot), String(instanceId), {
+        const paMountIdentity = publishPaMount(String(teamRoot), String(instanceId), {
           instanceId: String(instanceId),
           guard: a5p1Guard,
           plane: a5PlaneValue,

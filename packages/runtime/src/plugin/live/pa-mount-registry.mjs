@@ -28,19 +28,27 @@
 const mounts = new Map() // teamRoot -> Map(instanceId -> entry)
 
 /** Publish the CURRENT mount for (teamRoot, instanceId). Called by
- *  agentSetup AFTER bindOwnTools + publish succeeded. */
+ *  agentSetup AFTER bindOwnTools + publish succeeded. Returns the MOUNT
+ *  IDENTITY — the opaque handle the matching revoke must present; a key
+ *  alone never revokes somebody else's mount (9e review: an old disposer
+ *  must not delete the newer mount for the same pair). */
 export function publishPaMount(teamRoot, instanceId, entry) {
   const root = String(teamRoot)
   const id = String(instanceId)
   if (!mounts.has(root)) mounts.set(root, new Map())
-  mounts.get(root).set(id, Object.freeze({ ...entry }))
+  const mount = Object.freeze({ ...entry, identity: Symbol(`pa-mount:${root}:${id}`) })
+  mounts.get(root).set(id, mount)
+  return mount.identity
 }
 
-/** Revoke THIS mount only (teardown start; a stale disposer never clears a
- *  newer mount for the same key). Returns true when it removed the live one. */
-export function revokePaMount(teamRoot, instanceId) {
+/** Revoke by IDENTITY (teardown start). The live mount for the pair is
+ *  removed ONLY when the presented identity is the one currently published
+ *  for that pair; a stale disposer (old identity) clears nothing. */
+export function revokePaMount(teamRoot, instanceId, identity) {
   const bucket = mounts.get(String(teamRoot))
   if (bucket === undefined) return false
+  const live = bucket.get(String(instanceId))
+  if (live === undefined || identity === undefined || live.identity !== identity) return false
   return bucket.delete(String(instanceId))
 }
 
@@ -87,10 +95,15 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   void stage
   void decider // the REAL decider rides PaEffectsVerifierInput, never the facts
   if (!rootSessionId || !requestId || manifest === undefined) return undefined
-  const m = mount ?? resolvePaMount(rootSessionId, manifest?.request?.instanceId ?? '')
+  // 9e fix-2 (AUTH signature exchange): the PARSED manifest is FLAT — top-
+  // level `callId`, `member{teamSessionId,instanceId}`, `binding.toolName`.
+  // There is NO `request.*` wrapper and NO beneficiary self-report field;
+  // guessing either was the review finding (it silently answered undefined).
+  if (!rootSessionId || !requestId || manifest === undefined) return undefined
+  const m = mount ?? resolvePaMount(rootSessionId, manifest?.member?.instanceId ?? '')
   if (m === undefined) return undefined
   const dispatcher = m.guard?.dispatcher
-  const toolName = manifest?.request?.toolName ?? manifest?.binding?.toolName ?? ''
+  const toolName = manifest?.binding?.toolName ?? ''
   const entry = dispatcher?.surface?.entryOf?.(toolName)
   // binding authority: the CURRENT dispatcher entry — verified, ACTIVE.
   const entryBinding = entry?.binding
@@ -100,17 +113,17 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) return undefined
   // one governed lane: the binding's realm must BE the manifest's realm.
   if (m.plane?.realmId === undefined || m.plane.realmId !== manifest?.realmId) return undefined
-  // beneficiary: the mount's DURABLE attribution, never the manifest's.
+  // beneficiary: the mount's DURABLE attribution ONLY (the manifest carries
+  // no such field to compare — comparing a non-existent self-report was
+  // the bug; the pure core trusts the verifier's own rung comparison).
   const beneficiary = m.beneficiaryAuthority
   if (beneficiary !== 'leader' && beneficiary !== 'member') return undefined
-  if (beneficiary !== manifest?.beneficiaryAuthority) return undefined
   // durable member attribution of the mount vs the manifest's member.
   const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
   const manifestMember = manifest?.member
-  if (manifestMember !== undefined) {
-    if (String(manifestMember.teamSessionId ?? '') !== member.teamSessionId) return undefined
-    if (String(manifestMember.instanceId ?? '') !== member.instanceId) return undefined
-  }
+  if (manifestMember === undefined) return undefined
+  if (String(manifestMember.teamSessionId ?? '') !== member.teamSessionId) return undefined
+  if (String(manifestMember.instanceId ?? '') !== member.instanceId) return undefined
   // tuple + blueprint facts: the permission lane's OWN currentBinding
   // source, read fresh; unhealthy lane ⇒ undefined (never a stale answer).
   const plane = typeof m.readers?.permissionPlane === 'function' ? m.readers.permissionPlane() : m.readers?.permissionPlane
@@ -159,7 +172,7 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   if (policyDocument === null || typeof policyDocument !== 'object') return undefined
   if (!Array.isArray(denySources)) return undefined // EMPTY means empty; a broken reader is undefined
   // effects + plan snapshot: the mount's LIVE PA plan for this call.
-  const livePlan = m.plane?.livePaPlan?.get?.(String(manifest?.request?.callId ?? ''))
+  const livePlan = m.plane?.livePaPlan?.get?.(String(manifest?.callId ?? ''))
   if (livePlan === undefined) return undefined
   const effects = livePlan.requestedEffects
   if (effects === null || typeof effects !== 'object' || !Array.isArray(effects.effects)) return undefined
@@ -174,14 +187,10 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
     return undefined
   }
   if (typeof assembly.authorityGeneration !== 'function' || typeof authorityGeneration !== 'number' || !Number.isFinite(authorityGeneration)) return undefined
-  // contrast the durable manifest's binding snapshot against the CURRENT
-  // entry — drift is a FACT carried to the pure core, never self-proof.
-  const snapshot = manifest?.binding
-  const bindingSnapshotDrift = snapshot !== undefined && (
-    snapshot.definitionIdentity !== entryBinding.definitionIdentity
-    || snapshot.revision !== entryBinding.revision
-    || snapshot.providerId !== entryBinding.providerId
-  )
+  // 9e (AUTH ruling 3): NO bindingSnapshotDrift output — the named contract
+  // is exactly the 12 fields; the verifier performs the 11-field full-tuple
+  // + assurance comparison itself. A pre-computed flag here would invite
+  // trusting the flag over the real comparison.
   return {
     policySource: {
       staticLayerRefs: Object.freeze([
@@ -211,6 +220,5 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
       perEffectRequired: livePlan.perEffectRequired,
     },
     authorityGeneration,
-    bindingSnapshotDrift,
   }
 }

@@ -91,6 +91,12 @@ const BASH_PARAMETERS: Record<string, unknown> = {
  */
 export interface GovernedToolExecContext {
   readonly signal?: ToolCancelSignal
+  /** PR358 (9e fix-1): the ledger-allocated correlation for THIS execution
+   *  (set by the governed runner from the REAL token via the in-process
+   *  token ledger). A downstream plane executor consumes THIS string instead
+   *  of ever stringifying the token itself — `String(symbol)` throws and
+   *  stringify was the A1 violation. */
+  readonly tokenKey?: string
   /** fix-2b: the host registry's per-execution token (ToolExecution.token).
    *  It is the ONLY fact that cannot be recycled when a plane remounts, so
    *  it anchors the PA durable correlation. `rootCallId` is audit-only. */
@@ -158,6 +164,21 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
   // correlation for its whole life; in-flight and terminal tokens are both
   // refused for a second call (the allocation is never reused).
   const tokenLedger = new Map<PropertyKey, { readonly correlation: string; readonly settled: boolean }>()
+  // 9e fix-1: the REAL signal for this execution is the host exec.signal;
+  // a ledger-replay of a SETTLED token must be refused even before the
+  // pipeline sees the call, so when the token is terminal the runner hands
+  // the pipeline an ALREADY-ABORTED signal — the PA edge answers
+  // `cancelled` with zero backend and zero consumption (the A2 law).
+  const settledTokenSignals = new WeakMap<object, ToolCancelSignal>()
+  const makeAbortedSignal = (): ToolCancelSignal => ({ aborted: true, reason: 'exec-token-terminal', addEventListener: (_t: 'abort', _l: () => void): void => {}, removeEventListener: (_t: 'abort', _l: () => void): void => {} })
+  const alreadyAbortedSignal = (token: object | symbol): ToolCancelSignal => {
+    if (typeof token === 'symbol') return makeAbortedSignal()
+    const existing = settledTokenSignals.get(token)
+    if (existing !== undefined) return existing
+    const settled = makeAbortedSignal()
+    settledTokenSignals.set(token, settled)
+    return settled
+  }
 
   const makeExecute =
     <T extends ParsedToolArgs>(
@@ -179,17 +200,37 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
         : typeof exec?.token === 'symbol' ? exec.token
         : undefined
       const existing = tokenKey !== undefined ? tokenLedger.get(tokenKey) : undefined
-      if (existing !== undefined) {
-        return { text: refusalText('refused-replay', 'exec-token-replay', existing.settled
-          ? 'this host execution token is already terminal; a settled correlation is never re-used'
-          : 'this host execution already owns an in-flight governed call') }
+      if (existing !== undefined && !existing.settled) {
+        // IN-FLIGHT replay: a second concurrent call for one live execution
+        // is a contract violation — refused outright (9e: the CANCELLED form
+        // belongs to a TERMINAL token only; an in-flight call must not also
+        // be running while the first is unanswered).
+        return { text: refusalText('refused-replay', 'exec-token-replay', 'this host execution already owns an in-flight governed call') }
       }
+      // 9e fix-1 (terminal replay): a SETTLED token re-used allocates
+      // NOTHING new — the run proceeds under the token's ORIGINAL
+      // correlation with an already-aborted signal, so the PA edge settles
+      // the fact as `cancelled` (zero backend, zero consumption) instead
+      // of a non-row text refusal.
+      const replaySettled = existing !== undefined && existing.settled
       callSeq += 1
       const callSeq2 = callSeq
-      const callId = `${prefix}-${toolKind}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${mountNonce}-${String(callSeq2)}`
-      if (tokenKey !== undefined) {
+      const callId = replaySettled
+        ? (tokenLedger.get(tokenKey as PropertyKey)?.correlation ?? `${prefix}-${toolKind}:hexec:${mountNonce}-${String(callSeq2)}`)
+        : `${prefix}-${toolKind}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${mountNonce}-${String(callSeq2)}`
+      if (tokenKey !== undefined && !replaySettled) {
         tokenLedger.set(tokenKey, { correlation: callId, settled: false })
       }
+      // 9e: a terminal-token replay keeps the ledger entry terminal — the
+      // replay run never re-arms it (settled is NEVER re-opened).
+      const settleTokenKey = replaySettled ? undefined : tokenKey
+      // 9e fix-1: the pipeline (and any plane executor reached through it)
+      // consumes the ledger correlation as a STRING on the ctx — the real
+      // token never travels as text.
+      const runCtx: GovernedToolExecContext = { ...(exec ?? {}), tokenKey: callId }
+      const execSignal = replaySettled && exec?.token !== undefined
+        ? alreadyAbortedSignal(exec.token)
+        : (exec?.signal ?? undefined)
       let result: Awaited<ReturnType<typeof runToolCall>>
       try {
         result = await runToolCall({
@@ -204,7 +245,7 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
           // B3: the host's cancel signal rides the call untouched. This face
           // only CARRIES it — the cancelled fact belongs to the row that can
           // actually stop a payload (the shell arm), never to the presentation.
-          ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+          ...(execSignal === undefined ? {} : { signal: execSignal }),
         },
         decide: assembly.decide,
         ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
@@ -212,9 +253,9 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
         })
       } finally {
-        if (tokenKey !== undefined) {
-          const entry = tokenLedger.get(tokenKey)
-          if (entry !== undefined) tokenLedger.set(tokenKey, { correlation: entry.correlation, settled: true })
+        if (settleTokenKey !== undefined) {
+          const entry = tokenLedger.get(settleTokenKey)
+          if (entry !== undefined) tokenLedger.set(settleTokenKey, { correlation: entry.correlation, settled: true })
         }
       }
       if (result.kind === 'presented') return { text: result.rendered.text }

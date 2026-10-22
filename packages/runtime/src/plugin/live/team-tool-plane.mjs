@@ -701,6 +701,27 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const jobsEnabled = jobsEnabledRaw === true
 
+  // 9e fix-3: ONE durable-generation reader for this mount. `current` is
+  // the last CONFIRMED generation (undefined = never confirmed); preflight
+  // re-reads at mount and before each admission that lacks one. No cache
+  // semantics beyond the confirmed-latest value of the ONE overlay port.
+  let paGenerationConfirmed
+  const paGenerationReader = input.authorityFacts?.overlayGeneration
+  const paReadGeneration = async () => {
+    const read = paGenerationReader
+    if (typeof read !== 'function') return
+    try {
+      const g = await read(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
+      if (typeof g === 'number' && Number.isFinite(g) && g >= 0) paGenerationConfirmed = g
+    } catch {
+      // a faulting read CONFIRMS nothing; the previous confirmed value (if
+      // any) stays current, admissions keep answering it or refusing.
+    }
+  }
+  const paAuthorityGeneration = () => paGenerationConfirmed
+  if (typeof paGenerationReader === 'function') {
+    void paReadGeneration()
+  }
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
     permissionPolicy,
@@ -711,7 +732,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // is adopted by the human operator who authored it).
     definitionOwnerAuthority: input.plane?.definitionOwnerAuthority ?? 'human-user',
     clock: () => Date.now(),
-    authorityGeneration: () => 0, // same generation the PR1 guard publishes with (rev.0 until the overlay feeds revisions)
+    // 9e fix-3: the REAL durable overlay generation. The plane mounts a
+    // one-shot preflight read (the SAME `overlay.latest` the decision lane
+    // treats as the authority); until it lands, admissions REFUSE (an
+    // unanswerable generation is never answered with 0 — the constant here
+    // was the fabricated generation the review named). The read resolves
+    // once per assembly (a resolved promise keeps admit synchronous-ish);
+    // a faulting read stays rejected until the next preflight tick.
+    authorityGeneration: () => {
+      if (paGenerationReader === undefined) return 0 // rev.0 lane: this world carries NO durable overlay port (the pre-B documented state; production always carries one)
+      const g = paAuthorityGeneration()
+      if (g === undefined) throw new Error('authority-generation unanswerable (durable overlay read pending/failed; never a constant)')
+      return g
+    },
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
     ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
     onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
@@ -812,6 +845,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const paAdmitBody = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+    // 9e fix-3: the generation is answerable BEFORE any admission work:
+    // await the durable read once when nothing is confirmed yet (no
+    // constant ever answers the kernel).
+    if (typeof paGenerationReader === 'function' && paGenerationConfirmed === undefined) {
+      await paReadGeneration()
+    }
     const request = Object.freeze({
       binding: paBindingFor(toolName),
       member: paMember,
@@ -1217,10 +1256,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // read row uses, so the envelope/decline contract downstream stays
       // honest. The trio rows keep their `{ text }` face unchanged.
       execute: async (raw, exec) => {
-        // fix-2b: read RECEIVES the host exec — its per-execution token is
-        // the correlation the PA durable row binds to; the signal rides too.
+        // fix-2b: read RECEIVES the host exec. 9e fix-1: the REAL token
+        // rides (object | symbol, exactly like the shell row) — the plane
+        // NEVER stringifies it (`String(symbol)` throws; stringify was the
+        // A1 violation). The correlation is the a5p5 LEDGER's allocated
+        // string (`exec.tokenKey`), the same identity the trio rows carry.
         const corr = {
-          ...(exec?.token === undefined ? {} : { correlation: `hexec:${String(exec.token)}` }),
+          ...(exec?.token === undefined ? {} : { token: exec.token }),
+          ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
           ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
         }
         const outcome = await readExecutor(raw, corr)
