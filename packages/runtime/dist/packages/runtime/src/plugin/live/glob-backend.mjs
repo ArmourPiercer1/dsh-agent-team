@@ -166,6 +166,29 @@
  * `SPILL_ERROR_CLASSES`) with a stable code — this file never throws out of
  * `run()`, and a pre-execute refusal never increments `execCount()`.
  *
+ * THE CANCEL LEG (a5-cancel; mechanics in `./cancel-leg.mjs`, wording owned
+ * here): the host's cooperative cancel signal rides the call (`register.ts`
+ * forwards `exec?.signal`, the pipeline carries it untouched), and this row
+ * ANSWERS it. Additive in both directions — no signal on the call, no leg; a
+ * signal that never fires changes no outcome. A cancelled glob is a typed
+ * FAILURE of THIS table (`call-aborted` when the stop is confirmed — including a
+ * call that never spawned anything — `termination-unconfirmed` when the provider
+ * could not prove the stop), never an `ok: true` empty file list: an empty list
+ * is a statement about the tree, and a cancelled walk has made no such
+ * statement. Boundary law, not a race: the channel is asked before the first
+ * await and re-asked after every one, so a pre-abort costs no capability probe,
+ * no anchor descriptor, no plan, no child and no spill byte; a handle arriving
+ * after the caller already gave up is ADOPTED into the row's ONE owned terminate
+ * instead of being raced away; and the settle race's winner
+ * (`exited > timedOut > aborted`) is never rewritten by a later fact — a cancel
+ * that lands after the walk finished is honoured BEFORE the one channel write,
+ * which refuses the publication without changing what the walk was. This row's
+ * timeout budget keeps its own historical shape (an `ok: true` cancelled
+ * settlement): that arm is not this leg's to rule on, and changing it would
+ * change a disclosed behaviour no law here asks about. `signal.reason` is never
+ * read or echoed — caller-owned text has no place in a face that publishes codes
+ * plus arithmetic.
+ *
  * @module packages/runtime/src/plugin/live/glob-backend
  */
 
@@ -175,6 +198,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { setTimeout as sleepTimer, clearTimeout as clearTimer } from 'node:timers'
 import { buildGlobCommand, GLOB_MAX_RESULTS, parseGlobArgs as parseHostGlobArgs, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
+import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
 
 /** Stable backend identity (the plane/audit reports this name, never a anonymous one). */
 export const GLOB_BACKEND_ID = 'a5glb-anchored-confined-rg-glob'
@@ -250,6 +274,8 @@ export const GLOB_REFUSAL_TEXT = Object.freeze({
   'spawn-failed': 'the confined spawn could not be created',
   'confined-refused': 'the confined process plane refused the spawn',
   'confined-unavailable': 'the confined process plane is unavailable on this host',
+  'call-aborted': 'the glob call was cancelled cooperatively before its answer could be committed, and its confined walk is confirmed stopped',
+  'termination-unconfirmed': 'the glob call was cancelled cooperatively and its confined walk could not be confirmed stopped',
   'internal-error': 'an unexpected internal fault stopped the walk',
 })
 
@@ -281,6 +307,8 @@ export const GLOB_REFUSAL_FAMILIES = Object.freeze({
   'spawn-failed': 'a5glb-refused/confined-plane',
   'confined-refused': 'a5glb-refused/confined-plane',
   'confined-unavailable': 'a5glb-refused/confined-plane',
+  'call-aborted': 'a5glb-refused/cancel',
+  'termination-unconfirmed': 'a5glb-refused/cancel',
   'internal-error': 'a5glb-refused/internal',
 })
 
@@ -813,6 +841,53 @@ export function createAnchoredGlobBackend(options) {
           // The walker's own words are foreign text: internal face only.
           return failure('denied', 'pattern-invalid', {}, debug, String(error?.message ?? error))
         }
+        // ---- THE CANCEL LEG (a5-cancel) -----------------------------------
+        // The host's cooperative cancel signal rides the call (`register.ts`
+        // forwards `exec?.signal`, the pipeline carries it untouched). Additive
+        // in BOTH directions: a call with no channel runs no new branch, and a
+        // channel that never fires changes no outcome. This is a BOUNDARY law,
+        // not a race: ask before the first await and re-ask after every one, so
+        // a pre-abort costs no probe, no descriptor, no plan, no child and no
+        // spill byte — and the settle race's winner is never rewritten by a fact
+        // that arrives later.
+        const cancelSignal = call.signal
+        const owned = createOwnedStop()
+        /** THE one cancel terminal, built by THIS row's own `failure()` face:
+         *  closed code + family word + frozen table prose + arithmetic, and the
+         *  words describe THIS call's stop, never the caller's intent. The
+         *  call's ONE owned stop is taken here (idempotent: any number of
+         *  boundaries ask, exactly one terminate happens) and its result is
+         *  READ — only a provider-confirmed `terminated` lease, or the honest
+         *  case of a call that never adopted a child, may claim
+         *  `call-aborted`; a refused, throwing or non-`terminated` settle says
+         *  the stop is unconfirmed. A cancelled walk is a FAILURE, never an
+         *  `ok: true` empty file list: the empty list is a claim about the
+         *  tree, and this walk made no claim about anything. */
+        const cancelRefusal = async (stage) => {
+          // Every cancel boundary reads THE stop of this call — the one memoized
+          // reading of the one owned terminate. A second boundary costs no second
+          // terminate, and no boundary may guess at the outcome instead of asking
+          // the provider what it observed.
+          const stop = await owned.stop()
+          trace = [...trace, 'cancel']
+          const refusal = stop.stopped === true
+            ? failure('undetermined', CANCEL_CODE_ABORTED, { children: owned.child() === null ? 0 : 1 }, debug, `stage=${safeToken(stage)} stop=${safeToken(stop.form)}`)
+            : failure('undetermined', CANCEL_CODE_UNCONFIRMED, { children: owned.child() === null ? 0 : 1 }, debug, `stage=${safeToken(stage)} stop=${safeToken(stop.form)}`)
+          // Grammar-clean like every other line this row books: verb word, then
+          // `key=token` pairs, the family word in its pinned shape.
+          observe(`anchored-glob refused code=${refusal.failure.code} family=${refusal.failure.family} stop=${safeToken(stop.form)} children=${owned.child() === null ? '0' : '1'} stage=${safeToken(stage)} realm=${realmId} call=${safeToken(call?.callId)}`)
+          return refusal
+        }
+        // THE FIRST BOUNDARY, and it sits BEFORE the first await this row ever
+        // takes: an already-flown cancel costs not even the rg-path lookup. Every
+        // boundary below is likewise "immediately after an await", which is the
+        // whole law of this leg — a withdrawal that lands while the row is inside
+        // an await is noticed at the next instruction, not at the end of the walk.
+        // The stage trace keeps the word it had when this check sat after the
+        // lookup (`probe` names the phase the row is entering, not one it has
+        // finished), so no face of any other path moves.
+        if (callAborted(cancelSignal)) { trace = ['probe']; return await cancelRefusal('entry') }
+
         if (rgPath === null) {
           try {
             rgPath = await resolveRgPath()
@@ -820,6 +895,11 @@ export function createAnchoredGlobBackend(options) {
             return failure('undetermined', 'rg-unavailable', {}, debug, String(error?.message ?? error))
           }
         }
+        // THE BOUNDARY AFTER THE RG-PATH AWAIT: without it a withdrawal that lands
+        // during that lookup still pays the capability probe before it is answered.
+        // The stage trace keeps the word the later boundaries use, so no other
+        // path's face moves.
+        if (callAborted(cancelSignal)) { trace = ['probe']; return await cancelRefusal('after-rg-path') }
         trace = ['probe']
         if (probed === null) {
           probed = await provider.probe()
@@ -830,6 +910,7 @@ export function createAnchoredGlobBackend(options) {
           }
           observe(`anchored-glob capability OK realm=${realmId} legs=${String(probed.value.length)}`)
         }
+        if (callAborted(cancelSignal)) return await cancelRefusal('after-capability')
 
         // A1 + A2: anchor BEFORE the child exists; on refusal no process and no
         // byte of payload is ever produced.
@@ -839,7 +920,33 @@ export function createAnchoredGlobBackend(options) {
           observe(`anchored-glob refused code=${anchor.failure.code} family=${anchor.failure.family} call=${String(call.callId)} realm=${realmId}`)
           return anchor
         }
+        // A cancel landing during the anchor open gives the pinned descriptor
+        // back BEFORE the terminal is handed up, and never reaches the spawn.
+        if (callAborted(cancelSignal)) {
+          await anchor.handle.close().catch(() => undefined)
+          return await cancelRefusal('after-anchor')
+        }
         trace = ['probe', 'prepare', 'execute']
+        // THE LAST BOUNDARY BEFORE THE SPAWN: a cancel landing here still costs
+        // zero provider work — no plan, no child, no byte.
+        // The boundary this row books WHEN IT CONSULTS ITS CHANNEL at the last
+        // step before it would ask for a child, and only for a call that carries a
+        // cancel channel — a call without one books exactly what it booked before.
+        // The word names the instruction, not an intention: the row is ASKING its
+        // channel here, which stays true whichever way the answer goes, so a
+        // refusal below never leaves behind an audit claim that this row was going
+        // to spawn. Grammar-clean like every other line here: verb words, then
+        // `key=token` pairs. Being booked one instruction before the final check —
+        // as in the search row — is what makes "the cancel landed at the last
+        // boundary before the provider was asked" a fact a test can pin, and the
+        // answer to it is a refusal that costs zero provider work.
+        if (cancelSignal !== undefined && cancelSignal !== null) {
+          observe(`anchored-glob cancel-leg stage=pre-spawn-check realm=${realmId} call=${safeToken(call?.callId)}`)
+        }
+        if (callAborted(cancelSignal)) {
+          await anchor.handle.close().catch(() => undefined)
+          return await cancelRefusal('pre-spawn')
+        }
         const rgBinDir = rgPath.slice(0, rgPath.lastIndexOf('/'))
         const request = {
           grantFingerprint: `a5glb:${realmId}:${templateId}:${String(call.callId)}`,
@@ -874,14 +981,35 @@ export function createAnchoredGlobBackend(options) {
         }
         executed += 1
         const child = handle.value
+        // THE ADOPTION LAW: a handle this call caused to exist is owned the
+        // instant it exists — including the case where the caller gave up while
+        // `spawnStreaming` was still awaiting. Racing the cancel against the
+        // spawn promise would have thrown this handle away with the payload
+        // live; this row awaits the promise to its end, adopts what came back,
+        // and the ONE owned terminate below is what stops it.
+        owned.adopt(child)
+        // The second boundary booked for a channel-carrying call: the child
+        // EXISTS and this call owns it. Part of the cancel leg, not of the walk.
+        if (cancelSignal !== undefined && cancelSignal !== null) {
+          observe(`anchored-glob cancel-leg stage=child-live realm=${realmId} call=${safeToken(call?.callId)}`)
+        }
         // The pinned anchor handle MUST outlive every path the walk produced:
         // A4 verifies against it, so it closes only after the verdict exists.
+        // THE UNIFIED RELEASE is a slot installed below (the watches it releases do
+        // not exist yet at this line) and called from the `finally` at the end of
+        // this block, so every exit — cancel arm, early failure return, unexpected
+        // fault, admitted walk — gives the pipes back before the descriptor does.
+        // Idempotent by construction, and a no-op for an exit before installation.
+        let releaseAllWatchers = () => {}
         try {
+          // The first boundary after the adoption: the payload goes through the
+          // owned terminate before this row says anything about the call.
+          if (callAborted(cancelSignal)) return await cancelRefusal('after-spawn')
           let stdout = ''
           let stderr = ''
           let overflow = false
           let streamsWatch = null
-          child.stdout.on('data', (chunk) => {
+          const onStdoutData = (chunk) => {
             // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
             // UNVERIFIED until the verdict below admits them, and the spill
             // channel is a channel like any other: writing it as it arrives (the
@@ -896,12 +1024,57 @@ export function createAnchoredGlobBackend(options) {
             } else {
               overflow = true
             }
-          })
-          child.stderr.on('data', (chunk) => {
+          }
+          const onStderrData = (chunk) => {
             // Bounded, like every other buffer: the diagnostic channel cannot be
             // turned into a memory channel by a chatty walker.
             if (stderr.length < GLOB_MAX_STDERR_BYTES) stderr += String(chunk)
-          })
+          }
+          child.stdout.on('data', onStdoutData)
+          child.stderr.on('data', onStderrData)
+          // The data listeners come off through the unified release below, in the
+          // order that release states: the terminate first (the pipes are held by the
+          // living child), then the listeners, then the pinned descriptor in the
+          // `finally`. Nothing holds the caller's channel past the settle race.
+          const releaseStreamListeners = () => {
+            try { child.stdout.off('data', onStdoutData) } catch { /* already torn down */ }
+            try { child.stderr.off('data', onStderrData) } catch { /* already torn down */ }
+          }
+          // The slots the watchers write into are declared here, ABOVE the unified
+          // release below, because that release has to be reachable from the
+          // `finally` that ends this block — i.e. from every exit, including the
+          // ones that return before the drain ever ran.
+          // THE UNIFIED RELEASE of everything this row attached to the child's
+          // pipes: the data listeners, the completeness watcher and the streams
+          // watcher. Releasing "the data listeners" at one exit and "the data
+          // listeners plus the watches" at another is how a row ends up holding a
+          // caller's stream open behind a refusal, so there is exactly one function
+          // for it and the `finally` at the end of this block calls it — every
+          // branch, not only the ones someone thought to write. Idempotent (a slot
+          // is nulled before its handlers come off, and the function replaces
+          // itself with a no-op on its first run), and it always runs AFTER the
+          // owned terminate, which is what the cancel law's release order is.
+          releaseAllWatchers = () => {
+            releaseAllWatchers = () => {} // idempotent: the `finally` may call it again
+            releaseStreamListeners()
+            if (stdoutWatch !== null) {
+              const done = stdoutWatch
+              stdoutWatch = null
+              child.stdout.off('end', done)
+              child.stdout.off('close', done)
+              child.stdout.off('error', done)
+            }
+            if (streamsWatch !== null) {
+              const watch = streamsWatch
+              streamsWatch = null
+              const [one, died] = watch.handlers
+              for (const stream of watch.streams) {
+                stream.off('end', one)
+                stream.off('error', died)
+                stream.off('close', died)
+              }
+            }
+          }
           // g6b-flake: the settlement MUST NOT read stderr before the stream has
           // ended. This row's discriminator is the walker's SPEECH (see the
           // walker-error arm below), and Node can resolve `child.exited` while
@@ -943,15 +1116,61 @@ export function createAnchoredGlobBackend(options) {
             child.stdout.once('error', done)
             stdoutWatch = done
           })
-          const exit = await Promise.race([
-            child.exited,
-            new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
-          ])
+          const exit = await raceConfinedSettle({ exited: child.exited, timeoutMs, signal: cancelSignal })
           // The lease closes first: the provider's pipes are held by the supervised child,
           // so 'end' cannot be promised while it lives (measured in the previous hand's
           // failed attempt, where draining BEFORE terminate timed out on EVERY walk and
           // mass-failed the suites). The drain therefore judges AFTER terminate.
-          await child.terminate() // the frozen lease arm settles exactly once per path
+          // THE ONE TERMINATE, read by whoever is owed the answer. The ARM is the
+          // same single owned call either way (`owned` memoizes it); the READING
+          // differs, deliberately:
+          //  - A call nobody cancelled keeps this row's own contract, unchanged
+          //    since before this leg existed: `await owned.rawStop()` hands back the
+          //    very promise `await child.terminate()` used to be, so a lease arm
+          //    that throws still lands in `run`'s catch and answers `internal-error`
+          //    with zero bytes on the channel. Swallowing that here would turn a
+          //    broken lease arm into a walk that carries on to the sink — which is
+          //    the one thing this leg must not do to a path nobody cancelled.
+          //  - A call the caller DID withdraw from reads the classified stop: it
+          //    cannot throw, and its only two answers are "the provider confirmed
+          //    the stop" and "it did not". A throwing arm on that path is the second
+          //    one, and the throw's own text never reaches the answer.
+          const cancelled = callAborted(cancelSignal)
+          const timedOut = exit?.timedOut === true
+          if (cancelled && !timedOut) await owned.stop()
+          else {
+            // THE OLD CONTRACT, HELD IN BOTH DIRECTIONS. The timeout winner takes
+            // the raw arm even when the caller has already withdrawn: swallowing a
+            // fault there would be this leg inventing a success shape the row never
+            // had. On any OTHER winner a fault that arrives while the caller is
+            // withdrawing is an answer the caller is owed, and it is read through
+            // the SAME settled arm (`owned.stop()` derives from the promise that
+            // just rejected, so no second terminate is ever issued) and says
+            // 'termination-unconfirmed'. A fault on a call nobody withdrew from is
+            // rethrown untouched, exactly as `await child.terminate()` did before
+            // this leg existed.
+            try {
+              await owned.rawStop()
+            } catch (fault) {
+              if (timedOut || !callAborted(cancelSignal)) throw fault
+              await owned.stop()
+            }
+          }
+          if (!timedOut && (cancelled || callAborted(cancelSignal))) {
+            // THE CANCEL ARM, and it is reached from either side of the settle: the
+            // abort won the race (the walk was stopped, it did NOT finish), or the
+            // withdrawal landed during the stop await immediately above — an await
+            // like any other, so it gets a boundary of its own instead of slipping
+            // through to the verdict. The stage word says which.
+            // NOTHING downstream runs: no drain, no completeness judgement, no
+            // parse, no verification, no channel write — a walk that was stopped
+            // makes no claim about the tree, and an empty file list would be exactly
+            // such a claim. The terminal is this row's own cancel refusal, carrying
+            // what the ONE owned terminate actually reported. The timeout arm below
+            // is this row's oldest contract and this leg does not touch it, not even
+            // to look at a channel it never asked for.
+            return await cancelRefusal(exit?.aborted === true ? 'walk-aborted' : 'after-settle')
+          }
           // ... and the collection happens AFTER the lease is released: while the
           // supervised child lives, 'end' cannot be promised (measured: draining before
           // terminate refused 1176/6600 clean walks). Terminality is structurally promised
@@ -977,6 +1196,12 @@ export function createAnchoredGlobBackend(options) {
             ])
             if (capTimer !== null) clearTimer(capTimer)
             stdoutCollected = won === true
+            // THE BOUNDARY AFTER THE STDOUT DRAIN AWAIT, before the incomplete-drain
+            // return below: a withdrawal during the drain is answered as a cancel,
+            // and the `finally` still gives every watcher and the descriptor back.
+            // The completeness standard itself is untouched — an uncancelled walk
+            // judges the drain exactly as it always did.
+            if (callAborted(cancelSignal)) return await cancelRefusal('after-stdout-drain')
           }
           if (stdoutWatch !== null) {
             child.stdout.off('end', stdoutWatch)
@@ -1005,6 +1230,12 @@ export function createAnchoredGlobBackend(options) {
           }
           if (drainTimer !== null) clearTimer(drainTimer)
           drainTimer = null
+          // THE BOUNDARY AFTER THE STREAM-CLOSE DRAIN AWAIT, same law as the one
+          // above: ask the channel before the row reaches for its own indeterminate
+          // verdict, and let the `finally` do the cleanup either way. A walk whose
+          // BUDGET already won is excluded: once the timeout is the winner, a
+          // withdrawal that arrives afterwards may not rejudge it.
+          if (!timedOut && callAborted(cancelSignal)) return await cancelRefusal('after-streams-drain')
           if (streamsWatch !== null) {
             for (const stream of streamsWatch.streams) {
               for (const handler of streamsWatch.handlers) {
@@ -1069,6 +1300,13 @@ export function createAnchoredGlobBackend(options) {
             const recordBudget = new Promise((r) => { recTimer = sleepTimer(() => r(null), GLOB_STDERR_DRAIN_MS).unref?.() ?? null })
             const rec0 = await Promise.race([child.payloadExit, recordBudget])
             if (recTimer !== null) clearTimer(recTimer)
+            // THE BOUNDARY AFTER THE RECORD AWAIT, before the row judges what the
+            // record said: a withdrawal that landed while the payload's own record
+            // was being awaited is answered as the cancellation it is, not behind the
+            // record's untrustworthy-form verdict. The unified `finally` still gives
+            // the pipes and the descriptor back, and the record verdict keeps ruling
+            // any call nobody withdrew from.
+            if (callAborted(cancelSignal)) return await cancelRefusal('after-payload-record')
             // SECOND pid look (review-B item 2): the provider matched the record
             // against the HANDSHAKE pid; the row independently refuses any record
             // that does not name THIS handle's pid. Two checks, two sides of the
@@ -1154,6 +1392,13 @@ export function createAnchoredGlobBackend(options) {
           // A4: no path is returned unless every one of them is proven inside the
           // pinned anchor inode at this moment.
           const verdict = await verifyGlobResultsBeneath(anchor, records, debug)
+          // THE BOUNDARY IMMEDIATELY AFTER THE VERIFICATION AWAIT. The check at the
+          // sink below stays (it is the last word before the answer exists); this
+          // one is the earliest the row can notice, so a withdrawal during the
+          // verification is answered before the record list is even projected.
+          if (callAborted(cancelSignal)) {
+            return await cancelRefusal('after-verify')
+          }
           if (verdict.ok !== true) {
             observe(`anchored-glob RESULT-REFUSED code=${verdict.failure.code} family=${verdict.failure.family} call=${String(call.callId)} entries=${String(records.length)}`)
             return verdict
@@ -1163,6 +1408,17 @@ export function createAnchoredGlobBackend(options) {
           // verification and presentation. The ONLY thing done to it here is the
           // inline cap, an array window that preserves order (pinned by leg P10).
           const files = verdict.entries.slice(0, maxResults)
+          // THE LAST BOUNDARY BEFORE THE ANSWER EXISTS. A cancel that landed
+          // while the verdict and the verification were running does not rewrite
+          // the settle race's winner (the walk DID finish) — it prevents the
+          // publication: no channel byte, no spill, no result, and the terminal
+          // is this row's cancel refusal carrying what the owned stop reported
+          // (that stop settled with the walk, so asking again costs no second
+          // terminate). Below this point there is no retroactive arm: what was
+          // written is the answer, exactly as the spill law has always had it.
+          if (callAborted(cancelSignal)) {
+            return await cancelRefusal('before-commit')
+          }
           // THE ONE SINK WRITE IN THIS MODULE (channel audit, header A7): after the
           // verdict, from the admitted array only. Spill therefore carries exactly
           // what is presented, in the walker's own NUL framing — never more, never
@@ -1183,6 +1439,11 @@ export function createAnchoredGlobBackend(options) {
             settlement: { kind: 'completed' },
           }
         } finally {
+          // THE RELEASE ORDER, on every path: the payload is stopped first (the
+          // arms above read the provider's confirmation before they answer), the
+          // pipes this row attached are given back, and the pinned descriptor goes
+          // last.
+          releaseAllWatchers()
           await anchor.handle.close().catch(() => undefined)
         }
   }
