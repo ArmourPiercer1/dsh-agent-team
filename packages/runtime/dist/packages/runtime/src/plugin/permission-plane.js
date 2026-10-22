@@ -475,6 +475,17 @@ export function createPermissionAuthorityFacts(deps) {
             healthyFlag = allOk;
         },
         healthy: () => healthyFlag,
+        currentCallFacts: (teamSessionId, memberInstanceId) => {
+            const now = currentBinding(teamSessionId, memberInstanceId);
+            if (now === undefined)
+                return undefined;
+            return Object.freeze({
+                tuple: now.tuple,
+                blueprintId: String(now.blueprint.blueprintId),
+                providerVersion: providerVersionOf(),
+                healthy: healthyFlag,
+            });
+        },
         // Async-normalizing wrappers: the internal readers forward the deps'
         // `T | Promise<T>` shape (sync test fakes stay legal); the PRODUCTION
         // surface is exactly-Promise (the PermissionAuthorityFacts contract).

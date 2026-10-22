@@ -346,6 +346,17 @@ export interface TeamProductionRootParams {
     readonly permissionPlaneRef?: {
         current: TeamPermissionPlane | undefined;
     };
+    /** PR358-B: the ONE authority facts object (host-built); its
+     *  `currentCallFacts` read is published on the plane ref for the PA
+     *  call-level adapter. Absent = the face stays unpublished (old worlds
+     *  byte-compatible). */
+    readonly permissionAuthorityFactsForRef?: {
+        readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) => {
+            readonly tuple: unknown;
+            readonly blueprintId: string;
+            readonly healthy: boolean;
+        } | undefined;
+    };
     /**
      * pre-alpha3 PR4 (round 4, addressed-team binding) — the bound §6
      * expansion-ceiling reader for one ADDRESSED (team, target member),

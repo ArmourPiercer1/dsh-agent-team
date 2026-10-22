@@ -106,8 +106,13 @@ export function renderSearchResult(outcome, options = {}) {
         totalMatches: outcome.totalMatches,
         truncated: outcome.truncated,
         ...(options.spill ? { spill: options.spill } : {}),
+        ...(outcome.cancelled === true ? { cancelled: true } : {}),
     };
-    const lines = [`search · ${outcome.outputMode} · ${outcome.totalMatches} matches`];
+    const lines = [outcome.cancelled === true
+            // PR358-A2: the ONE cancelled shape — honest zero-match body plus the
+            // cancelled word. An ordinary answer's header is byte-identical.
+            ? `search · ${outcome.outputMode} · cancelled`
+            : `search · ${outcome.outputMode} · ${outcome.totalMatches} matches`];
     if (outcome.outputMode === 'content') {
         for (const match of outcome.matches) {
             const where = [

@@ -1596,6 +1596,12 @@ export async function apply(ctx, config) {
             // from it per agent). Additive optional dep: never in the hard inject
             // array.
             permissionPlaneRef,
+            // PR358-B: the durable overlay port (the SAME one the plane/decision
+            // lanes read) for the PA call-level facts adapter's overlay generation,
+            // + the ONE facts object for its ceiling readers (untyped mjs glue).
+            permissionOverlay,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            permissionAuthorityFacts: permissionFacts,
             // C1 (restart-recovery, guide §4.3): the Team session-activation fence
             // — the production host MUST pass it (the glue wraps every Team
             // create/resume in runOwned and performs the bounded writer-conflict
@@ -2068,6 +2074,10 @@ export async function apply(ctx, config) {
             permissionOverlay,
             fsContainsKeys,
             permissionPlaneRef,
+            // PR358-B: the ONE host-built authority facts object; its call-level
+            // currentCallFacts read is published on the plane ref for the PA
+            // all-Effects adapter (same authority, a new read — root ruling 3).
+            permissionAuthorityFactsForRef: permissionFacts,
             // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding,
             // round 5 ceiling REMOVAL): the authority fact readers (the root
             // forwards them VERBATIM into the pure governance lane). The envelope +

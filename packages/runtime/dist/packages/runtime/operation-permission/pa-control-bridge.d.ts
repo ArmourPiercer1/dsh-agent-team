@@ -67,23 +67,30 @@
  *    here as a STRUCTURAL minimal interface — the real service satisfies it,
  *    a stand-in that skips the durable row does not;
  *  - zero I/O of its own: no filesystem, no timers except the optional
- *    bounded-wait abort (the wait bridge owns its own poll cadence).
+ *    bounded-wait abort (the wait bridge owns its own poll cadence); the
+ *    verifier's ONE await (PR358-B) reaches only the injected call-level
+ *    facts adapter — the I/O is the adapter's, never this module's, and the
+ *    adapter must be free of the governance coordination lock (root ruling
+ *    point 6).
  *
- * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is the pure-verify
- * resolve/guard face for ALL Effects of the exact scope: read-only over the
- * durable state (`listControlState` is a fresh ledger read, invariant 45),
- * it answers whether an unconsumed durable allow covers the EXACT scope
- * without consuming anything and without minting anything. The AUTHORITATIVE
- * consumption stays `guardOperation`'s check-and-reserve under the per-team
- * lock; this port is the side-effect-free companion the resolve path may
- * consult, and it mirrors the guard's refusal vocabulary (no re-entry, no
- * second ledger).
+ * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is NON-PRODUCTION:
+ * a TEST-ONLY diagnostic mirror (see its own doc). PRODUCTION has ONE PA
+ * verification entry — the root wires the ONE {@link
+ * createPaEffectsVerifier} instance into `createControlService({
+ * paEffectsVerifier })`, and the service asks it inside the per-team lock at
+ * BOTH gates (resolve, guard). This module's leg never calls the verifier
+ * itself, and the mirror port answers NO coverage question of its own: it is
+ * REQUIRED to hold the SAME verifier instance the service was given, so a
+ * second verification path outside the service cannot exist. The root's real
+ * injection lands centrally with the B dependency table (this round does not
+ * touch root/agent-bindings).
  *
  * @module @dsh-agent-team/runtime/operation-permission/pa-control-bridge
  */
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js';
 import type { AdmissionRequest, GovernanceResult, OperationGrant } from '../../domain/tool-governance/src/index.js';
 import type { ControlDecisionRecord, ControlGuardVerdict, ControlOperationScope, ControlRequestKind, ControlRequestRecord, ControlWaitSignal } from '../control/index.js';
+import type { ControlCallerRef, PaCallFacts, PaControlManifest, PaEffectsVerifier, PaEffectsVerifierStage } from '../control/types.js';
 import type { RuntimeAuthority } from '../governance/runtime-authority.js';
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js';
 /** What the plane hands the leg (frozen input shape). */
@@ -99,6 +106,20 @@ export interface PaControlLegInput {
     readonly plan: EffectSetApprovalPlan;
     /** The plane's production admission assembly (the landing edges). */
     readonly assembly: PaLandingAssembly;
+    /**
+     * A5-M1 item 4 (additive): the PARAMETER-LEVEL cancellation signal of
+     * THIS invocation (the center threads the host exec/token cancel facts
+     * through the seam). It joins the wiring-level `deps.signal` at every
+     * checkpoint: the wait (abort ⇒ `unsettled`, the durable rows untouched),
+     * AFTER the decision arrived and before anything is minted (⇒
+     * `unsettled`: the durable allow stays exactly as written — retained,
+     * never reclaimed, never faked as unconsumed later), and after the mint
+     * and before the guard (⇒ deny, the minted grant NOT handed back — zero
+     * PA consumption, zero body). A cancel that arrives AFTER the guard
+     * consumed changes nothing: the durable consumption fact stands (truthful
+     * retention — the center owns whether the body still runs).
+     */
+    readonly signal?: ControlWaitSignal;
 }
 /** The landing edges the leg uses from the assembly (structural view — the
  *  real `ProductionAdmissionAssembly` satisfies it; nothing else may). */
@@ -204,6 +225,27 @@ export declare function paCorrelation(approvalCaseId: string, callId: string): s
  * time, the same posture as a Guard install failure failing the AgentSetup).
  */
 export declare function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControlLegInput) => Promise<PaControlLegResult>;
+export interface PaEffectsVerifierDeps {
+    /** PR358-B (root ruling 6): THE call-level facts adapter (the B
+     *  dependency table). Implemented CENTER-side — this round only defines
+     *  and AWAITS it. It answers the complete `PaCallFacts` for exactly this
+     *  call from real durable/current reads, or `undefined` when ANY member
+     *  is missing or unreadable (there is no partial shape of the contract,
+     *  and a rejected promise is the same answer as undefined). It MUST NEVER
+     *  hold or wait on the governance coordination lock (root ruling
+     *  point 6). */
+    readonly readCallFacts: (input: {
+        readonly rootSessionId: string;
+        readonly requestId: string;
+        readonly manifest: PaControlManifest;
+        readonly decider: ControlCallerRef;
+        readonly stage: PaEffectsVerifierStage;
+    }) => Promise<PaCallFacts | undefined>;
+    readonly onObserve?: (row: Readonly<Record<string, unknown>> & {
+        readonly stage: string;
+    }) => void;
+}
+export declare function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsVerifier;
 export interface PaGuardVerifyInput {
     /** Defaults to the bridge's root session. */
     readonly rootSessionId?: string;
@@ -212,6 +254,11 @@ export interface PaGuardVerifyInput {
     readonly toolName?: string;
     readonly correlation: string;
     readonly operationFingerprint?: string;
+    /** A5-M1: the EXECUTION-side fingerprint. For a PA manifest row the
+     *  probe must present it — a probe whose parameters disagree with the
+     *  approved manifest is a different invocation (`scope-mismatch`),
+     *  never a mirror hit. */
+    readonly parametersFingerprint?: string;
 }
 export type PaGuardVerifyVerdict = {
     readonly allowed: true;
@@ -226,13 +273,36 @@ export interface PaGuardVerifyPort {
     readonly verify: (input: PaGuardVerifyInput) => Promise<PaGuardVerifyVerdict>;
 }
 /**
- * The pure-verify counterpart of `guardOperation` for the EXACT scope of one
- * PA-guarded plane execution (all Effects ride the one fingerprint-bound
- * scope). Read-only by construction: one fresh `listControlState` per call,
- * zero durable writes, zero ledger touch. Mirrors the guard's closed refusal
- * vocabulary for the durable facts it can see; the AUTHORITATIVE last-mile
- * answer (including the live external recheck and the lock) stays with
- * `guardOperation`.
+ * NON-PRODUCTION — a TEST-ONLY thin shell. The pure-verify counterpart of
+ * `guardOperation` for the EXACT scope of one PA-guarded plane execution
+ * (all Effects ride the one payload-bound manifest): read-only by
+ * construction — one fresh `listControlState` per call, zero durable writes,
+ * zero ledger touch — mirroring the guard's closed refusal vocabulary so a
+ * test can observe the durable truth without burning the one-shot allow.
+ *
+ * IT IS NOT A VERIFICATION PATH. It answers NO coverage question of its own:
+ *  - `verifier` is REQUIRED and must be the SAME `createPaEffectsVerifier`
+ *    instance the service was wired with — the mirror delegates its entire
+ *    PA verdict to that one verifier, so no second verification path can
+ *    exist outside the service;
+ *  - the read-back class of the candidate row comes from the service's own
+ *    `paManifestClassOf` (PR358 f5 trichotomy): `corrupt` (marker damaged,
+ *    or the PA digest binding surviving a stripped marker) answers
+ *    `authority-undetermined` exactly as BOTH service gates fail closed;
+ *    `valid` delegates to the verifier; `not-effect-set` mirrors the legacy
+ *    scope check untouched.
+ *
+ * The PRODUCTION single entry stays: the root injects the one verifier into
+ * `createControlService({ paEffectsVerifier })` and the service asks it
+ * inside the per-team lock at BOTH gates (the root's real injection lands
+ * centrally with the B dependency table — outside this module). The
+ * AUTHORITATIVE check-and-reserve (the lock, the consumption fact) stays
+ * with `guardOperation` alone.
  */
-export declare function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'controlService' | 'rootSessionId'>): PaGuardVerifyPort;
+export declare function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'controlService' | 'rootSessionId'> & {
+    /** THE verifier — the same instance wired into the service. REQUIRED:
+     *  this shell must not exist without the one verifier, because it owns no
+     *  coverage answer of its own (NON-PRODUCTION mirror, see the header). */
+    readonly verifier: PaEffectsVerifier;
+}): PaGuardVerifyPort;
 //# sourceMappingURL=pa-control-bridge.d.ts.map

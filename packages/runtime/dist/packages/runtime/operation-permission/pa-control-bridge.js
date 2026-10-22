@@ -67,23 +67,34 @@
  *    here as a STRUCTURAL minimal interface — the real service satisfies it,
  *    a stand-in that skips the durable row does not;
  *  - zero I/O of its own: no filesystem, no timers except the optional
- *    bounded-wait abort (the wait bridge owns its own poll cadence).
+ *    bounded-wait abort (the wait bridge owns its own poll cadence); the
+ *    verifier's ONE await (PR358-B) reaches only the injected call-level
+ *    facts adapter — the I/O is the adapter's, never this module's, and the
+ *    adapter must be free of the governance coordination lock (root ruling
+ *    point 6).
  *
- * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is the pure-verify
- * resolve/guard face for ALL Effects of the exact scope: read-only over the
- * durable state (`listControlState` is a fresh ledger read, invariant 45),
- * it answers whether an unconsumed durable allow covers the EXACT scope
- * without consuming anything and without minting anything. The AUTHORITATIVE
- * consumption stays `guardOperation`'s check-and-reserve under the per-team
- * lock; this port is the side-effect-free companion the resolve path may
- * consult, and it mirrors the guard's refusal vocabulary (no re-entry, no
- * second ledger).
+ * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is NON-PRODUCTION:
+ * a TEST-ONLY diagnostic mirror (see its own doc). PRODUCTION has ONE PA
+ * verification entry — the root wires the ONE {@link
+ * createPaEffectsVerifier} instance into `createControlService({
+ * paEffectsVerifier })`, and the service asks it inside the per-team lock at
+ * BOTH gates (resolve, guard). This module's leg never calls the verifier
+ * itself, and the mirror port answers NO coverage question of its own: it is
+ * REQUIRED to hold the SAME verifier instance the service was given, so a
+ * second verification path outside the service cannot exist. The root's real
+ * injection lands centrally with the B dependency table (this round does not
+ * touch root/agent-bindings).
  *
  * @module @dsh-agent-team/runtime/operation-permission/pa-control-bridge
  */
 import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js';
 import { CONTROL_ERROR_CODES, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
-import { authorityRank } from '../governance/authority-ceiling.js';
+// The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
+// module's types file directly (the barrel predates the additive surface;
+// the module declares the closed vocabulary and the strict parser there).
+import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js';
+import { authorityRank, mayReview } from '../governance/authority-ceiling.js';
+import { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval } from '../tool-admission/approval-case.js';
 /** The frozen-A action name of a guarded plane-tool execution. */
 export const PA_CONTROL_ACTION_NAME = 'team-tool-execute';
 /** The reuse key: the ONE logical PA case + the ONE invocation. */
@@ -189,14 +200,29 @@ export function createPaControlLeg(deps) {
         if (plan.effectSetFingerprint !== effects.fingerprint) {
             return deny(`the plan's effect-set fingerprint ${plan.effectSetFingerprint} is not this request's ${effects.fingerprint} — the approval would cover a different set`);
         }
-        const toolName = effects.effects.find((effect) => effect.kind === 'tool-invoke')?.toolName;
+        const toolInvokeEffect = effects.effects.find((effect) => effect.kind === 'tool-invoke');
+        const toolName = toolInvokeEffect?.toolName;
         if (typeof toolName !== 'string' || toolName.length === 0) {
             return deny('the effect set names no tool-invoke tool — the guard scope would carry no tool identity');
         }
-        // ── the strict PA manifest — VERBATIM onto the durable row ──────────
+        // ── the strict PA operation manifest (PR358 fix, v2) — VERBATIM onto
+        //    the durable row, and COMPLETE by the service's own re-parse ─────
+        // A-class preservation: the approvalCaseId AND the A1-14 authority
+        // point ride the payload top level, the binding/member/request facts
+        // ride FIELD BY FIELD (the approval covers THIS binding, THIS member,
+        // THIS parameter identity — a summary that drops a field is not the
+        // approval), and the service RECOMPUTES the canonical digest: the row
+        // identity (`operationFingerprint`) IS that payload-integrity digest,
+        // while the EXECUTION-side `parametersFingerprint` rides the manifest
+        // as an independent field (parameters ≠ digest BY CONSTRUCTION — the
+        // two answer different questions: execution scope vs payload
+        // integrity, and the same scope key can only ever answer the SAME
+        // manifest bytes).
+        const authorityScope = effectApprovalScope(toolInvokeEffect, realmId);
         const manifest = deepLossless({
-            schema: 'a5m1.pa-control-manifest.v1',
+            schema: PA_CONTROL_MANIFEST_SCHEMA,
             approvalCaseId: plan.approvalCaseId,
+            authorityScope,
             requiredAuthority: plan.requiredAuthority,
             perEffectRequired: plan.perEffectRequired,
             deniedEffects: plan.deniedEffects,
@@ -206,6 +232,8 @@ export function createPaControlLeg(deps) {
             callId,
             parametersFingerprint: request.parametersFingerprint,
             effects: effects.effects,
+            binding: request.binding,
+            member: { teamSessionId: member.teamSessionId, instanceId: member.instanceId },
         });
         const digest = canonicalJsonFingerprint(manifest);
         const correlation = paCorrelation(plan.approvalCaseId, callId);
@@ -220,7 +248,12 @@ export function createPaControlLeg(deps) {
                 actionName,
                 toolName,
                 correlation,
-                operationFingerprint: request.parametersFingerprint,
+                // A5-M1: the row identity binds the PAYLOAD-INTEGRITY digest (the
+                // service recomputes and enforces it; the parameters fingerprint
+                // rides the manifest as the separate execution-side fact). Same
+                // case replayed with ANY different manifest bytes = different
+                // scope key = a new row, never a silent reuse.
+                operationFingerprint: digest,
                 summary: `PA ask case=${plan.approvalCaseId} rung=${plan.requiredAuthority} tool=${toolName} effects=${String(effects.effects.length)}`,
                 // The manifest is a pure JSON round-trip (deepLossless), i.e. a
                 // lossless JSON value BY CONSTRUCTION; the type carries that fact.
@@ -241,8 +274,14 @@ export function createPaControlLeg(deps) {
         }
         // ── 2. await the REAL durable decision ──────────────────────────────
         let decision;
-        const outerSignal = deps.signal?.();
-        if (outerSignal?.aborted === true) {
+        const signals = [];
+        const wiringSignal = deps.signal?.();
+        if (wiringSignal !== undefined)
+            signals.push(wiringSignal);
+        if (input.signal !== undefined)
+            signals.push(input.signal);
+        const cancelled = () => signals.some((s) => s.aborted === true);
+        if (cancelled()) {
             // The row exists (durable, resolvable later); this invocation stops —
             // cancellation never decides, and it never mints.
             observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, detail: 'pre-aborted' });
@@ -251,14 +290,19 @@ export function createPaControlLeg(deps) {
         let controller;
         let timer;
         try {
-            if (deps.waitTimeoutMs !== undefined && outerSignal === undefined) {
+            if (deps.waitTimeoutMs !== undefined) {
                 controller = new AbortController();
                 timer = setTimeout(() => controller?.abort(), deps.waitTimeoutMs);
+                signals.push(controller.signal);
             }
             decision = await deps.controlService.awaitControlDecision({
                 rootSessionId: deps.rootSessionId,
                 requestId: record.requestId,
-                ...(controller !== undefined ? { signal: controller.signal } : outerSignal !== undefined ? { signal: outerSignal } : {}),
+                ...(signals.length === 1
+                    ? { signal: signals[0] }
+                    : signals.length > 1
+                        ? { signal: AbortSignal.any(signals.map((s) => s)) }
+                        : {}),
             });
         }
         catch (error) {
@@ -280,6 +324,20 @@ export function createPaControlLeg(deps) {
         // request can never become an allow).
         if (decision.decision !== 'allow') {
             return deny(`the approval was denied (${decision.decision})`, record.requestId);
+        }
+        // A5-M1 item 4: the mint-time cancellation checkpoint. The arrived
+        // decision is DURABLE truth and stays exactly as the decider wrote it
+        // (retained — a later probe still sees the unspent allow; nothing is
+        // reclaimed, nothing is later reported as unconsumed that was
+        // consumed). What the cancel stops is everything downstream: zero
+        // mint, zero guard consumption, zero PA consumption, zero body.
+        if (cancelled()) {
+            observe({ stage: 'leg-unsettled', callId, requestId: record.requestId, detail: 'cancelled-after-decision' });
+            return {
+                decision: 'unsettled',
+                requestId: record.requestId,
+                detail: 'the invocation was cancelled after the decision arrived and before any grant was minted (the durable allow stays exactly as written, unspent)',
+            };
         }
         // ── 3. the bridge-side A1-14 rung re-check (pre-execute-adapter (4c')) ─
         // The authority plane is read AGAIN through the assembly's OWN derivation
@@ -325,6 +383,13 @@ export function createPaControlLeg(deps) {
             return deny(`the approved grant was refused at landing (${issued.error.code}: ${issued.error.message})`, record.requestId);
         }
         observe({ stage: 'grant-minted', callId, requestId: record.requestId, grantId: issued.value.grantId });
+        // A5-M1 item 4: the consumption-point cancellation checkpoint. The
+        // minted one-shot grant stays behind the refusal (never handed back to
+        // a dead invocation); the durable Control state is untouched — no
+        // guard call, hence zero consumption.
+        if (cancelled()) {
+            return deny('the invocation was cancelled after the grant was minted and before the durable consumption; the minted grant is not returned (zero PA consumption, zero body)', record.requestId);
+        }
         // ── 6. the last-mile durable consumption (check-and-reserve, in-lock) ─
         const scope = Object.freeze({
             rootSessionId: deps.rootSessionId,
@@ -332,7 +397,10 @@ export function createPaControlLeg(deps) {
             actionName,
             toolName,
             correlation,
-            operationFingerprint: request.parametersFingerprint,
+            // The guard's exact scope identity is the SAME payload-integrity
+            // digest the row was created under (the parameters binding is
+            // inside the manifest the digest covers).
+            operationFingerprint: digest,
         });
         let verdict;
         try {
@@ -346,19 +414,231 @@ export function createPaControlLeg(deps) {
         if (!verdict.allowed) {
             return deny(`the last-mile guard blocked the operation (${verdict.reason}); the minted grant is not returned`, record.requestId);
         }
+        // A5-M1 (PR358 fix): an `allowed` verdict must PAIR to this exact
+        // request — the requestId AND the decision sequence of the decision
+        // this invocation waited on. A verdict that names any other row (or
+        // no row at all) is not an authorization of THIS operation, whatever
+        // it says; the minted grant stays behind the refusal.
+        if (verdict.requestId !== record.requestId || verdict.decisionSequence !== decision.decisionSequence) {
+            return deny(`the last-mile guard answered with a foreign pairing (requestId=${String(verdict.requestId)} decisionSequence=${String(verdict.decisionSequence)}; this row: ${record.requestId}/${String(decision.decisionSequence)}) — a verdict not paired to this request authorizes nothing; the minted grant is not returned`, record.requestId);
+        }
         observe({ stage: 'guard-consumed', callId, requestId: record.requestId, grantId: issued.value.grantId });
         // ── 7. the frozen-A success shape (minted AND guard-consumed) ────────
         return { decision: 'approve', requestId: record.requestId, approval, grant: issued.value };
     }
 }
+export function createPaEffectsVerifier(deps) {
+    const observe = deps.onObserve ?? (() => { });
+    const nonEmpty = (value) => typeof value === 'string' && value.length > 0;
+    /** The manifest carries its rungs as STRINGS (durable JSON); the closed
+     *  ladder is re-admitted only through its own stated table — a rung
+     *  outside it means the row lies about its authority. */
+    const closedRung = (rung) => PA_CONTROL_MANIFEST_RUNGS.includes(rung) ? rung : undefined;
+    return async (input) => {
+        const { manifest, decider } = input;
+        const undetermined = (detail) => {
+            observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId });
+            return { ok: false, reason: 'authority-undetermined', detail };
+        };
+        const drifted = (detail) => {
+            observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'drift', detail, requestId: input.requestId });
+            return { ok: false, reason: 'pa-authority-drift', detail };
+        };
+        const deciderRung = deciderAuthority(decider);
+        if (deciderRung === undefined) {
+            return undetermined('the durable decider is outside the closed ControlCallerRef vocabulary — its reach cannot be derived');
+        }
+        const approvedRung = closedRung(manifest.requiredAuthority);
+        if (approvedRung === undefined) {
+            return undetermined(`the durable manifest carries required rung '${String(manifest.requiredAuthority)}', outside the closed ladder — the row lies about its own authority`);
+        }
+        // ── 0. THE FACTS — the ONE await of the orchestration ────────────────
+        let facts = input.facts;
+        if (facts === undefined) {
+            try {
+                facts = await deps.readCallFacts({
+                    rootSessionId: input.rootSessionId,
+                    requestId: input.requestId,
+                    manifest,
+                    decider,
+                    stage: input.stage,
+                });
+            }
+            catch (error) {
+                return undetermined(`the call-level facts adapter refused at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)}) — unreadable facts are never guessed`);
+            }
+        }
+        if (facts === undefined) {
+            return undetermined(`no complete call-level facts could be read for this row at the ${input.stage} gate — the adapter answers undefined for ANY missing or unreadable member of the facts contract, and coverage is never assumed`);
+        }
+        if (typeof facts.realmId !== 'string' || facts.realmId !== manifest.realmId) {
+            return undetermined(`the facts adapter answered for realm '${String(facts.realmId)}', not the row's '${manifest.realmId}' — those are not THIS call's facts`);
+        }
+        if (!Number.isInteger(facts.authorityGeneration) || facts.authorityGeneration < 0
+            || !Number.isInteger(facts.policySource?.overlayGeneration) || facts.policySource?.overlayGeneration < 0) {
+            return undetermined('the facts carry a malformed generation counter — a constant or fractional generation is exactly the synthesized-source failure the facts contract forbids');
+        }
+        const staticRefs = facts.policySource?.staticLayerRefs;
+        if (!Array.isArray(staticRefs) || staticRefs.length === 0 || staticRefs.some((ref) => !nonEmpty(ref))) {
+            return undetermined('the facts carry an empty or malformed static-layer source tuple — policy facts with no stated source are not facts');
+        }
+        const blueprint = facts.blueprint;
+        if (blueprint === null || typeof blueprint !== 'object' || !Number.isInteger(blueprint.revision)
+            || !nonEmpty(blueprint.contentHash) || !nonEmpty(blueprint.templateId) || !nonEmpty(blueprint.cwd) || !nonEmpty(blueprint.providerVersion)) {
+            return undetermined('the facts blueprint tuple is malformed — the plane the facts were read from is not established');
+        }
+        // ── 1. 对照: the durable snapshot against the CURRENT facts ──────────
+        // The manifest is never a fact source; every field it shares with the
+        // current reads must still hold, or the approved question has moved
+        // (DRIFT — the row approves the question AS APPROVED, not its successor).
+        const mb = manifest.binding;
+        const fb = facts.binding;
+        if (fb === null || typeof fb !== 'object'
+            || fb.bindingId !== mb.bindingId || fb.agentScopeKey !== mb.agentScopeKey || fb.toolName !== mb.toolName
+            || fb.definitionIdentity !== mb.definitionIdentity || fb.providerId !== mb.providerId
+            || fb.implementationOrigin !== mb.implementationOrigin || fb.executionBoundary !== mb.executionBoundary
+            || fb.status !== mb.status || fb.policyGeneration !== mb.policyGeneration
+            || fb.authorityGeneration !== mb.authorityGeneration || fb.revision !== mb.revision) {
+            return drifted(`the binding tuple moved after the row was written (approved '${mb.bindingId}'@r${String(mb.revision)}/p${String(mb.policyGeneration)}/a${String(mb.authorityGeneration)}, current '${String(fb?.bindingId)}'@r${String(fb?.revision)}/p${String(fb?.policyGeneration)}/a${String(fb?.authorityGeneration)}) — the approval covers the binding AS APPROVED, not its successor`);
+        }
+        if (canonicalJsonFingerprint(fb.assurance) !== canonicalJsonFingerprint(mb.assurance)) {
+            return drifted(`the binding's assurance cell moved after the row was written — the assurance the approval was granted under is not the assurance standing now`);
+        }
+        if (facts.member.teamSessionId !== manifest.member.teamSessionId || facts.member.instanceId !== manifest.member.instanceId) {
+            return drifted(`the durable member attribution moved (${manifest.member.teamSessionId}/${manifest.member.instanceId} → ${facts.member.teamSessionId}/${facts.member.instanceId}) — this row approves another member's operation`);
+        }
+        if (facts.effects.fingerprint !== manifest.effects.fingerprint) {
+            return drifted(`the effect set moved (${manifest.effects.fingerprint} → ${facts.effects.fingerprint}) — a multi-effect approval covers the WHOLE set it saw`);
+        }
+        // ── 2. THE PURE-CORE RE-DERIVATION, synchronous over the facts ───────
+        // (the ceiling pair's slot members assign STRUCTURALLY — no cast: an
+        // `unavailable` slot is unrepresentable in the facts contract, a read
+        // that faulted is undefined FACTS, decided above as undetermined).
+        const documents = facts.ceiling;
+        let expansion;
+        try {
+            expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument);
+        }
+        catch (error) {
+            return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`);
+        }
+        if (expansion.unapprovable !== null) {
+            return drifted(`the approved set is no longer approvable on the expansion plane (effect ${String(expansion.unapprovable.effectIndex)}: ${expansion.unapprovable.detail})`);
+        }
+        if (expansion.needsApproval.length === 0) {
+            return drifted('the approved effect set asks nothing of any authority any more — the approved question no longer exists (nothing-to-plan)');
+        }
+        const planned = planEffectSetApproval({
+            effects: facts.effects,
+            needApproval: expansion.needsApproval,
+            ...(expansion.policyDenied.length === 0 ? {} : { policyDenied: new Set(expansion.policyDenied) }),
+            denySources: facts.denySources,
+            realmId: facts.realmId,
+            beneficiaryAuthority: facts.beneficiaryAuthority,
+            documents,
+            authorityGeneration: facts.authorityGeneration,
+            teamSessionId: facts.member.teamSessionId,
+            instanceId: facts.member.instanceId,
+        });
+        if (!planned.ok) {
+            return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`);
+        }
+        if (planned.value.approvalCaseId !== manifest.approvalCaseId) {
+            return drifted(`the approval case identity moved (${manifest.approvalCaseId} → ${planned.value.approvalCaseId}) — this row approves a question that no longer exists`);
+        }
+        if (planned.value.perEffectRequired.length !== facts.effects.effects.length) {
+            return undetermined('the fresh per-effect derivation does not cover every effect of the set');
+        }
+        // F-2: the case is not only its MAX rung — the DENIED-EFFECT provenance
+        // it opened over is part of WHICH question was approved.
+        const manifestDenied = manifest.deniedEffects;
+        const freshDenied = planned.value.deniedEffects;
+        if (manifestDenied.length !== freshDenied.length
+            || manifestDenied.some((carried, i) => {
+                const now = freshDenied[i];
+                return now === undefined || carried.effectIndex !== now.effectIndex || carried.requiredAuthority !== now.requiredAuthority;
+            })) {
+            return drifted(`the denied-effect provenance moved (approved ${JSON.stringify(manifestDenied)}, the plane now answers ${JSON.stringify(freshDenied)}) — a different question is standing (F-2)`);
+        }
+        // TWO CURRENT READS, ONE QUESTION: the plane's own live plan snapshot
+        // must agree with the pure-core derivation over the same facts —
+        // sources that contradict each other answer NO coverage question.
+        const snapshot = facts.planSnapshot;
+        if (snapshot.approvalCaseId !== planned.value.approvalCaseId
+            || snapshot.effectSetFingerprint !== planned.value.effectSetFingerprint
+            || snapshot.perEffectRequired.length !== planned.value.perEffectRequired.length
+            || snapshot.perEffectRequired.some((rung, i) => rung !== planned.value.perEffectRequired[i])) {
+            return drifted('the call-level sources disagree about the CURRENT question (the plane\'s plan snapshot versus the pure-core re-derivation over the same facts) — no coverage can be answered from contradictory facts');
+        }
+        // ── 3. THE EXECUTION-BOUNDARY RE-CHECK (pure core, per effect) ───────
+        // The carried denied-effect rungs re-enter the closed ladder through
+        // their stated table (no blind casts on an authority path).
+        const carriedDenied = [];
+        for (const carried of manifestDenied) {
+            const rung = closedRung(carried.requiredAuthority);
+            if (rung === undefined) {
+                return undetermined(`the durable manifest carries denied-effect ${String(carried.effectIndex)} at rung '${String(carried.requiredAuthority)}', outside the closed ladder — the row lies about its own authority`);
+            }
+            carriedDenied.push({ effectIndex: carried.effectIndex, requiredAuthority: rung });
+        }
+        const presented = verifyEffectSetApproval({
+            effects: facts.effects,
+            realmId: facts.realmId,
+            approval: {
+                approvalCaseId: manifest.approvalCaseId,
+                reviewerAuthority: deciderRung,
+                beneficiaryAuthority: facts.beneficiaryAuthority,
+                requiredAuthorityAtCreation: approvedRung,
+                effectSetFingerprint: manifest.effects.fingerprint,
+                authorityGenerationAtCreation: manifest.authorityGeneration,
+                ...(carriedDenied.length === 0 ? {} : { deniedEffectsAtCreation: carriedDenied }),
+            },
+            currentAuthorityGeneration: facts.authorityGeneration,
+            documents,
+        });
+        if (!presented.ok) {
+            return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`);
+        }
+        // ── 4. per-effect ladder walk for the REAL decider (ADR A3-2, fused
+        //      rung including the R-1a deny floor) ─────────────────────────────
+        for (let i = 0; i < planned.value.perEffectRequired.length; i += 1) {
+            const required = planned.value.perEffectRequired[i];
+            if (required === undefined)
+                return undetermined(`the fresh per-effect derivation is missing entry ${String(i)}`);
+            if (!mayReview(deciderRung, facts.beneficiaryAuthority, required)) {
+                return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${facts.beneficiaryAuthority}'`);
+            }
+        }
+        observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) });
+        return { ok: true };
+    };
+}
 /**
- * The pure-verify counterpart of `guardOperation` for the EXACT scope of one
- * PA-guarded plane execution (all Effects ride the one fingerprint-bound
- * scope). Read-only by construction: one fresh `listControlState` per call,
- * zero durable writes, zero ledger touch. Mirrors the guard's closed refusal
- * vocabulary for the durable facts it can see; the AUTHORITATIVE last-mile
- * answer (including the live external recheck and the lock) stays with
- * `guardOperation`.
+ * NON-PRODUCTION — a TEST-ONLY thin shell. The pure-verify counterpart of
+ * `guardOperation` for the EXACT scope of one PA-guarded plane execution
+ * (all Effects ride the one payload-bound manifest): read-only by
+ * construction — one fresh `listControlState` per call, zero durable writes,
+ * zero ledger touch — mirroring the guard's closed refusal vocabulary so a
+ * test can observe the durable truth without burning the one-shot allow.
+ *
+ * IT IS NOT A VERIFICATION PATH. It answers NO coverage question of its own:
+ *  - `verifier` is REQUIRED and must be the SAME `createPaEffectsVerifier`
+ *    instance the service was wired with — the mirror delegates its entire
+ *    PA verdict to that one verifier, so no second verification path can
+ *    exist outside the service;
+ *  - the read-back class of the candidate row comes from the service's own
+ *    `paManifestClassOf` (PR358 f5 trichotomy): `corrupt` (marker damaged,
+ *    or the PA digest binding surviving a stripped marker) answers
+ *    `authority-undetermined` exactly as BOTH service gates fail closed;
+ *    `valid` delegates to the verifier; `not-effect-set` mirrors the legacy
+ *    scope check untouched.
+ *
+ * The PRODUCTION single entry stays: the root injects the one verifier into
+ * `createControlService({ paEffectsVerifier })` and the service asks it
+ * inside the per-team lock at BOTH gates (the root's real injection lands
+ * centrally with the B dependency table — outside this module). The
+ * AUTHORITATIVE check-and-reserve (the lock, the consumption fact) stays
+ * with `guardOperation` alone.
  */
 export function createPaGuardVerifyPort(deps) {
     const problem = (() => {
@@ -367,6 +647,8 @@ export function createPaGuardVerifyPort(deps) {
             return 'controlService.listControlState is required';
         if (!isNonEmptyString(deps.rootSessionId))
             return 'rootSessionId must be a non-empty string';
+        if (typeof deps.verifier !== 'function')
+            return 'verifier is required (the SAME PaEffectsVerifier the service gates use — this mirror owns no coverage answer of its own)';
         return undefined;
     })();
     if (problem !== undefined)
@@ -415,6 +697,33 @@ export function createPaGuardVerifyPort(deps) {
             const consumed = state.consumptions.some((c) => c.requestId === candidate.requestId && c.decisionSequence === decision.decisionSequence);
             if (consumed)
                 return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED, requestId: candidate.requestId };
+            // NON-PRODUCTION mirror (PR358 f5): the PA read-back class comes from
+            // the SERVICE's own classifier — a corrupt this-class row (marker
+            // damaged, or the PA digest binding surviving a stripped marker) is
+            // `authority-undetermined` exactly as both service gates fail closed;
+            // a valid manifest row's coverage answer is DELEGATED whole to the one
+            // verifier the service gates use; an ordinary old row (no marker, no
+            // digest binding) mirrors today's scope check untouched. The mirror
+            // itself decides no coverage question.
+            const paRead = paManifestClassOf(candidate);
+            if (paRead.state === 'corrupt') {
+                return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED, requestId: candidate.requestId };
+            }
+            if (paRead.state === 'valid') {
+                if (input.parametersFingerprint !== undefined && input.parametersFingerprint !== paRead.manifest.parametersFingerprint) {
+                    return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.SCOPE_MISMATCH, requestId: candidate.requestId };
+                }
+                const verdict = await deps.verifier({
+                    stage: 'guard',
+                    rootSessionId: root,
+                    requestId: candidate.requestId,
+                    manifest: paRead.manifest,
+                    decider: decision.decider,
+                });
+                if (!verdict.ok) {
+                    return { allowed: false, reason: verdict.reason, requestId: candidate.requestId };
+                }
+            }
             return { allowed: true, requestId: candidate.requestId, decisionSequence: decision.decisionSequence };
         },
     });
