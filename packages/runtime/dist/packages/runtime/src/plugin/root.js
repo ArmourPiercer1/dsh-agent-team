@@ -104,7 +104,8 @@ import { createTeamOperationCoordinator } from '../../coordination/index.js';
 import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js';
-// @ts-ignore -- untyped center module (mjs, no declaration)
+// untyped center module (.mjs source, no declaration file); bound through
+// the typed seam below (no `any` at the call sites).
 import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs';
 import { createPaEffectsVerifier } from '../../operation-permission/pa-control-bridge.js';
 import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js';
@@ -1614,24 +1615,10 @@ export function createTeamProductionRoot(params) {
     const operationApprovalFactsRef = {
         current: undefined,
     };
-    // PR358-B (root ruling 2): the ONE PA all-Effects verification port. The
-    // dispatcher resolves the CURRENT published mount per call (the narrow
-    // (teamRoot, instanceId) index agentSetup publishes after bind+publish
-    // and revokes at teardown start) and reads call-level facts through it —
-    // lazy like operationApprovalFactsRef above, so the ask and the
-    // consumption point necessarily consult the SAME live mount. Until the
-    // AUTH pure verifier is wired at `paVerifierRef.current`, the port
-    // fail-closes `authority-undetermined` (never a silent covered).
-    // THE composition (B ruling 2): the one pure verifier over the ONE
-    // call-level facts adapter; the adapter resolves the CURRENT published
-    // mount per call (no mount ⇒ undefined facts ⇒ authority-undetermined).
-    // Lazy per-call readers, so the resolve gate and the guard gate
-    // necessarily consult the SAME live mount authority.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const readPaCallFactsPort = readPaCallFacts;
+    const resolvePaMountPort = resolvePaMount;
     const paEffectsVerifierPort = createPaEffectsVerifier({
-        readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) => 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await readPaCallFacts({
+        readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) => await readPaCallFactsPort({
             rootSessionId,
             requestId,
             manifest,
@@ -1639,9 +1626,17 @@ export function createTeamProductionRoot(params) {
             stage,
             // 9e fix-2: the FLAT parsed manifest carries the member attribution
             // (manifest.member.instanceId); there is no `request` wrapper.
-            mount: resolvePaMount(rootSessionId, String(manifest?.member?.instanceId ?? '')),
+            mount: resolvePaMountPort(rootSessionId, String(manifest?.member?.instanceId ?? '')),
         }),
     });
+    // 9e-3: the SAME adapter the verifier consults is published as a shared
+    // ref (the controlServiceRef pattern) so the PLANE's final edge awaits the
+    // identical call-level facts at consumption — one adapter, one authority,
+    // no second getter path. agent-bindings threads it into the mount; the
+    // plane awaits it fresh at the consumption edge.
+    const paReadCallFactsRef = {
+        current: (input) => readPaCallFactsPort(input),
+    };
     const control = createControlService({
         paEffectsVerifier: paEffectsVerifierPort,
         teamDomain: domain,
@@ -3388,6 +3383,7 @@ export function createTeamProductionRoot(params) {
         catalog,
         blueprint,
         policyReader,
+        paReadCallFactsRef,
         leaderIdentity,
         intent,
         compatibility,

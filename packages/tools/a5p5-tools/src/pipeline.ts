@@ -64,7 +64,7 @@ export interface ToolCallRequest {
    *  token (the token identity itself never travels as text). Carried like
    *  `signal`: consumers sit on the plane/backend side; the pipeline acts on
    *  NOTHING from it. */
-  readonly exec?: { readonly tokenKey?: string; readonly [key: string]: unknown }
+  readonly exec?: { readonly tokenKey?: string }
 }
 
 export interface RunToolCallDeps {

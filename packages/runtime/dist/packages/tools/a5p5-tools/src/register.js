@@ -161,6 +161,11 @@ export function createGovernedToolDefinitions(assembly) {
                 request: {
                     realmId: assembly.realmId,
                     callId,
+                    // 9e-1: the ledger correlation as a STRING rides the call context
+                    // (never the real token); backends/planes reached through this
+                    // face consume `tokenKey`, so the token identity is single-flight
+                    // end to end.
+                    exec: runCtx,
                     parsedArgs: parsed.value,
                     // M1: the canonical parameter fingerprint (Alpha.2 canonical-operation
                     // law), computed here from the CLOSED parsed args — the fact the PA

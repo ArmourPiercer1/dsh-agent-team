@@ -198,15 +198,21 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   if (effects === null || typeof effects !== 'object' || !Array.isArray(effects.effects)) return undefined
   if (typeof livePlan.effectSetFingerprint !== 'string' || livePlan.effectSetFingerprint.length === 0) return undefined
   if (!Array.isArray(livePlan.perEffectRequired) || livePlan.perEffectRequired.length !== effects.effects.length) return undefined
-  // the CURRENT authority generation is the assembly's OWN trusted reader
-  // (the same counter the grants bind to) — never synthesized here.
+  // 9e-2 (AUTH fact list): `assembly.authorityGeneration()` DOES NOT exist
+  // on the ProductionAdmissionAssembly face (kernel holds the generator in
+  // a private closure — nothing reads back). The current generation is read
+  // from the PLANE-LOCAL READER: the SAME `() => number` source function
+  // the root injected into the assembly's config (one source, verified by
+  // construction), surfaced on the plane's mount face. Never synthesized.
   let authorityGeneration
   try {
-    authorityGeneration = assembly.authorityGeneration()
+    const reader = m.plane?.authorityGeneration
+    if (typeof reader !== 'function') return undefined
+    authorityGeneration = reader()
   } catch {
     return undefined
   }
-  if (typeof assembly.authorityGeneration !== 'function' || typeof authorityGeneration !== 'number' || !Number.isFinite(authorityGeneration)) return undefined
+  if (typeof authorityGeneration !== 'number' || !Number.isInteger(authorityGeneration) || authorityGeneration < 0) return undefined
   // 9e (AUTH ruling 3): NO bindingSnapshotDrift output — the named contract
   // is exactly the 12 fields; the verifier performs the 11-field full-tuple
   // + assurance comparison itself. A pre-computed flag here would invite

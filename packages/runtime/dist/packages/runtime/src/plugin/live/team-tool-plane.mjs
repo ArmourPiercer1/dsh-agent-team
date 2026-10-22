@@ -812,6 +812,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // genuine per-read values. Without the seam the legacy rev.0/revision-1
   // law applies (the PR1 guard's published generation, disclosed).
   const paCurrentFacts = input.currentFacts ?? {}
+  // 9e-3: the ONE call-level facts adapter (root-owned; shared with the
+  // Control verifier) + the mount's own entry lookup. The FINAL edge awaits
+  // these; the old scalar getters no longer answer production authority.
+  const paReadCallFacts = input.readCallFacts
+  const paEntryOf = input.entryOf
   const canonicalJsonFingerprintNow = (value) => {
     try { return JSON.stringify(value, (k, v) => v === undefined ? '__undef__' : v) } catch { return undefined }
   }
@@ -845,6 +850,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const paAdmitBody = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+    // 9e-3: THIS call's durable mint (row id + the exact manifest bytes the
+    // row carries, handed back by the AUTH leg). Per-call by construction:
+    // concurrent calls never see each other's mint.
+    let paDurableMint
     // 9e fix-3: the generation is answerable BEFORE any admission work:
     // await the durable read once when nothing is confirmed yet (no
     // constant ever answers the kernel).
@@ -926,6 +935,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
         return { kind: 'deny', code: 'APPROVAL_LEG_INCOMPLETE', detail: `request ${String(leg.requestId ?? 'uncreated')} returned an approval without a landed+guard-consumed grant; the frozen Control/PA leg is more than a decision boolean` }
       }
       grant = leg.grant
+      // 9e-3: the durable mint rides to the final edge (the row's exact
+      // manifest identity — what the verifier will parse), plus the row id.
+      paDurableMint = { requestId: String(leg.requestId ?? ''), manifest: leg.manifest }
     }
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
@@ -969,15 +981,56 @@ export function createTeamToolPlaneAssembly(input = {}) {
           return { kind: 'deny', code: 'GRANT_STALE', detail: `fresh policy re-verification moved this effect set out of the allow lane (${String(freshLane)}); the call is stale and runs nothing` }
         }
       }
-      // 9e fix-3: the CURRENT generation/revision at the consumption edge
-      // come from the REAL sources: the durable overlay generation the
-      // assembly itself answers with, and the CURRENT dispatcher entry's
-      // revision for this call's tool (no 0/1 constants — the mount binds
-      // what is in force).
-      const nowGeneration = typeof paCurrentFacts.getAuthorityGeneration === 'function' ? paCurrentFacts.getAuthorityGeneration() : paAuthorityGeneration()
-      const nowRevision = typeof paCurrentFacts.getBindingRevision === 'function' ? paCurrentFacts.getBindingRevision() : undefined
-      if (typeof nowGeneration !== 'number' || typeof nowRevision !== 'number') {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: 'current authority generation/revision is unanswerable; fail closed without consuming' }
+      // 9e-3 (root ruling): the FINAL edge is answered by the REAL
+      // call-level facts, awaited — the SAME adapter the Control verifier
+      // consults (no self-attesting getters). The generation is the
+      // facts-side value (identical source by construction: the plane-local
+      // reader the assembly was configured with); the revision is read
+      // from THIS call's dispatcher entry (`entryOf(toolName)`), never by
+      // scanning names. Unanswerable = GRANT_STALE, never a constant.
+      let nowGeneration
+      let nowRevision
+      if (paDurableMint !== undefined && typeof paReadCallFacts === 'function') {
+        // THE row path: read the CURRENT call-level facts for THIS row
+        // through the ONE adapter the Control verifier consults, riding the
+        // row's OWN minted manifest (never a re-synthesis — different bytes
+        // would be a different row). No answer = no consumption.
+        try {
+          const facts = await paReadCallFacts({
+            rootSessionId: paMember.teamSessionId,
+            requestId: paDurableMint.requestId,
+            manifest: paDurableMint.manifest,
+            stage: 'guard',
+          })
+          if (facts !== undefined && facts !== null && Number.isInteger(facts.authorityGeneration) && facts.authorityGeneration >= 0) {
+            nowGeneration = facts.authorityGeneration
+          }
+        } catch {
+          nowGeneration = undefined
+        }
+      } else if (paDurableMint === undefined) {
+        // The all-allow path mints NO row, so there are no call-level facts
+        // to await — the honest source is the plane's CONFIRMED durable
+        // generation reader: the very function the assembly was configured
+        // with (one source by construction), which refuses when the latest
+        // durable read is unconfirmed. Unconfirmed ⇒ no number ⇒ stale.
+        try {
+          const g = paAuthorityGeneration()
+          if (Number.isInteger(g) && g >= 0) nowGeneration = g
+        } catch {
+          nowGeneration = undefined
+        }
+      }
+      if (nowGeneration === undefined) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the current authority generation is unanswerable on the real source for this call; fail closed without consuming' }
+      }
+      if (typeof paEntryOf === 'function') {
+        const entry = paEntryOf(String(toolName ?? ''))
+        const rev = entry?.binding?.revision ?? entry?.revision
+        if (typeof rev === 'number') nowRevision = rev
+      }
+      if (typeof nowRevision !== 'number') {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: `the current dispatcher entry for ${String(toolName ?? '?')} is unanswerable; fail closed without consuming` }
       }
       freshGeneration = nowGeneration
       freshRevision = nowRevision
@@ -1318,7 +1371,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
   return {
     ok: true,
     value: {
-      assembly,
       fsProvider,
       definitions: allDefs,
       /** The mounted model-facing names — the own-layer bind list. */

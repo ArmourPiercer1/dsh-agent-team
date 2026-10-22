@@ -968,7 +968,35 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
   // non-reusable across rebuilds too. fix-4: the host cancel signal rides
   // the PA edge (leg wait + pre-consume check).
   const mountNonce = String(globalThis.crypto?.randomUUID?.() ?? `n-${Date.now()}-${Math.floor(Math.random() * 2 ** 31)}`)
+  // 9e-1: the REAL per-execution token (object | symbol) is consumed HERE —
+  // the read entry owns its own token→correlation ledger, exactly the trio
+  // face's law: ONE allocation per token for the token's whole life; a
+  // SETTLED token re-used answers the ORIGINAL correlation under an
+  // already-aborted signal (the PA edge settles `cancelled`, zero backend,
+  // zero consumption); an IN-FLIGHT replay is refused outright; a stringy
+  // token is not an identity (mount-unique fallback, never String(token)).
+  const readTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
+  const readSignalForSettled = (token) => (typeof token === 'symbol'
+    ? { aborted: true, reason: 'exec-token-terminal', addEventListener: (_t, _l) => {}, removeEventListener: (_t, _l) => {} }
+    : (() => {
+      const cached = settledTokenSignals.get(token)
+      if (cached !== undefined) return cached
+      const settled = { aborted: true, reason: 'exec-token-terminal', addEventListener: (_t, _l) => {}, removeEventListener: (_t, _l) => {} }
+      settledTokenSignals.set(token, settled)
+      return settled
+    })())
+  const settledTokenSignals = new WeakMap()
   const executor = async (raw, corr) => {
+    try {
+    // resolve THIS execution's identity: real token → ledger correlation
+    const token = corr?.token
+    const tokenKey = (typeof token === 'object' && token !== null) || typeof token === 'symbol' ? token : undefined
+    if (tokenKey !== undefined) {
+      const prior = readTokenLedger.get(tokenKey)
+      if (prior !== undefined && !prior.settled) {
+        return refused('admission', 'exec-token-replay', 'this host execution already owns an in-flight governed read')
+      }
+    }
     const execCorrelation = corr && typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
     const execSignal = corr && corr.signal ? corr.signal : undefined
     const record = (raw !== null && typeof raw === 'object') ? raw : {}
@@ -1022,10 +1050,27 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       const set = parseRequestedEffectSet(effects)
       if (!set.ok) return refused('schema', 'effect-set-rejected', JSON.stringify(set.problems).slice(0, 200))
       paSeq += 1
+      // 9e-1: ONE correlation per token for its whole life (single-flight);
+      // a terminal replay re-uses the ORIGINAL id and runs pre-aborted so
+      // the PA edge answers `cancelled` with zero consumption.
+      let ledgerCorrelation
+      let replaySettled = false
+      if (tokenKey !== undefined) {
+        const prior = readTokenLedger.get(tokenKey)
+        if (prior !== undefined && prior.settled) {
+          ledgerCorrelation = prior.correlation
+          replaySettled = true
+        } else {
+          paSeq += 1
+          ledgerCorrelation = `plane-read:${mountNonce}-${String(paSeq)}`
+          readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation, settled: false })
+        }
+      }
+      const readSignal = replaySettled && tokenKey !== undefined ? readSignalForSettled(tokenKey) : execSignal
       const gate = await pa({
         realmId,
-        callId: execCorrelation ?? `plane-read-${mountNonce}-${String(paSeq)}`,
-        ...(execSignal === undefined ? {} : { signal: execSignal }),
+        callId: ledgerCorrelation ?? execCorrelation ?? `plane-read-${mountNonce}-${String(paSeq)}`,
+        ...(readSignal === undefined ? {} : { signal: readSignal }),
         parametersFingerprint: set.value.fingerprint,
         requestedEffects: set.value,
       })
@@ -1140,6 +1185,15 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       return { kind: 'ok', path: parsed.path, offset: window.offset, lines, totalLines }
     } finally {
       await handle.close().catch(() => undefined)
+    }
+    } finally {
+      // 9e-1: the token's correlation goes TERMINAL when the execution
+      // settles (terminal is never re-armed; a later re-use of the token
+      // answers the ORIGINAL correlation as `cancelled`).
+      if (typeof corr?.token === 'object' && corr.token !== null || typeof corr?.token === 'symbol') {
+        const prior = readTokenLedger.get(corr.token)
+        if (prior !== undefined && !prior.settled) readTokenLedger.set(corr.token, { correlation: prior.correlation, settled: true })
+      }
     }
   }
   executor.execCount = () => executed

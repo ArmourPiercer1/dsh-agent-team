@@ -135,6 +135,15 @@ export type PaControlLegResult = {
     readonly requestId: string;
     readonly approval: PresentedApproval;
     readonly grant: OperationGrant;
+    /** ROOT 9e carriage (additive, NO semantic change): the durable
+     *  manifest of THIS row, strict-classified from the row the leg
+     *  minted and consumed through (`paManifestClassOf(record)` — the
+     *  same VALUE-checked trichotomy every gate uses, never a local
+     *  echo). The plane's final edge re-reads THIS call's level facts
+     *  against these fields. ABSENT only if the row no longer
+     *  strict-classifies — in which case the consumer fails closed
+     *  (no facts, no grant use), never a synthesized manifest. */
+    readonly manifest?: PaControlManifest;
 } | {
     readonly decision: 'deny';
     readonly requestId?: string;

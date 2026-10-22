@@ -424,7 +424,18 @@ export function createPaControlLeg(deps) {
         }
         observe({ stage: 'guard-consumed', callId, requestId: record.requestId, grantId: issued.value.grantId });
         // ── 7. the frozen-A success shape (minted AND guard-consumed) ────────
-        return { decision: 'approve', requestId: record.requestId, approval, grant: issued.value };
+        // ROOT 9e carriage: the manifest rides from the DURABLE row the leg
+        // consumed through, classified by the one VALUE-checked trichotomy
+        // (never the local construction bytes); a row that no longer
+        // strict-classifies carries nothing — the consumer fails closed.
+        const carried = paManifestClassOf(record);
+        return {
+            decision: 'approve',
+            requestId: record.requestId,
+            approval,
+            grant: issued.value,
+            ...(carried.state === 'valid' ? { manifest: carried.manifest } : {}),
+        };
     }
 }
 export function createPaEffectsVerifier(deps) {

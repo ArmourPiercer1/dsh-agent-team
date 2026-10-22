@@ -740,7 +740,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, paReadCallFactsRef, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2279,6 +2279,11 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
+      // 9e-4: ONE shared per-setup slot for the mount identity — declared
+      // in the SAME lexical scope as both the disposer (teardown) and the
+      // later publish; a `const` inside the publish block would leave the
+      // disposer referencing an out-of-scope binding (ReferenceError).
+      let paMountIdentity = undefined
       // ONE realm for the plane assembly AND the Guard's feed pairing —
       // computed once, so the pairing can never drift between the two rows.
       const a5PlaneRealmId = String(config?.teamToolPlane?.realmId ?? `a5-realm-${String(teamRoot)}`)
@@ -2551,33 +2556,16 @@ export function createAgentBindings(deps) {
           currentFacts: {
             getPolicy: () => policyReaderRef?.current,
             getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
-            // 9e fix-3: REAL current facts at the consumption edge — the
-            // durable overlay generation (the same `latest` authority the
-            // assembly answers with) and the CURRENT dispatcher entry's
-            // revision for the call's tool. Unanswerable stays undefined —
-            // the plane then fail-closes (GRANT_STALE), never 0/1.
-            getAuthorityGeneration: () => {
-              const latest = permissionOverlay?.latest?.({ teamSessionId: String(teamRoot), memberInstanceId: String(instanceId) })
-              // synchronous edge: consume the LAST CONFIRMED durable read;
-              // `latest` is async, so the plane's own assembly reader (which
-              // awaits the same port) is the source of truth. Answering
-              // undefined here routes the plane to GRANT_STALE — never a 0.
-              void latest
-              return a5PlaneValue?.authorityGeneration?.()
-            },
-            getBindingRevision: () => {
-              // the call's tool revision, read from the CURRENT dispatcher
-              // entry under the plane's governed names; `entryOf` per name —
-              // the plane carries the name list.
-              const names = a5PlaneOwnNames ?? []
-              let revision
-              for (const name of names) {
-                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(name))
-                if (entry !== undefined) revision = entry.revision
-              }
-              return revision
-            },
+            // 9e-3 (root ruling): the OLD scalar getters (a generation that
+            // discarded its Promise and a revision that scanned ALL names
+            // and kept the last) are DELETED from the production-authority
+            // path. The plane's final edge now awaits the ONE call-level
+            // facts adapter (the same reader the Control verifier uses) and
+            // reads THIS call's entry via the mount's own entryOf — per
+            // tool, per call. See `readCallFacts` / `entryOf` below.
           },
+          readCallFacts: (input) => paReadCallFactsRef?.current?.(input),
+          entryOf: (name) => a5p1Guard?.dispatcher?.surface?.entryOf?.(String(name)),
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),
@@ -2926,7 +2914,7 @@ export function createAgentBindings(deps) {
         // Published only AFTER bindOwnTools + publish succeeded; revoked at
         // teardown START. Not an authority ledger: references only, facts
         // are re-read fresh by the reader (see pa-mount-registry.mjs).
-        const paMountIdentity = publishPaMount(String(teamRoot), String(instanceId), {
+        paMountIdentity = publishPaMount(String(teamRoot), String(instanceId), {
           instanceId: String(instanceId),
           guard: a5p1Guard,
           plane: a5PlaneValue,
