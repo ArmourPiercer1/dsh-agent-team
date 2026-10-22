@@ -91,6 +91,11 @@ const BASH_PARAMETERS: Record<string, unknown> = {
  */
 export interface GovernedToolExecContext {
   readonly signal?: ToolCancelSignal
+  /** fix-2b: the host registry's per-execution token (ToolExecution.token).
+   *  It is the ONLY fact that cannot be recycled when a plane remounts, so
+   *  it anchors the PA durable correlation. `rootCallId` is audit-only. */
+  readonly token?: string | number
+  readonly rootCallId?: string
 }
 
 /** One registrable tool definition (the measured `tools.register` row shape). */
@@ -140,6 +145,12 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
   const globBackend = assembly.globBackend ?? assembly.searchBackend
   const names = assembly.names ?? {}
   let callSeq = 0
+  // fix-2b: fallback ids carry a per-mount nonce — a rebuilt plane can never
+  // re-issue a call id a previous mount already spent a pending/allow on.
+  const mountNonce = (((globalThis as unknown as {
+        crypto?: { randomUUID?: () => string }
+      }).crypto?.randomUUID?.() ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`))
+  const inFlight = new Set<string>()
 
   const makeExecute =
     <T extends ParsedToolArgs>(
@@ -152,8 +163,16 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
       if (!parsed.ok) {
         return { text: refusalText('refused-schema', parsed.problems[0]?.code ?? 'unknown', JSON.stringify(parsed.problems).slice(0, 200)) }
       }
-      const callId = `${prefix}-${toolKind}-${String(++callSeq)}`
-      const result = await runToolCall({
+      callSeq += 1
+      const hostToken = exec?.token !== undefined && exec?.token !== null ? String(exec.token) : undefined
+      if (hostToken !== undefined && inFlight.has(hostToken)) {
+        return { text: refusalText('refused-replay', 'exec-token-replay', 'this host execution already owns an in-flight governed call') }
+      }
+      const callId = hostToken !== undefined ? `${prefix}-${toolKind}:hexec:${hostToken}` : `${prefix}-${toolKind}:${mountNonce}-${String(callSeq)}`
+      if (hostToken !== undefined) inFlight.add(hostToken)
+      let result: Awaited<ReturnType<typeof runToolCall>>
+      try {
+        result = await runToolCall({
         request: {
           realmId: assembly.realmId,
           callId,
@@ -171,7 +190,10 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
         ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
         backend,
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
-      })
+        })
+      } finally {
+        if (hostToken !== undefined) inFlight.delete(hostToken)
+      }
       if (result.kind === 'presented') return { text: result.rendered.text }
       if (result.kind === 'refused-schema') return { text: refusalText(result.kind, result.problems[0]?.code ?? 'unknown', JSON.stringify(result.problems).slice(0, 200)) }
       if (result.kind === 'refused-admission') return { text: refusalText(result.kind, result.denyCode, result.effectFingerprint) }

@@ -106,7 +106,29 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
       callId: request.callId,
       parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,
       requestedEffects: derived.value,
+      // PR358 fix-4: the host cancel signal rides the PA edge too — the
+      // approval wait and the pre-consume check must honor the same
+      // invocation cancellation the backend row honors.
+      ...(request.signal === undefined ? {} : { signal: request.signal }),
     })
+    if (pa.kind === 'allow' && (pa as { passthrough?: string }).passthrough === 'pre-aborted') {
+      // governance is skipped entirely; the backend's own abort law settles
+      // the invocation (spawn-then-terminate / call-aborted), unchanged.
+    } else if (pa.kind === 'allow' && (pa as { cancelled?: boolean }).cancelled === true) {
+      // PR358 fix-4: cancelled at the PA edge — zero backend, zero PA
+      // consumption. The settled fact is rendered through the row's OWN
+      // cancel renderer (empty stdout = nothing was observed; the a5p5-meta
+      // tail stays on the wire — the presentation law does not fork).
+      return deepFreezeContracts({
+        kind: 'presented',
+        settlement: { kind: 'cancelled' as const, event: 'dispatcher-call-cancelled-before-body' as const },
+        rendered: request.parsedArgs.tool === 'bash'
+          ? renderShellResult({ exitCode: null, stdout: '', stderr: '', timedOut: false, cancelled: true, truncated: false })
+          : renderSearchResult({ outputMode: 'content', matches: [], counts: [], files: [], totalMatches: 0, truncated: false }),
+        spill: null,
+        effectFingerprint: derived.value.fingerprint,
+      } as const)
+    }
     if (pa.kind === 'deny') {
       // PA denial BEFORE the backend — pending approval, a refused approval
       // and a policy deny are all ZERO-body facts; the code distinguishes

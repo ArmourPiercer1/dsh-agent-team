@@ -60,7 +60,7 @@ async function planeWith(leg: unknown) {
   })
   expect(built.ok, JSON.stringify(built)).toBe(true)
   const bash = built.value.definitions.find((d: { name: string }) => d.name === 'team_bash')
-  const run = async (command: string) => await bash.execute({ command })
+  const run = async (command: string, exec?: unknown) => await bash.execute({ command }, exec)
   return { run, shell, done: () => rmSync(scratch, { recursive: true, force: true }) }
 }
 
@@ -95,6 +95,24 @@ describe('A5M1-SEAM — center enforcement of the controlLeg contract', () => {
       // first — the center passes the true kernel code through (measured:
       // TOOL_BINDING_UNVERIFIED), which is the honest refused-admission.
       expect(String(r.text)).toMatch(/TOOL_BINDING_UNVERIFIED|GRANT_CONSUMPTION_REFUSED/)
+      expect(shell.execCount()).toBe(0)
+    } finally { done() }
+  })
+
+  it('E4 mid-wait cancellation: the leg RECEIVES the invocation signal; when the wait is aborted the center reports the invocation fact (row-form cancelled), zero spawn, zero consumption', async () => {
+    const ac = new AbortController()
+    const signalHonorLeg = async (input: Record<string, unknown>) => {
+      const sig = (input as { signal?: { aborted?: boolean } }).signal
+      if (sig === undefined) throw new Error('fix-4: the center must hand the invocation signal to the leg')
+      ac.abort() // the cancellation lands while the approval wait is in flight
+      return { decision: 'unsettled', requestId: undefined } // real bridge: aborted wait never mints
+    }
+    const { run, shell, done } = await planeWith(signalHonorLeg)
+    try {
+      const r = await run('printf should-never-run', { signal: ac.signal })
+      expect(String(r.text)).toContain('· cancelled')
+      expect(String(r.text)).not.toContain('a5p5-refused')
+      expect(String(r.text)).not.toContain('APPROVAL_')
       expect(shell.execCount()).toBe(0)
     } finally { done() }
   })

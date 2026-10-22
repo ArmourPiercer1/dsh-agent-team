@@ -936,7 +936,16 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
   const refused = (refusalClass, code, detail) => ({
     kind: 'refused', refusalClass, code, text: `refused-${refusalClass} ${String(code)} — ${detail}`,
   })
-  const executor = async (raw) => {
+  // PR358 fix-2b: the optional second argument carries the REAL host exec
+  // correlation (the registry-assigned per-execution token). With it the PA
+  // call id is `hexec:<token>` — unique per execution, never recycled when
+  // the plane remounts; without it a mount-unique nonce keeps the fallback
+  // non-reusable across rebuilds too. fix-4: the host cancel signal rides
+  // the PA edge (leg wait + pre-consume check).
+  const mountNonce = String(globalThis.crypto?.randomUUID?.() ?? `n-${Date.now()}-${Math.floor(Math.random() * 2 ** 31)}`)
+  const executor = async (raw, corr) => {
+    const execCorrelation = corr && typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
+    const execSignal = corr && corr.signal ? corr.signal : undefined
     const record = (raw !== null && typeof raw === 'object') ? raw : {}
     // file_path = the canonical spelling the frozen operation-permission
     // layer resolves for `read`; `path` stays accepted for placement-direct
@@ -984,7 +993,8 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       paSeq += 1
       const gate = await pa({
         realmId,
-        callId: `plane-read-${String(paSeq)}`,
+        callId: execCorrelation ?? `plane-read-${mountNonce}-${String(paSeq)}`,
+        ...(execSignal === undefined ? {} : { signal: execSignal }),
         parametersFingerprint: set.value.fingerprint,
         requestedEffects: set.value,
       })

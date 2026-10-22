@@ -767,7 +767,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     return bindingCache.get(toolName)
   }
-  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown' }) => {
+  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal }) => {
     const request = Object.freeze({
       binding: paBindingFor(toolName),
       member: paMember,
@@ -776,6 +776,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
       parametersFingerprint,
       requestedEffects,
     })
+    // PR358 fix-4: an invocation ALREADY cancelled never enters governance at
+    // all — zero PA consumption, zero Control row. It stays the BACKEND's
+    // settled fact: the shell row's frozen spawn-then-terminate witness and
+    // the search row's call-aborted refusal are the row's own invocation
+    // laws (a5b3 C11/C7), untouched by admission. PA does not swallow or
+    // re-render an invocation that stopped existing before it was asked.
+    if (signal?.aborted === true) {
+      return { kind: 'allow', passthrough: 'pre-aborted' }
+    }
     const admitted = await assembly.admitCall(request)
     if (admitted.ok !== true) {
       return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? 'admitCall refused') }
@@ -804,7 +813,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // a bare decision boolean (or an approval without a landed grant) is a
       // contract violation, refused. Landing/verify ownership sits with the
       // AUTH bridge (operation-permission/pa-control-bridge.ts), not here.
-      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly })
+      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly, ...(signal === undefined ? {} : { signal }) })
+      // fix-4: a cancellation that lands DURING the approval wait means the
+      // invocation is gone — zero PA consumption, zero body. Whatever the
+      // Control row already did stays truthfully as-is (never unwound,
+      // never re-spent here).
+      if (signal?.aborted === true) {
+        // The invocation fact outranks the approval fact: a cancelled call
+        // reports `cancelled`, not a governance refusal (it was not denied —
+        // it stopped existing). Zero PA consumption either way.
+        return { kind: 'allow', cancelled: true }
+      }
       if (leg?.decision !== 'approve' || leg.approval === undefined || leg.approval === null) {
         return { kind: 'deny', code: leg?.decision === 'deny' ? 'APPROVAL_DENIED' : 'APPROVAL_NOT_RESOLVED', detail: `durable Control request ${String(leg?.requestId ?? 'uncreated')} answered ${String(leg?.decision ?? 'unsettled')}` }
       }
@@ -815,7 +834,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
+    if (signal?.aborted === true) {
+      return { kind: 'allow', cancelled: true }
+    }
     const edge = assembly.consumeForExecution(grant, {
+      ...(signal === undefined ? {} : { cancelRequested: signal.aborted === true }),
       currentAuthorityGeneration: 0,
       member: paMember,
       callId,
@@ -1089,8 +1112,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // THROW of its verbatim refusal text — the same transport the host
       // read row uses, so the envelope/decline contract downstream stays
       // honest. The trio rows keep their `{ text }` face unchanged.
-      execute: async (raw) => {
-        const outcome = await readExecutor(raw)
+      execute: async (raw, exec) => {
+        // fix-2b: read RECEIVES the host exec — its per-execution token is
+        // the correlation the PA durable row binds to; the signal rides too.
+        const corr = {
+          ...(exec?.token === undefined ? {} : { correlation: `hexec:${String(exec.token)}` }),
+          ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+        }
+        const outcome = await readExecutor(raw, corr)
         if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') {
           return { path: outcome.path, offset: outcome.offset, lines: outcome.lines, totalLines: outcome.totalLines }
         }
