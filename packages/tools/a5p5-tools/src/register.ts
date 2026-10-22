@@ -31,10 +31,11 @@
  */
 
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js'
+import { canonicalJsonFingerprint } from '../../../domain/tool-governance/src/index.js'
 import type { ParseResult } from '../../../domain/tool-governance/src/parse-util.js'
 import { parseBashArgs, parseGlobArgs, parseGrepArgs } from './args.js'
 import type { ToolCancelSignal, ToolEffectBackend } from './backend-contract.js'
-import { runToolCall, type AdmissionVerdict } from './pipeline.js'
+import { runToolCall, type AdmissionVerdict, type PaAdmitEdge } from './pipeline.js'
 import { GREP_OUTPUT_MODES } from './types.js'
 import type { SpillStore } from './spill.js'
 import type { ParsedToolArgs } from './types.js'
@@ -114,6 +115,11 @@ export interface A5P5Assembly {
   readonly names?: { readonly grep?: string; readonly glob?: string; readonly bash?: string }
   /** Deterministic call-id prefix for the assembly (audit join key); default `a5p5`. */
   readonly callIdPrefix?: string
+  /** M1 CENTER PA WIRING (frozen A): the async PA edge (admitCall → real
+   *  Control ask when required → issueApprovedGrant → one-shot consume).
+   *  The plane production mount injects it; archived pre-M1 kits omit it and
+   *  keep their historical behavior untouched. */
+  readonly pa?: PaAdmitEdge
 }
 
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
@@ -152,12 +158,17 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
           realmId: assembly.realmId,
           callId,
           parsedArgs: parsed.value,
+          // M1: the canonical parameter fingerprint (Alpha.2 canonical-operation
+          // law), computed here from the CLOSED parsed args — the fact the PA
+          // edge asks, consumes and rechecks against.
+          parametersFingerprint: canonicalJsonFingerprint(parsed.value),
           // B3: the host's cancel signal rides the call untouched. This face
           // only CARRIES it — the cancelled fact belongs to the row that can
           // actually stop a payload (the shell arm), never to the presentation.
           ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
         },
         decide: assembly.decide,
+        ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
         backend,
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
       })

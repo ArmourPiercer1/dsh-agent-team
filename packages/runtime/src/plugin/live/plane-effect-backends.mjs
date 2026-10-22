@@ -61,6 +61,7 @@ import { open as fsOpen } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 import { setTimeout as sleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
+import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { isBeneath, verifyOpenedHandle } from '../../../controlled-fs/src/index.js'
 import { createAnchoredRgSearchBackend } from './search-backend.mjs'
@@ -915,8 +916,9 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
  * own granularity — under `deny` an effect the policy never names never
  * touches the fs (no lane-widening anywhere in this file).
  */
-export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, subtreeContains, observe = () => {} }) {
+export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, pa, subtreeContains, observe = () => {} }) {
   let executed = 0
+  let paSeq = 0
   const ruleCovers = (rules, locator) => rules.some((rule) => {
     if (rule?.tool !== 'read') return false
     const kind = rule?.resource?.kind
@@ -960,13 +962,36 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, s
     }
     const effects = [
       { kind: 'tool-invoke', toolName: 'read', resource: null },
-      { kind: 'read', resource: { realmId, kind: 'file', canonicalLocator: parsed.path, rights: ['read'] } },
+      // The frozen resource vocabulary (parseRequestedEffectSet closed set):
+      // the anchored root is an ABSOLUTE governed root → 'absolute-path'.
+      { kind: 'read', resource: { realmId, kind: 'absolute-path', canonicalLocator: parsed.path, rights: ['read'] } },
     ]
     const verdict = decide({ effects })
     if (verdict.kind === 'deny') return refused('admission', verdict.code, 'the template lane denies this read effect')
     if (policy?.default === 'deny' && !ruleCovers([...(policy?.allow ?? []), ...(policy?.ask ?? [])], parsed.path)) {
       observe(`governed-read default-deny refusal call path=${parsed.path}`)
       return refused('admission', 'template-default-deny', 'the policy defaults to DENY and no rule covers this read effect')
+    }
+    // M1 CENTER PA WIRING (frozen A): the ASYNC production edge. The lane
+    // verdict above is a fast deny path, NEVER the ask stand-in: the parsed
+    // effect set now walks admitCall → (real Control ask when required →
+    // presenter → issueApprovedGrant) → one-shot consume INSIDE `pa`, and
+    // NOTHING below this line runs until that edge says allow. Pending is a
+    // denial with its own code — never a synchronous allow.
+    if (typeof pa === 'function') {
+      const set = parseRequestedEffectSet(effects)
+      if (!set.ok) return refused('schema', 'effect-set-rejected', JSON.stringify(set.problems).slice(0, 200))
+      paSeq += 1
+      const gate = await pa({
+        realmId,
+        callId: `plane-read-${String(paSeq)}`,
+        parametersFingerprint: set.value.fingerprint,
+        requestedEffects: set.value,
+      })
+      if (gate.kind === 'deny') {
+        observe(`governed-read pa-refused code=${String(gate.code)}`)
+        return refused('admission', String(gate.code), String(gate.detail ?? 'the PA execution edge refused this read'))
+      }
     }
     // TOCTOU fix (independent security review ①(c) leg C1: an external
     // rename->symlink swap in the realpath->read window leaked at iteration

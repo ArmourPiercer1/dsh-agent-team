@@ -75,7 +75,8 @@
 import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
 import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
-import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
+import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
+import { parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
@@ -716,6 +717,107 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const assembly = built.value
 
+  // ── M1 CENTER PA WIRING (frozen A; PR355 thin center) ────────────────────
+  // THE production admission edge, now ON the body path: every governed row
+  // (read / team_bash / grep / glob) walks `admitCall` BEFORE its backend and
+  // passes the one-shot execution edge (consumeForExecution: finite clock →
+  // validate → consume → lease) before its body. This closes the 9b2 fact
+  // "PA constructed, never entered the body".
+  // The approval rung is honest about identity: `planApproval().approvalCaseId`
+  // is the PA kernel's LOGICAL case id — NOT a durable Control row. A
+  // requires-approval outcome is therefore only FUNCTIONAL through an
+  // injected real Control leg (AUTH-owned): it must create/reuse the durable
+  // request for THIS invocation, await the real decision, present through the
+  // trusted presenter, and the returned PresentedApproval is spent via
+  // `issueApprovedGrant` + consume below. Without a control leg the call
+  // PENDING-REFUSES (zero body, zero backend, never a synchronous allow,
+  // never a fake Control row).
+  const controlLeg = typeof input.controlLeg === 'function' ? input.controlLeg : null
+  const paMember = Object.freeze({
+    teamSessionId: String(input.teamSessionId ?? `plane:${templateId}`),
+    instanceId: String(input.instanceId ?? templateId),
+  })
+  const bindingCache = new Map()
+  const paBindingFor = (toolName) => {
+    if (!bindingCache.has(toolName)) {
+      const parsed = parseToolBinding({
+        bindingId: `plane-row:${templateId}:${toolName}`,
+        agentScopeKey: `plane:${templateId}`,
+        toolName,
+        // The plane's own row identity — honest, not a native shadow.
+        definitionIdentity: `plane:${templateId}:${toolName}`,
+        providerId: 'a5p5-plane',
+        implementationOrigin: 'team-trusted-extension',
+        executionBoundary: 'confined-subprocess',
+        assurance: untestedAssurance('team-trusted-extension', 'confined-subprocess', realmId),
+        policyGeneration: 0,
+        authorityGeneration: 0,
+        revision: 1,
+        status: 'ACTIVE',
+      })
+      if (parsed.ok !== true) throw new Error(`plane PA binding refused (${toolName}): ${JSON.stringify(parsed.problems).slice(0, 200)}`)
+      bindingCache.set(toolName, parsed.value)
+    }
+    return bindingCache.get(toolName)
+  }
+  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown' }) => {
+    const request = Object.freeze({
+      binding: paBindingFor(toolName),
+      member: paMember,
+      callId,
+      realmId: callRealm,
+      parametersFingerprint,
+      requestedEffects,
+    })
+    const admitted = await assembly.admitCall(request)
+    if (admitted.ok !== true) {
+      return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? 'admitCall refused') }
+    }
+    const decision = admitted.value
+    if (decision.kind === 'denied') {
+      return { kind: 'deny', code: String(decision.error?.code ?? 'ADMISSION_DENIED'), detail: String(decision.error?.message ?? '') }
+    }
+    let grant = null
+    if (decision.kind === 'admitted') {
+      grant = decision.grant
+    } else {
+      // requires-approval — only a durable Control leg makes this functional.
+      const planned = assembly.planApproval(request)
+      if (planned.ok !== true) {
+        return { kind: 'deny', code: 'APPROVAL_PLAN_REFUSED', detail: String(planned.error?.message ?? '') }
+      }
+      if (controlLeg === null) {
+        observe(`pa-ask pending-refused call=${callId} paCaseId=${planned.value.approvalCaseId} — logical case id is not a durable Control request; no control leg is mounted`)
+        return { kind: 'deny', code: 'APPROVAL_REQUEST_UNAVAILABLE', detail: `PA logical case ${planned.value.approvalCaseId} needs a durable Control request; none is mounted (pending never runs)` }
+      }
+      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly })
+      if (leg?.decision !== 'approve' || leg.approval === undefined || leg.approval === null) {
+        return { kind: 'deny', code: leg?.decision === 'deny' ? 'APPROVAL_DENIED' : 'APPROVAL_NOT_RESOLVED', detail: `durable Control request ${String(leg?.requestId ?? 'uncreated')} answered ${String(leg?.decision ?? 'unsettled')}` }
+      }
+      const issued = await assembly.issueApprovedGrant(request, leg.approval)
+      if (issued.ok !== true) {
+        return { kind: 'deny', code: String(issued.error?.code ?? 'APPROVED_GRANT_REFUSED'), detail: String(issued.error?.message ?? '') }
+      }
+      grant = issued.value
+    }
+    // THE execution edge (one-shot): fresh clock/generation recheck, consume,
+    // optional lease. Every failure below is zero-body by construction.
+    const edge = assembly.consumeForExecution(grant, {
+      currentAuthorityGeneration: 0,
+      member: paMember,
+      callId,
+      realmId: callRealm,
+      bindingId: grant.bindingId,
+      bindingRevision: grant.bindingRevision,
+      parametersFingerprint,
+      requestedEffects,
+    })
+    if (edge.ok !== true) {
+      return { kind: 'deny', code: String(edge.error?.code ?? 'GRANT_CONSUMPTION_REFUSED'), detail: String(edge.error?.message ?? '') }
+    }
+    return { kind: 'allow' }
+  }
+
   // Gate 2: the C-FS production provider (pa §1.2/§4). ABSENT fsInstance
   // (no governed file root declared by the row) = no provider — the search
   // face stays behind its typed refusal, no implicit root is invented.
@@ -861,6 +963,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const defs = Object.freeze(createGovernedToolDefinitions({
     realmId,
     decide,
+    pa: paAdmit,
     searchBackend: hostedSearch,
     globBackend: hostedGlob,
     shellBackend: hostedShell,
@@ -883,6 +986,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       rootDir: fsInstance.rootDir,
       policy: permissionPolicy,
       decide,
+      pa: paAdmit,
       ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
       observe: logBackend('a5g7-read'),
     })
@@ -1020,6 +1124,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** The mounted model-facing names — the own-layer bind list. */
       ownNames: Object.freeze(allDefs.map((d) => d.name)),
       decide,
+      /** M1 CENTER PA WIRING: the async production edge every row now walks
+       *  (exposed for the acceptance kit's legs; the rows call it themselves). */
+      paAdmit,
+      /** The production admission assembly (planApproval/issueApprovedGrant
+       *  are the AUTH-owned durable-Control landing edges; the plane mounts
+       *  NO fake approvals — controlLeg is injected, never invented here). */
+      governance: assembly,
       /** GLUE-7: the plane's realm (the feed's pairing key) and the real
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,

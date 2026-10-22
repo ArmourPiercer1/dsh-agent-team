@@ -36,10 +36,27 @@ import type { ParsedToolArgs, RenderedPresentation, SearchOutcome, ShellOutcome 
 /** The admission verdict this lane consumes (the decision lives elsewhere — no second authorization fact). */
 export type AdmissionVerdict = { readonly kind: 'allow' } | { readonly kind: 'deny'; readonly code: string }
 
+/** M1 CENTER PA WIRING (frozen A): the ASYNC production admission edge. The
+ *  synchronous lane `decide` above is a fast deny path, NEVER an ask stand-in:
+ *  a call that survives it still has to pass `pa` — the injected PA kernel
+ *  edge (admitCall → real Control ask when required → issueApprovedGrant →
+ *  one-shot consume) — before ANY backend work starts. Pending/approval-denied
+ *  answers here are denials with distinct codes; there is no silent allow and
+ *  no second authorization fact below this seam. */
+export type PaVerdict = { readonly kind: 'allow' } | { readonly kind: 'deny'; readonly code: string; readonly detail?: string }
+export type PaAdmitEdge = (request: {
+  readonly realmId: string
+  readonly callId: string
+  readonly parametersFingerprint: string
+  readonly requestedEffects: RequestedEffectSet
+}) => Promise<PaVerdict>
+
 export interface ToolCallRequest {
   readonly realmId: string
   readonly callId: string
   readonly parsedArgs: ParsedToolArgs
+  /** M1: the canonical parameter fingerprint (Alpha.2 canonical-operation law), computed by the assembly owner; the plane mount always states it, archived kit rows may omit it (the edge then falls back to the effect-set fingerprint — same fact for the same call, never a guess across calls). */
+  readonly parametersFingerprint?: string
   /** B3 ADDITIVE: the host cancel signal, carried to the backend untouched (the pipeline itself acts on NOTHING — cancel is the row's fact, not a second authorization here). */
   readonly signal?: ToolCancelSignal
 }
@@ -47,6 +64,8 @@ export interface ToolCallRequest {
 export interface RunToolCallDeps {
   readonly request: ToolCallRequest
   readonly decide: (effectSet: RequestedEffectSet) => AdmissionVerdict
+  /** M1 PA edge; ABSENT only for the archived pre-M1 kit rows — the plane production mount always injects it. */
+  readonly pa?: PaAdmitEdge
   readonly backend: ToolEffectBackend
   readonly spill?: { readonly store: SpillStore }
 }
@@ -79,6 +98,21 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
   if (verdict.kind === 'deny') {
     // deny BEFORE backend: no sink opened, no backend call, no residue.
     return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: verdict.code })
+  }
+
+  if (deps.pa !== undefined) {
+    const pa = await deps.pa({
+      realmId: request.realmId,
+      callId: request.callId,
+      parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,
+      requestedEffects: derived.value,
+    })
+    if (pa.kind === 'deny') {
+      // PA denial BEFORE the backend — pending approval, a refused approval
+      // and a policy deny are all ZERO-body facts; the code distinguishes
+      // them on the audit line, never the wire shape.
+      return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: pa.code })
+    }
   }
 
   const lease = createSpillLease()

@@ -30,6 +30,7 @@
  * REAL legs). Scratch worlds live under `tests/homes/` (workspace constraint,
  * TEST_METHODS §5) and self-remove.
  */
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
@@ -109,6 +110,7 @@ const confinedProvider = () => ({
 function buildPlane(extra: Record<string, unknown> = {}, policy: unknown = ALLOW_ALL) {
   const rows: string[] = []
   const built = row.createTeamToolPlaneAssembly({
+    controlLeg: approvingControlLeg(),
     permissionPolicy: policy,
     realmId: REALM,
     templateId: 'a5g7-tpl',

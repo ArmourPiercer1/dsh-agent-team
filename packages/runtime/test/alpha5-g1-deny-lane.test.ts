@@ -31,6 +31,7 @@
  * (the same plain-`.mjs` live-row discipline the F15 suite uses); the kit
  * re-runs the same shapes against the committed dist mirror bytes.
  */
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { mkdirSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -59,9 +60,17 @@ beforeAll(async () => {
 })
 
 /** The member-shaped policy of the G1 world (GLUE-6 blueprint, verbatim arms). */
+// M1 PA carry: a 'any' whole-tool rule projects only the tool-invoke arm
+// (disclosed law), so the resource effects ride an explicit subtree over the
+// kit root, answered by the containment seam injected at each mount.
 const DENY_BASH_POLICY = Object.freeze({
   default: 'deny',
-  allow: [{ tool: 'read', resource: { kind: 'any' } }],
+  allow: [
+    { tool: 'read', resource: { kind: 'any' } },
+    { tool: 'read', resource: { kind: 'subtree', path: '/' } },
+    { tool: 'grep', resource: { kind: 'subtree', path: '/' } },
+    { tool: 'glob', resource: { kind: 'subtree', path: '/' } },
+  ],
   ask: [],
   deny: [{ tool: 'bash', resource: { kind: 'any' } }],
 })
@@ -212,6 +221,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: shellSentinel, kind: 'shell' })
     const search = createFixtureBackend({ sentinel: searchSentinel, kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -240,6 +251,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('production (shut) face shape: the denied call is refused by the LANE, not by the backend; the allowed call still lands on the backend face', async () => {
     const built = row.createTeamToolPlaneAssembly({
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -262,6 +275,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('default-deny gate at the assembly: an uncovered plane grep is refused before the shut backend answers', async () => {
     const built = row.createTeamToolPlaneAssembly({
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: { default: 'deny', allow: [], ask: [], deny: [] },
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -286,6 +301,8 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: join(scratch, 'succ-shell.sentinel'), kind: 'shell' })
     const search = createFixtureBackend({ sentinel: join(scratch, 'succ-search.sentinel'), kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: askPolicy,
       realmId: 'a5g1-realm',
       templateId: 'wa',

@@ -32,6 +32,7 @@
  * production provider -> executor, in-process). Real Host boot / live kit:
  * NOT RUN. NOT VERIFIED items are stated in the slice report, never here.
  */
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, beforeEach, expect, it, vi } from 'vitest'
 import {
   appendFileSync,
@@ -223,9 +224,13 @@ function buildPlane(input: {
   plane: Record<string, unknown>
   permissionPolicy: unknown
   realmId?: string
+  /** M1 carry: P4 pins the NO-SEAM refusal law; its world opts out of the kit seam. */
+  noSeam?: boolean
 }): { built: ReturnType<PlaneRow['createTeamToolPlaneAssembly']>; rows: string[] } {
   const rows: string[] = []
   const built = row.createTeamToolPlaneAssembly({
+    controlLeg: approvingControlLeg(),
+    ...(input.noSeam === true ? {} : { fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') } }),
     permissionPolicy: input.permissionPolicy,
     realmId: input.realmId ?? REALM,
     templateId: 'a5rsw-tpl',
@@ -553,6 +558,10 @@ describe('A5RSW T spelling (plan (b) T1-T2)', () => {
     const { built } = exactPlane({ default: 'deny', allow: [
       { tool: 'read', resource: { kind: 'exact', path: trail } },
       { tool: 'read', resource: { kind: 'exact', path: plain } },
+      // M1 PA carry: exact spellings answer the EFFECT path only up to the
+      // canonicalizer; the governed subtree rides the seam (kit-local widening,
+      // the T law itself remains the executor's spelling under test).
+      { tool: 'read', resource: { kind: 'subtree', path: ROOT_REAL } },
     ], ask: [], deny: [] })
     const value = planeOk(built)
     const r1 = await settle(() => readDefOf(value).execute({ file_path: 't-a ' }))
@@ -1257,7 +1266,7 @@ describe('A5RSW P production recipe (plan (b) P1-P4)', () => {
     //    subtree rule cannot be projected — the MOUNT itself refuses with
     //    TOOL_BINDING_UNVERIFIED (measured; stronger than the plan's assumed
     //    executor-level reach — disclosed as plan-vs-measured delta).
-    const mount = buildPlane({ plane: { fsInstance: fsInstance() }, permissionPolicy: subtreePolicy })
+    const mount = buildPlane({ plane: { fsInstance: fsInstance() }, permissionPolicy: subtreePolicy, noSeam: true })
     expect(mount.built.ok, 'a subtree rule without the seam must never mount').toBe(false)
     if (!mount.built.ok) expect(mount.built.code).toBe('TOOL_BINDING_UNVERIFIED')
     // -- Leg B (GUARD, the executor's own :828 law via the DIRECT executor,
