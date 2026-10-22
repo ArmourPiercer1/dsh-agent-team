@@ -13,7 +13,7 @@
 - source drift（CI Q7）：baseline→HEAD 在产品 src/dist/装配面、package.json+lock、tests/paths.mjs 上的增/删/rename；有 drift 且存在 `V@B=yes` 行 ⇒ 该行 NEEDS_REVALIDATION，否则红；比较失败/对象缺失=FAIL（禁空 diff 放行）；纯 docs 提交=过。
 - 本首批全部 `V@B=no`（本轮零 Host/零测试，无一行宣称 baseline 复验）。
 
-## 矩阵（**v0 draft**；26 行=初始工具/族清单，**非全 dispatch 穷尽**；**覆盖盘点未闭合，不能作为 M0 冻结输入**；提交本身不解锁 M0；行集为预计非裁 scope）
+## 矩阵（**v0 draft**；26 行=初始工具/族清单，**非全 dispatch 穷尽**；**覆盖盘点未闭合，不能作为 M0 冻结输入**；提交本身不解锁 M0；行集为预计非裁 scope；穷尽性静态目录逐名见**附录 A**（68 静态名+Team15 口径），覆盖盘点仍未闭合）
 
 | ①行ID | ②合入SHA | ③baseline生产注册入口+开关/default | ④真实IO | ⑤审批链 | ⑥验证 | ⑦已知缺陷 | ⑧级别 | V@B |
 |---|---|---|---|---|---|---|---|---|
@@ -43,6 +43,101 @@
 | team_* (M-14) | PR1 `db5cb5f7` 等 | own-layer 覆盖枚举在治理范围（builtinToolDeny 仅作用继承面，own-layer typed 拒在册）。**静态展开表**（矩阵审提供+@9b2 复核）：`createTeamTools` 闭集 **15 个**=tools.ts:1524-1544，入口映射 team_list_members(:498), team_list_templates(:520), team_inspect_config(:542), team_create_member(:572), team_delegate(:614), team_follow_up(:710), team_collect(:772), team_send_message(:817), team_report_progress(:856), team_request_control(:960), team_resolve_control(:1017), team_list_pending_control(:1119), team_archive_member(:1197), team_grant_permission/team_revoke_permission(:1370-1375)；9b2 接点：root.ts:3845-3874 `createTeamTools` → `teamToolsRef.current` 接 **15 固定名**；注册=agent-bindings:2436-2457（teamToolsRef 存在才循环；selective 按 capabilities.teamTools allow 名单/deny 零个；legacy 全 catalog；tool-selector.ts:30-51）。**注记**：仅定义/静态生产路线实证，**不是** 15 工具审批/功能已全验；**覆盖盘点未闭合，不能作为 M0 冻结输入**；**尚未枚举缺口**=运行时动态注入名与宿主内建面未逐名成行 | 内部状态面 | h6 公开审批面全驱动+一次性消费（历史 host） | 历史 @0e0b605a（真实Host审批链轮，证据=`evidence/alpha5/live/`）；适用性=dep-diff(plane 三件)@0e0b605a=3/3（实测，历史结论需重判） | 全 team 工具矩阵/冷恢复未测 | ENFORCE-PARTIAL(scope=@0e0b605a 真实Host审批链历史轮) | no |
 | todo_write (M-14) | PR1 覆盖枚举 | **plane 保留名在册**（:405）=plane 保留名登记→治理范围内非排除项；Host 继承来源**静态注册已核**（独审直核，pin639）：`packages/todo/tool-todo/src/index.ts:135-136` 注册 `todo_write`；`:197` 无 owning agent session→拒；`docs/tool-catalog.md:44` 要求 ctx.tools+owning session、`allowParallelInProgress` 必填无默认；`base/cordis.patch.yml:430-435` 装载 tool-todo；`web-app/cordis.patch.yml:552-553` 关的是 host 面（迁 preset），**不是产品无 todo** | 状态写面 | 静态 allow 清单+清单外默认 deny | 装配行级未证；**逐工具审批/功能仍未验**；适用性=NOT_VERIFIED(无 tested SHA) | 装面腿未复验 | NOT_VERIFIED（治理归属=在册事实） | no |
 | Preset/Team 自注册覆盖 (NEG-4) | bind-diag `248aff73` 系 | preset-realm 注册不达全局 tools.schemas() 面（bind-diag verdict 亲读摘录） | — | 未验证继承在 ABSTAIN 层（**从来不是 VERIFIED**，bind-diag 原文） | 三世界 17/17×3 @248aff73；证据=`evidence/alpha5/`（bind-diag 台账）；适用性=dep-diff(plane 三件)@248aff73=3/3（实测） | 无任何世界展示过 preset-realm VERIFIED 继承 | WIRED-NOT-ACCEPTED | no |
+
+## 附录 A — 穷尽性静态目录（v0；逐名一行；登记缺口非覆盖宣称）
+
+**来源（钉死）**：`pin639` 官方 `docs/tool-catalog.md:18-47`；`scripts/gen-tool-catalog.ts:205-680` 对应每包 source。**65 unique=官方 catalog 条目数，非当前实例**。
+**别名与 preset 事实**：`pin639 web-app/presets/standard.patch.yml:90-116` 声明 subagent、subagent_fork、subagent_codex(**disabled:true**)、subagent_claude_code(**disabled:true**)（ptc 同号；cordis :89-115）→ catalog 65 unique + 3 别名 = **68 静态名**，再加本 repo Team 15（M-14 展开表）；同名分实现/条件保留，**不强称 83 独立名**。`standard:133-136`=todo allowParallelInProgress；FS `:20-41`/bash 平台条件。`web-app/cordis.patch.yml:430-558`=关 host 面迁 preset，**非不可达**；**minimal preset 的 persistent bash/pwsh 不能继承 one-shot 测量**。
+**分档**=default / opt-in / disabled（可配置开启）。**未来任意 toolName/动态 MCP=未采**（缺口句保留，不假全覆盖）。
+**逐名纪律**：字段可引用主表族行共享事实，但合入/可达/IO/Host 正负/缺陷/等级**逐名明确**；无证据=**UNKNOWN**；**不由目录推"已控制"或"未实现"**。
+
+### A-1 FS
+- **read** [default] — 逐名适用：主表 read(M-01) 行全部事实（②合入=#353 `1739b262f…`；⑥run 归属=dad3；行级审批正控未复验）；无另证。
+- **read_image** [default] — 逐名适用：主表 read_image(M-05) 行事实；无另证。
+- **write** [default] — 逐名适用：主表 write(M-02) 行事实（写面正控未复验）；无另证。
+- **edit** [default] — 逐名适用：主表 edit(M-03) 行事实；无另证。
+- **str_replace_editor** [default] — 逐名适用：主表 str_replace_editor(M-04) 行事实；无另证。
+- **grep** [default] — 逐名适用：主表 grep(M-06native) 行事实（native 行级效果 NOT_VERIFIED）；无另证。
+- **glob** [default] — 逐名适用：主表 glob(M-06native) 行事实（关断键 unit @46e48218）；无另证。
+
+### A-2 shell / terminal / jobs
+- **bash** [default，平台条件（FS :20-41 同系约束）] — 逐名适用：主表 bash(M-07native) 行事实；persistent 形态**不能继承 one-shot 测量**（minimal preset 口径）；无另证。
+- **pwsh** [default，平台条件；one-shot 与 persistent 同名] — 逐名适用：主表 pwsh(M-07) 行事实（NOT_VERIFIED）；persistent 同上不可继承；无另证。
+- **terminal_open** [opt-in] — 逐名：合入/可达/IO/Host 正负/缺陷/等级=**UNKNOWN**（主表无行；本条=缺口登记）。
+- **terminal_close** [opt-in] — 逐名：**UNKNOWN**（同上，缺口登记）。
+- **terminal_list** [opt-in] — 逐名：**UNKNOWN**（同上）。
+- **terminal_read** [opt-in] — 逐名：**UNKNOWN**（同上）。
+- **terminal_send** [opt-in] — 逐名：**UNKNOWN**（同上）。
+- **terminal_signal** [opt-in] — 逐名：**UNKNOWN**（同上）。
+- **job_output** [默认关（jobsEnabled absent=FALSE @9b2 亲读）] — 逐名适用：主表 job_output(M-11) 行事实（@efb5bb55 台账；完整依赖适用性=NOT_VERIFIED）；无另证。
+- **job_list** [同上默认关] — 逐名适用：主表 job_list(M-11) 行事实；无另证。
+- **job_kill** [同上默认关] — 逐名适用：主表 job_kill(M-11) 行事实；无另证。
+
+### A-3 lsp / web / skill / todo
+- **lsp** [分档未核] — 逐名适用：主表 lsp(M-09) 行事实（SAME 仅两历史测面；至 baseline 未核）；无另证。
+- **web_fetch** [分档未核] — 逐名适用：主表 web_fetch(M-10) 行事实（fixture 级；行依赖系未成形 NOT_VERIFIED）；无另证。
+- **web_search** [分档未核] — 逐名适用：主表 web_search(M-10) 行事实；无另证。
+- **skill** [分档未核] — 逐名：合入/可达/IO/Host 正负/缺陷/等级=**UNKNOWN**（主表无行；缺口登记；不由目录推已控制/未实现）。
+- **load_workspace_dependencies** [分档未核] — 逐名：**UNKNOWN**（同上）。
+- **todo_write** [default（standard:133-136 allowParallelInProgress）] — 逐名适用：主表 todo_write(M-14) 行事实（静态注册已核 pin639；**逐工具审批/功能仍未验**）；无另证。
+
+### A-4 goal / schedule / session
+- **create_goal** [分档未核] — 逐名：**UNKNOWN**（主表无行；缺口登记）。
+- **get_goal** [分档未核] — 逐名：**UNKNOWN**。
+- **update_goal** [分档未核] — 逐名：**UNKNOWN**。
+- **schedule_create** [分档未核；live root scope] — 逐名：**UNKNOWN**。
+- **schedule_delete** [分档未核；live root scope] — 逐名：**UNKNOWN**。
+- **schedule_list** [分档未核；live root scope] — 逐名：**UNKNOWN**。
+- **schedule_update** [分档未核；live root scope] — 逐名：**UNKNOWN**。
+- **session_search** [opt-in] — 逐名：**UNKNOWN**。
+- **session_trace** [opt-in] — 逐名：**UNKNOWN**。
+- **session_event_read** [opt-in] — 逐名：**UNKNOWN**。
+- **session_event_search** [opt-in] — 逐名：**UNKNOWN**。
+- **session_event_trace** [opt-in] — 逐名：**UNKNOWN**。
+
+### A-5 subagent / 编排
+- **subagent** [别名口径见附录头（fork 计数；codex/claude_code disabled:true）] — 逐名：**UNKNOWN**（主表无行）。
+- **list_subagent_models** [分档未核] — 逐名：**UNKNOWN**。
+- **interrupt_agent** [subagent 族侧] — 逐名：**UNKNOWN**；与 A-9 同名=**分实现保留**，本条只指 subagent 族侧。
+- **list_agents** [subagent 族侧] — 逐名：**UNKNOWN**；同名分实现见 A-9。
+- **send_message** [subagent 族侧] — 逐名：**UNKNOWN**；同名分实现见 A-9。
+- **workflow** [分档未核] — 逐名：**UNKNOWN**。
+- **ralph** [默认 disabled] — 逐名：**UNKNOWN**。
+- **ask_user_question** [分档未核] — 逐名：**UNKNOWN**。
+- **exit_plan_mode** [分档未核] — 逐名：**UNKNOWN**。
+- **present** [分档未核] — 逐名：**UNKNOWN**。
+
+### A-6 plugin / cordis / mcp-resource
+- **plugin_manager** [默认 disabled/creator 条件] — 逐名：**UNKNOWN**。
+- **cordis_inspect_list** [creator] — 逐名：**UNKNOWN**。
+- **cordis_inspect_query** [creator] — 逐名：**UNKNOWN**。
+- **list_mcp_resource_templates** [分档未核] — 逐名：**UNKNOWN**；**非动态 `mcp__` tools**（区别于 M-12 动态域，勿混算）。
+- **list_mcp_resources** [分档未核] — 逐名：**UNKNOWN**；同上非动态 `mcp__`。
+- **read_mcp_resource** [分档未核] — 逐名：**UNKNOWN**；同上非动态 `mcp__`。
+
+### A-7 stagehand（experimental）
+- **stagehand_act** [experimental] — 逐名：**UNKNOWN**（主表无行）。
+- **stagehand_extract** [experimental] — 逐名：**UNKNOWN**。
+- **stagehand_navigate** [experimental] — 逐名：**UNKNOWN**。
+- **stagehand_observe** [experimental] — 逐名：**UNKNOWN**。
+- **stagehand_screenshot** [experimental] — 逐名：**UNKNOWN**。
+- **stagehand_tabs** [experimental] — 逐名：**UNKNOWN**。
+
+### A-8 run_code
+- **run_code** [default；mode ptc/both 仍治理] — 逐名适用：主表 run_code outer/nested(M-08) 两行**分面**事实（outer=fs 半臂+局部缺口+整体效果保证未验；nested=w-ptc fs）；mode 矩阵无另证。
+
+### A-9 上游 experimental team 九名（默认 disabled / exact live team member）
+- **interrupt_agent** [上游 team 族侧] — 逐名：**UNKNOWN**；与本附录 A-5 及本 repo Team15（M-14）**同名分实现保留**。
+- **list_agents** [上游 team 族侧] — 逐名：**UNKNOWN**；同名分实现保留。
+- **send_message** [上游 team 族侧] — 逐名：**UNKNOWN**；同名分实现保留。
+- **spawn_teammate** [上游 team 族侧] — 逐名：**UNKNOWN**；本 repo Team15 无此名。
+- **team_task_create** [上游 team 族侧] — 逐名：**UNKNOWN**。
+- **team_task_get** [上游 team 族侧] — 逐名：**UNKNOWN**。
+- **team_task_list** [上游 team 族侧] — 逐名：**UNKNOWN**。
+- **team_task_update** [上游 team 族侧] — 逐名：**UNKNOWN**。
+- **wait_agent** [上游 team 族侧] — 逐名：**UNKNOWN**。
+
+**附录尾注**：本附录=**静态目录登记**（68 静态名口径 + Team15 + 同名分实现），不构成覆盖闭合；"未来任意 toolName/动态 MCP=未采"与"运行时 inventory 快照缺失"两句继续有效。
 
 ## 注记
 
