@@ -109,6 +109,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/cancel-leg.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/cancel-leg.mjs',
   },
+  // A5-M1 (PR358-B): the PA mount registry is imported by the production
+  // root entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that
+  // tsc never emits) exactly like upstream-resolver was at GLUE-6 RED-A:
+  // on the strict `files: ["dist"]` install face a missing copy is
+  // ERR_MODULE_NOT_FOUND at root construction. Same law as every entry:
+  // byte-identical placement, drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/pa-mount-registry.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

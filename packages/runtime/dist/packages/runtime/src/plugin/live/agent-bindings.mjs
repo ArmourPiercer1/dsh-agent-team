@@ -352,6 +352,8 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // classifies a failed mcp server as REQUIRED/optional through the bound
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
+import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
+import { publishPaMount, revokePaMount } from './pa-mount-registry.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
@@ -738,7 +740,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2498,12 +2500,84 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(String(row)),
           })
           : null
+        // M1 PA→Control production wiring (frozen A): the plane's approval
+        // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
+        // (operation-permission/pa-control-bridge.ts) over the session's
+        // real ControlService — read lazily via the controlServiceRef seam
+        // (the ptc-row getControlService pattern). No control service
+        // mounted = every requires-approval settles as a refusal (pending
+        // never means allow; there is no fake-approval fallback here or in
+        // the plane).
+        const a5PaControlLeg = async (legInput) => {
+          const a5ControlService =
+            controlServiceRef !== undefined && controlServiceRef !== null ? controlServiceRef.current : undefined
+          if (a5ControlService === undefined || a5ControlService === null) {
+            observations.push(`a5-pa-bridge: no-control-service plane=${planeTemplateId ?? 'n/a'} -> refusal`)
+            return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
+          }
+          const a5IsLeaderPlane = sessionId === String(teamRoot)
+          const a5Leg = createPaControlLeg({
+            controlService: a5ControlService,
+            rootSessionId: String(teamRoot),
+            caller: { kind: 'instance', instanceId },
+            beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
+          })
+          return await a5Leg(legInput)
+        }
         const built = createTeamToolPlaneAssembly({
+          controlLeg: a5PaControlLeg,
+          // PR358 fix-2: the DURABLE attribution the Control rows live under
+          // is the real TeamSession root — never a `plane:<template>`
+          // fallback. Missing teamSessionId is a wiring bug the plane now
+          // refuses loudly instead of papering over with a synthetic id.
+          teamSessionId: String(teamRoot),
           permissionPolicy,
           realmId: a5PlaneRealmId,
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
+          // PR358 fix-3: the plane's CURRENT facts readers — live policy,
+          // activation/rollback epoch, published authority generation and
+          // binding revision. The consume edge re-reads these AFTER any
+          // approval wait; drift = stale refusal, never retroactive
+          // approval. Values come from the host seams themselves.
+          authorityFacts: {
+            overlayGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
+          },
+          currentFacts: {
+            getPolicy: () => policyReaderRef?.current,
+            getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
+            // 9e fix-3: REAL current facts at the consumption edge — the
+            // durable overlay generation (the same `latest` authority the
+            // assembly answers with) and the CURRENT dispatcher entry's
+            // revision for the call's tool. Unanswerable stays undefined —
+            // the plane then fail-closes (GRANT_STALE), never 0/1.
+            getAuthorityGeneration: () => {
+              const latest = permissionOverlay?.latest?.({ teamSessionId: String(teamRoot), memberInstanceId: String(instanceId) })
+              // synchronous edge: consume the LAST CONFIRMED durable read;
+              // `latest` is async, so the plane's own assembly reader (which
+              // awaits the same port) is the source of truth. Answering
+              // undefined here routes the plane to GRANT_STALE — never a 0.
+              void latest
+              return a5PlaneValue?.authorityGeneration?.()
+            },
+            getBindingRevision: () => {
+              // the call's tool revision, read from the CURRENT dispatcher
+              // entry under the plane's governed names; `entryOf` per name —
+              // the plane carries the name list.
+              const names = a5PlaneOwnNames ?? []
+              let revision
+              for (const name of names) {
+                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(name))
+                if (entry !== undefined) revision = entry.revision
+              }
+              return revision
+            },
+          },
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),
@@ -2535,7 +2609,14 @@ export function createAgentBindings(deps) {
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
-        toolDisposers.push(placed.dispose)
+        toolDisposers.push(() => {
+          // PR358-B (9e review): teardown START revokes THIS mount by its
+          // publication IDENTITY — the live entry is removed only when it is
+          // still the one this setup published; a stale disposer clears
+          // nothing (the newer mount stays published).
+          revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
+          return placed.dispose()
+        })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
@@ -2840,6 +2921,44 @@ export function createAgentBindings(deps) {
           }
         }
         const published = a5p1Guard.publish()
+        // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
+        // instanceId) index the root's ONE paEffectsVerifier reads per call.
+        // Published only AFTER bindOwnTools + publish succeeded; revoked at
+        // teardown START. Not an authority ledger: references only, facts
+        // are re-read fresh by the reader (see pa-mount-registry.mjs).
+        const paMountIdentity = publishPaMount(String(teamRoot), String(instanceId), {
+          instanceId: String(instanceId),
+          guard: a5p1Guard,
+          plane: a5PlaneValue,
+          beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
+          readers: {
+            permissionPlane: () => permissionPlaneRef?.current,
+            // 9e fix-3: the durable overlay generation for the assembly's
+            // authorityGeneration reader (the SAME `latest` source).
+            overlayGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
+            // 9e fix-2/3: the durable current authority GENERATION (the
+            // decision lane's own latest-generation; the guard dispatcher
+            // and the assembly answer from this ONE source).
+            authorityGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
+            policySnapshot: () => permissionPolicy,
+            // PR358-B: the durable overlay latest (the decision lane's own
+            // authority source) + the ONE facts object's ceiling readers.
+            overlaySnapshot: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === null ? null : latest
+            },
+            teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.teamHardEnvelope?.(teamSessionId, memberInstanceId),
+            permissionEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.permissionEnvelope?.(teamSessionId, memberInstanceId),
+          },
+        })
         if (published.ok !== true) {
           const error = new Error(
             `agent-bindings: alpha.5 Tool Dispatcher could not be published for '${sessionId}': ${published.error.message} (code: ${published.error.code})`,

@@ -75,7 +75,8 @@
 import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
 import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
-import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
+import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
+import { parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
@@ -253,6 +254,10 @@ const READ_ROW_PRESENTATION_FACE = Object.freeze({
  *  lying read card. Never throws. */
 function readRowPresentResult(_args, result) {
   if (result?.isError === true) return undefined
+  // PR358-A2: the cancelled read carries NO path/line card — it is not a
+  // read result; the generic card renders its honest cancelled line instead
+  // of a lying zero-lines read card.
+  if (result?.cancelled === true) return undefined
   const meta = readRowMetaFromMeta(result?.meta)
   if (meta === undefined) return undefined
   const only = Array.isArray(result.content) && result.content.length === 1 ? result.content[0] : undefined
@@ -696,6 +701,27 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const jobsEnabled = jobsEnabledRaw === true
 
+  // 9e fix-3: ONE durable-generation reader for this mount. `current` is
+  // the last CONFIRMED generation (undefined = never confirmed); preflight
+  // re-reads at mount and before each admission that lacks one. No cache
+  // semantics beyond the confirmed-latest value of the ONE overlay port.
+  let paGenerationConfirmed
+  const paGenerationReader = input.authorityFacts?.overlayGeneration
+  const paReadGeneration = async () => {
+    const read = paGenerationReader
+    if (typeof read !== 'function') return
+    try {
+      const g = await read(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
+      if (typeof g === 'number' && Number.isFinite(g) && g >= 0) paGenerationConfirmed = g
+    } catch {
+      // a faulting read CONFIRMS nothing; the previous confirmed value (if
+      // any) stays current, admissions keep answering it or refusing.
+    }
+  }
+  const paAuthorityGeneration = () => paGenerationConfirmed
+  if (typeof paGenerationReader === 'function') {
+    void paReadGeneration()
+  }
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
     permissionPolicy,
@@ -706,7 +732,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // is adopted by the human operator who authored it).
     definitionOwnerAuthority: input.plane?.definitionOwnerAuthority ?? 'human-user',
     clock: () => Date.now(),
-    authorityGeneration: () => 0, // same generation the PR1 guard publishes with (rev.0 until the overlay feeds revisions)
+    // 9e fix-3: the REAL durable overlay generation. The plane mounts a
+    // one-shot preflight read (the SAME `overlay.latest` the decision lane
+    // treats as the authority); until it lands, admissions REFUSE (an
+    // unanswerable generation is never answered with 0 — the constant here
+    // was the fabricated generation the review named). The read resolves
+    // once per assembly (a resolved promise keeps admit synchronous-ish);
+    // a faulting read stays rejected until the next preflight tick.
+    authorityGeneration: () => {
+      if (paGenerationReader === undefined) return 0 // rev.0 lane: this world carries NO durable overlay port (the pre-B documented state; production always carries one)
+      const g = paAuthorityGeneration()
+      if (g === undefined) throw new Error('authority-generation unanswerable (durable overlay read pending/failed; never a constant)')
+      return g
+    },
     beneficiaryAuthority: role === 'leader' ? 'leader' : 'member',
     ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
     onObserve: (row) => observe(`a5p2prod: ${String(row?.event ?? row)}`),
@@ -715,6 +753,254 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: false, code: String(built.error?.code ?? 'ADMISSION_ASSEMBLY_REFUSED'), message: String(built.error?.message ?? 'production admission assembly refused construction') }
   }
   const assembly = built.value
+
+  // ── M1 CENTER PA WIRING (frozen A; PR355 thin center) ────────────────────
+  // THE production admission edge, now ON the body path: every governed row
+  // (read / team_bash / grep / glob) walks `admitCall` BEFORE its backend and
+  // passes the one-shot execution edge (consumeForExecution: finite clock →
+  // validate → consume → lease) before its body. This closes the 9b2 fact
+  // "PA constructed, never entered the body".
+  // The approval rung is honest about identity: `planApproval().approvalCaseId`
+  // is the PA kernel's LOGICAL case id — NOT a durable Control row. A
+  // requires-approval outcome is therefore only FUNCTIONAL through an
+  // injected real Control leg (AUTH-owned): it must create/reuse the durable
+  // request for THIS invocation, await the real decision, present through the
+  // trusted presenter, and the returned PresentedApproval is spent via
+  // `issueApprovedGrant` + consume below. Without a control leg the call
+  // PENDING-REFUSES (zero body, zero backend, never a synchronous allow,
+  // never a fake Control row).
+  const controlLeg = typeof input.controlLeg === 'function' ? input.controlLeg : null
+  // PR358 fix-2 (trusted durable attribution): the PA member identity is
+  // the REAL TeamSession root supplied by the host wiring. A synthetic
+  // `plane:<template>` fallback would let Control rows live under an id the
+  // Control plane does not actually own — refused at mount instead.
+  if (input.teamSessionId === undefined || input.teamSessionId === null || String(input.teamSessionId).length === 0) {
+    return { ok: false, code: 'TOOL_BINDING_UNVERIFIED', message: 'the PA durable attribution needs the real teamSessionId (host TeamSession root); no synthetic plane:<template> identity is mounted' }
+  }
+  const paMember = Object.freeze({
+    teamSessionId: String(input.teamSessionId),
+    instanceId: String(input.instanceId ?? templateId),
+  })
+  const bindingCache = new Map()
+  const paBindingFor = (toolName) => {
+    if (!bindingCache.has(toolName)) {
+      const parsed = parseToolBinding({
+        bindingId: `plane-row:${templateId}:${toolName}`,
+        agentScopeKey: `plane:${templateId}`,
+        toolName,
+        // The plane's own row identity — honest, not a native shadow.
+        definitionIdentity: `plane:${templateId}:${toolName}`,
+        providerId: 'a5p5-plane',
+        implementationOrigin: 'team-trusted-extension',
+        executionBoundary: 'confined-subprocess',
+        assurance: untestedAssurance('team-trusted-extension', 'confined-subprocess', realmId),
+        policyGeneration: 0,
+        authorityGeneration: 0,
+        revision: 1,
+        status: 'ACTIVE',
+      })
+      if (parsed.ok !== true) throw new Error(`plane PA binding refused (${toolName}): ${JSON.stringify(parsed.problems).slice(0, 200)}`)
+      bindingCache.set(toolName, parsed.value)
+    }
+    return bindingCache.get(toolName)
+  }
+  // ── PR358 fix-3 readers (real current placement/policy/authority) ──
+  // The plane's CURRENT facts come from the host's live seams, never from
+  // the grant: `input.currentFacts` supplies { getPolicy, getRollbackEpoch,
+  // getAuthorityGeneration, getBindingRevision }; agent-bindings wires them
+  // to policyReaderRef.current and activationFence.getRollbackEpoch —
+  // genuine per-read values. Without the seam the legacy rev.0/revision-1
+  // law applies (the PR1 guard's published generation, disclosed).
+  const paCurrentFacts = input.currentFacts ?? {}
+  const canonicalJsonFingerprintNow = (value) => {
+    try { return JSON.stringify(value, (k, v) => v === undefined ? '__undef__' : v) } catch { return undefined }
+  }
+  const paMountPolicyFingerprint = canonicalJsonFingerprintNow(permissionPolicy)
+  // (the identity is recomputed at consume time; the row consts are
+  // initialized by then — no TDZ: this arrow only CLOSES over them)
+  const paProviderRefs = () => [hostedSearch, hostedGlob, hostedShell, readExecutor]
+  const readProviderIdentity = () => paProviderRefs().map((r) => r === null || r === undefined ? '-' : String(r.backendId ?? r.kind ?? 'obj')).join('|')
+  // computed lazily at first consume (the row consts initialize below
+  // this declaration during mount)
+  const paMountRollbackEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : undefined
+  const paLaneRecheck = (effectsSet) => {
+    const v = decide({ effects: effectsSet.effects ?? effectsSet })
+    return v?.kind === 'allow' ? 'allow' : (v?.kind === 'deny' ? 'deny' : 'ask')
+  }
+
+  // PR358-B: the mount's LIVE PA plans (callId → the plan this call walked:
+  // approvalCaseId / effect-set fingerprint / per-effect required rungs /
+  // the requested effect set). Entries exist only while the call is in this
+  // plane and are removed at settle; the map is bounded. This is the
+  // `planSnapshot` + `effects` source for the call-level facts adapter —
+  // the SAME canonical identity the approval walked, never a re-parse.
+  const livePaPlan = new Map()
+  const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal }) => {
+    try {
+      return await paAdmitBody({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal })
+    } finally {
+      // the plan fact ends with the call (the settled row's re-verification
+      // is answered by its TERMINAL Control state, not by facts carried on)
+      livePaPlan.delete(String(callId))
+    }
+  }
+  const paAdmitBody = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+    // 9e fix-3: the generation is answerable BEFORE any admission work:
+    // await the durable read once when nothing is confirmed yet (no
+    // constant ever answers the kernel).
+    if (typeof paGenerationReader === 'function' && paGenerationConfirmed === undefined) {
+      await paReadGeneration()
+    }
+    const request = Object.freeze({
+      binding: paBindingFor(toolName),
+      member: paMember,
+      callId,
+      realmId: callRealm,
+      parametersFingerprint,
+      requestedEffects,
+    })
+    // PR358 fix-4: an invocation ALREADY cancelled never enters governance at
+    // all — zero PA consumption, zero Control row. It stays the BACKEND's
+    // settled fact: the shell row's frozen spawn-then-terminate witness and
+    // the search row's call-aborted refusal are the row's own invocation
+    // laws (a5b3 C11/C7), untouched by admission. PA does not swallow or
+    // re-render an invocation that stopped existing before it was asked.
+    if (signal?.aborted === true) {
+      // PR358-A2: a cancelled invocation answers CANCELLED at the PA edge —
+      // zero backend, zero Control row, zero consumption. (The a5b3
+      // spawn-then-terminate witness legs live BELOW this edge in the
+      // backend's own laws; the governance edge no longer forwards a
+      // dead invocation into a backend.)
+      return { kind: 'allow', cancelled: true }
+    }
+    const admitted = await assembly.admitCall(request)
+    if (admitted.ok !== true) {
+      return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? 'admitCall refused') }
+    }
+    const decision = admitted.value
+    if (decision.kind === 'denied') {
+      return { kind: 'deny', code: String(decision.error?.code ?? 'ADMISSION_DENIED'), detail: String(decision.error?.message ?? '') }
+    }
+    let grant = null
+    if (decision.kind === 'admitted') {
+      grant = decision.grant
+    } else {
+      // requires-approval — only a durable Control leg makes this functional.
+      const planned = assembly.planApproval(request)
+      if (planned.ok !== true) {
+        return { kind: 'deny', code: 'APPROVAL_PLAN_REFUSED', detail: String(planned.error?.message ?? '') }
+      }
+      livePaPlan.set(String(callId), Object.freeze({
+        approvalCaseId: String(planned.value.approvalCaseId),
+        effectSetFingerprint: String(planned.value.effectSetFingerprint),
+        perEffectRequired: planned.value.perEffectRequired,
+        requestedEffects,
+      }))
+      if (livePaPlan.size > 2000) livePaPlan.delete(livePaPlan.keys().next().value)
+      if (controlLeg === null) {
+        observe(`pa-ask pending-refused call=${callId} paCaseId=${planned.value.approvalCaseId} — logical case id is not a durable Control request; no control leg is mounted`)
+        return { kind: 'deny', code: 'APPROVAL_REQUEST_UNAVAILABLE', detail: `PA logical case ${planned.value.approvalCaseId} needs a durable Control request; none is mounted (pending never runs)` }
+      }
+      // The leg implements the FROZEN obligations in full: durable Control
+      // request create/reuse → real decision → trusted presenter →
+      // `issueApprovedGrant` landing → durable `guardOperation` consumption —
+      // and returns the MINTED grant. The center mints nothing on this path:
+      // a bare decision boolean (or an approval without a landed grant) is a
+      // contract violation, refused. Landing/verify ownership sits with the
+      // AUTH bridge (operation-permission/pa-control-bridge.ts), not here.
+      const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly, ...(signal === undefined ? {} : { signal }) })
+      // fix-4: a cancellation that lands DURING the approval wait means the
+      // invocation is gone — zero PA consumption, zero body. Whatever the
+      // Control row already did stays truthfully as-is (never unwound,
+      // never re-spent here).
+      if (signal?.aborted === true) {
+        // The invocation fact outranks the approval fact: a cancelled call
+        // reports `cancelled`, not a governance refusal (it was not denied —
+        // it stopped existing). Zero PA consumption either way.
+        return { kind: 'allow', cancelled: true }
+      }
+      if (leg?.decision !== 'approve' || leg.approval === undefined || leg.approval === null) {
+        return { kind: 'deny', code: leg?.decision === 'deny' ? 'APPROVAL_DENIED' : 'APPROVAL_NOT_RESOLVED', detail: `durable Control request ${String(leg?.requestId ?? 'uncreated')} answered ${String(leg?.decision ?? 'unsettled')}` }
+      }
+      if (leg.grant === undefined || leg.grant === null) {
+        return { kind: 'deny', code: 'APPROVAL_LEG_INCOMPLETE', detail: `request ${String(leg.requestId ?? 'uncreated')} returned an approval without a landed+guard-consumed grant; the frozen Control/PA leg is more than a decision boolean` }
+      }
+      grant = leg.grant
+    }
+    // THE execution edge (one-shot): fresh clock/generation recheck, consume,
+    // optional lease. Every failure below is zero-body by construction.
+    if (signal?.aborted === true) {
+      return { kind: 'allow', cancelled: true }
+    }
+    let freshGeneration = 0
+    let freshRevision = 1
+    // ── PR358 fix-3: FRESH current-facts recheck at the execution edge ──
+    // After any approval wait (and also on the all-allow path, which waits
+    // nothing), the plane re-reads the CURRENT definition/provider/policy/
+    // authority facts and re-verifies the WHOLE effect set against the live
+    // policy snapshot. Anything missing, moved, or unanswerable is STALE:
+    // zero body, and never a retroactive approval. The grant never proves
+    // its own "current" — current is what the readers answer NOW.
+    if (typeof paCurrentFacts.getPolicy === 'function' || paCurrentFacts.getRollbackEpoch !== undefined) {
+      const nowPolicy = typeof paCurrentFacts.getPolicy === 'function' ? paCurrentFacts.getPolicy() : undefined
+      const nowPolicyFingerprint = nowPolicy === undefined || nowPolicy === null
+        ? undefined
+        : canonicalJsonFingerprintNow(nowPolicy)
+      if (nowPolicyFingerprint !== undefined && nowPolicyFingerprint !== paMountPolicyFingerprint) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the live permission policy moved after admission; this call is stale and runs nothing' }
+      }
+      const paMountProviderIdentity = readProviderIdentity()
+      const nowEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : paMountRollbackEpoch
+      if (nowEpoch !== paMountRollbackEpoch) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the placement/activation epoch rolled between admission and execution; this call is stale and runs nothing' }
+      }
+      // the definitions/provider identity the mount placed must be the ones
+      // still behind this row — a re-placed mount answers with a NEW
+      // assembly (new facts, new nonce), never this grant.
+      if (paMountProviderIdentity !== readProviderIdentity()) {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the governed provider surface changed between admission and execution; this call is stale and runs nothing' }
+      }
+      // allEffects re-verification against the LIVE policy (all-allow path
+      // included): the lane verdict is recomputed for the FULL set, one
+      // effect outside allow now = stale (covers default flips too).
+      if (typeof paLaneRecheck === 'function') {
+        const freshLane = paLaneRecheck(requestedEffects)
+        if (freshLane !== 'allow') {
+          return { kind: 'deny', code: 'GRANT_STALE', detail: `fresh policy re-verification moved this effect set out of the allow lane (${String(freshLane)}); the call is stale and runs nothing` }
+        }
+      }
+      // 9e fix-3: the CURRENT generation/revision at the consumption edge
+      // come from the REAL sources: the durable overlay generation the
+      // assembly itself answers with, and the CURRENT dispatcher entry's
+      // revision for this call's tool (no 0/1 constants — the mount binds
+      // what is in force).
+      const nowGeneration = typeof paCurrentFacts.getAuthorityGeneration === 'function' ? paCurrentFacts.getAuthorityGeneration() : paAuthorityGeneration()
+      const nowRevision = typeof paCurrentFacts.getBindingRevision === 'function' ? paCurrentFacts.getBindingRevision() : undefined
+      if (typeof nowGeneration !== 'number' || typeof nowRevision !== 'number') {
+        return { kind: 'deny', code: 'GRANT_STALE', detail: 'current authority generation/revision is unanswerable; fail closed without consuming' }
+      }
+      freshGeneration = nowGeneration
+      freshRevision = nowRevision
+    }
+    if (signal?.aborted === true) {
+      return { kind: 'allow', cancelled: true }
+    }
+    const edge = assembly.consumeForExecution(grant, {
+      ...(signal === undefined ? {} : { cancelRequested: signal.aborted === true }),
+      currentAuthorityGeneration: freshGeneration,
+      member: paMember,
+      callId,
+      realmId: callRealm,
+      bindingId: grant.bindingId,
+      bindingRevision: freshRevision,
+      parametersFingerprint,
+      requestedEffects,
+    })
+    if (edge.ok !== true) {
+      return { kind: 'deny', code: String(edge.error?.code ?? 'GRANT_CONSUMPTION_REFUSED'), detail: String(edge.error?.message ?? '') }
+    }
+    return { kind: 'allow' }
+  }
 
   // Gate 2: the C-FS production provider (pa §1.2/§4). ABSENT fsInstance
   // (no governed file root declared by the row) = no provider — the search
@@ -861,6 +1147,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const defs = Object.freeze(createGovernedToolDefinitions({
     realmId,
     decide,
+    pa: paAdmit,
     searchBackend: hostedSearch,
     globBackend: hostedGlob,
     shellBackend: hostedShell,
@@ -883,6 +1170,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       rootDir: fsInstance.rootDir,
       policy: permissionPolicy,
       decide,
+      pa: paAdmit,
       ...(input.fs?.subtreeContains === undefined ? {} : { subtreeContains: input.fs.subtreeContains }),
       observe: logBackend('a5g7-read'),
     })
@@ -972,10 +1260,26 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // THROW of its verbatim refusal text — the same transport the host
       // read row uses, so the envelope/decline contract downstream stays
       // honest. The trio rows keep their `{ text }` face unchanged.
-      execute: async (raw) => {
-        const outcome = await readExecutor(raw)
+      execute: async (raw, exec) => {
+        // fix-2b: read RECEIVES the host exec. 9e fix-1: the REAL token
+        // rides (object | symbol, exactly like the shell row) — the plane
+        // NEVER stringifies it (`String(symbol)` throws; stringify was the
+        // A1 violation). The correlation is the a5p5 LEDGER's allocated
+        // string (`exec.tokenKey`), the same identity the trio rows carry.
+        const corr = {
+          ...(exec?.token === undefined ? {} : { token: exec.token }),
+          ...(typeof exec?.tokenKey === 'string' && exec.tokenKey.length > 0 ? { correlation: exec.tokenKey } : {}),
+          ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+        }
+        const outcome = await readExecutor(raw, corr)
         if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') {
           return { path: outcome.path, offset: outcome.offset, lines: outcome.lines, totalLines: outcome.totalLines }
+        }
+        if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'cancelled') {
+          // PR358-A2: the cancelled read is a PRESENTED row-form fact, not
+          // a refusal — zero byte read, honest word carried (mirrors the
+          // shell row's own `· cancelled` law; no resolver ever ran).
+          return { cancelled: true, content: [{ type: 'text', text: 'read · cancelled' }], meta: { cancelled: true } }
         }
         const text = outcome !== null && typeof outcome === 'object' && typeof outcome.text === 'string'
           ? outcome.text
@@ -1020,6 +1324,22 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** The mounted model-facing names — the own-layer bind list. */
       ownNames: Object.freeze(allDefs.map((d) => d.name)),
       decide,
+      /** M1 CENTER PA WIRING: the async production edge every row now walks
+       *  (exposed for the acceptance kit's legs; the rows call it themselves). */
+      paAdmit,
+      /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
+      livePaPlan,
+      /** 9e fix-3: the CONFIRMED durable generation reader (the root's
+       *  currentFacts consumer answers through it; unconfirmed stays
+       *  undefined — never a 0). */
+      authorityGeneration: paAuthorityGeneration,
+      /** The production admission assembly (planApproval/issueApprovedGrant
+       *  are the AUTH-owned durable-Control landing edges; the plane mounts
+       *  NO fake approvals — controlLeg is injected, never invented here). */
+      governance: assembly,
+      /** PR358-B: the SAME assembly under its real name (the call-level
+       *  facts adapter reads policyDocument()/denySources() from it). */
+      assembly,
       /** GLUE-7: the plane's realm (the feed's pairing key) and the real
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,

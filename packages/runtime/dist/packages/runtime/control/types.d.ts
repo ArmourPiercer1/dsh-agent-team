@@ -1024,10 +1024,12 @@ export interface PaCallFacts {
  *  and the stage — the IDENTITY of this call and nothing else. The current
  *  authority facts are NOT service-supplied: they arrive through the one
  *  injected adapter (`readCallFacts` inside the verifier). The optional
- *  `facts` member exists for a caller that ALREADY HOLDS the adapter's
- *  answer (a test injection, or an upstream that fetched once); when
- *  ABSENT — the service's shape, always — the verifier fetches them itself
- *  as part of its small async orchestration. */
+ *  `facts` member is a TEST-ONLY caller pre-answer: the verifier honours
+ *  it ONLY when its construction deps explicitly open the seam
+ *  (`allowFactsInjection: true`, default CLOSED — see the bridge). A
+ *  production wiring that omits the flag IGNORES this member, so its
+ *  injected adapter is the single, unavoidable facts source; the service
+ *  never supplies it either way. */
 export interface PaEffectsVerifierInput {
     readonly stage: PaEffectsVerifierStage;
     readonly rootSessionId: string;
@@ -1037,7 +1039,8 @@ export interface PaEffectsVerifierInput {
      *  durable allow's decider (stage 'guard'). Never a presented stand-in. */
     readonly decider: ControlCallerRef;
     /** PR358-B: the call-level facts, when the caller already holds them.
-     *  ABSENT = the verifier reads them through its injected adapter. */
+     *  Honoured ONLY under the bridge's `allowFactsInjection: true` test seam
+     *  (default false ⇒ ignored, the adapter is always consulted). */
     readonly facts?: PaCallFacts;
 }
 /** The closed verdict vocabulary. `authority-undetermined` = the fresh

@@ -453,7 +453,11 @@ export function createPaEffectsVerifier(deps) {
             return undetermined(`the durable manifest carries required rung '${String(manifest.requiredAuthority)}', outside the closed ladder — the row lies about its own authority`);
         }
         // ── 0. THE FACTS — the ONE await of the orchestration ────────────────
-        let facts = input.facts;
+        // A caller-held `input.facts` is honoured ONLY under the explicit
+        // construction flag (test seam, default CLOSED): a production wiring
+        // that omits `allowFactsInjection` can never be fed facts through the
+        // input, so its injected adapter is the single, unavoidable source.
+        let facts = deps.allowFactsInjection === true ? input.facts : undefined;
         if (facts === undefined) {
             try {
                 facts = await deps.readCallFacts({
