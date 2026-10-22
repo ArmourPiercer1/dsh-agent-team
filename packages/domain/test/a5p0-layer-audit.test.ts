@@ -42,13 +42,43 @@ describe('the tool-governance lane audit', () => {
   // against the PR3/PR5 review provenance, file-by-file; the subtree prefixes
   // in the audit script cannot smuggle a file this list does not name, so
   // "no accretion" keeps biting exactly as before.
-  it('the consumer set is exactly the reviewed PR1+PR2+PR3+PR5 wiring (no accretion)', () => {
+  //
+  // A5-M1 (PR358) books the same way: census run 39866646962 at headSha
+  // efecfe2b4 listed FOUR new files, and each is booked here with the symbol
+  // it consumes and the reason it needs it (the audit-script entry carries the
+  // file:line provenance). Booking an edge is not widening a rule: the four
+  // entries are single files, each for the ONE thin face it imports, and the
+  // lane's pure-domain law + the outward-leaf leg below still refuse any edge
+  // pointing the other way.
+  it('the consumer set is exactly the reviewed PR1+PR2+PR3+PR5+A5-M1 wiring (no accretion)', () => {
     expect(verdict.consumers).toEqual([
+      // A5-M1: the Control lane's WRITE-side fingerprint — `canonicalJson
+      // Fingerprint` (control/service.ts:183) recomputed at :2311 so a PA
+      // manifest's `reviewPayloadDigest` / `operationFingerprint` must equal
+      // the SERVICE-computed digest of the payload it pairs with.
+      'runtime/control/service.ts',
+      // A5-M1: the Control lane's READ-side fingerprint (the PR358 f5 item-4
+      // read-back VALUE check at types.ts:1285) plus the TYPE-ONLY call-facts
+      // vocabulary (`RequestedEffectSet` / `ToolBinding` / `ToolPolicy
+      // Document`, types.ts:153 → the slots at :1407/:1414/:1423; erased at
+      // emit, so the Control plane gains no runtime edge from that half).
+      'runtime/control/types.ts',
       'runtime/controlled-fs/src/cf-descriptor.ts',
       'runtime/controlled-fs/src/cf-errors.ts',
       'runtime/controlled-fs/src/controlled-fs.ts',
       'runtime/controlled-fs/src/index.ts',
+      // A5-M1: the PA↔Control bridge — the manifest digest it writes
+      // (pa-control-bridge.ts:394) and the assurance snapshot it compares
+      // (:752), plus the closed admission vocabulary its ports are typed
+      // against (:93-98). runtime lane → domain leaf; the bridge's Alpha.4
+      // LADDER edge is booked on the a3p3 rows, not here.
+      'runtime/operation-permission/pa-control-bridge.ts',
       'runtime/src/plugin/live/agent-bindings.mjs',
+      // A5-M1: the governed effect backends row — `parseRequestedEffectSet`
+      // (plane-effect-backends.mjs:64) resolving the READ row's requested
+      // effects into the frozen closed resource vocabulary at :1050, before
+      // any backend is reached.
+      'runtime/src/plugin/live/plane-effect-backends.mjs',
       // alpha5-ptc-fs (branch `alpha5-ptc-pr`; review provenance 独审 PASS,
       // id 7f0e5d6e, booked by the integration coordinator on the #334 census
       // red): the PTC fs escalation row — direct lane edge = the effect-grammar

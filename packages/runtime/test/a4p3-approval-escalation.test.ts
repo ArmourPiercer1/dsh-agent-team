@@ -292,8 +292,39 @@ const hazard = await (async () => {
 describe('the escalated-reason read gate (A5-5, preflight no-red finding 2)', () => {
   it('the closed decision-reason vocabulary carries `escalated` beside `external-policy`', () => {
     // No test enumerated this vocabulary before PR3, and an unpinned reason
-    // is not "merely undocumented" — it is a dropped row.
-    expect([...CONTROL_DECISION_REASON_VALUES].sort()).toEqual(['escalated', 'external-policy'])
+    // is not "merely undocumented" — it is a dropped row: `parseDecisionPayload`
+    // fails closed by DROPPING any row whose `reason` is outside this set
+    // (control/service.ts:958 is the membership gate the reader runs through).
+    //
+    // A5-M1 (PR358) adds TWO values, booked here with where each is WRITTEN —
+    // the enumeration stays a strict equality, so a fifth value, a renamed
+    // value, or a value that stops being produced all fail this leg:
+    //   • `pa-authority-drift` (control/types.ts:266) — the decision-gate
+    //     drift: the all-Effects verifier answered that the real decider's
+    //     FRESH authority no longer covers every effect of the covered set
+    //     (service.ts:3163-3164 maps the verifier's verdict onto it, and
+    //     service.ts:3615-3617 mirrors it onto the guard-block vocabulary).
+    //   • `authority-undetermined` (control/types.ts:275) — "could not
+    //     confirm" is not "confirmed": no verifier port wired, the port
+    //     threw, or its verdict left the closed vocabulary
+    //     (service.ts:3155/:3160/:3165, and the durable deny at :2748).
+    // Both are recorded as a `deny` — the closed DECISION-VALUE axis gains
+    // neither a fourth value nor a status, which is exactly what the two legs
+    // below ("the terminal-reason vocabulary is closed and adds no new status
+    // or decision value", "every terminal reason maps to a deny") keep
+    // pinning. The A5-M1 read-back coverage legs in
+    // `a5-m1-auth-bridge.test.ts` ride these two values through the production
+    // reader; nothing here is weakened to make this list shorter.
+    // (Line-pointer bookkeeping, since this file is cited by line elsewhere:
+    // this comment block shifts everything below it, so the A1-12 terminate
+    // arm that `a4p7-v3-cutover-acceptance.test.ts:1973` cites as
+    // `a4p3-approval-escalation.test.ts:718` starts at :748 as of this edit.)
+    expect([...CONTROL_DECISION_REASON_VALUES].sort()).toEqual([
+      'authority-undetermined',
+      'escalated',
+      'external-policy',
+      'pa-authority-drift',
+    ])
   })
 
   it('an escalated terminal deny survives the production reader', () => {
