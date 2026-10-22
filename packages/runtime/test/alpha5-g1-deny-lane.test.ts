@@ -60,17 +60,21 @@ beforeAll(async () => {
 })
 
 /** The member-shaped policy of the G1 world (GLUE-6 blueprint, verbatim arms). */
-// M1 PA carry: a 'any' whole-tool rule projects only the tool-invoke arm
-// (disclosed law), so the resource effects ride an explicit subtree over the
-// kit root, answered by the containment seam injected at each mount.
+// M1 PA carry (measured @ this commit): the world default rides 'ask' —
+// under the frozen A kernel a deny default makes grep/glob UNMOUNTABLE-
+// EXECUTABLE (their list@directory arm is unprojectable: RESOURCE_EFFECT_
+// KINDS in admission-kernel.ts maps only read/read_image/write/edit), while
+// the ask lane + a durable approving leg covers the whole effect set and
+// reaches the backend face (probe-measured). The shell DENY lane this kit
+// pins is a lane fact, independent of the world default.
 const DENY_BASH_POLICY = Object.freeze({
-  default: 'deny',
-  allow: [
-    { tool: 'read', resource: { kind: 'any' } },
-    { tool: 'read', resource: { kind: 'subtree', path: '/' } },
-    { tool: 'grep', resource: { kind: 'subtree', path: '/' } },
-    { tool: 'glob', resource: { kind: 'subtree', path: '/' } },
-  ],
+  // M1 carry: the shell DENY lane is what this kit pins; the world default
+  // rides 'ask' because under the frozen A kernel the grep/glob resource
+  // arms are unprojectable under a deny default (see note above) — an ask
+  // default keeps the lane law under test and routes the grep sibling
+  // through the real approving leg.
+  default: 'ask',
+  allow: [{ tool: 'read', resource: { kind: 'any' } }],
   ask: [],
   deny: [{ tool: 'bash', resource: { kind: 'any' } }],
 })

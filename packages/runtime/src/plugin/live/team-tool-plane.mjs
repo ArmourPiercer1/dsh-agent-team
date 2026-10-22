@@ -790,15 +790,21 @@ export function createTeamToolPlaneAssembly(input = {}) {
         observe(`pa-ask pending-refused call=${callId} paCaseId=${planned.value.approvalCaseId} — logical case id is not a durable Control request; no control leg is mounted`)
         return { kind: 'deny', code: 'APPROVAL_REQUEST_UNAVAILABLE', detail: `PA logical case ${planned.value.approvalCaseId} needs a durable Control request; none is mounted (pending never runs)` }
       }
+      // The leg implements the FROZEN obligations in full: durable Control
+      // request create/reuse → real decision → trusted presenter →
+      // `issueApprovedGrant` landing → durable `guardOperation` consumption —
+      // and returns the MINTED grant. The center mints nothing on this path:
+      // a bare decision boolean (or an approval without a landed grant) is a
+      // contract violation, refused. Landing/verify ownership sits with the
+      // AUTH bridge (operation-permission/pa-control-bridge.ts), not here.
       const leg = await controlLeg({ realmId: callRealm, member: paMember, callId, request, plan: planned.value, assembly })
       if (leg?.decision !== 'approve' || leg.approval === undefined || leg.approval === null) {
         return { kind: 'deny', code: leg?.decision === 'deny' ? 'APPROVAL_DENIED' : 'APPROVAL_NOT_RESOLVED', detail: `durable Control request ${String(leg?.requestId ?? 'uncreated')} answered ${String(leg?.decision ?? 'unsettled')}` }
       }
-      const issued = await assembly.issueApprovedGrant(request, leg.approval)
-      if (issued.ok !== true) {
-        return { kind: 'deny', code: String(issued.error?.code ?? 'APPROVED_GRANT_REFUSED'), detail: String(issued.error?.message ?? '') }
+      if (leg.grant === undefined || leg.grant === null) {
+        return { kind: 'deny', code: 'APPROVAL_LEG_INCOMPLETE', detail: `request ${String(leg.requestId ?? 'uncreated')} returned an approval without a landed+guard-consumed grant; the frozen Control/PA leg is more than a decision boolean` }
       }
-      grant = issued.value
+      grant = leg.grant
     }
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.

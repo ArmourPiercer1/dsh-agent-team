@@ -126,7 +126,7 @@ describe('a5-m1-bash-c1 — confined shell C1 refusal family + success positive 
     expect(observe.some((l) => l.includes('confined-shell capability'))).toBe(false)
   })
 
-  it('R2-FIX (was PIN): team_bash default-ask with NO durable Control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly', async () => {
+  it('R2-CENTER (was PIN): team_bash default-ask with NO control leg PENDING-REFUSES — request=0 now MEANS body=0 (the release-blocker flipped); a deny leg and an approve leg settle correctly', async () => {
     const observe: string[] = []
     // (a) no control leg mounted: pending is a denial, never an allow.
     const noLeg = buildPlane(Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }), observe)
@@ -140,7 +140,7 @@ describe('a5-m1-bash-c1 — confined shell C1 refusal family + success positive 
     const r2 = await runBash(denyLeg, { command: 'true' })
     if (!r2.threw) expect(r2.res.text).toMatch(/APPROVAL_DENIED/)
     expect(denyLeg.backends.shell?.execCount?.()).toBe(0)
-    // (c) approve leg: ONE body run after the real issueApprovedGrant + consume edges.
+    // (c) C1 stand-in approving leg (kernel landing real; durable Control row/guardOperation = AUTH bridge): ONE body after issueApprovedGrant + consume.
     const okLeg = buildPlane(Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }), [], approvingControlLeg())
     const r3 = await runBash(okLeg, { command: 'printf r2-fixed-body' })
     expect(r3.threw).toBe(false)
