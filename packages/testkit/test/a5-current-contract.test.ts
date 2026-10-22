@@ -101,6 +101,7 @@ function contractGraph(over: Record<string, string> = {}) {
 function matrixText(vab: 'yes' | 'no' = 'no') {
   return [
     '<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->',
+    '<!-- phase-identity: alpha5-tool-io-governance -->',
     '| ①行ID | ②合入SHA | ③入口 | ④IO | ⑤审批 | ⑥验证 | ⑦缺陷 | ⑧级别 | V@B |',
     '|---|---|---|---|---|---|---|---|---|',
     `| read | #353=1739b262f | plane | ok | ask | 真实Host @1739b262f；证据=evidence/alpha5/x/；适用性=0/3 | none | LIVE-CONFIRMED(scope=x) | ${vab} |`,
@@ -108,13 +109,17 @@ function matrixText(vab: 'yes' | 'no' = 'no') {
   ].join('\n')
 }
 
-const docs = (extra = '') => `<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->\n# doc\n${extra}`
+const docs = (extra = '') =>
+  `<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->\n<!-- phase-identity: alpha5-tool-io-governance -->\n# doc\n${extra}`
 const files = (over: Record<string, string | null> = {}) => {
   const map: Record<string, string | null> = {
     'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md': docs(),
     'docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md': docs(),
     'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrixText(),
     'AGENTS.md': docs(),
+    // matrixText's read-row cites evidence/alpha5/x/ — resolvable through the
+    // dev/agent-workflow/ fallback (the same fallback the production leg uses).
+    'dev/agent-workflow/evidence/alpha5/x': '',
     ...over,
   }
   return {
@@ -208,10 +213,90 @@ describe('checkCurrentContract — production path (current_contract is the only
     const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
     const r = grade(contractGraph(), f)
     // a/b/c: parenthetical + standalone statuses are in the enum. d: LIVE-CONFIRMED is a CLAIM
-    // level whose own ⑥ cell says 同上 with no SHA of its own — literal-cell discipline fires.
+    // level whose own ⑥ cell says 同上 — literal-cell discipline owes it BOTH findings: no
+    // tested SHA of its own AND no evidence path/disclosure of its own.
     expect(r.findings.filter((x) => x.includes('outside the closed enum'))).toEqual([])
-    expect(r.findings.filter((x) => x.includes('claims verification'))).toHaveLength(1)
-    expect(r.findings[0]).toContain('row d')
+    const dd = r.findings.filter((x) => x.includes('row d'))
+    expect(dd.some((x) => x.includes('no tested SHA'))).toBe(true)
+    expect(dd.some((x) => x.includes('without an existing evidence path'))).toBe(true)
+  })
+
+  // ─────────── batch-3: the six bad graphs the reviewer built by hand that ALL graded
+  // green under the batch-2 checks. Each is now a named negative control; the fix was made
+  // in the checker, never by weakening an assertion (root ruling 2026-10-22).
+  describe('batch-3 hardening — six formerly-green bad graphs, one control each', () => {
+    it('① AGENTS ref aimed at old/alpha4 AND body still declaring Alpha.4 as current', () => {
+      const agents = `<!-- phase-baseline-ref: docs/plans/old/alpha4/plan.md -->\n<!-- phase-identity: alpha4-permission-governance -->\n**当前阶段（2026-10-07）**：**Alpha.4 硬治理阶段**\n`
+      const f = files({ 'AGENTS.md': agents })
+      const r = grade(contractGraph(), f)
+      expect(r.findings.some((x) => x.startsWith('Q6:') && x.includes('targets docs/plans/old/alpha4/plan.md'))).toBe(true)
+      expect(r.findings.some((x) => x.startsWith('Q6:') && x.includes('declares 当前阶段 Alpha.4'))).toBe(true)
+    })
+
+    it('② active_plan body declaring its own phase historical (substring-presence checks passed it)', () => {
+      const plan = `<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->\n<!-- phase-identity: alpha5-tool-io-governance -->\n- **当前阶段**：Alpha.4（historical；Alpha.5 未开始）\n`
+      const f = files({ 'docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md': plan })
+      expect(grade(contractGraph(), f).findings.some((x) => x.startsWith('Q6:') && x.includes('active_plan body declares 当前阶段 Alpha.4'))).toBe(true)
+    })
+
+    it('③ a duplicated active_plan field whose second copy points at Alpha.4', () => {
+      // DUPLICATED field: the Alpha.4 copy is ADDED above the current one (a retarget would
+      // be a different bug; the shape that fooled batch 2 was two declarations, both present).
+      const g = contractGraph().replace(
+        '  active_plan: docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md',
+        '  active_plan: docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md\n  active_plan: docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md',
+      )
+      expect(grade(g, files()).findings.some((x) => x.startsWith('Q3:') && x.includes('active_plan must appear exactly once'))).toBe(true)
+    })
+
+    it('④ a matrix claim citing evidence/…/missing-file.md that does not exist', () => {
+      const matrix = [
+        '<!-- phase-baseline-ref: graph#current_contract -->',
+        '<!-- phase-identity: alpha5-tool-io-governance -->',
+        '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
+        '|---|---|---|---|---|---|---|---|---|',
+        '| e | x | y | z | w | 真实Host @1a7c3c1cb；证据=`evidence/alpha5/missing-file.md` | — | LIVE-CONFIRMED(scope=x) | no |',
+      ].join('\n')
+      const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
+      const r = grade(contractGraph(), f)
+      expect(r.findings.some((x) => x.startsWith('Q5:') && x.includes('missing-file.md') && x.includes('do not resolve in-repo'))).toBe(true)
+    })
+
+    it('⑤ phase_id = nonsense is rejected by the canonical-id whitelist', () => {
+      const r = grade(contractGraph({ phase_id: 'nonsense' }), files())
+      expect(r.findings.some((x) => x.startsWith('Q2:') && x.includes('canonical id'))).toBe(true)
+    })
+
+    it('⑥ blocked:[BL-999] — a phantom backlog ID is graded; BL-01, which exists, is not', () => {
+      const bg = docs() + '\n| BL-01 | x | OPEN | x |\n'
+      const f = files({ 'docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md': bg })
+      const bad = grade(contractGraph().replace('blocked: []', 'blocked: [BL-999]'), f)
+      expect(bad.findings.some((x) => x.startsWith('Q1:') && x.includes('BL-999') && x.includes('does not exist in the backlog'))).toBe(true)
+      const good = grade(contractGraph().replace('blocked: []', 'blocked: [BL-01]'), f)
+      expect(good.findings.filter((x) => x.startsWith('Q1:') && x.includes('BL-01'))).toEqual([])
+    })
+
+    it('NEEDS_REVALIDATION must carry V@B=no; flipping the level alone is red', () => {
+      const matrix = [
+        '<!-- phase-baseline-ref: graph#current_contract -->',
+        '<!-- phase-identity: alpha5-tool-io-governance -->',
+        '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
+        '|---|---|---|---|---|---|---|---|---|',
+        '| g | x | y | z | w | 历史 @1a7c3c1cb；证据=`evidence/alpha5/x/`；适用性=3/3 | — | NEEDS_REVALIDATION | yes |',
+      ].join('\n')
+      const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
+      const r = grade(contractGraph(), f)
+      expect(r.findings.some((x) => x.startsWith('Q7:') && x.includes('row g') && x.includes('V@B=yes'))).toBe(true)
+      const flipped = matrix.replace('| yes |', '| no |')
+      const ok = grade(contractGraph(), files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': flipped }))
+      expect(ok.findings.filter((x) => x.includes('row g'))).toEqual([])
+    })
+
+    it('GROUP A: every current field is counted, not just baseline (duplicated collected/matrix)', () => {
+      const dup = contractGraph().replace('blocked: []', '  baseline_collected: "2026-10-23T00:00:00Z"\nblocked: []')
+      // The duplicate sits BEFORE blocked: — inside the block; count must catch it.
+      expect(grade(dup, files()).findings.some((x) => x.startsWith('Q3:') && x.includes('baseline_collected must appear exactly once'))).toBe(true)
+    })
   })
 
   // Production-path pin: the leg grades THIS tree, so it also guards the very docs it grades.
