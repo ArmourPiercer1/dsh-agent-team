@@ -1,0 +1,26 @@
+{
+ "kind": "records",
+ "records": [
+  {
+   "name": "some_tool",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "c",
+   "acc": "W1",
+   "req": "N-A-TOOL",
+   "reqSrc": "s",
+   "eff": [
+    "fs-content-search-rg"
+   ],
+   "prov": "p",
+   "life": "l",
+   "attr": "a",
+   "idx": "i"
+  }
+ ],
+ "expected": [
+  "E_NA_SCOPE"
+ ]
+}

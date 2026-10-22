@@ -1,0 +1,42 @@
+{
+ "kind": "lifecycle",
+ "branch": "ask",
+ "invocationCorrelation": "corr-A",
+ "hostCallId": "hc-1",
+ "hostToken": {
+  "fixtureRef": "trusted-test-fixture",
+  "serialized": false
+ },
+ "binding": {
+  "bindingId": "b1",
+  "bindingRevisionCurrent": true,
+  "status": "ACTIVE"
+ },
+ "member": {
+  "teamSessionId": "ts-1",
+  "instanceId": "i-1"
+ },
+ "realmId": "r-1",
+ "requestedEffects": {
+  "fingerprint": "fp-1"
+ },
+ "control": {
+  "request": {
+   "invocationCorrelation": "corr-A",
+   "requestId": "req-1"
+  }
+ },
+ "bodyStarted": false,
+ "states": [
+  "RECEIVED",
+  "CLASSIFIED",
+  "ASK_WAIT",
+  "CANCELLED"
+ ],
+ "terminal": "CANCELLED",
+ "expected": [],
+ "cancel": {
+  "point": "before-pa-consume",
+  "ledgerUnchanged": true
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "kind": "records",
+ "records": [
+  {
+   "name": "some_tool",
+   "scope": "own-layer",
+   "fc": "FC-U",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "c",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "s",
+   "eff": [
+    "fs-content-search-rg"
+   ],
+   "prov": "p",
+   "life": "l",
+   "attr": "a",
+   "idx": "i"
+  },
+  {
+   "name": "some_tool",
+   "scope": "host-preset-on",
+   "fc": "FC-TEAM15",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "c",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "s",
+   "eff": [
+    "fs-content-search-rg"
+   ],
+   "prov": "p",
+   "life": "l",
+   "attr": "a",
+   "idx": "i"
+  }
+ ],
+ "expected": [
+  "E_OWN_LAYER",
+  "E_OWN_LAYER"
+ ]
+}

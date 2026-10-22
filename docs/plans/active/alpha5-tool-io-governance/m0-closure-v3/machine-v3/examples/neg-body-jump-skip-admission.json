@@ -1,0 +1,35 @@
+{
+ "kind": "lifecycle",
+ "branch": "all-allow",
+ "invocationCorrelation": "corr-B",
+ "hostCallId": "hc-2",
+ "hostToken": {
+  "fixtureRef": "trusted-test-fixture",
+  "serialized": false
+ },
+ "binding": {
+  "bindingId": "b2",
+  "bindingRevisionCurrent": true,
+  "status": "ACTIVE"
+ },
+ "member": {
+  "teamSessionId": "ts-2",
+  "instanceId": "i-2"
+ },
+ "realmId": "r-2",
+ "requestedEffects": {
+  "fingerprint": "fp-2"
+ },
+ "states": [
+  "RECEIVED",
+  "DISPATCHED",
+  "SETTLED"
+ ],
+ "terminal": "SETTLED",
+ "expected": [
+  "E_MISSING",
+  "E_MISSING",
+  "E_MISSING",
+  "E_TRANSITION"
+ ]
+}

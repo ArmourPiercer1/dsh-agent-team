@@ -1,0 +1,1965 @@
+{
+ "meta": {
+  "id": "m0-closure-v3c-route-records",
+  "status": "M0-CLOSURE-CANDIDATE-v3c; NOT-FROZEN; checker-NOT-RUN; supersedes v3b(v3/v3b 留档); 根2026-10-22 六条纠偏落实版; idx/note 旧 Q5/DEFER 措辞已对齐治理必交(无是否治理选项语)",
+  "semanticSource": "v2 m0-candidates/route-records.json(只读底)+research/ receipts(7线+自补4)+TOOL-CAPABILITY-MATRIX-9b2.md@c09f94b(SHA b7062a9d…固定83名账口径 68静态+15Team)",
+  "tierMeaning": {
+   "F": "冻结波(已在治理或已定归属)",
+   "W1": "治理缺口首批必交",
+   "W2": "条件必交(shipped 不可达;声明挂载即入)"
+  },
+  "honesty": "本件 records/meta 无任何未定档 token(程序断言,范围=records+meta); fixture≠GO; CONFIG-DECLARED≠OS; parent-confirmed 标签保留; 全证据=静态源码核对(git show @9b2/HEAD 亲验 pin639), 零运行验证声称",
+  "factProvenance": "all research/ facts = 只读核 (git show @9b2 / HEAD-verified pin639); ZERO runtime verification claims; Contract-A=root-provided pending",
+  "pins": {
+   "product": "9b2ee57bc5afd30e89855e09d1769d2e5ec83912",
+   "host": "639ed015397290b3745d163aafe02ffee4aa3f84 (tests/deepseek-harness-test-use HEAD 亲验)",
+   "matrix": "c09f94bfae5e80ca774ab09ac7296679f2fff5bb"
+  },
+  "axes": "currentRoute=9b2 现状事实; targetGovernedRoute=治理目标(PLAN-B,全分发入口必交,未决仅形式字段); targetCeiling=Team policy/ceiling 恒适用; acc=验收波次(F/W1/W2,次序非豁免); req/reqSrc=逐项来源; openDeliverable=治理方案或安全不支持边界(禁删功能scope)",
+  "goalSemantics": "PB15 全分发入口受控+原生Body回落=阻断; PB16 仅Guard全拒/仅DORMANT/仅fixture≠完成; PB40 全工具范围用户已裁(不重开); PB169 100%安全归宿禁UNSUPPORTED藏主体。v3 的 G/D 语义(缺口清零/递延清零)已废——cur 现状不得当目标路线。",
+  "keyset": "93 行 = 90 唯一键(86 工具名+4 surface)+3 同名双列(host/upstream trio); 86=矩阵附录A 唯一83+plane 别名3; 差分零缺零余, 见 research/keyset-reconciliation.md",
+  "fcSource": "familyContracts 逐字引自 v2 §3.5(DELTA 正本 123a3dac…)，其中 T-1 等历史措辞属引文非本件现值；records 各行现值以本件为准"
+ },
+ "familyContracts": [
+  {
+   "id": "FC-RD",
+   "title": "read takeover"
+  },
+  {
+   "id": "FC-WR",
+   "title": "write-family arms (write/edit/str_replace_editor/read_image); pre-approval-zero-effect TARGET invariant (A12)"
+  },
+  {
+   "id": "FC-SRCH-N",
+   "title": "native grep/glob host passthrough; governance attribution UNDECIDED (T-1); chain=unsupported->next()->endcap-abstain"
+  },
+  {
+   "id": "FC-SRCH-A",
+   "title": "team_grep/team_glob alias + confined rg"
+  },
+  {
+   "id": "FC-SHL",
+   "title": "bash takeover"
+  },
+  {
+   "id": "FC-SHL-P",
+   "title": "pwsh not mounted"
+  },
+  {
+   "id": "FC-SHL-A",
+   "title": "team_bash alias; R2 violation of pre-approval-zero-effect (gate criteria GATES 2.7)"
+  },
+  {
+   "id": "FC-JOB",
+   "title": "job trio fixed spelling"
+  },
+  {
+   "id": "FC-WEB",
+   "title": "web family dormant"
+  },
+  {
+   "id": "FC-PTC",
+   "title": "run_code nested composite"
+  },
+  {
+   "id": "FC-LSP",
+   "title": "lsp assembly"
+  },
+  {
+   "id": "FC-MCP",
+   "title": "MCP dynamic domain mount/reconcile/bind"
+  },
+  {
+   "id": "FC-RES",
+   "title": "mcp resource trio non-dynamic; route undecided"
+  },
+  {
+   "id": "FC-TEAM15",
+   "title": "own-layer team tools; FULL 15 required, no spot-check (audit B6)"
+  },
+  {
+   "id": "FC-TODO",
+   "title": "todo_write reserved-name assembly"
+  },
+  {
+   "id": "FC-NEG4",
+   "title": "preset self-registration isolation surface"
+  },
+  {
+   "id": "FC-U",
+   "title": "UNKNOWN rows; route=M0_UNRESOLVED until adjudicated; U-A* = verification route only"
+  }
+ ],
+ "records": [
+  {
+   "name": "read",
+   "scope": "plane-takeover",
+   "fc": "FC-RD",
+   "eff": [
+    "read-resourceKey-window"
+   ],
+   "prov": "CONTROLLED_FS_OR_HOST_READ",
+   "life": "cooperative-abort;restart-OPEN",
+   "attr": "LANE_A",
+   "idx": "C1:parity-window+error-shape;C2:real-chain-row-approval;C3:full-matrix+UI",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(接管行已治理)",
+   "currentRoute": "PLANE_TAKEOVER",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "read_image",
+   "scope": "host-conditional",
+   "fc": "FC-WR",
+   "eff": [
+    "fs-read-bytes-capped",
+    "attachment-store-write",
+    "vision-token-context"
+   ],
+   "prov": "HOST_PKG:dsh-tool-fs(read-image.ts:209-263,attachments-conditional index.ts:53,67-72)",
+   "life": "exists-only-while-attachment-store-mounted;caps maxImageBytes/Pixels;exec.re-check",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger;C-defer:image-route-gate-negative",
+   "note": "只读核 research/fcwr-pwsh-web.json;plane reserved :398-399 no image row",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "write",
+   "scope": "host-preset-on",
+   "fc": "FC-WR",
+   "eff": [
+    "fs-write-bytes-under-sandbox"
+   ],
+   "prov": "HOST_PKG:dsh-tool-fs(index.ts:76-78 FsSandboxController)",
+   "life": "sandbox-escalation-per-call;no-plane-write-row(impostor-refusal :349-357,:489)",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "keep-v2-C-gates(M-02)+C1:write-receipt-face-unconsumed-disclosed",
+   "note": "只读核 research/fcwr-pwsh-web.json;C-FS lane implemented, plane consumes READ-side only",
+   "gap": "NO_GOVERNED_WRITE_ARM@plane",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "edit",
+   "scope": "host-preset-on",
+   "fc": "FC-WR",
+   "eff": [
+    "fs-edit-bytes-under-sandbox"
+   ],
+   "prov": "HOST_PKG:dsh-tool-fs(index.ts:76-79)",
+   "life": "same-face-as-write",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "keep-v2-C-gates(M-03)",
+   "note": "只读核 research/fcwr-pwsh-web.json",
+   "gap": "NO_GOVERNED_EDIT_ARM@plane",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "str_replace_editor",
+   "scope": "host-unmounted-shipped",
+   "fc": "FC-WR",
+   "eff": [
+    "fs-multi-mutate-view-create-replace-insert"
+   ],
+   "prov": "HOST_PKG:dsh-tool-str-replace-editor(index.ts:426-430,513-531-unconditional-when-mounted)",
+   "life": "zero-shipped-preset-rows;only-mount-proof=SDK-e2e-fixture",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending:route-resolved",
+   "note": "只读核 research/fcwr-pwsh-web.json;先验\"装载条件待核\"已负向落定",
+   "gap": "NONE_SHIPPED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "零 shipped preset 行;唯一挂载证据=SDK e2e fixture(keyless-smoke.e2e.ts:74-75)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "grep",
+   "scope": "host-preset-on-setup-excluded-on-strict",
+   "fc": "FC-SRCH-N",
+   "eff": [
+    "fs-content-search-rg"
+   ],
+   "prov": "HOST_PKG:dsh-tool-fs-search(grep.ts:276-340)",
+   "life": "strict-agent-setup-FATAL-unless-builtinToolDeny(permission-coverage.ts:146-151);post-mask-call=TEAM_TOOL_UNGOVERNED/TOOL_BINDING_UNVERIFIED;web-profile-guard-refuses-inherited-native;un-governed-session=plain-host-passthrough",
+   "attr": "SETUP_EXCLUDED",
+   "idx": "W1:Q5-form-pending(governance REQUIRED; form a=ledger :463-464+drift-pin :397 flip, form b=alias+native-deny with FUNCTIONAL parity legs)",
+   "note": "只读核 research/grep-glob-attribution.json;Q5=形式定夺(治理必交不动摇;A2C-6 现状=cur 事实)",
+   "gap": "A2C6_DEFERRAL_OPEN",
+   "acc": "W2",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15+L16(仅 Guard 全拒不算完成;治理目标不可豁免,Q5 仅形式选择)",
+   "currentRoute": "EXCLUDED_BY_SETUP",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "routeFormPending": "Q5(a 同名翻转 / b alias-only+native-deny)——治理必交不动摇,仅形式未决",
+   "q5Mapping": "映射(只读核): native grep 参数面={pattern!,path?,include?}(grep.ts:289-292 pin639), native glob={pattern!,path?}(glob.ts:312-320); alias confined-rg 行经 host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath=同一公共词汇(plane-effect-backends.mjs:264-277 @9b2), 被拒 4-knob(multiline/contextLines/fixedString/ignoreCase)属 lane 自身 legacy grep(1) port 词汇, 非 native 参数——alias 对 native 声明面静态核对无缺参; 两形不预定: (a)同名翻转成本=ledger :463-464+drift-pin :397+Coverage class 翻+掩蔽次序; (b)alias-only+native 名 deny: FUNCTIONAL 成立条件=输出形/caps/spill 对 native 验收(现行级未验收,matrix team_grep 行)+strict-surface 掩蔽次序; 纯 deny 无功能面=L16 不允许",
+   "openDeliverable": "Q5 形式定夺后补验收腿;本包已给映射"
+  },
+  {
+   "name": "glob",
+   "scope": "host-preset-on-setup-excluded-on-strict",
+   "fc": "FC-SRCH-N",
+   "eff": [
+    "fs-path-glob-rg"
+   ],
+   "prov": "HOST_PKG:dsh-tool-fs-search(glob.ts:296-353)",
+   "life": "same-as-grep;INT-R3-flip-使-backends-头注:42-45-stale",
+   "attr": "SETUP_EXCLUDED",
+   "idx": "W1:Q5-form-pending",
+   "note": "只读核 research/grep-glob-attribution.json",
+   "gap": "A2C6_DEFERRAL_OPEN",
+   "acc": "W2",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15+L16(仅 Guard 全拒不算完成;治理目标不可豁免,Q5 仅形式选择)",
+   "currentRoute": "EXCLUDED_BY_SETUP",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "routeFormPending": "Q5(a 同名翻转 / b alias-only+native-deny)——治理必交不动摇,仅形式未决",
+   "q5Mapping": "映射(只读核): native grep 参数面={pattern!,path?,include?}(grep.ts:289-292 pin639), native glob={pattern!,path?}(glob.ts:312-320); alias confined-rg 行经 host PUBLIC buildGrepCommand/parseGrepMatches/resolveRgPath=同一公共词汇(plane-effect-backends.mjs:264-277 @9b2), 被拒 4-knob(multiline/contextLines/fixedString/ignoreCase)属 lane 自身 legacy grep(1) port 词汇, 非 native 参数——alias 对 native 声明面静态核对无缺参; 两形不预定: (a)同名翻转成本=ledger :463-464+drift-pin :397+Coverage class 翻+掩蔽次序; (b)alias-only+native 名 deny: FUNCTIONAL 成立条件=输出形/caps/spill 对 native 验收(现行级未验收,matrix team_grep 行)+strict-surface 掩蔽次序; 纯 deny 无功能面=L16 不允许",
+   "openDeliverable": "Q5 形式定夺后补验收腿;本包已给映射"
+  },
+  {
+   "name": "team_grep",
+   "scope": "alias",
+   "fc": "FC-SRCH-A",
+   "eff": [
+    "read-subtree"
+   ],
+   "prov": "CONFINED_PROCESS_RG",
+   "life": "cancel-consistency-354-runtime-recheck-OPEN",
+   "attr": "LANE_B",
+   "idx": "C1:parity+error+cap+spill+exitcode+cancel;C2:alias-row-approval-closed-loop;C3:walker-absence-negative",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15+L16(alias 车道已治理;team_bash R2 blocker 必修=功能可用)",
+   "currentRoute": "PLANE_ALIAS",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_glob",
+   "scope": "alias",
+   "fc": "FC-SRCH-A",
+   "eff": [
+    "read-subtree"
+   ],
+   "prov": "CONFINED_PROCESS_RG",
+   "life": "cancel-consistency-354-runtime-recheck-OPEN",
+   "attr": "LANE_B",
+   "idx": "C1:parity+error+cap+spill+exitcode+cancel;C2:alias-row-approval-closed-loop;C3:globEnabled-typed-gate-positive",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15+L16(alias 车道已治理;team_bash R2 blocker 必修=功能可用)",
+   "currentRoute": "PLANE_ALIAS",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "bash",
+   "scope": "plane-takeover",
+   "fc": "FC-SHL",
+   "eff": [
+    "process-child-tree",
+    "read",
+    "write"
+   ],
+   "prov": "TARGET_CONFINED_PROCESS;host-body-verification-OPEN",
+   "life": "foreground-cancel-340-compile-side;bg=g7-M2;persistent-not-inherited(discipline 2)",
+   "attr": "LANE_B",
+   "idx": "C1:exit-timeout;C2:foreground-real-chain+approval;C3:cancel+restart+bg",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(接管行已治理)",
+   "currentRoute": "PLANE_TAKEOVER",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "pwsh",
+   "scope": "host-preset-conditional-win32",
+   "fc": "FC-SHL-P",
+   "eff": [
+    "shell-exec-powershell-win32",
+    "bg-jobs"
+   ],
+   "prov": "HOST_PKG:dsh-tool-pwsh(index.ts:214,384)+dsh-pwsh-local(resolve.ts:67-79)",
+   "life": "platform-gate disabled-unless-win32 (presets ~:23-28);no plane row",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger;C-defer:win32-parity",
+   "note": "只读核 research/fcwr-pwsh-web.json;root ruling 06:43Z bash-row≠pwsh",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ-COND-win32",
+   "reqSrc": "presets 平台门 disabled-unless-win32(三 preset ~:23-28);win32 组合内=REQ",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_bash",
+   "scope": "alias",
+   "fc": "FC-SHL-A",
+   "eff": [
+    "process-child-tree"
+   ],
+   "prov": "CONFINED_PROCESS_TARGET",
+   "life": "R2=violation of pre-approval-zero-effect; gate=GATES 2.7 three-stage",
+   "attr": "LANE_B+LANE_I",
+   "idx": "C2:combo-regression-gate AND real-host-gate (separate gates); no request>=1/body=0; no all-deny pass; no MCP/PTC extrapolation",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15+L16(alias 车道已治理;team_bash R2 blocker 必修=功能可用)",
+   "currentRoute": "PLANE_ALIAS",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "terminal_open",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "os-pty-spawn-shell"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:164)+terminal+terminal-bash+subprocess-local(node-pty :287)",
+   "life": "owner-agent-keyed;exec.signal;0-preset-mounts(release-native)",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED(REWORK-10-18:92)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "opt-in 包零 preset 挂载(gen-tool-catalog.spec.ts:40-41);PB15:声明 Team 配置挂载即必交",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "治理方案或明确安全不支持边界(根指令,不得删功能scope)"
+  },
+  {
+   "name": "terminal_close",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "owned-process-tree-kill"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:360,:379)",
+   "life": "closed|already-closing",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "terminal 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "治理方案或安全不支持边界声明(进程树杀属副作用)"
+  },
+  {
+   "name": "terminal_list",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "own-agent-snapshot-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:391,:400)",
+   "life": "stateless",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "terminal 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "terminal_read",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "memory-output-page-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:302,:321)",
+   "life": "stateless;bounded",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "terminal 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "terminal_send",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "shell-input-injection-stdin",
+    "bg-pty-send-jobs"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:199,258;background.ts:22)",
+   "life": "fg-honors-signal;bg-cancel=killed",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json;OS侧最大未纳管面",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED;shell-rules-key-bash-pwsh-only(plane:519)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "terminal 族同证;缺口账第一优先级(若挂载)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "治理方案或明确安全不支持边界(根指令,不得删功能scope)"
+  },
+  {
+   "name": "terminal_signal",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "os-signal-to-process-group"
+   ],
+   "prov": "HOST_PKG:dsh-tool-terminal(index.ts:335,:353)",
+   "life": "SIGKILL-shell-target-rejected-:339",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/terminal.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "terminal 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "治理方案或明确安全不支持边界(根指令,不得删功能scope)"
+  },
+  {
+   "name": "job_output",
+   "scope": "plane-fixed",
+   "fc": "FC-JOB",
+   "eff": [
+    "durable-state-read"
+   ],
+   "prov": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+   "life": "default-off-keyed-mount",
+   "attr": "LANE_D",
+   "idx": "C1:manage-auth;C2:cross-member-isolation;C3:restart-recovery",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(固定拼写;缺省 off=cur 事实非目标)",
+   "currentRoute": "PLANE_FIXED_MOUNT",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "job_list",
+   "scope": "plane-fixed",
+   "fc": "FC-JOB",
+   "eff": [
+    "durable-state-read"
+   ],
+   "prov": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+   "life": "default-off-keyed-mount",
+   "attr": "LANE_D",
+   "idx": "C1:manage-auth;C2:cross-member-isolation;C3:restart-recovery",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(固定拼写;缺省 off=cur 事实非目标)",
+   "currentRoute": "PLANE_FIXED_MOUNT",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "job_kill",
+   "scope": "plane-fixed",
+   "fc": "FC-JOB",
+   "eff": [
+    "job-control-durable-write"
+   ],
+   "prov": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+   "life": "kill-requested-not-terminated;restart-recovery-OPEN",
+   "attr": "LANE_D",
+   "idx": "C1:manage-auth;C2:cross-member-isolation;C3:real-termination+recovery",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(固定拼写;缺省 off=cur 事实非目标)",
+   "currentRoute": "PLANE_FIXED_MOUNT",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_OR_EQUIVALENT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "lsp",
+   "scope": "assembly",
+   "fc": "FC-LSP",
+   "eff": [
+    "process",
+    "read"
+   ],
+   "prov": "REAL_CLANGD_TSSERVER",
+   "life": "per-member-x-policy-generation;restart-invalidate-OPEN",
+   "attr": "LANE_C",
+   "idx": "C1:protocol-shape;C2:real-server-baseline-recheck;C3:strict-ui-family",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(装配可信面;归属已定)",
+   "currentRoute": "ASSEMBLY_STATIC",
+   "targetGovernedRoute": "GOVERNED_ASSEMBLY_STATIC",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "web_fetch",
+   "scope": "host-preset-on",
+   "fc": "FC-WEB",
+   "eff": [
+    "external-net-egress-fetch"
+   ],
+   "prov": "PR7-产品臂DORMANT + HOST dsh-tool-web(live)",
+   "life": "loopback-deny-before-fetch-callpoint(fixture-10/10);host-live",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "keep-v2-C-gates(FC-WEB);C2=real-endpoint-ENV_BLOCK",
+   "note": "只读核 research/fcwr-pwsh-web.json(同web_search事实族)",
+   "gap": "PRODUCT_WEB_ARM_DORMANT",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L16(仅 DORMANT 不可为目标)+L15",
+   "currentRoute": "PRODUCT_ARM_DORMANT_HOST_LIVE",
+   "targetGovernedRoute": "GOVERNED_PRODUCT_ARM_TO_LIVE",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "产品臂到活的治理方案(network effect 词汇缺口 permission-coverage.ts:212)"
+  },
+  {
+   "name": "web_search",
+   "scope": "host-preset-on",
+   "fc": "FC-WEB",
+   "eff": [
+    "external-net-egress-search"
+   ],
+   "prov": "HOST_PKG:dsh-tool-web(search.ts:326)+dsh-web seam(WEB_PROVIDER_UNAVAILABLE :187)",
+   "life": "host-live(searchProvider deepseek shipped base ~:473-490);product governance arm DORMANT",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "keep-FC-WEB-defer;C2=real-internet-ENV_BLOCK",
+   "note": "只读核 research/fcwr-pwsh-web.json;v2 DORMANT_NO_PROVIDER 指产品治理臂(sandbox-provider network.ts:45,51 DORMANT)——措辞已按 S2 教训更正：不断言 host 无 provider",
+   "gap": "PRODUCT_WEB_ARM_DORMANT",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L16(仅 DORMANT 不可为目标)+L15",
+   "currentRoute": "PRODUCT_ARM_DORMANT_HOST_LIVE",
+   "targetGovernedRoute": "GOVERNED_PRODUCT_ARM_TO_LIVE",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "产品臂到活的治理方案(network effect 词汇缺口 permission-coverage.ts:212)"
+  },
+  {
+   "name": "skill",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "prompt-injection-surface",
+    "catalog-publish"
+   ],
+   "prov": "HOST_PKG:dsh-tool-skill(index.ts:81,161)",
+   "life": "model-invocable double-gate :138/:145;user-gesture kind:user only :195",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger(REWORK:86)",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "load_workspace_dependencies",
+   "scope": "host-sdk-app-env-only",
+   "fc": "FC-U",
+   "eff": [
+    "runtime-payload-install-mkdir-cp-rename-rm"
+   ],
+   "prov": "HOST_PKG:dsh-tool-workspace-dependencies(index.ts:249,installPrimaryRuntime:204-235)",
+   "life": "first-execution-install-memoized;no-PATH-change",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "READ_KIND_MASKS_WRITE(index.ts:275)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "sdk-app bundle env-gate 专属(sdk-app:30-36)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "todo_write",
+   "scope": "assembly",
+   "fc": "FC-TODO",
+   "eff": [
+    "state-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "assembly-row-positive-proposed",
+   "attr": "LANE_I",
+   "idx": "C1:assembly-row;C2:state-approval;C3:cold-recovery",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(装配可信面;归属已定)",
+   "currentRoute": "ASSEMBLY_STATIC",
+   "targetGovernedRoute": "GOVERNED_ASSEMBLY_STATIC",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "create_goal",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "session-log-append",
+    "continuation-rounds-arm"
+   ],
+   "prov": "HOST_PKG:dsh-tool-goal+goal(goal/src/index.ts:613)",
+   "life": "disarm-on-agent/created;resume-rearm=human-only;maxGoalRounds=256;blocked-floor-3",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/goal-schedule-session.json;direct-human authority authority.ts:100",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "get_goal",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "session-state-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-goal(goal/src/index.ts:278-282)",
+   "life": "live-instance-only",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "update_goal",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "session-log-append",
+    "continuation-rounds-arm-or-disarm"
+   ],
+   "prov": "HOST_PKG:dsh-tool-goal(:234-235;:613)",
+   "life": "optimistic-revision-per-call;complete-terminal",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "schedule_create",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "durable-storage-write-tasks",
+    "timer-daemon-arm",
+    "session-wake-cross-session-on-delivery"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-schedule-bundle/schedule(tools.ts:416-444;runtime.ts:101-124;storage.ts:56-59)",
+   "life": "durable-restart-recovery;session-stop-stops-tasks;caller-session-scoped-tool-surface",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental bundle shipped-off(web-app/README.md:58)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "schedule_delete",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "durable-task-and-records-remove"
+   ],
+   "prov": "HOST_PKG:schedule(tools.ts:469-484;index.ts:342-348)",
+   "life": "IS-the-cancel-path",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "schedule 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "schedule_list",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "own-session-active-tasks-read"
+   ],
+   "prov": "HOST_PKG:schedule(tools.ts:451-460)",
+   "life": "stateless",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json;tool-surface≠host-wide(catalog≠tool)",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "schedule 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "schedule_update",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "durable-task-mutate-timer-reschedule"
+   ],
+   "prov": "HOST_PKG:schedule(tools.ts:492-527)",
+   "life": "re-align-on-rule-change",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "schedule 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "session_search",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "cross-session-read-workspace"
+   ],
+   "prov": "HOST_PKG:dsh-tool-session-query(index.ts:65-73)",
+   "life": "openAt:never-shipped→SEARCH_DISABLED;workspace-authorization;30s-deadline",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED;cwd-scoped-xsession",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "shipped 零挂载+openAt:never(session-query-sqlite:88-106)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "session_trace",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "cross-session-lineage-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-session-query(index.ts:85-93)",
+   "life": "concurrency-safe",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "session 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "session_event_read",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "cross-session-unabridged-event-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-session-query(index.ts:108-121)",
+   "life": "works-with-search-disabled(exact-reads-inherit)",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED;secrets-in-raw-events",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "session 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "session_event_search",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "session-event-fulltext-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-session-query(index.ts:75-83)",
+   "life": "SEARCH_DISABLED-until-openAt-flip",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "session 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "session_event_trace",
+   "scope": "host-unmounted-optin-package",
+   "fc": "FC-U",
+   "eff": [
+    "session-event-relationship-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-session-query(index.ts:95-106)",
+   "life": "concurrency-safe",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/goal-schedule-session.json",
+   "gap": "OPTIN_UNMANAGED_IF_MOUNTED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "session 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "subagent",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "child-agent-spawn-resource-cost"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent(index.ts:108,379)",
+   "life": "continuable;maxDepth-default-1",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "subagent_fork",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "child-agent-spawn-seeded-resource-cost"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent(fork provider)",
+   "life": "continuable-in-presets;one-shot-at-base",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "subagent_codex",
+   "scope": "host-preset-off",
+   "fc": "FC-U",
+   "eff": [
+    "external-codex-child-agent"
+   ],
+   "prov": "HOST_PKG:dsh-subagent-codex(presets-disabled std:105)",
+   "life": "one-shot;provider-managed-depth",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json;permcov无类目=strict-surface-UNKNOWN",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "preset disabled:true(std:105/cordis:104/ptc:105)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "subagent_claude_code",
+   "scope": "host-preset-off",
+   "fc": "FC-U",
+   "eff": [
+    "external-claude-code-child-agent"
+   ],
+   "prov": "HOST_PKG:dsh-subagent-claude-code(disabled std:113)",
+   "life": "one-shot",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "preset disabled:true(std:113)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "list_subagent_models",
+   "scope": "host-conditional-modelSelection",
+   "fc": "FC-U",
+   "eff": [
+    "model-routes-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent/list-models.ts:86",
+   "life": "registered-iff-modelSelectionSettings",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W1",
+   "req": "REQ-COND",
+   "reqSrc": "条件注册 iff modelSelectionSettings(list-models.ts:86)",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "interrupt_agent",
+   "scope": "plane-host-impl",
+   "fc": "FC-U",
+   "eff": [
+    "cancel-target-child-turn"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent-control(index.ts:74-75)",
+   "life": "stop-current-turn-only",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger;name-collision-disclosed",
+   "note": "只读核 research/subagent-team.json;同名=host impl",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "list_agents",
+   "scope": "plane-host-impl",
+   "fc": "FC-U",
+   "eff": [
+    "registry-read"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent-control/list-agents.ts:86",
+   "life": "snapshot",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger;name-collision-disclosed",
+   "note": "只读核 research/subagent-team.json;host impl",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "send_message",
+   "scope": "plane-host-impl",
+   "fc": "FC-U",
+   "eff": [
+    "message-inject-into-child-agent"
+   ],
+   "prov": "HOST_PKG:dsh-tool-subagent-control(index.ts:28-29)",
+   "life": "steers-at-step-boundary;resumes-inactive",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger;name-collision-disclosed",
+   "note": "只读核 research/subagent-team.json;host impl",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "workflow",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "agent-fanout-multiplicative-cost"
+   ],
+   "prov": "HOST_PKG:dsh-tool-workflow(index.ts:328-329,:60)",
+   "life": "off-in-ptc(:126);engine-isolate-group;caps-in-script",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "ralph",
+   "scope": "host-preset-off",
+   "fc": "FC-U",
+   "eff": [
+    "agent-loop-rounds-multiplicative-cost"
+   ],
+   "prov": "HOST_PKG:dsh-tool-ralph(index.ts:411;disabled std:127)",
+   "life": "maxRounds=64-preset-bound",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json;base-mounts-but-all-presets-disable",
+   "gap": "UNMANAGED_IF_ENABLED",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "preset disabled:true(std:127);base 挂载由 preset 关闭",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "ask_user_question",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "human-input-channel"
+   ],
+   "prov": "HOST_PKG:dsh-tool-ask-user(index.ts:38-39)",
+   "life": "blocking-question-answer",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/selfcheck-misc.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "exit_plan_mode",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "session-mode-transition-approval-gate"
+   ],
+   "prov": "HOST_PKG:dsh-plan-mode(index.ts:67,:278)",
+   "life": "plan-mode-exit-only-via-approval(standard:52-62)",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/selfcheck-misc.json;host级语义,preset-realm无对应物",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "present",
+   "scope": "host-preset-on",
+   "fc": "FC-U",
+   "eff": [
+    "file-expose-deliverable-card"
+   ],
+   "prov": "HOST_PKG:dsh-tool-present(index.ts:38-39)",
+   "life": "stateless-expose-no-copy",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/selfcheck-misc.json;refusal-pinned a5natexe…:298",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "plugin_manager",
+   "scope": "host-preset-conditional",
+   "fc": "FC-U",
+   "eff": [
+    "profile-config-write-persist-all-sessions",
+    "npm-install-build-script-exec",
+    "peer-dep-exemption"
+   ],
+   "prov": "HOST_PKG:dsh-boot-plugin-manager(tools.ts:20,38-41)",
+   "life": "per-call approveEscalation(danger-full-access);silent-no-prompt-if-session-already-full-access escalation.ts:173;fail-closed-no-approver :180/:203",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger(REWORK:99)",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json;cordis preset iff profileContext",
+   "gap": "PERCALL_ESCALATION_ONLY",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "Team 侧 ceiling/ask 治理方案(覆盖 host 免提示路径)或明确安全不支持边界"
+  },
+  {
+   "name": "cordis_inspect_list",
+   "scope": "host-preset-cordis-only",
+   "fc": "FC-U",
+   "eff": [
+    "runtime-topology-disclosure"
+   ],
+   "prov": "HOST_PKG:dsh-tool-cordis(index.ts:23)",
+   "life": "closed-registry-read-only",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "cordis_inspect_query",
+   "scope": "host-preset-cordis-only",
+   "fc": "FC-U",
+   "eff": [
+    "runtime-topology-disclosure",
+    "client-browser-roundtrip"
+   ],
+   "prov": "HOST_PKG:dsh-tool-cordis(index.ts:42;inspect-registry.ts:119-133)",
+   "life": "client-query-waits-browser-page;timeout",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "UNMANAGED_INHERITED_LIVE",
+   "acc": "W1",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(预设继承=分发入口;原生 Body 回落=阻断项)+L40",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "list_mcp_resource_templates",
+   "scope": "host-dynamic-mcp-scope",
+   "fc": "FC-RES",
+   "eff": [
+    "mcp-external-server-roundtrip"
+   ],
+   "prov": "HOST_PKG:dsh-mcp-resources(tools.ts:43)",
+   "life": "same-trio-dynamics",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "MCP_GOVERNANCE_DORMANT",
+   "acc": "W1",
+   "req": "REQ-COND",
+   "reqSrc": "MCP 三件同证",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "MCP 治理线方案(DORMANT 计划 §10 未实施,REWORK:94)"
+  },
+  {
+   "name": "list_mcp_resources",
+   "scope": "host-dynamic-mcp-scope",
+   "fc": "FC-RES",
+   "eff": [
+    "mcp-external-server-roundtrip",
+    "untrusted-external-content"
+   ],
+   "prov": "HOST_PKG:dsh-mcp-resources(tools.ts:34)",
+   "life": "visible-only-while-connected-server-in-agent-scope;scope-resolve-before-network :122",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger(REWORK:94)",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "MCP_GOVERNANCE_DORMANT",
+   "acc": "W1",
+   "req": "REQ-COND",
+   "reqSrc": "动态出现 iff ≥1 connected server(mcp-resources/index.ts:80-101);PB15 明列动态 MCP",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "MCP 治理线方案(DORMANT 计划 §10 未实施,REWORK:94)"
+  },
+  {
+   "name": "read_mcp_resource",
+   "scope": "host-dynamic-mcp-scope",
+   "fc": "FC-RES",
+   "eff": [
+    "mcp-external-arbitrary-uri-content",
+    "untrusted-external-content"
+   ],
+   "prov": "HOST_PKG:dsh-mcp-resources(tools.ts:52;connection.ts:380-verbatim-uri)",
+   "life": "no-host-uri-policy;only-server-membership+timeout",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "GAP-ledger",
+   "note": "只读核 research/skill-plugin-cordis-mcpres.json",
+   "gap": "MCP_GOVERNANCE_DORMANT",
+   "acc": "W1",
+   "req": "REQ-COND",
+   "reqSrc": "MCP 三件同证",
+   "currentRoute": "HOST_REALM_INHERITED",
+   "targetGovernedRoute": "GOVERNED_TAKEOVER_HOST_BODY",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "MCP 治理线方案(DORMANT 计划 §10 未实施,REWORK:94)"
+  },
+  {
+   "name": "stagehand_act",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "browser-act-incl-form-submit"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "stagehand 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "exfil/attach 面治理方案随 experimental 挂载声明"
+  },
+  {
+   "name": "stagehand_extract",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "page-content-to-external-model-exfil-surface"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "stagehand 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "exfil/attach 面治理方案随 experimental 挂载声明"
+  },
+  {
+   "name": "stagehand_navigate",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "browser-goto-any-url"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental opt-in 默认关(browser-use-stagehand-native index.ts:176-190)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "exfil/attach 面治理方案随 experimental 挂载声明"
+  },
+  {
+   "name": "stagehand_observe",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "page-observation-read"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "stagehand 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "stagehand_screenshot",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "screenshot-attachment"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "stagehand 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "exfil/attach 面治理方案随 experimental 挂载声明"
+  },
+  {
+   "name": "stagehand_tabs",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "tab-manipulation"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+   "life": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/stagehand.json",
+   "gap": "NO_APPROVAL_LANE_MCP_CLASS(@pin639 createMcpToolDefinition-adaptation-only tools.ts:225-247)",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "stagehand 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "openDeliverable": "exfil/attach 面治理方案随 experimental 挂载声明"
+  },
+  {
+   "name": "run_code",
+   "scope": "assembly",
+   "fc": "FC-PTC",
+   "eff": [
+    "fs-ladder-once-grant",
+    "nested-tools-second-governance",
+    "net-process-visibility-GAP-332-unproven"
+   ],
+   "prov": "CONFINED_EXECUTION_CONFIG_DECLARED",
+   "life": "one-shot-grant-consumed;CONSUMED-replay-refused",
+   "attr": "LANE_C",
+   "idx": "C1:five-negative-controls-fixture(NOT GO);C2:inner-edge-recheck(8eb93ddd historical)+outer-baseline-recheck;C3:overall-effect-guarantee",
+   "note": "outer escalation bridge in production; S-5/BL-16 net/process vocabulary registered upstream; v2 eff 占位 token 清除,矩阵 run_code 行事实补全(静态源码核对)",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B@8f84a784 §表(run_code/PTC 行):内层 tools.* 二次治理",
+   "currentRoute": "NESTED_COMPOSITE_PTC",
+   "targetGovernedRoute": "GOVERNED_COMPOSITE_SECOND_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "interrupt_agent",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "team-member-interrupt"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:277-278)",
+   "life": "team-semantic-interrupt;profile-disables-host-trio",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json;同名=team impl",
+   "gap": "PERMCOV_SILENT_UNKNOWN;NAME_COLLISION",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental profile 唯一挂载路径,默认关;同名分立即两行皆条件必交",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "list_agents",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "team-roster-read"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:232-233)",
+   "life": "roster-snapshot",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json;team impl",
+   "gap": "PERMCOV_SILENT_UNKNOWN;NAME_COLLISION",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental profile 唯一挂载路径,默认关;同名分立即两行皆条件必交",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "send_message",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "team-mailbox-write-durable"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:215-216)",
+   "life": "durable-mailbox;quotas-64-pending/64KB",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json;team impl",
+   "gap": "PERMCOV_SILENT_UNKNOWN;NAME_COLLISION",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental profile 唯一挂载路径,默认关;同名分立即两行皆条件必交",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "spawn_teammate",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "team-member-agent-spawn"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(index.ts:175-176)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "agent-team-profile 唯一挂载路径,默认关(README.md:12)",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "wait_agent",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "blocking-member-state-observe"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(index.ts:242-243)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental team 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_task_create",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "task-board-durable-write"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:289-290)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental team 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_task_get",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "task-read"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:345-346)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental team 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_task_list",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "task-list-read"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:313-314)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental team 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_task_update",
+   "scope": "host-experimental-bundle-off",
+   "fc": "FC-U",
+   "eff": [
+    "task-mutate-revision-claim"
+   ],
+   "prov": "HOST_PKG:dsh-experimental-tool-agent-team(:360-361)",
+   "life": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+   "attr": "HOST_REALM_RESERVED",
+   "idx": "W2:accept-pending",
+   "note": "只读核 research/subagent-team.json",
+   "gap": "PERMCOV_SILENT_UNKNOWN",
+   "acc": "W2",
+   "req": "REQ-COND",
+   "reqSrc": "experimental team 族同证",
+   "currentRoute": "HOST_REALM_UNMOUNTED_OPTIN",
+   "targetGovernedRoute": "GOVERNED_ON_DECLARED_MOUNT",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_list_members",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-read"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_list_templates",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-read"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_inspect_config",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-read"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_create_member",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_delegate",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_follow_up",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_collect",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_send_message",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_report_progress",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_request_control",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "approval-durable-write-via-ControlService"
+   ],
+   "prov": "CONTROL_SERVICE_SINGLE_LEDGER",
+   "life": "durable-row;no-self-ledger",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "note": "approval-control-plane tool: no prefix self-trust / no self-authorization / no loop approval — static read-only check ADAPTER 2.6-d; runtime negative controls = C1/C2 items",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_resolve_control",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "approval-durable-write-via-ControlService"
+   ],
+   "prov": "CONTROL_SERVICE_SINGLE_LEDGER",
+   "life": "resolver-roles-enforced-service-side;escalate-terminal-ladder",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "note": "approval-control-plane tool: see team_request_control note",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_list_pending_control",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "approval-durable-read"
+   ],
+   "prov": "CONTROL_SERVICE_SINGLE_LEDGER",
+   "life": "read-only-leader-only;creates-no-request-grants-no-authority",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "note": "approval-control-plane tool: see team_request_control note",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_archive_member",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "team-state-durable-write"
+   ],
+   "prov": "TEAM_RUNTIME_INTERNAL",
+   "life": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)",
+   "note": ""
+  },
+  {
+   "name": "team_grant_permission",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "permission-overlay-durable-write"
+   ],
+   "prov": "CONTROL_SERVICE_SINGLE_LEDGER",
+   "life": "leader-only-before-anything;ceiling-gated;replay-noop;not-self",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "note": "approval/permission-plane tool: static properties ADAPTER 2.6-d; single-ledger redline (no second ledger)",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "team_revoke_permission",
+   "scope": "own-layer",
+   "fc": "FC-TEAM15",
+   "eff": [
+    "permission-overlay-durable-write"
+   ],
+   "prov": "CONTROL_SERVICE_SINGLE_LEDGER",
+   "life": "leader-only-before-anything;reveal-as-expansion-gated;replay-noop;not-self",
+   "attr": "LANE_I",
+   "idx": "C1:schema-param-face;C2:per-tool-approval-functional-positive(15-of-15-required);C3:cold-recovery-concurrency",
+   "note": "same as team_grant_permission",
+   "acc": "F",
+   "req": "REQ",
+   "reqSrc": "PLAN-B-355@8f84a784 L15(Team自有入口)+@9b2 guard.ts SD-GUARD 已治理",
+   "currentRoute": "OWN_LAYER",
+   "targetGovernedRoute": "GOVERNED_OWN_LAYER",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "surface:mcp_stdio",
+   "scope": "surface",
+   "fc": "FC-MCP",
+   "eff": [
+    "remote-indeterminate"
+   ],
+   "prov": "REMOTE_SERVER_TRUSTED_PROVIDER_FINAL",
+   "life": "dynamic-create-revoke-reenter-closed-world",
+   "attr": "LANE_D",
+   "idx": "C1:mcp-binding-integrity-positive+negative(S-4-route);C2:real-stdio-confined-run;C3:dynamic-reentry-observation",
+   "note": "execution surface identified = upstream host MCP transport @pin639 (GATES 2.5-S2); status OPEN",
+   "acc": "F",
+   "req": "N-A-TOOL",
+   "reqSrc": "surface 行",
+   "currentRoute": "MCP_MOUNT_RECONCILE_CHAIN",
+   "targetGovernedRoute": "GOVERNED_MOUNT_RECONCILE",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "surface:mcp_http_dynamic",
+   "scope": "surface",
+   "fc": "FC-MCP",
+   "eff": [
+    "remote-indeterminate"
+   ],
+   "prov": "REMOTE_SERVER_TRUSTED_PROVIDER_FINAL",
+   "life": "dynamic-create-revoke-scope-collision-reenter-closed-world",
+   "attr": "LANE_D",
+   "idx": "C1:binding-completeness;C2:bind-effectiveness-real;C3:expansion-reentry",
+   "note": "instance snapshot NOT collected: itemized impact = GATES 2.8(d), neither blanket-block nor exemption",
+   "acc": "F",
+   "req": "N-A-TOOL",
+   "reqSrc": "surface 行",
+   "currentRoute": "MCP_MOUNT_RECONCILE_CHAIN",
+   "targetGovernedRoute": "GOVERNED_MOUNT_RECONCILE",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "surface:domain_family",
+   "scope": "surface",
+   "fc": "FC-U",
+   "eff": [
+    "domain-business-effect-at-plugin-boundary-family-level"
+   ],
+   "prov": "DOMAIN_SERVICE_INDEPENDENT_AT_EFFECT_BOUNDARY(ADR:75)",
+   "life": "independent-decision-at-effect-boundary;no-universal-domain-machinery-added",
+   "attr": "DOMAIN_INTERSECTION",
+   "idx": "C1:bidirectional-non-override-unit(Team-allow不越domain-deny;domain-allow不生成工具许可);C2=仅当已挂载真实gate(核无→honest-absence)",
+   "note": "技术定档:非模型面工具名(83矩阵不适用);ADR L72 \"Domain-side permissions remain independent\"+L75 条目6 交集语义;S-1按自决语义关闭,无CORE_SEAM反例",
+   "acc": "F",
+   "req": "N-A-TOOL",
+   "reqSrc": "surface 行;ADR:75",
+   "currentRoute": "DOMAIN_INTERSECTION_SELF_DETERMINED",
+   "targetGovernedRoute": "DOMAIN_INTERSECTION_SELF_DETERMINED",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  },
+  {
+   "name": "surface:neg4_preset_selfregister",
+   "scope": "surface",
+   "fc": "FC-NEG4",
+   "eff": [
+    "none-isolation"
+   ],
+   "prov": "PRESET_REALM_SURFACE",
+   "life": "n-a-isolation",
+   "attr": "LANE_I",
+   "idx": "C2:ABSTAIN-not-VERIFIED-disclosure+inheritance-positive",
+   "note": "preset-realm never reached global tools.schemas(); ABSTAIN!=VERIFIED",
+   "acc": "F",
+   "req": "N-A-TOOL",
+   "reqSrc": "surface 负控行",
+   "currentRoute": "ISOLATION_SURFACE",
+   "targetGovernedRoute": "ISOLATION_GUARANTEED",
+   "targetCeiling": "TEAM_POLICY_AND_CEILING_ALWAYS; Host-full-access/escalation免提示≠Team allow(根2026-10-22)"
+  }
+ ]
+}

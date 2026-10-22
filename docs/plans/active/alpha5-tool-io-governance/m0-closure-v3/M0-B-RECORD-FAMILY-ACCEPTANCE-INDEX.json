@@ -1,0 +1,4108 @@
+{
+  "status": "PROPOSED_NOT_FROZEN",
+  "sourceRecordsSha256": "55233426a022531cb5049587ffb605c5e487608cdcc08004e68509c2e535c929",
+  "contractSha256": "1b06c40231c99990a105cdd7837c7725509ca2867a2900144248bcfaa607156b",
+  "counts": {
+    "records": 93,
+    "uniqueNames": 90,
+    "families": 27
+  },
+  "limitations": "PROPOSED, not implemented/tested/frozen. PTY per-open private one-shot backend; LSP real protocol ready, hardDimensions propagation and unconfirmed cleanup obligations. ACTIVATION-TCB superseded by USER_SCOPE_CLARIFIED (user product boundary 2026-10-23, Sentinel_e08e9aeed9e08191bd7208454dca9323): Alpha5 governs plugin_manager management calls (install/enable-disable/remove etc.), no general sandbox for approved plugin init code; prior-version text preserved at original attachment hash a6717f26af78dfcdb6880790f2d586674920b2073b33fc56ea6a1a94b1ea6269; prior contract hash 4e744eaedbb0f0e1f0532cdc5f9e3d53a996734d13606b3167145e6eebbfd0ee kept as history reference. No new effect kinds/Host Core patch.",
+  "records": [
+    {
+      "recordIndex": 0,
+      "name": "read",
+      "scope": "plane-takeover",
+      "family": "B-FS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-FS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/fs.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROLLED_FS_OR_HOST_READ",
+        "lifecycle": "cooperative-abort;restart-OPEN",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-FS.C1",
+          "§5 finite adapter seam applicable to B-FS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-FS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-FS.C3"
+        ],
+        "recordPositiveObligation": "真实读取指定窗口；limit省略保留null",
+        "recordEffectDeltaFromInventory": [
+          "read-resourceKey-window"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 1,
+      "name": "read_image",
+      "scope": "host-conditional",
+      "family": "B-IMAGE",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-IMAGE",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/image.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-fs(read-image.ts:209-263,attachments-conditional index.ts:53,67-72)",
+        "lifecycle": "exists-only-while-attachment-store-mounted;caps maxImageBytes/Pixels;exec.re-check",
+        "notes": "只读核 research/fcwr-pwsh-web.json;plane reserved :398-399 no image row"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-IMAGE.C1",
+          "§5 finite adapter seam applicable to B-IMAGE"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-IMAGE.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-IMAGE.C3"
+        ],
+        "recordPositiveObligation": "真实图像读取和当前session附件可取",
+        "recordEffectDeltaFromInventory": [
+          "fs-read-bytes-capped",
+          "attachment-store-write",
+          "vision-token-context"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 2,
+      "name": "write",
+      "scope": "host-preset-on",
+      "family": "B-FS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-FS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/fs.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-fs(index.ts:76-78 FsSandboxController)",
+        "lifecycle": "sandbox-escalation-per-call;no-plane-write-row(impostor-refusal :349-357,:489)",
+        "notes": "只读核 research/fcwr-pwsh-web.json;C-FS lane implemented, plane consumes READ-side only"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-FS.C1",
+          "§5 finite adapter seam applicable to B-FS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-FS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-FS.C3"
+        ],
+        "recordPositiveObligation": "真实写入目标内容且不泄漏旧内容",
+        "recordEffectDeltaFromInventory": [
+          "fs-write-bytes-under-sandbox"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 3,
+      "name": "edit",
+      "scope": "host-preset-on",
+      "family": "B-FS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-FS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/fs.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-fs(index.ts:76-79)",
+        "lifecycle": "same-face-as-write",
+        "notes": "只读核 research/fcwr-pwsh-web.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-FS.C1",
+          "§5 finite adapter seam applicable to B-FS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-FS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-FS.C3"
+        ],
+        "recordPositiveObligation": "真实执行完整公开edit schema并校验最终内容",
+        "recordEffectDeltaFromInventory": [
+          "fs-edit-bytes-under-sandbox"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 4,
+      "name": "str_replace_editor",
+      "scope": "host-unmounted-shipped",
+      "family": "B-FS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-FS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/fs.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-str-replace-editor(index.ts:426-430,513-531-unconditional-when-mounted)",
+        "lifecycle": "zero-shipped-preset-rows;only-mount-proof=SDK-e2e-fixture",
+        "notes": "只读核 research/fcwr-pwsh-web.json;先验\"装载条件待核\"已负向落定"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-FS.C1",
+          "§5 finite adapter seam applicable to B-FS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-FS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-FS.C3"
+        ],
+        "recordPositiveObligation": "view/create/replace/insert全部公开command分别成功",
+        "recordEffectDeltaFromInventory": [
+          "fs-multi-mutate-view-create-replace-insert"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 5,
+      "name": "grep",
+      "scope": "host-preset-on-setup-excluded-on-strict",
+      "family": "B-SEARCH",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SEARCH",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/search.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-fs-search(grep.ts:276-340)",
+        "lifecycle": "strict-agent-setup-FATAL-unless-builtinToolDeny(permission-coverage.ts:146-151);post-mask-call=TEAM_TOOL_UNGOVERNED/TOOL_BINDING_UNVERIFIED;web-profile-guard-refuses-inherited-native;un-governed-session=plain-host-passthrough",
+        "notes": "只读核 research/grep-glob-attribution.json;Q5=形式定夺(治理必交不动摇;A2C-6 现状=cur 事实)"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SEARCH.C1",
+          "§5 finite adapter seam applicable to B-SEARCH"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SEARCH.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SEARCH.C3"
+        ],
+        "recordPositiveObligation": "team_grep对native pattern/path/include参数面、结果/caps/spill等价；native mask持续",
+        "recordEffectDeltaFromInventory": [
+          "fs-content-search-rg"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 6,
+      "name": "glob",
+      "scope": "host-preset-on-setup-excluded-on-strict",
+      "family": "B-SEARCH",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SEARCH",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/search.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-fs-search(glob.ts:296-353)",
+        "lifecycle": "same-as-grep;INT-R3-flip-使-backends-头注:42-45-stale",
+        "notes": "只读核 research/grep-glob-attribution.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SEARCH.C1",
+          "§5 finite adapter seam applicable to B-SEARCH"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SEARCH.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SEARCH.C3"
+        ],
+        "recordPositiveObligation": "team_glob对native pattern/path参数面、结果/caps/spill等价；native mask持续",
+        "recordEffectDeltaFromInventory": [
+          "fs-path-glob-rg"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 7,
+      "name": "team_grep",
+      "scope": "alias",
+      "family": "B-SEARCH",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SEARCH",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/search.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONFINED_PROCESS_RG",
+        "lifecycle": "cancel-consistency-354-runtime-recheck-OPEN",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SEARCH.C1",
+          "§5 finite adapter seam applicable to B-SEARCH"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SEARCH.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SEARCH.C3"
+        ],
+        "recordPositiveObligation": "真实内容搜索及有界输出",
+        "recordEffectDeltaFromInventory": [
+          "read-subtree"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 8,
+      "name": "team_glob",
+      "scope": "alias",
+      "family": "B-SEARCH",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SEARCH",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/search.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONFINED_PROCESS_RG",
+        "lifecycle": "cancel-consistency-354-runtime-recheck-OPEN",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SEARCH.C1",
+          "§5 finite adapter seam applicable to B-SEARCH"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SEARCH.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SEARCH.C3"
+        ],
+        "recordPositiveObligation": "真实路径glob及有界输出",
+        "recordEffectDeltaFromInventory": [
+          "read-subtree"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 9,
+      "name": "bash",
+      "scope": "plane-takeover",
+      "family": "B-PROCESS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PROCESS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/process.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TARGET_CONFINED_PROCESS;host-body-verification-OPEN",
+        "lifecycle": "foreground-cancel-340-compile-side;bg=g7-M2;persistent-not-inherited(discipline 2)",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PROCESS.C1",
+          "§5 finite adapter seam applicable to B-PROCESS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PROCESS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PROCESS.C3"
+        ],
+        "recordPositiveObligation": "真实前台命令及退出码/副作用",
+        "recordEffectDeltaFromInventory": [
+          "process-child-tree",
+          "read",
+          "write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 10,
+      "name": "pwsh",
+      "scope": "host-preset-conditional-win32",
+      "family": "B-PROCESS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PROCESS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/process.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-pwsh(index.ts:214,384)+dsh-pwsh-local(resolve.ts:67-79)",
+        "lifecycle": "platform-gate disabled-unless-win32 (presets ~:23-28);no plane row",
+        "notes": "只读核 research/fcwr-pwsh-web.json;root ruling 06:43Z bash-row≠pwsh"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PROCESS.C1",
+          "§5 finite adapter seam applicable to B-PROCESS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PROCESS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PROCESS.C3"
+        ],
+        "recordPositiveObligation": "Windows上真实PowerShell执行及后台分支",
+        "recordEffectDeltaFromInventory": [
+          "shell-exec-powershell-win32",
+          "bg-jobs"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "win32_and_declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 11,
+      "name": "team_bash",
+      "scope": "alias",
+      "family": "B-PROCESS",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PROCESS",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/process.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONFINED_PROCESS_TARGET",
+        "lifecycle": "R2=violation of pre-approval-zero-effect; gate=GATES 2.7 three-stage",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PROCESS.C1",
+          "§5 finite adapter seam applicable to B-PROCESS"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PROCESS.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PROCESS.C3"
+        ],
+        "recordPositiveObligation": "真实命令；Ask期间scratch/probe/spawn=0",
+        "recordEffectDeltaFromInventory": [
+          "process-child-tree"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 12,
+      "name": "terminal_open",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:164)+terminal+terminal-bash+subprocess-local(node-pty :287)",
+        "lifecycle": "owner-agent-keyed;exec.signal;0-preset-mounts(release-native)",
+        "notes": "只读核 research/terminal.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "spawn一个真实受限PTY；返回归属准确ID",
+        "recordEffectDeltaFromInventory": [
+          "os-pty-spawn-shell"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 13,
+      "name": "terminal_close",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:360,:379)",
+        "lifecycle": "closed|already-closing",
+        "notes": "只读核 research/terminal.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "关闭准确PTY并证实资源树终态",
+        "recordEffectDeltaFromInventory": [
+          "owned-process-tree-kill"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 14,
+      "name": "terminal_list",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:391,:400)",
+        "lifecycle": "stateless",
+        "notes": "只读核 research/terminal.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "只列当前owner PTY",
+        "recordEffectDeltaFromInventory": [
+          "own-agent-snapshot-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 15,
+      "name": "terminal_read",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:302,:321)",
+        "lifecycle": "stateless;bounded",
+        "notes": "只读核 research/terminal.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "真实分页输出不触发重发stdin",
+        "recordEffectDeltaFromInventory": [
+          "memory-output-page-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 16,
+      "name": "terminal_send",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:199,258;background.ts:22)",
+        "lifecycle": "fg-honors-signal;bg-cancel=killed",
+        "notes": "只读核 research/terminal.json;OS侧最大未纳管面"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "同一PTY两次输入保留状态；submit true/false、前后台逐分支",
+        "recordEffectDeltaFromInventory": [
+          "shell-input-injection-stdin",
+          "bg-pty-send-jobs"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 17,
+      "name": "terminal_signal",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-TERMINAL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TERMINAL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/terminal.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-terminal(index.ts:335,:353)",
+        "lifecycle": "SIGKILL-shell-target-rejected-:339",
+        "notes": "只读核 research/terminal.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TERMINAL.C1",
+          "§5 finite adapter seam applicable to B-TERMINAL",
+          "PTY-OPEN-CORRELATION: per-open private one-shot backend; Host spec carries no call/token"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TERMINAL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TERMINAL.C3",
+          "two concurrent opens for same owner cannot exchange plan/grant; pre-backend failure removes only own registration"
+        ],
+        "recordPositiveObligation": "准确signal命中准确PTY incarnation",
+        "recordEffectDeltaFromInventory": [
+          "os-signal-to-process-group"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Host packages/terminal/terminal/src/index.ts:registerBackend/spawn/startSend/read/signal/kill/list; Team owned backend (§5.1)"
+    },
+    {
+      "recordIndex": 18,
+      "name": "job_output",
+      "scope": "plane-fixed",
+      "family": "B-JOB",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-JOB",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/job.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+        "lifecycle": "default-off-keyed-mount",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-JOB.C1",
+          "§5 finite adapter seam applicable to B-JOB"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-JOB.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-JOB.C3"
+        ],
+        "recordPositiveObligation": "读取真实作业输出窗口",
+        "recordEffectDeltaFromInventory": [
+          "durable-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 19,
+      "name": "job_list",
+      "scope": "plane-fixed",
+      "family": "B-JOB",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-JOB",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/job.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+        "lifecycle": "default-off-keyed-mount",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-JOB.C1",
+          "§5 finite adapter seam applicable to B-JOB"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-JOB.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-JOB.C3"
+        ],
+        "recordPositiveObligation": "只列授权producer作业",
+        "recordEffectDeltaFromInventory": [
+          "durable-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 20,
+      "name": "job_kill",
+      "scope": "plane-fixed",
+      "family": "B-JOB",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-JOB",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/job.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_JOB_REGISTRY_PUBLIC_FACE",
+        "lifecycle": "kill-requested-not-terminated;restart-recovery-OPEN",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-JOB.C1",
+          "§5 finite adapter seam applicable to B-JOB"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-JOB.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-JOB.C3"
+        ],
+        "recordPositiveObligation": "真实取消请求并区分requested/terminated",
+        "recordEffectDeltaFromInventory": [
+          "job-control-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 21,
+      "name": "lsp",
+      "scope": "assembly",
+      "family": "B-LSP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-LSP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/lsp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "REAL_CLANGD_TSSERVER",
+        "lifecycle": "per-member-x-policy-generation;restart-invalidate-OPEN",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-LSP.C1",
+          "§5 finite adapter seam applicable to B-LSP",
+          "real ready(instance) protocol, never fixture ping/pong",
+          "validated hardDimensions actually passed to every provider realm"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-LSP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-LSP.C3",
+          "readiness cleanup termination-unconfirmed remains UNKNOWN and tracked, never zero-residual"
+        ],
+        "recordPositiveObligation": "真实goToDefinition/findReferences/goToImplementation/hover四操作；UTF-16坐标、session workspace、返回caps保持等价，不新增diagnostics/executeCommand",
+        "recordEffectDeltaFromInventory": [
+          "process",
+          "read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/runtime/sandbox-provider/lsp-assembly.ts:createLspRealmAssembly; P prepareRealm/executePreparedRealm split (§5.2)"
+    },
+    {
+      "recordIndex": 22,
+      "name": "web_fetch",
+      "scope": "host-preset-on",
+      "family": "B-WEB",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-WEB",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/web.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "PR7-产品臂DORMANT + HOST dsh-tool-web(live)",
+        "lifecycle": "loopback-deny-before-fetch-callpoint(fixture-10/10);host-live",
+        "notes": "只读核 research/fcwr-pwsh-web.json(同web_search事实族)"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-WEB.C1",
+          "§5 finite adapter seam applicable to B-WEB"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-WEB.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-WEB.C3"
+        ],
+        "recordPositiveObligation": "真实授权URL返回内容",
+        "recordEffectDeltaFromInventory": [
+          "external-net-egress-fetch"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 23,
+      "name": "web_search",
+      "scope": "host-preset-on",
+      "family": "B-WEB",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-WEB",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/web.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-web(search.ts:326)+dsh-web seam(WEB_PROVIDER_UNAVAILABLE :187)",
+        "lifecycle": "host-live(searchProvider deepseek shipped base ~:473-490);product governance arm DORMANT",
+        "notes": "只读核 research/fcwr-pwsh-web.json;v2 DORMANT_NO_PROVIDER 指产品治理臂(sandbox-provider network.ts:45,51 DORMANT)——措辞已按 S2 教训更正：不断言 host 无 provider"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-WEB.C1",
+          "§5 finite adapter seam applicable to B-WEB"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-WEB.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-WEB.C3"
+        ],
+        "recordPositiveObligation": "真实搜索provider返回查询结果",
+        "recordEffectDeltaFromInventory": [
+          "external-net-egress-search"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 24,
+      "name": "skill",
+      "scope": "host-preset-on",
+      "family": "B-SKILL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SKILL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/skill.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-skill(index.ts:81,161)",
+        "lifecycle": "model-invocable double-gate :138/:145;user-gesture kind:user only :195",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SKILL.C1",
+          "§5 finite adapter seam applicable to B-SKILL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SKILL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SKILL.C3"
+        ],
+        "recordPositiveObligation": "实际注入准确版本技能；保留双gate",
+        "recordEffectDeltaFromInventory": [
+          "prompt-injection-surface",
+          "catalog-publish"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 25,
+      "name": "load_workspace_dependencies",
+      "scope": "host-sdk-app-env-only",
+      "family": "B-DEPENDENCY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-DEPENDENCY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "PLUGIN",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/dependency.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-workspace-dependencies(index.ts:249,installPrimaryRuntime:204-235)",
+        "lifecycle": "first-execution-install-memoized;no-PATH-change",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-DEPENDENCY.C1",
+          "§5 finite adapter seam applicable to B-DEPENDENCY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-DEPENDENCY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-DEPENDENCY.C3"
+        ],
+        "recordPositiveObligation": "安装固定runtime payload后实际可用",
+        "recordEffectDeltaFromInventory": [
+          "runtime-payload-install-mkdir-cp-rename-rm"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 26,
+      "name": "todo_write",
+      "scope": "assembly",
+      "family": "B-SESSION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/session.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "assembly-row-positive-proposed",
+        "notes": ""
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSION.C1",
+          "§5 finite adapter seam applicable to B-SESSION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSION.C3"
+        ],
+        "recordPositiveObligation": "当前session真实todo状态变化",
+        "recordEffectDeltaFromInventory": [
+          "state-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 27,
+      "name": "create_goal",
+      "scope": "host-preset-on",
+      "family": "B-SESSION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/session.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-goal+goal(goal/src/index.ts:613)",
+        "lifecycle": "disarm-on-agent/created;resume-rearm=human-only;maxGoalRounds=256;blocked-floor-3",
+        "notes": "只读核 research/goal-schedule-session.json;direct-human authority authority.ts:100"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSION.C1",
+          "§5 finite adapter seam applicable to B-SESSION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSION.C3"
+        ],
+        "recordPositiveObligation": "goal建立并按限定轮次arm",
+        "recordEffectDeltaFromInventory": [
+          "session-log-append",
+          "continuation-rounds-arm"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 28,
+      "name": "get_goal",
+      "scope": "host-preset-on",
+      "family": "B-SESSION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/session.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-goal(goal/src/index.ts:278-282)",
+        "lifecycle": "live-instance-only",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSION.C1",
+          "§5 finite adapter seam applicable to B-SESSION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSION.C3"
+        ],
+        "recordPositiveObligation": "读当前goal",
+        "recordEffectDeltaFromInventory": [
+          "session-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 29,
+      "name": "update_goal",
+      "scope": "host-preset-on",
+      "family": "B-SESSION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/session.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-goal(:234-235;:613)",
+        "lifecycle": "optimistic-revision-per-call;complete-terminal",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSION.C1",
+          "§5 finite adapter seam applicable to B-SESSION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSION.C3"
+        ],
+        "recordPositiveObligation": "合法revision更新/complete并按动作arm或disarm",
+        "recordEffectDeltaFromInventory": [
+          "session-log-append",
+          "continuation-rounds-arm-or-disarm"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 30,
+      "name": "schedule_create",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-SCHEDULE",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SCHEDULE",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/schedule.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-schedule-bundle/schedule(tools.ts:416-444;runtime.ts:101-124;storage.ts:56-59)",
+        "lifecycle": "durable-restart-recovery;session-stop-stops-tasks;caller-session-scoped-tool-surface",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SCHEDULE.C1",
+          "§5 finite adapter seam applicable to B-SCHEDULE"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SCHEDULE.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SCHEDULE.C3"
+        ],
+        "recordPositiveObligation": "持久创建后在限制范围真实触发",
+        "recordEffectDeltaFromInventory": [
+          "durable-storage-write-tasks",
+          "timer-daemon-arm",
+          "session-wake-cross-session-on-delivery"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 31,
+      "name": "schedule_delete",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-SCHEDULE",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SCHEDULE",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/schedule.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:schedule(tools.ts:469-484;index.ts:342-348)",
+        "lifecycle": "IS-the-cancel-path",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SCHEDULE.C1",
+          "§5 finite adapter seam applicable to B-SCHEDULE"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SCHEDULE.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SCHEDULE.C3"
+        ],
+        "recordPositiveObligation": "准确task取消且不再wake",
+        "recordEffectDeltaFromInventory": [
+          "durable-task-and-records-remove"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 32,
+      "name": "schedule_list",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-SCHEDULE",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SCHEDULE",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/schedule.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:schedule(tools.ts:451-460)",
+        "lifecycle": "stateless",
+        "notes": "只读核 research/goal-schedule-session.json;tool-surface≠host-wide(catalog≠tool)"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SCHEDULE.C1",
+          "§5 finite adapter seam applicable to B-SCHEDULE"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SCHEDULE.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SCHEDULE.C3"
+        ],
+        "recordPositiveObligation": "读当前session任务集合",
+        "recordEffectDeltaFromInventory": [
+          "own-session-active-tasks-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 33,
+      "name": "schedule_update",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-SCHEDULE",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SCHEDULE",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/schedule.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:schedule(tools.ts:492-527)",
+        "lifecycle": "re-align-on-rule-change",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SCHEDULE.C1",
+          "§5 finite adapter seam applicable to B-SCHEDULE"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SCHEDULE.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SCHEDULE.C3"
+        ],
+        "recordPositiveObligation": "精确revision改规则并重排timer",
+        "recordEffectDeltaFromInventory": [
+          "durable-task-mutate-timer-reschedule"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 34,
+      "name": "session_search",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-SESSIONQUERY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSIONQUERY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/sessionquery.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-session-query(index.ts:65-73)",
+        "lifecycle": "openAt:never-shipped→SEARCH_DISABLED;workspace-authorization;30s-deadline",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSIONQUERY.C1",
+          "§5 finite adapter seam applicable to B-SESSIONQUERY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSIONQUERY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSIONQUERY.C3"
+        ],
+        "recordPositiveObligation": "授权workspace内真实session搜索",
+        "recordEffectDeltaFromInventory": [
+          "cross-session-read-workspace"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 35,
+      "name": "session_trace",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-SESSIONQUERY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSIONQUERY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/sessionquery.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-session-query(index.ts:85-93)",
+        "lifecycle": "concurrency-safe",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSIONQUERY.C1",
+          "§5 finite adapter seam applicable to B-SESSIONQUERY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSIONQUERY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSIONQUERY.C3"
+        ],
+        "recordPositiveObligation": "授权session lineage结果",
+        "recordEffectDeltaFromInventory": [
+          "cross-session-lineage-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 36,
+      "name": "session_event_read",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-SESSIONQUERY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSIONQUERY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/sessionquery.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-session-query(index.ts:108-121)",
+        "lifecycle": "works-with-search-disabled(exact-reads-inherit)",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSIONQUERY.C1",
+          "§5 finite adapter seam applicable to B-SESSIONQUERY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSIONQUERY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSIONQUERY.C3"
+        ],
+        "recordPositiveObligation": "准确授权event全文读取",
+        "recordEffectDeltaFromInventory": [
+          "cross-session-unabridged-event-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 37,
+      "name": "session_event_search",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-SESSIONQUERY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSIONQUERY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/sessionquery.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-session-query(index.ts:75-83)",
+        "lifecycle": "SEARCH_DISABLED-until-openAt-flip",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSIONQUERY.C1",
+          "§5 finite adapter seam applicable to B-SESSIONQUERY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSIONQUERY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSIONQUERY.C3"
+        ],
+        "recordPositiveObligation": "授权event fulltext搜索",
+        "recordEffectDeltaFromInventory": [
+          "session-event-fulltext-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 38,
+      "name": "session_event_trace",
+      "scope": "host-unmounted-optin-package",
+      "family": "B-SESSIONQUERY",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SESSIONQUERY",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/sessionquery.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-session-query(index.ts:95-106)",
+        "lifecycle": "concurrency-safe",
+        "notes": "只读核 research/goal-schedule-session.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SESSIONQUERY.C1",
+          "§5 finite adapter seam applicable to B-SESSIONQUERY"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SESSIONQUERY.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SESSIONQUERY.C3"
+        ],
+        "recordPositiveObligation": "授权event关系trace",
+        "recordEffectDeltaFromInventory": [
+          "session-event-relationship-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 39,
+      "name": "subagent",
+      "scope": "host-preset-on",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent(index.ts:108,379)",
+        "lifecycle": "continuable;maxDepth-default-1",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "受治理child实际任务并继续",
+        "recordEffectDeltaFromInventory": [
+          "child-agent-spawn-resource-cost"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 40,
+      "name": "subagent_fork",
+      "scope": "host-preset-on",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent(fork provider)",
+        "lifecycle": "continuable-in-presets;one-shot-at-base",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "真实seed fork且child受治理",
+        "recordEffectDeltaFromInventory": [
+          "child-agent-spawn-seeded-resource-cost"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 41,
+      "name": "subagent_codex",
+      "scope": "host-preset-off",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-subagent-codex(presets-disabled std:105)",
+        "lifecycle": "one-shot;provider-managed-depth",
+        "notes": "只读核 research/subagent-team.json;permcov无类目=strict-surface-UNKNOWN"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "真实外部Codex provider且权限可强制",
+        "recordEffectDeltaFromInventory": [
+          "external-codex-child-agent"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 42,
+      "name": "subagent_claude_code",
+      "scope": "host-preset-off",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-subagent-claude-code(disabled std:113)",
+        "lifecycle": "one-shot",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "真实外部Claude provider且权限可强制",
+        "recordEffectDeltaFromInventory": [
+          "external-claude-code-child-agent"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 43,
+      "name": "list_subagent_models",
+      "scope": "host-conditional-modelSelection",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent/list-models.ts:86",
+        "lifecycle": "registered-iff-modelSelectionSettings",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "准确当前provider可选模型列表",
+        "recordEffectDeltaFromInventory": [
+          "model-routes-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 44,
+      "name": "interrupt_agent",
+      "scope": "plane-host-impl",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent-control(index.ts:74-75)",
+        "lifecycle": "stop-current-turn-only",
+        "notes": "只读核 research/subagent-team.json;同名=host impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "停止准确所属child当前turn；不得误称销毁",
+        "recordEffectDeltaFromInventory": [
+          "cancel-target-child-turn"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 45,
+      "name": "list_agents",
+      "scope": "plane-host-impl",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent-control/list-agents.ts:86",
+        "lifecycle": "snapshot",
+        "notes": "只读核 research/subagent-team.json;host impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "该实现真实所属成员列表",
+        "recordEffectDeltaFromInventory": [
+          "registry-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 46,
+      "name": "send_message",
+      "scope": "plane-host-impl",
+      "family": "B-SUBAGENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-SUBAGENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/subagent.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-subagent-control(index.ts:28-29)",
+        "lifecycle": "steers-at-step-boundary;resumes-inactive",
+        "notes": "只读核 research/subagent-team.json;host impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-SUBAGENT.C1",
+          "§5 finite adapter seam applicable to B-SUBAGENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-SUBAGENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-SUBAGENT.C3"
+        ],
+        "recordPositiveObligation": "该实现准确收件者消息投递/续跑及预算",
+        "recordEffectDeltaFromInventory": [
+          "message-inject-into-child-agent"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 47,
+      "name": "workflow",
+      "scope": "host-preset-on",
+      "family": "B-ORCHESTRATION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-ORCHESTRATION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/orchestration.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-workflow(index.ts:328-329,:60)",
+        "lifecycle": "off-in-ptc(:126);engine-isolate-group;caps-in-script",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-ORCHESTRATION.C1",
+          "§5 finite adapter seam applicable to B-ORCHESTRATION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-ORCHESTRATION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-ORCHESTRATION.C3"
+        ],
+        "recordPositiveObligation": "真实多节点fanout结果且子call独立准入",
+        "recordEffectDeltaFromInventory": [
+          "agent-fanout-multiplicative-cost"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 48,
+      "name": "ralph",
+      "scope": "host-preset-off",
+      "family": "B-ORCHESTRATION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-ORCHESTRATION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/orchestration.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-ralph(index.ts:411;disabled std:127)",
+        "lifecycle": "maxRounds=64-preset-bound",
+        "notes": "只读核 research/subagent-team.json;base-mounts-but-all-presets-disable"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-ORCHESTRATION.C1",
+          "§5 finite adapter seam applicable to B-ORCHESTRATION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-ORCHESTRATION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-ORCHESTRATION.C3"
+        ],
+        "recordPositiveObligation": "有界真实多轮结果",
+        "recordEffectDeltaFromInventory": [
+          "agent-loop-rounds-multiplicative-cost"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 49,
+      "name": "ask_user_question",
+      "scope": "host-preset-on",
+      "family": "B-HUMAN",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-HUMAN",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/human.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-ask-user(index.ts:38-39)",
+        "lifecycle": "blocking-question-answer",
+        "notes": "只读核 research/selfcheck-misc.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-HUMAN.C1",
+          "§5 finite adapter seam applicable to B-HUMAN"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-HUMAN.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-HUMAN.C3"
+        ],
+        "recordPositiveObligation": "展示当前会话问题并只接对应回答",
+        "recordEffectDeltaFromInventory": [
+          "human-input-channel"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 50,
+      "name": "exit_plan_mode",
+      "scope": "host-preset-on",
+      "family": "B-HUMAN",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-HUMAN",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/human.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-plan-mode(index.ts:67,:278)",
+        "lifecycle": "plan-mode-exit-only-via-approval(standard:52-62)",
+        "notes": "只读核 research/selfcheck-misc.json;host级语义,preset-realm无对应物"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-HUMAN.C1",
+          "§5 finite adapter seam applicable to B-HUMAN"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-HUMAN.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-HUMAN.C3"
+        ],
+        "recordPositiveObligation": "合法Host批准后切换模式",
+        "recordEffectDeltaFromInventory": [
+          "session-mode-transition-approval-gate"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 51,
+      "name": "present",
+      "scope": "host-preset-on",
+      "family": "B-PRESENT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PRESENT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/present.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-present(index.ts:38-39)",
+        "lifecycle": "stateless-expose-no-copy",
+        "notes": "只读核 research/selfcheck-misc.json;refusal-pinned a5natexe…:298"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PRESENT.C1",
+          "§5 finite adapter seam applicable to B-PRESENT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PRESENT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PRESENT.C3"
+        ],
+        "recordPositiveObligation": "真实目标受众可打开准确文件卡片",
+        "recordEffectDeltaFromInventory": [
+          "file-expose-deliverable-card"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 52,
+      "name": "plugin_manager",
+      "scope": "host-preset-conditional",
+      "family": "B-PLUGIN",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PLUGIN",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "PLUGIN",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/plugin.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-boot-plugin-manager(tools.ts:20,38-41)",
+        "lifecycle": "per-call approveEscalation(danger-full-access);silent-no-prompt-if-session-already-full-access escalation.ts:173;fail-closed-no-approver :180/:203",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json;cordis preset iff profileContext"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PLUGIN.C1",
+          "§5 finite adapter seam applicable to B-PLUGIN",
+          "private Host transaction functions are not adapter API; same profile lock then HMR, no nested public manager lock reentry"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PLUGIN.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PLUGIN.C3"
+        ],
+        "recordPositiveObligation": "8个action逐分支真实成功；install含固定版本/scripts/activation边界",
+        "recordEffectDeltaFromInventory": [
+          "profile-config-write-persist-all-sessions",
+          "npm-install-build-script-exec",
+          "peer-dep-exemption"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "Existing plugin manager + minimal Team adapter wiring; reuse Host parsing/compatibility and lifecycle semantics, not raw installBundle as governed execution; no new governed installer/activation engine (§5.3, USER_SCOPE_CLARIFIED)",
+      "scopeClarification": "USER_SCOPE_CLARIFIED (Sentinel_e08e9aeed9e08191bd7208454dca9323): Alpha5 governs plugin_manager install/enable-disable/remove management calls; no general sandbox for approved plugin init code; Team tool/action/target authority and param-binding/single-use/revoke retained; Host existing build-script/version-exemption approvals retained; Host full-access cannot bypass Team admission; no call-permission expansion and no specific-install approval (per-call Team authorization). Prior OPEN history (Sentinel_5606c190ded88191a4d9bd9990fda52e) kept at original attachment hash a6717f26..."
+    },
+    {
+      "recordIndex": 53,
+      "name": "cordis_inspect_list",
+      "scope": "host-preset-cordis-only",
+      "family": "B-INSPECT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-INSPECT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/inspect.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-cordis(index.ts:23)",
+        "lifecycle": "closed-registry-read-only",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-INSPECT.C1",
+          "§5 finite adapter seam applicable to B-INSPECT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-INSPECT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-INSPECT.C3"
+        ],
+        "recordPositiveObligation": "真实允许registry列表",
+        "recordEffectDeltaFromInventory": [
+          "runtime-topology-disclosure"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 54,
+      "name": "cordis_inspect_query",
+      "scope": "host-preset-cordis-only",
+      "family": "B-INSPECT",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-INSPECT",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/inspect.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-tool-cordis(index.ts:42;inspect-registry.ts:119-133)",
+        "lifecycle": "client-query-waits-browser-page;timeout",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-INSPECT.C1",
+          "§5 finite adapter seam applicable to B-INSPECT"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-INSPECT.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-INSPECT.C3"
+        ],
+        "recordPositiveObligation": "真实允许query与正确client响应",
+        "recordEffectDeltaFromInventory": [
+          "runtime-topology-disclosure",
+          "client-browser-roundtrip"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 55,
+      "name": "list_mcp_resource_templates",
+      "scope": "host-dynamic-mcp-scope",
+      "family": "B-MCP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-MCP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/mcp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-mcp-resources(tools.ts:43)",
+        "lifecycle": "same-trio-dynamics",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-MCP.C1",
+          "§5 finite adapter seam applicable to B-MCP"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-MCP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-MCP.C3"
+        ],
+        "recordPositiveObligation": "真实指定server resources/templates/list",
+        "recordEffectDeltaFromInventory": [
+          "mcp-external-server-roundtrip"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 56,
+      "name": "list_mcp_resources",
+      "scope": "host-dynamic-mcp-scope",
+      "family": "B-MCP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-MCP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/mcp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-mcp-resources(tools.ts:34)",
+        "lifecycle": "visible-only-while-connected-server-in-agent-scope;scope-resolve-before-network :122",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-MCP.C1",
+          "§5 finite adapter seam applicable to B-MCP"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-MCP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-MCP.C3"
+        ],
+        "recordPositiveObligation": "真实指定server resources/list",
+        "recordEffectDeltaFromInventory": [
+          "mcp-external-server-roundtrip",
+          "untrusted-external-content"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 57,
+      "name": "read_mcp_resource",
+      "scope": "host-dynamic-mcp-scope",
+      "family": "B-MCP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-MCP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/mcp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-mcp-resources(tools.ts:52;connection.ts:380-verbatim-uri)",
+        "lifecycle": "no-host-uri-policy;only-server-membership+timeout",
+        "notes": "只读核 research/skill-plugin-cordis-mcpres.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-MCP.C1",
+          "§5 finite adapter seam applicable to B-MCP"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-MCP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-MCP.C3"
+        ],
+        "recordPositiveObligation": "真实指定server resources/read及opaque URI",
+        "recordEffectDeltaFromInventory": [
+          "mcp-external-arbitrary-uri-content",
+          "untrusted-external-content"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W1"
+    },
+    {
+      "recordIndex": 58,
+      "name": "stagehand_act",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "原单次instruction API实际执行；绑定tab/incarnation、允许origin/network、模型外发与适用Domain gate，不强制observe+act改产品",
+        "recordEffectDeltaFromInventory": [
+          "browser-act-incl-form-submit"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 59,
+      "name": "stagehand_extract",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "真实提取且模型外发已授权",
+        "recordEffectDeltaFromInventory": [
+          "page-content-to-external-model-exfil-surface"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 60,
+      "name": "stagehand_navigate",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "真实目标URL导航",
+        "recordEffectDeltaFromInventory": [
+          "browser-goto-any-url"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 61,
+      "name": "stagehand_observe",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "真实观察且模型外发已授权",
+        "recordEffectDeltaFromInventory": [
+          "page-observation-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 62,
+      "name": "stagehand_screenshot",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "真实截图及当前owner附件",
+        "recordEffectDeltaFromInventory": [
+          "screenshot-attachment"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 63,
+      "name": "stagehand_tabs",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-BROWSER",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-BROWSER",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/browser.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-browser-use-stagehand-native(index.ts:176-190)",
+        "lifecycle": "experimental-opt-in;default-launch=owned-Chromium-mkdtemp;attach-mode=users-logged-in-browser-full-CDP",
+        "notes": "只读核 research/stagehand.json"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-BROWSER.C1",
+          "§5 finite adapter seam applicable to B-BROWSER"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-BROWSER.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-BROWSER.C3"
+        ],
+        "recordPositiveObligation": "list/create/select/close逐分支",
+        "recordEffectDeltaFromInventory": [
+          "tab-manipulation"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "P Team browser-use/governed-native-provider.ts; mirror native.ts methods while replacing pre-effect resource hook (§5.5)"
+    },
+    {
+      "recordIndex": 64,
+      "name": "run_code",
+      "scope": "assembly",
+      "family": "B-PTC",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-PTC",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "FS-PROC",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/ptc.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONFINED_EXECUTION_CONFIG_DECLARED",
+        "lifecycle": "one-shot-grant-consumed;CONSUMED-replay-refused",
+        "notes": "outer escalation bridge in production; S-5/BL-16 net/process vocabulary registered upstream; v2 eff 占位 token 清除,矩阵 run_code 行事实补全(静态源码核对)"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-PTC.C1",
+          "§5 finite adapter seam applicable to B-PTC"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-PTC.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-PTC.C3"
+        ],
+        "recordPositiveObligation": "真实代码及真实nested allow/Ask/deny分支",
+        "recordEffectDeltaFromInventory": [
+          "fs-ladder-once-grant",
+          "nested-tools-second-governance",
+          "net-process-visibility-GAP-332-unproven"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 65,
+      "name": "interrupt_agent",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:277-278)",
+        "lifecycle": "team-semantic-interrupt;profile-disables-host-trio",
+        "notes": "只读核 research/subagent-team.json;同名=team impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "停止准确所属child当前turn；不得误称销毁",
+        "recordEffectDeltaFromInventory": [
+          "team-member-interrupt"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 66,
+      "name": "list_agents",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:232-233)",
+        "lifecycle": "roster-snapshot",
+        "notes": "只读核 research/subagent-team.json;team impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "该实现真实所属成员列表",
+        "recordEffectDeltaFromInventory": [
+          "team-roster-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 67,
+      "name": "send_message",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:215-216)",
+        "lifecycle": "durable-mailbox;quotas-64-pending/64KB",
+        "notes": "只读核 research/subagent-team.json;team impl"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "该实现准确收件者消息投递/续跑及预算",
+        "recordEffectDeltaFromInventory": [
+          "team-mailbox-write-durable"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 68,
+      "name": "spawn_teammate",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(index.ts:175-176)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "真实受治理实验Team成员创建",
+        "recordEffectDeltaFromInventory": [
+          "team-member-agent-spawn"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 69,
+      "name": "wait_agent",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(index.ts:242-243)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "真实成员终态等待",
+        "recordEffectDeltaFromInventory": [
+          "blocking-member-state-observe"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 70,
+      "name": "team_task_create",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:289-290)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "真实任务写入",
+        "recordEffectDeltaFromInventory": [
+          "task-board-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 71,
+      "name": "team_task_get",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:345-346)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "准确任务读取",
+        "recordEffectDeltaFromInventory": [
+          "task-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 72,
+      "name": "team_task_list",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:313-314)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "准确所属任务集合",
+        "recordEffectDeltaFromInventory": [
+          "task-list-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 73,
+      "name": "team_task_update",
+      "scope": "host-experimental-bundle-off",
+      "family": "B-UPSTREAMTEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-UPSTREAMTEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "SERVICE",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/upstreamteam.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "HOST_PKG:dsh-experimental-tool-agent-team(:360-361)",
+        "lifecycle": "opt-in-default-off(agent-team-profile-sole-mount);member-scoped-tryMembership:406-409",
+        "notes": "只读核 research/subagent-team.json"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-UPSTREAMTEAM.C1",
+          "§5 finite adapter seam applicable to B-UPSTREAMTEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-UPSTREAMTEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-UPSTREAMTEAM.C3"
+        ],
+        "recordPositiveObligation": "真实revision/claim修改",
+        "recordEffectDeltaFromInventory": [
+          "task-mutate-revision-claim"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "declared_mount",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "W2"
+    },
+    {
+      "recordIndex": 74,
+      "name": "team_list_members",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实所属Team roster",
+        "recordEffectDeltaFromInventory": [
+          "team-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 75,
+      "name": "team_list_templates",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实允许模板集合",
+        "recordEffectDeltaFromInventory": [
+          "team-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 76,
+      "name": "team_inspect_config",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实授权配置视图",
+        "recordEffectDeltaFromInventory": [
+          "team-state-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 77,
+      "name": "team_create_member",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实治理成员创建",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 78,
+      "name": "team_delegate",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实目标成员任务启动",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 79,
+      "name": "team_follow_up",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实已存在成员继续任务",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 80,
+      "name": "team_collect",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实目标结果收集",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN",
+        "inventoryEffectCorrection": "Existing tools.ts collectSpec WORK_STATUS is read-only; mother-table durable-write must not become target invented effect."
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 81,
+      "name": "team_send_message",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实目标mailbox持久消息",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 82,
+      "name": "team_report_progress",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实所属任务进度写入",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 83,
+      "name": "team_request_control",
+      "scope": "own-layer",
+      "family": "B-CONTROL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-CONTROL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/control.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROL_SERVICE_SINGLE_LEDGER",
+        "lifecycle": "durable-row;no-self-ledger",
+        "notes": "approval-control-plane tool: no prefix self-trust / no self-authorization / no loop approval — static read-only check ADAPTER 2.6-d; runtime negative controls = C1/C2 items"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-CONTROL.C1",
+          "§5 finite adapter seam applicable to B-CONTROL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-CONTROL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-CONTROL.C3"
+        ],
+        "recordPositiveObligation": "真实完整manifest请求落唯一Control账本",
+        "recordEffectDeltaFromInventory": [
+          "approval-durable-write-via-ControlService"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> existing controlService/permission port (§5.4)"
+    },
+    {
+      "recordIndex": 84,
+      "name": "team_resolve_control",
+      "scope": "own-layer",
+      "family": "B-CONTROL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-CONTROL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/control.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROL_SERVICE_SINGLE_LEDGER",
+        "lifecycle": "resolver-roles-enforced-service-side;escalate-terminal-ladder",
+        "notes": "approval-control-plane tool: see team_request_control note"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-CONTROL.C1",
+          "§5 finite adapter seam applicable to B-CONTROL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-CONTROL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-CONTROL.C3"
+        ],
+        "recordPositiveObligation": "合法真实reviewer全Effects验证后写decision",
+        "recordEffectDeltaFromInventory": [
+          "approval-durable-write-via-ControlService"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> existing controlService/permission port (§5.4)"
+    },
+    {
+      "recordIndex": 85,
+      "name": "team_list_pending_control",
+      "scope": "own-layer",
+      "family": "B-CONTROL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-CONTROL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/control.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROL_SERVICE_SINGLE_LEDGER",
+        "lifecycle": "read-only-leader-only;creates-no-request-grants-no-authority",
+        "notes": "approval-control-plane tool: see team_request_control note"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-CONTROL.C1",
+          "§5 finite adapter seam applicable to B-CONTROL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-CONTROL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-CONTROL.C3"
+        ],
+        "recordPositiveObligation": "真实可见pending列表且不mint权限",
+        "recordEffectDeltaFromInventory": [
+          "approval-durable-read"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> existing controlService/permission port (§5.4)"
+    },
+    {
+      "recordIndex": 86,
+      "name": "team_archive_member",
+      "scope": "own-layer",
+      "family": "B-TEAM",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-TEAM",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/team.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "TEAM_RUNTIME_INTERNAL",
+        "lifecycle": "static-registration-route-inventoried;per-tool-approval-function-NOT_VERIFIED",
+        "notes": ""
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-TEAM.C1",
+          "§5 finite adapter seam applicable to B-TEAM"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-TEAM.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-TEAM.C3"
+        ],
+        "recordPositiveObligation": "真实归档并完成必要drain",
+        "recordEffectDeltaFromInventory": [
+          "team-state-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> spec.run -> existing runtime/messaging/activity port (§5.4)"
+    },
+    {
+      "recordIndex": 87,
+      "name": "team_grant_permission",
+      "scope": "own-layer",
+      "family": "B-CONTROL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-CONTROL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/control.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROL_SERVICE_SINGLE_LEDGER",
+        "lifecycle": "leader-only-before-anything;ceiling-gated;replay-noop;not-self",
+        "notes": "approval/permission-plane tool: static properties ADAPTER 2.6-d; single-ledger redline (no second ledger)"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-CONTROL.C1",
+          "§5 finite adapter seam applicable to B-CONTROL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-CONTROL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-CONTROL.C3"
+        ],
+        "recordPositiveObligation": "合法leader/ceiling下准确overlay扩张",
+        "recordEffectDeltaFromInventory": [
+          "permission-overlay-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> existing controlService/permission port (§5.4)"
+    },
+    {
+      "recordIndex": 88,
+      "name": "team_revoke_permission",
+      "scope": "own-layer",
+      "family": "B-CONTROL",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-CONTROL",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONTROL",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/control.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "CONTROL_SERVICE_SINGLE_LEDGER",
+        "lifecycle": "leader-only-before-anything;reveal-as-expansion-gated;replay-noop;not-self",
+        "notes": "same as team_grant_permission"
+      },
+      "evidenceLevel": "E1 key execution interfaces re-read at fixed source; inventory details remain E2 unless specifically listed",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-CONTROL.C1",
+          "§5 finite adapter seam applicable to B-CONTROL"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-CONTROL.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-CONTROL.C3"
+        ],
+        "recordPositiveObligation": "准确撤销及可能reveal-as-expansion原生检查",
+        "recordEffectDeltaFromInventory": [
+          "permission-overlay-durable-write"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "always",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F",
+      "supplementalContractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#5",
+      "actualExecutionEntry": "packages/tools/src/tools.ts:createTeamTools -> makeDefinition -> existing controlService/permission port (§5.4)"
+    },
+    {
+      "recordIndex": 89,
+      "name": "surface:mcp_stdio",
+      "scope": "surface",
+      "family": "B-MCP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-MCP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/mcp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "REMOTE_SERVER_TRUSTED_PROVIDER_FINAL",
+        "lifecycle": "dynamic-create-revoke-reenter-closed-world",
+        "notes": "execution surface identified = upstream host MCP transport @pin639 (GATES 2.5-S2); status OPEN"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-MCP.C1",
+          "§5 finite adapter seam applicable to B-MCP"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-MCP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-MCP.C3"
+        ],
+        "recordPositiveObligation": "至少一个真实stdio工具+本地server约束+实际Domain gate",
+        "recordEffectDeltaFromInventory": [
+          "remote-indeterminate"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "surface_invariant",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 90,
+      "name": "surface:mcp_http_dynamic",
+      "scope": "surface",
+      "family": "B-MCP",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-MCP",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/mcp.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "REMOTE_SERVER_TRUSTED_PROVIDER_FINAL",
+        "lifecycle": "dynamic-create-revoke-scope-collision-reenter-closed-world",
+        "notes": "instance snapshot NOT collected: itemized impact = GATES 2.8(d), neither blanket-block nor exemption"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-MCP.C1",
+          "§5 finite adapter seam applicable to B-MCP"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-MCP.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-MCP.C3"
+        ],
+        "recordPositiveObligation": "至少一个真实HTTP动态工具+endpoint约束+实际Domain gate",
+        "recordEffectDeltaFromInventory": [
+          "remote-indeterminate"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "surface_invariant",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 91,
+      "name": "surface:domain_family",
+      "scope": "surface",
+      "family": "B-DOMAIN",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-DOMAIN",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CONNECTOR",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/domain.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "DOMAIN_SERVICE_INDEPENDENT_AT_EFFECT_BOUNDARY(ADR:75)",
+        "lifecycle": "independent-decision-at-effect-boundary;no-universal-domain-machinery-added",
+        "notes": "技术定档:非模型面工具名(83矩阵不适用);ADR L72 \"Domain-side permissions remain independent\"+L75 条目6 交集语义;S-1按自决语义关闭,无CORE_SEAM反例"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-DOMAIN.C1",
+          "§5 finite adapter seam applicable to B-DOMAIN"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-DOMAIN.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-DOMAIN.C3"
+        ],
+        "recordPositiveObligation": "Team allow而真实Domain deny阻止提交",
+        "recordEffectDeltaFromInventory": [
+          "domain-business-effect-at-plugin-boundary-family-level"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "surface_invariant",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    },
+    {
+      "recordIndex": 92,
+      "name": "surface:neg4_preset_selfregister",
+      "scope": "surface",
+      "family": "B-ISOLATION",
+      "contractRef": "M0-B-FAMILY-TARGET-CONTRACTS.md#B-ISOLATION",
+      "targetStatus": "PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED",
+      "implementationOwnerRole": "CENTER",
+      "sharedSeamOwnerRole": "CENTER",
+      "authorizationSeamOwnerRole": "AUTH",
+      "implementationPathProposed": "packages/runtime/src/plugin/live/governed-families/isolation.mjs",
+      "existingEntryPath": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "sourceEvidence": {
+        "provider": "PRESET_REALM_SURFACE",
+        "lifecycle": "n-a-isolation",
+        "notes": "preset-realm never reached global tools.schemas(); ABSTAIN!=VERIFIED"
+      },
+      "evidenceLevel": "E2_prior_fixed_source_research_unless_document_marks_E1",
+      "acceptance": {
+        "C1": [
+          "BASE.C1",
+          "B-ISOLATION.C1",
+          "§5 finite adapter seam applicable to B-ISOLATION"
+        ],
+        "C2": [
+          "BASE.C2",
+          "B-ISOLATION.C2"
+        ],
+        "C3": [
+          "BASE.C3",
+          "B-ISOLATION.C3"
+        ],
+        "recordPositiveObligation": "动态未知注册拒绝且known允许工具功能保留",
+        "recordEffectDeltaFromInventory": [
+          "none-isolation"
+        ],
+        "requiredNegative": "同一准确operation：Ask pending零不当effects；deny/revoke/replay/provider drift/跨owner拒；不得native回落",
+        "executionEvidence": "NOT_RUN"
+      },
+      "mountCondition": "surface_invariant",
+      "onMountObligation": "FULL_GOVERNANCE",
+      "legacyAcceptanceWaveNotCondition": "F"
+    }
+  ],
+  "revision": "1.2"
+}

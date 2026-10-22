@@ -1,0 +1,2 @@
+run=6-probe start=2026-10-22T18:07:58Z cmd=node check.mjs receipts/keyset-probe/mutated-records.json
+rc=1
