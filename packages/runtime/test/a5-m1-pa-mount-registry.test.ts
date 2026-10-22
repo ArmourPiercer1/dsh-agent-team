@@ -44,7 +44,12 @@ function healthyMount() {
     instanceId: 'member-1',
     guard: {
       dispatcher: {
-        surface: { entryOf: (name: string) => (name === 'team_bash' ? { verified: true, revision: 3, binding } : undefined) },
+        surface: {
+          names: () => ['team_bash', 'team_grep', 'team_glob', 'read'],
+          entryOf: (name: string) => (name === 'team_bash' ? { verified: true, revision: 3, binding }
+            : name === 'read' ? { verified: true, revision: 3, binding: { ...binding, bindingId: 'team:scope:read', toolName: 'read' } }
+            : undefined),
+        },
       },
     },
     plane: {
@@ -73,7 +78,9 @@ const manifest = {
   realmId: 'realm-x',
   beneficiaryAuthority: 'member',
   member: { teamSessionId: 'root-b', instanceId: 'member-1' },
-  binding: { toolName: 'team_bash', definitionIdentity: 'sha256:real-definition', revision: 3, providerId: 'dsh-agent-team' },
+  binding: { bindingId: 'team:scope:team_bash', toolName: 'bash', definitionIdentity: 'sha256:real-definition', revision: 3, providerId: 'dsh-agent-team' },
+  // AUTH audit (e) pin: the snapshot's toolName is the BACKEND name; the
+  // dispatcher key lookup must go by the bindingId family, never toolName.
   // 9e fix-2 pin: the PARSED manifest is FLAT — top-level callId, member.*.
   callId: 'call-1',
 }
@@ -92,13 +99,22 @@ describe('A5M1-B — PA mount registry (named PaCallFacts contract)', () => {
     expect(revokePaMount('root-b', 'member-1', identity2)).toBe(false) // once
   })
 
-  it('B2: unverified / non-ACTIVE current entry ⇒ undefined', async () => {
+  it('B2: unverified/non-ACTIVE, ambiguous, or off-family entries all ⇒ undefined', async () => {
     const m = healthyMount()
     ;(m.guard.dispatcher.surface as { entryOf: (n: string) => unknown }).entryOf = () => ({ verified: false, revision: 3, binding: {} })
     expect(await base(m)).toBeUndefined()
     const m2 = healthyMount()
     ;(m2.plane as { realmId: string }).realmId = 'realm-other'
     expect(await base(m2)).toBeUndefined()
+    // AUTH (e) pin: the BACKEND toolName is never a dispatcher key — an
+    // entry only under the backend name does NOT satisfy the family lookup
+    // unless its bindingId family matches (it never does across namespaces).
+    const m3 = healthyMount()
+    const surf = m3.guard.dispatcher.surface as { entryOf: (n: string) => unknown }
+    surf.entryOf = (n: string) => (n === 'bash'
+      ? { verified: true, revision: 3, binding: { bindingId: 'backend:family', toolName: 'bash', definitionIdentity: 'sha256:real-definition', status: 'ACTIVE' } }
+      : undefined)
+    expect(await base(m3)).toBeUndefined()
   })
 
   it('B3+B4: realm mismatch and durable-attribution mismatch both refuse', async () => {

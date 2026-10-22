@@ -102,13 +102,33 @@ export async function readPaCallFacts({ rootSessionId, requestId, manifest, deci
   if (!rootSessionId || !requestId || manifest === undefined) return undefined
   const m = mount ?? resolvePaMount(rootSessionId, manifest?.member?.instanceId ?? '')
   if (m === undefined) return undefined
+  // 9e fix-2 (AUTH audit (e)): `entryOf` is keyed by the DISPATCHER name
+  // space while `manifest.binding.toolName` carries the BACKEND name
+  // (`bash` ≠ dispatcher `team_bash`) — using the manifest name misses the
+  // entry for every renamed row, and the native `read` coincidence would
+  // hide exactly that. The binding authority is resolved by the binding's
+  // OWN identity: the manifest snapshot carries `bindingId`, and a binding
+  // id family is name-unique on the surface (revise keeps the family,
+  // re-bind under another family is refused). So: the unique dispatcher
+  // entry whose bindingId equals the snapshot's — a durable, namespaced
+  // key; zero or ambiguous candidates ⇒ undefined (never a guess). Drift
+  // (revision/definition/provider changes) stays fully strict: the
+  // verifier performs the 11-field full-tuple + assurance comparison.
   const dispatcher = m.guard?.dispatcher
-  const toolName = manifest?.binding?.toolName ?? ''
-  const entry = dispatcher?.surface?.entryOf?.(toolName)
-  // binding authority: the CURRENT dispatcher entry — verified, ACTIVE.
-  const entryBinding = entry?.binding
-  if (entry === undefined || entry.verified !== true) return undefined
-  if (entryBinding?.status !== 'ACTIVE') return undefined
+  const snapshotBindingId = manifest?.binding?.bindingId
+  if (typeof snapshotBindingId !== 'string' || snapshotBindingId.length === 0) return undefined
+  const surface = dispatcher?.surface
+  const candidateNames = [...new Set([
+    String(manifest?.binding?.toolName ?? ''),
+    ...(typeof surface?.names === 'function' ? surface.names() : []),
+  ])].filter((n) => n.length > 0)
+  const candidates = candidateNames
+    .map((n) => surface?.entryOf?.(n))
+    .filter((e) => e !== undefined && e?.verified === true && e?.binding?.status === 'ACTIVE'
+      && e?.binding?.bindingId === snapshotBindingId)
+  if (candidates.length !== 1) return undefined
+  const entry = candidates[0]
+  const entryBinding = entry.binding
   if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) return undefined
   if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) return undefined
   // one governed lane: the binding's realm must BE the manifest's realm.
