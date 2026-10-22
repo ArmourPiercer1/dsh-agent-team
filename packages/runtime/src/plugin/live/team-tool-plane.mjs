@@ -73,7 +73,7 @@
  * @module runtime/plugin/live/team-tool-plane
  */
 import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
-import { createProductionAdmissionAssembly } from '../../../tool-admission/index.js'
+import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
 import { parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
@@ -804,34 +804,45 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     return bindingCache.get(toolName)
   }
-  // ── PR358 fix-3 readers (real current placement/policy/authority) ──
-  // The plane's CURRENT facts come from the host's live seams, never from
-  // the grant: `input.currentFacts` supplies { getPolicy, getRollbackEpoch,
-  // getAuthorityGeneration, getBindingRevision }; agent-bindings wires them
-  // to policyReaderRef.current and activationFence.getRollbackEpoch —
-  // genuine per-read values. Without the seam the legacy rev.0/revision-1
-  // law applies (the PR1 guard's published generation, disclosed).
+  // ── A5-M1 (this round) readers: the ONE call-level facts entry ──
+  // M1-A deleted the two self-attesting authorities that used to stand here:
+  //   * `currentFacts.getPolicy` + the mount-time policy object compared by
+  //     canonical JSON against the live PolicyReader (a whole-object JSON
+  //     compare is not a call-level fact; the mount answering with its own
+  //     closure proves nothing about the policy standing now), and
+  //   * `readProviderIdentity()` compared with ITSELF (the same closure read
+  //     twice in one expression — an identity that can never differ).
+  // What answers instead is the registry's public call-level entry: the
+  // CURRENT facts of THIS call (policy projection, deny sources, ceiling,
+  // binding entry, durable overlay + authority generation), awaited on both
+  // PA paths. `currentFacts` keeps ONLY the activation/placement rollback
+  // epoch (M1 ruling: that check is a real fence, not a self-proof).
   const paCurrentFacts = input.currentFacts ?? {}
-  // 9e-3: the ONE call-level facts adapter (root-owned; shared with the
-  // Control verifier) + the mount's own entry lookup. The FINAL edge awaits
-  // these; the old scalar getters no longer answer production authority.
+  // The injected call-level entry (`readPaCallFactsForCall`, agent-bindings
+  // wires it): keyed by the CALL identity, so it answers with no Control row
+  // too. Absent = this world carries no call-level authority = the final
+  // edge refuses (see the execution edge below); it never falls back to a
+  // scalar getter or a constant.
   const paReadCallFacts = input.readCallFacts
-  const paEntryOf = input.entryOf
-  const canonicalJsonFingerprintNow = (value) => {
-    try { return JSON.stringify(value, (k, v) => v === undefined ? '__undef__' : v) } catch { return undefined }
+  // THE plane's own row-name mapping point (the same native-class ↔ mounted-
+  // name law `createLaneDecide` documents at the lane face): a call's
+  // tool-invoke name resolves to the row THIS plane placed, so a backend
+  // spelling (`bash`) reaches the dispatcher placement (`team_bash`) instead
+  // of being looked up as a dispatcher key it never was. An unknown spelling
+  // answers undefined — the entry lookup then fails closed on the binding
+  // family, and no name is ever guessed (M1-D).
+  const paPlacementNameOf = (name) => {
+    const spelling = String(name ?? '')
+    if (spelling.length === 0) return undefined
+    if (spelling === readName) return readName
+    for (const [nativeClass, mounted] of Object.entries(names)) {
+      if (nativeClass === spelling || mounted === spelling) return String(mounted)
+    }
+    return undefined
   }
-  const paMountPolicyFingerprint = canonicalJsonFingerprintNow(permissionPolicy)
-  // (the identity is recomputed at consume time; the row consts are
-  // initialized by then — no TDZ: this arrow only CLOSES over them)
-  const paProviderRefs = () => [hostedSearch, hostedGlob, hostedShell, readExecutor]
-  const readProviderIdentity = () => paProviderRefs().map((r) => r === null || r === undefined ? '-' : String(r.backendId ?? r.kind ?? 'obj')).join('|')
   // computed lazily at first consume (the row consts initialize below
   // this declaration during mount)
   const paMountRollbackEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : undefined
-  const paLaneRecheck = (effectsSet) => {
-    const v = decide({ effects: effectsSet.effects ?? effectsSet })
-    return v?.kind === 'allow' ? 'allow' : (v?.kind === 'deny' ? 'deny' : 'ask')
-  }
 
   // PR358-B: the mount's LIVE PA plans (callId → the plan this call walked:
   // approvalCaseId / effect-set fingerprint / per-effect required rungs /
@@ -946,94 +957,162 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     let freshGeneration = 0
     let freshRevision = 1
-    // ── PR358 fix-3: FRESH current-facts recheck at the execution edge ──
-    // After any approval wait (and also on the all-allow path, which waits
-    // nothing), the plane re-reads the CURRENT definition/provider/policy/
-    // authority facts and re-verifies the WHOLE effect set against the live
-    // policy snapshot. Anything missing, moved, or unanswerable is STALE:
-    // zero body, and never a retroactive approval. The grant never proves
-    // its own "current" — current is what the readers answer NOW.
-    if (typeof paCurrentFacts.getPolicy === 'function' || paCurrentFacts.getRollbackEpoch !== undefined) {
-      const nowPolicy = typeof paCurrentFacts.getPolicy === 'function' ? paCurrentFacts.getPolicy() : undefined
-      const nowPolicyFingerprint = nowPolicy === undefined || nowPolicy === null
-        ? undefined
-        : canonicalJsonFingerprintNow(nowPolicy)
-      if (nowPolicyFingerprint !== undefined && nowPolicyFingerprint !== paMountPolicyFingerprint) {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the live permission policy moved after admission; this call is stale and runs nothing' }
-      }
-      const paMountProviderIdentity = readProviderIdentity()
-      const nowEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : paMountRollbackEpoch
-      if (nowEpoch !== paMountRollbackEpoch) {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the placement/activation epoch rolled between admission and execution; this call is stale and runs nothing' }
-      }
-      // the definitions/provider identity the mount placed must be the ones
-      // still behind this row — a re-placed mount answers with a NEW
-      // assembly (new facts, new nonce), never this grant.
-      if (paMountProviderIdentity !== readProviderIdentity()) {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the governed provider surface changed between admission and execution; this call is stale and runs nothing' }
-      }
-      // allEffects re-verification against the LIVE policy (all-allow path
-      // included): the lane verdict is recomputed for the FULL set, one
-      // effect outside allow now = stale (covers default flips too).
-      if (typeof paLaneRecheck === 'function') {
-        const freshLane = paLaneRecheck(requestedEffects)
-        if (freshLane !== 'allow') {
-          return { kind: 'deny', code: 'GRANT_STALE', detail: `fresh policy re-verification moved this effect set out of the allow lane (${String(freshLane)}); the call is stale and runs nothing` }
+    // ── A5-M1 C: the execution edge is answered ONLY by fresh call-level facts ──
+    // After any approval wait (and on the all-allow path, which waits
+    // nothing) the plane AWAITS the public call-level entry — the SAME read
+    // the Control verifier's adapter shares — and verifies THIS call against
+    // the whole answer, never a picked-out scalar:
+    //  · row path (ask): the standing approval must still answer the
+    //    question that was approved (the assembly's own plan/verify
+    //    semantics re-run over the current policy: same case, same effect
+    //    set, same per-effect rungs — anything else would widen the approval
+    //    retroactively);
+    //  · no-row path (all-allow): the FULL effect set must still be allow on
+    //    the CURRENT projected policy (the pure-core expansion plane over
+    //    the facts' policyDocument), not one generation number and not a
+    //    whole-object JSON compare of a policy reader.
+    // Any failure, drift, or unanswerable source is GRANT_STALE with zero
+    // body. The grant never proves its own "current"; the last confirmed
+    // generation is never carried over to this edge, and no constant (0/1)
+    // ever answers (M1-A deleted the self-attesting getters, M1-D deleted
+    // the single-name entry lookup).
+    const stale = (detail) => ({ kind: 'deny', code: 'GRANT_STALE', detail })
+    const paFactsSeamMounted = typeof paReadCallFacts === 'function'
+    const paEpochSeamMounted = paCurrentFacts.getRollbackEpoch !== undefined
+    if (paFactsSeamMounted || paEpochSeamMounted) {
+      // (1) the activation/placement fence (retained per ruling: a real
+      //      epoch read of the host's own fence, not a closure proving
+      //      itself).
+      if (paEpochSeamMounted) {
+        const nowEpoch = typeof paCurrentFacts.getRollbackEpoch === 'function' ? paCurrentFacts.getRollbackEpoch() : paMountRollbackEpoch
+        if (nowEpoch !== paMountRollbackEpoch) {
+          return stale('the placement/activation epoch rolled between admission and execution; this call is stale and runs nothing')
         }
       }
-      // 9e-3 (root ruling): the FINAL edge is answered by the REAL
-      // call-level facts, awaited — the SAME adapter the Control verifier
-      // consults (no self-attesting getters). The generation is the
-      // facts-side value (identical source by construction: the plane-local
-      // reader the assembly was configured with); the revision is read
-      // from THIS call's dispatcher entry (`entryOf(toolName)`), never by
-      // scanning names. Unanswerable = GRANT_STALE, never a constant.
-      let nowGeneration
-      let nowRevision
-      if (paDurableMint !== undefined && typeof paReadCallFacts === 'function') {
-        // THE row path: read the CURRENT call-level facts for THIS row
-        // through the ONE adapter the Control verifier consults, riding the
-        // row's OWN minted manifest (never a re-synthesis — different bytes
-        // would be a different row). No answer = no consumption.
+      if (!paFactsSeamMounted) {
+        return stale('no call-level facts entry is mounted for this plane, so the current authority of this call cannot be answered; the rev.0/revision-1 law is never applied to a governed mount that carries a live-facts seam')
+      }
+      // (2) the ONE durable generation source is re-read HERE, for this call:
+      // a read that faults or answers nothing refuses the call — the last
+      // CONFIRMED value is never carried over the execution edge.
+      let durableGenerationNow
+      if (typeof paGenerationReader === 'function') {
         try {
-          const facts = await paReadCallFacts({
-            rootSessionId: paMember.teamSessionId,
-            requestId: paDurableMint.requestId,
-            manifest: paDurableMint.manifest,
-            stage: 'guard',
-          })
-          if (facts !== undefined && facts !== null && Number.isInteger(facts.authorityGeneration) && facts.authorityGeneration >= 0) {
-            nowGeneration = facts.authorityGeneration
+          const g = await paGenerationReader(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
+          if (typeof g === 'number' && Number.isFinite(g) && g >= 0) {
+            paGenerationConfirmed = g
+            durableGenerationNow = g
           }
         } catch {
-          nowGeneration = undefined
+          durableGenerationNow = undefined
         }
-      } else if (paDurableMint === undefined) {
-        // The all-allow path mints NO row, so there are no call-level facts
-        // to await — the honest source is the plane's CONFIRMED durable
-        // generation reader: the very function the assembly was configured
-        // with (one source by construction), which refuses when the latest
-        // durable read is unconfirmed. Unconfirmed ⇒ no number ⇒ stale.
+        if (durableGenerationNow === undefined) {
+          return stale('the durable authority generation could not be re-read at the execution edge; the previously confirmed value is never carried over, and this call runs nothing')
+        }
+      }
+      // (3) await the CURRENT call-level facts for THIS call (call identity
+      // only: no row is implied, which is exactly why the all-allow path can
+      // ask the same question). The row path additionally rides the row's
+      // OWN binding identity, so the facts must answer for the binding the
+      // approval covers.
+      const placementName = paPlacementNameOf(toolName)
+      const rowBindingId = paDurableMint?.manifest?.binding?.bindingId
+      let answer
+      try {
+        answer = await paReadCallFacts({
+          rootSessionId: paMember.teamSessionId,
+          instanceId: paMember.instanceId,
+          realmId: callRealm,
+          callId,
+          requestedEffects,
+          ...(typeof rowBindingId === 'string' && rowBindingId.length > 0 ? { bindingId: rowBindingId } : {}),
+          ...(placementName === undefined ? {} : { placementName }),
+        })
+      } catch {
+        answer = undefined
+      }
+      const facts = answer?.kind === 'call-facts' || answer?.kind === 'no-approval-question' ? answer.facts : undefined
+      if (facts === undefined) {
+        return stale('no complete call-level facts could be read for this call — the entry answers undefined for ANY missing or contradicting source, and coverage is never assumed')
+      }
+      if (facts.realmId !== callRealm) {
+        return stale(`the call-level facts answer for realm '${String(facts.realmId)}', not this call's '${callRealm}' — these are not this call's facts`)
+      }
+      if (facts.member?.teamSessionId !== paMember.teamSessionId || facts.member?.instanceId !== paMember.instanceId) {
+        return stale('the durable member attribution in the current facts is not this call\'s — a grant is never spendable for another member')
+      }
+      if (facts.effects?.fingerprint !== undefined && facts.effects.fingerprint !== requestedEffects.fingerprint) {
+        return stale(`the effect set the facts carry (${String(facts.effects?.fingerprint)}) is not this call's (${String(requestedEffects.fingerprint)}) — the answer is about a different operation`)
+      }
+      if (!Number.isInteger(facts.authorityGeneration) || facts.authorityGeneration < 0) {
+        return stale('the fresh facts carry a malformed authority generation — a constant or fractional generation is exactly the synthesized source the facts contract forbids')
+      }
+      if (durableGenerationNow !== undefined && facts.authorityGeneration !== durableGenerationNow) {
+        return stale(`the plane's confirmed generation (${String(facts.authorityGeneration)}) and this call's durable re-read (${String(durableGenerationNow)}) disagree — sources that contradict each other answer no coverage question`)
+      }
+      if (typeof facts.binding?.revision !== 'number' || facts.binding.revision < 1) {
+        return stale('the unique dispatcher binding behind this call carries no usable revision — the entry is unanswerable, so the call is stale (M1-D: never a name lookup, never the constant 1)')
+      }
+      if (answer.kind === 'call-facts') {
+        // THE row path: the approval that exists must still be the approval
+        // for the question standing NOW. `walked` is the identity THIS call
+        // planned (the same canonical object the Control row was written
+        // over); the facts' planSnapshot is the plane's current answer, and
+        // the assembly's plan/verify semantics re-run over the CURRENT
+        // projection — three views of one question, and any pair that
+        // disagrees refuses.
+        const walked = livePaPlan.get(String(callId))
+        if (walked === undefined) {
+          return stale('the approval this call waited on has no live plan any more — the question it answered is gone, and its grant is not spendable')
+        }
+        const snap = facts.planSnapshot
+        if (snap === undefined || snap.approvalCaseId !== walked.approvalCaseId || snap.effectSetFingerprint !== walked.effectSetFingerprint) {
+          return stale(`the approved question moved between the approval and this edge (approved ${String(walked.approvalCaseId)}/${String(walked.effectSetFingerprint)}, the plane now answers ${String(snap?.approvalCaseId)}/${String(snap?.effectSetFingerprint)}) — an approval covers the question AS APPROVED`)
+        }
+        let recheck
         try {
-          const g = paAuthorityGeneration()
-          if (Number.isInteger(g) && g >= 0) nowGeneration = g
-        } catch {
-          nowGeneration = undefined
+          recheck = assembly.planApproval(request)
+        } catch (error) {
+          recheck = { ok: false, error: { message: String(error?.message ?? error) } }
+        }
+        if (recheck.ok !== true) {
+          return stale(`the approved effect set has no approvable path on the CURRENT authority any more (${String(recheck.error?.message ?? 'plan refused')}); consuming this grant would answer a question nobody approved`)
+        }
+        if (recheck.value.approvalCaseId !== walked.approvalCaseId || recheck.value.effectSetFingerprint !== walked.effectSetFingerprint) {
+          return stale(`the approval case identity moved (${String(walked.approvalCaseId)} → ${recheck.value.approvalCaseId}) — the standing grant covers the question it was issued for, never its successor`)
+        }
+        if (recheck.value.perEffectRequired.length !== walked.perEffectRequired.length
+          || recheck.value.perEffectRequired.some((rung, i) => rung !== walked.perEffectRequired[i])) {
+          return stale('the per-effect rungs this approval covers are not the rungs standing now — consuming would widen the approval retroactively')
+        }
+        if (snap.perEffectRequired.length !== recheck.value.perEffectRequired.length
+          || snap.perEffectRequired.some((rung, i) => rung !== recheck.value.perEffectRequired[i])) {
+          return stale('the call-level sources disagree about the CURRENT question (the plane\'s live plan versus the assembly\'s re-derivation over the current policy) — no consumption happens on contradictory facts')
+        }
+      } else {
+        // THE all-allow path (no Control row was ever minted): the WHOLE set
+        // must still be allow under the CURRENT projected policy. The pure
+        // core's expansion plane over the fresh facts answers exactly the
+        // question "does the policy still decide every effect of this set as
+        // allow" — a set that now needs an approval, or that went
+        // undetermined, is stale by construction (a default flip included).
+        let expansion
+        try {
+          expansion = input.fs?.subtreeContains === undefined
+            ? evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+            : evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument, input.fs.subtreeContains)
+        } catch (error) {
+          return stale(`the current policy could not be re-evaluated over the fresh facts (${String(error?.message ?? error)}); fail closed without consuming`)
+        }
+        if (expansion.unapprovable !== null) {
+          return stale(`the effect set is no longer decided by the current policy (effect ${String(expansion.unapprovable.effectIndex)}: ${String(expansion.unapprovable.detail)}) — an undetermined set is never an allowed set`)
+        }
+        if (expansion.needsApproval.length > 0) {
+          return stale(`fresh policy re-verification moved ${String(expansion.needsApproval.length)} effect(s) of this set out of the allow lane; this call was admitted without an approval and none exists — it runs nothing`)
         }
       }
-      if (nowGeneration === undefined) {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: 'the current authority generation is unanswerable on the real source for this call; fail closed without consuming' }
-      }
-      if (typeof paEntryOf === 'function') {
-        const entry = paEntryOf(String(toolName ?? ''))
-        const rev = entry?.binding?.revision ?? entry?.revision
-        if (typeof rev === 'number') nowRevision = rev
-      }
-      if (typeof nowRevision !== 'number') {
-        return { kind: 'deny', code: 'GRANT_STALE', detail: `the current dispatcher entry for ${String(toolName ?? '?')} is unanswerable; fail closed without consuming` }
-      }
-      freshGeneration = nowGeneration
-      freshRevision = nowRevision
+      freshGeneration = facts.authorityGeneration
+      freshRevision = facts.binding.revision
     }
     if (signal?.aborted === true) {
       return { kind: 'allow', cancelled: true }

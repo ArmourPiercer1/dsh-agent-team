@@ -242,4 +242,71 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
     if (!r.resolved) expect(r.msg).toMatch(/locator-rejected/)
     expect(ranLines(observe)).toHaveLength(0)
   })
+
+  // A5-M1 C: the all-allow path (NO Control row) answers from the fresh
+  // call-level facts too — the SAME public entry the ask path awaits. These
+  // legs pin both sides on the REAL read face: an unanswerable current refuses
+  // with zero bytes, and a complete ALL-ALLOW answer still delivers the real
+  // bytes (fail-closed is not "always refuses").
+  it('R-C1-11 all-allow path: unanswerable call-level facts refuse the real read with ZERO bytes', async () => {
+    const { read, observe } = buildPlane(POLICY_ALLOW, { readCallFacts: async () => undefined })
+    const r = await run(() => read.execute({ file_path: join(ROOT_DIR, 'target.txt') }))
+    expect(r.resolved).toBe(false)
+    if (!r.resolved) expect(r.msg).toContain('GRANT_STALE')
+    expect(ranLines(observe)).toHaveLength(0)
+  })
+
+  it('R-C1-11b all-allow path: the plane asks with the REAL call identity, and a complete ALL-ALLOW answer delivers the bytes', async () => {
+    const observe: string[] = []
+    const asked: Array<Record<string, unknown>> = []
+    // the answer THIS world's current authority carries: the plane's own
+    // projected policy document and generation (no overlay port here, so the
+    // assembly's generation is 0 and its row binding validates at revision 1 —
+    // values read from the world, never invented by the pin).
+    const answer: { kind: 'no-approval-question'; facts: Record<string, unknown> } = {
+      kind: 'no-approval-question',
+      facts: {},
+    }
+    const built = mount(POLICY_ALLOW, {
+      readCallFacts: async (input: Record<string, unknown>) => {
+        asked.push(input)
+        answer.facts = {
+          ...answer.facts,
+          effects: input.requestedEffects,
+          realmId: input.realmId,
+        }
+        return answer
+      },
+    }, observe)
+    if (built.ok !== true) throw new Error(`mount refused: ${built.code}`)
+    const plane = built.value as unknown as {
+      definitions: ReadonlyArray<Definition>
+      governance: { policyDocument: () => unknown; denySources: () => unknown }
+    }
+    answer.facts = {
+      policySource: { staticLayerRefs: ['blueprint:bp@1#sha256:bp', 'template:a5m1-tpl'], overlayGeneration: 0 },
+      realmId: REALM,
+      ceiling: { teamHardEnvelope: { rules: [] }, permissionMutationEnvelope: { status: 'absent' } },
+      policyDocument: plane.governance.policyDocument(),
+      denySources: plane.governance.denySources(),
+      effects: undefined,
+      member: { teamSessionId: 'a5m1-test-team-root', instanceId: 'a5m1-instance' },
+      beneficiaryAuthority: 'member',
+      binding: { bindingId: 'plane-row:a5m1-tpl:read', revision: 1, definitionIdentity: 'sha256:def', status: 'ACTIVE' },
+      blueprint: { revision: 1, contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
+      authorityGeneration: 0,
+    }
+    const read = plane.definitions.find((d) => d.name === 'read')
+    if (!read) throw new Error('no read definition in mount')
+    const r = await read.execute({ file_path: join(ROOT_DIR, 'target.txt') })
+    expect(joined(r)).toContain('alpha5-m1-read-line-1')
+    expect(ranLines(observe)).toHaveLength(1)
+    // the plane asked with the CALL identity: its OWN placement spelling
+    // (never the backend/effect name), plus this call's realm, id and effects.
+    expect(asked.length).toBe(1)
+    const askedInput = asked[0] as Record<string, unknown>
+    expect(askedInput.placementName).toBe('read')
+    expect(askedInput.realmId).toBe(REALM)
+    expect(String(askedInput.callId ?? '')).not.toBe('')
+  })
 })

@@ -69,3 +69,44 @@ export declare function resolvePaMount(teamRoot: string, instanceId: string): Pa
  *  exactly this call, or `undefined` (never a partial shape, never a 0/1
  *  or empty-envelope fallback). */
 export declare function readPaCallFacts(input: ReadPaCallFactsInput): Promise<PaCallFactsResult>
+
+/** The named facts WITHOUT `planSnapshot` — the honest shape of a call that
+ *  walked NO approval question (an all-allow call has no case, so that one
+ *  source does not exist; it is never synthesized to complete the 12). */
+export type PaCallAuthorityFacts = Omit<PaCallFacts, 'planSnapshot'>
+
+/** What the public call-level entry answers for ONE live call:
+ *  - `call-facts`: the complete 12-field contract (the call walked an
+ *    approval question, so `planSnapshot` has a real source);
+ *  - `no-approval-question`: the same named facts minus `planSnapshot`,
+ *    STATED as such (never a partial `PaCallFacts`);
+ *  - `undefined`: any missing / unhealthy / contradicting source. */
+export type PaCallLevelAnswer =
+  | { readonly kind: 'call-facts'; readonly facts: PaCallFacts }
+  | { readonly kind: 'no-approval-question'; readonly facts: PaCallAuthorityFacts }
+  | undefined
+
+/** The public entry's input: the REAL call identity — no `requestId`, no
+ *  manifest, no Control row. `bindingId` is the family the call carries (a
+ *  durable row's own binding identity, when one exists); `placementName` is
+ *  the caller's OWN dispatcher placement spelling, which only SEEDS the
+ *  family — the matcher still requires the family to be uniquely carried. */
+export interface ReadPaCallFactsForCallInput {
+  readonly mount?: PaMountEntry
+  readonly rootSessionId: string
+  readonly instanceId: string
+  readonly realmId: string
+  readonly callId: string
+  readonly requestedEffects: unknown
+  readonly bindingId?: string
+  readonly placementName?: string
+}
+
+/** THE public call-level entry (A5-M1 B): the CURRENT facts of one live call
+ *  read through the mount, keyed by the call identity alone. Both PA paths
+ *  await this — the durable row's verifier reaches it through
+ *  `readPaCallFacts`, which layers the row's manifest validation on the same
+ *  shared read. */
+export declare function readPaCallFactsForCall(
+  input: ReadPaCallFactsForCallInput,
+): Promise<PaCallLevelAnswer>

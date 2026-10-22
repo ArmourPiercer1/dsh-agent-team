@@ -353,7 +353,7 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
-import { publishPaMount, revokePaMount } from './pa-mount-registry.mjs'
+import { publishPaMount, readPaCallFactsForCall, revokePaMount } from './pa-mount-registry.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
@@ -740,7 +740,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, paReadCallFactsRef, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2554,18 +2554,25 @@ export function createAgentBindings(deps) {
             },
           },
           currentFacts: {
-            getPolicy: () => policyReaderRef?.current,
+            // A5-M1-A: `getPolicy: () => policyReaderRef?.current` is DELETED
+            // from the production-authority path. The final edge compared the
+            // WHOLE live PolicyReader object (canonical JSON) against the
+            // mount-time policy object — a whole-object JSON compare is not a
+            // call-level fact, and a mount reading its own closure back proves
+            // nothing. The call-level facts entry below answers the CURRENT
+            // policy (its projected document + deny sources + durable overlay
+            // generation) per call instead; no substitute getter is wired.
             getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
-            // 9e-3 (root ruling): the OLD scalar getters (a generation that
-            // discarded its Promise and a revision that scanned ALL names
-            // and kept the last) are DELETED from the production-authority
-            // path. The plane's final edge now awaits the ONE call-level
-            // facts adapter (the same reader the Control verifier uses) and
-            // reads THIS call's entry via the mount's own entryOf — per
-            // tool, per call. See `readCallFacts` / `entryOf` below.
           },
-          readCallFacts: (input) => paReadCallFactsRef?.current?.(input),
-          entryOf: (name) => a5p1Guard?.dispatcher?.surface?.entryOf?.(String(name)),
+          // A5-M1 B/C: the ONE public call-level entry (the same shared read
+          // the Control verifier's adapter uses), keyed by the CALL identity —
+          // so the all-allow path, which mints no Control row, can await the
+          // current facts too. The old `entryOf` sibling (a single-name
+          // dispatcher lookup keyed by the BACKEND spelling) is deleted with
+          // M1-D: the binding behind a call is resolved by its bindingId
+          // FAMILY inside the entry, and zero/ambiguous answers stale the
+          // call instead of falling back to revision 1.
+          readCallFacts: (input) => readPaCallFactsForCall(input),
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),

@@ -19,10 +19,12 @@ const mod = await import(new URL('../src/plugin/live/pa-mount-registry.mjs', imp
 // 9e (identity law): publish HANDS BACK the mount identity and revoke
 // REQUIRES it — the test's binding states that contract, so the arity is
 // checked here rather than discovered at runtime.
-const { publishPaMount, revokePaMount, readPaCallFacts } = mod as {
+interface CallLevelAnswer { kind: 'call-facts' | 'no-approval-question'; facts: Record<string, unknown> }
+const { publishPaMount, revokePaMount, readPaCallFacts, readPaCallFactsForCall } = mod as {
   publishPaMount: (root: string, id: string, entry: Record<string, unknown>) => unknown
   revokePaMount: (root: string, id: string, identity: unknown) => boolean
   readPaCallFacts: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+  readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<CallLevelAnswer | undefined>
 }
 
 const TUPLE = { blueprintId: 'bp-1', revision: 9, contentHash: 'sha256:bp', templateId: 'tmpl-1', cwd: '/work', providerVersion: 'pv-1' }
@@ -42,7 +44,9 @@ function healthyMount() {
     revision: 3,
     status: 'ACTIVE',
   }
-  const requestedEffects = { effects: [{ kind: 'tool-invoke', toolName: 'team_bash' }, { kind: 'fs-read', resource: '/work/a' }] }
+  // a parsed set carries its canonical fingerprint (domain/tool-governance);
+  // the public call-level entry contrasts it against the live plan's own.
+  const requestedEffects = { effects: [{ kind: 'tool-invoke', toolName: 'team_bash' }, { kind: 'fs-read', resource: '/work/a' }], fingerprint: 'sha256:effects' }
   return {
     instanceId: 'member-1',
     guard: {
@@ -174,5 +178,84 @@ describe('A5M1-B — PA mount registry (named PaCallFacts contract)', () => {
       throw new Error('generation unanswerable')
     }
     expect(await base(brokenGen)).toBeUndefined()
+  })
+})
+
+// ── A5-M1 B: the PUBLIC call-level entry (no durable row, no manifest) ──────
+// The plane's execution edge must await the SAME read on BOTH PA paths, and
+// the all-allow path mints no Control row at all. These pins are exactly that
+// difference: same facts law, no requestId, no manifest, live plan keyed by
+// the CALL identity.
+describe('A5M1-B2 — the public call-level entry (A5-M1 B/D)', () => {
+  const callEffects = { effects: [{ kind: 'tool-invoke', toolName: 'team_bash' }, { kind: 'fs-read', resource: '/work/a' }], fingerprint: 'sha256:effects' }
+  const call = (mount: unknown, over: Record<string, unknown> = {}) => readPaCallFactsForCall({
+    rootSessionId: 'root-b',
+    instanceId: 'member-1',
+    realmId: 'realm-x',
+    callId: 'call-1',
+    requestedEffects: callEffects,
+    placementName: 'team_bash',
+    mount,
+    ...over,
+  })
+
+  it('B7: a live call answers with NO requestId and NO manifest (the row path is not implied)', async () => {
+    const a = await call(healthyMount())
+    expect(a?.kind).toBe('call-facts')
+    const f = a?.facts as Record<string, unknown>
+    expect(Object.keys(f)).toEqual([
+      'policySource', 'realmId', 'ceiling', 'policyDocument', 'denySources', 'effects',
+      'member', 'beneficiaryAuthority', 'binding', 'blueprint', 'planSnapshot', 'authorityGeneration',
+    ]) // the complete named contract, same order the durable path answers
+    expect(f.planSnapshot).toEqual({ approvalCaseId: 'case-1', effectSetFingerprint: 'sha256:effects', perEffectRequired: ['member', 'member'] })
+    expect(f.authorityGeneration).toBe(4)
+    // the identity that answered is the binding FAMILY's carrier, not the name:
+    expect((f.binding as { bindingId: string }).bindingId).toBe('team:scope:team_bash')
+  })
+
+  it('B8: a call that walked NO approval question answers the named facts MINUS planSnapshot — stated, never synthesized', async () => {
+    const m = healthyMount() as ReturnType<typeof healthyMount> & { plane: { livePaPlan: Map<string, unknown> } }
+    m.plane.livePaPlan.delete('call-1') // the all-allow case: this call opened no case
+    const a = await call(m)
+    expect(a?.kind).toBe('no-approval-question')
+    const f = a?.facts as Record<string, unknown>
+    expect('planSnapshot' in f).toBe(false) // never an empty/ fabricated snapshot
+    expect(Object.keys(f)).toHaveLength(11)
+    expect(f.realmId).toBe('realm-x')
+    expect(f.authorityGeneration).toBe(4)
+  })
+
+  it('B9: the binding is the UNIQUE carrier of the family — zero, ambiguous, or off-family answers undefined (M1-D)', async () => {
+    // (a) a placement name the surface does not carry ⇒ no family ⇒ undefined
+    expect(await call(healthyMount(), { placementName: 'team_nope' })).toBeUndefined()
+    // (b) AMBIGUOUS family: TWO entries carry the same bindingId — which one
+    //     is the call's binding is not this lane's to guess (never "first")
+    const amb = healthyMount()
+    const surf = amb.guard.dispatcher.surface as { names: () => string[]; entryOf: (n: string) => unknown }
+    const carrier = (amb.guard.dispatcher.surface as unknown as { entryOf: (n: string) => { binding: unknown } }).entryOf('team_bash')
+    surf.names = () => ['team_bash', 'team_bash_alias']
+    surf.entryOf = (n: string) => (n === 'team_bash' || n === 'team_bash_alias' ? carrier : undefined)
+    expect(await call(amb)).toBeUndefined()
+    // (c) an entry that is not VERIFIED (or not ACTIVE) never answers
+    const unverified = healthyMount()
+    ;(unverified.guard.dispatcher.surface as { entryOf: (n: string) => unknown }).entryOf = (n: string) =>
+      (n === 'team_bash' ? { verified: false, binding: { bindingId: 'team:scope:team_bash', status: 'ACTIVE', revision: 3, definitionIdentity: 'sha256:real-definition' } } : undefined)
+    expect(await call(unverified)).toBeUndefined()
+    // (d) the call's OWN binding identity wins and must be the carrier: a row
+    //     from another family never resolves through the placement seed
+    expect(await call(healthyMount(), { bindingId: 'some:other:family' })).toBeUndefined()
+  })
+
+  it('B10: one call, one identity — a conflicting effect set, realm, member, or mount answers undefined', async () => {
+    // the live plan recorded ANOTHER effect set than the call asked about
+    expect(await call(healthyMount(), { requestedEffects: { effects: callEffects.effects, fingerprint: 'sha256:some-other-set' } })).toBeUndefined()
+    expect(await call(healthyMount(), { realmId: 'realm-z' })).toBeUndefined()
+    expect(await call(healthyMount(), { instanceId: 'member-OTHER' })).toBeUndefined()
+    expect(await call(healthyMount(), { mount: undefined, rootSessionId: 'root-unpublished-9e' })).toBeUndefined()
+    expect(await call(healthyMount(), { callId: '' })).toBeUndefined()
+    // a missing generation reader ⇒ undefined, never the constant 0 (B6 law)
+    const noGen = healthyMount()
+    ;(noGen.plane as unknown as { authorityGeneration: unknown }).authorityGeneration = undefined
+    expect(await call(noGen)).toBeUndefined()
   })
 })
