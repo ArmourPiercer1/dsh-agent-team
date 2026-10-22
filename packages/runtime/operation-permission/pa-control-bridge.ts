@@ -176,6 +176,15 @@ export type PaControlLegResult =
       readonly requestId: string
       readonly approval: PresentedApproval
       readonly grant: OperationGrant
+      /** ROOT 9e carriage (additive, NO semantic change): the durable
+       *  manifest of THIS row, strict-classified from the row the leg
+       *  minted and consumed through (`paManifestClassOf(record)` — the
+       *  same VALUE-checked trichotomy every gate uses, never a local
+       *  echo). The plane's final edge re-reads THIS call's level facts
+       *  against these fields. ABSENT only if the row no longer
+       *  strict-classifies — in which case the consumer fails closed
+       *  (no facts, no grant use), never a synthesized manifest. */
+      readonly manifest?: PaControlManifest
     }
   | { readonly decision: 'deny'; readonly requestId?: string; readonly detail?: string }
   | { readonly decision: 'unsettled'; readonly requestId?: string; readonly detail?: string }
@@ -576,7 +585,18 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     observe({ stage: 'guard-consumed', callId, requestId: record.requestId, grantId: issued.value.grantId })
 
     // ── 7. the frozen-A success shape (minted AND guard-consumed) ────────
-    return { decision: 'approve', requestId: record.requestId, approval, grant: issued.value }
+    // ROOT 9e carriage: the manifest rides from the DURABLE row the leg
+    // consumed through, classified by the one VALUE-checked trichotomy
+    // (never the local construction bytes); a row that no longer
+    // strict-classifies carries nothing — the consumer fails closed.
+    const carried = paManifestClassOf(record)
+    return {
+      decision: 'approve',
+      requestId: record.requestId,
+      approval,
+      grant: issued.value,
+      ...(carried.state === 'valid' ? { manifest: carried.manifest } : {}),
+    }
   }
 }
 

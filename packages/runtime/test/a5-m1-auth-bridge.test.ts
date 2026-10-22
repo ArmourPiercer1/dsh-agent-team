@@ -101,7 +101,7 @@ import type {
 import type { ActionCaller } from '../admission/index.js'
 import { authorityRank } from '../governance/authority-ceiling.js'
 import type { AuthorityDocumentSlot, AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
-import type { PaCallFactsCeilingSlot } from '../control/types.js'
+import type { ControlCallerRef, PaCallFactsCeilingSlot } from '../control/types.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createProductionAdmissionAssembly } from '../tool-admission/index.js'
@@ -553,6 +553,16 @@ describe('A1 (positive leg + reuse): durable row → verified real allow → min
     // the durable allow carried NO special reason (the verifier COVERED)
     const decision = st.decisions.find((d) => d.requestId === rowA.requestId)
     expect(decision?.reason).toBeUndefined()
+    // ROOT 9e carriage pin: the approve leg hands back the DURABLE mint's
+    // manifest, identical to the row it rode (strict re-parse of the row
+    // bytes) and value-bound to the row's digest pairing — the plane's
+    // final edge re-reads THIS call's level facts against exactly these.
+    const durableRow = st.requests.find((r) => r.correlation === fixture.correlation)
+    expect(resA.manifest).not.toBeUndefined()
+    const carried = resA.manifest as NonNullable<typeof resA.manifest>
+    expect(canonicalJsonFingerprint(durableRow?.reviewPayload)).toBe(durableRow?.reviewPayloadDigest)
+    expect(durableRow?.operationFingerprint).toBe(durableRow?.reviewPayloadDigest)
+    expect(carried).toEqual(parsePaControlManifest(durableRow?.reviewPayload))
   })
 
   it('REUSES the same requestId on a repeat of the same invocation (no second row, no second spend)', async () => {
@@ -1250,7 +1260,7 @@ async function appendDurableFact(
 ): Promise<number> {
   const sequence = await ledger.allocateSequence()
   await ledger.put({
-    schemaVersion: 2,
+    schemaVersion: 2, // fence L1253 adjudication evidence: durable LEDGER-ROW envelope version (`ledger.put` row envelope — sequence/rootSessionId/factType/payload/createdAt, ZERO blueprint document fields); the ledger-row signature rides the head line (outer-line-evidence ⇒ UNKNOWN by design). NOT a blueprint document version.
     sequence,
     rootSessionId: P6T4_ROOT,
     factType,
@@ -1753,7 +1763,15 @@ describe('E4 (the input.facts pre-answer is a TEST seam, default CLOSED): a prod
     const manifest = parsePaControlManifest(manifestBytes(fixture))
     expect(manifest).not.toBeUndefined()
     const m = manifest as NonNullable<typeof manifest>
-    const decider = humanCaller()
+    // The REAL decider for these E-block rows: the row is a leader-approval
+    // row targeting WORKER, resolved by the LEADER — the exact
+    // ControlCallerRef the service's `callerRefOf` produces at the resolve
+    // gate (instance + durable role), not a copy of the helper's shape.
+    const decider: ControlCallerRef = {
+      kind: 'instance',
+      instanceId: String(P6T4_SEEDS.leader.instanceId),
+      role: 'leader',
+    }
     // REAL facts from the shared fake — the combination the restored E1/E2
     // guard flows ride to a live allow, so if honoured it MUST cover.
     const facts = await fakeReadCallFacts({
