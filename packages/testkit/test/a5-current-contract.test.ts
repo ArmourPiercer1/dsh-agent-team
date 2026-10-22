@@ -29,6 +29,13 @@ import { checkStatePointers, checkCurrentContract } from '../../../scripts/ci-pr
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
+// The checker lives in scripts/ci-pr-gate.mjs (plain JSDoc JS; test packages do not infer
+// script-side JSDoc as types). These are its ACTUAL runtime return shapes — findings is a
+// string[] on both checkers — declared once here so every downstream callback parameter
+// receives a real contextual type. No assertion changed; no `any`, no disable-comment.
+type ContractGrade = { findings: string[]; info: Record<string, unknown> }
+type LegacyGrade = { findings: string[]; info?: Record<string, unknown> }
+
 // ─────────────────────────────── LEGACY-ONLY test entry ──────────────────────────────
 // Alpha4 historical-form fixtures for checkStatePointers. NOT the production path: these
 // graphs carry no current_contract on purpose — they are what a round-58 Alpha.4 tree looked
@@ -49,18 +56,18 @@ describe('checkStatePointers — LEGACY-ONLY fixture entry (Alpha4 historical sh
   const legacyLog = ['## 2026-10-08 round 41 — lane', '## 2026-10-08 round 42 — close'].join('\n')
 
   it('grades the Alpha.4 shape green on its own terms (integrity, not currency)', () => {
-    const { findings } = checkStatePointers({ graphText: legacyGraph, logText: legacyLog, isAncestor: () => true })
+    const { findings }: LegacyGrade = checkStatePointers({ graphText: legacyGraph, logText: legacyLog, isAncestor: () => true })
     expect(findings).toEqual([])
   })
 
   it('still refuses a phase that embeds a revision — the rule that made the field checkable', () => {
     const g = legacyGraph.replace('closing lap)"', 'master = abc1234)"')
-    const { findings } = checkStatePointers({ graphText: g, logText: legacyLog, isAncestor: () => true })
+    const { findings }: LegacyGrade = checkStatePointers({ graphText: g, logText: legacyLog, isAncestor: () => true })
     expect(findings.some((f) => f.includes('embeds a master revision'))).toBe(true)
   })
 
   it('N5 (production boundary): the pristine legacy graph FAILS checkCurrentContract — no fallback', () => {
-    const cc = checkCurrentContract({
+    const cc: ContractGrade = checkCurrentContract({
       graphText: legacyGraph,
       readFile: () => null,
       fileExists: () => false,
@@ -128,7 +135,7 @@ const files = (over: Record<string, string | null> = {}) => {
   }
 }
 
-const grade = (graph: string, fs_: ReturnType<typeof files>, drift: string[] | null = [], revExists = () => true, baselineCurrent = () => true) =>
+const grade = (graph: string, fs_: ReturnType<typeof files>, drift: string[] | null = [], revExists = () => true, baselineCurrent = () => true): ContractGrade =>
   checkCurrentContract({
     graphText: graph,
     readFile: fs_.readFile,
@@ -296,6 +303,56 @@ describe('checkCurrentContract — production path (current_contract is the only
       const dup = contractGraph().replace('blocked: []', '  baseline_collected: "2026-10-23T00:00:00Z"\nblocked: []')
       // The duplicate sits BEFORE blocked: — inside the block; count must catch it.
       expect(grade(dup, files()).findings.some((x) => x.startsWith('Q3:') && x.includes('baseline_collected must appear exactly once'))).toBe(true)
+    })
+  })
+
+  // Annex boundary contract (phase-review ruling): the 9-cell law is REGION-BOUND and the
+  // appendix carries its own minimal contract. Three named negatives + one positive, reusing
+  // this file. Nothing here claims CI proves the live Host tool set — it audits the static
+  // catalog's self-consistency only (the dynamic-enumeration gap stays a document sentence).
+  describe('Q5 boundary + Q5a appendix minimal contract', () => {
+    const annex = (entries: string[], mainRow = '| read (M-01) | x | plane | ok | ask | 装配在册 | none | WIRED | no |') =>
+      [
+        '<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->',
+        '<!-- phase-identity: alpha5-tool-io-governance -->',
+        '<!-- q5:main-begin -->',
+        '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
+        '|---|---|---|---|---|---|---|---|---|',
+        mainRow,
+        '<!-- q5:main-end -->',
+        '<!-- q5:appendix-begin -->',
+        ...entries,
+        '<!-- q5:appendix-end -->',
+      ].join('\n')
+    const gradeMatrix = (matrix: string): ContractGrade =>
+      grade(contractGraph(), files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix }))
+
+    it('positive: appendix entries citing existing stable IDs pass, and appendix lines never hit the 9-cell law', () => {
+      const r = gradeMatrix(annex([
+        '- **read** [default] — 逐名适用：主表 read (M-01) 行事实',
+        '- **terminal_open** [opt-in] — 逐名：UNKNOWN（主表无行；缺口登记）',
+        '- **interrupt_agent** [subagent 族侧] — UNKNOWN',
+        '- **interrupt_agent** [上游 team 族侧] — UNKNOWN；同名分实现保留',
+      ]))
+      expect(r.findings.filter((x: string) => x.startsWith('Q5'))).toEqual([])
+    })
+
+    it('negative 1: an appendix entry with an empty static tool name is graded', () => {
+      const r = gradeMatrix(annex(['- **** [default] — 主表 read (M-01)']))
+      expect(r.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('empty static tool name'))).toBe(true)
+    })
+
+    it('negative 2: a duplicated name under the same side-tag is graded; across side-tags it stays legal', () => {
+      const dup = gradeMatrix(annex([
+        '- **read** [default] — 主表 read (M-01)',
+        '- **read** [default] — 主表 read (M-01)',
+      ]))
+      expect(dup.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('duplicated'))).toBe(true)
+    })
+
+    it('negative 3: a dangling mapping — the appendix cites a stable ID no main row carries', () => {
+      const r = gradeMatrix(annex(['- **ghost** [default] — 逐名适用：主表 ghost (M-99) 行事实']))
+      expect(r.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('M-99') && x.includes('dangling mapping'))).toBe(true)
     })
   })
 

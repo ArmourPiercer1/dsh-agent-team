@@ -371,15 +371,29 @@ export function checkCurrentContract({ graphText, readFile, fileExists, revExist
   const POSITIVE_CLAIM = new Set(['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL'])
   const matrixText = matrixPath ? readFile(matrixPath) : null
   const claimedRows = []
+  const mainIds = new Set()
   let rowCount = 0
   if (matrixText === null) findings.push('Q5: matrix file unreadable; row contract cannot be graded')
   else {
-    for (const line of matrixText.split('\n')) {
+    // Region law (phase review, appendix round): the 9-cell main-matrix law binds ONLY the
+    // region between its boundary markers, so a per-name appendix can never be misgraded as
+    // a malformed data row; a marker-less document keeps the old whole-file reading (every
+    // pre-appendix fixture and tree). No counts are hardcoded here — regions are found by
+    // anchors, IDs by content. The appendix gets its OWN minimal contract, below.
+    const MAIN_B = '<!-- q5:main-begin -->'
+    const MAIN_E = '<!-- q5:main-end -->'
+    const mb = String(matrixText).indexOf(MAIN_B)
+    const me = String(matrixText).indexOf(MAIN_E)
+    const mainText = mb >= 0 && me > mb ? String(matrixText).slice(mb + MAIN_B.length, me) : String(matrixText)
+    for (const line of mainText.split('\n')) {
       if (!line.startsWith('| ') || line.startsWith('|---') || line.includes('①行ID')) continue
       const cells = line.split('|').slice(1, -1).map((c) => c.trim())
       if (cells.length !== 9) { findings.push(`Q5: matrix row "${cells[0] ?? '?'}" has ${String(cells.length)} cells, expected 9 (①-⑧ + V@B)`); continue }
       rowCount += 1
       const rowId = cells[0].replace(/\*/g, '')
+      // Stable IDs are the parenthesised tokens of ① ("read (M-01)", "grep (M-06 native)");
+      // whitespace inside the token is spelling noise and normalises away on BOTH sides.
+      for (const idm of rowId.matchAll(/\((M-[^)]+|NEG-\d+)\)/g)) mainIds.add(idm[1].replace(/\s+/g, ''))
       const lvl = cells[7].replace(/\*/g, '').split(/[（(]/)[0].trim()
       const vab = cells[8].replace(/\*/g, '').toLowerCase()
       if (!ENUM.includes(lvl)) findings.push(`Q5: row ${rowId} acceptance level "${lvl}" is outside the closed enum`)
@@ -410,6 +424,36 @@ export function checkCurrentContract({ graphText, readFile, fileExists, revExist
       if (vab === 'yes') claimedRows.push(rowId)
     }
     if (rowCount === 0) findings.push('Q5: matrix holds no data rows; an empty matrix is not a filled one')
+
+    // Appendix minimal contract (phase review): static tool names unique (per name+side-tag,
+    // same-name-different-implementation entries stay legal), non-empty, and EVERY cited
+    // main-matrix stable ID must exist — a dangling mapping is a fiction. Scope statement,
+    // as ruled: shared-field citation guarantees each name's status attribution; the static
+    // catalog's integrity is audited against the fixed pin (this contract); dynamic instance
+    // enumeration is NOT attempted here and its gap sentence stays in the document — Q5a
+    // does not, and must not, claim the live Host's full tool set.
+    const AP_B = '<!-- q5:appendix-begin -->'
+    const AP_E = '<!-- q5:appendix-end -->'
+    const ab = String(matrixText).indexOf(AP_B)
+    if (ab >= 0) {
+      const ae = String(matrixText).indexOf(AP_E)
+      const apText = ae > ab ? String(matrixText).slice(ab, ae) : String(matrixText).slice(ab)
+      const seen = new Set()
+      for (const line of apText.split('\n')) {
+        const m = /^- \*\*([^*]*)\*\*(.*)$/.exec(line)
+        if (!m) continue
+        const name = m[1].trim()
+        if (!name) { findings.push('Q5a: appendix entry carries an empty static tool name'); continue }
+        const tagM = /\[([^\]]*)\]/.exec(m[2])
+        const key = name + '\u0000' + (tagM ? tagM[1].trim() : '')
+        if (seen.has(key)) findings.push(`Q5a: appendix entry ${name} is duplicated under the same side-tag`)
+        seen.add(key)
+        for (const ref of m[2].matchAll(/\((M-[^)]+|NEG-\d+)\)/g)) {
+          const refId = ref[1].replace(/\s+/g, '')
+          if (!mainIds.has(refId)) findings.push(`Q5a: appendix entry ${name} cites ${refId} — no main-matrix row carries that stable ID (dangling mapping)`)
+        }
+      }
+    }
   }
   info.matrix_rows = rowCount
   info.claimed_rows = claimedRows.length

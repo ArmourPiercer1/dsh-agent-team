@@ -15,6 +15,7 @@
 
 ## 矩阵（**v0 draft**；26 行=初始工具/族清单，**非全 dispatch 穷尽**；**覆盖盘点未闭合，不能作为 M0 冻结输入**；提交本身不解锁 M0；行集为预计非裁 scope；穷尽性静态目录逐名见**附录 A**（68 静态名+Team15 口径），覆盖盘点仍未闭合）
 
+<!-- q5:main-begin -->
 | ①行ID | ②合入SHA | ③baseline生产注册入口+开关/default | ④真实IO | ⑤审批链 | ⑥验证 | ⑦已知缺陷 | ⑧级别 | V@B |
 |---|---|---|---|---|---|---|---|---|
 | read (M-01) | #317 feed；②合入=#353 `1739b262fa0975300ad0d3e291ba72f966af828f`（②列=合入对象 1739；run 归属=dad3，见⑥） | plane `PLANE_SUPPORTED_NATIVE_TAKEOVERS.read=['read']`（team-tool-plane.mjs @9b2 亲读）；受治理 feed 含 read | 行窗口+native shape+bounded same-FD ring（#353 题注） | ask/allow 车道装配在产；行级审批正控未复验（注：ab :2335-2352=MCP native 信任排除区，非 read 审批证据，此处不引用） | ⑥实测指 **dad3**：tested 源码=@dad3d42073dea45d3c3eb35b7ae54da39284f8de（READ-slice fix"two consumers re-wired to the READ-slice face (root-directed)"），tree=`72dcb09103f27da8cb959df0c7b741af20d9b5db`，载体 tar 包 sha256=`9c9270dac562f8cf4fbf3ad0159c00f6a2ee37b753495be8474256c19390a7fe`（3,389,587B）；run 时刻=**2026-10-22 00:12:22–00:13:02 UTC**（safe-out 1,706B sha256=`4306c5c20ec273d273ccedc16c6a55070816a672e9b3371ef8085fd01f0b43d3`；member read 窗 2..11/25+footer+instance 匹配；rc=0、stop 四真、mock CLOSED）；证据=external/untracked:dev/agent-workflow/evidence/alpha5/COORDINATION.md L1136（49:Z_FS 条"dad3 pack 来源核+tar actual members 实检通过"；append-only 正本，当前未入 git=例外通道）。**时间序归属**：merge 1739b262fa0975300ad0d3e291ba72f966af828f @00:17:39Z **晚于 run**，归属由时间序自证。**tree-equivalence（另列，不并入归属句）**：`1739b262f^{tree}`=`72dcb09103f27da8cb959df0c7b741af20d9b5db`=`dad3d42073dea45d3c3eb35b7ae54da39284f8de^{tree}`＝**parent-confirmed**（不作本轮作者亲核声称）；适用性=dep-diff(plane 三件 read 装配面={agent-bindings,team-tool-plane,plane-effect-backends}.mjs)=**0/3**（实测） | 拒绝路径与 UI 维度未证 | LIVE-CONFIRMED(scope=@dad3d42073dea45d3c3eb35b7ae54da39284f8de 真实Host行窗口正控——⑥⑧实测对象=dad3；baseline 未复跑) | no |
@@ -43,14 +44,16 @@
 | team_* (M-14) | PR1 `db5cb5f7` 等 | own-layer 覆盖枚举在治理范围（builtinToolDeny 仅作用继承面，own-layer typed 拒在册）。**静态展开表**（矩阵审提供+@9b2 复核）：`createTeamTools` 闭集 **15 个**=tools.ts:1524-1544，入口映射 team_list_members(:498), team_list_templates(:520), team_inspect_config(:542), team_create_member(:572), team_delegate(:614), team_follow_up(:710), team_collect(:772), team_send_message(:817), team_report_progress(:856), team_request_control(:960), team_resolve_control(:1017), team_list_pending_control(:1119), team_archive_member(:1197), team_grant_permission/team_revoke_permission(:1370-1375)；9b2 接点：root.ts:3845-3874 `createTeamTools` → `teamToolsRef.current` 接 **15 固定名**；注册=agent-bindings:2436-2457（teamToolsRef 存在才循环；selective 按 capabilities.teamTools allow 名单/deny 零个；legacy 全 catalog；tool-selector.ts:30-51）。**注记**：仅定义/静态生产路线实证，**不是** 15 工具审批/功能已全验；**覆盖盘点未闭合，不能作为 M0 冻结输入**；**尚未枚举缺口**=运行时动态注入名与宿主内建面未逐名成行 | 内部状态面 | h6 公开审批面全驱动+一次性消费（历史 host） | 历史 @0e0b605a（真实Host审批链轮，证据=`evidence/alpha5/live/`）；适用性=dep-diff(plane 三件)@0e0b605a=3/3（实测，历史结论需重判） | 全 team 工具矩阵/冷恢复未测 | ENFORCE-PARTIAL(scope=@0e0b605a 真实Host审批链历史轮) | no |
 | todo_write (M-14) | PR1 覆盖枚举 | **plane 保留名在册**（:405）=plane 保留名登记→治理范围内非排除项；Host 继承来源**静态注册已核**（独审直核，pin639）：`packages/todo/tool-todo/src/index.ts:135-136` 注册 `todo_write`；`:197` 无 owning agent session→拒；`docs/tool-catalog.md:44` 要求 ctx.tools+owning session、`allowParallelInProgress` 必填无默认；`base/cordis.patch.yml:430-435` 装载 tool-todo；`web-app/cordis.patch.yml:552-553` 关的是 host 面（迁 preset），**不是产品无 todo** | 状态写面 | 静态 allow 清单+清单外默认 deny | 装配行级未证；**逐工具审批/功能仍未验**；适用性=NOT_VERIFIED(无 tested SHA) | 装面腿未复验 | NOT_VERIFIED（治理归属=在册事实） | no |
 | Preset/Team 自注册覆盖 (NEG-4) | bind-diag `248aff73` 系 | preset-realm 注册不达全局 tools.schemas() 面（bind-diag verdict 亲读摘录） | — | 未验证继承在 ABSTAIN 层（**从来不是 VERIFIED**，bind-diag 原文） | 三世界 17/17×3 @248aff73；证据=`evidence/alpha5/`（bind-diag 台账）；适用性=dep-diff(plane 三件)@248aff73=3/3（实测） | 无任何世界展示过 preset-realm VERIFIED 继承 | WIRED-NOT-ACCEPTED | no |
+<!-- q5:main-end -->
 
 ## 附录 A — 穷尽性静态目录（v0；逐名一行；登记缺口非覆盖宣称）
 
 **来源（钉死）**：`pin639` 官方 `docs/tool-catalog.md:18-47`；`scripts/gen-tool-catalog.ts:205-680` 对应每包 source。**65 unique=官方 catalog 条目数，非当前实例**。
 **别名与 preset 事实**：`pin639 web-app/presets/standard.patch.yml:90-116` 声明 subagent、subagent_fork、subagent_codex(**disabled:true**)、subagent_claude_code(**disabled:true**)（ptc 同号；cordis :89-115）→ catalog 65 unique + 3 别名 = **68 静态名**，再加本 repo Team 15（M-14 展开表）；同名分实现/条件保留，**不强称 83 独立名**。`standard:133-136`=todo allowParallelInProgress；FS `:20-41`/bash 平台条件。`web-app/cordis.patch.yml:430-558`=关 host 面迁 preset，**非不可达**；**minimal preset 的 persistent bash/pwsh 不能继承 one-shot 测量**。
 **分档**=default / opt-in / disabled（可配置开启）。**未来任意 toolName/动态 MCP=未采**（缺口句保留，不假全覆盖）。
-**逐名纪律**：字段可引用主表族行共享事实，但合入/可达/IO/Host 正负/缺陷/等级**逐名明确**；证据缺在 → **UNKNOWN**；**不由目录推"已控制"或"未实现"**。
+**逐名纪律**：字段可引用主表族行共享事实，但合入/可达/IO/Host 正负/缺陷/等级**逐名明确**；证据缺在 → **UNKNOWN**；**不由目录推"已控制"或"未实现"**。**边界与完整性说明（CI Q5/Q5a 实装口径）**：主矩阵区（锚 `q5:main-begin/end`）按 9 列行契约校验；附录区（锚 `q5:appendix-begin/end`）执行最小契约=静态工具名唯一（同名+分档侧标组合唯一，同名分实现合法）、非空、引用主矩阵稳定 ID 者必须存在。**共享字段引用保证每名状态归属；静态目录完整性靠固定 pin 的目录审计；动态实例枚举未采=缺口保留**——本节不构成 Host 全集证明。
 
+<!-- q5:appendix-begin -->
 ### A-1 FS
 - **read** [default] — 逐名适用：主表 read(M-01) 行全部事实（②合入=#353 `1739b262f…`；⑥run 归属=dad3；行级审批正控未复验）；无另证。
 - **read_image** [default] — 逐名适用：主表 read_image(M-05) 行事实；无另证。
@@ -145,3 +148,4 @@
 2. "历史 LIVE-CONFIRMED 不算 baseline 复验"：本表全部 V@B=no；复验轮（人工/矩阵轮触发）后逐行翻 V@B=yes 并记 tested SHA=baseline。
 3. 适用性=**每行自身依赖路径**对 tested SHA→baseline 的 git diff 实测（本轮各 N/M 均为 `git diff --name-only` 现算，文件集随行而列于 ⑥ 内）；未比对行=NOT_VERIFIED；**禁止全表统一文件集外推**，禁止以适用性暗示真伪（适用性只说明历史结论离基线多远）。
 4. tested SHA≠merge SHA：merge 点（如 `93cd7b09`）只在 ② 列作合入事实；⑥ 的 tested SHA 以台账实测基线为准（lsp 行=`7962022e`/`1d0d03d0`，见 ACCEPTANCE-STATUS LSP 行原文）。
+<!-- q5:appendix-end -->
