@@ -88,7 +88,14 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
+import {
+  createConfinedProcessProvider,
+  type ProviderLease,
+  type ProviderResult,
+  type SpawnRequest,
+  type StreamingOptions,
+  type StreamingSpawnHandle,
+} from '../sandbox-provider/index.js'
 import {
   buildSearchFixture,
   countingSink,
@@ -105,6 +112,26 @@ import {
   type SearchBackendRow,
 } from './alpha5-search-harness.js'
 import { sweepStrayWorlds } from './alpha5-glob-harness.js'
+
+/**
+ * THE LANE'S STRUCTURAL VIEW OF THE MONOTONIC CLOCK. The plugin node-min ambient
+ * shim types the `process` global as just `cwd`, so a duration read through it is a
+ * TS2339 — the same problem `a5b3-cancel-leg` has, solved the same way and for the
+ * same reason: read the clock off `globalThis` through a local structural view
+ * instead of widening a shim this file does not own. Same clock, same nanoseconds,
+ * behaviour unchanged.
+ */
+const monotonicMs = (): number =>
+  Number((globalThis as unknown as { process: { hrtime: { bigint(): bigint } } }).process.hrtime.bigint()) / 1_000_000
+
+/**
+ * The provider's compile face as this file needs it: the factory the confined rows
+ * call, and the streaming arm's declared result. Both are TAKEN FROM THE PROVIDER
+ * (`ReturnType`, `ProviderResult<StreamingSpawnHandle>`) rather than restated here,
+ * so a change to the real face is a typecheck error in this file and not a lie.
+ */
+type ConfinedProvider = ReturnType<typeof createConfinedProcessProvider>
+type StreamSettle = ProviderResult<StreamingSpawnHandle>
 
 const WORLD = newWorld('a5cancel-s')
 const ROOT_DIR = join(WORLD, 'root')
@@ -537,9 +564,9 @@ describe('a5-cancel/search B: once a child exists, the row owns its stop', () =>
     const live = signalFiringOnSubscribe()
     const { backend, audit } = makeBackend(BULK_ROOT, BULK_SCRATCH)
     const marks = providerSpawnMarks(BULK_SCRATCH)
-    const started = Number(process.hrtime.bigint())
+    const started = monotonicMs()
     const { result, sink } = await runCancelled(backend, 'ca-live', live.signal as never, { maxResults: 500 })
-    const elapsedMs = (Number(process.hrtime.bigint()) - started) / 1_000_000
+    const elapsedMs = monotonicMs() - started
     expect(live.subscribed(), 'the settle race never armed itself on the channel — the leg would prove nothing').toBe(true)
     expect(result.ok).toBe(false)
     if (result.ok !== false) return
@@ -1018,18 +1045,21 @@ describe('a5-cancel/search D: a throwing terminate keeps the contract of the pat
   // children back through that face in its own `finally`-equivalent below, asserting
   // the provider's own confirmation (`status === 'terminated'`) — the same fact the
   // row's stop law is built on. The legs' measured answers are untouched.
-  const forgedChildren: Array<{ value: Record<string, unknown>; realTerminate: (() => Promise<unknown>) | null }> = []
+  // The handles are recorded AS THE PROVIDER'S OWN FACE (`StreamingSpawnHandle`), so
+  // the cleanup calls the arm the provider declares and reads the lease status the
+  // provider publishes (`ProviderLease['status']`, whose closed set includes
+  // 'terminated') — nothing invented, nothing cast to a look-alike shape.
+  const forgedChildren: StreamingSpawnHandle[] = []
   const stopRealChildren = async (): Promise<void> => {
     const owed = forgedChildren.splice(0, forgedChildren.length)
     const seen: string[] = []
     for (const child of owed) {
-      if (child.realTerminate === null) { seen.push('no-real-arm'); continue }
       let status = 'never-asked'
       for (let attempt = 0; attempt < 40 && status !== 'terminated'; attempt += 1) {
-        const settled = await child.realTerminate
-          .call(child.value)
-          .catch(() => ({ ok: false, value: { status: 'terminate-threw' } })) as { ok?: boolean; value?: { status?: string } }
-        status = settled?.ok === true ? String(settled.value?.status ?? 'no-status') : 'refused'
+        // A throwing arm is its own outcome ('threw'); a refused one is 'refused';
+        // anything else is the lease's real status, read through the arm's type.
+        const settled: ProviderResult<ProviderLease> | null = await child.terminate().catch(() => null)
+        status = settled === null ? 'threw' : settled.ok === true ? settled.value.status : 'refused'
         if (status !== 'terminated') await new Promise((resolve) => { setTimeout(resolve, 25) })
       }
       seen.push(status)
@@ -1057,25 +1087,22 @@ describe('a5-cancel/search D: a throwing terminate keeps the contract of the pat
     await import('../sandbox-provider/index.js')
     vi.doMock('../sandbox-provider/index.js', async (importOriginal) => {
       const actual = (await importOriginal()) as Record<string, unknown>
-      const realCreate = actual.createConfinedProcessProvider as (cfg: unknown) => Record<string, unknown>
+      const realCreate = actual.createConfinedProcessProvider as (cfg: unknown) => ConfinedProvider
       // A COPY with one face replaced, not a `Proxy`: the provider's own object is
       // `Object.freeze`d, and a proxy whose `get` returns something other than a
       // frozen target's value is a TypeError at the trap — which the row would
       // report as `spawn-failed` and the leg would measure the wrong thing.
-      const wrapChild = (settled: unknown): unknown => {
-        const handle = settled as { ok?: boolean; value?: Record<string, unknown> }
-        if (handle?.ok !== true || typeof handle.value !== 'object' || handle.value === null) return settled
-        // Record the real handle and the real arm BEFORE replacing the face, so the
-        // cleanup below can stop what this forgery made un-stoppable.
-        const real = handle.value
-        forgedChildren.push({
-          value: real,
-          realTerminate: typeof real.terminate === 'function' ? real.terminate as () => Promise<unknown> : null,
-        })
+      // A refusal carries no handle to stop, so it travels untouched; a granted one
+      // is recorded and returned with ONLY its `terminate` face replaced.
+      const wrapChild = (settled: StreamSettle): StreamSettle => {
+        if (settled.ok !== true) return settled
+        // Record the real handle BEFORE replacing the face, so the cleanup below can
+        // stop what this forgery made un-stoppable.
+        forgedChildren.push(settled.value)
         return {
-          ...handle,
+          ...settled,
           value: {
-            ...handle.value,
+            ...settled.value,
             terminate: async (): Promise<never> => {
               terminateCalls += 1
               throw new Error(THROW_CANARY)
@@ -1083,17 +1110,24 @@ describe('a5-cancel/search D: a throwing terminate keeps the contract of the pat
           },
         }
       }
-      const forge = (cfg: unknown): Record<string, unknown> => {
+      // The confined rows take `spawnStreaming` and nothing else (one call site each,
+      // `provider.spawnStreaming(request)`), so that is the only face rewrapped: the
+      // copy's other members — `spawn` included — are the real ones the spread carried.
+      const forge = (cfg: unknown): ConfinedProvider => {
         const real = realCreate(cfg)
         return {
           ...real,
-          spawn: async (request: unknown): Promise<unknown> => wrapChild(await real.spawn(request as never)),
-          spawnStreaming: async (request: unknown): Promise<unknown> => wrapChild(await real.spawnStreaming(request as never)),
+          spawnStreaming: async (request: SpawnRequest, streaming?: StreamingOptions): Promise<StreamSettle> =>
+            wrapChild(await real.spawnStreaming(request, streaming)),
         }
       }
       return { ...actual, createConfinedProcessProvider: forge }
     })
-    forgedRow = (await import('../src/plugin/live/search-backend.mjs')) as unknown as SearchBackendRow
+    // The row's declared face comes from the lane harness (`loadGlobBackendRow`/
+    // `loadSearchBackendRow`): the row is plain .mjs with no declaration file of its
+    // own, by design, and the harness is where its compile face is written down.
+    // After `resetModules` this is a fresh import, so it is the FORGED module.
+    forgedRow = await loadSearchBackendRow()
   })
 
   afterAll(async () => {
@@ -1246,6 +1280,11 @@ describe('a5-cancel/search D: a throwing terminate keeps the contract of the pat
     const real = makeBackend(BULK_ROOT, BULK_SCRATCH, undefined, { timeoutMs: 1 })
     const control = await runCancelled(real.backend, 'ca-timeout-control', undefined)
     expect(control.result.ok, 'the budget winner lost its own pre-existing shape').toBe(true)
+    // Narrow on `ok` before reading the success-only face: `settlement` lives on the
+    // admitted arm of the result union, and the typechecker is right that an
+    // un-narrowed read could be a read of a refusal. Failing loudly here also keeps
+    // the assertion below live instead of unreachable.
+    if (control.result.ok !== true) throw new Error('the budget winner did not answer with its own shape')
     expect(control.result.settlement).toEqual({ kind: 'cancelled', event: 'search-walk-terminated-after-timeout' })
 
     const calibration = makeForged({ timeoutMs: 1 }, { rootDir: BULK_ROOT, scratchRoot: BULK_SCRATCH })
