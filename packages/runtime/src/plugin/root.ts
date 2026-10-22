@@ -2333,16 +2333,24 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // consumption point necessarily consult the SAME live mount. Until the
   // AUTH pure verifier is wired at `paVerifierRef.current`, the port
   // fail-closes `authority-undetermined` (never a silent covered).
-  const paVerifierRef: { current: undefined | ((input: Readonly<Record<string, unknown>>) => Promise<{ readonly ok: boolean; readonly reason?: string; readonly detail?: string }>) } = {
-    current: undefined,
-  }
-  const paEffectsVerifierPort = async (input: Readonly<Record<string, unknown>>): Promise<{ readonly ok: boolean; readonly reason?: string; readonly detail?: string }> => {
-    const verify = paVerifierRef.current
-    if (verify === undefined) {
-      return { ok: false, reason: 'authority-undetermined', detail: 'the pure PA effects verifier is not wired at the root injection point' }
-    }
-    return await verify(input as never)
-  }
+  // THE composition (B ruling 2): the one pure verifier over the ONE
+  // call-level facts adapter; the adapter resolves the CURRENT published
+  // mount per call (no mount ⇒ undefined facts ⇒ authority-undetermined).
+  // Lazy per-call readers, so the resolve gate and the guard gate
+  // necessarily consult the SAME live mount authority.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const paEffectsVerifierPort = createPaEffectsVerifier({
+    readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (readPaCallFacts as any)({
+        rootSessionId,
+        requestId,
+        manifest,
+        decider,
+        stage,
+        mount: (resolvePaMount as any)(rootSessionId, String((manifest as { request?: { instanceId?: string } })?.request?.instanceId ?? '')),
+      }),
+  })
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
