@@ -109,10 +109,15 @@ function matrixText(vab: 'yes' | 'no' = 'no') {
   return [
     '<!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract -->',
     '<!-- phase-identity: alpha5-tool-io-governance -->',
+    '<!-- q5:main-begin -->',
     '| ①行ID | ②合入SHA | ③入口 | ④IO | ⑤审批 | ⑥验证 | ⑦缺陷 | ⑧级别 | V@B |',
     '|---|---|---|---|---|---|---|---|---|',
     `| read | #353=1739b262f | plane | ok | ask | 真实Host @1739b262f；证据=evidence/alpha5/x/；适用性=0/3 | none | LIVE-CONFIRMED(scope=x) | ${vab} |`,
     '| write | — | 无 | 继承 | — | 历史 @0e0b605a；适用性=3/3 | — | NOT_IMPLEMENTED/NOT_WIRED | no |',
+    '<!-- q5:main-end -->',
+    '<!-- q5:appendix-begin -->',
+    '- **fixture_probe** [opt-in] — 逐名：UNKNOWN（主表无行；缺口登记）',
+    '<!-- q5:appendix-end -->',
   ].join('\n')
 }
 
@@ -210,12 +215,17 @@ describe('checkCurrentContract — production path (current_contract is the only
   it('Q5: levels carry parenthetical scopes (ASCII and full-width), NOT_IMPLEMENTED and NOT_WIRED stand alone', () => {
     const matrix = [
       '<!-- phase-baseline-ref: graph#current_contract -->',
+      '<!-- q5:main-begin -->',
       '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
       '|---|---|---|---|---|---|---|---|---|',
       '| a | x | y | z | w | 历史 @0e0b605a | — | **WIRED**（生产注册实证；非验收等级） | no |',
       '| b | x | y | z | w | Unit 无；n/a | 全谱未测 | NOT_IMPLEMENTED | no |',
       '| c | x | y | z | w | Unit 无；n/a | 未复验 | NOT_WIRED(装配臂未接) | no |',
       '| d | x | y | z | w | 同上；适用性=3/3 | — | LIVE-CONFIRMED(同 scope) | no |',
+    '<!-- q5:main-end -->',
+    '<!-- q5:appendix-begin -->',
+    '- **fixture_probe** [opt-in] — 逐名：UNKNOWN（主表无行；缺口登记）',
+    '<!-- q5:appendix-end -->',
     ].join('\n')
     const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
     const r = grade(contractGraph(), f)
@@ -260,10 +270,15 @@ describe('checkCurrentContract — production path (current_contract is the only
       const matrix = [
         '<!-- phase-baseline-ref: graph#current_contract -->',
         '<!-- phase-identity: alpha5-tool-io-governance -->',
+        '<!-- q5:main-begin -->',
         '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
         '|---|---|---|---|---|---|---|---|---|',
         '| e | x | y | z | w | 真实Host @1a7c3c1cb；证据=`evidence/alpha5/missing-file.md` | — | LIVE-CONFIRMED(scope=x) | no |',
-      ].join('\n')
+          '<!-- q5:main-end -->',
+        '<!-- q5:appendix-begin -->',
+        '- **fixture_probe** [opt-in] — 逐名：UNKNOWN（主表无行；缺口登记）',
+        '<!-- q5:appendix-end -->',
+    ].join('\n')
       const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
       const r = grade(contractGraph(), f)
       expect(r.findings.some((x) => x.startsWith('Q5:') && x.includes('missing-file.md') && x.includes('do not resolve in-repo'))).toBe(true)
@@ -287,10 +302,15 @@ describe('checkCurrentContract — production path (current_contract is the only
       const matrix = [
         '<!-- phase-baseline-ref: graph#current_contract -->',
         '<!-- phase-identity: alpha5-tool-io-governance -->',
+        '<!-- q5:main-begin -->',
         '| ①行ID | ② | ③ | ④ | ⑤ | ⑥ | ⑦ | ⑧ | V@B |',
         '|---|---|---|---|---|---|---|---|---|',
         '| g | x | y | z | w | 历史 @1a7c3c1cb；证据=`evidence/alpha5/x/`；适用性=3/3 | — | NEEDS_REVALIDATION | yes |',
-      ].join('\n')
+          '<!-- q5:main-end -->',
+        '<!-- q5:appendix-begin -->',
+        '- **fixture_probe** [opt-in] — 逐名：UNKNOWN（主表无行；缺口登记）',
+        '<!-- q5:appendix-end -->',
+    ].join('\n')
       const f = files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix })
       const r = grade(contractGraph(), f)
       expect(r.findings.some((x) => x.startsWith('Q7:') && x.includes('row g') && x.includes('V@B=yes'))).toBe(true)
@@ -326,6 +346,22 @@ describe('checkCurrentContract — production path (current_contract is the only
       ].join('\n')
     const gradeMatrix = (matrix: string): ContractGrade =>
       grade(contractGraph(), files({ 'docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md': matrix }))
+
+    it('negative 4 (round 2): an entry that declares NO mapping — no citation, no gap registration — is graded', () => {
+      const r = gradeMatrix(annex(['- **silent_ghost** [default] — 逐名：字段留空，不引用不登记']))
+      expect(r.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('silent_ghost') && x.includes('no mapping'))).toBe(true)
+    })
+
+    it('negative 5 (round 2): an appendix region with zero entries is graded (no empty-annex green)', () => {
+      const r = gradeMatrix(annex([]))
+      expect(r.findings.some((x: string) => x.startsWith('Q5a:') && x.includes('appendix region is empty'))).toBe(true)
+    })
+
+    it('negative 6 (round 2): deleting a boundary marker grades red — the production path has no fallback', () => {
+      const stripped = annex(['- **read** [default] — 主表 read (M-01) 行事实']).replace('<!-- q5:main-begin -->\n', '')
+      const r = gradeMatrix(stripped)
+      expect(r.findings.some((x: string) => x.startsWith('Q5:') && x.includes('q5:main-begin') && x.includes('exactly once'))).toBe(true)
+    })
 
     it('positive: appendix entries citing existing stable IDs pass, and appendix lines never hit the 9-cell law', () => {
       const r = gradeMatrix(annex([

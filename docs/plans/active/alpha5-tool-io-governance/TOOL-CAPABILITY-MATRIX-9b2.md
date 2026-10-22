@@ -59,7 +59,7 @@
 - **read_image** [default] — 逐名适用：主表 read_image(M-05) 行事实；无另证。
 - **write** [default] — 逐名适用：主表 write(M-02) 行事实（写面正控未复验）；无另证。
 - **edit** [default] — 逐名适用：主表 edit(M-03) 行事实；无另证。
-- **str_replace_editor** [default] — 逐名适用：主表 str_replace_editor(M-04) 行事实；无另证。
+- **str_replace_editor** [独立包；装载条件待核（**default 未证**，web preset 未见声明）] — 逐名适用：主表 str_replace_editor(M-04) 行事实；无另证。
 - **grep** [default] — 逐名适用：主表 grep(M-06native) 行事实（native 行级效果 NOT_VERIFIED）；无另证。
 - **glob** [default] — 逐名适用：主表 glob(M-06native) 行事实（关断键 unit @46e48218）；无另证。
 
@@ -72,9 +72,9 @@
 - **terminal_read** [opt-in] — 逐名：**UNKNOWN**（同上）。
 - **terminal_send** [opt-in] — 逐名：**UNKNOWN**（同上）。
 - **terminal_signal** [opt-in] — 逐名：**UNKNOWN**（同上）。
-- **job_output** [默认关（jobsEnabled absent=FALSE @9b2 亲读）] — 逐名适用：主表 job_output(M-11) 行事实（@efb5bb55 台账；完整依赖适用性=NOT_VERIFIED）；无另证。
-- **job_list** [同上默认关] — 逐名适用：主表 job_list(M-11) 行事实；无另证。
-- **job_kill** [同上默认关] — 逐名适用：主表 job_kill(M-11) 行事实；无另证。
+- **job_output** [**Team plane opt-in**（jobsEnabled absent=FALSE @9b2 亲读；=team 面挂载开关，**非上游 jobs 关闭**）] — 逐名适用：主表 job_output(M-11) 行事实（@efb5bb55 台账；完整依赖适用性=NOT_VERIFIED）；无另证。
+- **job_list** [同上 Team plane opt-in] — 逐名适用：主表 job_list(M-11) 行事实；无另证。
+- **job_kill** [同上 Team plane opt-in] — 逐名适用：主表 job_kill(M-11) 行事实；无另证。
 
 ### A-3 lsp / web / skill / todo
 - **lsp** [分档未核] — 逐名适用：主表 lsp(M-09) 行事实（SAME 仅两历史测面；至 baseline 未核）；无另证。
@@ -100,6 +100,9 @@
 
 ### A-5 subagent / 编排
 - **subagent** [别名口径见附录头（fork 计数；codex/claude_code disabled:true）] — 逐名：**UNKNOWN**（主表无行）。
+- **subagent_fork** [default（3 别名之一，见附录头 preset 事实）] — 逐名：**UNKNOWN**（主表无行；缺口登记）。
+- **subagent_codex** [**disabled:true**（standard.patch.yml:90-116 声明固定）] — 逐名：**UNKNOWN**（主表无行；开启条件=preset 改配置）。
+- **subagent_claude_code** [**disabled:true**（同上声明）] — 逐名：**UNKNOWN**（主表无行；开启条件=preset 改配置）。
 - **list_subagent_models** [分档未核] — 逐名：**UNKNOWN**。
 - **interrupt_agent** [subagent 族侧] — 逐名：**UNKNOWN**；与 A-9 同名=**分实现保留**，本条只指 subagent 族侧。
 - **list_agents** [subagent 族侧] — 逐名：**UNKNOWN**；同名分实现见 A-9。
@@ -130,7 +133,7 @@
 - **run_code** [default；mode ptc/both 仍治理] — 逐名适用：主表 run_code outer/nested(M-08) 两行**分面**事实（outer=fs 半臂+局部缺口+整体效果保证未验；nested=w-ptc fs）；mode 矩阵无另证。
 
 ### A-9 上游 experimental team 九名（默认 disabled / exact live team member）
-- **interrupt_agent** [上游 team 族侧] — 逐名：**UNKNOWN**；与本附录 A-5 及本 repo Team15（M-14）**同名分实现保留**。
+- **interrupt_agent** [上游 team 族侧] — 逐名：**UNKNOWN**；与本附录 A-5 subagent 族侧同名分实现保留（Team15 为 team_* 命名，与本名无关）。
 - **list_agents** [上游 team 族侧] — 逐名：**UNKNOWN**；同名分实现保留。
 - **send_message** [上游 team 族侧] — 逐名：**UNKNOWN**；同名分实现保留。
 - **spawn_teammate** [上游 team 族侧] — 逐名：**UNKNOWN**；本 repo Team15 无此名。
@@ -140,7 +143,24 @@
 - **team_task_update** [上游 team 族侧] — 逐名：**UNKNOWN**。
 - **wait_agent** [上游 team 族侧] — 逐名：**UNKNOWN**。
 
-**附录尾注**：本附录=**静态目录登记**（68 静态名口径 + Team15 + 同名分实现），不构成覆盖闭合；"未来任意 toolName/动态 MCP=未采"与"运行时 inventory 快照缺失"两句继续有效。
+### A-10 本 repo Team15 十五名（M-14 静态展开，逐名成行）
+- **team_list_members** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_list_templates** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_inspect_config** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_create_member** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_delegate** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_follow_up** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_collect** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_send_message** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_report_progress** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_request_control** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_resolve_control** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_list_pending_control** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_archive_member** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_grant_permission** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+- **team_revoke_permission** [入口条件=capabilities.teamTools allow 名单（注册路线见 M-14）] — 逐名适用：主表 team_* (M-14) 行**静态路线**事实（15 名展开表+9b2 接点）；**逐名审批/功能=NOT_VERIFIED**。
+
+**附录尾注**：本附录=**静态目录登记**（68 静态名口径 + Team15 + 同名分实现）；逐名行共 **86 行**=68 目录行（含 3 同名双列）+3 别名显名行+15 Team15 行——**行数≠独立名数**（不强称 83/98 独立名），不构成覆盖闭合；"未来任意 toolName/动态 MCP=未采"与"运行时 inventory 快照缺失"两句继续有效。
 
 ## 注记
 

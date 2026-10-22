@@ -375,17 +375,32 @@ export function checkCurrentContract({ graphText, readFile, fileExists, revExist
   let rowCount = 0
   if (matrixText === null) findings.push('Q5: matrix file unreadable; row contract cannot be graded')
   else {
-    // Region law (phase review, appendix round): the 9-cell main-matrix law binds ONLY the
-    // region between its boundary markers, so a per-name appendix can never be misgraded as
-    // a malformed data row; a marker-less document keeps the old whole-file reading (every
-    // pre-appendix fixture and tree). No counts are hardcoded here — regions are found by
-    // anchors, IDs by content. The appendix gets its OWN minimal contract, below.
+    // Region law (phase review, appendix round 2 — PRODUCTION FALLBACK BANNED): the 9-cell
+    // main-matrix law binds ONLY the region between boundary markers, and those markers are
+    // MANDATORY — each of the four appears EXACTLY ONCE, begin before end. Deleting or
+    // duplicating a marker does not skip the checks, it grades red. There is no whole-file
+    // fallback path: fixtures carry the very same anchors as the production document (one
+    // contract, no second door). Regions are found by anchors, IDs by content, counts by
+    // neither being hardcoded.
     const MAIN_B = '<!-- q5:main-begin -->'
     const MAIN_E = '<!-- q5:main-end -->'
-    const mb = String(matrixText).indexOf(MAIN_B)
-    const me = String(matrixText).indexOf(MAIN_E)
-    const mainText = mb >= 0 && me > mb ? String(matrixText).slice(mb + MAIN_B.length, me) : String(matrixText)
-    for (const line of mainText.split('\n')) {
+    const AP_B = '<!-- q5:appendix-begin -->'
+    const AP_E = '<!-- q5:appendix-end -->'
+    const mdoc = String(matrixText)
+    const regionsOk = [MAIN_B, MAIN_E, AP_B, AP_E].every((mk) => {
+      const n = mdoc.split(mk).length - 1
+      if (n !== 1) findings.push(`Q5: boundary marker ${mk} must appear exactly once (found ${n}); region checks are mandatory — deleting markers does not skip them`)
+      return n === 1
+    })
+    const mb = mdoc.indexOf(MAIN_B)
+    const me = mdoc.indexOf(MAIN_E)
+    const ab = mdoc.indexOf(AP_B)
+    const ae = mdoc.indexOf(AP_E)
+    let anchorsOrdered = regionsOk
+    if (regionsOk && mb > me) { findings.push('Q5: main-matrix markers out of order (begin after end)'); anchorsOrdered = false }
+    if (regionsOk && ab > ae) { findings.push('Q5: appendix markers out of order (begin after end)'); anchorsOrdered = false }
+    const mainText = anchorsOrdered ? mdoc.slice(mb + MAIN_B.length, me) : ''
+    if (anchorsOrdered) for (const line of mainText.split('\n')) {
       if (!line.startsWith('| ') || line.startsWith('|---') || line.includes('①行ID')) continue
       const cells = line.split('|').slice(1, -1).map((c) => c.trim())
       if (cells.length !== 9) { findings.push(`Q5: matrix row "${cells[0] ?? '?'}" has ${String(cells.length)} cells, expected 9 (①-⑧ + V@B)`); continue }
@@ -423,36 +438,40 @@ export function checkCurrentContract({ graphText, readFile, fileExists, revExist
       }
       if (vab === 'yes') claimedRows.push(rowId)
     }
-    if (rowCount === 0) findings.push('Q5: matrix holds no data rows; an empty matrix is not a filled one')
+    if (anchorsOrdered && rowCount === 0) findings.push('Q5: matrix holds no data rows; an empty matrix is not a filled one')
 
-    // Appendix minimal contract (phase review): static tool names unique (per name+side-tag,
+    // Appendix minimal contract (phase review, round 2 hardened): region NON-EMPTY; names unique (per name+side-tag,
     // same-name-different-implementation entries stay legal), non-empty, and EVERY cited
     // main-matrix stable ID must exist — a dangling mapping is a fiction. Scope statement,
     // as ruled: shared-field citation guarantees each name's status attribution; the static
     // catalog's integrity is audited against the fixed pin (this contract); dynamic instance
     // enumeration is NOT attempted here and its gap sentence stays in the document — Q5a
     // does not, and must not, claim the live Host's full tool set.
-    const AP_B = '<!-- q5:appendix-begin -->'
-    const AP_E = '<!-- q5:appendix-end -->'
-    const ab = String(matrixText).indexOf(AP_B)
-    if (ab >= 0) {
-      const ae = String(matrixText).indexOf(AP_E)
-      const apText = ae > ab ? String(matrixText).slice(ab, ae) : String(matrixText).slice(ab)
+    if (anchorsOrdered) {
+      const apText = mdoc.slice(ab + AP_B.length, ae)
       const seen = new Set()
+      let apEntries = 0
       for (const line of apText.split('\n')) {
         const m = /^- \*\*([^*]*)\*\*(.*)$/.exec(line)
         if (!m) continue
+        apEntries += 1
         const name = m[1].trim()
         if (!name) { findings.push('Q5a: appendix entry carries an empty static tool name'); continue }
         const tagM = /\[([^\]]*)\]/.exec(m[2])
         const key = name + '\u0000' + (tagM ? tagM[1].trim() : '')
         if (seen.has(key)) findings.push(`Q5a: appendix entry ${name} is duplicated under the same side-tag`)
         seen.add(key)
-        for (const ref of m[2].matchAll(/\((M-[^)]+|NEG-\d+)\)/g)) {
+        const refs = [...m[2].matchAll(/\((M-[^)]+|NEG-\d+)\)/g)]
+        for (const ref of refs) {
           const refId = ref[1].replace(/\s+/g, '')
           if (!mainIds.has(refId)) findings.push(`Q5a: appendix entry ${name} cites ${refId} — no main-matrix row carries that stable ID (dangling mapping)`)
         }
+        // Round-2 hardening: a mapping is never optional. An entry either cites at least one
+        // main-matrix stable ID (all citations must resolve) or registers its gap explicitly
+        // (UNKNOWN / 主表无行). Silence is red — this closes the un-mapped-entry false green.
+        if (refs.length === 0 && !/UNKNOWN|主表无行/.test(line)) findings.push(`Q5a: appendix entry ${name} declares no mapping — cite a main-matrix stable ID or register the gap explicitly (UNKNOWN / 主表无行)`)
       }
+      if (apEntries === 0) findings.push('Q5a: appendix region is empty — a document with an appendix boundary must register at least one static name')
     }
   }
   info.matrix_rows = rowCount
