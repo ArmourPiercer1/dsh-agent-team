@@ -20,7 +20,7 @@
 1. 三件当前态文档入 active/（本文件 + `ALPHA5-EFFECTIVE-BACKLOG.md` + `TOOL-CAPABILITY-MATRIX-9b2.md`）。
 2. `graph.yaml` 单一 `current_contract` 块成为唯一当前指针；L64/L84/L114-L115 旧指针降级（详见分支 commit message）。
 3. AGENTS.md 三处指入口；历史载体顶部 dated banner（一行，正文零改写）。
-4. `scripts/ci-pr-gate.mjs` 的 `state-freshness` 腿扩检（Q1-Q8，定义见矩阵头部与 PLAN-v3 §B；legacy s7 检原位保留、fixture 钉 legacy-only；生产路径缺 current_contract=FAIL，不回落）。
+4. `scripts/ci-pr-gate.mjs` 的 `state-freshness` 腿扩检（Q1-Q8；实现=同文件 `checkCurrentContract`，fixtures=`packages/testkit/test/a5-current-contract.test.ts`（正控 P1-P3 + 负控 N1-N5，含 baseline==HEAD 合法正控与"缺 current_contract 必红"的 N5）；legacy s7 检原位保留、fixture 钉 legacy-only；生产路径缺 current_contract=FAIL，不回落）。
 5. 逐工具能力矩阵实填（26 行预计，行集以实际治理面为准；含 R2 release-blocker 行）。
 
 **范围外（本分支禁做）**：产品 src/dist 改动、新 Host 运行、全套测试、依赖安装、历史文件改写/删除、push。
@@ -28,4 +28,9 @@
 ## 3. 验收线
 
 - 本分支验收 = 文档/CI 有限实现 + 定向自测（fixture 级 Q1-Q8 正负控，`node scripts/ci-pr-gate.mjs` 定向腿实跑 stdout/rc 入账）。**不承诺全 Alpha.5 完成。**
-- 阶段完成判据另行裁决；当前唯一 gate 事实 = 矩阵无 `BLOCKED-FOR-RELEASE` 行且各生产行达声明等级（人工/矩阵轮复验触发，非 CI 自动过期）。
+- **阶段完成判据 = 原 PR8 验收结构与用户全工具审批标准，继续有效**（S0/实施计划与 ACCEPTANCE-STATUS 裁决原文为正本，本轮不另裁、不替代）。矩阵"无 `BLOCKED-FOR-RELEASE` 行 + 各生产行达声明等级"是**必要非充分**条件：自声明等级与矩阵状态**不能代替**完整发布 gate（发布需用户全工具审批，逐 SHA 逐项）。
+
+## 4. 本窗口目标与产品冻结
+
+- **10-24 前目标（本轮窗口）**：docs 修正轮冻结 → 两审完整清单闭环 → `state-freshness` 扩展腿在分支上绿 + fixture 全绿 → 冻结 diff（patch+manifest+逐项修单对照表）交审。**不含**任何产品代码、Host 运行或全矩阵复跑。
+- **产品冻结**：docs 完成后**待根解冻**；graph `ready` 列出的 backlog ID **不构成产品侧开工授权**（复验轮/复跑轮均需根显式指令）。
