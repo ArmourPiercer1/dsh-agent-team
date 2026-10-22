@@ -16,8 +16,8 @@
  *  E3  a deny leg refuses with APPROVAL_DENIED and zero spawn (the pending
  *      row's fate is the bridge's business; the center only obeys verdicts).
  */
-import { describe, expect, it } from 'vitest'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { describe, expect, it, vi } from 'vitest'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -125,5 +125,69 @@ describe('A5M1-SEAM — center enforcement of the controlLeg contract', () => {
       expect(String(r.text)).toContain('APPROVAL_DENIED')
       expect(shell.execCount()).toBe(0)
     } finally { done() }
+  })
+})
+
+// fix-5 E5: transparent vi.mock wrappers COUNT resolver-surface fs access
+// (realpath/exists/open) while delegating to the real receiver verbatim —
+// measurement only, zero behavior change (the window-suite injection law).
+const fsProbe = { hits: 0, armed: false }
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>() as Record<string, unknown>
+  const count = <T extends unknown[]>(key: string, fn: (...a: T) => unknown) =>
+    (...a: T) => { if (fsProbe.armed) fsProbe.hits += 1; return fn(...a) }
+  return { ...actual,
+    realpathSync: count('realpathSync', actual.realpathSync as (...a: unknown[]) => unknown) as unknown,
+    existsSync: count('existsSync', actual.existsSync as (...a: unknown[]) => unknown) as unknown,
+    statSync: count('statSync', actual.statSync as (...a: unknown[]) => unknown) as unknown,
+  }
+})
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>() as Record<string, unknown>
+  const open = actual.open as (...a: unknown[]) => Promise<unknown>
+  return { ...actual, open: (...a: unknown[]) => { if (fsProbe.armed) fsProbe.hits += 1; return open(...a) } }
+})
+
+describe('A5M1-SEAM — fix-5 pending ordering', () => {
+  it('E5 pending approval performs ZERO resolver/probe fs: realpath/stat/open happen only after consumption', async () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'a5m1-e5-'))
+    const target = join(scratch, 'secret.txt')
+    writeFileSync(target, 'E5-NEVER-READ')
+    fsProbe.hits = 0
+    fsProbe.armed = true
+    try {
+      const built = row.createTeamToolPlaneAssembly({
+        teamSessionId: 'a5m1-test-team-root',
+        permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
+        realmId: 'a5m1-e5-realm',
+        templateId: 'e5-tpl',
+        role: 'member',
+        instanceId: 'e5-instance',
+        controlLeg: async () => {
+          if (fsProbe.hits !== 0) throw new Error(`fix-5 violated: ${String(fsProbe.hits)} fs accesses BEFORE approval`)
+          return { decision: 'deny', requestId: 'e5-deny' }
+        },
+        fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(`${parent}/`) },
+        plane: { fsInstance: { fs: 'e5', rootDir: scratch, realmId: 'a5m1-e5-realm', kind: 'absolute-path' } },
+      })
+      expect(built.ok, JSON.stringify(built)).toBe(true)
+      const read = built.value.definitions.find((d: { name: string }) => d.name === 'read')
+      let refusal = 'UNSET'
+      try {
+        const r = await read.execute({ file_path: join(scratch, 'secret.txt') })
+        refusal = `RES:${JSON.stringify(r).slice(0, 160)}`
+        void scratch
+      } catch (error) {
+        refusal = `THROWN:${String((error as Error)?.message ?? error)}`
+      }
+      if (refusal === 'UNSET') refusal = `RESOLVED:${JSON.stringify(r).slice(0, 200)}`
+      expect(refusal).toContain('APPROVAL_DENIED')
+      expect(refusal).not.toContain('E5-NEVER-READ')
+      // the denied call NEVER touched the resolver surface
+      expect(fsProbe.hits).toBe(0)
+    } finally {
+      fsProbe.armed = false
+      rmSync(scratch, { recursive: true, force: true })
+    }
   })
 })

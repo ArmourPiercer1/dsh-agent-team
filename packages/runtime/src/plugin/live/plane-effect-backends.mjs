@@ -58,7 +58,7 @@ import { Buffer } from 'node:buffer'
 import { spawnSync } from 'node:child_process'
 import { constants as fsConstants, existsSync, realpathSync, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
-import { relative, resolve } from 'node:path'
+import { relative, resolve, posix as posixModule, win32 as win32Module } from 'node:path'
 import { setTimeout as sleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
@@ -204,6 +204,31 @@ export function resolveAnchored(rootDir, locatorTarget) {
 }
 
 /** Anchor a raw relative/absolute path string (the governed read row). */
+/**
+ * PR358 fix-5: the PURE-LEXICAL layer of the anchored resolution — the same
+ * front refusals and the same lexical join/normalize the full resolver
+ * performs, with ZERO filesystem calls (no realpath, no exists, no stat).
+ * Approved-effect honesty only needs the lexical target; the resolver's
+ * realpath law is a POST-CONSUME step (below `lex` in the executor).
+ */
+export function lexicalAnchor(rootDir, rawPath) {
+  if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
+    return { ok: false, code: 'locator-rejected', detail: 'the read path must be a non-empty string' }
+  }
+  if (rawPath.includes('://')) return { ok: false, code: 'locator-rejected', detail: 'a filesystem locator never wears a URI scheme' }
+  if (rawPath.startsWith('\\')) return { ok: false, code: 'locator-rejected', detail: 'UNC/leading-` targets are refused' }
+  const posix = rootDir.startsWith('/')
+  const path = posix ? posixModule : win32Module
+  const isAbsolute = rawPath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(rawPath)
+  const joined = isAbsolute ? path.normalize(rawPath) : path.resolve(path.dirname(path.join(rootDir, 'x')), rawPath)
+  const rootNorm = path.normalize(rootDir)
+  const targetNorm = path.normalize(joined)
+  if (targetNorm !== rootNorm && !targetNorm.startsWith(rootNorm.endsWith(path.sep) ? rootNorm : rootNorm + path.sep)) {
+    return { ok: false, code: 'locator-rejected', detail: `the lexical target escapes the governed root (${targetNorm})` }
+  }
+  return { ok: true, path: targetNorm }
+}
+
 export function resolveAnchoredPath(rootDir, rawPath) {
   if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
     return { ok: false, code: 'locator-rejected', detail: 'the read path must be a non-empty string' }
@@ -960,15 +985,21 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       observe(`governed-read window-refused code=${window.refusal.code}`)
       return window.refusal
     }
-    // E3 (A3 single-point fix): the RAW locator goes to the resolver — the
-    // baseline's `.trim()` here diverged the EFFECT path from the authorized
-    // fingerprint. A whitespace-only locator is still refused, one layer
-    // down, by resolveAnchoredPath's own law (:105 mirror of pin639
-    // read.ts:56); relative workspace placement stays untouched.
-    const parsed = resolveAnchoredPath(rootDir, rawPath)
-    if (!parsed.ok) {
-      return refused('schema', parsed.code, parsed.detail)
+    // PR358 fix-5 (pending ⇒ resolver=0): BEFORE approval the executor does
+    // PURE LEXICAL projection only — zero realpath/exists/stat/fs access.
+    // The resolver's full law (realpath/alias class, the frozen
+    // target-unresolvable family) runs only AFTER the PA edge consumed, and
+    // its result must still match the approved lexical target — if realpath
+    // moved the target in between, the call is stale-refused (zero body, no
+    // re-approval here). The A3 single-point law holds: the effect locator,
+    // the approved fingerprint, and the consumed target are ONE value.
+    const lex = lexicalAnchor(rootDir, rawPath)
+    if (!lex.ok) {
+      return refused('schema', lex.code, lex.detail)
     }
+    // fix-5: pre-gate shape carries the LEXICAL path only; the resolver's
+    // `rootReal`/real identity fields attach after the PA consumption.
+    let parsed = { ok: true, path: lex.path }
     const effects = [
       { kind: 'tool-invoke', toolName: 'read', resource: null },
       // The frozen resource vocabulary (parseRequestedEffectSet closed set):
@@ -1003,6 +1034,22 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         return refused('admission', String(gate.code), String(gate.detail ?? 'the PA execution edge refused this read'))
       }
     }
+    // fix-5 (post-consume): now, and only now, the FULL resolver runs —
+    // realpath/alias/exists law. Drift between the approved lexical target
+    // and the resolved real target is a STALE refusal: zero body, zero
+    // re-approval (the approved fact is not rewritten here).
+    const resolved = resolveAnchoredPath(rootDir, rawPath)
+    if (!resolved.ok) {
+      observe(`governed-read resolver-refused code=${String(resolved.code)}`)
+      // Post-consume resolver refusals keep the resolver's transport class
+      // (`io`) — pre-gate only the PURE-LEXICAL refusals are `schema`.
+      return refused('io', String(resolved.code), String(resolved.detail))
+    }
+    if (resolved.path !== parsed.path) {
+      observe(`governed-read anchor-drift lex=${parsed.path} real=${resolved.path}`)
+      return refused('admission', 'ANCHOR-DRIFT', 'the resolved target differs from the approved lexical target; this call is stale and runs nothing')
+    }
+    parsed = resolved
     // TOCTOU fix (independent security review ①(c) leg C1: an external
     // rename->symlink swap in the realpath->read window leaked at iteration
     // 23/20000). The check-time path string no longer carries the open: the
