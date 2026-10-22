@@ -1,5 +1,7 @@
 # AGENTS.md — dsh-agent-team 仓库代理规则
 <!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 当前基线唯一权威=该块 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->
+<!-- phase-identity: alpha5-tool-io-governance -->
+
 
 本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH 保持 clean，全部能力通过外部插件 + 公开 seam 提供；任何需要 upstream source patch 的路径都是阻塞（`CORE_SEAM_BLOCKER`），不是待办。
 

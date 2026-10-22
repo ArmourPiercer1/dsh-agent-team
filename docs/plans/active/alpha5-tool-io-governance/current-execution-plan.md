@@ -1,6 +1,8 @@
 # Alpha.5 工具 IO 治理 — 当前执行计划（current-execution-plan）
 
 <!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 基线唯一权威=该块 baseline；本文件禁 SHA 副本 -->
+<!-- phase-identity: alpha5-tool-io-governance -->
+
 <!-- historical-carriers: dev/agent-workflow/evidence/alpha5/ALPHA5-CURRENT-STATE.md / ALPHA5-ACCEPTANCE-STATUS.md / dev/agent-workflow/PENDING-GATES.md / docs/plans/memo/alpha5-tool-io-governance/* = historical 正本（只追加不改写），本文件为其当前态唯一执行入口 -->
 
 ## 0. 阶段与红线状态
@@ -32,5 +34,5 @@
 
 ## 4. 本窗口目标与产品冻结
 
-- **10-24 前目标（本轮窗口）**：docs 修正轮冻结 → 两审完整清单闭环 → `state-freshness` 扩展腿在分支上绿 + fixture 全绿 → 冻结 diff（patch+manifest+逐项修单对照表）交审。**不含**任何产品代码、Host 运行或全矩阵复跑。
+- **10-24 前目标 = Alpha5 交付**（用户既定交付目标；**不是**本 docs 窗口的完成范围）。本 docs-realignment 轮=该目标的**前置**：冻结 diff（patch+manifest+对照表）+ 两审闭环 + `state-freshness` 扩展腿绿。本文件**不重定义** Alpha5 交付的完成范围（判据见 §3）。
 - **产品冻结**：docs 完成后**待根解冻**；graph `ready` 列出的 backlog ID **不构成产品侧开工授权**（复验轮/复跑轮均需根显式指令）。

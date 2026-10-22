@@ -1,6 +1,8 @@
 # ALPHA5-EFFECTIVE-BACKLOG — 有效待办唯一当前入口
 
 <!-- phase-baseline-ref: dev/agent-workflow/graph.yaml#current_contract — 基线以此字段为准；本文件禁 SHA 副本 -->
+<!-- phase-identity: alpha5-tool-io-governance -->
+
 - 性质：**当前指令**（非快照）。逐项状态=`carried-forward / closed-by<证据> / superseded / needs-revalidation`；逐项标源行，**禁抄旧 OPEN、禁批量关闭**。历史正文仍以 PENDING-GATES.md / CURRENT-STATE / ACCEPTANCE-STATUS / COORDINATION 为正本（只追加不改写）。
 - 状态核读时点=本分支创建；标 `needs-revalidation` 者=源文件状态列与正文/后续 merge 存在矛盾，须矩阵轮/人工重核，本文件不代裁。
 
@@ -17,7 +19,7 @@
 | BL-02 | G-b seam-record/s12 必改（三事实+限定措辞） | carried-forward | L15 状态"修复中"；无关闭证据在册。 |
 | BL-03 | G-c PR256 F-1/F-2 修复 | **needs-revalidation** | L16 **矛盾**：状态列="修复中"，同行动放行动作列="修复+新 head 独立复核+CI **已完成**：#256 合 ae3dcf54；#260/#261 各独立复核+CI 绿后合"。矩阵轮按 merge 事实重裁，不抄状态列。 |
 | BL-04 | G-d 各 lane 对契约 v1.1 集成确认（含 p4t6 pin、tsconfig、接线注、F-3 义务、Supported 宣称禁令） | **needs-revalidation** | L17 **矛盾**：状态列="未开始"，放行动作列已录 wiring #268 @9e75ee83 + live #269 @0e0b605a 入账。ACCEPTANCE-STATUS 判 G-d=OPEN 为更晚口径；G-6 计分项挂本行。人工/根裁关闭。 |
-| BL-05 | G-e 原 G1/G3/G7/YAML 待裁项 | carried-forward **未裁** | L18。**不得写成已裁**；四编号正文不在仓内（G-e-mapping.md §1b）→ **决策身份待核**（引用时须带"内容缺位+身份待核"披露；**不写作"待用户未裁"，不重新问旧问题**）。 |
+| BL-05 | G-e 原 G1/G3/G7/YAML 待裁项 | carried-forward **决策身份待核** | L18。**不得写成已裁**；四编号正文不在仓内（G-e-mapping.md §1b）→ **决策身份待核**（引用时须带"内容缺位+身份待核"披露；**不写作"待用户未裁"，不重新问旧问题**）。 |
 | BL-06 | G-g 静默通道排除门 | closed-by 证据门收口（**非产品支持宣称**） | L19：等级上限 LIVE-CONFIRMED/ENFORCE-PARTIAL 三项缺项在册；措辞禁则=lint-g-g-wording 常跑；双维度禁合并。 |
 | BL-07 | G-f census 非终态禁称全绿 + 事件缺口注记 | carried-forward（纪律行） | L20、L52-56 纪律持续有效。 |
 | BL-08 | D-1 NO-ABORT-AFTER-BODY-START | carried-forward DEFERRED（有主，非放弃） | L26/L29-42：owner=d9da2f74（L24 指派）；恢复三条件其一公开才解；回归三件套在册；禁以"延期"写成"已裁放弃"。 |
@@ -26,7 +28,7 @@
 | BL-11 | #337 glob rc-first 判据线收口 | **superseded by #343 `d5de74974b0320b191b310ead82407d478477ed7`**（ancestor 亲核；题注原文含"supersedes #337 (#343)"） | 旧 #337 判据线由 #343 取代，非本文件代裁而是题注自述+ancestor 事实；运行面复验另列 BL-19（#354=baseline 自身，与 bash 取消**无关**）。 |
 | BL-12 | C-16 钉名表 | closed-by c8ad9c4a（原始 13 名钉+双向漂移机检）；三段实况见 CURRENT-STATE §C | 后续以 pindir 证据为准。 |
 | BL-13 | T-1 v3 退役窗口 | carried-forward 待用户裁 | CURRENT-STATE §C（双 v3/v4 并行本身可运行=非必决）。 |
-| BL-14 | scoped visibility Q1（休眠 vs 登记 upstream ask 二选一） | **superseded（按后续裁决记）** | 矛盾在册：CURRENT-STATE §B 记 RESOLVED 而 §C 曾列 Q1 休眠。后续裁决事实=#332 `0fa2cd76`（net-arm 上游词表缺口**登记**，checklist 8.5 条目）+ #334 fs 半臂 scoped zero-widen 合入=走"登记 upstream 缺口"路线；Q1 二选一命题被该路线吸收。按后续裁决记 superseded，**不抄 §C 旧问题文本**。 |
+| BL-14 | scoped visibility Q1（休眠 vs 登记 upstream ask 二选一） | **superseded（按本议题自身证据记）** | 本议题=**scoped visibility**（独立议程，**不被 PTC #332/#334 吸收**）。自身证据=CURRENT-STATE §B scoped-visibility 行原文：**GLUE-4 Q 单 10-17 已 RESOLVED，Q1=降级 optional upstream ask 休眠**（Q4 准/Q2·Q3 拒有实测）；出处=GLUE-4 #302=`79f82441` README「RESOLVED 2026-10-17」节 + `4ba92b77`（两者存在已核）。**不再要求用户一句话**；不抄 §C 旧问题文本。 |
 | BL-15 | census 上传强化 | carried-forward 待根批准独立小 PR | CI 本体零动=根裁。 |
 | BL-16 | net 半臂（confined-execution network arm） | 上游词表需求级缺口，**登记非本仓待办** | M-08 notes 原文口径；#332=0fa2cd76 登记。 |
 | BL-17 | bg producer（team_bash 后台臂） | **未合入基线** | 工作区 bg WIP 未跟踪；本分支禁混入；恢复走原 task 纪律。 |
