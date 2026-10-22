@@ -119,6 +119,7 @@ import type {
   PaControlLegInput,
   PaControlLegResult,
   PaControlServiceLike,
+  PaEffectsVerifierDeps,
 } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
 import {
@@ -209,8 +210,10 @@ function factSlot(slot: AuthorityDocumentSlot): PaCallFactsCeilingSlot | undefin
   return slot
 }
 const realmTruths = new Map<string, RealmTruth>()
-const paVerifier = createPaEffectsVerifier({
-  readCallFacts: async (input) => {
+// Named (not inlined) so the injection-seam pin (E4) can mint REAL facts
+// for its `input.facts` attempts — the very same fake the main verifier
+// rides, so the sealed/opened contrast isolates ONLY the flag.
+const fakeReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
     const truth = realmTruths.get(input.manifest.realmId)
     if (truth === undefined) return undefined
     if (truth.throwFacts === true) throw new Error('the call-level facts adapter exploded (test seam)')
@@ -268,8 +271,8 @@ const paVerifier = createPaEffectsVerifier({
       },
       authorityGeneration: truth.generation,
     }
-  },
-})
+}
+const paVerifier = createPaEffectsVerifier({ readCallFacts: fakeReadCallFacts })
 
 const service: ControlService = createControlService({
   teamDomain: domain,
@@ -1738,6 +1741,70 @@ describe('E3 (facts-vs-manifest source mismatch ⇒ DRIFT): the approval covers 
     }
     const ok = await service.guardOperation(guardScope(fixture, digest))
     expect(ok.allowed).toBe(true)
+  })
+})
+
+describe('E4 (the input.facts pre-answer is a TEST seam, default CLOSED): a production-shaped wiring cannot be fed facts through the input', () => {
+  const realm = 'a5m1-auth-realm-e4'
+  const ctx = directAssembly(undefined, realm)
+
+  it('no flag ⇒ input.facts is IGNORED and the adapter is the only source; allowFactsInjection:true ⇒ the held facts are honoured, the adapter is never consulted', async () => {
+    const fixture = directFixture(ctx, 'e4-call')
+    const manifest = parsePaControlManifest(manifestBytes(fixture))
+    expect(manifest).not.toBeUndefined()
+    const m = manifest as NonNullable<typeof manifest>
+    const decider = humanCaller()
+    // REAL facts from the shared fake — the combination the restored E1/E2
+    // guard flows ride to a live allow, so if honoured it MUST cover.
+    const facts = await fakeReadCallFacts({
+      rootSessionId: P6T4_ROOT,
+      requestId: 'e4-req',
+      manifest: m,
+      decider,
+      stage: 'resolve',
+    })
+    expect(facts).not.toBeUndefined()
+    const held = facts as NonNullable<typeof facts>
+    // (1) the PRODUCTION shape: the flag was never opened. The injected
+    // facts change NOTHING — the verifier still asks the adapter, and the
+    // adapter's undefined lands the closed undetermined answer.
+    let adapterAsked = false
+    const sealed = createPaEffectsVerifier({
+      readCallFacts: async () => {
+        adapterAsked = true
+        return undefined
+      },
+    })
+    const sealedVerdict = await sealed({
+      stage: 'resolve',
+      rootSessionId: P6T4_ROOT,
+      requestId: 'e4-req',
+      manifest: m,
+      decider,
+      facts: held,
+    })
+    expect(adapterAsked).toBe(true)
+    expect(sealedVerdict.ok).toBe(false)
+    if (!sealedVerdict.ok) expect(sealedVerdict.reason).toBe('authority-undetermined')
+    // (2) the TEST seam explicitly opened: the held facts are honoured and
+    // the adapter is NEVER consulted — a throwing adapter proves the input
+    // answer bypassed it entirely, and the coverage verdict is the real
+    // pure-core walk over exactly those facts.
+    const opened = createPaEffectsVerifier({
+      readCallFacts: async () => {
+        throw new Error('the adapter must not be consulted while the seam supplies the facts')
+      },
+      allowFactsInjection: true,
+    })
+    const openedVerdict = await opened({
+      stage: 'resolve',
+      rootSessionId: P6T4_ROOT,
+      requestId: 'e4-req',
+      manifest: m,
+      decider,
+      facts: held,
+    })
+    expect(openedVerdict).toEqual({ ok: true })
   })
 })
 
