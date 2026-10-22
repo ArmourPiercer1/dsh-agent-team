@@ -110,6 +110,7 @@ const confinedProvider = () => ({
 function buildPlane(extra: Record<string, unknown> = {}, policy: unknown = ALLOW_ALL) {
   const rows: string[] = []
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     controlLeg: approvingControlLeg(),
     permissionPolicy: policy,
     realmId: REALM,

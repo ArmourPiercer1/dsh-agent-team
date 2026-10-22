@@ -31,7 +31,7 @@
  */
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js';
 import type { ToolCancelSignal, ToolEffectBackend } from './backend-contract.js';
-import { type AdmissionVerdict } from './pipeline.js';
+import { type AdmissionVerdict, type PaAdmitEdge } from './pipeline.js';
 import type { SpillStore } from './spill.js';
 /**
  * The execution context the host's dispatch hands as the SECOND argument
@@ -72,6 +72,11 @@ export interface A5P5Assembly {
     };
     /** Deterministic call-id prefix for the assembly (audit join key); default `a5p5`. */
     readonly callIdPrefix?: string;
+    /** M1 CENTER PA WIRING (frozen A): the async PA edge (admitCall → real
+     *  Control ask when required → issueApprovedGrant → one-shot consume).
+     *  The plane production mount injects it; archived pre-M1 kits omit it and
+     *  keep their historical behavior untouched. */
+    readonly pa?: PaAdmitEdge;
 }
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
 export declare const REFUSAL_PREFIX = "a5p5-refused ";

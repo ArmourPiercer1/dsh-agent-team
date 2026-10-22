@@ -29,6 +29,7 @@
  *
  * @module @dsh-agent-team/tools/a5p5-tools/register
  */
+import { canonicalJsonFingerprint } from '../../../domain/tool-governance/src/index.js';
 import { parseBashArgs, parseGlobArgs, parseGrepArgs } from './args.js';
 import { runToolCall } from './pipeline.js';
 import { GREP_OUTPUT_MODES } from './types.js';
@@ -95,12 +96,17 @@ export function createGovernedToolDefinitions(assembly) {
                 realmId: assembly.realmId,
                 callId,
                 parsedArgs: parsed.value,
+                // M1: the canonical parameter fingerprint (Alpha.2 canonical-operation
+                // law), computed here from the CLOSED parsed args — the fact the PA
+                // edge asks, consumes and rechecks against.
+                parametersFingerprint: canonicalJsonFingerprint(parsed.value),
                 // B3: the host's cancel signal rides the call untouched. This face
                 // only CARRIES it — the cancelled fact belongs to the row that can
                 // actually stop a payload (the shell arm), never to the presentation.
                 ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
             },
             decide: assembly.decide,
+            ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
             backend,
             ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
         });

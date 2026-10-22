@@ -48,6 +48,7 @@ async function planeWith(leg: unknown) {
   const scratch = mkdtempSync(join(tmpdir(), 'a5m1-seam-'))
   const shell = fixtureShell()
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: ASK_ALL,
     realmId: 'a5m1-seam-realm',
     templateId: 'seam-tpl',

@@ -94,6 +94,7 @@ const ALLOW_ALL = Object.freeze({
 
 function buildPlane() {
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     controlLeg: approvingControlLeg(),
     permissionPolicy: ALLOW_ALL,
     realmId: REALM,

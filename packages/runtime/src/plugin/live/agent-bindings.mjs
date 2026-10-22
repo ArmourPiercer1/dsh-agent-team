@@ -2526,6 +2526,11 @@ export function createAgentBindings(deps) {
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
+          // PR358 fix-2: the DURABLE attribution the Control rows live under
+          // is the real TeamSession root — never a `plane:<template>`
+          // fallback. Missing teamSessionId is a wiring bug the plane now
+          // refuses loudly instead of papering over with a synthetic id.
+          teamSessionId: String(teamRoot),
           permissionPolicy,
           realmId: a5PlaneRealmId,
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),

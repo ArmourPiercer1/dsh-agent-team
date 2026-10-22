@@ -733,8 +733,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // PENDING-REFUSES (zero body, zero backend, never a synchronous allow,
   // never a fake Control row).
   const controlLeg = typeof input.controlLeg === 'function' ? input.controlLeg : null
+  // PR358 fix-2 (trusted durable attribution): the PA member identity is
+  // the REAL TeamSession root supplied by the host wiring. A synthetic
+  // `plane:<template>` fallback would let Control rows live under an id the
+  // Control plane does not actually own — refused at mount instead.
+  if (input.teamSessionId === undefined || input.teamSessionId === null || String(input.teamSessionId).length === 0) {
+    return { ok: false, code: 'TOOL_BINDING_UNVERIFIED', message: 'the PA durable attribution needs the real teamSessionId (host TeamSession root); no synthetic plane:<template> identity is mounted' }
+  }
   const paMember = Object.freeze({
-    teamSessionId: String(input.teamSessionId ?? `plane:${templateId}`),
+    teamSessionId: String(input.teamSessionId),
     instanceId: String(input.instanceId ?? templateId),
   })
   const bindingCache = new Map()

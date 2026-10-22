@@ -36,7 +36,8 @@
  *  - no-row refuse: a caller the facade refuses never gets a row, and
  *    without a row the bridge never reaches a decision or a grant (no
  *    approved-by-default).
- *  - plane integration: through `createTeamToolPlaneAssembly({ controlLeg:
+ *  - plane integration: through `createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root', controlLeg:
  *    createPaControlLeg({ controlService }) })`, one team_bash run reaches
  *    ONE body behind a real durable approval (real landlock launcher), and
  *    one governed read run reaches its body behind its own approval; a
@@ -595,6 +596,7 @@ const PLANE_REALM = 'a5m1-auth-plane-realm'
 
 function buildPlane(controlLeg: (input: PaControlLegInput) => Promise<PaControlLegResult>) {
   const built = planeRow.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: Object.freeze({ default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] }),
     realmId: PLANE_REALM,
     templateId: 'a5m1-auth-tpl',

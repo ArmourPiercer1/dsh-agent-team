@@ -38,6 +38,20 @@ export async function runToolCall(deps) {
         // deny BEFORE backend: no sink opened, no backend call, no residue.
         return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: verdict.code });
     }
+    if (deps.pa !== undefined) {
+        const pa = await deps.pa({
+            realmId: request.realmId,
+            callId: request.callId,
+            parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,
+            requestedEffects: derived.value,
+        });
+        if (pa.kind === 'deny') {
+            // PA denial BEFORE the backend — pending approval, a refused approval
+            // and a policy deny are all ZERO-body facts; the code distinguishes
+            // them on the audit line, never the wire shape.
+            return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: pa.code });
+        }
+    }
     const lease = createSpillLease();
     let sink = null;
     if (deps.spill) {

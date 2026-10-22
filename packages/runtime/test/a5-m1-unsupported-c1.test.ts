@@ -42,6 +42,7 @@ const POLICY = Object.freeze({ default: 'deny', allow: [{ tool: 'read', resource
 const baseInput = (extra: Record<string, unknown> = {}) => ({
   permissionPolicy: POLICY, realmId: REALM, templateId: 't', role: 'member', instanceId: 'i',
   plane: { fsInstance: { fs: 'c', rootDir: ROOT_DIR, realmId: REALM, kind: 'absolute-path' }, confinedProvider: confinedProvider() },
+  teamSessionId: 'a5m1-test-team-root',
   ...extra,
 })
 
@@ -77,6 +78,7 @@ describe('a5-m1-unsupported-c1 — closed world: unknown names never mount, neve
 
   it('U-C1-6 no-fs-root world: without a governed fsInstance the fs-class row is NOT MOUNTED at all (the closed world invents no root — the STRONGER shut landing: absent face, never a native fallback)', async () => {
     const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
       permissionPolicy: POLICY, realmId: REALM, templateId: 't', role: 'member', instanceId: 'i',
       plane: { confinedProvider: confinedProvider() },
     })

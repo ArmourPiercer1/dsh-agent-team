@@ -229,6 +229,7 @@ function buildPlane(input: {
 }): { built: ReturnType<PlaneRow['createTeamToolPlaneAssembly']>; rows: string[] } {
   const rows: string[] = []
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     controlLeg: approvingControlLeg(),
     ...(input.noSeam === true ? {} : { fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') } }),
     permissionPolicy: input.permissionPolicy,

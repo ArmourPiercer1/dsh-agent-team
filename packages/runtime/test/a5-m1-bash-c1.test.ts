@@ -54,6 +54,7 @@ const POLICY_BASH_ALLOW = Object.freeze({
 })
 function buildPlane(policy: unknown, observe: string[] = [], controlLeg?: (input: Record<string, unknown>) => Promise<unknown>) {
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: policy,
     realmId: REALM, templateId: 'a5m1-tpl', role: 'member', instanceId: 'a5m1-instance',
     onObserve: (r: unknown) => observe.push(String(r)),

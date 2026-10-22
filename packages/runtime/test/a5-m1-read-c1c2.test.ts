@@ -90,6 +90,7 @@ void attempt
 
 function mount(policy: unknown, extra: Record<string, unknown> = {}, observe: string[] = []) {
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
     permissionPolicy: policy,
     realmId: REALM,
     templateId: 'a5m1-tpl',
