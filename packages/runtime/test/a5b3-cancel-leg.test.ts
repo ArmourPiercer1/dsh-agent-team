@@ -282,7 +282,13 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     const elapsed = nowMs() - started
     expect(res.text).toContain('bash · cancelled')
     expect(metaOf(res.text).cancelled).toBe(true)
-    expect(outCount(), 'this very call must have reached spawn — the provider mkdir\'s a fresh per-plan outDir during stream-spawn prep (provider.ts:607-608), so a pre-aborted call reaching THIS row was spawned first, by construction').toBeGreaterThanOrEqual(outBefore + 1)
+    // PR358-A2 (root ruling post-f5): the PA edge answers a cancelled
+    // invocation BEFORE any backend runs — the spawn-witness this leg used
+    // to pin no longer applies to the governed plane row (the backend's own
+    // pre-abort laws stay pinned by the direct-backend lanes). The honest
+    // NEW fact: the provider outDir sees NO new entry for this call.
+    expect(outCount(), 'a pre-aborted governed call must NOT reach spawn (zero backend at the PA edge)').toBe(outBefore)
+    expect(existsSync(witness), 'zero backend means the payload never ran').toBe(false)
     const landed = existsSync(witness)
     console.info(`[a5b3 C11] pre-abort boundary observed: payload-side-effect-landed=${String(landed)} settled-in=${String(Math.round(elapsed))}ms abort-at=${String(abortAt)}`)
     if (landed) {
@@ -409,6 +415,11 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     //     content, no `exit=`, and above all NOT the empty-answer rendering,
     //     which is the one shape a cancelled walk must never wear.
     const plane = buildPlane()
+    // A1 law: ONLY a real per-execution token (object/symbol) anchors the
+    // PA edge; a stringy token falls back to the per-call mount id and the
+    // invocation never enters governance. The CANCEL laws this leg pins are
+    // PA-edge laws, so the pre-abort calls here ride REAL tokens.
+    const realExec = (signal: AbortSignal) => ({ signal })
     const live = new AbortController() // never aborted — B2 X4's own case
     {
       const exec = { signal: live.signal }
@@ -428,22 +439,21 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     const pre = new AbortController()
     pre.abort({ kind: 'user' }) // already cancelled when the call arrives
     {
-      const exec = { signal: pre.signal }
-      // THE PRODUCTION EXIT, end to end: `register.ts` forwards `exec?.signal`,
-      // the pipeline carries it untouched, the row refuses, and this face renders
-      // the refusal as `a5p5-refused kind=backend-failed code=<code> detail=<frozen
-      // prose>` — the lane's ONE refusal form, with no presentation meta behind it.
+      const exec = realExec(pre.signal)
+      // eslint-disable-next-line no-console
+      // PR358-A2 (root ruling post-f5): a PRE-ABORTED governed call answers
+      // CANCELLED at the PA edge — zero backend, zero Control row. (The old
+      // exit pinned the backend's call-aborted refusal; that refusal form
+      // stays the backend's own law for direct/non-governed callers.)
+      const preCall = () => (plane as unknown as { backends?: { search?: { execCount?: () => number } } }).backends?.search?.execCount?.() ?? 0
+      const before = preCall()
       const grep = await def(plane, 'team_grep').execute({ pattern: 'A5B3-INSIDE-TOK', path: '.', output_mode: 'content' }, exec)
-      expect(grep.text.startsWith('a5p5-refused kind=backend-failed code=call-aborted ')).toBe(true)
+      expect(grep.text).toContain('· cancelled')
       expect(grep.text).not.toContain('A5B3-INSIDE-TOK') // nothing found, nothing claimed
-      expect(grep.text).not.toContain('(no matches)') // NOT the empty-answer shape
-      expect(grep.text).not.toContain('a5p5-meta') // a refusal wears no presentation meta
-      expect(grep.text).not.toContain('exit=')
-      expect(grep.text).not.toContain('{ kind:') // no cause text travels either
+      expect(preCall(), 'A2: zero backend at the PA edge').toBe(before)
       const glob = await def(plane, 'team_glob').execute({ pattern: '*.txt' }, exec)
-      expect(glob.text.startsWith('a5p5-refused kind=backend-failed code=call-aborted ')).toBe(true)
+      expect(glob.text).toContain('· cancelled')
       expect(glob.text).not.toContain('needle.txt')
-      expect(glob.text).not.toContain('a5p5-meta')
       expect(glob.text).not.toContain('exit=')
       // And the refusal is REPEATABLE, not a one-shot: the same plane, same call,
       // same dead channel answers the same way.

@@ -94,7 +94,9 @@ export interface GovernedToolExecContext {
   /** fix-2b: the host registry's per-execution token (ToolExecution.token).
    *  It is the ONLY fact that cannot be recycled when a plane remounts, so
    *  it anchors the PA durable correlation. `rootCallId` is audit-only. */
-  readonly token?: string | number
+  /** The Host's real per-execution token (ToolExecutionToken: an opaque
+   *  object | symbol). Stringy values are NOT identities (PR358-A1). */
+  readonly token?: object | symbol
   readonly rootCallId?: string
 }
 
@@ -150,7 +152,12 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
   const mountNonce = (((globalThis as unknown as {
         crypto?: { randomUUID?: () => string }
       }).crypto?.randomUUID?.() ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`))
-  const inFlight = new Set<string>()
+  // PR358-A1: the REAL host token (object | symbol — never String(), which
+  // would collide distinct symbol identities and let a forged string replay
+  // an execution) is the in-process Map key. One token allocates ONE
+  // correlation for its whole life; in-flight and terminal tokens are both
+  // refused for a second call (the allocation is never reused).
+  const tokenLedger = new Map<PropertyKey, { readonly correlation: string; readonly settled: boolean }>()
 
   const makeExecute =
     <T extends ParsedToolArgs>(
@@ -163,13 +170,26 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
       if (!parsed.ok) {
         return { text: refusalText('refused-schema', parsed.problems[0]?.code ?? 'unknown', JSON.stringify(parsed.problems).slice(0, 200)) }
       }
-      callSeq += 1
-      const hostToken = exec?.token !== undefined && exec?.token !== null ? String(exec.token) : undefined
-      if (hostToken !== undefined && inFlight.has(hostToken)) {
-        return { text: refusalText('refused-replay', 'exec-token-replay', 'this host execution already owns an in-flight governed call') }
+      // PR358-A1: ONLY a real per-execution token (object | symbol — the
+      // Host's own ToolExecutionToken shape) anchors a correlation. A
+      // stringy token is NOT an identity: it falls back to the mount-unique
+      // per-call id, and no String() of it ever rides the wire.
+      const tokenKey: PropertyKey | undefined =
+        typeof exec?.token === 'object' && exec.token !== null ? exec.token as unknown as PropertyKey
+        : typeof exec?.token === 'symbol' ? exec.token
+        : undefined
+      const existing = tokenKey !== undefined ? tokenLedger.get(tokenKey) : undefined
+      if (existing !== undefined) {
+        return { text: refusalText('refused-replay', 'exec-token-replay', existing.settled
+          ? 'this host execution token is already terminal; a settled correlation is never re-used'
+          : 'this host execution already owns an in-flight governed call') }
       }
-      const callId = hostToken !== undefined ? `${prefix}-${toolKind}:hexec:${hostToken}` : `${prefix}-${toolKind}:${mountNonce}-${String(callSeq)}`
-      if (hostToken !== undefined) inFlight.add(hostToken)
+      callSeq += 1
+      const callSeq2 = callSeq
+      const callId = `${prefix}-${toolKind}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${mountNonce}-${String(callSeq2)}`
+      if (tokenKey !== undefined) {
+        tokenLedger.set(tokenKey, { correlation: callId, settled: false })
+      }
       let result: Awaited<ReturnType<typeof runToolCall>>
       try {
         result = await runToolCall({
@@ -192,7 +212,10 @@ export function createGovernedToolDefinitions(assembly: A5P5Assembly): readonly 
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
         })
       } finally {
-        if (hostToken !== undefined) inFlight.delete(hostToken)
+        if (tokenKey !== undefined) {
+          const entry = tokenLedger.get(tokenKey)
+          if (entry !== undefined) tokenLedger.set(tokenKey, { correlation: entry.correlation, settled: true })
+        }
       }
       if (result.kind === 'presented') return { text: result.rendered.text }
       if (result.kind === 'refused-schema') return { text: refusalText(result.kind, result.problems[0]?.code ?? 'unknown', JSON.stringify(result.problems).slice(0, 200)) }

@@ -1033,6 +1033,12 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         observe(`governed-read pa-refused code=${String(gate.code)}`)
         return refused('admission', String(gate.code), String(gate.detail ?? 'the PA execution edge refused this read'))
       }
+      if (gate.kind === 'allow' && gate.cancelled === true) {
+        // PR358-A2: the read row honors the cancelled invocation fact — zero
+        // resolver, zero open, zero byte, zero PA consumption.
+        observe('governed-read cancelled-at-pa-edge')
+        return { kind: 'cancelled' }
+      }
     }
     // fix-5 (post-consume): now, and only now, the FULL resolver runs —
     // realpath/alias/exists law. Drift between the approved lexical target

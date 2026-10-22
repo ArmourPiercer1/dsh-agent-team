@@ -111,10 +111,7 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
       // invocation cancellation the backend row honors.
       ...(request.signal === undefined ? {} : { signal: request.signal }),
     })
-    if (pa.kind === 'allow' && (pa as { passthrough?: string }).passthrough === 'pre-aborted') {
-      // governance is skipped entirely; the backend's own abort law settles
-      // the invocation (spawn-then-terminate / call-aborted), unchanged.
-    } else if (pa.kind === 'allow' && (pa as { cancelled?: boolean }).cancelled === true) {
+    if (pa.kind === 'allow' && (pa as { cancelled?: boolean }).cancelled === true) {
       // PR358 fix-4: cancelled at the PA edge — zero backend, zero PA
       // consumption. The settled fact is rendered through the row's OWN
       // cancel renderer (empty stdout = nothing was observed; the a5p5-meta
@@ -124,7 +121,16 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
         settlement: { kind: 'cancelled' as const, event: 'dispatcher-call-cancelled-before-body' as const },
         rendered: request.parsedArgs.tool === 'bash'
           ? renderShellResult({ exitCode: null, stdout: '', stderr: '', timedOut: false, cancelled: true, truncated: false })
-          : renderSearchResult({ outputMode: 'content', matches: [], counts: [], files: [], totalMatches: 0, truncated: false }),
+          : renderSearchResult({
+              // the cancelled search wears the request's OWN output mode
+              outputMode: request.parsedArgs.tool === 'glob' ? 'files_with_matches' : request.parsedArgs.outputMode,
+              matches: [],
+              counts: [],
+              files: [],
+              totalMatches: 0,
+              truncated: false,
+              cancelled: true,
+            }),
         spill: null,
         effectFingerprint: derived.value.fingerprint,
       } as const)

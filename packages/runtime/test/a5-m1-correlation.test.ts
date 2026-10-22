@@ -83,7 +83,7 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
     } finally { done() }
   })
 
-  it('C1/C2 (a5p5 trio face): host token anchors the PA call id as hexec:<token>; same token twice = refused-replay', async () => {
+  it('C1/C2 (a5p5 trio face, PR358-A1): REAL token allocates ONE hexec correlation; in-flight/terminal replays refuse; stringy tokens never anchor', async () => {
     const reg = await import('../../tools/a5p5-tools/src/index.js')
     const seen: string[] = []
     const backend = {
@@ -104,14 +104,30 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
       pa: async (req: { callId: string }) => { seen.push(`pa:${req.callId}`); return { kind: 'allow' } },
     })
     const bashDef = (defs as { name: string; execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> }[]).find((d) => d.name === 'team_bash' || d.name === 'bash')!
-    const first = bashDef.execute({ command: 'true' }, { token: 'tok-abc' })
-    const replay = await bashDef.execute({ command: 'true' }, { token: 'tok-abc' })
-    expect(replay.text).toContain('refused-replay')
+    const TOK = Symbol('host-exec') // the identity IS the symbol; its description never rides a wire
+    const first = bashDef.execute({ command: 'true' }, { token: TOK })
+    const replay = await bashDef.execute({ command: 'true' }, { token: TOK })
+    expect(replay.text).toContain('refused-replay') // IN-FLIGHT replay refuses
     const ok = await first
     expect(ok.text).toContain('trio-body')
-    expect(seen.some((s) => s.includes('pa:bash:hexec:tok-abc') || s.includes(`hexec:tok-abc`))).toBe(true)
-    // after settle the token is releasable: a NEW execution may reuse none of the old state
-    const second = await bashDef.execute({ command: 'true' }, { token: 'tok-def' })
+    const hexec = seen.filter((l) => l.includes('hexec:'))
+    expect(hexec.length).toBe(1) // ONE allocation for the token's whole life
+    expect(hexec[0]).not.toContain('host-exec') // no token text ever leaves
+    const afterSettle = await bashDef.execute({ command: 'true' }, { token: TOK })
+    expect(afterSettle.text).toContain('refused-replay') // TERMINAL: never re-used
+    expect(seen.filter((l) => l.includes('hexec:')).length).toBe(1)
+    const second = await bashDef.execute({ command: 'true' }, { token: Symbol('other-exec') })
     expect(second.text).toContain('trio-body')
+    const hexec2 = seen.filter((l) => l.includes('hexec:'))
+    expect(hexec2.length).toBe(2)
+    expect(hexec2[1]).not.toBe(hexec2[0]) // fresh distinct correlation
+    // the stringy-token law: NOT an identity → mount fallback, governance
+    // still runs, and NO String() of the token rides the id
+    const strung = await bashDef.execute({ command: 'true' }, { token: 'fake-string-token' as unknown as object })
+    expect(strung.text).toContain('trio-body')
+    expect(seen.some((l) => l.includes('fake-string-token'))).toBe(false)
+    expect(seen.some((l) => l.includes('mount:'))).toBe(true)
   })
+
+
 })

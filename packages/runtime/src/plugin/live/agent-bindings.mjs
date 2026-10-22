@@ -2543,7 +2543,7 @@ export function createAgentBindings(deps) {
           // approval. Values come from the host seams themselves.
           currentFacts: {
             getPolicy: () => policyReaderRef?.current,
-            getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch() : undefined),
+            getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
             getAuthorityGeneration: () => 0,
             getBindingRevision: () => 1,
           },

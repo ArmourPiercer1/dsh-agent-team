@@ -807,7 +807,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // laws (a5b3 C11/C7), untouched by admission. PA does not swallow or
     // re-render an invocation that stopped existing before it was asked.
     if (signal?.aborted === true) {
-      return { kind: 'allow', passthrough: 'pre-aborted' }
+      // PR358-A2: a cancelled invocation answers CANCELLED at the PA edge —
+      // zero backend, zero Control row, zero consumption. (The a5b3
+      // spawn-then-terminate witness legs live BELOW this edge in the
+      // backend's own laws; the governance edge no longer forwards a
+      // dead invocation into a backend.)
+      return { kind: 'allow', cancelled: true }
     }
     const admitted = await assembly.admitCall(request)
     if (admitted.ok !== true) {
@@ -1194,6 +1199,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
         const outcome = await readExecutor(raw, corr)
         if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'ok') {
           return { path: outcome.path, offset: outcome.offset, lines: outcome.lines, totalLines: outcome.totalLines }
+        }
+        if (outcome !== null && typeof outcome === 'object' && outcome.kind === 'cancelled') {
+          // PR358-A2: the cancelled read is a PRESENTED row-form fact, not
+          // a refusal — zero byte read, honest word carried (mirrors the
+          // shell row's own `· cancelled` law; no resolver ever ran).
+          return { path: null, offset: 1, lines: [], totalLines: 0, cancelled: true }
         }
         const text = outcome !== null && typeof outcome === 'object' && typeof outcome.text === 'string'
           ? outcome.text

@@ -129,6 +129,34 @@ describe('A5M1-SEAM — center enforcement of the controlLeg contract', () => {
   })
 })
 
+describe('A5M1-SEAM — fix-5/A2 read row', () => {
+  it('E6 pre-aborted read is cancelled at the PA edge: zero resolver fs, zero bytes, row-form cancelled', async () => {
+    const scratch = mkdtempSync(join(tmpdir(), 'a5m1-e6-'))
+    writeFileSync(join(scratch, 'secret.txt'), 'E6-NEVER-READ')
+    fsProbe.hits = 0
+    fsProbe.armed = true
+    try {
+      const built = row.createTeamToolPlaneAssembly({
+        teamSessionId: 'a5m1-test-team-root',
+        permissionPolicy: { default: 'ask', allow: [] as unknown[], ask: [] as unknown[], deny: [] as unknown[] },
+        realmId: 'a5m1-e6-realm', templateId: 'e6-tpl', role: 'member', instanceId: 'e6-instance',
+        controlLeg: async () => { throw new Error('E6: a pre-aborted call must NEVER open an approval wait') },
+        plane: { fsInstance: { fs: 'e6', rootDir: scratch, realmId: 'a5m1-e6-realm', kind: 'absolute-path' } },
+      })
+      expect(built.ok, JSON.stringify(built)).toBe(true)
+      const read = built.value.definitions.find((d: { name: string }) => d.name === 'read')
+      const ac = new AbortController()
+      ac.abort()
+      const r = await read.execute({ file_path: join(scratch, 'secret.txt') }, { token: Symbol('e6'), signal: ac.signal })
+      expect(JSON.stringify(r)).not.toContain('E6-NEVER-READ')
+      expect(fsProbe.hits, 'resolver surface untouched').toBe(0)
+    } finally {
+      fsProbe.armed = false
+      rmSync(scratch, { recursive: true, force: true })
+    }
+  })
+})
+
 // fix-5 E5: transparent vi.mock wrappers COUNT resolver-surface fs access
 // (realpath/exists/open) while delegating to the real receiver verbatim —
 // measurement only, zero behavior change (the window-suite injection law).
