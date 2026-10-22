@@ -2542,11 +2542,41 @@ export function createAgentBindings(deps) {
           // binding revision. The consume edge re-reads these AFTER any
           // approval wait; drift = stale refusal, never retroactive
           // approval. Values come from the host seams themselves.
+          authorityFacts: {
+            overlayGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
+          },
           currentFacts: {
             getPolicy: () => policyReaderRef?.current,
             getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
-            getAuthorityGeneration: () => 0,
-            getBindingRevision: () => 1,
+            // 9e fix-3: REAL current facts at the consumption edge — the
+            // durable overlay generation (the same `latest` authority the
+            // assembly answers with) and the CURRENT dispatcher entry's
+            // revision for the call's tool. Unanswerable stays undefined —
+            // the plane then fail-closes (GRANT_STALE), never 0/1.
+            getAuthorityGeneration: () => {
+              const latest = permissionOverlay?.latest?.({ teamSessionId: String(teamRoot), memberInstanceId: String(instanceId) })
+              // synchronous edge: consume the LAST CONFIRMED durable read;
+              // `latest` is async, so the plane's own assembly reader (which
+              // awaits the same port) is the source of truth. Answering
+              // undefined here routes the plane to GRANT_STALE — never a 0.
+              void latest
+              return a5PlaneValue?.authorityGeneration?.()
+            },
+            getBindingRevision: () => {
+              // the call's tool revision, read from the CURRENT dispatcher
+              // entry under the plane's governed names; `entryOf` per name —
+              // the plane carries the name list.
+              const names = a5PlaneOwnNames ?? []
+              let revision
+              for (const name of names) {
+                const entry = a5p1Guard?.dispatcher?.surface?.entryOf?.(String(name))
+                if (entry !== undefined) revision = entry.revision
+              }
+              return revision
+            },
           },
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
@@ -2903,6 +2933,19 @@ export function createAgentBindings(deps) {
           beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
           readers: {
             permissionPlane: () => permissionPlaneRef?.current,
+            // 9e fix-3: the durable overlay generation for the assembly's
+            // authorityGeneration reader (the SAME `latest` source).
+            overlayGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
+            // 9e fix-2/3: the durable current authority GENERATION (the
+            // decision lane's own latest-generation; the guard dispatcher
+            // and the assembly answer from this ONE source).
+            authorityGeneration: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === undefined || latest === null ? 0 : Number(latest?.metadata?.generation)
+            },
             policySnapshot: () => permissionPolicy,
             // PR358-B: the durable overlay latest (the decision lane's own
             // authority source) + the ONE facts object's ceiling readers.

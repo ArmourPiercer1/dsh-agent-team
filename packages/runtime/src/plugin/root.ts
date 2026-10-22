@@ -2348,7 +2348,9 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
         manifest,
         decider,
         stage,
-        mount: (resolvePaMount as any)(rootSessionId, String((manifest as { request?: { instanceId?: string } })?.request?.instanceId ?? '')),
+        // 9e fix-2: the FLAT parsed manifest carries the member attribution
+        // (manifest.member.instanceId); there is no `request` wrapper.
+        mount: (resolvePaMount as any)(rootSessionId, String((manifest as { member?: { instanceId?: string } })?.member?.instanceId ?? '')),
       }),
   })
   const control = createControlService({

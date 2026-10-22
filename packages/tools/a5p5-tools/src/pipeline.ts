@@ -101,7 +101,12 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
   }
 
   if (deps.pa !== undefined) {
-    const pa = await deps.pa({
+    // 9e fix-1 (A2 law at the trio edge): an ALREADY-aborted invocation is
+    // settled `cancelled` BEFORE the PA edge — zero PA touch, zero
+    // consumption, zero backend (the plane's paAdmit pre-leg answers the
+    // same fact; a caller that never reaches the plane honors it here).
+    const preAborted = request.signal?.aborted === true
+    const pa = preAborted ? ({ kind: 'allow', cancelled: true } as const) : await deps.pa({
       realmId: request.realmId,
       callId: request.callId,
       parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,

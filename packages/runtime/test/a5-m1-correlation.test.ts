@@ -101,7 +101,12 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
       searchBackend: backend,
       shellBackend: backend,
       globBackend: backend,
-      pa: async (req: { callId: string }) => { seen.push(`pa:${req.callId}`); return { kind: 'allow' } },
+      pa: async (req: { callId: string; signal?: { aborted?: boolean } }) => {
+        seen.push(`pa:${req.callId}`)
+        // the real PA edge settles an already-aborted call as cancelled
+        // with ZERO consumption (A2 law) — the fake mirrors that fact.
+        return req.signal?.aborted === true ? { kind: 'allow', cancelled: true } : { kind: 'allow' }
+      },
     })
     const bashDef = (defs as { name: string; execute: (raw: unknown, exec?: unknown) => Promise<{ text: string }> }[]).find((d) => d.name === 'team_bash' || d.name === 'bash')!
     const TOK = Symbol('host-exec') // the identity IS the symbol; its description never rides a wire
@@ -113,9 +118,16 @@ describe('A5M1-CORR — exec-bound correlation and pre-consume cancel', () => {
     const hexec = seen.filter((l) => l.includes('hexec:'))
     expect(hexec.length).toBe(1) // ONE allocation for the token's whole life
     expect(hexec[0]).not.toContain('host-exec') // no token text ever leaves
+    // 9e fix-1: a TERMINAL-token replay is the CANCELLED fact, not a text
+    // refusal — the run flows under the token's ORIGINAL correlation with
+    // an already-aborted signal; the PA edge settles `cancelled` and the
+    // row renders its honest cancelled line. Zero new allocation, zero
+    // consumption growth (seen never grows).
     const afterSettle = await bashDef.execute({ command: 'true' }, { token: TOK })
-    expect(afterSettle.text).toContain('refused-replay') // TERMINAL: never re-used
+    expect(afterSettle.text).toContain('cancelled')
+    expect(afterSettle.text).not.toContain('trio-body') // zero backend
     expect(seen.filter((l) => l.includes('hexec:')).length).toBe(1)
+    expect(seen[seen.length - 1]).toContain('hexec:') // replayed the ORIGINAL id, no new one
     const second = await bashDef.execute({ command: 'true' }, { token: Symbol('other-exec') })
     expect(second.text).toContain('trio-body')
     const hexec2 = seen.filter((l) => l.includes('hexec:'))

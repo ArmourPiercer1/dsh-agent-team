@@ -969,8 +969,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
           return { kind: 'deny', code: 'GRANT_STALE', detail: `fresh policy re-verification moved this effect set out of the allow lane (${String(freshLane)}); the call is stale and runs nothing` }
         }
       }
-      const nowGeneration = typeof paCurrentFacts.getAuthorityGeneration === 'function' ? paCurrentFacts.getAuthorityGeneration() : 0
-      const nowRevision = typeof paCurrentFacts.getBindingRevision === 'function' ? paCurrentFacts.getBindingRevision() : 1
+      // 9e fix-3: the CURRENT generation/revision at the consumption edge
+      // come from the REAL sources: the durable overlay generation the
+      // assembly itself answers with, and the CURRENT dispatcher entry's
+      // revision for this call's tool (no 0/1 constants — the mount binds
+      // what is in force).
+      const nowGeneration = typeof paCurrentFacts.getAuthorityGeneration === 'function' ? paCurrentFacts.getAuthorityGeneration() : paAuthorityGeneration()
+      const nowRevision = typeof paCurrentFacts.getBindingRevision === 'function' ? paCurrentFacts.getBindingRevision() : undefined
       if (typeof nowGeneration !== 'number' || typeof nowRevision !== 'number') {
         return { kind: 'deny', code: 'GRANT_STALE', detail: 'current authority generation/revision is unanswerable; fail closed without consuming' }
       }
@@ -1324,6 +1329,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
       paAdmit,
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
       livePaPlan,
+      /** 9e fix-3: the CONFIRMED durable generation reader (the root's
+       *  currentFacts consumer answers through it; unconfirmed stays
+       *  undefined — never a 0). */
+      authorityGeneration: paAuthorityGeneration,
       /** The production admission assembly (planApproval/issueApprovedGrant
        *  are the AUTH-owned durable-Control landing edges; the plane mounts
        *  NO fake approvals — controlLeg is injected, never invented here). */
