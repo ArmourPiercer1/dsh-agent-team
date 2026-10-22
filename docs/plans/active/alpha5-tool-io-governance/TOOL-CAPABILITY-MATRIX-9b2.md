@@ -49,7 +49,7 @@
 **来源（钉死）**：`pin639` 官方 `docs/tool-catalog.md:18-47`；`scripts/gen-tool-catalog.ts:205-680` 对应每包 source。**65 unique=官方 catalog 条目数，非当前实例**。
 **别名与 preset 事实**：`pin639 web-app/presets/standard.patch.yml:90-116` 声明 subagent、subagent_fork、subagent_codex(**disabled:true**)、subagent_claude_code(**disabled:true**)（ptc 同号；cordis :89-115）→ catalog 65 unique + 3 别名 = **68 静态名**，再加本 repo Team 15（M-14 展开表）；同名分实现/条件保留，**不强称 83 独立名**。`standard:133-136`=todo allowParallelInProgress；FS `:20-41`/bash 平台条件。`web-app/cordis.patch.yml:430-558`=关 host 面迁 preset，**非不可达**；**minimal preset 的 persistent bash/pwsh 不能继承 one-shot 测量**。
 **分档**=default / opt-in / disabled（可配置开启）。**未来任意 toolName/动态 MCP=未采**（缺口句保留，不假全覆盖）。
-**逐名纪律**：字段可引用主表族行共享事实，但合入/可达/IO/Host 正负/缺陷/等级**逐名明确**；无证据=**UNKNOWN**；**不由目录推"已控制"或"未实现"**。
+**逐名纪律**：字段可引用主表族行共享事实，但合入/可达/IO/Host 正负/缺陷/等级**逐名明确**；证据缺在 → **UNKNOWN**；**不由目录推"已控制"或"未实现"**。
 
 ### A-1 FS
 - **read** [default] — 逐名适用：主表 read(M-01) 行全部事实（②合入=#353 `1739b262f…`；⑥run 归属=dad3；行级审批正控未复验）；无另证。
