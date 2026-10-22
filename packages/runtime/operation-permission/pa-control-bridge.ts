@@ -634,6 +634,18 @@ export interface PaEffectsVerifierDeps {
     readonly decider: ControlCallerRef
     readonly stage: PaEffectsVerifierStage
   }) => Promise<PaCallFacts | undefined>
+  /** TEST-only seam (CENTER↔AUTH ruling, CCR-358a follow-up). The
+   *  `PaEffectsVerifierInput.facts` member is a caller-held facts
+   *  pre-answer; in PRODUCTION no caller ever supplies it (the control
+   *  service always leaves it ABSENT and the verifier fetches through
+   *  `readCallFacts`). To turn "that injection surface belongs to tests
+   *  only" from a CONVENTION into an ENFORCEMENT, the verifier honours
+   *  `input.facts` ONLY when this flag is explicitly `true` at
+   *  construction (default `false` ⇒ `input.facts` is IGNORED and the
+   *  adapter is always consulted). A production wiring that omits the
+   *  flag can never be fed facts through the input, so the injected
+   *  adapter is its single, unavoidable facts source. */
+   readonly allowFactsInjection?: boolean
   readonly onObserve?: (row: Readonly<Record<string, unknown>> & { readonly stage: string }) => void
 }
 
@@ -665,7 +677,11 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     }
 
     // ── 0. THE FACTS — the ONE await of the orchestration ────────────────
-    let facts: PaCallFacts | undefined = input.facts
+    // A caller-held `input.facts` is honoured ONLY under the explicit
+    // construction flag (test seam, default CLOSED): a production wiring
+    // that omits `allowFactsInjection` can never be fed facts through the
+    // input, so its injected adapter is the single, unavoidable source.
+    let facts: PaCallFacts | undefined = deps.allowFactsInjection === true ? input.facts : undefined
     if (facts === undefined) {
       try {
         facts = await deps.readCallFacts({
