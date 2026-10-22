@@ -1,4 +1,5 @@
 # ALPHA.5 台账当前态（ALPHA5-CURRENT-STATE）— 协调台账的当前态投影
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文件"当前态"字段与 merge 指针按记录时点已过期；有效待办唯一入口=`docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md`。历史台账正本地位、红线、裁决原文与设计约束**仍有效**；正文未改动。
 
 - **整合规则**：`dev/agent-workflow/evidence/alpha5/COORDINATION.md` 保持只追加、原文不动（历史正本）；**本文件是它的当前态投影**——每行=当前状态+最新权威 SHA（`rev-parse`/`log` 现场查得，禁抄旧文档），失效行标 **SUPERSEDED** 并指回原文位置。writer=release-candidate-r1 审计员（qwen3.8-flash，只读+本文件新增）；根 20:2xZ ⑥ 单。
 - **基线（现场）**：`git ls-remote origin refs/heads/master` = **`5885e46ec2bcbfa7bfa58882d835801ec8b79e1f`**（= #340 shell cancel leg，2026-10-19 04:14+08 合）。宿主 pin（`tests/paths.mjs`）=`639ed015397290b3745d163aafe02ffee4aa3f84`（0.2.0-rc.2）。

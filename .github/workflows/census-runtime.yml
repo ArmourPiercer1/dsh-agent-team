@@ -100,14 +100,50 @@ jobs:
       CI: 'true'
     steps:
       - name: Checkout
-        # fetch-depth 1 on purpose: the leg this job runs never materialises HEAD in a linked
-        # worktree (that is `artifacts-at-head`, which stays `pr-gate`'s job), so the deep history
-        # `pr-gate` conservatively asks for buys nothing here except download time. The census leg's
-        # only git read is `git rev-parse --short HEAD` for the DSH-CI-RUN line, which a shallow
-        # checkout answers.
+        # fetch-depth 0 (full history) — CORRECTED 2026-10-22 by root ruling; the previous comment
+        # here claimed the only git read was `rev-parse --short HEAD` and that depth 1 sufficed.
+        # That was FALSE, and it went red: the census suite's lineage/ancestor checks walk real git
+        # ancestry (state-freshness test :406), and on the depth-1 checkout the round-58 pointer
+        # reported `a23e5c8f is not reachable from HEAD` — a shallow-clone artifact wearing the
+        # product's name (the Actions merge checkout @15d7e95c composes with --depth=1). The census
+        # therefore NEEDS the ancestor facts reachable, so the clone is full. The unrelated upstream
+        # HOST provisioning fetch below stays `--depth 1` untouched: that tree needs a working tree
+        # and a build, never history.
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Precheck — the graph's two git pins are present and HEAD-ancestors
+        # Why this step exists (root ruling, 2026-10-22): the census grades claims ABOUT history —
+        # state_pointers.master_sha (the round-58 pointer) must be reachable and an ancestor, and
+        # current_contract.baseline likewise. The fetch-depth fix above is what makes that true;
+        # this step is what makes it FAIL LOUDLY AND BY NAME, before minutes of provisioning and
+        # build, if the checkout ever again arrives too shallow for the claim. Local git only:
+        # NO network top-up fetch — a precheck that silently deepens the clone would grade a tree
+        # Actions never handed the job. Both values are READ from graph.yaml (read, never copied —
+        # same rule as the host pin up there), so this step cannot drift from the contract.
+        shell: bash
+        run: |
+          set -euo pipefail
+          MASTER_SHA=$(awk '/^state_pointers:/{f=1} f&&/master_sha:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
+          BASELINE=$(awk '/^current_contract:/{f=1;next} f&&/^[^[:space:]#]/{f=0} f&&/^[[:space:]]*baseline:/{gsub(/"/,"");print $2; exit}' dev/agent-workflow/graph.yaml)
+          for pair in "state_pointers.master_sha=$MASTER_SHA" "current_contract.baseline=$BASELINE"; do
+            NAME=${pair%%=*}
+            OBJ=${pair#*=}
+            if [ -z "$OBJ" ]; then
+              echo "::error::PIN PRECHECK FAIL: could not read ${NAME} from dev/agent-workflow/graph.yaml — the contract file moved or changed shape"
+              exit 1
+            fi
+            if ! git cat-file -e "${OBJ}^{commit}" 2>/dev/null; then
+              echo "::error::PIN PRECHECK FAIL: ${NAME}=${OBJ} is not PRESENT in this checkout — the clone is too shallow for the census ancestor claims (fetch-depth must be 0)"
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$OBJ" HEAD; then
+              echo "::error::PIN PRECHECK FAIL: ${NAME}=${OBJ} exists but is NOT an ancestor of HEAD=$(git rev-parse HEAD) — the census would grade a false unreachability verdict"
+              exit 1
+            fi
+            echo "pin precheck ok: ${NAME}=${OBJ} present and an ancestor of HEAD"
+          done
 
       - name: Setup Node
         # Node 24 and pnpm 11.7.0 are the versions BOTH trees declare: this repo's `packageManager`

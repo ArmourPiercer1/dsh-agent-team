@@ -1,4 +1,5 @@
 # S0 — 统一选型矩阵（Alpha.5 Tool I/O Governance · 唯一权威选型矩阵）
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 > **总状态：P0 NOT CLOSED；本矩阵是实施选型权威，不是产品 GO。**
 >

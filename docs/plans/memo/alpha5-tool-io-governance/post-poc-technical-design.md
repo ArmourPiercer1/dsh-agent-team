@@ -1,4 +1,5 @@
 # Alpha.5 — PoC 后技术方案完整设计：DSH 原生工具接管分类与执行控制
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 **状态：实施选型规范草案（设计方向已获用户认可；NOT PRODUCT GO）。**  
 **日期：2026-10-16；证据快照：PR #249 / `a2e741a02c4f0126f0aa6615c02c51877f7f3dba`。**  

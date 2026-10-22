@@ -245,6 +245,277 @@ export function checkStatePointers({ graphText, logText, isAncestor }) {
   return { findings, info }
 }
 
+/**
+ * Current-contract check — the Alpha.5 docs-realignment pointer checks, folded into the
+ * `state-freshness` leg (no new leg by root ruling). THE DIVISION OF LABOUR IS THE POINT:
+ * `checkStatePointers` above keeps its Alpha.4 s7-round historical-integrity job and its
+ * fixtures are LEGACY-ONLY (Alpha4 historical shape, not the production path); this function
+ * grades the top-level `current_contract` block, which is the ONLY current-phase authority.
+ * The production path never falls back: a graph without current_contract FAILS here even if
+ * the legacy block is pristine — "delete the current fields" must not reopen the old door.
+ *
+ * Batch-3 hardening (root review of 2026-10-22, after six hand-built bad graphs graded green):
+ *  - GROUP A: phase_id is format-whitelisted, and EVERY current field (not just baseline)
+ *    must appear exactly once inside the contract block — a second active_plan aimed at the
+ *    old phase is the exact shape this check exists to catch.
+ *  - GROUP B: identity is compared by VALUE — the phase-baseline-ref target and a
+ *    phase-identity line must equal the contract, in AGENTS, active plan, backlog and matrix;
+ *    the active plan BODY is read (first Alpha digit on any current-phase line must agree),
+ *    because "contains the substring" passed a document that declared itself Alpha.4.
+ *  - GROUP C: ready/blocked IDs must exist in the backlog; a phantom BL-999 is an
+ *    instruction to nothing.
+ *  - GROUP D: an in-repo evidence path cited in a matrix row must exist; external material
+ *    only passes via an explicit `external:`/`external/untracked:` marker; a bare tested
+ *    SHA is NEVER evidence (it is what was tested, not where the proof lives).
+ *  - NEEDS_REVALIDATION means "the claim expired": the row must ALSO carry V@B=no —
+ *    flipping the level while leaving V@B=yes is a contradiction, graded red.
+ * Grammar rules kept: baseline may EQUAL HEAD (neither equality nor inequality is required);
+ * a failed drift comparison is FAIL; the Q7 drift path set is deliberately CONSERVATIVE
+ * (all of packages + scripts, including this CI file itself) — disclosed, not refined away.
+ *
+ * @param graphText - raw dev/agent-workflow/graph.yaml.
+ * @param readFile - (relPath) => string | null (null when absent/unreadable).
+ * @param fileExists - (relPath) => boolean (true for directories too — existence, not type).
+ * @param revExists - (sha) => boolean, whether the object resolves to a commit.
+ * @param baselineCurrent - (sha) => boolean, true when sha is HEAD or an ancestor of HEAD.
+ * @param driftProvider - (sha) => string[] | null, product-surface changed paths baseline..HEAD; null = comparison failed.
+ */
+export function checkCurrentContract({ graphText, readFile, fileExists, revExists, baselineCurrent, driftProvider }) {
+  const findings = []
+  const info = {}
+  const g = String(graphText)
+
+  // Q8 — the no-fallback rule, checked first because everything else depends on the block.
+  if (!/^current_contract:[ \t]*$/m.test(g)) {
+    findings.push('Q8: current_contract block is absent — the production path fails; it never falls back to the Alpha.4 legacy state_pointers shape')
+    return { findings, info }
+  }
+  // Scope every field lookup to the current_contract BLOCK, not the whole graph: the Alpha.4
+  // history sections legitimately carry nested `baseline:` keys of their own (measured: two at
+  // L120/L262), and a check that scanned all two-space keys would grade history as a live
+  // duplicate. A guard narrower than the real state space is a false alarm, not a check.
+  const ccStart = g.search(/^current_contract:[ \t]*$/m)
+  const ccTail = g.slice(g.indexOf('\n', ccStart) + 1)
+  const nextTop = ccTail.match(/^(?!\s*#)[^\s#]/m)
+  const ccBlock = nextTop ? ccTail.slice(0, nextTop.index) : ccTail
+  const field = (name) => {
+    const m = new RegExp('^ {2}' + name + ':\\s*(.+?)\\s*$', 'm').exec(ccBlock)
+    if (!m) return null
+    const v = m[1].trim()
+    return v.startsWith('"') ? v.replace(/^"(.*)"$/, '$1') : v.replace(/\s+#.*$/, '').trim()
+  }
+  const phaseId = field('phase_id')
+  const activePlan = field('active_plan')
+  const backlogPath = field('backlog')
+  const matrixPath = field('matrix')
+  const baseline = field('baseline')
+  const collected = field('baseline_collected')
+  info.contract = { phase_id: phaseId, active_plan: activePlan, baseline, baseline_collected: collected }
+
+  // Q3 / GROUP A — one and only one set of active declarations: EVERY current field, not a
+  // baseline-only count (a duplicated active_plan aimed at Alpha.4 used to pass unnoticed).
+  const count = (re, text) => (String(text).match(re) ?? []).length
+  if (count(/^current_phase:/gm, g) !== 1) findings.push('Q3: expected exactly one top-level `current_phase:`')
+  if (count(/^current_contract:/gm, g) !== 1) findings.push('Q3: expected exactly one top-level `current_contract:`')
+  for (const name of ['phase_id', 'active_plan', 'backlog', 'matrix', 'baseline', 'baseline_collected']) {
+    const c = count(new RegExp('^ {2}' + name + ':', 'gm'), ccBlock)
+    if (c !== 1) findings.push(`Q3: current_contract.${name} must appear exactly once inside the block (found ${String(c)}; two active claims for one pointer)`)
+  }
+
+  // Q2 — fields, targets, grammar; active plan must be an ACTIVE plan, not a memo.
+  if (!phaseId || !/^alpha\d+-[a-z0-9][a-z0-9-]*$/.test(phaseId)) findings.push(`Q2: current_contract.phase_id must be a canonical id (alpha<N>-<kebab-name>); got ${String(phaseId)}`)
+  for (const [k, v] of [['active_plan', activePlan], ['backlog', backlogPath], ['matrix', matrixPath]]) {
+    if (!v) findings.push(`Q2: current_contract.${k} missing`)
+    else if (!fileExists(v)) findings.push(`Q2: current_contract.${k} target does not exist: ${v}`)
+  }
+  if (activePlan && !activePlan.startsWith('docs/plans/active/')) findings.push(`Q2: active_plan must live under docs/plans/active/ (got ${activePlan})`)
+  if (!collected || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(collected)) findings.push('Q2: baseline_collected must be an ISO8601Z timestamp')
+
+  // Q4 — grammar + git reality. Equality with HEAD is legal; required equality or inequality are both bugs.
+  if (!baseline || !/^[0-9a-f]{40}$/.test(baseline)) findings.push('Q4: current_contract.baseline must be exactly 40 hex chars')
+  else if (!revExists(baseline)) findings.push(`Q4: baseline ${baseline} does not resolve to a commit object — FAIL, an unresolvable anchor is never green`)
+  else if (!baselineCurrent(baseline)) findings.push(`Q4: baseline ${baseline} is neither HEAD nor an ancestor of HEAD — the pointer names a revision this tree cannot produce`)
+
+  // Q1 — active wording must agree with the contract; retired wording is a stale pointer.
+  const phase = /^current_phase:\s*(.*)$/m.exec(g)
+  if (!phase) findings.push('Q1: current_phase missing')
+  else {
+    if (/ALPHA\.?4|A4-PR7/i.test(phase[1])) findings.push('Q1: current_phase still names the Alpha.4 phase — an old active pointer dressed as current')
+    const pm = /^alpha(\d+)/i.exec(phaseId ?? '')
+    if (pm && !new RegExp(`ALPHA\\.?${pm[1]}`, 'i').test(phase[1])) findings.push(`Q1: current_phase wording disagrees with phase_id ${phaseId}`)
+  }
+  const conv = /^state_convergence:\s*"?([^\n]*?)"?\s*$/m.exec(g)
+  if (conv && !/^HISTORICAL/i.test(conv[1])) findings.push('Q1: state_convergence still asserts current authority — mark it HISTORICAL (per-round truth lives in the log)')
+
+  // GROUP C — ready/blocked are ID REFERENCES into the backlog, not free text and not phantoms.
+  const backlogText = backlogPath ? readFile(backlogPath) : null
+  const knownIds = new Set()
+  if (backlogText !== null) for (const m of String(backlogText).matchAll(/\bB[LR]-\d+\b/g)) knownIds.add(m[0])
+  for (const [what, m] of [['ready', /^ready:\s*\[([^\]]*)\]/m.exec(g)], ['blocked', /^blocked:\s*\[([^\]]*)\]/m.exec(g)]]) {
+    if (!m) continue
+    for (const item of m[1].split(',').map((s) => s.trim()).filter(Boolean)) {
+      if (!/^B[LR]-\d+$/.test(item)) { findings.push(`Q1: ${what} item "${item}" is not a backlog ID (B[LR]-NN) — retired phase blockers must not survive as current instructions`); continue }
+      if (backlogText === null) { findings.push(`Q1: ${what} references ${item} but the backlog is unreadable; membership cannot be graded`); continue }
+      if (!knownIds.has(item)) findings.push(`Q1: ${what} references ${item}, which does not exist in the backlog — a phantom ID is an instruction to nothing`)
+    }
+  }
+
+  // Q5 — matrix row contract. GROUP D: cited in-repo evidence must EXIST; tested SHAs are
+  // what-was-tested, not where-the-proof-lives, so they never satisfy the evidence channel.
+  const ENUM = ['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL', 'PROBE-GATED', 'WIRED', 'WIRED-NOT-ACCEPTED', 'BOUNDED-DEFER', 'DEFERRED', 'UNSUPPORTED', 'NOT_IMPLEMENTED', 'NOT_WIRED', 'NOT_IMPLEMENTED/NOT_WIRED', 'NOT_VERIFIED', 'BLOCKED-FOR-RELEASE', 'NEEDS_REVALIDATION']
+  const CLAIM = new Set(['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL', 'BLOCKED-FOR-RELEASE'])
+  // tested-SHA duty is owed by POSITIVE verification claims (a row asserting it was verified,
+  // or any row asserting V@B=yes). A BLOCKED-FOR-RELEASE row DISCLOSES a blocker: its proof
+  // channel is the evidence path / external disclosure — which every claim level owes. This
+  // scoping is semantics, not a dodge: counterexample ④ (path must EXIST) applies everywhere.
+  const POSITIVE_CLAIM = new Set(['DONE', 'LIVE-CONFIRMED', 'ENFORCE-PARTIAL'])
+  const matrixText = matrixPath ? readFile(matrixPath) : null
+  const claimedRows = []
+  const mainIds = new Set()
+  let rowCount = 0
+  if (matrixText === null) findings.push('Q5: matrix file unreadable; row contract cannot be graded')
+  else {
+    // Region law (phase review, appendix round 2 — PRODUCTION FALLBACK BANNED): the 9-cell
+    // main-matrix law binds ONLY the region between boundary markers, and those markers are
+    // MANDATORY — each of the four appears EXACTLY ONCE, begin before end. Deleting or
+    // duplicating a marker does not skip the checks, it grades red. There is no whole-file
+    // fallback path: fixtures carry the very same anchors as the production document (one
+    // contract, no second door). Regions are found by anchors, IDs by content, counts by
+    // neither being hardcoded.
+    const MAIN_B = '<!-- q5:main-begin -->'
+    const MAIN_E = '<!-- q5:main-end -->'
+    const AP_B = '<!-- q5:appendix-begin -->'
+    const AP_E = '<!-- q5:appendix-end -->'
+    const mdoc = String(matrixText)
+    const regionsOk = [MAIN_B, MAIN_E, AP_B, AP_E].every((mk) => {
+      const n = mdoc.split(mk).length - 1
+      if (n !== 1) findings.push(`Q5: boundary marker ${mk} must appear exactly once (found ${n}); region checks are mandatory — deleting markers does not skip them`)
+      return n === 1
+    })
+    const mb = mdoc.indexOf(MAIN_B)
+    const me = mdoc.indexOf(MAIN_E)
+    const ab = mdoc.indexOf(AP_B)
+    const ae = mdoc.indexOf(AP_E)
+    let anchorsOrdered = regionsOk
+    if (regionsOk && mb > me) { findings.push('Q5: main-matrix markers out of order (begin after end)'); anchorsOrdered = false }
+    if (regionsOk && ab > ae) { findings.push('Q5: appendix markers out of order (begin after end)'); anchorsOrdered = false }
+    const mainText = anchorsOrdered ? mdoc.slice(mb + MAIN_B.length, me) : ''
+    if (anchorsOrdered) for (const line of mainText.split('\n')) {
+      if (!line.startsWith('| ') || line.startsWith('|---') || line.includes('①行ID')) continue
+      const cells = line.split('|').slice(1, -1).map((c) => c.trim())
+      if (cells.length !== 9) { findings.push(`Q5: matrix row "${cells[0] ?? '?'}" has ${String(cells.length)} cells, expected 9 (①-⑧ + V@B)`); continue }
+      rowCount += 1
+      const rowId = cells[0].replace(/\*/g, '')
+      // Stable IDs are the parenthesised tokens of ① ("read (M-01)", "grep (M-06 native)");
+      // whitespace inside the token is spelling noise and normalises away on BOTH sides.
+      for (const idm of rowId.matchAll(/\((M-[^)]+|NEG-\d+)\)/g)) mainIds.add(idm[1].replace(/\s+/g, ''))
+      const lvl = cells[7].replace(/\*/g, '').split(/[（(]/)[0].trim()
+      const vab = cells[8].replace(/\*/g, '').toLowerCase()
+      if (!ENUM.includes(lvl)) findings.push(`Q5: row ${rowId} acceptance level "${lvl}" is outside the closed enum`)
+      if (vab !== 'yes' && vab !== 'no') findings.push(`Q5: row ${rowId} V@B must be yes|no, got "${cells[8]}"`)
+      if (lvl === 'NEEDS_REVALIDATION' && vab === 'yes') findings.push(`Q7: row ${rowId} sets NEEDS_REVALIDATION while still claiming V@B=yes — the revalidation flag says the claim expired; both cannot stand (flip V@B to no)`)
+      if (!cells[5]) { findings.push(`Q5: row ${rowId} has an empty ⑥ verification column`); continue }
+      const segM = /证据=([^；;]+)/.exec(cells[5])
+      const seg = segM ? segM[1].replace(/`/g, '').trim() : null
+      const external = seg !== null && /^(external\/untracked|external):/.test(seg)
+      const missing = []
+      let pathTokens = 0
+      if (seg !== null && !external) {
+        for (const m of seg.matchAll(/[\w][\w./-]*/g)) {
+          const tok = m[0].replace(/[）)、，,。]+$/, '')
+          if (/^[0-9a-f]{7,40}$/i.test(tok)) continue
+          if (!tok.includes('/') && !tok.includes('.')) continue
+          pathTokens += 1
+          const bare = tok.replace(/\/+$/, '')
+          if (!(fileExists(bare) || fileExists('dev/agent-workflow/' + bare))) missing.push(tok)
+        }
+      }
+      if (missing.length > 0) findings.push(`Q5: row ${rowId} cites evidence path(s) ${missing.join(', ')} that do not resolve in-repo (existence is checked; tested SHAs and prose are not paths)`)
+      const evidencedPath = pathTokens > 0 && missing.length === 0
+      if (CLAIM.has(lvl) || vab === 'yes') {
+        if ((POSITIVE_CLAIM.has(lvl) || vab === 'yes') && !/[0-9a-f]{7,40}\b/.test(cells[5])) findings.push(`Q5: row ${rowId} claims verification (${lvl}${vab === 'yes' ? ', V@B=yes' : ''}) but ⑥ carries no tested SHA`)
+        if (!(external || evidencedPath)) findings.push(`Q5: row ${rowId} claims verification (${lvl}${vab === 'yes' ? ', V@B=yes' : ''}) without an existing evidence path or an explicit external:/external/untracked: disclosure (a bare tested SHA is not evidence)`)
+      }
+      if (vab === 'yes') claimedRows.push(rowId)
+    }
+    if (anchorsOrdered && rowCount === 0) findings.push('Q5: matrix holds no data rows; an empty matrix is not a filled one')
+
+    // Appendix minimal contract (phase review, round 2 hardened): region NON-EMPTY; names unique (per name+side-tag,
+    // same-name-different-implementation entries stay legal), non-empty, and EVERY cited
+    // main-matrix stable ID must exist — a dangling mapping is a fiction. Scope statement,
+    // as ruled: shared-field citation guarantees each name's status attribution; the static
+    // catalog's integrity is audited against the fixed pin (this contract); dynamic instance
+    // enumeration is NOT attempted here and its gap sentence stays in the document — Q5a
+    // does not, and must not, claim the live Host's full tool set.
+    if (anchorsOrdered) {
+      const apText = mdoc.slice(ab + AP_B.length, ae)
+      const seen = new Set()
+      let apEntries = 0
+      for (const line of apText.split('\n')) {
+        const m = /^- \*\*([^*]*)\*\*(.*)$/.exec(line)
+        if (!m) continue
+        apEntries += 1
+        const name = m[1].trim()
+        if (!name) { findings.push('Q5a: appendix entry carries an empty static tool name'); continue }
+        const tagM = /\[([^\]]*)\]/.exec(m[2])
+        const key = name + '\u0000' + (tagM ? tagM[1].trim() : '')
+        if (seen.has(key)) findings.push(`Q5a: appendix entry ${name} is duplicated under the same side-tag`)
+        seen.add(key)
+        const refs = [...m[2].matchAll(/\((M-[^)]+|NEG-\d+)\)/g)]
+        for (const ref of refs) {
+          const refId = ref[1].replace(/\s+/g, '')
+          if (!mainIds.has(refId)) findings.push(`Q5a: appendix entry ${name} cites ${refId} — no main-matrix row carries that stable ID (dangling mapping)`)
+        }
+        // Round-2 hardening: a mapping is never optional. An entry either cites at least one
+        // main-matrix stable ID (all citations must resolve) or registers its gap explicitly
+        // (UNKNOWN / 主表无行). Silence is red — this closes the un-mapped-entry false green.
+        if (refs.length === 0 && !/UNKNOWN|主表无行/.test(line)) findings.push(`Q5a: appendix entry ${name} declares no mapping — cite a main-matrix stable ID or register the gap explicitly (UNKNOWN / 主表无行)`)
+      }
+      if (apEntries === 0) findings.push('Q5a: appendix region is empty — a document with an appendix boundary must register at least one static name')
+    }
+  }
+  info.matrix_rows = rowCount
+  info.claimed_rows = claimedRows.length
+
+  // Q6 / GROUP B — identity compared by VALUE in every carrier, and the active plan BODY is
+  // read: the first Alpha digit on a current-phase line must agree with phase_id, because a
+  // document that merely CONTAINS the ref line passed while declaring itself Alpha.4.
+  const REF_CANON = 'dev/agent-workflow/graph.yaml#current_contract'
+  const pm = /^alpha(\d+)/i.exec(phaseId ?? '')
+  for (const [name, path] of [['AGENTS.md', 'AGENTS.md'], ['active_plan', activePlan], ['backlog', backlogPath], ['matrix', matrixPath]]) {
+    const text = path ? readFile(path) : null
+    if (text === null) { findings.push(`Q6: ${name} unreadable; reference discipline cannot be graded`); continue }
+    const rv = /phase-baseline-ref:\s*([^\s>）;]+)/.exec(text)
+    if (!rv) findings.push(`Q6: ${name} lacks the phase-baseline-ref reference line`)
+    else if (rv[1] !== REF_CANON) findings.push(`Q6: ${name} phase-baseline-ref targets ${rv[1]}, not ${REF_CANON} — the sole current authority is the contract block`)
+    const ident = /phase-identity:\s*([^\s>）;]+)/.exec(text)
+    if (phaseId) {
+      if (!ident) findings.push(`Q6: ${name} lacks the phase-identity value line (compared by value against phase_id)`)
+      else if (ident[1] !== phaseId) findings.push(`Q6: ${name} declares phase-identity ${ident[1]} while the contract says ${phaseId}`)
+    }
+    if (/^[^\n]*\bbaseline:\s*[0-9a-f]{40}/mi.test(text)) findings.push(`Q6: ${name} re-declares a baseline authority field with a 40-hex copy — reference current_contract instead (tested SHAs are unaffected)`)
+    if (pm) for (const line of String(text).split('\n')) {
+      if (!line.includes('当前阶段')) continue
+      const dm = /Alpha\.?(\d+)/i.exec(line)
+      if (dm && dm[1] !== pm[1]) { findings.push(`Q6: ${name} body declares 当前阶段 Alpha.${dm[1]} while phase_id says alpha${pm[1]} — active identity mismatch (a historical pointer dressed as current)`); break }
+    }
+  }
+
+  // Q7 — conservative source drift. Unknown is FAIL; drifted product surface voids current claims.
+  if (baseline && /^[0-9a-f]{40}$/.test(baseline) && revExists(baseline)) {
+    const drift = driftProvider(baseline)
+    if (drift === null) findings.push('Q7: the baseline..HEAD product-drift comparison failed to run; FAIL — an unknown drift set is never treated as empty')
+    else {
+      info.drift_paths = drift.length
+      if (drift.length > 0 && claimedRows.length > 0) {
+        findings.push(`Q7: product surface moved since baseline (${String(drift.length)} path(s)) while rows still claim current verification: ${claimedRows.join(', ')} — mark NEEDS_REVALIDATION (which then REQUIRES V@B=no) or re-verify against HEAD`)
+      }
+    }
+  }
+
+  return { findings, info }
+}
+
 export function findContinuationComments(script) {
   const lines = String(script).split('\n')
   const bad = []
@@ -881,14 +1152,39 @@ const LEGS = {
       return { verdict: 'refused', refuseReason: 'git-unavailable', detail: 'REFUSED: state freshness is graded against git and git did not run' }
     }
     const isAncestor = (sha) => runCommand('git', ['merge-base', '--is-ancestor', sha, 'HEAD'], { cwd: REPO_ROOT }).code === 0
-    const { findings, info } = checkStatePointers({ graphText: readFileSync(gp, 'utf8'), logText: readFileSync(lp, 'utf8'), isAncestor })
+    const graphText = readFileSync(gp, 'utf8')
+    const { findings, info } = checkStatePointers({ graphText, logText: readFileSync(lp, 'utf8'), isAncestor })
     if (findings.length > 0) return { verdict: 'fail', detail: findings.join(' ; ') }
     const lagM = runCommand('git', ['rev-list', '--count', `${String(info.declared_sha)}..HEAD`], { cwd: REPO_ROOT })
     const lag = lagM.code === 0 ? `lag ${lagM.stdout.trim()} commits` : 'lag unknown'
+    // Folded-in current-contract grading (2026-10-22 docs realignment, root ruling: extend this
+    // leg, do not add one). The legacy check above keeps its Alpha.4 s7-round job; the
+    // production path additionally REQUIRES the top-level current_contract block (Q8: no
+    // fallback — a graph that satisfies only the legacy shape is not current) and grades Q1-Q7
+    // against it. Drift paths = product surface: packages, scripts, tests/paths.mjs,
+    // package.json, pnpm-lock.yaml; a failed comparison is a fail, never an empty diff.
+    const cc = checkCurrentContract({
+      graphText,
+      readFile: (rel) => { try { return readFileSync(resolve(REPO_ROOT, rel), 'utf8') } catch { return null } },
+      fileExists: (rel) => existsSync(resolve(REPO_ROOT, rel)),
+      revExists: (sha) => runCommand('git', ['cat-file', '-e', `${sha}^{commit}`], { cwd: REPO_ROOT }).code === 0,
+      baselineCurrent: (sha) => sha === head.stdout.trim() || isAncestor(sha),
+      driftProvider: (sha) => {
+        // DELIBERATELY CONSERVATIVE path set (disclosed, not refined away, per root ruling
+        // 2026-10-22): ALL of packages + scripts — including this CI file and its own fixtures
+        // — plus tests/paths.mjs, package.json, the lockfile. A too-wide set over-flags drift
+        // (annoyance); a too-narrow one voids claims silently (the failure mode). Rename/add/
+        // delete all surface via --name-only.
+        const r = runCommand('git', ['diff', '--name-only', sha, 'HEAD', '--', 'packages', 'scripts', 'tests/paths.mjs', 'package.json', 'pnpm-lock.yaml'], { cwd: REPO_ROOT })
+        return r.code === 0 ? r.stdout.split('\n').map((s) => s.trim()).filter(Boolean) : null
+      },
+    })
+    if (cc.findings.length > 0) return { verdict: 'fail', detail: cc.findings.join(' ; ') }
     return {
       verdict: 'pass',
       detail: `pointer agrees both ways (round ${String(info.declared_round)} = newest record = last log heading), records contiguous, ` +
-        `${String(info.declared_sha)} reachable (${lag}); code truth stays in git, orchestration state here, recovery read starts in the log`,
+        `${String(info.declared_sha)} reachable (${lag}); current contract ok (phase_id ${String(cc.info.contract.phase_id)}, ` +
+        `baseline ${String(cc.info.contract.baseline).slice(0, 12)}…, matrix rows ${String(cc.info.matrix_rows)} claimed ${String(cc.info.claimed_rows)}, drift ${String(cc.info.drift_paths)} path(s))`,
     }
   },
 

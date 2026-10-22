@@ -1,4 +1,5 @@
 # 正式 Schema ADR — Blueprint `schemaVersion: 4`（vNext v4）：单点翻档、双解析窗口 {3,4}、「翻档 ≠ 退役」
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 > **状态：FORMAL（转正随 flip 候选 PR 呈审；采纳裁决 = 本 PR 的 ADR Gate 正常通道：起草者提案 + 三门客观看审）。**
 > 本文件是 [S0+PR0–PR8 计划 §11:171](./alpha5-s0-pr0-pr8-implementation-plan.md) 点名 PR8 记录的「正式 Schema ADR」
