@@ -795,7 +795,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return v?.kind === 'allow' ? 'allow' : (v?.kind === 'deny' ? 'deny' : 'ask')
   }
 
+  // PR358-B: the mount's LIVE PA plans (callId → the plan this call walked:
+  // approvalCaseId / effect-set fingerprint / per-effect required rungs /
+  // the requested effect set). Entries exist only while the call is in this
+  // plane and are removed at settle; the map is bounded. This is the
+  // `planSnapshot` + `effects` source for the call-level facts adapter —
+  // the SAME canonical identity the approval walked, never a re-parse.
+  const livePaPlan = new Map()
   const paAdmit = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName = requestedEffects.effects.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown', signal }) => {
+    try {
+      return await paAdmitBody({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal })
+    } finally {
+      // the plan fact ends with the call (the settled row's re-verification
+      // is answered by its TERMINAL Control state, not by facts carried on)
+      livePaPlan.delete(String(callId))
+    }
+  }
+  const paAdmitBody = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
     const request = Object.freeze({
       binding: paBindingFor(toolName),
       member: paMember,
@@ -835,6 +851,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       if (planned.ok !== true) {
         return { kind: 'deny', code: 'APPROVAL_PLAN_REFUSED', detail: String(planned.error?.message ?? '') }
       }
+      livePaPlan.set(String(callId), Object.freeze({
+        approvalCaseId: String(planned.value.approvalCaseId),
+        effectSetFingerprint: String(planned.value.effectSetFingerprint),
+        perEffectRequired: planned.value.perEffectRequired,
+        requestedEffects,
+      }))
+      if (livePaPlan.size > 2000) livePaPlan.delete(livePaPlan.keys().next().value)
       if (controlLeg === null) {
         observe(`pa-ask pending-refused call=${callId} paCaseId=${planned.value.approvalCaseId} — logical case id is not a durable Control request; no control leg is mounted`)
         return { kind: 'deny', code: 'APPROVAL_REQUEST_UNAVAILABLE', detail: `PA logical case ${planned.value.approvalCaseId} needs a durable Control request; none is mounted (pending never runs)` }
@@ -1256,10 +1279,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
+      livePaPlan,
       /** The production admission assembly (planApproval/issueApprovedGrant
        *  are the AUTH-owned durable-Control landing edges; the plane mounts
        *  NO fake approvals — controlLeg is injected, never invented here). */
       governance: assembly,
+      /** PR358-B: the SAME assembly under its real name (the call-level
+       *  facts adapter reads policyDocument()/denySources() from it). */
+      assembly,
       /** GLUE-7: the plane's realm (the feed's pairing key) and the real
        *  backend handles (diagnostics: execCount / lastRuns / lastOutcomes). */
       realmId,

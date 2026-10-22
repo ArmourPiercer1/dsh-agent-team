@@ -740,7 +740,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2902,6 +2902,16 @@ export function createAgentBindings(deps) {
           readers: {
             permissionPlane: () => permissionPlaneRef?.current,
             policySnapshot: () => permissionPolicy,
+            // PR358-B: the durable overlay latest (the decision lane's own
+            // authority source) + the ONE facts object's ceiling readers.
+            overlaySnapshot: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === null ? null : latest
+            },
+            teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.teamHardEnvelope?.(teamSessionId, memberInstanceId),
+            permissionEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.permissionEnvelope?.(teamSessionId, memberInstanceId),
           },
         })
         if (published.ok !== true) {

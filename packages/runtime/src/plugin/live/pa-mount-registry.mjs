@@ -1,23 +1,27 @@
 /**
  * PR358-B (CENTER half): the narrow (teamRoot, instanceId) → CURRENT mount
- * index the root uses to build the ONE paEffectsVerifier injection. It is
- * deliberately NOT an authority ledger: entries exist only while a mount is
- * published, carry only the trusted references the fact readers need, and
- * every read re-answers them fresh (no cached facts, no long-lived tuple).
+ * index plus the call-level facts adapter the ONE injected PA verifier
+ * awaits per gate. Deliberately NOT an authority ledger: entries exist only
+ * while a mount is published, carry only the trusted references the fact
+ * readers need, and every read re-answers them fresh (no cached facts, no
+ * long-lived tuple).
  *
- * Facts law (root ruling B):
- *  - binding identity is the dispatcher's CURRENT entry (`dispatcher.surface
- *    .entryOf(toolName)`): verified + ACTIVE, real revision, real
- *    definitionIdentity/realm — a synthetic `plane-row` binding is NEVER an
- *    authority (the plane's own manifest-snapshot binding is a fact to
- *    CONTRAST against, never the source);
- *  - policy/blueprint facts come from the injected permission-plane face
- *    (`currentCallFacts`) — the same tuple source the permission lane reads
- *    (static layers + overlay generation); never JSON.stringify(PolicyReader);
- *  - beneficiary is the mount's DURABLE attribution (leader = the root is
- *    its own session; member = a durable member row existed at setup),
- *    never the manifest's self-report;
- *  - ANY missing/contradicting reader ⇒ undefined ⇒ the service answers
+ * Facts law (root ruling B; contract = control/types.ts PaCallFacts):
+ *  - binding is the dispatcher's CURRENT entry (`dispatcher.surface
+ *    .entryOf(toolName)`): verified + ACTIVE, real ToolBinding (revision,
+ *    definitionIdentity, realm) — a synthetic `plane-row` binding is NEVER
+ *    an authority; the manifest's snapshot is CONTRASTED against it, never
+ *    believed;
+ *  - policy/blueprint/ceiling facts come from the ONE authority the
+ *    permission plane already reads (currentBinding tuple, durable overlay
+ *    generation via overlay.latest, the envelope readers) — references
+ *    only, never a stringify of any policy reader;
+ *  - effects/planSnapshot come from the mount's LIVE PA plan for this call
+ *    (the same canonical identity the plan walked); no live plan = this
+ *    mount is not answering this call = undefined;
+ *  - beneficiary is the mount's DURABLE attribution; the manifest's
+ *    self-report must match or the facts are refused;
+ *  - ANY missing, unhealthy, or contradicting source ⇒ undefined ⇒
  *    `authority-undetermined`. There is no 0/1/empty-envelope fallback.
  */
 
@@ -45,113 +49,168 @@ export function resolvePaMount(teamRoot, instanceId) {
   return mounts.get(String(teamRoot))?.get(String(instanceId))
 }
 
-function tupleOf(permissionPlane, teamRoot, instanceId) {
-  const plane = typeof permissionPlane === 'function' ? permissionPlane() : permissionPlane
-  const face = plane?.currentCallFacts
-  if (typeof face !== 'function') return undefined
-  try {
-    const t = face(String(teamRoot), String(instanceId))
-    return t === null || typeof t !== 'object' ? undefined : t
-  } catch {
-    return undefined
-  }
+function toSlot(value) {
+  // The closed ceiling-slot vocabulary: a real document, a stated
+  // `absent`, or a stated `declared` wrapper. Anything else (including the
+  // lane's `unavailable` abstention) is NOT a slot — the caller fails the
+  // whole facts answer closed.
+  if (value === null || typeof value !== 'object') return undefined
+  if (value.status === 'absent') return { status: 'absent' }
+  if (value.status === 'unavailable') return undefined
+  if (value.status === 'declared' && value.document !== null && typeof value.document === 'object') return value
+  if (Array.isArray(value.rules) || typeof value.version === 'number' || typeof value.scope === 'string') return value
+  return undefined
+}
+
+async function readCeiling(readers, teamSessionId, instanceId) {
+  // The two ceiling slots, read through the ONE facts object's readers.
+  // An abstained/unavailable read (the lane's own UNKNOWN marker) is NOT a
+  // slot value — the whole facts answer becomes undefined (fail closed).
+  const [hard, expansion] = await Promise.all([
+    readers?.teamHardEnvelope?.(teamSessionId, instanceId),
+    readers?.permissionEnvelope?.(teamSessionId, instanceId),
+  ])
+  if (hard === undefined || expansion === undefined) return undefined
+  const teamHardEnvelope = toSlot(hard)
+  const permissionMutationEnvelope = toSlot(expansion)
+  if (teamHardEnvelope === undefined || permissionMutationEnvelope === undefined) return undefined
+  return { teamHardEnvelope, permissionMutationEnvelope }
 }
 
 /**
- * The call-level facts reader the (async) service orchestration awaits
- * BEFORE the pure core runs. `mount.readers` is wired by agentSetup/root
- * from the REAL seams: { permissionPlane (live ref), policySnapshot }.
+ * The call-level facts reader (contract: control/types.ts `PaCallFacts`).
+ * `mount.readers` is wired by agentSetup from the REAL seams:
+ * { permissionPlane (live ref), overlaySnapshot (async durable latest),
+ *   teamHardEnvelope, permissionEnvelope, providerVersion }.
  */
 export async function readPaCallFacts({ rootSessionId, requestId, manifest, decider, stage, mount }) {
   void stage
+  void decider // the REAL decider rides PaEffectsVerifierInput, never the facts
   if (!rootSessionId || !requestId || manifest === undefined) return undefined
   const m = mount ?? resolvePaMount(rootSessionId, manifest?.request?.instanceId ?? '')
   if (m === undefined) return undefined
-  const guard = m.guard
-  const dispatcher = guard?.dispatcher
-  const entry = dispatcher?.surface?.entryOf?.(manifest?.request?.toolName ?? manifest?.binding?.toolName ?? '')
+  const dispatcher = m.guard?.dispatcher
+  const toolName = manifest?.request?.toolName ?? manifest?.binding?.toolName ?? ''
+  const entry = dispatcher?.surface?.entryOf?.(toolName)
   // binding authority: the CURRENT dispatcher entry — verified, ACTIVE.
-  const entryBinding = entry?.binding ?? {}
+  const entryBinding = entry?.binding
   if (entry === undefined || entry.verified !== true) return undefined
-  if (entryBinding.status !== 'ACTIVE') return undefined
+  if (entryBinding?.status !== 'ACTIVE') return undefined
   if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) return undefined
   if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) return undefined
-  // the binding's realm must BE the manifest's realm (one governed lane);
-  // a realm mismatch is not this call's authority.
+  // one governed lane: the binding's realm must BE the manifest's realm.
   if (m.plane?.realmId === undefined || m.plane.realmId !== manifest?.realmId) return undefined
   // beneficiary: the mount's DURABLE attribution, never the manifest's.
   const beneficiary = m.beneficiaryAuthority
   if (beneficiary !== 'leader' && beneficiary !== 'member') return undefined
-  if (beneficiary !== manifest?.beneficiaryAuthority) {
-    // The manifest claims a rung the durable attribution does not carry:
-    // this is drift, not a question to answer — the caller denies.
+  if (beneficiary !== manifest?.beneficiaryAuthority) return undefined
+  // durable member attribution of the mount vs the manifest's member.
+  const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
+  const manifestMember = manifest?.member
+  if (manifestMember !== undefined) {
+    if (String(manifestMember.teamSessionId ?? '') !== member.teamSessionId) return undefined
+    if (String(manifestMember.instanceId ?? '') !== member.instanceId) return undefined
+  }
+  // tuple + blueprint facts: the permission lane's OWN currentBinding
+  // source, read fresh; unhealthy lane ⇒ undefined (never a stale answer).
+  const plane = typeof m.readers?.permissionPlane === 'function' ? m.readers.permissionPlane() : m.readers?.permissionPlane
+  const callFacts = plane?.currentCallFacts?.(member.teamSessionId, member.instanceId)
+  if (callFacts === undefined || callFacts.healthy !== true) return undefined
+  const tuple = callFacts.tuple
+  if (
+    tuple === undefined || typeof tuple !== 'object'
+    || typeof tuple.blueprintId !== 'string' || tuple.blueprintId.length === 0
+    || typeof tuple.contentHash !== 'string' || tuple.contentHash.length === 0
+    || typeof tuple.revision !== 'number'
+    || typeof tuple.templateId !== 'string' || tuple.templateId.length === 0
+    || typeof tuple.cwd !== 'string' || tuple.cwd.length === 0
+  ) return undefined
+  const providerVersion = callFacts.providerVersion
+  if (typeof providerVersion !== 'string' || providerVersion.length === 0) return undefined
+  // durable overlay generation (the decision lane's OWN `latest` source:
+  // the highest generation IS the authority; no row = generation 0 as the
+  // REAL durable state, a throwing read = undefined, never a fallback).
+  let overlayGeneration
+  try {
+    const snapshot = await m.readers?.overlaySnapshot?.(member.teamSessionId, member.instanceId)
+    if (snapshot === null) return undefined
+    overlayGeneration = snapshot === undefined ? 0 : Number(snapshot?.metadata?.generation)
+  } catch {
     return undefined
   }
-  const policyGeneration = dispatcher?.policyGeneration?.()
-  const authorityGeneration = dispatcher?.authorityGeneration?.()
-  if (typeof policyGeneration !== 'number' || typeof authorityGeneration !== 'number') return undefined
-  // policy/blueprint facts: the permission lane's OWN tuple source (static
-  // layers + overlay generation), read fresh and returned by reference.
-  const tuple = tupleOf(m.readers?.permissionPlane, rootSessionId, m.instanceId)
-  if (tuple === undefined) return undefined
-  // contrast the plane's binding snapshot against the CURRENT entry: a
-  // drift between the two is a fact the pure core must weigh, and it is
-  // carried HERE (the reader's answer), never self-proved by the manifest.
+  if (!Number.isFinite(overlayGeneration) || overlayGeneration < 0) return undefined
+  // ceiling pair: the TWO current realm-scoped documents through the ONE
+  // facts readers; any abstention ⇒ undefined.
+  const ceiling = await readCeiling(m.readers, member.teamSessionId, member.instanceId)
+  if (ceiling === undefined) return undefined
+  // the CURRENT expansion-plane policy document + deny projection: the
+  // mount's OWN production assembly derived them from the REAL template
+  // policy (the same sources the admission gates walk).
+  const assembly = m.plane?.assembly
+  if (typeof assembly?.policyDocument !== 'function' || typeof assembly?.denySources !== 'function') return undefined
+  let policyDocument
+  let denySources
+  try {
+    policyDocument = assembly.policyDocument()
+    denySources = assembly.denySources()
+  } catch {
+    return undefined
+  }
+  if (policyDocument === null || typeof policyDocument !== 'object') return undefined
+  if (!Array.isArray(denySources)) return undefined // EMPTY means empty; a broken reader is undefined
+  // effects + plan snapshot: the mount's LIVE PA plan for this call.
+  const livePlan = m.plane?.livePaPlan?.get?.(String(manifest?.request?.callId ?? ''))
+  if (livePlan === undefined) return undefined
+  const effects = livePlan.requestedEffects
+  if (effects === null || typeof effects !== 'object' || !Array.isArray(effects.effects)) return undefined
+  if (typeof livePlan.effectSetFingerprint !== 'string' || livePlan.effectSetFingerprint.length === 0) return undefined
+  if (!Array.isArray(livePlan.perEffectRequired) || livePlan.perEffectRequired.length !== effects.effects.length) return undefined
+  // the CURRENT authority generation is the assembly's OWN trusted reader
+  // (the same counter the grants bind to) — never synthesized here.
+  let authorityGeneration
+  try {
+    authorityGeneration = assembly.authorityGeneration()
+  } catch {
+    return undefined
+  }
+  if (typeof assembly.authorityGeneration !== 'function' || typeof authorityGeneration !== 'number' || !Number.isFinite(authorityGeneration)) return undefined
+  // contrast the durable manifest's binding snapshot against the CURRENT
+  // entry — drift is a FACT carried to the pure core, never self-proof.
   const snapshot = manifest?.binding
-  const bindingDrift = snapshot !== undefined && (
+  const bindingSnapshotDrift = snapshot !== undefined && (
     snapshot.definitionIdentity !== entryBinding.definitionIdentity
-    || snapshot.revision !== entry.revision
+    || snapshot.revision !== entryBinding.revision
     || snapshot.providerId !== entryBinding.providerId
   )
-  const plane = m.plane
-  const providerEntry = plane?.backends?.[manifest?.request?.toolName === 'read' ? 'read' : manifest?.request?.toolName === 'team_bash' ? 'shell' : manifest?.request?.toolName === 'team_grep' ? 'search' : 'glob']
   return {
-    identity: { rootSessionId: String(rootSessionId), requestId: String(requestId), callId: String(manifest?.request?.callId ?? '') },
-    binding: {
-      bindingId: entryBinding.bindingId,
-      definitionIdentity: entryBinding.definitionIdentity,
-      providerId: entryBinding.providerId,
-      revision: entry.revision,
-      realmId: m.plane.realmId,
-      status: entryBinding.status,
+    policySource: {
+      staticLayerRefs: Object.freeze([
+        `blueprint:${String(tuple.blueprintId)}@${String(tuple.revision)}#${String(tuple.contentHash)}`,
+        `template:${String(tuple.templateId)}`,
+      ]),
+      overlayGeneration,
     },
-    bindingSnapshotDrift: bindingDrift === true,
-    policy: {
-      policyGeneration,
-      authorityGeneration,
-      tuple,
-      livePolicy: typeof m.readers?.policySnapshot === 'function' ? m.readers.policySnapshot() : undefined,
-    },
+    realmId: m.plane.realmId,
+    ceiling,
+    policyDocument,
+    denySources,
+    effects,
+    member,
     beneficiaryAuthority: beneficiary,
-    // provider association: current definition → THIS mount's backend →
-    // plan; the providerId namespace stays the definition owner's (B5).
-    provider: {
-      providerId: entryBinding.providerId,
-      backendId: providerEntry?.backendId ?? providerEntry?.kind ?? 'unknown',
+    binding: entryBinding,
+    blueprint: {
+      revision: tuple.revision,
+      contentHash: tuple.contentHash,
+      templateId: tuple.templateId,
+      cwd: tuple.cwd,
+      providerVersion,
     },
-    decider: decider === undefined ? undefined : decider,
-  }
-}
-
-/** The service-injection dispatcher: ONE port object the root injects into
- *  createControlService; it resolves the live mount per call. Construction
- *  of the pure verifier is the AUTH export's job (createPaEffectsVerifier);
- *  `verify` is injected by the root once AUTH's async orchestration lands —
- *  until then the port fail-closes with undefined facts (undetermined). */
-export function createPaEffectsVerifierDispatcher({ verify }) {
-  return async (input) => {
-    const mount = resolvePaMount(input?.rootSessionId, input?.manifest?.request?.instanceId ?? '')
-    if (typeof verify !== 'function') {
-      return { ok: false, reason: 'authority-undetermined', detail: 'no pure verifier wired at the root injection point' }
-    }
-    const facts = await readPaCallFacts({ ...input, mount })
-    if (facts === undefined) {
-      return { ok: false, reason: 'authority-undetermined', detail: 'current call facts unanswerable (no live mount / entry / tuple / beneficiary)' }
-    }
-    try {
-      return await verify({ ...input, facts, mount })
-    } catch {
-      return { ok: false, reason: 'authority-undetermined', detail: 'the pure verifier threw; fail closed' }
-    }
+    planSnapshot: {
+      approvalCaseId: String(livePlan.approvalCaseId ?? ''),
+      effectSetFingerprint: livePlan.effectSetFingerprint,
+      perEffectRequired: livePlan.perEffectRequired,
+    },
+    authorityGeneration,
+    bindingSnapshotDrift,
   }
 }

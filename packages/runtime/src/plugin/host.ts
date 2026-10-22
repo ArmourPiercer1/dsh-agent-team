@@ -437,6 +437,10 @@ interface GlueModule {
      * canonical static lanes); when absent, the static pipeline is unchanged.
      */
     readonly permissionPlaneRef?: { current: unknown }
+    /** PR358-B: durable overlay latest + the ONE facts object, for the PA
+     *  call-level facts adapter (additive optional, untyped mjs glue). */
+    readonly permissionOverlay?: unknown
+    readonly permissionAuthorityFacts?: unknown
     /**
      * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
      * the narrow per-Team bound-blueprint resolver —
@@ -2290,6 +2294,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // from it per agent). Additive optional dep: never in the hard inject
     // array.
     permissionPlaneRef,
+    // PR358-B: the durable overlay port (the SAME one the plane/decision
+    // lanes read) for the PA call-level facts adapter's overlay generation,
+    // + the ONE facts object for its ceiling readers (untyped mjs glue).
+    permissionOverlay,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    permissionAuthorityFacts: permissionFacts as any,
     // C1 (restart-recovery, guide §4.3): the Team session-activation fence
     // — the production host MUST pass it (the glue wraps every Team
     // create/resume in runOwned and performs the bounded writer-conflict

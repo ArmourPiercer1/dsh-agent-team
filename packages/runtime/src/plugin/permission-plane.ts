@@ -407,7 +407,7 @@ export interface PermissionAuthorityFacts {
    * authority, never a second one.
    */
   readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) =>
-    | { readonly tuple: BindingTuple; readonly blueprintId: string; readonly healthy: boolean }
+    | { readonly tuple: BindingTuple; readonly blueprintId: string; readonly providerVersion: string; readonly healthy: boolean }
     | undefined
   /** The async warm boundary (host: after `builtRoot.boot()`, before
    *  readiness). Best-effort: builds the boot warm targets; a fault marks the
@@ -881,6 +881,7 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       return Object.freeze({
         tuple: now.tuple,
         blueprintId: String(now.blueprint.blueprintId),
+        providerVersion: providerVersionOf(),
         healthy: healthyFlag,
       })
     },

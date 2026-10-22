@@ -220,11 +220,9 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
-// PR358-B: the ONE PA all-Effects verification port (center registry).
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore -- untyped center module (mjs, no declaration): the port's
-// shape is asserted at the service boundary (ControlServiceOptions).
-import { createPaEffectsVerifierDispatcher } from './live/pa-mount-registry.mjs'
+// @ts-ignore -- untyped center module (mjs, no declaration)
+import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs'
+import { createPaEffectsVerifier } from '../../operation-permission/pa-control-bridge.js'
 import type { ControlService } from '../../control/index.js'
 import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js'
 import { createMessagingCoordinator } from '../../messaging/index.js'
@@ -2338,15 +2336,13 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const paVerifierRef: { current: undefined | ((input: Readonly<Record<string, unknown>>) => Promise<{ readonly ok: boolean; readonly reason?: string; readonly detail?: string }>) } = {
     current: undefined,
   }
-  const paEffectsVerifierPort = createPaEffectsVerifierDispatcher({
-    verify: async (input: Readonly<Record<string, unknown>>) => {
-      const verify = paVerifierRef.current
-      if (verify === undefined) {
-        return { ok: false, reason: 'authority-undetermined', detail: 'the pure PA effects verifier is not wired at the root injection point' }
-      }
-      return await verify(input as never)
-    },
-  })
+  const paEffectsVerifierPort = async (input: Readonly<Record<string, unknown>>): Promise<{ readonly ok: boolean; readonly reason?: string; readonly detail?: string }> => {
+    const verify = paVerifierRef.current
+    if (verify === undefined) {
+      return { ok: false, reason: 'authority-undetermined', detail: 'the pure PA effects verifier is not wired at the root injection point' }
+    }
+    return await verify(input as never)
+  }
   const control = createControlService({
     paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
