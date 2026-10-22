@@ -1,4 +1,5 @@
 # ADR — Alpha.5 Preset-Scoped Tool Governance and I/O Execution
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 **Status:** Accepted decisions with 2026-10-16 V2 supersession below; implementation unproven pending P0.
 **Decision date:** 2026-10-14

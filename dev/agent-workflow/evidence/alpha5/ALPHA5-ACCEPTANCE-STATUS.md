@@ -1,4 +1,5 @@
 # ALPHA.5 阶段验收清单（ALPHA5-ACCEPTANCE-STATUS）
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文件"当前态"字段与 merge 指针按记录时点已过期；有效待办唯一入口=`docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md`。历史台账正本地位、红线、裁决原文与设计约束**仍有效**；正文未改动。
 
 - 基线 = `origin/master @ d5fda5df`（ls-remote 亲验；PR#274 **未合**——`76b08372` 仅为 `alpha5-g-g-landing` tip 的行文刷新）。计划正本 = `docs/plans/memo/alpha5-tool-io-governance/alpha5-s0-pr0-pr8-implementation-plan.md`（下称 plan）+ `post-poc-technical-design.md`（下称 design）。台账正本 = `dev/agent-workflow/PENDING-GATES.md`（下称 PG）。
 - 四类口径：**DONE**（合并+计划该阶段自身证据门）/ **MERGED-NOT-WIRED (DORMANT)** / **WIRED-NOT-PRODUCTION-ACCEPTED** / **DEFERRED·UNSUPPORTED**（含原计划支持要求未满足的精确边界）。不确定 = OPEN 不猜。writer=qwen3.8-flash-next，只读+本文件新增；机检复跑（只读、零端口）：`PASS=24/FAIL=0/NOT_RUN=3/RLW=5`，与折叠轮在册原文一致（`pr8/runner/runs/fold-doc-matrix-negative-run.log`；27/0/0/5 系自带构建运行时的正式轮 worktree，`pr8/README.md:49`）。

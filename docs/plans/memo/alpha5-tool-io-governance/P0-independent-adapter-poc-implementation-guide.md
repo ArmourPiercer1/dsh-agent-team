@@ -1,4 +1,5 @@
 # Alpha.5 P0 — 独立 Team Adapter 可行性与执行保证 PoC 实施指导
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 > **状态：PLANNED / NOT EXECUTED。** 这是用于关闭 Alpha.5 选型问题的 PoC 阶段指导，**不是** Alpha.5 产品开发开工令、测试已通过的记录或已批准合并 PR 的声明。
 >

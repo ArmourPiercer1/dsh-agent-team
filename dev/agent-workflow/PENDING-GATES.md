@@ -1,4 +1,5 @@
 # PENDING-GATES.md — 项目内延期项登记（not a promise to anybody outside this repo）
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文件"当前态"字段与 merge 指针按记录时点已过期；有效待办唯一入口=`docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md`。历史台账正本地位、红线、裁决原文与设计约束**仍有效**；正文未改动。
 
 建立于 2026-10-16（PR #258 后续轮）。**为何新建本文件**：`452a04c0` 处仓库内不存在任何
 PENDING/DEFERRED 登记文件，而裁决要求在 seam-record 处给出 "PENDING-GATES D-1 链接"。为避免悬空链接，

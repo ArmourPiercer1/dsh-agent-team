@@ -7,7 +7,7 @@
 在本仓库工作的一切 agent（主 Agent、任务子代理、review 子代理、workflow 拉起的任意代理），**会话/子任务开始后的第一步**必须读取：
 
 1. `docs/ROUTER_RULES.md` — 无人值守执行协议：**先读 §0（当期计划优先裁决）**，其余条款为默认底线：blocker 类型与固定格式（含 `CORE_SEAM_BLOCKER`、禁止 patch upstream）、只追加执行日志、无人值守纪律、git 纪律（1 task=1 branch=1 worktree=1 writer、gated 历史禁止 force-push、master=alpha 线 / stable=已裁决 RC）。
-2. 当期阶段计划（现为 `docs/plans/active/alpha4-permission-governance/alpha4-implementation-plan.md`）— 当期任务分解、并行 lane 与文件所有权、审查组成与顺序、每 PR 合并门、临时语义披露；与 ROUTER_RULES 冲突处以计划为准。
+2. 当期阶段计划（现为 `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`；有效待办唯一入口 = 同目录 `ALPHA5-EFFECTIVE-BACKLOG.md`，逐工具验收 = 同目录 `TOOL-CAPABILITY-MATRIX-9b2.md`）— 当期任务分解、并行 lane 与文件所有权、审查组成与顺序、每 PR 合并门、临时语义披露；与 ROUTER_RULES 冲突处以计划为准。
 3. `docs/TEST_METHODS.md` — 测试基础设施约束：测试 DSH 源码 = `tests/deepseek-harness-test-use`（pristine upstream，基线 **0.2.0-rc.2 @ `639ed01539`**（2026-10-03 起，宿主升级轮；锚点 = fork 分支 `stable-3-0.2.0-rc.2` tip，fork 无该 tag；此前 0.1.7-rc.1 @ `46a7f68b09`（2026-09-24 … 2026-10-03）、0.1.5-rc.2 @ `fb2c4b9e69`（2026-09-17 起）；**DSH 0.1.2 不再支持**；版本/路径唯一来源 = `tests/paths.mjs`：`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH`），DSH_HOME = `tests/homes/<world>`（**必须工作区内**，workspace-write 沙箱约束；命名/清理协议见其 §7），port = `3180` 族；构建/启动链与沙箱实测见其 §2/§5；**严禁影响稳定开发实例**（:3080 及其 DSH_HOME）。
 
 读取之后才可执行任务；不得以"上下文已熟悉"为由跳过，不得违反其中禁止项。
@@ -16,7 +16,7 @@
 
 upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Architecture / UI / Development Plan / Task Decomposition，只读、语义唯一权威；2026-09-02 由 `docs/plans/active/` 移入 `docs/plans/paused/`，冻结基线地位不变）→ `docs/plans/active/` 当期执行计划 → `docs/ROUTER_RULES.md`（执行协议；其 **§0 = 当期计划优先**裁决）→ `docs/TEST_METHODS.md`（测试约束）→ `docs/migration/`（legacy inventory/reuse map，参考）→ legacy 代码（仅证据）→ 实现便利。冲突时按此序裁决，科学/设计理由需显式记录。
 
-**当前阶段（2026-10-07）**：**Alpha.4 硬治理阶段**。当期计划集 = `docs/plans/active/alpha4-permission-governance/`（`ADR-alpha4-hard-governance.md` + `alpha4-permission-governance-spec.md` + `alpha4-implementation-plan.md`，A4-PR0…A4-PR7 串行（PR0 = 耐久治理提案基座，无产品行为变更），仅 PR4∥PR5 在 PR3 接口冻结后可并行）。**该计划自带的执行协议优先于 ROUTER_RULES 的过时条款**（用户 2026-10-07 明确裁决：模型路由解绑、每 Gate 三 reviewer 与每任务 ≤3 次上限由计划的 PR 级审查循环取代；见 `docs/ROUTER_RULES.md` §0）。CORE PATCH BUDGET = 0 与红线不受该裁决影响。实现机制按 superpowers 技能族执行（`subagent-driven-development` / `executing-plans` / `dispatching-parallel-agents` / `test-driven-development` / `using-git-worktrees` / `requesting-code-review` / `receiving-code-review` / `verification-before-completion`，2026-10-07 装入全局技能根 `$DSH_HOME/skills`）。
+**当前阶段（2026-10-22）**：**Alpha.5 工具 IO 治理阶段**（实施/生产集成与验收；release BLOCKED = 全工具审批未达，见矩阵）。权威指针唯一 = `dev/agent-workflow/graph.yaml` `current_contract`（本文件不保留 SHA 副本）。以下为前一阶段 **Alpha.4 硬治理阶段（2026-10-07，历史记录）**：当期计划集 = `docs/plans/active/alpha4-permission-governance/`（`ADR-alpha4-hard-governance.md` + `alpha4-permission-governance-spec.md` + `alpha4-implementation-plan.md`，A4-PR0…A4-PR7 串行（PR0 = 耐久治理提案基座，无产品行为变更），仅 PR4∥PR5 在 PR3 接口冻结后可并行）。**该计划自带的执行协议优先于 ROUTER_RULES 的过时条款**（用户 2026-10-07 明确裁决：模型路由解绑、每 Gate 三 reviewer 与每任务 ≤3 次上限由计划的 PR 级审查循环取代；见 `docs/ROUTER_RULES.md` §0）。CORE PATCH BUDGET = 0 与红线不受该裁决影响。实现机制按 superpowers 技能族执行（`subagent-driven-development` / `executing-plans` / `dispatching-parallel-agents` / `test-driven-development` / `using-git-worktrees` / `requesting-code-review` / `receiving-code-review` / `verification-before-completion`，2026-10-07 装入全局技能根 `$DSH_HOME/skills`）。
 
 **逐轮历史指针不再写在本文件**：原先在此行逐轮堆积的 current 指针（T12 关闭 / P9 UI GO / PR #26–#35 / pre-alpha3 收口 F.1–F.6 / PR #37–#56 / test-infra #51 / **Alpha.3 权限面 PR #57–#61** / **DSH 0.2.0-rc.2 宿主升级轮 PR #62**）已停止在此维护；逐轮事实唯一来源 = `dev/agent-workflow/SESSION_ROUTER_LOG.md`（只追加）+ `dev/agent-workflow/graph.yaml`，快照见 `docs/STATUS.md`；已完成计划归档于 `docs/plans/finished/`。
 
@@ -24,7 +24,8 @@ upstream 公开契约 → `docs/plans/paused/` 四份 20260829 冻结文档（Ar
 
 | 路径 | 性质 |
 | --- | --- |
-| `docs/plans/active/` | 当期执行计划（**2026-10-07 起纳入 git 跟踪**；当前 = `alpha4-permission-governance/` 三份；用户/主 Agent 产物，禁 worker 改动；阶段完成即移入 `finished/`） |
+| `docs/plans/active/` | 当期执行计划（**2026-10-07 起纳入 git 跟踪**；当前 = `alpha5-tool-io-governance/` 三份当前态文件：current-execution-plan.md / ALPHA5-EFFECTIVE-BACKLOG.md / TOOL-CAPABILITY-MATRIX-9b2.md；用户/主 Agent 产物，禁 worker 改动；阶段完成即移入 `finished/`） |
+| `docs/plans/memo/` | 阶段设计/选型 memo 集（tracked）：现期 = `alpha5-tool-io-governance/`（S0 选型/ADR/实施计划 = 设计需求历史正本，各文件顶部 dated banner；当前态见 `active/alpha5-tool-io-governance/` 入口） |
 | `docs/plans/finished/` | 已完成/已关闭计划与指南归档（tracked，2026-10-07 起；只追加历史，不再作为当期需求来源） |
 | `docs/plans/issue-fix/` | 单点缺陷修复计划与复盘（tracked，2026-10-07 起） |
 | `docs/plans/third-party/` | 第三方外部建议文档（tracked，2026-10-07 起；非需求来源，仅参考） |

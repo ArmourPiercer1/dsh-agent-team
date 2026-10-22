@@ -1,4 +1,5 @@
 # Alpha.5 — S0 + PR0–PR8 分阶段实施计划（PoC 选型后）
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 **状态：PROPOSED / NOT STARTED，待开发阶段启动和合并门裁决。**  
 **日期：2026-10-16；依据 PR #249 当前 PoC HEAD `a2e741a02c4f0126f0aa6615c02c51877f7f3dba`；DSH Host pin `639ed015397290b3745d163aafe02ffee4aa3f84`（0.2.0-rc.2）。**  

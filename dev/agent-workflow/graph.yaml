@@ -61,7 +61,7 @@ exec_autonomy_contract_20260918:
   evidence: "dev/agent-workflow/evidence/exec-contract/（setup-install/baseline-fullsuite/typecheck/build/build-composition/fullsuite/gates 日志）+ live-smoke/exec-live-2026-09-19T11-16-48/（L1/L2/L3 live 三 case 完整 evidence：summary 15/15 + 每 case create/ledger/marker-file/tool-result + L2 resolve-response + blueprint YAML ×3 + instance 日志 + mock corpus + stable 探测）"
   red_lines: "member 契约零改动（H2 pin 字节级保真）；无隐式默认 allow；无 parse 层改动；A3 matcher 零行为改动；无 push（用户授权前禁止）；:3080/:3180 零触碰；冻结锚点未移动"
 
-current_phase: "ALPHA.4 HARD-GOVERNANCE PHASE — EXECUTION (A4-PR7 Task 7, closing lap)"
+current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — EXECUTION (docs realignment landed; per-tool matrix revalidation in flight; release BLOCKED pending whole-tool approval; authority = current_contract)"
 # state_pointers is the machine-graded recovery pointer, and it exists because the line above used
 # to carry a code revision inside prose: for four rounds and sixteen PRs `current_phase` asserted
 # `master = 606a0be7 (PR #65-#196 all merged)` while presenting itself as the recovery authority, and
@@ -81,7 +81,22 @@ state_pointers:
   master_sha: a23e5c8f
   master_sha_note: "may lag behind HEAD; must be an ancestor of it. Never a substitute for git."
   recovery_read: "SESSION_ROUTER_LOG.md newest entry, then this block, then the NEWEST alpha4_governance_20261007.a4_pr7_task7.s7_round*_records key. Never pin a round number in here: the state-freshness leg refuses one, an explanation that names a round here would go stale the same way, so it names none."
-state_convergence: "2026-10-08 round 40, from an external review that caught this file being used as a recovery authority while its top-level pointer had aged: current_phase is refreshed above and is the live pointer; alpha4_governance_20261007.a4_pr7_task7 plus the tail of SESSION_ROUTER_LOG.md carry the per-round truth. The keys integration_branch / integration_sha / p8s_base_sha / p8s_int_tip are FROZEN HISTORICAL ANCHORS of the P8-S closure phase, NOT current integration pointers -- do not resume from them. Rule adopted: any phase-boundary refresh must rewrite current_phase in the same commit that moves the pointer it describes, because a stale authority pointer is worse than no pointer when an agent is resuming unattended."
+# --- current contract (2026-10-22 docs realignment) ------------------------------------------
+# The single authority for the current phase. AGENTS.md / backlog / matrix must REFERENCE
+# `current_contract.baseline` and never carry their own baseline-SHA copy (matrix tested-SHA cells
+# are exempt: historical evidence, not a baseline-authority claim). The legacy `state_pointers`
+# block above is Alpha.4 historical-integrity state feeding the legacy s7 checks in
+# scripts/ci-pr-gate.mjs; it is NOT the current phase and must never be repurposed as Alpha.5
+# progress (round is not a phase counter).
+current_contract:
+  phase_id: alpha5-tool-io-governance
+  active_plan: docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md
+  backlog: docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+  matrix: docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+  baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912   # exactly 40hex; must exist and be HEAD or an ancestor of HEAD. Equality with HEAD is legal and the checker must require neither equality nor inequality.
+  baseline_collected: "2026-10-22T07:20:56Z"
+
+state_convergence: "HISTORICAL (Alpha.4 record, NOT current authority; current state = current_contract) — 2026-10-08 round 40, from an external review that caught this file being used as a recovery authority while its top-level pointer had aged: current_phase is refreshed above and is the live pointer; alpha4_governance_20261007.a4_pr7_task7 plus the tail of SESSION_ROUTER_LOG.md carry the per-round truth. The keys integration_branch / integration_sha / p8s_base_sha / p8s_int_tip are FROZEN HISTORICAL ANCHORS of the P8-S closure phase, NOT current integration pointers -- do not resume from them. Rule adopted: any phase-boundary refresh must rewrite current_phase in the same commit that moves the pointer it describes, because a stale authority pointer is worse than no pointer when an agent is resuming unattended."
 integration_branch: int/P9-master-product-closure
 integration_sha: d23c606c5d77cfdb917c1338194be876d76cfddb
 p8s_base_sha: 3fa4c1f27ed1e8903c131dadc9aafe536ed9eb86
@@ -111,8 +126,8 @@ p9_prototype:
     pass_full_restart: { status: MET, confirmed: 2026-09-02T22:44+08:00, evidence: "restart criterion met: E2E resume phase GREEN at F1 (e2e-2026-09-02T13-34-28) and re-verified at F2 (e2e-2026-09-02T14-43-44) - same team (leader inst-leader + member inst-18rz4km0i8d8 + child session-child-acf7f0c37ee06417f58df56418e20e7a) rehydrated from durable rows at boot=2 phase=resume; ledger fact types provision-member-instance/team-coordination-recorded/team-message-delivered preserved; no RESTART_GAP" }
     F2: { status: GREEN, owner: main-agent, confirmed: 2026-09-02T22:46+08:00, before: hard_freeze, evidence: "pre-freeze gate @2a23f52, evidence .worktrees/P9P/references/.p9proto-f2/: (1) chain 2223/0 rc=0 15.8s, pin 576 in-chain; (2) tsc 8/8; (3) dist wipe+rebuild (runtime tsc + client tsc + build-bundle) + composition-smoke double PASS (host dsh-agent-team provides [teamRoot] 1 effect 0 listeners; client dsh-agent-team-client 0/0); (4) live-17 homes j/ej 17/17 failures=[] rowMounted 4/4 bypass 0/25, per-criterion counts identical to F1/baseline E1:14 E2:3 E3:6 E4:5 E5:24 E6:6 E7:2 W1:10 W2:7 W3:5 W5:7 W7:7 M1:5 M2:7 M3:5 M4:9 M5:6, pristine cd5ef8148 pre/post, stable :3080 200 pre/post, ports released; (5) E2E driver stamp 2026-09-02T14-43-44 STATUS GATE-GREEN: deterministic identity pair reproduced (inst-18rz4km0i8d8 / session-child-acf7f0c37ee06417f58df56418e20e7a), real model turn qiyuan-self/qwen3.8-27b (tool-calls finish + reasoning in 26399B child log), persona model-visible in header.system, workspace cwd correct, negatives 5/5, restart resume rehydrated same team from durable rows (boot=2 phase=resume memberCount 2); (6) zero-core: test-use clean @cd5ef8148158c3a752a658978873241fdf8e2bbc; (7) diff 7d07330..2a23f52 = 51 files = F1 50 + proto-ui-d2.mjs, 0 unowned (D2 commit = exactly 2 files per R90 forensics); (8) pin 576 chain-proven; (9) :3080=200, 3180-3186 + 3491-3495 all free" }
   final_output: "PASS-core (rendered 2026-09-02T22:47+08:00; corrected PASS-core elements fully green at F1 and re-verified at F2 @2a23f52 - real bootstrap + honest v2 LeaderInstance + real member + Team-scoped child Session + correct workspace + persona model-visible + real model turn + marker observed + projection/activity/result observable + F1/F2 all green; PASS-full unreachable: D2 DOM-render sub-proof ENV-blocked (ENV_RENDER_GAP 3 probes, CDP infeasible); D2 PARTIAL-ACCEPTED @2a23f52; gaps recorded: ENV_RENDER_GAP + UI_BACKEND_GAP)"
-ready: []
-blocked: [G8-S (P9 proper line — pending prototype outcome + user)]
+ready: [BR-02, BL-03, BL-04, BL-11]   # 可推进项=backlog ID（docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md）
+blocked: []   # graph 级无当前指令；release blocker=backlog BL-01（team_bash default-ask/R2，见 current_contract.backlog）。原 G8-S (P9 proper line) = Alpha.4/P9 历史悬置事项，恢复为当前需重新登记 backlog。
 tasks:
   P0-T1: { state: INTEGRATED, class: C, branch: task/P0-T1-legacy-freeze, base_sha: 5ecf11d, head_sha: ce86d21cf635b124c4a2d4be7b6737b14865ae21, attempts: 1, gate: G0-PASS }
   P0-T2: { state: INTEGRATED, class: B, branch: task/P0-T2-commit-provenance, base_sha: 5ecf11d, head_sha: a9e6f3e762012504da6c3329fd16642e0566baab, attempts: 1, depends_on: [P0-T1], gate: G0-PASS }

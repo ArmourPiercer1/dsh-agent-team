@@ -1,4 +1,5 @@
 # Alpha.5 Tool-Level Fork — Technical Debt and Exit Register
+> **[2026-10-22 banner] historical / superseded-by `docs/plans/active/alpha5-tool-io-governance/current-execution-plan.md`** — 本文档的阶段状态与采纳状态（含 PROPOSED 提案）为记录时点，当前执行以该入口为准。设计约束/需求正文**仍有效**（本 banner 不宣告设计失效）；正文未改动。
 
 **Decision:** 2026-10-16, operator accepted a *public-seam-first, tool-level-fork fallback*.  
 **Status:** CONDITIONAL / NOT YET INCURRED. No fork has been created or authorized for any specific package by a completed P0 proof.  
