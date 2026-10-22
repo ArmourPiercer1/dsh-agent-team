@@ -175,15 +175,37 @@
  * code; `run()` never throws; a pre-execute refusal never increments
  * `execCount()`.
  *
+ * THE CANCEL LEG (a5-cancel; mechanics in `./cancel-leg.mjs`, owned here): the
+ * host's cooperative cancel signal rides the call (`register.ts` forwards
+ * `exec?.signal`, the pipeline carries it untouched), and this row ANSWERS it.
+ * Additive in both directions — no signal on the call, no leg; a signal that
+ * never fires changes no outcome. A cancelled search is a typed FAILURE of THIS
+ * table (`call-aborted` when the stop is confirmed — including the honest case
+ * of a call that never spawned anything — `termination-unconfirmed` when the
+ * provider could not prove the stop), NEVER an `ok: true` empty result: an empty
+ * match list is a statement about the tree, and a cancelled walk has made no
+ * such statement. The boundary law: the channel is checked before the first
+ * await and re-checked after every one, so a pre-abort costs ZERO provider work
+ * and ZERO sink bytes; a handle that arrives after the caller already gave up is
+ * ADOPTED into the row's one owned terminate instead of being raced away; the
+ * settle race's winner (`exited > timedOut > aborted`) is never rewritten by a
+ * later fact, which is why an abort that lands after the exit is honoured before
+ * the sink write rather than as a different walk outcome. The row's TIMEOUT
+ * budget keeps its own historical shape (an `ok: true` cancelled settlement with
+ * its own event word): that arm is out of this leg's scope, and rewriting it
+ * would change a disclosed behaviour no law here asks about. `signal.reason` is
+ * never read and never echoed: it is caller-owned text, and this face publishes
+ * codes plus arithmetic.
+ *
  * @module packages/runtime/src/plugin/live/search-backend
  */
 
 import { realpathSync } from 'node:fs'
 import { realpath } from 'node:fs/promises'
-import { setTimeout as sleepTimer } from 'node:timers'
 import { buildGrepCommand, parseGrepArgs, parseGrepMatches, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { openAnchoredWalkRoot, verifyGlobResultsBeneath } from './glob-backend.mjs'
+import { CANCEL_CODE_ABORTED, CANCEL_CODE_UNCONFIRMED, callAborted, createOwnedStop, raceConfinedSettle } from './cancel-leg.mjs'
 
 /** The row's identity, quoted by the mount and by the suites. */
 export const SEARCH_BACKEND_ID = 'a5srgp-anchored-confined-rg-grep'
@@ -240,6 +262,8 @@ export const SEARCH_REFUSAL_TEXT = Object.freeze({
   'root-symlink-alias': 'the governed root is a symlink alias',
   'walk-contaminated': 'a searched object is not a plain file inside the anchor',
   'walk-unverifiable': 'a searched object could not be verified',
+  'call-aborted': 'the search call was cancelled cooperatively before its answer could be committed, and its confined walk is confirmed stopped',
+  'termination-unconfirmed': 'the search call was cancelled cooperatively and its confined walk could not be confirmed stopped',
   'internal-error': 'an unexpected internal fault occurred',
 })
 
@@ -278,6 +302,8 @@ export const SEARCH_REFUSAL_FAMILIES = Object.freeze({
   'root-symlink-alias': 'a5srgp-refused/verification',
   'walk-contaminated': 'a5srgp-refused/verification',
   'walk-unverifiable': 'a5srgp-refused/verification',
+  'call-aborted': 'a5srgp-refused/cancel',
+  'termination-unconfirmed': 'a5srgp-refused/cancel',
   'internal-error': 'a5srgp-refused/transport',
 })
 
@@ -631,6 +657,43 @@ export function createAnchoredRgSearchBackend(options) {
       return failure('denied', 'wrong-tool-for-backend', {}, debug, `tool=${safeToken(parsed?.tool)}`)
     }
     trace = ['probe']
+    // ---- THE CANCEL LEG (a5-cancel) ---------------------------------------
+    // The host's cooperative cancel signal rides the call (`register.ts`
+    // forwards `exec?.signal`; the pipeline carries it untouched). ADDITIVE IN
+    // BOTH DIRECTIONS: a call with no channel runs no new branch at all, and a
+    // channel that never fires changes no outcome. The rule this leg enforces
+    // is a boundary rule, not a race: ask BEFORE the first await and RE-ASK
+    // after every one, so a pre-abort costs zero provider work and zero sink
+    // byte, and a fact that arrives late never rewrites a winner (the tie law
+    // `exited > timedOut > aborted` lives in `./cancel-leg.mjs`).
+    // `signal.reason` is never read: it is caller-owned text, and this face
+    // publishes codes plus arithmetic.
+    const cancelSignal = call.signal
+    const owned = createOwnedStop()
+    /** THE one cancel terminal, built by THIS row's own `failure()` face:
+     *  closed code + family word + frozen table prose + arithmetic. It takes
+     *  the call's ONE owned stop (idempotent, so any number of boundaries ask
+     *  and exactly one terminate happens) and READS its result: only a
+     *  provider-confirmed `terminated` lease — or the honest case of a call
+     *  that never adopted a child — may claim `call-aborted`; a refused,
+     *  throwing or non-`terminated` settle is reported as
+     *  `termination-unconfirmed`, because this row refuses to claim a stop it
+     *  cannot prove. A cancelled search is a FAILURE, never an `ok: true`
+     *  empty result: the empty list would be a statement about the tree. */
+    const cancelRefusal = async (stage) => {
+      // Every cancel boundary reads THE stop of this call — the one memoized
+      // reading of the one owned terminate. A second boundary costs no second
+      // terminate, and no boundary is allowed to guess at the outcome instead of
+      // asking what the provider reported.
+      const stop = await owned.stop()
+      trace = [...trace, 'cancel']
+      const code = stop.stopped === true ? CANCEL_CODE_ABORTED : CANCEL_CODE_UNCONFIRMED
+      observe(`anchored-search cancel code=${safeToken(code)} stage=${safeToken(stage)} stop=${safeToken(stop.form)} children=${owned.child() === null ? '0' : '1'} realm=${safeToken(realmId)} call=${safeToken(call?.callId)}`)
+      return failure('undetermined', code, { children: owned.child() === null ? 0 : 1 }, debug, `stage=${safeToken(stage)} stop=${safeToken(stop.form)}`)
+    }
+    // The FIRST boundary, before any await exists: an aborted channel here
+    // costs no capability probe, no anchor, no plan file, no child.
+    if (callAborted(cancelSignal)) return await cancelRefusal('entry')
     // The knobs this row cannot answer honestly, refused BEFORE anything runs.
     if (parsed.multiline === true) {
       observe(`anchored-search REFUSED multiline-unsupported call=${safeToken(call?.callId)}`)
@@ -682,6 +745,7 @@ export function createAnchoredRgSearchBackend(options) {
         return failure('undetermined', 'rg-unavailable', {}, debug, String(error?.message ?? error))
       }
     }
+    if (callAborted(cancelSignal)) return await cancelRefusal('after-rg-path')
     if (probed === null) {
       probed = await provider.probe()
       if (probed.ok !== true) {
@@ -691,6 +755,7 @@ export function createAnchoredRgSearchBackend(options) {
       }
       observe(`anchored-search capability OK realm=${safeToken(realmId)} legs=${String(probed.value.length)}`)
     }
+    if (callAborted(cancelSignal)) return await cancelRefusal('after-capability')
 
     // ---- A1/A2: anchor BEFORE the child exists; a refusal costs no process ---
     // A directory target anchors at itself and carries the constant `.`; a FILE
@@ -715,6 +780,15 @@ export function createAnchoredRgSearchBackend(options) {
       return mapSharedLaw(anchor, debug)
     }
     if (anchor.ok !== true) return mapSharedLaw(anchor, debug)
+    // A cancel landing while the anchor is being taken is honoured BEFORE the
+    // spawn, and the one resource this call already holds — the pinned
+    // descriptor — goes back before the terminal is handed up. No child was ever
+    // adopted, so the owned stop settles as never-spawned: the stopped-confirmed
+    // form is the honest one here, not an unconfirmed-stop claim.
+    if (callAborted(cancelSignal)) {
+      await anchor.handle.close().catch(() => undefined)
+      return await cancelRefusal('after-anchor')
+    }
     const searchElement = fileTarget ?? SEARCH_WALK_PATH_ELEMENT
 
     // A4 for the file case, BEFORE the spawn: the one object this walk is about
@@ -727,9 +801,32 @@ export function createAnchoredRgSearchBackend(options) {
         observe(`anchored-search file-refused code=${safeToken(one.failure?.code)} call=${safeToken(call?.callId)}`)
         return mapSharedLaw(one, debug)
       }
+      if (callAborted(cancelSignal)) {
+        await anchor.handle.close().catch(() => undefined)
+        return await cancelRefusal('after-target-verify')
+      }
     }
 
     trace = ['probe', 'prepare', 'execute']
+    // The boundary the row books WHEN IT CONSULTS ITS CHANNEL at the last step
+    // before it would ask for a child, and only for a call that carries a cancel
+    // channel (a call without one books exactly what it booked before — this line
+    // is part of the leg, not of the walk). The word names the instruction, not an
+    // intention: the row is ASKING its channel here, and that stays true whichever
+    // way the answer goes, so a refusal below never leaves behind an audit claim
+    // that this row was going to spawn. Being booked one instruction before the
+    // final check is what makes "the cancel landed at the last boundary before the
+    // provider was asked" a fact a test can pin; the answer to it is a refusal that
+    // costs zero provider work.
+    if (cancelSignal !== undefined && cancelSignal !== null) {
+      observe(`anchored-search cancel-leg stage=pre-spawn-check realm=${safeToken(realmId)} call=${safeToken(call?.callId)}`)
+    }
+    // THE LAST BOUNDARY BEFORE THE SPAWN. A cancel landing here still costs zero
+    // provider work: no plan, no child, no byte of output, no sink write.
+    if (callAborted(cancelSignal)) {
+      await anchor.handle.close().catch(() => undefined)
+      return await cancelRefusal('pre-spawn')
+    }
     const rgBinDir = rgPath.slice(0, rgPath.lastIndexOf('/'))
     const argv = [rgPath, ...searchArgv(parsed, searchElement)]
     const request = {
@@ -766,16 +863,43 @@ export function createAnchoredRgSearchBackend(options) {
     }
     executed += 1
     const child = handle.value
+    // THE ADOPTION LAW: a handle this call caused to exist is owned the instant
+    // it exists — including the case where the caller gave up while
+    // `spawnStreaming` was still awaiting. A `Promise.race` that had let the
+    // cancel win the spawn await would have thrown this handle away with the
+    // payload live; this row awaits the promise to its end, adopts what came
+    // back, and the ONE owned terminate below is what stops it.
+    owned.adopt(child)
+    // The second boundary the row books for a channel-carrying call: the child
+    // EXISTS and this call owns it. Like `pre-spawn` above it is part of the
+    // cancel leg, not of the walk — a call with no channel books nothing new —
+    // and it is what turns "the cancel landed while the payload was live" into a
+    // fact a test can pin instead of a timing bet.
+    if (cancelSignal !== undefined && cancelSignal !== null) {
+      observe(`anchored-search cancel-leg stage=child-live realm=${safeToken(realmId)} call=${safeToken(call?.callId)}`)
+    }
     // THE STDIN LAW (measured): fd 0 inside the child is a socket, so rg's
     // heuristic can replace the walk with an empty stdin search. The explicit
     // `-- <path>` element above already prevents that; this closes the channel
     // anyway, before a single byte of the grant is live.
     try { child.stdin.end() } catch { /* already closed: the path element rules */ }
+    // THE UNIFIED RELEASE of everything this block attaches to the child's pipes.
+    // It is a slot installed the instant the listeners are attached and called
+    // from the `finally` at the end of this block, so EVERY exit gives them back:
+    // the cancel arms, an early failure return, an unexpected fault, and the
+    // admitted path too (whose streams have ended by then, so the release is
+    // invisible there — what it removes is the row's ability to leak a listener
+    // down a path nobody thought about). Idempotent by construction, and a no-op
+    // for an exit that happens before anything is attached.
+    let releaseStreamListeners = () => {}
     try {
+      // The first boundary after the adoption: the payload is stopped through
+      // the owned terminate BEFORE this row says anything about the call.
+      if (callAborted(cancelSignal)) return await cancelRefusal('after-spawn')
       let stdout = ''
       let stderr = ''
       let overflow = false
-      child.stdout.on('data', (chunk) => {
+      const onStdoutData = (chunk) => {
         // NO CHANNEL IS WRITTEN HERE. The bytes arriving from the child are
         // unverified until the verdict below admits them, and the spill channel
         // is a channel like any other: writing it as it arrives would let a
@@ -783,25 +907,76 @@ export function createAnchoredRgSearchBackend(options) {
         const text = String(chunk)
         if (stdout.length + text.length <= walkBufferBytes) stdout += text
         else overflow = true
-      })
-      child.stderr.on('data', (chunk) => {
+      }
+      const onStderrData = (chunk) => {
         // Bounded, like every other buffer: the diagnostic channel cannot be
         // turned into a memory channel by a chatty walker.
         if (stderr.length < SEARCH_MAX_STDERR_BYTES) stderr += String(chunk)
-      })
-      const exit = await Promise.race([
-        child.exited,
-        new Promise((r) => sleepTimer(() => r({ timedOut: true }), timeoutMs).unref?.()),
-      ])
-      await child.terminate() // the frozen lease arm settles exactly once per path
+      }
+      child.stdout.on('data', onStdoutData)
+      child.stderr.on('data', onStderrData)
+      // Listener release, and LAST in the release order: the terminate of the
+      // payload is what has to be confirmed first (the pipes are held by the
+      // living child), the pinned descriptor goes back in the `finally`, and
+      // nothing holds the caller's channel past the settle race itself.
+      releaseStreamListeners = () => {
+        releaseStreamListeners = () => {} // idempotent: the `finally` may call it again
+        try { child.stdout.off('data', onStdoutData) } catch { /* already torn down */ }
+        try { child.stderr.off('data', onStderrData) } catch { /* already torn down */ }
+      }
+      const exit = await raceConfinedSettle({ exited: child.exited, timeoutMs, signal: cancelSignal })
+      // THE ONE TERMINATE, read by whoever is owed the answer. The ARM is the same
+      // single owned call either way (`owned` memoizes it); what differs is the
+      // READING, and that is a deliberate asymmetry:
+      //  - A call nobody cancelled keeps this row's own contract, unchanged since
+      //    before this leg existed: `await owned.rawStop()` hands back the very
+      //    promise `await child.terminate()` used to be, so a lease arm that throws
+      //    still lands in `run`'s catch and answers `internal-error`. The cancel
+      //    leg does not get to soften a fault on a path where nobody cancelled —
+      //    swallowing it here would turn a broken lease arm into a walk that
+      //    carries on to the sink.
+      //  - A call the caller DID withdraw from reads the classified stop, which
+      //    cannot throw and whose only two answers are 'the provider confirmed the
+      //    stop' and 'it did not'. A throwing arm on THAT path is the second one:
+      //    the throw's own text never reaches the answer.
+      const cancelled = callAborted(cancelSignal)
+      const timedOut = exit?.timedOut === true
+      if (cancelled && !timedOut) await owned.stop()
+      else {
+        // THE OLD CONTRACT, HELD IN BOTH DIRECTIONS. The timeout winner takes the
+        // raw arm even when the caller has already withdrawn: swallowing a fault
+        // there would be this leg inventing a success shape the row never had. On
+        // any OTHER winner, a fault that arrives while the caller is withdrawing is
+        // an answer the caller is owed — and it is read through the SAME settled
+        // arm (`owned.stop()` derives from the promise that just rejected, so no
+        // second terminate is ever issued) and says 'termination-unconfirmed'.
+        // A fault on a call nobody withdrew from is rethrown untouched, exactly as
+        // `await child.terminate()` did before this leg existed.
+        try {
+          await owned.rawStop()
+        } catch (fault) {
+          if (timedOut || !callAborted(cancelSignal)) throw fault
+          await owned.stop()
+        }
+      }
       trace = [...trace, 'terminate']
-      if (exit?.timedOut === true) {
+      if (timedOut) {
         observe(`anchored-search TIMEOUT realm=${safeToken(realmId)} call=${safeToken(call.callId)}`)
         return {
           ok: true,
           outcome: { outputMode: parsed.outputMode ?? 'content', matches: [], counts: [], files: [], totalMatches: 0, truncated: false },
           settlement: { kind: 'cancelled', event: 'search-walk-terminated-after-timeout' },
         }
+      }
+      if (cancelled || callAborted(cancelSignal)) {
+        // Either the abort won the race (the walk was stopped, it did not finish)
+        // or it landed DURING the stop await just above — which is an await like
+        // any other, so it gets a boundary of its own rather than being allowed to
+        // slip through to the verdict. The answer is THIS row's cancel refusal,
+        // carrying what the owned terminate actually reported — and never the
+        // timeout arm's `ok: true` empty result above, which would read as "the
+        // tree holds nothing" when in fact nobody looked at the tree.
+        return await cancelRefusal(exit?.aborted === true ? 'walk-aborted' : 'after-settle')
       }
       // The provider's settled shape is `{ code, signal }` with signal the EMPTY
       // STRING on a normal exit (measured: {"code":0,"signal":""}) — treating
@@ -876,6 +1051,12 @@ export function createAnchoredRgSearchBackend(options) {
       // (review finding this round: legs `V11` / `V11b` measure that each arm
       // catches a case the other misses, which is why both run).
       const recheck = await verifyAnchorStillGoverned(anchor)
+      // THE BOUNDARY IMMEDIATELY AFTER THIS AWAIT, and it comes BEFORE the verdict
+      // branch: a withdrawal that landed during the verification is answered here
+      // rather than behind a failure the row was about to return anyway. The
+      // verdict still stands for a call nobody withdrew from — this check only
+      // reorders WHO answers, never WHAT the walk proved.
+      if (callAborted(cancelSignal)) return await cancelRefusal('after-governed-recheck')
       if (recheck.verdict !== 'confirmed') {
         observe(`anchored-search exec-refused:${safeToken(recheck.verdict)} realm=${safeToken(realmId)} call=${safeToken(call.callId)}`)
         return recheck.verdict === 'escape'
@@ -885,19 +1066,42 @@ export function createAnchoredRgSearchBackend(options) {
             : failure('undetermined', 'anchor-unverifiable', {}, debug, String(recheck.detail))
       }
       const shared = await verifyGlobResultsBeneath(anchor, fileTarget === null ? [] : [fileTarget], debug)
+      // Same law on the second verification leg: ask the channel before the row
+      // hands up the shared law's own refusal.
+      if (callAborted(cancelSignal)) return await cancelRefusal('after-shared-law')
       if (shared.ok !== true) {
         observe(`anchored-search exec-refused:${safeToken(shared.failure?.code)} realm=${safeToken(realmId)} call=${safeToken(call.callId)}`)
         return mapSharedLaw(shared, debug)
       }
+      // THE BOUNDARY AFTER THE VERIFICATION AWAITS. Both governed-root checks above
+      // awaited, so a cancel that landed while they ran is answered HERE, before
+      // the projection, the rendering and the spill decision — not only at the
+      // sink. Two boundaries on this stretch is the point: the one after the awaits
+      // catches the withdrawal as early as the code allows, and the one below is
+      // the last word before the answer exists.
+      if (callAborted(cancelSignal)) return await cancelRefusal('after-verify')
       const projected = projectMatches(records, parsed.outputMode ?? 'content', parsed.maxResults, (p) => presentPath(anchor, p))
       if (projected.ok !== true) {
         observe(`anchored-search ${safeToken(projected.code)} realm=${safeToken(realmId)} call=${safeToken(call.callId)} records=${String(records.length)}`)
         return failure('denied', projected.code, { records: records.length }, debug)
       }
       const text = renderRows(projected.rows, projected.outcome.outputMode)
+      // THE LAST BOUNDARY BEFORE THE ANSWER EXISTS. A cancel that landed while
+      // the verdict and both verification legs were running does not rewrite the
+      // settle race's winner (the walk DID finish) — it prevents the
+      // publication: no sink byte, no spill, no result, and the terminal is this
+      // row's cancel refusal carrying what the owned stop reported (the stop
+      // settled with the walk, so asking again costs no second terminate). After
+      // the write below there is no retroactive arm: what was admitted is the
+      // answer, exactly as the pre-existing spill law has always had it.
+      if (callAborted(cancelSignal)) return await cancelRefusal('before-commit')
       // C-SPILL: the ONLY sink write in this module, after the verdict, from the
       // admitted rows. A refused search writes zero bytes; an admitted one writes
       // precisely what it admits.
+      // NOTE on the release order: what this row attached to the child's pipes is
+      // given back once, by the `finally` at the end of this block, after the payload
+      // was stopped and confirmed — on every path, the admitted one included. No arm
+      // releases by hand any more.
       if (text.length > 0) io?.sink?.write(text)
       trace = [...trace, 'terminate']
       lastRuns.push({
@@ -910,6 +1114,11 @@ export function createAnchoredRgSearchBackend(options) {
       observe(`anchored-search OK realm=${safeToken(realmId)} call=${safeToken(call.callId)} records=${String(records.length)} total=${String(projected.outcome.totalMatches)} truncated=${String(projected.outcome.truncated === true)}`)
       return { ok: true, outcome: projected.outcome, settlement: { kind: 'completed' } }
     } finally {
+      // THE RELEASE ORDER of the cancel law, on every path: the payload is
+      // stopped first (the arms above read the provider's confirmation before
+      // they answer), then the pipes this row attached are given back, and the
+      // pinned descriptor goes last.
+      releaseStreamListeners()
       await anchor.handle.close().catch(() => undefined)
     }
   }

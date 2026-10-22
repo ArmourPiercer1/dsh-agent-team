@@ -99,6 +99,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/plane-effect-backends.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/plane-effect-backends.mjs',
   },
+  // A5-CANCEL (branch `a5-cancel-leg`): the two async confined-rg rows above both
+  // import this module by RELATIVE specifier, so on the strict
+  // `files: ["dist"]` install face a missing copy is ERR_MODULE_NOT_FOUND at the
+  // first search/glob call — the same failure class GLUE-6 RED-A recorded for
+  // `upstream-resolver.mjs`. Walked from the files the list already contains, as
+  // the M3 leg of `alpha5-search-backend.test.ts` requires.
+  {
+    src: 'packages/runtime/src/plugin/live/cancel-leg.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/cancel-leg.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

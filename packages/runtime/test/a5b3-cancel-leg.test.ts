@@ -45,6 +45,15 @@
  *    (C7, copied in B2 X4's form plus the pre-aborted case), and the timeout leg keeps
  *    its recorded form (C5).
  *
+ * HISTORY OF ONE PIN (2026-10-22, branch `a5-cancel-leg`, reviewer-approved SPEC): the
+ * clause above — the glob/search rows "grow no abort leg" — WAS this file's pin and is
+ * SUPERSEDED by that round: those two rows now answer the same channel with a typed
+ * FAILURE of their OWN frozen tables (`call-aborted` / `termination-unconfirmed`), never
+ * an `ok: true` empty answer, because an empty answer is a claim about the tree that a
+ * cancelled walk never made. C7's live-signal case (B2 X4's own case) and EVERY shell
+ * assertion in this file are UNCHANGED; only C7's already-aborted case moved, and it
+ * moved at this exit, where the refusal is visible on the wire.
+ *
  * Worlds live under `tests/homes/` and self-remove. The launcher is the REAL one.
  */
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
@@ -381,20 +390,22 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
     expect(res.text).not.toContain('bash · cancelled')
   }, SLOW)
 
-  it('C7 zero-motion next door, in B2 X4\'s own form: the glob and search rows carry neither an exit code nor a cancelled word — WITH a live signal and with one already aborted', async () => {
-    // The signal now travels on every BackendCall, so the anti-collateral pin
-    // needs both cases: (i) B2 X4 verbatim — a live, never-aborted signal
-    // changes nothing on either row's wire; (ii) a signal ALREADY aborted when
-    // the call arrives — these two rows deliberately did NOT grow an abort
-    // leg, so they finish the work that was admitted and settle `completed`.
-    // Zero-motion is a two-sided claim; pinning only case (i) would let a
-    // copy-paste of the shell arm's abort leg into either row pass it.
+  it('C7 the LIVE signal is still zero-motion in B2 X4\'s own form, and a PRE-ABORTED one answers a typed refusal at this exit', async () => {
+    // (i) B2 X4 VERBATIM, unchanged: a live, never-aborted signal changes nothing
+    //     on either row's wire — no exit code, no cancelled word, no meta field.
+    // (ii) a signal ALREADY aborted when the call arrives. The pin here used to
+    //     read "these rows deliberately did NOT grow an abort leg, so they finish
+    //     the admitted work and settle `completed`". The `a5-cancel-leg` round
+    //     supersedes it (header HISTORY): a cancelled rg walk answers a typed
+    //     FAILURE of the row's own table. What the OLD leg was guarding against —
+    //     a cancelled PRESENTATION leaking into these rows — is still guarded:
+    //     the refusal carries a code and the row's frozen prose, no payload
+    //     content, no `exit=`, and above all NOT the empty-answer rendering,
+    //     which is the one shape a cancelled walk must never wear.
     const plane = buildPlane()
     const live = new AbortController() // never aborted — B2 X4's own case
-    const pre = new AbortController()
-    pre.abort({ kind: 'user' }) // already cancelled when the call arrives
-    for (const controller of [live, pre]) {
-      const exec = { signal: controller.signal }
+    {
+      const exec = { signal: live.signal }
       const grep = await def(plane, 'team_grep').execute({ pattern: 'A5B3-INSIDE-TOK', path: '.', output_mode: 'content' }, exec)
       expect(grep.text).toContain('A5B3-INSIDE-TOK')
       expect(grep.text).not.toContain('exit=')
@@ -407,6 +418,31 @@ describe('B3 C — the shell row honors the host cancel signal, and only for the
       expect(glob.text).not.toContain('cancelled')
       expect(JSON.stringify(metaOf(glob.text))).not.toContain('exitCode')
       expect(JSON.stringify(metaOf(glob.text))).not.toContain('cancelled')
+    }
+    const pre = new AbortController()
+    pre.abort({ kind: 'user' }) // already cancelled when the call arrives
+    {
+      const exec = { signal: pre.signal }
+      // THE PRODUCTION EXIT, end to end: `register.ts` forwards `exec?.signal`,
+      // the pipeline carries it untouched, the row refuses, and this face renders
+      // the refusal as `a5p5-refused kind=backend-failed code=<code> detail=<frozen
+      // prose>` — the lane's ONE refusal form, with no presentation meta behind it.
+      const grep = await def(plane, 'team_grep').execute({ pattern: 'A5B3-INSIDE-TOK', path: '.', output_mode: 'content' }, exec)
+      expect(grep.text.startsWith('a5p5-refused kind=backend-failed code=call-aborted ')).toBe(true)
+      expect(grep.text).not.toContain('A5B3-INSIDE-TOK') // nothing found, nothing claimed
+      expect(grep.text).not.toContain('(no matches)') // NOT the empty-answer shape
+      expect(grep.text).not.toContain('a5p5-meta') // a refusal wears no presentation meta
+      expect(grep.text).not.toContain('exit=')
+      expect(grep.text).not.toContain('{ kind:') // no cause text travels either
+      const glob = await def(plane, 'team_glob').execute({ pattern: '*.txt' }, exec)
+      expect(glob.text.startsWith('a5p5-refused kind=backend-failed code=call-aborted ')).toBe(true)
+      expect(glob.text).not.toContain('needle.txt')
+      expect(glob.text).not.toContain('a5p5-meta')
+      expect(glob.text).not.toContain('exit=')
+      // And the refusal is REPEATABLE, not a one-shot: the same plane, same call,
+      // same dead channel answers the same way.
+      const again = await def(plane, 'team_grep').execute({ pattern: 'A5B3-INSIDE-TOK', path: '.', output_mode: 'content' }, exec)
+      expect(again.text).toBe(grep.text)
     }
   }, SLOW)
 
