@@ -126,6 +126,24 @@ import type { ActionCaller } from '../admission/index.js'
 // names the durable owner, never the alias.
 import type { ProposalAuthorityPosition } from '../governance/proposal-store.js'
 import type { PermissionOverlayEffect } from '../../storage/schema/permission-overlay.js'
+// PR358-B (root ruling 6, AUTH half): the CALL-FACTS contract is typed
+// against the DURABLE OWNERS of these vocabularies (ADR X7-R3 discipline —
+// `import type` only: erased at emit, the Control plane gains no runtime
+// edge; the same domain-type route the CapabilityName line above already
+// uses). The ceiling DOCUMENT-PAIR type lives in the governance ceiling
+// module, whose a3p3-pinned consumer set this lane is NOT in — the facts
+// therefore name the ENVELOPE at its domain owner and re-express the pair's
+// slots by their closed STATUS shapes: `unavailable` is deliberately
+// unrepresentable here (an unreadable document is `undefined` FACTS at the
+// adapter, never a slot value), and `{status:'declared', document}` /
+// `{status:'absent'}` / the bare document are exactly the members of the
+// ceiling module's slot type that survive that contract, so the pair
+// assigns to it STRUCTURALLY with no cast at the verifier's edge.
+// `ProposalAuthorityPosition` stands where the governance lane names the
+// rung alias (X7-R3 alias law; this file never widens the alias-name set).
+import type { AuthorityEnvelope } from '../../domain/authority-envelope/src/index.js'
+import type { RequestedEffectSet, ToolBinding, ToolPolicyDocument } from '../../domain/tool-governance/src/index.js'
+import type { PolicyDenySource } from '../tool-admission/approval-case.js'
 
 // --- request kinds ------------------------------------------------------------------
 
@@ -1253,10 +1271,135 @@ export function paManifestClassOf(row: PaManifestRowShape): PaManifestReadBack {
  *  the same question, the same port object). */
 export type PaEffectsVerifierStage = 'resolve' | 'guard'
 
-/** Everything the verifier may read: the DURABLE row facts and the stage.
- *  Nothing else — the verifier re-derives authority from the CURRENT plane
- *  through its own wired synchronous readers; the service passes no
- *  documents and walks no ladder (ADR A5-12: one reader per answer). */
+// --- PR358-B (root ruling 6): THE CALL-FACTS CONTRACT (the B table) --------------------
+//
+// The verification the two gates ask is no longer answerable from a purely
+// synchronous seam: the CURRENT authority facts of one call live behind the
+// plane's own async reads (binding entryOf, overlay reads, generation
+// counters). THE RULING: the verifier becomes a SMALL ASYNC ORCHESTRATION —
+// it awaits ONE injected call-level facts adapter, then calls the PURE CORE
+// (`evaluateEffectSetExpansion` / `planEffectSetApproval` /
+// `verifyEffectSetApproval`) SYNCHRONOUSLY on those facts. The precedent is
+// the lane's own shape: `ControlAuthorityRecheckPort` is already a Promise
+// the service awaits inside the lock (service.ts — the pattern permission-
+// plane repeats), so "no promises in this seam" was a self-imposed limit,
+// not a law; the root lifted it for this PR.
+//
+// THE FACTS ARE THE TRUTH SURFACE. Every member must come from a REAL
+// durable/current read by the CENTER's adapter (which wires this type to its
+// planes). The adapter MUST NOT: stringify a live PolicyReader into the
+// tuple, invent constant `0`/`1` generations, or fall back to an empty
+// envelope when a read fails — ANY missing or unreadable member ⇒ the
+// adapter returns `undefined` ⇒ the verifier answers `authority-undetermined`
+// (fail closed; there is no defaulted shape of this contract).
+//
+// LOCK LAW (root ruling point 6): the Control per-team lock (b) is NOT the
+// governance coordination lock (a). The verifier (and its adapter) MUST
+// NEVER hold or wait on (a) while being asked inside (b) — the await exists
+// precisely so the adapter can reach the plane, and a lock-ordering edge
+// back into governance would invert the one direction this lane is allowed.
+
+/** One slot of the ceiling document pair as the FACTS carry it: the members
+ *  of the ceiling module's slot type that survive the facts contract — a
+ *  document (bare or `declared`) or a stated ABSENCE. `unavailable` is
+ *  unrepresentable by design: a read that faulted is `undefined` FACTS
+ *  (⇒ `authority-undetermined`), never a slot the verifier must interpret. */
+export type PaCallFactsCeilingSlot =
+  | AuthorityEnvelope
+  | { readonly status: 'declared'; readonly document: AuthorityEnvelope }
+  | { readonly status: 'absent' }
+
+/** The realm-scoped ceiling pair the pure core walks (the two documents,
+ *  structurally assignable to the ceiling module's document-pair type at
+ *  the verifier's edge — no cast, no reinterpretation). */
+export interface PaCallFactsCeiling {
+  /** The Human User hard ceiling (v3-only; v1/v2 Teams state `absent`). */
+  readonly teamHardEnvelope: PaCallFactsCeilingSlot
+  /** The Leader expansion ceiling (ADR A1-19: `absent` is a stated state). */
+  readonly permissionMutationEnvelope: PaCallFactsCeilingSlot
+}
+
+/** The policy-source tuple: identity refs of the STATIC layers the facts'
+ *  policy/ceiling reads ran over, plus the durable OVERLAY GENERATION the
+ *  read used. REFERENCES ONLY — never inlined document content. */
+export interface PaCallFactsPolicySource {
+  /** Non-empty identity refs of the static layers (blueprint/template policy
+   *  documents the current policy projection was built from). */
+  readonly staticLayerRefs: readonly string[]
+  /** The durable overlay generation the policy read ran at (≥ 0). */
+  readonly overlayGeneration: number
+}
+
+/** One realm-scoped ceiling entry as the facts carry it (the adapter hands
+ *  the closed document pair to the pure core through `ceilingDocuments`). */
+export interface PaCallFactsBlueprint {
+  readonly revision: number
+  readonly contentHash: string
+  readonly templateId: string
+  /** The member instance's canonical working directory. */
+  readonly cwd: string
+  /** The host/provider version string the plane reports for the blueprint. */
+  readonly providerVersion: string
+}
+
+/** The PLANE's current plan snapshot for the effect set (the question AS IT
+ *  NOW STANDS, read from the plane — the verifier's own pure-core
+ *  re-derivation is checked against BOTH this snapshot and the durable
+ *  manifest; any pair disagreeing is DRIFT — tuple 不一致). */
+export interface PaCallFactsPlanSnapshot {
+  readonly approvalCaseId: string
+  readonly effectSetFingerprint: string
+  /** The CURRENT per-effect required rungs, same order as the effect set. */
+  readonly perEffectRequired: readonly ProposalAuthorityPosition[]
+}
+
+/**
+ * The COMPLETE call-level facts one verification needs (the B table). The
+ * fields are exactly the pure core's inputs plus the source tuples the
+ * before/after cross-check compares; nothing may be synthesized.
+ * MISSING ANY MEMBER ⇒ THE ADAPTER RETURNS `undefined` (never a partial
+ * object) ⇒ `authority-undetermined` at the asking gate.
+ */
+export interface PaCallFacts {
+  readonly policySource: PaCallFactsPolicySource
+  /** The realm the facts (and the effect set) belong to. */
+  readonly realmId: string
+  /** The CURRENT authority-envelope documents (realm-scoped ceiling entries
+   *  in the closed document family) — THE ceiling input of the pure core. */
+  readonly ceiling: PaCallFactsCeiling
+  /** The CURRENT expansion-plane policy document (the projected closed
+   *  family the static layers + overlays evaluate against). */
+  readonly policyDocument: ToolPolicyDocument
+  /** The deny-source projection (R-1a) as the current plane reads it;
+   *  EMPTY MEANS EMPTY (a real read that projected nothing), never a
+   *  fallback marker — a failing read is `undefined` facts, not []. */
+  readonly denySources: readonly PolicyDenySource[]
+  /** The CURRENT effect set of the operation this row approves (the same
+   *  canonical identity the plan walks — NOT a re-parse of the manifest). */
+  readonly effects: RequestedEffectSet
+  /** The DURABLE member attribution (team + instance the operation belongs
+   *  to) — read from the durable plane, never from the manifest. */
+  readonly member: { readonly teamSessionId: string; readonly instanceId: string }
+  /** The trusted beneficiary rung from the durable attribution — NEVER the
+   *  manifest's self-report. */
+  readonly beneficiaryAuthority: ProposalAuthorityPosition
+  /** The CURRENT binding as the plane's entryOf reports it (real
+   *  revision / definitionIdentity / realm / assurance). */
+  readonly binding: ToolBinding
+  readonly blueprint: PaCallFactsBlueprint
+  readonly planSnapshot: PaCallFactsPlanSnapshot
+  /** The CURRENT authority generation (the real counter, never a constant). */
+  readonly authorityGeneration: number
+}
+
+/** Everything the verifier receives from the SERVICE: the DURABLE row facts
+ *  and the stage — the IDENTITY of this call and nothing else. The current
+ *  authority facts are NOT service-supplied: they arrive through the one
+ *  injected adapter (`readCallFacts` inside the verifier). The optional
+ *  `facts` member exists for a caller that ALREADY HOLDS the adapter's
+ *  answer (a test injection, or an upstream that fetched once); when
+ *  ABSENT — the service's shape, always — the verifier fetches them itself
+ *  as part of its small async orchestration. */
 export interface PaEffectsVerifierInput {
   readonly stage: PaEffectsVerifierStage
   readonly rootSessionId: string
@@ -1265,6 +1408,9 @@ export interface PaEffectsVerifierInput {
   /** The REAL decider: the resolving caller (stage 'resolve') or the
    *  durable allow's decider (stage 'guard'). Never a presented stand-in. */
   readonly decider: ControlCallerRef
+  /** PR358-B: the call-level facts, when the caller already holds them.
+   *  ABSENT = the verifier reads them through its injected adapter. */
+  readonly facts?: PaCallFacts
 }
 
 /** The closed verdict vocabulary. `authority-undetermined` = the fresh
@@ -1280,11 +1426,19 @@ export type PaEffectsVerifierVerdict =
     }
 
 /**
- * The injected all-Effects verifier (A5-M1, PR358 review fix). THE LAW:
- *  - SYNCHRONOUS and PURE: called INSIDE the per-team lock at the resolve
- *    gate and at the guard's consumption gate; no re-entry into the control
- *    service, no minting, no I/O of any kind (a port that returns a promise
- *    or throws is treated as `authority-undetermined`, never as a pass);
+ * The injected all-Effects verifier (A5-M1; PR358 review fix; PR358-B root
+ * ruling 6). THE LAW:
+ *  - a SMALL ASYNC ORCHESTRATION, nothing more: it awaits its ONE injected
+ *    call-level facts adapter, then calls the pure core SYNCHRONOUSLY on
+ *    those facts. It never re-enters the control service, never mints,
+ *    never writes, never touches a ledger; a rejection or a throw — like a
+ *    verdict outside the closed vocabulary — is `authority-undetermined`,
+ *    never a pass;
+ *  - LOCK LAW (root ruling point 6): the Control per-team lock (b) is not
+ *    the governance coordination lock (a) — the verifier and its adapter
+ *    MUST NEVER hold or wait on (a); the await may only ever reach reads
+ *    that are (a)-free by construction (the `ControlAuthorityRecheckPort`
+ *    precedent the service already awaits in-lock);
  *  - ABSENT IS NOT "COVERED": a PA operation-manifest row is neither
  *    allowable nor consumable by a composition that cannot answer for its
  *    authority (the authorityRevalidation polarity, carried);
@@ -1292,7 +1446,9 @@ export type PaEffectsVerifierVerdict =
  *    the same current facts is what makes an in-lock drift between decision
  *    and consumption refuse with zero consumption.
  */
-export type PaEffectsVerifier = (input: PaEffectsVerifierInput) => PaEffectsVerifierVerdict
+export type PaEffectsVerifier = (
+  input: PaEffectsVerifierInput,
+) => PaEffectsVerifierVerdict | Promise<PaEffectsVerifierVerdict>
 
 // --- scope ----------------------------------------------------------------------------
 
@@ -1853,7 +2009,8 @@ export interface ControlServiceOptions {
    * per-team lock hold. ABSENT is a refusal for such rows (durable deny at
    * the resolve gate, zero-consumption block at the guard), never a pass.
    * Rows without the marker never consult it. See {@link PaEffectsVerifier}
-   * for the synchronous/pure law.
+   * for the small-async-orchestration law (PR358-B: awaited in-lock like the
+   * recheck port above; the lock law, point 6, included).
    */
   readonly paEffectsVerifier?: PaEffectsVerifier
 }
