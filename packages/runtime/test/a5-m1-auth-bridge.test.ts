@@ -100,7 +100,8 @@ import type {
 } from '../control/index.js'
 import type { ActionCaller } from '../admission/index.js'
 import { authorityRank } from '../governance/authority-ceiling.js'
-import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { AuthorityDocumentSlot, AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import type { PaCallFactsCeilingSlot } from '../control/types.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createProductionAdmissionAssembly } from '../tool-admission/index.js'
@@ -178,14 +179,96 @@ for (const name of ['leader', 'worker', 'scribe'] as const) {
   })
 }
 
-// The trusted wiring the ALL-EFFECTS verifier re-derives through: one
-// landing assembly per PA realm — exactly the facts the leg used. The
-// service's resolve gate and guard gate both ask THIS port, inside the
-// same per-team lock, before the decision and before the consumption.
-const assemblies = new Map<string, ProductionAdmissionAssembly>()
+// PR358-B (CCR-358a): the fake CALL-LEVEL FACTS adapter — the test-side
+// shape of the CENTER's `readCallFacts` (the B dependency table). Every
+// member is a REAL read in this world: the realm's live documents holder
+// (the SAME live closure the assembly reads — drift flips flip both sides
+// of the plane), the assembly's own policy / deny-source projections, the
+// mount plane's LIVE plan for this call (planSnapshot), the binding and
+// effect set re-canonicalized through the domain's OWN parsers, and the
+// DURABLE member attribution from the real repository — never the manifest
+// self-report. No realm answer, a refused round trip, an unattributed
+// member, or a poisoned seam ⇒ `undefined` (never a partial table) ⇒ the
+// gate answers `authority-undetermined`. The trusted beneficiary is the
+// fixture's durable attribution: every mount here belongs to a member.
+interface RealmTruth {
+  readonly assembly: ProductionAdmissionAssembly
+  readonly documents: () => AuthorityEnvelopeDocuments
+  generation: number
+  throwFacts?: boolean
+  bindingRevisionBump?: number
+}
+/** Fold one ceiling-module slot into the FACTS contract: a document, a
+ *  `declared` document, or a stated absence. `unavailable` does NOT fold —
+ *  the caller turns that into undefined FACTS (undetermined), never into
+ *  a slot value the verifier would have to interpret. */
+function factSlot(slot: AuthorityDocumentSlot): PaCallFactsCeilingSlot | undefined {
+  if (typeof slot !== 'object') return undefined
+  if (!('status' in slot)) return slot
+  if (slot.status === 'unavailable') return undefined
+  return slot
+}
+const realmTruths = new Map<string, RealmTruth>()
 const paVerifier = createPaEffectsVerifier({
-  assemblyFor: (manifest) => assemblies.get(manifest.realmId),
-  beneficiaryOf: (manifest) => (manifest.member.teamSessionId === P6T4_ROOT ? 'member' : undefined),
+  readCallFacts: async (input) => {
+    const truth = realmTruths.get(input.manifest.realmId)
+    if (truth === undefined) return undefined
+    if (truth.throwFacts === true) throw new Error('the call-level facts adapter exploded (test seam)')
+    const manifest = input.manifest
+    if (input.rootSessionId !== P6T4_ROOT) return undefined
+    const durable = repos.memberInstances.get(P6T4_ROOT, manifest.member.instanceId)
+    if (durable === undefined) return undefined
+    const binding = parseToolBinding({ ...manifest.binding })
+    if (!binding.ok) return undefined
+    const effects = parseRequestedEffectSet(manifest.effects)
+    if (!effects.ok) return undefined
+    const request: AdmissionRequest = Object.freeze({
+      binding: binding.value,
+      member: Object.freeze({ teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) }),
+      callId: manifest.callId,
+      realmId: manifest.realmId,
+      parametersFingerprint: manifest.parametersFingerprint,
+      requestedEffects: effects.value,
+    })
+    const livePlan = truth.assembly.planApproval(request)
+    if (!livePlan.ok) return undefined
+    // `unavailable` is NOT carried into the facts contract: a slot whose
+    // read faulted answers UNDEFINED facts (fail closed at the gate) —
+    // never a slot value the verifier would have to interpret. (The
+    // CENTER's adapter rides the same law; this fake demonstrates it.)
+    const ceiling = truth.documents()
+    const hard = factSlot(ceiling.teamHardEnvelope)
+    const mutation = factSlot(ceiling.permissionMutationEnvelope)
+    if (hard === undefined || mutation === undefined) return undefined
+    return {
+      // the fixture's static layer + the durable overlay store (EMPTY for
+      // every realm here — the stated real state, never a synthesized gen).
+      policySource: { staticLayerRefs: ['a5m1-auth-tpl:directive-policy'], overlayGeneration: 0 },
+      realmId: manifest.realmId,
+      ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+      policyDocument: truth.assembly.policyDocument(),
+      denySources: truth.assembly.denySources(),
+      effects: effects.value,
+      member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
+      beneficiaryAuthority: 'member',
+      binding: truth.bindingRevisionBump === undefined
+        ? binding.value
+        : { ...binding.value, revision: truth.bindingRevisionBump },
+      blueprint: {
+        revision: Number(blueprint.revision),
+        contentHash: String(blueprint.contentHash),
+        templateId: String(durable.templateId),
+        cwd: ROOT_DIR,
+        providerVersion: 'a5p5-plane',
+      },
+      planSnapshot: {
+        approvalCaseId: livePlan.value.approvalCaseId,
+        effectSetFingerprint: livePlan.value.effectSetFingerprint,
+        perEffectRequired: livePlan.value.perEffectRequired,
+      },
+      authorityGeneration: truth.generation,
+    }
+  },
 })
 
 const service: ControlService = createControlService({
@@ -288,7 +371,11 @@ function directAssembly(
     onObserve: () => {},
   })
   if (!built.ok) throw new Error(`assembly refused: ${built.error.message}`)
-  assemblies.set(realmId, built.value)
+  realmTruths.set(realmId, {
+    assembly: built.value,
+    documents: documents ?? ((): AuthorityEnvelopeDocuments => EMPTY_DOCS),
+    generation: 0,
+  })
   return { assembly: built.value, realm: realmId }
 }
 
@@ -1429,6 +1516,178 @@ describe('D (PR358 f5 trichotomy): a THIS-CLASS damaged row never re-reads as a 
     const denied = await resolve(humanCaller(), row.requestId, 'allow')
     expect(denied.decision).toBe('deny')
     expect(denied.reason).toBe('authority-undetermined')
+  })
+})
+
+// ── E. PR358-B (CCR-358a): the call-level FACTS adapter at both gates ───
+//
+// The async-orchestration contract, tested at the SERVICE gates (not a
+// direct port poke): undefined facts, a throwing adapter, and a
+// facts-vs-manifest source mismatch each answer at BOTH the resolve and
+// the guard gate, and NONE of them writes anything but the closed durable
+// fact the deviation itself names: the resolve deviation is the
+// invariant-45 durable DENY (a fact, not a side effect), the guard
+// deviation is a block with ZERO consumption.
+
+async function forgeValidRow(fixture: DirectFixture) {
+  const bytes = manifestBytes(fixture)
+  const digest = canonicalJsonFingerprint(bytes)
+  const row = await service.requestControl({
+    rootSessionId: P6T4_ROOT,
+    caller: memberCaller(WORKER),
+    kind: 'leader-approval',
+    targetInstanceId: WORKER,
+    actionName: PA_CONTROL_ACTION_NAME,
+    toolName: 'team_bash',
+    correlation: fixture.correlation,
+    operationFingerprint: digest,
+    reviewPayload: bytes as never,
+    reviewPayloadDigest: digest,
+  })
+  return { row, digest }
+}
+
+function guardScope(fixture: DirectFixture, digest: string) {
+  return {
+    rootSessionId: P6T4_ROOT,
+    targetInstanceId: WORKER,
+    actionName: PA_CONTROL_ACTION_NAME,
+    toolName: 'team_bash',
+    correlation: fixture.correlation,
+    operationFingerprint: digest,
+  }
+}
+
+describe('E1 (facts undefined ⇒ undetermined at BOTH gates): undefined facts are never a pass, never a consumption', () => {
+  const realm = 'a5m1-auth-realm-e1'
+  const ctx = directAssembly(undefined, realm)
+
+  it('resolve gate: the ALLOW attempt on a valid PA row whose facts cannot be read DENIES durably (authority-undetermined), zero consumption', async () => {
+    const fixture = directFixture(ctx, 'e1-resolve-call')
+    const { row, digest } = await forgeValidRow(fixture)
+    expect(digest).not.toBe('')
+    const saved = realmTruths.get(realm)
+    expect(saved).not.toBeUndefined()
+    realmTruths.delete(realm) // the plane stops answering for this realm
+    try {
+      const decided = await resolve(leaderCaller(), row.requestId, 'allow')
+      expect(decided.decision).toBe('deny')
+      expect(decided.reason).toBe('authority-undetermined')
+    } finally {
+      realmTruths.set(realm, saved as RealmTruth)
+    }
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+  })
+
+  it('guard gate: facts gone AFTER the allow ⇒ block authority-undetermined, ZERO consumption; restored ⇒ the SAME allow consumes ONCE', async () => {
+    const fixture = directFixture(ctx, 'e1-guard-call')
+    const { row, digest } = await forgeValidRow(fixture)
+    const allowed = await resolve(leaderCaller(), row.requestId, 'allow')
+    expect(allowed.decision).toBe('allow')
+    const saved = realmTruths.get(realm)
+    expect(saved).not.toBeUndefined()
+    realmTruths.delete(realm)
+    try {
+      const blocked = await service.guardOperation(guardScope(fixture, digest))
+      expect(blocked.allowed).toBe(false)
+      if (blocked.allowed === false) {
+        expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+        expect(blocked.requestId).toBe(row.requestId)
+      }
+      const st = await state()
+      expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+    } finally {
+      realmTruths.set(realm, saved as RealmTruth)
+    }
+    const ok = await service.guardOperation(guardScope(fixture, digest))
+    expect(ok.allowed).toBe(true)
+    const st2 = await state()
+    expect(st2.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(1)
+  })
+})
+
+describe('E2 (facts adapter THROWS ⇒ undetermined, zero writes): the await deviation is fail-closed, never a pass', () => {
+  const realm = 'a5m1-auth-realm-e2'
+  const ctx = directAssembly(undefined, realm)
+
+  it('resolve gate: a throwing facts adapter DENIES durably (authority-undetermined)', async () => {
+    const fixture = directFixture(ctx, 'e2-resolve-call')
+    const { row } = await forgeValidRow(fixture)
+    const truth = realmTruths.get(realm)
+    expect(truth).not.toBeUndefined()
+    const poison = truth as RealmTruth
+    poison.throwFacts = true
+    try {
+      const decided = await resolve(leaderCaller(), row.requestId, 'allow')
+      expect(decided.decision).toBe('deny')
+      expect(decided.reason).toBe('authority-undetermined')
+    } finally {
+      delete poison.throwFacts
+    }
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+  })
+
+  it('guard gate: the throw AFTER the allow blocks with ZERO consumption; the same allow survives to consume ONCE', async () => {
+    const fixture = directFixture(ctx, 'e2-guard-call')
+    const { row, digest } = await forgeValidRow(fixture)
+    const allowed = await resolve(leaderCaller(), row.requestId, 'allow')
+    expect(allowed.decision).toBe('allow')
+    const truth = realmTruths.get(realm) as RealmTruth
+    truth.throwFacts = true
+    try {
+      const blocked = await service.guardOperation(guardScope(fixture, digest))
+      expect(blocked.allowed).toBe(false)
+      if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.AUTHORITY_UNDETERMINED)
+      const st = await state()
+      expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+    } finally {
+      delete truth.throwFacts
+    }
+    const ok = await service.guardOperation(guardScope(fixture, digest))
+    expect(ok.allowed).toBe(true)
+  })
+})
+
+describe('E3 (facts-vs-manifest source mismatch ⇒ DRIFT): the approval covers the facts it was granted over', () => {
+  const realm = 'a5m1-auth-realm-e3'
+  const ctx = directAssembly(undefined, realm)
+
+  it('the CURRENT binding reports a moved revision after the row ⇒ the ALLOW denies durably (pa-authority-drift), zero consumption', async () => {
+    const fixture = directFixture(ctx, 'e3-binding-call')
+    const { row } = await forgeValidRow(fixture)
+    const truth = realmTruths.get(realm) as RealmTruth
+    truth.bindingRevisionBump = 99
+    try {
+      const decided = await resolve(leaderCaller(), row.requestId, 'allow')
+      expect(decided.decision).toBe('deny')
+      expect(decided.reason).toBe('pa-authority-drift')
+    } finally {
+      delete truth.bindingRevisionBump
+    }
+    const st = await state()
+    expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+  })
+
+  it('the drift arriving AFTER the allow blocks the guard with ZERO consumption; restored facts consume ONCE', async () => {
+    const fixture = directFixture(ctx, 'e3-guard-call')
+    const { row, digest } = await forgeValidRow(fixture)
+    const allowed = await resolve(leaderCaller(), row.requestId, 'allow')
+    expect(allowed.decision).toBe('allow')
+    const truth = realmTruths.get(realm) as RealmTruth
+    truth.bindingRevisionBump = 99
+    try {
+      const blocked = await service.guardOperation(guardScope(fixture, digest))
+      expect(blocked.allowed).toBe(false)
+      if (blocked.allowed === false) expect(blocked.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.PA_AUTHORITY_DRIFT)
+      const st = await state()
+      expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(0)
+    } finally {
+      delete truth.bindingRevisionBump
+    }
+    const ok = await service.guardOperation(guardScope(fixture, digest))
+    expect(ok.allowed).toBe(true)
   })
 })
 

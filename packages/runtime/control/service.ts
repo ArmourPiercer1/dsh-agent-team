@@ -2751,7 +2751,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           })
         }
         if (paRead.state === 'valid') {
-          const denyReason = paEffectsDenyReason(
+          const denyReason = await paEffectsDenyReason(
             'resolve',
             root,
             request.payload.requestId,
@@ -3135,25 +3135,27 @@ export function createControlService(options: ControlServiceOptions): ControlSer
   /**
    * A5-M1: one gate's answer of the all-Effects verification, in DENY-reason
    * shape (`undefined` = covered, allowed to proceed). Called ONLY inside
-   * the per-team lock, at BOTH gates, through the SAME port object. The
-   * port is SYNCHRONOUS and PURE by contract (see `PaEffectsVerifier`);
-   * every deviation — no port, a throw, a non-boolean `ok` — is
-   * `authority-undetermined`, never a pass. The verdict's reason rides the
-   * closed decision vocabulary, so the durable row and the guard block name
-   * the SAME fact.
+   * the per-team lock, at BOTH gates, through the SAME port object. The port
+   * is a SMALL ASYNC ORCHESTRATION by contract (see `PaEffectsVerifier` —
+   * PR358-B root ruling 6): this await happens IN-LOCK, the established
+   * precedent of the awaited `ControlAuthorityRecheckPort`, and the port
+   * never re-enters this service. Every deviation — no port, a rejection, a
+   * throw, a non-boolean `ok` — is `authority-undetermined`, never a pass.
+   * Zero-write either way: this function commits nothing; the verdict only
+   * picks the closed reason the CALLER's next durable fact carries.
    */
-  function paEffectsDenyReason(
+  async function paEffectsDenyReason(
     stage: PaEffectsVerifierStage,
     root: string,
     requestId: string,
     manifest: PaControlManifest,
     decider: ControlCallerRef,
-  ): ControlDecisionReason | undefined {
+  ): Promise<ControlDecisionReason | undefined> {
     const port = options.paEffectsVerifier
     if (port === undefined) return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     let verdict: PaEffectsVerifierVerdict
     try {
-      verdict = port({ stage, rootSessionId: root, requestId, manifest, decider })
+      verdict = await port({ stage, rootSessionId: root, requestId, manifest, decider })
     } catch {
       return CONTROL_DECISION_REASONS.AUTHORITY_UNDETERMINED
     }
@@ -3600,7 +3602,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           }
         }
         if (paRead.state === 'valid') {
-          const denyReason = paEffectsDenyReason(
+          const denyReason = await paEffectsDenyReason(
             'guard',
             root,
             request.payload.requestId,

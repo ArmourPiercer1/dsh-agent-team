@@ -67,7 +67,11 @@
  *    here as a STRUCTURAL minimal interface — the real service satisfies it,
  *    a stand-in that skips the durable row does not;
  *  - zero I/O of its own: no filesystem, no timers except the optional
- *    bounded-wait abort (the wait bridge owns its own poll cadence).
+ *    bounded-wait abort (the wait bridge owns its own poll cadence); the
+ *    verifier's ONE await (PR358-B) reaches only the injected call-level
+ *    facts adapter — the I/O is the adapter's, never this module's, and the
+ *    adapter must be free of the governance coordination lock (root ruling
+ *    point 6).
  *
  * THE SECOND EXPORT — {@link createPaGuardVerifyPort} — is NON-PRODUCTION:
  * a TEST-ONLY diagnostic mirror (see its own doc). PRODUCTION has ONE PA
@@ -84,7 +88,7 @@
  * @module @dsh-agent-team/runtime/operation-permission/pa-control-bridge
  */
 
-import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../domain/tool-governance/src/index.js'
+import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js'
 import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'
 import type {
   AdmissionRequest,
@@ -101,7 +105,7 @@ import {
 // The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
 // module's types file directly (the barrel predates the additive surface;
 // the module declares the closed vocabulary and the strict parser there).
-import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlGuardVerdict,
@@ -111,13 +115,16 @@ import type {
   ControlWaitSignal,
 } from '../control/index.js'
 import type {
+  ControlCallerRef,
+  PaCallFacts,
   PaControlManifest,
   PaEffectsVerifier,
   PaEffectsVerifierInput,
+  PaEffectsVerifierStage,
   PaEffectsVerifierVerdict,
 } from '../control/types.js'
 import { authorityRank, mayReview } from '../governance/authority-ceiling.js'
-import { effectApprovalScope } from '../tool-admission/approval-case.js'
+import { effectApprovalScope, evaluateEffectSetExpansion, planEffectSetApproval, verifyEffectSetApproval } from '../tool-admission/approval-case.js'
 import type { RuntimeAuthority } from '../governance/runtime-authority.js'
 import type { EffectSetApprovalPlan, PresentedApproval } from '../tool-admission/approval-case.js'
 
@@ -575,47 +582,70 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
 
 // ── The third product: the ALL-EFFECTS verifier (the service's injected port) ──
 //
-// The PR358 review fix's PA-side half. The host wires this ONE pure port
-// into `createControlService({ paEffectsVerifier })`; the service then asks
-// the same question, INSIDE the per-team lock, at BOTH gates — before an
-// ALLOW is committed (decider = the real resolving caller) and before the
-// consumption fact is written (decider = the durable allow's decider). The
-// question is the seam's own landing law re-asked against the CURRENT
-// authority/policy facts, derived ONLY from the durable manifest's own
-// snapshots:
+// The PR358 review fix's PA-side half, in its PR358-B form (root ruling 6).
+// The host wires this ONE port into `createControlService({
+// paEffectsVerifier })`; the service asks the same question, INSIDE the
+// per-team lock, at BOTH gates — before an ALLOW is committed (decider = the
+// real resolving caller) and before the consumption fact is written (decider
+// = the durable allow's decider). The port is a SMALL ASYNC ORCHESTRATION:
 //
-//  1. the binding/effect-set snapshots must still reconstruct the domain
-//     request (the domain's own parsers — a snapshot that no longer
-//     re-canonicalizes is UNDETERMINED, never covered);
-//  2. `planApproval` re-derived: a refusal, a moved case identity, or a
-//     moved effect-set fingerprint is DRIFT (the approved question no
-//     longer exists);
-//  3. per effect, `mayReview(decider, beneficiary, freshRequired[i])` —
-//     the fresh per-effect rung is the fused policy∧ceiling requirement
-//     (the walk's own law: a ceiling can raise the bar, never lower it),
-//     so this one legality test per effect walks the FULL set for the
-//     REAL decider (ADR A3-2; the ceiling half is already fused).
+//  0. it awaits its ONE injected adapter (`readCallFacts` — the B dependency
+//     table, implemented CENTER-side) for the COMPLETE call-level facts;
+//     no complete facts, or a throwing adapter, is `authority-undetermined`,
+//     never a guess (there is no defaulted shape of the facts contract);
+//  1. the durable MANIFEST is 对照 only, never a fact source: its snapshot
+//     is cross-checked against the CURRENT facts — binding tuple, member
+//     attribution, case identity, denied-effect provenance (F-2) — and every
+//     mismatch is DRIFT: the approval covers the question AS APPROVED;
+//  2. the re-derivation runs the PURE CORE (`evaluateEffectSetExpansion` →
+//     `planEffectSetApproval` → `verifyEffectSetApproval` — the very
+//     functions the admission kernel walks, never a rewrite) SYNCHRONOUSLY
+//     over the facts' current documents / policy / deny sources /
+//     generation, and the plane's own plan snapshot must tell the SAME
+//     story as that derivation (two reads, one question — disagreement is
+//     drift);
+//  3. per effect, `mayReview(decider, beneficiary, fusedRequired[i])` — the
+//     plan's rung is the fused policy∧ceiling requirement INCLUDING the R-1a
+//     deny floor (ADR A3-2 applied to the full set for the REAL decider).
 //
-// THE LAW IT OBEYS (mirrors `PaEffectsVerifier` in the control types): it
-// is SYNCHRONOUS and PURE — zero mint, zero ledger touch, zero I/O, zero
-// re-entry into the control service; the two gates asking the same port
-// the same question is what makes a drift arriving between decision and
-// consumption refuse at the later gate with zero consumption.
+// THE LAW IT OBEYS (mirrors `PaEffectsVerifier` in the control types): the
+// single await reaches ONLY the injected facts adapter — no re-entry into
+// the control service, no minting, no ledger touch; and (root ruling
+// point 6) the Control per-team lock (b) is NOT the governance coordination
+// lock (a): the verifier and its adapter MUST NEVER hold or wait on (a), so
+// the in-lock await can never invert the one direction this lane may cross.
+// The two gates asking the SAME port the same question is what makes a
+// drift arriving between decision and consumption refuse at the later gate
+// with ZERO consumption.
 
 export interface PaEffectsVerifierDeps {
-  /** The landing assembly the manifest's realm re-derives through (trusted
-   *  wiring — the SAME facts the seam's leg used for this call). A realm
-   *  with no answer is undetermined, never covered. */
-  readonly assemblyFor: (manifest: PaControlManifest) => PaLandingAssembly | undefined
-  /** The trusted beneficiary rung of the manifest's case (assembly wiring,
-   *  never payload data). */
-  readonly beneficiaryOf: (manifest: PaControlManifest) => RuntimeAuthority | undefined
+  /** PR358-B (root ruling 6): THE call-level facts adapter (the B
+   *  dependency table). Implemented CENTER-side — this round only defines
+   *  and AWAITS it. It answers the complete `PaCallFacts` for exactly this
+   *  call from real durable/current reads, or `undefined` when ANY member
+   *  is missing or unreadable (there is no partial shape of the contract,
+   *  and a rejected promise is the same answer as undefined). It MUST NEVER
+   *  hold or wait on the governance coordination lock (root ruling
+   *  point 6). */
+  readonly readCallFacts: (input: {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly manifest: PaControlManifest
+    readonly decider: ControlCallerRef
+    readonly stage: PaEffectsVerifierStage
+  }) => Promise<PaCallFacts | undefined>
   readonly onObserve?: (row: Readonly<Record<string, unknown>> & { readonly stage: string }) => void
 }
 
 export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsVerifier {
   const observe = deps.onObserve ?? (((): void => {}) as NonNullable<PaEffectsVerifierDeps['onObserve']>)
-  return (input: PaEffectsVerifierInput): PaEffectsVerifierVerdict => {
+  const nonEmpty = (value: unknown): value is string => typeof value === 'string' && value.length > 0
+  /** The manifest carries its rungs as STRINGS (durable JSON); the closed
+   *  ladder is re-admitted only through its own stated table — a rung
+   *  outside it means the row lies about its authority. */
+  const closedRung = (rung: string): RuntimeAuthority | undefined =>
+    (PA_CONTROL_MANIFEST_RUNGS as readonly string[]).includes(rung) ? (rung as RuntimeAuthority) : undefined
+  return async (input: PaEffectsVerifierInput): Promise<PaEffectsVerifierVerdict> => {
     const { manifest, decider } = input
     const undetermined = (detail: string): PaEffectsVerifierVerdict => {
       observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'undetermined', detail, requestId: input.requestId })
@@ -629,57 +659,170 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     if (deciderRung === undefined) {
       return undetermined('the durable decider is outside the closed ControlCallerRef vocabulary — its reach cannot be derived')
     }
-    const assembly = deps.assemblyFor(manifest)
-    if (assembly === undefined || typeof assembly.planApproval !== 'function') {
-      return undetermined(`no landing assembly is wired for realm '${manifest.realmId}' — the all-Effects coverage cannot be answered`)
+    const approvedRung = closedRung(manifest.requiredAuthority)
+    if (approvedRung === undefined) {
+      return undetermined(`the durable manifest carries required rung '${String(manifest.requiredAuthority)}', outside the closed ladder — the row lies about its own authority`)
     }
-    const beneficiary = deps.beneficiaryOf(manifest)
-    if (beneficiary === undefined) return undetermined('no trusted beneficiary rung is wired for this case')
-    const binding = parseToolBinding({ ...manifest.binding })
-    if (!binding.ok) {
-      return undetermined(`the manifest binding snapshot no longer reconstructs a domain ToolBinding (${JSON.stringify(binding.problems).slice(0, 160)})`)
-    }
-    const effectSet = parseRequestedEffectSet(manifest.effects)
-    if (!effectSet.ok) {
-      return undetermined(`the manifest effect set no longer reconstructs (${JSON.stringify(effectSet.problems).slice(0, 160)})`)
-    }
-    if (effectSet.value.fingerprint !== manifest.effects.fingerprint) {
-      return drifted(`the effect set re-canonicalizes to ${effectSet.value.fingerprint}, not the manifest's ${manifest.effects.fingerprint}`)
-    }
-    const request: AdmissionRequest = Object.freeze({
-      binding: binding.value,
-      member: Object.freeze({ teamSessionId: manifest.member.teamSessionId, instanceId: manifest.member.instanceId }),
-      callId: manifest.callId,
-      realmId: manifest.realmId,
-      parametersFingerprint: manifest.parametersFingerprint,
-      requestedEffects: effectSet.value,
-    })
-    let fresh: GovernanceResult<EffectSetApprovalPlan>
-    try {
-      fresh = assembly.planApproval(request)
-    } catch (error: unknown) {
-      return undetermined(`the authority plane refused to answer at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`)
-    }
-    if (!fresh.ok) {
-      return drifted(`the authority plane refused the re-derivation at the ${input.stage} gate (${fresh.error.message}) — the approved effect set no longer has an approvable path`)
-    }
-    if (fresh.value.approvalCaseId !== manifest.approvalCaseId) {
-      return drifted(`the approval case identity moved (${manifest.approvalCaseId} → ${fresh.value.approvalCaseId}) — this row approves a question that no longer exists`)
-    }
-    if (fresh.value.effectSetFingerprint !== manifest.effects.fingerprint) {
-      return drifted(`the effect-set fingerprint moved at re-derivation (${manifest.effects.fingerprint} → ${fresh.value.effectSetFingerprint})`)
-    }
-    if (fresh.value.perEffectRequired.length !== manifest.effects.effects.length) {
-      return undetermined('the fresh per-effect derivation does not cover every effect of the set')
-    }
-    for (let i = 0; i < fresh.value.perEffectRequired.length; i += 1) {
-      const required = fresh.value.perEffectRequired[i]
-      if (required === undefined) return undetermined(`the fresh per-effect derivation is missing entry ${String(i)}`)
-      if (!mayReview(deciderRung, beneficiary, required)) {
-        return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${beneficiary}'`)
+
+    // ── 0. THE FACTS — the ONE await of the orchestration ────────────────
+    let facts: PaCallFacts | undefined = input.facts
+    if (facts === undefined) {
+      try {
+        facts = await deps.readCallFacts({
+          rootSessionId: input.rootSessionId,
+          requestId: input.requestId,
+          manifest,
+          decider,
+          stage: input.stage,
+        })
+      } catch (error: unknown) {
+        return undetermined(`the call-level facts adapter refused at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)}) — unreadable facts are never guessed`)
       }
     }
-    observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(fresh.value.perEffectRequired.length) })
+    if (facts === undefined) {
+      return undetermined(`no complete call-level facts could be read for this row at the ${input.stage} gate — the adapter answers undefined for ANY missing or unreadable member of the facts contract, and coverage is never assumed`)
+    }
+    if (typeof facts.realmId !== 'string' || facts.realmId !== manifest.realmId) {
+      return undetermined(`the facts adapter answered for realm '${String(facts.realmId)}', not the row's '${manifest.realmId}' — those are not THIS call's facts`)
+    }
+    if (!Number.isInteger(facts.authorityGeneration) || (facts.authorityGeneration as number) < 0
+      || !Number.isInteger(facts.policySource?.overlayGeneration) || (facts.policySource?.overlayGeneration as number) < 0) {
+      return undetermined('the facts carry a malformed generation counter — a constant or fractional generation is exactly the synthesized-source failure the facts contract forbids')
+    }
+    const staticRefs = facts.policySource?.staticLayerRefs
+    if (!Array.isArray(staticRefs) || staticRefs.length === 0 || staticRefs.some((ref) => !nonEmpty(ref))) {
+      return undetermined('the facts carry an empty or malformed static-layer source tuple — policy facts with no stated source are not facts')
+    }
+    const blueprint = facts.blueprint
+    if (blueprint === null || typeof blueprint !== 'object' || !Number.isInteger(blueprint.revision)
+      || !nonEmpty(blueprint.contentHash) || !nonEmpty(blueprint.templateId) || !nonEmpty(blueprint.cwd) || !nonEmpty(blueprint.providerVersion)) {
+      return undetermined('the facts blueprint tuple is malformed — the plane the facts were read from is not established')
+    }
+
+    // ── 1. 对照: the durable snapshot against the CURRENT facts ──────────
+    // The manifest is never a fact source; every field it shares with the
+    // current reads must still hold, or the approved question has moved
+    // (DRIFT — the row approves the question AS APPROVED, not its successor).
+    const mb = manifest.binding
+    const fb = facts.binding
+    if (fb === null || typeof fb !== 'object'
+      || fb.bindingId !== mb.bindingId || fb.agentScopeKey !== mb.agentScopeKey || fb.toolName !== mb.toolName
+      || fb.definitionIdentity !== mb.definitionIdentity || fb.providerId !== mb.providerId
+      || fb.implementationOrigin !== mb.implementationOrigin || fb.executionBoundary !== mb.executionBoundary
+      || fb.status !== mb.status || fb.policyGeneration !== mb.policyGeneration
+      || fb.authorityGeneration !== mb.authorityGeneration || fb.revision !== mb.revision) {
+      return drifted(`the binding tuple moved after the row was written (approved '${mb.bindingId}'@r${String(mb.revision)}/p${String(mb.policyGeneration)}/a${String(mb.authorityGeneration)}, current '${String(fb?.bindingId)}'@r${String(fb?.revision)}/p${String(fb?.policyGeneration)}/a${String(fb?.authorityGeneration)}) — the approval covers the binding AS APPROVED, not its successor`)
+    }
+    if (canonicalJsonFingerprint(fb.assurance) !== canonicalJsonFingerprint(mb.assurance)) {
+      return drifted(`the binding's assurance cell moved after the row was written — the assurance the approval was granted under is not the assurance standing now`)
+    }
+    if (facts.member.teamSessionId !== manifest.member.teamSessionId || facts.member.instanceId !== manifest.member.instanceId) {
+      return drifted(`the durable member attribution moved (${manifest.member.teamSessionId}/${manifest.member.instanceId} → ${facts.member.teamSessionId}/${facts.member.instanceId}) — this row approves another member's operation`)
+    }
+    if (facts.effects.fingerprint !== manifest.effects.fingerprint) {
+      return drifted(`the effect set moved (${manifest.effects.fingerprint} → ${facts.effects.fingerprint}) — a multi-effect approval covers the WHOLE set it saw`)
+    }
+
+    // ── 2. THE PURE-CORE RE-DERIVATION, synchronous over the facts ───────
+    // (the ceiling pair's slot members assign STRUCTURALLY — no cast: an
+    // `unavailable` slot is unrepresentable in the facts contract, a read
+    // that faulted is undefined FACTS, decided above as undetermined).
+    const documents = facts.ceiling
+    let expansion
+    try {
+      expansion = evaluateEffectSetExpansion(facts.effects, facts.realmId, facts.policyDocument)
+    } catch (error: unknown) {
+      return undetermined(`the expansion plane threw at the ${input.stage} gate (${error instanceof Error ? error.message : String(error)})`)
+    }
+    if (expansion.unapprovable !== null) {
+      return drifted(`the approved set is no longer approvable on the expansion plane (effect ${String(expansion.unapprovable.effectIndex)}: ${expansion.unapprovable.detail})`)
+    }
+    if (expansion.needsApproval.length === 0) {
+      return drifted('the approved effect set asks nothing of any authority any more — the approved question no longer exists (nothing-to-plan)')
+    }
+    const planned = planEffectSetApproval({
+      effects: facts.effects,
+      needApproval: expansion.needsApproval,
+      ...(expansion.policyDenied.length === 0 ? {} : { policyDenied: new Set(expansion.policyDenied) }),
+      denySources: facts.denySources,
+      realmId: facts.realmId,
+      beneficiaryAuthority: facts.beneficiaryAuthority,
+      documents,
+      authorityGeneration: facts.authorityGeneration,
+      teamSessionId: facts.member.teamSessionId,
+      instanceId: facts.member.instanceId,
+    })
+    if (!planned.ok) {
+      return drifted(`the authority plane refuses the re-derivation at the ${input.stage} gate (${planned.unapprovable.detail}) — the approved effect set no longer has an approvable path`)
+    }
+    if (planned.value.approvalCaseId !== manifest.approvalCaseId) {
+      return drifted(`the approval case identity moved (${manifest.approvalCaseId} → ${planned.value.approvalCaseId}) — this row approves a question that no longer exists`)
+    }
+    if (planned.value.perEffectRequired.length !== facts.effects.effects.length) {
+      return undetermined('the fresh per-effect derivation does not cover every effect of the set')
+    }
+    // F-2: the case is not only its MAX rung — the DENIED-EFFECT provenance
+    // it opened over is part of WHICH question was approved.
+    const manifestDenied = manifest.deniedEffects
+    const freshDenied = planned.value.deniedEffects
+    if (manifestDenied.length !== freshDenied.length
+      || manifestDenied.some((carried, i) => {
+        const now = freshDenied[i]
+        return now === undefined || carried.effectIndex !== now.effectIndex || carried.requiredAuthority !== now.requiredAuthority
+      })) {
+      return drifted(`the denied-effect provenance moved (approved ${JSON.stringify(manifestDenied)}, the plane now answers ${JSON.stringify(freshDenied)}) — a different question is standing (F-2)`)
+    }
+    // TWO CURRENT READS, ONE QUESTION: the plane's own live plan snapshot
+    // must agree with the pure-core derivation over the same facts —
+    // sources that contradict each other answer NO coverage question.
+    const snapshot = facts.planSnapshot
+    if (snapshot.approvalCaseId !== planned.value.approvalCaseId
+      || snapshot.effectSetFingerprint !== planned.value.effectSetFingerprint
+      || snapshot.perEffectRequired.length !== planned.value.perEffectRequired.length
+      || snapshot.perEffectRequired.some((rung, i) => rung !== planned.value.perEffectRequired[i])) {
+      return drifted('the call-level sources disagree about the CURRENT question (the plane\'s plan snapshot versus the pure-core re-derivation over the same facts) — no coverage can be answered from contradictory facts')
+    }
+
+    // ── 3. THE EXECUTION-BOUNDARY RE-CHECK (pure core, per effect) ───────
+    // The carried denied-effect rungs re-enter the closed ladder through
+    // their stated table (no blind casts on an authority path).
+    const carriedDenied: { readonly effectIndex: number; readonly requiredAuthority: RuntimeAuthority }[] = []
+    for (const carried of manifestDenied) {
+      const rung = closedRung(carried.requiredAuthority)
+      if (rung === undefined) {
+        return undetermined(`the durable manifest carries denied-effect ${String(carried.effectIndex)} at rung '${String(carried.requiredAuthority)}', outside the closed ladder — the row lies about its own authority`)
+      }
+      carriedDenied.push({ effectIndex: carried.effectIndex, requiredAuthority: rung })
+    }
+    const presented = verifyEffectSetApproval({
+      effects: facts.effects,
+      realmId: facts.realmId,
+      approval: {
+        approvalCaseId: manifest.approvalCaseId,
+        reviewerAuthority: deciderRung,
+        beneficiaryAuthority: facts.beneficiaryAuthority,
+        requiredAuthorityAtCreation: approvedRung,
+        effectSetFingerprint: manifest.effects.fingerprint,
+        authorityGenerationAtCreation: manifest.authorityGeneration,
+        ...(carriedDenied.length === 0 ? {} : { deniedEffectsAtCreation: carriedDenied }),
+      },
+      currentAuthorityGeneration: facts.authorityGeneration,
+      documents,
+    })
+    if (!presented.ok) {
+      return drifted(`the execution-boundary re-check refuses at the ${input.stage} gate (${presented.error.message})`)
+    }
+
+    // ── 4. per-effect ladder walk for the REAL decider (ADR A3-2, fused
+    //      rung including the R-1a deny floor) ─────────────────────────────
+    for (let i = 0; i < planned.value.perEffectRequired.length; i += 1) {
+      const required = planned.value.perEffectRequired[i]
+      if (required === undefined) return undetermined(`the fresh per-effect derivation is missing entry ${String(i)}`)
+      if (!mayReview(deciderRung, facts.beneficiaryAuthority, required)) {
+        return drifted(`effect ${String(i)} now requires '${required}' at the ${input.stage} gate; the durable decider '${deciderRung}' cannot cover it for beneficiary '${facts.beneficiaryAuthority}'`)
+      }
+    }
+    observe({ stage: 'pa-verifier', gate: input.stage, outcome: 'covered', requestId: input.requestId, effects: String(facts.effects.effects.length) })
     return { ok: true }
   }
 }
@@ -821,7 +964,7 @@ export function createPaGuardVerifyPort(deps: Pick<PaControlBridgeDeps, 'control
         if (input.parametersFingerprint !== undefined && input.parametersFingerprint !== paRead.manifest.parametersFingerprint) {
           return { allowed: false, reason: CONTROL_GUARD_BLOCK_REASONS.SCOPE_MISMATCH, requestId: candidate.requestId }
         }
-        const verdict = deps.verifier({
+        const verdict = await deps.verifier({
           stage: 'guard',
           rootSessionId: root,
           requestId: candidate.requestId,
