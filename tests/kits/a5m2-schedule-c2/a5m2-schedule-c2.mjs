@@ -60,7 +60,7 @@
  *          et al.) landed only in cf2555fb3.
  */
 const PIN_PKG = 'dsh-agent-team-0.1.1-alpha.2.tgz' // ROOT-level package
-const PIN_PKG_SHA256 = 'PENDING-CENTER-CANONICAL' // center's canonical root-package pin (cf2555fb3-era); kit refuses on placeholder
+const PIN_PKG_SHA256 = 'eda06b4a78bba180c0acef1b25237f3f741917385cd0728ee66adc737b1cd09d' // CENTER CANONICAL rootpack @874f3ae0d (3,857,455B/1821 entries; re-measured by this lane at out-874f3ae0d-20261023T213601Z, identical); kit still refuses on placeholder
 const PIN_PKG_TGZ_BYTES_MAX = 4_000_000 // measured lane packing 3,851,629B (a66f50886, RC 0); guard against bulk additions
 
 // WORLD BUDGET (root 21:29: two test worlds combined <=500MB, THIS lane
