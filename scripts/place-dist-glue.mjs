@@ -179,6 +179,18 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
   },
+  // A5M2-G1-WIRE (root ruling 15:28 工具适配不等待中心接线): the plane now
+  // imports the committed G1 adapter module by relative specifier (Gate 0f
+  // reads `A5_G1_RECORD_SPECS` / the adapter-revision constant off the
+  // frozen dispatch index — no arm authority crosses). Without this
+  // placement the dist copy of the plane dies with ERR_MODULE_NOT_FOUND on
+  // the strict `files: ["dist"]` install face; the module's own cross-module
+  // leg lands on tsc's OWN emit of the domain tool-governance index — inside
+  // the mirror, the same closure law as `image.mjs` above.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

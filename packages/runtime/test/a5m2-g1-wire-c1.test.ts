@@ -1,0 +1,998 @@
+/**
+ * A5M2-G1-WIRE (root ruling 15:28: 工具适配不等待中心接线) — the committed
+ * G1 captured-native-delegate adapter rows WIRED into the production tool
+ * plane along the established governed-row pattern, assembly level.
+ *
+ * What this spec proves (and NOTHING more):
+ *  - the closed `g1Enabled` key + `backends.g1` injection obey the SAME
+ *    pairing law as todo/write/image (both directions refused; a non-boolean
+ *    gate is a config defect; zero flip with the key absent);
+ *  - Gate 0f keeps the four-tier law in CODE: the PURE-QUERY trio
+ *    (`cordis_inspect_list` 53, `cordis_inspect_query` 54,
+ *    `team_list_pending_control` 85) is the closed placement table; the other
+ *    eleven records stay declared/INACTIVE and a mount that tries to place
+ *    one is refused, as is a declared (no-capture) row — measured at BOTH
+ *    levels (the module's own refusal and the plane's refusal);
+ *  - placement at the FIXED native spellings carries the CAPTURED native
+ *    description/parameters bytes verbatim (the captures are built with the
+ *    REAL host `defineTool` from the pinned baseline, so `parameters` is the
+ *    canonical JSON Schema the host face publishes — never re-lifted), and
+ *    the placement feed answers the RUNTIME (placed-def) definition identity
+ *    the seam minted for each placed row — strictly separate from the
+ *    capture-side identity the adapter's review payload carries;
+ *  - the wired trio walks THIS plane's ONE PA admission (shared token
+ *    ledger, ONE correlation per flight, the real durable Control row through
+ *    the real ControlService, the REAL open plus the fresh final edge's
+ *    consumedProof as the ONLY door to the row body — admit `ok` alone is
+ *    never a consumption, exactly the G2-wire precedent — the ONE-shot
+ *    consumption, the fresh recheck at the edge), and the BODY is the
+ *    adapter row's own `delegate` entering the captured native face exactly
+ *    once — including the CURRENT-facts law: a topology that moves during
+ *    the approval wait refuses AFTER consumption with zero native entry;
+ *  - exception paths leave NO residue: a refused call creates no row and
+ *    never enters native, a cancelled call creates no row, the consumed
+ *    stale plan never enters native and never re-runs, every refusal/cancel
+ *    settles its token;
+ *  - the family-block seam is MEASURED, not papered over: the committed
+ *    `PA_FAMILY_TARGET_RULES` registers no structure for the G1 families, so
+ *    this round registers NOTHING in the governed-family table and walks the
+ *    plain PA row — the FULL family block IS pushed into the durable leg
+ *    (both refusal directions measured on a real walk's own leg input, zero
+ *    row out), and the named gap rides the report.
+ *
+ * Disclosure (the lane/bridge specs own the REAL halves): the native
+ * definitions are host-`defineTool` products whose bodies mirror the pinned
+ * published law (tool-cordis index.ts: the list answers
+ * `{ providers: ctx.cordisInspect.list() }`; the team pending list mirrors
+ * listPendingControlSpec's `pending-control-listed` shape and the Leader-
+ * only law is owned by the lane spec) — the REAL host registry answers are
+ * Host-side acceptance (接线未测 until the Host window runs; assembly legs
+ * never mint 已测试). NO Host, NO network, NO :3080; worlds are
+ * workspace-internal and removed after.
+ *
+ * @module @dsh-agent-team/runtime/test/a5m2-g1-wire-c1
+ */
+import { describe, it, expect, afterAll } from 'vitest'
+import { mkdirSync, rmSync, existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+import { findTestRepoRoot, homeRoot } from '../../../tests/paths.mjs'
+import {
+  createBlueprintSnapshotRef,
+  parseBlueprintContentHash,
+  parseBlueprintId,
+  parseBlueprintRevision,
+  parseChildSessionId,
+  parseInstanceId,
+  parseTemplateId,
+} from '../../contracts/src/index.js'
+import { createBlueprintCatalog, parseBlueprint } from '../../domain/blueprint/src/index.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
+import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../domain/tool-governance/src/index.js'
+import type { ToolBinding } from '../../domain/tool-governance/src/index.js'
+import { createTeamDomain } from '../../storage/repositories/index.js'
+import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
+import { createControlService } from '../control/index.js'
+import type { ControlRequestRecord, ControlService } from '../control/index.js'
+import { parsePaControlManifest, validatePaFamilyTarget } from '../control/types.js'
+import type { PaCallFactsCeilingSlot } from '../control/types.js'
+import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
+import { untestedAssurance } from '../tool-dispatch/index.js'
+import type { ProductionAdmissionAssembly } from '../tool-admission/index.js'
+import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-governance/src/index.js'
+import {
+  createPaControlLeg,
+  createPaEffectsVerifier,
+} from '../operation-permission/pa-control-bridge.js'
+import type { PaControlLegInput, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
+import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
+import {
+  P6T4_BLUEPRINT_SOURCE,
+  P6T4_NOW,
+  P6T4_ROOT,
+  leaderCaller,
+  memberCaller,
+  p6t4Seed,
+} from './p6t4-helpers.js'
+
+const REPO = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
+if (REPO === null) throw new Error('a5m2-g1-wire: no repo root carrying tests/paths.mjs — failing closed')
+const STAMP = new Date().toISOString().replace(/[:.]/g, '-')
+const WORLD_ROOT = join(homeRoot(REPO), `a5m2-g1-wire-${STAMP}`)
+afterAll(() => { rmSync(WORLD_ROOT, { recursive: true, force: true }) })
+
+let worldSeq = 0
+function worldDir(label: string): string {
+  const dir = join(WORLD_ROOT, `${String(++worldSeq)}-${label}`)
+  mkdirSync(dir, { recursive: true })
+  return dir
+}
+
+// ── REAL host products from the pristine baseline (r9 pattern; fail closed) ─
+const HOST_TOOLS_LIB = join(REPO, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+if (!existsSync(HOST_TOOLS_LIB)) throw new Error(`pristine host tools lib absent (${HOST_TOOLS_LIB}); failing closed`)
+const HOST_TOOLS = (await import(pathToFileURL(HOST_TOOLS_LIB).href)) as unknown as {
+  defineTool: (options: Record<string, unknown>) => HostNativeDef
+  validateJsonSchemaValue: (schema: unknown, value: unknown, path: string) => string[]
+}
+interface HostNativeDef {
+  name: string
+  description: string
+  parameters: Record<string, unknown>
+  output: { schema: Record<string, unknown>; render: (args: unknown, value: unknown) => unknown[] }
+  execute: (args: never, exec: Record<string, unknown>) => Promise<unknown>
+}
+
+// ── the plane + the committed G1 adapter module (hand-cast per convention) ─
+const planeModule = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as {
+  createTeamToolPlaneAssembly: (input: Record<string, unknown>) => PlaneResult
+  A5_G1_PURE_QUERY_MOUNT_NAMES: readonly ['cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control']
+}
+const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as {
+  A5_G1_RECORD_SPECS: Record<string, { family: string; recordIndex: number; capture: string }>
+  A5_G1_ADAPTER_REVISION: number
+  mountG1SurfaceAdapter: (recordName: string, deps: Record<string, unknown>) => G1Row
+}
+interface G1Classified {
+  ok: boolean
+  code?: string
+  detail?: string
+  plan?: unknown
+  effects?: unknown
+  parametersFingerprint?: string
+  reviewPayload?: {
+    familyId: string
+    adapterRevision: number
+    providerIdentity: string
+    definitionIdentity: string | null
+    targetManifest: Record<string, unknown>
+  }
+}
+interface G1Row {
+  name: string
+  familyId: string
+  recordIndex: number
+  capturePresent: boolean
+  description: string | null
+  parameters: Record<string, unknown> | null
+  definitionIdentity: string | null
+  classify: (args: unknown, callId: string) => G1Classified
+  delegate: (plan: unknown, ctx: { exec?: Record<string, unknown> }) => Promise<{ ok: boolean; code?: string; detail?: string; value?: unknown; settled?: string }>
+}
+
+interface PlaneAssemblyValue {
+  ownNames: readonly string[]
+  definitions: ReadonlyArray<{
+    name: string
+    description: string
+    parameters: unknown
+    output?: { schema: unknown; render: unknown }
+    execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
+  }>
+  placementFeed: (name: string) => { definitionIdentity?: string; realmId: string } | undefined
+  livePaPlan: Map<string, { approvalCaseId: string; effectSetFingerprint: string; perEffectRequired: unknown[]; requestedEffects?: unknown }>
+  realmId: string
+  assembly: ProductionAdmissionAssembly
+  backends: { g1?: G1Row[] }
+  g1PlacementTruth: () => ReadonlyArray<{ recordName: string; familyId: string; recordIndex: number; state: string; why?: string; adapterRevision?: number }>
+}
+interface PlaneResult {
+  ok: boolean
+  code?: string
+  message?: string
+  value?: PlaneAssemblyValue
+}
+
+// ── the ONE durable world (real TeamDomain rows + real ControlService) ────
+const CHAIN_WORLD = worldDir('chain')
+const seam = new FileStorageSeam(CHAIN_WORLD)
+const domain = await createTeamDomain(seam)
+const blueprint = parseBlueprint(P6T4_BLUEPRINT_SOURCE)
+const catalog = createBlueprintCatalog([blueprint])
+const repos = domain.repositories
+await repos.teamSessions.put({
+  rootSessionId: P6T1_FIXTURE.rootSessionId,
+  blueprint: createBlueprintSnapshotRef({
+    blueprintId: parseBlueprintId(String(blueprint.blueprintId)),
+    revision: parseBlueprintRevision(String(blueprint.revision)),
+    contentHash: parseBlueprintContentHash(String(blueprint.contentHash)),
+  }),
+  defaultWorkspace: P6T1_FIXTURE.defaultWorkspace,
+  createdAt: P6T1_FIXTURE.createdAt,
+  generation: 1,
+})
+await repos.sessionBindings.put({ kind: 'team-root', schemaVersion: 1, sessionId: P6T1_FIXTURE.rootSessionId })
+const WORKER = String(p6t4Seed('worker').instanceId)
+for (const name of ['leader', 'worker'] as const) {
+  const seed = p6t4Seed(name)
+  await repos.memberInstances.put({
+    rootSessionId: P6T1_FIXTURE.rootSessionId,
+    instanceId: parseInstanceId(String(seed.instanceId)),
+    templateId: parseTemplateId(String(seed.templateId)),
+    label: String(seed.label),
+    childSessionId: parseChildSessionId(String(seed.childSessionId)),
+    lifecycle: 'RUNNING',
+    createdAt: P6T1_FIXTURE.createdAt,
+    activityVersion: 1,
+  })
+}
+
+const HEADER_ID = 'ses-a5m2-g1-header'
+const PROVIDER_ID = 'a5p5-plane'
+const DIRECT_POLICY: TemplatePermissionPolicy = Object.freeze({ default: 'ask', allow: [], ask: [], deny: [] })
+const EMPTY_DOCS: AuthorityEnvelopeDocuments = Object.freeze({
+  teamHardEnvelope: Object.freeze({ rules: [] }),
+  permissionMutationEnvelope: Object.freeze({ status: 'absent' as const }),
+})
+function factSlot(slot: unknown): PaCallFactsCeilingSlot | undefined {
+  if (slot === null || typeof slot !== 'object') return undefined
+  if ('status' in (slot as Record<string, unknown>) && (slot as { status?: string }).status === 'unavailable') return undefined
+  return slot as PaCallFactsCeilingSlot
+}
+
+const registryModule = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+  A5_GOVERNED_FAMILIES: Record<string, { familyId: string; adapterRevision: number; providerIdentity: string }>
+  a5GovernedFamilyFor: (definitionIdentity: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
+  registerA5GovernedFamily: (definitionIdentity: string, entry: { familyId: string; adapterRevision: number; providerIdentity: string }) => void
+}
+const familyTable = registryModule.A5_GOVERNED_FAMILIES
+const a5GovernedFamilyFor = registryModule.a5GovernedFamilyFor
+const registerA5GovernedFamily = registryModule.registerA5GovernedFamily
+
+interface RealmTruth { readonly assembly: ProductionAdmissionAssembly; plane?: PlaneAssemblyValue }
+const realmTruths = new Map<string, RealmTruth>()
+
+const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
+  const truth = realmTruths.get(input.manifest.realmId)
+  if (truth === undefined) return undefined
+  if (input.rootSessionId !== P6T4_ROOT) return undefined
+  const durable = repos.memberInstances.get(P6T4_ROOT, input.manifest.member.instanceId)
+  if (durable === undefined) return undefined
+  const binding = parseToolBinding({ ...input.manifest.binding })
+  if (!binding.ok) return undefined
+  const effects = parseRequestedEffectSet(input.manifest.effects)
+  if (!effects.ok) return undefined
+  const request: AdmissionRequest = Object.freeze({
+    binding: binding.value,
+    member: Object.freeze({ teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) }),
+    callId: input.manifest.callId,
+    realmId: input.manifest.realmId,
+    parametersFingerprint: input.manifest.parametersFingerprint,
+    requestedEffects: effects.value as RequestedEffectSet,
+  })
+  const livePlan = truth.assembly.planApproval(request)
+  if (!livePlan.ok) return undefined
+  const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
+  const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
+  if (hard === undefined || mutation === undefined) return undefined
+  const family = a5GovernedFamilyFor(String(binding.value.definitionIdentity))
+  return {
+    policySource: { staticLayerRefs: ['a5m2-g1-wire-tpl:directive-policy'], overlayGeneration: 0 },
+    realmId: input.manifest.realmId,
+    ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+    policyDocument: truth.assembly.policyDocument(),
+    denySources: truth.assembly.denySources(),
+    effects: effects.value as RequestedEffectSet,
+    member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
+    beneficiaryAuthority: 'member',
+    binding: binding.value,
+    blueprint: {
+      revision: String(blueprint.revision),
+      contentHash: String(blueprint.contentHash),
+      templateId: 'a5m2-g1-wire-tpl',
+      cwd: CHAIN_WORLD,
+      providerVersion: PROVIDER_ID,
+    },
+    planSnapshot: {
+      approvalCaseId: livePlan.value.approvalCaseId,
+      effectSetFingerprint: livePlan.value.effectSetFingerprint,
+      perEffectRequired: livePlan.value.perEffectRequired,
+    },
+    authorityGeneration: 0,
+    ...(family === undefined ? {} : { governedFamily: family }),
+  }
+}
+const paVerifier = createPaEffectsVerifier({ readCallFacts: verifierReadCallFacts })
+
+const service: ControlService = createControlService({
+  teamDomain: domain,
+  blueprintCatalog: catalog,
+  externalPolicyFacts: async () => makeExternalPolicyFacts(),
+  now: () => P6T4_NOW,
+  waitPollIntervalMs: 5,
+  paEffectsVerifier: paVerifier,
+})
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+async function stateNow() {
+  return service.listControlState(P6T4_ROOT)
+}
+async function waitRowForCall(callId: string, timeoutMs = 20_000): Promise<ControlRequestRecord> {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const found = (await stateNow()).requests.find((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === callId)
+    if (found !== undefined) return found
+    if (Date.now() > deadline) throw new Error(`the durable control row for ${callId} never appeared`)
+    await sleep(25)
+  }
+}
+
+// ── the REAL host face products (defineTool @ the pinned baseline) ─────────
+// The captures the adapter rows govern are built with the host's OWN
+// defineTool, so `parameters` is the canonical JSON Schema the pinned face
+// publishes (never re-lifted) and `output { schema, render }` is the pair the
+// injection carries (the adapter row captures description/parameters, not
+// output — the plane invents none, so the integrator supplies the CAPTURED
+// pair, verbatim from the same product).
+const INSPECT_LIST_DESCRIPTION = 'List every Cordis Inspect Provider currently known to the Host (pinned face mirror).'
+const INSPECT_QUERY_DESCRIPTION = 'Run a read-only query declared by an Inspect Provider (pinned face mirror).'
+const PENDING_LIST_DESCRIPTION = 'List this Team unresolved approvals across every carrier (lane face mirror; Leader-only law owned by the lane spec).'
+
+interface InspectTopology { topologyRevision: number; topologyDigest: string; allowed: Array<{ platform: string; provider: string; method: string }> }
+
+interface NativeCall { args: Record<string, unknown>; exec: Record<string, unknown> }
+interface TrioBag<T> { cordis_inspect_list: T; cordis_inspect_query: T; team_list_pending_control: T }
+
+function makeCaptures(topology: () => InspectTopology) {
+  const nativeCalls: TrioBag<NativeCall[]> = {
+    cordis_inspect_list: [], cordis_inspect_query: [], team_list_pending_control: [],
+  }
+  const PROVIDERS = [
+    { platform: 'host', id: 'dsh_compute', purpose: 'compute', methods: [{ name: 'compute_health' }, { name: 'compute_list_jobs' }] },
+    { platform: 'host', id: 'rogue-provider', purpose: 'unauthorized', methods: [{ name: 'anything' }] },
+  ]
+  const listDef = HOST_TOOLS.defineTool({
+    name: 'cordis_inspect_list',
+    description: INSPECT_LIST_DESCRIPTION,
+    parameters: {},
+    output: { schema: { type: 'json' }, render: (_a: unknown, v: unknown) => [{ type: 'text', text: JSON.stringify(v) }] },
+    execute(_args: Record<string, unknown>, _exec: Record<string, unknown>) {
+      nativeCalls.cordis_inspect_list.push({ args: {}, exec: _exec })
+      // The pinned host law (tool-cordis index.ts): the REAL list enumerates
+      // ALL providers; the row's constraint is the adapter's own work.
+      return Promise.resolve({ providers: PROVIDERS.map((p) => ({ ...p })) })
+    },
+  })
+  const queryDef = HOST_TOOLS.defineTool({
+    name: 'cordis_inspect_query',
+    description: INSPECT_QUERY_DESCRIPTION,
+    parameters: {
+      platform: { type: 'string', required: true, enum: ['host', 'client'], description: 'Runtime platform that owns the Provider.' },
+      provider: { type: 'string', required: true, description: 'Exact Provider ID returned by cordis_inspect_list.' },
+      method: { type: 'string', required: true, description: 'Exact method name declared by the Provider manifest.' },
+      input: { type: 'json', description: 'Optional query input.' },
+    },
+    output: { schema: { type: 'json' }, render: (_a: unknown, v: unknown) => [{ type: 'text', text: JSON.stringify(v) }] },
+    async execute(args: { platform: string; provider: string; method: string }, exec: Record<string, unknown>) {
+      nativeCalls.cordis_inspect_query.push({ args: { ...args }, exec })
+      return { platform: args.platform, provider: args.provider, method: args.method, answer: 'provider-answer' }
+    },
+  })
+  const pendingDef = HOST_TOOLS.defineTool({
+    name: 'team_list_pending_control',
+    description: PENDING_LIST_DESCRIPTION,
+    parameters: {
+      rootSessionId: { type: 'string', required: true, description: 'The Team root session id.' },
+      requestToken: { type: 'string', required: true, description: 'The invocation request token.' },
+      limit: { type: 'integer', description: 'Optional page size.' },
+    },
+    output: { schema: { type: 'json' }, render: (_a: unknown, v: unknown) => [{ type: 'text', text: JSON.stringify(v) }] },
+    async execute(args: { rootSessionId: string; limit?: number }, exec: Record<string, unknown>) {
+      nativeCalls.team_list_pending_control.push({ args: { ...args }, exec })
+      // Mirror of listPendingControlSpec's published return (tools.ts:1186-
+      // 1191): the ledger page rides the same shape; the REAL ledger + the
+      // Leader-only caller law are owned by the lane spec.
+      const page = [{ requestId: 'req-mirror-1', status: 'pending', requestSequence: 1 }]
+      const limit = args.limit ?? 50
+      return { status: 'pending-control-listed', rootSessionId: args.rootSessionId, pending: page.slice(0, limit), count: Math.min(page.length, limit), truncated: page.length > limit }
+    },
+  })
+  void topology
+  return { defs: { cordis_inspect_list: listDef, cordis_inspect_query: queryDef, team_list_pending_control: pendingDef }, nativeCalls }
+}
+
+const TOPOLOGY_BASE: InspectTopology = {
+  topologyRevision: 9,
+  topologyDigest: 'sha256;toponine',
+  allowed: [
+    { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+    { platform: 'host', provider: 'dsh_compute', method: 'compute_list_jobs' },
+    { platform: 'client', provider: 'page', method: 'activity' },
+  ],
+}
+
+const TRUSTED_FOR = (realmId: string) => ({
+  memberAgentId: WORKER,
+  sessionHeaderId: HEADER_ID,
+  realmId,
+  owner: P6T4_ROOT,
+  profileId: 'profile-a5m2-g1',
+})
+const BINDING_FACTS = (label: string) => () => ({
+  bindingId: `a5m2-g1-wire:${label}`,
+  bindingRevision: 1,
+  policyGeneration: 0,
+  authorityGeneration: 0,
+})
+
+type PlaneDef = PlaneAssemblyValue['definitions'][number]
+interface Mounted {
+  plane: PlaneAssemblyValue
+  defs: TrioBag<PlaneDef>
+  nativeDefs: TrioBag<HostNativeDef>
+  nativeCalls: TrioBag<NativeCall[]>
+  topology: { current: InspectTopology }
+  observed: string[]
+  legInputs: Record<string, unknown>[]
+  familyKeys: TrioBag<string>
+}
+const bindingFixtures = new Map<string, ReturnType<typeof parseToolBinding>>()
+function bindingOf(key: string): ToolBinding | undefined {
+  const parsed = bindingFixtures.get(key)
+  return parsed !== undefined && parsed.ok ? parsed.value : undefined
+}
+
+async function mountWorld(label: string, over: { plane?: Record<string, unknown>; backends?: Record<string, unknown>; topologyStart?: InspectTopology } = {}): Promise<Mounted> {
+  const realmId = `a5m2-g1-wire-${label}`
+  const topology = { current: over.topologyStart ?? structuredClone(TOPOLOGY_BASE) }
+  const { defs: nativeDefs, nativeCalls } = makeCaptures(() => topology.current)
+  const ports = { trustedTopology: { current: () => topology.current } }
+  const entries = (['cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control'] as const).map((recordName) => {
+    const row = G1.mountG1SurfaceAdapter(recordName, {
+      native: nativeDefs[recordName],
+      providerId: PROVIDER_ID,
+      definitionIdentity: `a5p5-plane@639ed01539#${recordName}`,
+      trusted: TRUSTED_FOR(realmId),
+      bindingFacts: BINDING_FACTS(label),
+      ...(recordName === 'team_list_pending_control' ? {} : { ports }),
+    })
+    return { row, output: nativeDefs[recordName].output }
+  })
+  const observed: string[] = []
+  const legInputs: Record<string, unknown>[] = []
+  const built = planeModule.createTeamToolPlaneAssembly({
+    permissionPolicy: DIRECT_POLICY,
+    realmId,
+    templateId: 'a5m2-g1-wire-tpl',
+    role: 'member',
+    instanceId: WORKER,
+    teamSessionId: P6T4_ROOT,
+    plane: { g1Enabled: true, ...(over.plane ?? {}) },
+    backends: { g1: { rows: entries }, ...(over.backends ?? {}) },
+    authorityFacts: {
+      overlayGeneration: async () => 0,
+      ensureAuthorityCurrent: async () => {},
+    },
+    controlLeg: async (legInput: unknown) => {
+      legInputs.push(legInput as Record<string, unknown>)
+      return createPaControlLeg({
+        controlService: service,
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        beneficiaryAuthority: 'member',
+        governedFamilies: familyTable,
+      })(legInput as PaControlLegInput)
+    },
+    readCallFacts: async (input: Record<string, unknown>) => {
+      const truth = realmTruths.get(String(input.realmId))
+      if (truth === undefined) return undefined
+      if (String(input.rootSessionId) !== P6T4_ROOT) return undefined
+      const durable = repos.memberInstances.get(P6T4_ROOT, String(input.instanceId))
+      if (durable === undefined) return undefined
+      const binding = bindingOf(`${label}:${String(input.placementName ?? '')}`)
+      if (binding === undefined) return undefined
+      const rawEffects = (input.requestedEffects as { effects?: unknown[] } | undefined)?.effects ?? input.requestedEffects
+      const effects = parseRequestedEffectSet(rawEffects as unknown[])
+      if (!effects.ok) return undefined
+      const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
+      const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
+      if (hard === undefined || mutation === undefined) return undefined
+      const family = a5GovernedFamilyFor(String(binding.definitionIdentity))
+      const livePlan = truth.plane?.livePaPlan.get(String(input.callId))
+      return {
+        kind: livePlan === undefined ? 'no-approval-question' : 'call-facts',
+        facts: {
+          policySource: { staticLayerRefs: ['a5m2-g1-wire-tpl:directive-policy'], overlayGeneration: 0 },
+          realmId: String(input.realmId),
+          ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+          policyDocument: truth.assembly.policyDocument(),
+          denySources: truth.assembly.denySources(),
+          effects: (livePlan?.requestedEffects as RequestedEffectSet | undefined) ?? (effects.value as RequestedEffectSet),
+          member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
+          beneficiaryAuthority: 'member',
+          binding,
+          blueprint: {
+            revision: String(blueprint.revision),
+            contentHash: String(blueprint.contentHash),
+            templateId: 'a5m2-g1-wire-tpl',
+            cwd: CHAIN_WORLD,
+            providerVersion: PROVIDER_ID,
+          },
+          ...(livePlan === undefined ? {} : {
+            planSnapshot: {
+              approvalCaseId: livePlan.approvalCaseId,
+              effectSetFingerprint: livePlan.effectSetFingerprint,
+              perEffectRequired: livePlan.perEffectRequired,
+            },
+          }),
+          authorityGeneration: 0,
+          ...(family === undefined ? {} : { governedFamily: family }),
+        },
+      }
+    },
+    onObserve: (row: string) => { observed.push(String(row)) },
+  })
+  if (built.ok !== true || built.value === undefined) {
+    throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
+  }
+  const plane = built.value
+  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
+  const defs = {
+    cordis_inspect_list: undefined as unknown as PlaneDef,
+    cordis_inspect_query: undefined as unknown as PlaneDef,
+    team_list_pending_control: undefined as unknown as PlaneDef,
+  } satisfies TrioBag<PlaneDef>
+  const familyKeys = {
+    cordis_inspect_list: '',
+    cordis_inspect_query: '',
+    team_list_pending_control: '',
+  } satisfies TrioBag<string>
+  for (const recordName of ['cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control'] as const) {
+    const fed = plane.placementFeed(recordName)
+    const identity = String(fed?.definitionIdentity ?? '')
+    if (identity.length === 0) throw new Error(`the placed ${recordName} row answered no placement definition identity`)
+    // PLACED-def identity (the seam minted it AFTER plane construction) —
+    // strictly separate from the CAPTURE-side identity the adapter carries
+    // (`a5p5-plane@639ed01539#<name>` above); family/registration keys are
+    // ALWAYS the placed-def identity, never the capture identity.
+    familyKeys[recordName] = identity
+    // NO family registration — the target grammar measures it (see the family
+    // seam leg); the binding tuple is the ordinary plane placement binding.
+    bindingFixtures.set(`${label}:${recordName}`, parseToolBinding({
+      bindingId: `a5m2-g1-wire:${label}`,
+      agentScopeKey: `a5m2-g1-wire:${label}`,
+      toolName: recordName,
+      definitionIdentity: identity,
+      providerId: PROVIDER_ID,
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'trusted-host',
+      assurance: untestedAssurance('team-trusted-extension', 'trusted-host', plane.realmId),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    }))
+    const def = plane.definitions.find((d) => d.name === recordName)
+    if (def === undefined) throw new Error(`the mounted plane carries no ${recordName} definition`)
+    defs[recordName] = def
+  }
+  return { plane, defs, nativeDefs, nativeCalls, topology, observed, legInputs, familyKeys }
+}
+
+function execFor(callId: string, over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    agent: { id: WORKER, session: { header: { id: HEADER_ID } } },
+    token: Symbol(`exec-${callId}`),
+    // The real 639 public ToolExecution carries a callId too — the adapter
+    // row's swapped-execution guard compares against it.
+    callId: `toolu-${callId}`,
+    ...over,
+  }
+}
+
+describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA path, and enter the captured native face once (assembly legs: 接线未测 pending Host, never 已测试)', () => {
+  it('gate law: zero flip without the key, closed-key pairing both directions, non-boolean gate refused', () => {
+    const bare = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY,
+      realmId: 'a5m2-g1-wire-bare',
+      templateId: 'a5m2-g1-wire-tpl',
+      role: 'member',
+      instanceId: WORKER,
+      teamSessionId: P6T4_ROOT,
+    })
+    expect(bare.ok).toBe(true)
+    const plane = bare.value as PlaneAssemblyValue
+    for (const name of planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES) {
+      expect(plane.ownNames).not.toContain(name)
+    }
+    const truth = plane.g1PlacementTruth()
+    expect(truth).toHaveLength(14)
+    expect(truth.filter((t) => t.state === 'unplaced')).toHaveLength(3)
+    expect(truth.filter((t) => t.state === 'declared')).toHaveLength(11)
+    expect(truth.every((t) => t.state === 'placed' || (typeof t.why === 'string' && t.why.length > 0))).toBe(true)
+
+    const gateOnly = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'r-gateonly', templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      plane: { g1Enabled: true },
+    })
+    expect(gateOnly.ok).toBe(false)
+    expect(gateOnly.code).toBe('G1_ROW_INJECT_INVALID')
+    expect(String(gateOnly.message)).toContain('nothing behind them')
+
+    const injectOnly = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'r-injectonly', templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      backends: { g1: { rows: [{ row: { name: 'cordis_inspect_list' }, output: { schema: {}, render: () => [] } }] } },
+    })
+    expect(injectOnly.ok).toBe(false)
+    expect(injectOnly.code).toBe('G1_ROW_INJECT_INVALID')
+    expect(String(injectOnly.message)).toContain('config law, not wiring')
+
+    const badGate = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'r-badgate', templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      plane: { g1Enabled: 'yes' },
+    })
+    expect(badGate.ok).toBe(false)
+    expect(badGate.code).toBe('PLANE_CFG_INVALID')
+  })
+
+  it('Gate 0f keeps the eleven rows declared/INACTIVE: the module refusal and the plane refusal are both measured', async () => {
+    // MODULE level: the declared posture the module spells — a no-capture row
+    // refuses every call, typed, zero native entry, no re-resolution.
+    const declared = G1.mountG1SurfaceAdapter('cordis_inspect_list', {
+      providerId: PROVIDER_ID,
+      trusted: TRUSTED_FOR('realm-declared'),
+      bindingFacts: BINDING_FACTS('declared'),
+    })
+    expect(declared.capturePresent).toBe(false)
+    const refusal = declared.classify({}, 'call-declared')
+    expect(refusal.ok).toBe(false)
+    expect(refusal.code).toBe('P_G1_NATIVE_CAPTURE_ABSENT')
+    const delegRefusal = await declared.delegate(refusal.plan ?? {}, { exec: {} })
+    expect(delegRefusal.ok).toBe(false)
+    expect(delegRefusal.code).toBe('P_G1_NATIVE_CAPTURE_ABSENT')
+
+    // MODULE level: the dependency arm stays CLOSED as the module spells it
+    // (record 25 named gap: the exported controlled-install path is not
+    // mounted anywhere this tree can observe): refuse typed, zero native entry.
+    const depNative = HOST_TOOLS.defineTool({
+      name: 'load_workspace_dependencies',
+      description: 'mirror',
+      parameters: {},
+      output: { schema: { type: 'json' }, render: () => [] },
+      execute: () => Promise.resolve({ unexpected: true }),
+    })
+    const depRow = G1.mountG1SurfaceAdapter('load_workspace_dependencies', {
+      native: depNative,
+      providerId: PROVIDER_ID,
+      definitionIdentity: 'a5p5-plane@639ed01539#load_workspace_dependencies',
+      trusted: TRUSTED_FOR('realm-dep'),
+      bindingFacts: BINDING_FACTS('dep'),
+      ports: { dependencyFacts: { current: () => ({ sourceLocator: '/srv/src', rootLocator: '/srv/root' }) } },
+    })
+    const depPlan = depRow.classify({}, 'call-dep')
+    expect(depPlan.ok).toBe(true)
+    const depRun = await depRow.delegate(depPlan.plan, { exec: {} })
+    expect(depRun.ok).toBe(false)
+    expect(depRun.code).toBe('P_G1_DEPENDENCY_ARM_CLOSED')
+
+    // PLANE level: injecting a declared row is refused — a declared row is
+    // never placed as a live tool.
+    const planeDeclared = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'r-declared', templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      plane: { g1Enabled: true },
+      backends: { g1: { rows: [{ row: declared, output: { schema: {}, render: () => [] } }] } },
+    })
+    expect(planeDeclared.ok).toBe(false)
+    expect(planeDeclared.code).toBe('G1_ROW_INJECT_INVALID')
+    expect(String(planeDeclared.message)).toContain('DECLARED/INACTIVE')
+
+    // PLANE level: a CAPTURED row outside the pure-query set (plugin_manager,
+    // whose Host escalation chain is unobservable here) is refused by name.
+    const pmNative = HOST_TOOLS.defineTool({
+      name: 'plugin_manager',
+      description: 'mirror',
+      parameters: { action: { type: 'string', required: true } },
+      output: { schema: { type: 'json' }, render: () => [] },
+      execute: () => Promise.resolve({}),
+    })
+    const pmRow = G1.mountG1SurfaceAdapter('plugin_manager', {
+      native: pmNative,
+      providerId: PROVIDER_ID,
+      definitionIdentity: 'a5p5-plane@639ed01539#plugin_manager',
+      trusted: TRUSTED_FOR('realm-pm'),
+      bindingFacts: BINDING_FACTS('pm'),
+    })
+    expect(pmRow.capturePresent).toBe(true)
+    const planePm = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'r-pm', templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      plane: { g1Enabled: true },
+      backends: { g1: { rows: [{ row: pmRow, output: pmNative.output }] } },
+    })
+    expect(planePm.ok).toBe(false)
+    expect(planePm.code).toBe('G1_ROW_INJECT_INVALID')
+    expect(String(planePm.message)).toContain('PURE-QUERY placement set')
+  })
+
+  it('Gate 0f validates rows against the FROZEN dispatch index: no guessed names, no disagreeing rows, no invented faces', () => {
+    const base = { permissionPolicy: DIRECT_POLICY, templateId: 't', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT }
+    const outFace = { schema: {}, render: () => [] }
+    const guessed = planeModule.createTeamToolPlaneAssembly({
+      ...base, realmId: 'r-guess', plane: { g1Enabled: true },
+      backends: { g1: { rows: [{ row: { name: 'cordis_inspect', familyId: 'B-INSPECT', recordIndex: 53, capturePresent: true, description: 'x', parameters: {}, classify: () => ({}), delegate: async () => ({ ok: true }) }, output: outFace }] } },
+    })
+    expect(guessed.ok).toBe(false)
+    expect(String(guessed.message)).toContain('not one of the 14 frozen G1 records')
+
+    const disagreeing = planeModule.createTeamToolPlaneAssembly({
+      ...base, realmId: 'r-disagree', plane: { g1Enabled: true },
+      backends: { g1: { rows: [{ row: { name: 'team_list_pending_control', familyId: 'B-SKILL', recordIndex: 85, capturePresent: true, description: 'x', parameters: {}, classify: () => ({}), delegate: async () => ({ ok: true }) }, output: outFace }] } },
+    })
+    expect(disagreeing.ok).toBe(false)
+    expect(String(disagreeing.message)).toContain('must MATCH the frozen index entry')
+
+    const noRender = planeModule.createTeamToolPlaneAssembly({
+      ...base, realmId: 'r-norender', plane: { g1Enabled: true },
+      backends: { g1: { rows: [{ row: { name: 'cordis_inspect_list', familyId: 'B-INSPECT', recordIndex: 53, capturePresent: true, description: 'x', parameters: {}, classify: () => ({}), delegate: async () => ({ ok: true }) }, output: { schema: {} } }] } },
+    })
+    expect(noRender.ok).toBe(false)
+    expect(String(noRender.message)).toContain('output face')
+
+    const emptyRows = planeModule.createTeamToolPlaneAssembly({
+      ...base, realmId: 'r-empty', plane: { g1Enabled: true },
+      backends: { g1: { rows: [] } },
+    })
+    expect(emptyRows.ok).toBe(false)
+    expect(String(emptyRows.message)).toContain('NON-EMPTY')
+  })
+
+  it('placement: the trio mounts at the FIXED native spellings, carries the captured faces verbatim, and the feed answers the runtime identity', async () => {
+    const world = await mountWorld('place')
+    for (const name of planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES) {
+      expect(world.plane.ownNames).toContain(name)
+    }
+    const listDef = world.defs.cordis_inspect_list
+    expect(listDef.description).toBe(INSPECT_LIST_DESCRIPTION)
+    // The canonical JSON Schema the host defineTool produced — mounted BY
+    // REFERENCE (the SAME object the capture carries), never re-lifted,
+    // never plane-invented; the description rides verbatim too.
+    expect(listDef.parameters).toBe(world.nativeDefs.cordis_inspect_list.parameters)
+    expect(listDef.description).toBe(world.nativeDefs.cordis_inspect_list.description)
+    expect(typeof listDef.parameters).toBe('object')
+    expect(listDef.output).toBeDefined()
+    const identities: string[] = planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES.map((name) => world.familyKeys[name])
+    expect(new Set(identities).size).toBe(3)
+    expect(identities.every((id) => id.length > 0)).toBe(true)
+    // placed vs captured identity STRICTLY separated: the feed answers the
+    // RUNTIME placed-def identity, never the capture-side string.
+    expect(identities.some((id) => id === 'a5p5-plane@639ed01539#cordis_inspect_list')).toBe(false)
+    const truth = world.plane.g1PlacementTruth()
+    expect(truth.filter((t) => t.state === 'placed')).toHaveLength(3)
+    expect(truth.filter((t) => t.state === 'placed').every((t) => t.adapterRevision === G1.A5_G1_ADAPTER_REVISION)).toBe(true)
+    expect(truth.filter((t) => t.state === 'declared')).toHaveLength(11)
+    expect(world.plane.backends.g1).toHaveLength(3)
+  })
+
+  it('cordis_inspect_list end to end: real durable row, allow, ONE consumption, the captured native entered ONCE, the answer constrained to the authorized topology', async () => {
+    const world = await mountWorld('list')
+    const correlation = `plane-g1:${world.plane.realmId}-cordis_inspect_list-1`
+    const running = world.defs.cordis_inspect_list.execute({}, execFor('call-list'))
+    const row = await waitRowForCall(correlation)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(manifest).toBeDefined()
+    expect(String(manifest?.callId)).toBe(correlation)
+    // The plain PA row: the committed target grammar registers no G1 family
+    // structure (family seam leg below) — so NO family block rides, and the
+    // walk carried none (the leg input says so directly).
+    expect(manifest?.familyId).toBeUndefined()
+    expect(world.legInputs[0]).not.toHaveProperty('family')
+    expect(String(manifest?.parametersFingerprint)).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(JSON.stringify(manifest?.effects)).toContain('cordis_inspect_list')
+    expect(row.status).toBe('pending')
+
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { providers: Array<{ id: string; methods: Array<{ name: string }> }>; excludedUnauthorizedProviders: number }
+    expect(value.excludedUnauthorizedProviders).toBe(1)
+    expect(value.providers.map((p) => p.id)).toEqual(['dsh_compute'])
+    expect(value.providers[0]?.methods.map((m) => m.name)).toEqual(['compute_health', 'compute_list_jobs'])
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(1)
+    const state = await stateNow()
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
+    expect(world.observed.some((o) => o.includes('a5m2-g1-row: review') && o.includes('family=B-INSPECT'))).toBe(true)
+  })
+
+  it('cordis_inspect_query end to end on an authorized triple; an unauthorized triple is refused before admission with zero row and zero native entry', async () => {
+    const world = await mountWorld('query')
+    // unauthorized first: the refusal must never reach admission.
+    const before = (await stateNow()).requests.length
+    await expect(world.defs.cordis_inspect_query.execute(
+      { platform: 'host', provider: 'rogue-provider', method: 'anything' },
+      execFor('call-bad'),
+    )).rejects.toThrow(/P_G1_INSPECT_TARGET_NOT_AUTHORIZED/)
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(world.nativeCalls.cordis_inspect_query).toHaveLength(0)
+
+    // ONE flight, ONE correlation id — and the refused attempt above was
+    // still a flight: it spent `-1` at the ledger before classify refused.
+    // The authorized call is therefore the SECOND allocation on this mount.
+    const correlation = `plane-g1:${world.plane.realmId}-cordis_inspect_query-2`
+    const running = world.defs.cordis_inspect_query.execute(
+      { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+      execFor('call-query'),
+    )
+    const row = await waitRowForCall(correlation)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { provider: string; answer: string }
+    expect(value).toMatchObject({ platform: 'host', provider: 'dsh_compute', method: 'compute_health', answer: 'provider-answer' })
+    expect(world.nativeCalls.cordis_inspect_query).toHaveLength(1)
+  })
+
+  it('team_list_pending_control end to end: the pending-queue read runs on the consumed plan and the ledger page comes back verbatim', async () => {
+    const world = await mountWorld('pending')
+    const correlation = `plane-g1:${world.plane.realmId}-team_list_pending_control-1`
+    const running = world.defs.team_list_pending_control.execute(
+      { rootSessionId: P6T4_ROOT, requestToken: 'tok-1', limit: 10 },
+      execFor('call-pending'),
+    )
+    const row = await waitRowForCall(correlation)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.callId)).toBe(correlation)
+    expect(manifest?.familyId).toBeUndefined()
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const value = (await running) as { status: string; pending: unknown[]; count: number }
+    expect(value).toMatchObject({ status: 'pending-control-listed', count: 1 })
+    expect(world.nativeCalls.team_list_pending_control[0]?.args).toEqual({ rootSessionId: P6T4_ROOT, requestToken: 'tok-1', limit: 10 })
+    const state = await stateNow()
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
+  })
+
+  it('CURRENT-facts law on the production walk: topology moving DURING the approval wait refuses after consumption with zero native entry', async () => {
+    const world = await mountWorld('stale')
+    const correlation = `plane-g1:${world.plane.realmId}-cordis_inspect_list-1`
+    const running = world.defs.cordis_inspect_list.execute({}, execFor('call-stale'))
+    const row = await waitRowForCall(correlation)
+    // The CURRENT authorized topology moves while the human decides — the
+    // approved question is no longer the question the plan answers.
+    world.topology.current = { ...structuredClone(TOPOLOGY_BASE), topologyRevision: 10, topologyDigest: 'sha256;topoten' }
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await expect(running).rejects.toThrow(/P_G1_TRUSTED_FACTS_STALE/)
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
+    const state = await stateNow()
+    // The consumption stands (the edge really consumed the approval); the
+    // stale plan never entered native — never re-approvable, never re-run.
+    expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(1)
+  })
+
+  it('the shared token law: unbound token, in-flight replay and settled replay all refuse with zero extra row and zero native entry', async () => {
+    const world = await mountWorld('token')
+    await expect(world.defs.cordis_inspect_list.execute({}, { agent: { id: WORKER } }))
+      .rejects.toThrow(/exec-token-unbound/)
+
+    const sharedExec = execFor('call-shared')
+    const running = world.defs.cordis_inspect_list.execute({}, sharedExec)
+    await expect(world.defs.cordis_inspect_list.execute({}, sharedExec))
+      .rejects.toThrow(/exec-token-replay/)
+    const row = await waitRowForCall(`plane-g1:${world.plane.realmId}-cordis_inspect_list-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    // settled token: never re-armed.
+    await expect(world.defs.cordis_inspect_list.execute({}, sharedExec))
+      .rejects.toThrow(/exec-token-replay/)
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(1)
+  })
+
+  it('a signal already aborted answers cancelled at the PA edge: zero Control row, zero native entry', async () => {
+    const world = await mountWorld('cancel')
+    const before = (await stateNow()).requests.length
+    const aborted = { aborted: true, addEventListener: () => {}, removeEventListener: () => {} }
+    await expect(world.defs.cordis_inspect_list.execute({}, execFor('call-cancel', { signal: aborted })))
+      .rejects.toThrow(/cancelled/)
+    expect((await stateNow()).requests.length).toBe(before)
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
+  })
+
+  it('the family seam is MEASURED: the committed target grammar refuses every G1 review payload, the wiring registers NOTHING and claims nothing on the walk', async () => {
+    const world = await mountWorld('family')
+    const ROW_ARGS: Record<string, Record<string, unknown>> = {
+      cordis_inspect_list: {},
+      cordis_inspect_query: { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+      team_list_pending_control: { rootSessionId: P6T4_ROOT, requestToken: 'tok-fam' },
+    }
+    const payloads = planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES.map((name) => {
+      const row = (world.plane.backends.g1 as G1Row[]).find((r) => r.name === name) as G1Row
+      const classified = row.classify(ROW_ARGS[name] ?? {}, `call-fam-${name}`)
+      expect(classified.ok, `${name}: ${String(classified.code)} ${String(classified.detail)}`).toBe(true)
+      return classified.reviewPayload as NonNullable<G1Classified['reviewPayload']>
+    })
+    for (const payload of payloads) {
+      const violation = validatePaFamilyTarget(payload.familyId, payload.targetManifest)
+      expect(String(violation)).toContain('no target structure is registered')
+    }
+    // The wiring therefore registered NOTHING for the placed identities (a
+    // registration without a leg claim is durable-verifier DRIFT — the
+    // named gap the integrator/center closes together with the target table):
+    for (const name of planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES) {
+      expect(a5GovernedFamilyFor(world.familyKeys[name])).toBeUndefined()
+    }
+    // Both leg directions are MEASURED on a REAL walk's own leg input.
+    // First drive one real (denied) walk to produce it:
+    const settle = world.defs.cordis_inspect_list.execute({}, execFor('call-fam-walk'))
+    const row = await waitRowForCall(`plane-g1:${world.plane.realmId}-cordis_inspect_list-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'deny' })
+    await expect(settle).rejects.toThrow(/APPROVAL_DENIED/)
+    const realLegInput = world.legInputs[0] as Record<string, unknown>
+    const probeLeg = (family: Record<string, unknown> | undefined) => createPaControlLeg({
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+      governedFamilies: familyTable,
+    })({
+      ...realLegInput,
+      callId: 'call-family-probe',
+      ...(family === undefined ? {} : { family }),
+    } as unknown as PaControlLegInput)
+    // Direction 1: a claim on THIS (unregistered) binding is refused before
+    // anything durable — zero row.
+    const claimProbe = await probeLeg({
+      familyId: 'B-INSPECT',
+      adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+      providerIdentity: PROVIDER_ID,
+      targetManifest: payloads[0]?.targetManifest ?? {},
+    })
+    expect(claimProbe.decision).toBe('deny')
+    expect(JSON.stringify(claimProbe)).toContain('family-claim-on-unregistered-binding')
+    // Direction 2: with the binding registered (exactly what the center/
+    // integrator step would do), the FULL family block STILL lands on the
+    // committed grammar wall — PA_FAMILY_TARGET_RULES registers no structure
+    // for a G1 family, so the row can never be created. Registration is
+    // undone right after the probe; the production wiring keeps nothing.
+    const listKey = world.familyKeys.cordis_inspect_list
+    registerA5GovernedFamily(listKey, { familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
+    try {
+      const targetProbe = await probeLeg({
+        familyId: 'B-INSPECT',
+        adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+        providerIdentity: PROVIDER_ID,
+        targetManifest: payloads[0]?.targetManifest ?? {},
+      })
+      expect(targetProbe.decision).toBe('deny')
+      expect(JSON.stringify(targetProbe)).toContain('family-target-invalid')
+    } finally {
+      delete familyTable[listKey]
+    }
+    expect(a5GovernedFamilyFor(listKey)).toBeUndefined()
+    const state = await stateNow()
+    expect(state.requests.some((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === 'call-family-probe')).toBe(false)
+  })
+
+  it('the adapter swapped-execution guard stays live under the plane identity law: a foreign host callId refuses the consumed-plan entry with zero native', async () => {
+    const world = await mountWorld('swap')
+    const row = (world.plane.backends.g1 as G1Row[]).find((r) => r.name === 'cordis_inspect_list') as G1Row
+    const classified = row.classify({}, 'call-owned')
+    expect(classified.ok).toBe(true)
+    const refusal = await row.delegate(classified.plan, { exec: { callId: 'call-foreign' } })
+    expect(refusal.ok).toBe(false)
+    expect(refusal.code).toBe('P_G1_NOT_OWN_PLAN')
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
+    // …and the SAME row under a MATCHING host callId does enter — the plane
+    // classifies with the host call identity when the execution carries one
+    // (the durable identity stays the ledger allocation, pinned by the list
+    // leg above): re-classify and delegate with the matching identity.
+    const classified2 = row.classify({}, 'call-owned-2')
+    const ran = await row.delegate(classified2.plan, { exec: { callId: 'call-owned-2' } })
+    expect(ran.ok).toBe(true)
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(1)
+  })
+
+  it('the row fingerprint is the full-VALUE parameters fingerprint the walk carries (same args move it, different args move it)', async () => {
+    const world = await mountWorld('fingerprint')
+    const args = { rootSessionId: P6T4_ROOT, requestToken: 'tok-fp' }
+    const running = world.defs.team_list_pending_control.execute(args, execFor('call-fp'))
+    const row = await waitRowForCall(`plane-g1:${world.plane.realmId}-team_list_pending_control-1`)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    expect(String(manifest?.parametersFingerprint)).toBe(`sha256:${canonicalJsonFingerprint(args).replace(/^sha256:/, '')}`.replace(/^sha256:sha256:/, 'sha256:'))
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    // A different value is a DIFFERENT question.
+    const world2 = world
+    const other = await (async () => {
+      const r = world2.defs.team_list_pending_control.execute({ ...args, requestToken: 'tok-fp-OTHER' }, execFor('call-fp-2')).catch(() => undefined)
+      const r2 = await waitRowForCall(`plane-g1:${world2.plane.realmId}-team_list_pending_control-2`)
+      const m = parsePaControlManifest(r2.reviewPayload)
+      void r
+      return m
+    })()
+    expect(String(other?.parametersFingerprint)).not.toBe(String(manifest?.parametersFingerprint))
+  })
+})
