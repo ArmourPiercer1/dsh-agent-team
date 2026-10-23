@@ -31,6 +31,7 @@
  * (the same plain-`.mjs` live-row discipline the F15 suite uses); the kit
  * re-runs the same shapes against the committed dist mirror bytes.
  */
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { mkdirSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -59,8 +60,20 @@ beforeAll(async () => {
 })
 
 /** The member-shaped policy of the G1 world (GLUE-6 blueprint, verbatim arms). */
+// M1 PA carry (measured @ this commit): the world default rides 'ask' —
+// under the frozen A kernel a deny default makes grep/glob UNMOUNTABLE-
+// EXECUTABLE (their list@directory arm is unprojectable: RESOURCE_EFFECT_
+// KINDS in admission-kernel.ts maps only read/read_image/write/edit), while
+// the ask lane + a durable approving leg covers the whole effect set and
+// reaches the backend face (probe-measured). The shell DENY lane this kit
+// pins is a lane fact, independent of the world default.
 const DENY_BASH_POLICY = Object.freeze({
-  default: 'deny',
+  // M1 carry: the shell DENY lane is what this kit pins; the world default
+  // rides 'ask' because under the frozen A kernel the grep/glob resource
+  // arms are unprojectable under a deny default (see note above) — an ask
+  // default keeps the lane law under test and routes the grep sibling
+  // through the real approving leg.
+  default: 'ask',
   allow: [{ tool: 'read', resource: { kind: 'any' } }],
   ask: [],
   deny: [{ tool: 'bash', resource: { kind: 'any' } }],
@@ -212,6 +225,9 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: shellSentinel, kind: 'shell' })
     const search = createFixtureBackend({ sentinel: searchSentinel, kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -240,6 +256,9 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('production (shut) face shape: the denied call is refused by the LANE, not by the backend; the allowed call still lands on the backend face', async () => {
     const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: DENY_BASH_POLICY,
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -262,6 +281,9 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
 
   it('default-deny gate at the assembly: an uncovered plane grep is refused before the shut backend answers', async () => {
     const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: { default: 'deny', allow: [], ask: [], deny: [] },
       realmId: 'a5g1-realm',
       templateId: 'wa',
@@ -286,6 +308,9 @@ describe('alpha5-g1 — the assembly answers the deny lane BEFORE any backend ru
     const shell = createFixtureBackend({ sentinel: join(scratch, 'succ-shell.sentinel'), kind: 'shell' })
     const search = createFixtureBackend({ sentinel: join(scratch, 'succ-search.sentinel'), kind: 'search' })
     const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+      controlLeg: approvingControlLeg(),
+      fs: { subtreeContains: ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/') },
       permissionPolicy: askPolicy,
       realmId: 'a5g1-realm',
       templateId: 'wa',

@@ -220,6 +220,11 @@ import {
   createCompatibilityProber,
 } from '../../compatibility/index.js'
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js'
+import type { PaCallFacts } from '../../control/types.js'
+// untyped center module (.mjs source, no declaration file); bound through
+// the typed seam below (no `any` at the call sites).
+import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs'
+import { createPaEffectsVerifier } from '../../operation-permission/pa-control-bridge.js'
 import type { ControlService } from '../../control/index.js'
 import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js'
 import { createMessagingCoordinator } from '../../messaging/index.js'
@@ -822,6 +827,15 @@ export interface TeamProductionRootParams {
    * decision point; the root fills it, the entry calls `boot()` only after.
    */
   readonly permissionPlaneRef?: { current: TeamPermissionPlane | undefined }
+  /** PR358-B: the ONE authority facts object (host-built); its
+   *  `currentCallFacts` read is published on the plane ref for the PA
+   *  call-level adapter. Absent = the face stays unpublished (old worlds
+   *  byte-compatible). */
+  readonly permissionAuthorityFactsForRef?: {
+    readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) =>
+      | { readonly tuple: unknown; readonly blueprintId: string; readonly healthy: boolean }
+      | undefined
+  }
   /**
    * pre-alpha3 PR4 (round 4, addressed-team binding) — the bound §6
    * expansion-ceiling reader for one ADDRESSED (team, target member),
@@ -910,6 +924,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     permissionOverlay,
     fsContainsKeys,
     permissionPlaneRef,
+    permissionAuthorityFactsForRef,
     permissionAuthorityCeiling,
     permissionEnvelope,
     permissionStaticLayers,
@@ -2312,7 +2327,56 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   const operationApprovalFactsRef: { current: OperationApprovalFactsReader | undefined } = {
     current: undefined,
   }
+  // PR358-B (root ruling 2): the ONE PA all-Effects verification port. The
+  // dispatcher resolves the CURRENT published mount per call (the narrow
+  // (teamRoot, instanceId) index agentSetup publishes after bind+publish
+  // and revokes at teardown start) and reads call-level facts through it —
+  // lazy like operationApprovalFactsRef above, so the ask and the
+  // consumption point necessarily consult the SAME live mount. Until the
+  // AUTH pure verifier is wired at `paVerifierRef.current`, the port
+  // fail-closes `authority-undetermined` (never a silent covered).
+  // THE composition (B ruling 2): the one pure verifier over the ONE
+  // call-level facts adapter; the adapter resolves the CURRENT published
+  // mount per call (no mount ⇒ undefined facts ⇒ authority-undetermined).
+  // Lazy per-call readers, so the resolve gate and the guard gate
+  // necessarily consult the SAME live mount authority.
+  // The registry is an untyped `.mjs` source module, so it is bound through
+  // ONE typed seam HERE instead of per-call casts (no `any`, no ts-ignores:
+  // the shapes below are the registry's real input/output contract, see
+  // live/pa-mount-registry.mjs).
+  type PaCallFactsInput = {
+    readonly rootSessionId: string
+    readonly requestId: string
+    readonly manifest: unknown
+    readonly decider: unknown
+    readonly stage: string
+    readonly mount?: unknown
+  }
+  const readPaCallFactsPort = readPaCallFacts as unknown as (input: PaCallFactsInput) => Promise<PaCallFacts | undefined>
+  const resolvePaMountPort = resolvePaMount as unknown as (rootSessionId: string, memberInstanceId: string) => unknown
+  const paEffectsVerifierPort = createPaEffectsVerifier({
+    readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) =>
+      await readPaCallFactsPort({
+        rootSessionId,
+        requestId,
+        manifest,
+        decider,
+        stage,
+        // 9e fix-2: the FLAT parsed manifest carries the member attribution
+        // (manifest.member.instanceId); there is no `request` wrapper.
+        mount: resolvePaMountPort(rootSessionId, String((manifest as { member?: { instanceId?: string } })?.member?.instanceId ?? '')),
+      }),
+  })
+  // 9e-3: the SAME adapter the verifier consults is published as a shared
+  // ref (the controlServiceRef pattern) so the PLANE's final edge awaits the
+  // identical call-level facts at consumption — one adapter, one authority,
+  // no second getter path. agent-bindings threads it into the mount; the
+  // plane awaits it fresh at the consumption edge.
+  const paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined } = {
+    current: (input) => readPaCallFactsPort(input as PaCallFactsInput),
+  }
   const control = createControlService({
+    paEffectsVerifier: paEffectsVerifierPort as never,
     teamDomain: domain,
     blueprintCatalog: catalog,
     externalPolicyFacts,
@@ -3186,6 +3250,16 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
             }),
           }
     permissionPlaneRef.current = planeForGlue ?? permissionPlane
+    // PR358-B: the CALL-LEVEL tuple read rides the SAME plane object the
+    // glue and the PA facts adapter read per call — the ONE authority
+    // (createPermissionAuthorityFacts' currentBinding source), published
+    // lazily like everything else on this ref.
+    if (permissionPlaneRef.current !== undefined && permissionAuthorityFactsForRef !== undefined) {
+      permissionPlaneRef.current = Object.freeze({
+        ...permissionPlaneRef.current,
+        currentCallFacts: permissionAuthorityFactsForRef.currentCallFacts as TeamPermissionPlane['currentCallFacts'],
+      })
+    }
     // A4-PR7 Task 7.0 (ADR A1-14): publish the SAME reader into the control
     // service's consumption-point recheck (whose declaration documents the ref).
     // It is assigned HERE — the one place that decides whether this process has
@@ -4235,6 +4309,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     catalog,
     blueprint,
     policyReader,
+    paReadCallFactsRef,
     leaderIdentity,
     intent,
     compatibility,

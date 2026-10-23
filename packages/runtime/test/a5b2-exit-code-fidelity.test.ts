@@ -40,6 +40,7 @@
  * X1-X6 measure the shipped shell row end to end (real plane assembly, real
  * kernel refusal). Worlds live under `tests/homes/` and self-remove.
  */
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import { describe, beforeAll, afterAll, expect, it } from 'vitest'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -93,6 +94,8 @@ const ALLOW_ALL = Object.freeze({
 
 function buildPlane() {
   const built = row.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5m1-test-team-root',
+    controlLeg: approvingControlLeg(),
     permissionPolicy: ALLOW_ALL,
     realmId: REALM,
     templateId: 'a5b2-tpl',

@@ -1,0 +1,22 @@
+{
+  "type": "server-response",
+  "rpcId": "c1x-p78ly4ssn8",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+      "message": "team.create: starting the root (leader) agent for 'session-c1-smoke-x-2026-10-22T21-47-36' failed: tools.restrict() names unknown global tools \"team_archive_member\", \"team_grant_permission\", \"team_revoke_permission\"; known global tools: bash, edit, read, read_image, write",
+      "details": {
+        "method": "team.create",
+        "endpoint": "team.create",
+        "contractVersion": 1,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED",
+          "message": "team.create: starting the root (leader) agent for 'session-c1-smoke-x-2026-10-22T21-47-36' failed: tools.restrict() names unknown global tools \"team_archive_member\", \"team_grant_permission\", \"team_revoke_permission\"; known global tools: bash, edit, read, read_image, write"
+        }
+      }
+    }
+  }
+}

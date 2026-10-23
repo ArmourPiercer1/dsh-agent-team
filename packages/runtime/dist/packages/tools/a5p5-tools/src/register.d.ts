@@ -31,7 +31,7 @@
  */
 import type { RequestedEffectSet } from '../../../domain/tool-governance/src/index.js';
 import type { ToolCancelSignal, ToolEffectBackend } from './backend-contract.js';
-import { type AdmissionVerdict } from './pipeline.js';
+import { type AdmissionVerdict, type PaAdmitEdge } from './pipeline.js';
 import type { SpillStore } from './spill.js';
 /**
  * The execution context the host's dispatch hands as the SECOND argument
@@ -44,6 +44,19 @@ import type { SpillStore } from './spill.js';
  */
 export interface GovernedToolExecContext {
     readonly signal?: ToolCancelSignal;
+    /** PR358 (9e fix-1): the ledger-allocated correlation for THIS execution
+     *  (set by the governed runner from the REAL token via the in-process
+     *  token ledger). A downstream plane executor consumes THIS string instead
+     *  of ever stringifying the token itself — `String(symbol)` throws and
+     *  stringify was the A1 violation. */
+    readonly tokenKey?: string;
+    /** fix-2b: the host registry's per-execution token (ToolExecution.token).
+     *  It is the ONLY fact that cannot be recycled when a plane remounts, so
+     *  it anchors the PA durable correlation. `rootCallId` is audit-only. */
+    /** The Host's real per-execution token (ToolExecutionToken: an opaque
+     *  object | symbol). Stringy values are NOT identities (PR358-A1). */
+    readonly token?: object | symbol;
+    readonly rootCallId?: string;
 }
 /** One registrable tool definition (the measured `tools.register` row shape). */
 export interface GovernedToolDefinition {
@@ -72,6 +85,11 @@ export interface A5P5Assembly {
     };
     /** Deterministic call-id prefix for the assembly (audit join key); default `a5p5`. */
     readonly callIdPrefix?: string;
+    /** M1 CENTER PA WIRING (frozen A): the async PA edge (admitCall → real
+     *  Control ask when required → issueApprovedGrant → one-shot consume).
+     *  The plane production mount injects it; archived pre-M1 kits omit it and
+     *  keep their historical behavior untouched. */
+    readonly pa?: PaAdmitEdge;
 }
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
 export declare const REFUSAL_PREFIX = "a5p5-refused ";

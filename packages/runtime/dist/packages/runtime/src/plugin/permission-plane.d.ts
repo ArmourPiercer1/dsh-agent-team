@@ -92,6 +92,11 @@ export interface TeamSessionRowReader {
 export type CanonicalKeyContains = (parentKey: string, childKey: string) => boolean;
 /** The PR4 plane as the production root exposes it. */
 export interface TeamPermissionPlane {
+    /** PR358-B: the current binding/blueprint tuple for a call target
+     *  (undefined = UNKNOWN ⇒ caller fail-closes). Published by the root when
+     *  the authority facts exist on this plane (planes without the facts
+     *  lane mount unchanged — old worlds stay byte-compatible). */
+    readonly currentCallFacts?: PermissionAuthorityFacts['currentCallFacts'];
     /** The write entries (grant / revoke / restore) into the ONE authority. */
     readonly mutation: PermissionLifecycleMutationLane;
     /** The execution read plane (the ADR §8 gate + the merged decision lanes). */
@@ -204,6 +209,20 @@ export interface PermissionAuthorityFactsDeps {
 }
 /** The built authority: a warm build + two kernel readers (async-capable). */
 export interface PermissionAuthorityFacts {
+    /**
+     * PR358-B (root ruling 3): the call-level binding/blueprint TUPLE read —
+     * the SAME `currentBinding` source every decision/facts lane derives from
+     * (static layers, overlay, envelope), exposed as a direct answer instead
+     * of any stringify of a policy reader. Absent bindings = undefined
+     * (UNKNOWN → the caller fail-closes). A read of the ONE existing
+     * authority, never a second one.
+     */
+    readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) => {
+        readonly tuple: BindingTuple;
+        readonly blueprintId: string;
+        readonly providerVersion: string;
+        readonly healthy: boolean;
+    } | undefined;
     /** The async warm boundary (host: after `builtRoot.boot()`, before
      *  readiness). Best-effort: builds the boot warm targets; a fault marks the
      *  authority unhealthy and the readers RETRY lazily on the next read (never
@@ -273,6 +292,17 @@ export type PermissionEnvelopeStateRead = {
 } | {
     readonly status: 'unavailable';
 };
+/** The binding tuple a cached document is valid against. Every component is
+ *  re-read fresh on each read and re-validated after the canonicalization
+ *  await; a change in ANY of them means the cached document is stale. */
+interface BindingTuple {
+    readonly blueprintId: string;
+    readonly revision: string;
+    readonly contentHash: string;
+    readonly templateId: string | undefined;
+    readonly cwd: string;
+    readonly providerVersion: string;
+}
 /**
  * Build the addressed-team, per-member authority readers (see the section
  * header for the three bindings and the fail-closed rules).
@@ -436,4 +466,5 @@ export declare function createAuthorityCeilingReader(deps: {
 export declare function createControlAuthorityRevalidation(deps: {
     readonly operationApprovalFacts: OperationApprovalFactsReader;
 }): ControlAuthorityRecheckPort;
+export {};
 //# sourceMappingURL=permission-plane.d.ts.map

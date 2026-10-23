@@ -26,6 +26,10 @@ import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, sy
 import { join } from 'node:path'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
 import { createConfinedProcessProvider } from '../sandbox-provider/index.js'
+// ask-lane worlds need a real Control leg (a requires-approval outcome never
+// runs its body without one), so the glob row reaches its landing (R1 shut face,
+// L4 seam backend). The C1 stand-in lands the kernel's own grant for real.
+import { approvingControlLeg } from './a5-m1-control-legs.mjs'
 import {
   buildCapFixture,
   buildGlobFixture,
@@ -219,11 +223,13 @@ describe('A5-GLOB R — the gap as shipped (RED face, pinned verbatim; stays gre
       createTeamToolPlaneAssembly: (i: Record<string, unknown>) => { ok: true; value: { definitions: ReadonlyArray<{ name: string; execute(a: unknown): Promise<{ text: string }> }> } } | { ok: false; code: string; message: string }
     }
     const built = plane.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5glb-red-team-root',
       permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] },
       realmId: 'a5glb-red-realm',
       templateId: 'a5glb-red-tpl',
       role: 'member',
       instanceId: 'a5glb-red-instance',
+      controlLeg: approvingControlLeg(),
     })
     expect(built.ok, JSON.stringify(built)).toBe(true)
     if (!built.ok) return
@@ -854,11 +860,13 @@ describe('A5-GLOB L — the LIVE leg: the real rg process inside the confined pr
       createTeamToolPlaneAssembly: (i: Record<string, unknown>) => { ok: true; value: { definitions: ReadonlyArray<{ name: string; execute(a: unknown): Promise<{ text: string }> }> } } | { ok: false; code: string; message: string }
     }
     const built = plane.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5glb-team-root',
       permissionPolicy: { default: 'ask', allow: [{ tool: 'read', resource: { kind: 'any' } }], ask: [], deny: [] },
       realmId: 'a5glb-realm',
       templateId: 'a5glb-tpl',
       role: 'member',
       instanceId: 'a5glb-instance',
+      controlLeg: approvingControlLeg(),
       backends: { glob: makeBackend() },
     })
     expect(built.ok, JSON.stringify(built)).toBe(true)

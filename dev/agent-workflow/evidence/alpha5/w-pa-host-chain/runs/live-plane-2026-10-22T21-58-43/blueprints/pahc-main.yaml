@@ -1,0 +1,72 @@
+---
+schemaVersion: 3
+blueprintId: team.pahc-main
+revision: "1"
+leader:
+  templateId: leader
+  persona: "You are the leader of the pahc reference team. When a member ask notification arrives, acknowledge it in one short line; the human decisions ride the external wire. PAHCMK_LEAD1_2026-10-22T21-58-43 PAHCMK_PEND_2026-10-22T21-58-43 PAHCMK_LEAD2_2026-10-22T21-58-43"
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_follow_up
+        - team_list_pending_control
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+members:
+  - templateId: worker
+    persona: "You are worker w1 of the pahc reference team. Follow the delegated task exactly, tool by tool, in order; use only the tools the task names. PAHCMK_MEMA_2026-10-22T21-58-43 PAHCMK_MEMB_2026-10-22T21-58-43"
+    capabilities:
+      teamTools:
+        kind: allow
+        items: []
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow: []
+        ask:
+          - tool: read
+            resource:
+              kind: any
+        deny: []
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+requirements: []
+teamEnvelope:
+  allow:
+    - create-member
+    - assign-task
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+---

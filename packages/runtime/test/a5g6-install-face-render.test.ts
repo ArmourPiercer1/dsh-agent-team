@@ -128,6 +128,7 @@ describe('GLUE-6 LEG B — the plane renders ContentBlock[], not a String', () =
       }
     }
     const built = plane.createTeamToolPlaneAssembly({
+      teamSessionId: 'a5g6-unit-team-root',
       permissionPolicy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'bash', resource: { kind: 'any' } }] },
       realmId: 'a5g6-unit-realm',
       templateId: 'a5g6-tpl',

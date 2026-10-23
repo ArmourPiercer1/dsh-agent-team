@@ -156,6 +156,38 @@ const NAMES_ONLY_LEDGER_EXCEPTIONS: readonly string[] = ['testkit/test/p4t6-sess
  */
 const REVIEWED_EDGE_EXCEPTIONS: readonly string[] = ['runtime/src/plugin/live/team-tool-plane.mjs']
 
+/**
+ * TEST-ONLY EDGES — a THIRD kind, deliberately NOT folded into either list
+ * above, and booked one path + one spelling at a time (A5-M1 / PR358-A1,
+ * census run 39866646962 at headSha efecfe2b4).
+ *
+ * `runtime/test/a5-m1-correlation.test.ts:87` performs a DYNAMIC barrel
+ * import of the lane —
+ * `const reg = await import('../../tools/a5p5-tools/src/index.js')` — to
+ * exercise the PR358-A1 execution-token correlation face (ONE real token
+ * allocates ONE hexec correlation; in-flight and terminal replays refuse; a
+ * stringy token never anchors) against the EMITTED-shape registration rather
+ * than a re-spelled copy. It is a real reference, so it does not belong in
+ * NAMES_ONLY_LEDGER_EXCEPTIONS (that list's contract is "a name without a
+ * reference"); it is not a shipped edge, so it does not belong in
+ * REVIEWED_EDGE_EXCEPTIONS (that list's contract is "a production row that
+ * retired part of the dormancy law").
+ *
+ * What the permit buys is exactly one file and one line, both pinned by the
+ * leg below: the entry is keyed to the path AND to the literal line, so a
+ * second reference in that spec, a static import, a deep import past the
+ * barrel, or the same shape appearing in any shipped path stays red. The
+ * SHIPPED face keeps every tooth: the barrel stays closed, the global mount
+ * stays zero, the per-scope judgement is untouched, and `dist`/production
+ * never sees this file.
+ */
+const TEST_ONLY_EDGE_EXCEPTIONS: readonly { readonly path: string; readonly form: string }[] = [
+  {
+    path: 'runtime/test/a5-m1-correlation.test.ts',
+    form: `const reg = await import('../../tools/a5p5-tools/src/index.js')`,
+  },
+]
+
 describe('a5p5-dormant-audit', () => {
   it('no shipped source outside the lane references a5p5-tools', () => {
     const offenders: string[] = []
@@ -165,6 +197,9 @@ describe('a5p5-dormant-audit', () => {
       if (insideLane) continue
       if (NAMES_ONLY_LEDGER_EXCEPTIONS.includes(relativePath)) continue
       if (REVIEWED_EDGE_EXCEPTIONS.includes(relativePath)) continue
+      // Path-EXACT, and only after the leg below has pinned the spelling: a
+      // test file whose one dynamic barrel line drifted is an offender again.
+      if (TEST_ONLY_EDGE_EXCEPTIONS.some((entry) => entry.path === relativePath)) continue
       let text: string
       try {
         text = readFileSync(file, 'utf8')
@@ -193,6 +228,40 @@ describe('a5p5-dormant-audit', () => {
       expect(line.trim(), line.trim()).toBe(`import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
     }
     expect(namedLines).toBe(1)
+  })
+
+  it('the A5-M1 correlation spec touches the lane ONLY as its one pinned dynamic barrel line', () => {
+    // The TEST_ONLY edge (see the list above): the permit is one path AND one
+    // spelling, so this leg is what makes the permit no wider than the fact.
+    // EXACTLY one line in that spec may name the lane, it must be the pinned
+    // `await import(...)` of the BARREL (`src/index.js` — never a deep import
+    // into the lane's internals), and no static import / require / export of
+    // the lane may appear anywhere in the file. Rename the file, grow it a
+    // second reference, or turn the dynamic import into a static one and the
+    // offender leg above is red again.
+    for (const entry of TEST_ONLY_EDGE_EXCEPTIONS) {
+      const spec = readFileSync(join(packagesRoot, ...entry.path.split('/')), 'utf8')
+      let namedLines = 0
+      for (const line of spec.split('\n')) {
+        if (!line.includes('a5p5-tools')) continue
+        namedLines += 1
+        expect(line.trim(), `${entry.path}: ${line.trim()}`).toBe(entry.form)
+      }
+      expect(namedLines, `${entry.path} names the lane on exactly the pinned line`).toBe(1)
+      for (const line of spec.split('\n')) {
+        const trimmed = line.trim()
+        expect(/^(import|export)\b.*a5p5-tools/.test(trimmed), `a static edge appeared in ${entry.path}: ${trimmed}`).toBe(false)
+        expect(/require\(.*a5p5-tools/.test(line), `a require edge appeared in ${entry.path}: ${trimmed}`).toBe(false)
+        // The pinned dynamic import is the barrel face; a `src/<other>.js`
+        // specifier would be a deep import past the reviewed surface.
+        if (!line.includes('a5p5-tools')) continue
+        expect(trimmed, `the pinned form must address the barrel: ${trimmed}`).toContain('/a5p5-tools/src/index.js')
+      }
+      // …and the permit is test-scoped by SHAPE, not by trust: only a
+      // `test/*.test.ts` file can ever qualify, so the same shape appearing
+      // under `src/` (a shipped path) is an offender, not an exception.
+      expect(entry.path, `a test-only permit must address a lane-local spec: ${entry.path}`).toMatch(/(?:^|\/)test\/[^/]+\.test\.ts$/)
+    }
   })
 
   it('the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge', () => {

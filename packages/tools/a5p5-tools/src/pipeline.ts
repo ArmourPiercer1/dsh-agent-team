@@ -36,17 +36,42 @@ import type { ParsedToolArgs, RenderedPresentation, SearchOutcome, ShellOutcome 
 /** The admission verdict this lane consumes (the decision lives elsewhere — no second authorization fact). */
 export type AdmissionVerdict = { readonly kind: 'allow' } | { readonly kind: 'deny'; readonly code: string }
 
+/** M1 CENTER PA WIRING (frozen A): the ASYNC production admission edge. The
+ *  synchronous lane `decide` above is a fast deny path, NEVER an ask stand-in:
+ *  a call that survives it still has to pass `pa` — the injected PA kernel
+ *  edge (admitCall → real Control ask when required → issueApprovedGrant →
+ *  one-shot consume) — before ANY backend work starts. Pending/approval-denied
+ *  answers here are denials with distinct codes; there is no silent allow and
+ *  no second authorization fact below this seam. */
+export type PaVerdict = { readonly kind: 'allow' } | { readonly kind: 'deny'; readonly code: string; readonly detail?: string }
+export type PaAdmitEdge = (request: {
+  readonly realmId: string
+  readonly callId: string
+  readonly parametersFingerprint: string
+  readonly requestedEffects: RequestedEffectSet
+}) => Promise<PaVerdict>
+
 export interface ToolCallRequest {
   readonly realmId: string
   readonly callId: string
   readonly parsedArgs: ParsedToolArgs
+  /** M1: the canonical parameter fingerprint (Alpha.2 canonical-operation law), computed by the assembly owner; the plane mount always states it, archived kit rows may omit it (the edge then falls back to the effect-set fingerprint — same fact for the same call, never a guess across calls). */
+  readonly parametersFingerprint?: string
   /** B3 ADDITIVE: the host cancel signal, carried to the backend untouched (the pipeline itself acts on NOTHING — cancel is the row's fact, not a second authorization here). */
   readonly signal?: ToolCancelSignal
+  /** 9e-1 ADDITIVE: the host execution CONTEXT the caller carries — its
+   *  `tokenKey` is the ledger STRING standing for the real per-execution
+   *  token (the token identity itself never travels as text). Carried like
+   *  `signal`: consumers sit on the plane/backend side; the pipeline acts on
+   *  NOTHING from it. */
+  readonly exec?: { readonly tokenKey?: string }
 }
 
 export interface RunToolCallDeps {
   readonly request: ToolCallRequest
   readonly decide: (effectSet: RequestedEffectSet) => AdmissionVerdict
+  /** M1 PA edge; ABSENT only for the archived pre-M1 kit rows — the plane production mount always injects it. */
+  readonly pa?: PaAdmitEdge
   readonly backend: ToolEffectBackend
   readonly spill?: { readonly store: SpillStore }
 }
@@ -79,6 +104,54 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
   if (verdict.kind === 'deny') {
     // deny BEFORE backend: no sink opened, no backend call, no residue.
     return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: verdict.code })
+  }
+
+  if (deps.pa !== undefined) {
+    // 9e fix-1 (A2 law at the trio edge): an ALREADY-aborted invocation is
+    // settled `cancelled` BEFORE the PA edge — zero PA touch, zero
+    // consumption, zero backend (the plane's paAdmit pre-leg answers the
+    // same fact; a caller that never reaches the plane honors it here).
+    const preAborted = request.signal?.aborted === true
+    const pa = preAborted ? ({ kind: 'allow', cancelled: true } as const) : await deps.pa({
+      realmId: request.realmId,
+      callId: request.callId,
+      parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,
+      requestedEffects: derived.value,
+      // PR358 fix-4: the host cancel signal rides the PA edge too — the
+      // approval wait and the pre-consume check must honor the same
+      // invocation cancellation the backend row honors.
+      ...(request.signal === undefined ? {} : { signal: request.signal }),
+    })
+    if (pa.kind === 'allow' && (pa as { cancelled?: boolean }).cancelled === true) {
+      // PR358 fix-4: cancelled at the PA edge — zero backend, zero PA
+      // consumption. The settled fact is rendered through the row's OWN
+      // cancel renderer (empty stdout = nothing was observed; the a5p5-meta
+      // tail stays on the wire — the presentation law does not fork).
+      return deepFreezeContracts({
+        kind: 'presented',
+        settlement: { kind: 'cancelled' as const, event: 'dispatcher-call-cancelled-before-body' as const },
+        rendered: request.parsedArgs.tool === 'bash'
+          ? renderShellResult({ exitCode: null, stdout: '', stderr: '', timedOut: false, cancelled: true, truncated: false })
+          : renderSearchResult({
+              // the cancelled search wears the request's OWN output mode
+              outputMode: request.parsedArgs.tool === 'glob' ? 'files_with_matches' : request.parsedArgs.outputMode,
+              matches: [],
+              counts: [],
+              files: [],
+              totalMatches: 0,
+              truncated: false,
+              cancelled: true,
+            }),
+        spill: null,
+        effectFingerprint: derived.value.fingerprint,
+      } as const)
+    }
+    if (pa.kind === 'deny') {
+      // PA denial BEFORE the backend — pending approval, a refused approval
+      // and a policy deny are all ZERO-body facts; the code distinguishes
+      // them on the audit line, never the wire shape.
+      return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: pa.code })
+    }
   }
 
   const lease = createSpillLease()

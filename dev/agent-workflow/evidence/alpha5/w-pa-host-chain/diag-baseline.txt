@@ -1,0 +1,425 @@
+A5-M1 DIAGNOSTIC BASELINE — w-pa-host-chain
+===========================================
+
+Purpose
+  One read-only diagnostic delta on the PA binding-identity path, so a single
+  real Host failure branch can be ATTRIBUTED instead of being reported as a flat
+  "could not be answered". Nothing here changes an authorization decision, a
+  facts value, a return path, or any `kind`/`code` meaning.
+
+Identity
+  baseline (new)   : aaa2a65b2a4c7b382553c7103eb974ca9a739a06  (origin/feat/a5-m1-center-kernel)
+  branch           : diag/a5-m1-facts-detail   (worktree .worktrees/a5-m1-facts-seam, NOT pushed)
+  candidate HEAD   : the commit that contains THIS file — `git rev-parse HEAD` at the tip of
+                     diag/a5-m1-facts-detail (one candidate HEAD; the evidence rides inside it)
+  IDENTITY UNDER DIAGNOSIS (PINNED for the one real diagnostic Host run):
+      diagnosed commit : 26cef5681a087e97b9175c86ad6408246b3b6f5f  (= 3f7b4d963c8156a9710d66d2b8ccbbb40d8fe6b1
+                                                   + this delta, on baseline aaa2a65b2)
+      the ONE pack     : pack/dsh-agent-team-0.1.1-alpha.2.tgz
+                         sha256 828e43df02c96eeef62c838f65ede391158e5a4eeeb06576488747535358dc04
+      Nothing else is the diagnosed identity. The remote tip 66e1399d0 is NOT merged into this
+      candidate: it removes the stale ledger row `a5-m1-auth-bridge.test.ts::L1263::v2`, and the
+      ledger under dev/agent-workflow/evidence/a4-pr7/ is the CI ledger writer's surface — this
+      branch never edits it (`git diff --name-only aaa2a65b2..HEAD` lists zero files there).
+      Integration into feat/a5-m1-center-kernel happens AFTER the Host run, on the CI side.
+      Any commit after 26cef5681 on this branch is EVIDENCE-ONLY (no src, no dist, no test, no
+      ledger): it cannot change the pack bytes, and `git show --name-only` on it proves that.
+  prior rounds (frozen, unmodified, NOT the base of this delta):
+                     091f56d378893555899be87ee2704662671e39c8 / bf8db1d945b0124a11c72eb41f38b5910337afd1
+                     / c1a8378bc4a682c1ff532c95967da14a8fff6de4  (branch feat/a5-m1-facts-seam)
+  NOTE             : conclusions from the coming Host diagnosis are about THIS baseline's bytes.
+                     They may not be attributed to `d882` bytes or to the older failures' causes.
+
+Changed source (authorized set only; no other file moved)
+  packages/runtime/src/plugin/live/pa-mount-registry.mjs      (local report sink + 27 codes + the revision contract fix; `git show --numstat` is authoritative)
+  packages/runtime/control/types.ts                           PaCallFactsBlueprint.revision: number -> string
+  packages/runtime/operation-permission/pa-control-bridge.ts  the same contract on the verifier's validity leg
+  packages/runtime/test/a5-m1-pa-mount-registry.test.ts       TUPLE to the REAL producer shape + one new pin (B6b)
+  packages/runtime/test/a5-m1-auth-bridge.test.ts             facts blueprint: Number(...) -> String(...)
+  packages/runtime/test/a5-m1-read-c1c2.test.ts               facts blueprint revision -> string
+  packages/runtime/test/a5-m1-seam-enforcement.test.ts        facts blueprint revision -> string
+  packages/runtime/src/plugin/live/pa-mount-registry.d.mts    +20 / -0    (the one signature that moves)
+  packages/runtime/src/plugin/live/team-tool-plane.mjs        +106 / -3   (detail face, observer line, edge face)
+  packages/runtime/src/plugin/live/agent-bindings.mjs         +38 / -1    (guard observation pass-through)
+  + dist mirrors of everything the build emits, + this evidence file.
+  TEST FILES: the only test edits are the four listed above (mock shape: a numeric blueprint revision
+  → the producer's string) plus ONE added leg (B6b) in a5-m1-pa-mount-registry.test.ts. No existing
+  assertion was weakened and no refusal assertion was turned into an acceptance — `git diff` on those
+  files shows revision literals plus one new `it`. NO new test file was created.
+
+Read-only proof (per CENTER: read the diff, no new test system)
+  Every changed line on the facts read chain keeps its `return undefined` verbatim; a report is
+  emitted on the branch that is ALREADY returning it:
+      - `if (surface === null || typeof surface !== 'object') return undefined`
+        + `if (...) { report?.('no-surface'); return undefined }`              (same value: undefined)
+      - `if (typeof surface.entryOf !== 'function') return undefined`          → same, 'surface-no-entry-of'
+      - `if (typeof family !== 'string' || family.length === 0) ...`           → same, 'no-binding-family'
+      - `if (candidates.length !== 1) return undefined`                        → report block, then the
+        SAME `return undefined`; the extra pass is a filter over the same `names`, run ONLY when a sink
+        was supplied, after the verdict is fixed.
+      - `bindingFamilyOf`: keeps the ORIGINAL `const seed = surface?.entryOf?.(placementName)` chain and
+        evaluation order untouched; adds `report?.('no-seed-entry')` / `report?.('seed-no-binding-id')`
+        before the existing `return undefined`.
+      - `readCallAuthorityFacts`: `bad-binding-revision` / `bad-definition-identity` name their own
+        existing `return undefined`; `no-mount-realm` / `realm-mismatch` / `bad-beneficiary-authority`
+        split existing conjunct lists (same union of predicates, same outcome); `no-call-facts-answer`
+        and `unhealthy-call-facts` split ONE line's two shapes (`callFacts === undefined` vs
+        `healthy !== true`) so the lane's abstention can never be blamed on the tuple; the tuple block
+        keeps its conjunct list and order and gains only a report-only sub-check that fires when the
+        REVISION conjunct itself failed (a different member failing claims nothing).
+      - `readPaCallFactsForCall`: `no-mount` / `mount-instance-mismatch` plus the six input guards on
+        their own lines. The durable row entry `readPaCallFacts` is NOT instrumented at all — it passes
+        no `report`, so every `report?.()` on the shared read is a no-op there; its signature and
+        answer shape are unchanged.
+      - `report` is one LOCAL closure inside `readPaCallFactsForCall` (5 lines, stateless per call, a
+        throwing sink is swallowed there). No module-level diagnostic helper/framework exists.
+  Gates that pin "missing source ⇒ undefined ⇒ refusal", run on this tree:
+      a5-m1-pa-mount-registry (10, incl. the new B6b) / a5-m1-seam-enforcement (26)
+      / a5-m1-read-c1c2 (16) / a5p2-admission-kernel (44) / a5-m1-auth-bridge (50)
+      / a5-m1-bash-c1 (7) / a5-m1-correlation (2) / a5-m1-unsupported-c1 (7)
+                                                             = 8 files / 162 tests PASSED
+      a3p4* + a3p5* + a4p7* (the observation-pinning family)  = 27 files / 358 tests PASSED
+      full packages/runtime suite                             = 4998 passed / 5008 total; the 10
+        failures are p6t3-mediation (5) + p6t3-restart (2) + rc2-persona-probe (3), MEASURED
+        IDENTICAL at baseline aaa2a65b2 with this delta reverted (a mediation routing assertion
+        and a probe that reads a MAIN-workspace path — both off this code path).
+      tsc -p packages/runtime/tsconfig.json --noEmit          = 0 errors
+      lint-identities --diff …0237d487.txt                    = 76 distinct; new 0, resolved 0
+      eslint on every changed .ts/.mjs                        = clean
+
+-------------------------------------------------------------------------------
+0. THE WIRING, HOP BY HOP (production; every line quoted from this commit)
+-------------------------------------------------------------------------------
+The member `read` call, from the governed row to the line that names the arm:
+
+  hop  file:line                                                     verbatim (trimmed)
+  ---- -----------------------------------------------------------  --------------------------------
+  A1   src/plugin/live/plane-effect-backends.mjs:1200                `const gate = await pa({`
+       (the read executor's admission call; realmId / callId / parametersFingerprint /
+        requestedEffects are passed here — NOT in this delta's file set, and it needs
+        no change because the sink is created inside paAdmitBody)
+  A2   src/plugin/live/team-tool-plane.mjs:1578                      `pa: paAdmit,`   (createGovernedReadExecutor)
+  A3   src/plugin/live/team-tool-plane.mjs:986-988                   `const paAdmit = async ({ realmId: callRealm, callId, … }) => {`
+                                                                     `  return await paAdmitBody({ realmId: callRealm, callId, … })`
+  A4   src/plugin/live/team-tool-plane.mjs:995                       `const paAdmitBody = async ({ realmId: callRealm, callId, … }) => {`
+  A5   src/plugin/live/team-tool-plane.mjs:1094 + :1107              `admittedFacts = await paReadCallFacts({`  …
+                                                                     `  diagnose: (cause) => { admittedFactsCause ??= cause },`
+       ★ THIS (A5) is the read the refusal under diagnosis walks: the CONSTRUCTION read
+         whose answer feeds the TOOL_BINDING_UNVERIFIED detail. The second sink
+         (`:1273` + `:1283`, `answerCause`) belongs to the EXECUTION EDGE (the
+         GRANT_STALE re-read after a mint) and is not this refusal.
+  A6   src/plugin/live/team-tool-plane.mjs:958                       `const paReadCallFacts = input.readCallFacts`
+  A7   src/plugin/live/agent-bindings.mjs:2684                       `readCallFacts: (input) => readPaCallFactsForCall(input),`
+       (the whole input object, sink included, is forwarded — the production port)
+  A8   src/plugin/live/pa-mount-registry.mjs:340 / :357              `export async function readPaCallFactsForCall(input = {}) {`
+                                                                     `const report = typeof diagnose !== 'function' ? undefined : (code) => {`
+  A9   pa-mount-registry.mjs:367-372                                 six input guards, each `report?.('…'); return undefined`
+  A10  pa-mount-registry.mjs:374 / :376                              `no-mount` / `mount-instance-mismatch`
+  A11  pa-mount-registry.mjs:378                                     `bindingFamilyOf(surface, { placementName }, report)`   → hop PASSED
+  A12  pa-mount-registry.mjs:380-389                                 `const read = await readCallAuthorityFacts({ … report, })` → hop PASSED
+  A13  pa-mount-registry.mjs:173 / :176                              `async function readCallAuthorityFacts({ …, report })` →
+                                                                     `matchUniqueBindingEntry(surface, { family: bindingFamily, seedNames: bindingSeeds }, report)` → hop PASSED
+  A14  pa-mount-registry.mjs:145 / :103                              `function bindingFamilyOf(surface, { placementName }, report)`
+                                                                     `function matchUniqueBindingEntry(surface, { family, seedNames = [] }, report)`
+  ⇒ NO BROKEN HOP on this branch: the sink reaches every function that can refuse the
+    call's binding identity.
+
+Where the sink deliberately STOPS (not a break; each is the untouched block):
+  · pa-mount-registry.mjs:223  `const ceiling = await readCeiling(m.readers, …)` — no sink (ceiling lane, excluded).
+  · pa-mount-registry.mjs:195 (permission plane), :217 (the overlay read's `catch`),
+    :233/:235 (the policy readers and their `catch`), :273/:276 (the authorityGeneration
+    reader and its `catch`) — no sink; those arms, including the three internal catches,
+    still answer plain `undefined`, baseline-verbatim.
+  · pa-mount-registry.mjs:441 — the DURABLE ROW path calls `readCallAuthorityFacts`
+    WITHOUT a report (its entry `readPaCallFacts` takes no sink at all), so every
+    `report?.()` there is a no-op by construction and the row path is byte-equivalent.
+  · `mount.readers.*` is the ONLY other fact source this branch touches, and every one
+    of those reads sits in the excluded block above — there is no second read that
+    bypasses `report` and can refuse the binding identity. The registry reads the
+    surface at exactly two places (`:175`, `:363`), both `m.guard?.dispatcher?.surface`;
+    the unused `PaMountEntry.surface` face is never consulted for a binding.
+  · the one INTERNAL CATCH on this branch is the plane's own around the entry read
+    (team-tool-plane.mjs:1109-1116): it reports the message it actually caught,
+    truncated — `identity-gap=answer-threw (the read THREW: <≤180 chars>)`. It never
+    guesses why.
+
+-------------------------------------------------------------------------------
+1b. THE BLUEPRINT-REVISION CONTRACT FIX (a real mismatch, NOT a claimed root cause)
+-------------------------------------------------------------------------------
+STATUS WORDING (root's ruling, do not upgrade it): this is a CONFIRMED real mismatch on the
+facts read chain; it is NOT proven to have been the first failure of the observed Host call —
+the lane's `healthy` leg runs BEFORE the tuple block, which is exactly why both arms are coded.
+
+PRODUCERS of the blueprint revision the facts carry (enumerated, none sends a number):
+  src/plugin/permission-plane.ts:508   `readonly revision: string`            (interface BindingTuple)
+  src/plugin/permission-plane.ts:684   `revision: String(blueprint.revision),` (the ONLY production tuple)
+  src/plugin/permission-plane.ts:878-886 `currentCallFacts` returns `tuple: now.tuple` verbatim
+  src/plugin/root.ts:835 / :3260       the typed plane ref, no conversion
+  domain convention: `parseBlueprintRevision(String(blueprint.revision))` — a string identity
+  ⇒ no producer sends a number, so the contract was corrected to the producer (per ruling,
+    a number never became legal by widening; nothing coerces in either direction).
+
+CONSUMERS, and what each does now:
+  src/plugin/live/pa-mount-registry.mjs:215   `typeof tuple.revision !== 'string'
+                                              || tuple.revision.length === 0`  (was `!== 'number'`)
+  src/plugin/live/pa-mount-registry.mjs:310   `blueprint:${id}@${revision}#${hash}` — unchanged text
+  src/plugin/live/pa-mount-registry.mjs:324   `revision: tuple.revision` — carried through unchanged
+  control/types.ts:1370-1377                  `PaCallFactsBlueprint.revision: string` (+ why, + the
+                                              warning that a ToolBinding.revision IS a number)
+  operation-permission/pa-control-bridge.ts:733  `!Number.isInteger(blueprint.revision)` →
+                                              `!nonEmpty(blueprint.revision)` (the file's own
+                                              string-identity predicate, no new helper)
+  NOT TOUCHED (different counter, still an integer): pa-mount-registry.mjs:179
+    `typeof entryBinding.revision !== 'number' || entryBinding.revision < 1`, whose producer is
+    tool-dispatch/scoped-dispatcher.ts:312 `revision: entry.revision + 1`.
+  NOT TOUCHED (root's ruling): the tuple's `templateId` non-empty-string check — this reader is the
+    explicit member/instance path and the producer guards members at permission-plane.ts:676.
+
+PINS (mock-vs-producer is what let this live): every fixture that mocked a numeric blueprint
+revision now carries the producer's string shape —
+  test/a5-m1-pa-mount-registry.test.ts:30 (TUPLE `revision: 9` → `'9'`) and its B5 assertion
+  test/a5-m1-auth-bridge.test.ts:262 (`Number(blueprint.revision)` → `String(blueprint.revision)`)
+  NOTE on that file: the replacement is kept STRICTLY line-neutral (1 line for 1 line, the
+  explanation lives as a trailing comment). The blueprint-version fence census pins the site
+  `a5-m1-auth-bridge.test.ts:1264` (`schemaVersion: 2, // fence L1253 …`) by LINE NUMBER, so any
+  line added above it re-keys the CI ledger for no reason. Verified after the edit:
+  `grep -n "schemaVersion: 2, // fence"` = 1264 and the census says `RESULT unknown(0 files, 0 sites)`.
+
+  CORRECTION (withdraws a wrong statement made in the round's report): the census test is NOT under
+  packages/runtime — it is `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`, and it holds
+  exactly 60 tests (globbing `packages/runtime/test/a4p7*` misses it; the "the 60 was a hand-picked
+  subset" claim was a scope miss and is withdrawn). Measured on this candidate:
+      ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests | 1 failed)
+      AssertionError: stale ledger row packages/runtime/test/a5-m1-auth-bridge.test.ts::L1263::v2
+        — the site is gone; remove the adjudication        ❯ …a4p7-blueprint-version-clean.test.ts:705:96
+      Tests  1 failed | 59 passed (60)
+  That failure is BASELINE-CARRIED, not this delta's, and the ledger itself records why: the site
+  drifted from :1263 to :1264 long before this branch (the `+1` came from the shell-stdio drain
+  import at :68, landed with `a1ae0dabf`), and the keep-old-key ruling left the stale `::L1263::v2`
+  row in place ("this ledger is append-only, a stale line key can never re-adjudicate a moved site").
+  Root later superseded keep-old-key and the remote removed the row (`b81c18133`, merged as
+  `66e1399d0`), so the assertion is green on a tree that carries that ledger and red on this
+  baseline — independently of anything in this delta. What this delta DID cause at that fence was
+  the L1266 UNKNOWN, and keeping the fixture edit line-neutral removed it (`unknown(0 files, 0 sites)`).
+  test/a5-m1-read-c1c2.test.ts / test/a5-m1-seam-enforcement.test.ts (facts blueprint → string)
+plus ONE new pin in the EXISTING file — `B6b` — which drives the real shape and asserts:
+  numeric revision  → undefined + cause `bad-tuple-revision-not-a-string`
+  empty string      → undefined + cause `bad-tuple-revision-empty`
+  lane unhealthy    → undefined + cause `unhealthy-call-facts`  (fires BEFORE the tuple, so the
+                      first failure can never be misattributed)
+  the real shape    → still answers `call-facts`
+No other assertion in the tree consumed `facts.blueprint.revision` as a number (tsc enumerated
+exactly one typed consumer, the auth-bridge facts factory; the full suite confirms no pin pinned
+the broken behaviour: 4998 passed / 5008, same 3 pre-existing red files as the baseline).
+
+-------------------------------------------------------------------------------
+1. THE ENHANCED REFUSAL DETAIL — greppable literals (extracted from the BUILT dist)
+-------------------------------------------------------------------------------
+Anchors (grep these in the unpacked copy, path `package/`…`dist/packages/runtime/src/plugin/live/`):
+
+  identity-gap=            in team-tool-plane.mjs   (3 occurrences)
+  entry-cause=             in team-tool-plane.mjs   (4 occurrences)
+  [entry carried           in team-tool-plane.mjs   (1 occurrence — the safe summary bracket)
+  a5m1-binding-refused     in team-tool-plane.mjs   (1 occurrence — the observer line prefix)
+
+Gap codes the PLANE edge itself can observe (all in team-tool-plane.mjs; grep -o confirms each):
+  no-answer-object            answer-threw              answered-other-kind
+  facts-not-an-object         binding-key-absent        binding-undefined
+  binding-null                binding-not-object        binding-id-not-a-string
+  binding-id-empty            definition-identity-not-a-string
+  definition-identity-empty   revision-not-in-range     status-not-active
+
+Read-report fallbacks (team-tool-plane.mjs; what the code says when the read reported nothing):
+  entry-cause=read-reported-nothing      the read answered no object and named nothing
+  entry-cause=read-reported-no-failure   the read ANSWERED, and named no failure (so the gap is in
+                                         the answer, not in the read)
+
+Real detail lines (produced by the code; the VALUES are fixture values from
+packages/runtime/test/a5-m1-seam-enforcement.test.ts — fixture, not Host):
+
+  REJECT:refused-admission TOOL_BINDING_UNVERIFIED — the live dispatcher binding behind this call (read)
+  could not be answered by the call-level facts entry: identity-gap=revision-not-in-range(0)
+  +status-not-active("DRAINING") entry-cause=read-reported-no-failure [entry carried
+  bindingId=team-own:a5m…(26 chars) definitionIdentity=∕srv∕some∕pl…(30 chars) revision=0
+  status="DRAINING" authorityGeneration=0] — no admission, no grant, and no Control row is opened on an
+  identity that was never read (never a synthesized `plane-row:` stand-in)
+
+  …could not be answered by the call-level facts entry: identity-gap=no-answer-object (the call-level
+  facts entry returned NO answer object at all (undefined)) entry-cause=read-reported-nothing — …
+
+  …identity-gap=answer-threw (the read THREW: registry read rejected the mount row (fixture))
+  entry-cause=read-reported-nothing — …
+
+  …identity-gap=no-answer-object (…) entry-cause=binding-not-active — …
+     (this last shape is the one a live Host produces: the plane's own gap plus the code the READ
+      named at its failing line; here the fixture's sink reported `binding-not-active`)
+
+Observer line (same words, one line earlier, on the row's own observation stream):
+  a5m1-binding-refused: placement=read identity-gap=no-answer-object (the call-level facts entry
+  returned NO answer object at all (undefined)) entry-cause=binding-not-active
+
+Execution-edge face (the GRANT_STALE path now names the source that refuses NOW):
+  … no complete call-level facts could be read for this call (entry-cause=<code>) — the entry answers
+  undefined for ANY missing or contradicting source, and coverage is never assumed
+
+Safe-summary rule (`paIdentityFace`, team-tool-plane.mjs): presence + a 12-character prefix with `/`
+folded to `∕` + the length. Never a whole bindingId, never a definition digest in full, never a policy
+document, a rule, a credential, or a full path.
+
+-------------------------------------------------------------------------------
+2. THE CAUSE CODES ON THE READ SIDE — 27 literals (all in pa-mount-registry.mjs)
+-------------------------------------------------------------------------------
+Every code is produced BY THE LINE that observes the fact, and each still returns `undefined`.
+The set is exactly the arms a call must cross to reach its OWN binding identity: the six
+input guards, the mount, the placement → family → unique-carrier law, the binding tuple
+fields, and the mount's own realm / beneficiary attribution. The healthy path reports
+nothing at all.
+
+  code                       observed at
+  ------------------------   --------------------------------------------------------------
+  no-root-session-id         readPaCallFactsForCall:367 — no team session root was named
+  no-instance-id             readPaCallFactsForCall:368 — no member instance was named
+  no-realm-id                readPaCallFactsForCall:369 — no realm was named
+  no-call-id                 readPaCallFactsForCall:370 — the caller supplied no call id
+  bad-call-effects           readPaCallFactsForCall:371 — no effect ARRAY was supplied
+  bad-effect-fingerprint     readPaCallFactsForCall:372 — no effect-set fingerprint
+  no-mount                   readPaCallFactsForCall:374 — resolvePaMount answered no mount
+  mount-instance-mismatch    readPaCallFactsForCall:376 — the mount answers another instance
+  no-placement-name          bindingFamilyOf:146 — the caller supplied no placement spelling
+  no-seed-entry              bindingFamilyOf:148 — the surface has no entry under that name
+  seed-no-binding-id         bindingFamilyOf:153 — the seed entry carries no usable bindingId
+  no-surface                 matchUniqueBindingEntry:104 — the surface face is not an object
+  surface-no-entry-of        matchUniqueBindingEntry:105 — the surface has no entryOf lookup
+  no-binding-family          matchUniqueBindingEntry:106 — no family name was resolved
+  no-entry-for-placement     matchUniqueBindingEntry:120 — 0 candidates, no carrier of the family
+  entry-not-verified         matchUniqueBindingEntry:120 — a carrier exists, verified !== true
+  binding-not-active         matchUniqueBindingEntry:120 — a carrier exists, status !== ACTIVE
+  ambiguous-family:<n>       matchUniqueBindingEntry:119 — n>1 carriers of ONE family (n appended)
+  bad-binding-revision       readCallAuthorityFacts:179 — revision is not an integer >= 1
+  bad-definition-identity    readCallAuthorityFacts:181 — definitionIdentity is unusable
+  no-mount-realm             readCallAuthorityFacts:184 — the published mount carries no realm
+  realm-mismatch             readCallAuthorityFacts:185 — the mount's realm is not this call's
+  bad-beneficiary-authority  readCallAuthorityFacts:192 — the mount carries no member/leader
+                             durable attribution (the VALUE is never printed)
+  no-call-facts-answer       readCallAuthorityFacts:201 — the lane's currentCallFacts answered nothing
+  unhealthy-call-facts       readCallAuthorityFacts:202 — the lane STATED it is not healthy (runs
+                             BEFORE the tuple block, so a tuple code can never be blamed for it)
+  bad-tuple-revision-not-a-string  readCallAuthorityFacts:225 — the tuple revision's TYPE failed
+  bad-tuple-revision-empty         readCallAuthorityFacts:225 — a string revision, but EMPTY
+
+  grep -o over dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs returns each literal exactly
+  once (`ambiguous-family:` as the prefix, the count appended at runtime).
+
+  Honest shadowing note (kept ORIGINAL evaluation order, so not a defect to "fix" here): on the
+  call-level path `bindingFamilyOf` runs BEFORE `matchUniqueBindingEntry`, so a missing mount surface
+  reports `no-seed-entry` (that is what the earlier line sees) and `no-surface` / `surface-no-entry-of`
+  / `no-binding-family` fire only when a family exists and the surface breaks afterwards. The
+  distinguishable set on a live call is therefore: no-mount, mount-instance-mismatch,
+  no-placement-name, no-seed-entry, seed-no-binding-id, no-entry-for-placement, entry-not-verified,
+  binding-not-active, ambiguous-family:<n>, bad-binding-revision, bad-definition-identity.
+
+  Real codes captured from the production entry (values from the fixture mount in
+  packages/runtime/test/a5-m1-pa-mount-registry.test.ts — fixture, not Host):
+    placementName absent    → no-placement-name
+    placement not on surface→ no-seed-entry
+    carrier verified=false  → entry-not-verified
+    carrier status DRAINING → binding-not-active
+    two carriers, one family→ ambiguous-family:2
+    revision 0              → bad-binding-revision
+    definitionIdentity ''   → bad-definition-identity
+    mount for another member→ mount-instance-mismatch
+    no mount published      → no-mount
+    rootSessionId ''        → no-root-session-id      instanceId ''        → no-instance-id
+    realmId ''              → no-realm-id             callId ''            → no-call-id
+    effects not an array    → bad-call-effects        fingerprint ''       → bad-effect-fingerprint
+    mount plane.realmId gone→ no-mount-realm          call realm differs   → realm-mismatch
+    mount attribution gone  → bad-beneficiary-authority
+    lane revision 9 (number)→ bad-tuple-revision-not-a-string   (pin B6b)
+    lane revision ''        → bad-tuple-revision-empty          (pin B6b)
+    lane healthy:false      → unhealthy-call-facts              (pin B6b)
+    healthy mount           → (no report — nothing is claimed when nothing failed)
+  (captured through the production entry with the fixture mount of
+   packages/runtime/test/a5-m1-pa-mount-registry.test.ts — fixture values, not Host.)
+
+  NOT covered (root's exclusion list, downstream of the binding identity — except the two arms root
+  ordered named: the lane's `healthy` abstention and the tuple revision): the provider version, the
+  durable overlay (+ its catch), the ceiling pair,
+  the policy projection (+ its catch), the live plan, and the generation reader (+ its catch), and
+  the other members of the blueprint tuple (a tuple failure that is NOT the revision stays uncoded). Those
+  arms — and their three internal catches — answer plain `undefined`, baseline-verbatim. The
+  localisation still works: a call that DID resolve its binding and still got `undefined` reports
+  `entry-cause=read-reported-nothing`, which places the refusal inside that untouched block.
+
+-------------------------------------------------------------------------------
+3. OBSERVER — fields that were already in the payload and are now passed through
+-------------------------------------------------------------------------------
+`agent-bindings.mjs` formats every Guard/dispatcher observation as
+`a5p1-guard: <event> agent=<session>…`. The old formatter printed only `tool` and `denied` and dropped
+the rest of the payload. It is now a PASS-THROUGH over a fixed allowlist (`GUARD_OBSERVATION_FIELDS`,
+in this order; a field the payload does not carry simply never appears; values truncated at 160):
+
+  tool, denied, revision, verified, unloaded, seam, armed, required, state, from, to, code, reason,
+  detail, callId, inFlight, outstanding, drifted, added, removed, surface, masked, seams, scope,
+  published, residue, mask, maskLiftable, hostDisposeReturned, note
+
+Motivating case: `scoped-dispatcher.ts:334` emits
+`dispatcher-binding-revised` WITH `revision` and `verified`; the row log used to say only that
+something was revised. No producing side was touched for this.
+
+Real lines from a factory-driven suite (a3p4-pr4-production-entry-regression; session ids are
+fixture values):
+  a5p1-guard: agent-published agent=session-a3p4e3root surface=2 masked=0 seams=["tools.guard","tools/execute","tools/post-execute","tools/pre-execute","tools/result"] scope=session-a3p4e3root
+  a5p1-guard: dispatcher-bind-inherited agent=session-a3p4e3child-a verified=0 surface=1
+  a5p1-guard: dispatcher-call-begin agent=session-a3p4e3child-a tool=write callId=e3-call-deny inFlight=2
+  a5p1-guard: dispatcher-drain-inflight agent=session-a3p4e3root outstanding=0 mask=KEPT
+  a5p1-guard: dispatcher-preparing agent=session-a3p4e3root to=PREPARING
+(No revise-family event fires in that family's worlds, so no real `dispatcher-binding-revised` line is
+shown; its `revision`/`verified` pass-through is the producer's own payload, cited above.)
+A line that carried only `tool`/`denied` before is byte-identical now (same keys, same order).
+
+-------------------------------------------------------------------------------
+4. WHERE EACH STRING LIVES IN THE BUILT DIST
+-------------------------------------------------------------------------------
+  dist/packages/runtime/src/plugin/live/team-tool-plane.mjs
+      identity-gap=  entry-cause=  "[entry carried"  a5m1-binding-refused
+      all 14 gap codes + read-reported-nothing / read-reported-no-failure
+  dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs
+      all 27 cause codes (and `ambiguous-family:` as a prefix); grep -o returns each exactly once
+  dist/packages/runtime/src/plugin/live/agent-bindings.mjs
+      GUARD_OBSERVATION_FIELDS / guardObservationFace (the pass-through), prefix `a5p1-guard:`
+  There is NO `.d.mts` in dist (declarations are consumed from src at build time) — do not grep dist
+  for `PaCallDiagnostic`.
+  sha256 of the three dist files AS PACKED IN THE TARBALL below:
+      3dc466c9a23ffd59814a40881a9b2a0a9db56070ee0e76b5c8e5f44555670c46  team-tool-plane.mjs
+      fa1d831d559d1016f6ee99e43436d3155b3f0c493a76fda021cc228f4c14510d  pa-mount-registry.mjs
+      85d849658fea95568026c7d39fffef6f53b6167d90788190d8722f2d178341ea  agent-bindings.mjs
+      590391ab0d4f8a4ebaf59da0d47b723318949d3f9ee847aaf4c04e140630631f  operation-permission/pa-control-bridge.js
+      5fda5bfafe47b0a00df9873d764c2436c0cb1c000054eb6c45e965f71b3d7c65  control/types.d.ts
+  Contract greps in the built dist (both must hold for the fix to be in the bytes):
+      dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs:215
+          `|| typeof tuple.revision !== 'string' || tuple.revision.length === 0`
+      dist/packages/runtime/operation-permission/pa-control-bridge.js — `Number.isInteger(blueprint.revision)`
+          occurs 0 times; dist/packages/runtime/control/types.d.ts:969 `readonly revision: string;`
+  (These are EXPECTED to differ from the pre-delta `d882`-side hashes the Host pre-flight pins.)
+
+-------------------------------------------------------------------------------
+5. INDEPENDENT PACKAGE (built AFTER this delta — official chain: pnpm build → place-dist-glue(11) →
+   build-client-composition → check-artifacts-committed → commit → check-artifacts-at-head)
+-------------------------------------------------------------------------------
+  path            : dev/agent-workflow/evidence/alpha5/w-pa-host-chain/pack/dsh-agent-team-0.1.1-alpha.2.tgz
+  sha256          : 828e43df02c96eeef62c838f65ede391158e5a4eeeb06576488747535358dc04
+  size            : 3486791 bytes
+  tar entries     : 1779
+  installed files : 1779
+  installed bytes : 13423544
+  content tree-sha: 57fca407d84e397c7a73392d43506f9e3069080ca8527baff2f66b03c2e28d4e
+                    (sha256 over the sorted "<file-sha256>  <relative-path>" list of the extracted tree)
+  (REBUILT after the blueprint-revision contract fix; supersedes this branch's earlier packs —
+   sha256 3db599b6… (tree-sha ebb89f02…) and sha256 7a860e64… (tree-sha 0401f0d6…) — neither is
+   on disk any more. Host pre-flight: ONLY the sha256 above carries the revision fix; the earlier
+   two are the broken-tuple bytes and must not be run.)
+  The three diagnostic files above are inside it under
+  package/packages/runtime/dist/packages/runtime/src/plugin/live/.
+
+Host boundary for this round: this tree was NOT used to start a Host, and `tests/homes/` was not
+touched. The Host owner (77a11fa5) runs the single read diagnostic on this built tree.

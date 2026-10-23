@@ -145,6 +145,11 @@ export type CanonicalKeyContains = (parentKey: string, childKey: string) => bool
 
 /** The PR4 plane as the production root exposes it. */
 export interface TeamPermissionPlane {
+  /** PR358-B: the current binding/blueprint tuple for a call target
+   *  (undefined = UNKNOWN ⇒ caller fail-closes). Published by the root when
+   *  the authority facts exist on this plane (planes without the facts
+   *  lane mount unchanged — old worlds stay byte-compatible). */
+  readonly currentCallFacts?: PermissionAuthorityFacts['currentCallFacts']
   /** The write entries (grant / revoke / restore) into the ONE authority. */
   readonly mutation: PermissionLifecycleMutationLane
   /** The execution read plane (the ADR §8 gate + the merged decision lanes). */
@@ -393,6 +398,17 @@ export interface PermissionAuthorityFactsDeps {
 
 /** The built authority: a warm build + two kernel readers (async-capable). */
 export interface PermissionAuthorityFacts {
+  /**
+   * PR358-B (root ruling 3): the call-level binding/blueprint TUPLE read —
+   * the SAME `currentBinding` source every decision/facts lane derives from
+   * (static layers, overlay, envelope), exposed as a direct answer instead
+   * of any stringify of a policy reader. Absent bindings = undefined
+   * (UNKNOWN → the caller fail-closes). A read of the ONE existing
+   * authority, never a second one.
+   */
+  readonly currentCallFacts: (teamSessionId: string, memberInstanceId: string) =>
+    | { readonly tuple: BindingTuple; readonly blueprintId: string; readonly providerVersion: string; readonly healthy: boolean }
+    | undefined
   /** The async warm boundary (host: after `builtRoot.boot()`, before
    *  readiness). Best-effort: builds the boot warm targets; a fault marks the
    *  authority unhealthy and the readers RETRY lazily on the next read (never
@@ -859,6 +875,16 @@ export function createPermissionAuthorityFacts(deps: PermissionAuthorityFactsDep
       healthyFlag = allOk
     },
     healthy: () => healthyFlag,
+    currentCallFacts: (teamSessionId: string, memberInstanceId: string) => {
+      const now = currentBinding(teamSessionId, memberInstanceId)
+      if (now === undefined) return undefined
+      return Object.freeze({
+        tuple: now.tuple,
+        blueprintId: String(now.blueprint.blueprintId),
+        providerVersion: providerVersionOf(),
+        healthy: healthyFlag,
+      })
+    },
     // Async-normalizing wrappers: the internal readers forward the deps'
     // `T | Promise<T>` shape (sync test fakes stay legal); the PRODUCTION
     // surface is exactly-Promise (the PermissionAuthorityFacts contract).

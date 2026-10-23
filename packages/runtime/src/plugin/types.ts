@@ -732,6 +732,11 @@ export interface TeamProductionRoot {
    * glue) through its lazy ref.
    */
   readonly policyReader: PolicyReader
+  /** 9e-3 (PR358): the ONE call-level facts adapter (the same reader the
+   *  PA verifier consults), shared by ref so the plane's final edge awaits
+   *  the identical durable facts at consumption (the controlServiceRef
+   *  pattern; the glue threads it into every PA mount). */
+  readonly paReadCallFactsRef: { current: (input: Record<string, unknown>) => Promise<unknown> | undefined }
   /** A07 — the leader actor identity (contracts, invariant 14). */
   readonly leaderIdentity: MemberIdentity
   /** A04 — the TeamIntent/preflight catalog (the remote method catalog). */

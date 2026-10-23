@@ -108,6 +108,14 @@
  *
  * @module @dsh-agent-team/runtime/control/types
  */
+// PR358 f5 item-4 (read-back VALUE check): the classifier recomputes the
+// payload digest EXACTLY as `requestControl` did at write (the same
+// canonicalizer over the RAW read-back payload — the PA row identity is
+// `operationFingerprint === reviewPayloadDigest === canonicalDigest(payload)`
+// there), so a payload that stayed schema-valid but no longer hashes to the
+// row's pairing re-reads as the damage it is. Runtime value import — the
+// control lane already rides this exact domain edge in `service.ts`.
+import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js';
 // --- request kinds ------------------------------------------------------------------
 /**
  * The closed control request kinds (Architecture 25.1: a member may meet
@@ -195,6 +203,26 @@ export const CONTROL_DECISION_REASONS = {
      * `a4p3-approval-escalation.test.ts` (preflight no-red finding 2).
      */
     ESCALATED: 'escalated',
+    /**
+     * A5-M1 (PR358 review fix): the allow was impossible at the DECISION gate —
+     * the row is a PA operation manifest (`reviewPayload.schema ===
+     * PA_CONTROL_MANIFEST_SCHEMA`) and the injected all-Effects verifier
+     * ({@link ControlServiceOptions.paEffectsVerifier}) answered that the REAL
+     * decider's fresh authority no longer covers EVERY effect of the covered
+     * set. Recorded as a `deny` (never a fourth value — A2-1); the drift is a
+     * fact about the moment of decision, and a re-ask re-presents the fresh
+     * plan. Nothing was consumed.
+     */
+    PA_AUTHORITY_DRIFT: 'pa-authority-drift',
+    /**
+     * A5-M1: an allow was attempted on a PA operation-manifest row but the
+     * all-Effects verification could not be answered at all — no verifier port
+     * is wired, the port threw, or its verdict left the closed vocabulary.
+     * "Could not confirm" is not "confirmed" (the ADR A5-16 polarity the
+     * guard's A1-14 recheck already carries): recorded as a `deny`, zero
+     * consumption; the reviewer may re-ask once the plane can answer.
+     */
+    AUTHORITY_UNDETERMINED: 'authority-undetermined',
 };
 /** Every durable-decision reason value, for membership checks. */
 export const CONTROL_DECISION_REASON_VALUES = Object.values(CONTROL_DECISION_REASONS);
@@ -516,6 +544,208 @@ export const CONTROL_AUTHORITY_RECHECK_KINDS = {
 };
 /** Every recheck kind, for membership pins. */
 export const CONTROL_AUTHORITY_RECHECK_KIND_VALUES = Object.values(CONTROL_AUTHORITY_RECHECK_KINDS);
+// --- A5-M1 (PR358 review fix): the PA operation manifest + the all-Effects verifier ----
+// The M1 AUTH bridge (packages/runtime/operation-permission/pa-control-bridge.ts)
+// rides a PLAIN requestControl row (no A4 case leg) whose `reviewPayload` is
+// this closed PA operation manifest. The marker is the schema id; the moment
+// a row carries it, THREE durable laws bind it:
+//  1. requestControl RECOMPUTES the canonical digest of the payload and
+//     requires BOTH `reviewPayloadDigest` and `operationFingerprint` to
+//     equal it — the parameter fingerprint is a MANIFEST FIELD (execution
+//     scope), the row identity is the PAYLOAD-INTEGRITY digest; a manifest
+//     missing any required member is malformed (no row written);
+//  2. resolveControl, before committing an ALLOW, calls the injected
+//     {@link PaEffectsVerifier} inside the per-team lock with the real
+//     decider; a refused or unanswered verification is committed as a
+//     durable `deny` (reason `pa-authority-drift` / `authority-undetermined`,
+//     the external-policy pattern) — never an allow, never a silent skip;
+//  3. guardOperation, inside the SAME lock hold and before the consumption
+//     fact, calls the SAME verifier with the durable allow's decider; a
+//     refusal blocks with ZERO consumption (`pa-authority-drift`; an
+//     unanswerable verification reuses `authority-undetermined`).
+// A row WITHOUT the marker is byte-identical legacy (every pre-M1 path is
+// untouched, including its `reviewPayload` as an opaque review aid).
+/** The closed marker of a PA operation manifest payload (v2: the PR358 fix
+ *  added the authority point and the binding/member snapshots). */
+export const PA_CONTROL_MANIFEST_SCHEMA = 'a5m1.pa-control-manifest.v2';
+/** The authority-rung vocabulary a manifest may name (the A4 ladder, closed;
+ *  typed loosely on purpose — membership is validated, the ladder type
+ *  itself lives in the governance layer the control plane must not import). */
+export const PA_CONTROL_MANIFEST_RUNGS = ['member', 'leader', 'human-user', 'human-admin'];
+/** Strict field-by-field parse of a manifest candidate (the marker is the
+ *  entry; a present marker that fails the shape is NOT a manifest — the
+ *  request is malformed, no row). Returns undefined on ANY defect. */
+export function parsePaControlManifest(value) {
+    if (typeof value !== 'object' || value === null)
+        return undefined;
+    const v = value;
+    if (v.schema !== PA_CONTROL_MANIFEST_SCHEMA)
+        return undefined;
+    const str = (x, max) => typeof x === 'string' && x.length > 0 && x.length <= max ? x : undefined;
+    const rung = (x) => typeof x === 'string' && PA_CONTROL_MANIFEST_RUNGS.includes(x) ? x : undefined;
+    const nonNegInt = (x) => typeof x === 'number' && Number.isInteger(x) && x >= 0 ? x : undefined;
+    const approvalCaseId = str(v.approvalCaseId, 1024);
+    if (approvalCaseId === undefined)
+        return undefined;
+    if (!isControlAuthorityScope(v.authorityScope))
+        return undefined;
+    const requiredAuthority = rung(v.requiredAuthority);
+    if (requiredAuthority === undefined)
+        return undefined;
+    const realmId = str(v.realmId, 512);
+    if (realmId === undefined)
+        return undefined;
+    const callId = str(v.callId, 512);
+    if (callId === undefined)
+        return undefined;
+    const parametersFingerprint = str(v.parametersFingerprint, 512);
+    if (parametersFingerprint === undefined)
+        return undefined;
+    const effectSetFingerprint = str(v.effectSetFingerprint, 512);
+    if (effectSetFingerprint === undefined)
+        return undefined;
+    const authorityGeneration = nonNegInt(v.authorityGeneration);
+    if (authorityGeneration === undefined)
+        return undefined;
+    if (!Array.isArray(v.effects))
+        return undefined;
+    const effectItems = v.effects;
+    if (effectItems.length === 0 || effectItems.length > 64)
+        return undefined;
+    const effects = [];
+    for (const item of effectItems) {
+        if (typeof item !== 'object' || item === null)
+            return undefined;
+        const e = item;
+        if (typeof e.kind !== 'string' || e.kind.length === 0)
+            return undefined;
+        if (e.kind === 'tool-invoke' && (typeof e.toolName !== 'string' || e.toolName.length === 0))
+            return undefined;
+        effects.push(item);
+    }
+    if (!Array.isArray(v.perEffectRequired))
+        return undefined;
+    const perEffect = [];
+    for (const item of v.perEffectRequired) {
+        const r = rung(item);
+        if (r === undefined)
+            return undefined;
+        perEffect.push(r);
+    }
+    if (perEffect.length !== effects.length)
+        return undefined;
+    if (!Array.isArray(v.deniedEffects))
+        return undefined;
+    const deniedEffects = [];
+    for (const item of v.deniedEffects) {
+        if (typeof item !== 'object' || item === null)
+            return undefined;
+        const d = item;
+        const effectIndex = nonNegInt(d.effectIndex);
+        const req = rung(d.requiredAuthority);
+        if (effectIndex === undefined || req === undefined)
+            return undefined;
+        deniedEffects.push({ effectIndex, requiredAuthority: req });
+    }
+    if (typeof v.binding !== 'object' || v.binding === null)
+        return undefined;
+    const b = v.binding;
+    const bindingId = str(b.bindingId, 1024);
+    const agentScopeKey = str(b.agentScopeKey, 1024);
+    const bindingToolName = str(b.toolName, 512);
+    const definitionIdentity = str(b.definitionIdentity, 1024);
+    const providerId = str(b.providerId, 512);
+    const implementationOrigin = str(b.implementationOrigin, 512);
+    const executionBoundary = str(b.executionBoundary, 512);
+    const status = str(b.status, 64);
+    const policyGeneration = nonNegInt(b.policyGeneration);
+    const bindingAuthorityGeneration = nonNegInt(b.authorityGeneration);
+    const revision = nonNegInt(b.revision);
+    if (bindingId === undefined || agentScopeKey === undefined || bindingToolName === undefined
+        || definitionIdentity === undefined || providerId === undefined || implementationOrigin === undefined
+        || executionBoundary === undefined || status === undefined
+        || policyGeneration === undefined || bindingAuthorityGeneration === undefined || revision === undefined
+        || typeof b.assurance !== 'object' || b.assurance === null)
+        return undefined;
+    if (typeof v.member !== 'object' || v.member === null)
+        return undefined;
+    const m = v.member;
+    const teamSessionId = str(m.teamSessionId, 512);
+    const instanceId = str(m.instanceId, 512);
+    if (teamSessionId === undefined || instanceId === undefined)
+        return undefined;
+    return {
+        schema: PA_CONTROL_MANIFEST_SCHEMA,
+        approvalCaseId,
+        authorityScope: v.authorityScope,
+        requiredAuthority,
+        perEffectRequired: perEffect,
+        deniedEffects,
+        authorityGeneration,
+        realmId,
+        callId,
+        parametersFingerprint,
+        effects: { fingerprint: effectSetFingerprint, effects },
+        binding: {
+            bindingId,
+            agentScopeKey,
+            toolName: bindingToolName,
+            definitionIdentity,
+            providerId,
+            implementationOrigin,
+            executionBoundary,
+            status,
+            policyGeneration,
+            authorityGeneration: bindingAuthorityGeneration,
+            revision,
+            assurance: b.assurance,
+        },
+        member: { teamSessionId, instanceId },
+    };
+}
+const PA_MANIFEST_NOT_EFFECT_SET = Object.freeze({ state: 'not-effect-set' });
+const PA_MANIFEST_CORRUPT = Object.freeze({ state: 'corrupt' });
+/** Classify one durably read-back row against the PA effect-set class (see
+ *  the criterion block above). PURE and total: every row lands in exactly
+ *  one state; nothing is defaulted, nothing is guessed. */
+export function paManifestClassOf(row) {
+    const raw = row.reviewPayload;
+    const markerPresent = typeof raw === 'object' && raw !== null
+        && raw['schema'] === PA_CONTROL_MANIFEST_SCHEMA;
+    if (markerPresent) {
+        const manifest = parsePaControlManifest(raw);
+        if (manifest === undefined)
+            return PA_MANIFEST_CORRUPT;
+        // PR358 f5 item-4 (the VALUE check, symmetric with the commit law): a
+        // schema-valid payload is `valid` ONLY when the row's own PA pairing
+        // re-computes: `operationFingerprint === reviewPayloadDigest ===
+        // canonicalJsonFingerprint(reviewPayload)` — the exact identity
+        // `requestControl` enforces at write (service.ts, same canonicalizer).
+        // A payload damaged while STAYING schema-valid (or a marker-bearing row
+        // that never went through that law) re-reads damaged: corrupt. No extra
+        // digest argument: both gates already pass the FULL row (`RequestPayload`
+        // / `ControlRequestRecord` satisfy {@link PaManifestRowShape}), so the
+        // pairing fields ride the very read the classifier already performs.
+        const digest = row.reviewPayloadDigest;
+        const fingerprint = row.operationFingerprint;
+        if (typeof digest === 'string' && digest.length > 0
+            && typeof fingerprint === 'string' && fingerprint === digest
+            && canonicalJsonFingerprint(raw) === digest) {
+            return { state: 'valid', manifest };
+        }
+        return PA_MANIFEST_CORRUPT;
+    }
+    const digest = row.reviewPayloadDigest;
+    const fingerprint = row.operationFingerprint;
+    if (typeof digest === 'string' && digest.length > 0
+        && typeof fingerprint === 'string' && fingerprint === digest) {
+        // The PA row-identity pairing survives while the reviewPayload is not
+        // a valid v2 manifest: a stripped/moved marker on a row that was
+        // strict at commit. This class — damaged. Never "an ordinary old row".
+        return PA_MANIFEST_CORRUPT;
+    }
+    return PA_MANIFEST_NOT_EFFECT_SET;
+}
 // --- guard verdicts -------------------------------------------------------------------
 /**
  * The closed guard block reasons (the last-mile guard NEVER throws for a
@@ -605,6 +835,15 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
      * is what keeps a corrupt authority row from executing.
      */
     AUTHORITY_SCOPE_UNBOUND: 'authority-scope-unbound',
+    /**
+     * A5-M1 (PR358 review fix): the row is a PA operation manifest and the
+     * injected all-Effects verifier re-derived — from the durable decider and
+     * the CURRENT authority/policy facts — that at least one effect of the
+     * covered set is no longer inside that decider's reach. The allow was
+     * true when it was written; it is about an authority that no longer
+     * exists. ZERO consumption, the same discipline as `authority-risen`.
+     */
+    PA_AUTHORITY_DRIFT: 'pa-authority-drift',
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);

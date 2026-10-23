@@ -22,7 +22,7 @@
  * the THROW transport lives in the OUTER read def, not here.
  */
 export interface GovernedReadExecutor {
-  (raw: unknown): Promise<unknown>
+  (raw: unknown, corr?: unknown): Promise<unknown>
   /**
    * BYTE-FETCH-STAGE ENTRY count: incremented when a call ENTERS the
    * byte-reading stage (after admission); later in-stage refusals
@@ -31,6 +31,21 @@ export interface GovernedReadExecutor {
    * itself NOT evidence of zero I/O.
    */
   execCount(): number
+  /**
+   * A5-M2 pre-dispatch leg: run ONLY the PA admission (Part A) for this
+   * execution token and hold the answer for its body. Resolves
+   * `{ kind: 'authorized' | 'refused' | 'cancelled', … }`; it never reads a
+   * byte and never terminalises the token.
+   */
+  paHandoffOpen(raw: unknown, corr?: unknown): Promise<unknown>
+  /**
+   * The terminal close (`tools/result`, and the adapter's own deny legs):
+   * idempotent, synchronous, and it leaves a state the same token cannot
+   * revive. Returns the correlation whose plan fact the caller must drop.
+   */
+  paHandoffClose(token: unknown): string | undefined
+  /** Mount teardown: no hand-off survives its mount. */
+  paHandoffCloseAll(): void
 }
 
 /**

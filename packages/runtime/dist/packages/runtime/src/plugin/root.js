@@ -104,6 +104,10 @@ import { createTeamOperationCoordinator } from '../../coordination/index.js';
 import { createLifecycleService } from '../../lifecycle/index.js';
 import { PROBE_TRIGGERS, createCompatibilityAuthority, createCompatibilityProber, } from '../../compatibility/index.js';
 import { createControlService, createLeaderControlNotifier } from '../../control/index.js';
+// untyped center module (.mjs source, no declaration file); bound through
+// the typed seam below (no `any` at the call sites).
+import { readPaCallFacts, resolvePaMount } from './live/pa-mount-registry.mjs';
+import { createPaEffectsVerifier } from '../../operation-permission/pa-control-bridge.js';
 import { createWorkCompletionNotifier } from '../../work-completion-notification/index.js';
 import { createMessagingCoordinator } from '../../messaging/index.js';
 import { createActivityLedger, createWorkActivityWriter, } from '../../activity/index.js';
@@ -353,7 +357,7 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @returns the complete {@link TeamProductionRoot} surface.
  */
 export function createTeamProductionRoot(params) {
-    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionAuthorityCeiling, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
+    const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionAuthorityFactsForRef, permissionAuthorityCeiling, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
     const repos = domain.repositories;
     const rootSid = config.rootSessionId;
     // --- A02 handle / write ports ------------------------------------------------------
@@ -1611,7 +1615,30 @@ export function createTeamProductionRoot(params) {
     const operationApprovalFactsRef = {
         current: undefined,
     };
+    const readPaCallFactsPort = readPaCallFacts;
+    const resolvePaMountPort = resolvePaMount;
+    const paEffectsVerifierPort = createPaEffectsVerifier({
+        readCallFacts: async ({ rootSessionId, requestId, manifest, decider, stage }) => await readPaCallFactsPort({
+            rootSessionId,
+            requestId,
+            manifest,
+            decider,
+            stage,
+            // 9e fix-2: the FLAT parsed manifest carries the member attribution
+            // (manifest.member.instanceId); there is no `request` wrapper.
+            mount: resolvePaMountPort(rootSessionId, String(manifest?.member?.instanceId ?? '')),
+        }),
+    });
+    // 9e-3: the SAME adapter the verifier consults is published as a shared
+    // ref (the controlServiceRef pattern) so the PLANE's final edge awaits the
+    // identical call-level facts at consumption — one adapter, one authority,
+    // no second getter path. agent-bindings threads it into the mount; the
+    // plane awaits it fresh at the consumption edge.
+    const paReadCallFactsRef = {
+        current: (input) => readPaCallFactsPort(input),
+    };
     const control = createControlService({
+        paEffectsVerifier: paEffectsVerifierPort,
         teamDomain: domain,
         blueprintCatalog: catalog,
         externalPolicyFacts,
@@ -2371,6 +2398,16 @@ export function createTeamProductionRoot(params) {
                 }),
             };
         permissionPlaneRef.current = planeForGlue ?? permissionPlane;
+        // PR358-B: the CALL-LEVEL tuple read rides the SAME plane object the
+        // glue and the PA facts adapter read per call — the ONE authority
+        // (createPermissionAuthorityFacts' currentBinding source), published
+        // lazily like everything else on this ref.
+        if (permissionPlaneRef.current !== undefined && permissionAuthorityFactsForRef !== undefined) {
+            permissionPlaneRef.current = Object.freeze({
+                ...permissionPlaneRef.current,
+                currentCallFacts: permissionAuthorityFactsForRef.currentCallFacts,
+            });
+        }
         // A4-PR7 Task 7.0 (ADR A1-14): publish the SAME reader into the control
         // service's consumption-point recheck (whose declaration documents the ref).
         // It is assigned HERE — the one place that decides whether this process has
@@ -3346,6 +3383,7 @@ export function createTeamProductionRoot(params) {
         catalog,
         blueprint,
         policyReader,
+        paReadCallFactsRef,
         leaderIdentity,
         intent,
         compatibility,

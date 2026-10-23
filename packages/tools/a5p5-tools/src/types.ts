@@ -139,6 +139,10 @@ export interface SearchOutcome {
   readonly files: readonly string[]
   readonly totalMatches: number
   readonly truncated: boolean
+  /** PR358-A2: ONLY the PA-edge cancel sets this; the backend row's own
+   *  typed call-aborted FAILURE shape is untouched (it never builds an
+   *  outcome at all). */
+  readonly cancelled?: true
 }
 
 /**
@@ -175,6 +179,9 @@ export interface SearchPresentationMeta {
   readonly totalMatches: number
   readonly truncated: boolean
   readonly spill?: SpillPointer
+  /** PR358-A2: present ONLY on a cancelled search (present-only-when-true);
+   *  an ordinary answer's meta stays byte-identical to the pre-358 wire. */
+  readonly cancelled?: true
 }
 
 /** Presentation meta of a rendered shell run. */

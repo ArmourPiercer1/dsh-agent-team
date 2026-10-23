@@ -352,6 +352,8 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // classifies a failed mcp server as REQUIRED/optional through the bound
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
+import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
+import { publishPaMount, readPaCallFactsForCall, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
@@ -724,6 +726,43 @@ export function guardNativeTrustExcludedMcpName(name) {
 }
 
 /**
+ * A5-M1-D (diagnostic delta, presentation ONLY): the pass-through face of a
+ * Guard/dispatcher observation for the row's `observations` stream.
+ *
+ * The producing side already tells more than the old formatter printed: it kept
+ * `event`, `tool` and `denied` and DROPPED the rest — so a binding republished
+ * by a generation refresh (`scoped-dispatcher.ts:334` ships `revision` and
+ * `verified` with every `dispatcher-binding-revised`) left the row log saying
+ * only that something was revised. This is a PASS-THROUGH, nothing more:
+ *  · ONLY fields the event payload ALREADY carries are printed (an absent field
+ *    simply does not appear — no default, no placeholder, no invented value);
+ *  · ONLY fields on the allowlist below, in this fixed order, so a line stays
+ *    diffable and a new payload field cannot silently widen what is logged;
+ *  · each value is the payload's own value, truncated. The allowlist is bounded
+ *    to identity/state/counter fields the Guard itself produces — no policy
+ *    document, no rule, no path, nothing that could carry content a caller owns.
+ * No producing side was touched, and no verdict or return path reads this.
+ */
+const GUARD_OBSERVATION_FIELDS = Object.freeze([
+  'tool', 'denied', 'revision', 'verified', 'unloaded',
+  'seam', 'armed', 'required', 'state', 'from', 'to', 'code', 'reason', 'detail',
+  'callId', 'inFlight', 'outstanding', 'drifted', 'added', 'removed', 'surface',
+  'masked', 'seams', 'scope', 'published', 'residue', 'mask', 'maskLiftable',
+  'hostDisposeReturned', 'note',
+])
+/** One `key=value` per field the payload actually carries (truncated at 160). */
+function guardObservationFace(row) {
+  let face = ''
+  for (const key of GUARD_OBSERVATION_FIELDS) {
+    const value = row?.[key]
+    if (value === undefined) continue
+    const text = typeof value === 'string' ? value : (JSON.stringify(value) ?? String(value))
+    face += ` ${key}=${text.length > 160 ? `${text.slice(0, 160)}\u2026` : text}`
+  }
+  return face
+}
+
+/**
  * Create the bindings closure over one row instance's deps.
  * @param {object} deps - see the module header.
  * @returns {object} the bindings (see the module header).
@@ -738,7 +777,33 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+
+  // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
+  // reader. Every consumer of the durable permission overlay's generation calls
+  // THIS function — the Guard's install-time slot, the plane assembly's
+  // `authorityFacts`, the published mount's generation readers, and the request
+  // boundary's refresh — so Guard and PA cannot grow two explanations of the
+  // same durable number.
+  // Its law has exactly two shapes:
+  //  · `0` ONLY for the legal no-row world (no overlay port wired, or the
+  //    durable lane answering with NO row) — that is the real durable state of
+  //    a team that never carried an overlay;
+  //  · a THROW for anything else: a faulting read, or a row whose
+  //    `metadata.generation` is not a finite non-negative number. It is never
+  //    folded into 0 and never answered as `undefined`-meant-zero: callers
+  //    either fail closed or refuse the unit of work, and none of them gets to
+  //    admit or install on a generation nobody read.
+  const readAuthorityGeneration = async (teamSessionId, memberInstanceId) => {
+    if (typeof permissionOverlay?.latest !== 'function') return 0
+    const latest = await permissionOverlay.latest({ teamSessionId, memberInstanceId })
+    if (latest === undefined || latest === null) return 0
+    const generation = Number(latest?.metadata?.generation)
+    if (!Number.isFinite(generation) || generation < 0) {
+      throw new Error(`agent-bindings: the durable permission overlay answered a non-generation (${JSON.stringify(latest?.metadata?.generation) ?? String(latest?.metadata?.generation)}) — never read as generation 0`)
+    }
+    return generation
+  }
 
   // C1 (restart-recovery, guide §7.2): the bounded window of the SINGLE
   // writer-conflict recovery wait (ensureLiveAgent's recoverWriterConflict
@@ -2277,6 +2342,11 @@ export function createAgentBindings(deps) {
       // the install flow, after this assembly ran. So the closure reads
       // through the LIVE plane value, never a build-time snapshot.
       let a5PlaneValue = null
+      // 9e-4: ONE shared per-setup slot for the mount identity — declared
+      // in the SAME lexical scope as both the disposer (teardown) and the
+      // later publish; a `const` inside the publish block would leave the
+      // disposer referencing an out-of-scope binding (ReferenceError).
+      let paMountIdentity = undefined
       // ONE realm for the plane assembly AND the Guard's feed pairing —
       // computed once, so the pairing can never drift between the two rows.
       const a5PlaneRealmId = String(config?.teamToolPlane?.realmId ?? `a5-realm-${String(teamRoot)}`)
@@ -2356,10 +2426,33 @@ export function createAgentBindings(deps) {
         } catch (error) {
           observations.push(`a5p1-guard: native-list-unavailable for ${sessionId} (${String(error?.message ?? error).slice(0, 140)}) — failing closed with an empty trusted native list`)
         }
+        // A5-M1 (root ruling on the generation seam): the Guard is installed
+        // on the authority generation this Agent ACTUALLY STANDS ON, awaited
+        // from the ONE durable reader BEFORE install. The Binding stamp is
+        // `dispatcher.authorityGeneration()` (tool-dispatch/install.ts:1160),
+        // so this is the only place a real generation can enter a Binding
+        // without the plane stamping its own (which would be the fake pairing
+        // the ruling forbids). `bindOwnTools` below therefore publishes the
+        // same generation, and the PA assembly's `authorityFacts` above reads
+        // the same function — Guard and PA are same-source, and the
+        // kernel's equality leg (tool-admission/admission-kernel.ts:245-254)
+        // is kept exact rather than relaxed. A read that faults or answers a
+        // non-generation FAILS THE SETUP: a Guard bound at a fabricated 0
+        // would admit or refuse every call under a generation nobody read.
+        let guardAuthorityGeneration
+        try {
+          guardAuthorityGeneration = await readAuthorityGeneration(String(teamRoot), String(instanceId))
+        } catch (error) {
+          observations.push(`a5p1-guard: authority-generation-unreadable for ${sessionId} (${String(error?.message ?? error).slice(0, 180)}) — the Guard is NOT installed on a defaulted generation; setup fails closed`)
+          throw error
+        }
         const outcome = installScopedToolGuard({
           agentCtx,
           runtimeAgent,
           agentScopeKey: String(sessionId),
+          // A5-M1: the awaited real number (never a callback, never a
+          // constant) — `policyGeneration` stays untouched.
+          authorityGeneration: guardAuthorityGeneration,
           trustedIdentities: [...trusted],
           nativeNames,
           // GLUE-5: filled by the plane placement BEFORE publish (the
@@ -2375,11 +2468,15 @@ export function createAgentBindings(deps) {
             a5PlaneValue === null
               ? undefined
               : a5PlaneValue.placementFeed(name),
-          // Generation 0 until PR2 (Operation Admission) feeds the overlay /
-          // authority generations into the Binding; the Guard validates every
-          // call against the generations it PUBLISHED with, so a change made
-          // later surfaces as a typed `binding-revision-drift` refusal the
-          // moment a revision is installed, never as a stale allow.
+          // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
+          // authority generations into the Binding": the awaited durable
+          // overlay generation rides the install above, and a later advance is
+          // published by the trusted assembly owner's refresh at the request
+          // boundary (prepareAgentForRequest → refreshAuthorityGeneration),
+          // which REVISES every governed name of this scope in one synchronous
+          // batch. Until such a refresh lands, the Guard validates every call
+          // against the generation it installed with, so a durable move
+          // surfaces as a typed refusal, never as a stale allow.
           maskedNames: capabilities.mode === 'selective' ? capabilities.builtinToolDeny : [],
           maskPort: {
             lift: () => {
@@ -2387,7 +2484,7 @@ export function createAgentBindings(deps) {
             },
           },
           onObserve: (row) => {
-            observations.push(`a5p1-guard: ${String(row.event)} agent=${sessionId}${row.tool === undefined ? '' : ` tool=${String(row.tool)}`}${row.denied === undefined ? '' : ` denied=${JSON.stringify(row.denied)}`}`)
+            observations.push(`a5p1-guard: ${String(row.event)} agent=${sessionId}${guardObservationFace(row)}`)
           },
         })
         if (outcome.ok === true) {
@@ -2498,12 +2595,93 @@ export function createAgentBindings(deps) {
             observe: (row) => observations.push(String(row)),
           })
           : null
+        // M1 PA→Control production wiring (frozen A): the plane's approval
+        // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
+        // (operation-permission/pa-control-bridge.ts) over the session's
+        // real ControlService — read lazily via the controlServiceRef seam
+        // (the ptc-row getControlService pattern). No control service
+        // mounted = every requires-approval settles as a refusal (pending
+        // never means allow; there is no fake-approval fallback here or in
+        // the plane).
+        const a5PaControlLeg = async (legInput) => {
+          const a5ControlService =
+            controlServiceRef !== undefined && controlServiceRef !== null ? controlServiceRef.current : undefined
+          if (a5ControlService === undefined || a5ControlService === null) {
+            observations.push(`a5-pa-bridge: no-control-service plane=${planeTemplateId ?? 'n/a'} -> refusal`)
+            return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
+          }
+          const a5IsLeaderPlane = sessionId === String(teamRoot)
+          const a5Leg = createPaControlLeg({
+            controlService: a5ControlService,
+            rootSessionId: String(teamRoot),
+            caller: { kind: 'instance', instanceId },
+            beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
+          })
+          return await a5Leg(legInput)
+        }
         const built = createTeamToolPlaneAssembly({
+          controlLeg: a5PaControlLeg,
+          // PR358 fix-2: the DURABLE attribution the Control rows live under
+          // is the real TeamSession root — never a `plane:<template>`
+          // fallback. Missing teamSessionId is a wiring bug the plane now
+          // refuses loudly instead of papering over with a synthetic id.
+          teamSessionId: String(teamRoot),
           permissionPolicy,
           realmId: a5PlaneRealmId,
           templateId: planeTemplateId === undefined ? '' : String(planeTemplateId),
           role: sessionId === String(teamRoot) ? 'leader' : 'member',
           instanceId,
+          // PR358 fix-3: the plane's CURRENT facts readers — live policy,
+          // activation/rollback epoch, published authority generation and
+          // binding revision. The consume edge re-reads these AFTER any
+          // approval wait; drift = stale refusal, never retroactive
+          // approval. Values come from the host seams themselves.
+          authorityFacts: {
+            // A5-M1: the ONE reader (a faulting/malformed durable read THROWS
+            // here; the plane withdraws its confirmed generation and refuses
+            // the admission instead of admitting on a carried-over number).
+            overlayGeneration: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            // A5-M1 (the same-turn gap): the NAMED assembly-write leg, a SIBLING
+            // of the reader above and deliberately NOT folded into it — a
+            // scope-wide binding write arriving through a reader is the disguised
+            // write the ruling forbids.
+            // The plane calls it on EVERY admission with the generation THAT call
+            // just read, so a generation the durable overlay moved to mid-turn
+            // lands on this Agent's governed bindings BEFORE the call captures its
+            // AdmissionRequest — including the 2nd..N-th LLM step of one turn and
+            // every wake path that reaches `paAdmit` without a delivery boundary
+            // (the ones `prepareAgentForRequest` never sees). Keyed by the SAME
+            // (teamRoot, instanceId) pair the mount is published under, so it can
+            // only ever republish THIS Agent's scope, and it performs no durable
+            // read of its own — the admission already paid for that read.
+            ensureAuthorityCurrent: (teamSessionId, memberInstanceId, generation) => publishAuthorityGeneration(
+              `call-boundary ${String(teamSessionId)}/${String(memberInstanceId)}`,
+              teamSessionId,
+              memberInstanceId,
+              generation,
+            ),
+          },
+          currentFacts: {
+            // A5-M1-A: `getPolicy: () => policyReaderRef?.current` is DELETED
+            // from the production-authority path. The final edge compared the
+            // WHOLE live PolicyReader object (canonical JSON) against the
+            // mount-time policy object — a whole-object JSON compare is not a
+            // call-level fact, and a mount reading its own closure back proves
+            // nothing. The call-level facts entry below answers the CURRENT
+            // policy (its projected document + deny sources + durable overlay
+            // generation) per call instead; no substitute getter is wired.
+            getRollbackEpoch: () => (typeof activationFence?.getRollbackEpoch === 'function' ? activationFence.getRollbackEpoch(String(teamRoot)) : undefined),
+          },
+          // A5-M1 B/C: the ONE public call-level entry (the same shared read
+          // the Control verifier's adapter uses), keyed by the CALL identity —
+          // so the all-allow path, which mints no Control row, can await the
+          // current facts too. The old `entryOf` sibling (a single-name
+          // dispatcher lookup keyed by the BACKEND spelling) is deleted with
+          // M1-D: the binding behind a call is resolved by its bindingId
+          // FAMILY inside the entry, and zero/ambiguous answers stale the
+          // call instead of falling back to revision 1.
+          readCallFacts: (input) => readPaCallFactsForCall(input),
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),
@@ -2535,7 +2713,14 @@ export function createAgentBindings(deps) {
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
-        toolDisposers.push(placed.dispose)
+        toolDisposers.push(() => {
+          // PR358-B (9e review): teardown START revokes THIS mount by its
+          // publication IDENTITY — the live entry is removed only when it is
+          // still the one this setup published; a stale disposer clears
+          // nothing (the newer mount stays published).
+          revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
+          return placed.dispose()
+        })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
         // already holds. It brings NO registry: the TeamPermit gate + lease
@@ -2840,6 +3025,47 @@ export function createAgentBindings(deps) {
           }
         }
         const published = a5p1Guard.publish()
+        // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
+        // instanceId) index the root's ONE paEffectsVerifier reads per call.
+        // Published only AFTER bindOwnTools + publish succeeded; revoked at
+        // teardown START. Not an authority ledger: references only, facts
+        // are re-read fresh by the reader (see pa-mount-registry.mjs).
+        paMountIdentity = publishPaMount(String(teamRoot), String(instanceId), {
+          instanceId: String(instanceId),
+          guard: a5p1Guard,
+          plane: a5PlaneValue,
+          beneficiaryAuthority: String(sessionId) === String(teamRoot) ? 'leader' : 'member',
+          readers: {
+            permissionPlane: () => permissionPlaneRef?.current,
+            // 9e fix-3: the durable overlay generation for the assembly's
+            // authorityGeneration reader (the SAME `latest` source).
+            overlayGeneration: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            // 9e fix-2/3: the durable current authority GENERATION (the
+            // decision lane's own latest-generation; the guard dispatcher
+            // and the assembly answer from this ONE source).
+            authorityGeneration: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            policySnapshot: () => permissionPolicy,
+            // PR358-B: the durable overlay latest (the decision lane's own
+            // authority source) + the ONE facts object's ceiling readers.
+            // The raw durable `latest` (a PASSTHROUGH, not a second
+            // generation interpretation): the registry's ONE fail-closed
+            // derivation reads the generation out of it and distinguishes an
+            // explicit abstention (`null`) from the legal no-row world. The
+            // value it lands must equal what `readAuthorityGeneration`
+            // answered for the same row — the plane's execution edge compares
+            // the fresh facts' generation against its own re-read and stales
+            // the call on any difference, so the two can never drift apart in
+            // a call that runs.
+            overlaySnapshot: async (teamSessionId, memberInstanceId) => {
+              const latest = await permissionOverlay?.latest?.({ teamSessionId, memberInstanceId })
+              return latest === null ? null : latest
+            },
+            teamHardEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.teamHardEnvelope?.(teamSessionId, memberInstanceId),
+            permissionEnvelope: async (teamSessionId, memberInstanceId) =>
+              await permissionAuthorityFacts?.permissionEnvelope?.(teamSessionId, memberInstanceId),
+          },
+        })
         if (published.ok !== true) {
           const error = new Error(
             `agent-bindings: alpha.5 Tool Dispatcher could not be published for '${sessionId}': ${published.error.message} (code: ${published.error.code})`,
@@ -3200,6 +3426,62 @@ export function createAgentBindings(deps) {
               }
             },
           } : {}),
+          // A5-M2 — PA owns the governed-read Ask before the native one, and
+          // the ONLY supplier of these ports is the ONE plane mount this agent
+          // already placed above (`a5PlaneValue`, set at the placement site and
+          // null when no plane was placed). Nothing is invented here:
+          //   open  — the plane's Part A for THIS exec, handed over BY
+          //           REFERENCE. The exec object that traversed the waterfall
+          //           is what travels, because the host's per-execution token
+          //           carried on it is the ONLY identity the read row redeems
+          //           against (a rebuilt or lookalike exec can never redeem the
+          //           hand-off — that is the real owner match, not a name
+          //           comparison).
+          //   close — what this exec still holds gets voided (idempotent; the
+          //           plane drops the plan fact it returns the correlation for).
+          //   onTerminal — the `'tools/result'` funnel, the ONE piece the glue
+          //           must supply because the plane owns no ctx: it registers
+          //           on the SAME agentCtx the plane was placed into, so the
+          //           terminal leg is handed the same exec object the pipeline
+          //           passed. The adapter's composite disposer (pushed into
+          //           `toolDisposers` right below) tears the terminal leg down
+          //           BEFORE the listener and the guard.
+          // ABSENT means absent: no plane placed, or a plane whose mount has no
+          // governed read row (`paReadHandoff` is undefined at the mount). Only
+          // then is the key omitted and today's pipeline is kept byte for byte,
+          // Alpha.4 Ask lane included. A face that EXISTS but is incomplete is
+          // NOT laundered into absence and NOT wrapped into looking whole — the
+          // `open`/`close` keys are passed through exactly as the plane holds
+          // them, so a missing one reaches the adapter and refuses the INSTALL
+          // with `pa-read-handoff-malformed`. Silently degrading a broken mount
+          // to the legacy lane would hide the very fault the reviewed
+          // fail-closed install exists to catch.
+          // ABSENT is decided by FIELD PRESENCE, not by whether a value looks
+          // usable, and no new abstraction is introduced to decide it:
+          //   no plane placed at all, OR a plane that never declared the
+          //     capability field (`'paReadHandoff' in plane` is false — an old
+          //     plane)  ->  the key is OMITTED and today's pipeline is kept
+          //     byte for byte, Alpha.4 Ask lane included.
+          //   the field IS declared — whatever it holds, including an explicit
+          //     `null` or an object missing `open`/`close`  ->  it is handed to
+          //     the adapter AS IT IS. `open`/`close` pass by reference, so a
+          //     missing one stays missing and the INSTALL is refused with
+          //     `pa-read-handoff-malformed`. Declaring the capability and
+          //     delivering it broken is a fault to surface, not an absence to
+          //     fall back from; wrapping it into wholeness, or reading a `null`
+          //     as "no hand-off", would hide exactly what the reviewed
+          //     fail-closed install exists to catch.
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paReadHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paReadHandoff: {
+                  open: a5PlaneValue.paReadHandoff?.open,
+                  close: a5PlaneValue.paReadHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },
@@ -3973,12 +4255,103 @@ export function createAgentBindings(deps) {
    *   executeTool) stay observation-only (they ignore the verdict — a
    *   liveness failure is a liveness failure).
    */
+  // ── A5-M1 (root ruling on the generation seam): THE narrow authority-
+  // generation refresh, published by the trusted assembly owner at the request
+  // boundary. This is an ASSEMBLY WRITE, not a reader/verifier read: it is the
+  // one place that advances this Agent's governed Bindings onto a generation
+  // the durable overlay has already moved to, and it runs BEFORE the turn's
+  // model-visible input (every `prepareAgentForRequest` call site is awaited
+  // there), so a read/bash started in this turn captures its AdmissionRequest
+  // on the refreshed binding.
+  // The order is fixed by the ruling:
+  //  1. read the generation through the ONE durable reader; a fault or a
+  //     malformed row changes NOTHING (no revise, no counter move) and is
+  //     observed — a failed read never advances or lowers an authority;
+  //  2. unchanged number ⇒ zero action (idempotent: no revision churn);
+  //  3. otherwise FIRST re-verify the real definitions/placement through the
+  //     Guard's own revalidation (`revalidate()`: diagnoses and revises drifted
+  //     or unreadable names DOWN — it can never raise `unverified` to
+  //     `verified`), THEN publish the generation in ONE SYNCHRONOUS BATCH over
+  //     `surface.names()` — every governed name of this scope, never just the
+  //     one a caller happened to use, and with NO await inside the batch (a
+  //     half-advanced scope is exactly the "read fresh, bash stays stale" bug);
+  //  4. `revise` keeps the bindingId FAMILY, the providerId and the
+  //     definitionIdentity, and only ever adds a revision — so a call holding
+  //     an older binding/grant does not continue under the new identity: its
+  //     execution edge compares the tuple it was admitted with against the
+  //     standing one and refuses (GRANT_STALE / consumption refused), and the
+  //     fresh edge stays read-only and never self-repairs.
+  // TWO CALLERS, ONE IMPLEMENTATION: `prepareAgentForRequest` (the DELIVERY
+  // boundary, which reads the generation itself) and the plane's NAMED
+  // `authorityFacts.ensureAuthorityCurrent` leg (the CALL boundary, handed the
+  // generation that admission just read) — so the 2nd..N-th LLM step of one
+  // turn and every wake that reaches `paAdmit` without a delivery land on the
+  // standing number BEFORE they capture an AdmissionRequest. Neither caller
+  // reads twice, and neither one keeps a value.
+  /** The publish HALF: it performs NO durable read, which is why the seam costs
+   *  exactly ONE durable read per admission/request whichever caller reaches it
+   *  (the no-cache/no-reuse evidence the ruling asks for).
+   *  @param observationKey - what the observation line names this publish by. */
+  function publishAuthorityGeneration(observationKey, teamRootSid, memberInstanceId, generation) {
+    if (typeof generation !== 'number' || !Number.isFinite(generation) || generation < 0) {
+      throw new Error(`agent-bindings: publishAuthorityGeneration was handed ${JSON.stringify(generation) ?? String(generation)} — a generation nobody read is never published`)
+    }
+    const mount = resolvePaMount(String(teamRootSid), String(memberInstanceId))
+    const guard = mount?.guard
+    const dispatcher = guard?.dispatcher
+    if (dispatcher === undefined || typeof dispatcher.revise !== 'function'
+      || typeof dispatcher.authorityGeneration !== 'function'
+      || typeof guard.revalidate !== 'function'
+      || dispatcher.surface?.names === undefined) {
+      return { refreshed: false, reason: 'no-guard-mount' }
+    }
+    const standing = dispatcher.authorityGeneration()
+    // 2. unchanged number ⇒ ZERO action (no revision churn, no revalidation).
+    if (standing === generation) return { refreshed: false, reason: 'unchanged' }
+    // 3. re-verify the real definitions/placement FIRST ...
+    const revalidation = guard.revalidate()
+    const revised = []
+    const refused = []
+    // ... THEN publish, synchronously and scope-wide: one authority generation
+    // for every governed name, no await inside the batch (a half-advanced scope
+    // is exactly the "read refreshed, bash stayed stale" bug this pins).
+    for (const name of dispatcher.surface.names()) {
+      const entry = dispatcher.surface.entryOf(name)
+      if (entry?.binding?.authorityGeneration === generation) continue
+      const done = dispatcher.revise(name, { authorityGeneration: generation })
+      if (done.ok === true) revised.push(name)
+      else refused.push(`${name}(${done.error?.code ?? '?'})`)
+    }
+    observations.push(`a5m1-authority-refresh: ${observationKey} generation ${String(standing)} → ${generation} revised=[${revised.join(',')}]${refused.length > 0 ? ` refused=[${refused.join(',')}]` : ''} revalidated-unverified=${String((revalidation?.unverified ?? []).length)} drifted=${String((revalidation?.drifted ?? []).length)}`)
+    return { refreshed: true, generation, revised, refused }
+  }
+
+  async function refreshAuthorityGeneration(sessionId, teamRootSid) {
+    const state = consumptionState.get(sessionId)
+    if (state === undefined) return { refreshed: false, reason: 'no-consumption-state' }
+    let generation
+    try {
+      generation = await readAuthorityGeneration(String(teamRootSid), String(state.instanceId))
+    } catch (error) {
+      observations.push(`a5m1-authority-refresh: REFUSED for ${sessionId} (${String(error?.message ?? error).slice(0, 180)}) — no binding moves, the standing generation stays as it is`)
+      return { refreshed: false, reason: 'read-failed' }
+    }
+    return publishAuthorityGeneration(sessionId, teamRootSid, state.instanceId, generation)
+  }
+
   async function prepareAgentForRequest(sessionId, teamRootSid, recovery) {
     const state = consumptionState.get(sessionId)
     if (state === undefined) {
       // defensive: every row agent has consumption state
       return { verdict: { blocked: false, failedServers: [], blockedServers: [], degradedServers: [], recoveryCoveredServers: [] } }
     }
+    // A5-M1: the request boundary refreshes this Agent's governed Bindings onto
+    // the durable authority generation BEFORE the turn's input is delivered
+    // (so no AdmissionRequest in this turn can be captured on a stale binding).
+    // A failure here changes nothing (observed, no write) — it never blocks a
+    // turn that the durable truth does not block; the guard's own typed refusal
+    // stays the fail-closed answer for any call whose generation is unreadable.
+    await refreshAuthorityGeneration(sessionId, teamRootSid)
     const { modelView, mcpViews } = resolveConsumptionViews(sessionId, undefined, teamRootSid)
     const selection = modelView.selection === undefined ? { ...config.deniedSelection } : modelView.selection
     if (state.ref.current.provider !== selection.provider || state.ref.current.model !== selection.model) {

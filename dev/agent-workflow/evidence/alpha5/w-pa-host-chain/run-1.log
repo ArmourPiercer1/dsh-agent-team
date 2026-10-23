@@ -1,0 +1,20 @@
+[2026-10-22T21:47:36.688Z] c1 real-host smoke — stamp 2026-10-22T21-47-36
+[2026-10-22T21:47:36.688Z] worktree=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+[2026-10-22T21:47:36.688Z] testuse=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/tests/deepseek-harness-test-use @ 639ed01539
+[2026-10-22T21:47:36.688Z] evidence=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/dev/agent-workflow/evidence/alpha5/w-pa-host-chain
+[2026-10-22T21:47:36.794Z] ports: host=3184 mock=3185
+[2026-10-22T21:47:36.807Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-10-22T21:47:36.808Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-10-22T21:47:36.813Z] mock model listening on 3185
+[2026-10-22T21:47:39.648Z] host booted at http://127.0.0.1:3184; row ready — toolCount=15
+[2026-10-22T21:47:39.648Z] ── L0: discovery ──
+[2026-10-22T21:47:40.072Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-10-22T21:47:40.072Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[team_archive_member,team_grant_permission,team_revoke_permission]
+[2026-10-22T21:47:40.073Z] saved blueprints X + Y + Z written (deny list = 3 names)
+[2026-10-22T21:47:40.073Z] ── S1–S3: team X (async delegate; the liveness arc) ──
+[2026-10-22T21:47:40.165Z] FAIL S1.0: team.create (X) succeeds on the fresh root — status=200 body={"type":"server-response","rpcId":"c1x-p78ly4ssn8","result":{"ok":false,"error":{"code":"TEAM_REMOTE_TEAM_CREATE_ROOT_START_FAILED","message":"team.create: starting the root (leader) agent for 'session-c1-smoke-x-2026-10-22T21-47-36' failed: tools.restrict() names unknown global tools \"team_archive_member\", \"team_grant_permission\", \"team_revoke_permission\"; known global tools: bash, edit, re
+[2026-10-22T21:52:40.467Z] mock wait timed out: X leader chain final (requests=2)
+[2026-10-22T21:52:40.468Z] FAIL S1: the X leader chain completed (create + async delegate admitted) — requests=2
+[2026-10-22T21:54:10.690Z] FAIL S1b: the member bash ask created a durable leader-approval request (pending) — requests=[]
+[2026-10-22T21:56:10.976Z] mock wait timed out: X notification turn start (requests=2)
+[2026-10-22T21:56:10.976Z] FAIL S1c: the C1 liveness notification reached the Leader as a model-visible input turn — requests=2

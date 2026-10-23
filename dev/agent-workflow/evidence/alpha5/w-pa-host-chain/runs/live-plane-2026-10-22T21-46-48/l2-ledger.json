@@ -1,0 +1,105 @@
+{
+  "recorded": [
+    {
+      "sequence": 4,
+      "payload": {
+        "actionName": "parameter-permission",
+        "approvalCaseId": "case-0itn5dr0vukds20x5sui11g0",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "<ABSOLUTE_PATH>"
+          },
+          "operationClass": "read"
+        },
+        "beneficiaryAuthority": "member",
+        "correlation": "call-pahc-ysiwr8wi",
+        "executionCoupling": "guarded",
+        "kind": "leader-approval",
+        "legOrdinal": 1,
+        "operationFingerprint": "sha256:1c9e60d4890768d9dcf65bdbaa36faee6d7b6377e1b4789fdc17b11a1ae6bf55",
+        "requestId": "ctrl-1wuoid50ieejeu0tq90sj0ab",
+        "requestedEffect": "allow",
+        "requester": {
+          "instanceId": "inst-0l3e2ih1ki7c",
+          "kind": "instance",
+          "role": "member"
+        },
+        "requiredAuthorityAtCreation": "leader",
+        "reviewAuthority": "leader",
+        "subject": {
+          "instanceId": "inst-0l3e2ih1ki7c",
+          "kind": "instance"
+        },
+        "summary": "read <ABSOLUTE_PATH>",
+        "targetInstanceId": "inst-0l3e2ih1ki7c",
+        "toolName": "read"
+      }
+    }
+  ],
+  "decision": [
+    {
+      "sequence": 5,
+      "payload": {
+        "decider": {
+          "humanId": "session-pahc-pa-2026-10-22T21-46-48",
+          "kind": "human"
+        },
+        "decision": "allow",
+        "note": "pahc L2 remote v4 allow",
+        "requestId": "ctrl-1wuoid50ieejeu0tq90sj0ab",
+        "requestSequence": 4,
+        "scope": {
+          "actionName": "parameter-permission",
+          "authorityScope": {
+            "matcher": {
+              "kind": "exact",
+              "resource": "<ABSOLUTE_PATH>"
+            },
+            "operationClass": "read"
+          },
+          "correlation": "call-pahc-ysiwr8wi",
+          "operationFingerprint": "sha256:1c9e60d4890768d9dcf65bdbaa36faee6d7b6377e1b4789fdc17b11a1ae6bf55",
+          "rootSessionId": "session-pahc-pa-2026-10-22T21-46-48",
+          "subject": {
+            "instanceId": "inst-0l3e2ih1ki7c",
+            "kind": "instance"
+          },
+          "targetInstanceId": "inst-0l3e2ih1ki7c",
+          "toolName": "read"
+        }
+      }
+    }
+  ],
+  "consumption": [
+    {
+      "sequence": 6,
+      "payload": {
+        "consumedAt": "2026-10-22T21:46:58.614Z",
+        "decisionSequence": 5,
+        "requestId": "ctrl-1wuoid50ieejeu0tq90sj0ab",
+        "scope": {
+          "actionName": "parameter-permission",
+          "authorityScope": {
+            "matcher": {
+              "kind": "exact",
+              "resource": "<ABSOLUTE_PATH>"
+            },
+            "operationClass": "read"
+          },
+          "correlation": "call-pahc-ysiwr8wi",
+          "operationFingerprint": "sha256:1c9e60d4890768d9dcf65bdbaa36faee6d7b6377e1b4789fdc17b11a1ae6bf55",
+          "rootSessionId": "session-pahc-pa-2026-10-22T21-46-48",
+          "subject": {
+            "instanceId": "inst-0l3e2ih1ki7c",
+            "kind": "instance"
+          },
+          "targetInstanceId": "inst-0l3e2ih1ki7c",
+          "toolName": "read"
+        }
+      }
+    }
+  ],
+  "corrReq": "call-pahc-ysiwr8wi",
+  "corrCon": "call-pahc-ysiwr8wi"
+}

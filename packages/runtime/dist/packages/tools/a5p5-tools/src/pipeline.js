@@ -38,6 +38,53 @@ export async function runToolCall(deps) {
         // deny BEFORE backend: no sink opened, no backend call, no residue.
         return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: verdict.code });
     }
+    if (deps.pa !== undefined) {
+        // 9e fix-1 (A2 law at the trio edge): an ALREADY-aborted invocation is
+        // settled `cancelled` BEFORE the PA edge — zero PA touch, zero
+        // consumption, zero backend (the plane's paAdmit pre-leg answers the
+        // same fact; a caller that never reaches the plane honors it here).
+        const preAborted = request.signal?.aborted === true;
+        const pa = preAborted ? { kind: 'allow', cancelled: true } : await deps.pa({
+            realmId: request.realmId,
+            callId: request.callId,
+            parametersFingerprint: request.parametersFingerprint ?? derived.value.fingerprint,
+            requestedEffects: derived.value,
+            // PR358 fix-4: the host cancel signal rides the PA edge too — the
+            // approval wait and the pre-consume check must honor the same
+            // invocation cancellation the backend row honors.
+            ...(request.signal === undefined ? {} : { signal: request.signal }),
+        });
+        if (pa.kind === 'allow' && pa.cancelled === true) {
+            // PR358 fix-4: cancelled at the PA edge — zero backend, zero PA
+            // consumption. The settled fact is rendered through the row's OWN
+            // cancel renderer (empty stdout = nothing was observed; the a5p5-meta
+            // tail stays on the wire — the presentation law does not fork).
+            return deepFreezeContracts({
+                kind: 'presented',
+                settlement: { kind: 'cancelled', event: 'dispatcher-call-cancelled-before-body' },
+                rendered: request.parsedArgs.tool === 'bash'
+                    ? renderShellResult({ exitCode: null, stdout: '', stderr: '', timedOut: false, cancelled: true, truncated: false })
+                    : renderSearchResult({
+                        // the cancelled search wears the request's OWN output mode
+                        outputMode: request.parsedArgs.tool === 'glob' ? 'files_with_matches' : request.parsedArgs.outputMode,
+                        matches: [],
+                        counts: [],
+                        files: [],
+                        totalMatches: 0,
+                        truncated: false,
+                        cancelled: true,
+                    }),
+                spill: null,
+                effectFingerprint: derived.value.fingerprint,
+            });
+        }
+        if (pa.kind === 'deny') {
+            // PA denial BEFORE the backend — pending approval, a refused approval
+            // and a policy deny are all ZERO-body facts; the code distinguishes
+            // them on the audit line, never the wire shape.
+            return deepFreezeContracts({ kind: 'refused-admission', effectFingerprint: derived.value.fingerprint, denyCode: pa.code });
+        }
+    }
     const lease = createSpillLease();
     let sink = null;
     if (deps.spill) {

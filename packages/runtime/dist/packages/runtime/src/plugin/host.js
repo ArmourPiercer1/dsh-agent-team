@@ -1325,6 +1325,12 @@ export async function apply(ctx, config) {
         // boundary resolves, the ref is filled; a world without the ref (test
         // compositions) keeps the pre-PR-B legacy input.
         const policyReaderRef = { current: null };
+        // 9e-3 (PR358): the shared PA call-level facts adapter ref (the same
+        // late-fill pattern as policyReaderRef): created before the glue, filled
+        // with builtRoot.paReadCallFactsRef.current right after root
+        // construction. The plane's consumption edge awaits THIS reader — one
+        // adapter with the Control verifier, no second authority path.
+        const paReadCallFactsRef = { current: undefined };
         // pre-alpha3 PR4 — the shared permission-plane reference (the exact
         // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
         // time object the ROOT fills during its construction; the live glue reads
@@ -1596,6 +1602,12 @@ export async function apply(ctx, config) {
             // from it per agent). Additive optional dep: never in the hard inject
             // array.
             permissionPlaneRef,
+            // PR358-B: the durable overlay port (the SAME one the plane/decision
+            // lanes read) for the PA call-level facts adapter's overlay generation,
+            // + the ONE facts object for its ceiling readers (untyped mjs glue).
+            permissionOverlay,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            permissionAuthorityFacts: permissionFacts,
             // C1 (restart-recovery, guide §4.3): the Team session-activation fence
             // — the production host MUST pass it (the glue wraps every Team
             // create/resume in runOwned and performs the bounded writer-conflict
@@ -1606,6 +1618,7 @@ export async function apply(ctx, config) {
             // (filled with builtRoot.policyReader right after root construction
             // — the glue reads it lazily per boundary; see the ref's rationale).
             policyReaderRef,
+            paReadCallFactsRef,
             // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
             // hook — the glue emits the MCP mount transitions (mount-failed /
             // mount-restored) and the host durably records each as a
@@ -2068,6 +2081,10 @@ export async function apply(ctx, config) {
             permissionOverlay,
             fsContainsKeys,
             permissionPlaneRef,
+            // PR358-B: the ONE host-built authority facts object; its call-level
+            // currentCallFacts read is published on the plane ref for the PA
+            // all-Effects adapter (same authority, a new read — root ruling 3).
+            permissionAuthorityFactsForRef: permissionFacts,
             // pre-alpha3 PR4 (round 3 BLOCK-1 + round 4 addressed-team binding,
             // round 5 ceiling REMOVAL): the authority fact readers (the root
             // forwards them VERBATIM into the pure governance lane). The envelope +
@@ -2128,6 +2145,7 @@ export async function apply(ctx, config) {
         // boundaries: the remote surface is not servable until the boot is
         // armed, and the boot preload below runs after this point).
         policyReaderRef.current = builtRoot.policyReader;
+        paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current;
         // --- strict-read + core-spill (Phase E, implementation guide §4/§13)
         // --- one artifact-read authority per production root, built over the
         // --- OPEN domain's durable repositories (session identity + the

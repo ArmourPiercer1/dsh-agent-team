@@ -80,6 +80,7 @@ const POLICY = Object.freeze({
 
 function buildPlane(extra: Record<string, unknown> = {}, sink: string[] = []) {
   const built = row.createTeamToolPlaneAssembly({
+    teamSessionId: 'a5int-r3-team-root',
     permissionPolicy: POLICY,
     realmId: REALM,
     templateId: 'a5int-tpl',

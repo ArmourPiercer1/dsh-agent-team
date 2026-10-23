@@ -38,6 +38,15 @@ import {
 } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+// The mount's PA durable attribution needs the REAL host TeamSession root (no
+// synthetic `plane:<template>` identity is mounted), and this kit's policy is
+// `default: 'ask'`, so every governed row is a requires-approval outcome that
+// never runs its body without a Control leg. The leg is the established C1
+// stand-in the runtime test tree already uses — it lands the kernel's own grant
+// through `issueApprovedGrant(request, approval)`. Nothing is invented here and
+// the mount guard is not bypassed; the world carries no dispatcher surface, so
+// the row lane stays the rev.0/revision-1 law it always used in this fixture.
+import { approvingControlLeg } from '../../../../../packages/runtime/test/a5-m1-control-legs.mjs'
 
 const REPO = fileURLToPath(new URL('../../../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
@@ -100,11 +109,18 @@ try {
     deny: [],
   })
   const build = (extra = {}) => plane.createTeamToolPlaneAssembly({
+    // THE PA durable attribution identity: the REAL host TeamSession root this
+    // kit world stands for (same `a5intr3-kit-*` keying as REALM/instanceId —
+    // never a synthetic `plane:<template>` stand-in, which the mount refuses).
+    teamSessionId: `a5intr3-kit-session-${STAMP}`,
     permissionPolicy: POLICY,
     realmId: REALM,
     templateId: 'a5intr3-kit',
     role: 'member',
     instanceId: `a5intr3-kit-${STAMP}`,
+    // `default: 'ask'` makes every governed row a requires-approval outcome;
+    // without a Control leg the center pending-refuses and no body ever runs.
+    controlLeg: approvingControlLeg(),
     onObserve: () => {},
     ...extra,
   })

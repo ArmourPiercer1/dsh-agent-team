@@ -30,7 +30,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { findTestRepoRoot } from '../../../../tests/paths.mjs'
-import type { ScenarioTable, ToolEffectBackend } from '../src/backend-contract.js'
+import type { ScenarioFixture, ScenarioTable, ToolEffectBackend } from '../src/backend-contract.js'
 import type { A5P5Assembly, GovernedToolDefinition } from '../src/register.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -99,12 +99,35 @@ describe('a5p5 emit self-check (the lane tsconfig emits to its own dist; the emi
       // LANE's own types — a structural conformance assertion as well)
       const createDirectBackend = mod['createDirectBackend'] as unknown as (table: ScenarioTable) => ToolEffectBackend
       const buildDefs = mod['createGovernedToolDefinitions'] as unknown as (assembly: A5P5Assembly) => readonly GovernedToolDefinition[]
-      const table: ScenarioTable = {
-        'emit-check-bash-1': {
-          outcome: { exitCode: 0, stdout: 'FROM-EMITTED-DIST\n', stderr: '', timedOut: false, cancelled: false, truncated: false },
-          chunks: ['FROM-EMITTED-DIST\n'],
-        },
+      // THE FIXTURE ANSWERS THE CALL-ID THE EMITTED FACE ACTUALLY MINTS.
+      // The correlation is composed INSIDE the register face — `src/register
+      // .ts:218-222` builds `${prefix}-${kind}:${hexec|mount}:${mountNonce}-
+      // ${seq}`, with a per-mount nonce since fix-2b and the host-token
+      // `hexec` branch since PR358-A1 — so no literal key written in this file
+      // can name it, and a literal key that DID happen to match would only
+      // prove that a random UUID collided with it. The emitted direct backend
+      // looks the scenario up as `table[call.callId]` (`src/backend-direct
+      // .ts:26`), so the table here is a live lookup: it answers whatever
+      // callId the request carries with the one scenario, and RECORDS the id
+      // it was asked with. The pin's intent is untouched and now bites twice:
+      // the emitted graph still has to route the call to the fixture and
+      // render its stdout (the assertion below is unchanged), AND the id it
+      // routed on must be this assembly's own closed grammar carrying the
+      // configured `callIdPrefix` — asserted once the run is back. Nothing in
+      // the product was edited to make an id unique, and no expectation here
+      // was relaxed.
+      const fixture: ScenarioFixture = {
+        outcome: { exitCode: 0, stdout: 'FROM-EMITTED-DIST\n', stderr: '', timedOut: false, cancelled: false, truncated: false },
+        chunks: ['FROM-EMITTED-DIST\n'],
       }
+      const askedCallIds: string[] = []
+      const table: ScenarioTable = new Proxy({} as Record<string, ScenarioFixture>, {
+        get: (target, key) => {
+          if (typeof key !== 'string') return undefined
+          askedCallIds.push(key)
+          return target[key] ?? fixture
+        },
+      })
       const backend = createDirectBackend(table)
       const defs = buildDefs({
         realmId: 'realm-emit-selfcheck',
@@ -122,6 +145,15 @@ describe('a5p5 emit self-check (the lane tsconfig emits to its own dist; the emi
       if (bash === undefined) throw new Error('emitted barrel must yield the bash definition')
       const okRun = await bash.execute({ command: 'echo hi', cwd: '.' })
       expect(okRun.text).toContain('FROM-EMITTED-DIST')
+      // …and the id it was served on is the EMITTED face's own fact: the
+      // configured prefix, the lane's tool spelling, the tokenless `mount`
+      // branch (this call carries no host execution token), a per-mount
+      // nonce, and the per-assembly sequence. A grammar drift in the emitted
+      // artifact — a lost prefix, a renumbered sequence, a `String()`-ed
+      // token — fails HERE, which is the half a literal fixture key could
+      // never check.
+      expect(askedCallIds).toHaveLength(1)
+      expect(askedCallIds[0]).toMatch(/^emit-check-bash:mount:[^:]+-1$/)
       const deniedDefs = buildDefs({
         realmId: 'realm-emit-selfcheck',
         decide: () => ({ kind: 'deny', code: 'ADMISSION-DENY' }),

@@ -486,6 +486,45 @@ export type DynamicPermissionDecision =
  * one agent ctx (the A6 glue builds these per agent lifecycle from the
  * bound template, the session cwd, and the team's control service).
  */
+/**
+ * A5-M2 — the outcome of the PRE-DISPATCH PA walk for one execution.
+ *
+ * `authorized` says ONE thing and nothing more: the full PA effect-set
+ * question was answered and a real Control guard consumed the durable Ask.
+ * It is NOT a consumption — the PA grant is unspent, and the row's own body
+ * still owes the fresh recheck and the one-shot consume. `no-match` means
+ * this execution is not the mount's governed read and the pre-existing
+ * pipeline below runs, byte for byte.
+ */
+export type PaReadHandoffOutcome =
+  | { readonly kind: 'no-match' }
+  | { readonly kind: 'authorized'; readonly correlation?: string }
+  | { readonly kind: 'cancelled' }
+  | {
+      readonly kind: 'refused'
+      readonly code: string
+      readonly detail: string
+      /** Cleanup ownership, stated EXPLICITLY and NEVER inferred from `code`:
+       *  `true` — this very entry created state on this exec, the adapter voids
+       *  it; `false` — a DUPLICATE entry refusing what ANOTHER leg owns, so the
+       *  adapter must not touch that leg's state (closing here used to end the
+       *  first owner's hand-off); absent — an unknown port shape, in which case
+       *  the adapter closes nothing and the `'tools/result'` terminal leg stays
+       *  the backstop for the exec that really ran. */
+      readonly ownsHandoff?: boolean
+    }
+
+/** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
+export interface PaReadHandoffPorts {
+  /** Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch. */
+  readonly open: (exec: object) => Promise<PaReadHandoffOutcome>
+  /** Void everything this exec still holds (idempotent, synchronous). */
+  readonly close: (exec: object) => void
+  /** The terminal leg: `'tools/result'` — the one funnel every pipeline
+   *  branch reaches with the SAME exec object that traversed the waterfall. */
+  readonly onTerminal: (observer: (exec: object, result: unknown) => undefined) => () => void
+}
+
 export interface InstallParameterPermissionListenerParams {
   /**
    * The bound template's static permission policy (A1 — deep-frozen,
@@ -606,6 +645,13 @@ export interface InstallParameterPermissionListenerParams {
     readonly staticDefault: 'ask' | 'deny'
   }) => Promise<DynamicPermissionDecision | undefined>
   readonly execEnvelopeOps?: readonly string[]
+  /**
+   * A5-M2 PA-READ HAND-OFF. ABSENT (or any member missing) = the pipeline
+   * below runs exactly as it does today, including the `parameter-permission`
+   * request — this port only ever REPLACES the native Ask for the ONE name the
+   * mount takeover-mounted as its governed read, and never adds an Ask.
+   */
+  readonly paReadHandoff?: PaReadHandoffPorts
   /**
    * Strict-read + Core-spill (implementation guide §9) — the injected
    * artifact-grant authorization port: for `read` decisions only, it
@@ -1226,6 +1272,27 @@ export function installParameterPermissionListener(
    * NEVER returns `ask`; NEVER awaits `next()` after a deny decision;
    * every unexpected failure fails closed to a deny.
    */
+  // A5-M2 ports, resolved ONCE per install. A half-wired port is treated as
+  // absent (the old path), never as a partial hand-off.
+  // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
+  // before any registration (the same R6 discipline as the missing guard
+  // seam): a half hand-off must never silently degrade into the old Ask.
+  // Truly ABSENT (no governed read row, no-Team) keeps the pre-hand-off path.
+  if (params.paReadHandoff !== undefined) {
+    const missing = (['open', 'close', 'onTerminal'] as const).filter(
+      (k) => typeof params.paReadHandoff?.[k] !== 'function',
+    )
+    if (missing.length > 0) {
+      throw new Error(`pa-read-handoff-malformed — paReadHandoff was supplied without: ${missing.join(', ')}`)
+    }
+  }
+  const paHandoffPorts = params.paReadHandoff
+  // The execs this install handed off, keyed by the exec OBJECT identity (the
+  // same discipline as `authorizedExecutions`). GC is leak insurance, never
+  // the cleanup mechanism — the mount's plan fact is a strong Map keyed by a
+  // string, so only the terminal leg below clears it.
+  const paHandoffExecs = new WeakSet<object>()
+
   const enforce = async (
     exec: PreExecuteExec,
     next: () => Promise<PreToolDecisionLike>,
@@ -1307,6 +1374,65 @@ export function installParameterPermissionListener(
         detail: preflight.detail,
       })
       return { kind: 'deny', reason: capabilityDenialReason(preflight.code, preflight.detail) }
+    }
+
+    // (2c) A5-M2 PA-READ HAND-OFF — the ONE durable effect-set Ask for the
+    // mount's governed read belongs to PA, so it is asked HERE, before this
+    // listener waits, over the SAME execution identity the body will get
+    // (`exec.token`, registry-assigned before policy begins). The plane runs
+    // its whole PA admission now: call-level facts, plan, the durable Control
+    // request, presenter, `issueApprovedGrant` and its `guardOperation`
+    // consumption. This adapter therefore opens NO `parameter-permission`
+    // request for this call — an Alpha4 row without a PA manifest is a record,
+    // never a credential for a PA-owned effect set. What `authorized` buys is
+    // only release of the end-cap; the grant stays unspent and the row's body
+    // still runs the fresh recheck and the single consume, refusing there.
+    if (paHandoffPorts !== undefined) {
+      let handoff
+      try {
+        handoff = await paHandoffPorts.open(exec)
+      } catch (error: unknown) {
+        // A leg that never handed off closes what it may have opened.
+        paHandoffExecs.delete(exec)
+        paHandoffPorts.close(exec)
+        observe({ stage: 'pa-handoff-fault', callId, tool: name, detail: String((error as { message?: unknown })?.message ?? error) })
+        return { kind: 'deny', reason: 'PA_HANDOFF_FAULT — the pre-dispatch PA walk could not be completed; nothing ran' }
+      }
+      if (handoff.kind === 'authorized') {
+        paHandoffExecs.add(exec)
+        authorizedExecutions.add(exec)
+        observe({ stage: 'pa-handoff-authorized', callId, tool: name })
+        // Mark-then-next, the same convention as every final-allow site below.
+        // NO close in any `finally` here: the guard stage and the dispatch of
+        // the rest of the chain have not happened yet.
+        return await next()
+      }
+      if (handoff.kind === 'cancelled') {
+        // ③ CANCELLATION IS NOT PERMISSION: no mark, no `next()`, no body. The
+        // PA edge answered this invocation cancelled with zero consumption, so
+        // nothing is dispatched and nothing is authorized.
+        paHandoffExecs.delete(exec)
+        paHandoffPorts.close(exec)
+        observe({ stage: 'pa-handoff-cancelled', callId, tool: name })
+        return { kind: 'deny', reason: 'cancelled — the PA edge answered this invocation cancelled before dispatch; zero consumption, zero body' }
+      }
+      if (handoff.kind === 'refused') {
+        // Mismatch or PA fault: FAIL CLOSED, in place. No native Ask is
+        // opened, no mark is made, `next()` is never awaited. Cleanup
+        // ownership is STATED by the trusted port and NEVER guessed from
+        // `handoff.code`: a duplicate entry that owns nothing must not close,
+        // because that close voided the hand-off the FIRST leg still needed.
+        // Anything not explicitly owned is left alone, and the real
+        // `'tools/result'` terminal leg stays the backstop.
+        if (handoff.ownsHandoff === true) {
+          paHandoffExecs.delete(exec)
+          paHandoffPorts.close(exec)
+        }
+        observe({ stage: 'pa-handoff-refused', callId, tool: name, code: handoff.code, detail: handoff.detail })
+        return { kind: 'deny', reason: `${handoff.code} — ${handoff.detail}` }
+      }
+      // 'no-match' falls through: every other name, every mount without the
+      // governed read row, and every no-Team world keeps the path below.
     }
 
     // (3) resolve the static decision (A3 — pure, synchronous).
@@ -2171,9 +2297,30 @@ export function installParameterPermissionListener(
   // agent-scoped registrations symmetric — the A6 glue stores this
   // single disposer in the agent lifecycle's `toolDisposers` slot
   // (plan §11.3) and cold resume calls the install again.
+  // A5-M2 terminal leg. `'tools/result'` is the one funnel EVERY branch
+  // reaches with the same exec object that traversed the waterfall: the
+  // pre-execute/guard denials and the pre-dispatch cancellation reach it
+  // through `post-result`, a throwing listener through `final-result`, and the
+  // body through its own result. It arrives FROZEN by then, which is precisely
+  // why the suspension lives in a WeakSet instead of on the object.
+  // Cleanup is synchronous, idempotent, and bidirectional with the body's own
+  // redemption: the same call twice changes nothing.
+  const onExecutionSettled = (exec: object): undefined => {
+    if (!paHandoffExecs.has(exec)) return undefined
+    paHandoffExecs.delete(exec)
+    // The end-cap mark is a per-invocation fact: it dies with the invocation,
+    // and only for a hand-off this install actually made.
+    authorizedExecutions.delete(exec)
+    params.paReadHandoff?.close(exec)
+    return undefined
+  }
+  const disposeTerminal = paHandoffPorts === undefined
+    ? null
+    : paHandoffPorts.onTerminal((exec) => onExecutionSettled(exec as object))
   const disposeListener = agentCtx.on('tools/pre-execute', listener)
   const disposeGuard = agentCtx.tools.guard(endCapGuard)
   return () => {
+    disposeTerminal?.()
     disposeListener()
     disposeGuard()
   }

@@ -109,6 +109,16 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/cancel-leg.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/cancel-leg.mjs',
   },
+  // A5-M1 (PR358-B): the PA mount registry is imported by the production
+  // root entry (`root.ts` — a `@ts-ignore` relative `.mjs` specifier that
+  // tsc never emits) exactly like upstream-resolver was at GLUE-6 RED-A:
+  // on the strict `files: ["dist"]` install face a missing copy is
+  // ERR_MODULE_NOT_FOUND at root construction. Same law as every entry:
+  // byte-identical placement, drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/pa-mount-registry.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
@@ -123,6 +133,23 @@ export const PLACEMENTS = [
   {
     src: 'packages/runtime/root-binding/harness/seam.mjs',
     dist: 'packages/runtime/dist/packages/runtime/root-binding/harness/seam.mjs',
+  },
+  // A5-M1 PACKING (root-approved): the landlock pre-launcher is a TRACKED
+  // runtime asset (`git ls-tree` at the release commit carries it) that tsc
+  // never emits, so the strict `files: ["dist"]` install face shipped WITHOUT
+  // it — and `provider.js`'s own default launcher path
+  // (`assembly.launcherPath ?? join(dirname(fileURLToPath(import.meta.url)),
+  // 'launcher', 'landlock-prelauncher.py')`, dist provider.js:90) resolved to a
+  // missing file, so confined bash could not start from an installed package at
+  // all. Same class as GLUE-6 RED-A (a runtime dependency outside tsc's emit
+  // must sit INSIDE the mirror). Byte-identical placement like every entry here;
+  // the drift gate (check D) compares src vs dist. NO sandbox rule, trust rule
+  // or path-trust boundary changes: the CONFINE_CONFIG_INCOMPLETE /
+  // TRUST_ROOT_SHA_MISMATCH triple and the verifyLauncherIntegrity byte gate
+  // still decide every single use of this file.
+  {
+    src: 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
+    dist: 'packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py',
   },
 ]
 
