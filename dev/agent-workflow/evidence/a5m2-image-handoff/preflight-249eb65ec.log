@@ -1,0 +1,9 @@
+0-integrity name=dsh-agent-team version=0.1.1-alpha.2
+0-integrity checked=473 pin=473 bad=0 MATCHES-PIN
+1-host IMPORT-OK exports=apply,buildGovernanceWarningContains,buildGovernanceWarningDocs,defaultGlueUrl,defaultSeamUrlCandidates,degradedAnchorBootLine,inject,name…
+2-glue IMPORT-OK exports=GUARD_NATIVE_TRUST_EXCLUDED_MCP_PREFIX,createAgentBindings,createPtcEscalationRouter,guardNativeTrustExcludedMcpName…
+2-glue port-law paImageHandoff=PRESENT
+2b-plane IMPORT-OK createTeamToolPlaneAssembly=function port-law=PRESENT
+2c-adapter IMPORT-OK exports=END_CAP_DENIAL_REASON,installParameterPermissionListener… third-port=PRESENT
+3-seam IMPORT-OK exports=createRealStorageDomainSeam
+VERDICT PASS (5/5)
