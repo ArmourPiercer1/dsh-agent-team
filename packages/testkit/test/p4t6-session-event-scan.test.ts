@@ -550,6 +550,20 @@ const SCANNED_PATHS_A5M2B18: readonly string[] = [
 
 
 
+const SCANNED_PATHS_A5M2B19: readonly string[] = [
+  // A5M2-BATCH19 (2026-10-23, center booking per the batch rule): the two wire
+  // lanes landed on int - B-SCHEDULE controlled wiring (59a058052: schedule
+  // .mjs/.d.mts/spec) and the B-SESSION-QUERY thin bridge (a33386817: g6
+  // .mjs/.d.mts/spec). Six scannable paths, zero new denylist vocabulary;
+  // dist mirrors stay OUTSIDE the scan.
+  'packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/schedule-wiring.d.mts',
+  'packages/runtime/test/a5m2-schedule-wiring.test.ts',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.d.mts',
+  'packages/runtime/test/a5m2-g6-session-query-wiring.test.ts',
+]
+
 const SCANNED_PATHS_A5M2G1W: readonly string[] = [
   // A5M2-G1-WIRE (branch feat/a5m2-wire-g1, base d25d15c6, root ruling 15:28
   // 工具适配不等待中心接线): the pure-query G1 adapter rows (records 53 / 54
@@ -3173,6 +3187,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B16.length +
         SCANNED_PATHS_A5M2B17.length +
         SCANNED_PATHS_A5M2B18.length +
+        SCANNED_PATHS_A5M2B19.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3257,6 +3272,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B16.length +
         SCANNED_PATHS_A5M2B17.length +
         SCANNED_PATHS_A5M2B18.length +
+        SCANNED_PATHS_A5M2B19.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3361,6 +3377,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5M2B16,
       ...SCANNED_PATHS_A5M2B17,
       ...SCANNED_PATHS_A5M2B18,
+      ...SCANNED_PATHS_A5M2B19,
       ...SCANNED_PATHS_A5M2G1W,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
