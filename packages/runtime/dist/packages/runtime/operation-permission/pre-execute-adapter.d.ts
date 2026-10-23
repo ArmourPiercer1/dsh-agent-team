@@ -600,6 +600,17 @@ export interface InstallParameterPermissionListenerParams {
      */
     readonly paReadHandoff?: PaReadHandoffPorts;
     /**
+     * A5-M2 PA-WRITE HAND-OFF (root 13:38, the MIN product hand-off): the SAME
+     * audited port shape, supplied only when THIS mount carries the governed
+     * WRITE row. ABSENT = today exactly. When present, the ONE name the mount
+     * takeover-mounted as its governed write asks the effect-set question at PA
+     * here, and the old `parameter-permission` front door opens NOTHING for it;
+     * everything unknown / unmounted / drifted keeps the old path (the port
+     * itself answers `no-match` for those — never this adapter guessing by
+     * name).
+     */
+    readonly paWriteHandoff?: PaReadHandoffPorts;
+    /**
      * Strict-read + Core-spill (implementation guide §9) — the injected
      * artifact-grant authorization port: for `read` decisions only, it
      * consults the Team's durable artifact-read grants (the

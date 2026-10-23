@@ -783,14 +783,21 @@ export function installParameterPermissionListener(agentCtx, params) {
     // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
     // before any registration (the same R6 discipline as the missing guard
     // seam): a half hand-off must never silently degrade into the old Ask.
-    // Truly ABSENT (no governed read row, no-Team) keeps the pre-hand-off path.
-    if (params.paReadHandoff !== undefined) {
-        const missing = ['open', 'close', 'onTerminal'].filter((k) => typeof params.paReadHandoff?.[k] !== 'function');
+    // Truly ABSENT (no governed read/write row, no-Team) keeps the pre-hand-off path.
+    for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff]]) {
+        if (port === undefined)
+            continue;
+        const missing = ['open', 'close', 'onTerminal'].filter((k) => typeof port?.[k] !== 'function');
         if (missing.length > 0) {
-            throw new Error(`pa-read-handoff-malformed — paReadHandoff was supplied without: ${missing.join(', ')}`);
+            throw new Error(`pa-read-handoff-malformed — ${portName} was supplied without: ${missing.join(', ')}`);
         }
     }
-    const paHandoffPorts = params.paReadHandoff;
+    // A5-M2 (root 13:38): the arm below runs over EVERY supplied port, read
+    // first then write — each port answers for ITS OWN mounted name and returns
+    // 'no-match' for everything else, so an absent second port changes NOTHING
+    // and the old path stays untouched for every other name and world.
+    const paHandoffPortsList = [params.paReadHandoff, params.paWriteHandoff]
+        .filter((p) => p !== undefined);
     // The execs this install handed off, keyed by the exec OBJECT identity (the
     // same discipline as `authorizedExecutions`). GC is leak insurance, never
     // the cleanup mechanism — the mount's plan fact is a strong Map keyed by a
@@ -882,7 +889,7 @@ export function installParameterPermissionListener(agentCtx, params) {
         // never a credential for a PA-owned effect set. What `authorized` buys is
         // only release of the end-cap; the grant stays unspent and the row's body
         // still runs the fresh recheck and the single consume, refusing there.
-        if (paHandoffPorts !== undefined) {
+        for (const paHandoffPorts of paHandoffPortsList) {
             let handoff;
             try {
                 handoff = await paHandoffPorts.open(exec);
@@ -927,8 +934,9 @@ export function installParameterPermissionListener(agentCtx, params) {
                 observe({ stage: 'pa-handoff-refused', callId, tool: name, code: handoff.code, detail: handoff.detail });
                 return { kind: 'deny', reason: `${handoff.code} — ${handoff.detail}` };
             }
-            // 'no-match' falls through: every other name, every mount without the
-            // governed read row, and every no-Team world keeps the path below.
+            // 'no-match' falls through to the NEXT port and finally to the path
+            // below: every other name, every mount without the governed row, and
+            // every no-Team world keeps the pre-hand-off pipeline untouched.
         }
         // (3) resolve the static decision (A3 — pure, synchronous).
         // P1-3 (H2, option A) — BEFORE the A3 resolver is called: a
@@ -1765,12 +1773,22 @@ export function installParameterPermissionListener(agentCtx, params) {
         // The end-cap mark is a per-invocation fact: it dies with the invocation,
         // and only for a hand-off this install actually made.
         authorizedExecutions.delete(exec);
-        params.paReadHandoff?.close(exec);
+        // Idempotent per port; a port that never owned this exec closes nothing.
+        for (const ports of paHandoffPortsList)
+            ports.close(exec);
         return undefined;
     };
-    const disposeTerminal = paHandoffPorts === undefined
+    const disposeTerminal = paHandoffPortsList.length === 0
         ? null
-        : paHandoffPorts.onTerminal((exec) => onExecutionSettled(exec));
+        : (() => {
+            const disposers = paHandoffPortsList.map((ports) => ports.onTerminal((exec) => onExecutionSettled(exec)));
+            return () => { for (const d of disposers) {
+                try {
+                    d();
+                }
+                catch { /* dispose best-effort */ }
+            } };
+        })();
     const disposeListener = agentCtx.on('tools/pre-execute', listener);
     const disposeGuard = agentCtx.tools.guard(endCapGuard);
     return () => {

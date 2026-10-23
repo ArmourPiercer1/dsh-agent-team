@@ -653,6 +653,17 @@ export interface InstallParameterPermissionListenerParams {
    */
   readonly paReadHandoff?: PaReadHandoffPorts
   /**
+   * A5-M2 PA-WRITE HAND-OFF (root 13:38, the MIN product hand-off): the SAME
+   * audited port shape, supplied only when THIS mount carries the governed
+   * WRITE row. ABSENT = today exactly. When present, the ONE name the mount
+   * takeover-mounted as its governed write asks the effect-set question at PA
+   * here, and the old `parameter-permission` front door opens NOTHING for it;
+   * everything unknown / unmounted / drifted keeps the old path (the port
+   * itself answers `no-match` for those — never this adapter guessing by
+   * name).
+   */
+  readonly paWriteHandoff?: PaReadHandoffPorts
+  /**
    * Strict-read + Core-spill (implementation guide §9) — the injected
    * artifact-grant authorization port: for `read` decisions only, it
    * consults the Team's durable artifact-read grants (the
@@ -1277,16 +1288,22 @@ export function installParameterPermissionListener(
   // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
   // before any registration (the same R6 discipline as the missing guard
   // seam): a half hand-off must never silently degrade into the old Ask.
-  // Truly ABSENT (no governed read row, no-Team) keeps the pre-hand-off path.
-  if (params.paReadHandoff !== undefined) {
+  // Truly ABSENT (no governed read/write row, no-Team) keeps the pre-hand-off path.
+  for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff]] as const) {
+    if (port === undefined) continue
     const missing = (['open', 'close', 'onTerminal'] as const).filter(
-      (k) => typeof params.paReadHandoff?.[k] !== 'function',
+      (k) => typeof port?.[k] !== 'function',
     )
     if (missing.length > 0) {
-      throw new Error(`pa-read-handoff-malformed — paReadHandoff was supplied without: ${missing.join(', ')}`)
+      throw new Error(`pa-read-handoff-malformed — ${portName} was supplied without: ${missing.join(', ')}`)
     }
   }
-  const paHandoffPorts = params.paReadHandoff
+  // A5-M2 (root 13:38): the arm below runs over EVERY supplied port, read
+  // first then write — each port answers for ITS OWN mounted name and returns
+  // 'no-match' for everything else, so an absent second port changes NOTHING
+  // and the old path stays untouched for every other name and world.
+  const paHandoffPortsList: PaReadHandoffPorts[] = [params.paReadHandoff, params.paWriteHandoff]
+    .filter((p): p is PaReadHandoffPorts => p !== undefined)
   // The execs this install handed off, keyed by the exec OBJECT identity (the
   // same discipline as `authorizedExecutions`). GC is leak insurance, never
   // the cleanup mechanism — the mount's plan fact is a strong Map keyed by a
@@ -1387,7 +1404,7 @@ export function installParameterPermissionListener(
     // never a credential for a PA-owned effect set. What `authorized` buys is
     // only release of the end-cap; the grant stays unspent and the row's body
     // still runs the fresh recheck and the single consume, refusing there.
-    if (paHandoffPorts !== undefined) {
+    for (const paHandoffPorts of paHandoffPortsList) {
       let handoff
       try {
         handoff = await paHandoffPorts.open(exec)
@@ -1431,8 +1448,9 @@ export function installParameterPermissionListener(
         observe({ stage: 'pa-handoff-refused', callId, tool: name, code: handoff.code, detail: handoff.detail })
         return { kind: 'deny', reason: `${handoff.code} — ${handoff.detail}` }
       }
-      // 'no-match' falls through: every other name, every mount without the
-      // governed read row, and every no-Team world keeps the path below.
+      // 'no-match' falls through to the NEXT port and finally to the path
+      // below: every other name, every mount without the governed row, and
+      // every no-Team world keeps the pre-hand-off pipeline untouched.
     }
 
     // (3) resolve the static decision (A3 — pure, synchronous).
@@ -2311,12 +2329,18 @@ export function installParameterPermissionListener(
     // The end-cap mark is a per-invocation fact: it dies with the invocation,
     // and only for a hand-off this install actually made.
     authorizedExecutions.delete(exec)
-    params.paReadHandoff?.close(exec)
+    // Idempotent per port; a port that never owned this exec closes nothing.
+    for (const ports of paHandoffPortsList) ports.close(exec)
     return undefined
   }
-  const disposeTerminal = paHandoffPorts === undefined
+  const disposeTerminal: (() => void) | null = paHandoffPortsList.length === 0
     ? null
-    : paHandoffPorts.onTerminal((exec) => onExecutionSettled(exec as object))
+    : (() => {
+        const disposers = paHandoffPortsList.map(
+          (ports) => ports.onTerminal((exec) => onExecutionSettled(exec as object)),
+        )
+        return () => { for (const d of disposers) { try { d() } catch { /* dispose best-effort */ } } }
+      })()
   const disposeListener = agentCtx.on('tools/pre-execute', listener)
   const disposeGuard = agentCtx.tools.guard(endCapGuard)
   return () => {
