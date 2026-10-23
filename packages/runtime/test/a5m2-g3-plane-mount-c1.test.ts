@@ -159,9 +159,15 @@ function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | unde
   }
 }
 
-function makeInject (opts: { absent?: string[], portCalls?: string[] } = {}) {
+function makeInject (opts: { absent?: string[], portCalls?: string[]; live?: { reads: number, poisonFromRead: number } } = {}) {
   const portCalls = opts.portCalls ?? []
   const absent = new Set(opts.absent ?? [])
+  // THE LIVE SNAPSHOT SOURCE (root 21:36: the CONTROL/QUERY rows ride live
+  // facts): one mutable snapshot list feeds BOTH the terminals face's list()
+  // and the producer-shaped session() resolution (pid-derived incarnation,
+  // status verbatim — the same derivation law the capture producer applies).
+  const snapshots: Array<Record<string, unknown>> = [{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' }, pid: 4242 }]
+  const live = opts.live ?? { reads: 0, poisonFromRead: Number.POSITIVE_INFINITY }
   const natives = new Map<string, Definition>()
   for (const name of TOOLS) {
     if (absent.has(name)) continue
@@ -179,11 +185,11 @@ function makeInject (opts: { absent?: string[], portCalls?: string[] } = {}) {
   const terminals = {
     registerBackend: () => () => {},
     spawn: async () => { portCalls.push('spawn'); throw new Error('spec plane world: spawn not driven here') },
-    startSend: () => { portCalls.push('startSend'); throw new Error('spec plane world: startSend not driven here') },
+    startSend: () => { portCalls.push('startSend'); return { done: Promise.resolve({ settled: true }) } },
     read: () => { portCalls.push('read'); return { viewport: 'pty-viewport', cursorOffset: 12 } },
     signal: async () => { portCalls.push('signal'); return { kind: 'sent' } },
     kill: async () => { portCalls.push('kill'); return true },
-    list: () => { portCalls.push('list'); return Object.freeze([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }]) },
+    list: () => { portCalls.push('list'); return Object.freeze(snapshots.map((entry) => Object.freeze({ ...entry }))) },
   }
   const inject = Object.freeze({
     providerId: PROVIDER,
@@ -193,7 +199,18 @@ function makeInject (opts: { absent?: string[], portCalls?: string[] } = {}) {
     declaredBackends: ['shell'],
     ptyService: {
       backend: (type: string) => (type === 'shell' ? { registrationId: 'reg-shell-1', incarnation: 'inc-1', processEnvelope: { sandbox: 'landlock' } } : null),
-      session: (ownerAgentId: string, sessionId: string) => (ownerAgentId === MEMBER && sessionId === 'pty-1' ? { incarnation: 'pty-inc-1', status: { kind: 'running' } } : null),
+      session: (ownerAgentId: string, sessionId: string) => {
+        if (ownerAgentId !== MEMBER || sessionId !== 'pty-1') return null
+        // producer-shaped derivation from the LIVE snapshot (pid-derived
+        // incarnation); `live.poisonFromRead` simulates the observable fact
+        // of a session restart (pid moves) AFTER the Nth read — the exact
+        // movement the adapter's execute-time recheck must refuse.
+        live.reads += 1
+        const snap = snapshots.find((entry) => entry.sessionId === sessionId)
+        if (snap === undefined || typeof snap.pid !== 'number') return null
+        const pid = live.reads > live.poisonFromRead ? 9999 : snap.pid
+        return { incarnation: `pid:${String(pid)}`, status: snap.status }
+      },
       approvedOpenPlan: () => ({ plan: { argv: ['/bin/bash'], cwd: '/tmp/g3-plane', rows: 24, cols: 80, graceMs: 2000 } }),
     },
     controlPortDeps: Object.freeze({
@@ -326,7 +343,7 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     const token = { k: 'g3-one-execution' }
     const served = await def.execute({}, { token, agent: AGENT })
     // VERBATIM: the port's answer is the service answer, un-wrapped.
-    expect(served).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+    expect(served).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' }, pid: 4242 }])
     expect(w.portCalls).toContain('list')
     // the trusted family block rode the leg at FULL VALUE (载荷法) —
     // familyId/adapterRevision/providerIdentity/targetManifest from the
@@ -344,7 +361,7 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     expect(sink.filter((line) => line.includes('admission-requires-approval')).length, 'the replay never reached PA again').toBe(paAsksBefore)
     // the ONE grant: a second execution token must re-ask (no grant reuse)
     const second = await def.execute({}, { token: { k: 'g3-second-execution' }, agent: AGENT })
-    expect(second).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+    expect(second).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' }, pid: 4242 }])
     expect(seen.length, 'the second call minted its own approval walk').toBe(2)
   })
 
@@ -432,7 +449,7 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     if (built.ok !== true) return
     const def = built.value.definitions.find((d) => d.name === 'terminal_list') as Definition
     const served = await def.execute({}, { token: { k: 'g3-callfacts' }, agent: AGENT })
-    expect(served).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+    expect(served).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' }, pid: 4242 }])
     // the measured law: the SAME read is asked the SAME question twice —
     // once to BUILD the request's binding (admission), once at the execution
     // EDGE (drift check). Both asks must carry the G3 placement spelling.
@@ -532,7 +549,7 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
       // resolved the live rev-0 tuple through the published mount (a missing
       // placementName, a mispaired tuple, or a planSnapshot drift would
       // stale the call before the seat — nothing here answers by hand).
-      expect(served, `the real reader served the row (causes: ${JSON.stringify(answerCauses)})`).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+      expect(served, `the real reader served the row (causes: ${JSON.stringify(answerCauses)})`).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' }, pid: 4242 }])
       // ZERO diagnose causes across BOTH production reads (construction +
       // edge): every arm of the shipped entry resolved through the
       // published mount — no refusal was ever on the path.
@@ -560,6 +577,91 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
       // the REAL revoke law (root 21:07): by (teamRoot, instanceId,
       // identity) — the identity the publish returned for THIS pair; a stale
       // disposer clears nothing.
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
+    }
+  })
+
+  it('(j) real supply on the CONTROL/QUERY rows (root 21:36: open 保 gap, 这些行不待它): send/read/signal/close SERVE through the published mount on LIVE snapshot facts, and a pid movement IS the drift the execute-time recheck refuses', async () => {
+    const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+      publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
+      readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
+    }
+    const tupleFor = (name: string) => Object.freeze({
+      bindingId: `plane-row:${TEMPLATE}:${name}`,
+      agentScopeKey: `plane:${TEMPLATE}`,
+      toolName: name,
+      definitionIdentity: `plane:${TEMPLATE}:${name}`,
+      providerId: 'a5p5-plane',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'confined-subprocess',
+      assurance: Object.freeze({}),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    })
+    const guard = { dispatcher: { surface: { names: () => [...TOOLS], entryOf: (name: string) => (TOOLS as readonly string[]).includes(name) ? { verified: true, revision: 1, binding: tupleFor(name) } : undefined } } }
+    const portCalls: string[] = []
+    const live = { reads: 0, poisonFromRead: Number.POSITIVE_INFINITY }
+    const w = makeInject({ portCalls, live })
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({
+      backends: { terminal: w.inject },
+      controlLeg: mintingControlLeg(seen),
+      authorityFacts: { overlayGeneration: () => 0 },
+      readCallFacts: (input: Record<string, unknown>) => registry.readPaCallFactsForCall(input),
+    })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    built.value.mount(fakeAgentCtx([]))
+    const identity = registry.publishPaMount('g3-plane-team', 'g3-instance', {
+      instanceId: 'g3-instance',
+      guard,
+      plane: built.value,
+      beneficiaryAuthority: 'member',
+      readers: {
+        permissionPlane: () => ({
+          currentCallFacts: () => ({
+            healthy: true,
+            tuple: { blueprintId: 'g3-bp', contentHash: 'sha256:bphash', revision: '3', templateId: TEMPLATE, cwd: '/tmp/g3-c1' },
+            providerVersion: 'pv-1',
+          }),
+        }),
+        overlaySnapshot: async () => ({ metadata: { generation: 0 } }),
+        teamHardEnvelope: async () => ({ status: 'absent' }),
+        permissionEnvelope: async () => ({ rules: [], scope: 'g3' }),
+      },
+    })
+    try {
+      const def = (name: string) => built.value.definitions.find((d) => d.name === name) as Definition
+      const exec = (k: string) => ({ token: { k }, agent: AGENT })
+      // THE FOUR CONTROL/QUERY ROWS SERVE, each reaching the live terminals
+      // face — every session fact resolved from the LIVE snapshot (pid-derived
+      // incarnation), every effect through the recording service face:
+      const sent = await def('terminal_send').execute({ sessionId: 'pty-1', text: 'echo hi\n' }, exec('g3-j-send'))
+      expect(sent, 'the send row served').toBeDefined()
+      const read = await def('terminal_read').execute({ sessionId: 'pty-1' }, exec('g3-j-read'))
+      expect(read, 'the read row served').toBeDefined()
+      const signaled = await def('terminal_signal').execute({ sessionId: 'pty-1', signal: 'SIGINT' }, exec('g3-j-signal'))
+      expect(signaled, 'the signal row served').toBeDefined()
+      const closed = await def('terminal_close').execute({ sessionId: 'pty-1' }, exec('g3-j-close'))
+      expect(closed, 'the close row served').toBeDefined()
+      expect(portCalls.filter((c) => ['startSend', 'read', 'signal', 'kill'].includes(c)), 'each row reached the REAL service face exactly once')
+        .toEqual(['startSend', 'read', 'signal', 'kill'])
+      // THE DRIFT IS REAL: the snapshot's pid moves BETWEEN the target read
+      // at approval and the entry recheck (the observable fact of a
+      // restarted session). The poison arms so the NEXT read (approval-time)
+      // still sees 4242 and the read AFTER it (the entry recheck) sees 9999
+      // — the recheck refuses with its OWN word naming both incarnations,
+      // BEFORE the effect entry (zero effect; a post-start move would ride
+      // the signed effectsStarted lane instead).
+      const sendsBefore = portCalls.filter((c) => c === 'startSend').length
+      live.poisonFromRead = live.reads + 1
+      await expect(def('terminal_send').execute({ sessionId: 'pty-1', text: 'again\n' }, exec('g3-j-drift')))
+        .rejects.toThrow(/P_TERM_TARGET_DRIFT[\s\S]*pid:4242 -> pid:9999/)
+      expect(portCalls.filter((c) => c === 'startSend').length, 'the drift refused at the entry — ZERO further service effects').toBe(sendsBefore)
+    } finally {
       registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
   })
