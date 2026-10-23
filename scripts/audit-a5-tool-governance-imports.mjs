@@ -86,6 +86,15 @@ const PR1_CONSUMERS = Object.freeze([
   // the row imports the RUNTIME module, never the lane barrel for grants).
   // Zero lane edits; scope-gated production consumer by the :2412 face.
   'runtime/src/plugin/live/ptc-escalation-row.mjs',
+  // A5-M2 independent-group round (root order 12:27, 2026-10-23, booked by the
+  // CENTER integrator on this face): the G2 CONNECTOR adapter module consumes
+  // the lane's effect-grammar face DIRECTLY (`parseRequestedEffectSet`, the
+  // canonical one-shot effect set — the SAME reuse pattern booked for
+  // ptc-escalation-row above; effects fail closed through the real parser,
+  // never a re-derivation). Shipped UNWIRED by this round (registration/
+  // placement stay CENTER); zero lane edits; its six-path census booking rides
+  // SCANNED_PATHS_A5M2J in the p4t6 scanner ledger.
+  'runtime/src/plugin/live/governed-families/g2-connector-adapters.mjs',
   // PR2 (plan §5) reviewed addition — see the block comment.
   'runtime/tool-admission/',
   // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
