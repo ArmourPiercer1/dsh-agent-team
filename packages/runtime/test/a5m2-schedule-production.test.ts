@@ -72,7 +72,7 @@ import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-gov
 import { createPaControlLeg, createPaEffectsVerifier } from '../operation-permission/pa-control-bridge.js'
 import type { PaControlLegInput, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
-import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, memberCaller, p6t4Seed } from './p6t4-helpers.js'
+import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, leaderCaller, memberCaller, p6t4Seed } from './p6t4-helpers.js'
 // THE production module identity: the SAME published package agent-bindings
 // imports. registerScheduleTools mints the native faces; ScheduleInputError
 // is the ONE class identity the native bodies throw and the arm mirrors.
@@ -532,6 +532,26 @@ async function mountWorld(
   } as unknown as World
 }
 
+/** COMBINATION POSTURE (5a16c4aa paired): a validated B-SCHEDULE claim now
+ *  MINTS its durable approval request (pre-combination it died at the
+ *  unregistered-family deny BEFORE minting). The paired legs therefore
+ *  await the pending request, assert the family block it carried, and the
+ *  LEADER answers deny — the flight refuses through the real approval
+ *  answer with the body never running. */
+async function denyFirstPending(label: string): Promise<string> {
+  for (let i = 0; i < 400; i++) {
+    const st = await service.listControlState(P6T4_ROOT)
+    const pending = st.requests.find((r) => String((r as { status?: string }).status) === 'pending') as { requestId?: string } | undefined
+    if (pending?.requestId !== undefined) {
+      const requestId = String(pending.requestId)
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId, decision: 'deny', note: `paired-leg deny ${label}` })
+      return requestId
+    }
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  throw new Error(`no pending Control request minted for ${label} (the paired rule must MINT, not pre-deny)`)
+}
+
 function execFor(agent: Record<string, unknown>): Record<string, unknown> {
   const controller = new AbortController()
   return { agent, token: Symbol(`exec-${String(Math.random())}`), signal: controller.signal }
@@ -558,31 +578,49 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     await expect(world.listDef.execute({}, exec)).rejects.toThrow(/exec-token-replay/)
   })
 
-  it('SP-R2 the ask-lane claim reaches the durable Control leg WITH the four-P-add family block: familyId/adapterRevision/providerIdentity + the 11-leaf targetManifest (taskId null for list, exactly measured)', async () => {
+  it('SP-R2 PAIRED (5a16c4aa): the ask-lane list claim now PASSES the signed B-SCHEDULE rule and MINTS the durable request (requestId defined — pre-combination it died unregistered before minting); the minted leg input carries the four-P-add block and the 11-leaf targetManifest with taskId null; the leader deny answer refuses the flight with the body never running', async () => {
     const world = await mountWorld('r2')
-    await expect(world.listDef.execute({}, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
+    const exec = execFor(world.agent)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await denyFirstPending('r2')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED/)
+    // the claim that PASSED the signed rule — field-for-field on the minted leg:
     expect(world.legInputs.length).toBeGreaterThanOrEqual(1)
-    expect(world.legResults[0]?.decision).toBe('deny')
-    expect(world.legResults[0]?.requestId, 'the grammar refusal happens BEFORE any Control request is minted — there is nothing to approve').toBeUndefined()
-    expect(String(world.legResults[0]?.detail)).toContain('familyId: no target structure is registered')
-    expect(String(world.legResults[0]?.detail)).toContain('B-SCHEDULE')
     const family = world.legInputs[0]?.family as { familyId: string; adapterRevision: number; providerIdentity: string; targetManifest: Record<string, unknown> }
-    expect(family.familyId).toBe('B-SCHEDULE')
+    expect(family, 'the four-P-add family block rode the REAL Control leg').toBeDefined()
+    expect(String(family.familyId)).toBe('B-SCHEDULE')
     expect(family.adapterRevision).toBe(A5_B_SCHEDULE_ADAPTER_REVISION)
-    expect(family.providerIdentity).toBe('a5m2-wire-lane')
-    expect(Object.keys(family.targetManifest)).toHaveLength(11)
-    expect(family.targetManifest.taskId).toBeNull()
-  })
+    expect(String(family.providerIdentity)).toBe('a5m2-wire-lane')
+    const manifest = family.targetManifest
+    expect(Object.keys(manifest)).toHaveLength(11)
+    expect(manifest.taskId).toBeNull()
+    // the answer is now the REAL approval answer: a requestId exists (the
+    // request was MINTED and resolved) — the paired contrast to the old
+    // pre-mint grammar deny.
+    expect(world.legResults[0]?.requestId).toBeDefined()
+    // body zero (deny answered before dispatch), lease law intact:
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
 
-  it('SP-R3 the delete claim carries the EXACT taskId through the same real leg (the nullable single column, admitted side); the flight still falls closed on the identical grammar refusal', async () => {
+  it('SP-R3 PAIRED (5a16c4aa): the delete claim mints too, and the MINTED leg carries the EXACT taskId through the same signed rule (the nullable single column, admitted side) with destinationSessionId === the owner session; the leader deny refuses the flight with zero delete entries', async () => {
     const world = await mountWorld('r3')
-    await expect(world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))).rejects.toThrow(/APPROVAL_DENIED/)
-    expect(String(world.legResults[0]?.detail)).toContain('familyId: no target structure is registered')
-    expect(world.serviceCalls.delete).toHaveLength(0)
+    const exec = execFor(world.agent)
+    const flight = world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, exec)
+    const requestId = await denyFirstPending('r3')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED/)
     const family = world.legInputs[0]?.family as { targetManifest: Record<string, unknown> }
-    expect(family.targetManifest.taskId).toBe('sch_a5m2_prod_1')
-    expect(family.targetManifest.destinationSessionId).toBe(String((world.agent.session as { id: unknown }).id))
-  })
+    const manifest = family.targetManifest
+    expect(Object.keys(manifest)).toHaveLength(11)
+    expect(manifest.taskId).toBe('sch_a5m2_prod_1')
+    expect(String(manifest.destinationSessionId)).toBe(String(world.agent.session.id))
+    expect(String(manifest.ownerSessionId)).toBe(String(world.agent.session.id))
+    expect(world.legResults[0]?.requestId).toBeDefined()
+    expect(world.serviceCalls.delete).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
 
   it('SP-R4 waiting-cancel lease cleanup: an aborted call refuses with zero service entry, its token stays SETTLED (replay refused, never re-armed), and the NEXT fresh call still flies the full path — no leaked lease, no poisoned mount', async () => {
     const world = await mountWorld('r4')
