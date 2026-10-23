@@ -1037,6 +1037,20 @@ export interface PaControlManifest {
   readonly deniedEffects: readonly PaControlManifestDeniedEffect[]
   readonly authorityGeneration: number
   readonly realmId: string
+  /**
+   * A5-M2 (CENTER): the governed FAMILY block - the M0 P-adds the strict manifest
+   * carries once a call belongs to a governed family. OPTIONAL IN THE TYPE BY DESIGN:
+   * a pre-A5M2 row bears none and must keep parsing from its original bytes (the
+   * read-back trichotomy would otherwise reclassify intact legacy rows as damage).
+   * When ANY member is present ALL FOUR must parse, or the whole manifest fails to
+   * parse - a family-bearing row missing part of its block is damage, never a
+   * silently smaller row. Whether a row MUST carry the block is decided UPSTREAM by
+   * the plane-owned family registration (never by which fields happen to be present).
+   */
+  readonly familyId?: string
+  readonly adapterRevision?: number
+  readonly providerIdentity?: string
+  readonly targetManifest?: Readonly<Record<string, unknown>>
   readonly callId: string
   /** The EXECUTION-side scope (canonical parameter fingerprint) — distinct
    *  from and never equal-by-design to the payload digest that keys the
@@ -1078,10 +1092,72 @@ export interface PaControlManifest {
 /** Strict field-by-field parse of a manifest candidate (the marker is the
  *  entry; a present marker that fails the shape is NOT a manifest — the
  *  request is malformed, no row). Returns undefined on ANY defect. */
+/** Losslessness of a value destined for the durable manifest: JSON-representable
+ *  all the way down. undefined-valued keys, NaN and Infinity are refused HERE rather
+ *  than being dropped or nullified by a later stringify - a hash computed over bytes
+ *  that silently lost a field would approve a question nobody asked. */
+function isLosslessJsonObject(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    if (key === '__proto__' || key === 'prototype' || key === 'constructor') return false
+    if (item === undefined) return false
+    if (typeof item === 'number' && !Number.isFinite(item)) return false
+    if (typeof item === 'function' || typeof item === 'symbol' || typeof item === 'bigint') return false
+    if (Array.isArray(item)) {
+      for (const entry of item) {
+        if (entry === undefined) return false
+        if (typeof entry === 'number' && !Number.isFinite(entry)) return false
+      }
+    } else if (typeof item === 'object' && item !== null && !isLosslessJsonObject(item)) {
+      return false
+    }
+  }
+  return true
+}
+
+/** The family block's strict parse. Returns `undefined` when the row bears NO family
+ *  field at all (a legacy row - original bytes, original meaning), the parsed block
+ *  when all four parse, and `'invalid'` when the block is partially present or a
+ *  member is malformed: the caller fails the whole manifest in that case. */
+export function parsePaManifestFamilyBlock(
+  v: Record<string, unknown>,
+): {
+  readonly familyId: string
+  readonly adapterRevision: number
+  readonly providerIdentity: string
+  readonly targetManifest: Readonly<Record<string, unknown>>
+} | 'invalid' | undefined {
+  const present = v.familyId !== undefined || v.adapterRevision !== undefined
+    || v.providerIdentity !== undefined || v.targetManifest !== undefined
+  if (!present) return undefined
+  if (typeof v.familyId !== 'string' || v.familyId.length === 0 || v.familyId.length > 128) return 'invalid'
+  if (typeof v.adapterRevision !== 'number' || !Number.isInteger(v.adapterRevision) || v.adapterRevision < 0) return 'invalid'
+  if (typeof v.providerIdentity !== 'string' || v.providerIdentity.length === 0 || v.providerIdentity.length > 512) return 'invalid'
+  if (!isLosslessJsonObject(v.targetManifest)) return 'invalid'
+  // The JSON round-trip is the last word on losslessness: what survives it is exactly
+  // what the durable bytes will carry, so the digest and the payload cannot disagree.
+  try {
+    const round = JSON.parse(JSON.stringify(v.targetManifest)) as unknown
+    if (!isLosslessJsonObject(round) || JSON.stringify(round) !== JSON.stringify(v.targetManifest)) return 'invalid'
+  } catch {
+    return 'invalid'
+  }
+  return {
+    familyId: v.familyId,
+    adapterRevision: v.adapterRevision,
+    providerIdentity: v.providerIdentity,
+    targetManifest: v.targetManifest as Readonly<Record<string, unknown>>,
+  }
+}
+
 export function parsePaControlManifest(value: unknown): PaControlManifest | undefined {
   if (typeof value !== 'object' || value === null) return undefined
   const v = value as Record<string, unknown>
   if (v.schema !== PA_CONTROL_MANIFEST_SCHEMA) return undefined
+  // A5-M2: the family block is parsed up front so a partially-present block fails the
+  // whole manifest BEFORE any other field is trusted (never a silently smaller row).
+  const familyBlock = parsePaManifestFamilyBlock(v)
+  if (familyBlock === 'invalid') return undefined
   const str = (x: unknown, max: number): string | undefined =>
     typeof x === 'string' && x.length > 0 && x.length <= max ? x : undefined
   const rung = (x: unknown): string | undefined =>
@@ -1184,6 +1260,7 @@ export function parsePaControlManifest(value: unknown): PaControlManifest | unde
       assurance: b.assurance as Record<string, unknown>,
     },
     member: { teamSessionId, instanceId },
+    ...(familyBlock === undefined ? {} : familyBlock),
   }
 }
 
@@ -1402,6 +1479,19 @@ export interface PaCallFactsPlanSnapshot {
  */
 export interface PaCallFacts {
   readonly policySource: PaCallFactsPolicySource
+  /**
+   * A5-M2 (CENTER): the CURRENT governed-family registration for this binding, as the
+   * plane reads it from its own trusted registration - never from the payload and never
+   * from the row. Absent means this binding belongs to no governed family (every
+   * pre-A5M2 family keeps its exact bytes and its exact behaviour). The guard compares
+   * it against the family block the row carries, so a family whose adapter or provider
+   * moved after approval is DRIFT, not a smaller approval.
+   */
+  readonly governedFamily?: {
+    readonly familyId: string
+    readonly adapterRevision: number
+    readonly providerIdentity: string
+  }
   /** The realm the facts (and the effect set) belong to. */
   readonly realmId: string
   /** The CURRENT authority-envelope documents (realm-scoped ceiling entries

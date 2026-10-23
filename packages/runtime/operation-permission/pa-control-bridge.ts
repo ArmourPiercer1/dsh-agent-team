@@ -249,6 +249,19 @@ export interface PaControlServiceLike {
 export interface PaControlBridgeDeps {
   /** The REAL Alpha.4 durable control plane (structural minimal face). */
   readonly controlService: PaControlServiceLike
+  /**
+   * A5-M2 (CENTER): the plane's OWN governed-family registration, keyed by the trusted
+   * `binding.definitionIdentity`. This - never the presence of a carrier on the input -
+   * decides whether a call belongs to a governed family: a registered family that ships
+   * no review facts is refused, and an unregistered binding that claims a family is
+   * refused too. Keying on the definition identity (not on a name a caller could pick)
+   * is what keeps the discriminator out of the payload's reach.
+   */
+  readonly governedFamilies?: Readonly<Record<string, {
+    readonly familyId: string
+    readonly adapterRevision: number
+    readonly providerIdentity: string
+  }>>
   /** The TeamSession (root session id) the durable rows live under. */
   readonly rootSessionId: string
   /** The requesting principal (host-authenticated — the member or leader
@@ -392,10 +405,16 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     // integrity, and the same scope key can only ever answer the SAME
     // manifest bytes).
     const authorityScope = effectApprovalScope(toolInvokeEffect, realmId)
-    // A5-M2: a BOUND family carries its P-adds or nothing happens. Checked BEFORE the
+    // A5-M2: whether THIS call belongs to a governed family is decided by the plane's own
+    // registration keyed on the trusted definition identity - never by whether a carrier
+    // happens to be present (which would let a new family opt out by shipping nothing).
+    // A registered family must carry all four P-adds and match the registration; a
+    // family claim on an unregistered binding is refused. All of it happens BEFORE the
     // durable row, before the mint, before any consume: zero effect on the way out.
-    if (input.family !== undefined) {
+    const expectedFamily = deps.governedFamilies?.[input.request.binding.definitionIdentity]
+    if (expectedFamily !== undefined) {
       const f = input.family
+      if (f === undefined) return deny(`family-review-facts-missing: ${expectedFamily.familyId}`)
       const bad = (typeof f.familyId !== 'string' || f.familyId.length === 0)
         ? 'familyId'
         : (typeof f.adapterRevision !== 'number' || !Number.isInteger(f.adapterRevision) || f.adapterRevision < 0)
@@ -406,6 +425,23 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
               ? 'targetManifest'
               : undefined
       if (bad !== undefined) return deny(`family-review-facts-incomplete: ${bad}`)
+      if (f.familyId !== expectedFamily.familyId) {
+        return deny(`family-mismatch: expected '${expectedFamily.familyId}', presented '${f.familyId}'`)
+      }
+      if (f.adapterRevision !== expectedFamily.adapterRevision) {
+        return deny(`family-adapter-revision-mismatch: expected ${expectedFamily.adapterRevision}, presented ${f.adapterRevision}`)
+      }
+      if (f.providerIdentity !== expectedFamily.providerIdentity) {
+        return deny(`family-provider-identity-mismatch: expected '${expectedFamily.providerIdentity}', presented '${f.providerIdentity}'`)
+      }
+    } else if (input.family !== undefined) {
+      return deny(`family-claim-on-unregistered-binding: ${input.request.binding.definitionIdentity}`)
+    }
+    const familyFacts = input.family === undefined ? {} : {
+      familyId: input.family.familyId,
+      adapterRevision: input.family.adapterRevision,
+      providerIdentity: input.family.providerIdentity,
+      targetManifest: input.family.targetManifest,
     }
     const manifest = deepLossless({
       ...(input.family === undefined
@@ -416,6 +452,7 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
             providerIdentity: input.family.providerIdentity,
             targetManifest: input.family.targetManifest,
           }),
+      ...familyFacts,
       schema: PA_CONTROL_MANIFEST_SCHEMA,
       approvalCaseId: plan.approvalCaseId,
       authorityScope,
@@ -783,6 +820,27 @@ export function createPaEffectsVerifier(deps: PaEffectsVerifierDeps): PaEffectsV
     // The manifest is never a fact source; every field it shares with the
     // current reads must still hold, or the approved question has moved
     // (DRIFT — the row approves the question AS APPROVED, not its successor).
+    // A5-M2: the family block is checked against the CURRENT registration exactly like
+    // the binding tuple - a row that approved a governed-family question whose family
+    // registration moved or vanished is DRIFT, and a governed binding whose row carries
+    // no family block is drift too (the row cannot be silently smaller than its family).
+    if (manifest.familyId !== undefined) {
+      const gf = facts.governedFamily
+      if (gf === undefined) {
+        return drifted('the governed-family registration for this binding is gone - the approved family question has no current authority')
+      }
+      if (gf.familyId !== manifest.familyId) {
+        return drifted(`the family moved (approved '${manifest.familyId}', current '${gf.familyId}')`)
+      }
+      if (gf.adapterRevision !== manifest.adapterRevision) {
+        return drifted(`the family adapter moved (approved revision ${manifest.adapterRevision}, current ${gf.adapterRevision})`)
+      }
+      if (gf.providerIdentity !== manifest.providerIdentity) {
+        return drifted(`the family provider moved (approved '${manifest.providerIdentity}', current '${gf.providerIdentity}')`)
+      }
+    } else if (facts.governedFamily !== undefined) {
+      return drifted('this binding is governed by a family but the approved row carries no family block')
+    }
     const mb = manifest.binding
     const fb = facts.binding
     if (fb === null || typeof fb !== 'object'
