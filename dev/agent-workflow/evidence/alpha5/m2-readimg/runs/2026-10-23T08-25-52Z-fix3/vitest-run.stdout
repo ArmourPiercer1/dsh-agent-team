@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts [ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts ]
+Error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mExpected `}` but found `EOF`
+      [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:1124:4 [38;5;246m][0m
+      [38;5;246m│[0m
+ [38;5;246m 606 │[0m [38;5;249md[0m[38;5;249me[0m[38;5;249ms[0m[38;5;249mc[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249mb[0m[38;5;249me[0m[38;5;249m([0m[38;5;249m'[0m[38;5;249ma[0m[38;5;249m5[0m[38;5;249mm[0m[38;5;249m2[0m[38;5;249m-[0m[38;5;249mr[0m[38;5;249me[0m[38;5;249ma[0m[38;5;249md[0m[38;5;249mi[0m[38;5;249mm[0m[38;5;249mg[0m[38;5;249m [0m[38;5;249ma[0m[38;5;249mr[0m[38;5;249mm[0m[38;5;249m [0m[38;5;249mr[0m[38;5;249me[0m[38;5;249mv[0m[38;5;249m2[0m[38;5;249m [0m[38;5;249m—[0m[38;5;249m [0m[38;5;249mr[0m[38;5;249me[0m[38;5;249ma[0m[38;5;249ml[0m[38;5;249m [0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249mr[0m[38;5;249mi[0m[38;5;249mc[0m[38;5;249mt[0m[38;5;249m-[0m[38;5;249mc[0m[38;5;249mh[0m[38;5;249ma[0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249ms[0m[38;5;249mu[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mt[0m[38;5;249mi[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249m [0m[38;5;249mo[0m[38;5;249mv[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249m [0m[38;5;249mt[0m[38;5;249mh[0m[38;5;249me[0m[38;5;249m [0m[38;5;249md[0m[38;5;249mu[0m[38;5;249mr[0m[38;5;249ma[0m[38;5;249mb[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249me[0m[38;5;249mr[0m[38;5;249m [0m[38;5;249m([0m[38;5;249mr[0m[38;5;249me[0m[38;5;249ma[0m[38;5;249ml[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mh[0m[38;5;249ma[0m[38;5;249mi[0m[38;5;249mn[0m[38;5;249m [0m[38;5;249m+[0m[38;5;249m [0m[38;5;249mr[0m[38;5;249me[0m[38;5;249ma[0m[38;5;249ml[0m[38;5;249m [0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249me[0m[38;5;249m;[0m[38;5;249m [0m[38;5;249mC[0m[38;5;249mE[0m[38;5;249mN[0m[38;5;249mT[0m[38;5;249mE[0m[38;5;249mR[0m[38;5;249m [0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mr[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249mr[0m[38;5;249ma[0m[38;5;249mc[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249md[0m[38;5;249mo[0m[38;5;249mu[0m[38;5;249mb[0m[38;5;249ml[0m[38;5;249me[0m[38;5;249m)[0m[38;5;249m'[0m[38;5;249m,[0m[38;5;249m [0m[38;5;249m([0m[38;5;249m)[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m>[0m[38;5;249m [0m{
+ [38;5;240m     │[0m                                                                                                                                                          ┬  
+ [38;5;240m     │[0m                                                                                                                                                          ╰── Opened here
+ [38;5;240m     │[0m 
+ [38;5;246m1124 │[0m [38;5;249m}[0m[38;5;249m)[0m
+ [38;5;240m     │[0m    │ 
+ [38;5;240m     │[0m    ╰─ `}` expected
+[38;5;246m──────╯[0m
+
+  Plugin: vite:oxc
+  File: /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts
+ ❯ transformWithOxc node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:4103:19
+ ❯ TransformPluginContext.transform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:4174:26
+ ❯ EnvironmentPluginContainer.transform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:30932:51
+ ❯ loadAndTransform node_modules/.pnpm/vite@8.2.2_@types+node@22.20.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/node.js:20671:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  08:25:53
+   Duration  178ms (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+

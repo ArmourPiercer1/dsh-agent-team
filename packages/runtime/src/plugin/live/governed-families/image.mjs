@@ -41,17 +41,21 @@
  *     normalized-object identity.
  *
  * Family facts (familyId/adapterRevision/providerIdentity/targetManifest):
- * consumed through a THIN SURFACE only, never self-assembled, never
- * digest-recomputed here. Measured state at this revision: the durable
- * bridge folds them into the raw reviewPayload (28d020b1) but the strict
- * projection (control/types.ts parsePaControlManifest) does not carry them
- * yet — CENTER's single-writer closure is pending and, per root, NO ONE may
- * call the bound family closed before it lands. So: when the projection
- * DOES carry the fields the arm pins them by value (mismatch = typed
- * refusal); while absent, the arm's target tie runs through the PROJECTED
- * `manifest.effects` (the row's read effect must name THIS call's lexically
- * classified target) and the absence is disclosed as
- * `family-facts:pending-center-finalization`, never silently skipped.
+ * consumed at the arm, never self-assembled, never digest-recomputed here.
+ * The center carries them (f696e6f2): createPaControlLeg REQUIRES the full
+ * carrier once the binding's definition identity is registered in
+ * `governedFamilies` (missing / incomplete / mismatched is denied BEFORE
+ * the durable row: family-review-facts-missing / -incomplete /
+ * family-mismatch / family-target-invalid, the target checked against the
+ * family's OWN typed-plan structure PA_FAMILY_TARGET_RULES), and
+ * parsePaManifestFamilyBlock keeps all four fields in the projected
+ * manifest at FULL VALUE (all-or-nothing: a partial block fails the whole
+ * manifest). A BOUND B-IMAGE call therefore MUST present the complete
+ * carrier here, and THIS call's full typed plan must equal the approved one
+ * FIELD BY FIELD (not just the four carrier values). There is no "pending"
+ * release: a row without the carrier fails closed as an incomplete receipt.
+ * The projected `manifest.effects` tie (the row's read effect naming THIS
+ * call's lexically classified target) runs IN ADDITION, never instead.
  *
  * Effect vocabulary (family contract §1.1, ZERO new kinds):
  *   I = { kind: 'tool-invoke', toolName: 'read_image', resource: null }
@@ -109,9 +113,26 @@ export const A5_IMAGE_TYPED_CODES = Object.freeze({
   STORE_LAW_REFUSED: 'P_IMAGE_STORE_LAW_REFUSED',
   STORE_UNAVAILABLE: 'P_IMAGE_STORE_UNAVAILABLE',
   EFFECTS_INVALID: 'P_IMAGE_INTERNAL_EFFECTS_INVALID',
+  CONSUMPTION_CONTEXT_UNKNOWN: 'P_IMAGE_CONSUMPTION_CONTEXT_UNKNOWN',
 })
 
 const CODES = A5_IMAGE_TYPED_CODES
+
+/** Value equality for lossless-JSON facts (the family plan comparison).
+ *  Deliberately NOT a digest: the root-split digests (parametersFingerprint
+ *  vs operationFingerprint) are the center's; the arm compares BY VALUE,
+ *  field by field, and never re-computes a hash. */
+function deepValueEqual(a, b) {
+  if (a === b) return true
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false
+    return a.every((item, i) => deepValueEqual(item, b[i]))
+  }
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false
+  const ka = Object.keys(a); const kb = Object.keys(b)
+  if (ka.length !== kb.length || ka.some((k) => !kb.includes(k))) return false
+  return ka.every((k) => deepValueEqual(a[k], b[k]))
+}
 
 /** The declared-extension mediaType table (wire declaration only — the
  *  bytes are judged ONLY by the real store; declaring a table is not a
@@ -343,13 +364,42 @@ export function createGovernedReadImageArm({
     if (draining) return refuseExecution(CODES.DRAINING, 'DRAINING: no backend is reachable (no native fallback exists by construction)')
     const plan = classify(args)
     if (plan.ok !== true) return { ...plan, classifyRefused: true }
-    // The receipt is the ONLY execution authority. No approve shape ⇒ no
-    // execution (a bare grant is not an authority — the bridge's own law:
-    // no facts, no grant use).
-    if (receipt?.decision !== 'approve' || typeof receipt?.requestId !== 'string' || receipt.requestId.length === 0) {
-      return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'execution requires the strict-chain approve receipt (decision=approve + durable requestId): a deny/unsettled/no-receipt call never executes and never reaches the port')
+    // THE CONSUMPTION EXECUTION CONTEXT (root ruling on f3864b24, item 1):
+    // two LEGAL worlds, told apart by the plane's trusted callFacts — never
+    // guessed by the arm:
+    //  (a) 'all-allow': policy admitted every effect, so NO Control row and
+    //      NO requestId ever existed — there is no approval to present, and
+    //      demanding one (or accepting a fabricated one) is a defect;
+    //  (b) 'ask': the durable strict-chain approve receipt is the ONLY
+    //      execution authority (approve + durable requestId + strict
+    //      manifest + minted grant), exactly as the leg answered it.
+    // The unified PA final edge is CENTER's; this arm never builds an edge
+    // of its own and never accepts a pseudo requestId / placeholder id /
+    // self-assembled approval in EITHER world.
+    const approval = callFacts?.approval
+    if (approval !== 'all-allow' && approval !== 'ask') {
+      return refuseExecution(CODES.CONSUMPTION_CONTEXT_UNKNOWN, `callFacts.approval must be the consumption execution context ('ask' or 'all-allow'), got ${JSON.stringify(approval ?? null)} — the arm never guesses which world a call belongs to, and an unclassified call reaches no backend`)
     }
-    const manifest = receipt.manifest
+    let manifest = undefined
+    if (approval === 'all-allow') {
+      if (receipt !== undefined && receipt !== null) {
+        return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the all-allow world has no approval to present (no Control row exists by construction): a receipt presented HERE is a synthesized approval — refused; 伪 requestId/占位 id/自造 approval are refused in both worlds')
+      }
+      // The all-allow consumption point still re-ties the trusted this-call
+      // facts to THIS ARM'S OWN mount (there is no durable row to tie
+      // against — that absence IS world (a), per the root ruling).
+      const team = String(callFacts?.member?.teamSessionId ?? '')
+      const inst = String(callFacts?.member?.instanceId ?? '')
+      if (team.length === 0 || inst.length === 0) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, 'all-allow consumption still requires the COMPLETE trusted member identity (teamSessionId + instanceId)')
+      if (typeof callFacts.callId !== 'string' || callFacts.callId.length === 0) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, 'all-allow consumption still requires the trusted this-call callId')
+      if (callFacts.definitionIdentity !== definitionIdentity) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, `definition (call ${String(callFacts.definitionIdentity)} vs arm ${definitionIdentity})`)
+      if (callFacts.providerIdentity !== providerId) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, `provider (call ${String(callFacts.providerIdentity)} vs arm ${providerId})`)
+      if (typeof callFacts.authorityGeneration !== 'number' || !Number.isInteger(callFacts.authorityGeneration)) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, 'all-allow consumption still carries the trusted authorityGeneration')
+    } else {
+    if (receipt?.decision !== 'approve' || typeof receipt?.requestId !== 'string' || receipt.requestId.length === 0) {
+      return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the ask world requires the strict-chain approve receipt (decision=approve + durable requestId): a deny/unsettled/no-receipt call never executes and never reaches the port')
+    }
+    manifest = receipt.manifest
     if (manifest === undefined || manifest === null || manifest.schema !== A5_IMAGE_MANIFEST_SCHEMA) {
       return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the leg carried NO strict-classified durable manifest (or a drifted class): the row no longer strict-classifies ⇒ fail closed, never a synthesized manifest')
     }
@@ -364,33 +414,50 @@ export function createGovernedReadImageArm({
     if (tieProblem !== null) {
       return refuseExecution(CODES.TARGET_TIE_MISMATCH, `the durable row's effect set does not carry THIS call's approved target (${tieProblem}) — approved target ≠ executed target, nothing runs`)
     }
-    // Thin family surface (CENTER closure pending): pinned when carried,
-    // disclosed when not — never self-assembled, never silently skipped.
-    const familyPending = manifest.familyId === undefined
-    if (!familyPending) {
-      if (manifest.familyId !== A5_IMAGE_FAMILY_ID) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries familyId ${JSON.stringify(manifest.familyId)} for a ${A5_IMAGE_FAMILY_ID} arm`)
-      if (manifest.adapterRevision !== A5_IMAGE_ADAPTER_REVISION) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries adapterRevision ${String(manifest.adapterRevision)}; this arm is ${String(A5_IMAGE_ADAPTER_REVISION)} — never execute across adapter revisions`)
-      if (manifest.providerIdentity !== providerId) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries providerIdentity ${JSON.stringify(manifest.providerIdentity ?? null)}; this mount is ${JSON.stringify(providerId)}`)
-      const tm = manifest.targetManifest
-      const same = tm !== null && typeof tm === 'object'
-        && tm.canonicalTarget === plan.targetManifest.canonicalTarget
-        && tm.declaredMediaType === plan.targetManifest.declaredMediaType
-        && tm.byteCap === plan.targetManifest.byteCap
-        && tm.operation === A5_IMAGE_OPERATION
-      if (!same) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, 'the row targetManifest does not equal this call\'s classified target manifest (VALUE equality; the arm never re-digests) — a stale or swapped target never executes')
+    // THE FAMILY CARRIER IS REQUIRED FOR A BOUND CALL (root ruling on
+    // f3864b24, item 2; the "pending release" is DELETED). The center
+    // carries the block: createPaControlLeg refuses a registered family's
+    // missing/incomplete/mismatched carrier BEFORE the durable row
+    // (family-review-facts-missing / -incomplete / family-mismatch …),
+    // parsePaManifestFamilyBlock keeps all four fields at FULL VALUE, and
+    // PA_FAMILY_TARGET_RULES['B-IMAGE'] pins this family's typed-plan
+    // structure. A row without the complete carrier therefore cannot come
+    // from the ask chain — it fails closed HERE as well.
+    if (manifest.familyId === undefined || manifest.adapterRevision === undefined
+      || manifest.providerIdentity === undefined || manifest.targetManifest === undefined) {
+      return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'a bound B-IMAGE call carries NO complete family carrier (familyId/adapterRevision/providerIdentity/targetManifest are required-together; the center parser fails a partial block as the whole manifest): no facts, no grant use — never a pending release')
+    }
+    if (manifest.familyId !== A5_IMAGE_FAMILY_ID) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries familyId ${JSON.stringify(manifest.familyId)} for a ${A5_IMAGE_FAMILY_ID} arm`)
+    if (manifest.adapterRevision !== A5_IMAGE_ADAPTER_REVISION) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries adapterRevision ${String(manifest.adapterRevision)}; this arm is ${String(A5_IMAGE_ADAPTER_REVISION)} — never execute across adapter revisions`)
+    if (manifest.providerIdentity !== providerId) return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row carries providerIdentity ${JSON.stringify(manifest.providerIdentity ?? null)}; this mount is ${JSON.stringify(providerId)}`)
+    // FULL typed-plan equality, field by field — not just the four carrier
+    // values: every member of THIS call's classified plan must equal the
+    // approved one BY VALUE (the arm never re-digests, never re-derives).
+    if (!deepValueEqual(manifest.targetManifest, plan.targetManifest)) {
+      return refuseExecution(CODES.FAMILY_FACTS_MISMATCH, `the row targetManifest does not equal THIS call's typed plan field by field (operation/realmId/canonicalTarget/declaredMediaType/byteCap/byteCapSource/businessObligations/familyId/adapterRevision) — row: ${JSON.stringify(manifest.targetManifest)} vs plan: ${JSON.stringify(plan.targetManifest)} — a stale or swapped target never executes`)
+    }
     }
     if (signal?.aborted === true) {
       return refuseExecution(CODES.CANCELLED, 'cancelled before the execution edge began: zero port calls, zero attachment writes')
     }
     counters.consumed += 1
-    observe({ event: 'consume', requestId: receipt.requestId, grantId: receipt.grant.grantId, callId: manifest.callId, ...(familyPending ? { familyFacts: 'pending-center-finalization' } : {}) })
+    observe({ event: 'consume', world: approval, ...(receipt?.requestId === undefined ? {} : { requestId: receipt.requestId }), ...(manifest === undefined ? { callId: callFacts.callId } : { callId: manifest.callId }) })
     // THE FS-PROC READ: one call, same FD inside the port (re-anchor AND
     // the cap+1 stop happen there — no stat step exists here at all).
     let read
     try {
       counters.portCalls += 1
+      // The port's reference input: the minted grant when one exists (ask
+      // world); in the all-allow world there is NO grant (nothing was ever
+      // minted) — the reference carries the trusted callId instead. An
+      // empty grant object is stated openly; a fabricated grantId never is.
       read = await readBounded(
-        { grant: receipt.grant, realmId, canonicalLocator: plan.targetManifest.canonicalTarget },
+        {
+          grant: receipt?.grant ?? Object.freeze({}),
+          realmId,
+          canonicalLocator: plan.targetManifest.canonicalTarget,
+          ...(manifest === undefined ? { callId: callFacts.callId } : {}),
+        },
         { maxBytes: plan.targetManifest.byteCap, ...(signal === undefined ? {} : { signal }) },
       )
     } catch (error) {
@@ -427,10 +494,14 @@ export function createGovernedReadImageArm({
     if (draining) {
       return refuseExecution(CODES.DRAINING, 'the mount began draining between the read and the commit: the bytes were dropped, nothing was saved')
     }
+    // The durable namespace: in the ask world it is the ROW's member
+    // identity; in the all-allow world (no row exists) it is the trusted
+    // this-call member identity plus this arm's bound realm — never a
+    // caller-invented scope either way.
     const namespace = Object.freeze({
-      realmId: manifest.realmId,
-      teamSessionId: manifest.member.teamSessionId,
-      instanceId: manifest.member.instanceId,
+      realmId,
+      teamSessionId: manifest?.member?.teamSessionId ?? callFacts.member.teamSessionId,
+      instanceId: manifest?.member?.instanceId ?? callFacts.member.instanceId,
     })
     try {
       const committed = await attachments.commitImage({
@@ -438,10 +509,10 @@ export function createGovernedReadImageArm({
         mediaType: plan.targetManifest.declaredMediaType,
         name: basename(plan.targetManifest.canonicalTarget),
         namespace,
-        correlation: `${receipt.requestId}:${manifest.callId}`,
+        correlation: manifest === undefined ? `all-allow:${callFacts.callId}` : `${receipt.requestId}:${manifest.callId}`,
       })
       counters.commits += 1
-      observe({ event: 'commit', requestId: receipt.requestId, detail: `${committed.attachmentId}:${committed.sourceSha256.slice(0, 12)}:normalizedEqualsSource=${String(committed.normalizedEqualsSource)}` })
+      observe({ event: 'commit', ...(receipt?.requestId === undefined ? {} : { requestId: receipt.requestId }), detail: `${committed.attachmentId}:${committed.sourceSha256.slice(0, 12)}:normalizedEqualsSource=${String(committed.normalizedEqualsSource)}` })
       return {
         ok: true,
         value: Object.freeze({
@@ -460,7 +531,6 @@ export function createGovernedReadImageArm({
             ...(committed.name === undefined ? {} : { name: committed.name }),
           }),
         }),
-        ...(familyPending ? { disclosure: 'family-facts:pending-center-finalization (effect tie enforced; family pin skipped and disclosed, not skipped silently)' } : {}),
       }
     } catch (error) {
       const storeCode = typeof error?.code === 'string' ? error.code : undefined
@@ -481,7 +551,17 @@ export function createGovernedReadImageArm({
    *  the durable (realm, teamSession, instance) identity — the same shape
    *  the leg carries, never a self-report the caller invents. */
   async function reference(attachmentId, namespace, signal) {
-    return attachments.referenceImage({ attachmentId, namespace, ...(signal === undefined ? {} : { signal }) })
+    // Same cancellation discipline as the main path (root ruling on
+    // f3864b24, item 3): the reference leg is a backend call too.
+    if (draining) return { ok: false, code: CODES.DRAINING, detail: 'DRAINING: the reference leg reaches no backend either' }
+    if (signal?.aborted === true) return { ok: false, code: CODES.CANCELLED, detail: 'cancelled before the reference leg began: zero store calls' }
+    const out = await attachments.referenceImage({ attachmentId, namespace, ...(signal === undefined ? {} : { signal }) })
+    // A cancel/drain landing WHILE the fetch was in flight refuses to SERVE
+    // the result (the fetch itself cannot be recalled — stated honestly;
+    // nothing is written either way on this leg).
+    if (signal?.aborted === true) return { ok: false, code: CODES.CANCELLED, detail: 'cancelled while the reference fetch was in flight: the bytes were fetched but are NOT served' }
+    if (draining) return { ok: false, code: CODES.DRAINING, detail: 'the mount began draining during the reference fetch: not served' }
+    return out
   }
 
   /** DRAINING: after this, every stage refuses typed; nothing reaches any

@@ -59,7 +59,7 @@ export interface ImageAttachmentAdapterHandle {
   readonly imageLimits: ImageAttachmentStorePort['imageLimits']
   commitImage: (input: { bytes: Uint8Array; mediaType: string; name: string; namespace: ImageAttachmentNamespace; correlation?: string }) => Promise<ImageAttachmentReceipt>
   referenceImage: (input: { attachmentId: string; namespace: ImageAttachmentNamespace; signal?: AbortSignal }) => Promise<ImageAttachmentReferenceOutcome>
-  stats: () => { commits: number; recomputes: number; references: number; storeCalls: number; refusedForeignNamespace: number; refusedUnknown: number; commitDrift: number }
+  stats: () => { commits: number; recommits: number; references: number; storeCalls: number; refusedForeignNamespace: number; refusedUnknown: number; commitDrift: number }
 }
 
 export declare const A5_IMAGE_ATTACHMENT_CODES: Readonly<Record<string, string>>

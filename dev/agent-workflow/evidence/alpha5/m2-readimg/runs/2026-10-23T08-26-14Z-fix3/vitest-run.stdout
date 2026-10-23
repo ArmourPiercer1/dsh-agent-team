@@ -1,0 +1,198 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (16 tests | 10 failed) 548ms
+     × C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact 76ms
+     ✓ no receipt, no execution: undefined/deny/manifest-less/grant-less receipts all refuse typed with ZERO port calls 22ms
+     × the five-way binding refuses PAIR BY PAIR on the real durable manifest (callId / member / authorityGeneration / definition / provider), zero port calls each 25ms
+     × approved target ≠ executed target refuses typed (swap the arguments after approval; the tie runs on TODAY'S projected effects) 20ms
+     × family carrier is REQUIRED for a bound call and compared FIELD BY FIELD: the real chain carries the block (f696e6f2); a stripped carrier fails closed (NO pending release); ANY typed-plan field drift refuses beyond the four carrier values; the leg refuses a missing carrier BEFORE the row 25ms
+     × world (a) all-allow is a LEGAL world (root ruling on f3864b24 item 1): no Control row, no requestId, receipt undefined EXECUTES on the trusted consumption context; a receipt presented there is a synthesized approval and refuses; an unclassified context never reaches a backend 10ms
+     × capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects 14ms
+     × the port refusal comes back VERBATIM (ANCHOR-DRIFT / fd-recycled are the CENTER law's words, not remapped), zero attachment writes 15ms
+     × cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it) 23ms
+     × no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER's execToken law, not claimed here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face 16ms
+     ✓ ownership is NEVER content-addressed: two namespaces committing identical bytes get TWO independent entitlements over ONE store object (positive control), a foreign namespace never fetches (zero store calls, negative control), and the original owner keeps working after the second mint (no owner overwrite — the rev-1 defect) 69ms
+     × the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted) 21ms
+     ✓ classify stays PURE-LEXICAL (root ruling: 审批前一律纯 lexical): closed argument root, traversal refuses before any fs act, undeclared media refuses, and the frozen I+F effect set parses through the domain itself 6ms
+     ✓ DRAINING is terminal and faceless: after drain every stage refuses typed and the handle exposes no native/fallback/delegate face 9ms
+     ✓ assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount) 1ms
+     ✓ row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls 190ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact
+AssertionError: expected 'deny' to be 'approve' // Object.is equality
+
+Expected: "approve"
+Received: "deny"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:614:32
+    612|       const c = chainCase(w.arm, w.ctx, 'img-pos-1', 'photo.png', targ…
+    613|       const receipt = await approve(c)
+    614|       expect(receipt.decision).toBe('approve')
+       |                                ^
+    615|       const approveReceipt = receipt as Extract<PaControlLegResult, { …
+    616|       // the manifest is the DURABLE row's own class — not a fixture h…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > the five-way binding refuses PAIR BY PAIR on the real durable manifest (callId / member / authorityGeneration / definition / provider), zero port calls each
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_CONSUMPTION_BINDING_MISMATCH' // Object.is equality
+
+Expected: "P_IMAGE_CONSUMPTION_BINDING_MISMATCH"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:700:50
+    698|         const forged = { decision: 'approve', requestId: receipt.reque…
+    699|         const ran = await w.arm.execute({ file_path: 'photo.png' }, fo…
+    700|         expect(ran.code, JSON.stringify(mutate)).toBe(A5_IMAGE_TYPED_C…
+       |                                                  ^
+    701|       }
+    702|       // and the call-side swap: wrong trusted facts refuse too
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > approved target ≠ executed target refuses typed (swap the arguments after approval; the tie runs on TODAY'S projected effects)
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_TARGET_TIE_MISMATCH' // Object.is equality
+
+Expected: "P_IMAGE_TARGET_TIE_MISMATCH"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:720:24
+    718|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    719|       const ran = await w.arm.execute({ file_path: 'b.png' }, receipt …
+    720|       expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.TARGET_TIE_MISMATCH)
+       |                        ^
+    721|       expect(w.port.counters.calls).toBe(0)
+    722|     } finally { await w.dispose() }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > family carrier is REQUIRED for a bound call and compared FIELD BY FIELD: the real chain carries the block (f696e6f2); a stripped carrier fails closed (NO pending release); ANY typed-plan field drift refuses beyond the four carrier values; the leg refuses a missing carrier BEFORE the row
+AssertionError: the ask world requires the strict-chain approve receipt (decision=approve + durable requestId): a deny/unsettled/no-receipt call never executes and never reaches the port: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:733:34
+    731|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    732|       const ran = await w.arm.execute({ file_path: 'photo.png' }, rece…
+    733|       expect(ran.ok, ran.detail).toBe(true)
+       |                                  ^
+    734|       // STRIPPED carrier (a legacy/unbound row shape cannot execute a…
+    735|       // call): refused as an incomplete receipt — the rev-2 "pending
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > world (a) all-allow is a LEGAL world (root ruling on f3864b24 item 1): no Control row, no requestId, receipt undefined EXECUTES on the trusted consumption context; a receipt presented there is a synthesized approval and refuses; an unclassified context never reaches a backend
+AssertionError: the FS-PROC port threw (Cannot read properties of undefined (reading 'grant')): the read never returned; the attachment commit was never reached — the write boundary was NEVER crossed (sideEffectPossible=false states the read edge, not the write edge): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:792:34
+    790|       }
+    791|       const ran = await w.arm.execute({ file_path: 'photo.png' }, unde…
+    792|       expect(ran.ok, ran.detail).toBe(true)
+       |                                  ^
+    793|       expect(w.port.counters.calls).toBe(1)
+    794|       expect(w.adapter.stats().commits).toBe(1)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_READ_TOO_LARGE' // Object.is equality
+
+Expected: "P_IMAGE_READ_TOO_LARGE"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:816:24
+    814|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    815|       const ran = await w.arm.execute({ file_path: 'big.png' }, receip…
+    816|       expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.READ_TOO_LARGE)
+       |                        ^
+    817|       expect(ran.detail).toContain('33 bytes') // cap+1, exactly what …
+    818|       expect(w.adapter.stats().storeCalls).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > the port refusal comes back VERBATIM (ANCHOR-DRIFT / fd-recycled are the CENTER law's words, not remapped), zero attachment writes
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_PORT_REFUSAL' // Object.is equality
+
+Expected: "P_IMAGE_PORT_REFUSAL"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:835:26
+    833|         const receipt = await approve(c) as Extract<PaControlLegResult…
+    834|         const ran = await w.arm.execute({ file_path: 'photo.png' }, re…
+    835|         expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.PORT_REFUSAL)
+       |                          ^
+    836|         expect(ran.portCode).toBe(refusal.code)
+    837|         expect(ran.detail).toContain(refusal.detail)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it)
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_CANCELLED' // Object.is equality
+
+Expected: "P_IMAGE_CANCELLED"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:854:26
+    852|         ac.abort()
+    853|         const ran = await w.arm.execute({ file_path: 'photo.png' }, re…
+    854|         expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.CANCELLED)
+       |                          ^
+    855|         expect(w.port.counters.calls).toBe(0)
+    856|       } finally { await w.dispose() }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER's execToken law, not claimed here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face
+AssertionError: the ask world requires the strict-chain approve receipt (decision=approve + durable requestId): a deny/unsettled/no-receipt call never executes and never reaches the port: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:898:38
+    896|       const receipt = await approve(c) as Extract<PaControlLegResult, …
+    897|       const first = await w.arm.execute({ file_path: 'photo.png' }, re…
+    898|       expect(first.ok, first.detail).toBe(true)
+       |                                      ^
+    899|       const second = await w.arm.execute({ file_path: 'photo.png' }, r…
+    900|       expect(second.code).toBe(A5_IMAGE_TYPED_CODES.PORT_REFUSAL)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted)
+AssertionError: expected 'P_IMAGE_RECEIPT_INCOMPLETE' to be 'P_IMAGE_STORE_LAW_REFUSED' // Object.is equality
+
+Expected: "P_IMAGE_STORE_LAW_REFUSED"
+Received: "P_IMAGE_RECEIPT_INCOMPLETE"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:979:26
+    977|         const receipt = await approve(c) as Extract<PaControlLegResult…
+    978|         const ran = await w.arm.execute({ file_path: 'three.png' }, re…
+    979|         expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.STORE_LAW_REFUSED)
+       |                          ^
+    980|         // pin639 measured arm text (the dimension law, verbatim)
+    981|         expect(ran.detail).toContain('Image exceeds the configured per…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  10 failed | 6 passed (16)
+   Start at  08:26:15
+   Duration  2.33s (transform 1.41s, setup 0ms, import 1.64s, tests 548ms, environment 0ms)
+

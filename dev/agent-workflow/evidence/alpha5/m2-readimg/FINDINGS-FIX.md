@@ -1,5 +1,12 @@
 # FINDINGS-FIX — M2-READIMG-01 中心修复卡 · 五项一次修完（revision 2）
 
+> **SUPERSEDED-IN-PART（2026-10-23 根裁决定 f3864b24）→ 见同目录 `FINDINGS-FIX2.md`。**
+> 本卷中以下表述不再为真，勿按现状引用：①"投影把字段剥了 / pending-center-finalization 薄层"
+> （真实：f696e6f2 全值携带四件；当时 fixture 未传 `input.family`、未注册 `governedFamilies`）；
+> ②"one-shot consumed view … 单飞"类措辞（双件只是 sequential guard；并发单飞归 CENTER）；
+> ③"approve + durable requestId 为普适前置"（真实：all-allow 世界无行无 requestId，属合法世界 (a)）。
+> 其余内容（缺陷 1-6 反例、双 hash、entitlement、取消三点、NOT_PROVEN 框架）仍为真。
+
 - 日期：2026-10-23（fix-card 轮）；owner：M2-READIMG-01（read_image，matrix row `read_image (M-05)`）
 - 交付制式：**新 SHA 精确 delta 交 parent 独审**（本卡不 commit、不 mount、零 Host boot）。
 - 三腿终验（runs/2026-10-23T08-04-59Z-arm2/）：`vitest 15/15 RC=0`；`eslint RC=0`（五文件）；`pnpm run typecheck RC=0`（包级全绿）。

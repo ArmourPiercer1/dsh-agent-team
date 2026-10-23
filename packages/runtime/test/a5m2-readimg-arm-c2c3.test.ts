@@ -7,33 +7,43 @@
  * positive-path receipt is NOT handcrafted — it is the durable chain's own
  * answer: REAL createProductionAdmissionAssembly (landing edges) + REAL
  * createControlService (durable TeamDomain rows) + REAL createPaControlLeg
- * (request → durable row → human ALLOW decision → fresh recheck → mint →
- * guardOperation check-and-reserve). Correlation-level single flight is
- * proven AT THE CHAIN: the second leg attempt on the same correlation is
- * refused by the durable consumption fact, so no second execution authority
- * exists. The arm itself holds NO ledger (measured by what it does NOT
- * own: no WeakMap, no per-id ownership, no identity self-report).
+ * (request → durable row → LEADER ALLOW decision → fresh recheck → mint →
+ * guardOperation check-and-reserve). The DURABLE CONTROL-SIDE consume
+ * refuses a replay on the same correlation at the chain, so no second
+ * execution authority exists IN THIS LANE'S WORLD. Control consume is NOT
+ * PA consume: the unified PA final edge and the execToken CONCURRENCY
+ * single flight are CENTER's law and are NOT_PROVEN here (root ruling on
+ * f3864b24 — vocabulary kept exact on purpose). The arm itself holds NO
+ * ledger (measured by what it does NOT own: no WeakMap, no per-id
+ * ownership, no identity self-report).
  *
  * THE FS-PROC PORT IS CENTER'S (root ruling): the production `readBounded`
  * (M1-verified read binary boundary: same-FD re-anchor, O_NOFOLLOW,
  * final-FD, cap+1, cancellation inside the port) is CENTER's shared face,
  * injected by the assembly. THIS FILE injects a CONTRACT DOUBLE implementing
- * exactly the ruled port shape (cap+1 stop on the real file, one-shot grant
- * view, port's own refusal words verbatim from plane-effect-backends) to
- * prove the ARM's consumption discipline against the contract. The port's
- * internal same-FD race law is CENTER's leg — NOT_VERIFIED here.
+ * exactly the ruled port shape (cap+1 stop on the real file, a SEQUENTIAL
+ * consumed-view replay guard, port's own refusal words verbatim from
+ * plane-effect-backends) to prove the ARM's consumption discipline against
+ * the contract. The double's consumed set is a sequential lane guard only —
+ * NOT concurrent single flight (that law is CENTER's, see above); the
+ * port's internal same-FD race law is likewise CENTER's leg — NOT_VERIFIED
+ * here.
  *
  * NOT_PROVEN (disclosed, asserted nowhere):
  *  - the attach-vision session-log ride + render face (Host dispatch leg);
  *  - the durable cross-restart entitlement ledger (in-life binding only);
  *  - the placement masking of the native spelling under the real Guard/
  *    Control/PA mount (CENTER's mount round);
- *  - the family-field CLOSURE: the strict projection does not yet carry
- *    familyId/adapterRevision/providerIdentity/targetManifest (measured:
- *    control/types.ts parsePaControlManifest strips them; raw row carries
- *    them @28d020b1). The lane pins BOTH states: the pending disclosure and
- *    the pinning behavior for the closed shape. Nobody may call the bound
- *    family closed before CENTER lands it;
+ *  - what remains open on the family plane is NOT the field carriage: the
+ *    center carries the block TODAY (f696e6f2 — createPaControlLeg refuses a
+ *    registered family's missing/incomplete/mismatched carrier BEFORE the
+ *    durable row; parsePaManifestFamilyBlock keeps all four fields at FULL
+ *    VALUE; PA_FAMILY_TARGET_RULES['B-IMAGE'] pins the typed-plan shape).
+ *    The earlier "projection strips the fields" claim in this file's rev-2
+ *    header was WRONG: the fixture simply never passed `input.family` and
+ *    never registered `governedFamilies`, so it walked the unbound legacy
+ *    row path. What IS NOT_PROVEN stays the production placement masking of
+ *    the native spelling under the real mount (CENTER's round);
  *  - the real normalize re-encode divergence: this checkout answers
  *    `INVALID_IMAGE` for a metadata-bearing PNG (no sharp in the lane;
  *    measured) — the lane pins the dual-hash LAW (source digest and store
@@ -86,8 +96,8 @@ import {
 } from '../operation-permission/pa-control-bridge.js'
 import type { PaControlLegInput, PaControlLegResult, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
-import { humanCaller, memberCaller, P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, p6t4Seed } from './p6t4-helpers.js'
-import { createGovernedReadImageArm, A5_IMAGE_MANIFEST_SCHEMA, A5_IMAGE_TYPED_CODES } from '../src/plugin/live/governed-families/image.mjs'
+import { leaderCaller, memberCaller, P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, p6t4Seed } from './p6t4-helpers.js'
+import { createGovernedReadImageArm, A5_IMAGE_ADAPTER_REVISION, A5_IMAGE_FAMILY_ID, A5_IMAGE_MANIFEST_SCHEMA, A5_IMAGE_TYPED_CODES } from '../src/plugin/live/governed-families/image.mjs'
 import { createImageAttachmentAdapter, A5_IMAGE_ATTACHMENT_CODES } from '../src/plugin/live/governed-families/image-attachment.mjs'
 import type { ImageAttachmentStorePort } from '../src/plugin/live/governed-families/image-attachment.d.mts'
 import type {
@@ -243,6 +253,14 @@ const fakeReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) 
       perEffectRequired: livePlan.value.perEffectRequired,
     },
     authorityGeneration: 0,
+    // CURRENT governed-family registration (center f696e6f2 point 3): the
+    // guard compares the row's block against THIS field-by-field — moved
+    // adapter / moved provider / vanished registration is drift, deny.
+    governedFamily: {
+      familyId: A5_IMAGE_FAMILY_ID,
+      adapterRevision: A5_IMAGE_ADAPTER_REVISION,
+      providerIdentity: ARM_PROVIDER,
+    },
   }
 }
 const paVerifier = createPaEffectsVerifier({ readCallFacts: fakeReadCallFacts })
@@ -326,30 +344,66 @@ function chainCase(arm: GovernedReadImageArmHandle, ctx: { assembly: ProductionA
   })
   const planned = ctx.assembly.planApproval(request)
   if (!planned.ok) throw new Error(`plan refused: ${planned.error.message}`)
-  const input: PaControlLegInput = Object.freeze({ realmId: ctx.realm, member, callId, request, plan: planned.value, assembly: ctx.assembly })
+  // THE FAMILY CARRIER IS PART OF THE CALL (center f696e6f2): the leg input
+  // carries the four fields and the registration is keyed on the definition
+  // identity — the durable row then holds the block at FULL VALUE.
+  const rawTarget = JSON.parse(JSON.stringify(classified.targetManifest)) as NonNullable<PaControlLegInput['family']>['targetManifest']
+  const input: PaControlLegInput = Object.freeze({
+    realmId: ctx.realm,
+    member,
+    callId,
+    request,
+    plan: planned.value,
+    assembly: ctx.assembly,
+    family: {
+      familyId: A5_IMAGE_FAMILY_ID,
+      adapterRevision: A5_IMAGE_ADAPTER_REVISION,
+      providerIdentity: ARM_PROVIDER,
+      targetManifest: rawTarget,
+    },
+  })
   const callFacts: ImageCallFacts = {
     member: { teamSessionId: P6T4_ROOT, instanceId: WORKER },
     callId,
     authorityGeneration: planned.value.authorityGeneration,
     definitionIdentity: ARM_DEFINITION,
     providerIdentity: ARM_PROVIDER,
+    // THE CONSUMPTION EXECUTION CONTEXT: every driven case here is an ASK
+    // world case (a durable approval case exists); world (a) all-allow is
+    // exercised by its own leg.
+    approval: 'ask',
   }
   void canonicalTarget
   return { input, plan: planned.value, callFacts, correlation: paCorrelation(planned.value.approvalCaseId, callId) }
 }
 
 /** Drive the REAL chain to an approve receipt (human allow, guard-consumed). */
-async function approve(c: ChainCase): Promise<PaControlLegResult> {
-  const leg = createPaControlLeg({
+/** The plane's BOUND-family registration (center discriminator, keyed on
+ *  the trusted definition identity — never on a caller-chosen name). */
+const GOVERNED: Record<string, { familyId: string, adapterRevision: number, providerIdentity: string }> = {
+  [ARM_DEFINITION]: { familyId: A5_IMAGE_FAMILY_ID, adapterRevision: A5_IMAGE_ADAPTER_REVISION, providerIdentity: ARM_PROVIDER },
+}
+
+function makeLeg(): ReturnType<typeof createPaControlLeg> {
+  return createPaControlLeg({
     controlService: service,
     rootSessionId: P6T4_ROOT,
     caller: memberCaller(WORKER),
     beneficiaryAuthority: 'member',
+    governedFamilies: GOVERNED,
   })
+}
+
+async function approve(c: ChainCase): Promise<PaControlLegResult> {
+  const leg = makeLeg()
   const pending = leg(c.input)
   const row = await waitRow((r) => r.correlation === c.correlation)
   try {
-    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: humanCaller() as ActionCaller, requestId: row.requestId, decision: 'allow' })
+    // THE DECIDER IS THE LEADER (carrier default: member ask ->
+    // leader-approval; the registered spec resolves the same shape with
+    // leaderCaller). A wrong-rung reviewer gets no allow written — the
+    // measured first failure of this revision was exactly that.
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller() as ActionCaller, requestId: row.requestId, decision: 'allow' })
   } catch (error) {
     // The replay of an already-decided case hits the DURABLE single-decision
     // law ("the first decision is authoritative") — the leg proceeds on the
@@ -381,9 +435,10 @@ function makePort(opts: {
     const grantId = String(grantRef.grant?.grantId ?? '')
     grants.push(grantId)
     if (opts.oneShotGrants === true && consumed.has(grantId)) {
-      // The real ControlledFs rides the one-shot consumed view (admission-
-      // binding assembly.consumed law); the double implements the same law.
-      return { ok: false, code: 'grant-consumed', detail: `grant ${grantId} is spent: the one-shot consumed view refuses a replay (the durable consumption fact stands)` }
+      // SEQUENTIAL consumed view IN THIS DOUBLE only — a lane replay guard.
+      // It is NOT concurrent single flight: that law (execToken / unified PA
+      // final edge) belongs to CENTER and is not claimed anywhere here.
+      return { ok: false, code: 'grant-consumed', detail: `grant ${grantId} is spent: the double's sequential consumed view refuses the sequential replay (the real consumed-view law is CENTER's)` }
     }
     if (opts.refuse !== undefined) return { ...opts.refuse, ok: false }
     if (opts.hangUntilAbort === true) {
@@ -561,14 +616,14 @@ async function nativeWorld(cwd: string): Promise<NativeWorld> {
 
 // ═══ the legs ═══
 describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double)', () => {
-  it('C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact', async () => {
+  it('C2 positive on the REAL chain (ask world): durable approve receipt (row + LEADER allow decision + durable check-and-reserve) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact', async () => {
     const w = await armWorld({}, { oneShotGrants: true })
     try {
       const target = join(w.govRoot, 'photo.png')
       writeFileSync(target, PNG_1X1)
       const c = chainCase(w.arm, w.ctx, 'img-pos-1', 'photo.png', target)
       const receipt = await approve(c)
-      expect(receipt.decision).toBe('approve')
+      expect(receipt.decision, JSON.stringify(receipt)).toBe('approve')
       const approveReceipt = receipt as Extract<PaControlLegResult, { decision: 'approve' }>
       // the manifest is the DURABLE row's own class — not a fixture handoff
       expect(approveReceipt.manifest?.schema).toBe(A5_IMAGE_MANIFEST_SCHEMA)
@@ -585,8 +640,13 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
       // the hex being the source digest for a pass-through save
       expect(image?.attachmentId).toBe(`sha256:${sha(PNG_1X1)}`)
       expect(existsSync(join(w.storeRoot, 'objects', sha(PNG_1X1).slice(0, 2), sha(PNG_1X1)))).toBe(true)
-      // thin family surface: today's projection carries NOTHING → disclosed
-      expect(ran.disclosure).toContain('pending-center-finalization')
+      // THE REAL CHAIN CARRIES THE FAMILY BLOCK (f696e6f2): leg input.family
+      // + governedFamilies registration → the DURABLE row's own manifest.
+      expect(approveReceipt.manifest?.familyId).toBe(A5_IMAGE_FAMILY_ID)
+      expect(approveReceipt.manifest?.adapterRevision).toBe(A5_IMAGE_ADAPTER_REVISION)
+      expect(approveReceipt.manifest?.providerIdentity).toBe(ARM_PROVIDER)
+      expect(JSON.stringify((approveReceipt.manifest?.targetManifest as Record<string, unknown> | undefined)?.canonicalTarget)).toBe(JSON.stringify(target))
+      expect('disclosure' in ran).toBe(false) // the pending-release is DELETED
       // one read, one commit — no second fact face
       expect(w.port.counters.calls).toBe(1)
       expect(w.adapter.stats().commits).toBe(1)
@@ -674,48 +734,88 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
     } finally { await w.dispose() }
   }, 30_000)
 
-  it('thin family surface both ways: today\'S absent projection is DISCLOSED never skipped silently; once carried it is PINNED (wrong familyId / stale revision / tampered targetManifest all refuse by value)', async () => {
+  it('family carrier is REQUIRED for a bound call and compared FIELD BY FIELD: the real chain carries the block (f696e6f2); a stripped carrier fails closed (NO pending release); ANY typed-plan field drift refuses beyond the four carrier values; the leg refuses a missing carrier BEFORE the row', async () => {
     const w = await armWorld()
     try {
       const target = join(w.govRoot, 'photo.png')
       writeFileSync(target, PNG_1X1)
       const c = chainCase(w.arm, w.ctx, 'img-fam-1', 'photo.png', target)
       const receipt = await approve(c) as Extract<PaControlLegResult, { decision: 'approve' }>
-      const ranPending = await w.arm.execute({ file_path: 'photo.png' }, receipt as unknown as ImageConsumptionReceipt, c.callFacts)
-      expect(ranPending.ok, ranPending.detail).toBe(true)
-      expect(ranPending.disclosure).toContain('pending-center-finalization')
-      // simulate the CLOSED projection shape (CENTER closure pending — this
-      // leg pins the arm's BEHAVIOR when it lands, on a fresh approval):
-      const c2 = chainCase(w.arm, w.ctx, 'img-fam-2', 'photo.png', target)
-      const r2 = await approve(c2) as Extract<PaControlLegResult, { decision: 'approve' }>
-      const plan = w.arm.classify({ file_path: 'photo.png' })
-      if (plan.ok !== true) throw new Error('fixture classify failed')
-      const forged = [
-        (m: Record<string, unknown>) => { m.familyId = 'B-WEB'; m.adapterRevision = 2; m.providerIdentity = ARM_PROVIDER; m.targetManifest = plan.targetManifest },
-        (m: Record<string, unknown>) => { m.familyId = 'B-IMAGE'; m.adapterRevision = 1; m.providerIdentity = ARM_PROVIDER; m.targetManifest = plan.targetManifest },
-        (m: Record<string, unknown>) => { m.familyId = 'B-IMAGE'; m.adapterRevision = 2; m.providerIdentity = 'other-provider'; m.targetManifest = plan.targetManifest },
-        (m: Record<string, unknown>) => { m.familyId = 'B-IMAGE'; m.adapterRevision = 2; m.providerIdentity = ARM_PROVIDER; m.targetManifest = { ...plan.targetManifest, canonicalTarget: '/tmp/stale.png' } },
+      const ran = await w.arm.execute({ file_path: 'photo.png' }, receipt as unknown as ImageConsumptionReceipt, c.callFacts)
+      expect(ran.ok, ran.detail).toBe(true)
+      // STRIPPED carrier (a legacy/unbound row shape cannot execute a bound
+      // call): refused as an incomplete receipt — the rev-2 "pending
+      // release" is deleted per the root ruling on f3864b24.
+      const stripped = cloneManifest(receipt)
+      delete stripped.familyId
+      delete stripped.adapterRevision
+      delete stripped.providerIdentity
+      delete stripped.targetManifest
+      const ranStripped = await w.arm.execute({ file_path: 'photo.png' }, { decision: 'approve', requestId: receipt.requestId, grant: receipt.grant, manifest: stripped } as unknown as ImageConsumptionReceipt, c.callFacts)
+      expect(ranStripped.code).toBe(A5_IMAGE_TYPED_CODES.RECEIPT_INCOMPLETE)
+      // FIELD-BY-FIELD plan equality BEYOND the four carrier values: each
+      // tamper rides a fresh real approval so every attempt is clean.
+      const tampers: Array<{ name: string, run: (m: Record<string, unknown>) => void }> = [
+        { name: 'familyId', run: (m) => { m.familyId = 'B-WEB' } },
+        { name: 'adapterRevision', run: (m) => { m.adapterRevision = 1 } },
+        { name: 'providerIdentity', run: (m) => { m.providerIdentity = 'def-provider' } },
+        { name: 'byteCap', run: (m) => { const tm = { ...(m.targetManifest as Record<string, unknown>) }; tm.byteCap = Number(tm.byteCap) + 1; m.targetManifest = tm } },
+        { name: 'declaredMediaType', run: (m) => { const tm = { ...(m.targetManifest as Record<string, unknown>) }; tm.declaredMediaType = 'image/gif'; m.targetManifest = tm } },
+        { name: 'businessObligations', run: (m) => { const tm = { ...(m.targetManifest as Record<string, unknown>) }; const obs = [...(tm.businessObligations as Array<Record<string, unknown>>)]; obs[0] = { ...obs[0], right: 'write-everything' }; tm.businessObligations = obs; m.targetManifest = tm } },
+        { name: 'missingPlanField', run: (m) => { const tm = { ...(m.targetManifest as Record<string, unknown>) }; delete tm.byteCapSource; m.targetManifest = tm } },
+        { name: 'extraPlanField', run: (m) => { const tm = { ...(m.targetManifest as Record<string, unknown>) }; tm.unregisteredField = 'ride-along'; m.targetManifest = tm } },
       ]
-      for (const mutate of forged) {
-        const m = cloneManifest(r2)
-        mutate(m)
-        const ran = await w.arm.execute({ file_path: 'photo.png' }, { decision: 'approve', requestId: r2.requestId, grant: r2.grant, manifest: m } as unknown as ImageConsumptionReceipt, c2.callFacts)
-        expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.FAMILY_FACTS_MISMATCH)
+      for (const [i, tamper] of tampers.entries()) {
+        const cc = chainCase(w.arm, w.ctx, `img-fam-t-${String(i)}`, 'photo.png', target)
+        const r = await approve(cc) as Extract<PaControlLegResult, { decision: 'approve' }>
+        const m = cloneManifest(r)
+        tamper.run(m)
+        const ranT = await w.arm.execute({ file_path: 'photo.png' }, { decision: 'approve', requestId: r.requestId, grant: r.grant, manifest: m } as unknown as ImageConsumptionReceipt, cc.callFacts)
+        expect(ranT.code, tamper.name).toBe(A5_IMAGE_TYPED_CODES.FAMILY_FACTS_MISMATCH)
       }
-      // and the CONSISTENT closed shape passes (the pin accepts what the
-      // center will carry): fresh approval #3, complete family facts.
-      const c3 = chainCase(w.arm, w.ctx, 'img-fam-3', 'photo.png', target)
-      const r3 = await approve(c3) as Extract<PaControlLegResult, { decision: 'approve' }>
-      const m3 = cloneManifest(r3)
-      m3.familyId = 'B-IMAGE'
-      m3.adapterRevision = 2
-      m3.providerIdentity = ARM_PROVIDER
-      m3.targetManifest = plan.targetManifest
-      const ran3 = await w.arm.execute({ file_path: 'photo.png' }, { decision: 'approve', requestId: r3.requestId, grant: r3.grant, manifest: m3 } as unknown as ImageConsumptionReceipt, c3.callFacts)
-      expect(ran3.ok, ran3.detail).toBe(true)
-      expect(ran3.disclosure).toBeUndefined()
+      // THE CENTER EDGE (witnessed, not implemented here): a REGISTERED
+      // family whose leg input carries NO carrier is denied BEFORE the
+      // durable row — zero durable write, no approval can exist.
+      const cNo = chainCase(w.arm, w.ctx, 'img-fam-nocarrier', 'photo.png', target)
+      const inputNo = { ...cNo.input } as PaControlLegInput
+      delete (inputNo as { family?: unknown }).family
+      const preRow = await makeLeg()(inputNo)
+      expect(preRow.decision).toBe('deny')
+      if (preRow.decision !== 'deny') throw new Error('fixture: the center must deny')
+      expect(String(preRow.detail)).toContain('family-review-facts-missing')
     } finally { await w.dispose() }
-  }, 60_000)
+  }, 120_000)
+
+  it('world (a) all-allow is a LEGAL world (root ruling on f3864b24 item 1): no Control row, no requestId, receipt undefined EXECUTES on the trusted consumption context; a receipt presented there is a synthesized approval and refuses; an unclassified context never reaches a backend', async () => {
+    const w = await armWorld()
+    try {
+      const target = join(w.govRoot, 'photo.png')
+      writeFileSync(target, PNG_1X1)
+      const rowsBefore = (await service.listControlState(P6T4_ROOT)).requests.length
+      const facts: ImageCallFacts = {
+        member: { teamSessionId: P6T4_ROOT, instanceId: WORKER },
+        callId: 'img-allow-1',
+        authorityGeneration: 0,
+        definitionIdentity: ARM_DEFINITION,
+        providerIdentity: ARM_PROVIDER,
+        approval: 'all-allow',
+      }
+      const ran = await w.arm.execute({ file_path: 'photo.png' }, undefined, facts)
+      expect(ran.ok, ran.detail).toBe(true)
+      expect(w.port.counters.calls).toBe(1)
+      expect(w.adapter.stats().commits).toBe(1)
+      // no Control row was ever needed or created by this execution
+      expect((await service.listControlState(P6T4_ROOT)).requests.length).toBe(rowsBefore)
+      // a receipt in world (a) can only be SYNTHESIZED: 伪 requestId/占位 id
+      // are refused — the all-allow fact is the ABSENCE, never a fake approve
+      const forged = { decision: 'approve', requestId: 'ctrl-placeholder-0', grant: { grantId: 'grant-placeholder' } } as unknown as ImageConsumptionReceipt
+      expect((await w.arm.execute({ file_path: 'photo.png' }, forged, facts)).code).toBe(A5_IMAGE_TYPED_CODES.RECEIPT_INCOMPLETE)
+      // no context, no backend: the arm never guesses the world
+      const noCtx = { ...facts } as Partial<ImageCallFacts>
+      delete noCtx.approval
+      expect((await w.arm.execute({ file_path: 'photo.png' }, undefined, noCtx as ImageCallFacts)).code).toBe(A5_IMAGE_TYPED_CODES.CONSUMPTION_CONTEXT_UNKNOWN)
+    } finally { await w.dispose() }
+  }, 30_000)
 
   it('capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects', async () => {
     const w = await armWorld({ maxImageBytes: 32 })
@@ -799,7 +899,7 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
     }
   }, 60_000)
 
-  it('no ledger, by construction: replaying the same receipt double-calls the PORT (which the one-shot consumed view refuses — the durable law lives outside the arm) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face', async () => {
+  it('no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER\'s execToken law, not claimed here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face', async () => {
     const w = await armWorld({}, { oneShotGrants: true })
     try {
       const target = join(w.govRoot, 'photo.png')
@@ -849,7 +949,34 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
       const unknown = await w.adapter.referenceImage({ attachmentId: sha(Buffer.from('never-minted')), namespace: nsA })
       expect(unknown.code).toBe(A5_IMAGE_ATTACHMENT_CODES.UNKNOWN_ATTACHMENT)
       expect(w.adapter.stats().storeCalls).toBe(storeCallsBefore)
+      // re-commit of the SAME (namespace, attachmentId): ONE fact, ONE
+      // counter name (root ruling item 3): commits counts the attempt,
+      // recommits counts the already-held entitlement — stats speaks the
+      // same names the code increments (no `recomputes` ghost key).
+      const commitsBefore = w.adapter.stats().commits
+      await w.adapter.commitImage({ bytes: PNG_1X1, mediaType: 'image/png', name: 'same.png', namespace: nsA })
+      const afterRe = w.adapter.stats()
+      expect(afterRe.commits).toBe(commitsBefore + 1)
+      expect(afterRe.recommits).toBe(1)
+      expect(Object.keys(afterRe)).not.toContain('recomputes')
+      expect(w.objects()).toBe(1)
     } finally { await w.dispose() }
+    // reference verifies the COMMITTED NORMALIZED OBJECT ONLY (root ruling
+    // item 3): a store answering different bytes on re-read is drift —
+    // refused, never served. (The lying port below is a contract probe of
+    // THIS ADAPTER's verification law; the real store's integrity is the
+    // store's own leg.)
+    {
+      const driftAdapter = createImageAttachmentAdapter({ store: {
+        saveImage: async (input) => ({ attachmentId: `sha256:${sha(input.data)}`, mediaType: input.mediaType, bytes: input.data.byteLength }),
+        readImage: async () => ({ data: new Uint8Array([0xde, 0xad, 0xbe, 0xef]) }),
+        imageLimits: { maxImageBytes: 1 << 20, maxMessageImageBytes: 1 << 20 },
+      } })
+      const committed = await driftAdapter.commitImage({ bytes: PNG_1X1, mediaType: 'image/png', name: 'x.png', namespace: { realmId: 'realm-d', teamSessionId: 'team-d', instanceId: 'inst-d' } })
+      const drift = await driftAdapter.referenceImage({ attachmentId: committed.attachmentId, namespace: { realmId: 'realm-d', teamSessionId: 'team-d', instanceId: 'inst-d' } })
+      expect(drift.code).toBe(A5_IMAGE_ATTACHMENT_CODES.COMMIT_DRIFT)
+      expect(drift.bytes).toBeUndefined() // never served
+    }
   })
 
   it('the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted)', async () => {
@@ -959,7 +1086,24 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
       expect('code' in r && r.code).toBe(A5_IMAGE_TYPED_CODES.DRAINING)
       const keys = Object.keys(w.arm).join(',').toLowerCase()
       expect(keys).not.toMatch(/native|fallback|delegate|prepare|cancel/)
+      // THE REFERENCE LEG IS A BACKEND CALL TOO (root ruling item 3): after
+      // drain it refuses typed with zero store calls.
+      const ns = { realmId: 'r', teamSessionId: 't', instanceId: 'i' }
+      const refRefused = await w.arm.reference('sha256:anything', ns)
+      expect(refRefused.code).toBe(A5_IMAGE_TYPED_CODES.DRAINING)
+      expect(w.adapter.stats().storeCalls).toBe(0)
     } finally { await w.dispose() }
+    // and a pre-aborted signal refuses the reference leg before any call
+    {
+      const w2 = await armWorld()
+      try {
+        const ac = new AbortController()
+        ac.abort()
+        const refCancelled = await w2.arm.reference('sha256:anything', { realmId: 'r', teamSessionId: 't', instanceId: 'i' }, ac.signal)
+        expect(refCancelled.code).toBe(A5_IMAGE_TYPED_CODES.CANCELLED)
+        expect(w2.adapter.stats().storeCalls).toBe(0)
+      } finally { await w2.dispose() }
+    }
   })
 
   it('assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount)', () => {

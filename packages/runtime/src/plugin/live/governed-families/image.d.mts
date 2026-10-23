@@ -11,9 +11,13 @@
 import type { ImageAttachmentAdapterHandle } from './image-attachment.d.mts'
 
 export interface ImageReadBoundedGrantRef {
+  /** The minted grant (ask world) — an explicitly EMPTY object in the
+   *  all-allow world (nothing was ever minted; never a fabricated id). */
   grant: { grantId?: string } & Record<string, unknown>
   realmId: string
   canonicalLocator: string
+  /** Present only when there is no grant to ride: the trusted this-call id. */
+  callId?: string
 }
 
 export interface ImageReadBoundedValue {
@@ -35,10 +39,14 @@ export type ImageReadBoundedPort = (
   opts: { maxBytes: number, signal?: AbortSignal },
 ) => Promise<ImageReadBoundedOutcome>
 
-/** The durable strict manifest AS PROJECTED TODAY (control/types.ts). The
- *  family four fields are OPTIONAL exactly because the projection does not
- *  carry them yet (root 07:38 measurement; CENTER closure pending): the arm
- *  pins them when present and discloses the pending state when absent. */
+/** The durable strict manifest as projected by control/types.ts TODAY:
+ *  parsePaManifestFamilyBlock (f696e6f2) KEEPS the four family fields at
+ *  full value when the row carries them (all-or-nothing; a partial block
+ *  fails the whole manifest), and createPaControlLeg refuses a registered
+ *  family's missing/incomplete carrier BEFORE the durable row. The fields
+ *  are typed optional here because UNBOUND (pre-A5M2) families legitimately
+ *  bear no block; a BOUND call missing it fails closed in the arm
+ *  (RECEIPT_INCOMPLETE) — no pending release. */
 export interface ImageConsumptionManifest {
   schema: string
   approvalCaseId: string
@@ -68,13 +76,18 @@ export interface ImageConsumptionReceipt {
 }
 
 /** The plane's trusted per-call facts (the same trusted source that built
- *  the leg input; the arm re-checks them at the consumption point). */
+ *  the leg input; the arm re-checks them at the consumption point).
+ *  `approval` is the CONSUMPTION EXECUTION CONTEXT (root ruling on
+ *  f3864b24): 'ask' demands the durable approve receipt; 'all-allow' is the
+ *  world where policy admitted every effect, so no Control row and no
+ *  requestId ever existed. The arm never guesses it. */
 export interface ImageCallFacts {
   member: { teamSessionId: string, instanceId: string }
   callId: string
   authorityGeneration: number
   definitionIdentity: string
   providerIdentity: string
+  approval: 'ask' | 'all-allow'
 }
 
 export interface ImageTargetManifest {
@@ -96,7 +109,6 @@ export interface ImageArmOutcome {
   readonly sideEffectPossible?: boolean
   readonly portCode?: string
   readonly classifyRefused?: boolean
-  readonly disclosure?: string
   readonly value?: {
     readonly path: string
     readonly image: {

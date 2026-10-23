@@ -96,7 +96,10 @@ export function createImageAttachmentAdapter({ store, observe = () => {} }) {
   /** attachmentIds this adapter has ever minted (for the foreign/unknown
    *  audit distinction only — never an ownership map). */
   const mintedIds = new Set()
-  const counters = { commits: 0, recomputes: 0, references: 0, storeCalls: 0, refusedForeignNamespace: 0, refusedUnknown: 0, commitDrift: 0 }
+  // ONE name per fact (root ruling on f3864b24, item 3): the re-commit of
+  // an existing (namespace, attachmentId) entitlement counts as `recommits`
+  // here AND in stats — never a second counter for the same fact.
+  const counters = { commits: 0, recommits: 0, references: 0, storeCalls: 0, refusedForeignNamespace: 0, refusedUnknown: 0, commitDrift: 0 }
 
   /**
    * The create/write leg, reached ONLY after the arm's consumption-point
@@ -192,9 +195,17 @@ export function createImageAttachmentAdapter({ store, observe = () => {} }) {
     const bytes = loaded?.data ?? loaded
     const rereadSha256 = sha256Hex(bytes)
     const normalizedIdentity = String(entitlement.ref?.attachmentId ?? '')
-    if (rereadSha256 !== entitlement.sourceSha256 && rereadSha256 !== bareHex(normalizedIdentity)) {
-      // The re-read matches NEITHER recorded fact — drift against the
-      // ORIGINAL commitment; refuse rather than serve an unverifiable fact.
+    // The reference verifies the COMMITTED NORMALIZED OBJECT and nothing
+    // else (root ruling on f3864b24, item 3): the re-read bytes MUST hash
+    // to the identity the store committed under (the minted ref's
+    // attachmentId, hex form). The source digest is a recorded fact of the
+    // ORIGINAL commit (returned alongside for the caller's own tie) — it is
+    // NOT an alternative accept condition "either matches" here: for a
+    // pass-through object the two coincide; under real normalization only
+    // the normalized identity may match.
+    if (rereadSha256 !== bareHex(normalizedIdentity)) {
+      // The re-read does not hash to the committed object's identity —
+      // drift against the ORIGINAL commitment; refuse, never serve.
       counters.commitDrift += 1
       observe({ event: 'attachment-refuse', detail: 'commit-drift' })
       return { ok: false, code: A5_IMAGE_ATTACHMENT_CODES.COMMIT_DRIFT, detail: `the re-read bytes (${rereadSha256.slice(0, 12)}) match neither the original source digest nor the store object identity — refused as drift, never served` }

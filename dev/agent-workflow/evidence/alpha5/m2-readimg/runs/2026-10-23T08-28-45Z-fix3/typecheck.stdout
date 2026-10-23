@@ -1,0 +1,3 @@
+$ tsc -p tsconfig.json
+test/a5m2-post-consume-write-c1.test.ts(39,26): error TS2339: Property 'pid' does not exist on type '{ cwd(): string; }'.
+[ELIFECYCLE] Command failed with exit code 2.
