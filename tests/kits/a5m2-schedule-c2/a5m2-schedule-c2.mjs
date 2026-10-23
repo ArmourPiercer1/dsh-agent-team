@@ -192,15 +192,30 @@ if (!existsSync(fixtureManifestPath)) { console.error('standard fixture package.
 
 function writePatch(patchPath, hostEntryHref) {
   mkdirSync(dirname(patchPath), { recursive: true })
-  // Root 00:2x fix (fail 23-36-28): the loader dialect (Host app-boot
-  // src/index.ts:354 + :358-360; official user-patches.spec :52-54) wants
-  // a TOP-LEVEL ARRAY whose entries carry `insert:` as a LIST of plugin
-  // entries — id/name/config are keys of one list item; config body +2.
+  // Root 00:2x (loader dialect): top-level ARRAY, `insert:` a LIST of one
+  // plugin entry. Root 00:4x (874 dist validator, one-batch fix, pr-d
+  // canonical row shape): REQUIRED validateTeamPluginConfig keys added —
+  // bootPhase/rootSessionId/blueprintSource; the four lawful MINIMAL-EMPTY
+  // keys kept (deniedSelection:null, mcpServers:[]/mcpServer:null,
+  // environmentFacts:[], externalPolicyFacts:{hard:{},capabilityExists:{}})
+  // — empty facts state NO capabilities (no fabricated available:true
+  // entries; authority stays a real later verification). glueUrl/seamUrl
+  // stay ABSENT (the real location-derived defaults). teamToolPlane is the
+  // consumed optional row face (agent-bindings); my lane's schedule gate.
+  const anchorYaml = [
+    '---', 'schemaVersion: 1', `blueprintId: ${BP_ID}.boot-anchor`, 'revision: "1"',
+    'leader:', '  templateId: leader', '  persona: "You are the leader of the A5M2 schedule C2 boot anchor."',
+    'members:', '  - templateId: sched-worker', '    persona: "Boot anchor member; idle unless delegated."', '',
+  ]
   writeFileSync(patchPath, [
     `- insert:`,
     '    - id: dsh-agent-team',
     `      name: ${JSON.stringify(hostEntryHref)}`,
     '      config:',
+    "        bootPhase: 'create'",
+    `        rootSessionId: ${JSON.stringify(`session-a5m2c2-boot-${RUN_STAMP}`)}`,
+    '        blueprintSource: |-',
+    ...anchorYaml.map((l) => `          ${l}`),
     `        blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
     '        seedMembers: []',
     '        generation: 1',
