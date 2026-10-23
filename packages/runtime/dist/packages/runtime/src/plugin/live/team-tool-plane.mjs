@@ -88,6 +88,8 @@ import { createAnchoredGlobBackend } from './glob-backend.mjs'
 // placements against. Import law (pc §3): the relative specifier resolves
 // inside the committed dist mirror exactly like ./plane-effect-backends.mjs.
 import { A5_G1_RECORD_SPECS, A5_G1_ADAPTER_REVISION } from './governed-families/g1-surface-adapters.mjs'
+import { A5_G6_FAMILY, A5_G6_TOOL_NAMES } from './governed-families/g6-session-query.mjs'
+import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-wiring.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -1110,6 +1112,52 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }))
     }
     g1Inject = Object.freeze({ rows: Object.freeze(g1Entries) })
+  }
+
+  // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the five
+  // governed session-query rows ride THIS plane's placement pipeline, the
+  // REAL paAdmit seat and the shared placement feed. The injection is the
+  // Team-plane owner's PUBLISHED DEPLOYMENT EVIDENCE — provider identity,
+  // the five typed query facets, the caller law, the ceiling decision port
+  // and the declared-mount evidence (the adapter's own hard-visit law
+  // decides their semantics; this plane adds NO gate to that surface).
+  // ABSENT (the ordinary config) = the family is not deployed on this
+  // assembly: no rows, byte-for-byte zero flip. There is no separate enable
+  // key and no fallback row; defective evidence refuses the MOUNT (the
+  // glob-gate ④ discipline: config is law, not wiring).
+  const sessionQueryInjectRaw = input.backends?.sessionQuery
+  const sessionQueryInjectInvalid = (why) => ({ ok: false, code: 'SESSION_QUERY_ARM_INJECT_INVALID', message: `backends.sessionQuery: ${why}` })
+  let sessionQueryInject = null
+  if (sessionQueryInjectRaw !== undefined) {
+    const g6IsRec = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+    const g6Bad = typeof sessionQueryInjectRaw.providerId !== 'string' || sessionQueryInjectRaw.providerId.length === 0
+      ? 'providerId must be a non-empty string (the provider identity the durable family gate compares against)'
+      : typeof sessionQueryInjectRaw.readNative !== 'function'
+        ? 'readNative (name) => definition is required — the MEMBER-SCOPED native capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)'
+        : !g6IsRec(sessionQueryInjectRaw.queryPorts)
+          ? 'queryPorts must be the typed session-query facet record — the adapter\'s own hard-visit law decides requiredness and contradictions'
+          : typeof sessionQueryInjectRaw.readCaller !== 'function'
+            ? 'readCaller is required — the row never invents a caller (the workspace-access caller law is owner-published)'
+            : typeof sessionQueryInjectRaw.teamCeiling !== 'function'
+              ? 'teamCeiling is required — the Team-plane ceiling decision port is the owner-side injection; no permissive stand-in exists here (fail closed)'
+              : !g6IsRec(sessionQueryInjectRaw.declaredMount) || !g6IsRec(sessionQueryInjectRaw.declaredMount.searchBackend)
+                ? 'declaredMount.searchBackend {present:true} | {present:false, evidence} is required — the search rows ride the deployment\'s real evidence either way'
+                : undefined
+    if (g6Bad !== undefined) return sessionQueryInjectInvalid(g6Bad)
+    for (const g6Name of A5_G6_TOOL_NAMES) {
+      if (g6Name === readName || g6Name === A5_TODO_MOUNT_NAME || g6Name === A5_WRITE_MOUNT_NAME || g6Name === A5_IMAGE_MOUNT_NAME) {
+        return sessionQueryInjectInvalid(`'${g6Name}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the G6 block)`)
+      }
+    }
+    sessionQueryInject = Object.freeze({
+      providerId: sessionQueryInjectRaw.providerId,
+      readNative: sessionQueryInjectRaw.readNative,
+      queryPorts: sessionQueryInjectRaw.queryPorts,
+      readCaller: sessionQueryInjectRaw.readCaller,
+      teamCeiling: sessionQueryInjectRaw.teamCeiling,
+      declaredMount: sessionQueryInjectRaw.declaredMount,
+      ...(sessionQueryInjectRaw.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInjectRaw.maxSearchResults }),
+    })
   }
 
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
@@ -3686,14 +3734,92 @@ export function createTeamToolPlaneAssembly(input = {}) {
     output,
     presentCall: (args) => ({ ...g1RowPresentFace, rawInput: args }),
   }))
+  // A5M2-G6 B-SESSION-QUERY (root 18:2x): the wiring bridge over the
+  // released G6 adapter (rev.4, owner-released, imported VERBATIM — no row
+  // law restated, no gate added) assembled on THIS mount: the mount realm,
+  // the owner-published evidence, and THE REAL `paAdmit` seat — the same
+  // way the a5p5 self-walking rows mount `pa: paAdmit` (:1874 law, the
+  // callable carrying open/edge/closePlan; the bridge accepts that exact
+  // shape). The issued definitions join the SAME placement/feed/dispose
+  // machinery as every other row (zero-flip law: with no injection this is
+  // byte-identical to the pre-G6 assembly).
+  const g6TokenLedger = new Map()
+  let g6Wiring = null
+  if (sessionQueryInject !== null) {
+    // THE ISSUED CALL IDENTITY — the a5p5 row-mount law (register.ts:196-
+    // 226): per-mount nonce + seq, and the REAL host execution token
+    // (object | symbol — never String(), which would collide distinct
+    // symbol identities) as the single-flight key. This is NOT a new runner
+    // ledger: no PA fact lives here — plan facts live only in paAdmit's own
+    // map and die through closePlan / the edge's finally; this map holds
+    // one correlation per execution token until the mount's ONE release
+    // point in dispose (the plane's own ledger obeys the same law below).
+    let g6CallSeq = 0
+    const g6MountNonce = String(globalThis.crypto?.randomUUID?.()
+      ?? `n-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`)
+    const g6Prefix = `team-${String(input.instanceId ?? templateId ?? 'unknown')}-g6`
+    const g6CorrelationOf = (exec, toolName) => {
+      const raw = exec !== null && typeof exec === 'object' ? exec.token : undefined
+      const tokenKey = (typeof raw === 'object' && raw !== null) ? raw : typeof raw === 'symbol' ? raw : undefined
+      if (tokenKey !== undefined) {
+        if (g6TokenLedger.has(tokenKey)) {
+          // An in-flight or settled token re-used allocates NOTHING new:
+          // the read lane has no replay lane, the walk refuses through the
+          // bridge's own CALL_ID_ABSENT bytes; the plane observes the fact.
+          observe(`a5m2-g6: token-replay REFUSED name=${String(toolName)} — one governed call per execution token`)
+          return null
+        }
+      }
+      g6CallSeq += 1
+      const callId = `${g6Prefix}-${String(toolName)}:${tokenKey !== undefined ? 'hexec' : 'mount'}:${g6MountNonce}-${String(g6CallSeq)}`
+      if (tokenKey !== undefined) g6TokenLedger.set(tokenKey, callId)
+      return callId
+    }
+    try {
+      const builtG6 = buildG6SessionQueryWiring({
+        realmId,
+        providerId: sessionQueryInject.providerId,
+        readNative: sessionQueryInject.readNative,
+        queryPorts: sessionQueryInject.queryPorts,
+        readCaller: sessionQueryInject.readCaller,
+        teamCeiling: sessionQueryInject.teamCeiling,
+        declaredMount: sessionQueryInject.declaredMount,
+        ...(sessionQueryInject.maxSearchResults === undefined ? {} : { maxSearchResults: sessionQueryInject.maxSearchResults }),
+        correlationOf: g6CorrelationOf,
+        // THE LAZY FEED (pb §6, the placedByName law right below): the
+        // family registration key is read at MOUNT MOMENT from the
+        // placement record — never an eager snapshot, never a guessed def#.
+        placementFeed: (name) => {
+          const d = placedByName.get(name)
+          if (d === undefined) return undefined
+          const identity = definitionIdentityOf(d)
+          return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
+        },
+        // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan
+        // (team-tool-plane.mjs:1214/:1679/:1713/:1714). Nothing else poses.
+        pa: paAdmit,
+        observe: (event) => observe(`a5m2-g6: ${String(event?.event ?? 'event')}${event?.name === undefined ? '' : ` ${String(event.name)}`}${event?.code === undefined ? '' : ` code=${String(event.code)}`}`),
+      })
+      if (builtG6.ok !== true) {
+        return { ok: false, code: 'SESSION_QUERY_ARM_REFUSED', message: `backends.sessionQuery: the wiring bridge refused the mount (${String(builtG6.code)} — ${String(builtG6.detail)})` }
+      }
+      g6Wiring = builtG6
+      for (const declaredRow of g6Wiring.declared) {
+        observe(`a5m2-g6: DECLARED-INACTIVE ${String(declaredRow.name)} (${String(declaredRow.reason)}) — native untouched, no registration`)
+      }
+    } catch (error) {
+      return { ok: false, code: 'SESSION_QUERY_ARM_REFUSED', message: `backends.sessionQuery: the adapter's own hard-visit law threw at placement (${String(error?.message ?? error).slice(0, 220)})` }
+    }
+  }
+  const g6Defs = g6Wiring === null ? [] : g6Wiring.definitions
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -3725,6 +3851,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /** A5M2-G6 B-SESSION-QUERY: the session-query wiring face for THIS
+       *  mount (omitted, NOT set to `undefined`, when the family is not
+       *  deployed — the presence-decision law the hand-off faces obey). The
+       *  mount writer reads `familyRegistrations()` AFTER publish and pairs
+       *  each entry with `registerA5GovernedFamily`; the drain rides this
+       *  mount's dispose (wired with the teardown law below), never the
+       *  writer's. */
+      ...(g6Wiring === null ? {} : { sessionQuery: Object.freeze({
+        familyId: A5_G6_FAMILY,
+        placementNames: g6Wiring.placementNames,
+        declared: g6Wiring.declared,
+        familyRegistrations: g6Wiring.familyRegistrations,
+      }) }),
       /** A5-M2: the governed-read hand-off face for THIS mount. The plane
        *  stores nothing here: the row holds the token-keyed flight and the
        *  correlation law, and the adapter's `tools/result` observer is what
@@ -3913,6 +4052,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // The arm is the placement-moment construction (central-card ②),
             // so the drain reaches the SAME arm the rows drove.
             if (imageArm !== null) imageArm.drain()
+            // A5M2-G6 B-SESSION-QUERY: the SAME teardown law — DRAINING is
+            // the wiring's new-call prohibition (an entered body is not
+            // rewound, no native fallback exists); the issued-identity
+            // ledger releases at its ONE legal end, beside the plane's own
+            // token-ledger release below.
+            if (g6Wiring !== null) g6Wiring.drain()
+            g6TokenLedger.clear()
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the

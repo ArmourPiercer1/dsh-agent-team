@@ -2399,6 +2399,10 @@ export function createAgentBindings(deps) {
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
       let a5ImagePlacedArm = null
+      // A5M2-G6 B-SESSION-QUERY: same outer-scope discipline — the inject is
+      // armed next to the plane assembly, the registration lands AFTER
+      // publish at the shared fill point below (both must see one binding).
+      let a5G6Inject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -3072,6 +3076,57 @@ export function createAgentBindings(deps) {
             },
           })
         })()
+        // A5M2-G6 B-SESSION-QUERY (root 18:2x, the lifted block scope): the
+        // Team-plane owner PUBLISHES the deployment evidence under
+        // `planeCfg.sessionQuery` — provider identity, the typed query
+        // facets, the caller law, the ceiling decision port and the
+        // declared-mount evidence (the adapter's own law decides their
+        // semantics; nothing is invented or stand-in'd here). ABSENT = the
+        // family is not deployed on this mount: no rows, zero flip. What
+        // THIS side owns is the CAPTURE: the natives are read through the
+        // SAME member-scoped seam the todo/write/image captures obey — the
+        // global face is NOT a fallback — and the seam is memoized so the
+        // whole mount sees ONE object per name (root 18:2x defect ② closed
+        // at the capture side too).
+        const g6Cfg = planeCfg?.sessionQuery
+        if (g6Cfg !== undefined && g6Cfg !== null) {
+          const refuseG6 = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed session-query mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-g6-arm-mount-refused'
+            observations.push(`a5m2-g6: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG6('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const g6Captured = new Map()
+          const g6ReadNative = (name) => {
+            if (g6Captured.has(name)) return g6Captured.get(name)
+            let captured
+            try {
+              captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+            } catch (error) {
+              throw refuseG6(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            // `undefined` is a LEGAL answer (a native this host build does
+            // not carry): the bridge lands it as the honest DECLARED-INACTIVE
+            // census — no def, no registration, native untouched.
+            g6Captured.set(name, captured === null ? undefined : captured)
+            return g6Captured.get(name)
+          }
+          a5G6Inject = Object.freeze({
+            providerId: g6Cfg.providerId,
+            readNative: g6ReadNative,
+            queryPorts: g6Cfg.queryPorts,
+            readCaller: g6Cfg.readCaller,
+            teamCeiling: g6Cfg.teamCeiling,
+            declaredMount: g6Cfg.declaredMount,
+            ...(g6Cfg.maxSearchResults === undefined ? {} : { maxSearchResults: g6Cfg.maxSearchResults }),
+          })
+          observations.push(`a5m2-g6: inject armed for ${sessionId} (evidence keys=${Object.keys(g6Cfg).sort().join(',')})`)
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3145,11 +3200,12 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
+            ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3597,6 +3653,38 @@ export function createAgentBindings(deps) {
             providerIdentity: a5ImagePlacedArm.providerId,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
+        }
+        // A5M2-G6 B-SESSION-QUERY: THE SAME fill point, the SAME law — the
+        // registration keys are the placement feed's RUNTIME identities of
+        // the PLACED definitions (the plane's own placedByName record read
+        // lazily through the wiring), and a silent or moved feed THROWS
+        // (P_G6_WIRE_PLACEMENT_KEY_* carried, never a guessed key, never a
+        // silent skip). Rows the bridge never emitted (DECLARED-INACTIVE
+        // census) have no definition, no placement and no registration —
+        // the native stays untouched behind them.
+        if (a5G6Inject !== null) {
+          const g6Plane = a5PlaneValue?.sessionQuery
+          if (g6Plane === undefined || g6Plane === null) {
+            const detail = 'the plane accepted the session-query injection but surfaced no wiring face — the mount is broken and registers nothing'
+            observations.push(`a5m2-g6: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed session-query mount refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g6-arm-mount-refused' })
+          }
+          let g6Registrations
+          try {
+            g6Registrations = g6Plane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g6: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed session-query family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g6-arm-mount-refused' })
+          }
+          for (const registration of g6Registrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g6: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.

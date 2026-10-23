@@ -550,6 +550,14 @@ const SCANNED_PATHS_A5M2B18: readonly string[] = [
 
 
 
+const SCANNED_PATHS_A5M2B20: readonly string[] = [
+  // A5M2-BATCH20 (2026-10-23, center booking): the G6 PRODUCTION assembly round
+  // (992df168f trio on feat/a5m2-wire-g6) adds ONE scannable file - the plane
+  // mount spec; the edited plane/bindings modules and the wiring bridge ride
+  // ALREADY-COUNTED paths.
+  'packages/runtime/test/a5m2-g6-plane-mount-c1.test.ts',
+]
+
 const SCANNED_PATHS_A5M2B19: readonly string[] = [
   // A5M2-BATCH19 (2026-10-23, center booking per the batch rule): the two wire
   // lanes landed on int - B-SCHEDULE controlled wiring (59a058052: schedule
@@ -3188,6 +3196,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B17.length +
         SCANNED_PATHS_A5M2B18.length +
         SCANNED_PATHS_A5M2B19.length +
+        SCANNED_PATHS_A5M2B20.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     expect(scanResult.files.length).toBe(
@@ -3273,6 +3282,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
         SCANNED_PATHS_A5M2B17.length +
         SCANNED_PATHS_A5M2B18.length +
         SCANNED_PATHS_A5M2B19.length +
+        SCANNED_PATHS_A5M2B20.length +
         SCANNED_PATHS_A5M2G1W.length,
     )
     // Every path in the two lists below is asserted present BY PATH, not inferred
@@ -3378,6 +3388,7 @@ describe('p4t6 frozen Team SessionEvent denylist scan', () => {
       ...SCANNED_PATHS_A5M2B17,
       ...SCANNED_PATHS_A5M2B18,
       ...SCANNED_PATHS_A5M2B19,
+      ...SCANNED_PATHS_A5M2B20,
       ...SCANNED_PATHS_A5M2G1W,
     ]) {
       expect(scanResult.files.includes(path)).toBe(true)
