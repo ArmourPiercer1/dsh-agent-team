@@ -80,7 +80,7 @@ import {
   createG2McpProviderSeam,
 } from './g2-provider-seams.mjs'
 
-export const A5_G2_ASSEMBLY_REVISION = 2
+export const A5_G2_ASSEMBLY_REVISION = 3
 
 /** Typed refusals owned by the assembly layer (P_G2_ASM_ prefixed). */
 export const A5_G2_ASSEMBLY_CODES = Object.freeze({
@@ -287,17 +287,28 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
   /** Generations connecting OR being rotated out — close() really closes every one. */
   const pendingGenerations = new Set()
   /** Real references whose close FAILED — owned, re-attempted at close, never swallowed. */
-  const retainedRotations = new Set()
+  const retainedGenerations = new Set()
+  /** gen(client) → its transport state — close truth is measured at the REAL
+   * transport wrapper: pin-verified, the SDK swallows transport.close failures
+   * on the failed-connect path and later client.close() calls no-op there, so
+   * a resolving client.close() is NOT proof the transport really closed. */
+  const generationStates = new Map()
   const closeFailures = []
 
-  const settleGenerationClose = async (gen, label) => {
+  const settleGenerationClose = async (gen, label, state = null) => {
+    let clientCloseFailed = false
     try {
       await gen.close()
-      return true
     } catch (error) {
+      clientCloseFailed = true
       closeFailures.push(`${label}: ${String(error?.message ?? error).slice(0, 120)}`)
+    }
+    if (state !== null && state.closed !== true) {
+      // a resolving client.close() over a transport that never really closed is a FAILURE here (SDK swallow law at this pin)
+      if (!clientCloseFailed) closeFailures.push(`${label}: transport did not reach a real close (${String(state.closeError?.message ?? 'close never succeeded').slice(0, 120)})`)
       return false
     }
+    return !clientCloseFailed
   }
 
   const buildTransport = () => {
@@ -317,7 +328,7 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
         throw error
       }
     }
-    return transport
+    return { transport, state }
   }
 
   /** Connect (or rotate to) one REAL SDK generation — serialized with everything else. */
@@ -328,20 +339,23 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
         { name: `dsh-agent-team-g2-${resourceServerName}`, version: '0.0.1' },
         { capabilities: {}, versionNegotiation: { mode: 'auto' } }, // host constructor pattern (connection.ts:258-261 @639ed01539)
       )
-      const transport = buildTransport()
+      const { transport, state: tsState } = buildTransport()
+      generationStates.set(next, tsState) // close truth for THIS generation is measured on its real transport
       pendingGenerations.add(next)
       try {
         await next.connect(transport)
       } catch (cause) {
         // A failed connect owns its cleanup: the half-open generation REALLY
         // closes; the CURRENT generation (if any) stays live and untouched.
-        const rolled = await settleGenerationClose(next, 'connect-rollback-close')
+        const rolled = await settleGenerationClose(next, 'connect-rollback-close', tsState)
         pendingGenerations.delete(next)
-        throw new G2SeamError(A5_G2_ASSEMBLY_CODES.CONNECT_FAILED, `Team MCP generation connect failed (${String(cause?.message ?? cause).slice(0, 140)}) — rollback close ${rolled ? 'succeeded; the current generation (if any) stays live, nothing half-open survives' : `FAILED and is OWNED (${closeFailures[closeFailures.length - 1] ?? 'unknown'}) — re-attempted and reported by close(), never swallowed`}`)
+        if (!rolled) retainedGenerations.add(next) // a half-open the rollback could NOT close keeps PERSISTENT real ownership — close() re-attempts it; never reduced to an error string
+        throw new G2SeamError(A5_G2_ASSEMBLY_CODES.CONNECT_FAILED, `Team MCP generation connect failed (${String(cause?.message ?? cause).slice(0, 140)}) — rollback close ${rolled ? 'succeeded; the current generation (if any) stays live, nothing half-open survives' : 'FAILED — the half-open reference is RETAINED (real ownership in stats.retainedGenerations; close() re-attempts and reports it, never swallowed)'}`)
       }
       if (disposed) { // scope closed (queued behind us) while connecting — nothing survives
         pendingGenerations.delete(next)
-        await settleGenerationClose(next, 'scope-race-close')
+        const raced = await settleGenerationClose(next, 'scope-race-close', tsState)
+        if (!raced) retainedGenerations.add(next) // same persistent ownership law on the close-race path
         throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope closed while this generation was connecting — the connecting client was really closed')
       }
       next.onclose = () => { if (client === next) client = null }
@@ -351,10 +365,10 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
       pendingGenerations.delete(next)
       if (previous !== null) {
         pendingGenerations.add(previous)
-        const closedOk = await settleGenerationClose(previous, 'rotated-generation-close')
+        const closedOk = await settleGenerationClose(previous, 'rotated-generation-close', generationStates.get(previous) ?? null)
         pendingGenerations.delete(previous)
         if (!closedOk) {
-          retainedRotations.add(previous) // REAL reference held — close() re-attempts and reports
+          retainedGenerations.add(previous) // REAL reference held persistently — close() re-attempts and reports
           throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `generation rotated to gen-${generation}, but the PREVIOUS generation refused to close — it is RETAINED (real reference; close() re-attempts and reports; the port never claims it closed). Failure: ${closeFailures[closeFailures.length - 1] ?? 'unknown'}`)
         }
       }
@@ -421,33 +435,45 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
   }
 
   /**
-   * Scope close, JOINING the serial chain (a pending connect settles first
-   * and is then really closed): unregister the BOUND face first, drain
-   * in-flight, then close the current + every pending/retained generation.
-   * Owned failures re-surface — close never reports clean over a failure.
+   * Scope close. The ADMISSION CUTOFF is SYNCHRONOUS AT ENTRY: requests,
+   * registrations and captures refuse immediately, and the BOUND scope face is
+   * unregistered NOW — not after a pending connect happens to settle. The
+   * teardown itself JOINS the serial chain (a pending connect settles first
+   * and is then really closed): drain in-flight, then close the current +
+   * every pending/retained generation. Anything that will not close KEEPS
+   * real ownership in retainedGenerations — ownership is reduced only on a
+   * close SUCCESS; owned failures re-surface, close never reports clean over
+   * a failure.
    */
   const close = () => {
     if (closing !== null) return closing
+    disposed = true // immediate cutoff: new requests/registrations/captures refuse while the chain unwinds
+    const entryErrors = []
+    let unregisterSettled = null
+    if (registration !== null) {
+      const bound = registration
+      registration = null
+      try {
+        unregisterSettled = Promise.resolve(bound.dispose()) // the disposer captured from the REGISTERED face — the scope binding, not a name lookup
+      } catch (error) {
+        entryErrors.push(`unregister: ${String(error?.message ?? error).slice(0, 120)}`)
+      }
+    }
     closing = chain.then(async () => {
-      disposed = true
-      const errors = []
-      if (registration !== null) {
-        try {
-          await registration.dispose() // the disposer captured from the REGISTERED face — the scope binding, not a name lookup
-        } catch (error) { errors.push(`unregister: ${String(error?.message ?? error).slice(0, 120)}`) }
+      const errors = [...entryErrors]
+      if (unregisterSettled !== null) {
+        try { await unregisterSettled } catch (error) { errors.push(`unregister: ${String(error?.message ?? error).slice(0, 120)}`) }
       }
       await Promise.allSettled([...inflight]) // drain: every dispatched request settles before the clients die
-      const dying = new Set(pendingGenerations)
-      pendingGenerations.clear()
-      if (client !== null) dying.add(client)
-      client = null
-      for (const gen of retainedRotations) dying.add(gen) // re-attempt the retained real references
-      retainedRotations.clear()
+      const dying = [...pendingGenerations, ...retainedGenerations]
+      if (client !== null) dying.push(client)
+      client = null // ownership now lives in `dying` — nothing is pre-cleared; a generation that will not close stays retained (below)
       for (const gen of dying) {
-        const ok = await settleGenerationClose(gen, 'scope-close-generation')
-        if (!ok) errors.push(closeFailures[closeFailures.length - 1] ?? 'generation.close: unknown')
+        const ok = await settleGenerationClose(gen, 'scope-close-generation', generationStates.get(gen) ?? null)
+        if (ok) { pendingGenerations.delete(gen); retainedGenerations.delete(gen) } // reduced ONLY on real success
+        else retainedGenerations.add(gen) // failed objects keep REAL ownership — re-attemptable by a later close(), never dropped for an error string
       }
-      for (const failure of closeFailures.splice(0)) errors.push(`retained-${failure}`) // failures owned from earlier rotations/connects
+      for (const failure of closeFailures.splice(0)) errors.push(`retained-${failure}`) // failures owned from earlier rotations/connects/attempts
       if (errors.length > 0) {
         throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `Team MCP scope close FAILED (${errors.join(' | ')}) — never reported clean`)
       }
@@ -474,19 +500,19 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
       transportsClosed: transportStates.filter((s) => s.closed).length, // only real successes count
       transportsCloseFailed: transportStates.filter((s) => s.closeError !== null).length,
       pendingGenerations: pendingGenerations.size,
-      retainedRotations: retainedRotations.size, // REAL references still held
+      retainedGenerations: retainedGenerations.size, // PERSISTENT real ownership of generations not yet really closed
       scopeBound: registration !== null,
       dispatch: seam.stats(),
       lastDispatch: seam.lastDispatch(),
     }),
     assemblyLaws: Object.freeze({
       serial: 'connects, rotations and close run on ONE serial chain — a pending connect is counted by close, concurrent reconnects cannot overwrite-and-leak, and a failed connect rolls its own half-open generation closed while the current one stays live',
-      failureOwnership: 'close failures are owned, never swallowed: a refusing generation is RETAINED (real reference), reported CLOSE_FAILED at the rotation and re-attempted/reported at close(); transport "closed" marks only AFTER the real close succeeded',
+      failureOwnership: 'close failures are owned, never swallowed: SUCCESS is measured at the REAL transport state (pin-verified law — the SDK swallows transport.close failures on the failed-connect path and later client.close() calls no-op there, so a resolving client.close proves nothing); a refusing generation is RETAINED with PERSISTENT real reference (connect-rollback failure, rotation failure and failed scope-close attempt alike), reported CLOSE_FAILED where it happens, re-attempted/re-reported at close(), and dropped from ownership ONLY on a real transport-close success; transport "closed" marks only AFTER the real close succeeded',
       sameOrigin: 'the captured {generation, client, timeout} are built BY THIS PORT from the SAME approved config — new Client per generation (SDK 2.0.0, connection.ts:18/258 pattern), timeout = the original approved config value; the host connection exposes no capture point at this pin (recorded gap, not requested)',
       transportSource: 'the transport factory receives ONLY the frozen approved-config target {server, transport, full endpointUrl | spawn argv0/args/cwd} this port derives — same-source by construction; a non-Transport return refuses FACE_INCOMPLETE',
       registration: 'PUBLIC scope-layered mcpResources.register(server, provider) face bound at register (mcp-resources/src/index.ts:85-107 @639ed01539); the disposer binds to THAT face instance — scope isolation is the face binding, never the server name; close() unregisters exactly the bound face',
       credentialPolicy: 'no credentials created, escalated or transformed; endpoints/commands/cwd/timeouts pass through from the approved config; no global security or network configuration is read or written',
-      scopeClose: 'unregister (bound face) → drain in-flight → real close of current + every pending/retained generation; capture afterwards refuses CAPTURE_INCOMPLETE — no post-close dispatch',
+      scopeClose: 'SYNCHRONOUS admission cutoff at entry (requests/registrations/captures refuse NOW, the bound face is unregistered NOW), then the chain: drain in-flight → real close of current + every pending/retained generation; un-closed objects keep real ownership and re-surface; capture afterwards refuses CAPTURE_INCOMPLETE — no post-close dispatch',
     }),
   })
 }
