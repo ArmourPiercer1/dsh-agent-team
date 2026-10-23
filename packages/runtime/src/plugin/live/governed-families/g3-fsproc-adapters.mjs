@@ -818,7 +818,23 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
         },
         status: () => (settled ? { kind: 'exited' } : { kind: 'running', pid: handle.pid }),
         close: async (reason) => {
-          if (closing === null) closing = handle.terminate().then(() => ({ closed: true, reason: String(reason ?? '') })).catch((error) => ({ closed: false, detail: String(error?.message ?? error) }))
+          // CARD 2 (root central adjudication): a REJECTED terminate is a
+          // REFUSAL of the close, never a `closed:false` ANSWER. The real
+          // contract (@639ed01539: TerminalBackendSession.close resolves ONLY
+          // on awaited quiescence; SubprocessTerminalHandle.terminate carries
+          // no false word) has no `closed:false` value to answer with —
+          // swallowing the rejection into one fabricated a success shape AND,
+          // cached in `closing`, made the refusal permanent. The rejection
+          // now rides OBSERVABLE (the close rejects, the row carries the
+          // typed failure), and the cached attempt is DROPPED so a later
+          // close re-enters the real terminate: a refused terminate stays
+          // RETRYABLE through this same entry.
+          if (closing === null) {
+            closing = handle.terminate().then(
+              () => ({ closed: true, reason: String(reason ?? '') }),
+              (error) => { closing = null; throw error },
+            )
+          }
           return closing
         },
       }
@@ -1074,7 +1090,11 @@ export function createHostTerminalControlPort(deps) {
           ok: true,
           handle: {
             identity: { sessionId },
-            invoke: async () => ({ outcome: await killSession(owner, sessionId) }),
+            // CARD 4 (close keeps its REAL shape): the word names WHICH
+            // session the service closed beside the honest two-valued
+            // service answer (kill true = newly closed, false = the same
+            // close already in flight — answered, never upgraded).
+            invoke: async () => ({ sessionId, outcome: await killSession(owner, sessionId) }),
           },
         }
       }
@@ -1129,6 +1149,16 @@ export function createHostTerminalControlPort(deps) {
           const settlePromise = new Promise((resolve) => { settleResolve = resolve })
           const specOut = {
             kind: 'pty-send',
+            // NAMED GAP (refused to fake-close, @639ed01539): the published
+            // JobKindMap (jobs/jobs lib types view.d.ts) is the closed merge
+            // { bash, subagent } for THIS compiled program — a pty-send
+            // producer kind exists only through a JobKindMap declaration
+            // merge at an integrator-owned compile, which this UNWIRED
+            // module does not own. The view contract carries kind as an
+            // open string (a browser bundle / Remote codec sees only its own
+            // merged map), so the string rides honestly and the merge point
+            // stays a named integrator obligation — never a silently
+            // "corrected" kind name.
             label: `g3 terminal_send ${sessionId}`,
             owner: ownerSessionId,
             output: [{
@@ -1147,20 +1177,51 @@ export function createHostTerminalControlPort(deps) {
               // THE effect starts inside run() — preflight refusal registers
               // nothing (host law); after run() the job id exists.
               operation = terminals.startSend(owner, sessionId, sendRequest)
+              // CARD 5 (root central adjudication — the DISTINCT fact): the
+              // real TerminalWaitReason @639ed01539 is exactly
+              // 'stdin_read' | 'inferred_idle' | 'timeout' | 'session_exit' —
+              // the host NEVER answers waitReason:'cancelled'. Deriving
+              // 'killed' from that value overloaded a published field with a
+              // fact the real host never answers. Whether this job was
+              // cancelled is therefore carried by the DISTINCT
+              // cancelRequested fact below — set exactly when JobHooks.cancel
+              // ran (the owner-checked registry.kill reaches the job through
+              // it) — while the host's own waitReason rides VERBATIM in the
+              // detail as the why-the-wait-returned word it actually is.
+              let cancelRequested = false
               return {
                 // JobHooks.cancel (jobs types.d.ts:102): SYNCHRONOUS,
                 // idempotent; the operation (NOT the PTY) is cancelled and
                 // `done` settles.
-                cancel: (reason) => { operation?.cancel(typeof reason === 'string' ? reason : undefined) },
-                done: operation.done.then((settled) => {
-                  const outcome = {
-                    status: String(settled?.waitReason ?? '') === 'cancelled' ? 'killed' : 'completed',
-                    detail: `waitReason: ${String(settled?.waitReason ?? 'unknown')}`,
-                    ...(typeof settled?.viewport === 'string' && settled.viewport.length > 0 ? { result: settled.viewport } : {}),
-                  }
-                  if (settleResolve !== null) settleResolve(outcome)
-                  return outcome
-                }),
+                cancel: (reason) => {
+                  cancelRequested = true
+                  operation?.cancel(typeof reason === 'string' ? reason : undefined)
+                },
+                done: operation.done.then(
+                  (settled) => {
+                    const outcome = {
+                      status: cancelRequested ? 'killed' : 'completed',
+                      detail: `waitReason: ${String(settled?.waitReason ?? 'unknown')}${cancelRequested ? ' (cancelRequested)' : ''}`,
+                      ...(typeof settled?.viewport === 'string' && settled.viewport.length > 0 ? { result: settled.viewport } : {}),
+                    }
+                    if (settleResolve !== null) settleResolve(outcome)
+                    return outcome
+                  },
+                  (error) => {
+                    // CARD 5: a REJECTING operation.done STILL SETTLES the
+                    // row. JobHooks.done must not reject — the published
+                    // runtime converts a rejection to `failed` (jobs types
+                    // .d.ts, JobHooks.done) — so the rejection lands as that
+                    // terminal JobOutcome, the awaited settle resolves, and
+                    // no accepted job is ever left with an unsettled row.
+                    const outcome = {
+                      status: cancelRequested ? 'killed' : 'failed',
+                      detail: `send operation settle failed: ${String(error?.message ?? error)}${cancelRequested ? ' (cancelRequested)' : ''}`,
+                    }
+                    if (settleResolve !== null) settleResolve(outcome)
+                    return outcome
+                  },
+                ),
               }
             },
           }
@@ -1325,7 +1386,7 @@ export function createHostTerminalControlPort(deps) {
       if (sessionId.length === 0) return { terminated: false, reason: 'the handle carries no session identity — nothing to kill' }
       const { owner, refusal } = ownerOrRefusal(context?.exec ?? {})
       if (refusal !== undefined) return { terminated: false, reason: refusal.detail }
-      return { terminated: await killSession(owner, sessionId), via: 'ctx.terminals.kill' }
+      return { sessionId, terminated: await killSession(owner, sessionId), via: 'ctx.terminals.kill' }
     },
   }
   return deepFreeze(asPort)
@@ -1447,6 +1508,15 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
     const agentId = typeof exec?.agent?.id === 'string' && exec.agent.id.length > 0 ? exec.agent.id : null
     const headerId = typeof exec?.agent?.session?.header?.id === 'string' && exec.agent.session.header.id.length > 0 ? exec.agent.session.header.id : null
     return { agentId, headerId }
+  }
+
+  /** CARD 3: the PENDING CANCELLATION registered while no resource was
+   *  answered settles with the EXECUTION OUTCOME — never silently, never as
+   *  a speculative kill. The evidence names which outcome settled it. */
+  const settlePendingCancel = (target, evidence) => {
+    if (target.cancelPending !== true) return
+    target.cancelPending = false
+    target.cancelPendingSettled = evidence
   }
 
   /**
@@ -1599,6 +1669,14 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       refusedWithEffects: false,
       settlementOverride: null,
       backgroundJobId: null,
+      // CARD 3 bookkeeping (independent intents, independent identity): the
+      // cleanup promise of a cancel whose cleanup law is RUNNING, plus the
+      // PENDING CANCELLATION registered when a cancel arrives while the plan
+      // is EXECUTING but NO resource has been answered yet — it is never
+      // dropped, and it settles with the execution outcome (see cancel()).
+      cancelCleanup: null,
+      cancelPending: false,
+      cancelPendingSettled: null,
     }
     plans.set(plan, entry)
     trackedEntries.push(entry)
@@ -1762,7 +1840,19 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
                 throw edge
               }
               entry.handle = prepared.handle
-              entry.startedResource = prepared.handle
+              // CARD 3 (root central adjudication — independent intents,
+              // independent identity): the started resource the PORT recorded
+              // during prepare carries the intent's OWN kind ({__kind:
+              // 'send-operation' | 'job' | 'open-session', …}). Overwriting
+              // it here with the generic handle erased that kind, so a
+              // cancel of ONE in-flight send lost its operation/job cleanup
+              // face and fell through to the generic session-level path.
+              // The kinded registration STANDS (cancelCleanup routes it to
+              // operation.cancel / owner-checked jobs.kill); the handle still
+              // rides entry.handle for identity/inFlight, and SESSION-LEVEL
+              // close stays its own distinct operation (terminal_close, or
+              // the handle's own terminate face).
+              if (entry.startedResource === null) entry.startedResource = prepared.handle
               // A REAL background job (host ctx.jobs id from the handle the
               // port answered) OUTLIVES this call and every drain word —
               // recorded as UNCLEARED from the handle's identity, never
@@ -1782,6 +1872,11 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       .then(
         (value) => {
           entry.state = 'COMMITTED'
+          // CARD 3: a pending cancellation registered while NO resource was
+          // answered settles HERE — the body ANSWERED and committed; a
+          // cancel never retracts answered work, and nothing was killed
+          // speculatively for it.
+          settlePendingCancel(entry, 'settled-by-execution-commit — the execution answered and committed; a cancel never retracts answered work (no speculative kill was owed or made)')
           // DRAIN HONESTY: a background job the native body started (host
           // jobs.start for a run_in_background send) OUTLIVES this call and
           // every drain word — record it as UNCLEARED, never as settled.
@@ -1795,6 +1890,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
         (error) => {
           if (error?.a5Edge === 'CANCELLED') {
             entry.state = 'CANCELLED'
+            settlePendingCancel(entry, 'settled-before-edge — the execution stopped at the commit edge with zero effects; any pending cancellation is settled here with that zero (defensive: the before-edge cancel path never leaves one registered)')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-at-edge' })
             return refuse(codes.CANCELLED, 'cancelled before the body: zero effects (the commit-edge re-check stopped it)')
           }
@@ -1803,6 +1899,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
             entry.refusedWithEffects = true
             entry.startedFact = error.a5Refusal?.cleanup ?? { started: true, note: 'the port reported effects started' }
             entry.settlementOverride = 'refused after effects — the caller never received a commitment; the resource cleanup is reported in the refusal'
+            settlePendingCancel(entry, 'settled-with-cleanup-truth — the after-effect refusal carried the cleanup of the started resource; that truth owns the settle (the refusal word above carries it)')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'refused-after-effects' })
             // VERBATIM content (refused/effectsStarted/code/detail/cleanup)
             // PLUS the protocol's `ok:false` (the refusal was committed as a
@@ -1811,6 +1908,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
           }
           if (error?.a5Edge === 'CANCELLED-AFTER-EFFECT') {
             entry.state = 'CANCELLED'
+            settlePendingCancel(entry, 'settled-with-cleanup-truth — the cancelled-after-effect word below carries the cleanup of the started resource')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-after-effect' })
             // CANCELLED is a decision; a resource had ALREADY STARTED behind
             // it. The started resource is cleaned (cleanup truth attached)
@@ -1825,6 +1923,7 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
           }
           if (error?.a5Edge === 'CANCELLED-ZERO-EFFECT') {
             entry.state = 'CANCELLED'
+            settlePendingCancel(entry, 'settled-zero-effect — the PORT measured that no real effect had started; the pending cancellation is settled by that honest zero-effect word')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'cancelled-before-effect' })
             // the PORT measured that no real effect had started (the
             // provider was never entered / no operation started): its
@@ -1833,15 +1932,18 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
           }
           if (error?.a5Edge === 'DRAINING') {
             entry.state = 'DRAINED-AT-EDGE'
+            settlePendingCancel(entry, 'settled-zero-effect — the execution drained at the edge with zero effects; the pending cancellation is settled by that word')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: 'drained-at-edge' })
             return refuse(codes.DRAINING, 'drained before the body: zero effects; no native fallback exists')
           }
           if (error?.a5Edge === 'REFUSED-AT-ENTRY') {
             entry.state = 'REFUSED-AT-ENTRY'
+            settlePendingCancel(entry, 'settled-at-entry-refusal — the execution refused at the entry (zero invoke, zero body); the pending cancellation is settled with that typed refusal')
             observe({ event: 'backend-end', correlation: entry.correlation, detail: String(error?.a5Refusal?.code ?? 'refused') })
             return error.a5Refusal
           }
           entry.state = 'FAILED-UNKNOWN'
+          settlePendingCancel(entry, 'UNRESOLVED — the execution itself failed without an answered outcome; the pending cancellation has NO settle evidence and stays visibly unresolved (the arm never invents one)')
           observe({ event: 'backend-end', correlation: entry.correlation, detail: 'error' })
           throw error
         },
@@ -1876,23 +1978,32 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       // settle (void — the sync word cannot carry it; the execution
       // result-path reports its own after-effect refusal truth).
       const live = controlPort !== null ? (entry.startedResource ?? entry.handle ?? null) : null
-      if (live === null) {
-        // NO resource is recorded as started yet (the provider window / the
-        // pre-handle phase): the word reports the truth — effectsStarted at
-        // minimum UNKNOWN, never zero — and cleans NOTHING speculatively
-        // (cancel is not close, and an unstarted resource is nobody's kill).
-        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path but NO resource is recorded as started yet: PREPARE IS AN EFFECT ENTRY, the effect boundary is inside prepare; effectsStarted is at minimum UNKNOWN — never zero — await the execution result (refusal paths carry the port cleanup truth)' }
+      if (live === null && controlPort !== null) {
+        // CARD 3 (root central adjudication): when NO resource has been
+        // answered back yet, the pending cancellation is STILL REGISTERED —
+        // dropping the bookkeeping here was the bug this card refuses. The
+        // registration is never speculative: nothing is killed before a
+        // resource exists (cancel is not close, and an unstarted resource is
+        // nobody's kill). It SETTLES with the execution outcome: a committed
+        // body is work the provider ANSWERED (a cancel never retracts it —
+        // the service law the effect-entry legs pin), and a refusal settles
+        // it with that path's own cleanup truth (the refusal already carries
+        // the real cleanup). Either way the fact stays visible in inFlight().
+        entry.cancelPending = true
+        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', cancelPending: true, bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path but NO resource is recorded as started yet: PREPARE IS AN EFFECT ENTRY, the effect boundary is inside prepare; effectsStarted is at minimum UNKNOWN — never zero — the pending cancellation is REGISTERED and settles with the execution outcome (await the execution result; refusal paths carry the port cleanup truth)' }
       }
       if (live !== null) {
-        const settlePromise = Promise.resolve(controlPort.cancelCleanup?.(live, {
+        // IDEMPOTENT like the faces it drives: a repeated cancel of the same
+        // entry follows the ONE cleanup already running, never a second kill.
+        const settlePromise = entry.cancelCleanup ?? Promise.resolve(controlPort.cancelCleanup?.(live, {
           exec: entry.snapshot,
           correlation: entry.correlation,
           memberAgentId,
           reason: 'cancelled by the caller before the operation settled',
         })).catch((error) => ({ routed: false, code: 'P_TERM_CLEANUP_FAILED', detail: String(error?.message ?? error) }))
-        // the word settles when the REAL cleanup settles (the async real
-        // result is awaited — the word never narrates ahead of it)
         entry.cancelCleanup = settlePromise
+        entry.cancelPending = false
+        entry.cancelPendingSettled = 'superseded-by-running-cleanup — the cancel reached the cleanup law through the started resource; that promise owns the settle'
         return {
           ok: true,
           settled: 'UNKNOWN-IN-FLIGHT',
@@ -1943,6 +2054,11 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
             ? Object.freeze({ ...entry.handle.identity })
             : null,
           settlementEvidence: entry.settlementOverride ?? (entry.backgroundJobId !== null ? 'none observed by this arm — the host jobs record owns it' : null),
+          // CARD 3 bookkeeping stays VISIBLE (observability, never authority):
+          // a registered pending cancellation until it settles, and the
+          // evidence of how it settled after that.
+          ...(entry.cancelPending === true ? { cancelPending: true } : {}),
+          ...(entry.cancelPendingSettled !== null ? { cancelPendingSettled: entry.cancelPendingSettled } : {}),
         }))
       }
     }
