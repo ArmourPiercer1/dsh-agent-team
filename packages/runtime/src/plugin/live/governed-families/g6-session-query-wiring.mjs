@@ -540,28 +540,46 @@ export function buildG6QuerySupplyFromService (service) {
   if (missing.length > 0) {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_INCOMPLETE, `the registered sessionQuery service implements no ${missing.join(', ')} — the family mounts no partial supply (fail-closed; the natives stay untouched)`)
   }
-  // THE APPROVED HANDLE, BOUND AT BUILD TIME (root 18:58 residual 2): the
-  // adapter's placement law pins the STABLE port face — a wrapper that
-  // re-reads `service[name]` on every call would let a LATER method swap on
-  // the service ride the supply while the adapter keeps pinning only the
-  // (unchanged) wrapper, masking the drift. `method.bind(service)` freezes
-  // the receiver AND the exact method object observed right now into the
-  // face the adapter pins: what is supplied IS the approved handle, and a
-  // swap afterwards cannot leak through it. bind(thisArg) preserves the
-  // method's own `length`, so the adapter's 2-parameter signature law
-  // (facets carry the real formal parameters — session-query/src/index.ts
-  // :153-167/:206-213/:251-259/:327-361 @639ed01539) still measures the
-  // REAL face, not a wrapper's (a rest-param wrapper is length 0 and the
-  // row itself refuses that signature drift — measured).
-  const bind = (name) => {
-    const method = service[name]
-    if (typeof method !== 'function') {
-      // Unreachable by construction (core names validated above; the search
-      // names are bound only inside the `searchPresent` branch) — stated
-      // because the face must NEVER fall back to a late re-resolution.
-      throw new Error(`buildG6QuerySupplyFromService: '${String(name)}' vanished between validation and binding — the approved handle must exist at build time`)
+  // THE LIVE VALUE MAPPED INTO THE ROW'S EXISTENT IDENTITY GUARDS (root
+  // 19:17): the row pins the facet OBJECT + bound FUNCTION at placement
+  // and RE-READS `facet[method]` per dispatch — at entry
+  // (g6-session-query.mjs:1391-1399), after every await and before serving
+  // (guardFacts :1425-1436) — refusing PORT_RECEIVER_MOVED /
+  // PORT_METHOD_MOVED on any mismatch. A build-time-frozen wrapper made
+  // those guards structurally blind to a real generational change (the
+  // OLD handle kept serving — i6's behavior, refused by root 19:17: the
+  // established drift-refusal law demands the CALL REFUSES). So each
+  // supplied facet property is a GETTER that maps the CURRENT live method
+  // into every guard read, STABLE PER GENERATION (the same source method
+  // always answers the same bound face — a steady service never trips the
+  // guards; bind(thisArg) preserves the method's own `length`, so the
+  // adapter's signature law still measures the REAL face, and `this` stays
+  // the service receiver the guards pin). The moment service[name] is a
+  // DIFFERENT function, the next guard read answers a different object
+  // and the row's OWN PORT_METHOD_MOVED law refuses — entry, mid-walk and
+  // final serve alike, zero forwarding; a vanished (non-function) current
+  // value reads as undefined ≠ the pinned ref and fails closed the same
+  // way. No new guard, no adapter edit: the live value rides the guard the
+  // row already runs.
+  const liveFacet = (names) => {
+    const facet = {}
+    for (const name of names) {
+      const perGeneration = new WeakMap()
+      Object.defineProperty(facet, name, {
+        enumerable: true,
+        get () {
+          const current = service[name]
+          if (typeof current !== 'function') return undefined
+          let face = perGeneration.get(current)
+          if (face === undefined) {
+            face = current.bind(service)
+            perGeneration.set(current, face)
+          }
+          return face
+        },
+      })
     }
-    return method.bind(service)
+    return Object.freeze(facet)
   }
   const searchPresent = typeof service.searchSessions === 'function' && typeof service.searchEvents === 'function'
   return deepFreeze({
@@ -573,12 +591,12 @@ export function buildG6QuerySupplyFromService (service) {
     providerId: typeof service.name === 'string' && service.name !== '' ? String(service.name) : 'sessionQuery',
     queryPorts: Object.freeze({
       ...(searchPresent
-        ? { searchQueryPort: Object.freeze({ searchSessions: bind('searchSessions'), searchEvents: bind('searchEvents') }) }
+        ? { searchQueryPort: liveFacet(['searchSessions', 'searchEvents']) }
         : {}),
-      traceQueryPort: Object.freeze({ traceSession: bind('traceSession'), traceEvent: bind('traceEvent') }),
-      eventReadQueryPort: Object.freeze({ readEvent: bind('readEvent') }),
-      authorizationQueryPort: Object.freeze({ filterSessions: bind('filterSessions') }),
-      titlesQueryPort: Object.freeze({ readTitleSnapshots: bind('readTitleSnapshots') }),
+      traceQueryPort: liveFacet(['traceSession', 'traceEvent']),
+      eventReadQueryPort: liveFacet(['readEvent']),
+      authorizationQueryPort: liveFacet(['filterSessions']),
+      titlesQueryPort: liveFacet(['readTitleSnapshots']),
     }),
     // Declared-mount = the OBSERVED evidence of THIS process's registration
     // (the trusted publisher): search facets callable → present; not

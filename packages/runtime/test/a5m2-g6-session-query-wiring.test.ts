@@ -1007,24 +1007,47 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(w.nativeBodies.length).toBe(0)
     })
 
-    it('i6: the supply IS the approved handle — a later method swap on the service can NOT ride the face the adapter pins (no wrapper masking)', () => {
-      const callsA: string[] = []
-      const callsB: string[] = []
-      const engine = engineFace({
-        traceSession: async function originalA (id: unknown, signal: unknown) { callsA.push(`A:${String(id)}:${String(signal)}`); return 'E:A' },
-      })
+    it('i6: a REAL method generational change REFUSES — the live service value rides the row\'s OWN entry/after-await/final-serve identity guards (PORT_METHOD_MOVED); the old handle never keeps serving (root 19:17)', async () => {
+      const w = makeWorld({ tag: 'i6' })
+      const ports = w.qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      const engine: Record<string, unknown> = {
+        name: 'sessionQuery',
+        searchSessions: ports.searchQueryPort.searchSessions,
+        searchEvents: ports.searchQueryPort.searchEvents,
+        traceSession: ports.traceQueryPort.traceSession,
+        traceEvent: ports.traceQueryPort.traceEvent,
+        readEvent: ports.eventReadQueryPort.readEvent,
+        filterSessions: ports.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: ports.titlesQueryPort.readTitleSnapshots,
+      }
       const supply = WIRE.buildG6QuerySupplyFromService(engine)
       expect(supply.ok).toBe(true)
       if (supply.ok !== true) return
-      const tracePort = supply.queryPorts.traceQueryPort as { traceSession: (a: unknown, b: unknown) => Promise<unknown> }
-      // the swap AFTER supply-build: the service face changes…
-      engine.traceSession = async function swappedB () { callsB.push('B'); return 'E:B' }
-      // …but the SUPPLIED face is the build-time handle bound to its
-      // receiver: the adapter pins this stable face and what it pins IS the
-      // approved method, so drift can never hide behind a wrapper.
-      void tracePort.traceSession('s-a', 'sig')
-      expect(callsA).toEqual(['A:s-a:sig'])
-      expect(callsB.length, 'the swapped method never rides the approved supply').toBe(0)
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      // STEADY generation: the per-generation-stable face never trips the
+      // guards — the call serves.
+      const served = String(await def.execute(TRACE_ARGS, { callId: 'exec-i6-steady' }))
+      expect(served).toContain('s-a')
+      const callsBefore = w.calls.length
+      // THE GENERATIONAL CHANGE: the live service method is swapped AFTER
+      // placement. The supplied face maps this CURRENT value into every
+      // guard read (entry :1391-1399 / after-await + final serve
+      // guardFacts :1425-1436), so the row's OWN established drift law
+      // refuses — zero forwarding, the old handle does NOT keep serving.
+      const swaps: string[] = []
+      engine.traceSession = async function swappedB (_a: unknown, _b: unknown): Promise<string> { swaps.push('B'); return 'E:B' }
+      const refusal = await asRefusal(def.execute(TRACE_ARGS, { callId: 'exec-i6-swapped' }))
+      expect(refusal.code).toBe(SC.PORT_METHOD_MOVED)
+      expect(swaps.length, 'the swapped generation is never invoked either — refusal precedes forwarding').toBe(0)
+      expect(w.calls.length, 'zero port entries past the drift').toBe(callsBefore)
     })
   })
 })
