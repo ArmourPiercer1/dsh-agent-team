@@ -47,19 +47,22 @@
 
 | 工具/面 | 档位（按档定义） | 范围与固定版本 | owner/树 | 备注 |
 |---|---|---|---|---|
-| todo_write | 已测试 | todo C2 r14 真 Host 验收 @8b94 包（既有范围） | center/已关弧 | — |
+| todo_write | 已测试 | todo PA hand-off C2 **r11** 真 Host 验收 @31f7 包 / pin bbde8（root 签收口径，更正：非 r14@8b94——r14 是 write 旧 kit 判据失败轮） | center/已关弧 | — |
 | write（既有文件） | 已测试 | 既有文件写 C2 r16 @19d54 包，root 14:38 限定既有文件范围接受 | center/已关弧 | 范围外新文件不在此档 |
 | write（新建文件） | 未开发 | 治理实现仍实质缺口（r16 明示限定既有文件） | 待派 | 无第五档 |
 | read_image | 接线未测 | paImageHandoff 生产已接 @249eb（真 Host boot 起效、旧门=0 实证 r17），Host 功能验收 r17 RC2 未完成 | center（原主保定位）+ 307c 窗口 | r17 决策侧 drift 诊断中（seam 缺失候选，见证据目录） |
 | read | 接线未测 | 生产挂载真路径（M1 弧已老版本验收；本固定包组合未重验） | V-RSJ `68701321` 第二 lane 进行中 | Host 验收=r17 后首跑 |
 | search | 接线未测 | 生产 rg 后端真路径 | 同上 | 同上 |
 | jobs | 接线未测 | durable bridge 生产路径 | 同上 | 同上 |
-| G1 纯查询 14 面 | 未接线 | g1-surface-adapters 可交付组件（59 腿）；生产装配在途 | 接线 `44ece7a3`@feat/a5m2-wire-g1；适配候选 `a0670fa8` | dependency/plugin 资源臂不强塞 |
-| G2 WEB seams | 未接线 | provider-seams 可交付；Team-only 固定 provider 为具名阻塞 | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
+| G1 纯查询子集（inspect×2 + team_list_pending_control） | 未接线 | g1-surface-adapters 组件（59 腿）+ wiring 候选 g1-query-wiring（15 腿，center 实测并入）可交付未生产装配 | 接线 `44ece7a3`@feat/a5m2-wire-g1 | 子集由冻结表推导（capture=tool ∧ 全 read 义务） |
+| G1 dependency/plugin/present 资源臂 | 未开发 | 治理实现仍实质缺口（无成熟适配可交付；禁冒升） | 待派 | 不强塞、不冒完成 |
+| G2 WEB seams 面 | 未接线 | provider-seams 可交付（registerSearchProvider/registerFetchProvider WEB pins） | 接线 `e78dee2a`@feat/a5m2-wire-g2 | WEB global/env 禁 |
+| G2 WEB 真实 Team-scoped 固定 provider | 未开发 | 实际 provider 仍缺（真 Team scoped register+close 绑定实现缺位，禁 server 名匹配） | 原 G2 组件 owner 生命周期修复卡内 | 具名阻塞 |
 | G2 MCP seams | 未接线 | 真 SDK 签名面可交付 | 同上 | request=执行租约 |
 | G2 BROWSER 装配 | 未开发（组件独审 BLOCK） | team-assembly 候选独审 BLOCK：MCP pending connect 未计 close/inflight、失败无 rollback、并发 reconnect 覆盖 client/吞 close 失败/提前 closed（需串行轮换+按 generation 跟踪+失败 ownership）；Browser 直连 openNativeBrowser 的 Stagehand.create 失败无清理且 execute 忽略 signal（按公开 worker/真实连接所有权修半开，无 ownedChromium 不得假清理）；makeTransport 须实际 endpoint/spawn/config 同源；真 Team scoped register+close 绑定，不靠 server 名 | 生命周期修复=原 G2 组件 owner 独占 g2-team-assembly.*（int 树两文件，进行中）；接线 `e78dee2a` 只续自身 plane/glue 且 browser 行 fail-closed 钉 BLOCK | 未修组件严禁升 Host/C2；533 组件已关不重开；不 Core/global |
-| G3 fsproc/shell 面 | 未接线 | 适配器+33 腿可交付；per-open 仍 integrator-supplied | 原 owner 续写中（int 树） | §5.1 未完成 |
+| G3 fsproc/shell 适配面 | 未接线 | 适配器+33 腿可交付未生产装配 | 原 owner 续写中（int 树） | 合并归 center |
+| G3 受控 PTY per-open 真实供给 | 未开发 | 真实 Host 供给实现中（现仅 integrator-supplied perOpenRegistration(callId)），§5.1 未完成 | 原 owner | 无同名 API≠无实现路（root 15:08） |
 | create_goal/get_goal/update_goal | 未开发 | 639 真接口适配实现中（无交付不落"未接线"） | 适配 `8722db94` | packages/goal/tool-goal 锚点 |
-| session_search/trace/event_read/event_search/event_trace | 未开发 | 同上 | 适配 `8e6e7788` | packages/session-query/tool-session-query 锚点 |
+| session_search/trace/event_read/event_search/event_trace | 未接线 | g6 五型别行适配已交付（639 file:line 全锚，26 腿+红除实测，center 实测并入）未生产装配；search 二行 declared_mount INACTIVE（抽象后端组合+SESSION_QUERY_SEARCH_DISABLED） | 适配 `8e6e7788`（已停笔交付） | 残差具名导出：TARGET_PREAUTH/PARENT_FILTER/TITLES_PRESENTATION/SESSION_HISTORY_RESOURCE_KIND |
 
 适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
