@@ -362,6 +362,7 @@ import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/to
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
+import { createG2TeamMount } from './governed-families/g2-team-mount.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -2391,6 +2392,7 @@ export function createAgentBindings(deps) {
       // placement moment); the placed handle comes back through the factory's
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
+      let a5G2Mount = null
       let a5ImagePlacedArm = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
@@ -2989,6 +2991,64 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-image: arm FACTORY wired for ${sessionId} (root=${imageRootDir.slice(0, 32)}) — identity binds at the placement moment`)
           }
         }
+        // A5-M2 G2 WIRING (root 19:31 item 1, live as of this round): the
+        // SIGNED Team assembly mount is CALLED here — the closed gate keys
+        // planeCfg.g2McpEnabled / g2BrowserEnabled arm it, the approval facts
+        // ride planeCfg.g2Mcp / planeCfg.g2Browser (approved config), and the
+        // NON-serializable supply (the scope mcpResources face, the pinned
+        // SDK client entries, the transport factory, the stagehand resource
+        // mapping) arrives through the ADDITIVE optional lazy deps accessor
+        // deps.g2TeamAssembly() (the deps.attachments law: optional, lazy,
+        // never a hard inject). Gate ON with no supply face is a typed
+        // REFUSAL, never a silent skip and never a fake service: the public
+        // per-Team supply face does not exist in the host deps today — that
+        // is the named gap, stated with the deps token list as source
+        // evidence inside the refusal itself.
+        if (planeCfg.g2McpEnabled === true || planeCfg.g2BrowserEnabled === true) {
+          const refuseG2 = (why) => {
+            const error = new Error(`agent-bindings: alpha.5 G2 Team mount refused for '${sessionId}': ${why}`)
+            error.code = 'alpha5-g2-mount-refused'
+            observations.push(`a5m2-g2: mount-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG2('the member Agent object is unreadable — the native capture has no scope key and the global face is NOT a fallback')
+          }
+          let g2Supply
+          try {
+            g2Supply = typeof deps.g2TeamAssembly === 'function' ? deps.g2TeamAssembly() : undefined
+          } catch (error) {
+            throw refuseG2(`the deps.g2TeamAssembly supply accessor threw (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (g2Supply === null || typeof g2Supply !== 'object') {
+            throw refuseG2('the deps face carries NO g2TeamAssembly supply accessor — the per-Team supply (scope mcpResources face, pinned SDK client entries, transport factory, stagehand resource mapping) has NO public producer in the host deps face (tokens present: agents/attachments/capabilityTelemetry/config/domain/jobs/llm/resolvePersonaSubstrate/sessionPersistence/subagents/teamToolsRef/web/writerHandoffTimeoutMs @this file); naming the gate without the face is a config defect, not a fallback')
+          }
+          const readG2Native = (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined)
+          const g2Built = await createG2TeamMount({
+            realmId: String(sessionId), providerId: 'a5p5-plane',
+            readNative: readG2Native, definitionIdentityOf,
+            scopeFaces: { mcpResources: g2Supply.mcpResources },
+            ...(planeCfg.g2McpEnabled === true && planeCfg.g2Mcp !== null && typeof planeCfg.g2Mcp === 'object' ? { mcpMount: {
+              declaredSurfaceConfig: planeCfg.g2Mcp.declaredSurfaceConfig ?? planeCfg.g2Mcp,
+              resourceServerName: planeCfg.g2Mcp.resourceServerName,
+              toolCallTimeoutMs: planeCfg.g2Mcp.toolCallTimeoutMs,
+              entries: g2Supply.entries, makeTransport: g2Supply.makeTransport,
+            } } : {}),
+            ...(planeCfg.g2BrowserEnabled === true && planeCfg.g2Browser !== null && typeof planeCfg.g2Browser === 'object' ? { browserMount: {
+              mode: planeCfg.g2Browser.mode, nativeConfig: planeCfg.g2Browser.nativeConfig ?? {},
+              ...(planeCfg.g2Browser.launchEnvelope === undefined ? {} : { launchEnvelope: planeCfg.g2Browser.launchEnvelope }),
+              ...(planeCfg.g2Browser.declaredServiceFacts === undefined ? {} : { declaredServiceFacts: planeCfg.g2Browser.declaredServiceFacts }),
+              entries: g2Supply.browserEntries ?? g2Supply.entries,
+              consumeApproval: g2Supply.consumeBrowserApproval, callResource: g2Supply.callResource,
+            } } : {}),
+            observe: (event) => observations.push(`a5m2-g2: ${String(event?.lane ?? '?')} ${String(event?.event ?? '')}`),
+          })
+          if (g2Built.ok !== true) {
+            throw refuseG2(`createG2TeamMount: ${String(g2Built.message)} (code ${String(g2Built.code)})`)
+          }
+          a5G2Mount = g2Built
+          observations.push(`a5m2-g2: TEAM MOUNT assembled for ${sessionId} (lanes: ${Object.keys(g2Built.backends).join('+') || 'none'}; WEB: ${String(g2Built.webRouteGap.code)})`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -3138,11 +3198,15 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G2Mount === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
+            // G2 lanes ride the SAME backends face (root 19:31 item 1): the
+            // mount's g2Mcp/g2Browser backends are what the plane's G2
+            // injection points pair against; WEB never rides (route gap).
+            ...(a5G2Mount === null ? {} : a5G2Mount.backends),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3179,7 +3243,27 @@ export function createAgentBindings(deps) {
           // still the one this setup published; a stale disposer clears
           // nothing (the newer mount stays published).
           revokePaMount(String(teamRoot), String(instanceId), paMountIdentity)
-          return placed.dispose()
+          // The plane release + the G2 mount close ride ONE awaited chain (the
+          // drain invokes disposers synchronously — the chain SELF-CATCHES
+          // every failure into the observation channel: nothing is awaited-
+          // and-swallowed, nothing survives un-handled). Root 19:31 item 4:
+          // close failures are REPORTED facts, never swallowed.
+          return Promise.resolve().then(async () => {
+            const planeDisposed = await placed.dispose()
+            if (a5G2Mount !== null) {
+              const g2Closed = await a5G2Mount.dispose()
+              if (g2Closed.ok !== true) {
+                observations.push(`a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+                globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close FAILED for ${sessionId}: ${g2Closed.failures.join(' | ')}`)
+              } else {
+                observations.push(`a5m2-g2: TEAM MOUNT closed for ${sessionId}`)
+              }
+            }
+            return planeDisposed
+          }).catch((error) => {
+            observations.push(`a5m2-g2: teardown close REJECTED for ${sessionId}: ${String(error?.message ?? error).slice(0, 200)}`)
+            globalThis.console?.error(`[dsh-agent-team] a5m2-g2: teardown close REJECTED for ${sessionId}: ${String(error?.message ?? error).slice(0, 200)}`)
+          })
         })
         // The GLUE-5 live row for PR7 (pc-CONTRACT §3): one jobs-gateway
         // assembly per owning root, over the SAME durable domain the glue
@@ -3590,6 +3674,32 @@ export function createAgentBindings(deps) {
             providerIdentity: a5ImagePlacedArm.providerId,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
+        }
+        // A5-M2 G2 family registrations: same law as todo/write/image — the
+        // trusted key is the plane's OWN placement feed; the mount rows are
+        // metadata-only here. The adapter revision is the SHARED G2 face
+        // (A5_G2_ADAPTER_REVISION, now 2): EVERY G2 family's r1 approvals are
+        // stale at the edge and refuse consume — a deliberate, disclosed
+        // pairing with the landed B-MCP rule map, applying to the whole G2
+        // group, not to MCP alone.
+        if (a5G2Mount !== null) {
+          const g2Rows = [...(a5G2Mount.backends.g2Mcp?.createRowset() ?? []), ...(a5G2Mount.backends.g2Browser?.createRowset() ?? [])]
+          for (const g2Row of g2Rows) {
+            const g2Fed = a5PlaneValue?.placementFeed?.(g2Row.toolName)
+            if (typeof g2Fed?.definitionIdentity !== 'string' || g2Fed.definitionIdentity.length === 0) {
+              const error = new Error(
+                `agent-bindings: alpha.5 G2 family registration refused for '${sessionId}': the placed row '${g2Row.toolName}' answered no definition identity through the placement feed — the family registration has no trusted key`,
+              )
+              error.code = 'alpha5-g2-mount-refused'
+              throw error
+            }
+            registerA5GovernedFamily(g2Fed.definitionIdentity, {
+              familyId: g2Row.familyId,
+              adapterRevision: g2Row.adapterRevision,
+              providerIdentity: g2Row.providerId,
+            })
+          }
+          observations.push(`a5m2-g2: ${String(g2Rows.length)} family row(s) REGISTERED for ${sessionId} (shared G2 revision ${String(g2Rows[0]?.adapterRevision ?? '?')})`)
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.

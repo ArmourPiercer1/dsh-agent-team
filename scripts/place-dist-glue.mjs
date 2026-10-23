@@ -179,6 +179,17 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-provider-seams.mjs',
   },
+  // A5-M2 G2 WIRING round-17: the placed agent-bindings now imports the
+  // TEAM MOUNT; the mount imports the SIGNED assembly. Both ride the same
+  // byte-identical placement law as every other entry.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-assembly.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g2-team-mount.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

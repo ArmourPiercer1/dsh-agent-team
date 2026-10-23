@@ -85,3 +85,14 @@ familyId splitting; no sentinel keys (the round-2 proposal's own exclusions,
 restated).
 
 — G2 wiring lane, round-16, 2026-10-23.
+
+## STATUS SUPERSEDED (root 19:28/19:36/19:45): the family lane LANDED the rule
+map (f1e0c92ec, six closed groups over mint-synthesized mcpVariant; cherry-
+picked -x onto this branch); this lane landed D1-D3 (flatten / always-emit-
+null-with-full-text-preserved / synthesize mcpVariant) + shared G2 adapter
+revision 1->2 in the same round. The FLAT rev-2 claims validate against the
+LANDED table end-to-end: wire spec 13/13 incl. the first APPROVED dispatch
+(client trio, uri verbatim, 1234ms timeout, generation tie refusing consume
+on rotation). The hand-written table legs on the owner branch (35/35 there,
+21/21 on this pick) are TABLE-SHAPE proofs, not migration/C2; C2 truth =
+Host acceptance, still 接线未测 tier.

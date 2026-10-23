@@ -115,7 +115,7 @@ import { createHash } from 'node:crypto'
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
 /** Adapter identity (§1 reviewPayload P-additions: familyId + adapterRevision). */
-export const A5_G2_ADAPTER_REVISION = 1
+export const A5_G2_ADAPTER_REVISION = 2
 export const A5_G2_FAMILY = Object.freeze({ web: 'B-WEB', mcp: 'B-MCP', browser: 'B-BROWSER' })
 
 /** Typed refusal codes (the STRINGS are pinned by the lane fixture
@@ -727,17 +727,43 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
       if (surface.transport === 'streamable-http') effects.push(connectEffect(realmId, surface.endpointOrigin))
       if (surface.domainAuthorityId !== undefined) effects.push(domainRefEffect(surface.domainAuthorityId))
       const canonical = { server: server.value }
+      // B-MCP REV-2 MINT (root-routed deltas D1-D3 from the LANDED rule map,
+      // f1e0c92ec cherry-pick): the table types SIX closed groups over one
+      // mint-synthesized discriminant; the mint answers in the measured flat
+      // key names the closed law requires.
+      //  D1 (flatten): the nested `surface` object projects LOSSLESSLY to its
+      //    measured inner key names at top level (record/transport/
+      //    connectionIncarnation/endpointOrigin + spawn -> spawnArgv0/
+      //    spawnArgCount/spawnCwd) — the signed Schedule lane's flat-
+      //    projection precedent; no signed kind types a nested object.
+      //  D3 (synthesize): ONE discriminant over transport x lane, derivable
+      //    from measured facts only (the signed B-INSPECT inspectVariant
+      //    pattern). `transport` itself keeps the MEASURED spelling
+      //    ('streamable-http' stays); the axis label 'http' is the variant's,
+      //    never a rewrite of the fact.
+      const transportAxis = surface.transport === 'stdio' ? 'stdio' : 'http'
+      const laneAxis = toolName === 'read_mcp_resource' ? 'read' : toolName === 'list_mcp_resource_templates' ? 'templates' : 'list'
       const manifest = {
+        mcpVariant: `${transportAxis}:${laneAxis}`,
         operation: MCP_METHODS[toolName],
         server: server.value,
-        surface: { record: surface.record, transport: surface.transport, connectionIncarnation: surface.connectionIncarnation, ...(surface.endpointOrigin === undefined ? {} : { endpointOrigin: surface.endpointOrigin }), ...(surface.spawn === undefined ? {} : { spawn: surface.spawn }) },
+        record: surface.record,
+        transport: surface.transport,
+        connectionIncarnation: surface.connectionIncarnation,
+        ...(surface.spawn === undefined
+          ? { endpointOrigin: surface.endpointOrigin }
+          : { spawnArgv0: surface.spawn.argv0, spawnArgCount: surface.spawn.argCount, spawnCwd: surface.spawn.cwd }),
         // CURRENT-FACTS law (fix card 2): the provider is RE-SELECTED at
         // request time by scope+serverName (mcp-resources/src/index.ts:120-125
         // @639ed01539); this manifest freezes the classify-time placement
         // facts — wrapper identity is not the connection incarnation.
         providerReSelectionLaw: 'the request leg re-selects the provider from the live exec.agent scope + serverName at REQUEST time (mcp-resources/src/index.ts:120-125 @639ed01539); a stale/unmounted server fails there — this manifest freezes classify-time placement facts only',
-        ...(surface.connectionIncarnation === 'unobserved' ? { connectionIncarnationReason: A5_G2_NAMED_BLOCKERS.MCP } : {}),
-        ...(surface.domainAuthorityId === undefined ? {} : { domainAuthorityId: surface.domainAuthorityId }),
+        //  D2 (always-emit null): applicability-conditional leaves ride the
+        //    signed nullableString law — null is MEASURED ABSENCE, a missing
+        //    key is a DRIFT DENIAL (the 18:07 key-omission law stays the G6
+        //    row's law).
+        connectionIncarnationReason: surface.connectionIncarnation === 'unobserved' ? A5_G2_NAMED_BLOCKERS.MCP : null,
+        domainAuthorityId: surface.domainAuthorityId === undefined ? null : surface.domainAuthorityId,
         businessObligations: [surface.obligation],
       }
       if (toolName === 'read_mcp_resource') {
@@ -753,11 +779,17 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
         manifest.uriVerbatim = uri.value
         manifest.uriOpacity = 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge'
       } else {
+        // D2 on the four list groups: cursor ALWAYS rides — null when no
+        // cursor was passed (the signed taskId-null precedent). The read
+        // groups carry NO cursor key (not in their adds): 'read declares no
+        // cursor' is STRUCTURAL at the grammar edge.
         if (args.cursor !== undefined) {
           const cursor = requireString(args.cursor, 'cursor')
           if (cursor.ok !== true) return cursor
           canonical.cursor = cursor.value
           manifest.cursor = cursor.value
+        } else {
+          manifest.cursor = null
         }
       }
       return { ok: true, effects, canonical, targetManifest: manifest }

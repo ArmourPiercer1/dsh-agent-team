@@ -1,48 +1,40 @@
 /**
- * A5-M2 G2 TEAM MOUNT (root 19:08 continuation): the OWNING-ASSEMBLY glue
- * between the SIGNED Team assembly ports (g2-team-assembly.mjs rev4 — cherry-
- * picked original bytes, owner feat/a5m2-g2fix: real Team-scoped transport
- * generation/timeout, real transport+handle ownership per generation, close
- * that SYNCHRONOUSLY cuts admission then drains; browser port over the PUBLIC
- * launchChromium/openBrowserWorker faces with launchOwned + cancel + close-
- * drain) and the production plane's G2 injection points (team-tool-plane.mjs
- * `backends.g2Mcp`/`backends.g2Browser`, the placement-moment rowset law, the
- * ONE shared PA walk).
+ * A5-M2 G2 TEAM MOUNT (root 19:08 dispatch; reworked per the root 19:31
+ * concentrated review of 5c597 — all five named defects closed IN THE GLUE;
+ * the assembly component lifecycle is NOT reopened):
+ *  1. the mount is ASYNC and every refusal AWAITS the cleanup of the ports
+ *     this call already built, folding cleanup failures into the refusal
+ *     message — "zero survivor" is an AWAITED fact, not a `void` promise;
+ *  2. the MCP port's FIRST real generation is awaited (`port.reconnect()`)
+ *     BEFORE any rowset exists, so the seam pins a REAL `gen-N` as the
+ *     declared incarnation — never a mount-time `unobserved` that would
+ *     silence the seam's generation law;
+ *  3. the same-provider-generation tie is ENFORCED at the execution edge by
+ *     the seam's own measured law (`the LIVE connection generation ...
+ *     differs from the declared incarnation; zero forwarding` + the
+ *     capture/re-verify pair, g2-provider-seams.mjs:545-561): the approved
+ *     question carries gen-N, a rotation to gen-M fails closed at dispatch
+ *     until the owning assembly RE-MOUNTS a rowset carrying the new gen — no
+ *     second ledger, no new machinery;
+ *  4. the BROWSER rows no longer actuate through a captured native that would
+ *     re-enter the host plugin's own admission: each mounted row's invoke
+ *     ROUTES THROUGH `browserPort.run(callFacts, work, signal)` — the SIGNED
+ *     public-worker lease (consumeApproval the caller-supplied Team PA face,
+ *     launchOwned, real cancel, close-drain). The stagehand method mapping is
+ *     the caller's REQUIRED `callResource` closure — the mount never guesses
+ *     which public face a `stagehand_<method>` row speaks;
+ *  5. the MCP rows dispatch on the Team-scoped chain the assembly built:
+ *     readNative captures the runtime trio the member scope answers, whose
+ *     per-call provider re-selection (mcp-resources/src/index.ts:120-125
+ *     @639ed01539, by SCOPE + serverName) resolves to the provider THIS mount
+ *     registered into the PASSED mcpResources face — the Team scope layer
+ *     holds ONLY the Team provider; nothing is registered globally.
  *
- * What this module owns (and ONLY this):
- *  - it constructs the SIGNED ports from APPROVED CONFIG passed in by the
- *    mount-caller (the production host row / agent-bindings hop): the
- *    declared surface config, the Team-only server name, the REAL public
- *    entries, the transport factory, the approved tool-call timeout. It never
- *    invents an endpoint, never defaults a timeout, never reads or writes a
- *    global, never resolves a face through a global lookup — the MCP scope
- *    face is the one PASSED to it (`scopeFaces.mcpResources`, the
- *    ctx.inject(['mcpResources']) face OF THAT SCOPE), and the port binds its
- *    register/disposer to exactly that face instance (Team-only isolation is
- *    the face binding, never server-name matching).
- *  - it supplies the rowset face the plane places: the B-MCP trio / B-BROWSER
- *    six over `g2-connector-adapters.mjs`, with the declaredService proof the
- *    adapters require DERIVED ONLY from the approved config plus the LIVE
- *    port stats (a real `connectionIncarnation: gen-N` once a generation is
- *    up; the honest `unobserved` + named blocker until then — never a fake
- *    incarnation).
- *  - it owns the close-drain hop: `dispose()` closes each constructed port
- *    with its REAL close law (MCP: synchronous cutoff + bound-face unregister
- *    + serial drain of every pending/retained generation; BROWSER: cancel the
- *    mid-ready acquisition for real, then drain the lease). Failures are
- *    REPORTED, never swallowed.
- *  - WEB stays exactly where the root ruling put it: this mount NEVER
- *    supplies a `g2Web` backend. `webRouteGap` re-states A5_G2_WEB_ROUTE_GAP
- *    verbatim — the public faces exist but selection reads a COMPOSITION-
- *    GLOBAL configured id, so until a per-realm provider-selection seam
- *    lands upstream (CORE_SEAM_BLOCKER, recorded not requested), the
- *    Team-only fixed provider lanes stay unsupplied and the plane's WEB
- *    injection point stays fail-closed. No global/env route rides through.
- *
- * Refusals are returned as values ({ ok:false, code, message }) — the
- * mount-caller decides; a half-built world never returns: any refusal
- * disposes whatever ports THIS call already constructed (zero surviving
- * transports, zero surviving registrations).
+ * WEB stays unsupplied BY LAW: `webRouteGap` re-states A5_G2_WEB_ROUTE_GAP
+ * verbatim (the public faces exist but their selection reads the
+ * COMPOSITION-GLOBAL configured id; a per-realm selection seam at
+ * 639ed01539 is the recorded CORE_SEAM_BLOCKER). Any all-G2-green claim that
+ * counts WEB is false and this module keeps it visibly so.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g2-team-mount
  */
@@ -52,10 +44,16 @@ import { createG2McpResourceAdapters, createG2BrowserAdapters } from './g2-conne
 const refuse = (code, message) => Object.freeze({ ok: false, code, message })
 
 // the closed mount-name spellings (the SAME lists the plane's G2 gate 0f
-// enforces in team-tool-plane.mjs — kept literal here so a rowset name drift
-// is caught at BOTH the mount and the plane, not silently shared).
+// enforces in team-tool-plane.mjs — literal here so a rowset name drift is
+// caught at BOTH the mount and the plane, never silently shared).
 const MCP_TOOL_NAMES = Object.freeze(['list_mcp_resource_templates', 'list_mcp_resources', 'read_mcp_resource'])
 const BROWSER_TOOL_NAMES = Object.freeze(['stagehand_act', 'stagehand_extract', 'stagehand_navigate', 'stagehand_observe', 'stagehand_screenshot', 'stagehand_tabs'])
+// the stagehand method behind each spelling — the lease callFacts stay
+// jsonClone-safe strings; the ACTUAL dispatch is the caller's callResource.
+const BROWSER_METHODS = Object.freeze({
+  stagehand_act: 'act', stagehand_extract: 'extract', stagehand_navigate: 'navigate',
+  stagehand_observe: 'observe', stagehand_screenshot: 'screenshot', stagehand_tabs: 'tabs',
+})
 
 /**
  * @param input {{
@@ -68,16 +66,12 @@ const BROWSER_TOOL_NAMES = Object.freeze(['stagehand_act', 'stagehand_extract', 
  *                toolCallTimeoutMs: number },
  *   browserMount?: { mode: 'launch'|'attach', nativeConfig: object,
  *                    entries: { launchChromium: Function, openBrowserWorker: Function },
- *                    consumeApproval: Function, launchEnvelope?: object,
- *                    declaredServiceFacts?: object },
+ *                    consumeApproval: Function, callResource: Function,
+ *                    launchEnvelope?: object, declaredServiceFacts?: object },
  *   observe?: (event) => void
  * }}
- * @returns {{ ok: true, backends: Record<string, { createRowset: Function, descriptions: Record<string,string> }>,
- *             ports: Record<string, { close: Function, stats: Function }>,
- *             webRouteGap: object, dispose: () => Promise<{ ok: boolean, failures: string[] }> }
- *           | { ok: false, code: string, message: string }}
  */
-export function createG2TeamMount(input = {}) {
+export async function createG2TeamMount(input = {}) {
   const { realmId, providerId, readNative, definitionIdentityOf, scopeFaces, mcpMount, browserMount } = input
   const observe = typeof input.observe === 'function' ? input.observe : () => {}
   if (typeof realmId !== 'string' || realmId.length === 0 || typeof providerId !== 'string' || providerId.length === 0) {
@@ -86,9 +80,30 @@ export function createG2TeamMount(input = {}) {
   if (typeof readNative !== 'function' || typeof definitionIdentityOf !== 'function') {
     return refuse(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'readNative (the scope tools.get capture seam) and definitionIdentityOf are REQUIRED — the mount captures the SAME native faces the plane places, it never substitutes its own')
   }
-  /** ports constructed SO FAR — a later refusal disposes them (no half-world). */
+  /** every port THIS call constructed; a refusal closes them all, awaited. */
   const built = []
   const backends = {}
+  const ports = {}
+
+  /** Awaited complete cleanup: each port runs its REAL close law; failures
+   * are RETURNED, never swallowed. */
+  const disposeBuilt = async () => {
+    const failures = []
+    for (const { label, port } of built) {
+      try {
+        const outcome = await port.close()
+        if (outcome?.ok === false) {
+          const late = Array.isArray(outcome.failures) && outcome.failures.length > 0 ? outcome.failures : ['close reported not-ok without details']
+          for (const f of late) failures.push(`${label}: ${String(f)}`)
+        }
+      } catch (error) {
+        failures.push(`${label}: ${String(error?.message ?? error).slice(0, 200)}`)
+      }
+    }
+    return failures
+  }
+  const withCleanup = (message, cleanup) => message + (cleanup.length > 0 ? ` — refusal cleanup FAILED: ${cleanup.join('; ')}` : '')
+  const detail = (error) => String(error?.message ?? error).slice(0, 300)
 
   const descriptionsFrom = (names) => {
     const descriptions = {}
@@ -102,24 +117,13 @@ export function createG2TeamMount(input = {}) {
     return { descriptions }
   }
 
-  const disposeBuilt = async () => {
-    const failures = []
-    for (const { label, port } of built) {
-      try {
-        await port.close()
-      } catch (error) {
-        failures.push(`${label}: ${String(error?.message ?? error).slice(0, 200)}`)
-      }
-    }
-    return failures.length === 0 ? { ok: true, failures: [] } : { ok: false, failures }
-  }
-
   if (mcpMount !== undefined && mcpMount !== null) {
     let port
     try {
       port = createG2TeamMcpPort({ ...mcpMount, observe: (event) => { observe({ lane: 'mcp', ...event }) } })
     } catch (error) {
-      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE), `backends g2Mcp mount refused at port construction: ${String(error?.message ?? error)}`)
+      // nothing built yet on this path — no cleanup to await
+      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE), `g2Mcp mount refused at port construction: ${detail(error)}`)
     }
     built.push({ label: `mcp:${mcpMount.resourceServerName}`, port })
     try {
@@ -127,60 +131,97 @@ export function createG2TeamMount(input = {}) {
       // never a global resolution, never server-name takeover.
       port.register(scopeFaces?.mcpResources)
     } catch (error) {
-      void disposeBuilt() // a half-built world never survives: whatever this call constructed is really closed
-      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE), `backends g2Mcp mount refused at scope-face registration: ${String(error?.message ?? error)}`)
+      const cleanup = await disposeBuilt()
+      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE), withCleanup(`g2Mcp mount refused at scope-face registration: ${detail(error)}`, cleanup))
     }
     const descs = descriptionsFrom(MCP_TOOL_NAMES)
     if (descs.refusal !== undefined) {
-      void disposeBuilt()
-      return descs.refusal
+      const cleanup = await disposeBuilt()
+      return refuse(descs.refusal.code, withCleanup(descs.refusal.message, cleanup))
+    }
+    // THE generation law (root 19:31 item 3): the FIRST real generation is up
+    // BEFORE any rowset exists, so the seam's declared incarnation is a real
+    // gen-N. A rotation underneath this mount then fails closed at the edge
+    // (seam SURFACE_DRIFT + capture/re-verify) until a RE-MOUNT carries the
+    // new gen — never a silent ride on a rotated connection.
+    try {
+      await port.reconnect()
+    } catch (error) {
+      const cleanup = await disposeBuilt()
+      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.CONNECT_FAILED), withCleanup(`g2Mcp mount refused: the first real generation never came up (${detail(error)})`, cleanup))
+    }
+    const stats = port.stats()
+    if (typeof stats.generation !== 'string' || stats.generation.length === 0) {
+      const cleanup = await disposeBuilt()
+      return refuse(A5_G2_ASSEMBLY_CODES.CONNECT_FAILED, withCleanup('g2Mcp mount refused: after connect the port answers no generation string', cleanup))
     }
     const approved = mcpMount.declaredSurfaceConfig ?? {}
+    const approvedGeneration = stats.generation
     backends.g2Mcp = Object.freeze({
-      createRowset: () => {
-        // the declared proof the adapters require, DERIVED here: approved
-        // config facts + the port's CURRENT generation as the connection
-        // incarnation (a real gen-N once a generation is up; absent ⇒ the
-        // adapters keep their honest 'unobserved' + named blocker).
-        const stats = port.stats()
-        return Object.values(createG2McpResourceAdapters({
-          realmId, providerId, readNative, definitionIdentityOf, observe,
-          declaredService: Object.freeze({
-            present: true,
-            serverName: approved.serverName,
-            transport: approved.transport,
-            ...(typeof approved.command === 'object' && approved.command !== null ? { command: approved.command } : {}),
-            ...(typeof approved.endpointUrl === 'string' ? { endpointUrl: approved.endpointUrl } : {}),
-            ...(typeof approved.cwd === 'string' ? { cwd: approved.cwd } : {}),
-            ...(typeof approved.domainAuthorityId === 'string' ? { domainAuthorityId: approved.domainAuthorityId } : {}),
-            ...(typeof stats.generation === 'string' ? { connectionIncarnation: stats.generation } : {}),
-          }),
-        })).map((row) => Object.freeze({
-          ...row,
-          // the Team-owned connection facts ride EVERY row the mount places:
-          // the approved timeout is the port's, the generation is the port's
-          // CURRENT one at row-build time.
-          teamConnectionFacts: Object.freeze({ server: stats.server, generation: stats.generation, toolCallTimeoutMs: mcpMount.toolCallTimeoutMs }),
-        }))
-      },
+      createRowset: () => Object.values(createG2McpResourceAdapters({
+        realmId, providerId, readNative, definitionIdentityOf, observe,
+        declaredService: Object.freeze({
+          present: true,
+          serverName: approved.serverName,
+          transport: approved.transport,
+          ...(Array.isArray(approved.command) ? { command: approved.command } : {}),
+          ...(typeof approved.endpointUrl === 'string' ? { endpointUrl: approved.endpointUrl } : {}),
+          ...(typeof approved.cwd === 'string' ? { cwd: approved.cwd } : {}),
+          ...(typeof approved.domainAuthorityId === 'string' ? { domainAuthorityId: approved.domainAuthorityId } : {}),
+          // a REAL gen-N from the generation THIS mount brought up: the
+          // approved question and the seam's declared incarnation carry the
+          // SAME generation; live drift is refused at the edge, not guessed.
+          connectionIncarnation: approvedGeneration,
+        }),
+        // ROOT 19:31 item 3/5 (ACTUATION): the row's body is TEAM-BOUND — it
+        // dispatches on the port request leg (seam -> capture -> the ONE live
+        // generation's client), not on a captured native that re-selects by
+        // exec.agent scope + serverName at request time. Governance is
+        // UNCHANGED (classify/effects/targetManifest remain the adapter's;
+        // the plane's walk + digest ride them verbatim); only the door the
+        // consumed call walks through moves. Raw args ride verbatim: the
+        // manifest's null cursors NEVER reach the native leg.
+      })).map((row) => Object.freeze({
+        ...row,
+        invoke: async (args, exec) => {
+          const now = port.stats()
+          if (now.generation !== approvedGeneration) {
+            throw new Error(`P_G2_MOUNT_GENERATION_DRIFT: the approved question carries generation ${JSON.stringify(approvedGeneration)}, the live mount now answers ${JSON.stringify(now.generation)} — the owning assembly must RE-MOUNT (a new rowset, a new approval); a rotated connection is never ridden silently, zero forwarding`)
+          }
+          const request = { server: approved.serverName, method: row.operation }
+          if (row.toolName === 'read_mcp_resource') request.uri = args?.uri
+          else if (typeof args?.cursor === 'string') request.cursor = args.cursor
+          // the row-body envelope the consumption edge answers with
+          // {ok:true, value}: the port's answer rides as the VALUE.
+          const answer = await port.request(request, exec)
+          return Object.freeze({ ok: true, value: answer })
+        },
+      })),
       descriptions: Object.freeze(descs.descriptions),
     })
+    ports.mcp = port
   }
 
   if (browserMount !== undefined && browserMount !== null) {
+    if (typeof browserMount.callResource !== 'function') {
+      const cleanup = await disposeBuilt()
+      return refuse(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, withCleanup('g2Browser mount refused: callResource (the production stagehand method mapping — the caller\'s closure over the PUBLIC runtime face) is REQUIRED; the mount never guesses which face a stagehand_<method> row speaks', cleanup))
+    }
     let port
     try {
       port = createG2TeamBrowserPort({ ...browserMount, observe: (event) => { observe({ lane: 'browser', ...event }) } })
     } catch (error) {
-      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE), `backends g2Browser mount refused at port construction: ${String(error?.message ?? error)}`)
+      const cleanup = await disposeBuilt()
+      return refuse(String(error?.code ?? A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE), withCleanup(`g2Browser mount refused at port construction: ${detail(error)}`, cleanup))
     }
     built.push({ label: 'browser', port })
     const descs = descriptionsFrom(BROWSER_TOOL_NAMES)
     if (descs.refusal !== undefined) {
-      void disposeBuilt()
-      return descs.refusal
+      const cleanup = await disposeBuilt()
+      return refuse(descs.refusal.code, withCleanup(descs.refusal.message, cleanup))
     }
     const facts = browserMount.declaredServiceFacts ?? {}
+    const { callResource } = browserMount
     backends.g2Browser = Object.freeze({
       createRowset: () => Object.values(createG2BrowserAdapters({
         realmId, providerId, readNative, definitionIdentityOf, observe,
@@ -191,21 +232,38 @@ export function createG2TeamMount(input = {}) {
           ...(typeof facts.cdpEndpointOrigin === 'string' ? { cdpEndpointOrigin: facts.cdpEndpointOrigin } : {}),
           ...(typeof facts.domainAuthorityId === 'string' ? { domainAuthorityId: facts.domainAuthorityId } : {}),
         }),
+        // row actuation moved to the port lease BELOW (the map replaces
+        // invoke); the adapters still own classify/effects/targetManifest.
+      })).map((row) => Object.freeze({
+        ...row,
+        // ROOT 19:31 item 4: the row's ACTUATION routes through the SIGNED
+        // port lease — public-worker acquisition with real cancel, one owner
+        // + one lease, close-drain — never through a captured native that
+        // would re-enter the host plugin\'s own SessionResources admission.
+        invoke: async (args, exec) => Object.freeze({
+          ok: true,
+          value: await port.run(
+          { toolName: row.toolName, operation: row.operation },
+          async (resource) => await callResource(resource, BROWSER_METHODS[row.toolName], args, exec?.signal),
+          exec?.signal,
+          ),
+        }),
       })),
       descriptions: Object.freeze(descs.descriptions),
     })
+    ports.browser = port
   }
 
   return Object.freeze({
     ok: true,
     backends: Object.freeze(backends),
-    ports: Object.freeze({
-      ...(backends.g2Mcp !== undefined ? { mcp: built.find((b) => b.label.startsWith('mcp:'))?.port } : {}),
-      ...(backends.g2Browser !== undefined ? { browser: built.find((b) => b.label === 'browser')?.port } : {}),
-    }),
+    ports: Object.freeze(ports),
     // WEB: not suppliable here — the named gap, verbatim from the SIGNED
-    // assembly module. The plane's WEB injection point stays fail-closed.
+    // assembly module. The plane\'s WEB injection point stays fail-closed.
     webRouteGap: A5_G2_WEB_ROUTE_GAP,
-    dispose: disposeBuilt,
+    dispose: async () => {
+      const failures = await disposeBuilt()
+      return failures.length === 0 ? { ok: true, failures: [] } : { ok: false, failures }
+    },
   })
 }

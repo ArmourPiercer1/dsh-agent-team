@@ -97,8 +97,7 @@ import {
   P6T4_NOW,
   P6T4_ROOT,
   memberCaller,
-  p6t4Seed,
-} from './p6t4-helpers.js'
+  p6t4Seed, leaderCaller,} from './p6t4-helpers.js'
 
 /** THE PINNED BROWSER BLOCKER (root ruling after the center review of
  *  6f9aec97). Recorded for this wire spec, NOT fixed here — the original G2
@@ -268,6 +267,26 @@ const service: ControlService = createControlService({
 
 async function stateNow() {
   return service.listControlState(P6T4_ROOT)
+}
+
+// the leader's allow, found through the durable row (the todo-round idiom:
+// the row is discovered by the plane's OWN callId in its reviewPayload —
+// never by a spec-side re-derivation).
+const approvedRowCallIds = new Set<string>()
+async function approveRowForCall(callId: string): Promise<void> {
+  const deadline = Date.now() + 3000
+  for (;;) {
+    if (!approvedRowCallIds.has(callId)) {
+      const found = (await stateNow()).requests.find((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === callId)
+      if (found !== undefined) {
+        approvedRowCallIds.add(callId)
+        await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: (found as { requestId: string }).requestId, decision: 'allow' })
+        return
+      }
+    }
+    if (Date.now() > deadline) throw new Error(`no durable PA row appeared for ${callId}`)
+    await new Promise((r) => setTimeout(r, 5))
+  }
 }
 
 // ── the committed G2 family modules (the reviewed candidates this wiring
@@ -765,15 +784,21 @@ describe('A5M2-G2-WIRE C1: the external-connection family mounts on the governed
     const world = await mountWorld('mcp-active')
     const def = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
     expect(def).toBeDefined()
-    const state0 = await stateNow()
     // (a) exec-token-unbound: zero classify, zero walk, zero row.
     await expect(def?.execute({ server: MCP_SERVER }, { agent: { id: WORKER } })).rejects.toThrow(/refused-g2 exec-token-unbound/)
-    // (b) the walk: a REAL token, one flight. The leg refuses the family
-    //     claim (fail closed) — the exact landing point of this wiring round,
-    //     pinned verbatim: the durable family row cannot exist until the
-    //     center registers the B-MCP target structure.
+    // (b) the walk: a REAL token, one flight. Since the family-rules lane
+    //     LANDED the B-MCP rule map (f1e0c92ec cherry-pick) and this lane
+    //     landed the D1-D3 flat mint (adapter revision 2), the claim PASSES
+    //     the typed target law; the leader's allow consumes it and the row's
+    //     captured-native dispatch fires — the FIRST end-to-end green on this
+    //     family. The un-mounted world's row is the DEFAULT rowset: its
+    //     connectionIncarnation is the honest 'unobserved' and D2 keeps the
+    //     full blocker text as the reason.
     const exec1 = execFor('active-1')
-    await expect(def?.execute({ server: MCP_SERVER }, exec1)).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    const running = def?.execute({ server: MCP_SERVER }, exec1) as Promise<Record<string, unknown>>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-1`)
+    const outcome = await running
+    expect(outcome).toBeDefined()
     expect(world.legInputs.length).toBe(1)
     const legInput = world.legInputs[0] as Record<string, Record<string, unknown>>
     expect(String(legInput.callId)).toBe(`plane-g2:${world.plane.realmId}-1`)
@@ -782,35 +807,34 @@ describe('A5M2-G2-WIRE C1: the external-connection family mounts on the governed
       adapterRevision: G2A.A5_G2_ADAPTER_REVISION,
       providerIdentity: PLANE_PROVIDER,
     }))
-    expect(legInput.family?.targetManifest as Record<string, unknown>).toEqual(expect.objectContaining({
-      operation: 'resources/list',
-      server: MCP_SERVER,
-    }))
-    expect(world.legResults.length).toBe(1)
-    expect(String(world.legResults[0]?.decision)).toBe('deny')
-    expect(String((world.legResults[0] as { detail?: string })?.detail)).toContain('family-target-invalid')
-    expect(String((world.legResults[0] as { detail?: string })?.detail)).toContain(`no target structure is registered for '${G2A.A5_G2_FAMILY.mcp}'`)
-    // nothing durable, nothing consumed, nothing entered native.
-    const state1 = await stateNow()
-    expect(state1.requests.length).toBe(state0.requests.length)
-    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(0)
-    // (c) exec-token-replay on the SHARED ledger: the spent token never
-    //     re-arms, and the refusal re-runs nothing.
+    const manifest = legInput.family?.targetManifest as Record<string, unknown>
+    expect(manifest.mcpVariant).toBe('stdio:list')
+    expect(manifest.operation).toBe('resources/list')
+    expect(manifest.server).toBe(MCP_SERVER)
+    expect(manifest.cursor).toBeNull()
+    expect(manifest.connectionIncarnation).toBe('unobserved')
+    expect(String(manifest.connectionIncarnationReason)).toContain('NAMED BLOCKER (B-MCP)')
+    expect(manifest.domainAuthorityId).toBeNull()
+    expect(String(world.legResults[0]?.decision)).toBe('approve')
+    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(1)
+    // (c) exec-token-replay on the SHARED ledger: the SPENT token never
+    //     re-arms; a consumed call is never re-run by a replayed token.
     await expect(def?.execute({ server: MCP_SERVER }, exec1)).rejects.toThrow(/refused-g2 exec-token-replay/)
     expect(world.legInputs.length).toBe(1)
-    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(0)
+    expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(1)
   })
 
   it('the server-identity law survives the wiring: an undeclared server swap refuses INSIDE the row before the walk (zero leg, zero row, zero native entry)', async () => {
     const world = await mountWorld('mcp-identity')
     const def = world.plane.definitions.find((d) => d.name === 'read_mcp_resource')
     expect(def).toBeDefined()
+    const state0 = await stateNow()
     await expect(def?.execute({ server: 'a-different-server', uri: 'mcp://x' }, execFor('identity-1'))).rejects.toThrow(
       /refused-g2 P_G2_CLASSIFY_INVALID_ARGUMENTS — .*is not the declared server of this mount/,
     )
     expect(world.legInputs.length).toBe(0)
     const state = await stateNow()
-    expect(state.requests.length).toBe(0)
+    expect(state.requests.length).toBe(state0.requests.length)
     expect(world.nativeCalls.read_mcp_resource?.length ?? 0).toBe(0)
   })
 
@@ -819,31 +843,17 @@ describe('A5M2-G2-WIRE C1: the external-connection family mounts on the governed
     const row = world.rows.find((r) => r.toolName === 'list_mcp_resources')
     row?.drain()
     const def = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
+    const state0 = await stateNow()
     await expect(def?.execute({ server: MCP_SERVER }, execFor('drain-1'))).rejects.toThrow(/refused-g2 P_G2_DRAINING/)
     expect(world.legInputs.length).toBe(0)
     expect(world.nativeCalls.list_mcp_resources?.length ?? 0).toBe(0)
     const state = await stateNow()
-    expect(state.requests.length).toBe(0)
+    expect(state.requests.length).toBe(state0.requests.length)
   })
 })
 
-/* ── the production G2 TEAM MOUNT: the signed assembly ports behind the
- *    plane's injection faces (root 19:08: assembly signed at rev4; the old
- *    review-BLOCKED is closed; this is the wiring duty, 接线未测 by tier).
- *    Disclosed stand-ins (the venue owns the REAL halves): the SDK Client
- *    class here is a DISCLOSED stand-in — this worktree carries no
- *    tests/deepseek-harness-test-use checkout, so the REAL pinned
- *    @modelcontextprotocol/client cannot load here (the same venue gate the
- *    assembly's own 17/17 spec named); the REAL-SDK lifecycle legs are the
- *    owner's measured 17/17 (rev4, kernel pristine checkout, READ-ONLY).
- *    What these legs prove is the MOUNT law: what the mount constructs,
- *    where it registers (the PASSED Team scope face, bound disposer), what
- *    facts the rowset carries (a REAL gen-N incarnation, the approved
- *    timeout, URI/cursor/connection at full value, NO fingerprint), and the
- *    close-drain hop. BROWSER positive launch is NOT_RUN in this environment
- *    (no browser binary/worker venue) — refusal laws only, honestly. ────── */
 const MOUNT = (await import(new URL('../src/plugin/live/governed-families/g2-team-mount.mjs', import.meta.url).href)) as {
-  createG2TeamMount: (input: Record<string, unknown>) => Record<string, unknown>
+  createG2TeamMount: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
 }
 
 interface StandInSdk {
@@ -851,12 +861,19 @@ interface StandInSdk {
   makeTransport: (target: Record<string, unknown>) => Record<string, unknown>
   connects: unknown[]
   sends: unknown[]
+  clientCalls: Array<{ method: string; params: unknown; options: Record<string, unknown> | undefined }>
   transports: Array<{ closed: boolean; target: Record<string, unknown> }>
 }
 function makeStandInSdk(): StandInSdk {
   const connects: unknown[] = []
   const sends: unknown[] = []
+  const clientCalls: Array<{ method: string; params: unknown; options: Record<string, unknown> | undefined }> = []
   const transports: Array<{ closed: boolean; target: Record<string, unknown> }> = []
+  // DISCLOSED stand-in for the pinned @modelcontextprotocol/client 2.0.0:
+  // implements the REAL generation dispatch trio the seam requires
+  // (g2-provider-seams.mjs:498 @this tree; the host maps them at
+  // mcp-client connection.ts:373-381 @639ed01539). The REAL-SDK legs are the
+  // owner's venue (kernel checkout, 17/17); THIS venue proves the mount law.
   class ClientStandIn {
     onclose: (() => void) | null = null
     constructor(_info: unknown, _opts: unknown) {}
@@ -866,6 +883,18 @@ function makeStandInSdk(): StandInSdk {
       if (typeof start === 'function') await start()
     }
     async close(): Promise<void> {}
+    async listResources(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'listResources', params, options })
+      return { resources: [{ uri: 'mcp://res/42', name: 'res-42' }] }
+    }
+    async listResourceTemplates(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'listResourceTemplates', params, options })
+      return { resourceTemplates: [] }
+    }
+    async readResource(params: unknown, options?: Record<string, unknown>) {
+      clientCalls.push({ method: 'readResource', params, options })
+      return { contents: [{ uri: 'mcp://res/42', text: 'res-42-body' }] }
+    }
   }
   const makeTransport = (target: Record<string, unknown>): Record<string, unknown> => {
     const rec = { closed: false, target }
@@ -876,12 +905,12 @@ function makeStandInSdk(): StandInSdk {
       close: async () => { rec.closed = true },
     }
   }
-  return { Client: ClientStandIn, makeTransport, connects, sends, transports }
+  return { Client: ClientStandIn, makeTransport, connects, sends, clientCalls, transports }
 }
 
-describe('A5M2-G2-WIRE mount legs: the signed Team ports behind the plane injection points (Team-only face binding, real generation facts, close-drain)', () => {
-  it('the absent world stays honest: no mounts, and WEB answers with the SIGNED route gap verbatim (no global/env route rides)', async () => {
-    const m = MOUNT.createG2TeamMount({ realmId: 'r', providerId: PLANE_PROVIDER, readNative: () => undefined, definitionIdentityOf }) as { ok: boolean; backends: Record<string, unknown>; webRouteGap: Record<string, string>; dispose: () => Promise<{ ok: boolean }> }
+describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the plane faces — Team-only face binding, REAL dispatch on the generation, the generation tie at consume, awaited cleanup', () => {
+  it('the absent world stays honest: no mounts, and WEB answers the SIGNED route gap verbatim (no global/env route rides)', async () => {
+    const m = (await MOUNT.createG2TeamMount({ realmId: 'r', providerId: PLANE_PROVIDER, readNative: () => undefined, definitionIdentityOf })) as { ok: boolean; backends: Record<string, unknown>; webRouteGap: Record<string, string>; dispose: () => Promise<{ ok: boolean }> }
     expect(m.ok).toBe(true)
     expect(Object.keys(m.backends)).toEqual([])
     expect(m.webRouteGap.publicFaces).toContain('registerSearchProvider')
@@ -890,25 +919,31 @@ describe('A5M2-G2-WIRE mount legs: the signed Team ports behind the plane inject
     expect((await m.dispose()).ok).toBe(true)
   })
 
-  it('refusal laws: no PASSED scope face means NO registration (never a global lookup); attach without the configured cdpEndpoint refuses CONFIG_INCOMPLETE', async () => {
+  it('refusal laws AWAIT their cleanup: no PASSED scope face means NO registration (never a global lookup) and the half-built port is really closed; attach without cdpEndpoint and a browser mount without the REQUIRED callResource mapping refuse CONFIG_INCOMPLETE', async () => {
     const sdk = makeStandInSdk()
-    const noFace = MOUNT.createG2TeamMount({
+    const noFace = (await MOUNT.createG2TeamMount({
       realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
-      mcpMount: { declaredSurfaceConfig: { ...MCP_DECLARED }, resourceServerName: MCP_SERVER, entries: { Client: sdk.Client }, makeTransport: sdk.makeTransport, toolCallTimeoutMs: 1234 },
-    }) as { ok: boolean; code?: string; message?: string }
+      mcpMount: { declaredSurfaceConfig: { ...MCP_DECLARED }, resourceServerName: MCP_SERVER, entries: { Client: sdk.Client }, makeTransport: sdk.makeTransport, toolCallTimeoutMs: 1234    },
+    })) as { ok: boolean; code?: string; message?: string }
     expect(noFace.ok).toBe(false)
     expect(noFace.code).toBe('P_G2_ASM_FACE_INCOMPLETE')
-    expect(String(noFace.message)).toContain('scope-face registration')
-    const badAttach = MOUNT.createG2TeamMount({
+    expect(sdk.transports.length).toBe(0)
+    const badAttach = (await MOUNT.createG2TeamMount({
       realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
-      browserMount: { mode: 'attach', nativeConfig: {}, entries: { launchChromium: async () => ({}), openBrowserWorker: async () => ({}) }, consumeApproval: () => ({}) },
-    }) as { ok: boolean; code?: string; message?: string }
+      browserMount: { mode: 'attach', nativeConfig: {}, entries: { launchChromium: async () => ({}), openBrowserWorker: async () => ({}) }, consumeApproval: async () => 'consumed', callResource: async () => ({}) },
+    })) as { ok: boolean; code?: string }
     expect(badAttach.ok).toBe(false)
     expect(badAttach.code).toBe('P_G2_ASM_CONFIG_INCOMPLETE')
-    expect(sdk.transports.length).toBe(0) // the half-built MCP port never survived its refusal
+    const noMap = (await MOUNT.createG2TeamMount({
+      realmId: 'r', providerId: PLANE_PROVIDER, readNative: (n: string) => ({ name: n, description: 'd', execute: async () => ({}) }), definitionIdentityOf,
+      browserMount: { mode: 'launch', nativeConfig: {}, entries: { launchChromium: async () => ({}), openBrowserWorker: async () => ({}) }, consumeApproval: async () => 'consumed' },
+    })) as { ok: boolean; code?: string; message?: string }
+    expect(noMap.ok).toBe(false)
+    expect(noMap.code).toBe('P_G2_ASM_CONFIG_INCOMPLETE')
+    expect(String(noMap.message)).toContain('callResource')
   })
 
-  it('MCP mount: the Team-scoped register binds the PASSED face with its real disposer; a real gen-1 incarnation + the approved timeout ride the rowset; every call walks the ONE PA path carrying URI/cursor/connection at FULL value and lands at the still-unregistered B-MCP target rule (zero native, zero send); dispose closes for real', async () => {
+  it('MCP mount, REAL dispatch: the Team-scoped register binds the PASSED face; the FIRST generation is up BEFORE placement (gen-1 rides the approved question); an approved call DISPATCHES on the mount generation client (uri verbatim, the approved 1234ms timeout in options, ZERO captured-native entry); the flat rev-2 target carries mcpVariant/spawn/cursor/connection at FULL value with no fingerprint; a rotation to gen-2 REFUSES consume on the generation tie; dispose closes for real', async () => {
     const sdk = makeStandInSdk()
     const faceCalls: Array<{ server: string; provider: Record<string, unknown> }> = []
     let disposers = 0
@@ -918,71 +953,136 @@ describe('A5M2-G2-WIRE mount legs: the signed Team ports behind the plane inject
         return () => { disposers += 1 }
       },
     }
-    let portsRef: Record<string, { stats: () => Record<string, unknown>; reconnect?: () => Promise<unknown>; request: (req: unknown, exec: unknown) => Promise<unknown> }> = {}
+    let portsRef: Record<string, { stats: () => Record<string, unknown>; request: (req: unknown, exec: unknown) => Promise<unknown> }> = {}
     const world = await mountWorld('mount-active', {
       mountFactory: async ({ readNative }) => {
-        const m = MOUNT.createG2TeamMount({
+        const m = (await MOUNT.createG2TeamMount({
           realmId: 'a5m2-g2-wire-mount-active', providerId: PLANE_PROVIDER, readNative, definitionIdentityOf,
           scopeFaces: { mcpResources: face },
           mcpMount: { declaredSurfaceConfig: { ...MCP_DECLARED }, resourceServerName: MCP_SERVER, entries: { Client: sdk.Client }, makeTransport: sdk.makeTransport, toolCallTimeoutMs: 1234 },
-        }) as Record<string, unknown>
-        const ports = m.ports as typeof portsRef
-        portsRef = ports
-        const mcpPort = ports.mcp
-        if (mcpPort !== undefined && typeof mcpPort.reconnect === 'function') await mcpPort.reconnect() // the real generation up, BEFORE placement reads the facts
+        })) as Record<string, unknown>
+        if (m.ok !== true) throw new Error(`mount refused: ${String(m.code)} ${String(m.message)}`)
+        portsRef = m.ports as typeof portsRef
         return m
       },
     })
-    // Team-scoped registration: ONE register on the PASSED face, Team-only name.
     expect(faceCalls.length).toBe(1)
     expect(faceCalls[0]?.server).toBe(MCP_SERVER)
-    expect(typeof faceCalls[0]?.provider.request).toBe('function')
     expect(sdk.connects.length).toBe(1)
-    const stats = portsRef.mcp!.stats()
-    expect(stats.generation).toBe('gen-1')
-    expect(stats.scopeBound).toBe(true)
-    // the trio mounted ACTIVE through the mount's rowset, at the native spellings
-    expect(world.rows.length).toBe(3)
+    expect(portsRef.mcp!.stats().generation).toBe('gen-1')
     const read = world.plane.definitions.find((d) => d.name === 'read_mcp_resource')
-    const list = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
-    expect(read).toBeDefined()
-    expect(list).toBeDefined()
-    // the URI leg: walks the ONE PA path; the durable leg still lands at the
-    // named CENTER gap (B-MCP target rule unregistered — family-owner lane).
-    await expect(read?.execute({ server: MCP_SERVER, uri: 'mcp://res/42' }, execFor('mount-1'))).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    expect(world.rows.length).toBe(3)
+    // POSITIVE DISPATCH through the ONE PA path: approve, then the mount's
+    // TEAM-BOUND invoke answers on the approved generation's client.
+    const callId = `plane-g2:${world.plane.realmId}-1`
+    const running = read?.execute({ server: MCP_SERVER, uri: 'mcp://res/42' }, execFor('mount-1')) as Promise<Record<string, unknown>>
+    await approveRowForCall(callId)
+    const outcome = await running
+    const contents = (outcome as { contents?: Array<{ text?: string }> }).contents
+    expect(contents?.[0]?.text).toBe('res-42-body')
+    expect(sdk.clientCalls.length).toBe(1)
+    expect(sdk.clientCalls[0]?.method).toBe('readResource')
+    expect((sdk.clientCalls[0]?.params as Record<string, unknown>).uri).toBe('mcp://res/42')
+    expect(sdk.clientCalls[0]?.options?.timeout).toBe(1234)
+    // the captured native was NEVER the door: zero native entries.
+    for (const n of ['list_mcp_resources', 'read_mcp_resource', 'list_mcp_resource_templates']) expect(world.nativeCalls[n]?.length ?? 0).toBe(0)
+    // the FLAT rev-2 target (D1/D2/D3), machine-pinned fingerprint-free.
     const manifest = (world.legInputs[0] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
+    expect(manifest.mcpVariant).toBe('stdio:read')
     expect(manifest.operation).toBe('resources/read')
-    expect(manifest.server).toBe(MCP_SERVER)
+    expect(manifest.record).toBe('surface:mcp_stdio')
+    expect(manifest.transport).toBe('stdio')
+    expect(manifest.spawnArgv0).toBe('/usr/bin/true')
+    expect(manifest.spawnArgCount).toBe(1)
+    expect(manifest.spawnCwd).toBe('') // the RAW empty string survives (no falsy normalization)
+    expect(manifest.connectionIncarnation).toBe('gen-1')
+    expect(manifest.connectionIncarnationReason).toBeNull() // D2: a real gen up => measured absence, null
+    expect(manifest.domainAuthorityId).toBeNull()
     expect(manifest.uriVerbatim).toBe('mcp://res/42')
-    const surface = manifest.surface as Record<string, unknown>
-    expect(surface.transport).toBe('stdio')
-    expect((surface.spawn as Record<string, unknown>).argv0).toBe('/usr/bin/true')
-    // THE signed-port fact: a REAL generation, not 'unobserved'.
-    expect(surface.connectionIncarnation).toBe('gen-1')
-    expect(manifest.connectionIncarnationReason).toBeUndefined()
-    // the connection facts bind WITHOUT moving a fingerprint into the target.
-    for (const key of Object.keys(manifest)) {
-      expect(key.toLowerCase()).not.toContain('fingerprint')
-    }
-    // the cursor variant: present cursor binds; absence stays absent (no sentinel).
-    await expect(list?.execute({ server: MCP_SERVER, cursor: 'page-2' }, execFor('mount-2'))).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    expect(typeof manifest.uriOpacity).toBe('string')
+    expect('surface' in manifest).toBe(false)
+    expect('cursor' in manifest).toBe(false) // cursor is STRUCTURALLY out on read groups
+    for (const key of Object.keys(manifest)) expect(key.toLowerCase()).not.toContain('fingerprint')
+    // cursor variants: raw value binds; ABSENCE emits null (D2), never a
+    // missing key, and the null NEVER rides the native leg.
+    const list = world.plane.definitions.find((d) => d.name === 'list_mcp_resources')
+    const running2 = list?.execute({ server: MCP_SERVER, cursor: 'page-2' }, execFor('mount-2')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-2`)
+    await running2
     const manifest2 = (world.legInputs[1] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
+    expect(manifest2.mcpVariant).toBe('stdio:list')
     expect(manifest2.cursor).toBe('page-2')
-    await expect(list?.execute({ server: MCP_SERVER }, execFor('mount-3'))).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    const running3 = list?.execute({ server: MCP_SERVER }, execFor('mount-3')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-3`)
+    await running3
     const manifest3 = (world.legInputs[2] as { family?: { targetManifest?: Record<string, unknown> } }).family?.targetManifest as Record<string, unknown>
-    expect('cursor' in manifest3).toBe(false)
-    // zero native entry, zero transport frame: nothing dispatched anywhere.
-    for (const n of [...A5_G2_MCP_MOUNT_NAMES]) expect(world.nativeCalls[n]?.length ?? 0).toBe(0)
-    expect(sdk.sends.length).toBe(0)
-    // close-drain through the mount: the bound face unregisters, the owned
-    // generation really closes, and afterwards the port refuses SCOPE_CLOSED.
+    expect(manifest3.cursor).toBeNull()
+    expect(sdk.clientCalls.length).toBe(3)
+    // THE GENERATION TIE (root 19:31 item 3): rotate underneath the mount —
+    // an approval against gen-1 now REFUSES consume on the drift law.
+    const rotated = (portsRef.mcp as unknown as { reconnect: () => Promise<unknown> })
+    await rotated.reconnect()
+    expect(portsRef.mcp!.stats().generation).toBe('gen-2')
+    const callsBefore = sdk.clientCalls.length
+    // the drift refusal sits AT CONSUME: the approval still lands (the
+    // target facts are unchanged), the generation tie refuses the BODY.
+    const running4 = read?.execute({ server: MCP_SERVER, uri: 'mcp://res/43' }, execFor('mount-4')) as Promise<unknown>
+    await approveRowForCall(`plane-g2:${world.plane.realmId}-4`)
+    await expect(running4).rejects.toThrow(/GENERATION_DRIFT|P_G2_EDGE_REFUSED/)
+    expect(sdk.clientCalls.length).toBe(callsBefore) // zero forwarding on drift
+    // close-drain: the bound face unregisters, the owned generations close,
+    // and afterwards the port refuses SCOPE_CLOSED.
     const mount = world.mount as { dispose: () => Promise<{ ok: boolean; failures: string[] }> }
     const closed = await mount.dispose()
     expect(closed, JSON.stringify(closed.failures)).toEqual({ ok: true, failures: [] })
     expect(disposers).toBe(1)
     const after = portsRef.mcp!.stats()
     expect(after.disposed).toBe(true)
-    expect(after.transportsClosed).toBe(1)
+    expect(after.transportsClosed).toBe(2) // gen-1 and gen-2 both really closed
     await expect(portsRef.mcp!.request({ server: MCP_SERVER, method: 'resources/list' }, {})).rejects.toThrow(/SCOPE_CLOSED/)
+  })
+
+  it('BROWSER mount supply leg: the row actuates through the SIGNED port lease (consumeApproval -> worker -> callResource mapping), never through the captured native; the PLANE leg stays fail-closed at the still-unregistered B-BROWSER target rule (a different lane — no fake green)', async () => {
+    const workerCalls: Array<{ resource: unknown; method: unknown; args: unknown }> = []
+    const approvals: string[] = []
+    const world = await mountWorld('browser-supply', {
+      surface: 'browser',
+      familyGate: 'g2BrowserEnabled',
+      mountBackendKey: 'g2Browser',
+      mountFactory: async ({ readNative }) => {
+        const m = (await MOUNT.createG2TeamMount({
+          realmId: 'a5m2-g2-wire-browser-supply', providerId: PLANE_PROVIDER, readNative, definitionIdentityOf,
+          browserMount: {
+            mode: 'launch', nativeConfig: {},
+            declaredServiceFacts: { modelOrigin: 'https://model.example.invalid' },
+            entries: { launchChromium: async () => ({ pid: 4242, endpoint: 'http://127.0.0.1:9222', close: async () => {} }), openBrowserWorker: async () => ({ tab: 't1', close: async () => {} }) },
+            consumeApproval: async (facts: Record<string, unknown>) => { approvals.push(String(facts.toolName)); return 'consumed' },
+            callResource: async (resource: unknown, method: unknown, args: unknown) => { workerCalls.push({ resource, method, args }); return { ok: true, acted: String(method) } },
+          },
+        })) as Record<string, unknown>
+        if (m.ok !== true) throw new Error(`browser mount refused: ${String(m.code)} ${String(m.message)}`)
+        return m
+      },
+    })
+    expect(world.rows.length).toBe(6)
+    // supply routing (invoke level — the governance walk is the PLANE leg
+    // below): the port lease runs the caller mapping on the OPENED worker.
+    const row = world.rows.find((r) => r.toolName === 'stagehand_navigate')
+    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER } })
+    expect(acted).toEqual({ ok: true, value: { ok: true, acted: 'navigate' } })
+    expect(workerCalls.length).toBe(1)
+    expect(workerCalls[0]?.method).toBe('navigate')
+    expect(workerCalls[0]?.resource).toBeDefined() // the OPENED worker chain rides the mapping (the port's own open law shapes it)
+    expect(approvals).toEqual(['stagehand_navigate'])
+    expect(world.nativeCalls.stagehand_navigate?.length ?? 0).toBe(0)
+    // the PLANE leg: B-BROWSER has no PA_FAMILY_TARGET_RULES entry (the
+    // browser rule map is ANOTHER lane) — the walk fail-closes there, zero
+    // worker entry beyond the invoke-level proof above.
+    const def = world.plane.definitions.find((d) => d.name === 'stagehand_observe')
+    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1'))).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    const detail = String((world.legResults[world.legResults.length - 1] as { detail?: string })?.detail ?? '')
+    expect(detail).toContain(`no target structure is registered for '${G2A.A5_G2_FAMILY.browser}'`)
+    const mount = world.mount as { dispose: () => Promise<{ ok: boolean }> }
+    expect((await mount.dispose()).ok).toBe(true)
   })
 })
