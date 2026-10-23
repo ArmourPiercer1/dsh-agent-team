@@ -22,6 +22,9 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 ## 22:5x 容量纪律（root，即时生效）
 r5 已实删（a356）；22:38:43 可用 10,819,141,632B（远<20GB，删后即时 +677498880B 非独占承诺）。**禁**：新增全 archive/全 tracked 证据、整 deps/Host 复制（无需等申请即执行）。各 lane：复用已核只读 store/基座 + 独占小 state；不上行泄漏 peer。保护：active/g6fix/pack/307cworld/.pnr18-home/.pnpmm-r18-store/恢复源。清理只 a356（核旧 a5-m1-host 退役候选），无新增删除许可。源码/既定小预算准备不中断，不全串行。中心足迹声明：两联合候选树=source-only+共享 node_modules 符号链接；`.worktrees/a5m2-joint-cand-probe/`（controls 探针留存，含其自建 node_modules）列 a356 未来退役候选，中心不删；日志均 KB 级。
 
+## image 线收口（根 22:45 令，OVERLAY-22）
+最终 kit **`84c655c1…a423eb8`** @ `44c8343e`（链 1c3d2642→84c655c1；27插/1删=helper+谓词行；判据/负控/终态/pin/产品零触，不再 boot）。C5 缺陷=旧 settle 谓词不认 abandoned call 上线的 rid 精确治理 deny 句；修法=rid 绑定并入接受集，结构证据不放宽，abandon 仍由独立 durably 检查证。原证离线重评 **RC0 8/8**（旧谓词 28 请求 0 命中逐字复现假阴性；新谓词恰中 seq27/row3；绑 row2 只中 row2=按行不按词；CROSS 无混）。口径写死：原 run 仍 exitCode=2/C5 3/4，**不重判 RC0**；签法=真实正/deny/abandon + 谓词假阴性离线复核。自报 RC1→0 与中间收据全部保留。候根源审签发。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
