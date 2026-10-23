@@ -1459,6 +1459,100 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['toolName', 'operation', 'portFamily', 'portMethod']),
   }),
+  /* A5-M2 B-MCP (root 19:28: express on the EXISTING signed grammar NOW -
+   * variant + nullableString + stringArray; root 19:25: one REAL legal +
+   * one REAL error native example, no hand-mirrored constraints). Measured
+   * read-only against the LIVE mount, feat/a5m2-wire-g2
+   * @5c597efea4d2f8e3ef0de5da96460c7ccf0e32c2 (A5_G2_ADAPTER_REVISION = 1,
+   * round-16; targetManifest :730+; the lane's delivered field contract
+   * dev/agent-workflow/evidence/a5m2-g2-wire/b-mcp-target-rule-field-
+   * contract.md measured in full - its own fallback clause authorizes this
+   * lane to substitute the optionality mechanism 1:1 while keeping the KEY
+   * NAMES AND KINDS the row produces, measured). MECHANISM SUBSTITUTIONS
+   * (each a named delta, same class as the signed G6 key-omission routing;
+   * zero new kinds): (D1) the nested `surface` object flattens to its
+   * measured inner key names at top level (record/transport/
+   * connectionIncarnation/endpointOrigin + spawn -> spawnArgv0/
+   * spawnArgCount/spawnCwd) - the signed closed law types exact key sets of
+   * scalar/array leaves and NO signed kind types a nested object (the
+   * round-6 Schedule lane's own lossless FLAT projection precedent,
+   * root-signed 19:28 as the structure-mapping discipline); (D2)
+   * applicability-conditional keys ride ALWAYS-EMITTED 'nullableString'
+   * (cursor on list rows: null = no cursor passed - the signed taskId-null
+   * precedent; connectionIncarnationReason: null once a REAL gen-N
+   * incarnation is up; domainAuthorityId: null when none declared) - the
+   * 18:07 key-omission law stays the G6 row's law; root 19:08/19:28's
+   * nullable-leaf ruling types THIS family's closed law; (D3) the two-axis
+   * structure (transport x method) selects SIX closed groups through ONE
+   * mint-synthesized discriminant 'mcpVariant' = `stdio|http` + ':' +
+   * `list|templates|read` - the SIGNED round-4 B-INSPECT inspectVariant
+   * pattern (derivable from measured facts, no invented data); this is
+   * what makes spawnArgCount a plain 'nonNegativeInt' (measured:
+   * command.length-1 over a non-empty command, exists exactly on stdio
+   * rows - no nullable-int anywhere) and FORBIDS cursor on the read groups
+   * STRUCTURALLY - the mint's own published-face law 'read_mcp_resource
+   * declares no cursor' (:746-748, real error example) now also holds at
+   * the grammar edge. Key/pairing fidelity to the live row: every key NAME
+   * above is the contract's measured name; the family-block twins
+   * (familyId/adapterRevision/providerIdentity) ride the block ABOVE the
+   * target (their mount legs prove it: legInput.family carries them, the
+   * targetManifest does not) - never re-minted into the target; `server`
+   * carries the IDENTITY LAW value (undeclared-server swaps refuse inside
+   * the row BEFORE any walk - real error example, zero leg); bind
+   * constants pin operation+record+transport per group (guard law: bound
+   * leaves live in their group's adds, the signed queryPlatform pattern)
+   * and uriOpacity binds its measured law literal verbatim (:754).
+   * NOT LANDED BY DECISION, pinned: headerCount is not in the rev-1
+   * manifest projection (:733) - a claim carrying it fails closed until a
+   * fingerprint ruling adds it; realmId (speculative in the contract's
+   * optional map) is NOT measured in the live target - this table invents
+   * nothing. UNTIL D1-D3 LAND ON THE MINT (g2 lane's half, routed by this
+   * entry + the pairing report) EVERY REAL B-MCP CLAIM FAILS CLOSED at the
+   * required-leaf law (measured first violation on today's nested claim:
+   * 'mcpVariant: required by the B-MCP typed plan, absent' - pinned); no
+   * silent acceptance, no translation; digest bump + adapter revision
+   * pairing at adoption. No Host enablement, no C2 claim. */
+  'B-MCP': Object.freeze({
+    required: Object.freeze({
+      mcpVariant: 'string',
+      server: 'string',
+      connectionIncarnation: 'string',
+      providerReSelectionLaw: 'string',
+      connectionIncarnationReason: 'nullableString',
+      domainAuthorityId: 'nullableString',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'mcpVariant',
+      by: Object.freeze({
+        'stdio:list': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', cursor: 'nullableString' }),
+          binds: Object.freeze({ operation: 'resources/list', record: 'surface:mcp_stdio', transport: 'stdio' }),
+        }),
+        'stdio:templates': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', cursor: 'nullableString' }),
+          binds: Object.freeze({ operation: 'resources/templates/list', record: 'surface:mcp_stdio', transport: 'stdio' }),
+        }),
+        'stdio:read': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', uriVerbatim: 'string', uriOpacity: 'string' }),
+          binds: Object.freeze({ operation: 'resources/read', record: 'surface:mcp_stdio', transport: 'stdio', uriOpacity: 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge' }),
+        }),
+        'http:list': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', cursor: 'nullableString' }),
+          binds: Object.freeze({ operation: 'resources/list', record: 'surface:mcp_http_dynamic', transport: 'streamable-http' }),
+        }),
+        'http:templates': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', cursor: 'nullableString' }),
+          binds: Object.freeze({ operation: 'resources/templates/list', record: 'surface:mcp_http_dynamic', transport: 'streamable-http' }),
+        }),
+        'http:read': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', uriVerbatim: 'string', uriOpacity: 'string' }),
+          binds: Object.freeze({ operation: 'resources/read', record: 'surface:mcp_http_dynamic', transport: 'streamable-http', uriOpacity: 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['mcpVariant', 'operation', 'record', 'transport']),
+  }),
 } as const)
 
 /* The SIGNED closed kind list - the single source the module-load legality
