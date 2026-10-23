@@ -22,6 +22,10 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 ## 22:5x 容量纪律（root，即时生效）
 r5 已实删（a356）；22:38:43 可用 10,819,141,632B（远<20GB，删后即时 +677498880B 非独占承诺）。**禁**：新增全 archive/全 tracked 证据、整 deps/Host 复制（无需等申请即执行）。各 lane：复用已核只读 store/基座 + 独占小 state；不上行泄漏 peer。保护：active/g6fix/pack/307cworld/.pnr18-home/.pnpmm-r18-store/恢复源。清理只 a356（核旧 a5-m1-host 退役候选），无新增删除许可。源码/既定小预算准备不中断，不全串行。中心足迹声明：两联合候选树=source-only+共享 node_modules 符号链接；`.worktrees/a5m2-joint-cand-probe/`（controls 探针留存，含其自建 node_modules）列 a356 未来退役候选，中心不删；日志均 KB 级。
 
+## Team ④⑤ 证据边界（9c 22:5x 两限点，中心入册）
+- **⑤ `796da885a` 的证据窄于"旧批准被撤"**：它证的是（a）mount face 发布 wiringRevision 于 adapterRevision 旁，（b）**纯结构 validator** 拒十叶旧形。**未证**：已在 durable 路径按旧语法批准过的 registration/plan/edge 会在 claim/edge 被拒——kernel 内 `adapterRevision` 无读者即"持久路径无比版本号者"，且该 validator 检查跑在我合成的 manifest 上、非落在的批准行上。**任何签法不得把"表拒旧形"读作"旧计划已被撤"**。真实待实现：发布版本入 claim（team-wiring.mjs:611-615 现仅携 adapterRevision/providerIdentity/targetManifest）并在 plane edge/consume 与同一发布值比对（复用既有 publish/registry/真 claim 配对，零第二账）。
+- **④ 实施图已实测可执行**（非授权/非表/非中心阻塞，唯该 lane 余量）：`packages/tools/src/tools.ts` 抽 `resolveToolCaller`(:261-310) + common-entry root-equality 臂(:455-474) 为一个导出 gate（同码同消息同 details，原生入口改调它=单一错误规则集）；治理侧 bridge 加一条注入 seam（agent-bindings 供 `bindings.resolveCaller` :6803-6829/:7178，零新身份逻辑），seat 在 queryFacts/mint **之前**调用，失败原样返回 native rejected VALUE、零 PA 入口。下一候选由该 lane 新轮承接（`f082452`①②③ 与 `796da885a` 不动）。
+
 ## image 线收口（根 22:45 令，OVERLAY-22）
 最终 kit **`84c655c1…a423eb8`** @ `44c8343e`（链 1c3d2642→84c655c1；27插/1删=helper+谓词行；判据/负控/终态/pin/产品零触，不再 boot）。C5 缺陷=旧 settle 谓词不认 abandoned call 上线的 rid 精确治理 deny 句；修法=rid 绑定并入接受集，结构证据不放宽，abandon 仍由独立 durably 检查证。原证离线重评 **RC0 8/8**（旧谓词 28 请求 0 命中逐字复现假阴性；新谓词恰中 seq27/row3；绑 row2 只中 row2=按行不按词；CROSS 无混）。口径写死：原 run 仍 exitCode=2/C5 3/4，**不重判 RC0**；签法=真实正/deny/abandon + 谓词假阴性离线复核。自报 RC1→0 与中间收据全部保留。候根源审签发。
 
