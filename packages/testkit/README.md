@@ -34,12 +34,15 @@ assertions. **Testkit is consumed by tests only; no production package may depen
   `PACKAGE_ID` marker (20 lines), so anything real is reached by direct specifier:
   `../../testkit/domain/src/…` or `../../testkit/fault-injection/…`.
 - Being depended on by shipped code, and the rule is currently honoured — with a wording
-  correction, because the obvious grep does **not** come back empty: every testkit **import** in
-  `packages/runtime` (78 lines) sits inside `test/`, while two lane barrels
-  (`member-residency/index.ts:31`, `root-binding/index.ts:22`) contain the word `testkit` only in
-  a **doc comment** describing what their unit tests bind (`the unit layer … binds the P4
-  repositories over the testkit FileStorageSeam`). Grep text and import graph are different
-  claims; the second is what the rule governs, and it is clean.
+  correction, because the obvious grep does **not** come back empty. Every testkit **import** in
+  `packages/runtime` sits inside `test/`: counting import specifiers outside `test/` and outside
+  the committed `dist/` gives **zero**. Three files outside `test/` do contain the word
+  `testkit`, all three in doc comments describing what gets injected in tests --
+  `member-residency/index.ts:31` and `root-binding/index.ts:22` ("*the unit layer … binds the P4
+  repositories over the testkit `FileStorageSeam*`") and
+  `agent-setup/binder/read-handle.ts:20` ("*tests: the P4 repositories over the testkit file seam
+  or an in-memory seam*"). Text-grep and import-graph are different claims; the second is what
+  the rule governs, and it is clean.
 - Node built-ins in `.ts` sources: `src/index.ts` and `domain/src` contain no `node:` imports
   (the only occurrence in `domain/src` is inside a comment). Test files and the two
   `fault-injection/*.mjs` modules do use them.
