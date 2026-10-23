@@ -250,6 +250,12 @@ export function validateRegistry(doc, root) {
     if (typeof e.refs === 'string' && e.refs) {
       findings.push({ code: 'REGISTRY_REF_SCALAR', detail: `${id}: refs must be a list, got scalar "${e.refs}"` });
       refs.push(e.refs);
+    } else if (e.refs !== undefined && !Array.isArray(e.refs)) {
+      // Before this, a scalar string was refused and anything else non-list (a mapping,
+      // a number) was silently read as "no refs", which meant the documented
+      // type: array was only half enforced -- the most convincing kind of gap, because
+      // the common mistake was caught and the uncommon one became an absence.
+      findings.push({ code: 'REGISTRY_REF_TYPE', detail: `${id}: refs must be a list, got ${typeof e.refs}` });
     }
     const knownIds = knownContractIds(root);
     for (const ref of refs) {
@@ -333,6 +339,42 @@ export function checkSchemaAgreement(root) {
     const got = props[k] && props[k].pattern;
     if (!got) out.push({ code: 'SCHEMA_KEYWORD_MISSING', detail: k + ': ' + SCHEMA_PATH + ' states no pattern, but /' + wantPattern[k] + '/ is enforced' });
     else if (got !== wantPattern[k]) out.push({ code: 'SCHEMA_PATTERN_MISMATCH', detail: k + ': schema=/' + got + '/ enforced=/' + wantPattern[k] + '/' });
+  }
+  // type / minItems, and only where a rule actually refuses. A keyword nothing enforces
+  // is documentation; comparing it would be theatre. Each expectation below names the
+  // enforcing finding in the comment next to it.
+  const entriesNode = ((doc.properties || {}).entries) || {};
+  const expectType = (node, label, want, enforcedBy) => {
+    if (!node || typeof node !== 'object') return; // a whole absent field is SCHEMA_FIELD_MISSING
+    const got = node.type;
+    if (got === undefined) out.push({ code: 'SCHEMA_TYPE_MISSING', detail: `${label}: schema states no type, but ${enforcedBy} refuses anything that is not ${want}` });
+    else if (got !== want) out.push({ code: 'SCHEMA_TYPE_MISMATCH', detail: `${label}: schema type=${got} enforced=${want} (${enforcedBy})` });
+  };
+  const expectMinItems = (node, label, want, enforcedBy) => {
+    if (!node || typeof node !== 'object') return;
+    const got = node.minItems;
+    if (got === undefined) out.push({ code: 'SCHEMA_MINITEMS_MISSING', detail: `${label}: schema sets no minItems, but ${enforcedBy} refuses an empty list` });
+    else if (got !== want) out.push({ code: 'SCHEMA_MINITEMS_MISMATCH', detail: `${label}: schema minItems=${got} enforced=${want} (${enforcedBy})` });
+  };
+  expectType(entriesNode, 'entries', 'array', 'the parser yields a list or refuses');
+  expectType(props.owners, 'entry.owners', 'array', 'REGISTRY_OWNER_TYPE');
+  expectType(props.refs, 'entry.refs', 'array', 'REGISTRY_REF_SCALAR / REGISTRY_REF_TYPE');
+  expectType(props.verification_artifacts, 'entry.verification_artifacts', 'array', 'REGISTRY_ARTIFACTS_TYPE');
+  expectMinItems(entriesNode, 'entries', 1, "validateRegistry's 'no entries' rule");
+  expectMinItems(props.owners, 'entry.owners', 1, 'the required-field rule, which treats an empty list as absent');
+  // The opposite direction matters as much: `refs` is the one list the required-field
+  // rule names as allowed to be empty, so a schema claiming minItems there would forbid
+  // something the validator permits -- drift in the strict direction is still drift.
+  if (props.refs && typeof props.refs === 'object' && props.refs.minItems !== undefined) {
+    out.push({ code: 'SCHEMA_MINITEMS_UNEXPECTED', detail: `entry.refs: schema says minItems=${props.refs.minItems}, but the required-field rule explicitly allows an empty refs list` });
+  }
+  // Every artifact path goes through `typeof p !== 'string'`, so the element type is
+  // enforced even though it sits one level deeper than the field itself.
+  const artifactItems = props.verification_artifacts && props.verification_artifacts.items;
+  if (!artifactItems || typeof artifactItems === 'object' && artifactItems.type === undefined) {
+    out.push({ code: 'SCHEMA_KEYWORD_MISSING', detail: 'entry.verification_artifacts.items: schema states no type, but each path is checked with typeof p === "string" (ARTIFACT_LOCATION_UNCONTROLLED)' });
+  } else if (artifactItems.type !== 'string') {
+    out.push({ code: 'SCHEMA_TYPE_MISMATCH', detail: `entry.verification_artifacts.items: schema type=${artifactItems.type} enforced=string (ARTIFACT_LOCATION_UNCONTROLLED)` });
   }
   if (item.additionalProperties !== false) {
     out.push({ code: 'SCHEMA_CONSTRAINT_MISMATCH', detail: SCHEMA_PATH + ' does not say additionalProperties:false, yet the entry field set is closed (REGISTRY_UNKNOWN_FIELD)' });

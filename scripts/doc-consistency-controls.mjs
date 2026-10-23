@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
 import { checkGeneratedTarget } from './generated-write.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
-import { renderContractIndex, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
+import { renderContractIndex, validateRegistry, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -143,7 +143,7 @@ owners:
 `,
   'dev/engineering/registry.schema.json': JSON.stringify({
     schema_version: 1,
-    properties: { entries: { items: {
+    properties: { entries: { type: 'array', minItems: 1, items: {
       required: ['id', 'kind', 'title', 'decision_status', 'implementation_status', 'verification_status', 'release_status', 'owners'],
       additionalProperties: false,
       properties: {
@@ -154,9 +154,9 @@ owners:
         implementation_status: { enum: ['not_started', 'in_progress', 'implemented_in_branch', 'merged'] },
         verification_status: { enum: ['not_verified', 'verified_local', 'verified_ci', 'verified_host'] },
         release_status: { enum: ['not_released', 'candidate', 'released'] },
-        owners: { type: 'array' },
+        owners: { type: 'array', items: { type: 'string' }, minItems: 1 },
         refs: { type: 'array' },
-        verification_artifacts: { type: 'array' },
+        verification_artifacts: { type: 'array', items: { type: 'string' } },
         verified_tier: { enum: ['C1', 'C2', 'C3'] },
         verification_commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
         merged_commit: { type: 'string', pattern: '^[0-9a-f]{40}$' },
@@ -674,6 +674,61 @@ control('NEG-53 enforcement stays per rule, not blanket', (d) => {
   return [
     expectRun('probe', res, 0, 'DOC_IMPACT_OWNED'),
     { ok: !failCodes.includes('DOC_OWNER_UPDATE_MISSING'), why: 'blocking set: [' + (failCodes.join(',') || 'empty') + ']' },
+  ];
+});
+
+const SCHEMA = 'dev/engineering/registry.schema.json';
+const mutateSchema = (d, fn) => {
+  const j = JSON.parse(read(d, SCHEMA));
+  fn(j);
+  writeFile(d, SCHEMA, JSON.stringify(j, null, 2) + '\n');
+};
+
+control('NEG-62 a schema calling owners a string is refused', (d) => {
+  mutateSchema(d, (j) => { j.properties.entries.items.properties.owners = { type: 'string' }; });
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_TYPE_MISMATCH')];
+});
+
+control('NEG-63 a schema that drops owners minItems is refused', (d) => {
+  // The required-field rule treats an empty owners list as absent, so a schema without
+  // minItems promises that [] is legal. A dropped keyword is not agreement.
+  mutateSchema(d, (j) => { delete j.properties.entries.items.properties.owners.minItems; });
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_MINITEMS_MISSING')];
+});
+
+control('NEG-64 a schema tightening refs to non-empty is refused', (d) => {
+  // Drift in the strict direction is still drift: refs is the one list the required-field
+  // rule names as allowed to be empty, so minItems here would forbid a legal registry.
+  mutateSchema(d, (j) => { j.properties.entries.items.properties.refs.minItems = 1; });
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_MINITEMS_UNEXPECTED')];
+});
+
+control('NEG-65 a schema with no element type for artifacts is refused', (d) => {
+  mutateSchema(d, (j) => { delete j.properties.entries.items.properties.verification_artifacts.items; });
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_KEYWORD_MISSING')];
+});
+
+control('NEG-66 a schema that allows an empty registry is refused', (d) => {
+  mutateSchema(d, (j) => { delete j.properties.entries.minItems; });
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'SCHEMA_MINITEMS_MISSING')];
+});
+
+control('NEG-67 a refs value that is not a list is refused, whatever the parser made it', (d) => {
+  // Unit-level on purpose. The strict parser turns `refs: 5` into the *string* '5', which
+  // the scalar rule already caught, and a mapping value is a parse error before the
+  // validator ever sees one -- an earlier version of this control hit exactly that and
+  // reported REGISTRY_PARSE. So the branch that guards a non-list, non-string refs is
+  // exercised directly against validateRegistry, where it can be observed honestly.
+  const entry = {
+    id: 'EB1-CASE', kind: 'work-package', title: 't', decision_status: 'accepted',
+    implementation_status: 'not_started', verification_status: 'not_verified',
+    release_status: 'not_released', owners: ['EB-CTL'], refs: 5,
+  };
+  const codes = validateRegistry({ schema_version: 1, entries: [entry] }, d).map((f) => f.code);
+  const scalarCodes = validateRegistry({ schema_version: 1, entries: [{ ...entry, refs: 'EB-ADR-0001' }] }, d).map((f) => f.code);
+  return [
+    { ok: codes.includes('REGISTRY_REF_TYPE'), why: 'refs=5 -> [' + codes.join(',') + ']' },
+    { ok: scalarCodes.includes('REGISTRY_REF_SCALAR') && !scalarCodes.includes('REGISTRY_REF_TYPE'), why: 'refs as a bare string keeps its own code -> [' + scalarCodes.join(',') + ']' },
   ];
 });
 
