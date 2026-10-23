@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts (26 tests) 83ms
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  07:36:08
+   Duration  791ms (transform 439ms, setup 0ms, import 572ms, tests 83ms, environment 0ms)
+
+RUNNER_EXIT=0

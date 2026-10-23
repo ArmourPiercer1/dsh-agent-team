@@ -1,0 +1,277 @@
+/**
+ * A5-M2 WRITE ROW — the governed `write` row body for the plane's future
+ * write-takeover row (M2-WRITE-01 / C2, card ruling D-C2-1).
+ *
+ * WHAT THIS IS: the law order of `packages/tools/a5p5-tools/src/write-slice.ts`
+ * (the lane-side governed write face, C1-pinned 20/20 at
+ * `packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts`) PORTED to the live
+ * row face over the REAL production arms, replacing the C1 fixture stubs:
+ *  - `pa` = the plane's `paAdmit` (admitCall → real Control ask lane →
+ *    `consumeForExecution` ONE-SHOT INSIDE the edge — the durable consumed
+ *    ledger is the kernel's, there is no second one);
+ *  - `decide`/`policy` = the same template-lane read the read row reads
+ *    (`createLaneDecide` over the mount's `permissionPolicy`);
+ *  - the fs edge = the READ ARM'S OWN algebra, same-position-same-parameter
+ *    (card ruling "零第二套 fs 代数"): the shared `lexicalAnchor` /
+ *    `resolveAnchoredPath` from `plane-effect-backends.mjs` plus the
+ *    O_NOFOLLOW open + `verifyOpenedHandle` exec-time re-read from the
+ *    controlled-fs face — the exact trio the shipped governed read row runs.
+ *
+ * LAW ORDER (every exit typed; nothing after the PA edge runs on a refusal):
+ *   1. host argument law at the pin (host `write.ts:24-27,75-79`): `file_path`
+ *      non-empty string, `content` a string (EMPTY is legitimate); the host
+ *      escalation pair (`sandbox_permissions`/`justification`, host
+ *      `sandbox.ts:59-72`) has NO governed lane here — refused typed, never
+ *      silently dropped;
+ *   2. PURE-LEXICAL anchor (the read row's fix-5 law: pending ⇒ resolver=0 —
+ *      no realpath/exists/stat before the PA edge answered);
+ *   3. the frozen effect grammar (`tool-invoke write` + `write` on the ONE
+ *      anchored locator — the A3 single-point law: approved fingerprint,
+ *      effect locator and consumed target are ONE value);
+ *   4. template-lane fast deny + deny-default re-check at the effect's own
+ *      granularity (a subtree rule without the containment seam proves
+ *      nothing: refuse — the read row's ruleCovers law, `tool: 'write'`);
+ *   5. the ASYNC PA edge — pending settles as a refusal with its own code
+ *      (no durable Control leg = `APPROVAL_REQUEST_UNAVAILABLE`, pending
+ *      never runs); `allow + cancelled` is a PRESENTED cancellation, never a
+ *      write; the one-shot consumption happens INSIDE the edge;
+ *   6. POST-consume the FULL resolver runs; realpath drift against the
+ *      approved lexical target = `ANCHOR-DRIFT` (stale, zero body, no
+ *      re-approval — the approved fact is never rewritten here);
+ *   7. the write itself: O_WRONLY|O_CREAT|O_TRUNC|O_NOFOLLOW, exec-time
+ *      `verifyOpenedHandle` on the OPENED fd BEFORE any byte moves (escape /
+ *      drift / undeterminable all refuse with zero bytes), one close owner,
+ *      and the receipt per ruling D-C2-1: `canonicalLocator` +
+ *      `writtenFingerprint` ONLY — old content NEVER travels back (the host
+ *      `before`/`after` echo is the C2-full increment, and it must ride a
+ *      PAIRED read effect through the governed read arm, never a second
+ *      read face).
+ *
+ * TOKEN LAW: one host execution token owns ONE correlation for its whole
+ * life (the read row's ledger law, minus the hand-off halves this row does
+ * not offer): an in-flight replay is refused, a SETTLED token is never
+ * re-armed (a write never re-runs on a spent identity), and the token is
+ * never stringified.
+ *
+ * @module packages/runtime/src/plugin/live/governed-write-row
+ */
+import { Buffer } from 'node:buffer'
+import { createHash } from 'node:crypto'
+import { constants as fsConstants, realpathSync, statSync } from 'node:fs'
+import { open as fsOpen } from 'node:fs/promises'
+
+import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
+import { verifyOpenedHandle } from '../../../controlled-fs/src/index.js'
+import { lexicalAnchor, resolveAnchoredPath } from './plane-effect-backends.mjs'
+
+/**
+ * Build the governed write executor — the row body a `writeName` mount feeds
+ * with the host exec correlation. The arms are the mount's OWN readers; this
+ * module owns no clock, no ledger and no second fs algebra.
+ * @param {object} arms
+ * @param {string} arms.realmId - the mount realm every effect names.
+ * @param {string} arms.rootDir - the governed instance root (the SAME
+ *   `fsInstance.rootDir` the read row anchors on).
+ * @param {{ default?: string, allow?: readonly object[], ask?: readonly object[] }} arms.policy - the mount policy (deny-default re-check).
+ * @param {(request: { effects: readonly object[] }) => { kind: string, code?: string }} arms.decide - the template-lane fast path.
+ * @param {(call: object) => Promise<{ kind: string, cancelled?: boolean, code?: string, detail?: string }>} arms.pa - the plane's `paAdmit` (the async production edge; consumes inside).
+ * @param {(args: { realmId: string, parent: string, child: string }) => boolean} [arms.subtreeContains] - the containment seam (absent = subtree rules inert).
+ * @param {(line: string) => void} [arms.observe] - the mount observation sink.
+ * @returns {(raw: unknown, corr?: object) => Promise<object>} the row body.
+ */
+export function createGovernedWriteRow({ realmId, rootDir, policy, decide, pa, subtreeContains, observe = () => {} }) {
+  // the read arm's rule law restated for `write`: exact paths match the
+  // anchored locator; a subtree rule WITHOUT the injected containment seam
+  // proves nothing and stays inert (refuse); `any` covers.
+  const ruleCovers = (rules, locator) => (rules ?? []).some((rule) => {
+    if (rule?.tool !== 'write') return false
+    const kind = rule?.resource?.kind
+    if (kind === 'any') return true
+    if (kind === 'exact') return typeof rule.resource.path === 'string' && rule.resource.path === locator
+    if (kind === 'subtree') {
+      if (typeof rule?.resource?.path !== 'string') return false
+      if (typeof subtreeContains === 'function') {
+        return subtreeContains({ realmId, parent: rule.resource.path, child: locator }) === true
+      }
+      return false
+    }
+    return false
+  })
+  const refused = (refusalClass, code, detail) => ({
+    kind: 'refused', refusalClass, code, text: `refused-${refusalClass} ${String(code)} — ${detail}`,
+  })
+  const mountNonce = String(globalThis.crypto?.randomUUID?.() ?? `w-${Date.now()}-${Math.floor(Math.random() * 2 ** 31)}`)
+  // token→correlation: ONE allocation per token for the token's whole life.
+  // A write NEVER re-runs: an in-flight replay and a settled replay are both
+  // refused outright (zero side effects either way); strings are not
+  // identities (mount-unique fallback correlation only).
+  const writeTokenLedger = new Map()
+  let writeSeq = 0
+
+  const rowMain = async (raw, corr) => {
+    const token = corr?.token
+    const tokenKey = (typeof token === 'object' && token !== null) || typeof token === 'symbol' ? token : undefined
+    let correlation
+    if (tokenKey !== undefined) {
+      const prior = writeTokenLedger.get(tokenKey)
+      if (prior !== undefined) {
+        return refused('admission', 'exec-token-replay', prior.settled
+          ? 'this host execution already ran a governed write; a spent identity is never re-armed and a write never re-runs'
+          : 'this host execution already owns an in-flight governed write (single-flight)')
+      }
+      writeSeq += 1
+      correlation = `plane-write:${mountNonce}-${String(writeSeq)}`
+      writeTokenLedger.set(tokenKey, { correlation, settled: false })
+    }
+    try {
+      return await walkWrite(raw, corr, correlation)
+    } finally {
+      if (tokenKey !== undefined) writeTokenLedger.set(tokenKey, { correlation, settled: true })
+    }
+  }
+
+  const walkWrite = async (raw, corr, ledgerCorrelation) => {
+    // 1 — host argument law at the pin + the escalation refusal.
+    const record = (raw !== null && typeof raw === 'object') ? raw : {}
+    if (record.sandbox_permissions !== undefined || record.justification !== undefined) {
+      observe('governed-write schema-refused code=write-escalation-ungoverned')
+      return refused('schema', 'write-escalation-ungoverned', 'sandbox_permissions/justification ride the host-native escalation face, which this governed write assembles NOT; a governed write carries no escalation lane')
+    }
+    const rawPath = record.file_path
+    if (typeof rawPath !== 'string' || rawPath.trim().length === 0) {
+      return refused('schema', 'write-args-file-path-blank', 'file_path must be a non-empty string')
+    }
+    if (typeof record.content !== 'string') {
+      return refused('schema', 'write-args-content-not-string', 'content must be a string (the empty string writes an empty file)')
+    }
+    const content = record.content
+    // 2 — PURE-LEXICAL anchor: zero realpath/exists/stat BEFORE admission.
+    const lex = lexicalAnchor(rootDir, rawPath)
+    if (!lex.ok) return refused('schema', lex.code, lex.detail)
+    // 3 — the frozen effect grammar over the ONE anchored locator.
+    const effects = [
+      { kind: 'tool-invoke', toolName: 'write', resource: null },
+      { kind: 'write', resource: { realmId, kind: 'absolute-path', canonicalLocator: lex.path, rights: ['write'] } },
+    ]
+    const set = parseRequestedEffectSet(effects)
+    if (!set.ok) return refused('schema', 'effect-set-rejected', JSON.stringify(set.problems).slice(0, 200))
+    // 4 — lane fast deny + deny-default re-check at the effect granularity.
+    const verdict = decide({ effects })
+    if (verdict.kind === 'deny') return refused('admission', verdict.code, 'the template lane denies this write effect')
+    if (policy?.default === 'deny' && !ruleCovers([...(policy?.allow ?? []), ...(policy?.ask ?? [])], lex.path)) {
+      observe(`governed-write default-deny refusal path=${lex.path}`)
+      return refused('admission', 'template-default-deny', 'the policy defaults to DENY and no rule covers this write effect')
+    }
+    // 5 — the ASYNC PA edge (the mount's `paAdmit`): the one-shot
+    // consumption happens INSIDE the edge; NOTHING past this point runs on
+    // deny, on cancellation, or on pending-without-a-durable-leg.
+    const writeSignal = corr?.signal
+    if (typeof pa === 'function') {
+      const gate = await pa({
+        realmId,
+        callId: ledgerCorrelation ?? (typeof corr?.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : `plane-write-${mountNonce}-0`),
+        ...(writeSignal === undefined ? {} : { signal: writeSignal }),
+        parametersFingerprint: set.value.fingerprint,
+        requestedEffects: set.value,
+      })
+      if (gate.kind === 'allow' && gate.cancelled === true) {
+        observe('governed-write cancelled-at-pa-edge')
+        return { kind: 'cancelled' }
+      }
+      if (gate.kind === 'deny') {
+        observe(`governed-write pa-refused code=${String(gate.code)}`)
+        return refused('admission', String(gate.code), String(gate.detail ?? 'the PA execution edge refused this write'))
+      }
+      if (gate.kind !== 'allow') {
+        // fail closed: an unrecognized verdict is never treated as an allow.
+        return refused('admission', 'PA_VERDICT_UNRECOGNIZED', `the PA edge answered '${String(gate.kind)}'; only a non-cancelled allow authorizes a write`)
+      }
+    }
+    // a cancellation that landed DURING the walk stops the write (zero bytes;
+    // whatever the PA edge already settled stays truthfully as-is).
+    if (writeSignal?.aborted === true) return { kind: 'cancelled' }
+    // 6 — POST-consume full resolver + the drift law (the approved fact is
+    // never rewritten: a moved target is a stale call that runs nothing).
+    // The WRITE-side shape of the read arm's resolver law: an EXISTING
+    // target must realpath to exactly the approved lexical path (else
+    // ANCHOR-DRIFT); an ABSENT target is the legitimate CREATE case (the
+    // read arm has no create, the host `write` does — write.ts 'Create or
+    // fully replace'), and its containment is enforced on the OPENED fd at
+    // exec time, BEFORE any byte moves. Intermediate-path traversal is
+    // caught there too: the fd resolves to its real path, and anything
+    // outside the anchor is an `escape` refusal with zero bytes.
+    let targetPath = lex.path
+    let rootReal
+    const resolved = resolveAnchoredPath(rootDir, rawPath)
+    if (resolved.ok) {
+      if (resolved.path !== lex.path) {
+        observe(`governed-write anchor-drift lex=${lex.path} real=${resolved.path}`)
+        return refused('admission', 'ANCHOR-DRIFT', 'the resolved target differs from the approved lexical target; this call is stale and writes nothing')
+      }
+      targetPath = resolved.path
+      rootReal = resolved.rootReal
+    } else if (resolved.code === 'target-unresolvable') {
+      try {
+        rootReal = realpathSync(rootDir)
+      } catch {
+        return refused('io', 'root-unavailable', `the governed root does not resolve: ${rootDir}`)
+      }
+    } else {
+      observe(`governed-write resolver-refused code=${String(resolved.code)}`)
+      return refused('io', String(resolved.code), String(resolved.detail))
+    }
+    // 7 — the write edge, SAME algebra as the shipped read row: pre-open
+    // object law, O_NOFOLLOW open, exec-time verification on the OPENED fd
+    // BEFORE any byte moves, ONE close owner.
+    let snapshot = null
+    try {
+      const stat = statSync(targetPath)
+      if (!stat.isFile()) return refused('io', 'not-a-file', 'the governed write is a file effect, never a directory or device target')
+      snapshot = { dev: Number(stat.dev), ino: Number(stat.ino), size: stat.size, mtimeMs: stat.mtimeMs }
+    } catch (error) {
+      if (String(error?.code ?? '') !== 'ENOENT') return refused('io', 'target-unwritable', 'the anchored target could not be stat-ed')
+      // absent = a create; the exec-time check below then enforces
+      // containment on the freshly opened fd (no pre-snapshot exists).
+    }
+    let handle
+    try {
+      handle = await fsOpen(targetPath, fsConstants.O_WRONLY | fsConstants.O_CREAT | fsConstants.O_TRUNC | fsConstants.O_NOFOLLOW)
+    } catch (error) {
+      const code = String(error?.code ?? '')
+      if (code === 'ELOOP') return refused('io', 'symlink-alias', 'the OS refused the open (ELOOP): symlink alias')
+      if (code === 'EISDIR') return refused('io', 'not-a-file', 'the governed write is a file effect, never a directory walk')
+      if (code === 'ENOENT') return refused('io', 'parent-missing', 'no governed directory exists for the target path')
+      return refused('io', 'open-failed', code.slice(0, 80))
+    }
+    try {
+      const recheck = await verifyOpenedHandle(handle, rootReal, snapshot)
+      if (recheck.verdict !== 'confirmed') {
+        const detail = recheck.verdict === 'escape'
+          ? `exec-time re-read: the fd resolved to ${recheck.resolvedPath} — OUTSIDE the governed anchor`
+          : recheck.verdict === 'drift'
+            ? `snapshot ${String(recheck.snapshot.dev)}:${String(recheck.snapshot.ino)} != opened ${String(recheck.actual.dev)}:${String(recheck.actual.ino)}`
+            : recheck.detail
+        observe(`governed-write exec-refused:${recheck.verdict} path=${targetPath}`)
+        return refused('io', `exec-time-${recheck.verdict}`, `${String(detail).slice(0, 200)}; zero bytes written`)
+      }
+      const buffer = Buffer.from(content, 'utf8')
+      let written = 0
+      while (written < buffer.length) {
+        const step = await handle.write(buffer, written, buffer.length - written, written)
+        if (step.bytesWritten <= 0) return refused('io', 'write-stalled', 'the write stopped making progress; the partial state is disclosed as such')
+        written += step.bytesWritten
+      }
+      const writtenFingerprint = `sha256:${createHash('sha256').update(buffer).digest('hex')}`
+      observe(`governed-write RAN path=${targetPath} bytes=${String(written)}`)
+      // THE RECEIPT (ruling D-C2-1): locator + fingerprint ONLY. No `before`,
+      // no old content, no diff payload — ever.
+      return { kind: 'written', canonicalLocator: targetPath, writtenFingerprint, bytes: written }
+    } finally {
+      // ONE close owner: every post-open outcome (refusal, stall, success)
+      // leaves through this same finally, so the fd closes exactly once.
+      await handle.close()
+    }
+  }
+
+  return rowMain
+}

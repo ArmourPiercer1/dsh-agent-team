@@ -1,5 +1,18 @@
 # M2-WRITE-01 — governed `write` face (C1 fixture round)
 
+> **SUPERSEDED FOR THE SLICE LAW (2026-10-23 07:13 root security ruling; fix round 1).**
+> The stub-graded C1 described below could not offset the three reproduced defects.
+> The CURRENT state of the card is `runs/2026-10-23T07-36Z-fix1/README-fix1.md`:
+> three mandated repairs (full-plan freeze via the M1 canonicalizer; sole consumption
+> point + cancel semantics + token single-flight; ANCHOR-DRIFT agreement), the pre-fix
+> reproduction suite (`repro/` + `a5m2-write-slice-defect-repro.test.ts`, 3/3) and the
+> fix-round C1 over REAL parts (real kernel/ledger/canonicalizer/gated lane, 26/26,
+> lawful ask/deny grammar). The production-assembly row direction is WITHDRAWN — its
+> two artifacts live PARKED under `parked/` (not delivered, not wired). Everything
+> below documents the FIRST revision and its 20 stub legs, kept unaltered as history.
+
+# M2-WRITE-01 — governed `write` face (C1 fixture round)
+
 Card: M2 首批 `M2-WRITE-01` (sole owner) · tool = `write` (matrix row `write (M-02)`).
 Baseline: branch `feat/a5-m1-center-kernel` @ `7a3540937e39aa5b90ec…` (HEAD at run time;
 M1 merged master `929fc4af2`, reviewed tree `7a3540937`). CORE PATCH BUDGET = 0 observed
