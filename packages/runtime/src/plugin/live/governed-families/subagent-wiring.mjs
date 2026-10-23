@@ -88,22 +88,42 @@ import {
 // OWN parsed value (team-tool-plane :2360-2365, paAdmit reads
 // requestedEffects.effects). This wiring reuses the SAME parser and rides
 // its canonical `{ effects, fingerprint }` struct — never a self-invented
-// effect envelope. canonicalJsonStringify is the SAME house canonical form
-// the fingerprints are minted over — used here for the UNION-ENCODED target
-// (root 21:20) where argsCanonical/namedGapsCanonical must ride as FULL
-// canonical JSON (never a digest): full message/prompt text, unknown-but-
-// legal args keys, array order, nulls and empty strings all survive.
-import { canonicalJsonStringify, parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
+// effect envelope.
+import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
+// THE CANONICAL LEAF LAW (root 21:20 joint card + the 9d968 mint-owner
+// handoff at feat/a5m2-family-rules @4e96decc6, leaf "argsCanonical = your
+// OWN canonicalJson"): the sorted-key JSON.stringify law of the controls
+// module subagent-adapters.mjs :234-238 IS the law — copied here verbatim
+// (the handoff: "same helper, spawn side may copy the law"), so
+// argsCanonical/namedGapsCanonical are complete reversible canonical JSON
+// under the SAME law the family's parametersFingerprint is minted over:
+// full message/prompt text, unknown-but-legal args keys, array order,
+// nulls and empty strings all survive; key ORDER is deterministically
+// normalized by this helper — the leaf carries content, not spelling.
+const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
+  v !== null && typeof v === 'object' && !Array.isArray(v)
+    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
+    : v
+))
 
 // Bumped 1→2 with the root-21:20 UNION ENCODING round (the control mint now
 // emits the common-required + control-addition manifest with FULL canonical
 // JSON; an OLD-shape mint is not produced anywhere and a previously reviewed
 // manifest bytes are NOT silently retranslated — every dispatch re-mints from
-// the frozen plan under the new law). Registration pairs this same round:
-// the adapter stays at its signed A5_B_SUBAGENT_ADAPTER_REVISION (not
-// reopened); the table entry's own revision pairing belongs to the 9d968
-// family-rule owner lane.
-export const A5_B_SUBAGENT_WIRING_REVISION = 2
+// the frozen plan under the new law). Bumped 2→3 with the 9d968 mint-owner
+// handoff (@4e96decc6, root 21:33): the canonical leaves are minted under
+// this module's OWN copy of the controls-module :234-238 sorted-key law (the
+// handoff names that helper as the law) instead of the domain canonical
+// helper — AND the root-21:37 scoped addressClaim correction (list_agents'
+// manifest claim is the operation's true no-address NULL; a foreign unknown
+// agent_id key is never interpreted as an address; args stay whole; the
+// frozen adapter is NOT reopened and the table's nullableString is NOT
+// widened) — a VISIBLE mint change per the pairing rules, never a silent
+// translation of approved revisions. Registration pairs same-round: the
+// adapter stays at its signed A5_B_SUBAGENT_ADAPTER_REVISION (not reopened;
+// the table entry pairs adapter rev 1 at the measured pins); the table
+// entry's own revision pairing belongs to the 9d968 family-rule owner lane.
+export const A5_B_SUBAGENT_WIRING_REVISION = 3
 
 /** Typed codes OWNED by this wiring layer (P_B_SUBAGENT_WIRE_*). Funnel and
  *  adapter refusals keep THEIR OWN bytes — this seat never re-codes them. */
@@ -238,12 +258,24 @@ export function createBSubagentControlWiring(input = {}) {
       revision: plan.target.revision,
       effect: plan.target.effect,
       depth: plan.target.depth,
-      argsCanonical: canonicalJsonStringify(plan.args),
-      namedGapsCanonical: canonicalJsonStringify(A5_B_SUBAGENT_NAMED_GAPS),
+      argsCanonical: canonicalJson(plan.args),
+      namedGapsCanonical: canonicalJson(A5_B_SUBAGENT_NAMED_GAPS),
       caller: plan.target.caller,
       addressRelation: plan.target.address.relation,
       addressAdjudication: plan.target.address.adjudication,
-      addressClaim: plan.target.address.claim,
+      // ROOT 21:37 SCOPED CORRECTION (mine, control-mint seat): the LIST
+      // operation addresses NOTHING — its true address fact is NULL. A
+      // list_agents call may legally carry an UNKNOWN key named agent_id (open
+      // object root — Host accepts it); that is NOT an address designation and
+      // the nullableString law must not see it folded into a claim (the
+      // adapter's internal plan.target.address.claim mirror stays the faithful
+      // `snapshot.agent_id ?? null` byte — NOT reopened, root 20:02 — but the
+      // MANIFEST this validator reads answers the operation's real no-address
+      // fact). interrupt / send_message keep their native address field
+      // unchanged. The unknown key still rides argsCanonical COMPLETELY and
+      // reaches the native untouched — nothing is deleted, no new kind, no
+      // nullable→any widening.
+      addressClaim: name === 'list_agents' ? null : plan.target.address.claim,
       budget: plan.target.budget,
       effectDelta: A5_B_SUBAGENT_EFFECT_LABELS[name],
       recordIndex,

@@ -67,7 +67,7 @@ type WiringValue = {
   subset: string
   definitions: Definition[]
   placementNames: string[]
-  rowOf: (name: string) => { name: string; classify: (args: unknown) => { ok: boolean; plan?: { target?: unknown } } } | undefined
+  rowOf: (name: string) => { name: string; classify: (args: unknown) => { ok: boolean; plan?: { target?: unknown; args?: unknown } } } | undefined
   familyRegistrations: () => { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }[]
   inFlight: () => { dispatches: number; refuses: number }
   mount: (agentCtx: { tools: { register: (definition: Definition) => unknown } }) => { ok: boolean; code?: string; name?: string; dispose?: () => unknown }
@@ -282,7 +282,7 @@ describe('a5m2-subagent-wiring (b) verbatim reuse of the frozen adapter', () => 
   it('placed defs travel COMPLETE (only execute replaced), send_message carries the REAL adjacency mark, registrations ride the assembly face', () => {
     const wiring = okValue(mountWiring(makePa()))
     expect(wiring.familyId).toBe('B-SUBAGENT')
-    expect(wiring.wiringRevision, 'bumped 1→2 WITH the root-21:20 union-encoding round (same-round pairing; the frozen adapter revision is UNTOUCHED)').toBe(2)
+    expect(wiring.wiringRevision, 'visible bumps: 1→2 root-21:20 union encoding; 2→3 the 9d968 handoff canonical-law switch (frozen adapter revision UNTOUCHED)').toBe(3)
     expect(wiring.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
     expect(wiring.providerId).toBe(PROVIDER)
     expect(wiring.placementNames).toEqual([...NAMES].sort())
@@ -432,9 +432,17 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     // the plan fact NULL — never a fabricated empty string, never absent-key
     // drift:
     await list.execute({}, execFor('call-rt2'))
+    // ROOT 21:37 case: list_agents({agent_id: 7}) — an address-SHAPED name
+    // under a NUMBER value is a legal UNKNOWN key for THIS operation (open
+    // object root, Host law). It is NOT an address designation: the manifest
+    // answers the operation's true no-address NULL, while the key rides
+    // argsCanonical COMPLETE and reaches the native law untouched — nothing
+    // deleted, no new kind, no nullable→any widening at the table:
+    await list.execute({ agent_id: 7 }, execFor('call-rt3'))
     const m1 = pa.walks[0]?.family.targetManifest
     const m2 = pa.walks[1]?.family.targetManifest
-    if (m1 === undefined || m2 === undefined) throw new Error('no walks')
+    const m3 = pa.walks[2]?.family.targetManifest
+    if (m1 === undefined || m2 === undefined || m3 === undefined) throw new Error('no walks')
     expect(JSON.parse(String(m1.argsCanonical)), 'the FULL classified args, value-for-value').toEqual(rich)
     expect(String(m1.argsCanonical), 'the full message text rides — no summary, no digest').toContain('原文全文')
     expect(String(m1.argsCanonical), 'unknown-but-legal keys ride').toContain('unknownButLegal')
@@ -442,12 +450,27 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     expect(back.orderMatters, 'array order preserved').toEqual([3, 1, 2, 3])
     expect(back.nilLeaf, 'null survives').toBeNull()
     expect(back.emptyString, 'empty string survives and is NOT dropped or coerced').toBe('')
+    // THE LEAF LAW (9d968 mint-owner handoff @4e96decc6): argsCanonical is
+    // the mint's OWN copy of the controls-module :234-238 sorted-key
+    // JSON.stringify — recomputed here over a fresh classify of the SAME
+    // args; the leaf is that exact byte string (content, not spelling):
+    const rtRow = wiring.rowOf('send_message')
+    if (rtRow === undefined) throw new Error('no send row')
+    const rtPlan = rtRow.classify(rich)
+    if (rtPlan.ok !== true || rtPlan.plan === undefined) throw new Error('classify refused')
+    const sortedKeyLaw = (v: unknown): string => JSON.stringify(v, (_k, x) => (x !== null && typeof x === 'object' && !Array.isArray(x)
+      ? Object.fromEntries(Object.keys(x as Record<string, unknown>).sort().map((k) => [k, (x as Record<string, unknown>)[k]]))
+      : x))
+    expect(String(m1.argsCanonical), 'the leaf IS the :234-238 law over the classified args').toBe(sortedKeyLaw(rtPlan.plan.args))
     expect(m1.addressClaim).toBe('agent-child-1')
     expect(m2.addressClaim, 'nullableString law: no claim is NULL (the plan fact)').toBeNull()
     expect(m2.operation).toBe('subagent-list')
     expect(m2.action).toBe('subagent-list')
     expect(m2.recordIndex).toBe(45)
     expect(m2.effectDelta).toBe(ADAPTER.A5_B_SUBAGENT_EFFECT_LABELS.list_agents)
+    expect(m3.addressClaim, 'list NEVER claims an address: the foreign numeric agent_id is not interpreted (root 21:37)').toBeNull()
+    expect(String(m3.argsCanonical), 'the unknown numeric key rides COMPLETE — nothing deleted').toBe('{"agent_id":7}')
+    expect(m3.operation).toBe('subagent-list')
   })
 })
 
