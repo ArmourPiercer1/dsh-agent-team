@@ -90,6 +90,10 @@ const ADAPTER = (await import(new URL('../src/plugin/live/governed-families/team
 }
 const CODES = WIRING.A5_B_TEAM_WIRING_CODES
 const NAMES = ADAPTER.A5_B_TEAM_TOOL_NAMES
+const ROSTER = [
+  { instanceId: 'mi-9', childSessionId: 's-child-mi9', templateId: 'tpl-worker' },
+  { instanceId: 'mi-1', childSessionId: 's-child-mi1', templateId: 'tpl-sec' },
+]
 const REALM = 'b-team-wire-realm'
 const PROVIDER = 'a5m2-b-team-wire'
 
@@ -160,6 +164,22 @@ function makeWorld (over: Record<string, unknown> = {}) {
       return typeof callId === 'string' && callId.length > 0 ? callId : null
     },
     observe: (event: Record<string, unknown>) => { events.push(event) },
+    // The published durable reads the QUERY rows mint their target leaves
+    // from. The rows carry their OWN content (instanceId / childSessionId /
+    // templateId); the fingerprint is a digest of the id set, never a count.
+    queryFacts: over.queryFacts === undefined ? {
+      resolve: (name: string, addressedInstanceId: string | undefined) => {
+        if (name === 'team_list_templates') return { templateIds: ['tpl-worker', 'tpl-sec'] }
+        if (name === 'team_inspect_config') {
+          const row = ROSTER.find((entry) => entry.instanceId === String(addressedInstanceId ?? ''))
+          return row === undefined
+            ? { absent: true }
+            : { memberTemplateId: row.templateId, memberChildSessionId: row.childSessionId }
+        }
+        const rosterMemberIds = ROSTER.map((entry) => entry.instanceId).slice().sort()
+        return { rosterMemberIds, rosterFingerprint: `sha256:${rosterMemberIds.join('+')}` }
+      },
+    } : over.queryFacts,
     ...bridgeOver,
   }
   return { base, natives, laneSet: () => laneSet, setLaneSet: (next: readonly Definition[]) => { laneSet = Object.freeze(next as Definition[]) }, delegateEntries, walks, closedPlans, events, seat, mkNative }
@@ -437,10 +457,15 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-claim'))
       const manifest = manifestOf(walkAt(w, 0))
+      // rev 2: a QUERY row's projection is the ten measured leaves PLUS the
+      // durable leaves its target is (here: the roster id set + its digest).
       expect(Object.keys(manifest).sort()).toEqual([
         'argumentLawFace', 'contract', 'effectLabel', 'memberAdjudication', 'memberClaim',
-        'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim', 'targetObject',
+        'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim',
+        'rosterFingerprint', 'rosterMemberIds', 'targetObject',
       ])
+      expect(manifest.rosterMemberIds).toEqual(['mi-1', 'mi-9'])
+      expect(String(manifest.rosterFingerprint)).toBe('sha256:mi-1+mi-9')
       expect(manifest.operation).toBe(specOf('team_list_members').operation)
       expect(manifest.rootClaim).toBe('s-root-wire')
       expect(manifest.memberClaim).toBeNull()
@@ -461,24 +486,44 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(String(created.memberAdjudication)).toContain('CREATE')
     })
 
-    it('MEASURED grammar gate: every real B-TEAM claim FAILS CLOSED — no B-TEAM rule is registered and no kind is invented here', () => {
+    it('grammar gate ACCEPTS the signed shape (flipped in the same commit as the six adds, the mint extension and revision 2)', () => {
       const w = makeWorld()
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       return defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-grammar')).then(() => {
         const manifest = manifestOf(walkAt(w, 0))
-        // The measured registered key set (this lane touched NOTHING here).
-        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-        expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+        expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
-        // The durable leg's own fail-closed answer, through the REAL checker:
-        expect(validatePaFamilyTarget('B-TEAM', manifest)).toBe(
-          "familyId: no target structure is registered for 'B-TEAM'",
-        )
-        // And the reason no flat rule can be signed today: two leaves are a
-        // string-OR-null union that no existing closed kind types.
+        expect(validatePaFamilyTarget('B-TEAM', manifest)).toBeUndefined()
+        // The row's own content rides, not a count and not a stand-in.
+        expect(manifest.rosterMemberIds).toEqual(['mi-1', 'mi-9'])
+        // A read that cannot answer the leaf is refused ABOVE, so the grammar
+        // never sees a query claim missing one of the six adds:
+        const broken: Record<string, unknown> = { ...manifest }
+        delete broken.rosterFingerprint
+        expect(validatePaFamilyTarget('B-TEAM', broken)).toContain('rosterFingerprint')
+        expect(validatePaFamilyTarget('B-TEAM', { ...manifest, rosterMemberIds: 'mi-1,mi-9' })).toContain('rosterMemberIds')
+        expect(validatePaFamilyTarget('B-TEAM', { ...manifest, unexpectedLeaf: 'x' })).toContain('unexpectedLeaf')
         expect(manifest.memberClaim).toBeNull()
-        expect(typeof manifest.rootClaim).toBe('string')
       })
+    })
+
+    it('inspect_config mints the addressed row content, and absence as null (never an invented row)', async () => {
+      const w = makeWorld({ mounted: ['team_inspect_config'] })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      await defOf(wiring, 'team_inspect_config').execute({ ...GOOD_ARGS, targetInstanceId: 'mi-9' }, execFor('call-grammar-present'))
+      const present = manifestOf(walkAt(w, 0))
+      expect(present.memberInstanceId).toBe('mi-9')
+      expect(present.memberTemplateId).toBe('tpl-worker')
+      expect(present.memberChildSessionId).toBe('s-child-mi9')
+      expect(validatePaFamilyTarget('B-TEAM', present)).toBeUndefined()
+      const w2 = makeWorld({ mounted: ['team_inspect_config'] })
+      const wiring2 = unwrap(WIRING.buildTeamOpsWiring(w2.base))
+      await defOf(wiring2, 'team_inspect_config').execute({ ...GOOD_ARGS, targetInstanceId: 'mi-404' }, execFor('call-grammar-absent'))
+      const absent = manifestOf(walkAt(w2, 0))
+      expect(absent.memberInstanceId, "the adapter's OWN addressed claim rides even when the roster carries no row").toBe('mi-404')
+      expect(absent.memberTemplateId).toBeNull()
+      expect(absent.memberChildSessionId).toBeNull()
+      expect(validatePaFamilyTarget('B-TEAM', absent), 'absence is a minted null, not an invented value').toBeUndefined()
     })
   })
 
@@ -525,7 +570,7 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
         ? [{ instanceId: 'mi-9' }, { instanceId: 'mi-1' }]
         : [{ instanceId: 'mi-9' }, { instanceId: 'mi-1' }, { instanceId: 'mi-12' }])
       const w = makeWorld({ queryFacts: { resolve: (name: string) => (name === 'team_list_members'
-        ? { rosterMemberIds: rosterAt().map((row: { instanceId: string }) => row.instanceId).sort() }
+        ? (() => { const ids = rosterAt().map((row: { instanceId: string }) => row.instanceId).sort(); return { rosterMemberIds: ids, rosterFingerprint: `sha256:${ids.join('+')}` } })()
         : { unresolved: true }) } })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       await wiring.definitions.find((d) => d.name === 'team_list_members')!.execute({ ...GOOD_ARGS }, execFor('call-facts-1'))
@@ -534,17 +579,20 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(ledger.map((row) => row.name), 'only the read rows resolve a durable target').toEqual(['team_list_members'])
       expect(reads, 'the seat reads the published query TWICE per admitted call (admit + post-approval)').toBe(2)
       expect(ledger[0]?.drifted, 'a roster that moved between the walk and the grant is RECORDED, not vouched for').toBe(true)
-      expect(ledger[0]?.admitFacts).toEqual({ rosterMemberIds: ['mi-1', 'mi-9'] })
-      expect(ledger[0]?.postApprovalFacts).toEqual({ rosterMemberIds: ['mi-1', 'mi-12', 'mi-9'] })
+      expect((ledger[0]?.admitFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-9'])
+      expect((ledger[0]?.postApprovalFacts as { rosterMemberIds: string[] }).rosterMemberIds).toEqual(['mi-1', 'mi-12', 'mi-9'])
     })
-    it('a resolution that faults is recorded as unresolved and changes nothing about the lane answer', async () => {
+    it('a resolution that faults is REFUSED AT COMPOSITION and its own fault stays visible', async () => {
       const w = makeWorld({ queryFacts: { resolve: () => { throw new Error('roster store unavailable') } } })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
-      const value = await wiring.definitions.find((d) => d.name === 'team_list_members')!.execute({ ...GOOD_ARGS }, execFor('call-facts-fault'))
-      expect((value as { status?: string }).status).toBe('executed')
+      const outcome = await wiring.definitions.find((d) => d.name === 'team_list_members')!.execute({ ...GOOD_ARGS }, execFor('call-facts-fault'))
+        .then((value) => String((value as { code?: string }).code ?? 'no-refusal'))
+        .catch((error: unknown) => String((error as { code?: string }).code ?? (error as Error).message))
+      expect(outcome).toContain('P_B_TEAM_WIRE_TARGET_MINT')
       const row = (wiring as unknown as { queryFactsLedger: () => Array<{ admitFacts: unknown }> }).queryFactsLedger()[0]
       expect(String((row?.admitFacts as { fault?: string } | undefined)?.fault)).toContain('roster store unavailable')
-      expect(w.delegateEntries).toHaveLength(1)
+      expect(w.walks).toHaveLength(0)
+      expect(w.delegateEntries, 'nothing executes behind a query claim that cannot read its own target').toHaveLength(0)
     })
   })
 

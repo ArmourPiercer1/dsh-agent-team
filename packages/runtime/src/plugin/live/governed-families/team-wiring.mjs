@@ -140,7 +140,7 @@ import {
   createTeamAdapterAssembly,
 } from './team-adapters.mjs'
 
-export const A5_B_TEAM_WIRING_REVISION = 1
+export const A5_B_TEAM_WIRING_REVISION = 2
 
 /** Typed codes OWNED by this wiring layer (P_B_TEAM_WIRE_*). Adapter refusals
  *  keep the row's own P_B_TEAM_* codes verbatim — never rewritten here. */
@@ -197,7 +197,9 @@ const measuredText = (value) => nonEmptyString(value)
  * invented, nothing dropped). A refusal here is a CLAIM-COMPOSITION refusal
  * before any durable fact and with zero port entry: the measured shape moved.
  */
-function mintTargetManifest (plan) {
+function mintTargetManifest (plan, readQueryFacts) {
+  const QUERY_DURABLE_GROUPS = new Set(['team-list-members', 'team-list-templates', 'team-inspect-config'])
+  const read = typeof readQueryFacts === 'function' ? readQueryFacts : () => undefined
   const target = isRecord(plan) ? plan.target : undefined
   const root = isRecord(target) ? target.root : undefined
   const member = isRecord(target) ? target.member : undefined
@@ -234,6 +236,64 @@ function mintTargetManifest (plan) {
   if (effect.refusal !== undefined) return effect.refusal
   const face = leaf('face')
   if (face.refusal !== undefined) return face.refusal
+  // THE DURABLE QUERY LEAVES (rev 2, paired with the family table's six adds):
+  // the three read rows carry the facts their target IS, read through the
+  // owner's published authority queries. This is the SAME composition law as
+  // every leaf above — a leaf the read cannot answer is a claim this bridge
+  // does not mint, refused before any durable question with zero port entry —
+  // and it replaces nothing: the lane's rejected VALUE, the classifier and the
+  // caller's ordering all ran, and still run, in front of it. Absence is
+  // minted as `null` (the FACT of absence), never as an invented row value.
+  const group = action.value
+  if (!QUERY_DURABLE_GROUPS.has(group)) {
+    return deepFreeze({
+    contract: contract.value,
+    operation: action.value,
+    rootClaim: root.claim,
+    rootAdjudication: root.adjudication,
+    memberClaim,
+    memberAdjudication,
+    targetObject: object.value,
+    revisionLaw: revision.value,
+    effectLabel: effect.value,
+    argumentLawFace: face.value,
+  })
+  }
+  const facts = read(group, memberClaim)
+  const stringsOf = (value) => Array.isArray(value) && value.every((item) => typeof item === 'string')
+  const nullable = (value) => value === null || typeof value === 'string'
+  if (!isRecord(facts)) {
+    return wiringRefuse(WIRE.TARGET_MINT, `the durable target read for '${group}' answered nothing — a query claim mints no leaf the published read did not answer`)
+  }
+  const durable = {}
+  if (group === 'team-list-members') {
+    if (!stringsOf(facts.rosterMemberIds)) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the roster read returned no array of member-instance ids — the roster leaves are not minted from anything else')
+    }
+    if (typeof facts.rosterFingerprint !== 'string' || facts.rosterFingerprint.length === 0) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the roster read returned no digest of the id set it answered with')
+    }
+    durable.rosterMemberIds = Object.freeze([...facts.rosterMemberIds])
+    durable.rosterFingerprint = facts.rosterFingerprint
+  }
+  if (group === 'team-list-templates') {
+    if (!stringsOf(facts.templateIds)) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the bound-blueprint read returned no array of member templateIds — no catalog-wide set is substituted for this session\'s blueprint')
+    }
+    durable.templateIds = Object.freeze([...facts.templateIds])
+  }
+  if (group === 'team-inspect-config') {
+    if (typeof memberClaim !== 'string') {
+      return wiringRefuse(WIRE.TARGET_MINT, 'an inspect claim with no addressed member mints no member leaves')
+    }
+    if ((facts.memberTemplateId !== undefined && !nullable(facts.memberTemplateId))
+      || (facts.memberChildSessionId !== undefined && !nullable(facts.memberChildSessionId))) {
+      return wiringRefuse(WIRE.TARGET_MINT, 'the addressed member read answered templateId/childSessionId outside string|null — absence is minted as null, not as a guess')
+    }
+    durable.memberInstanceId = memberClaim
+    durable.memberTemplateId = facts.memberTemplateId ?? null
+    durable.memberChildSessionId = facts.memberChildSessionId ?? null
+  }
   return deepFreeze({
     contract: contract.value,
     operation: action.value,
@@ -245,6 +305,7 @@ function mintTargetManifest (plan) {
     revisionLaw: revision.value,
     effectLabel: effect.value,
     argumentLawFace: face.value,
+    ...durable,
   })
 }
 
@@ -452,20 +513,39 @@ export function buildTeamOpsWiring (input = {}) {
   // the same store the lane itself reads.
   const QUERY_TARGET_NAMES = new Set(['team_list_members', 'team_list_templates', 'team_inspect_config'])
   const queryFactsLedger = []
-  const readFacts = (name, plan) => {
-    if (!QUERY_TARGET_NAMES.has(String(name)) || typeof queryFacts?.resolve !== 'function') return undefined
-    // The addressed member, taken from the ADAPTER'S OWN target (the same
-    // claim the lane classified) — never re-parsed out of the caller's object.
-    const target = isRecord(plan) ? plan.target : undefined
-    const member = isRecord(target) ? target.member : undefined
-    const addressed = isRecord(member) && typeof member.claim === 'string' ? member.claim : undefined
+  // The read the MINT consumes, captured as the mint consumes it so the
+  // post-approval re-check compares against the facts the claim actually
+  // carried (not against a later reading of the same store).
+  let mintFacts = null
+  const readQueryFacts = (group, memberClaim) => {
+    const tool = String(group).replace(/-/g, '_')
+    if (!QUERY_TARGET_NAMES.has(tool) || typeof queryFacts?.resolve !== 'function') return undefined
     try {
-      return queryFacts.resolve(String(name), addressed)
+      const facts = queryFacts.resolve(tool, typeof memberClaim === 'string' ? memberClaim : undefined)
+      mintFacts = facts
+      return facts
     } catch (error) {
-      // A read that cannot answer is RECORDED as unresolved, never a refusal:
-      // the lane's own answer to this call is untouched.
-      return Object.freeze({ unresolved: true, fault: String(error?.message ?? error).slice(0, 160) })
+      mintFacts = Object.freeze({ unresolved: true, fault: String(error?.message ?? error).slice(0, 160) })
+      // The read's own failure stays VISIBLE next to the composition refusal
+      // that follows from it, instead of leaving only a generic code behind.
+      queryFactsLedger.push(Object.freeze({
+        name: tool,
+        admitFacts: mintFacts,
+        postApprovalFacts: mintFacts,
+        drifted: false,
+        refusedAtComposition: true,
+      }))
+      observe({ event: 'b-team-wire:query-facts-unresolved', name: tool })
+      // An unreadable durable target mints no leaf (the mint's own composition
+      // law); the fault is still RECORDED below, so the failure is visible
+      // rather than inferred from a generic refusal.
+      return undefined
     }
+  }
+  const readAgain = (group, memberClaim) => {
+    const tool = String(group).replace(/-/g, '_')
+    if (!QUERY_TARGET_NAMES.has(tool) || typeof queryFacts?.resolve !== 'function') return undefined
+    try { return queryFacts.resolve(tool, typeof memberClaim === 'string' ? memberClaim : undefined) } catch { return undefined }
   }
   const stableJson = (facts) => { try { return JSON.stringify(facts ?? null) } catch { return '<unserializable>' } }
 
@@ -494,7 +574,8 @@ export function buildTeamOpsWiring (input = {}) {
       observe({ event: 'b-team-wire:tool-law-value', name, code: plan.toolError.code, paEntry: false })
       return Object.freeze({ ok: true })
     }
-    const targetManifest = mintTargetManifest(plan)
+    mintFacts = null
+    const targetManifest = mintTargetManifest(plan, readQueryFacts)
     if (targetManifest.ok === false) {
       stats.mintRefusals += 1
       observe({ event: 'b-team-wire:claim-mint-REFUSED', name, code: targetManifest.code })
@@ -570,8 +651,8 @@ export function buildTeamOpsWiring (input = {}) {
       }
       stats.witnessed += 1
       if (QUERY_TARGET_NAMES.has(String(name))) {
-        const admitFacts = readFacts(name, plan)
-        const afterFacts = readFacts(name, plan)
+        const admitFacts = mintFacts
+        const afterFacts = readAgain(String(name).replace(/_/g, '-'), undefined)
         const drifted = stableJson(admitFacts) !== stableJson(afterFacts)
         queryFactsLedger.push(Object.freeze({
           name: String(name),

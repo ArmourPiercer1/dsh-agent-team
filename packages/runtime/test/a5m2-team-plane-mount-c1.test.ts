@@ -162,7 +162,7 @@ function mintingControlLeg (seen: Array<Record<string, unknown> | undefined>) {
 /** The lane doubles: the SAME objects are the capture source, the live read
  *  and the delegate port — exactly the L3 pairing the adapter enforces (the
  *  delegate IS the captured execute), so one entry here is one port entry. */
-function makeLane (opts: { missing?: string[] } = {}) {
+function makeLane (opts: { withQueryFacts?: boolean, missing?: string[] } = {}) {
   const missing = new Set(opts.missing ?? [])
   const lane: Definition[] = []
   const entries: Array<{ name: string; args: Record<string, unknown>; exec: unknown }> = []
@@ -182,8 +182,20 @@ function makeLane (opts: { missing?: string[] } = {}) {
   // The placement owner's record (what agent-bindings' placementFeed reads:
   // the definition the scoped layer answers under this name).
   const placedByName = new Map<string, Definition>()
+  const withQueryFacts = opts.withQueryFacts !== false
   const inject = Object.freeze({
     providerId: PROVIDER,
+    // The published durable reads the QUERY rows mint their target leaves
+    // from (content-bearing rows; the fingerprint is a digest of the id set).
+    ...(withQueryFacts === false ? {} : {
+      queryFacts: Object.freeze({
+        resolve: (name: string) => (name === 'team_list_templates'
+          ? { templateIds: ['tpl-worker'] }
+          : name === 'team_inspect_config'
+            ? { memberTemplateId: 'tpl-worker', memberChildSessionId: 's-child-mi9' }
+            : { rosterMemberIds: ['mi-9'], rosterFingerprint: 'sha256:mi-9' }),
+      }),
+    }),
     readNative: (name: string) => lane.find((def) => def.name === name),
     liveNative: (name: string) => lane.find((def) => def.name === name),
     teamSet: () => lane,

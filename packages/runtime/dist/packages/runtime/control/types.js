@@ -1016,15 +1016,29 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
             leaf: 'operation',
             by: Object.freeze({
                 'team-list-members': Object.freeze({
-                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string', rosterMemberIds: 'stringArray', rosterFingerprint: 'string' }),
+                    // FACT SOURCES (documentation only — `binds` is a full-value
+                    // binding and its literals are the adapter's own constants, byte-
+                    // exact): rosterMemberIds = the memberInstances rows' OWN instanceIds
+                    // for this Team root (deduped, sorted; the ids ARE the identity);
+                    // rosterFingerprint = sha-256 over those ids joined — a digest OF
+                    // that set, never a count and never a stand-in for it.
                     binds: Object.freeze({ targetObject: 'the durable Team roster (member instances + lifecycle + bound child session ids)', effectLabel: 'S(read) — the durable Team roster through the existing facade action' }),
                 }),
                 'team-list-templates': Object.freeze({
-                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string', templateIds: 'stringArray' }),
+                    // FACT SOURCE: templateIds = the member templateIds of THIS
+                    // session's bound blueprint, read through the existing blueprint
+                    // resolver (never a synthesized or catalog-wide set).
                     binds: Object.freeze({ targetObject: "the bound blueprint's member templates", effectLabel: "S(read) — the bound blueprint templates through the existing facade action" }),
                 }),
                 'team-inspect-config': Object.freeze({
-                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string', memberInstanceId: 'string', memberTemplateId: 'nullableString', memberChildSessionId: 'nullableString' }),
+                    // FACT SOURCES: memberInstanceId = the adapter's OWN addressed
+                    // claim the resolution was attempted under; memberTemplateId /
+                    // memberChildSessionId = that roster row's OWN fields, or null as
+                    // the FACT OF ABSENCE when the roster carries no such instance
+                    // (absence is recorded, never filled with invented row content).
                     binds: Object.freeze({ targetObject: "ONE member's durable effective-policy / requirement / recovery facts", effectLabel: "S(read) — ONE member's durable effective-policy view (config object)" }),
                 }),
                 'team-create-member': Object.freeze({
