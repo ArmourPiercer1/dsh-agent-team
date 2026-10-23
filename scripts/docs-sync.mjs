@@ -29,6 +29,7 @@ import {
   checkPlanCitationBlocks,
   isBlockingFinding,
   SELF_UPDATE_CODES,
+  contractShapeFindings,
   checkRatification,
   allDocsForFullCheck,
 } from './doc-checks.mjs';
@@ -80,7 +81,20 @@ export function check(root) {
   const planDocs = docs.filter((d) => d.startsWith('docs/plans/'));
   const planCheck = checkPlanCitationBlocks(root, planDocs, { mirror: built.refused ? null : built.view.legacy_authority, commitExists });
   findings.push(...planCheck.findings);
-  return { findings, docs: docs.length, notes: notes.checked, plans_scanned: planDocs.length, plans_declaring: planCheck.declared };
+  // The contracts shape check runs here as well as in its own CLI. Standalone output is a
+  // report; a finding that never reaches a gate is how a checked rule quietly stops being
+  // true without anyone deciding to stop checking it.
+  const shapes = contractShapeFindings(root);
+  findings.push(...shapes.findings);
+  return {
+    findings,
+    docs: docs.length,
+    notes: notes.checked,
+    plans_scanned: planDocs.length,
+    plans_declaring: planCheck.declared,
+    shapes_applicable: shapes.applicable,
+    shapes_compared: shapes.coverage ? shapes.coverage.pairs_compared : 0,
+  };
 }
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -168,7 +182,7 @@ if (invokedDirectly) {
   // worse than either verdict alone, so the classification is now the same everywhere.
   const blocking = result.findings.filter(isBlockingFinding);
   for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
-  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length} blocking=${blocking.length}`);
+  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length} blocking=${blocking.length} contracts=${result.shapes_applicable ? result.shapes_compared + ' pairs compared' : 'not applicable'}`);
   console.log('LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof');
   process.exit(blocking.length ? 1 : 0);
 }

@@ -259,6 +259,7 @@ export function checkContractsFieldAgreement(root, opts = {}) {
     : PAIRS;
   const findings = [];
   const compared = [];
+  const notPresent = [];
   const notChecked = [];
   const unpaired = { interfaces: [], arrays: [] };
   const pairedInterfaces = new Set(pairs.map((p) => p.interface));
@@ -267,12 +268,21 @@ export function checkContractsFieldAgreement(root, opts = {}) {
   for (const pair of pairs) {
     const iface = interfaces[pair.interface];
     const arr = arrays[pair.fields];
+    // A pairing with neither side present is not drift, it is a root that does not carry
+    // that shape -- a fixture, or an older checkout. Calling that a finding would make the
+    // gate red for the absence of a file it never had, and the honest response to noise is
+    // never to widen the tolerance. One side present and the other gone is exactly drift:
+    // something was renamed or deleted on one side of the mirror only.
+    if (!iface && !arr) {
+      notPresent.push(`${pair.interface} / ${pair.fields}`);
+      continue;
+    }
     if (!iface) {
-      findings.push({ code: 'CONTRACT_PAIR_INTERFACE_MISSING', detail: `${pair.interface} (paired with ${pair.fields}) not found under ${CONTRACTS_SRC}` });
+      findings.push({ code: 'CONTRACT_PAIR_INTERFACE_MISSING', detail: `${pair.fields} exists but ${pair.interface} does not: the runtime set lost its declared shape (${arr.file})` });
       continue;
     }
     if (!arr) {
-      findings.push({ code: 'CONTRACT_PAIR_ARRAY_MISSING', detail: `${pair.fields} (paired with ${pair.interface}) not found under ${CONTRACTS_SRC}` });
+      findings.push({ code: 'CONTRACT_PAIR_ARRAY_MISSING', detail: `${pair.interface} exists but ${pair.fields} does not: the declaration lost the closed set that guards it at runtime (${iface.file})` });
       continue;
     }
     if (arr.refused) {
@@ -329,6 +339,8 @@ export function checkContractsFieldAgreement(root, opts = {}) {
       pairs_compared: compared.filter((c) => c.includes(' <-> ')).length,
       subset_checks: compared.filter((c) => c.includes(' >= ')).length,
       not_checked: notChecked,
+      not_present: notPresent,
+      applicable: true,
       unpaired,
       compared,
     },
@@ -352,6 +364,6 @@ if (invokedDirectly) {
   if (c.not_checked.length) console.log(`NOT_CHECKED (${c.not_checked.length}): ${c.not_checked.join(' | ')}`);
   console.log(`unpaired interfaces=${c.unpaired.interfaces.length} unpaired field arrays=${c.unpaired.arrays.length}`);
   console.log(`equality_pairs=${c.pairs_compared} v1_subset_checks=${c.subset_checks}`);
-  console.log('LIMIT: field NAMES only. No type comparison, no minItems/length/uniqueness, no cross-field rule: those live in the parse functions and are not derivable from a declaration. Not wired into any gate.');
+  console.log('LIMIT: field NAMES only. No type comparison, no minItems/length/uniqueness, no cross-field rule: those live in the parse functions and are not derivable from a declaration. The findings also reach docs:sync --check and docs:probe, where a missing counterpart is drift; a pairing absent on both sides is not applicable, not a pass.');
   process.exit(result.findings.length ? 1 : 0);
 }

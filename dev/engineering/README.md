@@ -64,3 +64,15 @@ claiming to be fresh while the meaning of every `refs` entry inside it had moved
 A regeneration is therefore required after a catalog edit, and `--check` says so.
 
 `doc-ownership.yaml` maps changed source paths to the current-state documents that should be read with them. Matching a rule turns `docs:probe`'s advisory into a named document list; matching nothing is reported as unowned coverage instead of being guessed at. A rule marked `enforce: true` is self-imposed by this line: it refuses (`DOC_OWNER_UPDATE_MISSING`) a source change while **none** of that rule's declared owner documents changed in the same change set — satisfied by at least one of them, with no claim that the right one changed, that all did, or that the new text matches the diff; semantic equivalence stays a Contract Owner judgement. Rules outside this line's own tooling stay advisory, and nothing here is wired into CI (EB3-B). An owner document that does not exist is a hard finding (`DOC_OWNER_DOC_MISSING`).
+
+`scripts/contracts-field-agreement.mjs` compares a contracts `interface` with the
+hand-maintained `X_FIELDS` array that mirrors the same frozen shape, for the pairings written
+out by hand in `PAIRS`. There is no JSON Schema for these DTOs, so "TypeScript to schema
+equivalence" had no counterparty; the equivalence that exists without dependencies is this
+one. Its findings reach `docs:sync --check` and `docs:probe` (rule `contracts-shape`), where
+a counterpart present on one side and gone on the other is drift; a pairing absent on **both**
+sides is not applicable — the summary prints `contracts=N pairs compared` or
+`contracts=not applicable` so an inapplicable run cannot read as coverage. Names only: no
+type, no `minItems`, no length, no uniqueness, no cross-field rule — those live in parse
+functions and are not derivable from a declaration. `docs:sync --write` cannot repair its
+findings: they name a shape, not a stale derivative, so it is not in `SELF_UPDATE_CODES`.

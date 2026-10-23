@@ -32,6 +32,7 @@ import {
   selectOwningDocs,
   BLOCKING_PREFIXES,
   isBlockingFinding,
+  contractShapeFindings,
   checkRatification,
 } from './doc-checks.mjs';
 import { run as runNotes } from './verify-agent-notes.mjs';
@@ -102,6 +103,7 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
   let viewMirror = null; // graph#current_contract mirror, read-only, filled by the derived-view rule
   const commitExists = makeCommitExists(root);
   const findings = [];
+  let shapes = { findings: [], applicable: false, coverage: null };
   const advisories = [];
   const selectedRules = [];
 
@@ -139,6 +141,14 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
       }
     }
   }
+
+  // Contracts shape/field-set agreement. Unconditional, unlike the rules above: the two
+  // copies of a frozen DTO live in packages/, which is outside every document bucket, so a
+  // scope filter here would skip the check for precisely the changes it exists to catch --
+  // and latent drift would pass the fast gate while failing the full one.
+  selectedRules.push('contracts-shape');
+  shapes = contractShapeFindings(root);
+  findings.push(...shapes.findings);
 
   // R6 terminology, R7 claims-without-evidence (current-state docs only)
   if (docTargets.length || buckets.contracts.length) {
@@ -213,6 +223,8 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     selected_rules: selectedRules,
     blocking,
     non_blocking: nonBlocking,
+    shapes_applicable: shapes.applicable,
+    shapes_compared: shapes.coverage ? shapes.coverage.pairs_compared : 0,
     advisories,
     limits: LIMITS,
   };
@@ -244,7 +256,7 @@ if (invokedDirectly) {
     for (const f of result.non_blocking) console.log(`WARN ${f.code}: ${f.detail}`);
     for (const a of result.advisories) console.log(`ADVISORY ${a.code}: ${a.detail}`);
     for (const l of result.limits) console.log(`LIMIT ${l}`);
-    console.log(`docs:probe blocking=${result.blocking.length} non_blocking=${result.non_blocking.length} advisories=${result.advisories.length}`);
+    console.log(`docs:probe blocking=${result.blocking.length} non_blocking=${result.non_blocking.length} advisories=${result.advisories.length} contracts=${result.shapes_applicable ? result.shapes_compared + ' pairs compared' : 'not applicable'}`);
   }
   process.exit(result.blocking.length ? 1 : 0);
 }

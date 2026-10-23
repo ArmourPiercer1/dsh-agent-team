@@ -16,6 +16,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative, dirname, resolve, sep } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { checkContractsFieldAgreement } from './contracts-field-agreement.mjs';
 
 /** Memoized "is this a real commit here" probe, so a doc full of SHAs costs one
  *  git call per distinct object. Unknown/absent objects return false. */
@@ -183,11 +184,25 @@ export const BLOCKING_PREFIXES = [
   'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED',
   'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG', 'STATE_BRIDGE', 'REGISTRY',
   'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_', 'SCHEMA_',
+  'CONTRACT_FIELD_', 'CONTRACT_PAIR_', 'CONTRACT_V1_', 'CONTRACT_OPTIONAL_',
 ];
 /** Codes that name the *freshness of a derivative* rather than a defect in an input.
  *  Regenerating a derivative is precisely how these are repaired, so the write gates may
  *  act on them; every other blocking finding still refuses the write. The list is shared
  *  so that two write paths cannot disagree about what they are allowed to fix. */
+/**
+ * The contracts shape/field-set agreement, reachable from the gates rather than only from
+ * its own CLI: a check nobody runs is a check that does not exist. When the product
+ * package is not in this root at all -- a fixture, an exported subset -- the answer is
+ * "not applicable", reported as such by the caller so a summary can never read like
+ * coverage that did not happen.
+ */
+export function contractShapeFindings(root) {
+  const res = checkContractsFieldAgreement(root);
+  if (res.refused) return { findings: [], applicable: false, coverage: null };
+  return { findings: res.findings, applicable: true, coverage: res.coverage };
+}
+
 export const SELF_UPDATE_CODES = ['STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG'];
 
 export function isBlockingFinding(f) {

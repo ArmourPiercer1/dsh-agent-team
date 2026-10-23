@@ -848,6 +848,44 @@ control('NEG-73 an array compared as a v1 subset is not also reported unpaired',
   }
 });
 
+control('NEG-74 contracts drift blocks the gates, not just the standalone script', (d) => {
+  // A rule that only reports when someone remembers to run the script has already been
+  // dropped. Drift is planted in a shape the pairing table really carries -- not in a
+  // test-only entry, because docs:sync and docs:probe run in their own processes and
+  // re-import their own table, which is how the first version of this control passed for
+  // the wrong reason -- and both entry points have to refuse it.
+  writeFile(d, 'packages/contracts/src/dto/team-session-record.ts', [
+    "export const TEAM_SESSION_RECORD_FIELDS: readonly string[] = [",
+    "  'schemaVersion',",
+    "  'rootSessionId',",
+    "]",
+    '',
+    'export interface TeamSessionRecordDto {',
+    '  readonly schemaVersion: number',
+    '  readonly rootSessionId: string',
+    '  readonly generation: number',
+    '}',
+    '',
+  ].join('\n'));
+  const sync = run(SYNC, ['--check', '--root', d]);
+  const probe = run(PROBE, ['--worktree-only', '--root', d]);
+  return [
+    expectBlocking('sync --check', sync, 'CONTRACT_FIELD_NOT_IN_RUNTIME'),
+    expectBlocking('probe', probe, 'CONTRACT_FIELD_NOT_IN_RUNTIME'),
+    { ok: /contracts=1 pairs compared/.test(sync.out), why: 'coverage reported matches the one pair present: ' + (sync.out.match(/contracts=[^\n]*/) || [''])[0] },
+  ];
+});
+control('NEG-75 a root without the package says not applicable instead of passing quietly', (d) => {
+  // Fixtures carry no packages/ tree. The gate must say the check did not run rather than
+  // stay silent: an unreported absence of coverage reads exactly like a clean result.
+  const sync = run(SYNC, ['--check', '--root', d]);
+  const probe = run(PROBE, ['--worktree-only', '--root', d]);
+  return [
+    { ok: /contracts=not applicable/.test(sync.out), why: 'sync summary: ' + (sync.out.match(/contracts=[^\n]*/) || [''])[0] },
+    { ok: /contracts=not applicable/.test(probe.out), why: 'probe summary: ' + (probe.out.match(/contracts=[^\n]*/) || [''])[0] },
+  ];
+});
+
 control('NEG-68 a stale index is a refusal in every entry point, and only --write fixes it', (d) => {
   // The absent case has its own cross-check (NEG-56); this is the same discipline for a
   // file that exists and disagrees. Four commands reading one input must not hand out
