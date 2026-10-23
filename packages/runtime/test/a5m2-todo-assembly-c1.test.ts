@@ -53,9 +53,9 @@
  * @module @dsh-agent-team/runtime/test/a5m2-todo-assembly-c1
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { mkdirSync, rmSync } from 'node:fs'
+import { mkdirSync, rmSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot, homeRoot } from '../../../tests/paths.mjs'
 import {
@@ -1079,5 +1079,55 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
     expect(events.length).toBe(0)
     expect(world.nativeCalls.length).toBe(0)
     expect((await stateNow()).requests.length).toBe(before)
+  })
+
+  // ── r9 placement-face law (root rulings 12:27/12:29) ────────────────────
+  it('r9: the governed todo output schema IS a canonical host registration face — proven against the REAL Host639 validator, constraints intact', async () => {
+    const world = await mountWorld('canon-face')
+    const schema = (world.todoDef as unknown as { output?: { schema?: Record<string, unknown> } }).output?.schema
+    if (schema === undefined) throw new Error('the placement definition carries no output face')
+    // THE validator is the host's own: `tools.register` runs exactly this
+    // assertSupportedJsonSchema on schema (core/tools/src/index.ts
+    // :1071 @639ed01539) — a hand-mirror of the host's AUTHORED DSL text
+    // (property-level `required: true`) is not a registration face.
+    const repo = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
+    if (repo === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
+    const hostTools = join(repo, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+    if (!existsSync(hostTools)) throw new Error(`pristine host lib absent (${hostTools}); failing closed`)
+    const host = (await import(pathToFileURL(hostTools).href)) as unknown as {
+      assertSupportedJsonSchema: (schema: unknown) => void
+      validateJsonSchemaValue: (schema: unknown, value: unknown, path: string) => string[]
+    }
+    expect(() => host.assertSupportedJsonSchema(schema)).not.toThrow()
+    // NO property-level marker survives ANYWHERE in the face (the r9 defect
+    // class, deep-swept): a `required` member is only ever the parent's
+    // string array, never a per-property boolean.
+    const marker = (node: unknown): boolean => {
+      if (node === null || typeof node !== 'object') return false
+      const rec = node as Record<string, unknown>
+      if (Object.hasOwn(rec, 'required') && rec.required === true) return true
+      const props = rec.properties
+      if (props !== null && typeof props === 'object') {
+        for (const child of Object.values(props as Record<string, unknown>)) if (marker(child)) return true
+      }
+      if (rec.items !== undefined && marker(rec.items)) return true
+      return false
+    }
+    expect(marker(schema)).toBe(false)
+    // TRUTH KEPT (nothing loosened): every authored `required: true` lifted
+    // to its parent, nested levels exact — root, items, and counts.
+    expect(schema.required).toEqual(['todos', 'counts'])
+    const props = schema.properties as Record<string, { items?: { required?: string[] }; required?: string[] }>
+    expect(props.todos?.items?.required).toEqual(['content', 'status'])
+    expect(props.counts?.required).toEqual(['pending', 'inProgress', 'completed'])
+    // …and the SAME host validator still REJECTS the missing-member shape
+    // (the constraints bind) while a complete value walks clean:
+    const partial = host.validateJsonSchemaValue(schema, { todos: [{ content: 'a' }], counts: { pending: 0 } }, '').join(';')
+    expect(partial).toMatch(/status/)
+    expect(partial).toMatch(/inProgress/)
+    expect(host.validateJsonSchemaValue(schema, {
+      todos: [{ content: 'a', status: 'pending' }],
+      counts: { pending: 1, inProgress: 0, completed: 0 },
+    }, '')).toEqual([])
   })
 })

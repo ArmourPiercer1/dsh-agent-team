@@ -60,10 +60,10 @@
  * @module @dsh-agent-team/runtime/test/a5m2-image-row-c1
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync } from 'node:fs'
+import { mkdirSync, rmSync, readFileSync, writeFileSync, symlinkSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot, homeRoot } from '../../../tests/paths.mjs'
 import {
@@ -1012,5 +1012,22 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     expect(world.adapter.stats().storeCalls).toBe(0)
     expect(world.store.saves.length).toBe(0)
     expect(events.length).toBe(0)
+  })
+
+  // r9 same-source scan (root ruling 12:29): the image output face obeys the
+  // same canonical registration law — proven against the REAL Host639
+  // assertSupportedJsonSchema (tools.register's own schema check).
+  it('r9: the governed image output face is a canonical host registration face', async () => {
+    const world = await mountWorld('canon-face', { policyFor: (root) => allowPolicyFor(join(root, 'good.png')) })
+    const schema = (world.imageDef as unknown as { output?: { schema?: Record<string, unknown> } }).output?.schema
+    if (schema === undefined) throw new Error('the image placement carries no output face')
+    const hostTools = join(REPO, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+    if (!existsSync(hostTools)) throw new Error(`pristine host lib absent (${hostTools}); failing closed`)
+    const host = (await import(pathToFileURL(hostTools).href)) as unknown as {
+      assertSupportedJsonSchema: (schema: unknown) => void
+    }
+    expect(() => host.assertSupportedJsonSchema(schema)).not.toThrow()
+    expect(schema.required).toEqual(['path', 'image'])
+    expect(Object.values(schema.properties as Record<string, Record<string, unknown>>).some((p) => Object.hasOwn(p, 'required'))).toBe(false)
   })
 })

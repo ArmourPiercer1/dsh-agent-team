@@ -1962,6 +1962,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // index.ts:155-191 @639ed01539) — same-name, same-meaning; refusals ride the
   // THROW transport (the read row's S2 law), so `render` only ever sees the
   // native body's own { todos, counts } return.
+  // r9 CANONICAL LAW (root ruling 12:29): the mirror rides the COMPILED
+  // canonical JSON Schema — the shape `tools.register` actually validates with
+  // the host's own assertSupportedJsonSchema (json-schema.ts: property-level
+  // `required: true` is the host's PRIVATE authored DSL, consumed by
+  // valueSchemaSpecToJsonSchema at defineTool time; a hand-mirror of the
+  // authored text is not a registration face). Same semantics, lifted: every
+  // authored `required: true` becomes its parent's `required` member — the
+  // constraints are kept, never loosened (the fixed point proves both: the
+  // REAL host validator accepts the shape AND still rejects a missing member).
   const TODO_ROW_PRESENTATION_FACE = Object.freeze({
     schema: Object.freeze({
       type: 'object',
@@ -1969,27 +1978,28 @@ export function createTeamToolPlaneAssembly(input = {}) {
       properties: {
         todos: Object.freeze({
           type: 'array',
-          required: true,
           items: Object.freeze({
             type: 'object',
             additionalProperties: false,
             properties: {
-              content: Object.freeze({ type: 'string', required: true }),
-              status: Object.freeze({ type: 'string', required: true, enum: ['pending', 'in_progress', 'completed'] }),
+              content: Object.freeze({ type: 'string' }),
+              status: Object.freeze({ type: 'string', enum: ['pending', 'in_progress', 'completed'] }),
             },
+            required: Object.freeze(['content', 'status']),
           }),
         }),
         counts: Object.freeze({
           type: 'object',
           additionalProperties: false,
-          required: true,
           properties: {
-            pending: Object.freeze({ type: 'integer', required: true }),
-            inProgress: Object.freeze({ type: 'integer', required: true }),
-            completed: Object.freeze({ type: 'integer', required: true }),
+            pending: Object.freeze({ type: 'integer' }),
+            inProgress: Object.freeze({ type: 'integer' }),
+            completed: Object.freeze({ type: 'integer' }),
           },
+          required: Object.freeze(['pending', 'inProgress', 'completed']),
         }),
       },
+      required: Object.freeze(['todos', 'counts']),
     }),
     render: (_args, value) => [{
       type: 'text',
@@ -2403,10 +2413,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
         type: 'object',
         additionalProperties: false,
         properties: {
-          canonicalLocator: Object.freeze({ type: 'string', required: true }),
-          writtenFingerprint: Object.freeze({ type: 'string', required: true }),
-          existingFileOnly: Object.freeze({ type: 'boolean', required: true }),
+          canonicalLocator: Object.freeze({ type: 'string' }),
+          writtenFingerprint: Object.freeze({ type: 'string' }),
+          existingFileOnly: Object.freeze({ type: 'boolean' }),
         },
+        // r9 canonical law (same-source scan of the write face): property-level
+        // `required: true` is the host's authored DSL, not a registration
+        // face; every property of this receipt is REQUIRED, said once at the
+        // parent exactly like the host's compiled output form.
+        required: Object.freeze(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly']),
       }),
     }),
     presentCall: (args) => ({ card: 'generic', title: 'Write file (governed)', kind: 'other', rawInput: args?.file_path }),
@@ -2691,9 +2706,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
         type: 'object',
         additionalProperties: false,
         properties: {
-          path: Object.freeze({ type: 'string', required: true }),
-          image: Object.freeze({ type: 'object', required: true }),
+          path: Object.freeze({ type: 'string' }),
+          image: Object.freeze({ type: 'object' }),
         },
+        // r9 canonical law (same-source scan of the image face): the parent
+        // says the two members once — property-level markers are the host's
+        // authored DSL and never reach a registration face.
+        required: Object.freeze(['path', 'image']),
       }),
       render: (_args, value) => {
         const image = value?.image ?? {}

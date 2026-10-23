@@ -42,10 +42,10 @@
  * @module @dsh-agent-team/runtime/test/a5m2-write-existing-c1
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { mkdirSync, rmSync, readFileSync, writeFileSync, statSync, symlinkSync } from 'node:fs'
+import { mkdirSync, rmSync, readFileSync, writeFileSync, statSync, symlinkSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { findTestRepoRoot, homeRoot } from '../../../tests/paths.mjs'
 import {
@@ -747,5 +747,23 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     // the ANCHOR-DRIFT refusal fired, not a landing).
     expect(readFileSync(join(rootA, 'notes.txt'), 'utf8')).toBe('old bytes\n')
     expect(readFileSync(join(rootB, 'notes.txt'), 'utf8')).toBe('sentinel-B\n')
+  })
+
+  // r9 same-source scan (root ruling 12:29): the write output face carries the
+  // same canonical registration law as the todo face — proven against the
+  // REAL Host639 assertSupportedJsonSchema (the very check tools.register runs
+  // on schema), constraints intact at the parent.
+  it('r9: the governed write output face is a canonical host registration face', async () => {
+    const world = await mountWorld('canon-face')
+    const schema = (world.writeDef as unknown as { output?: { schema?: Record<string, unknown> } }).output?.schema
+    if (schema === undefined) throw new Error('the write placement carries no output face')
+    const hostTools = join(REPO, 'tests', 'deepseek-harness-test-use', 'packages', 'core', 'tools', 'lib', 'index.js')
+    if (!existsSync(hostTools)) throw new Error(`pristine host lib absent (${hostTools}); failing closed`)
+    const host = (await import(pathToFileURL(hostTools).href)) as unknown as {
+      assertSupportedJsonSchema: (schema: unknown) => void
+    }
+    expect(() => host.assertSupportedJsonSchema(schema)).not.toThrow()
+    expect(schema.required).toEqual(['canonicalLocator', 'writtenFingerprint', 'existingFileOnly'])
+    expect(Object.values(schema.properties as Record<string, Record<string, unknown>>).some((p) => Object.hasOwn(p, 'required'))).toBe(false)
   })
 })
