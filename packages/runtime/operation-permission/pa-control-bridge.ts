@@ -155,6 +155,23 @@ export interface PaControlLegInput {
    * retention — the center owns whether the body still runs).
    */
   readonly signal?: ControlWaitSignal
+  /**
+   * A5-M2 (CENTER, single writer for all three governed families): the FAMILY this
+   * call belongs to, AS THE PLANE BOUND IT (never model input, never a self-report).
+   * The four fields are the M0 P-adds the strict manifest has always required and the
+   * center failed to carry; they are REQUIRED-TOGETHER once a family is bound, and
+   * they enter the manifest at FULL VALUE (no digest, no summary). An unbound call
+   * (every pre-A5M2 family) leaves the manifest byte-for-byte unchanged - that is the
+   * compatibility rule, and it must never be read as licence to let a BOUND family
+   * through with a field missing: a bound family with an incomplete carrier fails
+   * closed before any durable write.
+   */
+  readonly family?: {
+    readonly familyId: string
+    readonly adapterRevision: number
+    readonly providerIdentity: string
+    readonly targetManifest: RemoteSafeJsonValue
+  }
 }
 
 /** The landing edges the leg uses from the assembly (structural view — the
@@ -375,7 +392,30 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     // integrity, and the same scope key can only ever answer the SAME
     // manifest bytes).
     const authorityScope = effectApprovalScope(toolInvokeEffect, realmId)
+    // A5-M2: a BOUND family carries its P-adds or nothing happens. Checked BEFORE the
+    // durable row, before the mint, before any consume: zero effect on the way out.
+    if (input.family !== undefined) {
+      const f = input.family
+      const bad = (typeof f.familyId !== 'string' || f.familyId.length === 0)
+        ? 'familyId'
+        : (typeof f.adapterRevision !== 'number' || !Number.isInteger(f.adapterRevision) || f.adapterRevision < 0)
+          ? 'adapterRevision'
+          : (typeof f.providerIdentity !== 'string' || f.providerIdentity.length === 0)
+            ? 'providerIdentity'
+            : (f.targetManifest === undefined || f.targetManifest === null)
+              ? 'targetManifest'
+              : undefined
+      if (bad !== undefined) return deny(`family-review-facts-incomplete: ${bad}`)
+    }
     const manifest = deepLossless({
+      ...(input.family === undefined
+        ? {}
+        : {
+            familyId: input.family.familyId,
+            adapterRevision: input.family.adapterRevision,
+            providerIdentity: input.family.providerIdentity,
+            targetManifest: input.family.targetManifest,
+          }),
       schema: PA_CONTROL_MANIFEST_SCHEMA,
       approvalCaseId: plan.approvalCaseId,
       authorityScope,
