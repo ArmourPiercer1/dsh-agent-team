@@ -91,10 +91,12 @@
  *     measured: `PA_FAMILY_TARGET_RULES` (control/types.ts:1194) carries NO
  *     'B-SESSION-QUERY' entry, and the rev-4 targetManifest is not
  *     expressible with the CURRENT closed kinds — `callerWorkspaceCwd`
- *     admits null, `maxSearchResults` is an always-present member that is
- *     undefined on non-search rows (fails the lossless walk), and
- *     `disclosures` is a string array (no kind covers it); the closed
- *     key-set law refuses BOTH including and omitting each such key. New
+ *     admits null and `disclosures` is a string array (no kind covers
+ *     either); the closed key-set law refuses BOTH including and omitting
+ *     each such key. (`maxSearchResults`'s old always-present-with-undefined
+ *     defect is CLOSED at the mint by the merged omission law — eab9a9c0:
+ *     non-search rows omit the key, search rows carry the effective cap,
+ *     the lossless walk now passes for all five rows.) New
  *     kinds are NOT this lane's to add — the exact rule-grammar delta is
  *     ROUTED TO CENTER (and the manifest-side shape is the adapter owner's,
  *     released code). Until it lands, a real production walk on these

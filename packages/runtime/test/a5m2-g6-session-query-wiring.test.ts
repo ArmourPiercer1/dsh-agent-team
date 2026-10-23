@@ -658,16 +658,21 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
   })
 
   describe('(f) NAMED GAPS pinned at their measured bytes through the REAL published checkers — never worded closed', () => {
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the three always-mount rows’ targetManifest FAILS the bridge’s lossless walk (maxSearchResults is an always-present member that is undefined off the search family)', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (1): the mintfix omission (eab9a9c0) — non-search targetManifests OMIT maxSearchResults and PASS the lossless walk (pairing flip); the rules gate stays open on the OTHER kinds', () => {
       const w = makeWorld({ tag: 'f1' })
       const asm = w.build()
       for (const toolName of ['session_trace', 'session_event_trace', 'session_event_read']) {
         const plan = asm.rowOf(toolName).classify(toolName === 'session_trace' ? TRACE_ARGS : { session_id: 's-a', seq: 5 })
         expect(plan.ok).toBe(true)
         const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
-        expect('maxSearchResults' in manifest).toBe(true)
-        expect(manifest.maxSearchResults).toBe(undefined)
-        expect(isLosslessJsonValue(manifest)).toBe(false)
+        // PAIRING FLIP (measured before/after in the combined round):
+        // BEFORE the merged mintfix this was key-PRESENT-with-undefined
+        // (`'maxSearchResults' in manifest` TRUE — what
+        // validatePaFamilyTarget checks) and isLosslessJsonValue FALSE —
+        // the always-present member killed the walk. AFTER eab9a9c0 the
+        // mint OMITS the key entirely on non-search rows:
+        expect('maxSearchResults' in manifest).toBe(false)
+        expect(isLosslessJsonValue(manifest)).toBe(true)
       }
     })
 
