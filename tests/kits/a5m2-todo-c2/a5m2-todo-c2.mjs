@@ -335,12 +335,14 @@ const NONCE = RUN_STAMP.replace(/[^a-zA-Z0-9-]/g, '')
 const MK = (p) => `${p}_${NONCE}`
 const MK_CREATE = MK('CREATE')
 const MK_WORK1 = MK('W1')
+const MK_W2L = MK('W2L') // OVERLAY-21 (root 22:21): leader-side trigger for the image C4 SECOND call, issued only after C3 passes
 const MK_W3L = MK('W3L')
 const MK_WORK3 = MK('W3')
 const MK_DISC = MK('DISC')
 const DONE_DISC = 'A5M2C2_DISC_DONE'
 const DONE_CREATE = 'A5M2C2_CREATE_DONE'
 const DONE_WORK1 = 'A5M2C2_W1_DONE'
+const DONE_W2L = 'A5M2C2_W2L_DONE'
 const DONE_W3L = 'A5M2C2_W3L_DONE'
 const DONE_WORK3 = 'A5M2C2_W3_DONE'
 const NOTIF_PREFIX = '[team-control requestId='
@@ -989,7 +991,7 @@ function userTextOf(m) {
   if (Array.isArray(m.content)) return m.content.map((b) => (b !== null && typeof b === 'object' && typeof b.text === 'string' ? b.text : '')).join('\n')
   return ''
 }
-const ALL_MARKERS = [MK_CREATE, MK_WORK1, MK_W3L, MK_WORK3, MK_DISC]
+const ALL_MARKERS = [MK_CREATE, MK_WORK1, MK_W2L, MK_W3L, MK_WORK3, MK_DISC]
 function lastTriggerIndex(msgs) {
   for (let i = msgs.length - 1; i >= 0; i -= 1) {
     const m = msgs[i]
@@ -1038,6 +1040,16 @@ function denialPairSeen(msgs, want, textPred) {
   return null
 }
 
+/** OVERLAY-21: the image C4-tail wait. DONE_WORK1 alone is NOT enough — waitForMock scans the mock history
+ * from the FIRST request, and the W1 turn's DONE is already in it — so the reply must land in a request that
+ * also carries the DENIAL pair: a read_image(IMG_REL) tool_use whose result text holds APPROVAL_DENIED plus
+ * THIS row2 requestId's exact "answered deny" sentence. Reuses the existing denialPairSeen and the same
+ * exact wording the C4 criterion already demands; nothing is loosened, no new timer. */
+function imageTurnDoneAfterDenial(reply, msgs, row2RequestId) {
+  if (reply?.content !== DONE_WORK1) return false
+  return denialPairSeen(msgs ?? [], { tool: 'read_image', file: IMG_REL }, (tt) => tt.includes('APPROVAL_DENIED') && tt.includes(`durable Control request ${row2RequestId} answered deny`)) !== null
+}
+
 /** Model-visible ALLOWED image result: callId-paired tool_use(read_image, IMG_REL) ->
  * tool_result whose text is the native two-block envelope with the ORIGINAL-frame clause
  * (plane render 249eb:3076-3114 — text names BOTH frames; the image part carries the
@@ -1063,18 +1075,6 @@ function imageVisiblePair(msgs) {
   return null
 }
 
-/** How many read_image(IMG_REL) tool_use blocks a wire already carries. OVERLAY-20 uses it as the
- * second half of the case-1 guard: the second call may only follow when exactly ONE such call exists
- * and imageVisiblePair confirmed ITS success envelope. A body that already shows two calls therefore
- * yields no third, whatever else it contains (root 22:05: case 1 and case 2 can never both issue). */
-function readImageUses(msgs) {
-  let n = 0
-  for (const m of msgs ?? []) {
-    if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
-    for (const b of m.content) if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) n += 1
-  }
-  return n
-}
 function toolResultText(content) {
   if (typeof content === 'string') return content
   if (Array.isArray(content)) return content.map((b) => (b !== null && typeof b === 'object' && typeof b.text === 'string' ? b.text : JSON.stringify(b ?? ''))).join('\n')
@@ -1107,25 +1107,17 @@ function makeDecide() {
     if (lastUser.includes(MK_DISC)) return { kind: 'text', content: DONE_DISC }
     if (lastUser.startsWith(NOTIF_PREFIX)) return { kind: 'text', content: 'A5M2C2_NOTIF_REMOTE_DRIVEN' }
     if (lastUser.includes(MK_WORK1)) {
-      // OVERLAY-20 (root 22:05, image C4 only). Real RC2 evidence (run-2026-10-23T21-53-39): C1/C2/C3 all
-      // PASS on the new positive control (one store object 99cfdcaa…, 12197 B, name-sha == byte-sha; the
-      // model-visible text carried BOTH frames 512x384 / downscaled from 1024x768), but the whole wire held
-      // exactly ONE read_image tool_use id (call-a5c2-1i8huzff) — this case-1 branch ended the turn with
-      // DONE_WORK1, so no second call ever existed, no second governed row could appear, and C4's wait for
-      // row2 timed out. The oracle, not the product, was the gap.
-      // Fix is confined to image case 1: emit the SECOND read_image ONLY when the kit's existing
-      // imageVisiblePair confirms this call SUCCEEDED — a tool_use(read_image, IMG_REL) whose paired
-      // tool_result is NOT is_error and carries the native image envelope with the ORIGINAL-frame clause,
-      // bound to that same tool_use_id. First result is an error, or no success pair exists: return
-      // DONE_WORK1 exactly as before, so C3's own first-failure / terminal-is_error stop stays in charge
-      // and a failed leg can never be continued past. The second call reuses the PROVEN case-0 request
-      // builder verbatim (toolCall('read_image', { file_path: IMG_REL })), so no new wire field is invented;
-      // toolCall mints a fresh callId, which is what row2/lane-2 needs.
-      // Unchanged by law here: case 2 still DONE_WORK1 (so case 1 and case 2 can never both issue, and no
-      // third call exists), LOOP_BREAK_CAP 2, every timeout, every negative control, and the product.
+      // OVERLAY-21 (root 22:21) replaces OVERLAY-20's in-turn continuation. The image W1 case 1 is back to
+    // DONE_WORK1 exactly as it was at 0ef01d9e, and the readImageUses helper that let the oracle issue a
+    // second call inside the SAME turn is deleted. The C4 second read_image now arrives through a
+    // deterministic second delegation the runner issues only after C3's finishCriterion has passed (see the
+    // C3 tail) — so a failed C3 stops the run before any second call can exist, and the child turn keeps the
+    // one-call-then-DONE shape that C1/C2/C3 were verified against. Nothing else in this branch moved:
+    // case 0 issues the first call, case 2 still closes the turn, LOOP_BREAK_CAP and every negative control
+    // are untouched, and the product is unchanged.
       switch (tools) {
         case 0: return FIXTURE === 'image' ? toolCall('read_image', { file_path: IMG_REL }) : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_TGT }) : toolCall('todo_write', { todos: LIST1 })
-        case 1: return FIXTURE === 'image' ? (imageVisiblePair(msgs) !== null && readImageUses(msgs) === 1 ? toolCall('read_image', { file_path: IMG_REL }) : { kind: 'text', content: DONE_WORK1 }) : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_DENY }) : toolCall('todo_write', { todos: LIST2 })
+        case 1: return FIXTURE === 'image' ? { kind: 'text', content: DONE_WORK1 } : FIXTURE === 'write' ? toolCall('write', { file_path: WF_REL, content: WF_DENY }) : toolCall('todo_write', { todos: LIST2 })
         case 2: return { kind: 'text', content: DONE_WORK1 }
         default: return { kind: 'text', content: `A5M2C2_W1_FALLTHROUGH tools=${tools}` }
       }
@@ -1147,6 +1139,20 @@ function makeDecide() {
         }
         case 2: return { kind: 'text', content: DONE_CREATE }
         default: return { kind: 'text', content: `A5M2C2_CREATE_FALLTHROUGH tools=${tools}` }
+      }
+    }
+    // OVERLAY-21: the W3L leader branch with exactly three parameters changed and nothing else — its own
+    // request token, prompt MK_WORK1 (the CHILD runs the proven W1 leg; the leader is never handed MK_WORK1
+    // itself, which would make the leader call read_image, and the child is never prompted directly), and
+    // its own DONE. Same memberId extraction, same label, same async:true. Case 0 delegates once, case 1
+    // closes the turn, so no leader can ever delegate twice.
+    if (lastUser.includes(MK_W2L)) {
+      const memberId = allToolResults(msgs).map((m) => extractInstanceId(m.content)).find((v) => v !== null) ?? null
+      if (memberId === null) return { kind: 'text', content: 'A5M2C2_W2L_MEMBERID_FAIL' }
+      switch (tools) {
+        case 0: return toolCall('team_delegate', { rootSessionId: ROOT_P, requestToken: `a5c2-w2-delegate-${NONCE}`, delegationInstanceId: memberId, label: 'w1', prompt: MK_WORK1, async: true })
+        case 1: return { kind: 'text', content: DONE_W2L }
+        default: return { kind: 'text', content: `A5M2C2_W2L_FALLTHROUGH tools=${tools}` }
       }
     }
     if (lastUser.includes(MK_W3L)) {
@@ -2295,6 +2301,16 @@ async function main() {
       submitted: LIST1,
     }, null, 2))
     finishCriterion('C3')
+    // OVERLAY-21 (root 22:21): image only, and ONLY here — C3's finishCriterion has passed, and because it
+    // throws once its checks are recorded, a FAILED C3 stops the run before this line can be reached. The
+    // second read_image comes from a SECOND delegation through the same public API path C5 uses: the prompt
+    // goes to the LEADER session (ROOT_P) carrying MK_W2L and never MK_WORK1 (a leader handed MK_WORK1 would
+    // read_image itself), and never straight to the child. Admission is checked exactly as in C5
+    // (status 200 + result.ok) and NO new timer appears: row2 is awaited by the existing C4 wait below.
+    if (FIXTURE === 'image') {
+      const p2 = await apiPrompt(host.origin, host.cookie, ROOT_P, `${MK_W2L} Delegate task W2 to w1 asynchronously.`, 'c4')
+      if (!(p2.status === 200 && p2.body?.result?.ok === true)) await dieFatal(`C4 W2 delegate prompt not admitted: ${p2.status}`)
+    }
     const leg2Start = FIXTURE === 'write' ? wfState() : null
 
     // C4: second call (fresh exec token) -> public DENY -> zero append
@@ -2348,7 +2364,11 @@ async function main() {
       `fixture=${FIXTURE === 'image' ? `store=${storeCensus().length}(baseline ${storeBaseline.length}+allow-leg 1; only-leg=${storeCensus().every((o) => o.rel === allowStoreRel)}` : FIXTURE === 'write' ? JSON.stringify(wfState()) : 'n/a'} rows=${memberLog.rows.length} row2consumptions=${ledB['control-allow-consumed'].filter((f) => f.payload.requestId === row2.payload.requestId).length} denyFact=${denyFact !== null}`)
     assertNoTodoInImageMode('C4', childSid, 'public-deny')
     finishCriterion('C4')
-    if ((await waitForMock(mock, (r) => r.reply?.content === DONE_WORK1, 120_000, 'WORK1 turn done')) === null) log('WARN: WORK1 turn did not reach DONE (criterion checks above already captured)')
+    if (FIXTURE === 'image') {
+      // Root 22:21: the FIRST turn's DONE_WORK1 already sits in the mock history, so for image the wait is
+      // bound to the SECOND (W2) turn — its DONE plus the denial pair carrying row2's own requestId.
+      if ((await waitForMock(mock, (r) => imageTurnDoneAfterDenial(r.reply, r.body?.messages ?? [], row2.payload.requestId), 120_000, 'W2 second-image turn done with the row2 denial pair')) === null) log('WARN: the second image turn did not reach DONE carrying the row2 denial pair (criterion checks above already captured)')
+    } else if ((await waitForMock(mock, (r) => r.reply?.content === DONE_WORK1, 120_000, 'WORK1 turn done')) === null) log('WARN: WORK1 turn did not reach DONE (criterion checks above already captured)')
 
     // C5: third call pending -> abandon via the EXISTING p6t6 fixture
     const p3 = await apiPrompt(host.origin, host.cookie, ROOT_P, `${MK_W3L} Delegate task W3 to w1 asynchronously.`, 'c5')

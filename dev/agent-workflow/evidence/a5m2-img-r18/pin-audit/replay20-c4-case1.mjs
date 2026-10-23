@@ -23,6 +23,16 @@ let dir = dirname(new URL(import.meta.url).pathname)
 for (;;) { if (existsSync(join(dir, rel))) break; const up = dirname(dir); if (up === dir) throw new Error(`cannot find ${rel} above ${dir}`); dir = up }
 const KIT = join(dir, rel)
 const kit = readFileSync(KIT, 'utf8')
+
+// RETIRED BY OVERLAY-21 (root 22:21), RETAINED AS THE RECORD — not deleted, not rewritten. This harness
+// proved OVERLAY-20 (image case 1 issuing the second read_image inside the SAME turn, guarded by
+// imageVisiblePair + readImageUses). That approach was replaced by the deterministic second delegation
+// (MK_W2L after C3 passes), so the code it slices no longer exists. It retires with exit 0 — a retirement,
+// not a failure. Current harness: replay21-w2-schedule.mjs.
+if (!kit.includes('function readImageUses')) {
+  console.log('SUPERSEDED — OVERLAY-20 in-turn continuation was reverted at root 22:21; replay21-w2-schedule.mjs is the current harness. Retained, not deleted; retiring with exit 0 (not a failure).')
+  process.exit(0)
+}
 const upto = (needle, from = 0) => { const i = kit.indexOf(needle, from); if (i === -1) throw new Error(`slice anchor missing: ${needle}`); return i }
 const fnFrom = (name) => { const s = upto(`function ${name}(`); return kit.slice(s, kit.indexOf('\n}\n', s) + 3) }
 const work1Branch = kit.slice(upto('    if (lastUser.includes(MK_WORK1)) {'), upto('    if (lastUser.includes(MK_WORK3))'))
