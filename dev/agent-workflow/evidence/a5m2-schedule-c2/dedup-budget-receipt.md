@@ -74,9 +74,10 @@ first occurrence bucketed by its nlink). The store tree was NOT scanned.
 Per-world (blocks):
 - 7 pre-install worlds: exclusive 589,824-622,592 B each; shared 0.
 - 3 installed worlds: exclusive 46,481,408 / 46,481,408 / 46,489,600 B
-  (584-586 files); store-shared 464,314,368 B each (22,618 files; the same
-  shared bytes re-appear in each listing but are physically allocated once
-  in the shared store, ownership transfer only if store prunes).
+  (584-586 files); shared (nlink>1) 464,314,368 B each (22,618 files —
+  the same inodes recur across the three listings; a single inode means
+  one physical block set, counted once; the remaining links' locations
+  were NOT enumerated — store tree not scanned — co-owned, not charged).
 Lane-exclusive TOTAL (blocks) = 140,424,960 B (≈140.4 MB) — matches the
 nlink==1 logical-size 141,136,345 B within 0.7% tail rounding, CONFIRMING
 the earlier figure's substance under proper block accounting.
