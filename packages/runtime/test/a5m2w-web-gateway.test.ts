@@ -579,7 +579,80 @@ describe('a5m2w web gateway — gateway laws (GROUP 3 + C1/C2/C3)', () => {
     expect(facts.effects.effects.length).toBe(2) // FULL set: tool-invoke + connect
     expect(seen['operationKind']).toBe('web.fetch')
     expect(seen['canonicalLocator']).toBe('https://ok.test') // derived, path-free
-    expect(seen['cancelledAtDecision']).toBe(false) // the cancel-first gate guarantees this
+    // CANCEL SOURCE (root bf6a39be): a re-readable source, NOT a constant;
+    // evaluated at the decision point it reads false for a never-cancelled call.
+    expect(typeof seen['isCancelled']).toBe('function')
+    expect((seen['isCancelled'] as unknown as () => boolean)()).toBe(false)
+  })
+
+  it('C3-live-cancel: a cancellation landing DURING the authority await is read TRUE at the decision point (a constant false could not pass)', async () => {
+    const ac = new AbortController()
+    let readAtDecision: boolean | undefined
+    const liveConsumes: unknown[] = []
+    const authority: WebGrantAuthority & { consumes: unknown[] } = {
+      consumes: liveConsumes,
+      consume: async (input) => {
+        ac.abort() // cancellation lands WHILE consume is in flight (the pre-consume gate had passed)
+        readAtDecision = input.isCancelled() // decision-time read of the LIVE source
+        liveConsumes.push(input)
+        return { ok: true, value: { grantId: input.correlation.grantId, effects: input.facts.effects } }
+      },
+    }
+    const w = armedGateway({ authority })
+    const res = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' }), { signal: ac.signal }))
+    expect(readAtDecision, 'the consume boundary must READ the cancellation as TRUE').toBe(true)
+    // lane既有词：after-consume 披露（root: 不新增码）；transport 零字节
+    expect(res.error.message).toContain('call-cancelled-after-consume')
+    expect(w.consumes.length).toBe(1)
+    expect(w.fetchCalls.length).toBe(0)
+  })
+
+  it('C3-listener-hygiene: a COMPLETED call detaches its merged listeners (root bf6a39be); the abort path still aborts', async () => {
+    // counting stand-in signals (AbortSignal structurally = aborted +
+    // add/remove listener): pin that BOTH the caller signal and the
+    // LONG-LIVED row signal end each call with no listener residue.
+    class CountingSignal {
+      aborted = false
+      reason: unknown
+      adds = 0
+      removes = 0
+      private readonly listeners: Array<() => void> = []
+      addEventListener(_type: string, listener: () => void): void { this.adds += 1; this.listeners.push(listener) }
+      removeEventListener(_type: string, listener: () => void): void { this.removes += 1; const i = this.listeners.indexOf(listener); if (i >= 0) this.listeners.splice(i, 1) }
+      fireAbort(reason?: unknown): void { if (this.aborted) return; this.aborted = true; this.reason = reason; for (const l of this.listeners.splice(0)) l() }
+    }
+    const callerSig = new CountingSignal()
+    const rowSig = new CountingSignal()
+    const lifecycle: WebRowLifecycle = { isClosed: () => false, signal: rowSig as unknown as AbortSignal }
+    let hangNext = false
+    const stubPorts: WebGatewaySeamPorts = {
+      fetch: async (r, signal) => {
+        if (!hangNext) return { url: r.url, statusCode: 200, truncated: false }
+        return await new Promise<never>((_resolve, reject) => {
+          signal?.addEventListener('abort', () => { reject(Object.assign(new Error('aborted by caller mid-transport'), { code: 'ABORT_ERR' })) }, { once: true })
+        })
+      },
+      search: async () => ({ sources: [], truncated: false }),
+    }
+    const gateway = createWebGateway({ ports: stubPorts, searchOrigin: () => DS_CONFIG_ENDPOINT, authority: passThroughAuthority(), factsSource: factsFromLedger(), lifecycle })
+    const req = requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' })
+    const one = await gateway.callWeb(req, { signal: callerSig as unknown as AbortSignal })
+    expect(one.ok, JSON.stringify(one)).toBe(true)
+    // clean completion ⇒ listener count on BOTH signals back to pre-call:
+    expect(callerSig.adds).toBe(1)
+    expect(callerSig.removes, 'caller-signal listeners must detach on CLEAN completion (pre-fix: once:true alone never fires; every call leaked one pair)').toBe(1)
+    expect(rowSig.adds).toBe(1)
+    expect(rowSig.removes, 'the long-lived row signal must not accumulate one listener per call').toBe(1)
+    // the abort path still aborts for real:
+    hangNext = true
+    const second = gateway.callWeb(req, { signal: callerSig as unknown as AbortSignal })
+    await new Promise((resolve) => { setTimeout(resolve, 0) })
+    callerSig.fireAbort()
+    const res = row(await second)
+    expect(res.error.details?.['seamCode']).toBe('ABORT_ERR')
+    expect(res.error.sideEffectUnknown).toBe(true)
+    expect(callerSig.removes, 'settled calls leave zero residue on the caller signal').toBe(callerSig.adds)
+    expect(rowSig.removes, 'settled calls leave zero residue on the row signal').toBe(rowSig.adds)
   })
 
   it('C1 frozen snapshot: a payload getter is read EXACTLY ONCE per call, and mutation after approval cannot execute (refuse, zero consume)', async () => {

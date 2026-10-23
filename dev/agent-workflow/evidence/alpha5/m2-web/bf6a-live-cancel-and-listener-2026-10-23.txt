@@ -1,0 +1,25 @@
+{
+ "mid_consume_cancel": {
+  "readAtDecision": true,
+  "refusalMessage": "call-cancelled-after-consume: transport never delegated by this lane (zero bytes); DISCLOSURE: the grant WAS consumed at the cente",
+  "seamHit": false
+ },
+ "never_cancelled": {
+  "readAtDecision": false,
+  "ok": true
+ },
+ "clean_completion": {
+  "ok": true,
+  "callerAdds": 1,
+  "callerRemoves": 1,
+  "rowAdds": 1,
+  "rowRemoves": 1
+ },
+ "abort_path": {
+  "seamCode": "ABORT_ERR",
+  "sideEffectUnknown": true,
+  "callerRemoves": 2,
+  "rowRemoves": 2,
+  "fullyDetached": true
+ }
+}

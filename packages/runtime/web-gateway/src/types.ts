@@ -181,7 +181,11 @@ export interface WebAuthorityInput {
   }
   readonly operationKind: WebOperationPayload['kind']
   readonly canonicalLocator: string
-  readonly cancelledAtDecision: boolean
+  /** LIVE, re-readable cancel source (root bf6a39be): the authority must
+   *  evaluate it AT ITS DECISION POINT. The lane never snapshots a boolean
+   *  here — a construction-time `false` would impersonate "not cancelled",
+   *  the very check/execute split C3 closed. */
+  readonly isCancelled: () => boolean
 }
 
 /** The injected center-edge authority port (ONE consume per call). */

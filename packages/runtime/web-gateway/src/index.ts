@@ -66,8 +66,13 @@
  * checked BEFORE consume (`cancelled-before-consume` ⇒ zero consume,
  * measured), the row's abort signal is MERGED into the seam call so close()
  * drains in-flight transport (the provider sees abort; the call settles
- * cancelled, never silently continues), and the consume input carries the
- * decision-time cancellation state.
+ * cancelled, never silently continues), and the consume input carries a LIVE
+ * cancel source (`isCancelled()`) the authority evaluates at its OWN decision
+ * point — never a construction-time constant pretending "not cancelled"
+ * (root bf6a39be). Per-call merged listeners are detached in `finally` (a
+ * clean completion cleans up too). close() AFTER a provider SUCCESS keeps
+ * the success fact: abort is a drain, not a rollback, and close() stays a
+ * synchronous API (no async gate invented).
  *
  * SEAM-CODE MAP (the closed 8-code {@link GovernanceErrorCode} set has no
  * "provider unavailable" member — the least-wrong mapping is documented,
@@ -278,15 +283,15 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     // — destination: derived, never supplied (a caller-claimed destination is
     //   only a cross-check: a target.destination that disagrees is refused) —
     let envelope: WebDestinationEnvelope
-    let delegate: () => Promise<string>
+    let delegate: (sig?: AbortSignal) => Promise<string>
     if (payload.kind === 'web.fetch') {
       const derived = deriveDestination(payload.url)
       if ('code' in derived) {
         return done(webGatewayRefusal('DOMAIN_DENIED', `${derived.code}: ${derived.detail}`), { operation: kind, refusal: derived.code })
       }
       envelope = derived
-      delegate = async () => {
-        const res = await ports.fetch({ url: payload.url }, mergedSignal(signal))
+      delegate = async (sig?: AbortSignal) => {
+        const res = await ports.fetch({ url: payload.url }, sig)
         return fingerprintForFetch(envelope, res)
       }
     } else {
@@ -304,8 +309,8 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
         return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `search provider destination is not a usable origin (${derived.code}): ${derived.detail}`), { operation: kind, refusal: derived.code })
       }
       envelope = derived
-      delegate = async () => {
-        const res = await ports.search({ query: payload.query, ...(payload.maxResults === undefined ? {} : { maxResults: payload.maxResults }) }, mergedSignal(signal))
+      delegate = async (sig?: AbortSignal) => {
+        const res = await ports.search({ query: payload.query, ...(payload.maxResults === undefined ? {} : { maxResults: payload.maxResults }) }, sig)
         return fingerprintForSearch(envelope, res)
       }
     }
@@ -357,7 +362,12 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
       correlation: Object.freeze({ ...correlation, payloadFingerprint }),
       operationKind: payload.kind,
       canonicalLocator: envelope.canonicalLocator,
-      cancelledAtDecision: false, // the cancel-first gate above guarantees this
+      // LIVE cancel source, re-readable by the authority AT ITS DECISION
+      // POINT (root bf6a39be): every call reads lifecycle + caller signal
+      // afresh — never a construction-time constant pretending "not
+      // cancelled". A cancellation landing DURING the consume await is
+      // therefore truthfully visible at the decision boundary.
+      isCancelled: () => cancelledNow(signal),
     })
     if (!consumed.ok) {
       return done({ ok: false, error: consumed.error }, { operation: operationLabel, refusal: 'authority-refused' })
@@ -390,15 +400,27 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     }
 
     // — delegate to the REAL provider (the seam resolves the configured
-    //   provider at call time; we never select or imitate one) —
+    //   provider at call time; we never select or imitate one).
+    //   ROOT bf6a39be pins:
+    //   (a) the per-call merged listeners are DETACHED in `finally` — a
+    //     clean completion must remove them too (once:true only fires when
+    //     an abort actually lands), so long-lived row/caller signals never
+    //     accumulate one listener pair per call;
+    //   (b) the race where close() lands AFTER the provider succeeded keeps
+    //     the completion FACT: a finished call is never rewritten into a
+    //     failure by close — abort is a drain, NEVER a rollback, and never
+    //     claims an already-made remote request was undone. —
+    const live = mergedSignal(signal)
     try {
-      const outcomeFingerprint = await delegate()
+      const outcomeFingerprint = await delegate(live.signal)
       return done(
         { ok: true, value: Object.freeze({ outcomeFingerprint, domainVeto }) },
         { operation: operationLabel, outcome: 'ok' },
       )
     } catch (err) {
       return done(seamFailure(err), { operation: operationLabel, refusal: seamCodeOf(err) ?? 'seam-error' })
+    } finally {
+      live.detach()
     }
   }
 
@@ -453,16 +475,28 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     return lifecycle.isClosed() || caller?.aborted === true
   }
 
-  function mergedSignal(caller?: AbortSignal): AbortSignal | undefined {
+  /** Merge caller + row abort into the seam signal for ONE call and hand
+   *  back the detach handle that removes THIS call's listeners (root
+   *  bf6a39be: clean completion must clean up too; merge semantics
+   *  unchanged — either source aborting aborts the combined signal). */
+  function mergedSignal(caller?: AbortSignal): { readonly signal: AbortSignal | undefined; readonly detach: () => void } {
     const row = lifecycle.signal
-    if (row === undefined) return caller
-    if (caller === undefined) return row
+    if (row === undefined) return { signal: caller, detach: () => {} }
+    if (caller === undefined) return { signal: row, detach: () => {} }
     const combined = new AbortController()
+    const onCaller = (): void => { combined.abort(caller.reason) }
+    const onRow = (): void => { combined.abort(row.reason) }
     if (caller.aborted) combined.abort(caller.reason)
     else if (row.aborted) combined.abort(row.reason)
-    caller.addEventListener('abort', () => { combined.abort(caller.reason) }, { once: true })
-    row.addEventListener('abort', () => { combined.abort(row.reason) }, { once: true })
-    return combined.signal
+    caller.addEventListener('abort', onCaller, { once: true })
+    row.addEventListener('abort', onRow, { once: true })
+    return {
+      signal: combined.signal,
+      detach: () => {
+        caller.removeEventListener('abort', onCaller)
+        row.removeEventListener('abort', onRow)
+      },
+    }
   }
 
   function rowClosedRefusal(): ReturnType<typeof webGatewayRefusal> {
