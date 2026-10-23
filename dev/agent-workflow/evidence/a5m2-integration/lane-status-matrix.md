@@ -15,3 +15,7 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 | B-CONTROL/G1, AUTH, checker | 接线未测/landed | g1 fix 87/87 `942b0d1a5`; AUTH picks; checker `833e261da` | **landed** int (705742ad5…874f3ae0d chain) | local gates only; official CI still not-all-green |
 
 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
+
+## 关键命令最简纪律（root 21:57，对所有仍验证 owner 生效；后续派卡随行）
+每次工具只运行实际 pnpm/node 命令本体；stdout/stderr 可重定向本次唯一 log；命令后不接 tail/echo/其他命令；进程 exit 以工具直接报告的 process exit 为准；日志裁剪=另一次只读。不新 runner 框架；不用 grep0/tail0/touched0/'Done' 行冒整体 RC；旧不可信 RC 不补造。中心自身即刻起同样执行（此前 battery/tsc 等调用中 `; echo RC=$?` 尾缀按本纪律停止，改用单命令+工具 exit）。
+
