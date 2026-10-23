@@ -1,9 +1,10 @@
 /**
- * A5M2-G2-TEAM-ASSEMBLY (revision 3; rev2 = lifecycle round per the assembly
- * review of 6f9aec9782, rev3 = root 4afa MCP residuals: persistent retained
- * ownership on failed connect rollback, close keeps ownership on failure,
- * SYNCHRONOUS admission cutoff at close entry) — the two Team assembly ports
- * proven on the REAL pinned public entries at Host 639ed01539:
+ * A5M2-G2-TEAM-ASSEMBLY (revision 4; rev2 = lifecycle round per the assembly
+ * review of 6f9aec9782, rev3 = root 4afa MCP residuals — persistent retained
+ * ownership, close keeps ownership on failure, SYNCHRONOUS admission cutoff —
+ * rev4 = root 6875: generation ownership carries the REAL transport + close
+ * handle; failed cleanup really touches that owned handle) — the two Team
+ * assembly ports proven on the REAL pinned public entries at Host 639ed01539:
  *
  *  BROWSER port: the REAL public modules are LOADED by these legs
  *  (browser-use-stagehand-native src/launch.ts + src/worker-client.ts via the
@@ -402,7 +403,7 @@ describe('a5m2-g2-assembly MCP port', () => {
     const rbClose = await asyncError(() => port2.close())
     expect(rbClose.message).toMatch(/retained-connect-rollback-close/) // the owned failure re-surfaces at close…
     expect(rbClose.message).toMatch(/refusing rollback close/) // …with its underlying reason
-    expect(broken2Closes).toBe(1) // pin-verified: the SDK reaches transport.close exactly ONCE on the failed-connect path (its own cleanup) and later client.close() no-ops — the port measures the REAL transport state and keeps ownership instead of faking a re-reach
+    expect(broken2Closes).toBe(2) // pin law: the SDK reaches transport.close exactly ONCE on the failed-connect path (its own cleanup) and later client.close() no-ops — the SECOND call is the PORT'S OWNED cleanup reaching the retained transport handle directly (keeping the Client alone would not keep the unclosed transport closed)
     expect(port2.stats()).toMatchObject({ disposed: true, connected: false, retainedGenerations: 1 }) // a failed close keeps REAL ownership (never dropped for an error string)
   }, 30000)
 
