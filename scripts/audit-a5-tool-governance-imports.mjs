@@ -139,6 +139,13 @@ const PR1_CONSUMERS = Object.freeze([
   // (agent-bindings / team-tool-plane / ptc-escalation-row) were booked the
   // same way by their own rounds.
   'runtime/src/plugin/live/plane-effect-backends.mjs',
+  // A5-M2 B-WEB (a5m2w) - booked by the CENTER integration round (the PR #360 face),
+  // NOT by the lane: the web connector lane package consumes the frozen gateway and
+  // effect faces for its destination envelope and the literal-IP belt; its production
+  // row mounts through agent-bindings (listed above) and reaches the host web service
+  // only through the additive deps.web accessor in plugin/host.ts. Zero host edits,
+  // zero new ledger, gate keys read RAW and refused typed inside the assembly.
+  'runtime/web-gateway/',
 ])
 
 const SPECIFIER_PATTERNS = [

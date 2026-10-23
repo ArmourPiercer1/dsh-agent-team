@@ -58,6 +58,10 @@ export const PLACEMENTS = [
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs',
   },
   {
+    src: 'packages/runtime/src/plugin/live/web-gateway-assembly.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/web-gateway-assembly.mjs',
+  },
+  {
     // alpha5 PTC fs half-arm (10:04Z work order): the escalation
     // adjudication row — production import edge from agent-bindings (the
     // gate), shipped through the same dist mirror as every prior live row.

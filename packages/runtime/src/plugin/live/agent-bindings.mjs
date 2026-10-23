@@ -444,6 +444,10 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
+// M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
+// here and refused typed inside the assembly; the lane imports no host module
+// statically - the seam arrives through the additive deps.web accessor (host.ts).
+import { createLiveWebGatewayAssembly, deepSeekSearchOriginSource } from './web-gateway-assembly.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
@@ -867,6 +871,9 @@ export function createAgentBindings(deps) {
   // TeamPermit/lease/identity authority for its root — NOT a jobs registry
   // (the host `jobs` registry coverage stays the registered gap).
   const liveJobsGatewayAssemblies = new Map()
+  // M2 B-WEB (a5m2w): per-root web connector rows; state-only (no leases, no timers),
+  // so close() only clears the table.
+  const liveWebGatewayAssemblies = new Map()
   // alpha5 PTC fs half-arm (10:04Z work order): the per-root escalation
   // adjudication assemblies (live/ptc-escalation-row.mjs). Same lifecycle
   // as the jobs-gateway map: created lazily on the first governed mount,
@@ -2751,6 +2758,29 @@ export function createAgentBindings(deps) {
             observations.push(`a5p7-live: assembly-REFUSED for root ${gatewayRootKey} (${String(error?.message ?? error).slice(0, 160)})`)
             throw typed
           }
+        }
+        // M2 B-WEB (a5m2w): ONE web connector row per owning root (the jobs-gateway
+        // precedent). Gate keys pass RAW and the assembly decides: absent/false = a
+        // typed `web-not-enabled` row (default off, byte-for-byte zero flip), a
+        // non-boolean = `web-config-not-boolean`, a missing seam = `web-seam-absent` -
+        // never a silent fallback. The seam rides the additive deps.web accessor
+        // (host.ts, mirroring deps.jobs) and resolves AT CALL TIME, so a web service
+        // installed after this mount still reaches the row; no agentCtx property proxy
+        // is read here (the V1 live matrix topology lesson).
+        if (!liveWebGatewayAssemblies.has(gatewayRootKey)) {
+          liveWebGatewayAssemblies.set(gatewayRootKey, createLiveWebGatewayAssembly({
+            webEnabledRaw: config?.webGateway?.enabled,
+            ctxWeb: typeof deps.web === 'function'
+              ? {
+                fetch: (request) => { const seam = deps.web(); return seam?.fetch?.(request) },
+                search: (request) => { const seam = deps.web(); return seam?.search?.(request) },
+              }
+              : undefined,
+            resolveSearchOrigin: deepSeekSearchOriginSource({
+              configBaseURL: typeof config?.webGateway?.searchBaseURL === 'string' ? config.webGateway.searchBaseURL : undefined,
+            }),
+            onObserve: (o) => observations.push(`a5m2w-live: root=${gatewayRootKey} operation=${String(o?.operation ?? '')} outcome=${String(o?.outcome ?? o?.refusal ?? '')}`),
+          }))
         }
         // alpha5 PTC fs half-arm (work order 10:04Z; the row-shaped
         // productization of the reviewed L2 demo): the escalation
@@ -5656,6 +5686,10 @@ export function createAgentBindings(deps) {
         } catch { /* the window tombstones itself; never mask the close */ }
       }
     }
+    // M2 B-WEB: web rows hold no lease, fd or timer - clearing the table is the whole
+    // close, and it deliberately drains nothing that cannot settle.
+    liveWebGatewayAssemblies.clear()
+
     // T12-M2: the persona scope — dispose every agent-scoped
     // 'deployment:persona' entry (exactly the scoped sections; the global
     // prompt layer is never touched) and clear the persona surface state.
@@ -5883,5 +5917,6 @@ export function createAgentBindings(deps) {
     // NON-AUTHORITY: the durable MemberInstance rows stay the identity
     // source; this accessor exists for the wiring rounds' read-only kits.
     liveJobsGatewayFor: (rootSessionId) => liveJobsGatewayAssemblies.get(String(rootSessionId)),
+    liveWebGatewayFor: (rootSessionId) => liveWebGatewayAssemblies.get(String(rootSessionId)) ?? null,
   }
 }

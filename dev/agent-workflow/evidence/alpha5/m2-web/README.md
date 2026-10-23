@@ -78,3 +78,39 @@ makeFixture/tag ← `../../alpha5-adapter-p0/00-baseline/p00-fixture.mjs`（只�
 p4t6 exact-count pin +1）。P 层 provider 装配提案见 COORDINATION/交付消息（B-WEB：owner=CONNECTOR，
 接真实已安装 Host provider；`interfaces.ts:196 ProviderGateway` 为 E 面）。本目录 runner 保持
 fixture 级证据身份，不冒充生产接线验收。
+
+## 批次 2（2026-10-23 07:2xZ 放行；根 07:18 纪律 = 正负控落装配后生产路径）
+
+新增交付（全部 = 本卡独占路径，共享件未动）：
+
+- `packages/runtime/web-gateway/src/{types,destination-envelope,index}.ts` — ProviderGateway
+  web 臂实现（委托注入 seam `ctx.web.fetch/search`；目的地只从操作派生；N 臂
+  `connect@canonicalLocator` 复核；D 臂 commit 点前读；字面 IP 带 = 传输前
+  belt，比 provider 更严、零复制弱化）。
+- `packages/runtime/src/plugin/live/web-gateway-assembly.mjs` — 生产装配行
+  （GLUE-5 import 边；关闭键 `webEnabledRaw` 默认关、非布尔 typed 拒；缺依赖
+  typed 拒；`deepSeekSearchOriginSource()` 镜像 provider 自身来源法
+  `config ?? $DEEPSEEK_SEARCH_BASE_URL ?? 包常量`，动态 import 取常量，
+  文件内零目的地常量）。
+- `packages/runtime/test/a5m2w-web-gateway.test.ts` — 正式测试 **19 腿**
+  （G-1..G-5 装配面 + W-1..W-14 网关律）；连同既有
+  `a5m2w-web-c1.test.ts`（8 腿）= 27/27 PASS。
+- dist 镜像（构建产物，非提交）：`packages/runtime/dist/packages/runtime/web-gateway/src/*`
+  （tsc 探针 = 未来 include 一行 `"web-gateway"` 的字节等价输出，`tsc -p` rc=0，
+  git 仅新增该目录）+ `dist/.../live/web-gateway-assembly.mjs` 字节拷贝
+  （与 place-dist-glue 行为一致；PLACEMENTS 登记 = CENTER）。
+- runner **PHASE G**（8 腿）：从 **dist 生产 import 边** 导入装配行，over 真实
+  WebRuntime + 真实已安装 provider（deepseek-official/http，config 镜像
+  cordis.patch.yml:472-490）。G1 默认关零计数；G2 非布尔/缺依赖 typed 拒；
+  G3 belt 负控三层零计数（fetch 钩子/TCP 钩子/accessLog）；G4 真 provider
+  policy 负控透传（WEB_BLOCKED_URL verbatim，复用非复制）；G5 未知顶层键
+  信封/目的地/载荷三层 typed 拒；G6 冻结契约面无载荷不猜；G7 真搜索 provider
+  链 WEB_PROVIDER_CREDENTIAL_MISSING 透传零计数；G8 allow 正控 = **装配真实 +
+  端点桩**（披露：桩≠真实外网段）。load-bearing run =
+  `runs/2026-10-23T07-26-08Z/`（20/20 EXIT=0）。
+- 真 provider/外网正控段 = **ENV_BLOCK 明列**（phases.G.env_block：真外网
+  allow-through、真 DEEPSEEK 凭据、真 Host web-preset 复跑），未用 fixture 顶替。
+
+自查（07:2xZ）：`a5m2w-web-gateway + a5m2w-web-c1` 27/27；eslint 本卡全文件
+rc=0；typecheck 本卡行 **0**（残留红全部 = 兄弟卡文件：
+`a5m2-governed-write-row-c1.test.ts`×3、`../tools/a5p5-tools/src/write-slice.ts`×6）。
