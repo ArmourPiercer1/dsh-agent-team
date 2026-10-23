@@ -192,19 +192,23 @@ if (!existsSync(fixtureManifestPath)) { console.error('standard fixture package.
 
 function writePatch(patchPath, hostEntryHref) {
   mkdirSync(dirname(patchPath), { recursive: true })
+  // Root 00:2x fix (fail 23-36-28): the loader dialect (Host app-boot
+  // src/index.ts:354 + :358-360; official user-patches.spec :52-54) wants
+  // a TOP-LEVEL ARRAY whose entries carry `insert:` as a LIST of plugin
+  // entries — id/name/config are keys of one list item; config body +2.
   writeFileSync(patchPath, [
     `- insert:`,
-    '    id: dsh-agent-team',
-    `    name: ${JSON.stringify(hostEntryHref)}`,
-    '    config:',
-    `      blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
-    '      seedMembers: []',
-    '      generation: 1',
-    '      staticModel:', '        provider: deepseek-official', '        model: a5m2-sched-model',
-    '      deniedSelection: null', '      mcpServers: []', '      mcpServer: null',
-    '      environmentFacts: []', '      externalPolicyFacts:', '        hard: {}', '        capabilityExists: {}',
-    '      teamToolPlane:', // ③ governed pair refuses without plane+schedule
-    '        scheduleEnabled: true', '',
+    '    - id: dsh-agent-team',
+    `      name: ${JSON.stringify(hostEntryHref)}`,
+    '      config:',
+    `        blueprintDir: ${JSON.stringify(join(HOME, 'blueprints'))}`,
+    '        seedMembers: []',
+    '        generation: 1',
+    '        staticModel:', '          provider: deepseek-official', '          model: a5m2-sched-model',
+    '        deniedSelection: null', '        mcpServers: []', '        mcpServer: null',
+    '        environmentFacts: []', '        externalPolicyFacts:', '          hard: {}', '          capabilityExists: {}',
+    '        teamToolPlane:', // ③ governed pair refuses without plane+schedule
+    '          scheduleEnabled: true', '',
   ].join('\n'))
 }
 
