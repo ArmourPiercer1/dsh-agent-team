@@ -105,7 +105,6 @@ type World = ReturnType<typeof makeWorld>
 function makeWorld (over: Record<string, unknown> = {}) {
   session += 1
   const natives: Record<string, Definition> = {}
-  const nativeOverride = over.nativeOverride as ((name: string, args: Record<string, unknown>) => Record<string, unknown>) | undefined
   const delegateEntries: Array<{ name: string; args: Record<string, unknown>; exec: unknown; self: unknown }> = []
   const mkNative = (name: string): Definition => {
     const def = Object.freeze({
@@ -118,12 +117,6 @@ function makeWorld (over: Record<string, unknown> = {}) {
         // createTeamTools execute (L3 pairs the delegate to exactly this
         // reference), so an entry here is a port entry.
         delegateEntries.push({ name, args, exec, self: this })
-        // A world may stand in the NATIVE'S OWN earlier answer (e.g. the shared
-        // caller/root gate refusing at packages/tools:496, before `spec.run`):
-        // the value below then reaches the caller as the native's own object,
-        // which is the only way a native typed VALUE may be asserted - never by
-        // catching an exception this layer threw.
-        if (nativeOverride !== undefined) return Object.freeze(nativeOverride(name, args))
         return Object.freeze({ status: 'executed', name, echoed: { ...args } })
       },
     }) as unknown as Definition
@@ -156,7 +149,7 @@ function makeWorld (over: Record<string, unknown> = {}) {
   )
   // ONLY bridge keys reach the bridge: it refuses an unknown input key, so
   // the world's own knobs (mounted / seat) never ride into it.
-  const { mounted: _mounted, seat: _seatBehaviour, nativeOverride: _nativeOverride, ...bridgeOver } = over
+  const { mounted: _mounted, seat: _seatBehaviour, ...bridgeOver } = over
   const base: Record<string, unknown> = {
     realmId: REALM,
     providerId: PROVIDER,
@@ -638,30 +631,32 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
   })
 
   describe('(j) the shared caller/root gate answers BEFORE any durable fact', () => {
-    it('a trusted gate refusal answers with the NATIVE typed rejected VALUE as the RETURN object — zero PA entry, zero fact read, nothing minted', async () => {
+    it('a first gate refusal stops the call: zero PA entry, zero fact read, and NO delegate entry even though the identity would resolve afterwards', async () => {
       let factsRead = 0
-      const native = {
-        status: 'rejected',
-        code: 'TEAM_TOOL_CALLER_ROOT_MISMATCH',
-        message: "team-tools: caller session belongs to Team root 's-other', but the tool request targets root 's-root-wire'",
-        details: { callerRootSessionId: 's-other', requestedRootSessionId: 's-root-wire' },
-      }
+      let gateCalls = 0
       const w = makeWorld({
-        callerGate: async () => ({ ok: false, result: native }),
-        // The native tool's OWN answer at its shared gate (packages/tools:496,
-        // before spec.run): this is where the caller's VALUE comes from.
-        nativeOverride: () => native,
+        // The gate refuses ONCE (the real first-refusal case), then would
+        // succeed - so a design that re-entered the native would silently run
+        // the call. The leg fails loudly if the lane is ever entered.
+        callerGate: async () => {
+          gateCalls += 1
+          return gateCalls === 1
+            ? { ok: false, result: { status: 'rejected', code: 'TEAM_TOOL_CALLER_ROOT_MISMATCH', message: 'caller root mismatch', details: {} } }
+            : { ok: true, caller: { kind: 'leader' }, rootSessionId: 's-root-wire' }
+        },
         queryFacts: { resolve: () => { factsRead += 1; return { rosterMemberIds: [], rosterFingerprint: 'x' } } },
       })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
-      const value = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
-      expect(value).toEqual(native)
-      expect(factsRead, 'no durable read runs behind a call the caller/root gate already answered').toBe(0)
-      expect(w.walks, 'no PA question opens behind a caller/root refusal').toHaveLength(0)
-      expect(w.delegateEntries, 'the answer is the native settling its own call, with zero downstream effect').toHaveLength(1)
+      const outcome: { kind: 'returned'; value: unknown } | { kind: 'refused'; code: string } = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
+        .then((value): { kind: 'returned'; value: unknown } => ({ kind: 'returned', value }))
+        .catch((error: unknown) => ({ kind: 'refused', code: String((error as { code?: string }).code) }))
+      expect(outcome.kind).toBe('refused')
+      if (outcome.kind === 'refused') expect(outcome.code).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
+      expect(factsRead, 'no durable read runs behind a caller/root refusal').toBe(0)
+      expect(w.walks, 'no PA question opens').toHaveLength(0)
+      expect(w.delegateEntries, 'the native is NEVER re-entered: a later identity recovery must not reach spec.run').toHaveLength(0)
+      expect(gateCalls, 'the seat does not retry by re-running the native').toBe(1)
       expect(wiring.claimStats().callerGateRefusals).toBe(1)
-      expect(w.events.some((event) => event.event === 'b-team-wire:caller-gate-forwards-to-native'
-        && event.paEntry === false && event.factsRead === false && event.minted === false)).toBe(true)
     })
 
     it('a passing gate changes nothing about the admitted leg', async () => {
@@ -672,6 +667,42 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(w.walks).toHaveLength(2)
       expect(w.delegateEntries).toHaveLength(1)
       expect(wiring.claimStats().callerGateRefusals).toBe(0)
+    })
+  })
+
+  describe('(k) the claim and the published registration are version-paired at BOTH ends of the walk', () => {
+    it('a registration that does not match the claim refuses before any PA question opens', async () => {
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: 'some-OTHER-provider' }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-pre'))
+        .then(() => 'no-refusal')
+        .catch((error: unknown) => String((error as { code?: string }).code))
+      expect(outcome).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
+      expect(w.walks, 'a claim is never minted on a registration it does not match').toHaveLength(0)
+      expect(w.delegateEntries).toHaveLength(0)
+    })
+    it('a registration that moves under an open walk stops at the edge — the grant is never carried into the lane', async () => {
+      let published = { adapterRevision: 1, providerIdentity: PROVIDER }
+      const w = makeWorld({ registrationOf: () => published })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const originalOpen = w.seat.open
+      if (typeof originalOpen === 'function') {
+        w.seat.open = async (arg: Record<string, unknown>) => {
+          published = { adapterRevision: 2, providerIdentity: PROVIDER }
+          return (originalOpen as (a: Record<string, unknown>) => Promise<unknown>)(arg)
+        }
+      }
+      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-edge'))
+        .then(() => 'no-refusal')
+        .catch((error: unknown) => String((error as { code?: string }).code))
+      expect(outcome).toBe('P_B_TEAM_WIRE_EDGE_CANCELLED')
+      expect(w.delegateEntries, 'a stale approval never enters the lane').toHaveLength(0)
+    })
+    it('a matching registration changes nothing about the admitted leg', async () => {
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: PROVIDER }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-match'))
+      expect(w.delegateEntries).toHaveLength(1)
     })
   })
 
