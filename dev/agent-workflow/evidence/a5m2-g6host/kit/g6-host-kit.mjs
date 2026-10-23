@@ -148,6 +148,7 @@ const SCENE_LEDGER = [
 const PACK_ROOT = realpathSync(join(FIXTURE_INSTALL, 'node_modules/dsh-agent-team'))
 const INSTALLED_HOST_JS = realpathSync(join(PACK_ROOT, 'packages/runtime/dist/packages/runtime/src/plugin/host.js'))
 const INSTALLED_GLUE = realpathSync(join(PACK_ROOT, 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs'))
+const INSTALLED_BLUEPRINT_VALIDATE = realpathSync(join(PACK_ROOT, 'packages/runtime/dist/packages/domain/blueprint/src/validate.js'))
 const INSTALLED_SEAM = realpathSync(join(PACK_ROOT, 'packages/runtime/root-binding/harness/seam.mjs'))
 const PRODUCTION_ROW_NAME = pathToFileURL(INSTALLED_HOST_JS).href
 
@@ -220,8 +221,19 @@ const DENY_TOKENS = [G6.CEILING, G6.UNAUTHORIZED, G6.NOT_FOUND, G6.NO_STEP]
 // required capability fields + permissions lanes; builtinToolDeny carries
 // subagent_fork (known-sensitive; the preset-spawn subagent is NOT deny-able
 // on the standard preset — skill §5.2, recorded, not mitigable here).
+// SCHEMA v3 (root final minimal-field card, anchored on the image lane's
+// RUN BP_ANCHOR_YAML/savedBlueprintYaml STRUCTURE ONLY — no image rules, no
+// worker-message permissions, no available:true copied): schemaVersion 1->3,
+// the two new v3 top-level envelopes with empty rule sets, explicit
+// memberEnvelopes: [] (workers inherit NOTHING from the leader), and the
+// skills/mcp grammar {kind: deny, items: []} -> {kind: deny} (denial kept,
+// never allow). EVERYTHING ELSE IS UNCHANGED: leader tool list, teamEnvelope
+// (archive/resolve included), permissions default ask + empty lanes,
+// requirements persona/standard, quotas, policyStates, displayName/description.
+// If the REAL 874 parser rejects any retained field, that is reported as the
+// actual blocker — no silent semantic edits.
 const BLUEPRINT_YAML = `---
-schemaVersion: 1
+schemaVersion: 3
 blueprintId: ${BLUEPRINT_ID}
 revision: "1"
 displayName: "G6 session-query acceptance world"
@@ -232,41 +244,78 @@ leader:
   capabilities:
     teamTools:
       kind: allow
-      items: [team_list_members, team_list_templates, team_inspect_config, team_create_member, team_delegate, team_follow_up, team_collect, team_send_message, team_report_progress, team_request_control, team_resolve_control, team_list_pending_control, team_archive_member]
-    builtinToolDeny: [subagent_fork]
-    skills: { kind: deny, items: [] }
-    mcp: { kind: deny, items: [] }
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_follow_up
+        - team_collect
+        - team_send_message
+        - team_report_progress
+        - team_request_control
+        - team_resolve_control
+        - team_list_pending_control
+        - team_archive_member
+    builtinToolDeny:
+      - subagent_fork
+    skills:
+      kind: deny
+    mcp:
+      kind: deny
     permissions:
       default: ask
       allow: []
       ask: []
       deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+    - archive-member
+    - restore-member
+  deny: []
 members:
   - templateId: worker
     displayName: "Worker"
     persona: "You are a worker. Do exactly what each prompt says and answer briefly."
     capabilities:
-      teamTools: { kind: deny }
-      builtinToolDeny: [subagent_fork]
-      skills: { kind: deny, items: [] }
-      mcp: { kind: deny, items: [] }
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - subagent_fork
+      skills:
+        kind: deny
+      mcp:
+        kind: deny
       permissions:
         default: ask
         allow: []
         ask: []
         deny: []
+memberEnvelopes: []
 requirements:
   - domain: persona
     name: standard
-teamEnvelope:
-  allow: [assign-task, create-member, send-message, report-progress, request-control, resolve-control, archive-member, restore-member]
-  deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
 policyStates:
   - id: default
     description: "Default state."
 quotas:
-  team: { maxInstances: 4, maxConcurrent: 3 }
-  members: { maxInstances: 2, maxConcurrent: 2 }
+  team:
+    maxInstances: 4
+    maxConcurrent: 3
+  members:
+    maxInstances: 2
+    maxConcurrent: 2
 metadata: {}
 ---
 `
@@ -552,6 +601,22 @@ async function runPrechecks() {
     rowValidator = `REJECTED: ${String(e?.message ?? e).slice(0, 180)}`
   }
   ck('row-validator-replay-on-real-row', rowValidator === 'validated-OK', rowValidator)
+  // The blueprint's OWN canonical parser in the installed 874 (exported
+  // parseBlueprint; the row validator does NOT substitute): answers on the
+  // EXACT inline source that lands in blueprintSource. Non-empty, non-row.
+  let bpParser = 'parser-export-unavailable'
+  try {
+    const bpMod = await import(pathToFileURL(INSTALLED_BLUEPRINT_VALIDATE).href)
+    if (typeof bpMod.parseBlueprint === 'function') {
+      const core = bpMod.parseBlueprint(BLUEPRINT_YAML)
+      bpParser = core?.schemaVersion === 3 && typeof core?.contentHash === 'string'
+        ? `OK schemaVersion=3 contentHash=${String(core.contentHash).slice(0, 16)}…`
+        : `UNEXPECTED shape: schemaVersion=${String(core?.schemaVersion)}`
+    }
+  } catch (e) {
+    bpParser = `REJECTED: ${String(e?.message ?? e).slice(0, 240)}`
+  }
+  ck('blueprint-parser-replay-on-real-source', bpParser.startsWith('OK schemaVersion=3'), bpParser)
   ck('world-absent', !existsSync(WORLD), WORLD)
   const lockf = join(REPO_ROOT, 'tests/homes', `${WORLD_NAME_CLEAN}.lock`)
   ck('world-lockfile-absent', !existsSync(lockf), lockf)

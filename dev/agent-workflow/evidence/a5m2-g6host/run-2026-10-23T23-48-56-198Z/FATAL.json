@@ -1,0 +1,12 @@
+{
+  "fatal": "team.create failed: {\"code\":\"internal-error\",\"message\":\"remote method 'team.create' is unavailable while the team runtime is not ready (state: failed) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVersion\":1,\"requestToken\":null,\"reason\":\"runtime-not-ready\"}}",
+  "results": [],
+  "transcript": [
+    {
+      "at": "2026-10-23T23:49:00.863Z",
+      "method": "team.create",
+      "status": 200,
+      "body": "{\"type\":\"server-response\",\"rpcId\":\"g6-create-2b4vg3ujf7\",\"result\":{\"ok\":false,\"error\":{\"code\":\"internal-error\",\"message\":\"remote method 'team.create' is unavailable while the team runtime is not ready (state: failed) — the live boot is still starting or it failed; the route stays registered and the catalog reads stay servable\",\"details\":{\"method\":\"team.create\",\"endpoint\":\"team.create\",\"contractVer"
+    }
+  ]
+}
