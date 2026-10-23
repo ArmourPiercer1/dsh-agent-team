@@ -33,23 +33,36 @@
  *  (d) classify mirrors the captured tool bodies' OWN argument law as
  *      model-visible VALUES (invalid_selector/invalid_prompt/invalid_rule/
  *      frequency_too_high bytes measured from tools.ts) with ZERO port
- *      entry, and every plan is frozen, fingerprinted, and gap-carrying;
+ *      entry; every plan is frozen, fingerprinted, gap-carrying (rev-2 gap
+ *      set: TIMER_ARM/TRIGGER_GOVERNANCE/PLAN_ONCE_MEMO/PERSISTENCE_ORDER),
+ *      and carries the contract §B-SCHEDULE TARGET (root ①: owner session +
+ *      taskId + revision + action; timer namespace+effect SERVICE-labelled;
+ *      destination session + wake labelled service-owned);
  *  (e) dispatch answers the REAL service contract: exact port tuples
- *      (sessionId taken from the LIVE exec.agent.session.id, the create
+ *      (sessionId read from the BOUND owner Agent by reference, the create
  *      request = the classified args, the live exec.signal by reference, the
  *      CAS `expected` record by reference), the published scheduleView
  *      projection (state/deliveryMode), the update two-step
  *      list→catalog ended/not-found split with zero update entry, the L6
- *      error-VALUE mirror (closed-shape value / internal_error — never a
- *      re-raise), and the plan-once law (consumed/foreign/stale plans
- *      refuse with zero port entry);
- *  (f) governance edges: the host identity-refusal VALUE for a missing or
- *      mispaired live caller (BOTH facts: agent.id AND session.header.id),
- *      the per-tool HOST CHECK ORDER (delete answers the invalid_rule VALUE
+ *      error-VALUE mirror through `instanceof` the REAL published
+ *      ScheduleInputError (root ③ — a duck error wearing a closed code maps
+ *      to internal_error and NEVER leaks its message bytes), and the plan
+ *      MEMO law (consumed/foreign/stale plans refuse with zero port entry;
+ *      the copy-reuse boundary is PINNED honestly — consumedProof is the
+ *      center PA edge, root ④);
+ *  (f) governance edges: the host identity-refusal VALUE for a caller that
+ *      is not the BOUND owner Agent OBJECT (root ②: a look-alike object
+ *      carrying the SAME id/header/session bytes is refused exactly like the
+ *      host refuses it — tools.ts:438/:457/:481/:509 reference law), the
+ *      per-tool HOST CHECK ORDER (delete answers the invalid_rule VALUE
  *      before the identity check), the pre-abort internal_error VALUE with
- *      zero port entry, definition/port drift refusals, the drain
- *      new-call-prohibition, and the required admit seam (a refusal throws
- *      with the refusing side's OWN bytes, zero port entry);
+ *      zero port entry, definition/port drift refusals INCLUDING the live
+ *      ctx.schedule re-read (root ②: a replaced service object refuses; the
+ *      old constant self-compare is gone) and the update post-await
+ *      re-verify (a service replaced during the list await refuses with
+ *      ZERO update entry), the drain new-call-prohibition, and the required
+ *      admit seam (a refusal throws with the refusing side's OWN bytes,
+ *      zero port entry);
  *  (g) the registration face: keys are the placement feed's RUNTIME
  *      identities (backed by the REAL definitionIdentityOf mint over the
  *      emitted definitions — never the capture-side string), the frozen
@@ -57,9 +70,12 @@
  *      shape law, and a silent/moved feed THROWS.
  *
  * DISCLOSED STAND-INS: the schedule-service port, the admit seam, the
- * placement feed, the liveNative feed and the trusted CONFIG face are
- * lane-side doubles (production: the live ctx.schedule, the plane PA walk,
- * the pb §6 placement seam). The captured natives' EXECUTE BODIES are never
+ * placement feed, the liveNative feed, the liveScheduleService re-read feed
+ * and the owner Agent stand-in are lane-side doubles (production: the live
+ * ctx.schedule, the plane PA walk, the pb §6 placement seam, the member's
+ * REAL live Agent object bound at placement exactly like the host's
+ * registerScheduleTools(rootCtx, toolCtx, agent)). The ScheduleInputError
+ * used by the L6 legs is the REAL published class — not a double. The captured natives' EXECUTE BODIES are never
  * run by anything here — the rows dispatch to the port, and the capture
  * stand-in's own schedule recorder must stay EMPTY for the whole spec
  * (zero native entry). This spec is NOT C2: no Host, no network; C2/C3
@@ -78,7 +94,8 @@ import { findTestRepoRoot } from '../../../tests/paths.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 
 // ── the production module under spec (hand-cast, house idiom) ─────────────
-type Plan = { rowName: string; recordIndex: number; operation: string; args: Record<string, unknown>; toolError?: { code: string; message: string }; parametersFingerprint: string; namedGaps: Record<string, string> }
+type PlanTarget = { contract: string; owner: { kind: string; sessionId: string }; action: string; taskId: string | null; revision: string; timer: { namespace: string; effect: string }; destination: { sessionId: string; path: string; wake: string } }
+type Plan = { rowName: string; recordIndex: number; operation: string; target: PlanTarget; args: Record<string, unknown>; toolError?: { code: string; message: string }; parametersFingerprint: string; namedGaps: Record<string, string> }
 type ClassifyResult = { ok: boolean; code?: string; detail?: string; plan?: Plan }
 type DelegateResult = { ok?: boolean; code?: string; detail?: string; settled?: string; value?: unknown }
 type Row = {
@@ -211,14 +228,37 @@ async function captureRealNatives(): Promise<Record<string, Definition>> {
 const REAL_NATIVES = await captureRealNatives()
 
 // ── lane-side doubles: port, admit, liveNative, placement feed ────────────
-const TRUSTED = { memberAgentId: 'agent-member-7', sessionHeaderId: 'session-header-42' }
+// ROOT ②: the owner law is the host's REFERENCE identity — the bound Agent
+// OBJECT. The fixture's CAPTURED_AGENT is the double for the member's REAL
+// live Agent (production: the object registerScheduleTools binds,
+// tools.ts:405/:411); a look-alike object with the SAME id/header/session
+// BYTES must be refused exactly like the host refuses it (438/457/481/509).
 const LIVE_SESSION_ID = 'session-live-1'
+const CAPTURED_AGENT: Record<string, unknown> = {
+  id: 'agent-member-7',
+  session: { id: LIVE_SESSION_ID, header: { id: 'session-header-42' } },
+}
+/** A DIFFERENT Agent object carrying the SAME id/header/session bytes — the
+ *  ② case id-string pairing wrongly accepted: reference identity must refuse
+ *  it exactly like the host (tools.ts:438/:457/:481/:509). */
+const lookalikeAgent = (): Record<string, unknown> => ({
+  id: CAPTURED_AGENT['id'],
+  session: { id: LIVE_SESSION_ID, header: { id: (CAPTURED_AGENT['session'] as { header: { id: string } }).header.id } },
+})
 const liveExec = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
-  agent: { id: TRUSTED.memberAgentId, session: { id: LIVE_SESSION_ID, header: { id: TRUSTED.sessionHeaderId } } },
+  agent: CAPTURED_AGENT,
   callId: 'call-1',
   signal: new AbortController().signal,
   ...over,
 })
+// The REAL published error class (root ③): the L6 mirror and these legs run
+// `instanceof` against the SAME class identity the host bodies throw
+// (export src/index.ts:36). Not a double.
+const SCHEDULE_INPUT_ERROR = (HOST_SCHEDULE as Record<string, unknown>)['ScheduleInputError']
+if (typeof SCHEDULE_INPUT_ERROR !== 'function') {
+  throw new Error('the published schedule lib exports no ScheduleInputError class — baseline drift; failing closed')
+}
+const HostInputError = SCHEDULE_INPUT_ERROR as unknown as new (code: string, message: string) => Error
 
 type PortCall = { method: string; args: unknown[] }
 type PortState = {
@@ -281,7 +321,9 @@ async function mountFixture(overrides: Record<string, unknown> = {}): Promise<Fi
     captured: captureFor(natives),
     liveNative: (name: string) => natives[name],
     scheduleService: port,
-    trusted: TRUSTED,
+    liveScheduleService: () => port,
+    capturedAgent: CAPTURED_AGENT,
+    ScheduleInputError: HostInputError,
     placementFeed: () => undefined,
     admit,
     ...overrides,
@@ -305,10 +347,10 @@ const afterRecord = (over: Record<string, unknown> = {}): Record<string, unknown
 
 /* ═════════════════ (a) frozen dispatch facts + REAL interface measurements */
 describe('a5m2-schedule-adapters (a): frozen dispatch facts + the REAL published ScheduleService', () => {
-  it('carries exactly the four B-SCHEDULE records 30/31/32/33, declared_mount, revision 1', () => {
+  it('carries exactly the four B-SCHEDULE records 30/31/32/33, declared_mount, revision 2', () => {
     expect(ADAPTER.A5_B_SCHEDULE_FAMILY_ID).toBe('B-SCHEDULE')
     expect(ADAPTER.A5_B_SCHEDULE_MOUNT_CONDITION).toBe('declared_mount')
-    expect(ADAPTER.A5_B_SCHEDULE_ADAPTER_REVISION).toBe(1)
+    expect(ADAPTER.A5_B_SCHEDULE_ADAPTER_REVISION).toBe(2)
     expect(ADAPTER.A5_B_SCHEDULE_TOOL_NAMES).toEqual(['schedule_create', 'schedule_delete', 'schedule_list', 'schedule_update'])
     expect(Object.keys(ADAPTER.A5_B_SCHEDULE_RECORD_SPECS)).toHaveLength(4)
     expect(ADAPTER.A5_B_SCHEDULE_RECORD_SPECS.schedule_create).toEqual({ recordIndex: 30, operation: 'schedule-create' })
@@ -346,7 +388,9 @@ describe('a5m2-schedule-adapters (b): declared_mount honesty and assembly gate',
       captured: captureFor(REAL_NATIVES),
       liveNative: (name: string) => REAL_NATIVES[name],
       scheduleService: port,
-      trusted: TRUSTED,
+      liveScheduleService: () => port,
+      capturedAgent: CAPTURED_AGENT,
+      ScheduleInputError: HostInputError,
       placementFeed: () => undefined,
       admit: async () => ({ ok: true }),
     })
@@ -380,9 +424,16 @@ describe('a5m2-schedule-adapters (b): declared_mount honesty and assembly gate',
       { name: 'schedule_update', recordIndex: 33, familyId: 'B-SCHEDULE', status: 'DECLARED-INACTIVE', reason: 'capture-absent', captureReportedIgnored: false },
     ])
   })
-  it('assembly refusals: foreign capture, half-capture, capture without liveNative, partial port, unknown input key', () => {
+  it('assembly refusals: foreign capture, half-capture, capture without liveNative, partial port, unknown input key, missing owner/service-re-read/error-class', () => {
     const { port } = makePort()
-    const base = { scheduleService: port, trusted: TRUSTED, placementFeed: () => undefined, admit: async () => ({ ok: true }) }
+    const base = {
+      scheduleService: port,
+      liveScheduleService: () => port,
+      capturedAgent: CAPTURED_AGENT,
+      ScheduleInputError: HostInputError,
+      placementFeed: () => undefined,
+      admit: async () => ({ ok: true }),
+    }
     const foreign = ADAPTER.createScheduleAdapterAssembly({ ...base, captured: { todo_write: captureFor(REAL_NATIVES, ['schedule_create']).schedule_create } })
     expect(foreign).toMatchObject({ ok: false, code: CODES.NON_FAMILY_CAPTURE })
     const halfNative = { ...REAL_NATIVES.schedule_create } as Record<string, unknown>
@@ -393,12 +444,25 @@ describe('a5m2-schedule-adapters (b): declared_mount honesty and assembly gate',
     expect(noLive).toMatchObject({ ok: false, code: CODES.LIVE_NATIVE_ABSENT })
     const partialPort = { ...port }
     delete partialPort['catalog']
-    const partial = ADAPTER.createScheduleAdapterAssembly({ ...base, scheduleService: partialPort, captured: captureFor(REAL_NATIVES, ['schedule_list']), liveNative: (n: string) => REAL_NATIVES[n] as Definition })
+    const partial = ADAPTER.createScheduleAdapterAssembly({ ...base, scheduleService: partialPort, liveScheduleService: () => partialPort, captured: captureFor(REAL_NATIVES, ['schedule_list']), liveNative: (n: string) => REAL_NATIVES[n] as Definition })
     expect(partial).toMatchObject({ ok: false, code: CODES.PORT_METHOD_ABSENT })
     const unknownKey = ADAPTER.createScheduleAdapterAssembly({ ...base, bogus: 1 })
     expect(unknownKey).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
     const noAdmit = ADAPTER.createScheduleAdapterAssembly({ ...base, admit: undefined, captured: captureFor(REAL_NATIVES, ['schedule_list']), liveNative: (n: string) => REAL_NATIVES[n] as Definition })
     expect(noAdmit).toMatchObject({ ok: false, code: CODES.ADMISSION_ABSENT })
+    // ROOT ②③ REQUIRED inputs — an owner Agent object, the live service
+    // re-read, and the published error class are non-negotiable.
+    const noOwner = ADAPTER.createScheduleAdapterAssembly({ ...base, capturedAgent: undefined })
+    expect(noOwner).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
+    const badOwner = ADAPTER.createScheduleAdapterAssembly({ ...base, capturedAgent: { memberAgentId: 'agent-member-7' } })
+    expect(badOwner).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
+    const noServiceReRead = ADAPTER.createScheduleAdapterAssembly({ ...base, liveScheduleService: undefined })
+    expect(noServiceReRead).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
+    const noErrorClass = ADAPTER.createScheduleAdapterAssembly({ ...base, ScheduleInputError: undefined })
+    expect(noErrorClass).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
+    // the live re-read must answer the bound port, or the mount is split.
+    const splitMount = ADAPTER.createScheduleAdapterAssembly({ ...base, liveScheduleService: () => ({ ...port }) })
+    expect(splitMount).toMatchObject({ ok: false, code: CODES.PORT_DRIFT })
   })
 })
 
@@ -413,7 +477,9 @@ function mountFixtureSync(over: { omitCapture?: string } = {}): Fixture {
     captured: captureFor(natives, names),
     liveNative: (name: string) => natives[name] as Definition | undefined,
     scheduleService: port,
-    trusted: TRUSTED,
+    liveScheduleService: () => port,
+    capturedAgent: CAPTURED_AGENT,
+    ScheduleInputError: HostInputError,
     placementFeed: () => undefined,
     admit: async () => ({ ok: true }),
   })
@@ -523,7 +589,40 @@ describe('a5m2-schedule-adapters (d): the tool-parameter law mirror runs at clas
     expect(plan.parametersFingerprint).toBe((second.plan as Plan).parametersFingerprint)
     expect(plan.parametersFingerprint.startsWith('sha256:')).toBe(true)
     expect(plan.namedGaps).toEqual(ADAPTER.A5_B_SCHEDULE_NAMED_GAPS)
-    expect(Object.keys(ADAPTER.A5_B_SCHEDULE_NAMED_GAPS)).toContain('TIMER_ARM')
+    // REV-2 GAP SET (root ①③④): the trigger gap names the EXACT missing
+    // public interface; the plan-once boundary is stated; the retired duck-
+    // class gap (instanceof is now real) and old PER_TRIGGER wording are gone.
+    expect(Object.keys(ADAPTER.A5_B_SCHEDULE_NAMED_GAPS).sort()).toEqual(['PERSISTENCE_ORDER', 'PLAN_ONCE_MEMO', 'TIMER_ARM', 'TRIGGER_GOVERNANCE'])
+    expect(ADAPTER.A5_B_SCHEDULE_NAMED_GAPS.TRIGGER_GOVERNANCE).toContain('EXACT MISSING PUBLIC INTERFACE')
+    expect(ADAPTER.A5_B_SCHEDULE_NAMED_GAPS.PLAN_ONCE_MEMO).toContain('CENTER PA wiring obligation')
+  })
+  it('every plan carries the contract §B-SCHEDULE TARGET (root ①): owner+taskId+revision+action, timer delta, destination+wake', async () => {
+    const fixture = await mountFixture()
+    const create = fixture.assembly.rowOf('schedule_create') as Row
+    const createPlan = (create.classify(GOOD_ARGS.schedule_create) as { plan: Plan }).plan
+    expect(Object.isFrozen(createPlan.target)).toBe(true)
+    expect(createPlan.target.owner).toEqual({ kind: 'bound-live-agent-reference', sessionId: LIVE_SESSION_ID })
+    expect(createPlan.target.action).toBe('schedule-create')
+    expect(createPlan.target.taskId).toBeNull() // the service mints the id at commit
+    expect(createPlan.target.revision).toContain('service-mints-id-on-commit')
+    expect(createPlan.target.timer.effect).toContain('SERVICE-side')
+    expect(createPlan.target.timer.effect).toContain('arm')
+    expect(createPlan.target.destination.sessionId).toBe(LIVE_SESSION_ID) // NO cross-session target
+    expect(createPlan.target.destination.wake).toContain('NOT licensed by this invocation')
+    expect(createPlan.target.contract).toContain('B-SCHEDULE')
+    const del = fixture.assembly.rowOf('schedule_delete') as Row
+    const delPlan = (del.classify(GOOD_ARGS.schedule_delete) as { plan: Plan }).plan
+    expect(delPlan.target.taskId).toBe('task-1')
+    expect(delPlan.target.action).toBe('schedule-delete')
+    expect(delPlan.target.timer.effect).toContain('disarm-on-durable-record-state')
+    const upd = fixture.assembly.rowOf('schedule_update') as Row
+    const updPlan = (upd.classify(GOOD_ARGS.schedule_update) as { plan: Plan }).plan
+    expect(updPlan.target.taskId).toBe('task-1')
+    expect(updPlan.target.revision).toContain('cas-expected-record')
+    expect(updPlan.target.timer.effect).toContain('re-align')
+    // a plan carrying a TOOL ERROR has no valid taskId (the id law failed)
+    const badDel = (del.classify({ id: ' bad' }) as { plan: Plan }).plan
+    expect(badDel.target.taskId).toBeNull()
   })
   it('schedule_delete/update/list mirror their own bodies: id law, selector count, empty-parameter face', async () => {
     const fixture = await mountFixture()
@@ -629,17 +728,24 @@ describe('a5m2-schedule-adapters (e): exact port tuples, published projection, C
     expect(r2.value).toEqual({ id: 'task-gone', updated: false, code: 'schedule_not_found' })
     expect(goneMount.calls.map((c) => c.method)).toEqual(['list', 'catalog'])
   })
-  it('L6 error-VALUE mirror: a closed-shape throw maps {code,message}; anything else maps internal_error; NEVER a re-raise', async () => {
+  it('L6 error-VALUE mirror (root ③): instanceof the REAL published ScheduleInputError maps {code,message}; a DUCK carrying a closed code maps internal_error WITHOUT leaking its message; NEVER a re-raise', async () => {
     const fixture = await mountFixture()
     const row = fixture.assembly.rowOf('schedule_create') as Row
-    fixture.state.throwOn = { method: 'create', error: { code: 'not_future', message: 'target must be strictly future' } }
+    fixture.state.throwOn = { method: 'create', error: new HostInputError('not_future', 'target must be strictly future') }
     const first = await row.delegate((row.classify(GOOD_ARGS.schedule_create) as { plan: Plan }).plan, { exec: liveExec() })
     expect(first).toMatchObject({ ok: true, settled: 'service-error-value', value: { code: 'not_future', message: 'target must be strictly future' } })
+    // A FOREIGN error wearing a closed code is NOT a ScheduleInputError: the
+    // host maps it to internal_error, and its internal message never reaches
+    // the model (the retired duck path would have leaked these bytes).
+    fixture.state.throwOn = { method: 'create', error: { code: 'not_future', message: 'INTERNAL-STORAGE-DETAIL /absolute/path/secret' } }
+    const duck = await row.delegate((row.classify(GOOD_ARGS.schedule_create) as { plan: Plan }).plan, { exec: liveExec() })
+    expect(duck).toMatchObject({ ok: true, settled: 'service-error-value', value: { code: 'internal_error', message: 'The schedule operation failed.' } })
+    expect(JSON.stringify(duck)).not.toContain('INTERNAL-STORAGE-DETAIL')
     fixture.state.throwOn = { method: 'create', error: new Error('storage exploded') }
     const second = await row.delegate((row.classify(GOOD_ARGS.schedule_create) as { plan: Plan }).plan, { exec: liveExec() })
     expect(second).toMatchObject({ ok: true, settled: 'service-error-value', value: { code: 'internal_error', message: 'The schedule operation failed.' } })
   })
-  it('plan-once (L8): consumed, foreign, and stale plans refuse with zero port entry', async () => {
+  it('plan MEMO (L8/④): consumed/foreign/stale plans refuse with zero port entry; the COPY-REUSE boundary is pinned honestly (consumedProof is the center PA edge)', async () => {
     const fixture = await mountFixture()
     fixture.state.records = [afterRecord()]
     const listRow = fixture.assembly.rowOf('schedule_list') as Row
@@ -649,39 +755,58 @@ describe('a5m2-schedule-adapters (e): exact port tuples, published projection, C
     const callsAfterFirst = fixture.calls.length
     const replay = await listRow.delegate(plan, { exec: liveExec() })
     expect(replay.code).toBe(CODES.ALREADY_DISPATCHED)
+    expect(replay.detail).toContain('INTERNAL MEMO')
     const deleteRow = fixture.assembly.rowOf('schedule_delete') as Row
     const foreign = await deleteRow.delegate(plan, { exec: liveExec() })
     expect(foreign.code).toBe(CODES.NOT_OWN_PLAN)
     const tampered = { ...plan, parametersFingerprint: 'sha256:tampered' } as Plan
     const stale = await listRow.delegate(tampered, { exec: liveExec() })
     expect(stale.code).toBe(CODES.PLAN_STALE)
-    expect(fixture.calls).toHaveLength(callsAfterFirst)
+    // PINNED BOUNDARY (root ④): the memo covers the plan OBJECT. A caller
+    // that copies the fields re-dispatches (full law re-run) — the row
+    // claims NO once-closure; the real consumedProof is the plane's
+    // consume-for-execution edge (center PA wiring). This assertion exists
+    // so the boundary can never silently drift into a false "once" claim.
+    const copied = { ...plan } as Plan
+    const again = await listRow.delegate(copied, { exec: liveExec() })
+    expect(again.ok).toBe(true)
+    expect(fixture.calls).toHaveLength(callsAfterFirst + 1)
   })
 })
 
 /* ══════════════════════════════════ (f) governance edges + host ORDER */
-describe('a5m2-schedule-adapters (f): identity pairing, host check order, drift, drain, the admit seat', () => {
+describe('a5m2-schedule-adapters (f): bound-owner identity, host check order, drift + live re-read, drain, the admit seat', () => {
   const dispatch = async (fixture: Fixture, name: string, args: Record<string, unknown>, exec: Record<string, unknown>): Promise<DelegateResult> => {
     const row = fixture.assembly.rowOf(name) as Row
     const classified = row.classify(args)
     if (classified.ok !== true) throw new Error(`fixture classify refused: ${JSON.stringify(classified)}`)
     return row.delegate(classified.plan as Plan, { exec })
   }
-  it('a missing or mispaired LIVE caller answers the host identity-refusal VALUE for all four tools — zero port entry', async () => {
+  it('a caller that is not the BOUND owner Agent OBJECT answers the host identity-refusal VALUE for all four tools — zero port entry (root ②: REFERENCE law, not id strings)', async () => {
     const fixture = await mountFixture()
     for (const name of ADAPTER.A5_B_SCHEDULE_TOOL_NAMES) {
       const missing = await dispatch(fixture, name, GOOD_ARGS[name] as Record<string, unknown>, { callId: 'c' })
       expect(missing, name).toMatchObject({ ok: true, settled: 'tool-law-value', value: { code: 'internal_error' } })
-      const wrongAgent = liveExec({ agent: { id: 'agent-impostor', session: { id: LIVE_SESSION_ID, header: { id: TRUSTED.sessionHeaderId } } } })
-      expect(await dispatch(fixture, name, GOOD_ARGS[name] as Record<string, unknown>, wrongAgent)).toMatchObject({ value: { code: 'internal_error' } })
-      const wrongHeader = liveExec({ agent: { id: TRUSTED.memberAgentId, session: { id: LIVE_SESSION_ID, header: { id: 'session-header-99' } } } })
-      expect(await dispatch(fixture, name, GOOD_ARGS[name] as Record<string, unknown>, wrongHeader)).toMatchObject({ value: { code: 'internal_error' } })
+      // THE ② CASE: a DIFFERENT Agent object carrying the SAME id/header/
+      // session bytes — an id-string pairing would accept it; the host's
+      // reference law (exec.agent !== agent, tools.ts:438/:457/:481/:509)
+      // refuses it, and so does this row.
+      const lookalike = liveExec({ agent: lookalikeAgent() })
+      expect(await dispatch(fixture, name, GOOD_ARGS[name] as Record<string, unknown>, lookalike), name).toMatchObject({ value: { code: 'internal_error' } })
+      const impostor = liveExec({ agent: { id: 'agent-impostor', session: { id: LIVE_SESSION_ID, header: { id: 'session-header-42' } } } })
+      expect(await dispatch(fixture, name, GOOD_ARGS[name] as Record<string, unknown>, impostor), name).toMatchObject({ value: { code: 'internal_error' } })
     }
     expect(fixture.calls).toEqual([])
+    // control: the bound object's OWN reference passes the same edge.
+    fixture.state.records = [afterRecord()]
+    const listRow = fixture.assembly.rowOf('schedule_list') as Row
+    expect((await listRow.delegate((listRow.classify({}) as { plan: Plan }).plan, { exec: liveExec() })).ok).toBe(true)
   })
-  it('HOST CHECK ORDER: delete answers the invalid_rule VALUE even with a WRONG caller (id law first); create/update answer internal_error first — the values cannot swap', async () => {
+  it('HOST CHECK ORDER: delete answers the invalid_rule VALUE even with a wrong caller (id law first); create answers internal_error first — the values cannot swap', async () => {
     const fixture = await mountFixture()
-    const wrongAgent = { callId: 'c', agent: { id: 'impostor', session: { id: LIVE_SESSION_ID, header: { id: TRUSTED.sessionHeaderId } } }, signal: new AbortController().signal }
+    // THE look-alike caller (same bytes, other object): even stronger than a
+    // named impostor — delete's id law still runs FIRST (tools.ts:476-479).
+    const wrongAgent = { callId: 'c', agent: lookalikeAgent(), signal: new AbortController().signal }
     const del = await dispatch(fixture, 'schedule_delete', { id: ' bad' }, wrongAgent)
     expect(del).toMatchObject({ value: { code: 'invalid_rule', message: 'schedule_delete id must be non-empty without surrounding whitespace.' } })
     const create = await dispatch(fixture, 'schedule_create', { prompt: '  ', title: 't', after_seconds: 60 }, wrongAgent)
@@ -699,7 +824,7 @@ describe('a5m2-schedule-adapters (f): identity pairing, host check order, drift,
     }
     expect(fixture.calls).toEqual([])
   })
-  it('L7 drift refusals: liveNative answering a different object refuses DEFINITION_DRIFT; a rebound port method refuses PORT_DRIFT; both zero port', async () => {
+  it('L7 drift refusals: liveNative answering a different object refuses DEFINITION_DRIFT; a rebound port method refuses PORT_DRIFT; a service OBJECT replaced after mount refuses PORT_DRIFT — all zero port', async () => {
     const fixture = await mountFixture()
     fixture.setNative('schedule_list', { ...REAL_NATIVES.schedule_list } as Definition)
     const row = fixture.assembly.rowOf('schedule_list') as Row
@@ -710,6 +835,43 @@ describe('a5m2-schedule-adapters (f): identity pairing, host check order, drift,
     const rebound = await row.delegate((row.classify({}) as { plan: Plan }).plan, { exec: liveExec() })
     expect(rebound.code).toBe(CODES.PORT_DRIFT)
     expect(fixture.calls).toEqual([])
+  })
+  it('live ctx.schedule re-read (root ②): a replaced service OBJECT refuses at entry with zero port; a replacement surfacing DURING the update list await re-verifies and leaves ZERO update entry', async () => {
+    // Built directly (not via mountFixture) so the liveScheduleService feed
+    // closes over the SAME port the assembly binds — the split-mount guard at
+    // assembly time must pass, then the flip happens only at dispatch.
+    const { port, calls, state } = makePort()
+    let flip = false
+    const result = ADAPTER.createScheduleAdapterAssembly({
+      declaredService: { present: true },
+      captured: captureFor(REAL_NATIVES),
+      liveNative: (name: string) => REAL_NATIVES[name] as Definition,
+      scheduleService: port,
+      liveScheduleService: () => (flip ? { ...port } : port), // a NEW object when flipped
+      capturedAgent: CAPTURED_AGENT,
+      ScheduleInputError: HostInputError,
+      placementFeed: () => undefined,
+      admit: async () => ({ ok: true }),
+    })
+    if (result.ok !== true) throw new Error(`re-read fixture refused: ${JSON.stringify(result)}`)
+    const assembly = result
+    const listRow = assembly.rowOf('schedule_list') as Row
+    flip = true
+    const atEntry = await listRow.delegate((listRow.classify({}) as { plan: Plan }).plan, { exec: liveExec() })
+    expect(atEntry.code).toBe(CODES.PORT_DRIFT)
+    expect(calls).toEqual([])
+    flip = false
+    // UPDATE POST-AWAIT RE-VERIFY: flip the live read WHILE the list await is
+    // in flight (a getter fires exactly when the port reads state.records);
+    // the re-verify after the await must refuse before port.update — zero
+    // update entry, the drift never commits.
+    state.updateResult = { id: 'task-1', updated: true, record: afterRecord({ scheduledAt: futureAt() }) }
+    Object.defineProperty(state, 'records', { configurable: true, get: () => { flip = true; return [afterRecord()] } })
+    const updRow = assembly.rowOf('schedule_update') as Row
+    const settled = await updRow.delegate((updRow.classify(GOOD_ARGS.schedule_update) as { plan: Plan }).plan, { exec: liveExec() })
+    expect(settled.code).toBe(CODES.PORT_DRIFT)
+    expect(settled.detail).toContain('post-await re-verify')
+    expect(calls.map((c) => c.method)).toEqual(['list']) // list ran; update NEVER entered
   })
   it('L9 drain = new-call prohibition: later classify refuses DRAINING with zero port entry; committed writes stay as they are', async () => {
     const fixture = await mountFixture()
@@ -752,7 +914,7 @@ describe('a5m2-schedule-adapters (g): placement-keyed registrations, production 
       const placed = fedMount.assembly.definitions.find((d) => d.name === registration.name) as Definition
       expect(registration.definitionIdentity).toBe(definitionIdentityOf(placed as unknown as Record<string, unknown>))
       expect(registration.definitionIdentity).not.toBe(`capture-side-identity-${registration.name}`)
-      expect(registration.entry).toEqual({ familyId: 'B-SCHEDULE', adapterRevision: 1, providerIdentity: 'b-schedule' })
+      expect(registration.entry).toEqual({ familyId: 'B-SCHEDULE', adapterRevision: 2, providerIdentity: 'b-schedule' })
       expect(() => REGISTRY.registerA5GovernedFamily(registration.definitionIdentity, registration.entry)).not.toThrow()
       expect(REGISTRY.a5GovernedFamilyFor(registration.definitionIdentity)).toEqual(registration.entry)
       expect(() => REGISTRY.registerA5GovernedFamily(registration.definitionIdentity, registration.entry)).not.toThrow() // idempotent
@@ -771,9 +933,12 @@ describe('a5m2-schedule-adapters (g): placement-keyed registrations, production 
     })
     expect(() => moved.assembly.familyRegistrations()).not.toThrow()
     expect(() => moved.assembly.familyRegistrations()).toThrow(/P_B_SCHEDULE_PLACEMENT_KEY_MOVED/)
+    const declaredPort = makePort().port
     const declaredMount = ADAPTER.createScheduleAdapterAssembly({
-      scheduleService: makePort().port,
-      trusted: TRUSTED,
+      scheduleService: declaredPort,
+      liveScheduleService: () => declaredPort,
+      capturedAgent: CAPTURED_AGENT,
+      ScheduleInputError: HostInputError,
       placementFeed: () => ({ definitionIdentity: 'never-consulted' }),
       admit: async () => ({ ok: true }),
     }) as AssemblyValue
