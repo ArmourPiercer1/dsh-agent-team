@@ -28,6 +28,7 @@ import {
   checkContractAnchors,
   checkPlanCitationBlocks,
   isBlockingFinding,
+  SELF_UPDATE_CODES,
   checkRatification,
   allDocsForFullCheck,
 } from './doc-checks.mjs';
@@ -113,7 +114,6 @@ if (invokedDirectly) {
     // One carve-out, named: the freshness of the files this command owns may be
     // repaired by this command. Refusing on STALE_GENERATED_* would block the very
     // regeneration that fixes them. Everything else still refuses.
-    const SELF_UPDATE_CODES = ['STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG'];
     const blocking = built.findings.filter((f) => isBlockingFinding(f) && !SELF_UPDATE_CODES.includes(f.code));
     if (blocking.length) {
       for (const f of blocking) console.log(`FAIL ${f.code}: ${f.detail}`);

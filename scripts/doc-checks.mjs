@@ -184,6 +184,12 @@ export const BLOCKING_PREFIXES = [
   'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG', 'STATE_BRIDGE', 'REGISTRY',
   'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_', 'SCHEMA_',
 ];
+/** Codes that name the *freshness of a derivative* rather than a defect in an input.
+ *  Regenerating a derivative is precisely how these are repaired, so the write gates may
+ *  act on them; every other blocking finding still refuses the write. The list is shared
+ *  so that two write paths cannot disagree about what they are allowed to fix. */
+export const SELF_UPDATE_CODES = ['STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG'];
+
 export function isBlockingFinding(f) {
   return BLOCKING_PREFIXES.some((p) => String(f.code).startsWith(p));
 }

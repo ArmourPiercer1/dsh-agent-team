@@ -732,6 +732,26 @@ control('NEG-67 a refs value that is not a list is refused, whatever the parser 
   ];
 });
 
+control('NEG-68 a stale index is a refusal in every entry point, and only --write fixes it', (d) => {
+  // The absent case has its own cross-check (NEG-56); this is the same discipline for a
+  // file that exists and disagrees. Four commands reading one input must not hand out
+  // four verdicts -- and the one command allowed to act on it is the one that
+  // regenerates it, which is why the carve-out is named rather than general.
+  writeFile(d, CATALOG_INDEX_PATH, read(d, CATALOG_INDEX_PATH) + 'drift\n');
+  const sync = run(SYNC, ['--check', '--root', d]);
+  const gen = run(GEN, ['--check', '--root', d]);
+  const probe = run(PROBE, ['--worktree-only', '--root', d]);
+  const fix = run(SYNC, ['--write', '--root', d]);
+  const verdict = (res) => `${res.code}/${(res.out.match(/(?:FAIL|WARN) (STALE_GENERATED_CATALOG|CATALOG_\w+)/g) || []).join(',')}`;
+  return [
+    { ok: sync.code === 1 && /FAIL STALE_GENERATED_CATALOG/.test(sync.out), why: `docs:sync --check ${verdict(sync)}` },
+    { ok: gen.code === 1 && /FAIL STALE_GENERATED_CATALOG/.test(gen.out), why: `gen-current-state --check ${verdict(gen)}` },
+    { ok: probe.code === 1 && probe.out.includes('STALE_GENERATED_CATALOG'), why: `docs:probe ${verdict(probe)}` },
+    { ok: fix.code === 0 && /regenerated/.test(fix.out), why: `docs:sync --write repairs it: exit ${fix.code}` },
+    expectRun('check after repair', run(SYNC, ['--check', '--root', d]), 0, 'blocking=0'),
+  ];
+});
+
 control('POS-14 --write renders the index through the helper, then no-ops', (d) => {
   // Create-from-absent is the case the narrow permission covers, so the control starts
   // from absent rather than from the fixture's pre-rendered copy.

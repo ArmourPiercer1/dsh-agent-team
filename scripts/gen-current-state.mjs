@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 // One blocking classification for all three entry points; doc-checks owns the list and
 // does not import this file, so the dependency stays one-directional.
-import { isBlockingFinding } from './doc-checks.mjs';
+import { isBlockingFinding, SELF_UPDATE_CODES } from './doc-checks.mjs';
 
 export const ENUMS = {
   decision_status: ['proposed', 'accepted', 'rejected', 'superseded', 'pending_coordination'],
@@ -533,12 +533,18 @@ export function checkContractIndex(root) {
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedDirectly) {
-  const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+  // `--root` was accepted and ignored: every caller that passed one -- my own controls
+  // among them, which is how this surfaced -- got a verdict about whichever tree this
+  // script happens to live in, while believing it had been pointed elsewhere. A flag
+  // that is silently not honoured is worse than one that is refused outright.
+  let root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
   const args = process.argv.slice(2);
+  const rootAt = args.indexOf('--root');
+  if (rootAt !== -1 && args[rootAt + 1]) root = resolve(args[rootAt + 1]);
   const write = args.includes('--write');
   const check = args.includes('--check');
   if (!write && !check) {
-    console.error('usage: gen-current-state.mjs --check | --write');
+    console.error('usage: gen-current-state.mjs --check | --write [--root <dir>]');
     process.exit(2);
   }
   const result = build(root);
@@ -546,13 +552,18 @@ if (invokedDirectly) {
     console.log(`REFUSED ${result.refused}`);
     process.exit(2);
   }
-  for (const f of result.findings) console.log(`FAIL ${f.code}: ${f.detail}`);
+  // Printed once, and printed with the shared classification. The loop that used to sit
+  // here labelled every finding FAIL regardless of severity, so a recorded non-blocking
+  // gap was announced as a refusal and then announced again below as a warning.
+  const blockingNow = result.findings.filter(isBlockingFinding);
+  const writeBlocking = result.findings.filter((f) => isBlockingFinding(f) && !SELF_UPDATE_CODES.includes(f.code));
+  for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
   console.log(`runtime: branch=${result.runtime.branch} head=${String(result.runtime.head).slice(0, 9)} merged_into_master=${result.runtime.merged_into_master} dirty_paths=${result.runtime.dirty_paths} (live state, not persisted in the view)`);
   const target = join(root, 'dev/engineering/current-state.json');
   const rendered = renderView(result);
   if (write) {
-    if (result.findings.length) {
-      console.log('REFUSED write: findings above (a fake verification claim is never written into the derived view)');
+    if (writeBlocking.length) {
+      console.log(`REFUSED write: ${writeBlocking.length} blocking finding(s) above (a fake verification claim is never written into the derived view)`);
       process.exit(1);
     }
     const written = writeGenerated(root, 'dev/engineering/current-state.json', rendered);
@@ -575,8 +586,6 @@ if (invokedDirectly) {
   // Same classification as docs:sync --check and docs:probe. This entry point exited on
   // any finding at all, so it called a recorded non-blocking gap a refusal while the
   // probe reported the very same input as non_blocking — and it printed the gap as FAIL.
-  const blocking = result.findings.filter(isBlockingFinding);
-  for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
-  console.log(`gen-current-state: view fresh entries=${result.view.entries.length} findings=${result.findings.length} blocking=${blocking.length}`);
-  process.exit(blocking.length ? 1 : 0);
+  console.log(`gen-current-state: view fresh entries=${result.view.entries.length} findings=${result.findings.length} blocking=${blockingNow.length}`);
+  process.exit(blockingNow.length ? 1 : 0);
 }
