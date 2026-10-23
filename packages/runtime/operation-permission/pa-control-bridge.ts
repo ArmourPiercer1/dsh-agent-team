@@ -124,7 +124,7 @@ import type {
   PaEffectsVerifierVerdict,
 } from '../control/types.js'
 import { authorityRank, mayReview } from '../governance/authority-ceiling.js'
-import type { SubtreeContains } from '../governance/permission-mutation.js'
+import type { SubtreeContains } from '../governance/index.js'
 
 /** A5-M2 r17 FIX (center): the SAME lexical containment seam the mount's
  *  Part A edge and the plane's final edge already hand the pure core
