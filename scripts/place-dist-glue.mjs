@@ -158,6 +158,25 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5M2-G6 WIRE LANE install-surface (lane carry of the center closure
+  // 5968256620, the G6 half only): the G6 production block's STATIC
+  // relative imports (agent-bindings.mjs:368 -> ./governed-families/
+  // g6-session-query-wiring.mjs; team-tool-plane.mjs:82-83 -> both;
+  // g6-session-query-wiring.mjs:124 -> ./g6-session-query.mjs) had no
+  // placement coverage — on the strict `files: ["dist"]` install face the
+  // plane would die at ERR_MODULE_NOT_FOUND. The two G6 modules join the
+  // list; bytes ride unchanged (mirrors regenerate from THIS lane's source
+  // at the RC HEAD, byte-identical under the drift gate). The B-SCHEDULE
+  // half of the center closure belongs to that lane — schedule-wiring.mjs
+  // does not exist in this tree and this lane ships zero schedule bytes.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

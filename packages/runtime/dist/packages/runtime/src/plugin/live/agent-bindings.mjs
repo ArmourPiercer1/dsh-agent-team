@@ -362,6 +362,10 @@ import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/to
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
+// A5M2-G6 B-SESSION-QUERY (root 992 ②): the PURE supply builder — the five
+// governed facets/provider/declared-mount are mapped OFF the live DSH public
+// sessionQuery service here, never injected through config.
+import { buildG6QuerySupplyFromService } from './governed-families/g6-session-query-wiring.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
@@ -812,7 +816,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQuery: sessionQueryBackend, sessionProjections: sessionProjectionsBackend } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -2399,6 +2403,10 @@ export function createAgentBindings(deps) {
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
       let a5ImagePlacedArm = null
+      // A5M2-G6 B-SESSION-QUERY: same outer-scope discipline — the inject is
+      // armed next to the plane assembly, the registration lands AFTER
+      // publish at the shared fill point below (both must see one binding).
+      let a5G6Inject = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -3072,6 +3080,141 @@ export function createAgentBindings(deps) {
             },
           })
         })()
+        // A5M2-G6 B-SESSION-QUERY (root 992 ②: the REAL supply close). The
+        // five governed query facets, the provider identity and the
+        // declared-mount evidence are BUILT FROM the live DSH public
+        // `sessionQuery` service (the lazy `ctx.get('sessionQuery')` deps
+        // accessor — the same additive-optional global-store shape the
+        // jobs/web/attachments services ride); the Team ceiling answers the
+        // CURRENT durable membership (memberInstances of the TeamSession
+        // root, live lifecycle law, fresh per call); the caller law reads
+        // the ACTUAL exec owner (this member Agent's own session header,
+        // lazily, per call — never a global face). `planeCfg.sessionQuery`
+        // is ONLY the deployment-intent bit (the blueprint's `true`): a
+        // config VALUE carrying facets/ceiling/evidence is REFUSED — an
+        // externally injected stand-in is not production supply and is
+        // never called production-complete. Service not registered =
+        // honest DECLARED-INACTIVE census (zero flip, natives untouched,
+        // no setup failure); core facets incomplete = the same honest
+        // census with the observation bytes. The CAPTURE law is unchanged:
+        // member-scoped seam, memoized (root 18:2x ②), global face NOT a
+        // fallback.
+        const g6Cfg = planeCfg?.sessionQuery
+        if (g6Cfg !== undefined && g6Cfg !== null && g6Cfg !== false) {
+          const refuseG6 = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed session-query mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-g6-arm-mount-refused'
+            observations.push(`a5m2-g6: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (g6Cfg !== true) {
+            throw refuseG6('planeCfg.sessionQuery carries a VALUE — the query facets, provider identity, caller law, ceiling and declared-mount evidence are NOT injectable through config (externally supplied stand-ins are not supply); the only legal config face is the deployment-intent bit `true` — supply comes from the live sessionQuery service, the durable memberInstances and this Agent\'s own session header')
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseG6('the member Agent object is unreadable — the scope-aware native capture has no scope key and the actual-exec-owner caller law has no session header; the global face is NOT a fallback')
+          }
+          const g6Supply = buildG6QuerySupplyFromService(
+            typeof sessionQueryBackend === 'function' ? sessionQueryBackend() : undefined,
+            // Root 19:29 — the SAME Host public lazy accessor rides the
+            // supply: every adapter guard read re-observes the CURRENT
+            // `ctx.get('sessionQuery')` identity, so a whole-service
+            // replacement refuses through the row's own PORT_RECEIVER_MOVED
+            // law (the approved receiver/method handles keep executing
+            // while the identity matches and NEVER switch to the new
+            // instance's). The real accessor — no stale constant
+            // masquerading as current.
+            typeof sessionQueryBackend === 'function' ? sessionQueryBackend : undefined,
+          )
+          if (g6Supply.ok !== true) {
+            // An absent/incomplete service is a DEPLOYMENT census fact for
+            // this mount, not a setup failure: zero flip, natives untouched,
+            // one honest observed line.
+            observations.push(`a5m2-g6: family DECLARED-INACTIVE for ${sessionId} (${g6Supply.code})`)
+          } else {
+            const g6Captured = new Map()
+            const g6ReadNative = (name) => {
+              if (g6Captured.has(name)) return g6Captured.get(name)
+              let captured
+              try {
+                captured = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined
+              } catch (error) {
+                throw refuseG6(`the member-scoped tool face could not be read for '${String(name)}' (${String(error?.message ?? error).slice(0, 140)})`)
+              }
+              // `undefined` is a LEGAL answer (a native this host build does
+              // not carry): the bridge lands it as the honest DECLARED-INACTIVE
+              // census — no def, no registration, native untouched.
+              g6Captured.set(name, captured === null ? undefined : captured)
+              return g6Captured.get(name)
+            }
+            let g6BoundaryAbsentObserved = false
+            const g6ReadCaller = () => {
+              const header = runtimeAgent.session?.header
+              const ownId = header?.id
+              if (typeof ownId !== 'string' || ownId === '') {
+                // Fail-closed at the caller law: no owner identity, no
+                // classify, no port entry — never a guessed caller.
+                throw new Error(`agent-bindings: the actual exec owner of '${sessionId}' answers no session identity — the governed session-query caller law never guesses a caller`)
+              }
+              // The STEP BOUNDARY (root 18:58 residual 1): the actual exec
+              // owner's OWN turnBoundary projection, through the host
+              // public law verbatim — workspace-access.ts:56-69 @639ed01539
+              // builds the caller as { id: agent.session.id, header:
+              // agent.session.header, boundary: ctx.sessionProjections.
+              // stateOf(agent.session, 'turnBoundary') } (the projection
+              // state carries lastStepStartSeq, core/agent/src/types.ts:82
+              // — nullable). Without it the CURRENT-SESSION default
+              // (no explicit session_id) refuses with the row's own
+              // SESSION_QUERY_TOOL_NO_CURRENT_STEP at its own guard
+              // (g6-session-query.mjs:1600-1604) — NEVER a fabricated
+              // boundary here, and explicit-target reads are unaffected.
+              let boundary
+              try {
+                const projections = typeof sessionProjectionsBackend === 'function' ? sessionProjectionsBackend() : undefined
+                if (projections !== null && typeof projections === 'object' && typeof projections.stateOf === 'function') {
+                  const state = projections.stateOf(runtimeAgent.session, 'turnBoundary')
+                  if (state !== null && typeof state === 'object') boundary = state
+                }
+              } catch {
+                boundary = undefined
+              }
+              if (boundary === undefined && !g6BoundaryAbsentObserved) {
+                g6BoundaryAbsentObserved = true
+                observations.push(`a5m2-g6: turnBoundary projection unavailable for ${sessionId} — current-session searches will refuse NO_CURRENT_STEP at the row (explicit targets unaffected)`)
+              }
+              return Object.freeze({
+                id: String(ownId),
+                ...(typeof header.cwd === 'string' && header.cwd !== '' ? { cwd: String(header.cwd) } : {}),
+                ...(boundary === undefined ? {} : { boundary }),
+              })
+            }
+            const g6TeamCeiling = (target) => {
+              if (typeof target !== 'string' || target === '') return false
+              const ownId = String(runtimeAgent.session?.header?.id ?? '')
+              if (target === ownId || target === String(teamRoot)) return true
+              // The CURRENT durable membership, read fresh per call (the
+              // governance-routing live-lifecycle law beside this block:
+              // an ARCHIVED/DISPOSED instance never stays in the ceiling).
+              for (const mrow of domain.repositories.memberInstances.list(teamRoot)) {
+                if (String(mrow.childSessionId) === target) {
+                  const state = String(mrow.lifecycle ?? '')
+                  if (state !== 'ARCHIVED' && state !== 'DISPOSED') return true
+                }
+              }
+              return false
+            }
+            a5G6Inject = Object.freeze({
+              providerId: g6Supply.providerId,
+              readNative: g6ReadNative,
+              queryPorts: g6Supply.queryPorts,
+              readCaller: g6ReadCaller,
+              teamCeiling: g6TeamCeiling,
+              declaredMount: g6Supply.declaredMount,
+            })
+            observations.push(`a5m2-g6: inject armed for ${sessionId} (provider=${g6Supply.providerId}; supply=live sessionQuery service; ceiling=durable memberInstances of ${String(teamRoot)}; caller=own session header)`)
+          }
+        }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
           // PR358 fix-2: the DURABLE attribution the Control rows live under
@@ -3145,11 +3288,12 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5G6Inject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
+            ...(a5G6Inject === null ? {} : { sessionQuery: a5G6Inject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3597,6 +3741,38 @@ export function createAgentBindings(deps) {
             providerIdentity: a5ImagePlacedArm.providerId,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
+        }
+        // A5M2-G6 B-SESSION-QUERY: THE SAME fill point, the SAME law — the
+        // registration keys are the placement feed's RUNTIME identities of
+        // the PLACED definitions (the plane's own placedByName record read
+        // lazily through the wiring), and a silent or moved feed THROWS
+        // (P_G6_WIRE_PLACEMENT_KEY_* carried, never a guessed key, never a
+        // silent skip). Rows the bridge never emitted (DECLARED-INACTIVE
+        // census) have no definition, no placement and no registration —
+        // the native stays untouched behind them.
+        if (a5G6Inject !== null) {
+          const g6Plane = a5PlaneValue?.sessionQuery
+          if (g6Plane === undefined || g6Plane === null) {
+            const detail = 'the plane accepted the session-query injection but surfaced no wiring face — the mount is broken and registers nothing'
+            observations.push(`a5m2-g6: family-REFUSED for ${sessionId} (no wiring face)`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed session-query mount refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g6-arm-mount-refused' })
+          }
+          let g6Registrations
+          try {
+            g6Registrations = g6Plane.familyRegistrations()
+          } catch (error) {
+            const detail = String(error?.message ?? error).slice(0, 220)
+            observations.push(`a5m2-g6: family-REFUSED for ${sessionId} (${detail.slice(0, 80)})`)
+            throw Object.assign(new Error(
+              `agent-bindings: alpha.5 governed session-query family registration refused for '${sessionId}': ${detail}`,
+            ), { code: 'alpha5-g6-arm-mount-refused' })
+          }
+          for (const registration of g6Registrations) {
+            registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
+            observations.push(`a5m2-g6: family REGISTERED for ${sessionId} (placement=${String(registration.definitionIdentity).slice(0, 32)} family=${registration.entry.familyId})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
