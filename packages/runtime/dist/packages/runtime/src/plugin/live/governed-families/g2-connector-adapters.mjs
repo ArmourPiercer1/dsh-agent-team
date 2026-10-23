@@ -854,12 +854,24 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
   const attachEffects = proof.mode === 'attach' ? [connectEffect(realmId, cdpOrigin.origin)] : []
   const shared = { familyId: A5_G2_FAMILY.browser, mountCondition: 'declared_mount', realmId, providerId, readNative, definitionIdentityOf, observe, declared: { active: true, detail: '' }, preEffectDisclosure: A5_G2_NAMED_BLOCKERS.BROWSER }
 
+  // root 22:26 pairing: the flat table leaves ride the SAME manifest the
+  // approval fingerprint and final edge read — real variant/record, REAL
+  // injected incarnation facts ('unobserved' only per the signed B-MCP
+  // absence law; no self-attesting constant), explicit nulls for absent
+  // pageId/domainAuthorityId. Every existing value stays verbatim: no
+  // field moved out, none deleted, no hash standing in for a target.
+  const g2BrowserIncarnation = typeof proof.connectionIncarnation === 'string' && proof.connectionIncarnation.length > 0 ? proof.connectionIncarnation : 'unobserved'
   const baseManifest = (method, pageId) => ({
+    browserVariant: `${proof.mode}:${method}`,
+    record: 'surface:browser_owned',
     operation: `browser-${method}`,
     mode: proof.mode,
-    ...(pageId === undefined ? {} : { pageId }),
+    connectionIncarnation: g2BrowserIncarnation,
+    providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone — incarnation rotation stale-proofs prior approvals (B-BROWSER re-selection law @639ed01539)',
+    connectionIncarnationReason: typeof proof.connectionIncarnationReason === 'string' && proof.connectionIncarnationReason.length > 0 ? proof.connectionIncarnationReason : null,
+    pageId: pageId === undefined ? null : pageId,
     ...(proof.mode === 'attach' ? { attachEndpointOrigin: cdpOrigin.origin, attachNote: 'attached browser may also be changed by its user (native GUIDANCE); incarnation re-check belongs to the owned provider (§5.5)' } : {}),
-    ...(typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0 ? { domainAuthorityId: proof.domainAuthorityId } : {}),
+    domainAuthorityId: typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0 ? proof.domainAuthorityId : null,
   })
   const domainEffects = typeof proof.domainAuthorityId === 'string' && proof.domainAuthorityId.length > 0
     ? () => [domainRefEffect(proof.domainAuthorityId)]

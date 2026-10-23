@@ -1569,6 +1569,24 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
    * ownership duties. The discriminant is mint-synthesized
    * 'browserVariant' = `launch|attach` + ':' + `navigate|act|observe|
    * extract` (never a model argument). */
+  /* A5-M2 B-BROWSER (root 22:26 pairing card). The entry MIRRORS THE REAL
+   * mint fields of g2-connector-adapters (baseManifest/instructionRow/
+   * navigate classify) one-for-one — names, values and the full
+   * targets (url/destinationOrigin/pageId, modelDestinationOrigin/
+   * instructionDigest) stay in the approval-fingerprint manifest
+   * verbatim: NOTHING was moved to body facts and NOTHING deleted to
+   * fit the table; parameter hashes never replace a target
+   * (instructionDigest is the frozen digest the law already wrote, next
+   * to the full-target fields, not instead of them). operation keeps
+   * the ACTUAL 'browser-*' values; modelDestinationOrigin /
+   * attachEndpointOrigin are the mint's real names; pageId and
+   * domainAuthorityId carry explicit null when absent (nullableString,
+   * the signed B-MCP device); the incarnation trio rides REAL injected
+   * mount facts ('unobserved' only per the signed B-MCP absence law,
+   * never a self-attesting constant). screenshot/tabs are NOT claimed:
+   * their own variants land from their own real targets, separately —
+   * this entry does not stand for "all of Browser". No new kinds, no
+   * any. */
   'B-BROWSER': Object.freeze({
     required: Object.freeze({
       browserVariant: 'string',
@@ -1582,36 +1600,36 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
       leaf: 'browserVariant',
       by: Object.freeze({
         'launch:navigate': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string' }),
-          binds: Object.freeze({ operation: 'navigate', record: 'surface:browser_owned', mode: 'launch' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'launch' }),
         }),
         'launch:act': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'act', record: 'surface:browser_owned', mode: 'launch' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'launch' }),
         }),
         'launch:observe': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'observe', record: 'surface:browser_owned', mode: 'launch' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'launch' }),
         }),
         'launch:extract': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'extract', record: 'surface:browser_owned', mode: 'launch' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'launch' }),
         }),
         'attach:navigate': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'navigate', record: 'surface:browser_owned', mode: 'attach' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', url: 'string', destinationOrigin: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-navigate', record: 'surface:browser_owned', mode: 'attach' }),
         }),
         'attach:act': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'act', record: 'surface:browser_owned', mode: 'attach' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-act', record: 'surface:browser_owned', mode: 'attach' }),
         }),
         'attach:observe': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'observe', record: 'surface:browser_owned', mode: 'attach' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-observe', record: 'surface:browser_owned', mode: 'attach' }),
         }),
         'attach:extract': Object.freeze({
-          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
-          binds: Object.freeze({ operation: 'extract', record: 'surface:browser_owned', mode: 'attach' }),
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'attach' }),
         }),
       }),
     }),

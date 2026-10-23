@@ -1087,9 +1087,16 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
     // law B-MCP followed). Closed refusal, zero worker entry beyond the
     // invoke-level proof above — still no fake green.
     const def = world.plane.definitions.find((d) => d.name === 'stagehand_observe')
-    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1'))).rejects.toThrow(/refused-g2/)
-    const detail = String((world.legResults[world.legResults.length - 1] as { detail?: string })?.detail ?? '')
-    expect(detail).toContain('family-target-invalid')
+    // root 22:26: the REAL mint claims now VALIDATE at the table inside
+    // the walk — the walk moves PAST the target law to the durable
+    // approval boundary (proven by the walk blocking there until the
+    // caller's abort; it no longer refuses at the target). Bounded, no
+    // approval is minted here, zero entry — still no fake green.
+    const ac = new AbortController()
+    const timed = globalThis.setTimeout(() => ac.abort(), 250)
+    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1', { signal: ac.signal }))).rejects.toThrow(/cancelled|refused-g2/)
+    globalThis.clearTimeout(timed)
+    expect(world.nativeCalls.stagehand_observe ?? []).toHaveLength(0)
     const mount = world.mount as { dispose: () => Promise<{ ok: boolean }> }
     expect((await mount.dispose()).ok).toBe(true)
   })
@@ -1158,45 +1165,43 @@ describe('A5M2-G2-WIRE round-26: createG2ConsumedProofApproval — the real fina
   })
 })
 
-/* ROOT 21:57 table round — the B-BROWSER CLOSED TABLE, authored as this
- * family's entry on the EXISTING signed grammar; the entry's fields are
- * enumerated from the already-written refusal law (mode pair, attach
- * endpoint origin, modelOrigin REQUIRED for act/observe/extract because
- * page content rides the model, NOT for navigate). Shared validator and
- * the closed kinds are UNTOUCHED; B-TEAM/B-SUBAGENT entries untouched. */
-describe('A5M2-G2-WIRE round-27: the B-BROWSER closed table entry', () => {
+/* ROOT 22:26 pairing card — the table mirrors the REAL mint (names,
+ * browser-* operations, full targets kept IN the manifest), and the
+ * real mint now rides the same flat leaves. No value moved to body
+ * facts, nothing deleted to fit the table. */
+describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> REAL mint one-for-one', () => {
   const rule = () => {
     const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
-    if (entry === undefined) throw new Error('B-BROWSER table entry missing — the closed table MUST carry this family (root 21:57)')
+    if (entry === undefined) throw new Error('B-BROWSER table entry missing')
     return entry
   }
-  const base = {
-    browserVariant: 'launch:observe',
-    connectionIncarnation: 'gen-1',
-    providerReSelectionLaw: 'the mount generation owns the provider; captured-native re-selection is gone',
-    connectionIncarnationReason: null,
-    domainAuthorityId: null,
-    businessObligations: [{}],
-    operation: 'observe',
-    record: 'surface:browser_owned',
-    mode: 'launch',
-    modelOrigin: 'https://model.example.invalid',
+  const realNavigate = {
+    browserVariant: 'launch:navigate', record: 'surface:browser_owned', operation: 'browser-navigate', mode: 'launch',
+    connectionIncarnation: 'gen-1', providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone — incarnation rotation stale-proofs prior approvals (B-BROWSER re-selection law @639ed01539)', connectionIncarnationReason: null,
+    domainAuthorityId: null, businessObligations: [{ service: 'browser', action: 'navigate', right: 'connect', entry: 'x' }],
+    url: 'https://target.example.invalid/deep?q=1', destinationOrigin: 'https://target.example.invalid', pageId: null,
   }
-  it('passes module-load legality for the entry and validates the exact required+group key sets (launch:observe and attach:act)', () => {
+  const realObserveAttach = { ...realNavigate, browserVariant: 'attach:observe', operation: 'browser-observe', mode: 'attach', modelDestinationOrigin: 'https://model.example.invalid', instructionDigest: 'a'.repeat(64), attachEndpointOrigin: 'http://127.0.0.1:9222', attachNote: 'attached browser may also be changed by its user (native GUIDANCE); incarnation re-check belongs to the owned provider (§5.5)' }
+  delete (realObserveAttach as Record<string, unknown>).url
+  delete (realObserveAttach as Record<string, unknown>).destinationOrigin
+  it('the REAL launch:navigate and attach:observe manifests validate against the entry (full targets IN the approval manifest); module-load legality holds', () => {
     expect(() => assertPaFamilyTargetRuleLegality('B-BROWSER', rule())).not.toThrow()
-    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), base)).toBeUndefined()
-    const attachAct = { ...base, browserVariant: 'attach:act', mode: 'attach', operation: 'act', cdpEndpointOrigin: 'http://127.0.0.1:9222' }
-    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), attachAct)).toBeUndefined()
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), realNavigate)).toBeUndefined()
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), realObserveAttach)).toBeUndefined()
   })
-  it('the N leg stays visible: modelOrigin missing on observe refuses; navigate needs NO modelOrigin; attach without cdpEndpointOrigin refuses; a launch claim with attach mode refuses (bound literal)', () => {
-    const noModel = { ...base } as Record<string, unknown>
-    delete noModel.modelOrigin
-    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noModel))).toContain('modelOrigin')
-    const nav = { ...base, browserVariant: 'launch:navigate', operation: 'navigate' } as Record<string, unknown>
-    delete nav.modelOrigin
-    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav)).toBeUndefined()
-    const attachNoCdp = { ...base, mode: 'attach', browserVariant: 'attach:act', operation: 'act' }
-    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), attachNoCdp))).toContain('cdpEndpointOrigin')
-    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), { ...base, mode: 'attach' }))).toContain('mode')
+  it('lossless negatives: dropping url/pageId-null/domainAuthorityId-null refuses; a bare digest without modelDestinationOrigin refuses; launch mode with an attach variant refuses (bound literal)', () => {
+    const noUrl = { ...realNavigate } as Record<string, unknown>
+    delete noUrl.url
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noUrl))).toContain('url')
+    const noPage = { ...realNavigate } as Record<string, unknown>
+    delete noPage.pageId
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noPage))).toContain('pageId')
+    const noDa = { ...realNavigate } as Record<string, unknown>
+    delete noDa.domainAuthorityId
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noDa))).toContain('domainAuthorityId')
+    const digestOnly = { ...realObserveAttach } as Record<string, unknown>
+    delete digestOnly.modelDestinationOrigin
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), digestOnly))).toContain('modelDestinationOrigin')
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), { ...realNavigate, mode: 'attach' }))).toContain('mode')
   })
 })
