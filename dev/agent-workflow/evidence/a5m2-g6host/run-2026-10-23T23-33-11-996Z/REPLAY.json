@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-23T23:33:42.046Z",
+  "checks": [
+    {
+      "name": "R1-list-first",
+      "pass": true,
+      "extra": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-g6-7zmez4tc\",\"n"
+    },
+    {
+      "name": "R1-resolve-second",
+      "pass": true,
+      "extra": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-g6-roiatecb\",\"n"
+    },
+    {
+      "name": "R1-completion-reachable",
+      "pass": true,
+      "extra": "{\"kind\":\"text\",\"content\":\"G6_DONE_PAIR_RESOLVED_1dx8zuwc :: {\\\"status\\\":\\\"contro"
+    },
+    {
+      "name": "R1-fail-terminal",
+      "pass": true,
+      "extra": "{\"kind\":\"text\",\"content\":\"G6_PAIR_RESOLVE_FAIL :: boom-not-resolved\"}"
+    },
+    {
+      "name": "R2-session-search-restored",
+      "pass": true,
+      "extra": "tools=5"
+    },
+    {
+      "name": "R2-runtime-seq-not-frozen",
+      "pass": true,
+      "extra": "null-stage=[] seven=[\"7\"]"
+    },
+    {
+      "name": "R3-emitted-set-positive",
+      "pass": true,
+      "extra": "ids=emit-A"
+    },
+    {
+      "name": "R3-history-id-rejected",
+      "pass": true,
+      "extra": "staleFace=call-old-1 emitted=0"
+    },
+    {
+      "name": "R1-order-schedule-includes-session_search",
+      "pass": true,
+      "extra": "C3,C2,C2b,C4,C11,C5,C6,C10"
+    },
+    {
+      "name": "R4-branch-positive",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-existence-leak-fails",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-shape-nostep-legal",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-branch-faceless-fails",
+      "pass": true,
+      "extra": ""
+    },
+    {
+      "name": "R4-cleanup-records-false-returns",
+      "pass": true,
+      "extra": "[\"instance.stop returned portFree=false\",\"port 3999 not free 30s after cleanup (waitForPortFree=false)\"]"
+    },
+    {
+      "name": "R5-started-killed-false-fails",
+      "pass": true,
+      "extra": "[\"instance.stop returned killed=false after a real start (child may survive)\"]"
+    },
+    {
+      "name": "R5-idle-killed-false-not-rejected",
+      "pass": true,
+      "extra": "[]"
+    }
+  ],
+  "allPass": true
+}

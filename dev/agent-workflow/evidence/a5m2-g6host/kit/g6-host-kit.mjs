@@ -161,7 +161,7 @@ const log = (m) => console.log(`[g6-kit ${new Date().toISOString().slice(11, 19)
 // Root 23:08 card 5: after ANY start, every exit path runs the SAME awaited
 // cleanup (stop host, close mock, BOTH ports free); cleanup failure flips the
 // exit code — process.exit must never skip it.
-const liveRef = { instance: null, mock: null, ports: [] }
+const liveRef = { instance: null, mock: null, ports: [], started: false }
 let cleanupDone = false
 async function cleanup() {
   if (cleanupDone) return []
@@ -170,8 +170,15 @@ async function cleanup() {
   if (liveRef.instance !== null) {
     try {
       const st = await liveRef.instance.stop({ timeoutMs: 30_000 })
-      log(`host stopped (killed=${st?.killed} portFree=${st?.portFree})`)
-      if (st?.portFree !== true) failures.push(`instance.stop returned portFree=${String(st?.portFree)}`) // a false return IS a cleanup failure
+      log(`host stopped (killed=${st?.killed} portFree=${st?.portFree} started=${liveRef.started})`)
+      if (st?.portFree !== true) failures.push(`instance.stop returned portFree=${String(st?.portFree)}`) // false = failure in BOTH states
+      if (st?.killed === false) {
+        // Root dd00 ④: killed=false while the Host was STARTED means the child
+        // may survive = cleanup failure; never started = noted separately,
+        // never a false reject.
+        if (liveRef.started === true) failures.push('instance.stop returned killed=false after a real start (child may survive)')
+        else log('NOTE: stop.killed=false with no started Host (no child expected) — noted, not a failure')
+      }
     } catch (e) { failures.push(`instance.stop: ${String(e).slice(0, 120)}`) }
   }
   if (liveRef.mock !== null) {
@@ -453,6 +460,11 @@ const CASES = [
   { id: 'C10', tool: 'session_trace', input: () => ({ session_id: 'session-does-not-exist-000000' }), expect: 'deny', anyOf: [G6.CEILING, G6.UNAUTHORIZED] }, // ceiling FIRST; NOT_FOUND here = existence leak
   { id: 'C11', tool: 'session_search', input: () => ({ query: `G6_MARKER_${NONCE}` }), expect: 'ok', mustInclude: [`G6_MARKER_${NONCE}`] }, // the FIFTH tool: CROSS-SESSION workspace lane (:1047), cwd pinned via defaultWorkspace — NOT the current-event clamp
 ]
+// THE ACTUAL execution sequence (root dd00 ①: C11 must RUN, not merely sit in
+// the table). CASES is the spec; this is the schedule.
+const CASE_RUN_ORDER = ['C3', 'C2', 'C2b', 'C4', 'C11', 'C5', 'C6', 'C10']
+for (const id of CASE_RUN_ORDER) { if (!CASES.some((c) => c.id === id)) throw new Error(`CASE_RUN_ORDER names unknown case ${id}`) }
+if (CASE_RUN_ORDER.filter((id) => (CASES.find((c) => c.id === id) ?? {}).tool === 'session_search').length !== 1) throw new Error('the session_search lane (C11) must appear EXACTLY ONCE in the run order')
 // C9 = caller drift: verified at source level that NO public surface flips the
 // exec-owner/caller snapshot (host.ts :2349-2357 lazy public accessors; the
 // wiring canonicalValue(callerSnapshot) law). Recorded NOT-ATTEMPTED; no
@@ -572,6 +584,19 @@ function allocatedFootprint(root) {
   return { files: seen.size, totalAllocated: total, ownExclusiveAllocated: own, externallySharedAllocated: shared, dirs: dirs.size, dirBytes }
 }
 
+/** The tool_use ids this round's mock REPLIES actually emitted for a tool
+ *  (root dd00 ②): request.messages is the FULL history and must never be the
+ *  id source; the reply's toolCalls[].id is what this turn really called. */
+function emittedToolUseIds(turnReqs, toolName) {
+  const ids = new Set()
+  for (const r of turnReqs) {
+    const tcs = r?.reply?.toolCalls
+    if (!Array.isArray(tcs)) continue
+    for (const t of tcs) if (t?.name === toolName && typeof t.id === 'string') ids.add(t.id)
+  }
+  return ids
+}
+
 // ── verdict branch table (TOP LEVEL: replay exercises the REAL branches) ───
 
 function verdictOf(r) {
@@ -639,12 +664,20 @@ async function runReplay() {
   const runtimeProbe = (c2.mustInclude() ?? []).filter((v) => typeof v === 'string' && v !== '' && v !== 'null')
   ok('R2-runtime-seq-not-frozen', typeof c2.mustInclude === 'function' && JSON.stringify(frozenProbe) === '[]' && JSON.stringify(runtimeProbe) === '["7"]', `null-stage=${JSON.stringify(frozenProbe)} seven=${JSON.stringify(runtimeProbe)}`)
 
-  // R3 — REAL toolResultFaces tool_use_id lock: a same-named face from an
-  // EARLIER call (id not in this turn) must NOT satisfy this turn
-  const faces = toolResultFaces([asstUse('call-old-1', 'session_trace'), userRes('call-old-1', 'OLD-RESULT-TEXT')])
-  const useIds = new Set(['call-new-9'])
-  const locked = [...faces].reverse().find((f) => useIds.has(f.tool_use_id)) ?? null
-  ok('R3-old-call-face-rejected', faces.length === 1 && locked === null, `faces=${faces.length} id=${faces[0]?.tool_use_id}`)
+  // R3 — REAL emitted-id law: ids come from the mock REPLIES (emittedToolUseIds),
+  // positive case built from that SAME actually-emitted set, negative proves a
+  // same-named face from the request HISTORY (different id) cannot match.
+  const liveReq = { reply: { kind: 'tool-call', toolCalls: [{ id: 'emit-A', name: 'session_trace', arguments: {} }] }, body: { messages: [asstUse('emit-A', 'session_trace'), userRes('emit-A', 'THIS-ROUND-RESULT')] } }
+  const realIds = emittedToolUseIds([liveReq], 'session_trace')
+  const liveFaces = toolResultFaces(messagesOf(liveReq))
+  const liveMatch = [...liveFaces].reverse().find((f) => realIds.has(f.tool_use_id)) ?? null
+  const staleReq = { reply: { kind: 'tool-call', toolCalls: [{ id: 'emit-B', name: 'team_delegate', arguments: {} }] }, body: { messages: [asstUse('call-old-1', 'session_trace'), userRes('call-old-1', 'OLD-RESULT-TEXT')] } }
+  const staleIds = emittedToolUseIds([staleReq], 'session_trace')
+  const staleFaces = toolResultFaces(messagesOf(staleReq))
+  const staleMatch = [...staleFaces].reverse().find((f) => staleIds.has(f.tool_use_id)) ?? null
+  ok('R3-emitted-set-positive', realIds.has('emit-A') && liveMatch?.text === 'THIS-ROUND-RESULT', `ids=${[...realIds]}`)
+  ok('R3-history-id-rejected', staleIds.size === 0 && staleFaces.length === 1 && staleMatch === null, `staleFace=${staleFaces[0]?.tool_use_id} emitted=${[...staleIds].length}`)
+  ok('R1-order-schedule-includes-session_search', CASE_RUN_ORDER.includes('C11') && (CASES.find((c) => c.id === 'C11') ?? {}).tool === 'session_search', CASE_RUN_ORDER.join(','))
 
   // R4 — verdict branch table + cleanup false-recording (real functions)
   ok('R4-branch-positive', verdictOf({ id: 'X', status: 'DONE', faceFound: true, isError: false, toolResult: 'marker-abc', mustInclude: ['marker-abc'] }).verdict === 'PASS')
@@ -661,6 +694,20 @@ async function runReplay() {
   const failures = await cleanup()
   busy.close()
   ok('R4-cleanup-records-false-returns', failures.length === 2 && failures.some((x) => x.includes('portFree=false')) && failures.some((x) => x.includes('port 3999')), JSON.stringify(failures).slice(0, 220))
+
+  // R5 — started-flag law: started + killed=false FAILS; never-started
+  // killed=false is NOT a false reject; portFree=true required regardless
+  cleanupDone = false
+  liveRef.instance = { stop: async () => ({ killed: false, portFree: true }) }
+  liveRef.mock = { close: async () => {} }
+  liveRef.ports = []
+  liveRef.started = true
+  const fKilled = await cleanup()
+  cleanupDone = false
+  liveRef.started = false
+  const fIdle = await cleanup()
+  ok('R5-started-killed-false-fails', fKilled.length === 1 && fKilled[0].includes('killed=false'), JSON.stringify(fKilled).slice(0, 160))
+  ok('R5-idle-killed-false-not-rejected', fIdle.length === 0, JSON.stringify(fIdle).slice(0, 160))
   void userT
   writeFileSync(join(RUN_DIR, 'REPLAY.json'), JSON.stringify({ at: new Date().toISOString(), checks, allPass: checks.every((c) => c.pass) }, null, 2))
   return checks.every((c) => c.pass)
@@ -698,6 +745,7 @@ async function main() {
   const rowConfig = writeG6PatchFile(instance.patchFile)
   writeFileSync(join(RUN_DIR, 'row-config.json'), JSON.stringify({ ...rowConfig, blueprintSource: '<inline BLUEPRINT_YAML>' }, null, 2))
   const started = await instance.start({ timeoutMs: 240_000 })
+  liveRef.started = true // a started Host MUST die: stop.killed=false then = cleanup failure
   const m = /^http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)$/.exec(started.url)
   if (m === null) await dieFatal('unexpected boot url shape')
   const origin = `http://127.0.0.1:${m[1]}`
@@ -758,12 +806,7 @@ async function main() {
     if (done === null) return { status: 'TURN_TIMEOUT' }
     const turnReqs = mock.requests.slice(before)
     const faces = turnReqs.flatMap((r) => toolResultFaces(messagesOf(r)))
-    const useIds = new Set()
-    for (const r of turnReqs) for (const msg of messagesOf(r)) {
-      const cc = msg?.content
-      if (!Array.isArray(cc)) continue
-      for (const b of cc) if (b?.type === 'tool_use' && b.name === c.tool) useIds.add(b.id) // THIS turn's ids only
-    }
+    const useIds = emittedToolUseIds(turnReqs, c.tool) // THIS round's EMITTED ids (reply-side), not history
     const face = [...faces].reverse().find((f) => useIds.has(f.tool_use_id)) ?? null
     return {
       status: 'DONE',
@@ -862,7 +905,7 @@ async function main() {
     await dieFatal(`unexpected pairing state: ${pairState}`)
   }
   results.push({ id: 'C1', ...c1, expect: CASES[0].expect, mustInclude: CASES[0].mustInclude })
-  for (const id of ['C3', 'C2', 'C2b', 'C4', 'C5', 'C6', 'C10']) {
+  for (const id of CASE_RUN_ORDER) {
     const c = CASES.find((x) => x.id === id)
     await resolvePairingIfNeeded(`g6-ledger-${id}`) // NEW target realms gate per durable pending approval
     const r = await runCaseTurn(c, ROOT_G6)
@@ -905,6 +948,11 @@ async function main() {
 
   // ── teardown + budget ────────────────────────────────────────────────────
   if (PENDING_CONSUME.length > 0) await dieFatal(`pairing law violated: gated request(s) NEVER consumed: ${PENDING_CONSUME.map((x) => x.reqId).join(',')} (decision/consume proof can never be skipped)`)
+  // Root dd00 ③: pending-empty ALONE is not green — the G6 PA loop must have
+  // actually PROVEN at least one request with decision EXACTLY 1 and consume
+  // EXACTLY 1. An all-'none-open' run with zero audits cannot pass.
+  const validAudits = PAIR_AUDIT.filter((a) => a.decisionFacts === 1 && a.consumedFacts === 1)
+  if (validAudits.length < 1) await dieFatal(`pairing loop unproven: ${PAIR_AUDIT.length} audit entries, none with decision=1 AND consume=1 (none-open cannot be all-zero green)`)
   const fp = allocatedFootprint(WORLD)
   const cleanupFailures = await cleanup()
   writeFileSync(join(RUN_DIR, 'footprint.json'), JSON.stringify({ world: WORLD, ...fp, recoveryIncrementCap: BUDGET_CAP_BYTES, recoveryUsedBytes: RECOVERY_RECORD_BYTES + taskNewAllocated(), taskNewAllocatedBytes: taskNewAllocated(), taskWorldCapBytes: TASK_WORLD_CAP_BYTES, budgetHalt, cleanupFailures }, null, 2))
