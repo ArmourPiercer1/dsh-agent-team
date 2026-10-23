@@ -38,9 +38,16 @@ consequence of these files existing.
 
 **Boundary of what this entry surface can resolve** -- written because a reader followed a pointer
 out of here and found nothing behind it. The four 20260829 frozen documents (Architecture / UI /
-Development Plan / Task Decomposition) are not merely missing from a worktree: they are absent
-from this repository's history. `git log --all --diff-filter=A --name-only` over `docs/plans/`
-lists only alpha.1-era files under `docs/plans/paused/`. So citations of the form `TaskDoc §11`,
+Development Plan / Task Decomposition) **were not found in the commit history visible from this
+checkout** -- a statement about the refs this working tree can see, not a claim that they were
+never committed anywhere. `git log --all --diff-filter=A --name-only` over `docs/plans/` lists
+only alpha.1-era files there. The directory itself **is** tracked here -- four alpha.1-era files,
+`git check-ignore` says it is not ignored -- so this is not a "gitignored local dir" situation, and
+the two AGENTS.md revisions in this environment disagree about it: the one in this tree says the
+directory has been git-tracked since 2026-10-07 and that the four frozen documents remain the sole
+semantic authority, while the older revision in the main checkout still calls it local and
+gitignored. That disagreement is reported, not resolved here (`AGENTS.md` is not this line's to
+edit), and no remote search was run: the claim above is only about the refs this checkout can see. So citations of the form `TaskDoc §11`,
 `Development Plan §17.2` or "the Architecture document" -- which appear in package code headers,
 and in the package READMEs that quote those headers faithfully -- are **historical references with
 no resolvable target in this checkout**. Read them as provenance, not as something to open. Do not
@@ -198,3 +205,36 @@ mechanically refined". Two semantics worth stating because they are easy to over
 - An **AC being "newer"** means its *content* drifted from what it accepts, not that its file
   mtime is later. Nothing in this line compares timestamps; generated output carries no
   wall-clock for exactly that reason.
+
+## Where this line has NOT exited
+
+Read the green checks above as checks, not as an exit. What is still open, kept in its own words
+so nothing is quietly dropped:
+
+- **The one-time switch has not started, and this branch cannot perform it alone.** The execution
+  plan of PR #361 requires the new fact relation to **run in parallel** with the old entry first
+  (`execution-plan` :53, EB1-C: "先并跑旧 `current_contract`" with "旧/current 对账" as its
+  acceptance), and only then to switch **the single consumption entry of the old current state in
+  one move** (:56: "先建新事实关系，再一次性切换旧当前态的唯一消费入口 … 不能出现'两处可编辑的
+  current'"). The parallel half exists -- `current-state.json` mirrors `graph.yaml#current_contract`
+  read-only and no consumer treats the generated view as authority -- but the switch itself is
+  `not_started_requires_coordination`: it moves a shared consumption entry, so it belongs to a
+  coordinated window, not to a docs branch.
+- **EB0-1 … EB0-5 performance and resource baselines are incomplete.**
+  `evidence/EB-E0-E1/baseline-inventory.md` is a **read-only census of a tree** (five sub-censuses,
+  labelled by the source they were measured on). It is not a performance or resource baseline, and
+  producing the latter needs runs this line was told not to start.
+- **Integration Freeze evidence is incomplete.** `evidence/EB-E0-E1/integration-freeze.md` records
+  which conditions are satisfied and which are not; no candidate SHA is frozen, and a green
+  `pr-gate` on this branch is not a freeze.
+- **The E1 exit clause about a new agent is measured, not certified.** The cold read answered
+  7/7 with its caveats intact, and the 94/0 controls are **author runs** -- nobody independent has
+  re-executed them.
+- Unchanged and still open: contracts pairing beyond the 20 equality pairs plus 2 subset checks
+  (13 interfaces and 1 array unpaired, 1 `NOT_CHECKED`), CI wiring (EB3-B), and ratification of the
+  18 `proposed-not-ratified` ids (the single `idea-no-execution-authority` entry is not a
+  ratification target and grants no execution authority).
+
+Nothing above was deleted or weakened to make this line look finished; items this line could not
+close are recorded as open, with the reason being coordination or measurement the branch was not
+authorized to perform.

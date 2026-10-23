@@ -211,9 +211,12 @@ gitignored) — this section is a pointer summary, not the authority:
   2026-10-23 23:03) — that PR is where the C1/C2/C3 acceptance-level definitions are written, so
   a reader who wants them reads them there. Boundary, because a pointer that cannot be followed
   is worse than a missing one: the four 20260829 frozen documents (Architecture / UI /
-  Development Plan / Task Decomposition) are **absent from this repository's history**, not just
-  from the worktree — `git log --all --diff-filter=A --name-only` over `docs/plans/` shows only
-  alpha.1-era files under `docs/plans/paused/`. `TaskDoc §11` / `Development Plan §17.2` style
+  Development Plan / Task Decomposition) **were not found in the commit history visible from this
+  checkout** — that is the extent of what was searched: `git log --all --diff-filter=A
+  --name-only` over `docs/plans/` shows only alpha.1-era files under `docs/plans/paused/`, and
+  the directory itself is tracked and not ignored (it holds four alpha.1-era files), and the two
+  AGENTS.md revisions here disagree about whether it should be — reported, not resolved; nothing
+  about refs elsewhere is claimed. `TaskDoc §11` / `Development Plan §17.2` style
   citations in code and package docs are therefore historical references that no reader in this
   checkout can resolve; nothing has been reconstructed, and none should be invented here.
 
