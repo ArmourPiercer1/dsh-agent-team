@@ -615,16 +615,19 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       if (!isRecord(topology) || typeof topology.topologyRevision !== 'number' || typeof topology.topologyDigest !== 'string' || !Array.isArray(topology.allowed)) {
         return { refusal: classifyRefuse(CODES.TOPOLOGY_ABSENT, `${spec.recordIndex}·B-INSPECT·${providerId}: the CURRENT authorized registry topology is not mounted`) }
       }
-      /* A5-M2 (root ruling, pure-equivalence leaf flatten; PA_FAMILY_TARGET_RULES
-       * ['B-INSPECT'] is the paired rule): every leaf the old nested target carried
-       * rides the SAME facts at the SAME check order, expressed for ONE closed rule
-       * set. topologyRevision/topologyDigest are flat; the record's VARIANT facts
-       * (rec 53 the list-law notation, rec 54 the query triple + the client
-       * roundtrip law) ride as the ONE object of the single-item `inspectTarget`
-       * array — the correlated triple stays together (the edge re-verify reads it
-       * as one triple), the 'obligations' kind is STRUCTURAL notation (non-empty
-       * array of plain objects), never a second permission layer. No fact added,
-       * no fact dropped: the encoding is a bijection of the measured nested shape. */
+      /* A5-M2 (root 957 LIMITED ruling): the trusted/topology SCALAR flatten
+       * is PASS and stays — topologyRevision/topologyDigest are flat leaves
+       * (the trusted envelope is flattened in classify). The VARIANT facts
+       * stay in their measured base form INSIDE the target (they ride the
+       * approved question and its fingerprint — moving them out is frozen):
+       * rec 53 the top-level `listLaw`, rec 54 the nested `queryClaim` triple
+       * plus the client `clientRoundtrip` law. The root REFUSED the
+       * `inspectTarget: 'obligations'` rule pairing (the generic obligations
+       * kind cannot verify the triple — mint discipline is not the M0 §1
+       * typed target grammar), so PA_FAMILY_TARGET_RULES ['B-INSPECT']
+       * registers ONLY the scalar leaves and these variant facts fail closed
+       * at the grammar gate until a variant-grammar contract delta is signed:
+       * dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md */
       built.target = {
         topologyRevision: topology.topologyRevision,
         topologyDigest: topology.topologyDigest,
@@ -636,13 +639,12 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (!authorized) {
           return { refusal: classifyRefuse(CODES.INSPECT_TARGET_NOT_AUTHORIZED, `${spec.recordIndex}·B-INSPECT·${providerId}: ${String(claim.platform)}/${String(claim.provider)}/${String(claim.method)} is not in the CURRENT authorized topology; a captured manifest snapshot cannot authorize a query`) }
         }
-        built.target.inspectTarget = claim.platform === 'client'
-          ? [{ ...claim, clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel' }]
-          : [{ ...claim }]
+        built.target.queryClaim = claim
+        if (claim.platform === 'client') {
+          built.target.clientRoundtrip = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
+        }
       } else {
-        built.target.inspectTarget = [{
-          listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear',
-        }]
+        built.target.listLaw = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
       }
       break
     }
@@ -807,16 +809,18 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       case 'B-INSPECT': {
         const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
         if (!isRecord(topology) || !Array.isArray(topology.allowed)) return stale('the topology re-verification source is gone')
-        // The SAME CURRENT-facts source and the SAME verdicts as the nested
-        // target carried, now over the flat leaves (root ruling: current-facts
-        // re-verification unchanged — only the leaf paths moved).
+        // Root 957 LIMITED ruling: current-facts re-verification UNCHANGED in
+        // source, verdicts and words. The topology check is the flat scalar
+        // form of the SAME canonical({topologyRevision,topologyDigest}) fact
+        // the nested target carried (the PASSed scalar flatten). The triple
+        // re-verify reads the base nested `stored.queryClaim` - the refused
+        // single-item-array/[0] read is gone (mint discipline is not the
+        // grammar; see the variant-grammar candidate doc).
         if (stored.topologyRevision !== topology.topologyRevision || stored.topologyDigest !== topology.topologyDigest) {
           return stale(`topology now answers revision ${String(topology.topologyRevision)} (${String(topology.topologyDigest)})`)
         }
-        const targetEntry = Array.isArray(stored.inspectTarget) ? stored.inspectTarget[0] : undefined
-        if (targetEntry !== undefined && typeof targetEntry.platform === 'string'
-          && !topology.allowed.some((entry) => isRecord(entry)
-            && entry.platform === targetEntry.platform && entry.provider === targetEntry.provider && entry.method === targetEntry.method)) {
+        if (stored.queryClaim !== undefined && !topology.allowed.some((entry) => isRecord(entry)
+          && entry.platform === stored.queryClaim.platform && entry.provider === stored.queryClaim.provider && entry.method === stored.queryClaim.method)) {
           return stale('the query triple is no longer in the CURRENT authorized topology')
         }
         return null

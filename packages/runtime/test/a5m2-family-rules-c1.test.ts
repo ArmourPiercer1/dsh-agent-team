@@ -1,91 +1,66 @@
 /**
- * A5M2-FAMILY-RULES C1 — round 2: the B-CONTROL and B-INSPECT PA_FAMILY_TARGET_RULES
- * entries LAND paired with their mint side (root ruling: pure-equivalence leaf
- * flattening); B-MCP stays the NAMED GAP with a proposal-only correction.
+ * A5M2-FAMILY-RULES C1 — round 3 (root 957 LIMITED ruling):
  *
- * ROUND 1 (commit 2ffdd89b7, three rules refused-as-named-gaps) measured every
- * real claim shape against the committed lane modules (runtime-verified):
- *   B-CONTROL (records 83/84/85/87/88): EXACTLY { trusted: {memberAgentId,
- *     sessionHeaderId, realmId, owner, profileId} } — one nested object.
- *   B-INSPECT: rec 53 [topology{topologyRevision,topologyDigest}, listLaw
- *     <law string>, trusted]; rec 54 [topology, queryClaim{platform,provider,
- *     method}, trusted]; rec 54 client additionally [clientRoundtrip <law
- *     string>] — nested objects, and the two records DISAGREE on key sets.
- *   B-MCP: nested `surface` object on EVERY claim + per-call conditional keys
- *     cursor/uriVerbatim/uriOpacity/connectionIncarnationReason/domainAuthorityId
- *     (g2-connector-adapters.mjs:730-762).
- * The closed kind union (control/types.ts PaFamilyTargetFieldKind +
- * isPaFamilyTargetField) has no plain-object kind and the closed-key law
- * demands ONE exact key set per family — a rule over the NESTED shapes was
- * impossible (round-1 refusal, root-accepted: center's quoted field names were
- * summary wording, void as spec; pure equivalence pins to the measured source).
+ * SIGNED (kept field-for-field, do not touch — root 957):
+ *   - 'B-CONTROL' rule = the five trusted scalar leaves
+ *     (trustedMemberAgentId/trustedSessionHeaderId/trustedRealmId/
+ *     trustedOwner/trustedProfileId, all 'string'); the REAL classify output
+ *     of records 83/84/85/87/88 validates (leg 1 ACCEPT). This trusted-leaf
+ *     ACCEPT is NOT full-family closure: the full request/case/permission-
+ *     subject/revision/action facts records 83/84/87/88 carry (measured faces:
+ *     83 rootSessionId/requestToken/kind/targetInstanceId/actionName
+ *     (+toolName,summary); 84 rootSessionId/requestToken/requestId/decision
+ *     (+note); 85 rootSessionId/requestToken(+limit); 87/88 rootSessionId/
+ *     requestToken/targetInstanceId/rules) ride classifiedArgs/effects, NOT
+ *     the target — the ORIGINAL B-CONTROL gap, listed separately in
+ *     dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md.
+ *   - 'B-INSPECT' scalar floor: topologyRevision ('nonNegativeInt') +
+ *     topologyDigest ('string') + the same five trusted scalar leaves.
  *
- * ROUND 2 (root ruling, this commit): CONTROL + INSPECT proceed INDEPENDENTLY
- * with PURE-EQUIVALENCE LEAF FLATTENING, both sides PAIRED in one change:
- *   MINT  src/plugin/live/governed-families/g1-surface-adapters.mjs — classify
- *     mints flat leaves for the two landed families ONLY (every other family
- *     keeps the nested `trusted` envelope BYTE-IDENTICAL; no rule landed for
- *     them, their claims still fail closed — no drift either way). The
- *     B-INSPECT edge re-verify (reVerifyAtEdge) reads the flat leaves from the
- *     SAME CURRENT-facts source with the SAME verdicts and byte-identical
- *     stale strings; parametersFingerprint keeps its digest-of-input binding
- *     verbatim (it rides the plan outside the target, untouched); no fact
- *     added, none dropped — the encoding is a bijection of the measured
- *     nested shape (the MEASURED MAPPING TABLE, nested path -> flat field ->
- *     existing kind):
- *       trusted.memberAgentId     -> trustedMemberAgentId   ('string')
- *       trusted.sessionHeaderId   -> trustedSessionHeaderId ('string')
- *       trusted.realmId           -> trustedRealmId         ('string')
- *       trusted.owner             -> trustedOwner           ('string')
- *       trusted.profileId         -> trustedProfileId       ('string')
- *       topology.topologyRevision -> topologyRevision       ('nonNegativeInt')
- *       topology.topologyDigest   -> topologyDigest         ('string')
- *       listLaw (rec 53)          -> inspectTarget[0].listLaw
- *       queryClaim.platform       -> inspectTarget[0].platform   ('obligations'
- *       queryClaim.provider       -> inspectTarget[0].provider    kind used
- *       queryClaim.method         -> inspectTarget[0].method      STRUCTURALLY:
- *                                    non-empty array of plain objects)
- *       clientRoundtrip (client)  -> inspectTarget[0].clientRoundtrip
- *     `inspectTarget` is the ONE single-item array that keeps each record's
- *     VARIANT facts TOGETHER — the correlated query triple stays one object
- *     (the edge reads it as one triple) — so ONE closed rule serves both
- *     records although their nested key sets differed. Nothing invented:
- *     every leaf is a measured fact at the same check order.
- *   RULE  PA_FAMILY_TARGET_RULES gains 'B-CONTROL' and 'B-INSPECT' — the TABLE
- *     key MUST equal the claim's familyId string as the module spells it (the
- *     card's PA-B-* wording is prose naming; a PA- prefixed key could never be
- *     found by validatePaFamilyTarget's familyId lookup) — using ONLY the
- *     existing kinds, exactly the leaves above.
+ * REFUSED (root 957): `inspectTarget: 'obligations'` as the variant carrier.
+ * Measured flaw — pinned in leg 6 through the EXISTING rules on
+ * B-IMAGE.businessObligations, the same generic kind: 'obligations' accepts
+ * ANY non-empty array of plain objects — [{}] validates, arbitrary interiors,
+ * multiple elements — so it cannot verify the query triple, and an edge
+ * reading inspectTarget[0] with a platform-type check is mint/WeakMap
+ * discipline, not the M0 §1 strict typed target grammar. The mint therefore
+ * carries the variant facts in their measured BASE form INSIDE the target
+ * (they ride the approved question and its fingerprint — moving them out is
+ * FROZEN): rec 53 top-level `listLaw`; rec 54 nested `queryClaim{platform,
+ * provider, method}` + client `clientRoundtrip`. With the scalar-floor rule
+ * every REAL B-INSPECT claim FAILS CLOSED at the grammar gate (leg 2 pins the
+ * exact deny strings AND that the mint still carries every variant fact). The
+ * edge re-verify (leg 4) keeps the base nested-`queryClaim` triple check and
+ * the flat-scalar topology check — same CURRENT-facts source, verdicts,
+ * words.
  *
- * B-MCP REMAINS THE NAMED GAP (root FROZE any MCP encoding change): the five
- * variant keys and the nested surface object may not move to layers that do
- * not participate in the full-manifest digest/current facts, and nothing is
- * deleted to please closed-key. The ONE minimal contract correction (exact
- * validator/closed-key accommodation + its M0 semantic-equivalence argument)
- * is PROPOSAL-ONLY:
- * dev/agent-workflow/evidence/a5m2-family-rules/a5m2-mcp-closed-key-proposal.md
+ * DELIVERABLE (proposal only, NOT implemented — root 957): the proof that NO
+ * existing closed leaf expresses the three measured variants + cross-leaf
+ * pairing, and the minimal contract delta as an exact short interface
+ * candidate:
+ * dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md
  *
- * PAIRING LAW (root ruling): a PA_FAMILY_TARGET_RULES entry and its
- * registerA5GovernedFamily mint side land TOGETHER, one pair per change. This
- * change pairs each new RULE with its CLAIM-SHAPE mint (the classify flatten);
- * it still registers NOTHING in pa-mount-registry — the governed-family
- * registration for the G1 rows lands WITH the wire lane, against exactly these
- * shapes, and no lane may mint a registration without its paired rule.
+ * B-MCP unchanged named gap (leg 5): encoding FROZEN, no rule registered, the
+ * wire lanes' pinned deny stands; its contract-correction proposal remains
+ * NOT approved for implementation (root 957).
  *
- * LEGS: 1-2 ACCEPT: the REAL adapter's classify output (mounted rows, real
- * CURRENT-facts ports) validates and the claim's key set equals the rule's
- * required set byte-for-field; 3 the closed law still bites on the new rules
- * (foreign key / absent leaf / wrong kind) and the PRE-RULE nested forms now
- * deny explicitly (migration honesty: they never landed either way);
- * 4 the B-INSPECT current-facts re-verify stays live over the flat leaves —
- * fresh delegate runs the captured face, moved topology / de-authorized triple
- * refuse with byte-identical stale words, and the classify-time authorization
- * law itself is unchanged; 5 B-MCP stays the named gap with the wire lanes'
- * pinned deny string untouched; 6 the closed kind union still refuses plain
- * nested objects (why the flatten was needed — pinned through the PRE-EXISTING
- * rules' behaviour, never an invented kind); 7-9 byte-identical regression
- * legs of the three pre-existing rules against their lanes' real shapes
- * (todo.mjs:234-246, write.mjs:246-258, image.mjs:249-268).
+ * PAIRING LAW stands: a rule lands only paired with its claim-shape mint;
+ * nothing here registers pa-mount-registry entries (those land with the wire
+ * lane against exactly these shapes).
+ *
+ * LEGS: 1 B-CONTROL ACCEPT (real classify, field-for-field claim<->rule) +
+ * pre-rule nested form denies + the not-full-family note; 2 B-INSPECT interim:
+ * scalar floor validates with exact key-set, every REAL claim fails closed
+ * naming its variant fact, and the mint verifiably still carries all variant
+ * facts inside the target (fingerprint intact, no inspectTarget anywhere);
+ * 3 the closed law bites on both signed rules (foreign/absent/wrong-kind);
+ * 4 B-INSPECT current-facts re-verify live (fresh delegate runs the face;
+ * moved topology / de-authorized triple refuse byte-identical; classify-time
+ * authorization unchanged); 5 B-MCP named gap + table key pin; 6 the
+ * refused-grammar flaw measured through the existing 'obligations' kind
+ * ([{}] and junk interiors ACCEPT — root 957's stated reason) + countsTriple
+ * refuses non-triple objects; 7-9 byte-identical regression legs of the three
+ * pre-existing rules (todo.mjs:234-246, write.mjs:246-258, image.mjs:249-268).
  */
 import { describe, expect, it } from 'vitest'
 import { PA_FAMILY_TARGET_RULES, validatePaFamilyTarget } from '../control/types.js'
@@ -120,6 +95,7 @@ const keysOf = (record: Record<string, unknown> | undefined): string[] =>
   Object.keys(record ?? {}).slice().sort()
 const requiredKeysOf = (familyId: string): string[] =>
   Object.keys(PA_FAMILY_TARGET_RULES[familyId]?.required ?? {}).slice().sort()
+const sorted = (keys: string[]): string[] => keys.slice().sort()
 
 const TRUSTED = Object.freeze({
   memberAgentId: 'agent-a5m2',
@@ -136,6 +112,8 @@ const TRUSTED_LEAVES = Object.freeze({
   trustedOwner: 'owner-a5m2',
   trustedProfileId: 'profile-a5m2',
 })
+
+const TOPOLOGY_SCALARS = Object.freeze({ topologyRevision: 9, topologyDigest: 'sha256;topo' })
 
 const LIST_LAW = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
 const CLIENT_ROUNDTRIP = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
@@ -195,8 +173,8 @@ const B_MCP_HTTP_DOMAIN = Object.freeze({
   businessObligations: B_MCP_STDIO_LIST.businessObligations,
 })
 
-describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACCEPT over flattened leaves; B-MCP stays the named gap', () => {
-  it('B-CONTROL ACCEPT: the REAL classify output of records 85 and 83 validates, field-for-field against the paired rule', () => {
+describe('A5M2-FAMILY-RULES C1 round 3 (root 957): scalar floors signed; B-INSPECT variant facts fail closed pending the variant-grammar delta; B-CONTROL trusted ACCEPT is not full-family closure; B-MCP named gap', () => {
+  it('B-CONTROL ACCEPT (SIGNED): the REAL classify output of records 85 and 83 validates, field-for-field against the five trusted scalar leaves', () => {
     expect(PA_FAMILY_TARGET_RULES['B-CONTROL']).toBeDefined()
     const list = mountRow('team_list_pending_control', () => undefined)
     const c85 = list.classify({ rootSessionId: 'root-1', requestToken: 'tok-1' }, 'call-85')
@@ -209,16 +187,28 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     expect(c83.ok, `${c83.code} ${c83.detail}`).toBe(true)
     expect(c83.targetManifest).toEqual({ ...TRUSTED_LEAVES })
     expect(validatePaFamilyTarget('B-CONTROL', c83.targetManifest)).toBeUndefined()
-    // the PRE-RULE nested form never landed before (no rule) and denies
-    // explicitly now — the flat leaves are the only accepted shape.
+    // trusted ACCEPT is NOT full-family closure: the record-83 request facts
+    // (kind/targetInstanceId/actionName — riding classifiedArgs/effects) are
+    // not part of the typed plan yet — the ORIGINAL B-CONTROL gap, listed
+    // separately. This leg proves only that the claim the mint DOES produce
+    // is exactly the five signed leaves.
+    expect(requiredKeysOf('B-CONTROL')).toEqual(sorted([
+      'trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId', 'trustedOwner', 'trustedProfileId',
+    ]))
+    // the pre-rule nested form denies (the flat leaves are the only shape)
     expect(validatePaFamilyTarget('B-CONTROL', { trusted: TRUSTED }))
       .toBe('trustedMemberAgentId: required by the B-CONTROL typed plan, absent')
   })
 
-  it('B-INSPECT ACCEPT: all THREE measured variants of the REAL classify output validate, field-for-field against the one rule', () => {
+  it('B-INSPECT INTERIM (root 957 refuse): the scalar floor validates exact-keyset; every REAL claim FAILS CLOSED naming its variant fact; the mint verifiably keeps all variant facts INSIDE the target (fingerprint intact)', () => {
+    // scalar floor: exact key-set equality against the rule, validates.
+    const scalarFloor = { ...TOPOLOGY_SCALARS, ...TRUSTED_LEAVES }
+    expect(keysOf(scalarFloor)).toEqual(requiredKeysOf('B-INSPECT'))
+    expect(validatePaFamilyTarget('B-INSPECT', scalarFloor)).toBeUndefined()
+    // the three measured REAL claims — the mint still carries EVERY variant
+    // fact inside the target (nothing moved out of the approved question):
     const topology = () => ({
-      topologyRevision: 9,
-      topologyDigest: 'sha256;topo',
+      ...TOPOLOGY_SCALARS,
       allowed: [
         { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
         { platform: 'client', provider: 'dsh_compute', method: 'compute_health' },
@@ -227,39 +217,32 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     const list = mountRow('cordis_inspect_list', topology)
     const c53 = list.classify({}, 'call-53')
     expect(c53.ok, `${c53.code} ${c53.detail}`).toBe(true)
-    expect(c53.targetManifest).toEqual({
-      topologyRevision: 9, topologyDigest: 'sha256;topo', inspectTarget: [{ listLaw: LIST_LAW }],
-      ...TRUSTED_LEAVES,
-    })
-    expect(keysOf(c53.targetManifest)).toEqual(requiredKeysOf('B-INSPECT'))
-    expect(validatePaFamilyTarget('B-INSPECT', c53.targetManifest)).toBeUndefined()
-
+    expect(c53.targetManifest).toEqual({ ...TOPOLOGY_SCALARS, listLaw: LIST_LAW, ...TRUSTED_LEAVES })
+    expect(keysOf(c53.targetManifest)).toEqual(sorted([...requiredKeysOf('B-INSPECT'), 'listLaw']))
+    expect(validatePaFamilyTarget('B-INSPECT', c53.targetManifest))
+      .toBe('listLaw: not part of the B-INSPECT typed plan')
     const query = mountRow('cordis_inspect_query', topology)
     const c54 = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-54')
     expect(c54.ok, `${c54.code} ${c54.detail}`).toBe(true)
     expect(c54.targetManifest).toEqual({
-      topologyRevision: 9, topologyDigest: 'sha256;topo',
-      inspectTarget: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
-      ...TRUSTED_LEAVES,
+      ...TOPOLOGY_SCALARS, queryClaim: { platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, ...TRUSTED_LEAVES,
     })
-    expect(keysOf(c54.targetManifest)).toEqual(requiredKeysOf('B-INSPECT'))
-    expect(validatePaFamilyTarget('B-INSPECT', c54.targetManifest)).toBeUndefined()
-
+    expect(keysOf(c54.targetManifest)).toEqual(sorted([...requiredKeysOf('B-INSPECT'), 'queryClaim']))
+    expect(validatePaFamilyTarget('B-INSPECT', c54.targetManifest))
+      .toBe('queryClaim: not part of the B-INSPECT typed plan')
     const c54c = query.classify({ platform: 'client', provider: 'dsh_compute', method: 'compute_health' }, 'call-54c')
     expect(c54c.ok, `${c54c.code} ${c54c.detail}`).toBe(true)
     expect(c54c.targetManifest).toEqual({
-      topologyRevision: 9, topologyDigest: 'sha256;topo',
-      inspectTarget: [{ platform: 'client', provider: 'dsh_compute', method: 'compute_health', clientRoundtrip: CLIENT_ROUNDTRIP }],
-      ...TRUSTED_LEAVES,
+      ...TOPOLOGY_SCALARS, queryClaim: { platform: 'client', provider: 'dsh_compute', method: 'compute_health' }, clientRoundtrip: CLIENT_ROUNDTRIP, ...TRUSTED_LEAVES,
     })
-    expect(validatePaFamilyTarget('B-INSPECT', c54c.targetManifest)).toBeUndefined()
-    // the PRE-RULE nested form denies explicitly now (migration honesty).
-    expect(validatePaFamilyTarget('B-INSPECT', {
-      topology: { topologyRevision: 9, topologyDigest: 'sha256;topo' }, listLaw: LIST_LAW, trusted: TRUSTED,
-    })).toBe('topologyRevision: required by the B-INSPECT typed plan, absent')
+    expect(keysOf(c54c.targetManifest)).toEqual(sorted([...requiredKeysOf('B-INSPECT'), 'queryClaim', 'clientRoundtrip']))
+    expect(validatePaFamilyTarget('B-INSPECT', c54c.targetManifest))
+      .toBe('queryClaim: not part of the B-INSPECT typed plan')
+    // the refused carrier shape is GONE from the mint too (957 revert):
+    expect(JSON.stringify(c54c.targetManifest)).not.toContain('inspectTarget')
   })
 
-  it('the new rules enforce the closed law: foreign key, absent leaf and wrong kind deny with the closed codes', () => {
+  it('the signed rules enforce the closed law: foreign key, absent leaf and wrong kind deny with the closed codes', () => {
     const flatControl = { ...TRUSTED_LEAVES }
     expect(validatePaFamilyTarget('B-CONTROL', { ...flatControl, surface: { transport: 'stdio' } }))
       .toBe('surface: not part of the B-CONTROL typed plan')
@@ -268,23 +251,18 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     expect(validatePaFamilyTarget('B-CONTROL', { ...flatControl, trustedProfileId: 7 }))
       .toBe('trustedProfileId: not a string')
 
-    const flatInspect = {
-      topologyRevision: 9,
-      topologyDigest: 'sha256;topo',
-      inspectTarget: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
-      ...TRUSTED_LEAVES,
-    }
-    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, queryClaim: { platform: 'host' } }))
+    const scalarFloor = { ...TOPOLOGY_SCALARS, ...TRUSTED_LEAVES }
+    expect(validatePaFamilyTarget('B-INSPECT', { ...scalarFloor, queryClaim: { platform: 'host' } }))
       .toBe('queryClaim: not part of the B-INSPECT typed plan')
-    expect(validatePaFamilyTarget('B-INSPECT', without(flatInspect, 'topologyDigest')))
+    expect(validatePaFamilyTarget('B-INSPECT', without(scalarFloor, 'topologyDigest')))
       .toBe('topologyDigest: required by the B-INSPECT typed plan, absent')
-    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, topologyRevision: 'nine' }))
+    expect(validatePaFamilyTarget('B-INSPECT', { ...scalarFloor, topologyRevision: 'nine' }))
       .toBe('topologyRevision: not a nonNegativeInt')
-    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, inspectTarget: [] }))
-      .toBe('inspectTarget: not a obligations')
+    expect(validatePaFamilyTarget('B-INSPECT', { ...scalarFloor, trustedOwner: '' }))
+      .toBe('trustedOwner: not a string')
   })
 
-  it('current-facts re-verification stays live over the flat leaves: fresh delegate runs the captured face; moved topology / de-authorized triple refuse with byte-identical stale words; the classify-time authorization law is unchanged', async () => {
+  it('current-facts re-verification stays live (base nested queryClaim read restored; flat topology scalars): fresh delegate runs the captured face; moved topology / de-authorized triple refuse with byte-identical stale words; the classify-time authorization law is unchanged', async () => {
     const state = {
       revision: 9,
       allowed: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
@@ -296,8 +274,7 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     const ran = await query.delegate(fresh.plan, { exec: { callId: 'call-fresh' } })
     expect(ran.ok, `${ran.code} ${ran.detail}`).toBe(true)
     // classify on the CURRENT facts, THEN the CURRENT fact moves → stale,
-    // byte-identical words (the plan is classified at revision 9 and the edge
-    // answers revision 10 — the same order the nested edge verified in).
+    // byte-identical words.
     const moved = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-moved')
     expect(moved.ok).toBe(true)
     state.revision = 10
@@ -313,7 +290,7 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     expect(unauthorized.ok).not.toBe(true)
     expect(unauthorized.code).toBe('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
     // classify WHILE authorized, then de-authorize → the same stale refusal,
-    // the same words, over inspectTarget[0] as one correlated triple.
+    // the same words, over the nested stored.queryClaim as one triple.
     state.allowed = [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }]
     const ok2 = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-ok2')
     expect(ok2.ok).toBe(true)
@@ -324,18 +301,30 @@ describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACC
     expect(String(staleTriple.detail)).toContain('the query triple is no longer in the CURRENT authorized topology')
   })
 
-  it('B-MCP: STILL no rule registered — every measured variant denies at the table gate with the wire-pinned string (named gap, encoding FROZEN, proposal-only correction)', () => {
+  it('B-MCP: STILL no rule registered — every measured variant denies at the table gate with the wire-pinned string (named gap, encoding FROZEN, proposal NOT approved)', () => {
     expect(PA_FAMILY_TARGET_RULES['B-MCP']).toBeUndefined()
     const deny = `familyId: no target structure is registered for 'B-MCP'`
     expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(deny)
-    // the table itself: the paired CONTROL/INSPECT entries landed, MCP did not.
+    // the table itself: the signed CONTROL/INSPECT scalar entries landed, MCP did not.
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
       .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
   })
 
-  it('the closed kind union has no plain-object kind (why the flatten was needed) — pinned through the PRE-EXISTING rules: countsTriple is ONLY the todo triple, obligations ONLY non-empty object arrays', () => {
+  it('the REFUSED grammar, MEASURED through the existing rules (root 957 reason pinned): the generic obligations kind ACCEPTS [{}], junk interiors and multiple elements — it cannot verify a triple; countsTriple is ONLY the todo triple', () => {
+    // THE flaw: [{}] (one empty object) validates as 'obligations' —
+    // undefined = ACCEPTED. Exactly why inspectTarget:obligations was refused.
+    expect(validatePaFamilyTarget('B-IMAGE', {
+      ...B_IMAGE_REAL,
+      businessObligations: [{}],
+    })).toBeUndefined()
+    // junk interiors and multiple elements also ride through unverified:
+    expect(validatePaFamilyTarget('B-IMAGE', {
+      ...B_IMAGE_REAL,
+      businessObligations: [{ anything: 1 }, { nope: [1, 2] }, {}],
+    })).toBeUndefined()
+    // while a strict plain-object carrier does not exist among the kinds:
     expect(validatePaFamilyTarget('B-SESSION', {
       ...B_SESSION_REAL,
       counts: { topologyRevision: 9, topologyDigest: 'sha256;topo' },
