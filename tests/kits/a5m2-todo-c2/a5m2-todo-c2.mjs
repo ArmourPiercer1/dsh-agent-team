@@ -174,9 +174,10 @@ import { parseWorldArg, isDirectEntry, WorldSafetyError } from '../lib/world-saf
 // OVERLAY-11b (root 17:42 item 2): there is NO homes-root override — an arbitrary resolve() there
 // would have WIDENED the guard's root set, which is the one thing the entry-safety law forbids. The
 // root is the single derived superproject path, and it is re-proved before use: no .worktrees
-// segment, basename `homes` under a `tests` directory, its realpath exists and sits directly under
-// the realpath of the superproject. Any failure exits before a write. The guard's own protections
-// (parseWorldArg, protected roots, realpath re-check) stay exactly as shipped.
+// segment, basename `homes` under a `tests` directory, and its realpath EQUALS the canonical
+// <superproject realpath>/tests/homes (so a symlinked or relocated homes root fails closed). Direct
+// entry exits before any write; an import gets a catchable Error (OVERLAY-11c). The guard's own
+// protections (parseWorldArg, protected roots, realpath re-check) stay exactly as shipped.
 const SUPERPROJECT_ROOT = (() => {
   const seg = REPO.split('/')
   const i = seg.lastIndexOf('.worktrees')
@@ -184,19 +185,26 @@ const SUPERPROJECT_ROOT = (() => {
 })()
 const HOMES_ROOT = join(SUPERPROJECT_ROOT, 'tests', 'homes')
 function assertHomesRoot() {
+  // OVERLAY-11c (root 17:50): this gate runs at MODULE LOAD, so an unconditional process.exit(1)
+  // here let a mere IMPORT kill the importing process — the exact regression class the entry-safety
+  // law exists to prevent. On direct entry it still exits before any write; for an import it throws
+  // a catchable Error instead.
   const fail = (why) => {
-    console.error(`FATAL: homes root rejected (${why}): ${HOMES_ROOT} — the world root is fixed to the verified superproject tests/homes; no override exists and the entry-safety guard is not widened.`)
-    process.exit(1)
+    const msg = `homes root rejected (${why}): ${HOMES_ROOT} — the world root is fixed to the verified superproject tests/homes; no override exists and the entry-safety guard is not widened.`
+    if (ENTRY_DIRECT) { console.error(`FATAL: ${msg}`); process.exit(1) }
+    throw new Error(msg)
   }
   if (HOMES_ROOT.split('/').includes('.worktrees')) fail('under a .worktrees segment')
   if (basename(HOMES_ROOT) !== 'homes' || basename(dirname(HOMES_ROOT)) !== 'tests') fail('not <root>/tests/homes')
   let realHomes, realSuper
   try { realHomes = realpathSync(HOMES_ROOT); realSuper = realpathSync(SUPERPROJECT_ROOT) } catch (e) { fail(`realpath unavailable: ${e.code ?? e.message}`) }
-  if (realHomes === realSuper || !realHomes.startsWith(`${realSuper}/`) || realHomes.slice(realSuper.length + 1).split('/').length !== 2) fail(`realpath ${realHomes} is not <superproject>/tests/homes`)
+  // EXACTLY the canonical <superproject>/tests/homes — a two-segment "somewhere under super" test
+  // would accept any other two-deep dir, and a homes root that is a SYMLINK elsewhere fails here too.
+  if (realHomes !== join(realSuper, 'tests', 'homes')) fail(`realpath ${realHomes} is not canonically ${join(realSuper, 'tests', 'homes')}`)
   return realHomes
 }
-assertHomesRoot()
 const ENTRY_DIRECT = isDirectEntry(import.meta.url, process.argv[1])
+assertHomesRoot() // after ENTRY_DIRECT: the gate must be able to tell import from direct entry
 const WORLD_REL = ENTRY_DIRECT ? argValue('world', null) : null
 let HOME
 if (ENTRY_DIRECT) {
