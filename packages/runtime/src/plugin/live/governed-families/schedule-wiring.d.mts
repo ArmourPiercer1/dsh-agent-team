@@ -170,3 +170,70 @@ export declare const A5_B_SCHEDULE_WIRING_SUBSET: readonly BScheduleWiringSubset
 
 /** The assembly-time controlled wiring factory — semantics in the `.mjs`. */
 export declare function createScheduleWiring(input?: BScheduleWiringInput): BScheduleWiringResult
+
+/* ── PRODUCTION ARM SURFACE (root 18:11 continuation) ─────────────────────
+ * Types for the production-reachability exports; the semantics (native-body
+ * law, inert-port law, real-error-class mirror) live in the `.mjs`. */
+
+/** The production-legal inert port: shape-legal for the adapter factory,
+ *  every call REFUSES loudly (production dispatches NATIVE, never a port). */
+export declare function createScheduleInertPort(): Readonly<{
+  create: (...args: never[]) => Promise<never>
+  list: (...args: never[]) => Promise<never>
+  catalog: (...args: never[]) => Promise<never>
+  history: (...args: never[]) => Promise<never>
+  delete: (...args: never[]) => Promise<never>
+  update: (...args: never[]) => Promise<never>
+}>
+
+/** The ONE production claim face: the 11-leaf measured projection (taskId
+ *  rides null-or-exact as measured; the nullable kind is root's column). */
+export declare function mintScheduleTargetManifest(
+  plan: unknown,
+): BScheduleWiringTargetManifest | { ok: false; code: string; message: string }
+
+/** One arm classify answer: the adapter plan plus the claim bytes the plane
+ *  walk embeds (targetManifest + effects + the four-P-add reviewPayload). */
+export type BScheduleArmClassifyResult =
+  | {
+      readonly ok: true
+      readonly plan: Record<string, unknown>
+      readonly targetManifest: BScheduleWiringTargetManifest
+      readonly effects: readonly unknown[]
+      readonly reviewPayload: BScheduleWiringClaimFamily
+    }
+  | { readonly ok: false; readonly code: string; readonly detail: string }
+
+export type BScheduleArmExecuteResult =
+  | { readonly ok: true; readonly value: unknown; readonly settled?: string }
+  | { readonly ok: false; readonly code: string; readonly detail: string; readonly sideEffectPossible?: boolean }
+
+export interface BScheduleProductionArm {
+  readonly name: string
+  readonly familyId: string
+  readonly adapterRevision: number
+  readonly providerId: string
+  readonly definitionIdentity: string
+  classify: (raw: unknown) => BScheduleArmClassifyResult
+  execute: (plan: Record<string, unknown>, exec: { agent?: unknown; signal?: unknown }) => Promise<BScheduleArmExecuteResult>
+  drain: () => void
+}
+
+export interface BScheduleProductionArmInput {
+  readonly name: string
+  readonly assembly: BScheduleWiring
+  readonly nativeDefinition: Record<string, unknown>
+  readonly capturedAgent: { session: { id: string } } & Record<string, unknown>
+  readonly ScheduleInputError: BScheduleErrorConstructor
+  readonly definitionIdentity: string
+  readonly providerId?: string
+  readonly observe?: (row: unknown) => void
+}
+
+export type BScheduleProductionArmResult =
+  | { readonly ok: true; readonly arm: BScheduleProductionArm }
+  | { readonly ok: false; readonly code: string; readonly message: string }
+
+/** Build one governed production arm at the PLACEMENT moment (the plane
+ *  passes the definition it ACTUALLY places; identity binds off that def). */
+export declare function createGovernedScheduleArm(input?: BScheduleProductionArmInput): BScheduleProductionArmResult
