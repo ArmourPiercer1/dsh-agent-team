@@ -867,7 +867,7 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
     operation: `browser-${method}`,
     mode: proof.mode,
     connectionIncarnation: g2BrowserIncarnation,
-    providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone — incarnation rotation stale-proofs prior approvals (B-BROWSER re-selection law @639ed01539)',
+    providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone. Incarnation rotation stale-proofs an approval ONLY IF the connection-owning assembly injects the real fact via declaredService.connectionIncarnation — while the fact reads unobserved the rotation is UNPROVEN, never a claimed guarantee (B-BROWSER re-selection law mirroring the signed B-MCP absence wording @639ed01539)',
     connectionIncarnationReason: typeof proof.connectionIncarnationReason === 'string' && proof.connectionIncarnationReason.length > 0 ? proof.connectionIncarnationReason : null,
     pageId: pageId === undefined ? null : pageId,
     ...(proof.mode === 'attach' ? { attachEndpointOrigin: cdpOrigin.origin, attachNote: 'attached browser may also be changed by its user (native GUIDANCE); incarnation re-check belongs to the owned provider (§5.5)' } : {}),

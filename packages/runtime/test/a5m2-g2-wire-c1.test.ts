@@ -1169,7 +1169,11 @@ describe('A5M2-G2-WIRE round-26: createG2ConsumedProofApproval — the real fina
  * browser-* operations, full targets kept IN the manifest), and the
  * real mint now rides the same flat leaves. No value moved to body
  * facts, nothing deleted to fit the table. */
-describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> REAL mint one-for-one', () => {
+/* root 22:39 honesty: these are GRAMMAR legs over hand-built manifests in
+ * the mint's exact real shape — they are NOT the cross-table real-mint
+ * evidence (registered as the next round's leg); no component green count
+ * stands in for the chain. */
+describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> mint-shape grammar (NOT cross-table mint evidence)', () => {
   const rule = () => {
     const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
     if (entry === undefined) throw new Error('B-BROWSER table entry missing')
@@ -1177,7 +1181,7 @@ describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> REAL mint one-for-one', () 
   }
   const realNavigate = {
     browserVariant: 'launch:navigate', record: 'surface:browser_owned', operation: 'browser-navigate', mode: 'launch',
-    connectionIncarnation: 'gen-1', providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone — incarnation rotation stale-proofs prior approvals (B-BROWSER re-selection law @639ed01539)', connectionIncarnationReason: null,
+    connectionIncarnation: 'gen-1', providerReSelectionLaw: 'the mount generation owns the Stagehand provider for this Team realm; a captured native handle re-selecting or replacing the provider is gone. Incarnation rotation stale-proofs an approval ONLY IF the connection-owning assembly injects the real fact via declaredService.connectionIncarnation — while the fact reads unobserved the rotation is UNPROVEN, never a claimed guarantee (B-BROWSER re-selection law mirroring the signed B-MCP absence wording @639ed01539)', connectionIncarnationReason: null,
     domainAuthorityId: null, businessObligations: [{ service: 'browser', action: 'navigate', right: 'connect', entry: 'x' }],
     url: 'https://target.example.invalid/deep?q=1', destinationOrigin: 'https://target.example.invalid', pageId: null,
   }
