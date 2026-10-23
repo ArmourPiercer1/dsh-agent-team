@@ -266,6 +266,24 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     /** the world's DURABLE overlay generation, as the one overlay port answers
      *  it; a leg advances it the way a real overlay write does. */
     readonly gen: { value: number; fault: 'none' | 'throw' | 'malformed' }
+    /** What the LIVE dispatcher bindings of this scope carry — what the Guard
+     *  was installed with, and what the owner's publish batch moves. Every
+     *  revise bumps that entry's revision, exactly as
+     *  `tool-dispatch/scoped-dispatcher.ts:296-335` does. */
+    readonly scope: { value: number; revision: number }
+    /** The fixture's stand-in for the ASSEMBLY OWNER's publish
+     *  (`publishAuthorityGeneration` in agent-bindings): `publish: false` is a
+     *  scope nobody refreshed, `fault: 'throw'` is a leg that refuses, `names`
+     *  is what its synchronous batch covers. */
+    readonly owner: { publish: boolean; fault: 'none' | 'throw'; names: string[] }
+    /** ONE ordered log of every seam event — `durable-read`, `entry-read`,
+     *  `leg:<g>`, `leg:<g>:threw`, `revalidate`, `revise:<name>` — because every
+     *  ordering law below (leg BEFORE the entry read, revalidate BEFORE the
+     *  batch, NOTHING after the verifier's read) is an ordering law. */
+    readonly events: string[]
+    /** set by a leg to park a call INSIDE the Control leg (the concurrency
+     *  fixture: a second call's publish landing while the first waits). */
+    readonly gate: { fn: (() => Promise<void>) | undefined }
     readonly plane: PlaneFace
     readonly scratch: string
     readonly target: string
@@ -282,6 +300,9 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     readonly rowManifestBinding?: Record<string, unknown>
     readonly legOverrides?: Record<string, unknown>
     readonly resurrectDeletedReaders?: boolean
+    /** `false` = this world has NO assembly owner mounted to publish (the shape
+     *  of a plane mounted without a Guard): the leg is not passed at all. */
+    readonly withLeg?: boolean
   }): Promise<SeamWorld> {
     const scratch = mkdtempSync(join(tmpdir(), 'a5m1-c-'))
     const target = join(scratch, 'target.txt')
@@ -290,6 +311,10 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     const asked: SeamInput[] = []
     const requests: Record<string, unknown>[] = []
     const gen = { value: GEN, fault: 'none' as 'none' | 'throw' | 'malformed' }
+    const scope = { value: GEN, revision: 3 }
+    const owner = { publish: true, fault: 'none' as 'none' | 'throw', names: ['read', 'team_bash', 'team_grep'] }
+    const events: string[] = []
+    const gate: { fn: (() => Promise<void>) | undefined } = { fn: undefined }
     let seam: (input: SeamInput, read: number) => SeamAnswer | Promise<SeamAnswer> = () => undefined
     // production-isomorphic read world (a5-m1-read-c1c2's law): an `any`
     // whole-tool rule projects ONLY its tool-invoke arm, so the resource
@@ -307,6 +332,9 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     const leg = async (input: Record<string, unknown>) => {
       requests.push(input.request as Record<string, unknown>)
       const result = await inner(input)
+      // the concurrency fixture parks a call AFTER its grant landed and BEFORE
+      // the plane consumes it: a MINTED, UNSPENT grant crossing a publish.
+      if (gate.fn !== undefined && (result as Record<string, unknown> | undefined)?.grant !== undefined) await gate.fn()
       return opts.rowManifestBinding === undefined
         ? result
         : { ...(result as Record<string, unknown>), manifest: { binding: opts.rowManifestBinding } }
@@ -323,10 +351,37 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       // can fault exactly the way a real one does (throw / malformed row).
       authorityFacts: {
         overlayGeneration: async () => {
+          events.push('durable-read')
           if (gen.fault === 'throw') throw new Error('overlay latest refused (fixture)')
           if (gen.fault === 'malformed') return 'generation-seventeen' as unknown as number
           return gen.value
         },
+        // THE NAMED assembly-write leg of production
+        // (`authorityFacts.ensureAuthorityCurrent`, a SIBLING of the reader
+        // above): the plane hands it the generation THIS admission just read,
+        // and the owner answers by revalidating and revising the whole scope.
+        // Standing number unchanged ⇒ ZERO action, exactly like the real
+        // `publishAuthorityGeneration`; the batch is synchronous here because it
+        // is synchronous there.
+        ...(opts.withLeg === false ? {} : {
+          ensureAuthorityCurrent: async (teamSessionId: string, memberInstanceId: string, g: number) => {
+            if (teamSessionId !== 'a5m1-test-team-root' || memberInstanceId !== 'c-instance') {
+              throw new Error(`fixture leg was asked for ${teamSessionId}/${memberInstanceId} — this mount is published under a5m1-test-team-root/c-instance`)
+            }
+            if (owner.fault === 'throw') {
+              events.push(`leg:${String(g)}:threw`)
+              throw new Error('fixture leg: the owner refused to publish (no binding moves)')
+            }
+            events.push(`leg:${String(g)}`)
+            if (!owner.publish || scope.value === g) return
+            events.push('revalidate')
+            for (const name of owner.names) {
+              events.push(`revise:${name}`)
+              scope.revision += 1
+            }
+            scope.value = g
+          },
+        }),
       },
       // the retained placement/activation fence (M1-A kept this one), plus —
       // for the C7 pin only — the authorities M1-A DELETED: if anything still
@@ -346,6 +401,7 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       // the anti-circular law (never a row bindingId as a read input) is a
       // fact this file can falsify.
       readCallFacts: async (input: SeamInput) => {
+        events.push('entry-read')
         asked.push(input)
         return await seam(input, asked.length)
       },
@@ -354,7 +410,8 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       onObserve: (r: unknown) => { observe.push(String(r)) },
     }))
     return {
-      plane, scratch, target, observe, asked, requests, gen,
+      plane, scratch, target, observe, asked, requests, gen, scope, owner, events,
+      gate,
       setSeam: (fn) => { seam = fn },
       done: () => rmSync(scratch, { recursive: true, force: true }),
     }
@@ -375,7 +432,7 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       effects,
       member: { teamSessionId: 'a5m1-test-team-root', instanceId: 'c-instance' },
       beneficiaryAuthority: 'member',
-      binding: liveBinding(world.gen.value),
+      binding: liveBinding(world.scope.value, { revision: world.scope.revision }),
       blueprint: { revision: 1, contentHash: 'sha256:bp', templateId: 'c-tpl', cwd: '/work', providerVersion: 'pv-1' },
       authorityGeneration: world.gen.value,
     }
@@ -599,38 +656,70 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
     } finally { world.done() }
   })
   // ── THE generation seam (root ruling, same HEAD as the real-binding
-  // replacement). The Guard's bindings and this assembly's generation come
-  // from ONE durable reader; the kernel's equality leg stays EXACT
+  // replacement). The Guard's bindings and this assembly's generation come from
+  // ONE durable reader; the kernel's equality leg stays EXACT
   // (tool-admission/admission-kernel.ts:245-254, unrelaxed); and a new
   // admission never rides a generation an earlier call read.
-  it('G1 a new admission reads THIS call\u2019s generation: the second call runs on the advanced g, the old g is gone from its request', async () => {
+  //
+  // THE GAP THESE LEGS CLOSE (Host639): the delivery boundary
+  // (`prepareAgentForRequest`) runs only where a NEW INPUT is delivered, while
+  // `paAdmitBody` is the ONE funnel every governed call passes — so the 2nd..N-th
+  // LLM step of one turn, and every wake that reaches admission without a
+  // delivery, used to capture its AdmissionRequest on a binding the Guard had
+  // stamped with a generation the overlay had already moved past, and the kernel
+  // refused it until the next user input. The fix is the NAMED assembly-write leg
+  // `authorityFacts.ensureAuthorityCurrent` (a SIBLING of the `overlayGeneration`
+  // reader, never folded into it): the plane hands the mount's owner the
+  // generation THIS call just read, and the owner publishes it — before the
+  // call-level entry is asked, so the tuple this call admits on is already the
+  // standing one.
+  it('G1 the SAME TURN: a second admission reads its own generation, the owner publishes it BEFORE the entry read, and the old generation is gone from its request', async () => {
     const world = await seamWorld({ lane: 'ask' })
     world.setSeam((input) => answerFor(world, input, 'call-facts'))
     try {
-      const first = await runRead(world, 'first')
-      expect(first).toContain('alpha5-m1-seam-bytes')
-      // the overlay moves (a real permission-overlay row is written) and the
-      // assembly owner's refresh republishes this scope's bindings onto it —
-      // what the fixture's live tuple follows is exactly what
-      // `refreshAuthorityGeneration` publishes in its synchronous batch.
+      expect(await runRead(world, 'first')).toContain('alpha5-m1-seam-bytes')
+      // the overlay moves mid-turn (a real permission-overlay row is written).
       world.gen.value = 5
-      const second = await runRead(world, 'second')
-      expect(second).toContain('alpha5-m1-seam-bytes')
-      expect(ranReads(world)).toBe(2)
+      expect(await runRead(world, 'second')).toContain('alpha5-m1-seam-bytes')
+      // a THIRD admission with nothing moved: the leg is asked and does NOTHING
+      // (the standing number already answers it) — no revision churn.
+      expect(await runRead(world, 'third')).toContain('alpha5-m1-seam-bytes')
+      expect(ranReads(world)).toBe(3)
+
       const generations = world.requests.map((r) => (r.binding as Record<string, unknown>).authorityGeneration)
-      expect(generations).toEqual([0, 5])
+      expect(generations).toEqual([0, 5, 5])
       // the OLD confirmed value never rides a new request: after the advance,
       // nothing this call hands the kernel still says 0.
-      expect(generations[1]).toBe(5)
       expect(JSON.stringify(world.requests[1]?.binding)).not.toContain('"authorityGeneration":0')
+      expect(JSON.stringify(world.requests[2]?.binding)).not.toContain('"authorityGeneration":0')
+
+      // THE ORDER, pinned as one exact sequence (no leg, no revalidate, no revise
+      // may appear anywhere else):
+      //  · `durable-read` twice per call — the construction read and the
+      //    execution edge's mandated fresh re-read, and the leg adds NO third
+      //    read (the leg is served from the number construction read);
+      //  · `leg:<g>` strictly BEFORE the call-level entry read, with the number
+      //    that read just answered;
+      //  · `revalidate` strictly BEFORE the batch, and the batch CONTIGUOUS over
+      //    the whole scope (`team_bash`/`team_grep` move although this turn only
+      //    ever called `read` — refreshing `read` alone would leave `bash`
+      //    refused forever) with no read interleaved (a synchronous batch);
+      //  · NOTHING after the last `entry-read`: the verifier only reads, it never
+      //    publishes its own drift away.
+      expect(world.events).toEqual([
+        // the mount's one-shot preflight kick (a read, never a carried value)
+        'durable-read',
+        'durable-read', 'leg:0', 'entry-read', 'durable-read', 'entry-read',
+        'durable-read', 'leg:5', 'revalidate', 'revise:read', 'revise:team_bash', 'revise:team_grep', 'entry-read', 'durable-read', 'entry-read',
+        'durable-read', 'leg:5', 'entry-read', 'durable-read', 'entry-read',
+      ])
     } finally { world.done() }
   })
 
-  it('G2 the overlay advanced but this scope\u2019s bindings did not: the kernel identity leg REFUSES (the plane never re-stamps a generation to make a pair)', async () => {
+  it('G2 the overlay advanced and NOBODY republished this scope: the kernel identity leg REFUSES (the plane never re-stamps a generation to make a pair)', async () => {
     const world = await seamWorld({ lane: 'ask' })
-    // the durable port answers 5 while the live dispatcher tuple still carries
-    // the generation the Guard installed with (0) — i.e. no refresh landed.
-    world.setSeam((input) => answerFor(world, input, 'call-facts', { binding: liveBinding(0), authorityGeneration: 5 }))
+    world.owner.publish = false
+    world.setSeam((input) => answerFor(world, input, 'call-facts'))
     world.gen.value = 5
     try {
       const wire = await runRead(world)
@@ -639,6 +728,20 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       expect(ranReads(world)).toBe(0)
       // no grant, no Control row: the leg was never reached
       expect(world.requests).toHaveLength(0)
+    } finally { world.done() }
+  })
+
+  it('G2b a plane with NO assembly owner mounted to publish answers the same refusal (the absent leg is not a licence to pair)', async () => {
+    const world = await seamWorld({ lane: 'ask', withLeg: false })
+    world.setSeam((input) => answerFor(world, input, 'call-facts'))
+    world.gen.value = 5
+    try {
+      const wire = await runRead(world)
+      expect(wire).toContain('TOOL_BINDING_UNVERIFIED')
+      expect(ranReads(world)).toBe(0)
+      expect(world.requests).toHaveLength(0)
+      // nothing was ever published in this world
+      expect(world.events.filter((e) => e.startsWith('revise:'))).toHaveLength(0)
     } finally { world.done() }
   })
 
@@ -652,13 +755,15 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       expect(refused).toContain('TOOL_BINDING_UNVERIFIED')
       expect(refused).toMatch(/previously confirmed value is withdrawn/)
       expect(ranReads(world)).toBe(1) // the second call ran nothing
-      // the fault did NOT leave generation 0 in place: the read-back advances
-      // and that call admits on 7 (never on the earlier confirmation).
+      // the fault did NOT leave generation 0 in place, and it left no leg behind
+      // either: the read-back advances and that call admits on 7 (never on the
+      // earlier confirmation, and never on a value the faulting read half-gave).
       world.gen.fault = 'none'
       world.gen.value = 7
       expect(await runRead(world, 'after')).toContain('alpha5-m1-seam-bytes')
       expect((world.requests[1]?.binding as Record<string, unknown>).authorityGeneration).toBe(7)
       expect(ranReads(world)).toBe(2)
+      expect(world.events.filter((e) => e.startsWith('leg:'))).toEqual(['leg:0', 'leg:7'])
     } finally { world.done() }
   })
 
@@ -672,6 +777,60 @@ describe('A5M1-SEAM — C: the execution edge answers from fresh call-level fact
       expect(wire).toMatch(/never read as generation 0/)
       expect(ranReads(world)).toBe(0)
       expect(world.requests).toHaveLength(0)
+      // a refused read never even reaches the publish leg
+      expect(world.events.filter((e) => e.startsWith('leg:'))).toHaveLength(0)
+    } finally { world.done() }
+  })
+
+  it('G5 a publish landing WHILE another call waits never renews THAT call: its minted grant is stale, never spent under the new generation', async () => {
+    const world = await seamWorld({ lane: 'ask' })
+    world.setSeam((input) => answerFor(world, input, 'call-facts'))
+    let release: () => void = () => {}
+    const held = new Promise<void>((resolve) => { release = resolve })
+    let markParked: () => void = () => {}
+    const parked = new Promise<void>((resolve) => { markParked = resolve })
+    let armed = true
+    // park ONLY the first call, inside the Control leg, after its grant request.
+    world.gate.fn = async () => {
+      if (!armed) return
+      armed = false
+      markParked()
+      await held
+    }
+    try {
+      const first = runRead(world, 'first') // admitted on g0 / the r3 tuple, grant LANDED
+      await parked
+      world.gen.value = 5 // the overlay moved mid-turn...
+      // ...and THIS call's construction leg publishes it scope-wide, bumping the
+      // revision of every binding in the family on the way.
+      const second = await runRead(world, 'second')
+      expect(second).toContain('alpha5-m1-seam-bytes')
+      release()
+      const firstWire = await first
+      expect(firstWire).toContain('GRANT_STALE')
+      // the minted grant was NEVER consumed under the republished identity: only
+      // the second call ran a body, though both minted.
+      expect(ranReads(world)).toBe(1)
+      expect(world.requests).toHaveLength(2)
+      expect((world.requests[0]?.binding as Record<string, unknown>).authorityGeneration).toBe(0)
+    } finally { world.done() }
+  })
+
+  it('G6 a publish the owner REFUSES leaves the call UNPAIRED: the kernel answers it, and nothing moved', async () => {
+    const world = await seamWorld({ lane: 'ask' })
+    world.owner.fault = 'throw'
+    world.setSeam((input) => answerFor(world, input, 'call-facts'))
+    world.gen.value = 5
+    try {
+      const wire = await runRead(world)
+      expect(wire).toContain('TOOL_BINDING_UNVERIFIED')
+      expect(ranReads(world)).toBe(0)
+      expect(world.requests).toHaveLength(0)
+      // the fault is OBSERVED (not absorbed): the leg was asked, it threw, and no
+      // binding moved — the call went on unpaired and the identity leg refused it.
+      expect(world.events.filter((e) => e.includes(':threw'))).toHaveLength(1)
+      expect(world.events.filter((e) => e.startsWith('revise:'))).toHaveLength(0)
+      expect(world.observe.filter((l) => l.includes('a5m1-authority-leg'))).toHaveLength(1)
     } finally { world.done() }
   })
 

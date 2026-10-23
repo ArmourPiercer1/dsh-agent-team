@@ -2605,6 +2605,25 @@ export function createAgentBindings(deps) {
             // here; the plane withdraws its confirmed generation and refuses
             // the admission instead of admitting on a carried-over number).
             overlayGeneration: (teamSessionId, memberInstanceId) => readAuthorityGeneration(teamSessionId, memberInstanceId),
+            // A5-M1 (the same-turn gap): the NAMED assembly-write leg, a SIBLING
+            // of the reader above and deliberately NOT folded into it — a
+            // scope-wide binding write arriving through a reader is the disguised
+            // write the ruling forbids.
+            // The plane calls it on EVERY admission with the generation THAT call
+            // just read, so a generation the durable overlay moved to mid-turn
+            // lands on this Agent's governed bindings BEFORE the call captures its
+            // AdmissionRequest — including the 2nd..N-th LLM step of one turn and
+            // every wake path that reaches `paAdmit` without a delivery boundary
+            // (the ones `prepareAgentForRequest` never sees). Keyed by the SAME
+            // (teamRoot, instanceId) pair the mount is published under, so it can
+            // only ever republish THIS Agent's scope, and it performs no durable
+            // read of its own — the admission already paid for that read.
+            ensureAuthorityCurrent: (teamSessionId, memberInstanceId, generation) => publishAuthorityGeneration(
+              `call-boundary ${String(teamSessionId)}/${String(memberInstanceId)}`,
+              teamSessionId,
+              memberInstanceId,
+              generation,
+            ),
           },
           currentFacts: {
             // A5-M1-A: `getPolicy: () => policyReaderRef?.current` is DELETED
@@ -4169,10 +4188,22 @@ export function createAgentBindings(deps) {
   //     execution edge compares the tuple it was admitted with against the
   //     standing one and refuses (GRANT_STALE / consumption refused), and the
   //     fresh edge stays read-only and never self-repairs.
-  async function refreshAuthorityGeneration(sessionId, teamRootSid) {
-    const state = consumptionState.get(sessionId)
-    if (state === undefined) return { refreshed: false, reason: 'no-consumption-state' }
-    const mount = resolvePaMount(String(teamRootSid), String(state.instanceId))
+  // TWO CALLERS, ONE IMPLEMENTATION: `prepareAgentForRequest` (the DELIVERY
+  // boundary, which reads the generation itself) and the plane's NAMED
+  // `authorityFacts.ensureAuthorityCurrent` leg (the CALL boundary, handed the
+  // generation that admission just read) — so the 2nd..N-th LLM step of one
+  // turn and every wake that reaches `paAdmit` without a delivery land on the
+  // standing number BEFORE they capture an AdmissionRequest. Neither caller
+  // reads twice, and neither one keeps a value.
+  /** The publish HALF: it performs NO durable read, which is why the seam costs
+   *  exactly ONE durable read per admission/request whichever caller reaches it
+   *  (the no-cache/no-reuse evidence the ruling asks for).
+   *  @param observationKey - what the observation line names this publish by. */
+  function publishAuthorityGeneration(observationKey, teamRootSid, memberInstanceId, generation) {
+    if (typeof generation !== 'number' || !Number.isFinite(generation) || generation < 0) {
+      throw new Error(`agent-bindings: publishAuthorityGeneration was handed ${JSON.stringify(generation) ?? String(generation)} — a generation nobody read is never published`)
+    }
+    const mount = resolvePaMount(String(teamRootSid), String(memberInstanceId))
     const guard = mount?.guard
     const dispatcher = guard?.dispatcher
     if (dispatcher === undefined || typeof dispatcher.revise !== 'function'
@@ -4181,18 +4212,16 @@ export function createAgentBindings(deps) {
       || dispatcher.surface?.names === undefined) {
       return { refreshed: false, reason: 'no-guard-mount' }
     }
-    let generation
-    try {
-      generation = await readAuthorityGeneration(String(teamRootSid), String(state.instanceId))
-    } catch (error) {
-      observations.push(`a5m1-authority-refresh: REFUSED for ${sessionId} (${String(error?.message ?? error).slice(0, 180)}) — no binding moves, the standing generation stays as it is`)
-      return { refreshed: false, reason: 'read-failed' }
-    }
-    if (dispatcher.authorityGeneration() === generation) return { refreshed: false, reason: 'unchanged' }
+    const standing = dispatcher.authorityGeneration()
+    // 2. unchanged number ⇒ ZERO action (no revision churn, no revalidation).
+    if (standing === generation) return { refreshed: false, reason: 'unchanged' }
+    // 3. re-verify the real definitions/placement FIRST ...
     const revalidation = guard.revalidate()
     const revised = []
     const refused = []
-    // THE batch: synchronous, scope-wide, one authority generation.
+    // ... THEN publish, synchronously and scope-wide: one authority generation
+    // for every governed name, no await inside the batch (a half-advanced scope
+    // is exactly the "read refreshed, bash stayed stale" bug this pins).
     for (const name of dispatcher.surface.names()) {
       const entry = dispatcher.surface.entryOf(name)
       if (entry?.binding?.authorityGeneration === generation) continue
@@ -4200,8 +4229,21 @@ export function createAgentBindings(deps) {
       if (done.ok === true) revised.push(name)
       else refused.push(`${name}(${done.error?.code ?? '?'})`)
     }
-    observations.push(`a5m1-authority-refresh: ${sessionId} generation ${String(dispatcher.authorityGeneration())} → ${generation} revised=[${revised.join(',')}]${refused.length > 0 ? ` refused=[${refused.join(',')}]` : ''} revalidated-unverified=${String((revalidation?.unverified ?? []).length)} drifted=${String((revalidation?.drifted ?? []).length)}`)
+    observations.push(`a5m1-authority-refresh: ${observationKey} generation ${String(standing)} → ${generation} revised=[${revised.join(',')}]${refused.length > 0 ? ` refused=[${refused.join(',')}]` : ''} revalidated-unverified=${String((revalidation?.unverified ?? []).length)} drifted=${String((revalidation?.drifted ?? []).length)}`)
     return { refreshed: true, generation, revised, refused }
+  }
+
+  async function refreshAuthorityGeneration(sessionId, teamRootSid) {
+    const state = consumptionState.get(sessionId)
+    if (state === undefined) return { refreshed: false, reason: 'no-consumption-state' }
+    let generation
+    try {
+      generation = await readAuthorityGeneration(String(teamRootSid), String(state.instanceId))
+    } catch (error) {
+      observations.push(`a5m1-authority-refresh: REFUSED for ${sessionId} (${String(error?.message ?? error).slice(0, 180)}) — no binding moves, the standing generation stays as it is`)
+      return { refreshed: false, reason: 'read-failed' }
+    }
+    return publishAuthorityGeneration(sessionId, teamRootSid, state.instanceId, generation)
   }
 
   async function prepareAgentForRequest(sessionId, teamRootSid, recovery) {
