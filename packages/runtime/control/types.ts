@@ -1096,23 +1096,34 @@ export interface PaControlManifest {
  *  all the way down. undefined-valued keys, NaN and Infinity are refused HERE rather
  *  than being dropped or nullified by a later stringify - a hash computed over bytes
  *  that silently lost a field would approve a question nobody asked. */
-function isLosslessJsonObject(value: unknown): boolean {
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
-  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
-    if (key === '__proto__' || key === 'prototype' || key === 'constructor') return false
-    if (item === undefined) return false
-    if (typeof item === 'number' && !Number.isFinite(item)) return false
-    if (typeof item === 'function' || typeof item === 'symbol' || typeof item === 'bigint') return false
-    if (Array.isArray(item)) {
-      for (const entry of item) {
-        if (entry === undefined) return false
-        if (typeof entry === 'number' && !Number.isFinite(entry)) return false
-      }
-    } else if (typeof item === 'object' && item !== null && !isLosslessJsonObject(item)) {
-      return false
+/** Losslessness of a value destined for the durable manifest: JSON-representable at
+ *  EVERY level - objects, arrays, and objects nested inside arrays. The point of the
+ *  walk is that it runs on the RAW value, before any stringify or lossless-rewrite step
+ *  could drop a member: a digest computed over bytes that silently lost a field would
+ *  approve a question nobody asked. Mirrors the shape the contracts boundary
+ *  (`isRemoteSafeJsonValue`) accepts, so the two ends cannot drift apart. */
+export function isLosslessJsonValue(value: unknown): boolean {
+  if (value === null) return true
+  switch (typeof value) {
+    case 'boolean':
+    case 'string':
+      return true
+    case 'number':
+      return Number.isFinite(value)
+    case 'object': {
+      if (Array.isArray(value)) return value.every((item) => isLosslessJsonValue(item))
+      if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) return false
+      return Object.entries(value as Record<string, unknown>).every(
+        ([key, item]) => key.length > 0
+          && key !== '__proto__' && key !== 'prototype' && key !== 'constructor'
+          && isLosslessJsonValue(item),
+      )
     }
+    default:
+      // undefined, function, symbol, bigint: all of them are things JSON would drop,
+      // throw on, or quietly rewrite - never a member of an approved question.
+      return false
   }
-  return true
 }
 
 /** The family block's strict parse. Returns `undefined` when the row bears NO family
@@ -1133,15 +1144,11 @@ export function parsePaManifestFamilyBlock(
   if (typeof v.familyId !== 'string' || v.familyId.length === 0 || v.familyId.length > 128) return 'invalid'
   if (typeof v.adapterRevision !== 'number' || !Number.isInteger(v.adapterRevision) || v.adapterRevision < 0) return 'invalid'
   if (typeof v.providerIdentity !== 'string' || v.providerIdentity.length === 0 || v.providerIdentity.length > 512) return 'invalid'
-  if (!isLosslessJsonObject(v.targetManifest)) return 'invalid'
-  // The JSON round-trip is the last word on losslessness: what survives it is exactly
-  // what the durable bytes will carry, so the digest and the payload cannot disagree.
-  try {
-    const round = JSON.parse(JSON.stringify(v.targetManifest)) as unknown
-    if (!isLosslessJsonObject(round) || JSON.stringify(round) !== JSON.stringify(v.targetManifest)) return 'invalid'
-  } catch {
-    return 'invalid'
-  }
+  // A target manifest is an OBJECT of facts; and it must be lossless at every level.
+  // No stringify comparison here on purpose: comparing two lossy renderings of the same
+  // input proves nothing - the walk above is what decides.
+  if (typeof v.targetManifest !== 'object' || v.targetManifest === null || Array.isArray(v.targetManifest)) return 'invalid'
+  if (!isLosslessJsonValue(v.targetManifest)) return 'invalid'
   return {
     familyId: v.familyId,
     adapterRevision: v.adapterRevision,

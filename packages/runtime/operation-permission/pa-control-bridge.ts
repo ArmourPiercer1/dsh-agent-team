@@ -105,7 +105,7 @@ import {
 // The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
 // module's types file directly (the barrel predates the additive surface;
 // the module declares the closed vocabulary and the strict parser there).
-import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, isLosslessJsonValue } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlGuardVerdict,
@@ -436,6 +436,13 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
       }
     } else if (input.family !== undefined) {
       return deny(`family-claim-on-unregistered-binding: ${input.request.binding.definitionIdentity}`)
+    }
+    // A5-M2 (root review item 1): the RAW target manifest is walked BEFORE any
+    // deepLossless/JSON step touches it. Rewriting first and checking after is the flaw
+    // this closes - the rewrite is exactly what drops undefined members and turns NaN
+    // into null, so a check placed after it would bless bytes nobody ever presented.
+    if (input.family !== undefined && !isLosslessJsonValue(input.family.targetManifest)) {
+      return deny('family-target-manifest-not-lossless-json')
     }
     const familyFacts = input.family === undefined ? {} : {
       familyId: input.family.familyId,

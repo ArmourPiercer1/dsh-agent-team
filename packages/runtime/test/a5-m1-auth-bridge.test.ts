@@ -92,7 +92,7 @@ import {
   ControlError,
   createControlService,
 } from '../control/index.js'
-import { PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, parsePaControlManifest, parsePaManifestFamilyBlock } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_SCHEMA, isLosslessJsonValue, paManifestClassOf, parsePaControlManifest, parsePaManifestFamilyBlock } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlRequestRecord,
@@ -2391,5 +2391,66 @@ describe('A5M2-FAMILY: the family block is all-or-nothing and lossless', () => {
     // over - that is what must never reach a durable row.
     expect(parsePaManifestFamilyBlock({ ...good, targetManifest: JSON.parse('{"__proto__":{"x":1}}') })).toBe('invalid')
     expect(parsePaManifestFamilyBlock({ ...good, targetManifest: { a: 1, constructor: 2 } })).toBe('invalid')
+  })
+})
+
+/* ── A5M2-FAMILY-RAW (CENTER, root review item 1): the walk runs on the RAW value ────
+ * Two flaws the review named are pinned here: a validator that recurses objects but
+ * only skims array entries (so an object INSIDE an array escapes), and a check placed
+ * after the lossless-rewrite / stringify step (which has already dropped the member the
+ * check was supposed to catch). Both are pinned against the same helper the bridge
+ * calls before it builds the manifest, so the placement is not a comment - it is the
+ * only call site. */
+describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every level', () => {
+  it('L6 objects nested inside arrays are walked, not skimmed (the recursion hole)', () => {
+    expect(isLosslessJsonValue({ ok: true })).toBe(true)
+    expect(isLosslessJsonValue({ list: [{ a: 1 }, { b: 'x' }] })).toBe(true)
+    expect(isLosslessJsonValue({ list: [{ a: undefined }] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [{ a: Number.NaN }] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [[{ a: Infinity }]] })).toBe(false)
+    expect(isLosslessJsonValue({ list: [() => 1] })).toBe(false)
+    expect(isLosslessJsonValue({ s: Symbol('x') })).toBe(false)
+    expect(isLosslessJsonValue({ n: 10n })).toBe(false)
+    expect(isLosslessJsonValue({ d: new Date(0) })).toBe(false)
+    expect(isLosslessJsonValue({ u: undefined })).toBe(false)
+  })
+  it('L7 checking AFTER the rewrite would have passed what the raw walk refuses', () => {
+    const raw = { operation: 'append', drop: undefined, bad: Number.NaN }
+    const rewritten = JSON.parse(JSON.stringify(raw)) as Record<string, unknown>
+    // the naive ordering: after the loss the value looks perfectly JSON-clean...
+    expect(isLosslessJsonValue(rewritten)).toBe(true)
+    expect(Object.keys(rewritten)).toEqual(['operation', 'bad'])
+    // ...while the raw value it came from is refused. This pair is the whole reason the
+    // gate sits before deepLossless/JSON in the leg, not after it.
+    expect(isLosslessJsonValue(raw)).toBe(false)
+    expect(parsePaManifestFamilyBlock({
+      familyId: 'B-SESSION',
+      adapterRevision: 1,
+      providerIdentity: 'prov@1',
+      targetManifest: raw,
+    })).toBe('invalid')
+  })
+  it('L8 a deep table of illegal raw target manifests is refused end to end', () => {
+    const table: Record<string, unknown> = {
+      'undefined at depth 3': { a: { b: [{ c: undefined }] } },
+      'NaN in array of arrays': { a: [[Number.NaN]] },
+      'Infinity nested in object in array': { a: [{ b: Infinity }] },
+      'function member': { a: () => 1 },
+      'symbol key value': { a: Symbol('s') },
+      'bigint member': { a: 1n },
+      'class instance': { a: new (class Thing { readonly x = 1 })() },
+      'Date instance': { a: new Date(0) },
+      'null top': null,
+      'array top': [{ a: 1 }],
+      'string top': 'append',
+    }
+    for (const [name, targetManifest] of Object.entries(table)) {
+      expect(parsePaManifestFamilyBlock({
+        familyId: 'B-SESSION',
+        adapterRevision: 1,
+        providerIdentity: 'prov@1',
+        targetManifest,
+      }), name).toBe('invalid')
+    }
   })
 })
