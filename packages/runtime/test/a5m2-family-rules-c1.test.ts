@@ -1161,6 +1161,11 @@ describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed
  * lane's OWN mint change (root 21:18); until those land, joint claims fail
  * at the absent-leaf denial - no silent translation of the old approved
  * shapes. Table passage proves the type gate ONLY; no C2, no wiring tier.
+ * ROOT 21:33 CARRIED: this lane owns the B-SUBAGENT ENTRY ONLY (not the
+ * whole table); the round-9 legs below are the type gate over TRANSCRIBED
+ * real constants - they do not impersonate a lane emit; the required
+ * real-new-mint -> same-validator pairing belongs to the two mint owners
+ * (handoff: evidence/a5m2-family-rules/a5m2-subagent-mint-owner-handoff.md).
  * ───────────────────────────────────────────────────────────────────────── */
 describe('A5M2-FAMILY-RULES C1 round 9 (root 21:20 joint): the B-SUBAGENT map - eight minted operations, per-group action binds, complete canonical JSON leaves; both lanes real mint shapes through the SAME validator', () => {
   const SPAWN_NAMED_GAPS = {
@@ -1260,7 +1265,7 @@ describe('A5M2-FAMILY-RULES C1 round 9 (root 21:20 joint): the B-SUBAGENT map - 
   const SEND = CTRL_ROWS[2]
   if (SEND === undefined) throw new Error('ctrl rows table empty')
 
-  it('ACCEPT all EIGHT rows: one entry, the minted operation discriminates; the two lane key sets are required ∪ that group\'s adds EXACTLY', () => {
+  it('TYPE-GATE ACCEPT for all EIGHT joint-card projections (transcribed from the pinned REAL constants - hand-built flat views, not the emitted manifests of either lane; the REQUIRED real-new-mint to same-validator pairing legs are obligations of the two mint owners per root 21:33, handed off in a5m2-subagent-mint-owner-handoff.md): the minted operation discriminates and the two lane key sets equal required plus the group adds EXACTLY', () => {
     expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT']).toBeDefined()
     for (const row of [...SPAWN_ROWS, ...CTRL_ROWS]) expect(validatePaFamilyTarget('B-SUBAGENT', row), String(row.operation)).toBeUndefined()
     expect(keysOf(FIRST_SPAWN).sort()).toEqual(['action', 'argsCanonical', 'childAdjudication', 'childClaim', 'contract', 'depth', 'effect', 'model', 'namedGapsCanonical', 'operation', 'parent', 'revision'])
