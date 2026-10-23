@@ -854,6 +854,8 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     // originalDimensions (its presence would LIE about a reduction) — the
     // field is conditional exactly like the host's ref (pin639).
     expect(attachment.originalDimensions).toBeUndefined()
+    // …and the text envelope carries NO downscale clause for a 1:1 read.
+    expect(String(blocks?.[0]?.text)).not.toContain('downscaled from')
   })
 
   it('card ③ (full-argument fingerprint): two spellings of ONE governed file are TWO fingerprints over one identical approved target', async () => {
@@ -979,6 +981,12 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     expect(attachment.height).toBe(20)
     expect(attachment.originalDimensions).toEqual({ width: 4096, height: 2560 })
     expect(attachment.attachmentId).toBe(value.image.attachmentId)
+    // THE TEXT ENVELOPE (root proof 12:04 — the serializers ride the frame
+    // INSIDE the text): native's downscale clause verbatim — the original
+    // dimensions and the coordinate multiplier (both axes round equal here:
+    // 4096/32 = 2560/20 = 128.00 → the single-multiplier form).
+    expect(String(blocks?.[0]?.text)).toContain('image/png image, 32x20 px')
+    expect(String(blocks?.[0]?.text)).toContain('(downscaled from 4096x2560 px; multiply coordinates by 128.00 to locate features in the original file)')
   })
 
   it('leg 13 (item ② drain window during the capability probe): a dispose that lands WHILE the probe awaits still refuses before the port — the re-arm of the drain verdict after the await', async () => {

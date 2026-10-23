@@ -2697,9 +2697,31 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }),
       render: (_args, value) => {
         const image = value?.image ?? {}
+        // THE TEXT CLAUSE (root proof 12:04: the Host serializers ride the
+        // dimensions INSIDE the text envelope — dropping them there loses the
+        // original frame even when the attachment block carries it). NATIVE
+        // SEMANTICS REUSED VERBATIM (read-image.ts formatImageReadOutput
+        // :167-181): a downscaled read names the original dimensions and the
+        // multiplier mapping attached-image coordinates back onto the
+        // original file; one multiplier only when both axes round equal.
+        // Guard per root ruling: the clause appears when the ORIGINAL frame
+        // EXISTS AND DIFFERS from the preview dims the block shows.
+        const original = Number.isInteger(image.originalDimensions?.width) && Number.isInteger(image.originalDimensions?.height)
+          ? image.originalDimensions
+          : undefined
+        let scaled = ''
+        if (original !== undefined && Number.isInteger(image.width) && Number.isInteger(image.height)
+          && (original.width !== image.width || original.height !== image.height)) {
+          const x = (original.width / image.width).toFixed(2)
+          const y = (original.height / image.height).toFixed(2)
+          const advice = x === y
+            ? `multiply coordinates by ${x}`
+            : `multiply x coordinates by ${x} and y coordinates by ${y}`
+          scaled = ` (downscaled from ${original.width}x${original.height} px; ${advice} to locate features in the original file)`
+        }
         const blocks = [{
           type: 'text',
-          text: `<path>${String(value?.path ?? '')}</path>\n<type>image</type>\n<content>\n${String(image.mediaType ?? 'image')} image, ${String(image.width ?? '?')}x${String(image.height ?? '?')} px, ${String(image.bytes ?? '?')} bytes\n</content>`,
+          text: `<path>${String(value?.path ?? '')}</path>\n<type>image</type>\n<content>\n${String(image.mediaType ?? 'image')} image, ${String(image.width ?? '?')}x${String(image.height ?? '?')} px, ${String(image.bytes ?? '?')} bytes${scaled}\n</content>`,
         }]
         if (typeof image.attachmentId === 'string' && image.attachmentId.length > 0
           && typeof image.mediaType === 'string' && Number.isInteger(image.bytes) && Number.isInteger(image.width) && Number.isInteger(image.height)) {
