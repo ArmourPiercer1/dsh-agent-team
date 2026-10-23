@@ -1,12 +1,30 @@
 #!/usr/bin/env node
 /**
- * A5M2 schedule C2 — REAL-HOST runner (consolidated fix per root 22:44
- * card; BOOT remains gated behind A5M2_SCHED_C2_WINDOW=GRANTED — the
- * window is root's ruling). A no-boot dry path (A5M2_SCHED_C2_DRY=1) runs
- * the REAL pre-flight to the boot boundary — pins -> awaited port probes
- * -> real offline install (minimal lock update over the standard fixture)
- * -> exports-resolved plugin entry -> blueprint/patch writes -> cleanup
- * handles — then stops BEFORE any listen/spawn.
+ * A5M2 schedule C2 — REAL-HOST runner (final 5-item card per root 23:03
+ * on top of the 22:44 items; BOOT remains gated behind
+ * A5M2_SCHED_C2_WINDOW=GRANTED — the window is root's ruling). A no-boot
+ * dry path (A5M2_SCHED_C2_DRY=1) runs the REAL pre-flight to the boot
+ * boundary — pins -> awaited port probes -> real offline install (minimal
+ * lock update over the standard fixture) -> exports-resolved plugin entry
+ * -> blueprint/patch writes -> cleanup handles — then stops BEFORE any
+ * listen/spawn. THE DRY PATH PROVES ONLY UP-TO-BOUNDARY FACTS: the API/
+ * ledger code paths below are exercised ONLY in a real granted window;
+ * dry must never be claimed as full readiness.
+ *
+ * Root 23:03 final five (all grounded in cited real contracts):
+ *  1 EVERY prompt mints a unique requestId (types :333-341 required;
+ *    commands :330 + hasPromptRequest :602-612 dedup on source.rpcId —
+ *    a shared/undefined id silently no-ops every later prompt).
+ *  2 session values under result.value; team ledger pages under
+ *    result.value.data.entries (pr-d resultData .data wrapper).
+ *  3 durable rows are canonical JSON strings (pr-d :720-741 safeParse);
+ *    pending = public-ledger recorded MINUS decision MINUS abandoned
+ *    (pr-d :751-781), never a raw status field.
+ *  4 payloads parsed; STRICT payload.requestId equality; factTypes exact
+ *    'control-allow-consumed' / 'control-request-abandoned' — no
+ *    stringify().includes, no whole-text regex.
+ *  5 teardown error or portFree=false => NON-ZERO verdict; never log-
+ *     and-finish(0).
  *
  * Root 22:44 items, each grounded in the cited real contract:
  *  ① findTestRepoRoot(dirname(fileURLToPath(import.meta.url))) + null
@@ -131,16 +149,21 @@ function finish(rc) {
     if (existsSync(HOME)) log(`world total ${duBytes(HOME)}B (hard cap ${WORLD_BUDGET.worldTotalMax}B)`)
   } finally { process.exit(rc) }
 }
-// ⑩ cleanup handles awaited BEFORE exit
+// ⑩ cleanup handles awaited BEFORE exit. Root 23:03 ⑤: any cleanup ERROR
+// or portFree=false sets cleanupOk=false — a green conclusion is FORBIDDEN
+// then; the verdict must be non-zero.
+let cleanupOk = true
 async function cleanup() {
   const notes = []
   try { if (mock !== null) { await mock.close(); notes.push('mock closed') } } catch (e) { notes.push(`mock close ERR ${String(e).slice(0, 120)}`) }
   try { if (instance !== null) { const r = await instance.stop({ timeoutMs: 30_000 }); notes.push(`instance stopped killed=${r.killed} portFree=${r.portFree}`) } } catch (e) { notes.push(`instance stop ERR ${String(e).slice(0, 120)}`) }
   for (const p of [HOST_PORT, MOCK_PORT]) {
-    try { notes.push(`port ${p} free=${await waitForPortFree(p, 10_000)}`) } catch (e) { notes.push(`port ${p} ERR ${String(e).slice(0, 120)}`) }
+    try { const free = await waitForPortFree(p, 10_000); notes.push(`port ${p} free=${free}`) } catch (e) { notes.push(`port ${p} ERR ${String(e).slice(0, 120)}`) }
   }
-  log(`cleanup: ${notes.join(' | ')}`)
-  return notes
+  const ok = !notes.some((n) => n.includes('ERR') || n.includes('free=false'))
+  cleanupOk = ok
+  log(`cleanup (${ok ? 'OK' : 'NOT-OK'}): ${notes.join(' | ')}`)
+  return { ok, notes }
 }
 
 // ── pins (fail closed) ─────────────────────────────────────────────────────
@@ -172,12 +195,25 @@ function writePatch(patchPath, hostEntryHref) {
   ].join('\n'))
 }
 
-// ── public channels (④ server-response envelope) ───────────────────────────
+// ── public channels (root 23:03 ②: session values under result.value; team
+//    ledger pages under result.value.data.entries — pr-d resultData/
+//    resultError verbatim shape incl. the .data wrapper + fail-loud error) ──
 let origin = null
 let cookie = null
 let currentRoot = null
-const resultValue = (b) => (b?.result?.ok === true ? b.result.value : undefined)
-const resultErr = (b) => (b?.result?.ok === false ? (b.result.error ?? b.result) : b?.error ?? null)
+function resultError(body) {
+  const r = body?.result
+  if (r === undefined) return { code: 'NO_RESULT', message: String(body).slice(0, 200) }
+  if (r.ok !== true) return r.error ?? { code: 'UNKNOWN', message: JSON.stringify(r).slice(0, 200) }
+  return null
+}
+function resultData(body) {
+  const r = body?.result
+  if (r === undefined || r.ok !== true) return null
+  const v = r.value
+  if (v && typeof v === 'object' && 'data' in v) return v.data
+  return v
+}
 async function fetchJson(url, init, timeoutMs = 240_000) {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
   let body = null
@@ -209,11 +245,17 @@ async function sessionRpc(method, request, tag) {
     body: JSON.stringify({ type: 'client-request', rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`, method: `session/${method}`, payload: { args: { request } } }),
   })
   TRANSCRIPT.push({ channel: 'session-rpc', method, request, status: res.status, body: res.body })
-  const err = resultErr(res.body)
+  const err = resultError(res.body)
   if (err !== null) throw new Error(`session/${method} ${tag} failed: ${JSON.stringify(err).slice(0, 300)}`)
-  return resultValue(res.body)
+  return resultData(res.body)
 }
-const apiPrompt = (sessionId, text, tag = 'c2') => sessionRpc('prompt', { sessionId, mode: 'queue', content: [{ type: 'text', text }] }, tag)
+// Root 23:03 ①: SessionPromptRequest.requestId is REQUIRED (types :333-341)
+// and the dedup key (commands :330 + hasPromptRequest :602-612 matches the
+// accepted message's source.rpcId) — EVERY prompt mints a unique one;
+// session/create ({cwd}) and session/cancel ({sessionId}) keep their own
+// lawful field sets (types :285-296 / :371-373), no shared template.
+let promptSeq = 0
+const apiPrompt = (sessionId, text, tag = 'c2') => sessionRpc('prompt', { requestId: `c2-prompt-${NONCE}-${tag}-${promptSeq += 1}`, sessionId, mode: 'queue', content: [{ type: 'text', text }] }, tag)
 const apiCancel = (sessionId, tag = 'c2-cancel') => sessionRpc('cancel', { sessionId }, tag) // ⑥ public cancel
 
 async function main() {
@@ -352,7 +394,7 @@ async function main() {
     writeFileSync(join(RUN_DIR, 'dry-receipts.json'), JSON.stringify(receipts, null, 2))
     log(`DRY receipts: ${JSON.stringify(receipts).slice(0, 400)}`)
     await cleanup()
-    finish(0)
+    finish(cleanupOk ? 0 : 1) // ⑤ teardown NOT-OK forbids a green exit
     return
   }
 
@@ -416,48 +458,93 @@ async function main() {
     return { kind: 'text', content: `TURN-DONE ${NONCE}` }
   }
 
-  // ⑪ ledger EVENTS by requestId
-  async function ledgerEvents(requestId) {
-    const events = []
-    let afterSequence = 0
-    for (let page = 0; page < 12; page += 1) {
-      const res = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `c2-ledger-${page}`, 1)
-      const data = resultValue(res.body)
-      if (data === undefined) throw new Error(`getLedgerPage failed: ${JSON.stringify(resultErr(res.body) ?? res.body).slice(0, 300)}`)
-      const rows = data?.events ?? data?.rows ?? data?.entries ?? null
-      if (rows === null) throw new Error(`getLedgerPage value shape unknown: ${JSON.stringify(data).slice(0, 300)}`)
-      for (const row of rows) if (JSON.stringify(row).includes(requestId)) events.push(row)
-      const next = data?.nextAfterSequence ?? data?.nextCursor ?? null
-      if (next === null || next === afterSequence || rows.length === 0) break
-      afterSequence = next
+  // Root 23:03 ②③④: control facts over the PUBLIC wire only. Pages
+  // team.getLedgerPage (pr-d :751-781 pattern: data.entries under the
+  // .data-wrapped value, fail-loud on error pages); every row payload is
+  // safeParse'd (durable tables store canonical JSON STRINGS, pr-d
+  // :720-741); factType matched EXACTLY and payload.requestId compared
+  // with strict equality — no JSON.stringify().includes, no regex.
+  function safeParse(v) {
+    if (v === null || v === undefined) return {}
+    if (typeof v === 'object') return v
+    try { return JSON.parse(v) } catch { return { raw: String(v).slice(0, 400) } }
+  }
+  async function controlFacts() {
+    const byType = {
+      'control-request-recorded': [],
+      'control-decision-recorded': [],
+      'control-allow-consumed': [],
+      'control-request-abandoned': [],
     }
-    return events
+    let afterSequence = 0
+    for (let pageNo = 0; pageNo < 50; pageNo += 1) {
+      const page = await remoteCallReady('team.getLedgerPage', { teamSessionId: currentRoot, afterSequence, limit: 500 }, `c2-ledger-${pageNo + 1}`, 1)
+      const pageErr = resultError(page.body)
+      if (pageErr !== null) throw new Error(`team.getLedgerPage failed (page ${pageNo + 1}, afterSequence=${afterSequence}): ${pageErr.code} ${String(pageErr.message).slice(0, 300)}`)
+      const data = resultData(page.body)
+      const entries = Array.isArray(data?.entries) ? data.entries : []
+      for (const e of entries) {
+        if (byType[e?.factType] !== undefined) byType[e.factType].push({ sequence: e.sequence, payload: safeParse(e.payload) })
+      }
+      const next = data?.nextAfterSequence
+      if (next === null || next === undefined || entries.length === 0) break
+      afterSequence = Number(next)
+    }
+    return byType
+  }
+  // Pending = recorded MINUS decided MINUS abandoned, by strict
+  // payload.requestId equality (root 23:03 ③; no raw-status guessing).
+  async function pendingRequestIds() {
+    const byType = await controlFacts()
+    const ids = (list) => new Set(list.map((e) => e.payload?.requestId).filter((r) => typeof r === 'string'))
+    const decided = ids(byType['control-decision-recorded'])
+    const abandoned = ids(byType['control-request-abandoned'])
+    return byType['control-request-recorded']
+      .map((e) => e.payload?.requestId)
+      .filter((r) => typeof r === 'string' && !decided.has(r) && !abandoned.has(r))
+  }
+  async function hasFact(requestId, factType) {
+    const byType = await controlFacts()
+    const hits = (byType[factType] ?? []).filter((e) => e.payload?.requestId === requestId)
+    return hits.length > 0 ? hits[0] : false
   }
 
-  // durable control facts (storage read-back; ledger EVENTS remain the ⑪ authority)
+  // Member discovery: durable domain TABLES store canonical JSON strings
+  // (pr-d :720-741) — every row value is safeParse'd before field reads.
   function domainFacts() {
     const f = join(HOME, 'storages', 'team_domain.json')
-    return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null
-  }
-  function collectRows(node, out) {
-    if (node === null || typeof node !== 'object') return out
-    if (Array.isArray(node)) { for (const v of node) collectRows(v, out); return out }
-    if (typeof node.requestId === 'string') out.push(node)
-    for (const v of Object.values(node)) collectRows(v, out)
-    return out
-  }
-  const findPending = (toolName) => {
-    const facts = domainFacts()
-    if (facts === null) return null
-    const hit = collectRows(facts, []).find((r) => (r.status === 'pending' || r.state === 'pending') && JSON.stringify(r).includes(`tool:${toolName}`))
-    return hit?.requestId ?? null
+    if (!existsSync(f)) return null
+    const doc = safeParse(readFileSync(f, 'utf8'))
+    const found = []
+    const seen = new Set()
+    const walk = (n) => {
+      if (typeof n === 'string') {
+        if (n.length > 1 && (n.startsWith('{') || n.startsWith('[')) && !seen.has(n)) { seen.add(n); walk(safeParse(n)) }
+        return
+      }
+      if (n === null || typeof n !== 'object') return
+      if (Array.isArray(n)) { n.forEach(walk); return }
+      for (const [k, v] of Object.entries(n)) {
+        if ((k === 'sessionId' || k === 'memberSessionId') && typeof v === 'string' && v !== currentRoot) found.push(v)
+        else walk(v)
+      }
+    }
+    walk(doc)
+    return found[0] ?? null
   }
   async function driveGoverned(memberSession, marker, toolName, decision, tag) {
+    const before = new Set(await pendingRequestIds())
     await apiPrompt(memberSession, marker, tag)
-    const requestId = await waitFor(`pending control row ${toolName} (${tag})`, 120_000, () => findPending(toolName))
+    const requestId = await waitFor(`new pending control request (${tag}, ${toolName})`, 120_000, async () => {
+      const now = await pendingRequestIds()
+      const fresh = now.filter((r) => !before.has(r))
+      if (fresh.length === 0) return null
+      if (fresh.length > 1) throw new Error(`${tag}: expected exactly ONE new pending control request, saw ${fresh.length}: ${fresh.join(',')}`)
+      return fresh[0]
+    })
     if (decision !== null) {
       const res = await remoteCallReady('team.resolveControl', { teamSessionId: currentRoot, requestId, decision, note: `sched-c2 ${tag}` }, tag, 4)
-      if (resultErr(res.body) !== null) throw new Error(`resolveControl ${decision} ${tag}: ${JSON.stringify(resultErr(res.body)).slice(0, 300)}`)
+      if (resultError(res.body) !== null) throw new Error(`resolveControl ${decision} ${tag}: ${JSON.stringify(resultError(res.body)).slice(0, 300)}`)
     }
     return requestId
   }
@@ -493,21 +580,7 @@ async function main() {
   log(`team created at root session ${currentRoot}`)
 
   await apiPrompt(currentRoot, `A5M2-C2-LEADER ${NONCE}`, 'c2-leader')
-  const memberSession = await waitFor('member session in team_domain', 120_000, () => {
-    const facts = domainFacts()
-    if (facts === null) return null
-    const found = []
-    const walk = (n) => {
-      if (n === null || typeof n !== 'object') return
-      if (Array.isArray(n)) { n.forEach(walk); return }
-      for (const [k, v] of Object.entries(n)) {
-        if ((k === 'sessionId' || k === 'memberSessionId') && typeof v === 'string' && v !== currentRoot) found.push(v)
-        else walk(v)
-      }
-    }
-    walk(facts)
-    return found[0] ?? null
-  })
+  const memberSession = await waitFor('member session in team_domain', 120_000, () => domainFacts())
   log(`member session ${memberSession}`)
 
   // C0 visibility receipt BEFORE any seed
@@ -538,11 +611,10 @@ async function main() {
   {
     const requestId = await driveGoverned(memberSession, 'LIST-1', 'schedule_list', 'allow', 'c2-c1')
     const res = await resultFor(stepOuter('LIST-1'))
-    const events = await ledgerEvents(requestId)
-    const consumed = events.some((e) => /consum/i.test(JSON.stringify(e)))
-    check('C1', 'list returns all three real records after ALLOW; consumption event for THIS requestId',
-      SEED_TITLES.every((t) => res.includes(t)) && seedIds.every((id) => res.includes(id)) && consumed,
-      `requestId=${requestId} consumed=${consumed} result=${String(res).slice(0, 300)}`)
+    const consumed = await hasFact(requestId, 'control-allow-consumed')
+    check('C1', 'list returns all three real records after ALLOW; control-allow-consumed for THIS requestId',
+      SEED_TITLES.every((t) => res.includes(t)) && seedIds.every((id) => res.includes(id)) && consumed !== false,
+      `requestId=${requestId} consumedFact=${JSON.stringify(consumed).slice(0, 200)} result=${String(res).slice(0, 300)}`)
   }
   // C2
   currentCriterion = 'C2'
@@ -559,26 +631,28 @@ async function main() {
     const requestId = await driveGoverned(memberSession, 'DELETE-BETA', 'schedule_delete', 'deny', 'c2-c3')
     await driveGoverned(memberSession, 'LIST-3', 'schedule_list', 'allow', 'c2-c3lst')
     const res = await resultFor(stepOuter('LIST-3'))
-    const events = await ledgerEvents(requestId)
-    const consumed = events.some((e) => /consum/i.test(JSON.stringify(e)))
-    check('C3', 'public DENY on delete BETA -> BETA still listed; no consumption event',
-      res.includes(seedIds[1]) && !consumed, `requestId=${requestId} consumed=${consumed} list=${String(res).slice(0, 250)}`)
+    const consumed = await hasFact(requestId, 'control-allow-consumed')
+    check('C3', 'public DENY on delete BETA -> BETA still listed; no control-allow-consumed for the denied requestId',
+      res.includes(seedIds[1]) && consumed === false, `requestId=${requestId} consumedFact=${JSON.stringify(consumed)} list=${String(res).slice(0, 250)}`)
   }
-  // C4 — ⑥ public session/cancel + REAL abandonment EVENT by requestId
+  // C4 — ⑥ public session/cancel + EXACT control-request-abandoned fact
   currentCriterion = 'C4'
   {
+    const before = new Set(await pendingRequestIds())
     await apiPrompt(memberSession, 'LIST-4-ABANDON', 'c2-c4')
-    const requestId = await waitFor('pending list row (c2-c4)', 120_000, () => findPending('schedule_list'))
-    await apiCancel(memberSession, 'c2-c4-cancel')
-    const abandonEvent = await waitFor(`abandonment event for ${requestId}`, 90_000, async () => {
-      const events = await ledgerEvents(requestId)
-      return events.find((e) => /abandon/i.test(JSON.stringify(e))) ?? null
+    const requestId = await waitFor('new pending control request (c2-c4)', 120_000, async () => {
+      const fresh = (await pendingRequestIds()).filter((r) => !before.has(r))
+      if (fresh.length === 0) return null
+      if (fresh.length > 1) throw new Error(`c2-c4: expected exactly ONE new pending request, saw ${fresh.join(',')}`)
+      return fresh[0]
     })
+    await apiCancel(memberSession, 'c2-c4-cancel')
+    const abandonFact = await waitFor(`control-request-abandoned for ${requestId}`, 90_000, async () => await hasFact(requestId, 'control-request-abandoned'))
     await driveGoverned(memberSession, 'LIST-5', 'schedule_list', 'allow', 'c2-c4lst')
     const res = await resultFor(stepOuter('LIST-5'))
-    check('C4', 'public session/cancel -> ledger ABANDON event for the exact requestId; records unchanged',
+    check('C4', 'public session/cancel -> control-request-abandoned for the exact requestId; records unchanged',
       res.includes(seedIds[1]) && res.includes(seedIds[2]) && !res.includes(seedIds[0]),
-      `requestId=${requestId} event=${JSON.stringify(abandonEvent).slice(0, 200)}`)
+      `requestId=${requestId} abandonFact=${JSON.stringify(abandonFact).slice(0, 200)}`)
   }
   // C5
   currentCriterion = 'C5'
@@ -589,7 +663,7 @@ async function main() {
   }
 
   await cleanup()
-  finish(results.every((r) => r.ok) ? 0 : 1)
+  finish(results.every((r) => r.ok) && cleanupOk ? 0 : 1) // ⑤ teardown NOT-OK forbids 0
 }
 main().then(
   () => {},
