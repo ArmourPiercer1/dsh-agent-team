@@ -99,6 +99,23 @@ export default tseslint.config(
       '.agents/**',
       '.dsh-vision-toolkit/**',
       '.private-raw-evidence/**',
+      // A5-M2 temporary package-extraction faces (`/pack/pack-*/`, `.gitignore`):
+      // diagnostic re-derivations of the versioned `.tgz`, never tracked, never a
+      // release artifact. ESLint does not read `.gitignore` — the same sentence this
+      // file keeps re-earning — so an unpacked face left in the working tree enters
+      // the lint universe and reddens the identity diff against a baseline nobody
+      // edited. Measured at `929fc4af2` with four faces unpacked:
+      // `scripts/lint-identities.mjs --diff` reported `universe: 1399 file(s) linted,
+      // 76 of them gitignored`, naming `pack/pack-3c9bfed65/package/packages/runtime/
+      // root-binding/**` (+68 more), and `ci-pr-gate`'s lint leg reported `29 NEW lint
+      // identities` whose names are those files; nothing in the tree was changed to
+      // cause it. No tracked path is collateral: `git ls-files | grep -c '^pack/'` = 0
+      // and `grep -c '^pack/pack-'` = 0, so this pattern can only remove untracked
+      // diagnostic mirrors. Product coverage is untouched: no `packages/**`, no
+      // `packages/*/dist/**` (tracked on purpose, plan rule 8) and no formal test
+      // lives under these prefixes. The files stay on disk — the faces and their
+      // evidence are kept, not deleted or moved; only the scan stops walking them.
+      'pack/pack-*/**',
       'dev/**',
       'docs/**',
       'tests/**',
