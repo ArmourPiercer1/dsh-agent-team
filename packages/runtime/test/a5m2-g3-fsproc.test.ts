@@ -108,7 +108,7 @@ interface Arm {
   prepare: (plan: unknown, grant?: unknown) => ArmResult
   execute: (plan: unknown, consumed: unknown) => Promise<ArmResult>
   cancel: (plan: unknown) => ArmResult
-  inFlight: () => Array<{ correlation: string; toolName: string; state: string; backgroundJobId: string | null; settlementEvidence: string | null }>
+  inFlight: () => Array<{ correlation: string; toolName: string; state: string; backgroundJobId: string | null; settlementEvidence: string | null; handleIdentity?: Record<string, unknown> | null }>
   drain: () => DrainFacts
 }
 type BindingFacts = { bindingId: string; bindingRevision: number; policyGeneration: number; authorityGeneration: number }
@@ -126,6 +126,7 @@ const G3 = (await import(new URL('../src/plugin/live/governed-families/g3-fsproc
   createGovernedTerminalArms: (deps: Record<string, unknown>) => Record<TerminalName, Arm>
   createGovernedLspArm: (deps: Record<string, unknown>) => Arm
   createGovernedRunCodeArm: (deps: Record<string, unknown>) => Arm
+  createHostTerminalControlPort: (deps: Record<string, unknown>) => Record<string, unknown>
 }
 
 // The ONE escalation-vocabulary source the arm must reuse (existing mounted
@@ -618,6 +619,8 @@ describe('g3 B-LSP — the closed four-operation arm over the captured native ls
     const native = makeNative('lsp', CAPTURED.lsp)
     const binding = makeBinding()
     const doc = { kind: 'workspace', canonicalLocator: 'src/a.ts', revision: 'rev-1' }
+    let realmAnswer = 'realm-g3-test'
+    let scopeAnswer: 'inside' | 'outside' = 'inside'
     const arm = G3.createGovernedLspArm({
       nativeDefinition: native.def,
       definitionIdentity: 'lsp@v1',
@@ -630,9 +633,14 @@ describe('g3 B-LSP — the closed four-operation arm over the captured native ls
       lspFacts: {
         server: () => (deps.absentServer === true ? null : { binaryIdentity: 'tsserver@5.6.0-sha-abc', generation: 'polgen-4' }),
         document: (filePath: string) => (deps.unresolvableDoc === true ? null : { ...doc, canonicalLocator: filePath }),
+        // §5.2 INTERFACE OBLIGATIONS (the assembly adapter's realm-scoped
+        // document answers): realm + cross-file scope, enforced at classify
+        // AND at the entry — facts-only providers are refused, not trusted.
+        documentRealm: () => realmAnswer,
+        documentScope: () => scopeAnswer,
       },
     })
-    return { arm, native, binding, doc }
+    return { arm, native, binding, doc, moveRealm: () => { realmAnswer = 'realm-other-member' }, moveScope: () => { scopeAnswer = 'outside' } }
   }
 
   it('exactly the four navigation operations classify; effects carry the REAL grammar-valid read effect (§5.2 F read project-scope); ANY fifth spelling refuses with zero body', () => {
@@ -716,6 +724,8 @@ describe('g3 B-LSP — the closed four-operation arm over the captured native ls
       lspFacts: {
         server: () => ({ binaryIdentity: 'tsserver@5.6.0-sha-abc', generation }),
         document: (filePath: string) => ({ kind: 'workspace', canonicalLocator: filePath, revision }),
+        documentRealm: () => 'realm-g3-test',
+        documentScope: () => 'inside',
       },
     })
     const c = arm.classify({ operation: 'findReferences', file_path: 'src/a.ts', line: 3, character: 2 }, makeExec().exec, 'lsp-drift')
@@ -734,10 +744,46 @@ describe('g3 B-LSP — the closed four-operation arm over the captured native ls
     expect((await running2).code).toBe(G3.A5_G3_LSP_TYPED_CODES.TARGET_DRIFT)
     expect(native.calls.length).toBe(0)
   })
+
+  it('§5.2 REALM + cross-file SCOPE are interface obligations (root ruling: they do NOT downgrade to facts-only): a document the adapter answers under ANOTHER realm refuses at classify; a scope answer that flips to outside INSIDE the pre-entry window refuses at the entry — both with zero body; a provider that omits the obligations is refused as unresolved', async () => {
+    // (a) classify-time realm escape: the assembly adapter says this file
+    //     belongs to another member's realm — navigation refuses BEFORE any
+    //     approval could cover it.
+    const wEsc = lspWorld()
+    wEsc.moveRealm()
+    const realmBad = wEsc.arm.classify({ operation: 'goToDefinition', file_path: 'src/a.ts', line: 2, character: 1 }, makeExec().exec, 'scope-2')
+    expect(realmBad.code).toBe(G3.A5_G3_LSP_TYPED_CODES.SCOPE_ESCAPED)
+    expect(realmBad.detail).toMatch(/not the bound realm/)
+    expect(wEsc.native.calls.length).toBe(0)
+    // (b) entry-time scope flip: inside at classify, outside in the window —
+    //     the SCOPE obligation answers again at the entry and the body never
+    //     runs (navigation would read a file outside the approved scope).
+    const w2 = lspWorld()
+    const c = w2.arm.classify({ operation: 'findReferences', file_path: 'src/a.ts', line: 4, character: 2 }, makeExec().exec, 'scope-3')
+    expect(c.ok, `${c.code} ${c.detail}`).toBe(true)
+    expect(w2.arm.prepare(c.plan, { grantId: 'g' }).ok).toBe(true)
+    const running = w2.arm.execute(c.plan, { consumed: true, grant: grantFor(c, c.plan as Record<string, unknown>, w2.binding, 'g') })
+    w2.moveScope() // the cross-file scope answer flips inside the window
+    const late = await running
+    expect(late.code).toBe(G3.A5_G3_LSP_TYPED_CODES.SCOPE_ESCAPED)
+    expect(late.detail).toMatch(/cross-file scope answer moved/)
+    expect(w2.native.calls.length).toBe(0)
+    // (c) A FACTS-ONLY provider is NOT the §5.2 implementation: an arm
+    //     assembled without the realm/scope obligation answers refuses to
+    //     be built — the obligations are structural, not optional facts.
+    expect(() => G3.createGovernedLspArm({
+      nativeDefinition: makeNative('lsp', CAPTURED.lsp).def,
+      definitionIdentity: 'lsp@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'lsp@v1' }),
+      providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
+      bindingFacts: makeBinding().read,
+      lspFacts: { server: () => ({ binaryIdentity: 'x', generation: 'g' }), document: (p: string) => ({ kind: 'workspace', canonicalLocator: p, revision: 'r' }) },
+    })).toThrow(/documentRealm/)
+  })
 })
 
 describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalation answers live ONLY in the mounted bridge)', () => {
-  function ptcWorld(deps: { noFacts?: boolean; moveChannel?: boolean } = {}) {
+  function ptcWorld(deps: { noFacts?: boolean; moveChannel?: boolean; noEnvelope?: boolean; noBudget?: boolean } = {}) {
     const native = makeNative('run_code', CAPTURED.run_code)
     const binding = makeBinding()
     const arm = G3.createGovernedRunCodeArm({
@@ -753,13 +799,15 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
         ? null
         : {
             interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
-            effectiveEnvelope: { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
+            effectiveEnvelope: deps.noEnvelope === true
+              ? null // an unevidenced envelope is NOT an implementation (root ruling)
+              : { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' },
             timeout: { defaultMs: 30000, maxMs: 120000 },
             childChannel: {
               capabilityList: ['read', 'write', 'bash', 'todo__write'],
               channelDigest: deps.moveChannel === true ? 'sha256:chan-2' : 'sha256:chan-1',
-              maxParallelSubCalls: 8,
-              runDispatchBudget: 64,
+              maxParallelSubCalls: deps.noBudget === true ? null : 8,
+              runDispatchBudget: deps.noBudget === true ? null : 64,
             },
           }),
     })
@@ -859,6 +907,48 @@ describe('g3 B-PTC — the outer run_code arm (row itself a NAMED GAP; escalatio
     const faces = Object.keys(w.arm).sort().join(',')
     expect(faces).toBe('adapterRevision,cancel,classify,declaredAbsent,definitionIdentity,drain,execute,familyId,inFlight,parametersFace,prepare,providerId,toolName')
   })
+
+  it('THE REAL ENVELOPE/BUDGET LAW (root ruling: null/empty does NOT count): an unevidenced EFFECTIVE envelope or a null budget refuses P_PTC_ENVELOPE_UNEVIDENCED at classify AND at the entry, never running behind an unenforced claim', async () => {
+    const noEnvelope = ptcWorld({ noEnvelope: true })
+    const dark = noEnvelope.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-dark')
+    expect(dark.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
+    expect(dark.detail).toMatch(/not an implementation/)
+    expect(noEnvelope.native.calls.length).toBe(0)
+    const noBudget = ptcWorld({ noBudget: true })
+    const poor = noBudget.arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-poor')
+    expect(poor.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
+    expect(poor.detail).toMatch(/maxParallelSubCalls/)
+    expect(noBudget.native.calls.length).toBe(0)
+    // The same law AT THE ENTRY: an envelope evidenced at classify that
+    // stops being evidenced inside the pre-entry window refuses there too.
+    let envelopeLive = true
+    const native = makeNative('run_code', CAPTURED.run_code)
+    const binding = makeBinding()
+    const arm = G3.createGovernedRunCodeArm({
+      nativeDefinition: native.def,
+      definitionIdentity: 'run_code@v1',
+      liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
+      providerId: 'g3-test-provider',
+      memberAgentId: AGENT_ID,
+      sessionHeaderId: HEADER_ID,
+      realmId: 'realm-g3-test',
+      bindingFacts: binding.read,
+      ptcFacts: () => ({
+        interpreter: { runtimeIdentity: 'node@22.14.0@/usr/bin/node', language: 'javascript' },
+        effectiveEnvelope: envelopeLive ? { mode: 'workspace-write', enforcement: 'realm+env+rlimit+tree-kill' } : null,
+        timeout: { defaultMs: 30000, maxMs: 120000 },
+        childChannel: { capabilityList: ['read'], channelDigest: 'sha256:chan-1', maxParallelSubCalls: 8, runDispatchBudget: 64 },
+      }),
+    })
+    const c = arm.classify({ code: 'x', description: 'd' }, makeExec().exec, 'env-edge')
+    expect(arm.prepare(c.plan, { grantId: 'g' }).ok).toBe(true)
+    const running = arm.execute(c.plan, { consumed: true, grant: grantFor(c, c.plan as Record<string, unknown>, binding, 'g') })
+    envelopeLive = false // the sandbox answer went unevidenced in the window
+    const late = await running
+    expect(late.code).toBe(G3.A5_G3_PTC_TYPED_CODES.ENVELOPE_UNEVIDENCED)
+    expect(late.detail).toMatch(/stopped being evidenced/)
+    expect(native.calls.length).toBe(0)
+  })
 })
 
 describe('g3 B-JOB gap closure — the management path across the gateway DRAINING state', () => {
@@ -948,6 +1038,233 @@ describe('g3 B-JOB gap closure — the management path across the gateway DRAINI
   })
 })
 
+describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a faithful ctx.terminals double (root boundary ruling: real prepare/execute/terminate handles — the handle answers, the arm routes; an integrator adapter over the PUBLIC @deepseek-ai/dsh-terminal service face is the delivery shape; the module stays UNWIRED)', () => {
+  /** The double answers the EXACT @deepseek-ai/dsh-terminal @639ed01539 face
+   *  (spawn/startSend/read/signal/kill/list; TerminalSendOperation.done;
+   *  kill true = newly closed, false = same close already in flight). Every
+   *  answer below is the SERVICE word — the legs assert the ARM routed it. */
+  function makeTerminalsDouble() {
+    const sessions = new Map<string, { pid: number; status: string; closed: boolean }>([
+      // the service's OWN live sessions (seeded identities the facts reader
+      // also carries): the double stays self-consistent.
+      ['pty-1', { pid: 4101, status: 'running', closed: false }],
+      ['pty-2', { pid: 4102, status: 'running', closed: false }],
+    ])
+    const log: string[] = []
+    let nextId = 90
+    const live = (id: string) => {
+      const rec = sessions.get(id)
+      if (rec === undefined || rec.closed) throw Object.assign(new Error('NO_SESSION'), { code: 'NO_SESSION' })
+      return rec
+    }
+    return {
+      log,
+      spawn: async (owner: Record<string, unknown>, request: Record<string, unknown>) => {
+        log.push(`spawn:${String(request.type)}:${String(owner?.id ?? '')}`)
+        const sessionId = `pty-svc-${String(nextId++)}`
+        sessions.set(sessionId, { pid: 4100 + nextId, status: 'running', closed: false })
+        return { sessionId, name: request.name, type: String(request.type), pid: 4100 + nextId, status: 'running', motd: '$ ' }
+      },
+      startSend: (owner: Record<string, unknown>, id: string, request: Record<string, unknown>) => {
+        live(id)
+        log.push(`send:${id}:${String(request.text)}:${String(request.submit)}`)
+        let settle: (v: Record<string, unknown>) => void = () => {}
+        const done = new Promise<Record<string, unknown>>((resolve) => { settle = resolve })
+        return {
+          done,
+          readOutput: () => ({ delta: '', truncated: false }),
+          cancel: () => { settle({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
+        }
+      },
+      read: (owner: Record<string, unknown>, id: string, _request?: Record<string, unknown>) => {
+        live(id)
+        log.push(`read:${id}`)
+        return { text: 'make: nothing to be done\n', truncated: false, oldest: 0, newest: 4 }
+      },
+      signal: async (owner: Record<string, unknown>, id: string, signal: string) => {
+        live(id)
+        log.push(`signal:${id}:${signal}`)
+        return { deliveredTo: 4242 }
+      },
+      kill: async (owner: Record<string, unknown>, id: string) => {
+        const rec = sessions.get(id)
+        if (rec === undefined) { log.push(`kill-missing:${id}`); return false }
+        if (rec.closed) { log.push(`kill-in-flight:${id}`); return false }
+        rec.closed = true
+        log.push(`kill:${id}`)
+        return true
+      },
+      list: (_owner: Record<string, unknown>) => {
+        log.push('list')
+        return [...sessions.entries()].filter(([, r]) => !r.closed).map(([sessionId, r]) => ({ sessionId, type: 'shell', pid: r.pid, status: r.status }))
+      },
+    }
+  }
+
+  function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean } = {}) {
+    const terminals = makeTerminalsDouble()
+    const binding = makeBinding()
+    const natives = {} as Record<TerminalName, NativeDouble>
+    const nativeDefinitions: Record<string, unknown> = {}
+    const definitionIdentities: Record<string, string> = {}
+    const liveDefinitions: Record<string, () => { definitionIdentity: string } | null> = {}
+    for (const name of TERMINAL_NAMES) {
+      natives[name] = makeNative(name, CAPTURED[name] as Record<string, unknown>)
+      nativeDefinitions[name] = natives[name].def
+      definitionIdentities[name] = `${name}@v1`
+      liveDefinitions[name] = () => ({ definitionIdentity: `${name}@v1` })
+    }
+    const ptyBridge = makePtyService()
+    const tracked = makePtyService() // static seed facts (pty-1..pty-10)
+    const minted = new Map<string, { incarnation: string; status: string; envelope: string }>()
+    const ptyService = {
+      backend: (type: string) => ptyBridge.backend(type),
+      session: (ownerAgentId: string, sessionId: string) =>
+        tracked.session(ownerAgentId, sessionId) ?? minted.get(sessionId) ?? null,
+      // the integrator's feed: sessions the SERVICE minted this world (the
+      // spawn answer carries the identity; the facts reader carries it on)
+      recordMinted: (sessionId: string) => {
+        minted.set(sessionId, { incarnation: `svc-${sessionId}-inc-1`, status: 'running', envelope: 'env-pty-default' })
+      },
+      closeMinted: (sessionId: string) => {
+        const cur = minted.get(sessionId)
+        if (cur !== undefined) minted.set(sessionId, { ...cur, status: 'closed' })
+      },
+    }
+    const controlPort = deps.brokenPort === true
+      ? { name: 'broken', prepare: async () => null }
+      : G3.createHostTerminalControlPort({
+          terminals,
+          resolveOwner: (exec: Record<string, unknown>) => (deps.noOwner === true ? null : (exec as { agent?: unknown }).agent ?? null),
+          jobs: deps.jobs ?? null,
+        })
+    const arms = G3.createGovernedTerminalArms({
+      nativeDefinitions, definitionIdentities, liveDefinitions,
+      declaredBackends: ['shell'],
+      ptyService,
+      controlPort,
+      providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
+      bindingFacts: binding.read,
+    })
+    return { arms, natives, binding, terminals, ptyService }
+  }
+
+  it('THE HANDLE ROUTES: open commits the SERVICE-minted identity (spawn answered it) and the captured native body is NEVER entered on this path; remove the routing and this leg is RED', async () => {
+    const w = handleWorld()
+    const { x } = await runPass(w.arms.terminal_open, w.binding, { type: 'shell', name: 'build' }, 'h-open')
+    expect(x.ok).toBe(true)
+    expect(x.value).toMatchObject({ outcome: 'opened', sessionId: 'pty-svc-90', motd: '$ ' })
+    w.ptyService.recordMinted('pty-svc-90') // the service minted it: the facts reader carries it
+    expect(w.terminals.log).toEqual([`spawn:shell:${AGENT_ID}`]) // owner-authorized by the EXACT Agent
+    expect(w.natives.terminal_open.calls.length).toBe(0) // the HANDLE executed, not the delegate body
+    const inflight = w.arms.terminal_open.inFlight()
+    expect(inflight[0]?.handleIdentity).toMatchObject({ sessionId: 'pty-svc-90' }) // handle-owned identity recorded from the ANSWER
+  })
+
+  it('the REAL result is awaited through the handle: a foreground send commits EXACTLY the TerminalSendResult the operation.done resolved (viewport/waitReason/sessionStatus/truncated), the captured body never entered', async () => {
+    const w = handleWorld()
+    // The double's operation settles on cancel; drive the committed-value
+    // shape with an auto-settling operation (the real service settles on
+    // readiness/timeout/exit — same contract).
+    const terminals = w.terminals as unknown as { startSend: (o: Record<string, unknown>, id: string, r: Record<string, unknown>) => unknown }
+    const record: string[] = (terminals as unknown as { log: string[] }).log
+    terminals.startSend = (o: Record<string, unknown>, id: string, r: Record<string, unknown>) => {
+      record.push(`send:${id}:${String(r.text)}:${String(r.submit)}`)
+      return { done: Promise.resolve({ viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false }), readOutput: () => ({ delta: '', truncated: false }), cancel: () => true }
+    }
+    const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'python3\n', submit: true }, 'h-send-2')
+    expect(x.ok).toBe(true)
+    // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo:
+    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false })
+    expect(w.natives.terminal_send.calls.length).toBe(0)
+    expect(record).toEqual(['send:pty-1:python3\n:true'])
+  })
+
+  it('terminate is the REAL face: close commits the service kill word (closed, then already-closing — kill FALSE is answered, never upgraded); read/signal/list route through the service with zero body', async () => {
+    const w = handleWorld()
+    const opened = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'h-o2')
+    const sessionId = String((opened.x.value as Record<string, unknown>).sessionId)
+    w.ptyService.recordMinted(sessionId) // the service owns the session: the facts reader carries it
+    // LIVE FIRST: read/signal/list ride the live session through the
+    // service — the captured body never entered on the handle path.
+    const read = await runPass(w.arms.terminal_read, w.binding, { sessionId, count: 10 }, 'h-r1')
+    expect(read.x.value).toMatchObject({ text: 'make: nothing to be done\n' })
+    const sig = await runPass(w.arms.terminal_signal, w.binding, { sessionId, signal: 'SIGINT' }, 'h-s1')
+    expect(sig.x.value).toEqual({ deliveredTo: 4242 })
+    const list = await runPass(w.arms.terminal_list, w.binding, {}, 'h-l1')
+    expect(Array.isArray(list.x.value)).toBe(true)
+    // THEN TERMINATE: the service kill word, answered honestly twice.
+    const first = await runPass(w.arms.terminal_close, w.binding, { sessionId }, 'h-c1')
+    expect(first.x.value).toEqual({ outcome: 'closed' })
+    const again = await runPass(w.arms.terminal_close, w.binding, { sessionId }, 'h-c2')
+    expect(again.x.value).toEqual({ outcome: 'already-closing' }) // kill FALSE answered honestly — never 'closed'
+    // A DEAD session refuses at the SERVICE entry (NO_SESSION through the
+    // port) — zero invoke past a dead handle, zero body, always.
+    expect(Object.values(w.natives).every((n) => n.calls.length === 0)).toBe(true)
+    expect(w.terminals.log.filter((l) => l.startsWith('kill'))).toEqual([`kill:${sessionId}`, `kill-in-flight:${sessionId}`])
+  })
+
+  it('a background send is the ctx.jobs CONTRACT, never a fake id: without the registry the send REFUSES typed with zero start; with it the REAL jobs.start mints the id and the drain word carries it UNCLEARED', async () => {
+    const unwired = handleWorld()
+    const refused = await runPass(unwired.arms.terminal_send, unwired.binding, { sessionId: 'pty-1', text: 'long\n', run_in_background: true }, 'bg-0')
+    expect(refused.x.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.BG_PORT_UNWIRED)
+    expect(unwired.terminals.log.length).toBe(0) // zero start: preflight refusal before any resource
+
+    const started: Array<Record<string, unknown>> = []
+    const jobs = {
+      start: (spec: Record<string, unknown>) => {
+        // the host JobSpec law: run(job) is called SYNCHRONOUSLY, hooks.done
+        // is how the real result is awaited.
+        const hooks = (spec.run as (job: unknown) => { done: Promise<unknown> })({ append: () => {} })
+        started.push({ kind: spec.kind, label: spec.label, doneHook: typeof hooks.done?.then === 'function' })
+        return 'job-pty-send-7'
+      },
+      kill: (id: string) => (id === 'job-pty-send-7' ? 'requested' : 'already-finished'),
+    }
+    const w = handleWorld({ jobs })
+    const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'make\n', run_in_background: true }, 'bg-1')
+    expect(x.ok).toBe(true)
+    expect(x.value).toEqual({ outcome: 'accepted', jobId: 'job-pty-send-7' })
+    expect(started).toEqual([{ kind: 'pty-send', label: 'g3 terminal_send pty-1', doneHook: true }])
+    expect(w.terminals.log).toEqual(['send:pty-1:make\n:true']) // the operation started INSIDE run()
+    const drain = w.arms.terminal_send.drain()
+    expect(drain.unsettledBackgroundJobIds).toEqual(['job-pty-send-7']) // UNCLEARED: the jobs record owns the settlement
+    expect(drain.controls).toMatch(/no resource is settled/)
+  })
+
+  it('an unanswered handle NEVER executes: a port that fails to answer a real handle refuses at the entry typed with zero invoke and zero body; an owner the adapter cannot answer refuses before any service call', async () => {
+    const broken = handleWorld({ brokenPort: true })
+    const r = await runPass(broken.arms.terminal_open, broken.binding, { type: 'shell' }, 'bad-1')
+    expect(r.x.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.TARGET_UNRESOLVED)
+    expect(r.x.detail).toMatch(/never executes behind an unanswered handle/)
+    expect(broken.natives.terminal_open.calls.length).toBe(0)
+    expect(broken.terminals.log.length).toBe(0)
+
+    const ownerless = handleWorld({ noOwner: true })
+    const r2 = await runPass(ownerless.arms.terminal_open, ownerless.binding, { type: 'shell' }, 'bad-2')
+    expect(r2.x.code).toBe(G3.A5_G3_TERMINAL_TYPED_CODES.PORT_OWNER_UNRESOLVED)
+    expect(ownerless.terminals.log.length).toBe(0) // owner authorization FIRST: zero service reach
+  })
+
+  it('the adapter is CONTRACT-verified at assembly: a terminals face missing ANY method, or a missing resolveOwner, throws — the adapter names the entry, it does not simulate it', () => {
+    expect(() => G3.createHostTerminalControlPort({ terminals: {}, resolveOwner: () => null })).toThrow(/dsh-terminal/)
+    expect(() => G3.createHostTerminalControlPort({ terminals: makeTerminalsDouble() })).toThrow(/resolveOwner/)
+  })
+  it('ANTI-TAUTOLOGY: the SAME classified plan through the two routes lands on DIFFERENT backends — handle path commits the SERVICE word with zero native entries, delegate path enters the captured body with zero service calls; a module that ignored the port would run this leg RED', async () => {
+    const wHandle = handleWorld()
+    const viaHandle = await runPass(wHandle.arms.terminal_list, wHandle.binding, {}, 'anti-1')
+    expect(viaHandle.x.ok).toBe(true)
+    expect(viaHandle.x.value).toEqual([{ sessionId: 'pty-1', type: 'shell', pid: 4101, status: 'running' }, { sessionId: 'pty-2', type: 'shell', pid: 4102, status: 'running' }]) // the SERVICE's list answer
+    expect(wHandle.natives.terminal_list.calls.length).toBe(0)
+    expect(wHandle.terminals.log).toEqual(['list'])
+    const wDelegate = terminalWorld()
+    const viaDelegate = await runPass(wDelegate.arms.terminal_list, wDelegate.binding, {}, 'anti-2')
+    expect(viaDelegate.x.ok).toBe(true)
+    expect(wDelegate.natives.terminal_list.calls.length).toBe(1) // the captured body executed
+    expect(viaDelegate.x.value).not.toEqual(viaHandle.x.value) // the answers DIFFER by construction
+  })
+})
+
 describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRegistrationFace) IS the canonical host registration face (REAL pinned validator + REAL host lift)', () => {
   const specs: Array<[string, Record<string, unknown>]> = [
     ['terminal_open', CAPTURED.terminal_open as unknown as Record<string, unknown>],
@@ -970,7 +1287,34 @@ describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRe
       assertSupportedJsonSchema: (schema: unknown) => void
       validateJsonSchemaValue: (schema: unknown, value: unknown, path: string) => string[]
       parameterSchemaSpecToJsonSchema: (spec: Record<string, unknown>) => Record<string, unknown>
+      defineTool: (options: {
+        name: string
+        description: string
+        parameters: Record<string, unknown>
+        output: { schema: Record<string, unknown>; render: (args: unknown, value: unknown) => [] }
+        execute: (args: unknown, exec: unknown) => Promise<Record<string, unknown>>
+      }) => { parameters: Record<string, unknown> }
     }
+  }
+
+  // THE FIXED POINT (root final ruling @639ed01539): the host defineTool
+  // ALREADY transforms the authored parameters — property-level `required:
+  // true` markers are lifted into parent `required` arrays — and the
+  // COMPILED product IS the registration face. We compile the captured
+  // authored config through the REAL pinned defineTool; the derived face must
+  // equal THAT lift (plus the closed-surface key), never a mirror-lift of our
+  // own re-derived from the same authored input.
+  async function defineToolProduct(host: Awaited<ReturnType<typeof hostTools>>, name: string, authored: Record<string, unknown>): Promise<Record<string, unknown>> {
+    return host.defineTool({
+      name,
+      description: `g3 fixed-point compilation of ${name}`,
+      parameters: authored,
+      output: {
+        schema: { type: 'object', description: 'compiled probe output', additionalProperties: false, properties: {} },
+        render: () => [],
+      },
+      execute: async () => ({}),
+    }).parameters
   }
 
   const marker = (node: unknown): boolean => {
@@ -989,18 +1333,51 @@ describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRe
     return false
   }
 
-  it('the DERIVED face EQUALS the host\'s own parameterSchemaSpecToJsonSchema lift (+ the closed-surface key); the REAL Host639 validator accepts every face; NO property-level required marker survives; parent arrays are exact', async () => {
+  const compiledArms: Record<string, Record<string, unknown>> = {}
+  // The compiled terminal_send shape, captured for the tamper leg. A HOST
+  // that ran defineTool mounts THAT shape — capturing a compiled envelope
+  // is the realistic tamper surface, so the tampered shape IS built from the
+  // real compiled product, never from a hand-written envelope.
+  let compiledArmsReady: Promise<void> | null = null
+  async function compiledArmsOnce(): Promise<void> {
+    if (compiledArmsReady === null) {
+      compiledArmsReady = (async () => {
+        const host = await hostTools()
+        for (const [name, spec] of specs) compiledArms[name] = await defineToolProduct(host, name, spec)
+      })()
+    }
+    return compiledArmsReady
+  }
+
+  it('COMPILED-CAPTURE FIXED POINT: every face equals the REAL defineTool product (authored config → compiled parameters) + the closed-surface key; the compiled-shape capture derives IDENTICALLY; NO property-level marker; parent arrays exact', async () => {
     const host = await hostTools()
     for (const [name, spec] of specs) {
-      const face = G3.g3CanonicalRegistrationFace(spec)
-      // The derivation IS the host lift (the marker-stripping law, pinned to
-      // the host's own function) — plus the governed row's closed surface.
-      const hostLift = host.parameterSchemaSpecToJsonSchema(spec)
+      const compiled = await defineToolProduct(host, name, spec)
+      const face = G3.g3CanonicalRegistrationFace(compiled)
+      // THE fixed point: the host's OWN compiler produced `compiled`; the
+      // governed face carries that lift verbatim + the closed-surface key.
       const { additionalProperties: _closed, ...faceMinusClosed } = face
-      expect(faceMinusClosed, `${name}: derivation equals the host lift`).toEqual(hostLift)
+      expect(faceMinusClosed, `${name}: face equals the defineTool product`).toEqual(compiled)
       expect(face.additionalProperties, `${name}: closed governed surface`).toBe(false)
       expect(() => host.assertSupportedJsonSchema(face), name).not.toThrow()
       expect(marker(face), `${name}: property-level required marker`).toBe(false)
+      // The host lift is IDEMPOTENT on its own product through the VALIDATOR
+      // boundary (it accepts its output as a registration face); re-running it
+      // through the AUTHORING parser is not legal input — the parser wants the
+      // marker DSL, not compiled parent arrays (proven: JsonSchemaError
+      // 'parameters.type must be a value schema object'). The derivation's
+      // COMPILED test rests on this pinned acceptance, not a marker sniff.
+      expect(() => host.assertSupportedJsonSchema(compiled), `${name}: host accepts its own product`).not.toThrow()
+      expect(() => host.assertSupportedJsonSchema(compiled), `${name}: acceptance stable (idempotent validation)`).not.toThrow()
+    }
+    // The arms may ALSO capture the compiled definition (what a host that
+    // ran defineTool actually mounts): deriving from that COMPILED shape
+    // must produce the IDENTICAL face — no re-lift of an already-lifted
+    // schema, keys taken from the compiled `properties` only.
+    await compiledArmsOnce()
+    for (const [name] of specs) {
+      expect(G3.g3CanonicalRegistrationFace(compiledArms[name]!), `${name}: compiled-shape capture derives identically`)
+        .toEqual(G3.g3CanonicalRegistrationFace(specs.find(([n]) => n === name)![1]))
     }
     const faceOf = (toolName: string): { required?: string[] } => {
       const hit = derived.find(([name]) => name === toolName)
@@ -1014,6 +1391,60 @@ describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRe
     expect(faceOf('terminal_list').required).toBeUndefined()
     expect(faceOf('lsp').required).toEqual(['operation', 'file_path', 'line', 'character'])
     expect(faceOf('run_code').required).toEqual(['code', 'description'])
+    // DYNAMIC CONFIG through the REAL compiler: the SAME tool captured on a
+    // host WITHOUT the jobs arm compiles to a face WITHOUT the background
+    // surface — the fixed point mirrors the ACTUAL captured config, never a
+    // hand-written superset.
+    const nobgCompiled = await defineToolProduct(host, 'terminal_send', CAPTURED.terminal_send_nobg as unknown as Record<string, unknown>)
+    const nobgFace = G3.g3CanonicalRegistrationFace(nobgCompiled)
+    expect(nobgFace, 'no-jobs capture equals its own defineTool product').toEqual({ ...nobgCompiled, additionalProperties: false })
+    expect(Object.keys(nobgFace.properties as Record<string, unknown>), 'no background surface when the capture has none')
+      .toEqual(['sessionId', 'text', 'submit'])
+    expect(G3.g3CanonicalRegistrationFace(CAPTURED.terminal_send_nobg as unknown as Record<string, unknown>), 'authored path agrees for the no-jobs capture')
+      .toEqual(nobgFace)
+  })
+
+  it('the AUTHORED path agrees with the REAL lift for EVERY member; and against the defineTool product the ONLY delta is the closed-surface key (no second truth source)', async () => {
+    const host = await hostTools()
+    for (const [name, spec] of specs) {
+      const hostLift = host.parameterSchemaSpecToJsonSchema(spec)
+      const authoredFace = G3.g3CanonicalRegistrationFace(spec)
+      const { additionalProperties: _closed, ...authoredMinusClosed } = authoredFace
+      expect(authoredMinusClosed, `${name}: authored-path derivation equals the host lift`).toEqual(hostLift)
+    }
+  })
+
+  it('a tampered COMPILED capture (envelope from the REAL product, marker smuggled back into a property) NEVER survives as compiled: the marker law enforces strip-and-collect, and schema-envelope keys are never parameter names', async () => {
+    await compiledArmsOnce()
+    const compiled = compiledArms['terminal_send']!
+    // Clean compiled capture derives identically to the authored derivation.
+    expect(G3.g3CanonicalRegistrationFace(compiled))
+      .toEqual(G3.g3CanonicalRegistrationFace(CAPTURED.terminal_send as unknown as Record<string, unknown>))
+    // Smuggle the marker back onto one property: no longer a compiled fixed
+    // point — the authored path runs, STRIPS the marker into the parent
+    // array, and NEVER nests the envelope's `properties`/`required` keys as
+    // parameters (parameter keys come from parameter entries ONLY). The
+    // result re-derives EXACTLY the clean capture's face.
+    const tampered = structuredClone(compiled)
+    ;(tampered.properties as Record<string, Record<string, unknown>>).sessionId!.required = true
+    const tamperedFace = G3.g3CanonicalRegistrationFace(tampered)
+    expect(tamperedFace, 'tampered capture re-derives the CLEAN face (marker law enforced)')
+      .toEqual(G3.g3CanonicalRegistrationFace(compiled))
+    expect(marker(tamperedFace), 'a smuggled marker never survives into a face').toBe(false)
+    expect(Object.keys(tamperedFace.properties as Record<string, unknown>).sort(), 'schema-envelope keys are never parameters')
+      .toEqual(['run_in_background', 'sessionId', 'submit', 'text'])
+    // A FORGED envelope (a compiled shape carrying the governed closed flag
+    // as if it were the host product) is not a compiled lift at all: the
+    // compiled envelope is closed (type/properties/required) — the forged key
+    // fails the test and the capture is refused as a compiled product. It
+    // derives through the authored path (never carrying the forged flag as
+    // its own authority): the derivation trusts STRUCTURE, never claims.
+    const forged = structuredClone(compiled)
+    forged.additionalProperties = false
+    const forgedFace = G3.g3CanonicalRegistrationFace(forged)
+    expect(marker(forgedFace), 'forged envelope: no property-level marker survives').toBe(false)
+    expect(forgedFace.required, 'forged envelope: parameter keys are the compiled parameters only')
+      .toEqual(['sessionId', 'text'])
   })
 
   it('the SAME validator still REJECTS missing required members and off-surface values, and accepts complete values — the arm\'s faces (parametersFace) ARE these derived faces', async () => {
@@ -1025,7 +1456,7 @@ describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRe
       liveDispatcher: () => ({ definitionIdentity: 'lsp@v1' }),
       providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
       bindingFacts: makeBinding().read,
-      lspFacts: { server: () => ({ binaryIdentity: 'x', generation: 'g' }), document: (p: string) => ({ kind: 'workspace', canonicalLocator: p, revision: 'r' }) },
+      lspFacts: { server: () => ({ binaryIdentity: 'x', generation: 'g' }), document: (p: string) => ({ kind: 'workspace', canonicalLocator: p, revision: 'r' }), documentRealm: () => 'realm-g3-test', documentScope: () => 'inside' },
     })
     const ptcArm = G3.createGovernedRunCodeArm({
       nativeDefinition: makeNative('run_code', CAPTURED.run_code).def,
@@ -1033,7 +1464,7 @@ describe('g3 r9 — every DERIVED face (captured authored spec → g3CanonicalRe
       liveDispatcher: () => ({ definitionIdentity: 'run_code@v1' }),
       providerId: 'g3-test-provider', memberAgentId: AGENT_ID, sessionHeaderId: HEADER_ID, realmId: 'realm-g3-test',
       bindingFacts: makeBinding().read,
-      ptcFacts: () => ({ interpreter: { runtimeIdentity: 'i', language: 'javascript' }, effectiveEnvelope: { mode: 'read-only', enforcement: 'e' }, timeout: null, childChannel: { capabilityList: [], channelDigest: 'd' } }),
+      ptcFacts: () => ({ interpreter: { runtimeIdentity: 'i', language: 'javascript' }, effectiveEnvelope: { mode: 'read-only', enforcement: 'full' }, timeout: null, childChannel: { capabilityList: [], channelDigest: 'd', maxParallelSubCalls: 10, runDispatchBudget: 64 } }),
     })
     const openSchema = w.arms.terminal_open.parametersFace as Record<string, unknown>
     const sendSchema = w.arms.terminal_send.parametersFace as Record<string, unknown>
