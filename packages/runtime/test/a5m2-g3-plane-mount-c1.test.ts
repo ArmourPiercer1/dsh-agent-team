@@ -128,7 +128,7 @@ function buildPlane (extra: Record<string, unknown> = {}, sink: string[] = [], p
   }) as Built
 }
 
-interface LegPlan { approvalCaseId: string, effectSetFingerprint: string, requiredAuthority?: string, deniedEffects?: unknown }
+interface LegPlan { approvalCaseId: string, effectSetFingerprint: string, requiredAuthority?: string, deniedEffects?: unknown, perEffectRequired?: unknown }
 interface LegAssembly { issueApprovedGrant: (request: unknown, approval: unknown) => Promise<{ ok: boolean, value?: unknown, error?: { message?: string } }> }
 /** The control-leg SEAM double: the kernel's OWN landing (`assembly.
  *  issueApprovedGrant`, the edge the AUTH bridge at pa-control-bridge.ts:642
@@ -137,9 +137,10 @@ interface LegAssembly { issueApprovedGrant: (request: unknown, approval: unknown
  *  owns that half against a real Control service; this spec pins the
  *  PLANE+kernel half). The plane's Part A, the one-shot `consumeForExecution`
  *  edge, the grant identity and the plan-fact lifecycle are all REAL. */
-function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | undefined }>) {
+function mintingControlLeg (seen: Array<{ family: Record<string, unknown> | undefined }>, planSink?: Array<Record<string, unknown>>) {
   return async (input: { request: unknown, family?: Record<string, unknown>, plan: LegPlan, assembly: LegAssembly }): Promise<Record<string, unknown>> => {
     seen.push({ family: input.family })
+    if (planSink !== undefined) planSink.push({ approvalCaseId: input.plan.approvalCaseId, effectSetFingerprint: input.plan.effectSetFingerprint, ...(input.plan.perEffectRequired === undefined ? {} : { perEffectRequired: input.plan.perEffectRequired }) })
     const plan = input.plan
     const approval = Object.freeze({
       approvalCaseId: plan.approvalCaseId,
@@ -378,5 +379,76 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     expect(placed.ok).toBe(true)
     expect(registered).not.toContain('terminal_open')
     expect(built.value.terminal!.familyRegistrations().map((r) => r.name).sort()).toEqual(['terminal_close', 'terminal_list', 'terminal_read', 'terminal_send', 'terminal_signal'])
+  })
+
+  it('(h) production readCallFacts pairing: the PLACEMENT LIST answers the read for placed rows (positive), and an UNPLACED (census) name never reaches the read at all (negative)', async () => {
+    // (root 20:14 card item 2): paPlacementNameOf must resolve the G3 fixed
+    // spellings from the WIRING'S OWN placementNames, else the production
+    // call-facts read arrives with NO placementName and the registry
+    // refuses the binding lookup (the mount walks but never binds). The
+    // reader below is the integrator seam double; the TUPLE it answers is
+    // the plane's own rev-0 row identity (the same measured fact as the
+    // inject's bindingFacts — a real pairing, not a fake binding).
+    const reads: Array<Record<string, unknown>> = []
+    const plans: Array<Record<string, unknown>> = []
+    const readCallFacts = async (request: Record<string, unknown>) => {
+      reads.push(request)
+      const name = String(request.placementName ?? '')
+      const walked = plans[plans.length - 1]
+      return {
+        kind: 'call-facts',
+        facts: {
+          realmId: String(request.realmId ?? REALM),
+          member: { teamSessionId: 'g3-plane-team', instanceId: 'g3-instance' },
+          effects: request.requestedEffects,
+          authorityGeneration: 0,
+          binding: {
+            bindingId: `plane-row:${TEMPLATE}:${name}`,
+            agentScopeKey: `plane:${TEMPLATE}`,
+            toolName: name,
+            definitionIdentity: `plane:${TEMPLATE}:${name}`,
+            providerId: 'a5p5-plane',
+            implementationOrigin: 'team-trusted-extension',
+            executionBoundary: 'confined-subprocess',
+            status: 'ACTIVE',
+            policyGeneration: 0,
+            authorityGeneration: 0,
+            revision: 1,
+            assurance: { class: 'UNTESTED', source: 'team-trusted-extension' },
+          },
+          ...(walked === undefined ? {} : { planSnapshot: walked }),
+        },
+      }
+    }
+    // POSITIVE: terminal_list IS placed → the read names its placement and
+    // the call walks to the mint and serves.
+    const w = makeInject()
+    const seen: Array<{ family: Record<string, unknown> | undefined }> = []
+    const built = buildPlane({ backends: { terminal: w.inject }, controlLeg: mintingControlLeg(seen, plans), readCallFacts })
+    expect(built.ok).toBe(true)
+    if (built.ok !== true) return
+    const def = built.value.definitions.find((d) => d.name === 'terminal_list') as Definition
+    const served = await def.execute({}, { token: { k: 'g3-callfacts' }, agent: AGENT })
+    expect(served).toEqual([{ sessionId: 'pty-1', type: 'shell', status: { kind: 'running' } }])
+    // the measured law: the SAME read is asked the SAME question twice —
+    // once to BUILD the request's binding (admission), once at the execution
+    // EDGE (drift check). Both asks must carry the G3 placement spelling.
+    expect(reads.length, 'construction + edge reads both ran for the placed row').toBe(2)
+    expect([...new Set(reads.map((r) => String(r.placementName)))], 'paPlacementNameOf named the G3 placement').toEqual(['terminal_list'])
+    expect(String(reads[0]!.callId)).toMatch(/^team-g3-instance-g3-terminal_list:hexec:/)
+    // NEGATIVE: a CENSUS name (never placed) has no row and NEVER produces
+    // a call-facts read — the native behind it stays untouched and the
+    // placement list refuses to name it (zero flip through the SAME line).
+    const wc = makeInject({ absent: ['terminal_list'] })
+    const readsC: Array<Record<string, unknown>> = []
+    const plansC: Array<Record<string, unknown>> = []
+    const builtC = buildPlane({ backends: { terminal: wc.inject }, controlLeg: mintingControlLeg([], plansC), readCallFacts: async (r: Record<string, unknown>) => { readsC.push(r); const nm = String(r.placementName ?? ''); const wk = plansC[plansC.length - 1]; return { kind: 'call-facts', facts: { realmId: String(r.realmId ?? REALM), member: { teamSessionId: 'g3-plane-team', instanceId: 'g3-instance' }, effects: r.requestedEffects, authorityGeneration: 0, binding: { bindingId: `plane-row:${TEMPLATE}:${nm}`, agentScopeKey: `plane:${TEMPLATE}`, toolName: nm, definitionIdentity: `plane:${TEMPLATE}:${nm}`, providerId: 'a5p5-plane', implementationOrigin: 'team-trusted-extension', executionBoundary: 'confined-subprocess', status: 'ACTIVE', policyGeneration: 0, authorityGeneration: 0, revision: 1, assurance: { class: 'UNTESTED', source: 'team-trusted-extension' } }, ...(wk === undefined ? {} : { planSnapshot: wk }) } } } })
+    expect(builtC.ok).toBe(true)
+    if (builtC.ok !== true) return
+    expect(builtC.value.definitions.find((d) => d.name === 'terminal_list'), 'census row placed nothing').toBeUndefined()
+    expect((builtC.value.terminal?.declared ?? []).map((d) => d.name)).toEqual(['terminal_list'])
+    const placedRow = builtC.value.definitions.find((d) => d.name === 'terminal_read') as Definition
+    await placedRow.execute({ sessionId: 'pty-1' }, { token: { k: 'g3-census-contrast' }, agent: AGENT })
+    expect([...new Set(readsC.map((r) => String(r.placementName)))], 'only PLACED spellings reach the read').toEqual(['terminal_read'])
   })
 })

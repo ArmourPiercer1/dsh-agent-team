@@ -367,23 +367,58 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
 import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
-// A5M2 G3 B-TERMINAL (root 19:08, wiring lane; the ScheduleInputError law
-// verbatim — 同Host错误类 is a MODULE identity, never a look-alike class):
-// the REAL pinned-639 cleanup-error class from the published `terminal` face
-// (terminal/src/types.ts:18, an AggregateError carrying spawnError +
-// cleanupError — the live TerminalSessionService.spawn catch tests
-// `instanceof` this exact class, index.ts:197), and the REAL session
-// capability + its published config law from the `terminal-bash` face
-// (LocalPtySession @ terminal-bash src/session.ts:237; resolveConfig/
-// validateConfig @ config.ts:78/:119 — the same functions
-// BashTerminalBackend.spawn runs before constructing the session,
-// index.ts:196/:236). The export map PUBLISHES ./src/* — this is the public
-// face, not a private-path import. CAPACITY DISCLOSURE: these published
-// packages are not installed in THIS test tree (the @deepseek-ai/dsh-schedule
-// precedent — center materializes installs at merge; no install runs here).
-import { TerminalBackendCleanupError } from '@deepseek-ai/dsh-terminal'
-import { LocalPtySession } from '@deepseek-ai/dsh-terminal-bash/src/session.ts'
-import { resolveConfig, validateConfig } from '@deepseek-ai/dsh-terminal-bash/src/config.ts'
+// A5M2 G3 B-TERMINAL (root 19:08 wiring lane; root 20:14 card item 1
+// CORRECTS the supply route): the pinned-639 terminal faces must NOT be
+// top-level imports. A top-level `@deepseek-ai/*` import loads on EVERY
+// mount, including a mount where the terminal family is not deployed at all
+// (禁用态也加载), and the Host's published `./src/*` subpath is answered by the
+// checkout only because its `files` list omits src — a local/devDep presence
+// therefore proves NEITHER publication NOR that the class object is the SAME
+// instance the live terminals service tests with `instanceof`. So the supply
+// rides the mechanism this plugin ALREADY ships for `@deepseek-ai/*`:
+// host.ts's registered upstream-resolver hook (normal-first install, then
+// re-parent into the pinned Host checkout's apps/cli) — the loader is NOT
+// new, no alias is added. The load happens ONLY on the ENABLED path (the
+// `planeCfg.terminal` capture below), and it is then PAIR-CHECKED: the class
+// handed to the wiring must be the one the live service publishes
+// (TerminalSessionService and TerminalBackendCleanupError are exported by the
+// same `terminal/src/index.ts`, so a class from a DIFFERENT module instance
+// is caught and the mount refuses rather than silently installing a
+// look-alike). CAPACITY DISCLOSURE unchanged: these packages are not
+// installed in THIS test tree; the spec legs import the class from the
+// read-only pinned checkout face directly.
+let a5G3TerminalFaces
+/**
+ * A5M2-G3-WIRE (root 20:14 item 1): load the pinned-639 terminal faces ONCE,
+ * ONLY from the enabled path (the `planeCfg.terminal` capture). Bare
+ * `@deepseek-ai/*` specifiers ride the resolve hook the shipped entry ALREADY
+ * registers (host.ts registerUpstreamResolverOnce — normal-first install,
+ * then re-parent into the pinned Host checkout; no new loader, no alias), so
+ * what comes back is the Host-fixed supply chain's own module. A load failure
+ * THROWS — the capture turns it into the typed mount refusal; nothing is
+ * ever posed or shimmed.
+ */
+async function loadA5G3TerminalFaces () {
+  if (a5G3TerminalFaces !== undefined) return a5G3TerminalFaces
+  const terminalPkg = await import('@deepseek-ai/dsh-terminal')
+  const sessionModule = await import('@deepseek-ai/dsh-terminal-bash/src/session.ts')
+  const configModule = await import('@deepseek-ai/dsh-terminal-bash/src/config.ts')
+  if (typeof terminalPkg.TerminalBackendCleanupError !== 'function'
+    || typeof terminalPkg.TerminalSessionService !== 'function'
+    || typeof sessionModule.LocalPtySession !== 'function'
+    || typeof configModule.resolveConfig !== 'function'
+    || typeof configModule.validateConfig !== 'function') {
+    throw new Error('the pinned terminal faces did not answer their published exports (TerminalBackendCleanupError / TerminalSessionService / LocalPtySession / resolveConfig / validateConfig)')
+  }
+  a5G3TerminalFaces = Object.freeze({
+    cleanupErrorClass: terminalPkg.TerminalBackendCleanupError,
+    TerminalSessionServiceClass: terminalPkg.TerminalSessionService,
+    LocalPtySession: sessionModule.LocalPtySession,
+    resolveConfig: configModule.resolveConfig,
+    validateConfig: configModule.validateConfig,
+  })
+  return a5G3TerminalFaces
+}
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
@@ -3342,6 +3377,29 @@ export function createAgentBindings(deps) {
           const g3Terminals = typeof deps.terminals === 'function' ? deps.terminals() : undefined
           const g3Subprocess = typeof deps.subprocess === 'function' ? deps.subprocess() : undefined
           const g3JobsService = typeof deps.jobs === 'function' ? deps.jobs() : undefined
+          // THE ENABLED-PATH SUPPLY (root 20:14 item 1): the pinned terminal
+          // faces load HERE and only here — a mount without `planeCfg.terminal`
+          // never evaluates the specifier at all — through the entry's ALREADY
+          // registered @deepseek-ai/* resolve hook (the fixed Host's own supply
+          // chain; no new loader, no alias).
+          let g3Faces
+          try {
+            g3Faces = await loadA5G3TerminalFaces()
+          } catch (error) {
+            throw refuseG3(`the pinned terminal faces could not be supplied through the shipped @deepseek-ai/* resolver (${String(error?.message ?? error).slice(0, 160)}) — the REAL session capability and cleanup-error class are loadable only on the enabled path; nothing is posed`)
+          }
+          // 核同实例 (root 20:14): the LIVE terminals service was constructed
+          // by the Host's own module graph; TerminalSessionService and
+          // TerminalBackendCleanupError are exported by the SAME terminal
+          // module. If the answered service is not an instance of the loaded
+          // module's service class, the loaded module is a DIFFERENT module
+          // instance than the Host's — the cleanup-error class handed to the
+          // wiring would be a look-alike the service's own `instanceof` law
+          // (terminal/src/index.ts:197) would not catch. REFUSE, never pose.
+          if (g3Terminals !== undefined && g3Terminals !== null
+            && !(g3Terminals instanceof g3Faces.TerminalSessionServiceClass)) {
+            throw refuseG3("the live terminals service is NOT an instance of the TerminalSessionService the supplied terminal module answers — the loaded copy is not the own module instance of the Host; a look-alike TerminalBackendCleanupError would cross a service whose instanceof law never catches it, so the mount refuses")
+          }
           a5G3TerminalInject = Object.freeze({
             providerId: g3Cfg.providerId,
             memberAgentId: g3MemberAgentId,
@@ -3401,13 +3459,13 @@ export function createAgentBindings(deps) {
                   ...(Number.isInteger(plan?.rows) ? { rows: plan.rows } : {}),
                   ...(Number.isInteger(plan?.cols) ? { cols: plan.cols } : {}),
                 }
-                const resolved = resolveConfig(config)
-                validateConfig(resolved)
-                return new LocalPtySession(handle, resolved)
+                const resolved = g3Faces.resolveConfig(config)
+                g3Faces.validateConfig(resolved)
+                return new g3Faces.LocalPtySession(handle, resolved)
               },
               // THE REAL CLASS — module identity, not a look-alike (the
               // service's spawn catch tests `instanceof` THIS class).
-              TerminalBackendCleanupError,
+              TerminalBackendCleanupError: g3Faces.cleanupErrorClass,
               // The bg-send lane: the JobRegistry face only travels WITH its
               // branded owner reader (the adapter's own law); absent = the
               // bg operations refuse typed, never run unowned.

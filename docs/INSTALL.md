@@ -437,6 +437,36 @@ config:
         minAbiVersion: 3
 ```
 
+**B-TERMINAL 列（`teamToolPlane.terminal`；A5M2-G3-WIRE 接线，root 20:14 表单列补齐）**：
+`terminal_*` 六行的受治挂载证据。**缺省不配 = 零翻转**（无行、无注册、native
+逐字节不变）；配置了但键集不合格 = **挂载被类型化拒绝**（`TERMINAL_ARM_INJECT_INVALID`，
+键集 CLOSED，多余键同样拒绝）。表单列的语义生产者分工：
+
+```yaml
+config:
+  teamToolPlane:
+    terminal:
+      providerId: "my-team-provider"          # 行 provider 身份（durable family gate 比对键）
+      declaredBackends: ["shell"]             # §5.1 declared_mount：公开的 DECLARED backend 类型集（非空字符串数组）
+      sessionConfig:                          # 可选；REAL LocalPtySession 的 base Config
+        rows: 24                              #   （BashTerminalBackend 同款发布 law：resolveConfig+validateConfig 先行）
+        cols: 80
+      ptyService: !!js/function >-            # 可选但一经启用即必须可答：§5.1 服务事实 seam
+        (ctx) => ({ backend, session, approvedOpenPlan })
+        # backend(type) → {registrationId, incarnation, processEnvelope?}；
+        # session(ownerAgentId, sessionId) → {incarnation, status}；
+        # approvedOpenPlan(callId) → 该次 open 的 CONTROLLED EXECUTION PLAN。
+        # 三者是 DEPLOYMENT 的 controlled backend provider 事实（owner 发布；
+        # 载体不同可经 cordis !!js）。capture 从不发明这些事实：seam 答不出的
+        # 行按 adapter 自身法律逐条类型化拒绝（P_TERM_TARGET_UNRESOLVED 等）。
+```
+
+live 的 `terminals` / `subprocess`（以及 bg 用的 `jobs`）**不进表单**：它们是
+Host 自身的公开服务，由装配经 lazy deps 在挂载时刻读取（`ctx.get` 的
+deps.jobs/web/B-IMAGE 既有模式）；世界缺服务 = 挂载被 hard-visit 法律类型化
+拒绝，已挂载世界的 `TerminalBackendCleanupError` 还须与服务自身的
+`instanceof` 律同实例配对（配对不过 = 拒绝挂载，从不静默装 look-alike 类）。
+
 **read-only 最小配方（Alpha.5 READ slice；P1 回归的机读对象）**：上块是
 含 shell 行的完整形态。本配方**仅为 `read` 提供此配置所需的能力/授权，不配置
 shell 信任对**（不配 `confinedProvider`/launcher 字段）；**grep/glob/bash 行

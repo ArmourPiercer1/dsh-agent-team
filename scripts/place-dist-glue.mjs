@@ -170,6 +170,26 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
   },
+  // A5M2-G3-WIRE (root 20:14 card item 3, 组合须补): the plane and the glue
+  // import the B-TERMINAL family by RELATIVE specifier — the wiring bridge
+  // (`g3-terminal-wiring.mjs`, imported by the mirrored plane) and its
+  // adapter (`g3-fsproc-adapters.mjs`, imported by the wiring AND the
+  // mirrored glue). Without BOTH placements the dist copy dies at
+  // ERR_MODULE_NOT_FOUND on the strict `files: ["dist"]` install face —
+  // exactly the invisible-absence class the C2 audit named for todo.mjs.
+  // Closure law holds: the wiring's cross-module legs land on tsc's OWN
+  // emit of the domain tool-governance index (inside the mirror, the G1
+  // law) and on the adapter below; the adapter's only cross-module leg is
+  // `../ptc-escalation-row.mjs` (already placed above); everything else is
+  // node builtins. Byte-identical like every entry; drift gate D compares.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-terminal-wiring.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

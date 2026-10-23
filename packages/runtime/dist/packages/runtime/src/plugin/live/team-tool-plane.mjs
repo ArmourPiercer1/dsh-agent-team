@@ -1504,6 +1504,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
     // ONLY when this mount actually placed them (zero flip otherwise).
     if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
+    // A5M2-G3-WIRE (root 20:14 card item 2): the B-TERMINAL rows mount at
+    // their FIXED native spellings, so production `readCallFacts` must be
+    // able to name their placement — WITHOUT this line the read arrives with
+    // NO placementName and the registry refuses the binding lookup (the
+    // mount would walk but never bind). THE REUSED SOURCE IS THE WIRING'S
+    // OWN PLACEMENT LIST (the Team85 pattern): a name resolves iff the G3
+    // wiring on THIS mount actually placed it — census rows and unmounted
+    // worlds answer undefined exactly as before (zero flip; no whole-family
+    // whitelist, no fake binding, never a guessed mapping).
+    if (g3Wiring !== null && g3Wiring.placementNames.includes(spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
