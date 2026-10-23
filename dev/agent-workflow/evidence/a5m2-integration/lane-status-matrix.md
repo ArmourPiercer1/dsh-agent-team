@@ -37,6 +37,10 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 
 - **E1 让位核（根 23:03）**：`domain/tool-governance/src/index.ts` 旧 DORMANT 描述头拟修=注释块、无行为变化。中心实测：git 全分支 18:00Z 以来该文件零提交、无任何 lane 声明占写（joint 批仅只读 import 其 parseRequestedEffectSet，已落不再触源）。**该注释块让 E1 其隔离树自改**；若后续普通合流冲突按中心 keep-both 常规处理，不抢写不挡 E1。
 
+- **a5-m1-host 状态核（根 23:06，只读）**：worktree 元数据 `.git/worktrees/a5-m1-host` 已注销、目录仍在盘（11 顶层项）；退役账（a356 retired-trees-2026-10-23）：head `d882483906…`、branch `feat/a5-m1-host-diag`（**origin 无此分支**）、dirty 711 与根数一致、dirty+untracked 证据已归档 `a5-m1-host.tar.zst` sha256 `641b7251…`（1430 文件核验）、tracked-diff patch 备份原样保留。**活跃 owner：找不到**（graph/router log/我的 lane 册均无主）。按根令归类：**owner 视作已退役、无活跃续阻信号 → 目录保护原样**（不 chmod 不 force 不删，87MiB 去重停，风险不冒）。
+- **Schedule 最终五合一候窗**：tip **`72d046c2df59b24ab114d2e51bee304913ac865d`**（ls-remote==local，parent 72e557bce）：requestId 每呼唯一（types :333-341/commands :330 实测后修）/pr-d resultData 形制（entries 在 result.value.data.entries，NO_RESULT 响亮）/pending=recorded−decided−abandoned+恰一新 pending 门+safeParse 修成员发现（旧 raw-object 遍历会静默空）/精确 factType+严格 payload.requestId（字符串扫全删）/cleanup ok 门（free=false 禁 exit 0）。诚实边界：dry 只证至 boot 边界、本轮未重跑（重装被禁）；edge-diff 实据 523/2220→602/2332（+112 边全可溯源 file: importer+平台可选件清单在册）。307c 支持按根 23:06：image 取证毕后只读复用既有 API，由根直送，002/d675 各为其文件唯一 writer——中心集成不等此支持。
+- **push 通道根因**：远端 owner 大小写迁移（armourpiercer1→ArmourPiercer1）旧 URL 重定向产物 "missing necessary objects"；origin 已重指 canonical 大写 URL，恢复直推（a985a3401 起）。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
