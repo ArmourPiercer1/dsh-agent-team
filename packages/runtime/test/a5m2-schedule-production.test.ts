@@ -678,7 +678,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B2 REAL service drift, both signed legs: (a) the service OBJECT replaced underneath the mount answers PORT_DRIFT with zero entries on either service, (b) a METHOD rebound under the same object answers PORT_DRIFT too — the current feed observes the ACTUAL ctx.schedule, and the combined RC rides the arm event AND the assembly refusal event (root 19:17)', async () => {
+  it('SP-B2 service-OBJECT drift: the service replaced underneath the mount answers PORT_DRIFT on the object leg (detail: "not the bound port object") with zero entries on either service — the current feed observes the ACTUAL ctx.schedule (root 19:17; legs split per root 19:31: this leg proves the OBJECT identity check ALONE)', async () => {
     const world = await mountWorld('b2')
     const arm = world.arms.schedule_list
     const c1 = arm.classify({})
@@ -686,7 +686,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(first.ok).toBe(true)
     expect(first.settled).toBe('service')
     expect(world.serviceCalls.list).toHaveLength(1)
-    // (a) the service OBJECT is replaced underneath the mount.
+    // the service OBJECT is replaced underneath the mount.
     const replacedCalls: unknown[] = []
     world.swapScheduleService({
       list: async (input: unknown) => { replacedCalls.push(input); return [] },
@@ -696,23 +696,36 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
       history: async () => { throw new Error('never') },
       update: async () => { throw new Error('never') },
     })
-    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string; detail?: string }
     expect(second.ok).toBe(false)
     expect(second.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    // the EXACT signed leg that fired (per-leg precise RC, not just code):
+    expect(String(second.detail)).toContain('not the bound port object')
     expect(world.serviceCalls.list).toHaveLength(1)
     expect(replacedCalls).toHaveLength(0)
-    // (b) the SAME object with a rebound list method — the method-identity
-    // leg of the same signed check; the drift is observed BEFORE any entry.
+    // 组合真RC: the exact typed code rides BOTH observable channels.
+    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(1)
+    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(1)
+  })
+
+  it('SP-B2M service-METHOD drift on the ORIGINAL bound object: the object identity check PASSES and the method-identity leg alone refuses PORT_DRIFT (detail: "rebound underneath the frozen bind") with zero entries — independently proven, the object leg cannot have fired first (root 19:31)', async () => {
+    const world = await mountWorld('b2m')
+    const arm = world.arms.schedule_list
+    const first = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string }
+    expect(first.ok).toBe(true)
+    expect(world.serviceCalls.list).toHaveLength(1)
+    // the SAME service OBJECT, one method rebound underneath the frozen
+    // bind — no swap happened, so only the method-identity leg CAN fire.
     let reboundHits = 0
     world.rebindScheduleList(async () => { reboundHits += 1; return [] })
-    const third = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
-    expect(third.ok).toBe(false)
-    expect(third.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    const second = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string; detail?: string }
+    expect(second.ok).toBe(false)
+    expect(second.code).toBe('P_B_SCHEDULE_PORT_DRIFT')
+    expect(String(second.detail)).toContain("rebound underneath the frozen bind")
     expect(reboundHits).toBe(0)
     expect(world.serviceCalls.list).toHaveLength(1)
-    // 组合真RC: the exact typed code rides BOTH observable channels.
-    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(2)
-    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(2)
+    expect(world.observed.filter((r) => r.includes('P_B_SCHEDULE_PORT_DRIFT') && r.startsWith('arm:b-schedule-arm:delegated'))).toHaveLength(1)
+    expect(world.observed.filter((r) => r.startsWith('wire:b-schedule:refusal:P_B_SCHEDULE_PORT_DRIFT'))).toHaveLength(1)
   })
 
   it('SP-B3 the admitted delete body reaches the service with the OWNER session and the EXACT branded id and settles the native value — exactly one dispatch', async () => {
