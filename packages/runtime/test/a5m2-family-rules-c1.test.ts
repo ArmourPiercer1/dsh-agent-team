@@ -1,5 +1,17 @@
 /**
+ * A5M2-FAMILY-RULES C1 — round 6 (root 19:06) lands at the bottom: the REAL
+ * closed rule maps for B-SCHEDULE (11 measured leaves; wire @3e88b2822,
+ * adapter rev 2; subset delete(31)/list(32) - create/update stay disabled
+ * lane-side, not by this table) and B-SESSION-QUERY (rev-4 mint
+ * @fe63dec9e; both search rows REQUIRE maxSearchResults, the three
+ * always-mount rows FORBID it; callerWorkspaceCwd null|""|string; the
+ * one-element SESSION_HISTORY disclosure law stays mint-side). Claims are
+ * transcribed field-for-field from read-only fixed-commit reads; grammar
+ * entries are type gates - no Host, no C2 claim, real PA assembly is the
+ * wire lanes' own obligation.
+ *
  * A5M2-FAMILY-RULES C1 — round 5 (root 18:42 LIMITED ruling on c80fad) adds
+ * at the bottom: 'nullableString' + 'stringArray' as committed grammar under
  * at the bottom: 'nullableString' + 'stringArray' as committed grammar under
  * the six signed constraints (empty string LEGAL in nullableString — this
  * SUPERSEDES the candidate doc's length>0 line; missing ≠ null ≠ '' pinned as
@@ -393,10 +405,13 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(deny)
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-    // ONLY B-INSPECT carries a variant grammar (no schema generalization):
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY'])
+    // The discriminated variant grammar is carried ONLY by B-INSPECT and
+    // (per root 18:42/19:06) B-SESSION-QUERY - it does NOT generalize to
+    // B-MCP or to any other entry:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(familyId !== 'B-INSPECT')
+      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId)
+        .toBe(familyId !== 'B-INSPECT' && familyId !== 'B-SESSION-QUERY')
     }
   })
 
@@ -495,11 +510,12 @@ const B_IMAGE_REAL = {
 /* ─────────────────────────────────────────────────────────────────────────
  * ROUND 5 (root 18:42 LIMITED ruling on c80fad): 'nullableString' +
  * 'stringArray' as committed grammar under EXACTLY the six signed
- * constraints, one leg each. B-SCHEDULE and B-SESSION-QUERY are NOT
- * registered (their RULES land only after the root's ruling on this
- * commit); every synthetic claim below runs the REAL law through
- * validatePaFamilyTargetAgainstRule in this test namespace - the real table
- * still denies unknown families with the wire-pinned string.
+ * constraints, one leg each. At round 5 time B-SCHEDULE/B-SESSION-QUERY
+ * were NOT registered (their RULES waited for the root's ruling - which
+ * arrived at 19:06 and lands as the round-6 describe below); every synthetic
+ * claim here runs the REAL law through validatePaFamilyTargetAgainstRule in
+ * this test namespace - the real table still denies unknown families with
+ * the wire-pinned string.
  * ───────────────────────────────────────────────────────────────────────── */
 describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArray - the two kinds under exactly the signed semantics; the closed variant grammar carries the per-row difference', () => {
   // SYNTHETIC family shaped like the measured G6 claim (test namespace only,
@@ -682,23 +698,22 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
     for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
       expect(() => assertPaFamilyTargetRuleLegality(familyId, rule)).not.toThrow()
     }
-    // NO LEAK: the signed families keep the original five kinds; the table is
-    // still exactly the five registered families - the two new families'
-    // RULES land only after the root's ruling on this commit:
+    // NO LEAK on the ORIGINAL five families: they keep the original five
+    // kinds exactly (the two NEW kinds appear only in the two RULES root
+    // 19:06 landed - their own legs are the round-6 describe below):
     const ORIGINAL = new Set<string>(['string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations'])
-    expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-    for (const rule of Object.values(PA_FAMILY_TARGET_RULES)) {
+    for (const familyId of ['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT']) {
+      const rule = PA_FAMILY_TARGET_RULES[familyId]
+      if (rule === undefined) throw new Error(`signed family ${familyId} disappeared`)
       for (const kind of Object.values(rule.required)) expect(ORIGINAL.has(kind), kind).toBe(true)
       for (const group of Object.values(rule.variant?.by ?? {})) {
         for (const kind of Object.values(group.adds)) expect(ORIGINAL.has(kind), kind).toBe(true)
       }
     }
-    // unregistered families deny with the wire-pinned string (nothing widened
-    // the REGISTRY surface):
-    expect(validatePaFamilyTarget('B-SESSION-QUERY', {}))
-      .toBe(`familyId: no target structure is registered for 'B-SESSION-QUERY'`)
-    expect(validatePaFamilyTarget('B-SCHEDULE', {}))
-      .toBe(`familyId: no target structure is registered for 'B-SCHEDULE'`)
+    // a still-UNREGISTERED family denies with the wire-pinned string (the
+    // registry surface only grew by the two RULES the root ruled in):
+    expect(validatePaFamilyTarget('B-DOMAIN', {}))
+      .toBe(`familyId: no target structure is registered for 'B-DOMAIN'`)
   })
 
   it('constraints (5)+(6, revision): value-admission only - every signed encoding byte-identical; this grammar admits exactly adapterRevision 7 (round-4 law intact: revision-6 approvals stay explicitly stale, nothing translates; lossless walk + full fingerprint untouched)', () => {
@@ -713,5 +728,163 @@ describe('A5M2-FAMILY-RULES C1 round 5 (root 18:42): nullableString + stringArra
     // translation path (constraint (5): null vs missing stay distinguishable
     // end-to-end - pinned as three distinct outcomes in the constraint-(1) leg):
     expect(G1.A5_G1_ADAPTER_REVISION, 'widening moved no encoding digest: revision 7 stays; revision 6 stays explicitly stale, never translated').toBe(7)
+  })
+})
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ROUND 6 (root 19:06): the REAL closed rule maps for B-SCHEDULE and
+ * B-SESSION-QUERY land in PA_FAMILY_TARGET_RULES per the already-approved
+ * 18:42 structure. Claims below are transcribed FIELD-FOR-FIELD from the
+ * real mints measured READ-ONLY at fixed commits (root: read their actual
+ * mint, never copy/write the other trees):
+ *   B-SCHEDULE        schedule-wiring.mjs mintTargetManifest return object,
+ *                     feat/a5m2-wire-schedule @3e88b2822c3ffde3d941b21ebe3dd9c2fc5765f2
+ *                     :150-203 (adapter A5_B_SCHEDULE_ADAPTER_REVISION = 2,
+ *                     schedule-adapters.mjs :265) - 11 measured leaves, one
+ *                     closed key set, taskId null | validated id.
+ *   B-SESSION-QUERY   targetManifest literal, feat/a5m2-wire-g6
+ *                     @fe63dec9ef10addc26bcac9a96265f8fdb17be3a:1346-1355
+ *                     (A5_G6_ADAPTER_REVISION = 4, :214) - 7 base leaves +
+ *                     maxSearchResults ONLY on the two search rows; the
+ *                     unfixed :1353 key-with-undefined form is pinned
+ *                     failing CLOSED (the routed owner-side mint fix is key
+ *                     OMISSION; this table never translates).
+ * LEAF VALUES are representative of the lanes' real values; the KEY SETS,
+ * TYPES and null-vs-omitted discipline are exactly as measured. Leaf values
+ * are typed by the kinds; family laws (id trim-stability, the one-element
+ * SESSION_HISTORY disclosure, C1 destination equality) stay mint-side and
+ * are cited, never encoded here. Grammar entries are TYPE GATES: nothing
+ * here mounts anything, enables Host, or claims C2 - the real PA assembly
+ * stays the wire lanes' own obligation.
+ * ───────────────────────────────────────────────────────────────────────── */
+describe('A5M2-FAMILY-RULES C1 round 6 (root 19:06): the real B-SCHEDULE + B-SESSION-QUERY closed maps - claims transcribed from the wire mints at fixed commits', () => {
+  const G6_DISCLOSURE = 'SESSION_HISTORY_RESOURCE_KIND law sentence (rev-4 mints disclosures === [this blocker] on EVERY row, wire-g6 @fe63dec9e:1354, never droppable - mint-side law, not the kind)'
+  const SCHEDULE_DELETE_CLAIM: Record<string, unknown> = {
+    // @3e88b2822:191-203 projection, schedule_delete (record 31), admitted id:
+    contract: 'M0-B-FAMILY-TARGET-CONTRACTS §B-SCHEDULE — target I+S(owner session+taskId+revision,action)+S(timer namespace,arm/reschedule/disarm)+S(destination session,wake)',
+    ownerKind: 'bound-live-agent-reference',
+    ownerSessionId: 'sess-owner-1',
+    action: 'schedule-delete',
+    taskId: 'sched-0007x9',
+    revision: 'r3',
+    timerNamespace: 'ns-team-a5m2',
+    timerEffect: 'disarm',
+    destinationSessionId: 'sess-owner-1',
+    destinationPath: 'inbox/timers',
+    destinationWake: 'followup',
+  }
+  const SCHEDULE_LIST_CLAIM: Record<string, unknown> = {
+    // same projection, schedule_list (record 32): taskId rides NULL as measured
+    ...SCHEDULE_DELETE_CLAIM,
+    action: 'schedule-list',
+    taskId: null,
+    timerEffect: 'arm',
+  }
+  const G6_SEARCH_CLAIM: Record<string, unknown> = {
+    // wire-g6 @fe63dec9e:1346-1355, session_search (search family): the
+    // variant leaf + REQUIRED maxSearchResults:
+    toolName: 'session_search',
+    operation: 'search-across-sessions',
+    portFamily: 'search',
+    portMethod: 'searchSessions',
+    effectiveTargetSessionId: 'sess-caller-1',
+    callerWorkspaceCwd: '/srv/work',
+    maxSearchResults: 50,
+    disclosures: [G6_DISCLOSURE],
+  }
+  const G6_TRACE_CLAIM: Record<string, unknown> = {
+    // same mint, session_trace (always-mount row): NO maxSearchResults key
+    // (post routed-mint-fix omission; the CURRENT key-with-undefined form is
+    // its own CLOSED leg below):
+    toolName: 'session_trace',
+    operation: 'trace-session-lineage',
+    portFamily: 'trace',
+    portMethod: 'traceSession',
+    effectiveTargetSessionId: 'sess-target-1',
+    callerWorkspaceCwd: null,
+    disclosures: [G6_DISCLOSURE],
+  }
+
+  it('B-SCHEDULE ACCEPT: both signable rows (delete 31, list 32) validate field-for-field; taskId keeps null|non-empty as measured; ""-admission is the GRAMMAR law (18:42(1)) while non-empty+trim-stable stays the wire lane\'s BUSINESS edge (@3e88b2822:511-517)', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-SCHEDULE']).toBeDefined()
+    expect(validatePaFamilyTarget('B-SCHEDULE', SCHEDULE_DELETE_CLAIM)).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SCHEDULE', SCHEDULE_LIST_CLAIM)).toBeUndefined()
+    expect(keysOf(SCHEDULE_DELETE_CLAIM)).toEqual(requiredKeysOf('B-SCHEDULE'))
+    expect(requiredKeysOf('B-SCHEDULE')).toHaveLength(11)
+    expect(PA_FAMILY_TARGET_RULES['B-SCHEDULE']?.required.taskId).toBe('nullableString')
+    expect(PA_FAMILY_TARGET_RULES['B-SCHEDULE']?.variant).toBeUndefined() // ONE measured shared key set - no groups needed
+    // grammar-vs-business-edge honesty, pinned so nobody reads the kind as
+    // the id law: '' PASSES the grammar (18:42(1)); the delete id law
+    // (non-empty, no surrounding whitespace) refuses it at the lane's edge.
+    expect(validatePaFamilyTarget('B-SCHEDULE', { ...SCHEDULE_DELETE_CLAIM, taskId: '' })).toBeUndefined()
+    // negatives: the three distinct taskId states + closed key set:
+    expect(validatePaFamilyTarget('B-SCHEDULE', without(SCHEDULE_DELETE_CLAIM, 'taskId')))
+      .toBe('taskId: required by the B-SCHEDULE typed plan, absent')
+    expect(validatePaFamilyTarget('B-SCHEDULE', { ...SCHEDULE_DELETE_CLAIM, taskId: undefined }))
+      .toBe('taskId: not a nullableString')
+    expect(validatePaFamilyTarget('B-SCHEDULE', { ...SCHEDULE_DELETE_CLAIM, taskId: 7 }))
+      .toBe('taskId: not a nullableString')
+    expect(validatePaFamilyTarget('B-SCHEDULE', { ...SCHEDULE_DELETE_CLAIM, action: '' }))
+      .toBe('action: not a string')
+    expect(validatePaFamilyTarget('B-SCHEDULE', { ...SCHEDULE_DELETE_CLAIM, triggerLicense: 'future wakes authorized' }))
+      .toBe('triggerLicense: not part of the B-SCHEDULE typed plan')
+    // ENABLEMENT IS NOT THIS TABLE: create(30)/update(33) stay disabled by
+    // the wire lane's A5_B_SCHEDULE_WIRING_SUBSET + registration - no claim
+    // for them ever reaches this gate; nothing here enables Host.
+  })
+
+  it('B-SESSION-QUERY ACCEPT: all FIVE rev-4 rows validate on the closed maps - both search rows REQUIRE maxSearchResults, the three always-mount rows FORBID it; callerWorkspaceCwd keeps null|""|string; disclosures stays a mint-enforced law sentence list', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-SESSION-QUERY']).toBeDefined()
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', G6_SEARCH_CLAIM)).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_SEARCH_CLAIM, toolName: 'session_event_search', operation: 'search-within-session', portMethod: 'searchEvents' })).toBeUndefined()
+    expect(keysOf(G6_SEARCH_CLAIM)).toEqual([...requiredKeysOf('B-SESSION-QUERY'), 'maxSearchResults'].sort())
+    for (const [toolName, operation, portMethod] of [
+      ['session_trace', 'trace-session-lineage', 'traceSession'],
+      ['session_event_trace', 'trace-event-relationships', 'traceEvent'],
+      ['session_event_read', 'read-event-window', 'readEvent'],
+    ] as const) {
+      const claim = { ...G6_TRACE_CLAIM, toolName, operation, portMethod }
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', claim), toolName).toBeUndefined()
+      expect(keysOf(claim)).toEqual(requiredKeysOf('B-SESSION-QUERY'))
+    }
+    // callerWorkspaceCwd - the 18:42(1) three-value law on the REAL rule:
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, callerWorkspaceCwd: '' })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', without(G6_TRACE_CLAIM, 'callerWorkspaceCwd')))
+      .toBe('callerWorkspaceCwd: required by the B-SESSION-QUERY typed plan, absent')
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, callerWorkspaceCwd: 5 }))
+      .toBe('callerWorkspaceCwd: not a nullableString')
+    // effectiveTargetSessionId stays strict 'string': the mint ternary's
+    // ': null' arm (@fe63dec9e:1351) is MEASURED-DEAD - validateCapturedArgs
+    // enforces the captured schema's string type (:1312-1316, "nothing is
+    // coerced") and requireCaller pins a non-empty caller.id:
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, effectiveTargetSessionId: null }))
+      .toBe('effectiveTargetSessionId: not a string')
+    // per-group maxSearchResults law (18:42(4)):
+    for (const bad of [50, 0, null, '50', undefined]) {
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, maxSearchResults: bad }), String(bad))
+        .toBe('maxSearchResults: not part of the B-SESSION-QUERY typed plan')
+    }
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', without(G6_SEARCH_CLAIM, 'maxSearchResults')))
+      .toBe('maxSearchResults: required by the B-SESSION-QUERY typed plan, absent')
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_SEARCH_CLAIM, maxSearchResults: null }))
+      .toBe('maxSearchResults: not a nonNegativeInt')
+    // PAIRING (fail-closed until the routed owner fix): wire-g6 :1353 CURRENTLY
+    // still writes maxSearchResults: undefined on non-search rows - that
+    // key-with-undefined form denies HERE exactly as it dies at the lossless
+    // walk; the fix is key OMISSION on the mint side (routed 18:42), and this
+    // table translates NOTHING. The row above (undefined → 'not part') is
+    // this pairing's pin.
+    // disclosures: the KIND admits [] and any all-string array; the FAMILY
+    // law (rev-4 mints EXACTLY [SESSION_HISTORY_RESOURCE_KIND], never
+    // droppable, @fe63dec9e:1354) is mint-side - never weakened, never
+    // moved into the grammar (18:42(3), pinned again against misreading):
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, disclosures: [] })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, disclosures: ['a', 1] }))
+      .toBe('disclosures: not a stringArray')
+    // own-key variant closure + strict-string discriminant:
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, toolName: 'session_bogus' }))
+      .toBe(`toolName: 'session_bogus' selects no B-SESSION-QUERY variant group`)
+    expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, toolName: 'toString' }))
+      .toBe(`toolName: 'toString' selects no B-SESSION-QUERY variant group`)
   })
 })
