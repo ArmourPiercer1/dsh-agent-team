@@ -59,7 +59,7 @@ import { spawnSync } from 'node:child_process'
 import { constants as fsConstants, existsSync, realpathSync, statSync } from 'node:fs'
 import { open as fsOpen } from 'node:fs/promises'
 import { relative, resolve, posix as posixModule, win32 as win32Module } from 'node:path'
-import { setTimeout as sleepTimer } from 'node:timers'
+import { setTimeout as sleepTimer, clearTimeout as clearSleepTimer } from 'node:timers'
 import { createConfinedProcessProvider } from '../../../sandbox-provider/index.js'
 import { parseRequestedEffectSet } from '../../../../domain/tool-governance/src/index.js'
 import { buildGlobCommand, GLOB_MAX_RESULTS, resolveRgPath } from '@deepseek-ai/dsh-tool-fs-search'
@@ -797,36 +797,74 @@ export function shellCancelled({ timedOut, aborted, reason }) {
  * house history, not speculation — the glob row's DRAIN-INCOMPLETE leg
  * (glob-backend.mjs, root ruling ①) recorded that provider stdio streams are NOT
  * guaranteed to close at lease settle, which is exactly why this is a bounded
- * stream-end await and NEVER a fixed sleep: it waits for the real 'end'/'close'
- * event and only bounds the pathological non-closing case. Resolves TRUE when
- * both streams settled, FALSE on bound expiry (the row then keeps the captured
- * bytes and reports the DRAIN-INCOMPLETE audit line — bytes stay honest, the
+ * stream-end await and NEVER a fixed sleep.
+ * THE COMPLETENESS LAW (root narrow-review ruling, B4): only the real EOF — the
+ * stream's 'end' / `readableEnded` — proves the pipe delivered everything the
+ * writer flushed before its death. Every other settle point is INCOMPLETE: an
+ * early `destroy`, a 'close' without a prior 'end', an 'error', or the bound
+ * expiring. A teardown settles the drain IMMEDIATELY (no paying the bound for
+ * bytes that can no longer arrive) but answers `complete: false`; the bound
+ * answers `complete: false` too. The two incompletions are distinguishable
+ * (`shortOf: 'stdio' | 'bound'`) and both reach the row as `truncated: true`
+ * plus the DRAIN-INCOMPLETE audit line — bytes stay as captured, and the
  * settlement law above is untouched: exit code / timed-out / cancelled were
- * already decided by `raceShellSettle` and no drain answer rewrites them).
+ * already decided by `raceShellSettle` and no drain answer rewrites them.
+ * A stream that ENDED and was destroyed afterwards stays COMPLETE (the EOF
+ * stands; a routine post-end 'close' must not downgrade a healthy run).
+ * Two streams settle as an AND: complete only when EVERY present stream ended.
  * `sleep` is injectable exactly like `raceShellSettle`'s; the bound timer is
- * unref'd so a pending drain never keeps the process alive.
+ * unref'd and cleared once the drain answers, so a pending drain never keeps
+ * the process alive nor lingers after its answer.
  */
 export const SHELL_STREAM_DRAIN_MS = 2_000
 
+/**
+ * Resolves `{ complete: boolean; shortOf: 'bound' | 'stdio' | null }`.
+ * `shortOf` names WHICH leg closed an incomplete drain ('stdio' = a teardown
+ * or error hit before EOF on some stream; 'bound' = the production bound
+ * expired with a pipe still held); `null` only on the complete answer.
+ */
 export function drainShellStdio({ stdout, stderr, boundMs, sleep = sleepTimer }) {
-  const settledNow = (s) => s === null || s === undefined || s.readableEnded === true || s.destroyed === true
-  // THE ZERO-COST PATH (pinned by the D5 leg): a drain of already-settled
-  // streams returns through this single resolved promise — no listeners, no
-  // bound armed, no extra tick spent. Normal runs (payload wrote early, pipes
-  // closed early) always take it, so the fix costs the healthy cadence nothing.
-  if (settledNow(stdout) && settledNow(stderr)) return Promise.resolve(true)
-  const streamSettled = (s) => new Promise((resolve) => {
-    if (s === null || s === undefined) { resolve(); return }
-    // Completed streams pay nothing: no new event is waited for.
-    if (s.readableEnded === true || s.destroyed === true) { resolve(); return }
-    s.once('end', resolve)
-    s.once('close', resolve) // a teardown also means: no further data can arrive
-    s.once('error', resolve) // the spawn arm's guard makes errors non-fatal here
+  return new Promise((resolve) => {
+    const streams = [stdout, stderr].filter((s) => s !== null && s !== undefined)
+    let finished = false
+    let timer = null
+    /** @type {Array<{ stream: any, ended: boolean, onEnd: () => void, onClose: () => void, onError: () => void }>} */
+    const watched = []
+    const finish = (complete, shortOf) => {
+      if (finished) return
+      finished = true
+      for (const w of watched) {
+        w.stream.off('end', w.onEnd)
+        w.stream.off('close', w.onClose)
+        w.stream.off('error', w.onError)
+      }
+      if (timer !== null && timer !== undefined) clearSleepTimer(timer) // no-op for a custom sleep's handle shape
+      resolve({ complete, shortOf })
+    }
+    let endedCount = 0
+    for (const s of streams) {
+      if (s.readableEnded === true) { endedCount += 1; continue } // real EOF already stands (even if later destroyed)
+      if (s.destroyed === true) { finish(false, 'stdio'); return } // torn down before EOF: nothing can arrive
+      const w = { stream: s, ended: false, onEnd: () => {}, onClose: () => {}, onError: () => {} }
+      w.onEnd = () => {
+        w.ended = true
+        endedCount += 1
+        if (endedCount === streams.length) finish(true, null) // AND: every stream brought its EOF
+      }
+      // close/error while THIS stream never saw its 'end': the capture is cut
+      // short — settle now (waiting the bound would change nothing) and SAY so.
+      w.onClose = () => { if (!w.ended) finish(false, 'stdio') } // post-end 'close' is routine: ignored
+      w.onError = () => { if (!w.ended) finish(false, 'stdio') } // an error is not an EOF either
+      s.once('end', w.onEnd)
+      s.once('close', w.onClose)
+      s.once('error', w.onError)
+      watched.push(w)
+    }
+    if (endedCount === streams.length) { finish(true, null); return } // ZERO-COST PATH: real EOFs only — no listeners kept, NO bound armed (pinned by D5)
+    timer = sleep(() => finish(false, 'bound'), boundMs)
+    if (timer !== null && timer !== undefined) timer?.unref?.()
   })
-  return Promise.race([
-    Promise.all([streamSettled(stdout), streamSettled(stderr)]).then(() => true),
-    new Promise((resolve) => { const t = sleep(() => resolve(false), boundMs); t?.unref?.() }),
-  ])
 }
 
 export function createConfinedShellBackend({ realmId, templateId, instanceId, cwdRoot, confined, observe = () => {} }) {
@@ -981,15 +1019,18 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
       const cancelled = shellCancelled({ timedOut, aborted, reason: aborted ? signal?.reason : undefined })
       lastRuns.push({ callId: call.callId, pid: h.pid, exit: exit.code ?? null, timedOut, cancelled, stdoutBytes: stdout.length, stderrBytes: stderr.length })
       observe(`confined-shell ran realm=${realmId} call=${call.callId} pid=${String(h.pid)} exit=${String(exit.code ?? 'not-observed')} timedOut=${String(timedOut)} cancelled=${String(cancelled)}`)
-      // THE BOUND EXPIRY IS REPORTED, NEVER PASSED OFF (root ruling, B4 pins): an
-      // expired drain means a writer this row never owned still holds a pipe, so
-      // the capture MAY BE SHORTER THAN WHAT THE PAYLOAD WROTE — the outcome says
-      // exactly that on its data face (`truncated: true`, the contract's existing
-      // "this is not the whole answer" bit; the presentation renders it as the
-      // truncation marker) and the audit line repeats it. The bytes stay as
-      // captured (honest partial), the settle race's answer stays as settled, and
-      // nothing in this row may claim a complete capture it did not observe.
-      if (drained !== true) observe(`confined-shell DRAIN-INCOMPLETE realm=${realmId} call=${call.callId} pid=${String(h.pid)}`)
+      // AN INCOMPLETE DRAIN IS REPORTED, NEVER PASSED OFF (root narrow-review
+      // ruling, B4 pins): the drain answers complete ONLY on the real EOF of
+      // every stream. A bound expiry (a writer this row never owns still holds a
+      // pipe) OR a teardown/error before EOF means the capture MAY BE SHORTER THAN
+      // WHAT THE PAYLOAD WROTE — the outcome says exactly that on its data face
+      // (`truncated: true`, the contract's existing "this is not the whole answer"
+      // bit; the presentation renders it as the truncation marker) and the audit
+      // line repeats it WITH THE CAUSE (shortOf distinguishes the two). The bytes
+      // stay as captured (honest partial), the settle race's answer stays as
+      // settled, and nothing in this row may claim a complete capture it did not
+      // observe.
+      if (drained.complete !== true) observe(`confined-shell DRAIN-INCOMPLETE realm=${realmId} call=${call.callId} pid=${String(h.pid)} shortOf=${String(drained.shortOf)}`)
       return {
         ok: true,
         outcome: {
@@ -1007,9 +1048,13 @@ export function createConfinedShellBackend({ realmId, templateId, instanceId, cw
           stderr,
           timedOut,
           cancelled,
-          // B4: a completed drain keeps the historical `false`; an expired bound
-          // flips the existing "not the whole answer" bit — see above.
-          truncated: drained !== true,
+          // B4: a drain that reached the real EOF on BOTH streams keeps the
+          // historical `false`; ANY other settle point — bound expiry, an early
+          // destroy, a close without end, an error — flips the existing "not the
+          // whole answer" bit (the drain answers complete ONLY on EOF). A stream
+          // that ended and was destroyed AFTER still counts complete, so a healthy
+          // run's post-end teardown never downgrades it. See `drainShellStdio`.
+          truncated: drained.complete !== true,
         },
         settlement: timedOut || aborted
           ? { kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' }
