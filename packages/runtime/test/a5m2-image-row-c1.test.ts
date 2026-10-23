@@ -850,6 +850,10 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     expect(Number.isInteger(attachment.bytes)).toBe(true)
     expect(Number.isInteger(attachment.width)).toBe(true)
     expect(Number.isInteger(attachment.height)).toBe(true)
+    // 1:1 store: no normalization happened, so the ref carries NO
+    // originalDimensions (its presence would LIE about a reduction) — the
+    // field is conditional exactly like the host's ref (pin639).
+    expect(attachment.originalDimensions).toBeUndefined()
   })
 
   it('card ③ (full-argument fingerprint): two spellings of ONE governed file are TWO fingerprints over one identical approved target', async () => {
@@ -963,6 +967,42 @@ describe('A5M2-IMAGE-ROW: the read_image row mounts at the placement moment, reg
     expect(value.image.originalDimensions).toEqual({ width: 4096, height: 2560 })
     expect(world.arm.stats()).toMatchObject({ portCalls: 1, commits: 1 })
     expect(world.adapter.stats()).toMatchObject({ storeCalls: 1 })
+    expect(events.length).toBe(0)
+    // THE RENDER EDGE (root narrow review on ea12, item ①): the reduced
+    // coords AND the original frame ride the plane's REAL output.render into
+    // the model-facing attachment block — not just the raw execute value.
+    const renderFace = world.imageDef as unknown as { output?: { render?: (a: unknown, v: unknown) => Array<Record<string, unknown>> } }
+    const blocks = renderFace.output?.render?.({ file_path: 'good.png' }, value)
+    const attachment = blocks?.[1]?.attachment as Record<string, unknown>
+    expect(blocks?.[1]?.type).toBe('image')
+    expect(attachment.width).toBe(32)
+    expect(attachment.height).toBe(20)
+    expect(attachment.originalDimensions).toEqual({ width: 4096, height: 2560 })
+    expect(attachment.attachmentId).toBe(value.image.attachmentId)
+  })
+
+  it('leg 13 (item ② drain window during the capability probe): a dispose that lands WHILE the probe awaits still refuses before the port — the re-arm of the drain verdict after the await', async () => {
+    // The probe is the ONE async edge between the entry drain check and the
+    // execution checks. A deferred probe holds the call there; drain() then
+    // flips the mount. When the probe finally answers ADMIT, the post-await
+    // re-check must still refuse DRAINING — zero port calls, zero saves.
+    const probeGate = { resolve: (_v: { ok: true }) => {}, promise: null as unknown as Promise<{ ok: true }> }
+    probeGate.promise = new Promise<{ ok: true }>((resolve) => { probeGate.resolve = resolve })
+    const world = await mountWorld('drain-window', {
+      policyFor: (root) => allowPolicyFor(join(root, 'good.png')),
+      imageCapability: () => probeGate.promise,
+    })
+    const events: Array<{ type: string; data: unknown }> = []
+    const running = world.imageDef.execute({ file_path: 'good.png' }, execFor('call-drain-window', events))
+    // the row's pre-arm edges are awaited — a macrotask tick is the honest
+    // "still in flight, probe unresolved" moment.
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    world.arm.drain()
+    probeGate.resolve({ ok: true })
+    await expect(running).rejects.toThrow(/P_IMAGE_DRAINING/)
+    expect(world.arm.stats()).toMatchObject({ portCalls: 0, commits: 0, consumed: 0 })
+    expect(world.adapter.stats().storeCalls).toBe(0)
+    expect(world.store.saves.length).toBe(0)
     expect(events.length).toBe(0)
   })
 })

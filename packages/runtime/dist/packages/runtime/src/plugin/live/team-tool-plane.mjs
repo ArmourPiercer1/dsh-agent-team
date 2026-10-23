@@ -2678,9 +2678,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // (read-image.ts:190-195: text + {type:'image', attachment: ref}). A
     // text-only render dropped the model-facing visual content; the shapes
     // are the host's own (mirrored locally, exactly how the read row
-    // mirrors formatReadRowOutput — no host-internal import). The
-    // downscale clause has no source in this lane (the governed port never
-    // resamples; normalization is pass-through) — stated, not invented.
+    // mirrors formatReadRowOutput — no host-internal import). THE REF FIELDS
+    // (root narrow review on ea12, item ①): the attachment block mirrors the
+    // HOST ref field set — `width`/`height` are the STORE receipt's
+    // coordinates (the stored, normalized object), and `originalDimensions`
+    // rides through WHEN PRESENT (pin639: present only when normalization
+    // reduced the raster) so original-frame coordinate mapping survives to
+    // the consumer. Pass-through is the coincidence of a 1:1 store, not the
+    // rule; the render never re-derives or re-reads anything.
     output: Object.freeze({
       schema: Object.freeze({
         type: 'object',
@@ -2707,6 +2712,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
               width: image.width,
               height: image.height,
               ...(typeof image.name === 'string' && image.name.length > 0 ? { name: image.name } : {}),
+              ...(Number.isInteger(image.originalDimensions?.width) && Number.isInteger(image.originalDimensions?.height)
+                ? { originalDimensions: Object.freeze({ width: image.originalDimensions.width, height: image.originalDimensions.height }) }
+                : {}),
             }),
           })
         }

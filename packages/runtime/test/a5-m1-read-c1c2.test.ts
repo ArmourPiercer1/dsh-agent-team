@@ -81,7 +81,12 @@ const confinedProvider = () => ({
   assembly: { launcherPath: LAUNCHER, launcherSha256: LAUNCHER_SHA, minAbiVersion: 3 },
 })
 const fsInstance = (realm: string) => ({ fs: 'a5m1-ctl', rootDir: ROOT_DIR, realmId: realm, kind: 'absolute-path' })
-const subtreeContains = ({ parent, child }: { parent: string; child: string }) => child === parent || child.startsWith(parent + '/')
+// THE seam arity law (root fs narrow review on ea12): ONE two-arg contract
+// subtreeContains(rulePath, locator) — plane lane decide (:598) and the read
+// executor's ruleCovers both call it this way. The old single-object bag let
+// this mirror answer `true` for ANY subtree via a destructuring miss
+// (`undefined === undefined`) — a false pass the corrected consumer exposes.
+const subtreeContains = (parent: string, child: string) => child === parent || child.startsWith(parent + '/')
 const joined = (body: ReadOk) => body.lines.map((l) => l.text).join('\n')
 
 async function run(fn: () => Promise<unknown>): Promise<{ resolved: true; value: unknown } | { resolved: false; msg: string }> {
@@ -574,6 +579,21 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     }), { fs: seam })
     const yes = await read.execute({ file_path: join(ROOT_DIR, 'target.txt') })
     expect(joined(yes)).toContain('alpha5-m1-read-line-1')
+    // (b2) the DEFAULT-DENY world (root fs narrow review on ea12): this is
+    // the line that died on the arity mismatch — under `default: deny` the
+    // executor's own allow-coverage gate (plane-effect-backends ruleCovers,
+    // PRE-PA) called the seam; the single-object bag handed the two-arg
+    // production seam an undefined locator and lexicalAnchor threw before PA
+    // was ever reached. A relative subtree ALLOW must COVER the effect here
+    // for the read to proceed at all.
+    const { read: denyDefault } = buildPlane(Object.freeze({
+      default: 'deny',
+      allow: Object.freeze([{ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: '.' }) }]),
+      ask: Object.freeze([]) as readonly unknown[],
+      deny: Object.freeze([]) as readonly unknown[],
+    }), { fs: seam })
+    const covered = await denyDefault.execute({ file_path: join(ROOT_DIR, 'target.txt') })
+    expect(joined(covered)).toContain('alpha5-m1-read-line-1')
     // (c) ESCAPE keeps the EXISTING lane semantics verbatim: a DENY whose
     // lexeme escapes the governed root still refuses the mount — the seam
     // canonicalizes it to NO exactly as the absolute-only fallback did.

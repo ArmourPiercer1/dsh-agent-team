@@ -1082,7 +1082,15 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
     if (kind === 'subtree') {
       if (typeof rule?.resource?.path !== 'string') return false
       if (typeof subtreeContains === 'function') {
-        return subtreeContains({ realmId, parent: rule.resource.path, child: locator }) === true
+        // THE one seam arity (root fs narrow review on ea12): the SAME two-arg
+        // contract the plane's lane decide already calls (:598
+        // subtreeContains(res.path, locator)) — rule path first, effect
+        // locator second. The old single-object bag invented a SECOND,
+        // undeclared protocol that the production seam (agent-bindings
+        // a5PlaneFsSeam, built for the two-arg law) could not answer: a
+        // `default: deny` + subtree rule failed on lexicalAnchor(undefined)
+        // BEFORE PA. No dual-protocol compatibility — one call shape.
+        return subtreeContains(rule.resource.path, locator) === true
       }
       return false // without the containment seam, a subtree rule proves nothing: refuse
     }

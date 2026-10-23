@@ -389,8 +389,13 @@ export function createGovernedReadImageArm({
     // (assertImageCapableRoute :119-130). The probe rides the PUBLIC llm
     // service and the CURRENT exec route — injected by the placing assembly;
     // never native re-entry, never a second authorization face. A refusal
-    // here answers with ZERO port calls, ZERO attachment writes and ZERO
-    // consumption: the count proves the pre-resource position.
+    // here keeps the ARM's own counters at zero (portCalls / commits /
+    // consumed) — the pre-RESOURCE position, proven by the count. POSITION,
+    // LABELED EXACTLY (root narrow review on ea12): the gate runs AFTER the
+    // unified PA final edge has consumed this call's grant and BEFORE the
+    // resource edge — arm `consumed: 0` is an ARM-level counter and does NOT
+    // mean "no PA consumption" (the ask world's grant is already spent by
+    // the time execute is reached; that is native's own ordering too).
     const plan = classify(args)
     if (plan.ok !== true) return { ...plan, classifyRefused: true }
     const requestedPath = String(args.file_path)
@@ -405,6 +410,14 @@ export function createGovernedReadImageArm({
       const code = refusal?.code === CODES.MODEL_NOT_IMAGE_CAPABLE ? CODES.MODEL_NOT_IMAGE_CAPABLE : CODES.ROUTE_UNRESOLVED
       return refuseExecution(code, `cannot read "${requestedPath}" as an image: ${String(refusal?.detail ?? 'the current model route could not be resolved')}`)
     }
+    // The probe's await is the ONE async edge between the entry drain check
+    // and the execution checks — a drain or cancel landing WHILE IT RAN must
+    // still die before the resource edge (root narrow review on ea12,
+    // item ②: entry check → await → signal-only check left a window where
+    // dispose could not be seen). BOTH verdicts re-arm the moment the probe
+    // answers, before any port call.
+    if (draining) return refuseExecution(CODES.DRAINING, 'the mount began draining while the capability probe was in flight: nothing resolved, read, or saved')
+    if (signal?.aborted === true) return refuseExecution(CODES.CANCELLED, 'cancelled while the capability probe was in flight: nothing resolved, read, or saved')
     // THE CONSUMPTION EXECUTION CONTEXT (root ruling on f3864b24, item 1):
     // two LEGAL worlds, told apart by the plane's trusted callFacts — never
     // guessed by the arm:
