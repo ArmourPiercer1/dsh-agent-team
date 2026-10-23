@@ -274,6 +274,11 @@ const DRAIN_SEMANTICS = 'drain = NEW-CALL PROHIBITION: the lane\'s durable commi
 /* ── small internal primitives (sibling house, schedule-adapters) ─────── */
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
+/** THE LANE'S OWN optional-string normalization (optionalStringField,
+ *  tokens.ts:142-144): an optional string field carrying an EMPTY STRING is
+ *  ABSENT. Used by the team_delegate branch decision (fix 3b) — reused,
+ *  never re-invented. */
+const optionalPresent = (value) => typeof value === 'string' && value.length > 0
 const deepFreeze = (value) => {
   if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
     for (const child of Object.values(value)) deepFreeze(child)
@@ -670,9 +675,18 @@ export function createTeamAdapterAssembly(input = {}) {
       // continue form and mislabelled it template/null; it no longer runs
       // for team_delegate.
       name === 'team_delegate'
-        ? ('delegationInstanceId' in snapshot
-          ? { claim: snapshot.delegationInstanceId ?? null, adjudication: 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id' }
-          : { claim: snapshot.delegationTemplateId ?? null, adjudication: 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there' })
+        ? // fix 3b (root ec97 narrow review): the branch decision rides the
+          // SAME optional-string normalization the delegated chain's law
+          // applies (optionalStringField, tokens.ts:142-144: an OPTIONAL
+          // field carrying an EMPTY STRING is ABSENT). The legal call
+          // {delegationTemplateId:'tpl-worker', delegationInstanceId:''}
+          // is CREATE — the empty id normalizes to absent — NOT a CONTINUE
+          // with an empty claim; a raw `in` check misread the explicitly
+          // passed empty option. Legality itself is untouched (the law
+          // still answers the lane's exactly-one bytes).
+          (optionalPresent(snapshot.delegationInstanceId)
+            ? { claim: snapshot.delegationInstanceId, adjudication: 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id' }
+            : { claim: optionalPresent(snapshot.delegationTemplateId) ? snapshot.delegationTemplateId : null, adjudication: 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there' })
         : ('targetInstanceId' in snapshot || 'recipientInstanceId' in snapshot || 'instanceId' in snapshot
           ? { claim: snapshot.targetInstanceId ?? snapshot.recipientInstanceId ?? snapshot.instanceId ?? null, adjudication: 'durable instance resolution INSIDE the delegated chain (labels/template ids are rejected; INSTANCE_ID addressing law)' }
           : (name === 'team_create_member'

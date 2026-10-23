@@ -787,4 +787,28 @@ describe('a5m2-team-adapters (k) root first-review fix pins', () => {
     // the generic instance branch must NOT have answered the continue form:
     expect((contPlan.target.member as { adjudication?: string }).adjudication).not.toContain('INSTANCE_ID addressing law')
   })
+  it('fix 3b — the branch decision rides the lane optional-string law (tokens.ts:142-144: EMPTY optional string = ABSENT): template=tpl-worker + instance=\'\' is a LEGAL CREATE, not an empty CONTINUE', () => {
+    const harness = makeHarness()
+    const assembly = mount(harness)
+    const row = assembly.rowOf('team_delegate')
+    if (row === undefined) throw new Error('no row')
+    // the root-quoted legal call: the empty optional instance id normalizes
+    // to ABSENT → CREATE form with the real template claim, no toolError.
+    const legalCreate = row.classify({ rootSessionId: ROOT, requestToken: 'tok-c-1', label: 'builder', prompt: 'p', delegationTemplateId: 'tpl-worker', delegationInstanceId: '' })
+    const lp = legalCreate.plan
+    if (lp === undefined) throw new Error(`legal create-form refused: ${String(legalCreate.code)} ${String(legalCreate.detail)}`)
+    expect(lp.toolError).toBeUndefined() // legality UNCHANGED: empty optional = absent, the exactly-one law passes on the template
+    expect(lp.target.member).toEqual({ claim: 'tpl-worker', adjudication: expect.stringContaining('CREATE form') })
+    // symmetric: template='' + a real instance id → the normalized instance
+    // decides CONTINUE, the claim carries the real id (never the empty string).
+    const legalContinue = row.classify({ rootSessionId: ROOT, requestToken: 'tok-c-2', label: 'builder', prompt: 'p', delegationTemplateId: '', delegationInstanceId: 'inst-a1' })
+    const lc = legalContinue.plan
+    if (lc === undefined) throw new Error('legal continue-form refused')
+    expect(lc.toolError).toBeUndefined()
+    expect(lc.target.member).toEqual({ claim: 'inst-a1', adjudication: expect.stringContaining('CONTINUE form') })
+    // input LEGALITY is untouched: both-empty stays the lane's exactly-one
+    // rejected VALUE (pre-existing byte law, restated here as the boundary).
+    const bothEmpty = row.classify({ rootSessionId: ROOT, requestToken: 'tok-c-3', label: 'builder', prompt: 'p', delegationTemplateId: '', delegationInstanceId: '' })
+    expect(bothEmpty.plan?.toolError).toMatchObject({ status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: delegate requires exactly one of delegationTemplateId / delegationInstanceId' })
+  })
 })
