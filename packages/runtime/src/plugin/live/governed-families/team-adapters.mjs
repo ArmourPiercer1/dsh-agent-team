@@ -144,12 +144,19 @@
  *     errors at all).
  *  L7 PER-DISPATCH EDGE RE-VERIFY: before any delegate entry the row
  *     re-answers REQUIRED `liveNative(name)` — the definition OBJECT
- *     identity, its description bytes, its compiled parameters, and its
- *     execute function must match the bind-time capture — and REQUIRED
- *     `liveTeamDelegates()`, which must answer the SAME bound port OBJECT
- *     whose `name` method is still the frozen delegate. Any drift refuses
- *     typed with ZERO delegate entry: there is no replacement-body path and
- *     no native fallback (the governed row IS the only path it serves).
+ *     identity, its description bytes, and its compiled parameters compared
+ *     against the BIND-TIME CANONICAL SNAPSHOT (deep bytes, not the live
+ *     shared reference — an in-place mutation cannot move both sides of the
+ *     compare together; the row still CARRIES the original reference for
+ *     presentation), and its execute function must match the bind-time
+ *     capture — and REQUIRED `liveTeamDelegates()`, whose answer must be the
+ *     SAME bound port OBJECT with the `name` method still the frozen
+ *     delegate. THE VERIFIED HANDLES ARE THE INVOKED HANDLES: edge integrity
+ *     returns {port, method} and the delegate edge calls exactly those —
+ *     there is no second, unverified live read between check and entry. Any
+ *     drift refuses typed with ZERO delegate entry: there is no
+ *     replacement-body path and no native fallback (the governed row IS the
+ *     only path it serves).
  *  L8 PLAN MEMO, RUN THE FRESH PLAN (root ④ boundary stated honestly):
  *     classify freezes {args snapshot, operation, target,
  *     parametersFingerprint, toolError?}; delegate re-derives classify on the
@@ -569,7 +576,10 @@ export function createTeamAdapterAssembly(input = {}) {
     return refuse(code, detail)
   }
 
-  /** L7 edge integrity. Returns a refusal or null. */
+  /** L7 edge integrity. Returns a frozen `{ port, method }` handle on the
+   *  VERIFIED live read (root first-review fix 1: the delegate edge later
+   *  INVOKES these exact handles — there is no second, unverified
+   *  `liveTeamDelegates()` read on the dispatch path), or a refusal. */
   const edgeIntegrity = (row) => {
     if (state.draining) {
       return refuse(CODES.DRAINING, `${row.name}: draining — new calls are refused, durable lane commits stay durable (${DRAIN_SEMANTICS})`)
@@ -582,8 +592,13 @@ export function createTeamAdapterAssembly(input = {}) {
     if (live !== bound.def) {
       return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the face behind liveNative is no longer the captured object — the governed call refuses; there is no replacement-body path and no native fallback`)
     }
-    if (live.description !== bound.descriptionBytes || canonicalJson(live.parameters) !== canonicalJson(bound.parameters)) {
-      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's description or compiled parameter bytes moved since bind time`)
+    // fix 2 (root first-review): the compare base is the BIND-TIME CANONICAL
+    // SNAPSHOT (deep bytes captured at bind time), never the live object's
+    // own reference — an IN-PLACE mutation of the shared compiled-parameters
+    // object can no longer move both sides of this comparison together. The
+    // row/placed definition still CARRY the original reference (L2).
+    if (live.description !== bound.descriptionBytes || canonicalJson(live.parameters) !== bound.parametersCanonical) {
+      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's description or compiled parameter bytes moved since bind time (compared against the BIND-TIME canonical snapshot, not the live shared reference)`)
     }
     if (live.execute !== bound.execute) {
       return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's execute function is no longer the bound function value`)
@@ -592,10 +607,11 @@ export function createTeamAdapterAssembly(input = {}) {
     if (current !== bound.port) {
       return refuse(CODES.PORT_DRIFT, `${row.name}: the CURRENT team delegates read is not the bound port object — a rebuilt/replaced implementation set underneath this mount is drift, full stop (L7)`)
     }
-    if (current[row.name] !== frozenDelegates[row.name]) {
+    const method = current[row.name]
+    if (method !== frozenDelegates[row.name]) {
       return refuse(CODES.PORT_DRIFT, `${row.name}: the delegate '${row.name}' was rebound underneath the frozen bind — a rebound implementation is drift, full stop`)
     }
-    return null
+    return Object.freeze({ port: current, method })
   }
 
   const buildActiveRow = (name, capture) => {
@@ -619,7 +635,7 @@ export function createTeamAdapterAssembly(input = {}) {
       classify: (rawArgs) => classify(row, rawArgs),
       delegate: (plan, ctx) => delegate(row, plan, ctx),
     }
-    boundOf.set(row, Object.freeze({ def, descriptionBytes, parameters, execute: def.execute, port: delegates }))
+    boundOf.set(row, Object.freeze({ def, descriptionBytes, parametersCanonical: canonicalJson(parameters), execute: def.execute, port: delegates }))
     return row
   }
 
@@ -632,7 +648,7 @@ export function createTeamAdapterAssembly(input = {}) {
     team_list_templates: 'the bound blueprint\'s member templates',
     team_inspect_config: 'ONE member\'s durable effective-policy / requirement / recovery facts',
     team_create_member: 'a NEW member instance from a blueprint template (the member-lifecycle object)',
-    team_delegate: 'a NEW work unit (+ create-form: a NEW member instance)',
+    team_delegate: 'a work unit with BOTH real branches (tools.ts:688-701): CONTINUE form = a NEW round on an EXISTING delegation instance (guarded on that target, SD-GUARD), CREATE form = a NEW delegation plus template-resolved member (SD-CREATE, activation authority is the gate)',
     team_follow_up: 'a NEW work unit on an EXISTING member (same bound child session)',
     team_collect: 'the durable work-unit states behind the submitted request tokens',
     team_send_message: 'one durable attributed message on the recipient\'s bound session',
@@ -646,11 +662,22 @@ export function createTeamAdapterAssembly(input = {}) {
       adjudication: 'the caller-root binding gate INSIDE the delegated chain (tools.ts:459-477, TEAM_TOOL_CALLER_ROOT_MISMATCH) compares the resolver\'s durable OWNING root against this claim — the row never trusts the argument string (C1)',
     }),
     member: Object.freeze(
-      'targetInstanceId' in snapshot || 'recipientInstanceId' in snapshot || 'instanceId' in snapshot
-        ? { claim: snapshot.targetInstanceId ?? snapshot.recipientInstanceId ?? snapshot.instanceId ?? null, adjudication: 'durable instance resolution INSIDE the delegated chain (labels/template ids are rejected; INSTANCE_ID addressing law)' }
-        : (name === 'team_create_member' || name === 'team_delegate'
-          ? { claim: snapshot.delegationTemplateId ?? null, adjudication: 'the activation authority resolves the template DURABLY inside the delegated chain' }
-          : 'no member addressed'),
+      // fix 3 (root first-review): team_delegate addresses its member
+      // through the REAL two-branch law (tools.ts:688-701) — the continue
+      // form carries delegationInstanceId (existing instance, SD-GUARD),
+      // the create form carries delegationTemplateId (no existing target,
+      // SD-CREATE activation gate). The generic branch below never saw the
+      // continue form and mislabelled it template/null; it no longer runs
+      // for team_delegate.
+      name === 'team_delegate'
+        ? ('delegationInstanceId' in snapshot
+          ? { claim: snapshot.delegationInstanceId ?? null, adjudication: 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id' }
+          : { claim: snapshot.delegationTemplateId ?? null, adjudication: 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there' })
+        : ('targetInstanceId' in snapshot || 'recipientInstanceId' in snapshot || 'instanceId' in snapshot
+          ? { claim: snapshot.targetInstanceId ?? snapshot.recipientInstanceId ?? snapshot.instanceId ?? null, adjudication: 'durable instance resolution INSIDE the delegated chain (labels/template ids are rejected; INSTANCE_ID addressing law)' }
+          : (name === 'team_create_member'
+            ? { claim: snapshot.delegationTemplateId ?? null, adjudication: 'the activation authority resolves the template DURABLY inside the delegated chain' }
+            : 'no member addressed')),
     ),
     object: TARGET_OBJECT[name],
     action: A5_B_TEAM_RECORD_SPECS[name].operation,
@@ -692,8 +719,8 @@ export function createTeamAdapterAssembly(input = {}) {
    *  resolves the caller from it per call — L4); nothing is taken from the
    *  plan closure. */
   const delegate = async (row, plan, ctx) => {
-    const integrity = edgeIntegrity(row)
-    if (integrity !== null) return refuseWith(row.name, integrity.code, integrity.detail)
+    const edge = edgeIntegrity(row)
+    if (edge !== null && edge.ok === false) return refuseWith(row.name, edge.code, edge.detail)
     if (!isRecord(plan) || plan.rowName !== row.name || plan.recordIndex !== row.recordIndex) {
       return refuseWith(row.name, CODES.NOT_OWN_PLAN, `${row.name}: the presented plan belongs to another row — governed dispatch never runs a foreign plan`)
     }
@@ -723,8 +750,10 @@ export function createTeamAdapterAssembly(input = {}) {
     // unexpected; the row passes the value or the throw through verbatim,
     // fabricating no error map (no duck-coding, root ③ spirit). L4: exec
     // rides BY REFERENCE — the chain resolves the live caller from it.
-    const current = input.liveTeamDelegates()
-    return Promise.resolve(current[row.name].call(current, fresh.plan.args, exec)).then((value) => {
+    // fix 1 (root first-review): the invocation goes to the EXACT port and
+    // method the edge-integrity read VERIFIED — no second liveTeamDelegates()
+    // read exists between verification and invocation.
+    return Promise.resolve(edge.method.call(edge.port, fresh.plan.args, exec)).then((value) => {
       observe({ event: 'b-team:dispatched', name: row.name })
       // SHALLOW freeze: the wrapper is ours; the lane's result may carry
       // lane-owned objects — the row never freezes the lane's own data.

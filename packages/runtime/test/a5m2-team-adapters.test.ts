@@ -706,3 +706,85 @@ describe('a5m2-team-adapters (i/j) drain + registration', () => {
     expect(() => floating.familyRegistrations()).toThrow(new RegExp(`^${CODES.PLACEMENT_KEY_MOVED}:`))
   })
 })
+
+// ── (k) ROOT FIRST-REVIEW FIX PINS (the three local cards) ────────────────
+describe('a5m2-team-adapters (k) root first-review fix pins', () => {
+  it('fix 1 — the VERIFIED live read IS the invoked read: a feed that turns over to a second, unverified set is never entered', async () => {
+    const harness = makeHarness()
+    const good: Record<string, Definition['execute']> = {}
+    for (const name of NAMES) {
+      const native = harness.byName.get(name)
+      if (native !== undefined) good[name] = native.execute
+    }
+    let poisonedHits = 0
+    const poisoned: Record<string, Definition['execute']> = { ...good }
+    poisoned.team_list_members = (async () => {
+      poisonedHits += 1
+      return { status: 'executed', poison: true }
+    }) as Definition['execute']
+    let reads = 0
+    const assembly = mount(harness, {
+      teamDelegates: good,
+      // reads 1 (assembly split-check) and 2 (the delegate edge) answer the
+      // VERIFIED set; ANY later read answers the second set. The pre-fix
+      // code performed exactly such a later read inside delegate and INVOKED
+      // whatever it answered.
+      liveTeamDelegates: () => {
+        reads += 1
+        return reads <= 2 ? good : poisoned
+      },
+    })
+    const row = assembly.rowOf('team_list_members')
+    if (row === undefined) throw new Error('no row')
+    const plan = row.classify(VALID_ARGS.team_list_members).plan
+    if (plan === undefined) throw new Error('no plan')
+    const settled = await row.delegate(plan, { exec: EXEC })
+    expect(settled).toMatchObject({ ok: true, settled: 'delegated' }) // the VERIFIED set answered
+    expect(poisonedHits).toBe(0) // the second set was never entered
+    expect(reads).toBe(2) // assembly check + the one edge read the call rides — nothing else
+    expect(harness.calls.length).toBeGreaterThan(0) // the real chain ran on the verified port
+  })
+  it('fix 2 — IN-PLACE mutation of the shared compiled-parameters object is CAUGHT (bind-time canonical snapshot), and the reference-presentation law stands', async () => {
+    const harness = makeHarness()
+    const assembly = mount(harness)
+    const row = assembly.rowOf('team_list_members')
+    const native = harness.byName.get('team_list_members')
+    if (row === undefined || native === undefined) throw new Error('no row/native')
+    expect(Object.isFrozen(native.parameters), 'premise (measured): the lane hands the LIVE mutable compiled object').toBe(false)
+    const plan = row.classify(VALID_ARGS.team_list_members).plan
+    if (plan === undefined) throw new Error('no plan')
+    const before = harness.calls.length
+    const liveParams = native.parameters as Record<string, unknown>
+    liveParams.inPlaceMutation = true
+    expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: false, code: CODES.DEFINITION_DRIFT })
+    expect(harness.calls).toHaveLength(before) // ZERO delegate entry on the mutated shared object
+    // the presentation law STANDS (root card 2): row + placed definition
+    // still CARRY the original live reference — only the COMPARE BASE is a
+    // bind-time canonical snapshot.
+    expect(row.parameters).toBe(native.parameters)
+    const placed = assembly.definitions.find((d) => d.name === 'team_list_members')
+    if (placed === undefined) throw new Error('no placed definition')
+    expect(placed.parameters).toBe(native.parameters)
+    delete liveParams.inPlaceMutation
+    expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: true, settled: 'delegated' }) // bytes restored → the row serves again
+  })
+  it('fix 3 — team_delegate mints the REAL two-branch target (tools.ts:688-701): CONTINUE = existing instance SD-GUARD, CREATE = template SD-CREATE', () => {
+    const harness = makeHarness()
+    const assembly = mount(harness)
+    const row = assembly.rowOf('team_delegate')
+    if (row === undefined) throw new Error('no row')
+    const cont = row.classify({ rootSessionId: ROOT, requestToken: 'tok-cont-1', label: 'builder', prompt: 'continue the round', delegationInstanceId: 'inst-a1' })
+    const contPlan = cont.plan
+    if (contPlan === undefined) throw new Error(`continue form refused: ${String(cont.code)} ${String(cont.detail)}`)
+    expect(contPlan.target.member).toEqual({ claim: 'inst-a1', adjudication: expect.stringContaining('CONTINUE form') })
+    expect((contPlan.target.member as { adjudication?: string }).adjudication).toContain('SD-GUARD') // guarded on the EXISTING target
+    expect(contPlan.target.object).toContain('CONTINUE form')
+    const create = row.classify(VALID_ARGS.team_delegate)
+    const createPlan = create.plan
+    if (createPlan === undefined) throw new Error('create form refused')
+    expect(createPlan.target.member).toEqual({ claim: 'tpl-worker', adjudication: expect.stringContaining('CREATE form') })
+    expect((createPlan.target.member as { adjudication?: string }).adjudication).toContain('SD-CREATE') // no existing target: activation gate
+    // the generic instance branch must NOT have answered the continue form:
+    expect((contPlan.target.member as { adjudication?: string }).adjudication).not.toContain('INSTANCE_ID addressing law')
+  })
+})
