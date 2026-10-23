@@ -558,7 +558,7 @@ function execFor(agent: Record<string, unknown>): Record<string, unknown> {
 }
 const delegatedRows = (world: World) => world.observed.filter((r) => r.startsWith('arm:b-schedule-arm:delegated'))
 
-describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — grammar gate CLOSED pending root', () => {
+describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — the signed B-SCHEDULE rule table is REGISTERED at this base (family-chain landing bf4e89e108620479d1a43344a8ea74d82cfde229): the validated ask-lane claim MINTS its approval request and the deny-resolve legs answer it', () => {
   // ── GROUP A — the real plane flight up to the SIGNED-GRAMMAR BOUNDARY ──
   // Every leg below runs the mounted plane's own row execute: the REAL
   // paAdmit.open, the REAL durable Control leg carrying the walk's four
