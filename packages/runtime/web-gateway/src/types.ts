@@ -117,16 +117,49 @@ export interface WebGatewayCallRequest extends Omit<GatewayCallRequest, 'target'
 export type SearchOriginResolver = () => string | Promise<string>
 
 // ---------------------------------------------------------------------------
-// The approval authority (ROOT 07:38 GROUP 3): the gateway is envelope +
-// destination validation + delegation ONLY. Every approval FACT — grant
-// validity (expired/revoked), single-use consumption, payload↔manifest
-// binding, definition/binding verification, concurrent-replay refusal — is
-// produced by the injected authority (the M1 manifest + trusted
-// call-definition-provider + ONE consume, wired by the integration owner)
-// and travels here as an already-decided Result. A refusal from the
-// authority is passed through VERBATIM (code, message, sideEffectUnknown,
-// details): the lane never re-admits, re-judges, or mints its own approval.
+// The approval authority (ROOT 07:38 GROUP 3 + ROOT 08:4x C2): the gateway is
+// envelope + destination validation + delegation ONLY. Every approval FACT is
+// produced by the injected authority and passed through VERBATIM (code,
+// message, sideEffectUnknown, details): the lane never re-admits, re-judges,
+// or mints its own approval. C2 LAW: the authority NEVER judges on the
+// presented grant — a presented document cannot self-prove (the pre-fix
+// counterexample `c123-before-counterexamples` C2 showed an
+// attacker-written effects set approving its own destination). What the
+// authority judges on is the TRUSTED CALL FACTS, captured from the center
+// ledger by the injected {@link WebFactsSource} using ONLY the correlation
+// ids the request carries. The lane cannot mint these facts; missing/incomplete
+// facts are typed refusals (honest: pending the center's wiring).
+// The lane keeps exactly ONE deterministic consistency check: the request's
+// payloadFingerprint MUST equal the canonical fingerprint of the FROZEN
+// normalized snapshot the gateway itself built once (C1 — see ./index.js).
 // ---------------------------------------------------------------------------
+
+/** The complete trusted fact set for ONE call (C2): full effects set, live
+ *  generations, member/call identity. Produced ONLY by the center edge. */
+export interface WebTrustedCallFacts {
+  readonly member: { readonly teamSessionId: string; readonly instanceId: string }
+  readonly callId: string
+  /** CURRENT binding generation (not the presented document's claim). */
+  readonly bindingRevision: number
+  readonly authorityGeneration: number
+  readonly policyGeneration: number
+  /** The ledger's FULL effects set for this call (every effect, every kind). */
+  readonly effects: { readonly effects: readonly unknown[] }
+}
+
+/** Center-edge capture port: correlation ids in, trusted facts out. The
+ *  gateway hands it ONLY ids (realmId/grantId/bindingId); grant/binding
+ *  DOCUMENTS never travel into the authority's judgement path. */
+export interface WebFactsSource {
+  capture(correlation: {
+    readonly realmId: string
+    readonly grantId: string
+    readonly bindingId: string
+  }): Promise<
+    { readonly ok: true; readonly value: WebTrustedCallFacts }
+    | { readonly ok: false; readonly error: GovernanceError }
+  >
+}
 
 /** What the authority returns for a SUCCESSFUL consume: the admitted
  *  manifest facts the gateway validates the derived destination against.
@@ -136,14 +169,19 @@ export interface WebConsumedGrant {
   readonly effects: { readonly effects: readonly unknown[] }
 }
 
-/** The exact material the authority needs to decide (nothing more; NO
- *  approval logic lives in this lane). */
+/** The exact material the authority needs to decide (C2 shape): trusted
+ *  facts + correlation only; cancellation state at decision time travels
+ *  to the real consume boundary (C3 cancel-first). */
 export interface WebAuthorityInput {
-  readonly grant: OperationGrant
-  readonly binding: ToolBinding
-  readonly payloadFingerprint: string
+  readonly facts: WebTrustedCallFacts
+  readonly correlation: {
+    readonly grantId: string
+    readonly bindingId: string
+    readonly payloadFingerprint: string
+  }
   readonly operationKind: WebOperationPayload['kind']
   readonly canonicalLocator: string
+  readonly cancelledAtDecision: boolean
 }
 
 /** The injected center-edge authority port (ONE consume per call). */
@@ -152,6 +190,14 @@ export interface WebGrantAuthority {
     { readonly ok: true; readonly value: WebConsumedGrant }
     | { readonly ok: false; readonly error: GovernanceError }
   >
+}
+
+/** Row lifecycle (C3): ONE closed state must cover EVERY exported reference;
+ *  the gateway re-checks it after each await and before delegating, and the
+ *  abort signal it exposes drains in-flight transport when close() fires. */
+export interface WebRowLifecycle {
+  isClosed(): boolean
+  readonly signal: AbortSignal | undefined
 }
 
 /** The Domain Authority's answer at the effect-commit point (D arm). Absent

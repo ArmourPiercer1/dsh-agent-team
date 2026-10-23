@@ -14,18 +14,25 @@
  * arms this row. An unarmed row is returned honestly (`active: false` +
  * code) and the entry mounts NOTHING — restrict-first.
  *
- * APPROVAL (ROOT 07:38 GROUP 3): the armed row REQUIRES `grantAuthority` —
- * the center-edge port (M1 manifest + trusted call-definition-provider +
- * ONE consume). This row owns NO approval logic; missing authority is a
- * typed decline, never a permissive default.
+ * APPROVAL (ROOT 07:38 GROUP 3 + ROOT 08:4x C2): the armed row REQUIRES BOTH
+ * `grantAuthority` (center-edge consume port) AND `factsSource` (center-edge
+ * ledger capture: correlation ids → trusted call facts — full effects set,
+ * generations, member/call identity). The presented grant/binding documents
+ * never travel into the judgement path. This row owns NO approval logic; a
+ * missing port is a typed decline, never a permissive default.
  *
- * LIFECYCLE (ROOT 07:38 GROUP 5): `close()` genuinely DE-ARMS the row —
- * after close, every call (both faces) is a typed refusal `web-row-closed`
- * and the closed flag is one-way. A dropped Map entry in the entry's close()
- * is NOT a stop: the row itself must be dead, so a stale handle held by any
- * earlier caller cannot keep transacting. Cancellation travels per call as
- * `callWeb(request, { signal })` → the seam → the provider (the frozen
- * `call(request)` face has no signal channel — disclosed, not invented).
+ * LIFECYCLE (ROOT 07:38 GROUP 5 + ROOT 08:4x C3): ONE closed state covers
+ * EVERY exported reference — the row exports NO raw gateway object (the
+ * pre-fix counterexample c123-before C3 showed an exported raw handle
+ * transacting after close); the GATEWAY ITSELF consults the lifecycle on
+ * entry and after every await (web-gateway/index.ts LIFECYCLE LAW). Cancellation
+ * travels per call as `callWeb(request, { signal })`; `close()` additionally
+ * ABORTS the row signal, which the gateway merges into every seam call, so
+ * in-flight transport is DRAINED (the provider sees abort; the call settles
+ * cancelled — never a silent continue). Cancellation is checked BEFORE the
+ * consume boundary ⇒ zero consume (cancel-first, measured in-spec). The
+ * closed flag is one-way; a dropped Map entry in the entry's close() is NOT
+ * a stop: the row itself must be dead.
  *
  * PROVIDER TRUTH: this row ships no destination constant and selects no
  * provider. Retrieval delegates to `ctxWeb` (the Host WebRuntime,
@@ -98,6 +105,8 @@ export function boundSearchOriginSource({ readConfig, readLaunchEnv, packageDefa
  *        `{ fetch, search }`; anything else declines the row.
  * @param deps.grantAuthority the center-edge approval port (GROUP 3;
  *        ONE consume per call). Missing ⇒ typed decline.
+ * @param deps.factsSource the center-edge ledger capture port (C2:
+ *        correlation ids → trusted facts). Missing ⇒ typed decline.
  * @param deps.resolveSearchOrigin trusted reader (see
  *        {@link boundSearchOriginSource}); may throw the seam's typed
  *        `WebError` code (mapped refusal per call).
@@ -105,7 +114,7 @@ export function boundSearchOriginSource({ readConfig, readLaunchEnv, packageDefa
  *        at the effect-commit point); absent ⇒ receipts say `not-applicable`.
  * @param deps.onObserve observation sink (lane ledger mirror).
  */
-export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, grantAuthority, resolveSearchOrigin, readDomainVeto, onObserve } = {}) {
+export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, grantAuthority, factsSource, resolveSearchOrigin, readDomainVeto, onObserve } = {}) {
   const enabled = parseWebEnabledRaw(webEnabledRaw)
   if (!enabled.ok) {
     return inactive(enabled.refusal.code, enabled.refusal.detail)
@@ -119,11 +128,21 @@ export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, grantAutho
   if (grantAuthority === null || typeof grantAuthority !== 'object' || typeof grantAuthority.consume !== 'function') {
     return inactive('web-grant-authority-absent', 'the armed row requires the center-edge grant authority (M1 manifest + trusted definition provider + ONE consume); this row owns no approval and never defaults one open')
   }
+  if (factsSource === null || typeof factsSource !== 'object' || typeof factsSource.capture !== 'function') {
+    return inactive('web-facts-source-absent', 'the armed row requires the center-edge facts capture port (C2: trusted call facts judged INSTEAD of the presented grant documents); this row cannot mint facts and never fabricates stand-ins')
+  }
   if (typeof resolveSearchOrigin !== 'function') {
     return inactive('search-origin-resolver-missing', 'the armed row requires the config-bound search-origin resolver; a fixed-URL fake is structurally impossible here')
   }
   const ledger = []
   let closed = false
+  // node-globals discipline (live/ eslint env carries no node globals — the
+  // lane precedent is agent-bindings.mjs reaching process off globalThis):
+  // reach the ctor off globalThis.
+  const rowAbort = new globalThis['AbortController']()
+  // C3: THE one closed/abort state — consulted by the gateway itself (entry
+  // + after every await), merged into every seam call, aborted by close().
+  const lifecycle = { isClosed: () => closed, signal: rowAbort.signal }
   const emit = (o) => {
     ledger.push(o)
     if (typeof onObserve === 'function') onObserve(o)
@@ -132,27 +151,30 @@ export function createLiveWebGatewayAssembly({ webEnabledRaw, ctxWeb, grantAutho
     ports: { fetch: (req, signal) => ctxWeb.fetch(req, signal), search: (req, signal) => ctxWeb.search(req, signal) },
     searchOrigin: resolveSearchOrigin,
     authority: grantAuthority,
+    factsSource,
+    lifecycle,
     ...(readDomainVeto === undefined ? {} : { readDomainVeto }),
     onObserve: emit,
   })
   const closedRefusal = async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: 'web-row-closed: this row was closed by the owning entry; stale handles cannot transact (zero delegation after close)', sideEffectUnknown: false } })
   return {
     active: true,
-    gateway,
+    // C3: NO raw `gateway` reference is exported — the two faces below and
+    // the gateway's own lifecycle checks are the only ways in.
     /** Lane-typed entry (operation payload rides the closed target
      *  extension — web-gateway/types.ts DISCLOSURE; `{ signal }` threads
-     *  cancellation to the seam — GROUP 5). */
+     *  cancellation to the seam — GROUP 5; merged with the row abort). */
     callWeb: (request, options) => closed ? closedRefusal() : gateway.callWeb(request, options),
     /** The frozen ProviderGateway face: a payload-less envelope is a typed
      *  refusal, never a guess. No signal channel exists on this face. */
     call: (request) => closed ? closedRefusal() : gateway.call(request),
-    /** GROUP 5: genuine de-arm. One-way; idempotent; in-flight calls are
-     *  owned by their callers' signals (the row never aborts them behind
-     *  the caller's back — disclosed: close stops NEW calls, cancellation
-     *  ends in-flight ones). */
+    /** C3: genuine de-arm. One-way; idempotent; ALSO aborts the row signal,
+     *  draining in-flight seam transport (merged into every live call —
+     *  those settle cancelled, never silently continue). */
     close: () => {
       if (!closed) {
         closed = true
+        rowAbort.abort(new Error('web-row-closed: closed by the owning entry (in-flight transport drained)'))
         emit({ event: 'row-closed' })
       }
       return closed
@@ -167,7 +189,6 @@ function inactive(code, detail) {
     active: false,
     code,
     detail,
-    gateway: null,
     callWeb: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}`, sideEffectUnknown: false } }),
     call: async () => ({ ok: false, error: { code: 'IO_POLICY_UNSUPPORTED', message: `web row not mounted (${code}): ${detail}`, sideEffectUnknown: false } }),
     close: () => true,

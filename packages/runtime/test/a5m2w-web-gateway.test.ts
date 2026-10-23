@@ -9,26 +9,34 @@
  * zero network, zero Host. Real external egress / real provider auth /
  * real-Host reruns remain ENV_BLOCK legs owned by the integration owner.
  *
- * ROOT 07:38 GROUP 3 (approval law): the gateway is envelope + destination
- * validation + delegation. Approval FACTS (expiry, single-use, definition/
- * binding verification, replay) come from the injected authority — here a
- * DISCLOSED STUB standing in for the center edge (the real authority is the
- * M1 manifest + trusted definition provider + ONE consume, wired by the
- * integration owner); its refusals must pass through VERBATIM, and the lane
- * keeps exactly one deterministic check (payload↔fingerprint self-consistency,
- * BEFORE consume — a refusal never burns the single-use grant).
+ * ROOT 07:38 GROUP 3 + ROOT 08:4x C1/C2/C3 (laws this spec pins):
+ *  C2 (no self-proof): the authority judges on TRUSTED CALL FACTS captured
+ *     by the facts source using ONLY correlation ids; the presented grant
+ *     documents never enter the judgement path. The test's center-edge
+ *     STAND-IN is a disclosed ledger: fixtures REGISTER facts at setup;
+ *     capture reads ONLY the ledger — a grant absent from the ledger is a
+ *     typed refusal (the attacker-written-grant pre-fix counterexample C2
+ *     now structurally cannot pass).
+ *  C1 (freeze): payload fields are read at most once into a frozen snapshot;
+ *     mutation/getter-drift after approval cannot change what executes —
+ *     the drifted snapshot fails the fingerprint check before consume.
+ *     Pinned observably: within one callWeb a payload getter is read
+ *     EXACTLY ONCE, mutation ⇒ refusal with zero consume, no-mutation ⇒
+ *     the provider receives the approved values.
+ *  C3 (lifecycle): ONE closed state inside the GATEWAY (not only the row
+ *     wrapper; the row exports NO raw gateway); re-checked after every
+ *     await; cancellation BEFORE consume ⇒ zero consume; close() aborts the
+ *     row signal and DRAINS in-flight seam transport.
  *
- * Pinned laws: enable closed-key default-off + non-boolean typed refusal;
- * derived-only destinations (loopback/private LITERALS — including the
- * IPv4-MAPPED spelling after the root 07:38 index fix — vetoed at the lane
- * edge with zero seam calls AND zero consumes, the belt being a stricter-
- * than provider pre-check, never a copy); N-arm `destination-outside-grant`
- * (lane backstop over the CONSUMED manifest); D veto at the commit point;
- * payload-less envelopes refuse, never guess; seam codes map typed with the
- * seam code verbatim in `error.details.seamCode`; seam-thrown refusals say
- * sideEffectUnknown=true (GROUP 5 honesty: a blocked destination can surface
- * on a LATER redirect hop after hop 1 produced effects); cancellation
- * threads to the seam; `close()` genuinely de-arms the row.
+ * Other pinned laws (unchanged): enable closed-key default-off + non-boolean
+ * typed refusal; derived-only destinations (loopback/private LITERALS —
+ * including the IPv4-MAPPED spelling after the root 07:38 index fix — vetoed
+ * at the lane edge with zero seam calls AND zero consumes); N-arm
+ * `destination-outside-grant` backstop over the CONSUMED manifest; D veto at
+ * the commit point; payload-less envelopes refuse, never guess; seam codes
+ * map typed with the seam code verbatim in `error.details.seamCode`;
+ * seam-thrown refusals say sideEffectUnknown=true (GROUP 5 honesty);
+ * cancellation threads to the seam; `close()` genuinely de-arms the row.
  *
  * @module test/a5m2w-web-gateway
  */
@@ -37,7 +45,7 @@ import { canonicalJsonFingerprint, parseRequestedEffectSet } from '../../domain/
 import type { GatewayReceipt, GovernanceError, GovernanceResult, OperationGrant } from '../../domain/tool-governance/src/index.js'
 import { binding, MEMBER } from './a5p2-fixtures.js'
 import { createWebGateway } from '../web-gateway/src/index.js'
-import type { WebGatewayCallRequest, WebGatewaySeamPorts, WebGrantAuthority } from '../web-gateway/src/index.js'
+import type { WebFactsSource, WebGatewayCallRequest, WebGatewaySeamPorts, WebGrantAuthority, WebRowLifecycle, WebTrustedCallFacts } from '../web-gateway/src/index.js'
 
 const REALM = 'realm-m2w'
 const FP = `sha256:${'b'.repeat(64)}`
@@ -51,7 +59,8 @@ function row(res: Res): Row {
 }
 
 /** The fingerprint the gateway recomputes and demands (lane law: fingerprint
- *  = canonical fingerprint of the closed operation presented). */
+ *  = canonical fingerprint of the frozen operation snapshot the lane builds —
+ *  for stable payloads that equals the canonical fingerprint presented). */
 const fpOf = (operation: Record<string, unknown>): string => canonicalJsonFingerprint(operation)
 
 function portsStub(behavior?: { fetchImpl?: (url: string) => { url: string; statusCode: number; truncated: boolean }; seamThrow?: Error }) {
@@ -94,9 +103,41 @@ function grantWith(locator: string, toolName: string): OperationGrant {
   }
 }
 
-function requestFor(toolName: 'web_fetch' | 'web_search', operation: Record<string, unknown>, grant?: OperationGrant): WebGatewayCallRequest {
+// — DISCLOSED center-edge ledger STAND-IN (C2): fixtures REGISTER trusted
+//   facts at setup (the center issued the grant ⇒ its facts live HERE);
+//   capture reads ONLY this ledger, never the presented grant document.
+//   The REAL facts source is the integration owner's M1-ledger wiring. —
+const TEST_LEDGER = new Map<string, WebTrustedCallFacts>()
+function registerFacts(grant: OperationGrant): void {
+  TEST_LEDGER.set(grant.grantId, {
+    member: { teamSessionId: grant.member.teamSessionId, instanceId: grant.member.instanceId },
+    callId: grant.callId,
+    bindingRevision: grant.bindingRevision,
+    authorityGeneration: grant.authorityGeneration,
+    policyGeneration: 1,
+    effects: grant.effects as unknown as { effects: readonly unknown[] },
+  })
+}
+function factsFromLedger(): WebFactsSource & { captures: unknown[] } {
+  const captures: unknown[] = []
   return {
-    grant: grant ?? grantWith(operation['kind'] === 'web.fetch' ? 'https://ok.test' : 'https://api.deepseek.com', toolName),
+    captures,
+    capture: async (correlation) => {
+      captures.push(correlation)
+      const facts = TEST_LEDGER.get(correlation.grantId)
+      if (facts === undefined) {
+        return { ok: false, error: Object.freeze({ code: 'TOOL_BINDING_UNVERIFIED', message: `facts-unknown-grant: ${correlation.grantId} has no trusted record in the center ledger (recorder stand-in)`, sideEffectUnknown: false }) as unknown as GovernanceError }
+      }
+      return { ok: true, value: facts }
+    },
+  }
+}
+
+function requestFor(toolName: 'web_fetch' | 'web_search', operation: Record<string, unknown>, grant?: OperationGrant): WebGatewayCallRequest {
+  const g = grant ?? grantWith(operation['kind'] === 'web.fetch' ? 'https://ok.test' : 'https://api.deepseek.com', toolName)
+  registerFacts(g)
+  return {
+    grant: g,
     binding: binding({ toolName, definitionIdentity: `def:${toolName}`, providerId: toolName === 'web_search' ? 'deepseek-official' : 'web-fetch-http' }),
     target: { webOperation: operation as never },
     payloadFingerprint: fpOf(operation),
@@ -105,8 +146,8 @@ function requestFor(toolName: 'web_fetch' | 'web_search', operation: Record<stri
 
 const DS_CONFIG_ENDPOINT = 'https://api.deepseek.com/anthropic/v1' // authority: provider.ts:34 (REAL config material, not a fetch target)
 
-/** DISCLOSED center-edge STUB (GROUP 3): passes every consume and hands the
- *  presented manifest back. The REAL authority (M1 manifest + trusted
+/** DISCLOSED center-edge STUB (GROUP 3): passes every consume and echoes the
+ *  TRUSTED FACTS' effects. The REAL authority (M1 manifest + trusted
  *  definition provider + ONE consume) is the integration owner's wiring;
  *  these legs pin the WIRE, not the decision logic. */
 function passThroughAuthority(): WebGrantAuthority & { consumes: unknown[] } {
@@ -115,8 +156,7 @@ function passThroughAuthority(): WebGrantAuthority & { consumes: unknown[] } {
     consumes,
     consume: async (input) => {
       consumes.push(input)
-      const grant = input.grant as unknown as OperationGrant
-      return { ok: true, value: { grantId: grant.grantId, effects: grant.effects as unknown as { effects: readonly unknown[] } } }
+      return { ok: true, value: { grantId: input.correlation.grantId, effects: input.facts.effects } }
     },
   }
 }
@@ -136,12 +176,11 @@ function singleUseAuthority(): WebGrantAuthority & { consumes: unknown[] } {
     consumes,
     consume: async (input) => {
       consumes.push(input)
-      const grant = input.grant as unknown as OperationGrant
-      if (used.has(grant.grantId)) {
+      if (used.has(input.correlation.grantId)) {
         return { ok: false, error: Object.freeze({ code: 'TOOL_BINDING_UNVERIFIED', message: 'grant-already-consumed: single-use grant presented a second time', sideEffectUnknown: false }) as unknown as GovernanceError }
       }
-      used.add(grant.grantId)
-      return { ok: true, value: { grantId: grant.grantId, effects: grant.effects as unknown as { effects: readonly unknown[] } } }
+      used.add(input.correlation.grantId)
+      return { ok: true, value: { grantId: input.correlation.grantId, effects: input.facts.effects } }
     },
   }
 }
@@ -161,6 +200,7 @@ const glue = await import(new URL('../src/plugin/live/web-gateway-assembly.mjs',
 const okSeam = { fetch: async () => ({}), search: async () => ({}) }
 const okResolver = () => DS_CONFIG_ENDPOINT
 const okAuthority = { consume: async () => ({ ok: true as const, value: { grantId: 'g', effects: { effects: [] } } }) }
+const okFactsShape = { capture: async () => ({ ok: false as const, error: { code: 'IO_POLICY_UNSUPPORTED', message: 'shape stand-in (never called in these legs)', sideEffectUnknown: false } as unknown as GovernanceError }) }
 
 function armedGateway(opts?: {
   seamThrow?: Error
@@ -168,6 +208,8 @@ function armedGateway(opts?: {
   origin?: () => string
   veto?: (t: unknown) => 'allowed' | 'denied' | 'not-applicable'
   authority?: WebGrantAuthority
+  facts?: WebFactsSource
+  lifecycle?: WebRowLifecycle
 }) {
   const stub = portsStub({
     ...(opts?.fetchImpl === undefined ? {} : { fetchImpl: opts.fetchImpl }),
@@ -175,17 +217,28 @@ function armedGateway(opts?: {
   })
   const observations: Record<string, string | boolean>[] = []
   const authority = opts?.authority ?? passThroughAuthority()
+  const facts = opts?.facts ?? factsFromLedger()
   const gateway = createWebGateway({
     ports: stub.ports,
     searchOrigin: opts?.origin ?? (() => DS_CONFIG_ENDPOINT),
     authority,
+    factsSource: facts,
+    lifecycle: opts?.lifecycle ?? { isClosed: () => false, signal: undefined },
     ...(opts?.veto === undefined ? {} : { readDomainVeto: opts.veto }),
     onObserve: (o) => { observations.push(o) },
   })
-  // single-point cast: the consume stubs carry a `consumes` ledger the frozen
-  // WebGrantAuthority port deliberately does NOT expose (observation is
-  // test-side only); read structurally, the a5b3-cancel-leg.test.ts:295 style.
-  return { gateway, authority, consumes: (authority as unknown as { consumes?: readonly unknown[] }).consumes ?? [], ...stub, observations }
+  // single-point cast: the consume/capture stubs carry ledgers the frozen
+  // ports deliberately do NOT expose (observation is test-side only); read
+  // structurally, the a5b3-cancel-leg.test.ts:295 style.
+  return {
+    gateway,
+    authority,
+    consumes: (authority as unknown as { consumes?: readonly unknown[] }).consumes ?? [],
+    facts,
+    captures: (facts as unknown as { captures?: readonly unknown[] }).captures ?? [],
+    ...stub,
+    observations,
+  }
 }
 
 describe('a5m2w web gateway — assembly closed keys + de-arm lifecycle', () => {
@@ -203,14 +256,15 @@ describe('a5m2w web gateway — assembly closed keys + de-arm lifecycle', () => 
     expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: 1, ctxWeb: okSeam, resolveSearchOrigin: okResolver }).code).toBe('web-config-not-boolean')
   })
 
-  it('G-3 armed requires Host seam + center authority + config resolver (restrict-first, GROUP 3)', () => {
-    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: null, resolveSearchOrigin: okResolver, grantAuthority: okAuthority }).code).toBe('web-seam-absent')
+  it('G-3 armed requires Host seam + center authority + facts source + config resolver (restrict-first, GROUP 3 + C2)', () => {
+    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: null, resolveSearchOrigin: okResolver, grantAuthority: okAuthority, factsSource: okFactsShape }).code).toBe('web-seam-absent')
     expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, resolveSearchOrigin: okResolver }).code).toBe('web-grant-authority-absent')
-    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority }).code).toBe('search-origin-resolver-missing')
-    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority, resolveSearchOrigin: okResolver }).active).toBe(true)
+    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority }).code).toBe('web-facts-source-absent')
+    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority, factsSource: okFactsShape }).code).toBe('search-origin-resolver-missing')
+    expect(glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority, factsSource: okFactsShape, resolveSearchOrigin: okResolver }).active).toBe(true)
   })
 
-  it('G-4 the glue row drives the REAL gateway classes end to end (fetch positive through the authority wire)', async () => {
+  it('G-4 the glue row drives the REAL gateway classes end to end (fetch positive over facts + authority wire)', async () => {
     const seen: { url: string }[] = []
     const seam = {
       fetch: async (req: { url: string }) => { seen.push(req); return { url: req.url, statusCode: 200, truncated: false } },
@@ -219,7 +273,8 @@ describe('a5m2w web gateway — assembly closed keys + de-arm lifecycle', () => 
     const r = glue.createLiveWebGatewayAssembly({
       webEnabledRaw: true,
       ctxWeb: seam,
-      grantAuthority: { consume: async (i: { grant: { effects: unknown } }) => ({ ok: true, value: { grantId: 'g', effects: i.grant.effects as { effects: readonly unknown[] } } }) },
+      grantAuthority: { consume: async (i: { correlation: { grantId: string }; facts: { effects: unknown } }) => ({ ok: true, value: { grantId: i.correlation.grantId, effects: i.facts.effects as { effects: readonly unknown[] } } }) },
+      factsSource: factsFromLedger(),
       resolveSearchOrigin: okResolver,
     })
     const res = await r.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/page' }))
@@ -253,9 +308,11 @@ describe('a5m2w web gateway — assembly closed keys + de-arm lifecycle', () => 
     await expect(async () => { await glue.boundSearchOriginSource({})() }).rejects.toThrow(/readers/)
   })
 
-  it('G-6 close() genuinely de-arms: stale handles cannot transact; one-way + idempotent (GROUP 5)', async () => {
-    const r = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority, resolveSearchOrigin: okResolver })
+  it('G-6 close() genuinely de-arms; the row exports NO raw gateway (C3: one closed state, no bypass handle)', async () => {
+    const r = glue.createLiveWebGatewayAssembly({ webEnabledRaw: true, ctxWeb: okSeam, grantAuthority: okAuthority, factsSource: okFactsShape, resolveSearchOrigin: okResolver })
     expect(r.active).toBe(true)
+    // C3: no raw reference to reach past the closed check —
+    expect((r as unknown as Record<string, unknown>)['gateway']).toBeUndefined()
     expect(r.close()).toBe(true)
     expect(r.closed()).toBe(true)
     expect(r.close()).toBe(true) // idempotent
@@ -265,9 +322,36 @@ describe('a5m2w web gateway — assembly closed keys + de-arm lifecycle', () => 
     expect(err.sideEffectUnknown).toBe(false)
     expect(r.observations().some((o) => o['event'] === 'row-closed')).toBe(true)
   })
+
+  it('G-7 close() DRAINS in-flight transport (C3): the row abort reaches the seam; the call settles cancelled', async () => {
+    let seamSawAbort = false
+    const seam = {
+      fetch: (_req: { url: string }, signal?: AbortSignal) => new Promise<never>((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          seamSawAbort = true
+          reject(Object.assign(new Error('aborted: web row closed mid-flight'), { code: 'ABORT_ERR' }))
+        }, { once: true })
+      }),
+      search: async () => ({ sources: [], truncated: false }),
+    }
+    const r = glue.createLiveWebGatewayAssembly({
+      webEnabledRaw: true,
+      ctxWeb: seam,
+      grantAuthority: { consume: async (i: { correlation: { grantId: string }; facts: { effects: unknown } }) => ({ ok: true, value: { grantId: i.correlation.grantId, effects: i.facts.effects as { effects: readonly unknown[] } } }) },
+      factsSource: factsFromLedger(),
+      resolveSearchOrigin: okResolver,
+    })
+    const inFlight = r.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/page' }))
+    await new Promise((resolve) => { setTimeout(resolve, 0) }) // let the call reach the seam
+    r.close()
+    const res = row(await inFlight)
+    expect(seamSawAbort, 'the seam must OBSERVE the row abort (drain, not silence)').toBe(true)
+    expect(res.error.details?.['seamCode']).toBe('ABORT_ERR')
+    expect(res.error.sideEffectUnknown).toBe(true) // honest: transport was live when closed
+  })
 })
 
-describe('a5m2w web gateway — gateway laws (GROUP 3: approval facts come from the authority)', () => {
+describe('a5m2w web gateway — gateway laws (GROUP 3 + C1/C2/C3)', () => {
   it('W-1 fetch positive: derived N, delegation with the exact URL, canonical receipt', async () => {
     const w = armedGateway()
     const res = await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/page?a=1' }))
@@ -347,7 +431,7 @@ describe('a5m2w web gateway — gateway laws (GROUP 3: approval facts come from 
     expect(w.fetchCalls.length).toBe(0)
   })
 
-  it('W-7 N arm backstop: a consumed manifest without connect@derived-destination refuses (zero seam calls)', async () => {
+  it('W-7 N arm backstop: consumed facts without connect@derived-destination refuse (zero seam calls)', async () => {
     const w = armedGateway()
     const grant = grantWith('https://elsewhere.test', 'web_fetch')
     const res = await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' }, grant))
@@ -424,7 +508,7 @@ describe('a5m2w web gateway — gateway laws (GROUP 3: approval facts come from 
     if (a.ok && b.ok) expect(a.value.outcomeFingerprint).not.toBe(b.value.outcomeFingerprint)
   })
 
-  it('A-1 authority refusal passes through VERBATIM (expired-grant stand-in): code/message/sideEffectUnknown/details identity, zero seam calls', async () => {
+  it('A-1 authority refusal passes through VERBATIM (expired-grant stand-in): identity, zero seam calls', async () => {
     const refusal = Object.freeze({
       code: 'TOOL_BINDING_UNVERIFIED',
       message: 'grant-expired: expiresAt 1730000000000 is past (recorder decision)',
@@ -437,7 +521,7 @@ describe('a5m2w web gateway — gateway laws (GROUP 3: approval facts come from 
     expect(w.fetchCalls.length).toBe(0)
   })
 
-  it('A-2 forged binding pair is refused at the authority (definition verification is NOT lane arithmetic anymore)', async () => {
+  it('A-2 forged binding pair is refused at the authority (definition verification is NOT lane arithmetic)', async () => {
     const refusal = Object.freeze({
       code: 'TOOL_BINDING_UNVERIFIED',
       message: 'definition-unknown: binding pairs bind-bash-1/web_fetch are not a registered definition of operation web.search (recorder decision)',
@@ -467,22 +551,131 @@ describe('a5m2w web gateway — gateway laws (GROUP 3: approval facts come from 
     const w = armedGateway({ seamThrow: abortErr })
     const res = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' }), { signal: ac.signal }))
     expect(w.fetchCalls.length).toBe(1)
-    expect(w.fetchCalls[0]?.signal).toBe(ac.signal) // identity: same object to the seam
+    expect(w.fetchCalls[0]?.signal).toBe(ac.signal) // identity: same object to the seam (no row abort configured on this face)
     expect(res.error.code).toBe('IO_POLICY_UNSUPPORTED')
     expect(res.error.sideEffectUnknown).toBe(true)
   })
 
-  it('A-5 the authority sees the EXACT decision material (grant, binding, fingerprint, kind, derived locator)', async () => {
+  it('A-5 the authority sees FACTS + correlation ONLY (C2): full effects set, generations, member/callId; NO grant/binding documents', async () => {
     const auth = passThroughAuthority()
     const w = armedGateway({ authority: auth })
     const req = requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/deep/path?x=1#frag' })
     const res = await w.gateway.callWeb(req)
     expect(res.ok).toBe(true)
-    const seen = auth.consumes[0] as Record<string, unknown>
-    expect(seen['grant']).toBe(req.grant)
-    expect(seen['binding']).toBe(req.binding)
-    expect(seen['payloadFingerprint']).toBe(req.payloadFingerprint)
+    const seen = auth.consumes[0] as Record<string, Record<string, unknown>> & Record<string, unknown>
+    // documents never travel into the judgement path (C2):
+    expect(seen['grant']).toBeUndefined()
+    expect(seen['binding']).toBeUndefined()
+    // correlation is ids + fingerprint only:
+    expect(seen['correlation']).toEqual({ grantId: req.grant.grantId, bindingId: req.binding.bindingId, payloadFingerprint: req.payloadFingerprint })
+    // the trusted facts: FULL effects set + live generations + identity:
+    const facts = seen['facts'] as unknown as WebTrustedCallFacts
+    expect(facts.member).toEqual({ teamSessionId: MEMBER.teamSessionId, instanceId: MEMBER.instanceId })
+    expect(facts.callId).toBe('call-m2w-1')
+    expect(facts.bindingRevision).toBe(1)
+    expect(facts.authorityGeneration).toBe(1)
+    expect(facts.policyGeneration).toBe(1)
+    expect(Array.isArray(facts.effects.effects)).toBe(true)
+    expect(facts.effects.effects.length).toBe(2) // FULL set: tool-invoke + connect
     expect(seen['operationKind']).toBe('web.fetch')
     expect(seen['canonicalLocator']).toBe('https://ok.test') // derived, path-free
+    expect(seen['cancelledAtDecision']).toBe(false) // the cancel-first gate guarantees this
+  })
+
+  it('C1 frozen snapshot: a payload getter is read EXACTLY ONCE per call, and mutation after approval cannot execute (refuse, zero consume)', async () => {
+    // (a) exactly-once read + execution on the fingerprinted value:
+    let reads = 0
+    const operation: Record<string, unknown> = { kind: 'web.search', query: 'q' }
+    Object.defineProperty(operation, 'maxResults', { enumerable: true, configurable: true, get() { reads += 1; return 3 } })
+    const w = armedGateway()
+    const req = requestFor('web_search', { kind: 'web.search', query: 'q', maxResults: 3 })
+    reads = 0 // from here ONLY the lane's reads count
+    const res = await w.gateway.callWeb({ ...req, target: { webOperation: operation }, payloadFingerprint: req.payloadFingerprint } as WebGatewayCallRequest)
+    expect(res.ok, JSON.stringify(res)).toBe(true)
+    expect(reads, 'the lane reads each payload field AT MOST ONCE (C1)').toBe(1)
+    expect(w.searchCalls[0]?.maxResults, 'execution uses the fingerprinted value').toBe(3)
+    // (b) mutation AFTER approval: the drifted snapshot fails the fingerprint
+    //     check before consume — what got approved can never be different
+    //     from what executes. (Pre-fix counterexample C1: approved 1 →
+    //     provider received 999.)
+    const mutable: Record<string, unknown> = { kind: 'web.fetch', url: 'https://ok.test/p' }
+    const req2 = requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' })
+    mutable['url'] = 'https://evil.test/secret' // attacker mutates after approval
+    const w2 = armedGateway()
+    const res2 = row(await w2.gateway.callWeb({ ...req2, target: { webOperation: mutable as never } } as WebGatewayCallRequest))
+    expect(res2.error.message).toContain('payload-fingerprint-mismatch')
+    expect(w2.consumes.length, 'a drifted payload refuses BEFORE consume').toBe(0)
+    expect(w2.fetchCalls.length).toBe(0)
+  })
+
+  it('C2 presented documents cannot self-prove: an attacker grant absent from the center ledger refuses at the facts source (authority never asked, zero consume)', async () => {
+    const w = armedGateway()
+    const attackerEffects = { effects: [{ kind: 'connect', resource: { realmId: REALM, kind: 'network-destination', canonicalLocator: 'https://attacker-selected.test', rights: ['connect'] } }] }
+    const forged = { grantId: 'grant-not-issued', realmId: REALM, bindingId: 'bind-bash-1', effects: attackerEffects } as unknown as OperationGrant
+    const op = { kind: 'web.fetch' as const, url: 'https://attacker-selected.test/secret' }
+    const res = row(await w.gateway.callWeb({ grant: forged, binding: binding({ toolName: 'web_fetch', definitionIdentity: 'def:web_fetch', providerId: 'web-fetch-http' }), target: { webOperation: op }, payloadFingerprint: fpOf(op) }))
+    expect(res.error.message).toContain('facts-unknown-grant')
+    expect(w.consumes.length, 'refusal happens at the facts source: consume is never asked on an unbacked grant').toBe(0)
+    expect(w.fetchCalls.length).toBe(0)
+  })
+
+  it('C2 incomplete facts refuse typed BEFORE consume (honest: center wiring pending — never fabricated)', async () => {
+    const partial = { capture: async () => ({ ok: true as const, value: { member: { teamSessionId: MEMBER.teamSessionId, instanceId: MEMBER.instanceId }, callId: 'c1', bindingRevision: 1, effects: { effects: [] } } as unknown as WebTrustedCallFacts }) }
+    const w = armedGateway({ facts: partial })
+    const err = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' }))).error
+    expect(err.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(err.message).toContain('authority-facts-incomplete')
+    expect(err.message).toContain('authorityGeneration') // names exactly what is missing
+    expect(err.message).toContain('policyGeneration')
+    expect(w.consumes.length).toBe(0)
+    expect(w.fetchCalls.length).toBe(0)
+  })
+
+  it('C3 cancel-first: an already-cancelled call refuses BEFORE consume — consume counter 0, seam 0', async () => {
+    const ac = new AbortController()
+    ac.abort()
+    const w = armedGateway()
+    const res = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' }), { signal: ac.signal }))
+    expect(res.error.message).toContain('call-cancelled-before-consume')
+    expect(res.error.sideEffectUnknown).toBe(false)
+    expect(w.consumes.length, 'cancel-first ⇒ ZERO consume').toBe(0)
+    expect(w.fetchCalls.length).toBe(0)
+  })
+
+  it('C3 re-check during the facts await: closed while awaiting the center edge ⇒ before-consume, zero consume', async () => {
+    let closedFlag = false
+    const lifecycle: WebRowLifecycle = { isClosed: () => closedFlag, signal: undefined }
+    const facts: WebFactsSource = {
+      capture: async (c) => {
+        const r = await factsFromLedger().capture(c)
+        closedFlag = true // close lands WHILE the call awaits the center edge
+        return r
+      },
+    }
+    const w = armedGateway({ facts, lifecycle })
+    const res = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' })))
+    expect(res.error.message).toContain('call-cancelled-before-consume')
+    expect(w.consumes.length).toBe(0)
+    expect(w.fetchCalls.length).toBe(0)
+  })
+
+  it('C3 re-check after consume: closed during consume ⇒ transport NEVER delegated; the consume fact is DISCLOSED', async () => {
+    let closedFlag = false
+    const lifecycle: WebRowLifecycle = { isClosed: () => closedFlag, signal: undefined }
+    const afterConsumes: unknown[] = []
+    const authority: WebGrantAuthority & { consumes: unknown[] } = {
+      consumes: afterConsumes,
+      consume: async (input) => {
+        closedFlag = true // close lands WHILE consume is in flight
+        afterConsumes.push(input)
+        return { ok: true, value: { grantId: input.correlation.grantId, effects: input.facts.effects } }
+      },
+    }
+    const w = armedGateway({ authority, lifecycle })
+    const res = row(await w.gateway.callWeb(requestFor('web_fetch', { kind: 'web.fetch', url: 'https://ok.test/p' })))
+    expect(res.error.message).toContain('call-cancelled-after-consume')
+    expect(res.error.message).toContain('DISCLOSURE') // the spent single-use grant is honest receipt material
+    expect(w.consumes.length).toBe(1)
+    expect(w.fetchCalls.length, 'zero bytes delegated after the close was observed').toBe(0)
   })
 })

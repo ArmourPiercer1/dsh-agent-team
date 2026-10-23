@@ -30,17 +30,44 @@
  *       and caps are manifest material — here: `payloadFingerprint` + the
  *       receipt's `outcomeFingerprint`.
  *
- * APPROVAL LAW (ROOT 07:38 GROUP 3): this gateway is ENVELOPE + DESTINATION
- * validation + delegation ONLY. Grant validity (expired/revoked), single-use
- * consumption, payload↔manifest binding, definition/binding verification and
- * concurrent-replay refusal are approval FACTS produced by the injected
- * {@link WebGrantAuthority} (the M1 manifest + trusted call-definition-
- * provider + ONE consume, wired by the integration owner) and passed through
+ * APPROVAL LAW (ROOT 07:38 GROUP 3 + ROOT 08:4x C2): this gateway is
+ * ENVELOPE + DESTINATION validation + delegation ONLY. Every approval FACT is
+ * produced by the injected {@link WebGrantAuthority} and passed through
  * VERBATIM — the lane runs no private validate, no second approval algebra.
+ * C2 (no self-proof): the authority judges on the TRUSTED CALL FACTS captured
+ * by the injected {@link WebFactsSource} ({@link WebTrustedCallFacts}: full
+ * effects set, live generations, member/call identity) using ONLY the
+ * correlation ids the request carries. The presented grant/binding DOCUMENTS
+ * never enter the judgement path (the pre-fix counterexample
+ * c123-before C2 showed an attacker-written grant approving its own
+ * destination). The lane cannot mint facts; incomplete facts refuse typed
+ * (`authority-facts-incomplete`) — honest, never fabricated stand-ins.
  * The lane keeps exactly ONE deterministic consistency check: the request's
- * payloadFingerprint MUST equal the canonical fingerprint of the closed
- * operation it carries (a swapped payload refuses BEFORE consume, so a
- * refusal never burns a single-use grant).
+ * payloadFingerprint MUST equal the canonical fingerprint of the FROZEN
+ * snapshot the lane itself built (see the payload law below) — refused
+ * BEFORE consume, so a refusal never burns a single-use grant.
+ *
+ * PAYLOAD FREEZE LAW (ROOT 08:4x C1): every payload field is read from the
+ * caller's (possibly getter-backed, possibly mutated-after-approval) object
+ * AT MOST ONCE into ONE canonical {@link WebOperationPayload} snapshot built
+ * with value copies and `Object.freeze`. The fingerprint check, destination
+ * derivation, and the provider delegate read ONLY that frozen snapshot —
+ * after the snapshot is built this module never touches the caller's object
+ * again, so what got fingerprinted is exactly what gets delegated (the
+ * pre-fix counterexample c123-before C1 showed approved `maxResults=1`
+ * drifting to provider-received `999`). Mutation between approval and
+ * execution therefore cannot change what executes: the drifted snapshot
+ * simply fails the fingerprint check (refused, zero consume).
+ *
+ * LIFECYCLE LAW (ROOT 08:4x C3): ONE closed state (the row's
+ * {@link WebRowLifecycle}) is consulted by the GATEWAY ITSELF — every
+ * reference, including anything reached past the wrapper, checks it on entry
+ * and again after EVERY await before the provider call. Cancellation is
+ * checked BEFORE consume (`cancelled-before-consume` ⇒ zero consume,
+ * measured), the row's abort signal is MERGED into the seam call so close()
+ * drains in-flight transport (the provider sees abort; the call settles
+ * cancelled, never silently continues), and the consume input carries the
+ * decision-time cancellation state.
  *
  * SEAM-CODE MAP (the closed 8-code {@link GovernanceErrorCode} set has no
  * "provider unavailable" member — the least-wrong mapping is documented,
@@ -82,10 +109,8 @@ import type {
   GatewayCallRequest,
   GatewayReceipt,
   GovernanceResult,
-  OperationGrant,
   ProviderGateway,
   ResourceRef,
-  ToolBinding,
 } from '../../../domain/tool-governance/src/index.js'
 import { deriveDestination, originOf } from './destination-envelope.js'
 import {
@@ -95,9 +120,13 @@ import type {
   DomainVetoReader,
   SearchOriginResolver,
   WebDestinationEnvelope,
+  WebFactsSource,
   WebGatewayCallRequest,
   WebGatewaySeamPorts,
   WebGrantAuthority,
+  WebOperationPayload,
+  WebRowLifecycle,
+  WebTrustedCallFacts,
 } from './types.js'
 
 /** Constructor dependencies (all host-injected; none optional by default). */
@@ -106,6 +135,10 @@ export interface CreateWebGatewayOptions {
   readonly searchOrigin: SearchOriginResolver
   /** GROUP 3: the center-edge approval authority (ONE consume per call). */
   readonly authority: WebGrantAuthority
+  /** C2: the center-edge ledger capture port (correlation ids → facts). */
+  readonly factsSource: WebFactsSource
+  /** C3: the ONE row closed/abort state this gateway itself consults. */
+  readonly lifecycle: WebRowLifecycle
   readonly readDomainVeto?: DomainVetoReader
   readonly onObserve?: (observation: Readonly<Record<string, string | boolean>>) => void
 }
@@ -149,7 +182,7 @@ function extraKeys(obj: Record<string, unknown>, allowed: readonly string[]): st
  * is only constructed when that decision armed the row.
  */
 export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
-  const { ports, searchOrigin, authority, readDomainVeto, onObserve } = options
+  const { ports, searchOrigin, authority, factsSource, lifecycle, readDomainVeto, onObserve } = options
 
   const callWeb = async (request: WebGatewayCallRequest, callOptions?: WebCallOptions): Promise<GovernanceResult<GatewayReceipt>> => {
     const outcome = await runCall(request, callOptions?.signal)
@@ -158,6 +191,12 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
   }
 
   async function runCall(request: WebGatewayCallRequest, signal?: AbortSignal): Promise<CallOutcome> {
+    // — C3: the ONE closed state is enforced HERE, not only in the wrapper:
+    //   every reference — wrapper or anything reached past it — enters
+    //   through this check, and every await below re-checks. —
+    if (lifecycle.isClosed()) {
+      return done(rowClosedRefusal(), { operation: 'row-closed', refusal: 'web-row-closed' })
+    }
     // — envelope integrity (never re-admitting; that is admission's law) —
     if (!isRecord(request)) {
       return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'a gateway call request is a record'), { operation: 'malformed-request' })
@@ -189,7 +228,7 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     if (!isRecord(rawOperation) || typeof rawOperation['kind'] !== 'string') {
       return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'operation-payload-absent: the frozen GatewayCallRequest carries only a fingerprint; the lane refuses to GUESS the retrieval payload (types.ts DISCLOSURE)'), { operation: 'payload-absent' })
     }
-    const kind = rawOperation['kind']
+    const kind = rawOperation['kind'] // read exactly once (C1)
     if (kind !== 'web.fetch' && kind !== 'web.search') {
       return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `unknown web operation kind ${JSON.stringify(kind)}`), { operation: String(kind) })
     }
@@ -198,13 +237,39 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     if (payloadExtras.length > 0) {
       return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `the ${kind} payload is closed; undeclared keys: ${payloadExtras.join(', ')}`), { operation: kind })
     }
+    // — C1 FREEZE: each field is read from the caller's (getter-backed,
+    //   mutable-after-approval) object AT MOST ONCE into one frozen value
+    //   snapshot. From here on the caller's object is NEVER touched again:
+    //   the fingerprint check, the destination derivation and the provider
+    //   delegate all read ONLY `payload`. What gets fingerprinted is
+    //   therefore exactly what gets delegated. —
+    let payload: WebOperationPayload
+    if (kind === 'web.fetch') {
+      const url = rawOperation['url']
+      if (typeof url !== 'string' || url.length === 0) {
+        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'web.fetch requires a non-empty url'), { operation: kind })
+      }
+      payload = Object.freeze({ kind: 'web.fetch' as const, url })
+    } else {
+      const query = rawOperation['query']
+      const maxResults = rawOperation['maxResults']
+      if (typeof query !== 'string' || query.length === 0) {
+        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'web.search requires a non-empty query'), { operation: kind })
+      }
+      if (maxResults !== undefined && (typeof maxResults !== 'number' || !Number.isInteger(maxResults) || maxResults < 1)) {
+        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'maxResults, when present, is a positive integer'), { operation: kind })
+      }
+      payload = Object.freeze(maxResults === undefined
+        ? { kind: 'web.search' as const, query }
+        : { kind: 'web.search' as const, query, maxResults })
+    }
     // — payload↔fingerprint self-consistency (GROUP 3, the ONE deterministic
-    //   lane-side integrity check): the fingerprint MUST be the canonical
-    //   fingerprint of the closed operation it presents. A swapped payload
-    //   refuses HERE, before consume — so a refusal never burns a single-use
-    //   grant. This is arithmetic, not approval. —
-    if (payloadFingerprint !== canonicalJsonFingerprint(rawOperation)) {
-      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'payload-fingerprint-mismatch: the presented payloadFingerprint is not the canonical fingerprint of the carried operation (swapped payload; refused before consume)'), { operation: kind, refusal: 'payload-fingerprint-mismatch' })
+    //   lane-side integrity check) against the FROZEN SNAPSHOT: a payload
+    //   mutated or drifted between approval and this call fails HERE, before
+    //   consume — so a refusal never burns a single-use grant, and execution
+    //   can never run on a value other than the fingerprinted one. —
+    if (payloadFingerprint !== canonicalJsonFingerprint(payload)) {
+      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', 'payload-fingerprint-mismatch: the presented payloadFingerprint is not the canonical fingerprint of the frozen operation snapshot (swapped or mutated payload; refused before consume)'), { operation: kind, refusal: 'payload-fingerprint-mismatch' })
     }
     // (definition/binding verification — "is this binding the exact
     //  definition of this operation" — is an approval FACT: it belongs to
@@ -214,42 +279,33 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     //   only a cross-check: a target.destination that disagrees is refused) —
     let envelope: WebDestinationEnvelope
     let delegate: () => Promise<string>
-    if (kind === 'web.fetch') {
-      const url = rawOperation['url']
-      if (typeof url !== 'string' || url.length === 0) {
-        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'web.fetch requires a non-empty url'), { operation: kind })
-      }
-      const derived = deriveDestination(url)
+    if (payload.kind === 'web.fetch') {
+      const derived = deriveDestination(payload.url)
       if ('code' in derived) {
         return done(webGatewayRefusal('DOMAIN_DENIED', `${derived.code}: ${derived.detail}`), { operation: kind, refusal: derived.code })
       }
       envelope = derived
       delegate = async () => {
-        const res = await ports.fetch({ url }, signal)
+        const res = await ports.fetch({ url: payload.url }, mergedSignal(signal))
         return fingerprintForFetch(envelope, res)
       }
     } else {
-      const query = rawOperation['query']
-      if (typeof query !== 'string' || query.length === 0) {
-        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'web.search requires a non-empty query'), { operation: kind })
-      }
-      if (rawOperation['maxResults'] !== undefined && (typeof rawOperation['maxResults'] !== 'number' || !Number.isInteger(rawOperation['maxResults']) || rawOperation['maxResults'] < 1)) {
-        return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'maxResults, when present, is a positive integer'), { operation: kind })
-      }
       let origin: string
       try {
         origin = await searchOrigin() // REAL config only — see SearchOriginResolver
       } catch (err) {
         return done(seamFailure(err), { operation: kind, refusal: seamCodeOf(err) ?? 'search-origin-resolver-threw' })
       }
+      if (cancelledNow(signal)) {
+        return cancelledOutcome(kind, 'before-consume') // C3 post-await re-check (zero consume)
+      }
       const derived = deriveDestination(origin)
       if ('code' in derived) {
         return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `search provider destination is not a usable origin (${derived.code}): ${derived.detail}`), { operation: kind, refusal: derived.code })
       }
       envelope = derived
-      const maxResults = rawOperation['maxResults']
       delegate = async () => {
-        const res = await ports.search({ query, ...(typeof maxResults === 'number' ? { maxResults } : {}) }, signal)
+        const res = await ports.search({ query: payload.query, ...(payload.maxResults === undefined ? {} : { maxResults: payload.maxResults }) }, mergedSignal(signal))
         return fingerprintForSearch(envelope, res)
       }
     }
@@ -270,21 +326,44 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
         return done(webGatewayRefusal('DOMAIN_DENIED', `destination-claim-mismatch: a claimed target.destination must equal the derived destination (destinations are derived, never supplied)`), { operation: operationLabel, refusal: 'destination-claim-mismatch' })
       }
     }
-    // — GROUP 3: ONE consume at the center edge. Everything the old lane
-    //   checked by its own numeric fields (expiry, single-use, forged
-    //   binding pairs, payload↔manifest binding, replay) is decided HERE by
-    //   the injected authority; a refusal passes through VERBATIM. Belt and
-    //   fingerprint checks intentionally precede consume: a lane-side
-    //   refusal must never burn the single-use grant. —
+    // — C2: capture the TRUSTED CALL FACTS from the center-edge ledger using
+    //   ONLY the correlation ids the request carries. The presented grant/
+    //   binding DOCUMENTS never travel into the authority's judgement path
+    //   (pre-fix counterexample C2: an attacker-written effects set approved
+    //   its own destination — self-proof is now structurally impossible). —
+    const correlation = Object.freeze({
+      grantId: String(grant['grantId']),
+      bindingId: String(binding['bindingId']),
+    })
+    const captured = await factsSource.capture({ realmId: String(grant['realmId']), ...correlation })
+    if (!captured.ok) {
+      return done({ ok: false, error: captured.error }, { operation: operationLabel, refusal: 'facts-source-refused' })
+    }
+    const incomplete = factsIncompleteMessage(captured.value)
+    if (incomplete !== null) {
+      return done(webGatewayRefusal('TOOL_BINDING_UNVERIFIED', `authority-facts-incomplete: the captured trusted facts are missing/invalid (${incomplete}); the center wiring produces these facts — the lane never fabricates stand-ins`), { operation: operationLabel, refusal: 'authority-facts-incomplete' })
+    }
+    // — C3 cancel-first: cancellation checked BEFORE the consume boundary ⇒
+    //   zero consume (measured). Post-await re-check, per the lifecycle law. —
+    if (cancelledNow(signal)) {
+      return cancelledOutcome(operationLabel, 'before-consume')
+    }
+    // — GROUP 3: ONE consume at the center edge, judged on the trusted facts.
+    //   A refusal passes through VERBATIM. Belt, snapshot-fingerprint and
+    //   facts checks intentionally precede consume: a lane-side refusal must
+    //   never burn the single-use grant. —
     const consumed = await authority.consume({
-      grant: grant as unknown as OperationGrant,
-      binding: binding as unknown as ToolBinding,
-      payloadFingerprint,
-      operationKind: kind,
+      facts: captured.value,
+      correlation: Object.freeze({ ...correlation, payloadFingerprint }),
+      operationKind: payload.kind,
       canonicalLocator: envelope.canonicalLocator,
+      cancelledAtDecision: false, // the cancel-first gate above guarantees this
     })
     if (!consumed.ok) {
       return done({ ok: false, error: consumed.error }, { operation: operationLabel, refusal: 'authority-refused' })
+    }
+    if (cancelledNow(signal)) {
+      return cancelledOutcome(operationLabel, 'after-consume') // disclosure: grant consumed, zero bytes delegated
     }
     // — N arm: the CONSUMED manifest must carry connect@this exact
     //   destination (frozen parser's law via `resourceEquals`) —
@@ -304,6 +383,9 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
       domainVeto = await readDomainVeto(target)
       if (domainVeto === 'denied') {
         return done(webGatewayRefusal('DOMAIN_DENIED', 'the Domain Authority denied this effect commit (Team approval cannot rewrite it)'), { operation: operationLabel, refusal: 'domain-denied' })
+      }
+      if (cancelledNow(signal)) {
+        return cancelledOutcome(operationLabel, 'before-transport')
       }
     }
 
@@ -364,6 +446,54 @@ export function createWebGateway(options: CreateWebGatewayOptions): WebGateway {
     return undefined
   }
 
+  // — C3 helpers: ONE closed/abort state, consulted at entry and after every
+  //   await; the row signal is merged into the seam call so close() drains
+  //   in-flight transport (the provider sees abort — never silence). —
+  function cancelledNow(caller?: AbortSignal): boolean {
+    return lifecycle.isClosed() || caller?.aborted === true
+  }
+
+  function mergedSignal(caller?: AbortSignal): AbortSignal | undefined {
+    const row = lifecycle.signal
+    if (row === undefined) return caller
+    if (caller === undefined) return row
+    const combined = new AbortController()
+    if (caller.aborted) combined.abort(caller.reason)
+    else if (row.aborted) combined.abort(row.reason)
+    caller.addEventListener('abort', () => { combined.abort(caller.reason) }, { once: true })
+    row.addEventListener('abort', () => { combined.abort(row.reason) }, { once: true })
+    return combined.signal
+  }
+
+  function rowClosedRefusal(): ReturnType<typeof webGatewayRefusal> {
+    return webGatewayRefusal('IO_POLICY_UNSUPPORTED', 'web-row-closed: this row was closed by the owning entry; every reference (wrapper or raw) refuses; zero delegation after close', { sideEffectUnknown: false })
+  }
+
+  function cancelledOutcome(operation: string, stage: 'before-consume' | 'after-consume' | 'before-transport'): CallOutcome {
+    const detail = stage === 'before-consume'
+      ? 'cancellation observed before the consume boundary: ZERO consume (cancel-first law)'
+      : 'transport never delegated by this lane (zero bytes); DISCLOSURE: the grant WAS consumed at the center edge (single-use is spent)'
+    return done(webGatewayRefusal('IO_POLICY_UNSUPPORTED', `call-cancelled-${stage}: ${detail}`, { sideEffectUnknown: false }), { operation, refusal: `cancelled-${stage}` })
+  }
+
+  /** C2 runtime completeness of the captured facts (stubs/wiring may lie;
+   *  the lane refuses incomplete facts rather than run on half-material). */
+  function factsIncompleteMessage(facts: WebTrustedCallFacts): string | null {
+    if (!isRecord(facts)) return 'facts-not-a-record'
+    const missing: string[] = []
+    const member = facts['member']
+    if (!isRecord(member) || typeof member['teamSessionId'] !== 'string' || member['teamSessionId'].length === 0 || typeof member['instanceId'] !== 'string' || member['instanceId'].length === 0) {
+      missing.push('member{teamSessionId,instanceId}')
+    }
+    if (typeof facts['callId'] !== 'string' || facts['callId'].length === 0) missing.push('callId')
+    for (const generation of ['bindingRevision', 'authorityGeneration', 'policyGeneration'] as const) {
+      if (typeof facts[generation] !== 'number' || !Number.isFinite(facts[generation])) missing.push(generation)
+    }
+    const effects = facts['effects']
+    if (!isRecord(effects) || !Array.isArray(effects['effects'])) missing.push('effects{effects[]}')
+    return missing.length > 0 ? missing.join(', ') : null
+  }
+
   function done(result: GovernanceResult<GatewayReceipt>, obs: Record<string, string | boolean>): CallOutcome {
     return { result, obs }
   }
@@ -380,10 +510,13 @@ export type {
   WebAuthorityInput,
   WebConsumedGrant,
   WebDestinationEnvelope,
+  WebFactsSource,
   WebGatewayCallRequest,
   WebGatewaySeamPorts,
   WebGrantAuthority,
   WebOperationPayload,
+  WebRowLifecycle,
+  WebTrustedCallFacts,
 } from './types.js'
 export { parseWebEnabledRaw, webGatewayRefusal } from './types.js'
 export type { WebAddressVeto, WebEnabledParse, WebFetchSeamRequest, WebFetchSeamResult, WebSearchSeamRequest, WebSearchSeamResult } from './types.js'
