@@ -334,6 +334,19 @@ interface GlueModule {
     readonly ptcEscalationRef?: { current: unknown }
     readonly now: () => string
     /**
+     * B-SCHEDULE PORT BOUNDARY (root 19:17, optional additive — the
+     * `subagents` precedent): a CURRENT FEED for the REAL published
+     * ScheduleService raw handle — the lazy strict global-store read under
+     * 'schedule', the SAME name the host schedule bodies resolve
+     * `rootCtx.schedule` from at every dispatch. The signed adapter is fed
+     * THIS service (never a wrapper of the native TOOL face) and
+     * re-reads the feed at every dispatch edge, so a service object or
+     * method replaced underneath the mount is the signed PORT_DRIFT it
+     * is. Absent/undefined → the glue fail-closes the schedule mount
+     * (gate closed; no stand-in).
+     */
+    readonly scheduleServiceFeed?: () => unknown
+    /**
      * T12-M3 (optional additive): the DSH `subagents` public service,
      * structurally a superset of the glue's SubagentsDrainPort
      * (drainContinuableDescendants + listDescendants). Absent → the glue's
@@ -2296,6 +2309,22 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     controlServiceRef,
     ptcEscalationRef,
     now: () => new Date().toISOString(),
+    // B-SCHEDULE PORT BOUNDARY (root 19:17): the REAL published
+    // ScheduleService raw handle / CURRENT FEED — the global service store
+    // read under 'schedule', the SAME name the host's own schedule bodies
+    // resolve `rootCtx.schedule` from at every dispatch. The signed adapter
+    // is fed the raw service (never a wrapper of the native TOOL face — the
+    // tool output is a rendered view set, not the service's record stream),
+    // and the feed is re-read LIVE so a service object or method replaced
+    // underneath the mount is observed as the signed PORT_DRIFT it is.
+    // Absence answers undefined (the glue fail-closes; no stand-in exists).
+    scheduleServiceFeed: (): unknown => {
+      try {
+        return (ctx as { get?: (name: string) => unknown }).get?.('schedule')
+      } catch {
+        return undefined
+      }
+    },
     // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
     // blueprint resolver (the glue's dynamic Team authority — the three-
     // case contract in bound-blueprint.ts: a bound ref resolves through

@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the seven closed tool names (A2C-1: the shell class bash/pwsh)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (A2C-1: the shell class bash/pwsh; Alpha.5 M2 root 20:05: + the invocation-only pair schedule_list/schedule_delete)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -949,6 +949,8 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'lsp',
       'bash',
       'pwsh',
+      'schedule_list',
+      'schedule_delete',
     ])
   })
 
@@ -963,5 +965,195 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
   it('PERMISSION_RULE_FIELDS / PERMISSION_POLICY_FIELDS pin the closed field sets', () => {
     expect(PERMISSION_RULE_FIELDS).toEqual(['tool', 'resource'])
     expect(PERMISSION_POLICY_FIELDS).toEqual(['default', 'allow', 'ask', 'deny'])
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Alpha.5 M2 (root 20:05 limited card) — the INVOCATION-ONLY pair. The two
+// names join the closed template vocabulary with the whole-tool `any`
+// resource legal in ALL THREE lanes of BOTH roles; `exact`/`subtree` reject
+// in every lane of every role; the envelope carrier keeps the FROZEN
+// seven-name operationClass set (the schedule names never widen it);
+// `schedule_create` / `schedule_update` are not enabled; the original seven
+// classes' law stays byte-identical.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('invocation-only schedule vocabulary (Alpha.5 M2, root 20:05)', () => {
+  /** Shift every non-empty line right by `by` spaces (role-indent reuse). */
+  function indentBy(lines: string[], by: number): string[] {
+    const pad = ' '.repeat(by)
+    return lines.map((line) => (line.length === 0 ? line : `${pad}${line}`))
+  }
+
+  function scheduleSource(role: 'leader' | 'member', lanes: string[]): string {
+    const caps = [
+      '    permissions:',
+      '      default: deny',
+      ...lanes,
+    ]
+    const memberCaps = indentBy(caps, 2)
+    if (role === 'leader') {
+      return [
+        '---',
+        `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+        'blueprintId: team.min',
+        'revision: "1"',
+        'leader:',
+        '  templateId: leader',
+        '  persona: "Lead."',
+        '  capabilities:',
+        '    teamTools:',
+        '      kind: allow',
+        '      items: []',
+        '    builtinToolDeny: []',
+        '    skills:',
+        '      kind: allow',
+        '      items: []',
+        '    mcp:',
+        '      kind: allow',
+        '      items: []',
+        ...caps,
+        'members: []',
+        'requirements: []',
+        'memberEnvelopes: []',
+        'policyStates: []',
+        'permissionMutationEnvelope:',
+        '  rules: []',
+        'teamHardEnvelope:',
+        '  rules: []',
+        'metadata: {}',
+        '---',
+        '',
+      ].join('\n')
+    }
+    return [
+      '---',
+      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      'members:',
+      '  - templateId: worker',
+      '    persona: "Worker."',
+      '    capabilities:',
+      '      teamTools:',
+      '        kind: allow',
+      '        items: []',
+      '      builtinToolDeny: []',
+      '      skills:',
+      '        kind: allow',
+      '        items: []',
+      '      mcp:',
+      '        kind: allow',
+      '        items: []',
+      ...memberCaps,
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules: []',
+      'teamHardEnvelope:',
+      '  rules: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+  }
+
+  const laneBlock = (lane: 'allow' | 'ask' | 'deny', tool: string, resourceLines: string[]): string[] => [
+    `      ${lane}:`,
+    '        - tool: ' + tool,
+    '          resource:',
+    ...resourceLines,
+  ]
+  const emptyLanes = (except: 'allow' | 'ask' | 'deny'): string[] =>
+    (['allow', 'ask', 'deny'] as const).filter((lane) => lane !== except).map((lane) => `      ${lane}: []`)
+
+  it('the two names join the closed vocabulary and the closed invocation-only set (create/update absent)', () => {
+    expect(PERMISSION_TOOL_NAMES.includes('schedule_list')).toBe(true)
+    expect(PERMISSION_TOOL_NAMES.includes('schedule_delete')).toBe(true)
+    expect(PERMISSION_TOOL_NAMES.includes('schedule_create')).toBe(false)
+    expect(PERMISSION_TOOL_NAMES.includes('schedule_update')).toBe(false)
+  })
+
+  for (const tool of ['schedule_list', 'schedule_delete']) {
+    for (const lane of ['allow', 'ask', 'deny'] as const) {
+      for (const role of ['leader', 'member'] as const) {
+        it(`${role} ${lane} lane: { tool: ${tool}, resource: any } parses (rule IS the invocation authority)`, () => {
+          const source = scheduleSource(role, [
+            ...laneBlock(lane, tool, ['            kind: any']),
+            ...emptyLanes(lane),
+          ])
+          const blueprint = parseBlueprint(source)
+          const caps = role === 'leader'
+            ? blueprint.leader.capabilities
+            : (blueprint.members[0]?.capabilities ?? undefined)
+          expect(caps?.permissions !== undefined).toBe(true)
+          expect(caps?.permissions?.default).toBe('deny') // the declared default survives (缺省: no implicit allow)
+          const rules = caps?.permissions?.[lane] as readonly PermissionRule[]
+          expect(rules).toEqual([{ tool, resource: { kind: 'any' } }])
+        })
+      }
+    }
+  }
+
+  for (const tool of ['schedule_list', 'schedule_delete']) {
+    for (const lane of ['allow', 'ask', 'deny'] as const) {
+      for (const kind of ['exact', 'subtree'] as const) {
+        it(`${lane} lane ${tool} '${kind}' rejects MALFORMED_DTO (resource.any only)`, () => {
+          const source = scheduleSource('leader', [
+            ...laneBlock(lane, tool, [`            kind: ${kind}`, '            path: "/data/notes.md"']),
+            ...emptyLanes(lane),
+          ])
+          expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
+        })
+      }
+    }
+  }
+
+  for (const tool of ['schedule_create', 'schedule_update']) {
+    it(`${tool} is not an enabled permission tool (MALFORMED_DTO at .tool)`, () => {
+      const source = scheduleSource('leader', [
+        ...laneBlock('deny', tool, ['            kind: any']),
+        ...emptyLanes('deny'),
+      ])
+      expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
+    })
+  }
+
+  it('the envelope carrier keeps the frozen seven-name operationClass set — the schedule names never widen it', () => {
+    const source = [
+      '---',
+      `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`,
+      'blueprintId: team.min',
+      'revision: "1"',
+      'leader:',
+      '  templateId: leader',
+      '  persona: "Lead."',
+      'members: []',
+      'requirements: []',
+      'memberEnvelopes: []',
+      'policyStates: []',
+      'permissionMutationEnvelope:',
+      '  rules:',
+      '    - operationClass: schedule_list',
+      '      matcher:',
+      '        kind: exact',
+      '        path: "/data/notes.md"',
+      '      maximumEffect: ask',
+      'teamHardEnvelope:',
+      '  rules: []',
+      'metadata: {}',
+      '---',
+      '',
+    ].join('\n')
+    expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
+  })
+
+  it('the original seven names parse exactly as before (bash deny-any still legal)', () => {
+    const policy = policyOf(PERMISSION_SOURCE_BASH_ANY)
+    expect(policy.deny).toEqual([{ tool: 'bash', resource: { kind: 'any' } }])
   })
 })

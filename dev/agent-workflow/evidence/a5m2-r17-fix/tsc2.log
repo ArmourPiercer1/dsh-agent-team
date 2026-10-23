@@ -1,0 +1,120 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+packages/runtime/test/a5m2-g1-query-wiring.test.ts(512,69): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(pattern: string | RegExp, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 2 of 3, '(pattern: string | RegExp): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 3 of 3, '(pattern: string, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+packages/runtime/test/a5m2-g1-query-wiring.test.ts(518,69): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(pattern: string | RegExp, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 2 of 3, '(pattern: string | RegExp): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+      Type 'undefined' is not assignable to type 'string | RegExp'.
+  Overload 3 of 3, '(pattern: string, flags?: string | undefined): RegExp', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+packages/runtime/test/a5m2-g1-query-wiring.test.ts(670,33): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string'.
+packages/runtime/test/a5m2-g1-query-wiring.test.ts(699,21): error TS2339: Property 'nativeFaceRef' does not exist on type 'AdapterRow'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(282,14): error TS18048: 'tool' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(285,22): error TS18048: 'tool' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(292,51): error TS18048: 'tool' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(294,11): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(295,45): error TS18048: 'tool' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(295,117): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(295,117): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | RegExp'.
+  Type 'undefined' is not assignable to type 'string | RegExp'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(297,45): error TS18048: 'tool' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(423,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(424,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(425,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(427,14): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(428,14): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(430,30): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(435,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(450,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(451,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(452,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(452,53): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(453,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(454,20): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(455,24): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(459,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(460,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(461,14): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(463,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(464,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(465,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(466,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(467,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(469,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(470,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(471,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(477,12): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(478,12): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(479,18): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(482,27): error TS18048: 'row' is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(491,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(498,41): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(512,14): error TS2322: Type 'G6Row | undefined' is not assignable to type 'G6Row'.
+  Type 'undefined' is not assignable to type 'G6Row'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(549,21): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(552,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(560,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(581,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(587,13): error TS2339: Property 'method' does not exist on type 'Tuple | undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(587,21): error TS2339: Property 'args' does not exist on type 'Tuple | undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(604,13): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(611,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(614,20): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(621,29): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(627,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(631,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(638,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(640,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(641,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(642,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(646,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(654,11): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(655,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(659,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(665,30): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(670,25): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(693,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(695,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(696,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(697,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(718,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(720,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(721,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(726,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(733,26): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(749,24): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(751,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(752,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(756,11): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(757,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(761,26): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(770,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(780,23): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(796,25): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(803,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(809,27): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(819,18): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(826,11): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(827,19): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(830,5): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(831,12): error TS2532: Object is possibly 'undefined'.
+packages/runtime/test/a5m2-g6-session-query-c1.test.ts(832,21): error TS2532: Object is possibly 'undefined'.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

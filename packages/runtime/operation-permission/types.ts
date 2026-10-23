@@ -27,7 +27,21 @@
  * the A3/A5 integration: once A1's module is merged, A3/A5 should import
  * `PermissionTool` from the A1 blueprint module and retire (or
  * re-export) this alias — the two definitions must never diverge (same
- * seven names, same closed semantics, plan §6.2 + A2C-1).
+ * names, same closed semantics, plan §6.2 + A2C-1; the A2C-1 suite pins
+ * `PERMISSION_TOOL_VALUES == PERMISSION_TOOL_NAMES`).
+ *
+ * Alpha.5 M2 (root 20:05 limited card): the A1 vocabulary gained the
+ * INVOCATION-ONLY pair `schedule_list` / `schedule_delete`
+ * (`PERMISSION_INVOCATION_ONLY_TOOL_NAMES` in the blueprint schema) and
+ * THIS alias widens WITH it — the never-diverge law holds. Widening the
+ * NAME SET changes no canonicalization BEHAVIOR: classification reads
+ * only the FILE and SHELL class lists below, so an invocation-only name
+ * keeps answering `unsupported` (the A2 adapter lane passes the call
+ * through unchanged — no file matcher, no fingerprint, no canonical
+ * operation is ever added for the class); the pair's authority rides
+ * the Alpha.5 admission projection's `tool-invoke` arm. The runtime
+ * single source for the third class is
+ * {@link INVOCATION_ONLY_PERMISSION_TOOL_VALUES} below.
  */
 export type PermissionTool =
   | 'read'
@@ -37,6 +51,8 @@ export type PermissionTool =
   | 'lsp'
   | 'bash'
   | 'pwsh'
+  | 'schedule_list'
+  | 'schedule_delete'
 
 /** Every {@link PermissionTool} value, for membership checks. */
 export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
@@ -47,6 +63,8 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'lsp',
   'bash',
   'pwsh',
+  'schedule_list',
+  'schedule_delete',
 ]
 
 /**
@@ -90,6 +108,43 @@ export type ToolLevelPermissionTool = 'bash' | 'pwsh'
 export const SHELL_PERMISSION_TOOL_VALUES: readonly ToolLevelPermissionTool[] = [
   'bash',
   'pwsh',
+]
+
+/**
+ * The INVOCATION-ONLY permission tools (Alpha.5 M2, root 20:05 limited
+ * card): `schedule_list` / `schedule_delete` — the native B-SCHEDULE
+ * pair with no matchable resource space (`schedule_list` takes an empty
+ * parameter face — host tools.ts:454; `schedule_delete` takes only an
+ * opaque record id returned by `schedule_list` — host tools.ts:470-479).
+ * The closed contract of the class, runtime single source:
+ * - rules carry the whole-tool `any` resource in ALL THREE lanes
+ *   (allow/ask/deny; the rule IS the invocation authority — an absent
+ *   rule resolves to `policy.default`, no implicit allow);
+ * - `exact` / `subtree` are rejected in every lane of every role — the
+ *   class is NEVER a file tool (no file matcher is ever added for it)
+ *   and NEVER a shell tool (no fingerprint, no exec dual gate);
+ * - canonicalization: NEVER — `classifyPermissionTool` keeps answering
+ *   `unsupported` (the A2 adapter lane passes the call through
+ *   unchanged); the authority rides the Alpha.5 admission projection's
+ *   `tool-invoke` arm (realm `tool-invoke` + `<realm>|tool:<name>`)
+ *   with the R-1a deny sources of the shared algebra;
+ * - `schedule_list authority != schedule_delete authority` (a rule or
+ *   an approval for one never gates the other);
+ * - `schedule_create` / `schedule_update` are NOT enabled — naming them
+ *   anywhere in this vocabulary is a defect (the blueprint schema's
+ *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror).
+ */
+export type InvocationOnlyPermissionTool = 'schedule_list' | 'schedule_delete'
+
+/**
+ * Every {@link InvocationOnlyPermissionTool} value. The single source of
+ * invocation-only class membership in the runtime: the admission
+ * projection's narrowing (deny/`any` law, exact/subtree refusal) reads
+ * THIS list — never a copied literal.
+ */
+export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPermissionTool[] = [
+  'schedule_list',
+  'schedule_delete',
 ]
 
 /**

@@ -77,8 +77,12 @@ import { PERMISSION_PATH_MAX_LENGTH, PERMISSION_RESOURCE_KINDS, PERMISSION_RULE_
 // (`operation-permission/types.ts`), never a second membership list. (The
 // shell-class membership decides the grammar branches below; the file class
 // is carried by the effect-kind map `RESOURCE_EFFECT_KINDS` + the lsp arm,
-// so only the shell list is cited here.)
-import { SHELL_PERMISSION_TOOL_VALUES } from '../operation-permission/types.js';
+// so only the shell list is cited here.) Alpha.5 M2 (root 20:05 limited
+// card) adds the third classification sites below: the FILE list narrows
+// the whole-tool deny law to TRULY file tools, and the INVOCATION-ONLY
+// list (schedule_list / schedule_delete) accepts `any` in all three lanes
+// and refuses exact/subtree — never shell, never file, no file matcher.
+import { FILE_PERMISSION_TOOL_VALUES, INVOCATION_ONLY_PERMISSION_TOOL_VALUES, SHELL_PERMISSION_TOOL_VALUES, } from '../operation-permission/types.js';
 import { requireFiniteClock } from './clock.js';
 import { createStubAssuranceProbe, verifyAssuranceForHardProfile } from './assurance-runtime.js';
 import { evaluateEffectSetExpansion, planEffectSetApproval, toolAskApprovalCaseId, verifyEffectSetApproval, } from './approval-case.js';
@@ -636,15 +640,23 @@ export function deriveTeamPolicyAuthority(input) {
                 return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource.kind must be one of ${PERMISSION_RESOURCE_KINDS.join(' | ')}`);
             }
             const isShell = SHELL_PERMISSION_TOOL_VALUES.includes(permissionTool);
+            const isFileTool = FILE_PERMISSION_TOOL_VALUES.includes(permissionTool);
+            const isInvocationOnly = INVOCATION_ONLY_PERMISSION_TOOL_VALUES.includes(permissionTool);
             const invokeMatcher = { kind: 'exact', resource: `${input.realmId}|tool:${permissionTool}` };
             if (kind === 'any') {
                 if (Object.keys(resource).some((key) => key !== 'kind')) {
                     return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path}.resource (kind 'any') must carry no field other than 'kind' (blueprint grammar)`);
                 }
-                if (lane === 'deny' && !isShell) {
+                if (lane === 'deny' && isFileTool) {
                     // A whole-tool file deny would need a resource-scope catch-all the
                     // PR0 closed family does not have. Dropping it would LOOSEN the
                     // deny — the one direction a projection may never take. Refuse.
+                    // Alpha.5 M2 (root 20:05): this law is TRULY-FILE only (the old
+                    // condition was "not shell", which swept the invocation-only
+                    // pair in). An invocation-only whole-tool deny projects
+                    // EXACTLY — its authority is the `tool-invoke` arm alone, the
+                    // same arm the allow/ask lanes project, with the shared R-1a
+                    // deny sources; nothing is dropped, nothing is weakened.
                     return projectionRefusal('IO_POLICY_UNSUPPORTED', 'projection-deny-unprojectable', `projection refused: a deny-lane whole-tool ('any') rule for the file-class tool '${permissionTool}' cannot be projected — the PR0 document family has no resource catch-all matcher, and a partial projection would silently weaken the deny (assembly refuses; move the rule to exact/subtree resources)`);
                 }
                 if (lane === 'allow' && isShell) {
@@ -663,7 +675,13 @@ export function deriveTeamPolicyAuthority(input) {
                 entries.push({ ceiling: lane, effectKinds: Object.freeze(['tool-invoke']), matcher: invokeMatcher });
                 if (lane === 'deny')
                     denySources.push({ effectKind: 'tool-invoke', matcher: invokeMatcher, ruleIndex: index });
-                if (!isShell)
+                // The tightening disclosure is a FILE-class fact (resource-scoped
+                // effects fall to no-authority ⇒ Ask). The invocation-only class
+                // HAS no resource-scoped effect to fall: the projected
+                // `tool-invoke` arm IS the declared authority — nothing is
+                // tighter than declared, so no note is due (root 20:05: reuse the
+                // original algebra/denySources, add no new default-allow).
+                if (!isShell && !isInvocationOnly)
                     notes.push(`rule ${path} (${permissionTool} whole-tool allow over ALL resources): only the tool-invoke arm projects — resource-scoped effects fall to no-authority ⇒ Ask (TIGHTER than declared, disclosed never silent)`);
                 continue;
             }
@@ -671,6 +689,14 @@ export function deriveTeamPolicyAuthority(input) {
             // at the blueprint grammar (A2C-1); re-verified here, fail closed.
             if (isShell) {
                 return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path} gives the shell tool '${permissionTool}' a '${kind}' resource — the shell class keeps only the whole-tool 'any' resource (A2C-1)`);
+            }
+            // The invocation-only class likewise keeps only the whole-tool 'any'
+            // resource (Alpha.5 M2, root 20:05): it carries no matchable resource
+            // space at all, so an exact/subtree rule cannot be projected even
+            // partially — re-verified here after the blueprint grammar, fail
+            // closed, in every lane of every role.
+            if (isInvocationOnly) {
+                return projectionRefusal('TOOL_BINDING_UNVERIFIED', 'projection-rule-malformed', `projection refused: rule ${path} gives the invocation-only tool '${permissionTool}' a '${kind}' resource — the class carries no matchable resource space (no file matcher, no fingerprint exists for it), so the whole-tool 'any' rule is its only projectable shape`);
             }
             const declaredPath = resource['path'];
             const controlChar = typeof declaredPath === 'string' && [...declaredPath].some((ch) => (ch.codePointAt(0) ?? 0x20) < 0x20);

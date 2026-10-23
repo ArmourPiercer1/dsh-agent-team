@@ -81,6 +81,7 @@ type AdapterRow = {
   description: string | null
   parameters: Record<string, unknown> | null
   definitionIdentity: string | null
+  nativeFaceRef: string
   classify: (args: unknown, callId: unknown) => ClassifyResult
   delegate: (plan: unknown, ctx?: { exec?: unknown }) => Promise<DelegateResult>
 }
@@ -118,7 +119,14 @@ type WiringResult = WiringValue | { ok: false; code: string; message: string }
 type WiringModule = {
   A5_G1_QUERY_WIRING_GROUP: string
   A5_G1_QUERY_WIRING_REVISION: number
-  A5_G1_QUERY_WIRING_CODES: Record<string, string>
+  A5_G1_QUERY_WIRING_CODES: {
+    readonly INPUT_INVALID: string
+    readonly ARM_NOT_ACCEPTED: string
+    readonly NON_SUBSET_CAPTURE: string
+    readonly ADMISSION_ABSENT: string
+    readonly PLACEMENT_KEY_ABSENT: string
+    readonly PLACEMENT_KEY_MOVED: string
+  }
   g1PureQuerySubset: () => Array<{ name: string; recordIndex: number; familyId: string }>
   createG1QueryWiring: (input?: Record<string, unknown>) => WiringResult
 }
@@ -667,9 +675,14 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
   })
 
   describe('(e) import closure asserted from the SOURCE TEXT: one project edge, zero lane-private / immature-arm imports', () => {
-    const source = readFileSync(new URL('../src/plugin/live/governed-families/g1-query-wiring.mjs', import.meta.url), 'utf8')
+    // (global-URL vs node:url URL typing clash - path joins instead, same file)
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../src/plugin/live/governed-families/g1-query-wiring.mjs'), 'utf8')
     it('the static import closure is exactly [./g1-surface-adapters.mjs] and there is no dynamic import', () => {
-      const statics = [...source.matchAll(/^\s*import\s+(?:[\s\S]*?)\s*from\s*'([^']+)'/gm)].map((m) => String(m[1]))
+      const statics: string[] = []
+      const importRe = /^\s*import\s+(?:[\s\S]*?)\s*from\s*'([^']+)'/gm
+      for (let m = importRe.exec(source); m !== null; m = importRe.exec(source)) {
+        statics.push(String(m[1]))
+      }
       expect([...new Set(statics)].sort()).toEqual(['./g1-surface-adapters.mjs'])
       // every `import` line is static; no bare/dynamic import expression exists
       const dynamic = source.match(/(^|[^.\w])import\s*\(/m)

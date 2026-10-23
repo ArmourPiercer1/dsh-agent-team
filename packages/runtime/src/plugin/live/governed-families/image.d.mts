@@ -92,6 +92,12 @@ export interface ImageCallFactsBase {
   callId: string
   authorityGeneration: number
   definitionIdentity: string
+  /** The plane's PER-CALL answer of the SAME live binding authority the arm
+   *  reads (A5M2 provider-identity supply, site 3): it is never a constant and
+   *  never copied off a row. The production plane is a `.mjs` and may therefore
+   *  hand `undefined` when the authority answers nothing — the arm refuses that
+   *  consumption with its own code (zero port reads, zero attachment writes).
+   *  A typed caller passes the live answer; there is nothing to fall back to. */
   providerIdentity: string
 }
 
@@ -161,7 +167,22 @@ export type ImageCapabilityProbe = (
 
 export interface GovernedReadImageArmDeps {
   definitionIdentity: string
-  providerId: string
+  /** The arm's provider identity, in ONE of two mutually exclusive shapes
+   *  (A5M2 provider-identity supply, candidate 2026-10-23):
+   *  - `providerId` — a NON-EMPTY CONSTANT the arm may honestly carry (the
+   *    unit-world shape: an arm whose authority cannot change under it);
+   *  - `provider` — a READER that resolves the LIVE binding authority's
+   *    providerId at every read (the production mount shape: the arm is built
+   *    at the PLACEMENT moment, BEFORE `bindOwnTools`, so no constant there can
+   *    be honest).
+   *  Supplying BOTH or NEITHER is a config defect refused at assembly — the law
+   *  is the same family as the `realmId` requirement below. In the reader world
+   *  the arm stores NO provider value: `providerId` and `resolveProviderId()`
+   *  answer LIVE, and `undefined` (authority absent / unverified / not ACTIVE /
+   *  non-string / a reader that throws) refuses every consumption with the
+   *  arm's own code — never a fallback constant, never the row's value. */
+  providerId?: string
+  provider?: () => string | undefined
   realmId: string
   namespaceRoot: string
   readBounded: ImageReadBoundedPort
@@ -174,7 +195,15 @@ export interface GovernedReadImageArmHandle {
   readonly familyId: string
   readonly adapterRevision: number
   readonly definitionIdentity: string
-  readonly providerId: string
+  /** LIVE answer of this arm's provider source AT THIS MOMENT: the constant in
+   *  the constant world; in the reader world whatever the live binding
+   *  authority answers NOW (`undefined` when it answers nothing). The reader
+   *  world never exposes a construction-time value — the arm is built before
+   *  the Guard binds. */
+  readonly providerId: string | undefined
+  /** The same answer as an explicit read, for the consumption points that want
+   *  the read named (the plane's per-call callFacts assembly). */
+  resolveProviderId: () => string | undefined
   readonly byteCap: number
   classify: (args: unknown) => { ok: true, effects: unknown, targetManifest: ImageTargetManifest } | { ok: false, code: string, detail: string }
   execute: (args: unknown, receipt: ImageConsumptionReceipt | undefined, callFacts: ImageCallFacts, signal?: AbortSignal) => Promise<ImageArmOutcome>

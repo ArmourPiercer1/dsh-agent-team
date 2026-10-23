@@ -183,7 +183,15 @@ function extensionOf(path) {
  *   assembly — the jobsEnabled law family; no half-wired arm can exist).
  * @param {string} deps.definitionIdentity - bind-time identity of the owned
  *   definition (the consumption tie checks the durable row against it).
- * @param {string} deps.providerId - the trusted assembly placing this arm.
+ * @param {string} [deps.providerId] - the trusted assembly placing this arm,
+ *   as a CONSTANT (the unit-world law; a placer that already knows its own
+ *   identity at construction).
+ * @param {() => (string | undefined)} [deps.provider] - A5M2 provider-identity
+ *   supply (candidate 2026-10-23 site 1): a READER resolving the LIVE binding
+ *   authority's providerId at the read moment. The production mount builds this
+ *   arm BEFORE the Guard binds, so a constant is not yet knowable there — and
+ *   the arm stores nothing from it: every consumption point re-asks. EXACTLY ONE
+ *   of providerId / provider is accepted (both or neither = config defect).
  * @param {string} deps.realmId - the realm the F effect is answered in.
  * @param {string} deps.namespaceRoot - the governed namespace root for the
  *   PURE-LEXICAL stage (the containment decision is this arm's own act).
@@ -198,7 +206,8 @@ function extensionOf(path) {
  */
 export function createGovernedReadImageArm({
   definitionIdentity,
-  providerId,
+  providerId: providerIdConstant,
+  provider,
   realmId,
   namespaceRoot,
   readBounded,
@@ -209,8 +218,21 @@ export function createGovernedReadImageArm({
   if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
     throw new TypeError('governed-families/image: definitionIdentity must be a non-empty string (the consumption tie binds through it; an unbound arm is a config defect)')
   }
-  if (typeof providerId !== 'string' || providerId.length === 0 || typeof realmId !== 'string' || realmId.length === 0) {
-    throw new TypeError('governed-families/image: providerId and realmId are required (the placing assembly and the answered realm identify themselves)')
+  // A5M2 PROVIDER-IDENTITY SUPPLY (candidate 2026-10-23 site 1, root timing
+  // fact: the mount builds the arm BEFORE bind, so the placing assembly cannot
+  // hand a constant here). The law is the SAME law, widened to two legal
+  // placers: EXACTLY ONE provider source — a usable non-empty constant string,
+  // or a reader function that resolves the LIVE binding authority's providerId
+  // at the read moment. Both (two authorities) or neither (an arm that would
+  // carry a guessed identity) is a config defect refused AT ASSEMBLY, exactly
+  // as the old law refused a missing providerId. There is no third shape and no
+  // fallback constant anywhere in this module: an authority that answers
+  // nothing answers `undefined`, and every consumption point fails closed on
+  // that answer.
+  const providerIsConstant = typeof providerIdConstant === 'string' && providerIdConstant.length > 0
+  const providerIsReader = typeof provider === 'function'
+  if (providerIsConstant === providerIsReader || typeof realmId !== 'string' || realmId.length === 0) {
+    throw new TypeError('governed-families/image: exactly one provider identity source is required — providerId (non-empty string: the placer already knows its identity) or provider (a reader resolving the LIVE binding authority providerId at read time: the placer binds later) — and realmId is required (the placing assembly and the answered realm identify themselves)')
   }
   if (typeof namespaceRoot !== 'string' || namespaceRoot.length === 0) {
     throw new TypeError('governed-families/image: namespaceRoot must be a non-empty string (the arm exists to STOP delegating the containment decision; an arm without a root delegates again)')
@@ -223,6 +245,25 @@ export function createGovernedReadImageArm({
   }
   if (typeof imageCapability !== 'function') {
     throw new TypeError('governed-families/image: imageCapability is required — native 639 refuses a non-image-capable route BEFORE resolving, reading or saving ANYTHING (tool-fs read-image.ts assertImageCapableRoute :119-130); the governed row keeps that gate at the same position, and it arrives as an async (signal) -> {ok, refusal?} probe built by the placing assembly over the PUBLIC llm service (ctx.get(\'llm\') + the exec route). An assembly that injects no gate silently REOPENS native\'s lost check — that is a config defect, never a default.')
+  }
+  const providerReader = providerIsReader ? provider : null
+  /** THIS arm's provider identity AS THE AUTHORITY ANSWERS NOW (A5M2 supply,
+   *  site 1). The constant placer answers its own bound string; the reader
+   *  placer re-asks the live authority on EVERY read — nothing is cached,
+   *  nothing is defaulted, and a construction-time answer is never stored (the
+   *  arm is built before bind, so a stored answer would be a permanent stale
+   *  identity). A reader that throws, or answers a non-string / empty string,
+   *  answers `undefined`: the authority is absent, and the consumption points
+   *  refuse on that rather than fall back to anything. */
+  function resolveProviderId() {
+    if (providerReader === null) return providerIdConstant
+    let answered
+    try {
+      answered = providerReader()
+    } catch {
+      return undefined
+    }
+    return typeof answered === 'string' && answered.length > 0 ? answered : undefined
   }
   const limits = attachments.imageLimits
   const byteCap = Math.min(limits.maxImageBytes, limits.maxMessageImageBytes)
@@ -348,6 +389,14 @@ export function createGovernedReadImageArm({
    *   authorityGeneration, definitionIdentity, providerIdentity }.
    */
   function bindingMismatch(manifest, callFacts) {
+    // A5M2 PROVIDER-IDENTITY SUPPLY (site 1, AT THE CONSUMPTION MOMENT): the
+    // third leg of the pinned three-way tie below is THIS arm's provider
+    // identity as the LIVE binding authority answers it NOW — never a value the
+    // placing assembly stored at construction (the arm predates bind). An
+    // authority that answers nothing IS a mismatch: the comparison keeps its
+    // bytes, the refusal keeps its code, and nothing is defaulted.
+    const providerId = resolveProviderId()
+    if (providerId === undefined) return 'provider (the live binding authority answers no providerId at the consumption moment; this arm carries no constant to fall back to and a row is never an authority)'
     const durableMember = `${String(manifest?.member?.teamSessionId ?? '')} ${String(manifest?.member?.instanceId ?? '')}`
     const liveMember = `${String(callFacts?.member?.teamSessionId ?? '')} ${String(callFacts?.member?.instanceId ?? '')}`
     if (durableMember !== liveMember || typeof callFacts?.member?.instanceId !== 'string' || callFacts.member.instanceId.length === 0) return `member (${durableMember} vs ${liveMember})`
@@ -438,6 +487,25 @@ export function createGovernedReadImageArm({
     const approval = callFacts?.approval
     if (approval !== 'all-allow' && approval !== 'ask') {
       return refuseExecution(CODES.CONSUMPTION_CONTEXT_UNKNOWN, `callFacts.approval must be the consumption execution context ('ask' or 'all-allow'), got ${JSON.stringify(approval ?? null)} — the arm never guesses which world a call belongs to, and an unclassified call reaches no backend`)
+    }
+    // A5M2 PROVIDER-IDENTITY SUPPLY (site 1, the consumption moment of THIS
+    // call): THIS arm's provider identity — the third leg of every pinned
+    // provider comparison below (the all-allow tie, the five-way tie inside
+    // `bindingMismatch`, the family-carrier check) — is read from the LIVE
+    // binding authority HERE. The arm stores no construction-time value: it is
+    // built before the Guard binds, so any stored answer would be a permanently
+    // stale identity (FP-C). An authority that answers nothing (absent entry /
+    // non-string / a throwing reader) refuses with the arm's OWN consumption
+    // code, and there is no fallback constant to fall back to and no durable
+    // row to borrow an identity from. SCOPE OF THE CLAIM (root narrow review on
+    // bd48): this refusal is upstream of THIS arm's effects only — zero port
+    // reads, zero attachment writes. It does NOT undo anything the PA / Control
+    // edge consumed before the arm was reached: by the time `execute` runs, the
+    // plane's PA final edge has already consumed the grant, and this arm never
+    // claims otherwise.
+    const providerId = resolveProviderId()
+    if (providerId === undefined) {
+      return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, "provider (this arm resolves no providerId from the live binding authority at the consumption moment) — the arm carries no provider constant and never falls back to the row's value: this refusal performs zero port reads and writes zero attachments (whatever the PA edge consumed upstream of the arm is not undone here)")
     }
     let manifest = undefined
     // The REAL execution credential of whichever world, resolved once:
@@ -656,7 +724,15 @@ export function createGovernedReadImageArm({
     familyId: A5_IMAGE_FAMILY_ID,
     adapterRevision: A5_IMAGE_ADAPTER_REVISION,
     definitionIdentity,
-    providerId,
+    /** A5M2 provider-identity supply: the arm's provider identity AS THE LIVE
+     *  AUTHORITY ANSWERS NOW (the constant placer answers its own bound string;
+     *  the reader placer answers live, or `undefined` while no authority
+     *  answers — e.g. before bind). NEVER a construction-time snapshot. */
+    get providerId() { return resolveProviderId() },
+    /** THE reader face (candidate site 1+3): the plane reads the family claim and
+     *  the call facts' provider identity through THIS, at each consumption
+     *  moment. `undefined` = no live authority = the consumer fails closed. */
+    resolveProviderId,
     byteCap,
     classify,
     execute,
