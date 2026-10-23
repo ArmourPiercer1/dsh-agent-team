@@ -584,6 +584,28 @@ interface GlueModule {
      * native does (a missing route is a refusal, never an implicit allow).
      */
     readonly llm?: () => unknown
+    /**
+     * A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+     * DSH public `sessionQuery` service accessor (the same ctx.get shape as
+     * `jobs`/`web`/`attachments` above, resolved at mount time). The five
+     * governed query facets, the provider identity and the declared-mount
+     * evidence are built FROM this live service — never from injected
+     * config. Additive optional, never hard-injected: worlds without the
+     * service keep the family DECLARED-INACTIVE (honest census, zero flip).
+     */
+    readonly sessionQuery?: () => unknown
+    /**
+     * A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1, the step-boundary
+     * line): the LAZY DSH public `sessionProjections` accessor — the
+     * caller law supplies the actual exec owner's OWN turnBoundary
+     * projection exactly as the host workspace-access law does
+     * (workspace-access.ts:56-69 @639ed01539: stateOf(agent.session,
+     * 'turnBoundary'), the state carrying lastStepStartSeq). Additive
+     * optional, never hard-injected: without it the current-session
+     * default refuses with the row's own NO_CURRENT_STEP guard — explicit
+     * targets keep serving; nothing is fabricated.
+     */
+    readonly sessionProjections?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2353,6 +2375,23 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // leaves the current route unresolvable, which the governed arm refuses at
     // the same pre-resource position native does.
     llm: () => ctx.get('llm'),
+    // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+    // DSH public `sessionQuery` service — the registered SessionQueryEngine
+    // whose five facets (search / trace / event-read / authorization /
+    // titles) ARE the governed supply. Resolved AT MOUNT TIME (additive
+    // optional, never a hard inject): worlds without the service keep the
+    // family DECLARED-INACTIVE (honest census, zero flip). Facets are never
+    // injected through config — the glue maps them off THIS service
+    // (buildG6QuerySupplyFromService).
+    sessionQuery: () => ctx.get('sessionQuery'),
+    // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+    // `sessionProjections` accessor — the caller law reads the actual exec
+    // owner's own turnBoundary projection (stateOf(agent.session,
+    // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+    // current-session default rides it and refuses with the row's own
+    // NO_CURRENT_STEP guard when the projection is unavailable — never a
+    // fabricated boundary. Additive optional, never a hard inject.
+    sessionProjections: () => ctx.get('sessionProjections'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
     // service is absent). Additive optional dep: never in the hard inject

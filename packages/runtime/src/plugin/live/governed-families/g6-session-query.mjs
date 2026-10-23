@@ -1350,7 +1350,13 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         portMethod: spec.portMethod,
         effectiveTargetSessionId: typeof effectiveTarget === 'string' ? effectiveTarget : null,
         callerWorkspaceCwd: typeof caller.caller.cwd === 'string' ? caller.caller.cwd : null,
-        maxSearchResults: spec.portFamily === 'search' ? maxSearchResults : undefined,
+        // APPROVED OMISSION LAW (root 19:25, wiring-owner measurement
+        // g6-session-query-wiring.mjs:92-96): the family-rules table denies
+        // key-with-undefined by design and the lossless walk kills it too —
+        // so the MINT must not emit it: non-search rows OMIT the key
+        // entirely (hasOwnProperty false), search rows keep the effective
+        // cap value byte-unchanged.
+        ...(spec.portFamily === 'search' ? { maxSearchResults } : {}),
         disclosures: [A5_G6_NAMED_BLOCKERS.SESSION_HISTORY_RESOURCE_KIND],
       })
       const reviewPayload = deepFreeze({

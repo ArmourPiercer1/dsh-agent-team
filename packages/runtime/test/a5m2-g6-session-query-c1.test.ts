@@ -1455,3 +1455,38 @@ describe('a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and 
     expect(out.value).toBeUndefined()
   })
 })
+
+/* ══ 10. MINT OMISSION LAW (root 19:25) — key GONE on non-search, kept on search ══ */
+describe('a5m2-g6 mint omission law — non-search targetManifests OMIT maxSearchResults; search rows byte-unchanged', () => {
+  it('non-search rows: the KEY IS ABSENT AT ALL (hasOwnProperty false + ownKeys exclude it) — never a present-and-undefined member', async () => {
+    const w = await makeWorld()
+    const probes: Array<[ToolName, Record<string, unknown>]> = [
+      ['session_trace', { session_id: 's-a' }],
+      ['session_event_trace', { session_id: 's-a', seq: 5 }],
+      ['session_event_read', { session_id: 's-a', seq: 5 }],
+    ]
+    for (const [name, args] of probes) {
+      const plan = w.adapter.rows[name].classify(args)
+      expect(plan['ok'], `${name} classify`).toBe(true)
+      const manifest = plan['targetManifest'] as Record<string, unknown>
+      expect(Object.prototype.hasOwnProperty.call(manifest, 'maxSearchResults'), `${name} key presence`).toBe(false)
+      expect(Object.keys(manifest), `${name} ownKeys`).not.toContain('maxSearchResults')
+      expect('maxSearchResults' in manifest, `${name} in-probe (what validatePaFamilyTarget checks)`).toBe(false)
+    }
+  })
+
+  it('search rows stay UNCHANGED: the key is PRESENT carrying the effective cap (default 100; configured 1 stays 1) on BOTH search-family rows', async () => {
+    const w = await makeWorld()
+    const plan = w.adapter.rows['session_search'].classify({ query: 'needle' })
+    const manifest = plan['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(manifest, 'maxSearchResults')).toBe(true)
+    expect(manifest['maxSearchResults']).toBe(100)
+    const evs = w.adapter.rows['session_event_search'].classify({ session_id: 's-a', query: 'needle' })['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(evs, 'maxSearchResults')).toBe(true)
+    expect(evs['maxSearchResults']).toBe(100)
+    const w1 = await makeWorld({ maxSearchResults: 1 })
+    const m1 = w1.adapter.rows['session_search'].classify({ query: 'needle' })['targetManifest'] as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(m1, 'maxSearchResults')).toBe(true)
+    expect(m1['maxSearchResults']).toBe(1)
+  })
+})

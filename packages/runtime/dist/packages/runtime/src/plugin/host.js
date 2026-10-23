@@ -1614,6 +1614,23 @@ export async function apply(ctx, config) {
             // leaves the current route unresolvable, which the governed arm refuses at
             // the same pre-resource position native does.
             llm: () => ctx.get('llm'),
+            // A5M2-G6 B-SESSION-QUERY (root 992 ②, the REAL supply line): the LAZY
+            // DSH public `sessionQuery` service — the registered SessionQueryEngine
+            // whose five facets (search / trace / event-read / authorization /
+            // titles) ARE the governed supply. Resolved AT MOUNT TIME (additive
+            // optional, never a hard inject): worlds without the service keep the
+            // family DECLARED-INACTIVE (honest census, zero flip). Facets are never
+            // injected through config — the glue maps them off THIS service
+            // (buildG6QuerySupplyFromService).
+            sessionQuery: () => ctx.get('sessionQuery'),
+            // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+            // `sessionProjections` accessor — the caller law reads the actual exec
+            // owner's own turnBoundary projection (stateOf(agent.session,
+            // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+            // current-session default rides it and refuses with the row's own
+            // NO_CURRENT_STEP guard when the projection is unavailable — never a
+            // fabricated boundary. Additive optional, never a hard inject.
+            sessionProjections: () => ctx.get('sessionProjections'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject
