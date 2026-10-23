@@ -3196,7 +3196,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
         member: Object.freeze({ teamSessionId: String(input.teamSessionId ?? ''), instanceId: String(input.instanceId ?? '') }),
         callId: correlation,
         definitionIdentity: placement?.definitionIdentity,
-        providerIdentity: 'a5p5-plane',
+        // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 3, root ruling 18:37): the ONE
+        // 'a5p5-plane' literal this site carried is REMOVED - the call's
+        // provider identity is the LIVE binding authority, read per call
+        // through the reader the mount assembly wired once into the arm
+        // (arm.resolveProviderId; the same getter the durable facts read
+        // `facts.binding` from). This plane owns NO provider constant: the
+        // read answers a string or it answers nothing, and the arm's own
+        // consumption-point law refuses on nothing (this value is never
+        // defaulted here, and the row's value is never copied in). The
+        // family claim above (walk.family.providerIdentity = arm.providerId)
+        // resolves through the SAME reader at the same moment, so the leg's
+        // carrier and these facts come from one live source.
+        providerIdentity: typeof arm.resolveProviderId === 'function' ? arm.resolveProviderId() : arm.providerId,
         authorityGeneration: paAuthorityGeneration(),
       })
       const receipt = askWorld
@@ -3529,8 +3541,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
       : (typeof imageArm.classify !== 'function' || typeof imageArm.execute !== 'function' || typeof imageArm.reference !== 'function' || typeof imageArm.drain !== 'function'
               || imageArm.familyId !== 'B-IMAGE' || typeof imageArm.adapterRevision !== 'number'
               || typeof imageArm.definitionIdentity !== 'string' || imageArm.definitionIdentity.length === 0
-              || typeof imageArm.providerId !== 'string' || imageArm.providerId.length === 0)
-        ? 'the answered arm is not the governed B-IMAGE surface (classify/execute/reference/drain + family facts + a bound definitionIdentity)'
+              // A5M2 PROVIDER-IDENTITY SUPPLY (SITE 1, the arm-owner law this
+              // mount signs): the provider identity arrives EITHER as a usable
+              // constant (a placer that already knows its identity) OR as a
+              // reader the arm re-asks at each consumption moment. The
+              // production mount builds its arm BEFORE `bindOwnTools`, so a
+              // constant CANNOT be honest there; what the law requires is the
+              // CAPACITY to answer, and the consumption points require the
+              // answer (an authority that answers nothing refuses there). An
+              // arm with neither is refused HERE — no half-wired row.
+              || ((typeof imageArm.providerId !== 'string' || imageArm.providerId.length === 0)
+                && typeof imageArm.resolveProviderId !== 'function'))
+        ? 'the answered arm is not the governed B-IMAGE surface (classify/execute/reference/drain + family facts + a bound definitionIdentity + a provider identity that is a non-empty constant or a live reader)'
         : undefined
     if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
   }
