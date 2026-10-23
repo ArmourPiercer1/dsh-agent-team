@@ -4,3 +4,18 @@ PASS  POS-0 write authority allow-list
 FAIL  NEG-5 duplicate stable id in the contract index
       sync: exit 0 != 1; output lacks "ID_DUPLICATE"
 controls=2 failed=1  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+# mutation controls (each rule must be shown capable of failing)
+
+## mutation A: checkIdUniqueness() disabled in scripts/doc-checks.mjs -> NEG-5 must fail
+PASS  POS-0 write authority allow-list
+FAIL  NEG-5 duplicate stable id in the contract index
+controls=2 failed=1  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+exit=0
+
+## mutation B: ratification check removed from scripts/docs-probe.mjs -> NEG-23 must fail
+PASS  POS-0 write authority allow-list
+FAIL  NEG-23 probe enforces ratification on a changed contract index
+controls=2 failed=1  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+
+## restored: both mutations reverted, full set re-run
+controls=29 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)

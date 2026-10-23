@@ -268,3 +268,101 @@ export function allDocsForFullCheck(root) {
   const found = listMarkdown(root, ['docs', '.agents', 'dev/engineering', 'AGENTS.md', 'README.md']);
   return found.filter((rel) => !isHistorical(rel));
 }
+
+/** EB1-D phase-plan citation interface (v0).
+ *
+ *  A phase plan MAY declare machine-readable facts in a fenced block:
+ *
+ *      ```yaml eb-plan
+ *      phase_id: alpha5-tool-io-governance
+ *      baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912
+ *      active_plan: docs/plans/active/<phase>/current-execution-plan.md
+ *      evidence_root: dev/agent-workflow/evidence/<phase>/
+ *      ```
+ *
+ *  Absence is NOT a finding: plans belong to the phase owner and this line may
+ *  not rewrite them (the standing instruction says the existing plans stay as
+ *  they are). Presence is checked, because a plan that cites a path nobody can
+ *  open, or states a phase id that contradicts `graph.yaml`, is precisely the
+ *  drift EB0-1 measured.
+ */
+export function checkPlanCitationBlocks(root, relFiles, { mirror = null, commitExists = null } = {}) {
+  const findings = [];
+  let declared = 0;
+  for (const rel of relFiles) {
+    if (!rel.startsWith('docs/plans/') || isHistorical(rel)) continue;
+    const abs = join(root, rel);
+    if (!existsSync(abs)) continue;
+    const text = readFileSync(abs, 'utf8');
+    const blocks = text.match(/```yaml eb-plan\n[\s\S]*?```/g) || [];
+    for (const block of blocks) {
+      declared += 1;
+      const body = block.replace(/^```yaml eb-plan\n/, '').replace(/```$/, '');
+      const fields = {};
+      body.split(/\r?\n/).forEach((line) => {
+        const m = line.match(/^([a-z_]+):\s*(.*)$/);
+        if (m) fields[m[1]] = m[2].trim().replace(/^"|"$/g, '');
+      });
+      const line = text.slice(0, text.indexOf(block)).split('\n').length;
+      for (const key of ['active_plan', 'backlog', 'matrix', 'evidence_root']) {
+        if (fields[key] && !existsSync(join(root, fields[key]))) {
+          findings.push({ code: 'PLAN_CITATION_MISSING', detail: `${rel}:${line}: ${key} -> ${fields[key]}` });
+        }
+      }
+      if (fields.baseline && commitExists && !commitExists(fields.baseline)) {
+        findings.push({ code: 'PLAN_CITATION_UNKNOWN_COMMIT', detail: `${rel}:${line}: baseline ${fields.baseline} is not an object in this repository` });
+      }
+      if (mirror && mirror.phase_id && fields.phase_id && fields.phase_id !== mirror.phase_id) {
+        findings.push({ code: 'PLAN_CITATION_CONFLICT', detail: `${rel}:${line}: phase_id=${fields.phase_id} contradicts ${mirror.file}#current_contract phase_id=${mirror.phase_id}` });
+      }
+      if (!fields.phase_id) {
+        findings.push({ code: 'PLAN_CITATION_INCOMPLETE', detail: `${rel}:${line}: eb-plan block without phase_id` });
+      }
+    }
+  }
+  return { findings, declared };
+}
+
+/** EB1-D ratification rule: an id may only leave `proposed-not-ratified` when it
+ *  names a note that exists and is not itself proposed. This is the machine half
+ *  of docs/contracts/engineering-baseline/promotion-rules.md. */
+export function checkRatification(root) {
+  const file = join(root, 'docs/contracts/engineering-baseline/ids.yaml');
+  if (!existsSync(file)) return [];
+  const text = readFileSync(file, 'utf8');
+  const findings = [];
+  const entryRe = /- id: ([A-Z]+-EB-\d{4})([\s\S]*?)(?=\n  - id: |\n[a-z_]+:|$)/g;
+  let m;
+  while ((m = entryRe.exec(text))) {
+    const [, id, body] = m;
+    const status = (body.match(/normative_status:\s*(\S+)/) || [])[1];
+    if (!status) {
+      findings.push({ code: 'ID_STATUS_MISSING', detail: `ids.yaml: ${id} has no normative_status` });
+      continue;
+    }
+    if (!['proposed-not-ratified', 'ratified', 'retired'].includes(status)) {
+      findings.push({ code: 'ID_STATUS_UNKNOWN', detail: `ids.yaml: ${id} normative_status=${status}` });
+      continue;
+    }
+    if (status === 'proposed-not-ratified') continue;
+    const by = (body.match(/ratified_by:\s*(\S+)/) || [])[1];
+    if (!by) {
+      findings.push({ code: 'ID_RATIFIED_WITHOUT_DECISION', detail: `ids.yaml: ${id} claims ${status} with no ratified_by note (refused; INV-EB-0009)` });
+      continue;
+    }
+    const noteId = by.replace(/^EB-ADR-/, '');
+    const noteFile = new RegExp(`id: ${by}\\b`).test(
+      ['proposed', 'implemented', 'rejected', 'archived']
+        .map((d) => {
+          const dir = join(root, '.agents/notes', d);
+          if (!existsSync(dir)) return '';
+          return readdirSync(dir).filter((f) => f.endsWith('.md')).map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+        })
+        .join('\n'),
+    );
+    if (!noteId || !noteFile) {
+      findings.push({ code: 'ID_RATIFIED_BY_UNKNOWN_NOTE', detail: `ids.yaml: ${id} ratified_by=${by} which is not a note in any lifecycle directory` });
+    }
+  }
+  return findings;
+}

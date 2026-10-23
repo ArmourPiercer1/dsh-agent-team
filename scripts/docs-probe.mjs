@@ -22,17 +22,20 @@ import { join, resolve, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   makeCommitExists,
+  allDocsForFullCheck,
   checkLinks,
   checkDeprecatedTerms,
   checkClaimsHaveEvidence,
   checkIdUniqueness,
   checkContractAnchors,
+  checkPlanCitationBlocks,
+  checkRatification,
 } from './doc-checks.mjs';
 import { run as runNotes } from './verify-agent-notes.mjs';
 import { build as buildStateView, renderView } from './gen-current-state.mjs';
 
 const BLOCKING = [
-  'NOTE', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
+  'NOTE', 'ID_', 'PLAN_CITATION', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
   'ID_DUPLICATE', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'REGISTRY', 'FAKE_VERIFICATION', 'ARTIFACT_MISSING',
 ];
 const LIMITS = [
@@ -93,6 +96,7 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
   if (scope.refused) return { refused: scope.refused };
 
   const buckets = classify(scope.all);
+  let viewMirror = null; // graph#current_contract mirror, read-only, filled by the derived-view rule
   const commitExists = makeCommitExists(root);
   const findings = [];
   const advisories = [];
@@ -117,6 +121,7 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
   {
     selectedRules.push('derived-view');
     const built = buildStateView(root);
+    viewMirror = built.refused ? null : built.view.legacy_authority;
     if (built.refused) {
       advisories.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
     } else {
@@ -142,6 +147,14 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     selectedRules.push('id-uniqueness', 'contract-anchors');
     findings.push(...checkIdUniqueness(root));
     findings.push(...checkContractAnchors(root));
+    findings.push(...checkRatification(root));
+    const planDocs = docTargets.filter((d) => d.startsWith('docs/plans/'));
+    const scanned = planDocs.length ? planDocs : allDocsForFullCheck(root).filter((d) => d.startsWith('docs/plans/'));
+    const planCheck = checkPlanCitationBlocks(root, scanned, { mirror: viewMirror, commitExists });
+    findings.push(...planCheck.findings);
+    if (planCheck.declared === 0) {
+      advisories.push({ code: 'PLAN_CITATION_ADOPTION', detail: 'no phase plan declares an eb-plan citation block yet; the interface exists and adoption is the phase owner decision — this line does not rewrite existing plans' });
+    }
   }
 
   // R9 source change -> which owning document should be looked at (advisory in v0)

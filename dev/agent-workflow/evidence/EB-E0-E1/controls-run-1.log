@@ -2,13 +2,13 @@ doc-consistency controls   fixture=/srv/workspace/dsh-plugins/dsh-agent-team/.wo
 PASS  POS-0 write authority allow-list
       only the generated view is writable
 PASS  POS-1 clean fixture passes the complete check
-      sync --check: refused with findings=0
+      sync --check: clean, observed findings=0
 PASS  POS-2 probe covers untracked and committed changes
-      worktree scope: refused with LIMIT T0 only; committed scope: refused with changed=1
+      worktree scope: clean, observed LIMIT T0 only; committed scope: clean, observed changed=1
 PASS  POS-3 Idea and Proposed text needs no runtime evidence
-      proposal exemption: refused with findings=0
+      proposal exemption: clean, observed findings=0
 PASS  POS-4 --write regenerates the view only
-      --write: refused with regenerated; check after write: refused with findings=0; normative file byte-identical
+      --write: clean, observed regenerated; check after write: clean, observed findings=0; normative file byte-identical
 PASS  NEG-1 note status does not match its directory
       sync: refused with NOTE_note-status-dir-mismatch
 PASS  NEG-2 duplicate note id
@@ -41,4 +41,20 @@ PASS  NEG-15 docs:sync requires an explicit mode
       no mode: refused with usage
 PASS  NEG-16 probe catches an uncommitted broken note
       probe: refused with NOTE_note-archived-needs-successor
-controls=21 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+PASS  POS-6 plan declaring a valid citation block passes
+      sync: clean, observed findings=0
+PASS  NEG-17 plan citation pointing at a path that is not there
+      sync: refused with PLAN_CITATION_MISSING
+PASS  NEG-18 plan phase_id contradicting the graph mirror
+      sync: refused with PLAN_CITATION_CONFLICT
+PASS  NEG-19 id ratified without naming a decision
+      sync: refused with ID_RATIFIED_WITHOUT_DECISION
+PASS  NEG-20 ratification citing a note that does not exist
+      sync: refused with ID_RATIFIED_BY_UNKNOWN_NOTE
+PASS  NEG-21 plan without a citation block is not a finding
+      sync: clean, observed plans=1(0 declaring) findings=0
+PASS  NEG-22 probe survives a contract-index change without crashing
+      probe: clean, observed rules=
+PASS  NEG-23 probe enforces ratification on a changed contract index
+      probe: refused with ID_RATIFIED_WITHOUT_DECISION
+controls=29 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)

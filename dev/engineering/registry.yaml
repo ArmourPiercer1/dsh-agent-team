@@ -93,12 +93,12 @@ entries:
     kind: implementation-pr
     title: Phase-plan citation interface and Idea-to-Contract rules
     decision_status: proposed
-    implementation_status: not_started
-    verification_status: not_verified
+    implementation_status: implemented_in_branch
+    verification_status: verified_local
     release_status: not_released
     owners: [Workflow Owner]
     refs: [IDEA-EB-0001]
-    verification_artifacts: []
+    verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log, dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log]
   - id: EB1-E
     kind: implementation-pr
     title: docs:probe fast document probe with negative controls

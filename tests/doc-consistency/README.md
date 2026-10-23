@@ -40,6 +40,23 @@ gets its own throwaway fixture Git repository under the gitignored
 | proposal exemption (AC-EB-0001 positive) | Idea + Proposed describing future behaviour → no findings | — |
 | base resolution | `--base <sha>` sees committed, staged and untracked changes | unresolvable `--base` → `REFUSED`, exit 2 (never "no changes") |
 | CLI discipline | `--check` | `--base` missing → `REFUSED`; `docs:sync` with neither `--check` nor `--write` → `REFUSED` |
+| plan citation exists (EB1-D) | a plan block citing real paths | `PLAN_CITATION_MISSING` when a cited path is absent |
+| plan phase identity (EB1-D) | block matches the `current_contract` mirror | `PLAN_CITATION_CONFLICT` when `phase_id` disagrees |
+| plan without a block (EB1-D positive) | prose-only plan → `plans=1(0 declaring) findings=0` | absence is never a finding: plans belong to the phase owner |
+| ratification needs a decision (EB1-D) | `proposed-not-ratified` ids | `ID_RATIFIED_WITHOUT_DECISION`; `ID_RATIFIED_BY_UNKNOWN_NOTE` |
+
+## Two things this harness has already caught in its own tooling
+
+1. **A patch that hit two identical anchors.** Wiring `checkRatification` into
+   `docs-sync.mjs` by string replacement matched both `const built = buildStateView(root)`
+   sites — inside `check()` and inside the `--write` CLI branch — so `--write` threw
+   `ReferenceError: findings is not defined`. 26 controls reported FAIL, not PASS, because
+   a crashing scenario is a failed control. Fixed by removing the stray line.
+2. **A green that was really a crash.** Earlier, on 2026-10-23, a helper deleted by
+   dead-code cleanup made a control exit 1 for the wrong reason; it nearly got logged as a
+   passing negative control. `expectRun` therefore rejects any output containing crash text
+   even when the exit code matches.
+
 
 A scenario passes only when the expected finding code **and** the expected exit
 code are both observed; an unexpected crash is reported as a FAILED control, never

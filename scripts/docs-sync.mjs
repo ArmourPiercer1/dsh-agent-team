@@ -25,6 +25,8 @@ import {
   checkClaimsHaveEvidence,
   checkIdUniqueness,
   checkContractAnchors,
+  checkPlanCitationBlocks,
+  checkRatification,
   allDocsForFullCheck,
 } from './doc-checks.mjs';
 
@@ -53,6 +55,7 @@ export function check(root) {
   findings.push(...checkDeprecatedTerms(root, docs));
   findings.push(...checkClaimsHaveEvidence(root, docs, { commitExists }));
 
+  findings.push(...checkRatification(root));
   const built = buildStateView(root);
   if (built.refused) {
     findings.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
@@ -63,7 +66,10 @@ export function check(root) {
     if (!existsSync(viewPath)) findings.push({ code: 'STALE_GENERATED_VIEW', detail: 'missing; run --write' });
     else if (readFileSync(viewPath, 'utf8') !== rendered) findings.push({ code: 'STALE_GENERATED_VIEW', detail: 'out of date; run --write' });
   }
-  return { findings, docs: docs.length, notes: notes.checked };
+  const planDocs = docs.filter((d) => d.startsWith('docs/plans/'));
+  const planCheck = checkPlanCitationBlocks(root, planDocs, { mirror: built.refused ? null : built.view.legacy_authority, commitExists });
+  findings.push(...planCheck.findings);
+  return { findings, docs: docs.length, notes: notes.checked, plans_scanned: planDocs.length, plans_declaring: planCheck.declared };
 }
 
 const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -111,7 +117,7 @@ if (invokedDirectly) {
 
   const result = check(root);
   for (const f of result.findings) console.log(`FAIL ${f.code}: ${f.detail}`);
-  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} findings=${result.findings.length}`);
+  console.log(`docs:sync --check: docs=${result.docs} notes=${result.notes} plans=${result.plans_scanned}(${result.plans_declaring} declaring) findings=${result.findings.length}`);
   console.log('LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof');
   process.exit(result.findings.length ? 1 : 0);
 }

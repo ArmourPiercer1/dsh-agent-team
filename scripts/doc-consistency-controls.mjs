@@ -164,7 +164,7 @@ function expectRun(label, res, wantCode, want) {
   if (/at .*\.mjs:\d+|ReferenceError|TypeError:/.test(res.out)) bad.push('crash text in output');
   return bad.length
     ? { ok: false, why: `${label}: ${bad.join('; ')}` }
-    : { ok: true, why: want ? `${label}: refused with ${want}` : `${label}: exit ${wantCode}` };
+    : { ok: true, why: want ? `${label}: ${wantCode === 0 ? 'clean, observed' : 'refused with'} ${want}` : `${label}: exit ${wantCode}` };
 }
 
 const results = [];
@@ -301,6 +301,49 @@ control('NEG-15 docs:sync requires an explicit mode', (d) => [
 control('NEG-16 probe catches an uncommitted broken note', (d) => {
   writeFile(d, '.agents/notes/archived/EB-ADR-0005-orphan.md', note({ id: 'EB-ADR-0005', status: 'archived', decided: '2026-10-23', title: 'orphan' }));
   return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'NOTE_note-archived-needs-successor')];
+});
+
+
+const planDoc = (phaseId, extra) => `# CTL plan\n\n\`\`\`yaml eb-plan\nphase_id: ${phaseId}\nactive_plan: docs/glossary.md\nevidence_root: dev/agent-workflow/evidence/CTL/\n${extra || ''}\`\`\`\n`;
+
+control('POS-6 plan declaring a valid citation block passes', (d) => {
+  writeFile(d, 'docs/plans/active/ctl/plan.md', planDoc('ctl-phase'));
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 0, 'findings=0')];
+});
+
+control('NEG-17 plan citation pointing at a path that is not there', (d) => {
+  writeFile(d, 'docs/plans/active/ctl/plan.md', planDoc('ctl-phase', 'backlog: docs/plans/active/ctl/never-written.md\n'));
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 1, 'PLAN_CITATION_MISSING')];
+});
+
+control('NEG-18 plan phase_id contradicting the graph mirror', (d) => {
+  writeFile(d, 'docs/plans/active/ctl/plan.md', planDoc('some-other-phase'));
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 1, 'PLAN_CITATION_CONFLICT')];
+});
+
+control('NEG-19 id ratified without naming a decision', (d) => {
+  writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('normative_status: proposed-not-ratified', 'normative_status: ratified'));
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 1, 'ID_RATIFIED_WITHOUT_DECISION')];
+});
+
+control('NEG-20 ratification citing a note that does not exist', (d) => {
+  writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('normative_status: proposed-not-ratified', 'normative_status: ratified\n    ratified_by: EB-ADR-9999'));
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 1, 'ID_RATIFIED_BY_UNKNOWN_NOTE')];
+});
+
+control('NEG-21 plan without a citation block is not a finding', (d) => {
+  writeFile(d, 'docs/plans/active/ctl/plan.md', '# CTL plan\n\nprose only, no machine block.\n');
+  return [expectRun('sync', run(SYNC, ['--check', '--root', d]), 0, 'plans=1(0 declaring) findings=0')];
+});
+
+control('NEG-22 probe survives a contract-index change without crashing', (d) => {
+  writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('text: a fixture invariant', 'text: a reworded invariant'));
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'rules=')];
+});
+
+control('NEG-23 probe enforces ratification on a changed contract index', (d) => {
+  writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('normative_status: proposed-not-ratified', 'normative_status: ratified'));
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'ID_RATIFIED_WITHOUT_DECISION')];
 });
 
 // ------------------------------ run ------------------------------

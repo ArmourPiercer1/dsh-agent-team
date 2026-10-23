@@ -2,7 +2,7 @@
   "generated_by": "scripts/gen-current-state.mjs",
   "schema_version": 1,
   "source_registry": "dev/engineering/registry.yaml",
-  "source_registry_sha": "16dda29c3da3d26871772f8e80c96cc689686b91",
+  "source_registry_sha": "a18070f43135d258461c6f66d82eeb10c62833c5",
   "axes_legend": {
     "decision_status": [
       "proposed",
@@ -234,8 +234,8 @@
       "kind": "implementation-pr",
       "title": "Phase-plan citation interface and Idea-to-Contract rules",
       "decision_status": "proposed",
-      "implementation_status": "not_started",
-      "verification_status": "not_verified",
+      "implementation_status": "implemented_in_branch",
+      "verification_status": "verified_local",
       "release_status": "not_released",
       "owners": [
         "Workflow Owner"
@@ -244,8 +244,17 @@
         "IDEA-EB-0001"
       ],
       "verification": {
-        "claimed": false,
-        "artifacts": []
+        "claimed": true,
+        "artifacts": [
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/controls-run-1.log",
+            "exists": true
+          },
+          {
+            "path": "dev/agent-workflow/evidence/EB-E0-E1/mutation-control-1.log",
+            "exists": true
+          }
+        ]
       }
     },
     {
