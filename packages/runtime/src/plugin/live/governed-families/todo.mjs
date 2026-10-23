@@ -42,7 +42,7 @@
  * `reviewPayload` = {familyId, adapterRevision, providerIdentity,
  * definitionIdentity, targetManifest} + the §1.1 effects
  * (`{kind:'tool-invoke', toolName:'todo_write', resource:null}` ONLY), and an
- * `operationFingerprint` over the FULL VALUES (never digest-only): this is the
+ * `parametersFingerprint` over the FULL VALUES (never digest-only): this is the
  * `parametersFingerprint` the A request carries and the consumed grant must
  * answer with verbatim — the grant therefore binds the exact payload the body
  * runs. `todosDigest` stays a manifest SUMMARY, never the identity.
@@ -252,13 +252,19 @@ export function createGovernedTodoArm({
       definitionIdentity,
       targetManifest,
     })
-    // 载荷法：FULL VALUES participate in the fingerprint (never digest-only);
-    // this is what the A request carries as parametersFingerprint and what
-    // the consumed grant must answer with verbatim. The frozen GRANT GRAMMAR
-    // ($.parametersFingerprint field-type, hit live by the lane legs) demands
-    // the `sha256:<hex64>` form — the prefix is part of the fingerprint VALUE
-    // (the arm pairs against the grant's own field, so the lane stays closed).
-    const operationFingerprint = `sha256:${sha256(canonicalJson({
+    // ROOT RULING (closed): TWO fingerprint layers, NEVER merged or replaced.
+    //   parametersFingerprint = the independent digest of THIS call's full
+    //   canonicalized values (载荷法: FULL VALUES, never digest-only; the
+    //   frozen GRANT GRAMMAR $.parametersFingerprint field-type demands the
+    //   `sha256:<hex64>` form — prefix part of the VALUE; hit live by the
+    //   lane legs). This is what the A request carries and what the consumed
+    //   grant must answer with verbatim — the arm pairs against it.
+    //   operationFingerprint = the strict-MANIFEST canonical digest, computed
+    //   by the PA center (`canonicalJsonFingerprint(manifest)` with the four
+    //   P-adds carried WHOLE via PaControlLegInput.family @ pa-control-bridge
+    //   .ts:395-417, fail-closed `family-review-facts-incomplete` BEFORE the
+    //   durable row/mint/consume). The arm NEVER computes or self-defines it.
+    const parametersFingerprint = `sha256:${sha256(canonicalJson({
       ...generations,
       callId,
       effects,
@@ -273,7 +279,7 @@ export function createGovernedTodoArm({
       callId,
       effects,
       reviewPayload,
-      operationFingerprint,
+      parametersFingerprint,
       canonical,
       generationsAtClassify: Object.freeze(generations),
     })
@@ -300,8 +306,8 @@ export function createGovernedTodoArm({
     correlationSeq += 1
     const correlation = `todo.r${A5_TODO_ADAPTER_REVISION}.${correlationSeq}.${callId}`
     plans.set(plan, { state: 'CLASSIFIED', correlation, snapshot })
-    observe({ event: 'classify', correlation, detail: operationFingerprint })
-    return { ok: true, plan, effects, reviewPayload, operationFingerprint, manifest: targetManifest }
+    observe({ event: 'classify', correlation, detail: parametersFingerprint })
+    return { ok: true, plan, effects, reviewPayload, parametersFingerprint, manifest: targetManifest }
   }
 
   /** The grant-issued hook (A answered allow/approve): internal state only —
@@ -341,11 +347,11 @@ export function createGovernedTodoArm({
     // PAIRING: the consumed grant must answer to THIS plan's payload and call.
     if (
       grant.callId !== plan.callId
-      || grant.parametersFingerprint !== plan.operationFingerprint
+      || grant.parametersFingerprint !== plan.parametersFingerprint
       || grant.bindingId !== plan.generationsAtClassify.bindingId
       || grant.bindingRevision !== plan.generationsAtClassify.bindingRevision
     ) {
-      return Promise.resolve(refuse(CODES.GRANT_MISMATCH, 'the consumed grant does not answer to this plan (callId / operationFingerprint / binding-generation pairing): a grant spent for one payload never runs another'))
+      return Promise.resolve(refuse(CODES.GRANT_MISMATCH, 'the consumed grant does not answer to this plan (callId / parametersFingerprint / binding-generation pairing): a grant spent for one payload never runs another'))
     }
     // EDGE RE-CHECK ③: definition identity + the captured function value.
     const current = generationFacts()
@@ -387,7 +393,7 @@ export function createGovernedTodoArm({
       .then(
         (value) => {
           entry.state = 'COMMITTED'
-          observe({ event: 'backend-commit', correlation: entry.correlation, detail: plan.operationFingerprint })
+          observe({ event: 'backend-commit', correlation: entry.correlation, detail: plan.parametersFingerprint })
           observe({ event: 'backend-end', correlation: entry.correlation, detail: 'ok' })
           return { ok: true, value }
         },

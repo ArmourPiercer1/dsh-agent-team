@@ -125,7 +125,7 @@ interface ArmOutcome {
   effects?: { kind: string; toolName: string; resource: null }[]
   manifest?: Record<string, unknown>
   reviewPayload?: Record<string, unknown>
-  operationFingerprint?: string
+  parametersFingerprint?: string
   value?: { todos: { content: string; status: string }[]; counts: { pending: number; inProgress: number; completed: number } }
   settled?: string
   appendOutcome?: string
@@ -371,8 +371,8 @@ type LaneRun =
 async function runLane(f: ArmFixture, policy: TemplatePermissionPolicy, callId: string, opts: { args?: unknown; approve?: boolean } = {}): Promise<LaneRun> {
   const args = opts.args ?? VALID_ARGS
   const c = f.arm.classify(args, f.exec, callId)
-  if (!c.ok || c.plan === undefined || c.operationFingerprint === undefined) return { stage: 'classify', out: c }
-  const fingerprint = c.operationFingerprint
+  if (!c.ok || c.plan === undefined || c.parametersFingerprint === undefined) return { stage: 'classify', out: c }
+  const fingerprint = c.parametersFingerprint
   const { assembly, ledger } = paHarness(policy)
   const request = paRequest(f, callId, fingerprint)
   const admitted = await assembly.admitCall(request)
@@ -710,11 +710,11 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
   it('T17 same-tick cancel agrees with the append count (commit-edge re-check); post-commit cancel never rewrites', async () => {
     const f = armFixture(true)
     const c = f.arm.classify(VALID_ARGS, f.exec, 'call-t17a')
-    if (!c.ok || c.plan === undefined || c.operationFingerprint === undefined) throw new Error('T17: classify must succeed')
+    if (!c.ok || c.plan === undefined || c.parametersFingerprint === undefined) throw new Error('T17: classify must succeed')
     const { assembly } = paHarness(ASK_DEFAULT)
-    const grant = await openApproved(f, assembly, 'call-t17a', c.operationFingerprint)
+    const grant = await openApproved(f, assembly, 'call-t17a', c.parametersFingerprint)
     expect(f.arm.prepare(c.plan, { grantId: grant.grantId }).ok).toBe(true)
-    if (!consumeEdge(assembly, grant, 'call-t17a', c.operationFingerprint).ok) throw new Error('T17: first consume edge must succeed')
+    if (!consumeEdge(assembly, grant, 'call-t17a', c.parametersFingerprint).ok) throw new Error('T17: first consume edge must succeed')
     const running = f.arm.execute(c.plan, { consumed: true, grant: grantView(grant) })
     const z = f.arm.cancel(c.plan) // SAME tick: CLAIMED, body not entered
     expect(z.settled).toBe('CANCELLED-BEFORE-EXECUTION')
@@ -725,10 +725,10 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     expect(f.events).toHaveLength(0) // …and post-settle append = 0: CONSISTENT (the pre-fix defect reported ALREADY-COMMITTED at 0, then wrote)
     // post-commit honesty: a committed plan says ALREADY-COMMITTED, append 1.
     const c2 = f.arm.classify({ todos: [{ content: 'z', status: 'pending' }] }, f.exec, 'call-t17b')
-    if (!c2.ok || c2.plan === undefined || c2.operationFingerprint === undefined) throw new Error('T17: second classify must succeed')
-    const grant2 = await openApproved(f, assembly, 'call-t17b', c2.operationFingerprint)
+    if (!c2.ok || c2.plan === undefined || c2.parametersFingerprint === undefined) throw new Error('T17: second classify must succeed')
+    const grant2 = await openApproved(f, assembly, 'call-t17b', c2.parametersFingerprint)
     expect(f.arm.prepare(c2.plan, { grantId: grant2.grantId }).ok).toBe(true)
-    if (!consumeEdge(assembly, grant2, 'call-t17b', c2.operationFingerprint).ok) throw new Error('T17: second consume edge must succeed')
+    if (!consumeEdge(assembly, grant2, 'call-t17b', c2.parametersFingerprint).ok) throw new Error('T17: second consume edge must succeed')
     const x2 = await f.arm.execute(c2.plan, { consumed: true, grant: grantView(grant2) })
     expect(x2.ok).toBe(true)
     const z2 = f.arm.cancel(c2.plan)
@@ -741,11 +741,11 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     //     entry → the edge re-check (captured function VALUE) refuses typed:
     const a = armFixture(true)
     const ca = a.arm.classify(VALID_ARGS, a.exec, 'call-t18a')
-    if (!ca.ok || ca.plan === undefined || ca.operationFingerprint === undefined) throw new Error('T18a: classify must succeed')
+    if (!ca.ok || ca.plan === undefined || ca.parametersFingerprint === undefined) throw new Error('T18a: classify must succeed')
     const { assembly: asmA } = paHarness(ASK_DEFAULT)
-    const grantA = await openApproved(a, asmA, 'call-t18a', ca.operationFingerprint)
+    const grantA = await openApproved(a, asmA, 'call-t18a', ca.parametersFingerprint)
     expect(a.arm.prepare(ca.plan, { grantId: grantA.grantId }).ok).toBe(true)
-    if (!consumeEdge(asmA, grantA, 'call-t18a', ca.operationFingerprint).ok) throw new Error('T18a: consume edge must succeed')
+    if (!consumeEdge(asmA, grantA, 'call-t18a', ca.parametersFingerprint).ok) throw new Error('T18a: consume edge must succeed')
     let spyRan = false
     a.tool.execute = async () => { spyRan = true; return { todos: [], counts: { pending: 0, inProgress: 0, completed: 0 } } } // property replacement POST-APPROVAL
     const drifted = await a.arm.execute(ca.plan, { consumed: true, grant: grantView(grantA) })
@@ -755,11 +755,11 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     // (b) binding-generation drift between classify and the edge:
     const b = armFixture(true)
     const cb = b.arm.classify(VALID_ARGS, b.exec, 'call-t18b')
-    if (!cb.ok || cb.plan === undefined || cb.operationFingerprint === undefined) throw new Error('T18b: classify must succeed')
+    if (!cb.ok || cb.plan === undefined || cb.parametersFingerprint === undefined) throw new Error('T18b: classify must succeed')
     const { assembly } = paHarness(ASK_DEFAULT)
-    const grant = await openApproved(b, assembly, 'call-t18b', cb.operationFingerprint)
+    const grant = await openApproved(b, assembly, 'call-t18b', cb.parametersFingerprint)
     expect(b.arm.prepare(cb.plan, { grantId: grant.grantId }).ok).toBe(true)
-    if (!consumeEdge(assembly, grant, 'call-t18b', cb.operationFingerprint).ok) throw new Error('T18b: consume edge must succeed')
+    if (!consumeEdge(assembly, grant, 'call-t18b', cb.parametersFingerprint).ok) throw new Error('T18b: consume edge must succeed')
     b.facts.bindingRevision += 1 // the M1 binding row advances under the approval
     const moved = await b.arm.execute(cb.plan, { consumed: true, grant: grantView(grant) })
     expect(moved.code).toBe(TODO_ARM.A5_TODO_TYPED_CODES.GRANT_MISMATCH)
@@ -768,11 +768,11 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     //     lands ONLY on the session classified for; foreign session stays empty:
     const f = armFixture(true)
     const cc = f.arm.classify(VALID_ARGS, f.exec, 'call-t18c')
-    if (!cc.ok || cc.plan === undefined || cc.operationFingerprint === undefined) throw new Error('T18c: classify must succeed')
+    if (!cc.ok || cc.plan === undefined || cc.parametersFingerprint === undefined) throw new Error('T18c: classify must succeed')
     const { assembly: asmC } = paHarness(ASK_DEFAULT)
-    const grantC = await openApproved(f, asmC, 'call-t18c', cc.operationFingerprint)
+    const grantC = await openApproved(f, asmC, 'call-t18c', cc.parametersFingerprint)
     expect(f.arm.prepare(cc.plan, { grantId: grantC.grantId }).ok).toBe(true)
-    if (!consumeEdge(asmC, grantC, 'call-t18c', cc.operationFingerprint).ok) throw new Error('T18c: consume edge must succeed')
+    if (!consumeEdge(asmC, grantC, 'call-t18c', cc.parametersFingerprint).ok) throw new Error('T18c: consume edge must succeed')
     // (d) SECOND plan on the SAME exec, classified while the exec is still
     //     original (同 exec 双票): its own plan exists but no matching
     //     consumed proof — it must never ride (c)'s grant:
@@ -800,10 +800,10 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     expect(f.events).toHaveLength(1) // still ONE append total
   })
 
-  it('T19 M0 strict payload: deep-frozen reviewPayload, FULL-VALUE operationFingerprint (never digest-only), effects-only vocabulary', () => {
+  it('T19 M0 strict payload: deep-frozen reviewPayload, FULL-VALUE parametersFingerprint (never digest-only), effects-only vocabulary', () => {
     const f = armFixture(true)
     const c = f.arm.classify(VALID_ARGS, f.exec, 'call-t19')
-    if (!c.ok || c.reviewPayload === undefined || c.operationFingerprint === undefined) throw new Error('T19: classify must answer the payload')
+    if (!c.ok || c.reviewPayload === undefined || c.parametersFingerprint === undefined) throw new Error('T19: classify must answer the payload')
     expect(c.effects).toEqual([{ kind: 'tool-invoke', toolName: 'todo_write', resource: null }])
     expect(EFFECT_KINDS).toContain('tool-invoke') // closed vocabulary, zero new kinds
     const parsed = parseRequestedEffectSet(c.effects)
@@ -821,9 +821,9 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
     expect(String(manifest.todosDigest)).toMatch(/^[0-9a-f]{64}$/)
     // 载荷法: the fingerprint is NEVER the digest alone, and it moves with
     // FULL values — same list, different call correlation ⇒ different value:
-    expect(c.operationFingerprint).not.toBe(manifest.todosDigest)
+    expect(c.parametersFingerprint).not.toBe(manifest.todosDigest)
     const same = f.arm.classify(VALID_ARGS, f.exec, 'call-t19-other')
-    expect(same.ok && same.operationFingerprint !== c.operationFingerprint).toBe(true)
+    expect(same.ok && same.parametersFingerprint !== c.parametersFingerprint).toBe(true)
     // deep freeze ALL the way down (冻结 payload):
     expect(Object.isFrozen(c.reviewPayload)).toBe(true)
     expect(Object.isFrozen(manifest)).toBe(true)
@@ -837,11 +837,11 @@ describe('a5-m2-todo-write-c1 — B-SESSION todo arm, root-card caliber (real sh
   it('T20 DRAINING everywhere: classify/prepare refuse, an already-claimed plan is stopped at the edge with append 0, no native fallback', async () => {
     const f = armFixture(true)
     const c = f.arm.classify(VALID_ARGS, f.exec, 'call-t20')
-    if (!c.ok || c.plan === undefined || c.operationFingerprint === undefined) throw new Error('T20: classify must succeed')
+    if (!c.ok || c.plan === undefined || c.parametersFingerprint === undefined) throw new Error('T20: classify must succeed')
     const { assembly } = paHarness(ASK_DEFAULT)
-    const grant = await openApproved(f, assembly, 'call-t20', c.operationFingerprint)
+    const grant = await openApproved(f, assembly, 'call-t20', c.parametersFingerprint)
     expect(f.arm.prepare(c.plan, { grantId: grant.grantId }).ok).toBe(true)
-    if (!consumeEdge(assembly, grant, 'call-t20', c.operationFingerprint).ok) throw new Error('T20: consume edge must succeed')
+    if (!consumeEdge(assembly, grant, 'call-t20', c.parametersFingerprint).ok) throw new Error('T20: consume edge must succeed')
     const running = f.arm.execute(c.plan, { consumed: true, grant: grantView(grant) })
     f.arm.drain() // SAME tick: the commit-edge re-check must stop the body
     const done = await running
