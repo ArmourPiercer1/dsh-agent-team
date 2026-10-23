@@ -1050,6 +1050,32 @@ function imageTurnDoneAfterDenial(reply, msgs, row2RequestId) {
   return denialPairSeen(msgs ?? [], { tool: 'read_image', file: IMG_REL }, (tt) => tt.includes('APPROVAL_DENIED') && tt.includes(`durable Control request ${row2RequestId} answered deny`)) !== null
 }
 
+/** OVERLAY-22 (root 22:45 — predicate-level only; the C5 criterion itself, its timeouts, the negative
+ * controls, the terminal rules, first-stop, world-safety, the pin and the product are untouched).
+ * Accepted settle wording for the ABANDONED call, always bound to the requestId:
+ *   - the previous wording set (answered abandoned|unsettled, APPROVAL_NOT_RESOLVED, PA walk/edge, cancelled);
+ *   - PLUS the sentence the pinned Host really puts on the wire when that call is unresolved: a governance
+ *     denial for THAT requestId — "…APPROVAL_DENIED — durable Control request <row3 requestId> answered deny".
+ *     Original raw: run-2026-10-23T22-35-22 seq 27 at 22:35:31.339Z carries
+ *     tool_result(call-a5c2-0kbf5s1p) is_error:true with exactly that text for row3
+ *     ctrl-1wd5c8x1jd8r340suhv4j06l; the Host's own tool-calls rows 277-289 hold the same event as
+ *     event.data.message.isError (not top level) and DeepSeek's serialize at lines 118-124 turns it into this
+ *     wire. The old set never matched it, so C5 recorded a FALSE NEGATIVE while the settle was in fact present.
+ * No evidence is accepted more weakly than before: the caller still runs denialPairSeen, which binds a
+ * tool_use(read_image, IMG_REL) to a tool_result for THAT SAME callId with is_error true, and the row3
+ * requestId must still appear in the text, so a foreign row can never satisfy it. And a denial wording is
+ * NOT hereby declared an abandon: the abandon is proven separately and durably — exactly ONE
+ * control-request-abandoned fact for row3 in the ledger AND in the durable file, ZERO control-allow-consumed
+ * for row3, store census unchanged vs leg-3 start. Row 2's public denial carries the identical wording with
+ * row2's OWN requestId, which is exactly why the requestId binding plus those durable cross-checks are the
+ * discriminator and why an ordinary deny cannot masquerade as an abandon. */
+function c5SettleTextOk(text, row3RequestId) {
+  const t = String(text ?? '')
+  if (!t.includes(row3RequestId)) return false
+  return /answered (?:abandoned|unsettled)|APPROVAL_NOT_RESOLVED|PA walk|PA edge|cancelled/i.test(t)
+    || t.includes(`durable Control request ${row3RequestId} answered deny`)
+}
+
 /** Model-visible ALLOWED image result: callId-paired tool_use(read_image, IMG_REL) ->
  * tool_result whose text is the native two-block envelope with the ORIGINAL-frame clause
  * (plane render 249eb:3076-3114 — text names BOTH frames; the image part carries the
@@ -2393,7 +2419,7 @@ async function main() {
       const msgs = r.body?.messages ?? []
       if (FIXTURE === 'write' || FIXTURE === 'image') {
         const wantC = FIXTURE === 'image' ? { tool: 'read_image', file: IMG_REL } : { tool: 'write', content: WF_CANCEL }
-        const pair = denialPairSeen(msgs, wantC, (t) => t.includes(row3.payload.requestId) && /answered (?:abandoned|unsettled)|APPROVAL_NOT_RESOLVED|PA walk|PA edge|cancelled/i.test(t))
+        const pair = denialPairSeen(msgs, wantC, (t) => c5SettleTextOk(t, row3.payload.requestId))
         if (pair !== null) cancelSeen = pair
         return pair !== null
       }

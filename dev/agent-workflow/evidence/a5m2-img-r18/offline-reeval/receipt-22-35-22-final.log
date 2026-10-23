@@ -1,0 +1,42 @@
+=== OVERLAY-22 OFFLINE RE-EVALUATION OF C5 — original run raw, read-only ===
+run dir      : /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-35-22
+fixture      : examples/minimal/.sessions/a5m2c2-im-a5m2-img-r18-2026-10-23T22-35-22.png  (mode=image synthetic={"width":1024,"height":768,"generator":"kit synthPng (filter-0 RGB scanlines, zlib level 9, single IDAT, deterministic)","sha256":"59c5e468a161bb7833c0062f9935d4d0c48e9a5e37d42c7c73964f78427d1516","size":1092684}; expected normalization 512x384 from 1024x768)
+wire         : 28 requests, seq 1..28
+identities   : row1(allow)=ctrl-0latv4y1awig3j1fxsgdk1u8  row2(deny)=ctrl-0rivsl410q2ixl0redsae0af  row3(abandon)=ctrl-1wd5c8x1jd8r340suhv4j06l  read_image rows in durable ledger=3
+durable facts: recorded=3 decisions=2 consumptions=1 abandonments=1
+original outcome (quoted, NOT re-attributed): summary.exitCode=2 criteria=[["C1","run","3/3"],["C2","run","2/2"],["C3","run","5/5"],["C4","run","4/4"],["C5","run","3/4"],["H1","not-run","0/0"],["H2","not-run","0/0"]]
+PASS C5-1 a third governed read_image row was recorded and stayed pending (never decided, never consumed)
+       ridOrder=["ctrl-0latv4y1awig3j1fxsgdk1u8","ctrl-0rivsl410q2ixl0redsae0af","ctrl-1wd5c8x1jd8r340suhv4j06l"] decisions(row3)=0 consumptions(row3)=0
+PASS C5-2 cancel ran through the EXISTING p6t6 abandon fixture = production abandonControlRequest authority (runner-recorded answer; the durable fact carries its own sequence)
+       status=200 requestId=ctrl-1wd5c8x1jd8r340suhv4j06l abandonmentSequence=18 reason=a5m2c2-c5 cancel-via-existing-fixture abandonedAt=2026-10-23T22:35:31.247Z
+PASS C5-3 exactly ONE durable abandon fact for row3, ZERO consumptions for row3, store census unchanged by the abandon (baseline 0 -> 1 object from the allow leg only)
+       abandonFacts(row3)=1 consumptions(row3)=0 baseline=[] afterAllow=[{"rel":"99/99cfdcaafc5c505be5b4d76479017541ce46997d507e4cdadf7529f6d8669685","size":12197}] addedObject=99/99cfdcaafc5c505be5b4d76479017541ce46997d507e4cdadf7529f6d8669685
+PASS C5-3x CROSS — the row2 public DENY produced NO abandon fact and NO consumption, so a plain deny cannot masquerade as an abandon; row1 keeps its single consumption
+       abandonFacts(row2)=0 consumptions(row2)=0 consumptions(row1)=1 durableFileAbandonFacts(row3)=1 consumptionEvidence.requestId=ctrl-0latv4y1awig3j1fxsgdk1u8
+PASS C5-4a the OLD predicate reproduces the recorded FALSE NEGATIVE exactly — zero hits over all 28 requests (the raw settle was there, the wording set missed it)
+       oldPredicate(row3) hits=0; runner recorded: "no callId-paired is_error tool_result bound to row3 requestId observed" after "mock wait timed out: C5 member-visible cancel settle …)"
+PASS C5-4b the FIXED predicate (kit bytes, sliced) finds the row3 settle — same callId, is_error true, IMG_REL tool_use paired, row3 requestId bound, and no row2 bleed
+       seq=27 at=2026-10-23T22:35:31.339Z callId=call-a5c2-0kbf5s1p (third and last read_image call on that wire: call-a5c2-0kbf5s1p) text="Error: APPROVAL_DENIED — durable Control request ctrl-1wd5c8x1jd8r340suhv4j06l answered deny"
+PASS C5-4c DISCRIMINATION — bound to row2 the SAME predicate resolves ONLY to the row2 pair (identical wording, different requestId) across every request that repeats that history: the binding is per-row, not per-word
+       row2-bound hits=3 on seqs 19,24,27 all callId=call-a5c2-1vikr6bo; row3-bound hits=1 callId=call-a5c2-0kbf5s1p
+PASS C5-4d Host-side agreement (nested field, not top level) — the child session tool/result event carries event.data.message.isError=true for the SAME callId and the same row3 sentence
+       session seq=50 type=tool/result data.keys=["turn","step","message"] message.keys=["role","source","toolCallId","content","isError","id"] isError=true toolCallId=call-a5c2-0kbf5s1p
+PASS C5-5 ZERO todo footprint at the public-abandon boundary (durable lanes, the run boundary snapshot, and the model wire re-counted from raw)
+       laneFacts=[] sessionRows=0 wireCalls=0 wireHits=[] ledgerError=null wireTodoRecount=0
+--- runner outcome lines, quoted verbatim (original failure preserved) ---
+  [2026-10-23T22:35:30.715Z] C4: PASS (4/4 checks)
+  [2026-10-23T22:38:31.598Z] C5 FAIL — the abandoned call surfaced its settle to the member as a tool result for THIS call: callId-paired tool_use(read_image, source PNG)->tool_result is_error=true bound to the exact row3 requestId with the arm-settle protocol wording (abandon via p6t6 abandonControlRequest authority — NOT nativeAbort; layered separately from the durable abandon fact) :: no callId-paired is_error tool_result bound to row3 requestId observed
+  [2026-10-23T22:38:31.601Z] C5: FAIL (3/4 checks)
+  [2026-10-23T22:38:31.602Z] FIRST-FAILURE-STOP C5 FAILED — first-failure stop (full state in /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-imgverify/dev/agent-workflow/evidence/a5m2-img-r18/run-2026-10-23T22-35-22)
+--- inputs, hashed read-only by this receipt (full sha256) ---
+  997fc787657fff0431ec8bd8ebbb8780b6d06164a3552778e857deee8ad2e0ab  mock.log (full 28-request wire array)
+  c6afc4f66fb7a9ae1506401745a83517a7a4e6c3e5117a9f269fe1207ed1f503  ledger-dump.json (final durable readLedger())
+  a0e4316cfc32991adee27e800bdd79124d277c236b034ca8e31944ba6b2a56ff  control-consumption-evidence.json
+  9be253d9ad8a889c297d4c0ca40af9a3d35e75baa82cc2009e6565f75d696910  fixture-evidence.json
+  9edf9b55e8a123a112da254cd948e04addec94117cc69329b568a55eb99d57e0  zero-todo-law-public-abandon.json
+  14f8c3cb9e22aa6220762ddffd4626982d4bb321a4fe782fe6e8eb4981d8f178  summary.json (the runner outcome, quoted, never rewritten)
+  2761b46e6e59d472fc9e14330749ec52f44a0cb49c5ac2218eaba30ffbb5abd0  run.log
+  d0d2972bcf9420e25a3c07c9f35d245628bbac9c9719b2c9448b8e10cfbd0e67  kit CURRENT (OVERLAY-22) tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs
+  1c3d2642565ba942d5337725a64186ebe4e96e28079b67150e9a913e91d93e7f  kit PRE-FIX snapshot .pinbuild-verify/kit-c5prefix-1c3d2642.mjs
+  fface2fe79e6e5c4c1f9b94bf9231a2159b34e4daf6d65125c46162e97e28e99  session-logs/<child 976d16bfee…> session.v4 (Host-side tool/result events)
+RECEIPT bad=0 — scope: 真实正 / deny / abandon + C5 谓词假阴性 的离线复核. The original runner exit (summary.exitCode=2, C5 3/4) stands as recorded; this receipt does not declare the original run passed and wrote nothing into the run dir.
