@@ -176,7 +176,17 @@ export interface G6AdapterDeps {
   queryPorts: G6QueryPorts
   readCaller: () => G6Caller | undefined
   /** Team allow ceiling INTERSECTED with the service-side pre-authorization
-   *  (item 1): a target read needs BOTH. Denial is pre-read, zero port entry. */
+   *  (item 1): a target read needs BOTH. Denial is pre-read, zero port entry.
+   *  ROOT-16:47 closure: the SAME live decision gates (a) every hasTarget
+   *  row — all four session_id-taking tools, session_event_search included
+   *  — at classify AND invoke AND every later recheck; (b) session_trace's
+   *  ancestor/descendant lineage lanes (denied members under-disclose, their
+   *  ids never reach visibleIds/title reads); (c) the title lane itself —
+   *  every cross-session title lookup passes this gate before the port; and
+   *  (d) the cross-await REVOCATION contract — re-read at every dispatch,
+   *  every await resumption, every cursor-continuation request construction
+   *  and the final serve. This is the LIVE decision port: no stale revision
+   *  snapshot is ever trusted. */
   teamCeiling: (targetSessionId: string, caller: G6Caller) => boolean
   declaredMount: { searchBackend: G6SearchBackendEvidence }
   maxSearchResults?: number
@@ -187,7 +197,13 @@ export interface G6AdapterDeps {
 /** Governance-plane refusal envelope — P_G6_* codes only. Service-lane
  *  failures are NOT envelopes: invoke THROWS G6SessionQueryServiceError
  *  carrying the SAME code+message the native boundary throws (existence-safe
- *  safe-table semantics, service-boundary.ts:21-97). */
+ *  safe-table semantics, service-boundary.ts:21-97).
+ *  REVOCATION SHAPE (rev 3): the envelope fronts failures observable BEFORE
+ *  admission; a revocation of caller/boundary/service/ceiling discovered at
+ *  any LATER recheck (dispatch, await resumption, cursor-continuation
+ *  construction, final serve) rejects with G6SessionQueryRefusal carrying
+ *  the SAME closed P_G6_* codes — zero further forwarding, entered effects
+ *  not rewound, nothing served. */
 export interface G6Refusal {
   ok: false
   code: string
