@@ -1275,7 +1275,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : undefined
+                : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
+                  ? 'queryFacts, when supplied, must expose resolve (toolName, addressedInstanceId) => facts — the published durable reads the three QUERY rows mint their target leaves from. OPTIONAL on purpose: a mount arming only the write rows is never forced to supply a roster/blueprint read; without it a query claim simply mints nothing and the bridge refuses it at composition.'
+                  : undefined
     if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
     for (const teamName of A5_B_TEAM_TOOL_NAMES) {
       if (teamName === readName || teamName === A5_TODO_MOUNT_NAME || teamName === A5_WRITE_MOUNT_NAME || teamName === A5_IMAGE_MOUNT_NAME
@@ -1290,6 +1292,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      ...(teamOpsInjectRaw.queryFacts === undefined ? {} : { queryFacts: teamOpsInjectRaw.queryFacts }),
     })
   }
 
@@ -4224,6 +4227,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        ...(teamOpsInject.queryFacts === undefined ? {} : { queryFacts: teamOpsInject.queryFacts }),
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
         // Nothing else poses as the admission seat.
         pa: paAdmit,
