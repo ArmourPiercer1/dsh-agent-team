@@ -1592,16 +1592,21 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(cleanupTruth2 === undefined || cleanupTruth2.launchClaimed === true).toBe(true)
     expect(cleanupTruth2 === undefined || cleanupTruth2.nothingToKill === true).toBe(true)
     expect(w.terminals.log.filter((l: string) => l.startsWith('kill')), JSON.stringify({ log: w.terminals.log, launches: w.launches.length })).toEqual([]) // zero speculative kills
-    w.gate.settle() // the launch proceeds past the cancel
-    // THE REAL SERVICE CONTRACT: a cancel never retracts work the provider
-    // already answered with — the REAL result commits (never narrated as
-    // cancelled, never dressed as a zero-effect refusal). The session the
-    // caller cancelled stays LIVE (no speculative kill was issued at the
-    // cancel); closing it is a later kill, not a retroactive cancel word.
+    w.gate.settle() // the launch ANSWERS AFTER the cancel intent
+    // ROOT 580f REVIEW ① (this tail REPLACES the old commit-wins tail, which
+    // the root ruled the WRONG contract): the pending cancellation is REAL.
+    // The instant the resource is ANSWERED, the port's post-await recheck
+    // reads the cancel intent (isCancelled), CLEANS the answered session
+    // through the service, and REFUSES the success commit with the cleanup
+    // truth. The zero-speculative-kill law above still holds: nothing was
+    // killed while nothing had been answered (不猜尚无资源) — the kill exists
+    // only AFTER the real resource answered, exactly once.
     const x = await running
-    expect(x.ok, JSON.stringify(x).slice(0, 220)).toBe(true)
-    expect(String((x as { value?: Record<string, unknown> }).value?.outcome)).toBe('opened') // the ANSWER commits — never narrated as cancelled
-    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // cancel minted no speculative kill; the session lives until a real close
+    expect(x.ok, JSON.stringify(x).slice(0, 220)).toBe(false) // the success commit is REFUSED, never silently cleared over a pending intent
+    expect(x.code).toBe('P_TERM_CANCELLED_AFTER_EFFECT')
+    expect((x as { effectsStarted?: boolean }).effectsStarted).toBe(true)
+    expect((x as { cleanup?: Record<string, unknown> }).cleanup?.started).toBe(true)
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual(['kill:pty-svc-90']) // the ANSWERED session cleaned — after the answer, exactly once
   })
 
   it('FACTS MOVED AFTER THE EFFECT (no cancel — the pure drift edge): the CURRENT-FACTS recheck after the awaited spawn refuses with the drift code AND cleans the started resource — never a zero-effect word', async () => {
@@ -1633,8 +1638,11 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'python3\n', submit: true }, 'h-send-2')
     expect(x.ok).toBe(true)
     // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo
-    // (the waitReason rides the REAL enum spelling @639ed01539):
-    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false })
+    // (the waitReason rides the REAL enum spelling @639ed01539). ROOT 580f
+    // REVIEW ②: the foreground word carries the HOST's own kind tag beside
+    // the VERBATIM TerminalSendResult (tool-terminal src/index.ts:283:
+    // { kind: 'foreground', ...result }):
+    expect(x.value).toEqual({ kind: 'foreground', viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false })
     expect(w.natives.terminal_send.calls.length).toBe(0)
     expect(record).toEqual(['send:pty-1:python3\n:true'])
   })
@@ -1698,7 +1706,10 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const w = await handleWorld({ jobs })
     const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'make\n', run_in_background: true }, 'bg-1')
     expect(x.ok).toBe(true)
-    expect(x.value).toEqual({ outcome: 'accepted', jobId: 'job-pty-send-7' })
+    // ROOT 580f REVIEW ②: the HOST's own background word shape @639ed01539
+    // (tool-terminal src/index.ts:278) is { kind: 'background', jobId } —
+    // the kind tag is the real fact, not a generic outcome string.
+    expect(x.value).toEqual({ kind: 'background', jobId: 'job-pty-send-7' })
     expect(started).toEqual([{
       kind: 'pty-send', label: 'g3 terminal_send pty-1', owner: `session-${AGENT_ID}`,
       outputSourceRead: true, doneHook: true, cancelHook: true,
@@ -1847,7 +1858,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // the persistent PTY survives one cancelled send
   })
 
-  it('CARD 3 — a cancel while EXECUTING with NO resource answered still REGISTERS the pending cancellation, and it SETTLES with the execution outcome (never dropped bookkeeping, never a speculative kill)', async () => {
+  it('CARD 3 + root 580f① — a cancel while EXECUTING with NO resource answered REGISTERS the pending cancellation and is HONOURED the moment the real resource answers: cleanup through the service, the success commit REFUSED with the cleanup truth (never dropped bookkeeping, never a speculative kill)', async () => {
     const w = await handleWorld({ deferredSpawn: true })
     const c = w.arms.terminal_open.classify({ type: 'shell' }, makeExec().exec, 'c3-pending')
     expect(c.ok, `${c.code} ${c.detail}`).toBe(true)
@@ -1858,15 +1869,18 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     const word = w.arms.terminal_open.cancel(plan)
     expect(word.settled).toBe('UNKNOWN-IN-FLIGHT')
     expect((word as { cancelPending?: boolean }).cancelPending).toBe(true) // REGISTERED on the no-resource path (before the fix this word dropped the bookkeeping)
-    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // nothing is killed speculatively — an unstarted resource is nobody's kill
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // 不猜尚无资源 — nothing is killed while NO resource exists
     expect(JSON.stringify(w.arms.terminal_open.inFlight())).toMatch(/"cancelPending":true/) // visible in the live inventory (observability, never authority)
-    w.gate.settle()
+    w.gate.settle() // NOW the real resource ANSWERS — root 580f①: the registered intent is HONOURED here
     const x = await running
-    expect(x.ok, JSON.stringify(x).slice(0, 200)).toBe(true) // the provider ANSWERED — the real result commits (a cancel never retracts answered work)
+    expect(x.ok, JSON.stringify(x).slice(0, 220)).toBe(false) // the success commit is REFUSED over the pending intent — never a silent commit that clears the bookkeeping
+    expect(x.code).toBe('P_TERM_CANCELLED_AFTER_EFFECT')
+    expect((x as { effectsStarted?: boolean }).effectsStarted).toBe(true)
+    expect((x as { cleanup?: Record<string, unknown> }).cleanup?.started).toBe(true) // the ANSWERED session was cleaned through the service…
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual(['kill:pty-svc-90']) // …exactly once, and only AFTER the answer
     const inflightAfter = JSON.stringify(w.arms.terminal_open.inFlight())
-    expect(inflightAfter).toMatch(/settled-by-execution-commit/) // SETTLED with the outcome, evidence attached
+    expect(inflightAfter).toMatch(/settled-with-cleanup-truth/) // the pending bookkeeping SETTLED by the real cleanup it commanded
     expect(inflightAfter).not.toMatch(/"cancelPending":true/)
-    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // and still no speculative kill
   })
 
   it('CARD 5 — a REJECTING job done STILL SETTLES the row: JobHooks.done resolves the published terminal JobOutcome (never rejects, never leaves the awaited settle hanging), and the killed fact rides the DISTINCT cancelRequested fact', async () => {

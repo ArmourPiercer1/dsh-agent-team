@@ -1250,7 +1250,11 @@ export function createHostTerminalControlPort(deps) {
             ok: true,
             handle: {
               identity: { jobId, background: true, sessionId },
-              invoke: async () => ({ outcome: 'accepted', jobId }),
+              // ROOT 580f REVIEW ②: the tool-level background word is the
+              // HOST's own kind-tagged shape — tool-terminal src/index.ts
+              // :278 @639ed01539 answers `{ kind: 'background', jobId }`.
+              // The kind is the real fact, never a generic outcome string.
+              invoke: async () => ({ kind: 'background', jobId }),
               // ASYNC TERMINATION AWAITS THE REAL RESULT (root 66a521):
               // registry.kill(id, caller) answers requested | already-finished;
               // 'requested' is followed until the hooks' done outcome settles.
@@ -1294,7 +1298,14 @@ export function createHostTerminalControlPort(deps) {
           ok: true,
           handle: {
             identity: { sessionId, exclusiveSend: true },
-            invoke: async () => await operation.done,
+            // ROOT 580f REVIEW ②: the tool-level foreground word is the
+            // HOST's own kind-tagged shape — tool-terminal src/index.ts:283
+            // @639ed01539 answers `{ kind: 'foreground', ...TerminalSendResult }`
+            // (the awaited real settle spread VERBATIM beside its kind tag).
+            invoke: async () => {
+              const result = await operation.done
+              return { kind: 'foreground', ...(result ?? {}) }
+            },
             // CANCELLING AN ASYNC SEND = operation.cancel (SIGINT request);
             // NEVER service.kill of the persistent PTY. The real settle
             // arrives through done — awaited, not narrated.
@@ -1769,7 +1780,17 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
               correlation: entry.correlation,
               handleRequest: entry.handleRequest,
               manifest: entry.handleManifest,
-              isCancelled: () => entry.state === 'CANCELLED' || draining,
+              // ROOT 580f REVIEW ①: the port's post-effect rechecks read the
+              // REAL cancel INTENT, not just a state flip. A cancellation
+              // registered while NO resource had been answered (cancelPending)
+              // stands: the moment a real resource is ANSWERED, the port's
+              // cancelled() after its await sees this intent, cleans the
+              // ANSWERED resource through the service, and refuses the success
+              // commit with the cleanup truth — the pending cancel is
+              // HONOURED, never silently cleared by a commit. Nothing is
+              // killed before any resource exists (the registration itself
+              // kills nothing; only the post-answer recheck acts).
+              isCancelled: () => entry.state === 'CANCELLED' || draining || entry.cancelPending === true,
               recheckFacts: () => (typeof entry.recheckTarget === 'function' ? entry.recheckTarget() : null),
               // THE CLEANUP REGISTER (root ruling 66a521): the port records
               // what STARTED behind this call here (ownedResource before the
@@ -1872,11 +1893,13 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       .then(
         (value) => {
           entry.state = 'COMMITTED'
-          // CARD 3: a pending cancellation registered while NO resource was
-          // answered settles HERE — the body ANSWERED and committed; a
-          // cancel never retracts answered work, and nothing was killed
-          // speculatively for it.
-          settlePendingCancel(entry, 'settled-by-execution-commit — the execution answered and committed; a cancel never retracts answered work (no speculative kill was owed or made)')
+          // ROOT 580f REVIEW ①: with a REAL cancel intent registered, every
+          // effect-entry route REFUSES after the answer (the port's recheck
+          // reads isCancelled and cleans) — reaching the commit with the
+          // intent still registered means the route started NO resource the
+          // intent could clean (a completed read/signal/list), so settling
+          // the bookkeeping here is honest, never a silent forgiveness.
+          settlePendingCancel(entry, 'settled-by-execution-commit — the execution committed with NO started resource left for the intent to clean (an effect-entry route refuses after the answer through the isCancelled recheck instead of committing here)')
           // DRAIN HONESTY: a background job the native body started (host
           // jobs.start for a run_in_background send) OUTLIVES this call and
           // every drain word — record it as UNCLEARED, never as settled.
@@ -1979,18 +2002,20 @@ function createDelegateArm({ familyId, toolName, codes, nativeDefinition, defini
       // result-path reports its own after-effect refusal truth).
       const live = controlPort !== null ? (entry.startedResource ?? entry.handle ?? null) : null
       if (live === null && controlPort !== null) {
-        // CARD 3 (root central adjudication): when NO resource has been
-        // answered back yet, the pending cancellation is STILL REGISTERED —
-        // dropping the bookkeeping here was the bug this card refuses. The
-        // registration is never speculative: nothing is killed before a
-        // resource exists (cancel is not close, and an unstarted resource is
-        // nobody's kill). It SETTLES with the execution outcome: a committed
-        // body is work the provider ANSWERED (a cancel never retracts it —
-        // the service law the effect-entry legs pin), and a refusal settles
-        // it with that path's own cleanup truth (the refusal already carries
-        // the real cleanup). Either way the fact stays visible in inFlight().
+        // CARD 3 + ROOT 580f REVIEW ①: when NO resource has been answered
+        // back yet, the pending cancellation is STILL REGISTERED — dropping
+        // the bookkeeping here was the bug this card refuses — AND THE
+        // INTENT IS REAL, not a note awaiting forgiveness: it rides the
+        // isCancelled seam into the port's post-effect rechecks, so the
+        // moment a REAL resource is ANSWERED the port cleans it through the
+        // service and REFUSES the success commit with the cleanup truth
+        // (真实资源应答后执行清理/拒绝成功commit). Nothing is killed while no
+        // resource exists (不猜尚无资源 — the registration itself is not a
+        // kill); the commit may settle the bookkeeping only on routes that
+        // leave NO started resource for it to clean. inFlight() carries the
+        // fact either way.
         entry.cancelPending = true
-        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', cancelPending: true, bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path but NO resource is recorded as started yet: PREPARE IS AN EFFECT ENTRY, the effect boundary is inside prepare; effectsStarted is at minimum UNKNOWN — never zero — the pending cancellation is REGISTERED and settles with the execution outcome (await the execution result; refusal paths carry the port cleanup truth)' }
+        return { ok: true, settled: 'UNKNOWN-IN-FLIGHT', cancelPending: true, bodyOutcome: 'unknown — this plan is EXECUTING on the control-port path but NO resource is recorded as started yet: PREPARE IS AN EFFECT ENTRY, the effect boundary is inside prepare; effectsStarted is at minimum UNKNOWN — never zero — the pending cancellation is REGISTERED and HONOURED: the port rechecks this intent after every await, so a resource that gets ANSWERED is cleaned through the service and the execution answers the refusal with its cleanup truth (await the execution result)' }
       }
       if (live !== null) {
         // IDEMPOTENT like the faces it drives: a repeated cancel of the same
