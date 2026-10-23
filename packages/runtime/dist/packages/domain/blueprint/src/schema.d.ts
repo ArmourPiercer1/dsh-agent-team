@@ -369,12 +369,16 @@ export declare const PERMISSION_TOOL_NAMES: readonly string[];
  * three lanes, `exact`/`subtree` refused every lane of every role, no file
  * matcher, no fingerprint, no envelope carrier (the seven-name
  * operationClass set stays frozen). Naming them here opens the named
- * allow/ask/deny channel ONLY: the package is a host-UNMOUNTED opt-in at
- * baseline (M0-B :34-38 `host-unmounted-optin-package`), no PA wiring is
- * claimed by this module, and an invocation permission grants NO I/O
- * exemption — these tools read only through their own authorized-session
- * seam, and every resource-scoped effect still resolves to no-authority
- * ⇒ Ask.
+ * allow/ask/deny channel ONLY: the rows are PA-WIRED in the current
+ * integration production (center landing 874f3ae0d: adapter
+ * g6-session-query.mjs + wiring + the REAL bindings supply-close block +
+ * host lazy accessors; capture → PA open/edge/consume source-signed) —
+ * Host ACCEPTANCE is still pending, and the old M0-B frozen table
+ * (`host-unmounted-optin-package`, PROPOSED) is a historical record, NOT
+ * the current implementation fact. An invocation permission grants NO
+ * I/O exemption — these tools read only through their own authorized-
+ * session seam, and every resource-scoped effect still resolves to
+ * no-authority ⇒ Ask.
  */
 export declare const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[];
 /**

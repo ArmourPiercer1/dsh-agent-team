@@ -42,15 +42,19 @@
  * single source for the third class is
  * {@link INVOCATION_ONLY_PERMISSION_TOOL_VALUES} below.
  *
- * Alpha.5 M2 continuation (root 22:13 limited card): the A1 vocabulary
- * widens the same class with the five G6 session-query names (
- * `session_search` / `session_event_search` / `session_trace` /
- * `session_event_trace` / `session_event_read`). Same law: canonicalization
- * still answers `unsupported` for them (no canonical op, no file matcher,
- * no fingerprint); they ride the `tool-invoke` arm and their invocation
- * authority is NOT an I/O exemption.
+ * Alpha.5 M2 continuation (root 22:13/22:4x limited cards): the A1
+ * vocabulary widens the same class with the five G6 session-query names,
+ * the ten B-TEAM names, the three G1 PURE-QUERY names, the three
+ * B-SUBAGENT controls and the five B-SUBAGENT spawn ops (each verified
+ * against the production source: the plane's ONE PA tool-invoke lane, the G6
+ * landing 874f3ae0d, the controls trio at the source-signed branch
+ * 7c6869879; the old M0-B table is a historical record, not the current
+ * fact). Same law for all: canonicalization still answers `unsupported`
+ * (no canonical op, no file matcher, no fingerprint); they ride the
+ * `tool-invoke` arm and their invocation authority is NOT an I/O
+ * exemption.
  */
-export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read';
+export type PermissionTool = 'read' | 'read_image' | 'write' | 'edit' | 'lsp' | 'bash' | 'pwsh' | 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read' | 'team_list_members' | 'team_list_templates' | 'team_inspect_config' | 'team_create_member' | 'team_delegate' | 'team_follow_up' | 'team_collect' | 'team_send_message' | 'team_report_progress' | 'team_archive_member' | 'cordis_inspect_list' | 'cordis_inspect_query' | 'team_list_pending_control' | 'interrupt_agent' | 'list_agents' | 'send_message' | 'subagent' | 'subagent_fork' | 'subagent_codex' | 'subagent_claude_code' | 'list_subagent_models';
 /** Every {@link PermissionTool} value, for membership checks. */
 export declare const PERMISSION_TOOL_VALUES: readonly PermissionTool[];
 /**
@@ -106,18 +110,24 @@ export declare const SHELL_PERMISSION_TOOL_VALUES: readonly ToolLevelPermissionT
  * - `schedule_create` / `schedule_update` are NOT enabled — naming them
  *   anywhere in this vocabulary is a defect (the blueprint schema's
  *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror);
- * - Alpha.5 M2 continuation (root 22:13 limited card) adds the five G6
- *   SESSION-QUERY names (`session_search` / `session_event_search` /
- *   `session_trace` / `session_event_trace` / `session_event_read`, host
- *   `tool-session-query` @639ed01539 — a host-UNMOUNTED opt-in package
- *   at baseline, so this is vocabulary + projection law only, no PA
- *   wiring claimed). Same law: `any` in all three lanes, exact/subtree
- *   refused, the `tool-invoke` arm is the whole authority, and an
- *   invocation permission grants NO I/O exemption — these tools read
- *   only through their own authorized-session seam; every name is a
- *   DISTINCT authority.
+ * - Alpha.5 M2 continuation (root 22:13 + 22:4x limited cards) widens
+ *   the class with the five G6 session-query names, the ten B-TEAM names,
+ *   the three G1 PURE-QUERY names, the three B-SUBAGENT controls and the
+ *   five B-SUBAGENT spawn ops (records 39-43, tool-invoke-only envelope;
+ *   joint candidate 9b5c9f4b2, landing pending — naming pre-wires the
+ *   named channel only; each name verified against the production source:
+ *   A5_B_TEAM_TOOL_NAMES / A5_G1_PURE_QUERY_MOUNT_NAMES in the plane's
+ *   ONE PA admission lane, the G6 landing 874f3ae0d, the trio at the
+ *   source-signed branch 7c6869879; the M0-B frozen table is a historical
+ *   record, not the current implementation fact). Same law throughout:
+ *   `any` in all three lanes, exact/subtree refused, the `tool-invoke`
+ *   arm is the whole authority, and an invocation permission grants NO
+ *   I/O exemption — delegated durable writes ride their own delegated
+ *   chain, session rows read only their authorized-session seam, and
+ *   every name is a DISTINCT authority. The four Team self-governance
+ *   controls stay OUT (declared INACTIVE; Gate 0f refuses their mount).
  */
-export type InvocationOnlyPermissionTool = 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read';
+export type InvocationOnlyPermissionTool = 'schedule_list' | 'schedule_delete' | 'session_search' | 'session_event_search' | 'session_trace' | 'session_event_trace' | 'session_event_read' | 'team_list_members' | 'team_list_templates' | 'team_inspect_config' | 'team_create_member' | 'team_delegate' | 'team_follow_up' | 'team_collect' | 'team_send_message' | 'team_report_progress' | 'team_archive_member' | 'cordis_inspect_list' | 'cordis_inspect_query' | 'team_list_pending_control' | 'interrupt_agent' | 'list_agents' | 'send_message' | 'subagent' | 'subagent_fork' | 'subagent_codex' | 'subagent_claude_code' | 'list_subagent_models';
 /**
  * Every {@link InvocationOnlyPermissionTool} value. The single source of
  * invocation-only class membership in the runtime: the admission
