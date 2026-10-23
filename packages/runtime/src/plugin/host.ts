@@ -480,6 +480,16 @@ interface GlueModule {
      */
     readonly writerHandoffTimeoutMs?: number
     /**
+     * A5-M2 G2 (round-19, optional additive): the lazy G2 Team mount
+     * supply accessor — see `buildG2TeamSupply` for what is REAL there
+     * (entries via the SIGNED loader, `createTransport` from the PUBLIC
+     * mcp-client surface, the public worker execute mapping) and what
+     * refuses TYPED with named public-port gaps (scoped mcpResources face,
+     * per-session browser approval). Absent config answers undefined and
+     * the glue refuses typed; worlds without the block are byte-identical.
+     */
+    readonly g2TeamAssembly?: () => Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string } | undefined>
+    /**
      * pre-alpha3 PR-B (plan §B.2, optional additive): the production
      * PolicyReader reference (the controlServiceRef pattern — the entry
      * creates the plain `{ current: null }` object, passes it to the
@@ -2287,6 +2297,86 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     )
   }
 
+/**
+ * A5-M2 G2 supply producer (round-19, root 20:24: 真实供给不以传参冒充).
+ * Builds the face the bindings' `deps.g2TeamAssembly()` accessor answers,
+ * from the APPROVED plugin config alone. What is REAL here (public ports
+ * verified at the pinned host @639ed01539):
+ * - entries: the pinned PUBLIC entry files load through the SIGNED owner
+ *   loader (createG2TeamAssemblySupply -> loadG2TeamAssemblyEntries);
+ * - transport: `createTransport` at mcp-client/src/transport.ts:31, PUBLIC
+ *   over the package `./src/*` exports map — the closure binds each
+ *   approved per-server connection record (the SAME record the config
+ *   validation ran), so the transport is built from approved config only,
+ *   never from row-side re-derivation (fail-closed on an unknown server);
+ * - the browser worker mapping: the PUBLIC worker face answers
+ *   `execute(method, args, signal)` (worker-client.ts:70-71, used exactly
+ *   so by the host plugin itself at index.ts:187).
+ * What stays a TYPED REFUSAL (public port genuinely absent — enumerated in
+ * dev/agent-workflow/evidence/a5m2-g2-wire/g2-supply-public-gap-639.md, NOT
+ * papered over with getters or a global provider swap): the TEAM-scoped
+ * `mcpResources` face (the public retrieval `ctx.inject(['mcpResources'],
+ * cb)` is a composition-fiber API — server-context.ts:29 is the ONLY host
+ * usage; no per-Team scoped retrieval exists from plugin-assembly code),
+ * and the per-SESSION `consumeBrowserApproval` (the Team PA plane edge —
+ * bindings-owned, built after the mount; the lazy-bind increment is named
+ * in the gap doc, with the callResource mapping above already real).
+ * Absent `teamToolPlane.g2Mount` config answers `undefined` (the bindings
+ * then refuse typed exactly as before — no behavior change for worlds
+ * without the block).
+ */
+async function buildG2TeamSupply(
+  cfg: TeamPluginConfig,
+): Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string } | undefined> {
+  const g2Mount = (cfg as { teamToolPlane?: { g2Mount?: Record<string, unknown> } }).teamToolPlane?.g2Mount
+  if (g2Mount === null || typeof g2Mount !== 'object') return undefined
+  // specifier via URL (the glueUrl pattern at :1932/:1945 — same module,
+  // same typing discipline: the cast below is the module's only type face).
+  const g2MountModuleUrl = new URL('./live/governed-families/g2-team-mount.mjs', import.meta.url).href
+  const mountMod = (await import(g2MountModuleUrl)) as unknown as {
+    createG2TeamAssemblySupply: (input: Record<string, unknown>) => Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string }>
+  }
+  const entryPaths = g2Mount.entryPaths as { launchEntry?: string; workerEntry?: string; sdkClientEntry?: string } | undefined
+  const transportEntry = g2Mount.transportEntry
+  const serverConfigs = g2Mount.serverConfigs as Array<Record<string, unknown>> | undefined
+  const out: Record<string, unknown> = { entryPaths }
+  if (typeof transportEntry === 'string' && transportEntry.length > 0 && Array.isArray(serverConfigs)) {
+    const tMod = (await import(transportEntry)) as unknown as {
+      createTransport?: (config: Record<string, unknown>) => { start: unknown; send: unknown; close: unknown }
+    }
+    if (typeof tMod.createTransport !== 'function') {
+      return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the approved transport entry (${transportEntry}) answered no createTransport — @deepseek/dsh mcp-client/src/transport.ts:31 exports it over the package ./src/* PUBLIC map; minting nothing over a defective entry` }
+    }
+    const byServer = new Map<string, Record<string, unknown>>()
+    for (const rec of serverConfigs) {
+      if (typeof rec?.serverName === 'string') byServer.set(rec.serverName, rec)
+    }
+    // SYNC factory (the port calls makeTransport(target) synchronously and
+    // requires a Transport {start,send/close} back — g2-team-assembly
+    // :331-333). The approved record is the ONLY source; an unknown server
+    // name refuses, the row facts never re-derive a connection.
+    out.makeTransport = (target: { server?: unknown; transport?: unknown }): { start: unknown; send: unknown; close: unknown } => {
+      const rec = byServer.get(String(target?.server))
+      if (rec === undefined || rec.transport !== target?.transport) {
+        throw new Error(`g2TeamAssembly: no approved ${String(target?.transport)} connection record for server '${String(target?.server)}' — the transport is fixed by approved config, never by row-side facts`)
+      }
+      return tMod.createTransport!(rec)
+    }
+  }
+  // The PUBLIC stagehand worker mapping (real face, cited above): rows'
+  // (method, args) ride the worker's own execute dispatcher — no method
+  // table is invented here; the worker entry is the method surface.
+  out.callResource = async (resource: unknown, method: string, args: unknown, signal?: AbortSignal): Promise<unknown> => {
+    const execute = (resource as { execute?: (m: string, a: unknown, s?: AbortSignal) => unknown } | null)?.execute
+    if (typeof execute !== 'function') throw new Error('g2TeamAssembly.callResource: the opened worker answers no execute(method, args, signal) (worker-client.ts:70-71 public face) — refusing, no fallback')
+    return await execute.call(resource, method, args, signal)
+  }
+  // The two faces the host genuinely cannot mint TODAY (gap doc, fork
+  // options enumerated): passed ABSENT so the producer's own typed refusal
+  // names them at supply time, config-armed world or not.
+  return await mountMod.createG2TeamAssemblySupply(out)
+}
+
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
     sessionPersistence,
@@ -2317,6 +2407,11 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // never in a hard inject: worlds without the service answer the assembly's
     // observed store-absent lane, the gate-on mount refuses at the plane.
     attachments: () => ctx.get('attachments'),
+    // A5-M2 G2 (round-19): the lazy per-Team G2 supply accessor (see
+    // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
+    // undefined — the bindings then refuse typed; NOTHING changes for
+    // worlds without the block (additive optional, never a hard inject).
+    g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig)),
     // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
     // `llm` service — the SAME token native read-image.ts:119-130 answers
     // `resolveModelInfo` through for its image-capability route gate. Resolved
