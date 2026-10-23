@@ -946,21 +946,28 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   let imageInject = null
   if (imageInjectRaw !== undefined) {
-    const arm = imageInjectRaw.arm
-    const bad = arm === undefined || arm === null
-      ? 'an enabled image row requires the governed arm object'
-      : (typeof arm.classify !== 'function' || typeof arm.execute !== 'function' || typeof arm.drain !== 'function'
-              || typeof arm.familyId !== 'string' || arm.familyId !== 'B-IMAGE' || typeof arm.adapterRevision !== 'number'
-              || typeof arm.definitionIdentity !== 'string' || typeof arm.providerId !== 'string'
-              || typeof arm.reference !== 'function')
-        ? 'backends.image.arm must be the governed B-IMAGE arm surface (classify/execute/reference/drain + family facts) — nothing less drives this row'
-        : (typeof imageInjectRaw.description !== 'string' || imageInjectRaw.description.length === 0)
-          ? 'backends.image.description must be a non-empty string (the CAPTURED native description bytes)'
-          : (imageInjectRaw.parameters === undefined || imageInjectRaw.parameters === null || typeof imageInjectRaw.parameters !== 'object')
-            ? 'backends.image.parameters must be the CAPTURED native parameters schema — the three-way definitionIdentity tie (durable row / this call / arm) can only hold when the mount IS the native definition face; a plane-invented schema drifts the identity'
-            : undefined
+    // THE IDENTITY TIMING (root central card on 6c354, item ②): the arm
+    // CANNOT be constructed at glue time from a captured native definition —
+    // `definitionIdentityOf` is the pb §6 WeakMap algebra (the id is minted
+    // off the def's OWN execute function and the seam mints placement ids
+    // AFTER plane construction), so a native snapshot would carry a
+    // different id than the eventual placement and the arm's strict
+    // three-way tie (durable row / this call / arm) would refuse every
+    // call. The injection therefore carries a FACTORY: the plane calls it
+    // at the real placement moment with the def it actually placed, and
+    // the factory binds `definitionIdentityOf(that def)` — the same
+    // identity the Guard reads and the placement feed reports (never a
+    // guessed def#, never a loosened check; todo/write could not be
+    // analogized because neither performs this three-way tie).
+    const bad = typeof imageInjectRaw.createArm !== 'function'
+      ? 'backends.image.createArm must be a function (def) -> the governed B-IMAGE arm — the arm binds its definitionIdentity off the definition THIS plane actually places, so the construction belongs to the placement moment, not to glue time'
+      : (typeof imageInjectRaw.description !== 'string' || imageInjectRaw.description.length === 0)
+        ? 'backends.image.description must be a non-empty string (the CAPTURED native description bytes)'
+        : (imageInjectRaw.parameters === undefined || imageInjectRaw.parameters === null || typeof imageInjectRaw.parameters !== 'object')
+          ? 'backends.image.parameters must be the CAPTURED native parameters schema — the three-way definitionIdentity tie (durable row / this call / arm) can only hold when the mount IS the native definition face; a plane-invented schema drifts the identity'
+          : undefined
     if (bad !== undefined) return imageInjectInvalid(bad)
-    imageInject = Object.freeze({ arm, description: imageInjectRaw.description, parameters: imageInjectRaw.parameters })
+    imageInject = Object.freeze({ createArm: imageInjectRaw.createArm, description: imageInjectRaw.description, parameters: imageInjectRaw.parameters })
     if (readName === A5_IMAGE_MOUNT_NAME || writeInject !== null && A5_WRITE_MOUNT_NAME === A5_IMAGE_MOUNT_NAME) {
       return imageInjectInvalid(`'${A5_IMAGE_MOUNT_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
     }
@@ -2471,14 +2478,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // arm's structured fields (sideEffectPossible where present) ride the
   // plain-Error in-band protocol, write-row shape verbatim: no new code, no
   // new gate.
-  const imageDefs = imageInject === null ? [] : [Object.freeze({
+  let imageArm = null
+  const imageDef = imageInject === null ? null : Object.freeze({
     name: A5_IMAGE_MOUNT_NAME,
     // The CAPTURED native description + parameters bytes (Gate 0e): same
     // name, same meaning — never a plane-invented wording or schema.
     description: imageInject.description,
     parameters: imageInject.parameters,
     execute: async (raw, exec) => {
-      const arm = imageInject.arm
+      const arm = imageArm
       // Identity law (fix-1, SHARED ledger): the REAL registry token; absent
       // is a typed front refusal — zero classify, zero walk, zero row.
       const execToken = exec?.token
@@ -2529,18 +2537,20 @@ export function createTeamToolPlaneAssembly(input = {}) {
       const walk = {
         realmId,
         callId: correlation,
-        // SEAM #1 CLOSED (root ruling 10:37Z 收接缝, kernel source open):
-        // the exact-scope fingerprint is the DOMAIN's own canonical digest
-        // over THIS call's typed plan facts. The kernel NEVER recomputes it
-        // from raw arguments — pa-control-bridge carries it verbatim into
-        // the durable manifest (:483) and re-verifies equality at the
-        // execution edge (:1119), so the same walk object across open→edge
-        // IS the pairing consistency, exactly the write arm's discipline
-        // (opaque per-plan identity) with the digest derived from facts the
-        // row holds, no invented hash.
+        // SEAM #1 CLOSED (root ruling 10:37Z 收接缝) + CENTRAL-CARD ③
+        // (10:5xZ): the digest is INDEPENDENT and COMPLETE over the
+        // ORIGINAL parameters — the raw `file_path` value rides it in full,
+        // so two different spellings of the same governed file are two
+        // different fingerprints (a canonicalTarget-only digest would
+        // MERGE them; the kernel never recomputes this — pa-control-bridge
+        // carries the string verbatim into the durable manifest (:483) and
+        // re-verifies equality at the edge (:1119), so the same walk object
+        // across open→edge IS the pairing consistency). The
+        // operationFingerprint stays the manifest's own independent field.
         parametersFingerprint: canonicalJsonFingerprint({
           realmId,
           toolName: A5_IMAGE_MOUNT_NAME,
+          parameters: raw,
           effects: classified.effects,
           targetManifest: classified.targetManifest,
         }),
@@ -2652,6 +2662,16 @@ export function createTeamToolPlaneAssembly(input = {}) {
         governedTokenLedger.set(tokenKey, { correlation, settled: true })
       }
     },
+    presentCall: (args) => ({ card: 'generic', title: 'Read image (governed)', kind: 'other', rawInput: args?.file_path }),
+    // CENTRAL-CARD ① (root on 6c354): the render lives in `output` (the
+    // read row's READ_ROW_PRESENTATION_FACE pattern) and returns the
+    // NATIVE two-block shape — the envelope text AND the image block
+    // (read-image.ts:190-195: text + {type:'image', attachment: ref}). A
+    // text-only render dropped the model-facing visual content; the shapes
+    // are the host's own (mirrored locally, exactly how the read row
+    // mirrors formatReadRowOutput — no host-internal import). The
+    // downscale clause has no source in this lane (the governed port never
+    // resamples; normalization is pass-through) — stated, not invented.
     output: Object.freeze({
       schema: Object.freeze({
         type: 'object',
@@ -2661,13 +2681,53 @@ export function createTeamToolPlaneAssembly(input = {}) {
           image: Object.freeze({ type: 'object', required: true }),
         },
       }),
+      render: (_args, value) => {
+        const image = value?.image ?? {}
+        const blocks = [{
+          type: 'text',
+          text: `<path>${String(value?.path ?? '')}</path>\n<type>image</type>\n<content>\n${String(image.mediaType ?? 'image')} image, ${String(image.width ?? '?')}x${String(image.height ?? '?')} px, ${String(image.bytes ?? '?')} bytes\n</content>`,
+        }]
+        if (typeof image.attachmentId === 'string' && image.attachmentId.length > 0
+          && typeof image.mediaType === 'string' && Number.isInteger(image.bytes) && Number.isInteger(image.width) && Number.isInteger(image.height)) {
+          blocks.push({
+            type: 'image',
+            attachment: Object.freeze({
+              attachmentId: image.attachmentId,
+              mediaType: image.mediaType,
+              bytes: image.bytes,
+              width: image.width,
+              height: image.height,
+              ...(typeof image.name === 'string' && image.name.length > 0 ? { name: image.name } : {}),
+            }),
+          })
+        }
+        return blocks
+      },
     }),
-    presentCall: (args) => ({ card: 'generic', title: 'Read image (governed)', kind: 'other', rawInput: args?.file_path }),
-    render: (_args, value) => [{
-      type: 'text',
-      text: `Read image ${String(value?.path ?? 'the approved target')} (governed attachment ${String(value?.image?.attachmentId ?? '')}).`,
-    }],
-  })]
+  })
+  if (imageDef !== null) {
+    // THE PLACEMENT MOMENT (central-card ②): the arm is constructed HERE,
+    // over the def THIS plane actually placed — the factory binds
+    // definitionIdentityOf(that def), the WeakMap id the seam mints for the
+    // registered body, the Guard compares, and placementFeed reports. A
+    // surface that answers less than the reviewed B-IMAGE contract, or a
+    // factory that throws, refuses the ASSEMBLY (never a half-wired row).
+    try {
+      imageArm = imageInject.createArm(imageDef)
+    } catch (error) {
+      return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image.createArm refused the placed definition: ${String(error?.message ?? error).slice(0, 200)}` }
+    }
+    const armBad = imageArm === undefined || imageArm === null
+      ? 'the factory answered no arm'
+      : (typeof imageArm.classify !== 'function' || typeof imageArm.execute !== 'function' || typeof imageArm.reference !== 'function' || typeof imageArm.drain !== 'function'
+              || imageArm.familyId !== 'B-IMAGE' || typeof imageArm.adapterRevision !== 'number'
+              || typeof imageArm.definitionIdentity !== 'string' || imageArm.definitionIdentity.length === 0
+              || typeof imageArm.providerId !== 'string' || imageArm.providerId.length === 0)
+        ? 'the answered arm is not the governed B-IMAGE surface (classify/execute/reference/drain + family facts + a bound definitionIdentity)'
+        : undefined
+    if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
+  }
+  const imageDefs = imageDef === null ? [] : [imageDef]
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
@@ -2808,7 +2868,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
             if (writeInject !== null) writeInject.arm.drain()
             // A5-M2 B-IMAGE: same teardown law — drain BEFORE any state
             // clears; an entered body is not rewound, no native fallback.
-            if (imageInject !== null) imageInject.arm.drain()
+            // The arm is the placement-moment construction (central-card ②),
+            // so the drain reaches the SAME arm the rows drove.
+            if (imageArm !== null) imageArm.drain()
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the
