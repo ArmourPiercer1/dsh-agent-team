@@ -1,0 +1,12 @@
+PASS  A1 surface-own (RC=0; both sites audited-pass; issue list otherwise unchanged) RC=0
+PASS  A2 surface-int (RC=0; read-only run against integration dist surface) RC=0
+PASS  F0 fixture-clean (RC=0; S7+S8 consumed at fixture root; lock leg SKIPPED not faked) RC=0
+PASS  B1 mutate-s8 (hash mismatch => site RED, S7 untouched) RC=1
+PASS  B2 mutate-s7 (hash mismatch => site RED, S8 untouched) RC=1
+PASS  C twoarg-url (two-arg usage change => RED; hash gate AND verbatim-expression gate both violated) RC=1
+PASS  D move-path (same bytes, moved path => RED, handler path-pinned) RC=1
+PASS  E1 third-site (unknown computed new URL still rejected; no blanket skip) RC=1
+PASS  E2 second-site (added site breaks hash AND unique-count; both sites RED) RC=1
+----
+negative-controls suite RC=0 (0 = every control behaved as specified)
+SUITERC=0

@@ -1,0 +1,10 @@
+  note: exports target not a scanned module class (existence verified only): ./package.json -> ./package.json
+  note: audited site S1 consumed: host.js loadLegacyInspect literal array (2 targets enqueued+verified)
+  note: audited site S2 consumed: seamUrl default candidates (2 literals enqueued+verified; injected rowConfig.seamUrl NOT covered by package guarantee)
+  note: audited site S3 consumed: glueUrl default literal enqueued+verified (injected rowConfig.glueUrl NOT covered)
+  note: audited site S4 consumed: __extReq all-31-refs direct-literal, set == browser table (4)
+  note: audited sites S5/S6 consumed: resolveTeamSkillsDir asset dirs (first .agents/skills shipped with SKILL.md; dist fallback may be absent)
+FAIL check-install-manifest: 2 issue(s) over 448 graph visit(s); lock leg: PASS
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs:397 expr="href"
+  - computed new URL() target rejected at packages/runtime/dist/packages/runtime/web-gateway/src/destination-envelope.js:2 expr="input"
+RC=1
