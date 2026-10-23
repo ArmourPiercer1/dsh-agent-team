@@ -964,7 +964,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const flight = world.listDef.execute({}, exec)
     const requestId = await allowFirstPending('r14')
     expect(requestId.length).toBeGreaterThan(0)
-    const out = await flight
+    await flight
     expect(world.serviceCalls.list).toHaveLength(1)
     expect(delegatedRows(world)).toHaveLength(1)
     expect(world.plane.livePaPlan.size).toBe(0)
