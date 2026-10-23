@@ -4,7 +4,7 @@
   "source_registry": "dev/engineering/registry.yaml",
   "source_registry_sha": "460038c9aff40acf850a5e3c8b7ee109cc13c7a6",
   "source_catalog": "docs/contracts/engineering-baseline/ids.yaml",
-  "source_catalog_sha": "3b90277606b26cf080f88e409d75ea52a2e72adb",
+  "source_catalog_sha": "cffa500c0439479cc7c66dcc8e45ac5d2cfe87c9",
   "axes_legend": {
     "decision_status": [
       "proposed",

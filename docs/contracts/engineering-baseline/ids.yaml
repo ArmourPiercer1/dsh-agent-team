@@ -1,6 +1,13 @@
 # Stable requirement / invariant / acceptance ids for the Engineering Baseline.
 #
-# NORMATIVE STATUS: every entry below is `proposed-not-ratified`. Drafting text
+# NORMATIVE STATUS, stated per kind (the entry fields below are authoritative and
+# are not changed by this comment): 18 entries -- 10 invariant, 4 requirement,
+# 4 acceptance -- carry `proposed-not-ratified`, and 1 entry, IDEA-EB-0001,
+# carries `idea-no-execution-authority`. An earlier wording here said "every
+# entry" and that was inaccurate for the idea. Neither value is a verdict on
+# whether the work it documents may be done: it says how much contractual force
+# the sentence has, not whether mechanical work on this baseline is authorized
+# (see dev/engineering/work-package-authorization.md). Drafting text
 # inside the repository does NOT make it law (architecture.md 5.x / D8 of the
 # PR #361 design). Ratification happens only through an explicit approval
 # recorded in dev/engineering/registry.yaml (decision_status) plus the owning
