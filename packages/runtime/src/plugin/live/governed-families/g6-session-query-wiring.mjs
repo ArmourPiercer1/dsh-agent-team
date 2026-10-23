@@ -21,14 +21,38 @@
  *  - the REAL PA consumption walk is the adapter's own typed plan products
  *    driven through the plane's published split-path seam
  *    `pa.open(walk) -> pa.edge({...walk, grant, ...}) -> body -> pa.closePlan`
- *    (team-tool-plane.mjs:1679/:1713/:1714 — `paAdmit.open`, its idempotent
- *    `closePlan` redemption handle, and `paAdmit.edge`, which closes the plan
- *    fact in its own finally). The walk carries the family block at FULL
- *    VALUE (载荷法): familyId / adapterRevision / providerIdentity /
- *    targetManifest ride from the row's OWN reviewPayload, and the execution
- *    body demands the edge's one-shot `consumedProof` witness before ANY port
- *    entry (the todo-row law at team-tool-plane.mjs:2186-2196) — a missing
- *    witness refuses with zero port entry, never a self-attested consume.
+ *    (team-tool-plane.mjs:1214/:1679/:1713/:1714). THE SEAT IS ACCEPTED IN
+ *    ITS PRODUCTION SHAPE: `paAdmit` is a CALLABLE carrying the three
+ *    methods (`paAdmit.open`, its idempotent `closePlan` redemption handle,
+ *    and `paAdmit.edge`, which closes the plan fact in its own finally) —
+ *    the seat check accepts exactly a callable-with-those-methods or an
+ *    equivalent plain methods object, and nothing else poses as it. The
+ *    walk carries the family block at FULL VALUE (载荷法): familyId /
+ *    adapterRevision / providerIdentity / targetManifest ride from the
+ *    row's OWN reviewPayload, and the execution body demands the edge's
+ *    one-shot `consumedProof` witness before ANY port entry (the todo-row
+ *    law at team-tool-plane.mjs:2186-2196) — a missing witness refuses with
+ *    zero port entry, never a self-attested consume.
+ *  - BODY BINDING (root 18:2x, the TOCTOU close): everything after the
+ *    approval is bound to the APPROVED PLAN — the row's deep-frozen
+ *    `actualArgs` snapshot, its caller snapshot and its
+ *    `parametersFingerprint`. The mutable caller-side args object never
+ *    re-enters the row after the first classify; between the landed proof
+ *    and the body the FROZEN args are re-classified and must answer the
+ *    APPROVED fingerprint (caller A→B, a moved workspace, a moved
+ *    step-boundary or any fact drift refuses with P_G6_WIRE_PLAN_DRIFT and
+ *    zero port entry — an older grant NEVER executes a newer scope, and a
+ *    newer permission NEVER re-qualifies the old grant); the served result
+ *    must carry the same fingerprint (P_G6_WIRE_PLAN_INTEGRITY).
+ *  - ONE CAPTURE (root 18:2x): the native face is read through the seam
+ *    exactly ONCE per tool at assembly time (memoized), and the SAME object
+ *    serves the adapter's row capture and the placed definition's spread —
+ *    a second object under one name is structurally impossible here.
+ *  - the call identity is ISSUED, never invented: an injected
+ *    `correlationOf (exec, toolName) => string | null` seam (the plane
+ *    mounts the a5p5/paAdmit mount law there — per-mount nonce + seq +
+ *    execution-token single-flight, register.ts:196-226) or an execution
+ *    that already answers a non-empty `callId`. No identity, no admission.
  *  - the placed definition is the CAPTURED definition, COMPLETE (root 8b4
  *    law): every presentation face of the native read through the assembly's
  *    `readNative` seam rides verbatim and by reference; ONLY `execute` is
@@ -110,6 +134,8 @@ export const A5_G6_QUERY_WIRING_CODES = Object.freeze({
   APPROVAL_NOT_LANDED: 'P_G6_WIRE_APPROVAL_NOT_LANDED',
   EDGE_CANCELLED: 'P_G6_WIRE_EDGE_CANCELLED',
   CONSUME_PROOF_MISSING: 'P_G6_WIRE_CONSUME_PROOF_MISSING',
+  PLAN_DRIFT: 'P_G6_WIRE_PLAN_DRIFT',
+  PLAN_INTEGRITY: 'P_G6_WIRE_PLAN_INTEGRITY',
   PLACEMENT_KEY_ABSENT: 'P_G6_WIRE_PLACEMENT_KEY_ABSENT',
   PLACEMENT_KEY_MOVED: 'P_G6_WIRE_PLACEMENT_KEY_MOVED',
 })
@@ -165,18 +191,19 @@ const registrationFaceComplete = (native) => {
  *   declaredMount: { searchBackend: { present: true } | { present: false, evidence: string } },
  *   maxSearchResults?: number,
  *   definitionIdentityOf?: (definition: object) => string,     // capture-side mint seam (pb §6)
+ *   correlationOf?: (exec: object, toolName: string) => string | null, // issued call identity (plane mount law)
  *   placementFeed: (name: string) => { definitionIdentity?: string, realmId?: string } | undefined,
- *   pa: { open: (walk: object) => Promise<object>, edge: (state: object) => Promise<object>, closePlan: (callId: string) => void },
+ *   pa: paAdmit-shaped seat — CALLABLE with { open, edge, closePlan } methods (production) or a plain methods object,
  *   observe?: (event: object) => void,
  * }}
  * @returns wiring assembly `{ ok: true, ... }` or a frozen `{ ok: false, code, detail }` refusal.
  */
 export function buildG6SessionQueryWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'wiring input must be one object')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'queryPorts', 'readCaller', 'teamCeiling', 'declaredMount', 'maxSearchResults', 'definitionIdentityOf', 'placementFeed', 'pa', 'observe'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'queryPorts', 'readCaller', 'teamCeiling', 'declaredMount', 'maxSearchResults', 'definitionIdentityOf', 'correlationOf', 'placementFeed', 'pa', 'observe'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
-      return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, maxSearchResults, definitionIdentityOf, placementFeed, pa, observe}`)
+      return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, maxSearchResults, definitionIdentityOf, correlationOf, placementFeed, pa, observe}`)
     }
   }
   const { realmId, providerId, readNative, queryPorts, readCaller, teamCeiling, declaredMount, placementFeed, pa, observe = () => {} } = input
@@ -195,17 +222,47 @@ export function buildG6SessionQueryWiring (input = {}) {
   if (typeof placementFeed !== 'function') {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'placementFeed (name) => {definitionIdentity, realmId} | undefined is REQUIRED — the family key is the runtime identity the seam minted for the PLACED definition (pb §6; the agent-bindings registration law), never a hand-spelled string')
   }
-  if (!isRecord(pa) || typeof pa.open !== 'function' || typeof pa.edge !== 'function' || typeof pa.closePlan !== 'function') {
-    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'pa {open, edge, closePlan} is REQUIRED — the plane\'s published split-path seat (paAdmit.open / paAdmit.edge / paAdmit.closePlan, team-tool-plane.mjs:1679/:1713/:1714); with no admission seat no governed call may enter the ports')
+  // THE SEAT, ACCEPTED IN ITS PRODUCTION SHAPE (root 18:2x, defect ③):
+  // the real `paAdmit` (team-tool-plane.mjs:1214) is a CALLABLE carrying
+  // `.open` (:1679), `.closePlan` (:1713) and `.edge` (:1714) as attached
+  // methods — a plain-object test would (and did) reject it. The seat is
+  // accepted as exactly one of: a function or object answering all three
+  // methods; nothing else poses as the admission seat (no silent shim).
+  const paSeatOk = (pa !== null && (typeof pa === 'object' || typeof pa === 'function')
+    && typeof pa.open === 'function' && typeof pa.edge === 'function' && typeof pa.closePlan === 'function')
+  if (!paSeatOk) {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'pa is REQUIRED in its published shape — the plane\'s paAdmit face (a CALLABLE with open / edge / closePlan methods, team-tool-plane.mjs:1214/:1679/:1713/:1714) or an equivalent plain {open, edge, closePlan} methods object; with no admission seat no governed call may enter the ports')
+  }
+  // The call identity ISSUER (root 18:2x): the production plane mounts its
+  // a5p5-law correlation issuer here (per-mount nonce + seq + execution-
+  // token single-flight, register.ts:196-226 — the host exec carries a
+  // TOKEN, never a callId). Absent the seam, only an exec that already
+  // answers a non-empty callId is admitted; nothing is ever guessed.
+  const correlationOf = input.correlationOf === undefined
+    ? (exec) => (isRecord(exec) && typeof exec.callId === 'string' && exec.callId.length > 0 ? exec.callId : null)
+    : typeof input.correlationOf === 'function' ? input.correlationOf : null
+  if (correlationOf === null) {
+    return wiringRefuse(A5_G6_QUERY_WIRING_CODES.INPUT_INVALID, 'correlationOf, when supplied, must be (exec, toolName) => string | null — the ISSUED call identity seam (the plane\'s mount law); a non-function never substitutes')
   }
 
   // The adapter factory's OWN hard-visit law (identity, required facets,
   // ceiling, evidence) throws placement defects directly — carried here
   // verbatim; this bridge adds no gate of its own to that surface.
+  // ONE CAPTURE (root 18:2x, defect ②): the seam is read AT MOST once per
+  // tool name; the SAME object serves the adapter's row capture below and
+  // the placed definition's spread — reading twice and publishing a second
+  // object is structurally impossible on this wiring.
+  const capturedOnce = new Map()
+  const readNativeOnce = (name) => {
+    if (capturedOnce.has(name)) return capturedOnce.get(name)
+    const captured = readNative(name)
+    capturedOnce.set(name, captured === null ? undefined : captured)
+    return capturedOnce.get(name)
+  }
   const adapter = createG6SessionQueryAdapter({
     realmId,
     providerId,
-    readNative,
+    readNative: readNativeOnce,
     queryPorts,
     readCaller,
     teamCeiling,
@@ -220,7 +277,7 @@ export function buildG6SessionQueryWiring (input = {}) {
   const definitions = []
   for (const toolName of A5_G6_TOOL_NAMES) {
     const row = adapter.rows[toolName]
-    const native = readNative(toolName)
+    const native = readNativeOnce(toolName)
     if (row.active !== true) {
       // Honest DECLARED/INACTIVE census (the adapter's own row, evidence
       // bytes verbatim): NO definition, NO registration — a def masking the
@@ -246,9 +303,17 @@ export function buildG6SessionQueryWiring (input = {}) {
         observe({ event: 'g6-wire:classify-REFUSED', name: toolName, code: classified.code })
         throw refusalToThrow(classified)
       }
-      const callId = isRecord(exec) && typeof exec.callId === 'string' && exec.callId.length > 0 ? exec.callId : null
-      if (callId === null) {
-        throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.CALL_ID_ABSENT, `${toolName}: the execution token answered no call identity — the PA walk has no single-flight key; a guessed correlation is forbidden`))
+      // BODY BINDING (root 18:2x, the TOCTOU close): the APPROVED PLAN is
+      // frozen right here — the row's deep-frozen actualArgs snapshot and
+      // its parametersFingerprint. From this line on, the caller-side args
+      // object never re-enters the row: whatever the caller (or anything
+      // holding the same object) mutates during the awaits below, the body
+      // runs the APPROVED snapshot or nothing.
+      const frozenArgs = classified.plan.actualArgs
+      const approvedFingerprint = classified.parametersFingerprint
+      const callId = correlationOf(exec, toolName)
+      if (typeof callId !== 'string' || callId.length === 0) {
+        throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.CALL_ID_ABSENT, `${toolName}: the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden`))
       }
       const parsedEffects = parseRequestedEffectSet(classified.effects)
       if (parsedEffects.ok !== true) {
@@ -297,13 +362,34 @@ export function buildG6SessionQueryWiring (input = {}) {
           // The body NEVER self-attests consumption: no witness, no port entry.
           throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.CONSUME_PROOF_MISSING, `${toolName}: the execution edge answered allow without its one-shot consume witness — the row never substitutes a self-attested consumption; the body did not run and zero port entries were made`))
         }
-        // ② the row's OWN governed body: receiver/method pins, caller
-        // re-verify, Team ceiling, the rev-4 final-serve whole-set membership
-        // recheck — all the row's law, through this bridge unchanged.
-        const ran = await row.invoke(args, { ...(signal === undefined ? {} : { signal }) })
+        // RE-BIND before the body (root 18:2x): the CURRENT classify of the
+        // FROZEN approved snapshot must still answer the APPROVED
+        // fingerprint — the caller moving A→B, a moved workspace cwd or a
+        // moved step-boundary makes the row answer a refusal or a different
+        // fingerprint, and either one refuses: the grant was issued for the
+        // frozen plan and NEVER rides a newer scope (a newer permission
+        // never re-qualifies the old grant either — there is no second
+        // ceiling ask here). Zero port entry on this path.
+        const rebound = row.classify(frozenArgs)
+        if (rebound.ok !== true || rebound.parametersFingerprint !== approvedFingerprint) {
+          observe({ event: 'g6-wire:plan-DRIFT', name: toolName, callId, code: rebound.ok === true ? 'fingerprint-moved' : rebound.code })
+          throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.PLAN_DRIFT, `${toolName}: the plan facts moved between the approved plan and the body (${String(rebound.ok === true ? `fingerprint ${String(rebound.parametersFingerprint).slice(0, 16)}… != approved` : rebound.code)}) — the grant was issued for the frozen plan; zero port entry`))
+        }
+        // ② the row's OWN governed body, run on the APPROVED snapshot:
+        // receiver/method pins, caller re-verify (the row's own
+        // CALLER_DRIFT law covers the final classify→ports window), Team
+        // ceiling, the rev-4 final-serve whole-set membership recheck — all
+        // the row's law, through this bridge unchanged.
+        const ran = await row.invoke(frozenArgs, { ...(signal === undefined ? {} : { signal }) })
         if (ran?.ok !== true) {
           observe({ event: 'g6-wire:invoke-REFUSED', name: toolName, code: ran?.code })
           throw refusalToThrow(ran)
+        }
+        // RESULT PAIRING: what served must BE the approved plan — a body
+        // that answers a different fingerprint never rides this grant.
+        if (!isRecord(ran.plan) || ran.plan.parametersFingerprint !== approvedFingerprint) {
+          observe({ event: 'g6-wire:plan-INTEGRITY', name: toolName, callId })
+          throw refusalToThrow(wiringRefuse(A5_G6_QUERY_WIRING_CODES.PLAN_INTEGRITY, `${toolName}: the row answered a plan that is not the approved one — the served value is withheld (zero provided bytes)`))
         }
         observe({ event: 'g6-wire:served', name: toolName, callId })
         return ran.value

@@ -16,8 +16,8 @@
  * @module @dsh-agent-team/runtime/src/plugin/live/governed-families/g6-session-query-wiring (type surface)
  */
 
-/** The plane's published split-path PA seat (paAdmit.open / .edge /
- *  .closePlan, team-tool-plane.mjs:1679/:1713/:1714). Answers are typed
+/** The plane's published split-path PA seat methods (paAdmit.open / .edge /
+ *  .closePlan, team-tool-plane.mjs:1214/:1679/:1713/:1714). Answers are typed
  *  structurally only — the kernel owns their shapes. */
 export interface G6WirePaSeat {
   open: (walk: Readonly<Record<string, unknown>>) => Promise<{
@@ -40,6 +40,16 @@ export interface G6WirePaSeat {
   }>
   closePlan: (callId: string) => void
 }
+
+/** The seat AS IT ARRIVES in production: `paAdmit` is a CALLABLE carrying the
+ *  three methods (team-tool-plane.mjs:1214 defines it as
+ *  `const paAdmit = async (...) => {...}` with `.open`/:1679, `.closePlan`
+ *  /:1713 and `.edge`/:1714 attached), so the input accepts exactly a
+ *  callable-with-those-methods or an equivalent plain methods object —
+ *  nothing else poses as the admission seat. */
+export type G6WirePaSeatInput = G6WirePaSeat | (G6WirePaSeat & ((
+  input: Readonly<Record<string, unknown>>,
+) => Promise<{ kind?: string, cancelled?: boolean, code?: string, detail?: string }>))
 
 /** The adapter row face AS CONSUMED here: identity members typed, the plan
  *  machinery structurally opaque (owned by g6-session-query.mjs rev.4). */
@@ -106,8 +116,12 @@ export interface G6SessionQueryWiringInput {
   }>
   readonly maxSearchResults?: number
   readonly definitionIdentityOf?: (definition: Readonly<Record<string, unknown>>) => string
+  /** The ISSUED call identity seam (the plane's mount law: per-mount nonce +
+   *  seq + execution-token single-flight, register.ts:196-226). Absent, only
+   *  an exec answering a non-empty `callId` is admitted; nothing is guessed. */
+  readonly correlationOf?: (exec: unknown, toolName: string) => string | null
   readonly placementFeed: (name: string) => { definitionIdentity?: string, realmId?: string } | undefined | null
-  readonly pa: G6WirePaSeat
+  readonly pa: G6WirePaSeatInput
   readonly observe?: (event: Record<string, unknown>) => void
 }
 
@@ -145,6 +159,8 @@ export declare const A5_G6_QUERY_WIRING_CODES: Readonly<{
   APPROVAL_NOT_LANDED: 'P_G6_WIRE_APPROVAL_NOT_LANDED'
   EDGE_CANCELLED: 'P_G6_WIRE_EDGE_CANCELLED'
   CONSUME_PROOF_MISSING: 'P_G6_WIRE_CONSUME_PROOF_MISSING'
+  PLAN_DRIFT: 'P_G6_WIRE_PLAN_DRIFT'
+  PLAN_INTEGRITY: 'P_G6_WIRE_PLAN_INTEGRITY'
   PLACEMENT_KEY_ABSENT: 'P_G6_WIRE_PLACEMENT_KEY_ABSENT'
   PLACEMENT_KEY_MOVED: 'P_G6_WIRE_PLACEMENT_KEY_MOVED'
 }>
