@@ -725,8 +725,10 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
       }
       // THE REAL SESSION CAPABILITY (root 16:2x problem 4): the controlled
       // handle must be carried by the REAL fixed-Host session class — the
-      // pinned 639 @deepseek-ai/dsh-terminal-bash exports LocalPtySession
-      // (index.ts:237) whose initialize() gates startup readiness and whose
+      // pinned 639 terminal-bash session class lives at src/session.ts:237
+      // (LocalPtySession; export map reaches ./src/*, production supply of
+      // that path unverified by this lane; construction needs a VALIDATED
+      // complete ResolvedConfig) whose initialize() gates readiness and whose
       // startSend/readOutput/cancel/read/signal/status/close ARE the send,
       // readiness and scrollback law. An adapter-side shim would FABRICATE
       // that law (done-at-exit instead of done-at-readiness, fake wait
@@ -734,7 +736,7 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
       // factory refuses HERE, before any effect — naming the seam.
       if (typeof sessionFactory !== 'function') {
         state.current = 'refused'
-        throw new Error(`P_TERM_OPEN_SESSION_CAPABILITY_ABSENT: the per-open launch for call ${callId} refuses BEFORE any effect — the controlled handle must be wrapped by the REAL session capability (pinned 639 terminal-bash LocalPtySession, index.ts:237, with initialize() readiness); deps.sessionFactory is absent on this mount and no adapter shim substitutes for it`)
+        throw new Error(`P_TERM_OPEN_SESSION_CAPABILITY_ABSENT: the per-open launch for call ${callId} refuses BEFORE any effect — the controlled handle must be wrapped by the REAL session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession with a VALIDATED complete ResolvedConfig; initialize() gates readiness); deps.sessionFactory is absent on this mount and no adapter shim substitutes for it`)
       }
       // THE ENVELOPE OF RECORD IS THE CANONICAL PLAN: exactly the shape the
       // approved digest covers (normalize BEFORE digest/spawn — root 16:2x
@@ -744,7 +746,11 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
       const launchSpec = Object.freeze({
         ...canonicalPlanFacts,
         argv: Object.freeze([...canonicalPlanFacts.argv]),
-        ...(canonicalPlanFacts.env === null ? {} : { env: Object.freeze({ ...canonicalPlanFacts.env }) }),
+        // env is UNIFIED (root 4fdaf review 1): canonicalOpenPlan omits an
+        // absent/nullish env, so a missing key must behave EXACTLY like
+        // null here — a strict === null test let undefined materialize
+        // env:{} into the launch spec and diverge from the digest again.
+        ...(canonicalPlanFacts.env === undefined || canonicalPlanFacts.env === null ? {} : { env: Object.freeze({ ...canonicalPlanFacts.env }) }),
         ...(spec.signal === undefined ? {} : { signal: spec.signal }),
       })
       state.launch = launchSpec
@@ -755,21 +761,42 @@ function createOneShotControlledBackend({ internalType, owner, canonical, callId
       // owns its pre-answer rollback); cancel after the answer follows the
       // cleanup law on the started resource.
       if (typeof onLaunched === 'function') onLaunched(launchSpec)
-      if (typeof onLaunched === 'function') onLaunched(launchSpec)
-      // THE REAL SESSION CAPABILITY, REUSED: wrap(handle) is the integrator-
-      // injected REAL class (pinned 639 terminal-bash LocalPtySession +
-      // resolveConfig defaults); its initialize() IS the startup readiness
-      // law. A startup failure cleans the UNPUBLISHED handle and awaits
-      // quiescence first — mirroring the real rejectAfterStartupCleanup
-      // (terminal-bash index.ts reject-after-cleanup law) — then refuses
-      // with ZERO published effect (the caller can own no session).
+      // THE REAL SESSION CAPABILITY, REUSED: sessionFactory is the
+      // integrator-injected REAL class — the pinned 639 session lives at
+      // terminal-bash src/session.ts:237 (LocalPtySession; the package
+      // export map reaches ./src/*, but the PRODUCTION supply of that
+      // path is unverified here), constructed with a VALIDATED complete
+      // ResolvedConfig (validateConfig law — not an empty object claiming
+      // materialized defaults). Its initialize() IS the startup readiness
+      // law. Failure cleanup follows the REAL rejectAfterStartupCleanup
+      // law (terminal-bash index.ts:174-180/219-228): a NOT-CONSTRUCTED
+      // resource cleans through provider terminate, a CONSTRUCTED one
+      // through session.close (which owns quiescence); both are AWAITED,
+      // and a cleanup FAILURE is propagated together with the original
+      // failure (the TerminalBackendCleanupError law) — never a claimed
+      // quiescence over a swallowed rejection.
       let session
       try {
         session = await sessionFactory(handle, launchSpec)
+      } catch (error) {
+        const original = String(error?.message ?? error)
+        try {
+          await handle.terminate()
+        } catch (cleanupError) {
+          throw new Error(`P_TERM_OPEN_STARTUP_CLEANUP_FAILED: constructing the REAL session for call ${callId} failed (${original}) AND the provider terminate of the unpublished handle FAILED (${String(cleanupError?.message ?? cleanupError)}) — the controlled spawn started and its cleanup did NOT reach quiescence: resources may remain and need operator attention; zero session was ever published`)
+        }
+        throw new Error(`P_TERM_OPEN_STARTUP_FAILED: the REAL session capability refused to construct for call ${callId} before publication (${original}) — the unpublished handle was TERMINATED AND AWAITED to quiescence; zero published effect, zero session`)
+      }
+      try {
         if (typeof session?.initialize === 'function') await session.initialize(spec.signal)
       } catch (error) {
-        try { await handle.terminate() } catch { /* quiescence best-effort; the original failure surfaces */ }
-        throw new Error(`P_TERM_OPEN_STARTUP_FAILED: the REAL session capability rejected the controlled handle for call ${callId} before publication (${String(error?.message ?? error)}) — the handle was terminated and awaited to quiescence; zero published effect, zero session`)
+        const original = String(error?.message ?? error)
+        try {
+          await session.close('PTY startup failed')
+        } catch (cleanupError) {
+          throw new Error(`P_TERM_OPEN_STARTUP_CLEANUP_FAILED: startup readiness failed for call ${callId} (${original}) AND the session close FAILED (${String(cleanupError?.message ?? cleanupError)}) — the controlled spawn started and its cleanup did NOT reach quiescence: resources may remain and need operator attention; zero session was ever published`)
+        }
+        throw new Error(`P_TERM_OPEN_STARTUP_FAILED: startup readiness failed for call ${callId} (${original}) — the CONSTRUCTED session was closed through its own close() and AWAITED to quiescence before this refusal; zero published effect, zero session`)
       }
       return session
     },
@@ -901,7 +928,7 @@ export function createHostTerminalControlPort(deps) {
           return { ok: false, code: 'P_TERM_OPEN_CAPABILITY_ABSENT', detail: 'the per-open controlled backend spawns ONLY through the restricted process plan on the controlled PTY capability (SubprocessRuntime.spawnTerminal: terminal allocation, foreground groups, awaited whole-session quiescence) — deps.subprocess is absent on this mount, and a bare process spawn is never substituted' }
         }
         if (sessionFactory === null) {
-          return { ok: false, code: 'P_TERM_OPEN_SESSION_CAPABILITY_ABSENT', detail: 'the per-open controlled handle must be carried by the REAL fixed-Host session capability (pinned 639 @deepseek-ai/dsh-terminal-bash exports LocalPtySession at index.ts:237; initialize() gates startup readiness and its startSend/readOutput/cancel/read/signal/status/close ARE the send, readiness and scrollback law) — deps.sessionFactory is absent on this mount and no adapter-side shim is substituted (a shim would fabricate the law: done-at-exit instead of done-at-readiness, invented wait reasons, invented page math); refused BEFORE any effect, zero spawn, zero resource' }
+          return { ok: false, code: 'P_TERM_OPEN_SESSION_CAPABILITY_ABSENT', detail: 'the per-open controlled handle must be carried by the REAL fixed-Host session capability (pinned 639 terminal-bash src/session.ts:237 LocalPtySession, constructed with a VALIDATED complete ResolvedConfig — the export map reaches ./src/* but production supply of that path is unverified by this lane; initialize() gates startup readiness and its startSend/readOutput/cancel/read/signal/status/close ARE the send, readiness and scrollback law) — deps.sessionFactory is absent on this mount and no adapter-side shim is substituted (a shim would fabricate the law: done-at-exit instead of done-at-readiness, invented wait reasons, invented page math); refused BEFORE any effect, zero spawn, zero resource' }
         }
         openSequence += 1
         const internalType = `dsh-g3-po-${String(spec.callId)}-${openSequence}`
@@ -1009,6 +1036,9 @@ export function createHostTerminalControlPort(deps) {
           // UNPUBLISHED handle to awaited quiescence BEFORE publication, so
           // nothing was ever ownable — but the honesty law names the
           // started-and-cleaned truth, never a zero-effect word.
+          if (message.startsWith('P_TERM_OPEN_STARTUP_CLEANUP_FAILED:')) {
+            return { ok: false, code: 'P_TERM_OPEN_STARTUP_CLEANUP_FAILED', detail: `${message} — started-and-CLEANUP-FAILED is reported as such: the port claims NO quiescence, NO zero-effect word, and no retry-suppression` }
+          }
           if (message.startsWith('P_TERM_OPEN_STARTUP_FAILED:')) {
             return { ok: false, code: 'P_TERM_OPEN_STARTUP_FAILED', detail: `${message} — the controlled spawn STARTED and was cleaned to awaited quiescence BEFORE publication (started-and-cleaned, not zero-effect); no session was ever published or ownable` }
           }
