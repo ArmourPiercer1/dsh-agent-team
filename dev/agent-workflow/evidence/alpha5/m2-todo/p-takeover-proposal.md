@@ -74,18 +74,23 @@
 - **S 臂不入 PA effects**（§1.1：S 是业务操作义务的语义记法）：`S(current session incarnation, exact todo action)` 的落点 = targetManifest 字段 + P 前置 owner/incarnation 检查 + 原生提交入口 `exec.agent.session.append('todo/write', …)`（宿主 index.ts:199，pin639）。
 - F/N/D = 无（todo 不触 FS/网络/独立域）。
 
-**targetManifest 严格字段名**（fixture T12 现形）：
+**targetManifest 严格字段名**（实现版现形；封闭集**待中心定版**——缺项清单已交 CENTER）：
 
 ```js
 {
   operation: 'replace-list',            // 闭集单值；todo_write 只有一个公开 operation
-  sessionIncarnation: <string>,          // 受信 ctx，非模型参数
-  todosDigest: <sha256hex>,              // 规范化(trim)后 JSON 摘要
+  agentId: <string>,                     // 真实 exec.agent.id（Agent.id，Session-backed）配对成功后回填
+  sessionHeaderId: <string>,             // 真实 exec.agent.session.header.id（durable header 单副本）
+  todosDigest: <sha256hex>,              // 规范化(trim)后 JSON 摘要 —— 摘要只是 manifest 字段，绝不冒充身份
   counts: { pending, inProgress, completed },
   allowParallelPolicy: <boolean>,        // config 消费位（装配期定值）
   paramFingerprint: <sha256hex>,         // = todosDigest（单参数即全指纹）
 }
 ```
+
+（root 修复卡后 `sessionIncarnation` 字段**已删**——incarnation≠identity；两真实 id 即 I+S 臂的载体。）
+
+**operationFingerprint**（A request 的 `parametersFingerprint` 载体；全值算法**待中心定版**）：现实现 = `sha256:<hex64>` 前缀形（冻结 grant 语法 `$.parametersFingerprint` field-type 实跑撞出的硬要求，同侪件一致）+ canonicalJson(key 排序) 覆盖 `{generations, callId, effects, reviewPayload}` 全值。定版只改 todo.mjs 一处。
 
 **typed 码**（P-PROPOSED，命名权在 AUTH/CENTER，family 前缀供裁）：
 `P_TODO_CLASSIFY_UNKNOWN_PARAMETER`（含**未知顶层键**——原生层无此拒，T10 回归网所在格）、
@@ -102,21 +107,25 @@
 
 ```js
 createGovernedTodoArm({
-  nativeDefinition,          // 绑定期捕获的原生 todo_write definition 对象（成员 ctx 注册现场捕获；绝不按名重找）
-  definitionIdentity,        // definitionIdentityOf(nativeDefinition) @ tool-dispatch/install.ts —— I 臂 @ 半格
-  providerId,                // 放置装配自证（'dsh-agent-team'）
-  agentScopeKey,             // 本 arm 服务的 Agent scope
-  trustedIdentities,         // 计为本 agent 的身份集（Guard scope 同族）
+  nativeDefinition,          // 绑定期捕获的原生 todo_write definition 对象（成员 ctx 注册现场捕获；绝不按名重找；execute 函数值同刻快照）
+  definitionIdentity,        // definitionIdentityOf(nativeDefinition) @ tool-dispatch/install.ts —— I 臂 @ 半格，末端重核
+  providerId,                // 放置装配自证（'team-adapter'/CENTER 定值；非空必填）
+  memberAgentId,             // 真实 Agent.id 配对目标（root 卡①）
+  sessionHeaderId,           // 真实 session.header.id 配对目标（durable 单副本）
+  bindingFacts,              // () => {bindingId, bindingRevision, policyGeneration, authorityGeneration}：注入的 M1/Guard 同一代际读者；arm 不自造代际
   allowParallelInProgress,   // 装配期 config 定值（manifest 报策略；执法律留原生）
   observe,                   // §1.2 最小 backend 日志（classify/admit/backend-start|commit|end/cancel + correlation）
 })
-// 面：classify(args, {agentIdentity, sessionIncarnation}) / prepare(plan)→一次性 ticket
-//     / execute(ticket, exec)（typed 预检→单飞→绑定期 body）/ cancel / drain
+// 面（root 修复版签名）：
+//   classify(args, exec, callId)            → 纯解析+真实形配对+深冻结 payload/指纹；快照 append/facade 在此刻定（批准窗之后不可追改）
+//   prepare(plan, grant)                    → 记 kernel grantId 入内部态（STATE=记账，非权限来源）
+//   execute(plan, {grant, consumed:true})   → 唯一入口：需真 A 边消费凭证；配对/代际/body 重核→提交末端取消·drain 重核→快照跑体
+//   cancel(plan) / drain()
 ```
 
-**装配三步（CENTER 单 writer，`agent-bindings.mjs`，接 §2 的 `a5TodoBridge` 块）**：
-1. **捕获**：成员 setup 的原生注册现场（preset mount 之后）取 `todo_write` definition 对象 + `definitionIdentityOf` 同刻快照——这是"绑定期捕获"的**唯一合法捕获点**，晚于 = drift。
-2. **placement**：向 Guard/placement feed 以 `origin='inherited-native'`、`definitionIdentity=快照` 发布 governed 行（jobs trio 同通道同法，laziness 法照 jobs 桥注释：def#N mint 于 seam install 之后）；调用路由 = arm 面（classify→A→prepare→consume→execute），**不是** `ScopedDispatcher.byName` 按名路（§1.1）。
-3. **mask**：`todoEnabled` 实例上原生同名 face 先 mask 后发行（Guard `maskedNames`/maskPort 既有通道）；DRAINING 由 arm.drain()+Guard 双闸，fixture T18 已证无 native fallback 可退。
+**装配三步（CENTER 单 writer，`agent-bindings.mjs`，接 §2 的 `a5TodoBridge` 块）——每步的权限来源标注（root 卡：ticket 只是内部状态，不是权限来源）**：
+1. **捕获**：成员 setup 的原生注册现场（preset mount 之后）取 `todo_write` definition 对象 + `definitionIdentityOf` 同刻快照 + 真实 `memberAgentId`/`sessionHeaderId`——这是"绑定期捕获"的**唯一合法捕获点**，晚于 = drift。
+2. **placement + 真 A 开单**：向 Guard/placement feed 以 `origin='inherited-native'`、`definitionIdentity=快照` 发布 governed 行（jobs trio 同通道同法）；调用路由 = arm 面，**不是** `ScopedDispatcher.byName` 按名路（§1.1）。每调用 `assembly.admitCall(request)`（request.parametersFingerprint = classify 的 operationFingerprint）：本家族 lane 事实 = `PermissionTool` 闭集不含 `todo_write` 且 `default:'allow'` 被语法拒 ⇒ **唯一可表达正控 = ask 案**；requires-approval → 审批案（C2 起 = AUTH 桥真 leg；C1 现形 = 已披露 stand-in `approvingControlLeg`，经 `assembly.issueApprovedGrant` **落真 kernel grant**）→ `arm.prepare(plan, grant)`【拿真 grant 的就是这一步：grant 由 kernel mint，arm 只记数】。
+3. **唯一 consume + mask**：`assembly.consumeForExecution(grant, {...})` = 全链**唯一** consume 边（kernel one-shot ledger 记账；arm 不建任何账本）→ `arm.execute(plan, {grant, consumed:true})`；同 exec 双票证在 T18(d)（第二 plan 无配对凭证 → typed 拒，append 恒 1）。`todoEnabled` 实例上原生同名 face 先 mask 后发行（Guard `maskedNames`/maskPort 既有通道）；DRAINING 由 arm.drain()+Guard 双闸，fixture T20 已证无 native fallback 可退。
 
-**booking 续清单（CENTER 明处登记用）**：新 scannable 文件 = `packages/runtime/src/plugin/live/governed-families/todo.mjs`（测试文件 `packages/runtime/test/a5-m2-todo-write-c1.test.ts` 已在 `SCANNED_PATHS_A5M2`）；`lint-identities` = todo.mjs 导出面为新身份（`A5_TODO_FAMILY_ID/TOOL_NAME/OPERATION/ADAPTER_REVISION/TYPED_CODES/createGovernedTodoArm`）；`check-artifacts` = 重建 dist 镜像含新 .mjs；census = 文件 558→560（+test、+src）、legs **+18**（前报 +14 作废）、9 titled reds 容差集不动。
+**booking 续清单（CENTER 明处登记用）**：新 scannable 文件 = `packages/runtime/src/plugin/live/governed-families/todo.mjs`（测试文件 `packages/runtime/test/a5-m2-todo-write-c1.test.ts` 已在 `SCANNED_PATHS_A5M2`）；`lint-identities` = todo.mjs 导出面为新身份（`A5_TODO_FAMILY_ID/TOOL_NAME/OPERATION/ADAPTER_REVISION/TYPED_CODES/createGovernedTodoArm`）；`check-artifacts` = 重建 dist 镜像含新 .mjs；census = 文件 558→560（+test、+src）、legs **+20**（root 修复波重数；前报 +14/+18 作废）、9 titled reds 容差集不动。
