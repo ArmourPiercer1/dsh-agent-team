@@ -1237,6 +1237,33 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget']),
   }),
+  // A5-M2 B-SUBAGENT (spawn side, records 39-43; the ONE entry of this
+  // family's owner = the spawn writer — the B-SESSION/B-IMAGE/B-WRITE
+  // entries above stay their owners', untouched). Written field-for-field
+  // against the IMPLEMENTED spawn typed plan: the production wiring
+  // (governed-families/subagent-spawn-wiring.mjs) projects the adapter's
+  // plan.target into this flat lossless string view — closed kinds only,
+  // no new kind, no `any`, no replacement of any sibling entry. `childClaim`
+  // encodes the target's constant `child.claim: null` (the child identity
+  // is minted by the SERVICE at start/acceptance, never claimed at this
+  // seam) as the non-empty sentinel below; `childAdjudication` carries the
+  // PRE_SPAWN_CLOSED_WORLD disclosure whole. The named gaps stay gaps:
+  // nothing here enforces them — the MEANING is the plan's own (doc above).
+  'B-SUBAGENT': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      contract: 'string',
+      parent: 'string',
+      childClaim: 'string',
+      childAdjudication: 'string',
+      action: 'string',
+      revision: 'string',
+      effect: 'string',
+      model: 'string',
+      depth: 'string',
+    }),
+    currentFields: Object.freeze(['operation', 'contract']),
+  }),
 } as const)
 
 function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): boolean {

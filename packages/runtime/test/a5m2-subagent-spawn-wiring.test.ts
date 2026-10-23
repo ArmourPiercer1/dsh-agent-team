@@ -54,6 +54,7 @@ type PaRequest = {
   signal?: unknown
   family?: { familyId?: string; adapterRevision?: number; providerIdentity?: string; definitionIdentity?: string; targetManifest?: unknown }
 }
+type SpawnTarget = { contract: string; parent: string; child: { claim: string | null; adjudication: string }; action: string; revision: string; effect: string; model: string; depth: string }
 type WiringValue = {
   familyId: string
   adapterRevision: number
@@ -63,7 +64,7 @@ type WiringValue = {
   mountNames: readonly string[]
   definitions: Definition[]
   declared: Array<{ name: string; recordIndex: number; status: string; reason: string }>
-  rowOf: (name: string) => { classify: (args: unknown) => { ok: boolean; plan?: { parametersFingerprint: string; target: unknown } } } | undefined
+  rowOf: (name: string) => { classify: (args: unknown) => { ok: boolean; plan?: { parametersFingerprint: string; operation: string; target: SpawnTarget } } } | undefined
   familyRegistrations: () => Array<{ name: string; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }>
   wiringCodes: Record<string, string>
 }
@@ -155,8 +156,13 @@ const CONTINUABLE: Array<Record<string, unknown>> = []
 const REAL_NATIVES = await captureRealNatives()
 
 // ── the wiring-side doubles: a RECORDING plane paAdmit + a plane feed ─────
+// THE REAL PA PROTOCOL (root 20:41 fix 2): `ok:true` is NOT an answer the
+// real walk ever produces — the spec answers with the plane's own shapes:
+// {kind:'allow',consumedProof} / bare {kind:'allow'} / {kind:'allow',
+// cancelled:true} / {kind:'deny',code,detail}.
+const REAL_PROOF = { grant: 'grant-w-1', lease: 'lease-w-1', spentOnce: true }
 const PA_CALLS: PaRequest[] = []
-let paAnswer: Record<string, unknown> = { ok: true }
+let paAnswer: Record<string, unknown> = { kind: 'allow', consumedProof: REAL_PROOF }
 const recordingPaAdmit = async (request: PaRequest): Promise<Record<string, unknown>> => {
   PA_CALLS.push(request)
   return paAnswer
@@ -227,7 +233,7 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
   it('ONE dispatched call walks PA with the exact public envelope, then runs the REAL captured body', async () => {
     PA_CALLS.length = 0
     SERVICE_STARTS.length = 0
-    paAnswer = { ok: true }
+    paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
     const def = wiring.definitions.find((d) => d.name === 'subagent')
     if (def === undefined) throw new Error('no def')
@@ -248,9 +254,25 @@ describe('a5m2-subagent-spawn-wiring (c) the admit seat → the plane PA walk', 
     expect(req.family?.adapterRevision).toBe(1)
     expect(req.family?.providerIdentity).toBe('a5p5-plane')
     expect(req.family?.definitionIdentity).toBe('cap:subagent')
-    // the plan target rides the family P-adds WHOLE (same frozen bytes — the
-    // fingerprint line above already pins that this is the same plan);
-    expect(req.family?.targetManifest).toStrictEqual(classified.plan.target) // never re-spelled
+    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3; the entry in
+    // PA_FAMILY_TARGET_RULES['B-SUBAGENT'] pairs exactly these keys, closed
+    // string kinds): the adapter plan.target flat lossless view — every
+    // target fact names one manifest field, child.claim:null encodes as the
+    // sentinel, nothing is re-spelled or dropped.
+    const t = classified.plan.target
+    expect(req.family?.targetManifest).toStrictEqual({
+      operation: classified.plan.operation,
+      contract: t.contract,
+      parent: t.parent,
+      childClaim: 'service-mints-child-identity (claim not carried at this seam)',
+      childAdjudication: t.child.adjudication,
+      action: t.action,
+      revision: t.revision,
+      effect: t.effect,
+      model: t.model,
+      depth: t.depth,
+    })
+    expect(t.child.claim).toBeNull() // the sentinel encodes the CONST null claim
     expect(req.signal).toBe(CONTROLLER.signal)
     // admitted: the REAL captured body ran and the service double saw it
     expect(SERVICE_STARTS).toHaveLength(1)
@@ -283,10 +305,21 @@ describe('a5m2-subagent-spawn-wiring (d) answer mapping without rewriting verdic
     expect(String(error?.message)).toContain(CODES.CALL_CANCELLED)
     expect(SERVICE_STARTS).toHaveLength(0)
   })
+  it('a bare allow without the kernel consume witness refuses ADMIT_PROOF_ABSENT (self-attestation is not admission; zero service entry)', async () => {
+    SERVICE_STARTS.length = 0
+    paAnswer = { kind: 'allow' } // the plane's non-witness branch: the governed row DEMANDS the proof
+    const wiring = wire()
+    const def = wiring.definitions.find((d) => d.name === 'subagent')
+    if (def === undefined) throw new Error('no def')
+    const error = await def.execute({ description: 'd', prompt: 'p' }, { agent: AGENT_REF, callId: 'call-noproof-1', signal: CONTROLLER.signal })
+      .then(() => undefined, (e: unknown) => e as Error)
+    expect(String(error?.message)).toContain(CODES.ADMIT_PROOF_ABSENT)
+    expect(SERVICE_STARTS).toHaveLength(0)
+  })
   it('no public exec.callId fails closed BEFORE PA is asked; unrecognizable answers fail closed', async () => {
     PA_CALLS.length = 0
     SERVICE_STARTS.length = 0
-    paAnswer = { ok: true }
+    paAnswer = { kind: 'allow', consumedProof: REAL_PROOF }
     const wiring = wire()
     const def = wiring.definitions.find((d) => d.name === 'subagent')
     if (def === undefined) throw new Error('no def')

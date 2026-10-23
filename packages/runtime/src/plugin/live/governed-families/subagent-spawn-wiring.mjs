@@ -21,12 +21,13 @@
  *     plan.target} that pa-control-bridge.ts demands of a BOUND family
  *     (`family-review-facts-incomplete` denies a partial carrier BEFORE the
  *     durable row — the same bytes the registration table answers with).
- *     ANSWER MAPPING (no rewriting of PA's verdicts): `ok:true` → admitted;
- *     `allow + cancelled` (PA's own zero-backend answer for an already
- *     aborted call) → typed CALL_CANCELLED refusal; any `deny`/other answer
- *     → the PA side's OWN code/detail travels as the refusal (a PA answer
- *     with no recognizable verdict fails closed PA_ANSWER_UNRECOGNIZED).
- *     The wiring CATCHES NOTHING: a throwing paAdmit propagates verbatim,
+ *     ANSWER MAPPING (no rewriting of PA's verdicts): the REAL protocol —
+ *     `kind:'allow'` WITH the kernel's one-shot `consumedProof` admits (the
+ *     witness is DEMANDED: a bare allow is refusing, not self-attesting →
+ *     ADMIT_PROOF_ABSENT); PA's own `allow+cancelled` (already-aborted call,
+ *     zero backend) → typed CALL_CANCELLED refusal; `deny` travels with PA's
+ *     OWN code/detail bytes; anything unrecognizable fails closed. The
+ *     wiring CATCHES NOTHING: a throwing paAdmit propagates verbatim,
  *     exactly as the adapter's no-catch law demands.
  *  2. THE PLACEMENT FEED → PASSED THROUGH. `familyRegistrations()` (the
  *     adapter's mount-moment registration) reads the plane's `placementFeed`
@@ -69,6 +70,7 @@ export const A5_B_SPAWN_WIRING_CODES = Object.freeze({
   ADMISSION_ABSENT: 'P_B_SPAWN_WIRE_ADMISSION_ABSENT',
   CALL_IDENTITY_ABSENT: 'P_B_SPAWN_WIRE_CALL_IDENTITY_ABSENT',
   CALL_CANCELLED: 'P_B_SPAWN_WIRE_CALL_CANCELLED',
+  ADMIT_PROOF_ABSENT: 'P_B_SPAWN_WIRE_ADMIT_PROOF_ABSENT',
   PA_ANSWER_UNRECOGNIZED: 'P_B_SPAWN_WIRE_PA_ANSWER_UNRECOGNIZED',
 })
 
@@ -132,19 +134,37 @@ export function createSubagentSpawnWiring(input = {}) {
     }
     // The CLOSED effect envelope vocabulary (todo.mjs :233 verbatim shape).
     const requestedEffects = deepFreeze({ effects: [{ kind: 'tool-invoke', toolName: String(name), resource: null }] })
-    // THE FAMILY P-ADDS (pa-control-bridge.ts): a BOUND family must present
-    // all four fields and they must MATCH the mount-time registration, or PA
-    // denies `family-review-facts-incomplete/-mismatch` before any durable
-    // row. targetManifest is the adapter plan's own frozen target (contract
-    // §B-SUBAGENT rows, operation, effect disclosure, named gaps) — carried
-    // WHOLE, never re-spelled.
     const definitionIdentity = capturedIdentities.get(name)
+    // THE TYPED TARGET, PA-PROJECTED (root 20:41 fix 3): the family's
+    // PA_FAMILY_TARGET_RULES['B-SUBAGENT'] entry (control/types.ts) pairs
+    // field-for-field with the adapter's typed plan target; the durable
+    // schema wants the FLAT lossless string view the closed kinds carry —
+    // the nested `child` pair travels as childClaim/childAdjudication, and
+    // the target's constant `child.claim: null` (the child identity is
+    // minted by the SERVICE, never claimed at this seam) encodes as the
+    // sentinel below. Nothing is dropped or re-spelled: every adapter
+    // target fact names exactly one manifest field, losslessly.
+    const target = plan.target
+    const targetManifest = deepFreeze({
+      operation: String(plan.operation),
+      contract: String(target.contract),
+      parent: String(target.parent),
+      childClaim: target.child.claim === null
+        ? 'service-mints-child-identity (claim not carried at this seam)'
+        : String(target.child.claim),
+      childAdjudication: String(target.child.adjudication),
+      action: String(target.action),
+      revision: String(target.revision),
+      effect: String(target.effect),
+      model: String(target.model),
+      depth: String(target.depth),
+    })
     const family = deepFreeze({
       familyId: typeof familyId === 'string' && familyId.length > 0 ? familyId : A5_B_SUBAGENT_SPAWN_FAMILY_ID,
       adapterRevision: A5_B_SUBAGENT_SPAWN_ADAPTER_REVISION,
       providerIdentity: typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'b-subagent-spawn',
       definitionIdentity,
-      targetManifest: plan.target,
+      targetManifest,
     })
     // NO catch: the plane walk's own throws are the call's throws (adapter L6).
     const answer = await input.paAdmit({
@@ -156,18 +176,40 @@ export function createSubagentSpawnWiring(input = {}) {
       ...(isRecord(exec) && typeof exec.signal === 'object' && exec.signal !== null ? { signal: exec.signal } : {}),
       family,
     })
-    if (answer?.ok === true) return deepFreeze({ ok: true, callId })
+    // THE REAL ANSWER PROTOCOL (root 20:41 fix 2): the plane's walk answers
+    // `{kind:'allow', consumedProof}` on the consumption-success branch
+    // (team-tool-plane :1695-1697 — the kernel's one-shot witness rides
+    // additively), `{kind:'allow'}` on the non-witness branch, its own
+    // `{kind:'allow', cancelled:true}` for a dead invocation, and
+    // `{kind:'deny', code, detail}`. `ok:true` is NOT the protocol —
+    // accepting it left a REAL consumed call landing as unrecognized
+    // AFTER the spend. The witness is DEMANDED (the plane's own law: "a
+    // row that proceeds without the proof is refusing, not self-attesting").
     if (answer?.kind === 'allow' && answer.cancelled === true) {
       // PA's OWN zero-backend answer for an already-cancelled invocation.
       return deepFreeze({ ok: false, code: A5_B_SPAWN_WIRING_CODES.CALL_CANCELLED, detail: `PA answered this '${String(name)}' call CANCELLED at the governance edge (zero backend, zero consume) — the captured spawn body is never entered for a dead invocation` })
     }
-    const code = typeof answer?.code === 'string' && answer.code.length > 0
-      ? answer.code
-      : A5_B_SPAWN_WIRING_CODES.PA_ANSWER_UNRECOGNIZED
-    const detail = typeof answer?.detail === 'string' && answer.detail.length > 0
-      ? answer.detail
-      : `the PA walk answered with no recognizable verdict (kind=${String(answer?.kind ?? 'none')}) — fail closed with zero native entry`
-    return deepFreeze({ ok: false, code, detail })
+    if (answer?.kind === 'allow') {
+      const proof = answer.consumedProof
+      const proofPresent = (typeof proof === 'object' && proof !== null) || (typeof proof === 'string' && proof.length > 0)
+      if (proofPresent !== true) {
+        return deepFreeze({ ok: false, code: A5_B_SPAWN_WIRING_CODES.ADMIT_PROOF_ABSENT, detail: `PA answered 'allow' for '${String(name)}' WITHOUT the kernel's one-shot consume witness — a governed spawn row proceeding on a bare allow would be self-attesting; refused with zero native entry` })
+      }
+      return deepFreeze({ ok: true, callId, consumedProof: proof })
+    }
+    if (answer?.kind === 'deny') {
+      // PA's verdict travels with PA's OWN bytes (never re-coded here).
+      const denyCode = typeof answer.code === 'string' && answer.code.length > 0 ? answer.code : 'PA_DENIED'
+      const denyDetail = typeof answer.detail === 'string' && answer.detail.length > 0
+        ? answer.detail
+        : `the PA walk denied this '${String(name)}' call without a detail — fail closed with zero native entry`
+      return deepFreeze({ ok: false, code: denyCode, detail: denyDetail })
+    }
+    return deepFreeze({
+      ok: false,
+      code: A5_B_SPAWN_WIRING_CODES.PA_ANSWER_UNRECOGNIZED,
+      detail: `the PA walk answered this '${String(name)}' call with no recognizable verdict (kind=${String(answer?.kind ?? 'none')}) — fail closed with zero native entry`,
+    })
   }
 
   const assembly = createSubagentSpawnAdapterAssembly({

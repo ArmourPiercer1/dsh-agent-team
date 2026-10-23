@@ -3027,6 +3027,39 @@ export function createAgentBindings(deps) {
           }
           const spawnCaptured = {}
           const spawnNativeBodies = {}
+          // THE READ-BACK DISTINCTION (root 20:41 read-only check — CONFIRMED
+          // at the sources, not assumed, and NOT yet observed in any run —
+          // disclosed as a source-level finding): the host scope store
+          // (core/scope chainLayers) answers the NEAREST layer last ("the
+          // nearest scope's entry wins a name"), and bindOwnTools/bindAll
+          // ('team-own') places THIS plane's governed definitions at the
+          // member scope UNDER THE SAME NAMES. Capture above ran BEFORE the
+          // placement (setup order: capture → plane build → place/bind →
+          // publish), so the natives were read clean; at CALL time the same
+          // scoped read answers THIS MOUNT'S PLACED definition, not the
+          // preset native object. The per-dispatch re-read therefore
+          // recognizes its own placement as the SAME real generation (the
+          // placed row delegates to the bound captured execute BY THE
+          // ADAPTER'S OWN construction) and answers a NEW container carrying
+          // the foreign handle only when the face moves to anything else —
+          // never a fake-stable snapshot, never a per-read new object (which
+          // would answer DELEGATE_DRIFT every dispatch while the mount is
+          // healthy). Limit, honestly: while the placement shadows the scope,
+          // a native swap UNDERNEATH is unobservable through this face; it
+          // lands as a placement change (teardown + re-setup re-captures, the
+          // Guard re-verifies the own bind through placement).
+          const readSpawnFace = (spawnName) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined)
+          const spawnPlacedByName = new Map() // filled right after the wiring builds: its definitions ARE the placements
+          const spawnCurrentBodies = () => Object.fromEntries(Object.keys(spawnNativeBodies).map((spawnName) => {
+            const current = readSpawnFace(spawnName)
+            const placed = spawnPlacedByName.get(spawnName)
+            if (placed !== undefined && current === placed) return [spawnName, spawnNativeBodies[spawnName]] // own placement = same generation: answer the BOUND handle
+            return [spawnName, current?.execute]
+          }))
+          const spawnStableGeneration = () => {
+            const bodies = spawnCurrentBodies()
+            return Object.keys(spawnNativeBodies).every((spawnName) => bodies[spawnName] === spawnNativeBodies[spawnName])
+          }
           for (const spawnName of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
             let spawnNative
             try {
@@ -3050,22 +3083,33 @@ export function createAgentBindings(deps) {
           if (Object.keys(spawnCaptured).length === 0) {
             throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
           }
+          // THE ONE bound container (root 20:41 fix 1): the adapter compares
+          // the CONTAINER object identity (assembly gate + per-dispatch edge
+          // re-read), so a stable generation must answer THIS object — built
+          // once, after the capture, from the real captured bodies.
+          const spawnNativeDelegates = Object.freeze({ ...spawnNativeBodies })
           const spawnWiringBuilt = createSubagentSpawnWiring({
             providerId: 'a5p5-plane',
             realmId: a5PlaneRealmId,
             captured: spawnCaptured,
             // THE DRIFT LAW, PRODUCTION SOURCE: the CURRENT member-scoped
             // read answers per dispatch — a preset generation that moved
-            // swaps the object and the row refuses DRIFT.
-            liveNative: (spawnName) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined),
-            spawnDelegates: Object.freeze({ ...spawnNativeBodies }),
-            // THE VERIFIED-HANDLE LAW: every edge re-reads the CURRENT
-            // member-scoped bodies — the handle the row verifies IS the
-            // handle it invokes (reads=2 law), never a bind-time constant.
-            liveSpawnDelegates: () => Object.freeze(Object.fromEntries(Object.keys(spawnNativeBodies).map((spawnName) => {
-              const current = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
-              return [spawnName, current?.execute]
-            }))),
+            // swaps the object and the row refuses DRIFT. The self-placement
+            // shadow maps back to the captured object (read-back law above);
+            // a FOREIGN object on the face answers itself and refuses.
+            liveNative: (spawnName) => {
+              const current = readSpawnFace(spawnName)
+              const placed = spawnPlacedByName.get(spawnName)
+              if (placed !== undefined && current === placed) return spawnCaptured[spawnName].native
+              return current
+            },
+            spawnDelegates: spawnNativeDelegates,
+            // THE VERIFIED-HANDLE LAW (root 20:41 fix 1): the SAME real-
+            // generation container while every bound handle still answers
+            // the face (own placement included); a NEW container carrying
+            // the moved/foreign handles the moment it does not — the
+            // adapter's own DELEGATE_DRIFT refuses then, at the edge.
+            liveSpawnDelegates: () => (spawnStableGeneration() ? spawnNativeDelegates : Object.freeze(spawnCurrentBodies())),
             // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
             // plane construction; consulting before the plane answers
             // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
@@ -3085,6 +3129,7 @@ export function createAgentBindings(deps) {
             throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`)
           }
           a5SpawnWiring = spawnWiringBuilt.wiring
+          for (const spawnPlacedDef of a5SpawnWiring.definitions) spawnPlacedByName.set(spawnPlacedDef.name, spawnPlacedDef)
           observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
         }
         // M1 PA→Control production wiring (frozen A): the plane's approval

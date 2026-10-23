@@ -10,6 +10,7 @@ export type SpawnWiringCodes = Readonly<Record<
   | 'ADMISSION_ABSENT'
   | 'CALL_IDENTITY_ABSENT'
   | 'CALL_CANCELLED'
+  | 'ADMIT_PROOF_ABSENT'
   | 'PA_ANSWER_UNRECOGNIZED',
   string
 >>
