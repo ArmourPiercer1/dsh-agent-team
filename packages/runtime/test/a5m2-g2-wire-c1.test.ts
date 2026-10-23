@@ -1046,6 +1046,7 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
   it('BROWSER mount supply leg: the row actuates through the SIGNED port lease (consumeApproval -> worker -> callResource mapping), never through the captured native; the PLANE leg stays fail-closed at the still-unregistered B-BROWSER target rule (a different lane — no fake green)', async () => {
     const workerCalls: Array<{ resource: unknown; method: unknown; args: unknown }> = []
     const approvals: string[] = []
+    const factsSeen: Record<string, unknown>[] = []
     const world = await mountWorld('browser-supply', {
       surface: 'browser',
       familyGate: 'g2BrowserEnabled',
@@ -1057,7 +1058,7 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
             mode: 'launch', nativeConfig: {},
             declaredServiceFacts: { modelOrigin: 'https://model.example.invalid' },
             entries: { launchChromium: async () => ({ pid: 4242, endpoint: 'http://127.0.0.1:9222', close: async () => {} }), openBrowserWorker: async () => ({ tab: 't1', close: async () => {} }) },
-            consumeApproval: async (facts: Record<string, unknown>) => { approvals.push(String(facts.toolName)); return 'consumed' },
+            consumeApproval: async (facts: Record<string, unknown>) => { approvals.push(String(facts.toolName)); factsSeen.push(facts); return 'consumed' },
             callResource: async (resource: unknown, method: unknown, args: unknown) => { workerCalls.push({ resource, method, args }); return { ok: true, acted: String(method) } },
           },
         })) as Record<string, unknown>
@@ -1069,12 +1070,13 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
     // supply routing (invoke level — the governance walk is the PLANE leg
     // below): the port lease runs the caller mapping on the OPENED worker.
     const row = world.rows.find((r) => r.toolName === 'stagehand_navigate')
-    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER } })
+    const acted = await row!.invoke({ url: 'https://example.invalid' }, { agent: { id: WORKER }, g2ApprovedCallId: 'plane-g2:w-browser-supply-7' })
     expect(acted).toEqual({ ok: true, value: { ok: true, acted: 'navigate' } })
     expect(workerCalls.length).toBe(1)
     expect(workerCalls[0]?.method).toBe('navigate')
     expect(workerCalls[0]?.resource).toBeDefined() // the OPENED worker chain rides the mapping (the port's own open law shapes it)
     expect(approvals).toEqual(['stagehand_navigate'])
+    expect(factsSeen[0]?.approvedCallId).toBe('plane-g2:w-browser-supply-7') // the ONE correlation fact rides the lease facts
     expect(world.nativeCalls.stagehand_navigate?.length ?? 0).toBe(0)
     // the PLANE leg: B-BROWSER has no PA_FAMILY_TARGET_RULES entry (the
     // browser rule map is ANOTHER lane) — the walk fail-closes there, zero

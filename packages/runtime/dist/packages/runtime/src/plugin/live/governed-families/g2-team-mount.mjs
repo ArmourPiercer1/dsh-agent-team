@@ -243,7 +243,10 @@ export async function createG2TeamMount(input = {}) {
         invoke: async (args, exec) => Object.freeze({
           ok: true,
           value: await port.run(
-          { toolName: row.toolName, operation: row.operation },
+          // the approval this call consumed, when the walk rode it (the ONE
+          // pass-through fact, plane :3597 law): the lease's consumeApproval
+          // facts carry approvedCallId for per-call confirmation.
+          Object.assign({ toolName: row.toolName, operation: row.operation }, typeof exec?.g2ApprovedCallId === 'string' ? { approvedCallId: exec.g2ApprovedCallId } : {}),
           async (resource) => await callResource(resource, BROWSER_METHODS[row.toolName], args, exec?.signal),
           exec?.signal,
           ),

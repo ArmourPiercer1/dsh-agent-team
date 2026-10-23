@@ -3601,7 +3601,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // classify-time facts answer ARGS_REBOUND/ARGS_DEEPEQUAL with zero
       // native entry: an approved plan does not outlive the facts frozen at
       // the edge.
-      const ran = await consumeG2ApprovedPlan({ row, plan: classified, args: raw, exec })
+      // ROOT 21:23 next-source, the ONE fact: the approval THIS call consumed
+      // (its durable correlation) rides the exec token copy into the row
+      // body, so a lease-backed body can CONFIRM its own approval — nothing
+      // else changes (args identity law untouched; the copy only ADDS).
+      const ran = await consumeG2ApprovedPlan({ row, plan: classified, args: raw, exec: Object.assign({}, exec, { g2ApprovedCallId: correlation }) })
       if (ran === null || typeof ran !== 'object' || ran.ok !== true) {
         throw new Error(`refused-g2 ${ran?.code ?? 'P_G2_EDGE_REFUSED'} — ${ran?.detail ?? 'the G2 consumption edge refused the body'} (zero native entry)`)
       }
