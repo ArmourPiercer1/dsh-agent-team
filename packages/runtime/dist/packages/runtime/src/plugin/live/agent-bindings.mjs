@@ -2773,14 +2773,25 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-write: arm-REFUSED for ${sessionId}`)
             return error
           }
+          // SAME scoped-capture law as the todo arm above (root ruling this
+          // round): the shipped web-app profile DISABLES the global tool-fs
+          // row too, so `write` — like todo_write — is contributed ONLY through
+          // the agent preset, and the global face answers nothing. Read the
+          // native through the member's OWN scope (the runtime Agent object IS
+          // the registry scope key, matching the Guard's readDefinition); the
+          // arm binds only this object's definitionIdentity + description, its
+          // execute stays never-re-entered exactly as before.
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseWrite('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
           let nativeWriteDefinition
           try {
-            nativeWriteDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_WRITE_TOOL_NAME) : undefined
+            nativeWriteDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_WRITE_TOOL_NAME, runtimeAgent) : undefined
           } catch (error) {
-            throw refuseWrite(`the global tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+            throw refuseWrite(`the member-scoped tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
           }
           if (nativeWriteDefinition === null || typeof nativeWriteDefinition !== 'object') {
-            throw refuseWrite('no native write definition stands on the global tool face — the arm binds its definitionIdentity and description through the captured OBJECT')
+            throw refuseWrite('no native write definition is visible to this member scope (global layer, the joined preset generation, and the member own layer all resolve no such body) — the arm binds its definitionIdentity and description through the captured OBJECT')
           }
           const writeNativeIdentity = definitionIdentityOf(nativeWriteDefinition)
           if (typeof writeNativeIdentity !== 'string' || writeNativeIdentity.length === 0) {
