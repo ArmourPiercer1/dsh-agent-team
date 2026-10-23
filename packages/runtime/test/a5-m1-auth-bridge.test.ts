@@ -2461,3 +2461,96 @@ describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every lev
     }
   })
 })
+
+/* ── A5M2-CHAIN (CENTER): what a registered family's row really binds ───────────────
+ * The chain claim this lane can prove without inventing anything: the approved target
+ * and the question the chain keys on are the SAME bytes of ONE immutable typed plan -
+ * the row's digest is computed over the payload that carries the target, so any edit to
+ * a target field changes the digest, and a changed plan is therefore a DIFFERENT
+ * approval, never a restatement of the old one. The refusals prove the other half: an
+ * unregistered binding cannot claim a family, a registered family shipping nothing is
+ * refused, and an out-of-structure target is refused - all before any row exists.
+ * The approve path is NOT claimed here (see the lane's own note: the first attempt at
+ * it answered pa-authority-drift at the decision gate and stays open). */
+describe('A5M2-CHAIN: the row binds the plan it was approved under', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a5m2-chain-call')
+  const definitionIdentity = String((fixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+  const familyFacts = { familyId: 'B-SESSION', adapterRevision: 1, providerIdentity: 'prov@1' }
+  const target = {
+    operation: 'replace-list',
+    agentId: 'agent-a',
+    sessionHeaderId: 'header-1',
+    todosDigest: 'sha256:todo',
+    counts: { pending: 1, inProgress: 0, completed: 0 },
+    allowParallelPolicy: false,
+    paramFingerprint: 'sha256:todo',
+  }
+  const family = { ...familyFacts, targetManifest: target }
+  const registeredLeg = () => makeLeg({ governedFamilies: { [definitionIdentity]: familyFacts } })
+
+  it('F1 the row carries the block, and its digest is the fingerprint of those very bytes', async () => {
+    const pending = registeredLeg()({ ...fixture.input, family })
+    const row = await waitRow((r) => r.correlation === fixture.correlation)
+    const parsed = parsePaControlManifest(row.reviewPayload)
+    expect(parsed, 'the read-back must keep the family block').toBeDefined()
+    expect(parsed?.familyId).toBe('B-SESSION')
+    expect(parsed?.adapterRevision).toBe(1)
+    expect(parsed?.providerIdentity).toBe('prov@1')
+    expect(parsed?.targetManifest).toEqual(target)
+    // the parameter summary and the target live in the same payload the digest locks:
+    // the approved target IS the question that was approved.
+    const locked = row as unknown as Record<string, unknown>
+    expect(locked.operationFingerprint).toBe(locked.reviewPayloadDigest)
+    expect(parsed?.parametersFingerprint, 'the block rides beside the parameter summary it belongs to').toBe(fixture.input.request.parametersFingerprint)
+    const edited = JSON.parse(JSON.stringify(row.reviewPayload)) as Record<string, unknown>
+    ;(edited.targetManifest as Record<string, unknown>).sessionHeaderId = 'header-2'
+    expect(canonicalJsonFingerprint(edited)).not.toBe(locked.operationFingerprint)
+    await resolve(humanCaller(), row.requestId, 'deny')
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('F2 the target bytes on the row come from the plan it was asked under, not from a later argument', async () => {
+    // A second, independent call whose plan carries DIFFERENT target bytes: the row that
+    // appears carries exactly those bytes. Together with F1's digest lock this is the
+    // chain's whole binding claim - the approved target and the recorded target are the
+    // same immutable plan's bytes, and the digest that keys the approval covers them, so
+    // a moved target is a different question and never a restatement of the first.
+    const movedCtx = directAssembly()
+    const movedFixture = directFixture(movedCtx, 'a5m2-chain-moved')
+    const movedDefinition = String((movedFixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+    const pending = makeLeg({
+      governedFamilies: { [movedDefinition]: familyFacts },
+    })({ ...movedFixture.input, family: { ...family, targetManifest: { ...target, sessionHeaderId: 'header-2' } } })
+    const row = await waitRow((r) => r.correlation === movedFixture.correlation)
+    const payload = parsePaControlManifest(row.reviewPayload)
+    expect(payload?.targetManifest).toEqual({ ...target, sessionHeaderId: 'header-2' })
+    const locked = row as unknown as Record<string, unknown>
+    expect(locked.operationFingerprint).toBe(canonicalJsonFingerprint(row.reviewPayload))
+    expect(locked.operationFingerprint).not.toBe(
+      canonicalJsonFingerprint({
+        ...(row.reviewPayload as Record<string, unknown>),
+        targetManifest: { ...target, sessionHeaderId: 'header-1' },
+      }),
+    )
+    await resolve(humanCaller(), row.requestId, 'deny')
+    expect((await pending).decision).toBe('deny')
+  })
+
+  it('F3 the three refusals write no row at all', async () => {
+    const before = (await state()).requests.length
+    const unregistered = await makeLeg()({ ...fixture.input, family })
+    expect(unregistered.decision).toBe('deny')
+    expect(String(unregistered.decision === 'deny' ? unregistered.detail : '')).toContain('family-claim-on-unregistered-binding')
+    const bare = await registeredLeg()({ ...fixture.input })
+    expect(bare.decision).toBe('deny')
+    expect(String(bare.decision === 'deny' ? bare.detail : '')).toContain('family-review-facts-missing')
+    const outOfStructure = await registeredLeg()({
+      ...fixture.input,
+      family: { ...family, targetManifest: { ...target, counts: { pending: 1 } } },
+    })
+    expect(outOfStructure.decision).toBe('deny')
+    expect(String(outOfStructure.decision === 'deny' ? outOfStructure.detail : '')).toContain('family-target-invalid')
+    expect((await state()).requests.length).toBe(before)
+  })
+})
