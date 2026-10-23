@@ -58,7 +58,7 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve, basename } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CLIENT_COMMIT_HASH, findTestRepoRoot } from '../../../tests/paths.mjs'
 import { DshInstance } from '../../../tests/characterization/lib/instance.mjs'
@@ -86,6 +86,19 @@ const WORLD_PREFIX = 'a5m2-sched-c2'
 const BP_ID = 'team.a5m2-sched-c2'
 const SEED_TITLES = ['A5M2SEED-ALPHA', 'A5M2SEED-BETA', 'A5M2SEED-GAMMA']
 const ABSENT_ID = 'sch_a5m2_absent_zz'
+// Root 23:5x: read-only reuse of the approved frozen surface (skips the
+// install stage; verified before use; the reused tree is never written).
+const REUSE_INSTALL = process.env.A5M2_SCHED_C2_REUSE_INSTALL ?? null
+const REUSE_LOCK_SHA256 = '7faee42f88306edb43888cbd3d822a45596d6a05d0641e32457cbcd553568cfe'
+const FIFTEEN_PEER_PINS = Object.freeze({
+  '@deepseek-ai/dsh': '0.2.0-rc.2', '@deepseek-ai/dsh-agent': '0.2.0-rc.2',
+  '@deepseek-ai/dsh-llm': '0.2.0-rc.2', '@deepseek-ai/dsh-mcp-client': '0.2.0-rc.2',
+  '@deepseek-ai/dsh-schedule': '0.2.0-rc.2', '@deepseek-ai/dsh-scope': '0.2.0-rc.2',
+  '@deepseek-ai/dsh-session': '0.2.0-rc.2', '@deepseek-ai/dsh-spill': '0.2.0-rc.2',
+  '@deepseek-ai/dsh-spill-local': '0.2.0-rc.2', '@deepseek-ai/dsh-storage-domain': '0.2.0-rc.2',
+  '@deepseek-ai/dsh-system-prompt': '0.2.0-rc.2', '@deepseek-ai/dsh-tool-fs-search': '0.2.0-rc.2',
+  '@deepseek-ai/cordis': '4.0.4', yaml: '2.9.0', zod: '4.4.3',
+})
 const NONCE = Math.random().toString(36).slice(2, 8)
 const DRY = process.env.A5M2_SCHED_C2_DRY === '1'
 
@@ -269,9 +282,44 @@ async function main() {
   for (const p of [HOME, join(HOME, 'blueprints'), join(HOME, 'storages'), RUN_DIR]) mkdirSync(p, { recursive: true })
   writeFileSync(join(HOME, 'a5m2-sched-lock.json'), JSON.stringify({ world: HOME, pid: process.pid, kit: 'a5m2-schedule-c2.mjs', stamp: RUN_STAMP, dry: DRY }, null, 2))
 
+  // Root 23:5x sanctioned READ-ONLY reuse entry: when
+  // A5M2_SCHED_C2_REUSE_INSTALL names the approved frozen surface, the
+  // install stage is SKIPPED entirely (no pnpm, no downloads, no writes
+  // to the reused tree) after verifying: lock hash, 15-peer ACTUAL
+  // resolved versions, and the product tgz identity/hash. HOME and
+  // RUN_DIR remain fresh and independent; the reused install is never a
+  // boot world and never written.
+  let INSTALL = REUSE_INSTALL
+  if (INSTALL !== null) {
+    if (!existsSync(INSTALL)) throw new Error(`reuse install absent: ${INSTALL}`)
+    const reuseLockPath = join(INSTALL, 'pnpm-lock.yaml')
+    if (sha256(reuseLockPath) !== REUSE_LOCK_SHA256) throw new Error(`reuse lock sha drifted from ${REUSE_LOCK_SHA256}`)
+    const ryaml = (await import('yaml')).default ?? (await import('yaml'))
+    const rlock = ryaml.parse(readFileSync(reuseLockPath, 'utf8'))
+    const rdeps = rlock?.importers?.['.']?.dependencies ?? {}
+    const verOf = (v) => String(typeof v === 'object' ? (v?.version ?? '') : (v ?? '')).split('(')[0]
+    const pinMiss = Object.entries(FIFTEEN_PEER_PINS)
+      .filter(([name, want]) => verOf(rdeps[name]) !== want)
+      .map(([name, want]) => `${name} want ${want} got ${verOf(rdeps[name]) || 'ABSENT'}`)
+    if (pinMiss.length > 0) throw new Error(`reuse 15-peer resolution mismatch: ${pinMiss.join('; ')}`)
+    const fileEntry = verOf(rdeps['dsh-agent-team'])
+    if (!fileEntry.startsWith('file:')) throw new Error(`reuse file: entry missing (got "${fileEntry}")`)
+    const tgzFromLock = resolve(INSTALL, fileEntry.slice('file:'.length)) // lock file: paths are relative to the lock's own directory
+    if (basename(tgzFromLock) !== basename(tgzPath)) throw new Error(`reuse product tgz name mismatch: ${tgzFromLock}`)
+    if (sha256(tgzFromLock) !== PIN_PKG_SHA256) throw new Error(`reuse product tgz hash mismatch: ${tgzFromLock}`)
+    writeFileSync(join(RUN_DIR, 'reuse-receipt.json'), JSON.stringify({
+      reuseInstall: INSTALL, lockSha256: REUSE_LOCK_SHA256,
+      peersVerified: Object.keys(FIFTEEN_PEER_PINS).length, productTgz: tgzFromLock, productTgzSha256: PIN_PKG_SHA256,
+      mode: 'READ-ONLY reuse; install stage skipped; reused tree not written; no pnpm invoked',
+    }, null, 2))
+    log(`READ-ONLY REUSE: ${INSTALL} (lock verified ${REUSE_LOCK_SHA256.slice(0, 12)}…, 15 peers + product tgz verified; pnpm skipped)`)
+  } else {
   // ② install: fixture manifest/lock + ONLY the file: entry; minimal
   //    lockfile-only update first, then frozen offline install.
-  const INSTALL = join(HOME, `install-${PIN_PKG_SHA256.slice(0, 9)}`)
+  //    NOTE (root 23:5x phrasing law): execFileSync THROWS on any
+  //    non-zero child exit — a normal return is a true proof of the
+  //    pnpm child's exit 0 (plus the Done line + kit rc0).
+  INSTALL = join(HOME, `install-${PIN_PKG_SHA256.slice(0, 9)}`)
   mkdirSync(INSTALL, { recursive: true })
   const fixtureManifest = JSON.parse(readFileSync(fixtureManifestPath, 'utf8'))
   writeFileSync(join(INSTALL, 'package.json'), JSON.stringify({
@@ -357,6 +405,7 @@ async function main() {
   execFileSync('pnpm', ['install', '--frozen-lockfile', '--offline', '--ignore-workspace', '--ignore-scripts', `--store-dir=${STORE}`], { cwd: INSTALL, stdio: ['ignore', installLogFd, installLogFd] })
   execFileSync('chmod', ['-R', 'a-w', INSTALL], { stdio: 'ignore' })
   budget('install', INSTALL, WORLD_BUDGET.installBytesMax)
+  }
   // ② entry resolved from the installed exports map (signed layout)
   const PKG_DIR = join(INSTALL, 'node_modules', 'dsh-agent-team')
   const installedManifest = JSON.parse(readFileSync(join(PKG_DIR, 'package.json'), 'utf8'))
@@ -388,6 +437,7 @@ async function main() {
       dry: true, reachedBootBoundary: true, booted: false,
       portsAwaited: { host: HOST_PORT, hostIdle: !(await portInUse(HOST_PORT)), mock: MOCK_PORT, mockIdle: !(await portInUse(MOCK_PORT)) },
       manifestEntry: HOST_ENTRY, patchWritten: dryPatch,
+      reuseInstall: REUSE_INSTALL, reuseLockSha256: REUSE_INSTALL !== null ? REUSE_LOCK_SHA256 : null,
       cleanupHandles: ['mock.close()', 'instance.stop()', 'waitForPortFree(HOST_PORT)', 'waitForPortFree(MOCK_PORT)'],
       budgetInstallBytes: duBytes(INSTALL),
     }
