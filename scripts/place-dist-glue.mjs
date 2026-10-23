@@ -143,6 +143,21 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/write.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/write.mjs',
   },
+  // A5-M2 B-IMAGE (root-authorized 实际接线): the live glue now imports the
+  // image arm family by relative specifier too — same closure law as the two
+  // entries above. `image-attachment.mjs` imports NOTHING but node builtins;
+  // `image.mjs`'s two cross-module legs land on `plane-effect-backends.mjs`
+  // (already placed above) and tsc's OWN emit of the domain
+  // tool-governance index — both inside the mirror. The port
+  // (`controlled-fs/src/governed-image-read-port.js`) is tsc's own emit.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/image.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

@@ -1585,6 +1585,11 @@ export async function apply(ctx, config) {
             jobs: () => ctx.get('jobs'),
             // M2 B-WEB (a5m2w): the same lazy global-store read as jobs, resolved at call time.
             web: () => ctx.get('web'),
+            // A5-M2 B-IMAGE: the same lazy shape for the 639 public `attachments` service
+            // (the store hand-face of the governed read_image triple). Additive optional,
+            // never in a hard inject: worlds without the service answer the assembly's
+            // observed store-absent lane, the gate-on mount refuses at the plane.
+            attachments: () => ctx.get('attachments'),
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

@@ -360,6 +360,9 @@ import { A5_GOVERNED_FAMILIES, publishPaMount, readPaCallFactsForCall, registerA
 // AUTH bridge — both already wired below).
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
+import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
+import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
+import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
 // A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
@@ -2384,6 +2387,11 @@ export function createAgentBindings(deps) {
       // reach it (the 9e-4 lesson).
       let a5TodoInject = null
       let a5WriteInject = null
+      // B-IMAGE: the injection carries a FACTORY (identity mints at the
+      // placement moment); the placed handle comes back through the factory's
+      // closure for the ONE-table family registration below.
+      let a5ImageInject = null
+      let a5ImagePlacedArm = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2848,6 +2856,110 @@ export function createAgentBindings(deps) {
           a5WriteInject = Object.freeze({ arm: writeArm, description: nativeWriteDefinition.description })
           observations.push(`a5m2-write: arm BOUND for ${sessionId} (native=${writeNativeIdentity.slice(0, 32)} member=${writeMemberAgentId.slice(0, 16)} header=${writeSessionHeaderId.slice(0, 16)} root=${writeRootDir.slice(0, 32)})`)
         }
+        // A5-M2 B-IMAGE (CENTER vertical, root-authorized 实际接线): the governed
+        // read_image row's PLACING assembly. The arm law differs from todo/write
+        // in the one point the WeakMap algebra imposes (root central card on
+        // 6c354, item ②): the arm binds `definitionIdentityOf(the definition THIS
+        // plane actually places)` — the id mints AFTER plane construction, so the
+        // injection carries a FACTORY the plane calls at the real placement
+        // moment, and the glue-time scoped capture supplies ONLY the native
+        // description + parameters the mount IS (a plane-invented schema would
+        // drift the three-way tie). The triple (port × attachment adapter ×
+        // governed root namespace) builds HERE; a mount that cannot honestly
+        // build it builds NO arm, and the gate-on mount then refuses AT THE
+        // PLANE (IMAGE_ARM_INJECT_INVALID, team-tool-plane's pairing law) —
+        // never a half-wired row, never a silent disable.
+        if (planeCfg.imageEnabled === true) {
+          const refuseImage = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-image-arm-mount-refused'
+            observations.push(`a5m2-image: arm-REFUSED for ${sessionId}`)
+            return error
+          }
+          // The scoped-capture law the todo/write rounds closed (r6 class):
+          // read_image rides the PRESET plane on the shipped web-app shape — the
+          // member's OWN scope answers it; the global face is NOT a fallback.
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseImage('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          let nativeImageDefinition
+          try {
+            nativeImageDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_IMAGE_TOOL_NAME, runtimeAgent) : undefined
+          } catch (error) {
+            throw refuseImage(`the member-scoped tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+          }
+          if (nativeImageDefinition === null || typeof nativeImageDefinition !== 'object') {
+            throw refuseImage('no native read_image definition is visible to this member scope (global layer, the joined preset generation, and the member own layer all resolve no such body) — the mount IS the native definition face and has no other source')
+          }
+          if (typeof nativeImageDefinition.description !== 'string' || nativeImageDefinition.description.length === 0) {
+            throw refuseImage('the captured native definition carries no description — the same-name, same-meaning mount has no other source for it')
+          }
+          if (nativeImageDefinition.parameters === undefined || nativeImageDefinition.parameters === null || typeof nativeImageDefinition.parameters !== 'object') {
+            throw refuseImage('the captured native definition carries no parameters schema — the three-way definitionIdentity tie drifts the moment the mount invents one')
+          }
+          const imageRootDir = planeCfg.fsInstance?.rootDir
+          if (typeof imageRootDir !== 'string' || imageRootDir.length === 0) {
+            throw refuseImage('imageEnabled is true while planeCfg.fsInstance carries no rootDir — the image namespace must be the SAME governed fs instance the read row anchors on; a second root is a config defect')
+          }
+          // THE STORE HAND-FACE: the 639 public `attachments` service read ONCE
+          // at assembly through the lazy deps accessor (the jobs/web shape —
+          // additive optional, never a hard inject). Absent store = the
+          // conditionally-unavailable lane: NO arm, NO inject, the refusal
+          // OBSERVED, and the gate-on mount refuses at the plane with the typed
+          // IMAGE_ARM_INJECT_INVALID — never silent, never half-wired.
+          let imageStore
+          try {
+            imageStore = typeof deps.attachments === 'function' ? deps.attachments() : undefined
+          } catch (error) {
+            observations.push(`a5m2-image: store-absent for ${sessionId} (accessor threw ${String(error?.message ?? error).slice(0, 120)}) — no arm assembled`)
+            imageStore = undefined
+          }
+          if (imageStore === null || imageStore === undefined) {
+            observations.push(`a5m2-image: store-absent for ${sessionId} — no arm assembled (conditionally unavailable); a gate-on mount refuses at the plane`)
+          } else {
+            let imageAdapter
+            let imagePort
+            try {
+              // RECEIVER-BOUND law (the adapter's measured first-failure fact):
+              // the store rides as the service OBJECT — its methods are called
+              // through it, never bare-extracted (extraction loses the `this`
+              // the store needs). The port IS the callable readBounded face
+              // (createGovernedImageReadPort returns the function itself).
+              imageAdapter = createImageAttachmentAdapter({
+                store: imageStore,
+                observe: (row) => observations.push(`a5m2-image-attach: ${String(row?.event ?? 'event')} ${String(row?.detail ?? '')}`),
+              })
+              imagePort = createGovernedImageReadPort({ namespaceRoot: imageRootDir })
+            } catch (error) {
+              throw refuseImage(`the arm's triple could not be assembled (${String(error?.message ?? error).slice(0, 200)})`)
+            }
+            a5ImageInject = Object.freeze({
+              createArm: (placedDef) => {
+                // Identity binds off the def the plane ACTUALLY places — never
+                // a glue-time snapshot, never a hand-spelled def#.
+                const identity = definitionIdentityOf(placedDef)
+                if (typeof identity !== 'string' || identity.length === 0) {
+                  throw new TypeError('the placed read_image definition carries no WeakMap identity — no arm without one (never a hand-spelled string)')
+                }
+                a5ImagePlacedArm = createGovernedReadImageArm({
+                  definitionIdentity: identity,
+                  providerId: 'a5p5-plane',
+                  realmId: a5PlaneRealmId,
+                  namespaceRoot: imageRootDir,
+                  readBounded: imagePort,
+                  attachments: imageAdapter,
+                  observe: (row) => observations.push(`a5m2-image: ${String(row?.event ?? 'event')} ${String(row?.correlation ?? '')} ${String(row?.detail ?? '')}`),
+                })
+                return a5ImagePlacedArm
+              },
+              description: nativeImageDefinition.description,
+              parameters: nativeImageDefinition.parameters,
+            })
+            observations.push(`a5m2-image: arm FACTORY wired for ${sessionId} (root=${imageRootDir.slice(0, 32)}) — identity binds at the placement moment`)
+          }
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -2946,10 +3058,11 @@ export function createAgentBindings(deps) {
           // source, and second sources are what this move removes.
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
+            ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3366,6 +3479,37 @@ export function createAgentBindings(deps) {
             providerIdentity: a5WriteInject.arm.providerId,
           })
           observations.push(`a5m2-write: family REGISTERED for ${sessionId} (placement=${String(writeFed.definitionIdentity).slice(0, 32)} family=${a5WriteInject.arm.familyId})`)
+        }
+        // B-IMAGE registration: same law, same single fill point. The arm the
+        // FACTORY built at placement is the source of the claim (its identity
+        // is the placement-moment def#N by construction); the trusted key is
+        // still read back through the plane's OWN placement feed — the factory
+        // closure is never a second key source, a feed mismatch is a broken
+        // mount and refuses.
+        if (a5ImageInject !== null) {
+          const imageFed = a5PlaneValue?.placementFeed?.(A5_IMAGE_TOOL_NAME)
+          if (typeof imageFed?.definitionIdentity !== 'string' || imageFed.definitionIdentity.length === 0) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': the placed row answered no definition identity through the placement feed — the family registration has no trusted key`,
+            )
+            error.code = 'alpha5-image-arm-mount-refused'
+            observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (no placement identity)`)
+            throw error
+          }
+          if (a5ImagePlacedArm === null || a5ImagePlacedArm.definitionIdentity !== imageFed.definitionIdentity) {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed image mount refused for '${sessionId}': the placement-moment arm and the placement feed disagree on the definition identity — the three-way tie has no anchor`,
+            )
+            error.code = 'alpha5-image-arm-mount-refused'
+            observations.push(`a5m2-image: family-registration-REFUSED for ${sessionId} (arm/feed identity mismatch)`)
+            throw error
+          }
+          registerA5GovernedFamily(imageFed.definitionIdentity, {
+            familyId: a5ImagePlacedArm.familyId,
+            adapterRevision: a5ImagePlacedArm.adapterRevision,
+            providerIdentity: a5ImagePlacedArm.providerId,
+          })
+          observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
