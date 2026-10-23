@@ -666,19 +666,21 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       }
     })
 
-    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): even the lossless search-row manifest meets NO registered structure — the wire-pinned unregistered-family denial of the rules gate', () => {
+    it('PA_CONSUMPTION_BRIDGE_COMPLETION (2): the search rows ACCEPT too - THE RETIRED PIN (base 556d+family-chain landed: the B-SESSION-QUERY table is registered; the retirement is the owner (G6) round at 17166eb2b, mirrored by the center at landing)', () => {
       const w = makeWorld({ tag: 'f2' })
       const asm = w.build()
       const plan = asm.rowOf('session_search').classify({ query: 'needle' })
       expect(plan.ok).toBe(true)
       const manifest = plan.reviewPayload!.targetManifest as Record<string, unknown>
       expect(isLosslessJsonValue(manifest)).toBe(true) // search rows carry the number
-      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBe(
-        "familyId: no target structure is registered for 'B-SESSION-QUERY'",
-      )
-      // the measured inexpressibility the delta must close: nullable string,
-      // string array — NO current kind admits either, and the closed key-set
-      // law refuses both including and omitting the keys.
+      // THE RETIRED PIN (verbatim, kept for the record): at afd89fd61 this leg
+      // asserted validatePaFamilyTarget('B-SESSION-QUERY', manifest) ===
+      // "familyId: no target structure is registered for 'B-SESSION-QUERY'".
+      // The signed table (5a16c4aab, landed by the family-chain picks) registers
+      // the structure and the signed nullableString/stringArray kinds admit the
+      // two former inexpressibilities; the G6 owner round retired this pin at
+      // 17166eb2b. Measured now: ACCEPT.
+      expect(validatePaFamilyTarget('B-SESSION-QUERY', manifest)).toBe(undefined)
       expect(manifest.callerWorkspaceCwd).toBe(CWD)
       expect(Array.isArray(manifest.disclosures)).toBe(true)
       const noCwd = makeWorld({ tag: 'f2b', cwd: undefined })

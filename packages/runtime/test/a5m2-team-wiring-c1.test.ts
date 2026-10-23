@@ -461,19 +461,20 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(String(created.memberAdjudication)).toContain('CREATE')
     })
 
-    it('MEASURED grammar gate: every real B-TEAM claim FAILS CLOSED — no B-TEAM rule is registered and no kind is invented here', () => {
+    it('MEASURED grammar gate: THE FLIPPED PIN (base now carries the signed B-TEAM table 29716.. family-chain pick; the owner 9c642 declared this merge-time flip, not a pre-flip): every real B-TEAM claim ACCEPTS on the closed 10-leaf shape', () => {
       const w = makeWorld()
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       return defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-grammar')).then(() => {
         const manifest = manifestOf(walkAt(w, 0))
         // The measured registered key set (this lane touched NOTHING here).
-        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
-        expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+        expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+        expect(PA_FAMILY_TARGET_RULES['B-TEAM' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeDefined()
         expect(isLosslessJsonValue(manifest)).toBe(true)
-        // The durable leg's own fail-closed answer, through the REAL checker:
-        expect(validatePaFamilyTarget('B-TEAM', manifest)).toBe(
-          "familyId: no target structure is registered for 'B-TEAM'",
-        )
+        // THE RETIRED fail-closed answer (kept for the record): at the lane base
+        // this asserted "familyId: no target structure is registered for
+        // 'B-TEAM'". The signed table landed with the family-chain picks; the
+        // REAL checker now ACCEPTS the minted 10-leaf manifest.
+        expect(validatePaFamilyTarget('B-TEAM', manifest)).toBe(undefined)
         // And the reason no flat rule can be signed today: two leaves are a
         // string-OR-null union that no existing closed kind types.
         expect(manifest.memberClaim).toBeNull()
