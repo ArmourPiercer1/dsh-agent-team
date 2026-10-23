@@ -16,7 +16,7 @@ ordinary per-tree path after root's immediate pre-admission checks (no force/pru
 | tree | state |
 | --- | --- |
 | .worktrees/a5m2-g2fix | feat/a5m2-g2fix @ c80ec68e06d0796d3b1cadefcff8f8833d7548c0 — e78dee2a (G2 wire lane) REAL-NAMED refusal: NOT their tree (git fact-check attached: dc9c4a252 is a shared early ancestor on their branch; 4afa70063 + g2fix tip NOT on it); no receipt issued; tree untouched by them. TRUE ORIGINAL OWNER STILL UNIDENTIFIED — no cleanup, no dispatch, awaiting root routing. |
-| .worktrees/a5m2-g1fix | feat/a5m2-g1fix @ 18f181d6a87af34bc3e834908a1fe127afde4510 — coordination 20:5x: locate true owner by ID (原a067); identity question sent to a0670fa8-4274-4700-8c40-e0edbc481131 ("Card G1-WIRE query wiring") with strict no-proxy/no-guess wording; receipt PENDING. |
+| .worktrees/a5m2-g1fix | feat/a5m2-g1fix @ 18f181d6a87af34bc3e834908a1fe127afde4510 — **RECEIVED AND REGISTERED (20:5x)**: owner a0670fa8-4274-4700-8c40-e0edbc481131 real-named: did NOT create (tree pre-existed at b57ff559d under root's 8b4 isolation ruling) but IS last-write owner (three owned files, tip commit 18f181d6a, pushed remote); (2) COMPLETE + will-not-reuse — verified read-only: lineage landed on integration as 430ec1b6e and g1-query-wiring.mjs at 53ee0f28c hashes byte-identical to the owner's blob 7c820565…; tree holds nothing unlanded; zero touches (read-only log/show/hash-object only). **RETIRED** (完成不复用, registered verbatim against 18f181d6a87af34bc3e834908a1fe127afde4510; center performs no cleanup). |
 
 ## Peripheral declarations (context, NOT owner receipts)
 
