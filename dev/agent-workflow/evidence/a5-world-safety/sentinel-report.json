@@ -1,0 +1,195 @@
+{
+  "at": "2026-10-23T16:13:23.226Z",
+  "root": "/srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a5-world-safety/fixture",
+  "scenarios": [
+    {
+      "case": "S1 import (no main)",
+      "exit": 0,
+      "ok": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": []
+    },
+    {
+      "case": "S2 no --world",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world is REQUIRED (no default; refusing to derive a world)"
+    },
+    {
+      "case": "S2 empty world",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world is REQUIRED (no default; refusing to derive a world)"
+    },
+    {
+      "case": "S2 dot",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \".\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 dotdot",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"..\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 homes root",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"tests/homes\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 homes prefix root",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"tests/homes/\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 nested path (worktree int)",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \".worktrees/a5-m2-int\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 nested escaped",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"tests/homes/../../admin-decoy\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 absolute repo",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be relative to the repo homes root (absolute refused): /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a5-world-safety/fixture"
+    },
+    {
+      "case": "S2 absolute root",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be relative to the repo homes root (absolute refused): /"
+    },
+    {
+      "case": "S2 symlink world",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: world directory must not be a symlink: /srv/workspace/dsh-plugins/dsh-agent-team/dev/agent-workflow/evidence/a5-world-safety/fixture/tests/homes/w-symlink"
+    },
+    {
+      "case": "S2 bare dotdot name",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"..hidden\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S2 flag-shaped",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world rejected (control character or flag-shaped): \"-rf\""
+    },
+    {
+      "case": "S2 backslash nested",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": "FATAL: world-safety: --world must be ONE safe basename under tests/homes (got \"tests\\\\homes\\\\w-ok\\\\..\\\\sibling-world\"; traversal, dot-names, nested paths and dot-dot are refused)"
+    },
+    {
+      "case": "S3 valid-world preflight failure (pin missing)",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": ""
+    },
+    {
+      "case": "S3b stale world",
+      "exit": 1,
+      "refusedOrExpected": true,
+      "deleted": [],
+      "badAdds": [],
+      "changed": [],
+      "tripwire": false,
+      "note": ""
+    },
+    {
+      "case": "S4 static law (no rm/prune/df call sites)",
+      "ok": true,
+      "found": []
+    },
+    {
+      "case": "S5 guard units (no-parent-fallback)",
+      "ok": true,
+      "detail": {
+        "inside registered world passes": "ok",
+        "parent fallback throws": "ok(threw)",
+        "repo root throws": "ok(threw)",
+        "sibling world throws": "ok(threw)",
+        "no-registered throws": "ok(threw)"
+      }
+    }
+  ],
+  "finalDeleted": [],
+  "finalChanged": [],
+  "finalBadAdds": [],
+  "violations": [],
+  "verdict": "PASS — ZERO out-of-bounds deletion"
+}
