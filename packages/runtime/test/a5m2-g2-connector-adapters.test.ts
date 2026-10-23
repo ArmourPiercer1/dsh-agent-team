@@ -35,13 +35,24 @@
  *    `required` arrays, NO property-level `required: true` marker ANYWHERE
  *    (deep sweep), constraints bind.
  *
- * Disclosed stand-ins: every native definition is a TEST-owned double whose
- * execute records the entry (the pinned host law each mirrors is quoted at
- * the g2-connector-adapters.mjs header). Real-Host egress/launch legs are
- * ENV_BLOCK, owned by the integration schedule. The stagehand pre-effect
- * resource hook (§5.5 owned-provider gap) is a NAMED BLOCKER disclosed in
- * the module header — no C2 claim rides this spec. Windows-only dimensions:
- * NOT_RUN_WINDOWS_UNAUTHORIZED (this Linux harness never claims them).
+ * Disclosed stand-ins: EVERY leg drives a TEST-owned native double — these
+ * legs are NOT C2 and prove no real-Host dimension (the pinned host law each
+ * double mirrors is quoted at the g2-connector-adapters.mjs header). The
+ * module is UNWIRED and Host use is FOREVER-BANNED-FOR-THIS-LANE until the
+ * exported A5_G2_NAMED_BLOCKERS seams close (WEB: no public current-provider
+ * face; MCP: no connection-incarnation token on the public provider;
+ * BROWSER: the pre-effect resources.run hook can launch/attach before the
+ * captured body — no zero-launch claim; the §5.5 governed-native-provider is
+ * the close). Windows-only dimensions: NOT_RUN_WINDOWS_UNAUTHORIZED (this
+ * Linux harness never claims them).
+ *
+ * ROOT FIX CARD (this revision): tabs(new,url) carries its connect (the
+ * previous I-only pin was a固化漏报, now corrected); provider/connection
+ * CURRENT facts ride the manifest as assembly-injected classify-time
+ * snapshots frozen against per-call re-resolution; the fingerprint is over
+ * the COMPLETE ACTUAL arguments (summaries ride alongside only); the drain
+ * boundary states exactly what the row controls (new entries refused;
+ * in-flight bodies not cleared).
  *
  * Scope: NO Host process, NO network, NO mount.
  *
@@ -65,6 +76,7 @@ interface G2Plan {
   targetManifest: Record<string, unknown>
   reviewPayload: Record<string, unknown>
   parametersFingerprint: string
+  actualArgs?: unknown
 }
 interface G2Outcome {
   ok?: boolean
@@ -92,6 +104,8 @@ interface G2Row {
   definitionIdentity: string | null
   classify: (args: unknown) => G2Outcome | Promise<G2Outcome>
   invoke: (args: unknown, exec?: unknown) => Promise<G2Outcome>
+  drainSemantics?: string
+  preEffectDisclosure?: string
   drain: () => void
   draining: () => boolean
 }
@@ -117,6 +131,8 @@ const A = (await import(new URL('../src/plugin/live/governed-families/g2-connect
   >
   A5_G2_REGISTRATION_SCHEMAS: Record<string, Record<string, unknown>>
   A5_G2_MCP_TRANSPORTS: readonly string[]
+  A5_G2_NAMED_BLOCKERS: Record<'WEB' | 'MCP' | 'BROWSER', string>
+  A5_G2_DRAIN_SEMANTICS: string
   classifyG2McpSurface: (config: Record<string, unknown>) => Record<string, unknown>
   createG2WebAdapters: (deps: Record<string, unknown>) => WebRows
   createG2McpResourceAdapters: (deps: Record<string, unknown>) => McpRows
@@ -128,7 +144,7 @@ interface NativeDouble {
   name: string
   description: string
   execute: (args: unknown, exec: unknown) => Promise<unknown>
-  calls: Array<{ args: unknown; exec: unknown }>
+  calls: Array<Record<string, unknown>>
 }
 
 function nativeDouble(name: string, value: unknown = { ok: 'native' }): NativeDouble {
@@ -216,7 +232,7 @@ describe('a5m2-g2 B-WEB', () => {
     })
     const plan = okOutcome(await rows.web_search.invoke({ queries: ['  dsh governance ', 'm0 b-family'] }))
     expect(searchDef.calls.length).toBe(1)
-    expect(plan.targetManifest['queries']).toEqual(['dsh governance', 'm0 b-family'])
+    expect(plan.targetManifest['queriesSummary']).toEqual(['dsh governance', 'm0 b-family'])
     expect(connectLocator(plan)).toBe('https://search.deepseek.example')
     expect(parseRequestedEffectSet(plan.effects).ok).toBe(true)
   })
@@ -239,6 +255,57 @@ describe('a5m2-g2 B-WEB', () => {
     expect(searchDef.calls.length).toBe(0)
   })
 
+  it('FULL-VALUES fingerprint (fix card 3): the fingerprint covers the COMPLETE ACTUAL arguments the native receives verbatim — a whitespace-only summary difference still moves the fingerprint; the trimmed summary rides alongside, never replaces', async () => {
+    const padded = nativeDouble('web_search')
+    const rows = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: readNativeFrom({ web_search: padded }), searchOrigin: 'https://s.example' })
+    const withPad = await rows.web_search.classify({ queries: [' dsh ', 'x'] })
+    const trimmed = await rows.web_search.classify({ queries: ['dsh', 'x'] })
+    expect(withPad.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(withPad.parametersFingerprint).not.toBe(trimmed.parametersFingerprint) // summary trim NEVER hides a value difference
+    const odd = okOutcome(await rows.web_search.invoke({ queries: ['ünïcode 🚀  spaced', 'dsh', 'dsh'] }))
+    expect(odd.actualArgs).toEqual({ queries: ['ünïcode 🚀  spaced', 'dsh', 'dsh'] }) // the FULL values, order and duplicates kept
+    expect(padded.calls.at(-1)?.args).toEqual({ queries: ['ünïcode 🚀  spaced', 'dsh', 'dsh'] }) // native receives exactly these
+    expect(odd.targetManifest['queriesSummary']).toEqual(['ünïcode 🚀  spaced', 'dsh', 'dsh'])
+  })
+
+  it('provider-identity CURRENT facts (fix card 2): the plan freezes the CLASSIFY-TIME provider identity while the captured native RE-RESOLVES its provider at execute (the resolveProvider-varies double proves the seam re-selects per call); with no trusted reader the manifest answers the named blocker, never an invented identity', async () => {
+    let providerNow = 'deepseek-v1'
+    let releaseGate: (() => void) | undefined
+    const gate = new Promise<void>((res) => { releaseGate = res })
+    const searchDef: NativeDouble = {
+      name: 'web_search',
+      description: 'resolveProvider-at-execute double',
+      calls: [],
+      execute: async (args: unknown, exec: unknown) => {
+        await gate // the body reaches the provider seam only later…
+        searchDef.calls.push({ args, exec, servedBy: providerNow })
+        return { sources: [] }
+      },
+    }
+    let reads = 0
+    const rows = A.createG2WebAdapters({
+      realmId: 'realm-g2',
+      providerId: 'test-assembly',
+      readNative: readNativeFrom({ web_search: searchDef }),
+      readProviderFacts: () => { reads += 1; return { searchProviderId: providerNow, searchOrigin: 'https://search.deepseek.example/v1' } },
+    })
+    const running = rows.web_search.invoke({ queries: ['q'] })
+    providerNow = 'exa-v2' // …the mounted generation moves while the call is in flight
+    releaseGate?.()
+    const plan = okOutcome(await running)
+    expect(reads).toBe(1) // ONE read per classify
+    expect((plan.targetManifest['providerIdentityAtClassify'] as Record<string, unknown>)['searchProviderId']).toBe('deepseek-v1') // plan froze CLASSIFY-TIME identity
+    expect(plan.targetManifest['destinationOrigin']).toBe('https://search.deepseek.example') // destination from the CURRENT reader fact, never invented
+    expect(String(plan.targetManifest['providerOriginSource'])).toMatch(/readProviderFacts/)
+    expect(searchDef.calls[0]).toMatchObject({ servedBy: 'exa-v2' }) // the body rode the EXECUTE-TIME provider — the row never claims otherwise
+    // no trusted reader ⇒ honest `observed:false` + the named blocker verbatim:
+    const bare = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: readNativeFrom({ web_search: nativeDouble('web_search') }), searchOrigin: 'https://s.example' })
+    const res = await bare.web_search.classify({ queries: ['q'] })
+    const facts = res.targetManifest?.['providerIdentityAtClassify'] as Record<string, unknown>
+    expect(facts['observed']).toBe(false)
+    expect(facts['reason']).toBe(A.A5_G2_NAMED_BLOCKERS.WEB)
+  })
+
   it('native face ABSENT on the capture seam (mountCondition always): the row refuses P_G2_NATIVE_FACE_ABSENT typed at classify AND invoke — never a substitute body, zero entries', async () => {
     const rows = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: () => undefined })
     for (const name of ['web_fetch', 'web_search'] as const) {
@@ -259,12 +326,35 @@ describe('a5m2-g2 B-WEB', () => {
     expect(fetchDef.calls.length).toBe(0)
   })
 
-  it('drain: after teardown begins every call refuses P_G2_DRAINING (and no native fallback exists to fall back to)', async () => {
+  it('drain: after teardown begins every NEW call refuses P_G2_DRAINING (and no native fallback exists to fall back to)', async () => {
     const fetchDef = nativeDouble('web_fetch')
     const rows = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: readNativeFrom({ web_fetch: fetchDef }) })
     rows.web_fetch.drain()
     expect((await rows.web_fetch.invoke({ url: 'https://a.example' })).code).toBe(CODES.DRAINING)
     expect(fetchDef.calls.length).toBe(0)
+    expect(rows.web_fetch.drainSemantics).toBe(A.A5_G2_DRAIN_SEMANTICS)
+  })
+
+  it('drain boundary HONESTY (fix card 4): drain forbids NEW invokes and does NOT clear IN-FLIGHT ones — an entered body settles honestly and the row-face text states exactly this', async () => {
+    let releaseBody: ((v: unknown) => void) | undefined
+    const slow: NativeDouble = {
+      name: 'web_fetch',
+      description: 'slow native',
+      calls: [],
+      execute: async (args: unknown, exec: unknown) => {
+        slow.calls.push({ args, exec })
+        return await new Promise<unknown>((res) => { releaseBody = res })
+      },
+    }
+    const rows = A.createG2WebAdapters({ realmId: 'realm-g2', providerId: 'test-assembly', readNative: readNativeFrom({ web_fetch: slow }) })
+    const inFlight = rows.web_fetch.invoke({ url: 'https://a.example' }) // the body is entered synchronously
+    rows.web_fetch.drain() // teardown begins WHILE the body is inside the native
+    expect(rows.web_fetch.drainSemantics).toMatch(/not rewound, NOT cleared|NOT rewound/)
+    releaseBody?.('served-while-draining')
+    const out = await inFlight
+    expect(out.ok).toBe(true) // the in-flight call is NOT cleared — it settles truthfully
+    expect((await rows.web_fetch.invoke({ url: 'https://b.example' })).code).toBe(CODES.DRAINING) // NEW entries are refused from drain on
+    expect(slow.calls.length).toBe(1)
   })
 })
 
@@ -289,6 +379,7 @@ describe('a5m2-g2 B-MCP', () => {
     expect(listed.targetManifest['surface']).toEqual({
       record: 'surface:mcp_stdio',
       transport: 'stdio',
+      connectionIncarnation: 'unobserved',
       spawn: { argv0: '/usr/local/bin/local-tool', argCount: 1, cwd: '/srv/mcp' },
     })
     expect(listed.targetManifest['operation']).toBe('resources/list')
@@ -352,6 +443,35 @@ describe('a5m2-g2 B-MCP', () => {
     for (const def of Object.values(defs)) expect(def.calls.length).toBe(0)
   })
 
+  it('CURRENT-facts law (fix card 2): the injected connectionIncarnation is the frozen CLASSIFY-TIME transport fact; without it the manifest states the NAMED BLOCKER (the request leg re-selects at REQUEST time — wrapper identity is not the incarnation)', async () => {
+    const defs = {
+      list_mcp_resources: nativeDouble('list_mcp_resources'),
+      list_mcp_resource_templates: nativeDouble('list_mcp_resource_templates'),
+      read_mcp_resource: nativeDouble('read_mcp_resource'),
+    }
+    const withInc = A.createG2McpResourceAdapters({
+      realmId: 'realm-g2',
+      providerId: 'test-assembly',
+      readNative: readNativeFrom(defs),
+      declaredService: { present: true, serverName: 'remote-api', transport: 'streamable-http', endpointUrl: 'https://mcp.example/mcp', connectionIncarnation: 'conn-gen-7' },
+    })
+    const plan = okOutcome(await withInc.list_mcp_resources.invoke({ server: 'remote-api' }))
+    const surface = plan.targetManifest['surface'] as Record<string, unknown>
+    expect(surface['connectionIncarnation']).toBe('conn-gen-7') // the owner-injected CURRENT fact, frozen at classify
+    expect(plan.targetManifest['connectionIncarnationReason']).toBeUndefined()
+    expect(plan.targetManifest['providerReSelectionLaw']).toMatch(/REQUEST time/)
+    const bare = A.createG2McpResourceAdapters({
+      realmId: 'realm-g2',
+      providerId: 'test-assembly',
+      readNative: readNativeFrom(defs),
+      declaredService: { present: true, serverName: 'remote-api', transport: 'streamable-http', endpointUrl: 'https://mcp.example/mcp' },
+    })
+    const res = await bare.list_mcp_resources.classify({ server: 'remote-api' })
+    const bareSurface = res.targetManifest?.['surface'] as Record<string, unknown>
+    expect(bareSurface['connectionIncarnation']).toBe('unobserved')
+    expect(res.targetManifest?.['connectionIncarnationReason']).toBe(A.A5_G2_NAMED_BLOCKERS.MCP)
+  })
+
   it('SURFACES (surface_invariant, records 89/90): stdio vs streamable-http classify apart with their distinct envelopes; an unknown transport and missing transport-critical facts are typed assembly throws', () => {
     const stdio = A.classifyG2McpSurface({ serverName: 's1', transport: 'stdio', command: ['node', 'server.js'] })
     expect(stdio).toMatchObject({ record: 'surface:mcp_stdio', transport: 'stdio', spawn: { argv0: 'node', argCount: 1 } })
@@ -397,11 +517,47 @@ describe('a5m2-g2 B-BROWSER', () => {
     }
 
     expect((await rows.stagehand_tabs.classify({ action: 'select' })).code).toBe(CODES.INVALID_ARGUMENTS) // native law: select needs pageId
-    const tabs = okOutcome(await rows.stagehand_tabs.invoke({ action: 'new', url: 'https://new.example' }))
-    expect(tabs.targetManifest['branch']).toBe('new')
-    expect(tabs.effects).toEqual([{ kind: 'tool-invoke', toolName: 'stagehand_tabs', resource: null }])
+    // FIX CARD RULING 1 (the corrected pin): native tabs(new,url) does
+    // `context.newPage(url)` — net connect + page creation — so the connect
+    // to the tab URL MUST be carried. The previous I-only expectation was a
+    // 固化漏报 and is retired here.
+    const tabsNew = okOutcome(await rows.stagehand_tabs.invoke({ action: 'new', url: 'https://new.example' }))
+    expect(tabsNew.targetManifest['branch']).toBe('new')
+    expect(tabsNew.effects).toEqual([
+      { kind: 'tool-invoke', toolName: 'stagehand_tabs', resource: null },
+      { kind: 'connect', resource: { realmId: 'realm-g2', kind: 'network-destination', canonicalLocator: 'https://new.example', rights: ['connect'] } },
+    ])
+    expect(parseRequestedEffectSet(tabsNew.effects).ok).toBe(true)
+    const tabsList = okOutcome(await rows.stagehand_tabs.invoke({ action: 'list' }))
+    expect(tabsList.effects).toEqual([{ kind: 'tool-invoke', toolName: 'stagehand_tabs', resource: null }]) // no URL branch ⇒ no connect
     const shot = okOutcome(await rows.stagehand_screenshot.invoke({ fullPage: true }))
-    expect(shot.effects).toEqual([{ kind: 'tool-invoke', toolName: 'stagehand_screenshot', resource: null }])
+    expect(shot.effects).toEqual([{ kind: 'tool-invoke', toolName: 'stagehand_screenshot', resource: null }]) // launch mode: no attach leg
+    // the pre-effect boundary is stated ON THE ROW FACE (fix card 4):
+    for (const name of BROWSER_TOOL_NAMES) expect(rows[name].preEffectDisclosure).toBe(A.A5_G2_NAMED_BLOCKERS.BROWSER)
+  })
+
+  it('ATTACH mount (fix card 4): the CDP endpoint is ITSELF a connect carried on every row; the row face carries the NAMED BLOCKER verbatim and makes NO zero-launch claim (resources.run can launch/attach BEFORE the captured body)', async () => {
+    expect(A.A5_G2_NAMED_BLOCKERS.BROWSER).toMatch(/CANNOT guarantee Ask-pending zero-launch/)
+    expect(A.A5_G2_NAMED_BLOCKERS.BROWSER).toMatch(/pre-effect resource hook/)
+    const defs = sixDoubles()
+    const rows = A.createG2BrowserAdapters({
+      realmId: 'realm-g2',
+      providerId: 'test-assembly',
+      readNative: readNativeFrom(defs),
+      declaredService: { present: true, mode: 'attach', cdpEndpointOrigin: 'http://127.0.0.1:9222', modelOrigin: 'https://model.example' },
+    })
+    const shot = okOutcome(await rows.stagehand_screenshot.invoke({}))
+    expect(shot.effects).toEqual([
+      { kind: 'tool-invoke', toolName: 'stagehand_screenshot', resource: null },
+      { kind: 'connect', resource: { realmId: 'realm-g2', kind: 'network-destination', canonicalLocator: 'http://127.0.0.1:9222', rights: ['connect'] } },
+    ])
+    expect(parseRequestedEffectSet(shot.effects).ok).toBe(true)
+    const nav = okOutcome(await rows.stagehand_navigate.invoke({ url: 'https://t.example/p' }))
+    const locators = nav.effects.filter((e) => e['kind'] === 'connect').map((e) => (e['resource'] as Record<string, unknown>)['canonicalLocator'])
+    expect(locators).toEqual(['https://t.example', 'http://127.0.0.1:9222']) // target AND cdp
+    expect(nav.targetManifest['attachEndpointOrigin']).toBe('http://127.0.0.1:9222')
+    const act = okOutcome(await rows.stagehand_act.invoke({ instruction: 'click' }))
+    expect(act.effects.filter((e) => e['kind'] === 'connect').length).toBe(2) // model AND cdp
   })
 
   it('act/observe/extract WITHOUT a declared model origin refuse P_G2_NO_DECLARED_DESTINATION — page-content-to-model is never hidden — zero native entry', async () => {

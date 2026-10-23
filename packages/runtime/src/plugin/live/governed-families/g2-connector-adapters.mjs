@@ -72,15 +72,29 @@
  *    :56-66 browserInputs; the six operations execute at native.ts:94-158
  *    (act is the SINGLE-instruction API — kept, per contract §3/B-BROWSER).
  *
- * NAME-BLOCKER DISCLOSURE: the stagehand PRE-EFFECT resource hook
- * (index.ts:197-215 `tools/execute` listener starting the browser BEFORE the
- * native body) means a row that merely wraps the captured definition CANNOT
- * keep launch/attach out of an Ask-pending window. §5.5 rules the owned
- * provider must own the BrowserResource lease instead; that provider
- * (`browser-use/governed-native-provider.ts`) is the named remaining gap of
- * this lane — this file captures and delegates the six definitions honestly
- * and states: the Ask-pending zero-launch leg is NOT PROVABLE through this
- * seam alone, and no C2 claim is made here.
+ * NAMED BLOCKERS (root fix card ruling 2/4 — stated exactly, per family;
+ * exported as {@link A5_G2_NAMED_BLOCKERS} and referenced from every
+ * affected manifest): each family has a trusted CURRENT-facts source that is
+ * NOT reachable through a public seam at this layer; the rows freeze the
+ * classify-time snapshot the owning assembly injects and NEVER claim the
+ * execute-time identity, destination selection, or launch ordering.
+ *
+ * PROVIDER/AUTHORITY LAW (fix card 2): the native bodies re-resolve their
+ * provider/connection EVERY call (web: resolveProvider per call,
+ * web/src/index.ts:137-164; MCP: scope+server selection at request time,
+ * mcp-resources/src/index.ts:120-125). WRAPPER IDENTITY IS NOT the
+ * destination/connection incarnation — plans carry the assembly-injected
+ * CURRENT config-or-binding facts at classify time (`readProviderFacts` /
+ * `connectionIncarnation`), and where no public seam can supply them the
+ * manifest says so with the named blocker instead of an invented origin.
+ *
+ * STAGEHAND PRE-EFFECT LAW (fix card 4): `resources.run` can LAUNCH/ATTACH
+ * the browser BEFORE `next()` reaches the captured body — a captured body
+ * cannot guarantee Ask-pending zero-launch; the attach-CDP origin is itself
+ * a connect effect (carried); drain only forbids NEW invokes and does not
+ * clear in-flight ones. The row face states this boundary (`preEffect-
+ * Disclosure`, `drainSemantics`) and the §5.5 owned
+ * `browser-use/governed-native-provider.ts` stays the named close.
  *
  * REGISTRATION FACES: every tool row publishes a CANONICAL JSON Schema
  * (`type/properties/required/items/enum/additionalProperties/description`
@@ -88,10 +102,12 @@
  * form is the host defineTool INPUT DSL (core/tools/src/json-schema.ts
  * CONSTRAINT_KEYWORDS :76-86 @639ed01539) and NEVER a registration face).
  * The lane spec validates each face against the REAL host validator
- * (assertSupportedJsonSchema + validateJsonSchemaValue, the r9 idiom).
+ * (assertSupportedJsonSchema + validateJsonSchemaValue, the r9 idiom);
+ * the lane paths in this header are comment-side audit edges only.
  *
- * `final_declaration` stays null; C1/C2/C3 acceptance belongs to the center
- * wiring and the real-Host schedule (ENV_BLOCK legs), not to this file.
+ * STATUS (root fix card): this module is UNWIRED and Host use is
+ * FOREVER-BANNED-FOR-THIS-LANE until the named real boundaries close. The
+ * lane legs are NATIVE DOUBLES, NOT C2; `final_declaration` stays null.
  *
  * @module runtime/plugin/live/governed-families/g2-connector-adapters
  */
@@ -119,6 +135,21 @@ export const A5_G2_TYPED_CODES = Object.freeze({
 })
 
 const CODES = A5_G2_TYPED_CODES
+
+/**
+ * NAMED BLOCKERS (fix card rulings 2/4) — exported so manifests, the lane
+ * spec and the integrator quote the SAME words. These are real-interface
+ * gaps at THIS layer: no Core patch, no parallel authorization, no invented
+ * seams. Each names the exact missing seam.
+ */
+export const A5_G2_NAMED_BLOCKERS = Object.freeze({
+  WEB: 'NAMED BLOCKER (B-WEB): no PUBLIC ctx.web seam answers which provider is CURRENTLY selected — the selection law `resolveProvider` is module-internal and the WebRuntime provider maps are private (web/src/index.ts:137-164 @639ed01539), and the captured native execute RE-RUNS the selection every call. Until an owned seam (the web-gateway-assembly row or a host face) supplies a trusted current-provider reader, production placement can only inject what it itself owns; the row freezes that CLASSIFY-TIME snapshot (readProviderFacts) and never claims the execute-time identity.',
+  MCP: 'NAMED BLOCKER (B-MCP): McpResourceRuntime re-selects the server provider at REQUEST time from the live exec.agent scope + serverName (mcp-resources/src/index.ts:120-125 @639ed01539) and the public surface exposes NO connection-incarnation identity (McpResourceProvider carries no generation token). The row therefore freezes ONLY the placement facts the connection-owning assembly injects (serverName/transport/endpoint/connectionIncarnation); without an injected current `connectionIncarnation` the manifest states `connectionIncarnation: "unobserved"` — a reconnect rotating the incarnation stale-proofs an approval only if the owner injects the fact.',
+  BROWSER: 'NAMED BLOCKER (B-BROWSER): the native pre-effect resource hook (browser-use-stagehand-native index.ts:197-215 @639ed01539) can LAUNCH or ATTACH the browser BEFORE next() reaches the captured body, so a captured-definition wrapper CANNOT guarantee Ask-pending zero-launch; the attach-CDP endpoint is itself a network connect (carried as a connect effect); the live SessionResources incarnation is not publicly observable and an attached browser may be changed by its user. Close: the §5.5 owned browser-use/governed-native-provider (own BrowserResource lease + incarnation pin). This row makes NO zero-launch claim.',
+})
+
+/** The honest drain boundary this row actually controls (fix card 4). */
+export const A5_G2_DRAIN_SEMANTICS = 'drain forbids NEW classify/invoke entries from this point on; already-entered native bodies are NOT rewound, NOT cleared and NOT killable from this row (cancellation of a live body rides the caller exec signal the native owns; an attached browser belongs to its user)'
 
 const refuse = (code, detail, extra) => ({ ok: false, code, detail, ...(extra ?? {}) })
 
@@ -329,6 +360,10 @@ export function classifyG2McpSurface(config) {
       familyId: A5_G2_FAMILY.mcp,
       serverName,
       transport: 'stdio',
+      // Connection-incarnation fact (fix card 2): only the connection-OWNING
+      // assembly can inject the current incarnation; "unobserved" is the
+      // honest state and the named blocker, never a wrapper-identity guess.
+      connectionIncarnation: typeof config.connectionIncarnation === 'string' && config.connectionIncarnation.length > 0 ? config.connectionIncarnation : 'unobserved',
       // The LOCAL SPAWN envelope (contract §3/B-MCP: stdio is a local
       // process that may still carry remote business legs — neither
       // "all remote" nor "just a spawn"). argv0 only: full env values are
@@ -351,6 +386,7 @@ export function classifyG2McpSurface(config) {
     serverName,
     transport: 'streamable-http',
     endpointOrigin: endpoint.origin,
+    connectionIncarnation: typeof config.connectionIncarnation === 'string' && config.connectionIncarnation.length > 0 ? config.connectionIncarnation : 'unobserved',
     // Header VALUES never ride the manifest; their presence is a count fact.
     headerCount: config.headersPresent === true ? Number(config.headerCount ?? 1) : 0,
     obligation: Object.freeze({ service: `mcp-server(streamable-http:${serverName})`, action: 'roundtrip', right: 'connect', entry: 'captured native resource-tool execute -> McpResourceRuntime.request -> provider.request (mcp-resources tools.ts:27-63 + index.ts:120-125 @639ed01539); redirects/endpoint hops are the transport plugin\'s provider-side obligation' }),
@@ -361,7 +397,7 @@ export function classifyG2McpSurface(config) {
 /** ─────────────────────────────────────────────────────────────────────────
  *  THE THIN ROW BUILDER (capture → classify → delegate).
  * ──────────────────────────────────────────────────────────────────────── */
-function buildG2Row({ familyId, toolName, operation, mountCondition, realmId, providerId, readNative, definitionIdentityOf, declared, classifyCall, observe }) {
+function buildG2Row({ familyId, toolName, operation, mountCondition, realmId, providerId, readNative, definitionIdentityOf, declared, classifyCall, observe, preEffectDisclosure }) {
   let capture = null
   if (readNative !== null && typeof readNative === 'function') {
     const definition = readNative(toolName)
@@ -404,6 +440,12 @@ function buildG2Row({ familyId, toolName, operation, mountCondition, realmId, pr
       if (!parsed.ok) {
         return refuse(CODES.INTERNAL_EFFECTS_INVALID, `the row built effects its own closed schema rejects: ${parsed.problems.map((p) => `${p.path}:${p.code}`).join('; ')} — nothing delegates on an unvalidatable effect set`)
       }
+      // FULL-VALUES SNAPSHOT of the COMPLETE ACTUAL arguments (fix card 3):
+      // read ONCE into a frozen copy; the native body receives the caller's
+      // argument object verbatim, so the fingerprint must cover EXACTLY
+      // those values (whitespace, order, extra detail included) — a trimmed
+      // SUMMARY may ride alongside, never replace.
+      const actualArgs = deepFreeze(JSON.parse(JSON.stringify(args)))
       seq += 1
       const correlation = `g2.${familyId}.${toolName}.r${A5_G2_ADAPTER_REVISION}.${String(seq)}`
       const reviewPayload = deepFreeze({
@@ -413,10 +455,11 @@ function buildG2Row({ familyId, toolName, operation, mountCondition, realmId, pr
         definitionIdentity: capture.definitionIdentity,
         targetManifest: plan.targetManifest,
       })
-      // Payload fingerprint over the FULL canonical values (载荷法; the
-      // operationFingerprint remains the PA center's — never computed here).
-      const parametersFingerprint = `sha256:${sha256(canonicalJson({ realmId, providerId, toolName, reviewPayload, canonical: plan.canonical }))}`
-      return deepFreeze({ ok: true, correlation, effects: plan.effects, targetManifest: plan.targetManifest, reviewPayload, parametersFingerprint })
+      // Payload fingerprint over the COMPLETE ACTUAL argument values plus the
+      // review payload (载荷法 FULL VALUES; the operationFingerprint remains
+      // the PA center's — never computed here).
+      const parametersFingerprint = `sha256:${sha256(canonicalJson({ realmId, providerId, toolName, reviewPayload, actualArgs }))}`
+      return deepFreeze({ ok: true, correlation, effects: plan.effects, targetManifest: plan.targetManifest, reviewPayload, parametersFingerprint, actualArgs })
     },
     /** The delegate edge: classify → drift re-check → the CAPTURED execute,
      *  verbatim args, the caller's own exec (the caller's signal rides the
@@ -439,13 +482,16 @@ function buildG2Row({ familyId, toolName, operation, mountCondition, realmId, pr
         throw error
       }
     },
-    /** DRAINING: after this every call refuses typed; nothing reaches any
-     *  backend; entered bodies are not rewound (honesty). */
+    /** DRAINING (fix card 4): this forbids NEW classify/invoke entries from
+     *  this point on; already-entered native bodies are NOT rewound, NOT
+     *  cleared, NOT killable from this row — the honest boundary is: */
+    drainSemantics: A5_G2_DRAIN_SEMANTICS,
     drain() {
       draining = true
     },
     draining: () => draining,
   }
+  if (preEffectDisclosure !== undefined) row.preEffectDisclosure = preEffectDisclosure
   return row
 }
 
@@ -467,6 +513,7 @@ function inactiveG2Row({ familyId, toolName, operation, mountCondition, code, de
     definitionIdentity: null,
     classify: async () => say(),
     invoke: async () => say(),
+    drainSemantics: A5_G2_DRAIN_SEMANTICS,
     drain: () => {},
     draining: () => false,
   }
@@ -485,20 +532,51 @@ function assertAssembly(name, value, cond, detail) {
  * @param {string} deps.providerId - the trusted placing assembly identity.
  * @param {(name: string) => object | undefined} deps.readNative - the
  *        capture seam (production: `name => ctx.tools.get(name, scope)`).
- * @param {string} [deps.searchOrigin] - the TRUSTED declared search-provider
- *        origin (the same config-bound fact family as
- *        web-gateway-assembly.boundSearchOriginSource). REQUIRED for a
+ * @param {string} [deps.searchOrigin] - the TRUSTED DECLARED search-provider
+ *        origin placed by the owning assembly (the same config-bound fact
+ *        family as web-gateway-assembly.boundSearchOriginSource — a
+ *        placement fact, never an origin this file invents). REQUIRED for a
  *        web_search call to project its N leg; absent ⇒ typed refusal —
  *        the row never hides the egress or fixed-URL-fakes a destination.
+ * @param {() => {fetchProviderId?: string, searchProviderId?: string,
+ *        searchOrigin?: string} | undefined} [deps.readProviderFacts] - the
+ *        trusted CURRENT-facts reader the OWNING assembly injects (fix card 2): an IN-MEMORY read
+ *        of the mounted web-config slot, evaluated at classify time and
+ *        FROZEN into the manifest. The captured native execute re-runs
+ *        resolveProvider every call — this snapshot is the CLASSIFY-TIME
+ *        identity, never a claim about which provider served the body (see
+ *        A5_G2_NAMED_BLOCKERS.WEB). An assembly injecting no reader gets the
+ *        manifest's honest `observed:false` + the named blocker.
  * @param {number} [deps.maxQueries] - the mounted search config's cap
  *        (host tool-web search.ts parseSearchArgs carries one; default 4).
  * @param {(row: object) => void} [deps.observe] - §1.2 minimal backend log.
  */
-export function createG2WebAdapters({ realmId, providerId, readNative, searchOrigin, maxQueries = 4, definitionIdentityOf, observe = () => {} } = {}) {
+export function createG2WebAdapters({ realmId, providerId, readNative, searchOrigin, readProviderFacts, maxQueries = 4, definitionIdentityOf, observe = () => {} } = {}) {
   assertAssembly('web', realmId, typeof realmId === 'string' && realmId.length > 0, 'realmId is required (connect effects answer in a realm)')
   assertAssembly('web', providerId, typeof providerId === 'string' && providerId.length > 0, 'providerId is required (the placing assembly identifies itself)')
   assertAssembly('web', readNative, typeof readNative === 'function', 'readNative is required — the tools.get(name, scope) capture seam; a row that cannot capture refuses typed AT CALL TIME (mountCondition always), it never mounts a body of its own')
   assertAssembly('web', maxQueries, Number.isInteger(maxQueries) && maxQueries >= 1, 'maxQueries must be a positive integer (the mounted search cap)')
+  // CURRENT provider facts (fix card 2): ONE in-memory read of the trusted
+  // injected snapshot PER CLASSIFY, frozen into the manifest. Wrapper
+  // identity is not the provider — the native re-resolves per call; what
+  // this row may lawfully carry is the classify-time snapshot the OWNING
+  // assembly read, or the honest `observed:false` + named blocker.
+  const providerFactsAtClassify = () => {
+    if (typeof readProviderFacts !== 'function') {
+      return deepFreeze({ observed: false, reason: A5_G2_NAMED_BLOCKERS.WEB })
+    }
+    const snap = readProviderFacts()
+    if (snap === null || typeof snap !== 'object') {
+      return deepFreeze({ observed: false, reason: A5_G2_NAMED_BLOCKERS.WEB })
+    }
+    return deepFreeze({
+      observed: true,
+      fetchProviderId: typeof snap.fetchProviderId === 'string' ? snap.fetchProviderId : null,
+      searchProviderId: typeof snap.searchProviderId === 'string' ? snap.searchProviderId : null,
+      ...(typeof snap.searchOrigin === 'string' && snap.searchOrigin.length > 0 ? { searchOrigin: snap.searchOrigin } : {}),
+      selectionLaw: 'the captured native execute re-runs resolveProvider EVERY call (web/src/index.ts:137-164 @639ed01539); this is the CLASSIFY-TIME snapshot only — wrapper identity is not the provider',
+    })
+  }
   const shared = { familyId: A5_G2_FAMILY.web, mountCondition: 'always', realmId, providerId, readNative, definitionIdentityOf, observe, declared: { active: true, detail: '' } }
 
   const web_fetch = buildG2Row({
@@ -523,6 +601,10 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
             operation: 'fetch-exact-url',
             url: url.value,
             destinationOrigin: origin.origin,
+            // CURRENT provider fact (fix card 2): the fetch destination is
+            // THIS call's URL (from the arguments), while the provider that
+            // actually serves it is re-resolved per call by the native seam.
+            providerIdentityAtClassify: providerFactsAtClassify(),
             businessObligations: [{
               service: 'web-runtime', action: 'fetch', right: 'connect',
               entry: 'captured native web_fetch execute -> ctx.web.fetch(request, exec.signal) (tool-web fetch.ts:499-510; web/src/index.ts:155-164 @639ed01539); redirect-per-hop and loopback/linklocal checks are the ProviderGateway row\'s law',
@@ -549,21 +631,37 @@ export function createG2WebAdapters({ realmId, providerId, readNative, searchOri
           return refuse(CODES.INVALID_ARGUMENTS, `queries[${String(i)}] must be a non-empty string`)
         }
       }
-      if (typeof searchOrigin !== 'string' || searchOrigin.length === 0) {
-        return refuse(CODES.NO_DECLARED_DESTINATION, 'no trusted search-provider origin was declared at bind time (the config-bound family of web-gateway-assembly.boundSearchOriginSource): projecting external-net-egress-search onto an undeclared destination, or a fixed-URL fake, is structurally impossible here — typed refusal, zero delegation')
-      }
-      const origin = httpOrigin(searchOrigin, 'the declared search origin')
-      if (origin.ok !== true) return origin
-      return {
-        ok: true,
-        effects: [invokeEffect('web_search'), connectEffect(realmId, origin.origin)],
-        canonical: { queries: args.queries.map((q) => q.trim()) },
-        targetManifest: {
-          operation: 'search-queries',
-          queries: args.queries.map((q) => q.trim()),
-          count: args.queries.length,
-          destinationOrigin: origin.origin,
-          providerOriginSource: 'bind-time declared search origin (trusted assembly fact; provider selection stays the seam\'s call-time law, web/src/index.ts resolveProvider :167+ @639ed01539 — never mirrored here)',
+        // CURRENT provider facts (fix card 2): the SELECTED provider identity
+        // and, when the reader carries it, the CURRENT search endpoint are
+        // read ONCE per classify from the assembly-owned trusted reader and
+        // FROZEN into the manifest. Destination precedence: reader's current
+        // origin ⇒ else the assembly's bind-time declared origin ⇒ else typed
+        // refusal — the row never invents an origin and never fixed-URL-fakes.
+        const facts = providerFactsAtClassify()
+        const originRaw = facts.observed === true && typeof facts.searchOrigin === 'string' && facts.searchOrigin.length > 0
+          ? facts.searchOrigin
+          : (typeof searchOrigin === 'string' && searchOrigin.length > 0 ? searchOrigin : null)
+        if (originRaw === null) {
+          return refuse(CODES.NO_DECLARED_DESTINATION, 'no trusted search destination at this layer (neither a readProviderFacts current origin nor a bind-time declared searchOrigin): projecting external-net-egress-search onto an undeclared destination, or a fixed-URL fake, is structurally impossible here — typed refusal, zero delegation')
+        }
+        const origin = httpOrigin(originRaw, 'the search-provider origin (trusted reader or assembly-declared placement fact)')
+        if (origin.ok !== true) return origin
+        return {
+          ok: true,
+          effects: [invokeEffect('web_search'), connectEffect(realmId, origin.origin)],
+          // SUMMARY ONLY — the fingerprint is computed over `actualArgs` (the
+          // COMPLETE ACTUAL arguments) in buildG2Row; a trimmed query summary
+          // may ride alongside, it never replaces the full values.
+          canonical: { queriesSummary: args.queries.map((q) => q.trim()) },
+          targetManifest: {
+            operation: 'search-queries',
+            queriesSummary: args.queries.map((q) => q.trim()),
+            queryCount: args.queries.length,
+            destinationOrigin: origin.origin,
+            providerIdentityAtClassify: facts,
+            providerOriginSource: originRaw === searchOrigin && !(facts.observed === true && typeof facts.searchOrigin === 'string' && facts.searchOrigin.length > 0)
+              ? 'bind-time assembly-declared searchOrigin (trusted placement fact; no CURRENT reader supplied — see providerIdentityAtClassify for the observed/named-blocker state)'
+              : 'readProviderFacts() CURRENT origin — read once per classify and frozen here (the config-bound family of web-gateway-assembly.boundSearchOriginSource). Provider selection stays the seam\'s call-time law (web/src/index.ts resolveProvider :167+ @639ed01539), never mirrored or invented here.',
           businessObligations: [{
             service: 'web-runtime', action: 'search', right: 'connect',
             entry: 'captured native web_search execute -> runSearchQueries -> ctx.web.search(request, exec.signal) (tool-web search.ts:325-380; web/src/index.ts:137-146 @639ed01539) — a REAL search provider, never a fetch-of-a-fixed-URL stand-in',
@@ -632,7 +730,13 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
       const manifest = {
         operation: MCP_METHODS[toolName],
         server: server.value,
-        surface: { record: surface.record, transport: surface.transport, ...(surface.endpointOrigin === undefined ? {} : { endpointOrigin: surface.endpointOrigin }), ...(surface.spawn === undefined ? {} : { spawn: surface.spawn }) },
+        surface: { record: surface.record, transport: surface.transport, connectionIncarnation: surface.connectionIncarnation, ...(surface.endpointOrigin === undefined ? {} : { endpointOrigin: surface.endpointOrigin }), ...(surface.spawn === undefined ? {} : { spawn: surface.spawn }) },
+        // CURRENT-FACTS law (fix card 2): the provider is RE-SELECTED at
+        // request time by scope+serverName (mcp-resources/src/index.ts:120-125
+        // @639ed01539); this manifest freezes the classify-time placement
+        // facts — wrapper identity is not the connection incarnation.
+        providerReSelectionLaw: 'the request leg re-selects the provider from the live exec.agent scope + serverName at REQUEST time (mcp-resources/src/index.ts:120-125 @639ed01539); a stale/unmounted server fails there — this manifest freezes classify-time placement facts only',
+        ...(surface.connectionIncarnation === 'unobserved' ? { connectionIncarnationReason: A5_G2_NAMED_BLOCKERS.MCP } : {}),
         ...(surface.domainAuthorityId === undefined ? {} : { domainAuthorityId: surface.domainAuthorityId }),
         businessObligations: [surface.obligation],
       }
@@ -679,8 +783,11 @@ export function createG2McpResourceAdapters({ realmId, providerId, readNative, d
  *        never hidden).
  * @param deps.readNative - capture seam; production captures the six
  *        `stagehand_<method>` definitions the same way any ToolDefinition is
- *        captured (ctx.tools.get). See the header NAME-BLOCKER disclosure on
- *        the pre-effect resource hook.
+ *        captured (ctx.tools.get). PRE-EFFECT LAW (fix card 4): the native
+ *        `tools/execute` hook can LAUNCH/ATTACH the browser before the
+ *        captured body runs — every browser row carries
+ *        `preEffectDisclosure` (A5_G2_NAMED_BLOCKERS.BROWSER) and makes NO
+ *        zero-launch claim; attach mounts carry the cdp-origin connect.
  */
 export function createG2BrowserAdapters({ realmId, providerId, readNative, declaredService, definitionIdentityOf, observe = () => {} } = {}) {
   assertAssembly('browser', realmId, typeof realmId === 'string' && realmId.length > 0, 'realmId is required')
@@ -709,7 +816,11 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
   if (proof.mode === 'attach' && cdpOrigin.ok === false) {
     throw new TypeError(`g2-connector-adapters/browser: ${CODES.SURFACE_FACTS_INCOMPLETE}: ${cdpOrigin.detail}`)
   }
-  const shared = { familyId: A5_G2_FAMILY.browser, mountCondition: 'declared_mount', realmId, providerId, readNative, definitionIdentityOf, observe, declared: { active: true, detail: '' } }
+  // The attach-CDP endpoint is ITSELF a network connect (fix card 4): every
+  // operation on an attach mount rides that transport leg, so the closed-set
+  // effect projection carries it on every browser row of this mount.
+  const attachEffects = proof.mode === 'attach' ? [connectEffect(realmId, cdpOrigin.origin)] : []
+  const shared = { familyId: A5_G2_FAMILY.browser, mountCondition: 'declared_mount', realmId, providerId, readNative, definitionIdentityOf, observe, declared: { active: true, detail: '' }, preEffectDisclosure: A5_G2_NAMED_BLOCKERS.BROWSER }
 
   const baseManifest = (method, pageId) => ({
     operation: `browser-${method}`,
@@ -753,7 +864,7 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
       }]
       return {
         ok: true,
-        effects: [invokeEffect(`stagehand_${method}`), connectEffect(realmId, modelOrigin.origin), ...domainEffects()],
+        effects: [invokeEffect(`stagehand_${method}`), connectEffect(realmId, modelOrigin.origin), ...attachEffects, ...domainEffects()],
         canonical: { instruction: instruction.value, ...(pageId === undefined ? {} : { pageId }), ...(method === 'extract' && args.schema !== undefined ? { schemaDigest: sha256(canonicalJson(args.schema)) } : {}) },
         targetManifest: manifest,
       }
@@ -789,7 +900,7 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
         }]
         return {
           ok: true,
-          effects: [invokeEffect('stagehand_navigate'), connectEffect(realmId, origin.origin), ...domainEffects()],
+          effects: [invokeEffect('stagehand_navigate'), connectEffect(realmId, origin.origin), ...attachEffects, ...domainEffects()],
           canonical: { url: url.value, ...(pageId === undefined ? {} : { pageId }) },
           targetManifest: manifest,
         }
@@ -815,25 +926,33 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
           return refuse(CODES.INVALID_ARGUMENTS, `action ${JSON.stringify(args.action)} requires pageId (native law, native.ts:61)`)
         }
         let url
+        let urlOrigin
         if (args.url !== undefined) {
           if (args.action !== 'new') return refuse(CODES.INVALID_ARGUMENTS, 'url is only declared on action "new" (native.ts:60)')
           const u = httpOrigin(args.url, 'the new-tab URL')
           if (u.ok !== true) return u
           url = args.url
+          urlOrigin = u.origin
         }
         const manifest = baseManifest('tabs', pageId)
         manifest.branch = args.action
         if (url !== undefined) {
           manifest.url = url
-          manifest.destinationOrigin = httpOrigin(url, 'the new-tab URL').origin
+          manifest.destinationOrigin = urlOrigin
         }
         manifest.businessObligations = [{
           service: 'browser', action: `tab-${args.action}`, right: 'write',
-          entry: 'captured native stagehand_tabs execute -> native.execute("tabs", …) (native.ts:113-123 @639ed01539)',
+          entry: url === undefined
+            ? 'captured native stagehand_tabs execute -> native.execute("tabs", …) (native.ts:113-123 @639ed01539)'
+            : 'captured native stagehand_tabs execute -> native.execute("tabs", …) -> context.newPage(url) (native.ts:113-116 @639ed01539): REAL net connect + page creation — the connect effect to the tab URL is CARRIED, never underreported',
         }]
         return {
           ok: true,
-          effects: [invokeEffect('stagehand_tabs')],
+          // FIX CARD RULING 1: tabs(new,url) REALLY does `newPage(url)` — a
+          // net connect plus page creation — so the closed-set projection
+          // MUST carry the connect to the tab URL (the previous I-only
+          // answer was a固化漏报, now pinned by the spec leg).
+          effects: [invokeEffect('stagehand_tabs'), ...(urlOrigin === undefined ? [] : [connectEffect(realmId, urlOrigin)]), ...attachEffects],
           canonical: { action: args.action, ...(pageId === undefined ? {} : { pageId }), ...(url === undefined ? {} : { url }) },
           targetManifest: manifest,
         }
@@ -863,7 +982,7 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
         }]
         return {
           ok: true,
-          effects: [invokeEffect('stagehand_screenshot')],
+          effects: [invokeEffect('stagehand_screenshot'), ...attachEffects],
           canonical: { ...(pageId === undefined ? {} : { pageId }), fullPage: args.fullPage === true },
           targetManifest: manifest,
         }
