@@ -484,6 +484,21 @@ export const PERMISSION_TOOL_NAMES: readonly string[] = [
   'interrupt_agent',
   'list_agents',
   'send_message',
+  // B-SUBAGENT SPAWN side (root 22:32 fact-supply, joint candidate
+  // feat/a5m2-joint-cand2 @ 9b5c9f4b2: A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
+  // records 39-43 — subagent/subagent_fork mount always, the external-
+  // provider faces and the model-route read mount declared_mount; the
+  // closed effect envelope is `tool-invoke` ONLY, resource null. NOT in
+  // int yet — root review in flight; naming pre-wires the channel only).
+  // Invocation identity is the whole rule: the provider declaration
+  // (codex/claude), model-selection, maxDepth and every I/O/provider/
+  // domain constraint stay SERVICE-SIDE — an invocation `any` rule
+  // exempts NONE of them.
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**
@@ -575,6 +590,21 @@ export const PERMISSION_INVOCATION_ONLY_TOOL_NAMES: readonly string[] = [
   'interrupt_agent',
   'list_agents',
   'send_message',
+  // B-SUBAGENT SPAWN side (root 22:32 fact-supply, joint candidate
+  // feat/a5m2-joint-cand2 @ 9b5c9f4b2: A5_B_SUBAGENT_SPAWN_TOOL_NAMES,
+  // records 39-43 — subagent/subagent_fork mount always, the external-
+  // provider faces and the model-route read mount declared_mount; the
+  // closed effect envelope is `tool-invoke` ONLY, resource null. NOT in
+  // int yet — root review in flight; naming pre-wires the channel only).
+  // Invocation identity is the whole rule: the provider declaration
+  // (codex/claude), model-selection, maxDepth and every I/O/provider/
+  // domain constraint stay SERVICE-SIDE — an invocation `any` rule
+  // exempts NONE of them.
+  'subagent',
+  'subagent_fork',
+  'subagent_codex',
+  'subagent_claude_code',
+  'list_subagent_models',
 ]
 
 /**

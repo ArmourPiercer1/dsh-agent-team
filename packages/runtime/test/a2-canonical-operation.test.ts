@@ -430,11 +430,11 @@ describe('a2 classification (plan §7.5)', () => {
     // the invocation-only classes are vocabulary members (named lane rules
     // exist for them) while classifyPermissionTool keeps answering
     // `unsupported` (no canonical op) — the two laws are separate arms.
-    for (const tool of ['schedule_list', 'session_search', 'team_delegate', 'cordis_inspect_query', 'team_list_pending_control', 'send_message', 'interrupt_agent', 'list_agents']) {
+    for (const tool of ['schedule_list', 'session_search', 'team_delegate', 'cordis_inspect_query', 'team_list_pending_control', 'send_message', 'interrupt_agent', 'list_agents', 'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code', 'list_subagent_models']) {
       expect(isPermissionToolName(tool)).toBe(true)
       expect(classifyPermissionTool(tool)).toEqual({ kind: 'unsupported' })
     }
-    for (const tool of ['web_fetch', 'subagent_fork', 'BASH']) {
+    for (const tool of ['web_fetch', 'workflow', 'BASH']) {
       expect(isPermissionToolName(tool)).toBe(false)
     }
   })

@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (30 = seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio; root 20:05/22:13/22:4x)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (35 = seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio + spawn five; root 20:05/22:13/22:4x/22:32)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -972,6 +972,11 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'interrupt_agent',
       'list_agents',
       'send_message',
+      'subagent',
+      'subagent_fork',
+      'subagent_codex',
+      'subagent_claude_code',
+      'list_subagent_models',
     ])
   })
 
@@ -1357,17 +1362,22 @@ describe('invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13)',
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Alpha.5 M2 CONTINUATION 2 (root 22:4x card) — the production-CONFIRMED
-// closed sets join the invocation-only class name by name: TEN B-TEAM
-// (team-adapters.mjs A5_B_TEAM_TOOL_NAMES @int, PA lane = the plane's ONE
-// paAdmit, bindings actualservice 85ccbf9e3), THREE G1 PURE-QUERY
+// Alpha.5 M2 CONTINUATION 2 (root 22:4x + 22:32 cards) — the production-
+// CONFIRMED closed sets join the invocation-only class name by name: TEN
+// B-TEAM (team-adapters.mjs A5_B_TEAM_TOOL_NAMES @int 50fdce962 — chain
+// team-wiring → team-tool-plane (paAdmit/walk/rows/toolNameToRecord per
+// root 22:32) → agent-bindings teamOps inject), THREE G1 PURE-QUERY
 // (A5_G1_PURE_QUERY_MOUNT_NAMES: "walk THIS plane's ONE PA admission"),
-// THREE B-SUBAGENT controls (A5_B_SUBAGENT_TOOL_NAMES @ the source-signed
-// branch 7c6869879; the spawn-side commits are mint/address encoding, NOT
-// named invocations — subagent/subagent_fork stay OUT). The FOUR Team
-// self-governance controls stay OUT (declared INACTIVE, Gate 0f refuses
-// their mount) — pinned absent. No prefix, no whole-native sweep, no I/O
-// exemption: the tool-invoke arm is the entire authority for every name.
+// THREE B-SUBAGENT controls + FIVE SPAWN ops (joint candidate
+// feat/a5m2-joint-cand2 @ 9b5c9f4b2: A5_B_SUBAGENT_TOOL_NAMES trio,
+// WIRING_REVISION 3, and A5_B_SUBAGENT_SPAWN_TOOL_NAMES records 39-43;
+// both files' closed effect envelope is `tool-invoke` ONLY, resource
+// null; NOT in int — root review in flight, naming pre-wires the channel
+// only). The FOUR Team self-governance controls stay OUT (declared
+// INACTIVE, Gate 0f refuses their mount) — pinned absent. No prefix, no
+// whole-native sweep, no I/O exemption: the tool-invoke arm is the entire
+// authority for every name; provider/model/maxDepth constraints stay
+// service-side.
 // ═══════════════════════════════════════════════════════════════════════════
 
 const CONFIRMED_SETS_22 = [
@@ -1376,9 +1386,11 @@ const CONFIRMED_SETS_22 = [
   'team_send_message', 'team_report_progress', 'team_archive_member',
   'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
   'interrupt_agent', 'list_agents', 'send_message',
+  'subagent', 'subagent_fork', 'subagent_codex', 'subagent_claude_code',
+  'list_subagent_models',
 ] as const
 
-describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:4x)', () => {
+describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:4x + 22:32)', () => {
   function indentByS2(lines: string[], by: number): string[] {
     const pad = ' '.repeat(by)
     return lines.map((line) => (line.length === 0 ? line : `${pad}${line}`))
@@ -1403,14 +1415,14 @@ describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:
     ]
   }
 
-  it('membership: all sixteen confirmed names are in; the four INACTIVE controls and the spawn names stay OUT', () => {
+  it('membership: all twenty-one confirmed names are in; the four INACTIVE controls and the un-adjudicated orchestration names stay OUT', () => {
     for (const name of CONFIRMED_SETS_22) expect(PERMISSION_TOOL_NAMES).toContain(name)
-    for (const out of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission', 'subagent', 'subagent_fork', 'list_subagent_models', 'workflow']) {
+    for (const out of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission', 'workflow', 'ralph', 'web_fetch', 'todo_write']) {
       expect(PERMISSION_TOOL_NAMES.includes(out)).toBe(false)
     }
   })
 
-  it('sixteen names × three lanes × both roles parse (whole-tool any) under default:deny — the named rule is the ONLY exception', () => {
+  it('twenty-one names × three lanes × both roles parse (whole-tool any) under default:deny — the named rule is the ONLY exception', () => {
     for (const tool of CONFIRMED_SETS_22) {
       for (const lane of ['allow', 'ask', 'deny'] as const) {
         for (const role of ['leader', 'member'] as const) {

@@ -75,8 +75,9 @@ import type { V4ToolBindingAuthoring } from './blueprint-v4.js'
  *
  * Alpha.5 M2 continuation (root 22:13 + 22:4x limited cards) widens the
  * same class with the five G6 SESSION-QUERY names, the ten B-TEAM names,
- * the three G1 PURE-QUERY names and the three B-SUBAGENT controls names —
- * each verified name-by-name against the CURRENT integration production
+ * the three G1 PURE-QUERY names and the three B-SUBAGENT controls names
+ * and the five B-SUBAGENT spawn ops (joint candidate 9b5c9f4b2, landing
+ * pending) — each verified name-by-name against the CURRENT production
  * (PA tool-invoke rows: the plane's ONE paAdmit; the G6 landing
  * 874f3ae0d; the controls trio at the source-signed branch 7c6869879;
  * the old M0-B frozen table is a historical record, NOT the current
@@ -115,6 +116,11 @@ export type PermissionTool =
   | 'interrupt_agent'
   | 'list_agents'
   | 'send_message'
+  | 'subagent'
+  | 'subagent_fork'
+  | 'subagent_codex'
+  | 'subagent_claude_code'
+  | 'list_subagent_models'
 
 /**
  * The resource a permission rule addresses (alpha.2 plan §6.2):

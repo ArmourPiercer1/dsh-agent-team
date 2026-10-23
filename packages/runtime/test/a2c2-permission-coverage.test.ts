@@ -376,8 +376,10 @@ const R: Record<string, unknown> = await (async () => {
   }
 
   // ==========================================================================
-  // S0-P3 · grep / subagent / web_fetch escape the nine-name managed
-  // vocabulary (plan §7.6 probe 3). Pre-fix observable gap: the final
+  // S0-P3 · grep / ralph / web_fetch escape the managed vocabulary
+  // (plan §7.6 probe 3; root 22:32: `subagent` itself is now a PA-WIRED
+  // vocabulary name — the UNWIRED orchestration example `ralph` carries the
+  // class proof). Pre-fix observable gap: the final
   // managed vocabulary (PERMISSION_TOOL_NAMES) covers only the
   // alpha.2 operation-permission tools — the fs-search, orchestration,
   // and egress tools are NOT in it, and the A2 canonical classifier
@@ -386,7 +388,7 @@ const R: Record<string, unknown> = await (async () => {
   // categories) and a surface of exactly those three fails.
   // ==========================================================================
   {
-    const escaping = ['grep', 'subagent', 'web_fetch']
+    const escaping = ['grep', 'ralph', 'web_fetch']
     // stable characterization (both trees).
     const managedSet = [...PERMISSION_TOOL_NAMES].sort()
     const inVocabulary = escaping.map((name) => PERMISSION_TOOL_NAMES.includes(name))
@@ -395,7 +397,7 @@ const R: Record<string, unknown> = await (async () => {
     // all three sensitive and the verdict fails with the sorted detail.
     const evaluator = a2c2.evaluatePermissionCoverage
     const gatePresent = typeof evaluator === 'function'
-    const verdict = gatePresent ? evaluator!(['web_fetch', 'subagent', 'grep'], EMPTY_FACTS) : undefined
+    const verdict = gatePresent ? evaluator!(['web_fetch', 'ralph', 'grep'], EMPTY_FACTS) : undefined
     out.p3 = {
       managedSet,
       inVocabulary,
@@ -824,10 +826,10 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
     ])
   })
 
-  it('P3 · grep/subagent/web_fetch escape the fourteen-name managed vocabulary (root 20:05 pair + root 22:13 G6 five) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
+  it('P3 · grep/ralph/web_fetch escape the thirty-five-name managed vocabulary (root 22:32: subagent joined — the unwired orchestration example ralph keeps the class proof) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
     const p3 = R['p3'] as Record<string, any>
     // stable characterization of the pre-fix gap (both trees):
-    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_send_message', 'write'])
+    expect(p3.managedSet).toEqual(['bash', 'cordis_inspect_list', 'cordis_inspect_query', 'edit', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'send_message', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'subagent', 'subagent_claude_code', 'subagent_codex', 'subagent_fork', 'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate', 'team_follow_up', 'team_inspect_config', 'team_list_members', 'team_list_pending_control', 'team_list_templates', 'team_report_progress', 'team_send_message', 'write'])
     expect(p3.inVocabulary).toEqual([false, false, false])
     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'unsupported'])
     // the post-fix gate leg (RED on base):
@@ -842,7 +844,7 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
           'remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)',
       },
       {
-        name: 'subagent',
+        name: 'ralph',
         classification: 'known-sensitive-unmanaged',
         reason: 'generic subagent/workflow orchestration escapes MemberInstance governance (no alpha.2 operation adapter)',
         remediation:
@@ -860,7 +862,7 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
 })
 
 describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
-  it('G1 · the thirty-name managed vocabulary (root 20:05 + 22:13 + 22:4x production-confirmed classes) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
+  it('G1 · the thirty-five-name managed vocabulary (root 20:05 + 22:13 + 22:4x + 22:32 production-confirmed classes) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
     const g1 = R['g1'] as Record<string, any>
     expect(g1.present).toBe(true)
     expect(g1.ok).toBe(true)
@@ -871,6 +873,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'edit', classification: 'managed-operation-permission' },
       { name: 'interrupt_agent', classification: 'managed-operation-permission' },
       { name: 'list_agents', classification: 'managed-operation-permission' },
+      { name: 'list_subagent_models', classification: 'managed-operation-permission' },
       { name: 'lsp', classification: 'managed-operation-permission' },
       { name: 'pwsh', classification: 'managed-operation-permission' },
       { name: 'read', classification: 'managed-operation-permission' },
@@ -883,6 +886,10 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'session_event_trace', classification: 'managed-operation-permission' },
       { name: 'session_search', classification: 'managed-operation-permission' },
       { name: 'session_trace', classification: 'managed-operation-permission' },
+      { name: 'subagent', classification: 'managed-operation-permission' },
+      { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
+      { name: 'subagent_codex', classification: 'managed-operation-permission' },
+      { name: 'subagent_fork', classification: 'managed-operation-permission' },
       { name: 'team_archive_member', classification: 'managed-operation-permission' },
       { name: 'team_collect', classification: 'managed-operation-permission' },
       { name: 'team_create_member', classification: 'managed-operation-permission' },
@@ -936,7 +943,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g4.safe).toEqual(['todo_write'])
   })
 
-  it('G5 · closed known-sensitive entries classify KNOWN_SENSITIVE_UNMANAGED and FAIL — EXCEPT the three wired controls (root 22:4x), whose vocabulary membership resolves MANAGED at precedence #1', () => {
+  it('G5 · closed known-sensitive entries classify KNOWN_SENSITIVE_UNMANAGED and FAIL — EXCEPT the five wired subagent-family names (root 22:4x + 22:32), whose vocabulary membership resolves MANAGED at precedence #1', () => {
     const g5 = R['g5'] as Record<string, any>
     expect(g5.present).toBe(true)
     expect(g5.registry).toEqual([
@@ -958,10 +965,11 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g5.prefixes).toEqual(['job_'])
     expect(g5.safe).toEqual(['todo_write'])
     expect(g5.ok).toBe(false)
-    // 15 entries: the 12 unwired sensitive names + the synthetic job-family
-    // leg classify sensitive; the THREE B-SUBAGENT controls (send_message /
-    // interrupt_agent / list_agents) joined the MANAGED vocabulary (root
-    // 22:4x, PA-wired trio) and precedence #1 resolves them MANAGED — the
+    // 15 entries: the 9 unwired sensitive names + the synthetic job-family
+    // leg classify sensitive; the FIVE wired subagent-family names (the trio
+    // send_message / interrupt_agent / list_agents, root 22:4x, plus the
+    // spawn rows subagent / subagent_fork, joint-cand2 9b5c9f4b2, root
+    // 22:32) joined the MANAGED vocabulary and precedence #1 resolves them MANAGED — the
     // name-based suspicion is SUPERSEDED, never silent: each is now gated
     // by its own named allow/ask/deny rule.
     expect(g5.classifications).toEqual([
@@ -975,8 +983,8 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       'managed-operation-permission', // list_agents — wired control, precedence #1
       'known-sensitive-unmanaged', // ralph
       'managed-operation-permission', // send_message — wired control, precedence #1
-      'known-sensitive-unmanaged', // subagent
-      'known-sensitive-unmanaged', // subagent_fork
+      'managed-operation-permission', // subagent — wired spawn row (joint-cand2), precedence #1
+      'managed-operation-permission', // subagent_fork — wired spawn row (joint-cand2), precedence #1
       'known-sensitive-unmanaged', // web_fetch
       'known-sensitive-unmanaged', // web_search
       'known-sensitive-unmanaged', // workflow
@@ -992,7 +1000,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
         'remove the tool with builtinToolDeny (or another capability-layer removal) or add a reviewed authority owner (an operation adapter)',
     })
     expect(g5.unmanaged.map((e: any) => e.name)).toEqual(
-      g5.registry.filter((n: string) => !['send_message', 'interrupt_agent', 'list_agents'].includes(n)).concat(JOB_FAMILY_TOOL).sort(),
+      g5.registry.filter((n: string) => !['send_message', 'interrupt_agent', 'list_agents', 'subagent', 'subagent_fork'].includes(n)).concat(JOB_FAMILY_TOOL).sort(),
     )
   })
 
@@ -1022,7 +1030,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     ])
   })
 
-  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; registries disjoint EXCEPT the three wired controls, resolved MANAGED at precedence #1 (root 22:4x)', () => {
+  it('G7 · the fixed precedence — a proven owner beats a name-based suspicion; registries disjoint EXCEPT the five wired subagent-family names, resolved MANAGED at precedence #1 (root 22:4x + 22:32)', () => {
     const g7 = R['g7'] as Record<string, any>
     expect(g7.present).toBe(true)
     expect(g7.managedBeatsTeam).toBe('managed-operation-permission')
@@ -1030,11 +1038,11 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
     expect(g7.mcpVerdictOk).toBe(true)
     expect(g7.teamBeatsMcp).toBe('other-managed-team-tool')
     expect(g7.registryOverlapSafeSensitive).toEqual([])
-    // The ONLY managed∩sensitive overlap is the PA-wired B-SUBAGENT trio
-    // (root 22:4x): membership is intentional and the precedence order
-    // decides — MANAGED (#1) beats the name-based suspicion (#5). Any NEW
-    // overlap is this pin's red light.
-    expect(g7.registryOverlapManagedSensitive).toEqual(['interrupt_agent', 'list_agents', 'send_message'])
+    // The ONLY managed∩sensitive overlap is the five wired subagent-family
+    // names (trio root 22:4x + spawn rows root 22:32): membership is
+    // intentional and the precedence order decides — MANAGED (#1) beats the
+    // name-based suspicion (#5). Any NEW overlap is this pin's red light.
+    expect(g7.registryOverlapManagedSensitive).toEqual(['interrupt_agent', 'list_agents', 'send_message', 'subagent', 'subagent_fork'])
   })
 
   it('G8 · determinism — three input orders of the same surface give byte-identical verdicts', () => {
@@ -1056,6 +1064,7 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'edit', classification: 'managed-operation-permission' },
       { name: 'interrupt_agent', classification: 'managed-operation-permission' },
       { name: 'list_agents', classification: 'managed-operation-permission' },
+      { name: 'list_subagent_models', classification: 'managed-operation-permission' },
       { name: 'lsp', classification: 'managed-operation-permission' },
       { name: 'mcp_weather', classification: 'other-managed-mcp' },
       { name: 'pwsh', classification: 'managed-operation-permission' },
@@ -1069,6 +1078,10 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'session_event_trace', classification: 'managed-operation-permission' },
       { name: 'session_search', classification: 'managed-operation-permission' },
       { name: 'session_trace', classification: 'managed-operation-permission' },
+      { name: 'subagent', classification: 'managed-operation-permission' },
+      { name: 'subagent_claude_code', classification: 'managed-operation-permission' },
+      { name: 'subagent_codex', classification: 'managed-operation-permission' },
+      { name: 'subagent_fork', classification: 'managed-operation-permission' },
       { name: 'team_archive_member', classification: 'managed-operation-permission' },
       { name: 'team_collect', classification: 'managed-operation-permission' },
       { name: 'team_create_member', classification: 'managed-operation-permission' },
