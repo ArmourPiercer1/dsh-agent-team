@@ -29,7 +29,15 @@ export interface BSubagentOutputFace {
 
 /** One placed definition: the COMPLETE captured native with ONLY `execute`
  *  replaced; the send_message placed definition additionally carries the
- *  re-applied standard adjacent-Agent messaging mark (L3b). */
+ *  re-applied standard adjacent-Agent messaging mark (L3b). The replaced
+ *  execute PASSES NON-RECORD arguments (null/undefined/array/string) to the
+ *  captured native uncoerced — but ONLY through the edge-VERIFIED
+ *  {def, execute} handles: full drift verification runs FIRST, so a
+ *  rebound/foreign native is refused with zero native entry (root 19:24:
+ *  no drift reaches an unverified native, no unadmitted fallback), and the
+ *  verified bound wrapper's compiled object-root validator answers the
+ *  Host's own ToolArgsError before any body (581-1 FIX 1). Record args enter
+ *  the governed classify → admit → delegate pipeline. */
 export interface BSubagentDefinition {
   readonly [face: string]: unknown
   readonly name: string
@@ -57,7 +65,14 @@ export interface BSubagentNativeCapture {
 
 /** The ctx.subagents-shaped REAL-SERVICE port (the four methods the three
  *  published bodies call; everything else the published face carries stays
- *  outside this seam). */
+ *  outside this seam). ERROR REALITY (measured, 581-1 FIX 4): this face HAS
+ *  a published error class — SubagentError (dsh-subagent package index,
+ *  exported by the same published runtime bundle whose throw sites
+ *  instantiate it). The row maps nothing: interrupt answers absent/one-shot/
+ *  unknown targets with an ACCEPTED NO-OP and only live cross-authority
+ *  targets with SubagentError(UNAUTHORIZED); such throws propagate verbatim
+ *  through `delegate`/`execute` and stay instanceof-able against the real
+ *  published class. */
 export interface BSubagentServicePort {
   readonly sendMessage: (sender: unknown, targetId: string, content: readonly unknown[], options: { readonly signal?: unknown }) => Promise<unknown>
   readonly interrupt: (targetSessionId: string, authority: { readonly kind: 'ancestor'; readonly agent: unknown }) => void
@@ -65,16 +80,29 @@ export interface BSubagentServicePort {
   readonly listDescendants: (rootSessionId: unknown, signal?: unknown) => Promise<readonly Record<string, unknown>[]>
 }
 
-/** The ctx.agents-shaped live Agent registry the list projection reads. */
+/** The ctx.agents-shaped live Agent registry the list projection reads.
+ *  Its `get` function is a CAPTURED HANDLE (581-1 FIX 2): the assembly
+ *  captures it at bind time, the dispatch edge re-verifies it, and the
+ *  projection invokes exactly that handle (never a property re-read).
+ *  The row performs NO lineage reads on it (root 19:24): the only fact the
+ *  projection consumes is the live Agent `status`. */
 export interface BSubagentAgentsRegistry {
   readonly get: (id: unknown) => { readonly status?: unknown } | undefined
 }
 
-/** The contract §B-SUBAGENT target facts every plan carries. */
+/** The contract §B-SUBAGENT target facts every plan carries. The relation
+ *  is the measured ADJACENT law (send: direct child OR, for a resident
+ *  continuable child, the direct parent — child→parent is legal; interrupt:
+ *  the caller's live ancestry; list: the caller's own tree), never a
+ *  universal parent→child quantifier (581-1 FIX 3). */
 export interface BSubagentPlanTarget {
   readonly contract: string
-  readonly parent: string
-  readonly child: { readonly claim: string | null; readonly adjudication: string }
+  readonly caller: string
+  readonly address: {
+    readonly claim: string | null
+    readonly relation: string
+    readonly adjudication: string
+  }
   readonly action: string
   readonly revision: string
   readonly effect: string
