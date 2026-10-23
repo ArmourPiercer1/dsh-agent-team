@@ -1,4 +1,15 @@
 /**
+ * A5M2-FAMILY-RULES C1 — round 8 (root 19:06 card) lands at the bottom: the
+ * B-TEAM closed map over the seat's lossless FLAT 10-leaf projection
+ * (measured read-only @fc072d5c2 wiring + @88ad3cf37 adapter rev 1).
+ * 'operation' is a MINTED string leaf discriminating TEN bound rows
+ * (row↔targetObject↔effectLabel pinned at the edge; ASK-lane effect labels
+ * bound WITHOUT widening the one admitted tool-invoke effect);
+ * nullableString types the two measured string-or-null claims - zero new
+ * kinds, zero mint deltas; the only measured residual was this entry. Their
+ * real minted manifests ACCEPT; their refusals hold at the grammar edge;
+ * their branch pins re-anchor at merge (expected, disclosed).
+ *
  * A5M2-FAMILY-RULES C1 — round 7 (root 19:28) lands at the bottom: B-MCP
  * expressed on the EXISTING signed grammar (six closed groups over a
  * mint-synthesized mcpVariant - the signed inspectVariant pattern; real
@@ -419,12 +430,13 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(closed)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(closed)
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
     // The discriminated variant grammar is carried by B-INSPECT,
-    // B-SESSION-QUERY and (root 19:28) B-MCP - and nothing else:
+    // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card) -
+    // and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId)
-        .toBe(familyId !== 'B-INSPECT' && familyId !== 'B-SESSION-QUERY' && familyId !== 'B-MCP')
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM'
+      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
 
@@ -1019,5 +1031,102 @@ describe('A5M2-FAMILY-RULES C1 round 7 (root 19:28): the B-MCP closed map on the
     // fingerprint ruling moves it in; this table invents nothing:
     expect(validatePaFamilyTarget('B-MCP', { ...read, headerCount: 0 }))
       .toBe('headerCount: not part of the B-MCP typed plan')
+  })
+})
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ROUND 8 (root 19:06 card, root reviews): B-TEAM closed map. Measured
+ * read-only at feat/a5m2-wire-team
+ * @fc072d5c248f008734bdc10b879d313c13625017 (team-wiring.mjs
+ * mintTargetManifest :200-248 - the lossless FLAT projection) + adapter
+ * team-adapters.mjs @88ad3cf37 mintTarget :663-708 (A5_B_TEAM_ADAPTER_
+ * REVISION = 1) + their a5m2-team-wiring-c1.test.ts (g) legs (the 10-key
+ * set they pin sorted, the two real delegate branches, the real
+ * no-member-addressed literal, the fail-closed refusal string). NO new kind:
+ * nullableString (signed 5d83ed6f6) types the two string-OR-null claims
+ * (rootClaim, memberClaim) exactly; 'operation' is a MINTED string leaf so
+ * it discriminates the TEN closed groups with NO synthetic discriminant and
+ * NO mint delta - the only measured residual was the missing entry. Real
+ * legal example = their seat's real minted manifest; the ASK-lane effect
+ * labels are bound per row (comment-side I+S annotations - the ONE admitted
+ * effect stays tool-invoke, no Team resource kind invented; the named
+ * residual their lane reports to CENTER). B-TEAM durable claims were
+ * fail-closed at the bridge until this entry and stay 接线未测 either way.
+ * ───────────────────────────────────────────────────────────────────────── */
+describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed map - operation discriminates ten bound rows; nullableString types the two string|null claims; their real minted manifests ACCEPT, their refusals hold at the grammar edge', () => {
+  const CONTRACT = 'M0-B-FAMILY-TARGET-CONTRACTS §B-TEAM — 目标I+S(可信durable root/member/template/config/消息/归档对象,exact operation)'
+  const ROOT_ADJ = 'the caller-root binding gate INSIDE the delegated chain (tools.ts:459-477, TEAM_TOOL_CALLER_ROOT_MISMATCH) compares the resolver\'s durable OWNING root against this claim — the row never trusts the argument string (C1)'
+  const REVISION = 'requestToken = the durable facade idempotency identity (reuse = retry of the SAME logical operation — the facade/messaging lanes adjudicate); the row carries the token as data and claims no idempotency authority (NAMED GAP PLAN_ONCE_MEMO)'
+  const FACE_PASSED = 'the mirrored pure argument law passed'
+  const LIST_OBJECT = 'the durable Team roster (member instances + lifecycle + bound child session ids)'
+  const LIST_EFFECT = 'S(read) — the durable Team roster through the existing facade action'
+  const DELEGATE_OBJECT = 'a work unit with BOTH real branches (tools.ts:688-701): CONTINUE form = a NEW round on an EXISTING delegation instance (guarded on that target, SD-GUARD), CREATE form = a NEW delegation plus template-resolved member (SD-CREATE, activation authority is the gate)'
+  const DELEGATE_EFFECT = 'I + S(durable work-unit admission; create-form additionally mints the member-lifecycle fact; child run + budget INSIDE the delegated chain; requestToken = the facade idempotency identity)'
+  // the shared required leaves every row carries (the eight non-bound leaves):
+  const base = (over: Record<string, unknown>) => ({
+    contract: CONTRACT,
+    rootClaim: 's-root-wire',
+    rootAdjudication: ROOT_ADJ,
+    revisionLaw: REVISION,
+    argumentLawFace: FACE_PASSED,
+    ...over,
+  })
+
+  it('ACCEPT (their real minted manifests): team-list-members no-member + the two real delegate branches ride field-for-field; key sets = required ∪ bound adds EXACTLY (their 10-key pin)', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']).toBeDefined()
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    expect(validatePaFamilyTarget('B-TEAM', listMembers)).toBeUndefined()
+    expect(keysOf(listMembers).sort()).toEqual(['argumentLawFace', 'contract', 'effectLabel', 'memberAdjudication', 'memberClaim', 'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim', 'targetObject'])
+    const CONTINUE_ADJ = 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id'
+    const CREATE_ADJ = 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there'
+    const cont = base({ operation: 'team-delegate', memberClaim: 'di-7', memberAdjudication: CONTINUE_ADJ, targetObject: DELEGATE_OBJECT, effectLabel: DELEGATE_EFFECT })
+    const create = base({ operation: 'team-delegate', memberClaim: 'tpl-worker', memberAdjudication: CREATE_ADJ, targetObject: DELEGATE_OBJECT, effectLabel: DELEGATE_EFFECT })
+    expect(validatePaFamilyTarget('B-TEAM', cont)).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TEAM', create)).toBeUndefined()
+    // the two claims are string|null as measured: rootClaim rides a string,
+    // memberClaim rides null (list) or the instance/template id (branches):
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.rootClaim).toBe('nullableString')
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.memberClaim).toBe('nullableString')
+    // all TEN operations select their bound row (targetObject+effectLabel):
+    const objects: Record<string, [string, string]> = {
+      'team-list-templates': ["the bound blueprint's member templates", 'S(read) — the bound blueprint templates through the existing facade action'],
+      'team-inspect-config': ["ONE member's durable effective-policy / requirement / recovery facts", "S(read) — ONE member's durable effective-policy view (config object)"],
+      'team-create-member': ['a NEW member instance from a blueprint template (the member-lifecycle object)', 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)'],
+      'team-follow-up': ['a NEW work unit on an EXISTING member (same bound child session)', 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)'],
+      'team-collect': ['the durable work-unit states behind the submitted request tokens', 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing'],
+      'team-send-message': ["one durable attributed message on the recipient's bound session", "I + S(durable message write to the member's bound session via the messaging coordinator; relay policy + guard INSIDE the delegated chain; message-commit uncertainty is NOT blindly retried — that law lives in the coordinator)"],
+      'team-report-progress': ['one durable activity row on the per-subject lane', 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)'],
+      'team-archive-member': ["ONE member's lifecycle (quiesce-then-archive durable commits)", 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)'],
+    }
+    for (const [op, [obj, eff]] of Object.entries(objects)) {
+      expect(validatePaFamilyTarget('B-TEAM', base({ operation: op, memberClaim: null, memberAdjudication: 'no member addressed', targetObject: obj, effectLabel: eff })), op).toBeUndefined()
+    }
+  })
+
+  it('their refusals hold at the grammar edge: a foreign row is not a synonym (bound constants), an unknown operation selects no row, the three-way leaf law and null-vs-missing stay distinct', () => {
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    // the ASK-lane binding: list-members may NOT wear the delegate object/effect (no synonym effect widening):
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, effectLabel: DELEGATE_EFFECT }))
+      .toBe(`effectLabel: not the 'team-list-members' variant constant of the B-TEAM typed plan`)
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, targetObject: DELEGATE_OBJECT }))
+      .toBe(`targetObject: not the 'team-list-members' variant constant of the B-TEAM typed plan`)
+    // operation is the closed discriminant - an unknown row selects nothing (own-key, no fallback):
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, operation: 'team-drop-member' }))
+      .toBe(`operation: 'team-drop-member' selects no B-TEAM variant group`)
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, operation: 'toString' }))
+      .toBe(`operation: 'toString' selects no B-TEAM variant group`)
+    // required leaf absent vs null vs wrong-kind stay three distinct outcomes:
+    expect(validatePaFamilyTarget('B-TEAM', without(listMembers, 'rootClaim')))
+      .toBe('rootClaim: required by the B-TEAM typed plan, absent')
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, rootClaim: null })).toBeUndefined() // string|null as measured
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, rootClaim: 7 }))
+      .toBe('rootClaim: not a nullableString')
+    expect(validatePaFamilyTarget('B-TEAM', without(listMembers, 'targetObject')))
+      .toBe('targetObject: required by the B-TEAM typed plan, absent')
+    // closed key set: the durable write cannot smuggle an extra authority leaf:
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, guardCleared: true }))
+      .toBe('guardCleared: not part of the B-TEAM typed plan')
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, contract: '' }))
+      .toBe('contract: not a string')
   })
 })

@@ -1553,6 +1553,99 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['mcpVariant', 'operation', 'record', 'transport']),
   }),
+  /* A5-M2 B-TEAM (root card 19:4x; the ONLY measured residual was THIS
+   * entry - their seat already mints the exact shape). Measured read-only at
+   * the Team wire lane feat/a5m2-wire-team
+   * @fc072d5c248f008734bdc10b879d313c13625017 (team-wiring.mjs
+   * mintTargetManifest :200-248: the lossless FLAT projection, leaf for
+   * leaf, of the adapter's plan.target; adapter team-adapters.mjs @88ad3cf37
+   * mintTarget :663-708, A5_B_TEAM_ADAPTER_REVISION = 1, records
+   * 74-82+86) and their spec a5m2-team-wiring-c1.test.ts (g) - the 10-key
+   * set their legs pin sorted. NO mint delta, NO synthetic discriminant:
+   * 'operation' is a MINTED string leaf (the per-row operation constant), so
+   * it discriminates TEN closed groups directly - the signed variant
+   * pattern with zero new vocabulary (nullableString, signed since 5d83ed6f6,
+   * types the two string-OR-null claims exactly: rootClaim and memberClaim
+   * ride null AS MEASURED - an un-adjudicated claim is a measured null,
+   * never a sentinel; their own grammar-honesty block predates nullableString
+   * and is superseded BY THIS ENTRY, their fail-closed pin flips to
+   * ACCEPTANCE at merge - expected, disclosed). Per-group adds+binds pin the
+   * row↔object↔effect-label pairing at the grammar edge (guard law: bound
+   * leaves live in adds): a team_collect claim CANNOT wear another row's
+   * durable object or effect label; an unknown operation selects no group.
+   * ASK-lane fidelity, NOT widened: the effect labels are the contract's
+   * comment-side I+S annotations (the closed RESOURCE_KINDS carries NO
+   * Team-object kind - the named residual their lane reports to CENTER);
+   * the call still rides the ONE admitted tool-invoke effect and this table
+   * invents no effect dimension. The two-branch delegate law, the
+   * optionalStringField ''-normalizes-to-absent rule and the branch
+   * correlations (memberClaim null ↔ which adjudication) are their
+   * MINT-SIDE laws - typed here, never mirrored (root 19:25: no
+   * hand-mirrored constraints). contract/rootAdjudication/revisionLaw are
+   * the mint's constant law sentences: kind-typed here, their constancy and
+   * their lane's exactly-one/identity refusals stay lane-side, cited not
+   * encoded. currentFields = the mint-side pure-data constants the edge can
+   * restate. No Host enablement; B-TEAM's four-tier row stays 未接线/接线未测
+   * their own wording until a Host-accepted acceptance leg lands - no C2
+   * claim from table passage. */
+  'B-TEAM': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      contract: 'string',
+      rootClaim: 'nullableString',
+      rootAdjudication: 'string',
+      memberClaim: 'nullableString',
+      memberAdjudication: 'string',
+      revisionLaw: 'string',
+      argumentLawFace: 'string',
+    }),
+    variant: Object.freeze({
+      leaf: 'operation',
+      by: Object.freeze({
+        'team-list-members': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'the durable Team roster (member instances + lifecycle + bound child session ids)', effectLabel: 'S(read) — the durable Team roster through the existing facade action' }),
+        }),
+        'team-list-templates': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: "the bound blueprint's member templates", effectLabel: "S(read) — the bound blueprint templates through the existing facade action" }),
+        }),
+        'team-inspect-config': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: "ONE member's durable effective-policy / requirement / recovery facts", effectLabel: "S(read) — ONE member's durable effective-policy view (config object)" }),
+        }),
+        'team-create-member': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'a NEW member instance from a blueprint template (the member-lifecycle object)', effectLabel: 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)' }),
+        }),
+        'team-delegate': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'a work unit with BOTH real branches (tools.ts:688-701): CONTINUE form = a NEW round on an EXISTING delegation instance (guarded on that target, SD-GUARD), CREATE form = a NEW delegation plus template-resolved member (SD-CREATE, activation authority is the gate)', effectLabel: 'I + S(durable work-unit admission; create-form additionally mints the member-lifecycle fact; child run + budget INSIDE the delegated chain; requestToken = the facade idempotency identity)' }),
+        }),
+        'team-follow-up': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'a NEW work unit on an EXISTING member (same bound child session)', effectLabel: 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)' }),
+        }),
+        'team-collect': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'the durable work-unit states behind the submitted request tokens', effectLabel: 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing' }),
+        }),
+        'team-send-message': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: "one durable attributed message on the recipient's bound session", effectLabel: "I + S(durable message write to the member's bound session via the messaging coordinator; relay policy + guard INSIDE the delegated chain; message-commit uncertainty is NOT blindly retried — that law lives in the coordinator)" }),
+        }),
+        'team-report-progress': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: 'one durable activity row on the per-subject lane', effectLabel: 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)' }),
+        }),
+        'team-archive-member': Object.freeze({
+          adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+          binds: Object.freeze({ targetObject: "ONE member's lifecycle (quiesce-then-archive durable commits)", effectLabel: 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['operation', 'targetObject', 'effectLabel']),
+  }),
 } as const)
 
 /* The SIGNED closed kind list - the single source the module-load legality
