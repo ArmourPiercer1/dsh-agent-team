@@ -1209,3 +1209,60 @@ describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> mint-shape grammar (NOT cro
     expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), { ...realNavigate, mode: 'attach' }))).toContain('mode')
   })
 })
+
+/* ROOT 22:44 — REAL factory mint through the CURRENT validator. No
+ * hand-built manifests here: the adapters' OWN classifyCall produces the
+ * targetManifest and the table validator judges it. The generation fact
+ * is the REAL injected supply (declaredService.connectionIncarnation =
+ * what the connection-owning assembly injects) — 'gen-real-2244' rides
+ * every manifest verbatim; 'unobserved' is not passed off as a real
+ * binding. screenshot/tabs variants judge their REAL targets too. */
+describe('A5M2-G2-WIRE round-30: the REAL mint validates at the table (positive+negative)', () => {
+  const mint = (declared: Record<string, unknown>) => (G2A as unknown as {
+    createG2BrowserAdapters: (i: Record<string, unknown>) => Record<string, { classify: (a: Record<string, unknown>) => { ok?: boolean; targetManifest?: Record<string, unknown>; code?: string; detail?: string } }>
+  }).createG2BrowserAdapters({
+    realmId: 'r-real-2244', providerId: 'p-real-2244', readNative: (name: string) => ({ name, definitionIdentity: 'di-2244', execute: async () => ({ ok: true, value: 'native' }) }),
+    definitionIdentityOf: () => 'def-2244', observe: () => {},
+    declaredService: { present: true, ...declared },
+  })
+  const rule = () => {
+    const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
+    if (entry === undefined) throw new Error('B-BROWSER table entry missing')
+    return entry
+  }
+  it('launch: the factory OWN navigate/act/screenshot/tabs manifests validate; the injected generation fact rides verbatim (no unobserved in the real-binding leg)', () => {
+    const rows = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-real-2244', connectionIncarnationReason: 'owner-injected mount generation' })
+    const nav = rows.stagehand_navigate!.classify({ url: 'https://target.example.invalid/deep?q=1' })
+    expect(nav.ok).toBe(true)
+    expect(nav.targetManifest!.connectionIncarnation).toBe('gen-real-2244')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav.targetManifest)).toBeUndefined()
+    const act = rows.stagehand_act!.classify({ instruction: 'click the save button' })
+    expect(act.ok).toBe(true)
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), act.targetManifest)).toBeUndefined()
+    const shot = rows.stagehand_screenshot!.classify({ fullPage: true })
+    expect(shot.ok).toBe(true)
+    expect(shot.targetManifest!.fullPage).toBe(true)
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), shot.targetManifest)).toBeUndefined()
+    const tabsNew = rows.stagehand_tabs!.classify({ action: 'new', url: 'https://tabtarget.example.invalid/x' })
+    expect(tabsNew.ok).toBe(true)
+    expect(tabsNew.targetManifest!.url).toBe('https://tabtarget.example.invalid/x')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), tabsNew.targetManifest)).toBeUndefined()
+    const tabsList = rows.stagehand_tabs!.classify({ action: 'list' })
+    expect(tabsList.targetManifest!.url).toBeNull() // explicit null device, never a silently missing target field
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), tabsList.targetManifest)).toBeUndefined()
+  })
+  it('attach + negatives: the attach-mode navigate/observe manifests validate with the real endpoint target; a REAL manifest stripped of url / generation reason-as-fact still refuses at the table', () => {
+    const rows = mint({ mode: 'attach', cdpEndpointOrigin: 'http://127.0.0.1:9222', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-real-2244' })
+    const nav = rows.stagehand_navigate!.classify({ url: 'https://target.example.invalid/' })
+    expect(nav.targetManifest!.attachEndpointOrigin).toBe('http://127.0.0.1:9222')
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav.targetManifest)).toBeUndefined()
+    const stripped = { ...(nav.targetManifest as Record<string, unknown>) }
+    delete stripped.url
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), stripped))).toContain('url')
+    const swapped = { ...(nav.targetManifest as Record<string, unknown>), browserVariant: 'attach:act' }
+    // the REAL navigate manifest re-labelled as an ACT group claim is
+    // refused for the ACT group's required target leaves (the variant
+    // discriminant selects a REAL group; the table still refuses closed)
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), swapped))).toContain('modelDestinationOrigin')
+  })
+})

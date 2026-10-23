@@ -1583,10 +1583,14 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
    * domainAuthorityId carry explicit null when absent (nullableString,
    * the signed B-MCP device); the incarnation trio rides REAL injected
    * mount facts ('unobserved' only per the signed B-MCP absence law,
-   * never a self-attesting constant). screenshot/tabs are NOT claimed:
-   * their own variants land from their own real targets, separately —
-   * this entry does not stand for "all of Browser". No new kinds, no
-   * any. */
+   * never a self-attesting constant). screenshot/tabs joined (root 22:44)
+   * STRICTLY from their real manifests: screenshot = fullPage boolean +
+   * pageId; tabs = branch (native closed list|new|select|close, the
+   * validated action string) + url/destinationOrigin as nullableString
+   * carrying the REAL url when declared (tabs(new,url) is a real net
+   * connect — effect law pinned) and an explicit null otherwise — no
+   * value dropped, nothing invented. Still does not stand for "all of
+   * Browser" (ordinary public export awaits the user). No new kinds. */
   'B-BROWSER': Object.freeze({
     required: Object.freeze({
       browserVariant: 'string',
@@ -1630,6 +1634,22 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
         'attach:extract': Object.freeze({
           adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelDestinationOrigin: 'string', instructionDigest: 'string', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
           binds: Object.freeze({ operation: 'browser-extract', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:screenshot': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', fullPage: 'boolean', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-screenshot', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'launch:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:tabs': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', branch: 'string', url: 'nullableString', destinationOrigin: 'nullableString', pageId: 'nullableString', attachEndpointOrigin: 'string', attachNote: 'string' }),
+          binds: Object.freeze({ operation: 'browser-tabs', record: 'surface:browser_owned', mode: 'attach' }),
         }),
       }),
     }),

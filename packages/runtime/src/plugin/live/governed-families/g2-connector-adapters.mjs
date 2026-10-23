@@ -980,10 +980,11 @@ export function createG2BrowserAdapters({ realmId, providerId, readNative, decla
         }
         const manifest = baseManifest('tabs', pageId)
         manifest.branch = args.action
-        if (url !== undefined) {
-          manifest.url = url
-          manifest.destinationOrigin = urlOrigin
-        }
+        // explicit-null device (pageId precedent): the REAL url rides
+        // verbatim when declared; absence is an explicit null, never a
+        // silently missing target field (root 22:44 tabs variant).
+        manifest.url = url === undefined ? null : url
+        manifest.destinationOrigin = urlOrigin === undefined ? null : urlOrigin
         manifest.businessObligations = [{
           service: 'browser', action: `tab-${args.action}`, right: 'write',
           entry: url === undefined
