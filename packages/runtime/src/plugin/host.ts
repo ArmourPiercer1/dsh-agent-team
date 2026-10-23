@@ -2355,10 +2355,33 @@ async function buildG2TeamSupply(
     // requires a Transport {start,send/close} back — g2-team-assembly
     // :331-333). The approved record is the ONLY source; an unknown server
     // name refuses, the row facts never re-derive a connection.
-    out.makeTransport = (target: { server?: unknown; transport?: unknown }): { start: unknown; send: unknown; close: unknown } => {
+    out.makeTransport = (target: Record<string, unknown>): { start: unknown; send: unknown; close: unknown } => {
       const rec = byServer.get(String(target?.server))
       if (rec === undefined || rec.transport !== target?.transport) {
         throw new Error(`g2TeamAssembly: no approved ${String(target?.transport)} connection record for server '${String(target?.server)}' — the transport is fixed by approved config, never by row-side facts`)
+      }
+      // ROOT 21:01 same-source law: server-name equality is NOT the binding.
+      // The APPROVED record is compared FIELD BY FIELD against the actual
+      // transport target the mount minted from the approved surface config —
+      // spawn (argv0/count/cwd RAW strings, '' stays '') for stdio, the
+      // endpoint ORIGIN for streamable-http — and only a fully matched pair
+      // reaches createTransport. A divergent endpoint/spawn between the two
+      // config faces throws BEFORE any transport object exists (zero open).
+      const mismatches: string[] = []
+      if (target?.transport === 'stdio') {
+        if (target.spawnArgv0 !== rec.command) mismatches.push(`spawnArgv0 '${String(target.spawnArgv0)}' vs approved command '${String(rec.command)}'`)
+        const recArgs = Array.isArray(rec.args) ? rec.args.length : -1
+        if (target.spawnArgCount !== recArgs) mismatches.push(`spawnArgCount ${String(target.spawnArgCount)} vs approved args length ${String(recArgs)}`)
+        if (target.spawnCwd !== (typeof rec.cwd === 'string' ? rec.cwd : '')) mismatches.push(`spawnCwd ${String(target.spawnCwd)} vs approved cwd ${String(rec.cwd)}`)
+      } else if (target?.transport === 'streamable-http') {
+        let recOrigin: string | undefined
+        try { recOrigin = new URL(String(rec.url)).origin } catch { recOrigin = undefined }
+        if (recOrigin === undefined || target.endpointOrigin !== recOrigin) mismatches.push(`endpointOrigin '${String(target.endpointOrigin)}' vs approved url origin '${String(recOrigin)}'`)
+      } else {
+        mismatches.push(`unknown transport axis '${String(target?.transport)}'`)
+      }
+      if (mismatches.length > 0) {
+        throw new Error(`g2TeamAssembly: the transport target and the approved ${String(target?.transport)} record for server '${String(target?.server)}' are NOT same-source (${mismatches.join('; ')}) — refusing before construction; no transport object exists`)
       }
       return tMod.createTransport!(rec)
     }
@@ -2367,9 +2390,14 @@ async function buildG2TeamSupply(
   // (method, args) ride the worker's own execute dispatcher — no method
   // table is invented here; the worker entry is the method surface.
   out.callResource = async (resource: unknown, method: string, args: unknown, signal?: AbortSignal): Promise<unknown> => {
-    const execute = (resource as { execute?: (m: string, a: unknown, s?: AbortSignal) => unknown } | null)?.execute
-    if (typeof execute !== 'function') throw new Error('g2TeamAssembly.callResource: the opened worker answers no execute(method, args, signal) (worker-client.ts:70-71 public face) — refusing, no fallback')
-    return await execute.call(resource, method, args, signal)
+    // ROOT 21:01: the port hands the LEASE-OWNED resource ({ value, close }
+    // — the lease's law at g2-team-assembly :331 shape contract); the
+    // runtime is resource.value; execute binds THAT value, never a swapped
+    // runtime, and the close owner stays the lease.
+    const runtime = (resource as { value?: { execute?: (m: string, a: unknown, s?: AbortSignal) => unknown } } | null)?.value
+    const execute = runtime?.execute
+    if (typeof execute !== 'function') throw new Error('g2TeamAssembly.callResource: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71 public face on the leased runtime) — refusing, no fallback, no runtime swap')
+    return await execute.call(runtime, method, args, signal)
   }
   // The two faces the host genuinely cannot mint TODAY (gap doc, fork
   // options enumerated): passed ABSENT so the producer's own typed refusal

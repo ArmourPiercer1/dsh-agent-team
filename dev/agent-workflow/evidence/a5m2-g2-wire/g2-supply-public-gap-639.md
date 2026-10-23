@@ -41,3 +41,29 @@
 
 WEB/BROWSER closed-table gaps stay single-filed as before (B-BROWSER target
 rule = browser lane; WEB route = the signed A5_G2_WEB_ROUTE_GAP).
+
+## ROUND-20 (root 21:01) — shipped-surface audit + same-source bind fixes
+SHIPPED-ENTRY AUDIT (files vs exports maps @639ed01539): mcp-client and
+browser-use-stagehand-native both map "./src/*" while `files` ships ONLY
+lib/index.js (+ lib/types) — the deep src/* specifiers resolve in a SOURCE
+CHECKOUT (the pinned test-use world, where this lane verifies) but NOT in a
+published package install. Current PUBLIC lib entries: mcp-client root =
+apply/Config/createMcpToolDefinition only (no createTransport); stagehand
+root = apply/Config only (launchChromium/openBrowserWorker are src-internal,
+imported at its own index.ts:14-15 for apply's composition). NO dsh
+lib/runtime helper offers either entry either. MINIMAL EXPORT PROPOSALS
+(report-only, awaiting root; NO self-patch, NO alias, NO core touch):
+ (P1) mcp-client src/index.ts: `export { createTransport } from
+      './transport.ts'` — rides the ALREADY-shipped lib/index.js; approved
+      transportEntry then names the package ROOT, not a src path.
+ (P2) stagehand src/index.ts: `export { launchChromium, openBrowserWorker }`
+      — both already imported there (:14-15), zero new wiring, same shipping.
+SAME-SOURCE TRANSPORT BIND (host.ts buildG2TeamSupply): server/transport
+equality was NOT the binding — the closure now compares the approved record
+FIELD BY FIELD against the actual minted target (stdio: spawnArgv0 vs
+command, spawnArgCount vs args.length, RAW spawnCwd vs cwd with '' kept;
+http: endpointOrigin vs the record url's URL.origin) and throws BEFORE
+construction on any divergence (zero transport object). LEASE LAW:
+callResource now binds the LEASE-OWNED resource's runtime
+resource.value.execute(method,args,signal) — never a swapped runtime; the
+close owner stays the lease.
