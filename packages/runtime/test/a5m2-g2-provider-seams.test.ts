@@ -516,9 +516,10 @@ describe('a5m2-g2-seams MCP request lease', () => {
 
 /* ── TEAM-OWNED launch owner (c0e-4 — shipped) ────────────────────── */
 describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
-  interface OwnerDouble { owner: LaunchOwnerResult, order: string[], launches: number, runtimeOpens: number, procCloses: number, runtimeCloses: number }
-  function ownerDouble (opts: { mode?: 'launch' | 'attach', failRuntime?: boolean, failProcClose?: boolean, failRuntimeClose?: boolean, failRollback?: boolean, invalidRuntime?: boolean } = {}): OwnerDouble {
+  interface OwnerDouble { owner: LaunchOwnerResult, order: string[], launches: number, runtimeOpens: number, procCloses: number, runtimeCloses: number, procHandles: unknown[] }
+  function ownerDouble (opts: { mode?: 'launch' | 'attach', failRuntime?: boolean, failProcClose?: boolean, failRuntimeClose?: boolean, failRollback?: boolean, invalidRuntime?: boolean, gateRuntime?: Promise<void> } = {}): OwnerDouble {
     const order: string[] = []
+    const procHandles: unknown[] = [] // the REAL process handle objects the factory produced
     let launches = 0
     let runtimeOpens = 0
     let procCloses = 0
@@ -528,17 +529,20 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
       launchOwned: async () => {
         launches += 1
         order.push('proc:launch')
-        return {
+        const proc = {
           close: async () => {
             procCloses += 1
             order.push('proc:close')
             if (opts.failRollback === true || opts.failProcClose === true) throw new Error('process refuses to die')
           },
         }
+        procHandles.push(proc)
+        return proc
       },
       openRuntime: async () => {
         runtimeOpens += 1
         order.push('runtime:open')
+        if (opts.gateRuntime !== undefined) await opts.gateRuntime // stays PENDING while drain runs
         if (opts.failRuntime === true && runtimeOpens === 1) throw new Error('CDP connect exploded') // the FIRST open fails; a recoverable retry succeeds
         if (opts.invalidRuntime === true) return { handle: 'not-an-OwnedSessionResource' } // resolves WITHOUT close()
         return {
@@ -550,7 +554,7 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
         }
       },
     })
-    return { owner, order, get launches () { return launches }, get runtimeOpens () { return runtimeOpens }, get procCloses () { return procCloses }, get runtimeCloses () { return runtimeCloses } }
+    return { owner, order, procHandles, get launches () { return launches }, get runtimeOpens () { return runtimeOpens }, get procCloses () { return procCloses }, get runtimeCloses () { return runtimeCloses } }
   }
 
   it('open() composes the REAL sequence (process FIRST, runtime SECOND — host pattern index.ts:105-117) and answers an OwnedSessionResource handle; close() closes runtime THEN process EXACTLY ONCE and is idempotent', async () => {
@@ -621,7 +625,7 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect((await asyncError(() => d.owner.open())).message).toMatch(/POISONED/) // same ban after a failed close
   })
 
-  it('57f5: the INVALID-RUNTIME branch never swallows a failing rollback — the breach surfaces BOTH failures, the process handle and the uncloseable runtime are retained at owner level, and the owner is poisoned', async () => {
+  it('8494: the INVALID-RUNTIME branch never swallows a failing rollback — the breach surfaces BOTH failures, and BOTH real references (the un-rolled-back PROCESS handle and the invalid runtime) are retained at owner level, with the original owned object inside the ledger', async () => {
     const d = ownerDouble({ invalidRuntime: true, failRollback: true })
     const err = await asyncError(() => d.owner.open())
     expect(err.code).toBe(SC.OPEN_CONTRACT_BREACH)
@@ -629,14 +633,19 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect(err.message).toMatch(/process refuses to die/)
     expect(d.procCloses).toBe(1) // the owner TRIED the rollback
     expect(d.owner.poisoned()).toBe(true)
-    expect(d.owner.retained().length).toBe(1) // the half-open process handle is held
+    // 8494 defect 1: TWO real references — keeping only the invalid runtime
+    // while the half-open PROCESS floats free is RED here:
+    expect(d.owner.retained().length).toBe(2)
+    expect(d.owner.retained()).toContain(d.procHandles[0]) // the ORIGINAL owned handle object
     expect((await asyncError(() => d.owner.open())).message).toMatch(/POISONED/)
-    // same branch, rollback CLEAN: breach + runtime-reference retention, poison (uncloseable handle), but the PROCESS died:
+    // same branch, rollback CLEAN: breach + ONLY the uncloseable runtime is
+    // retained (the process really died — not held as a phantom):
     const clean = ownerDouble({ invalidRuntime: true })
     expect((await asyncError(() => clean.owner.open())).code).toBe(SC.OPEN_CONTRACT_BREACH)
     expect(clean.procCloses).toBe(1)
-    expect(clean.owner.poisoned()).toBe(true) // the uncloseable runtime handle is still retained
+    expect(clean.owner.poisoned()).toBe(true)
     expect(clean.owner.retained().length).toBe(1)
+    expect(clean.owner.retained()).not.toContain(clean.procHandles[0]) // rolled back cleanly ⇒ not retained
   })
 
   it('LEASE × LAUNCH OWNER integration (the Team lane end-to-end): PA refused ⇒ the owner never opens (zero launches); PA consumed ⇒ work runs on the owner handle and drain closes THROUGH the owner (runtime then process)', async () => {
@@ -699,6 +708,35 @@ describe('a5m2-g2-seams TEAM-OWNED launch owner', () => {
     expect(snap.state).toBe('closed')
     expect(clean.runtimeCloses).toBe(1)
     expect(clean.procCloses).toBe(2) // one rollback + one real close
+  })
+
+  it('8494 drain-first race: drain begins WHILE the launch is PENDING, the factory rollback THEN fails — the ALREADY-RETURNED drain promise must REJECT (shared persistent factory-retained fact checked by the ORIGINAL drain flow), never fake-closed by the old allSettled path', async () => {
+    let releaseRuntime: (() => void) | undefined
+    const gate = new Promise<void>((res) => { releaseRuntime = res })
+    const d = ownerDouble({ failRuntime: true, failRollback: true, gateRuntime: gate })
+    const lease = S.createG2BrowserResourceLease({
+      mode: 'launch',
+      openResource: async () => await d.owner.open(),
+      consumeApproval: () => 'consumed',
+    })
+    const running = lease.run({ toolName: 'stagehand_navigate' }, async () => 'never')
+    await flush()
+    expect(lease.state()).toBe('launching') // the open is PENDING (gate held)
+    const draining = lease.drain() // drain is HANDED OUT before the failure exists
+    await flush()
+    expect(lease.state()).toBe('draining') // and it is WAITING on the pending launch
+    releaseRuntime?.() // NOW: runtime open fails AND the process rollback fails
+    expect((await asyncError(() => running)).code).toBe(SC.CLOSE_FAILED) // owner's retained refusal surfaces
+    const err = await asyncError(() => draining) // RED if the original drain promise resolves settled
+    expect(err.code).toBe(SC.CLOSE_FAILED)
+    expect(err.message).toMatch(/while this drain waited/) // the shared persistent fact rejected THIS promise
+    expect(lease.state()).toBe('close-failed')
+    expect(lease.launchOrder()).toContain('lease:close-failed')
+    expect(lease.launchOrder()).not.toContain('lease:closed') // never a fake closed
+    expect((await asyncError(() => lease.drain())).code).toBe(SC.CLOSE_FAILED) // later calls re-reject
+    expect((await asyncError(() => lease.run({ toolName: 'stagehand_act' }, async () => 'never'))).code).toBe(SC.LEASE_CLOSED)
+    expect(d.owner.poisoned()).toBe(true)
+    expect(d.owner.retained().length).toBe(1)
   })
 })
 

@@ -731,8 +731,14 @@ export function createG2BrowserLaunchOwner ({ mode, launchOwned, openRuntime, ob
           log.push('owner:rollback-failed')
         }
       }
+      if (breachRollback !== null) {
+        // 8494: TWO real references are held — the invalid runtime handle
+        // AND the process handle that refused to roll back. Words (or only
+        // the runtime reference) are not retention.
+        retainedHandles.push(owned)
+      }
       poison(runtime ?? { uncloseableRuntime: true }, breachRollback !== null ? `invalid runtime AND rollback failed: ${breachRollback}` : 'invalid runtime handle cannot be closed')
-      throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, `openRuntime resolved without an OwnedSessionResource-shaped handle (close REQUIRED, browser-use-runtime index.ts:12-18 @639ed01539) — the reference is RETAINED at owner level and the owner POISONED${breachRollback !== null ? `; the process rollback ALSO FAILED (${breachRollback.slice(0, 120)}) — both failures surface, neither swallowed` : ''}`)
+      throw new G2SeamError(A5_G2_SEAM_CODES.OPEN_CONTRACT_BREACH, `openRuntime resolved without an OwnedSessionResource-shaped handle (close REQUIRED, browser-use-runtime index.ts:12-18 @639ed01539) — the reference is RETAINED at owner level and the owner POISONED${breachRollback !== null ? `; the process rollback ALSO FAILED (${breachRollback.slice(0, 120)}) — BOTH the un-rolled-back process handle and the invalid runtime are RETAINED, neither failure swallowed` : ''}`)
     }
     log.push('owner:ready')
     let closing = null
@@ -845,6 +851,10 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
   const inflight = new Set() // EVERY promise this lease started: pending launches AND work
   const retained = [] // handles that could NOT be closed — never dropped (c0e-1)
   let lateCloseFailure = null // a late arrival whose close failed during drain
+  // 8494: SHARED PERSISTENT fact for a factory-retained launch failure. An
+  // already-RETURNED drain promise can never be replaced — the ORIGINAL drain
+  // flow core-checks this flag after quiescence and rejects itself.
+  let factoryRetainedFailure = null // otherwise the old allSettled path would fake 'closed'
   let state = 'idle' // idle | launching | active | draining | failed | close-failed | closed
   let resource = null
   let init = null
@@ -901,8 +911,16 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
             log.push('lease:launch-retained')
             state = 'close-failed'
             init = null
-            drainPromise = Promise.reject(new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `the launch factory RETAINED a half-open resource at owner level and POISONED itself (${String(cause?.message ?? '').slice(0, 200)}) — the lease found no handle of its own yet refuses to fake 'closed': no reopen, disposal REJECTED (57f5); recovery boundary = a NEW owner+lease after the assembly disposes the retained handles`))
-            void drainPromise.catch(() => {}) // observable, never unhandled
+            // 8494: record the SHARED PERSISTENT fact instead of swapping the
+            // variable — a drain promise already handed to a caller stays the
+            // one it resolves (or rejects) through; the original drain body
+            // reads this flag after quiescence and rejects itself. Only a
+            // drain that has NOT begun is pre-seeded rejected (cached).
+            factoryRetainedFailure = String(cause?.message ?? cause)
+            if (drainPromise === null) {
+              drainPromise = Promise.reject(new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `the launch factory RETAINED a half-open resource at owner level and POISONED itself (${factoryRetainedFailure.slice(0, 200)}) — the lease found no handle of its own yet refuses to fake 'closed': no reopen, disposal REJECTED (57f5); recovery boundary = a NEW owner+lease after the assembly disposes the retained handles`))
+              void drainPromise.catch(() => {}) // observable, never unhandled
+            }
             throw cause
           }
           log.push('lease:launch-failed')
@@ -1021,6 +1039,15 @@ export function createG2BrowserResourceLease ({ mode, openResource, consumeAppro
       if (lateCloseFailure !== null) {
         log.push('lease:close-failed')
         throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `a late-arriving resource could not be closed (${lateCloseFailure.slice(0, 160)}) — the handle is RETAINED and disposal REJECTED (owner dispose law :131-137 @639ed01539); the lease never reports closed`)
+      }
+      // 8494: the factory retained something WHILE this drain waited on the
+      // pending open. The flag is checked HERE, inside the original drain
+      // flow — swapping the drainPromise variable could never un-settle a
+      // promise already handed out, so the allSettled path used to run on to
+      // a fake 'closed'. It now REJECTS this same promise.
+      if (factoryRetainedFailure !== null) {
+        log.push('lease:close-failed')
+        throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `the launch factory RETAINED a half-open resource at owner level while this drain waited on the pending open (${factoryRetainedFailure.slice(0, 200)}) — the original drain flow rejects on the shared persistent fact (8494); the lease never reports closed`)
       }
       if (resource !== null) {
         const closing = resource
