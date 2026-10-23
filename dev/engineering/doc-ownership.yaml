@@ -72,6 +72,18 @@ owners:
   - glob: packages/**
     docs:
       - docs/STATUS.md
+  # Permission and tool-governance code has no package README at this base, and the exit
+  # criteria name package documentation as a reading surface. Pointing at the authoritative
+  # M0 contracts is a pointer, not an edit of them. Advisory on purpose: this line does not
+  # gate the product tree, so a missing reading here is an advisory, not a refusal.
+  - glob: packages/runtime/**
+    docs:
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+      - docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
+  - glob: packages/tools/**
+    docs:
+      - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
   - glob: scripts/**
     docs:
       - docs/STATUS.md

@@ -105,3 +105,45 @@ The third does not: `ls packages/*/README.md` returns only `packages/legacy/READ
 for `packages/contracts/**` the ownership map can only point at `docs/STATUS.md`, a living
 snapshot that is not authoritative and is not mine to edit. That gap is named in the report
 rather than filled by writing into the product tree.
+
+## 7. The exit test the plan itself names, run once
+
+*"一个新的 Agent 以当前状态入口、相应语义/合同和包说明能正确解释权限相关变更，不需加载海量历史"*
+— tested by running exactly that: a fresh agent with no session context, allowed to read ten
+entry files and forbidden `git log`, `graph.yaml`, `SESSION_ROUTER_LOG.md` and `docs/plans/**`
+(the bulk history the clause says it should not need). It answered six questions with
+citations and listed nine gaps. Result: it got the four axes, the writable surface, the
+difference between "in branch" / "merged" / "released", and — the one that matters most for a
+documentation line — that **an unimplemented proposal must not fail a check**, all from the
+entry files alone. Every answer cited a real file; it invented nothing, and said "not
+answerable" where the files were silent.
+
+Closed from this line's own files (no other owner's file was touched):
+
+| gap the reader found | where it is now answered |
+| --- | --- |
+| axis values listed but never defined | `dev/engineering/README.md` → "Status vocabulary": all four enums in full |
+| `verified_tier` / `verification_commit` / `merged_commit` undocumented | same section, a field→required-by→refusal table naming each code |
+| no tier ↔ `verification_status` mapping | same section: C1/C2/C3 as *where a claim was observed*, and why `verified_local` needs no commit |
+| "current-state documents" never enumerated | same section: the exact six files plus three prefixes, and the two exempt prefixes |
+| no owner/reading path for permission code | `doc-ownership.yaml`: advisory rules pointing `packages/runtime/**` and `packages/tools/**` at the M0 lifecycle contract, the effective backlog and the tool matrix (all present at this base, so `DOC_OWNER_DOC_MISSING` cannot fire) |
+| the field-agreement check's silent semantic ceiling | same section: names only; the rest lives in parse functions and no check here guards it; pairing data stays in the script rather than being duplicated into a document that could drift |
+
+Reported, not fixed, because they are not mine:
+
+1. `docs/contracts/engineering-baseline/ids.yaml` carries `normative_status: proposed-not-ratified`
+   for all 19 ids and `owners: [Contract/Security Owner]` — ratification and the role roster
+   are Contract Owner acts on a normative file this line cannot write.
+2. `packages/*/README.md` exists only for `packages/legacy`; the plan names package
+   documentation as an entry surface, so today the owner map can only point product changes at
+   `docs/STATUS.md`.
+3. `.agents/notes/README.md` cites the mandate as PR #361's `architecture.md` §3.2/D7, which
+   is not a file at this base — the mandate is quoted, not verifiable from within this branch.
+4. A rule gap found while writing the vocabulary section: `verified_ci` paired with
+   `verified_tier: C1` is self-contradictory and is **not** refused, because the tier
+   comparison sits in the `verified_host`-only branch. Stated in the README as a known gap;
+   tightening an existing rule is a rule change and is root's call, not a convenience.
+
+Controls after these edits: 91/0, RC=0 (`controls-run-17.log`). The readability test is
+repeatable in principle but was run once by hand, by me, through one subagent — a single
+sample, in my session, is not a repeatability claim.

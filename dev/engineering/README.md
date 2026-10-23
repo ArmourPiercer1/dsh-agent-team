@@ -76,3 +76,60 @@ sides is not applicable — the summary prints `contracts=N pairs compared` or
 type, no `minItems`, no length, no uniqueness, no cross-field rule — those live in parse
 functions and are not derivable from a declaration. `docs:sync --write` cannot repair its
 findings: they name a shape, not a stale derivative, so it is not in `SELF_UPDATE_CODES`.
+
+## Status vocabulary, and exactly what the tools can see
+
+Written because a fresh reader using only the entry files could reconstruct the axis names
+but not their meanings. `dev/engineering/registry.schema.json` is the machine check that
+refuses anything outside these sets; this prose explains them and says which of them any
+tool actually enforces.
+
+- `decision_status`: `proposed` | `accepted` | `rejected` | `superseded` | `pending_coordination`
+- `implementation_status`: `not_started` | `in_progress` | `implemented_in_branch` | `merged`
+- `verification_status`: `not_verified` | `verified_local` | `verified_ci` | `verified_host`
+- `release_status`: `not_released` | `candidate` | `released`
+
+Claim metadata, what it is for, and the code that refuses without it:
+
+| field | required by | refusal |
+| --- | --- | --- |
+| `verification_artifacts` | any `verified_*` | `FAKE_VERIFICATION` when empty, or when a listed path does not exist |
+| `verification_commit` | `verified_ci`, `verified_host` | `CLAIM_UNBOUND` when absent, or when it is 40-hex but names no commit object here |
+| `verified_tier` | `verified_host` | `CLAIM_TIER_MISSING` without C2/C3; `CLAIM_TIER_MISMATCH` when C1 is offered for real-environment behaviour; `CLAIM_TIER_UNKNOWN` outside C1/C2/C3 |
+| `merged_commit` | `implementation_status: merged` | `MERGED_CLAIM_UNCORROBORATED` unless it exists and is an ancestor of `origin/master` |
+| — | `release_status: candidate` / `released` | `RELEASE_CLAIM_UNCORROBORATED` unless `verified_host` at C2/C3 plus that ancestry |
+
+The tiers describe **where a claim was observed**, not how confident anyone feels: C1 = this
+machine, static analysis or local controls; C2 = a hosted or second-environment run; C3 = a
+real-environment (Host) run. `verified_local` deliberately needs no `verification_commit`: it
+asserts nothing about another machine, which is also why C1 evidence is not allowed to stand
+in for `verified_host`. Known gap, not hidden here: the rules do **not** refuse
+`verified_ci` carrying `verified_tier: C1`, which is self-contradictory — the commit binding
+fires, the tier comparison does not (`gen-current-state.mjs`, the `verified_host`-only tier
+branch). Tightening it is a rule change, so it is reported rather than done from here.
+
+`released` is not defined by this line. What the tools do is refuse the word without
+corroboration, which is not the same as deciding what a release is — tag, `stable` push, or
+publish. That belongs to a release decision and to `docs/ROUTER_RULES.md`; nothing here is a
+release ledger.
+
+The **"current-state documents"** that several rules scan are exactly these, and no others:
+`AGENTS.md`, `README.md`, `docs/STATUS.md`, `docs/BRANCHING.md`, `docs/glossary.md`,
+`docs/terminology.md`, plus everything under `docs/contracts/`, `.agents/notes/` and
+`dev/engineering/`. `docs/ideas/` and `.agents/notes/proposed/` are exempt from evidence
+requirements because they may describe the future by design; that exemption is what keeps an
+unimplemented proposal from reading as a product failure.
+
+Contracts pairings are **data inside `scripts/contracts-field-agreement.mjs`** (`PAIRS`). The
+script prints what it compared; the list is not copied into any document, because a second
+copy is a second thing that can drift from the first. It compares names only — type,
+`minItems`, length, uniqueness and cross-field rules live in the `packages/contracts` parse
+functions and **no check here guards them**; the accountable role for that package is
+whatever its registry entry's `owners` says, and there is no separate role roster on this
+branch.
+
+Ratification, as far as tooling reaches: an id in `ids.yaml` marked `proposed-not-ratified`
+stays that way until a registry entry records a `decision_status` for it. The tools do not
+detect a *missing* ratification — no rule requires an id to be ratified, and inventing that
+requirement would be this line promoting its own contract. Whether to ratify is the Contract
+Owner's judgement, expressed by editing the normative file, which this line cannot write.
