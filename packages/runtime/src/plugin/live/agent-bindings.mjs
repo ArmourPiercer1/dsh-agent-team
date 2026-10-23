@@ -4072,6 +4072,23 @@ export function createAgentBindings(deps) {
                   onTerminal: (observer) => agentCtx.on('tools/result', observer),
                 },
               }),
+          // A5-M2 IMAGE hand-off (root 14:44): the THIRD port, forwarded BY
+          // REFERENCE under the IDENTICAL presence law — forwarded only when
+          // the plane DECLARED the capability (`'paImageHandoff' in plane` is
+          // false = omit, never launder a declared-broken face into absence;
+          // the adapter's install refuses it). `onTerminal` rides the SAME
+          // 'tools/result' funnel and the SAME composite disposer.
+          ...(a5PlaneValue === undefined
+            || a5PlaneValue === null
+            || (typeof a5PlaneValue === 'object' && !('paImageHandoff' in a5PlaneValue))
+            ? {}
+            : {
+                paImageHandoff: {
+                  open: a5PlaneValue.paImageHandoff?.open,
+                  close: a5PlaneValue.paImageHandoff?.close,
+                  onTerminal: (observer) => agentCtx.on('tools/result', observer),
+                },
+              }),
           onObserve: (row) => {
             observations.push(`alpha2-perm: ${JSON.stringify(row)}`)
           },

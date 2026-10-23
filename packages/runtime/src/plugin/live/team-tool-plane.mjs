@@ -2815,12 +2815,35 @@ export function createTeamToolPlaneAssembly(input = {}) {
         throw new Error('refused-image exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
       }
       const priorFlight = governedTokenLedger.get(tokenKey)
-      if (priorFlight !== undefined) {
+      // A5-M2 IMAGE HAND-OFF redemption (the write row's take law, verbatim):
+      // the ONE in-flight HANDED-OFF flight on this token IS this body's
+      // redemption — the ledger's single-flight law holds, because the flight
+      // was opened FOR this exact execution at pre-dispatch. The take is
+      // SYNCHRONOUS and SINGLE: a re-entrant second redemption finds no flight
+      // and fails closed there (Part A is never re-run, no fallback lane serves
+      // this read_image). Any other prior stays the typed replay refusal.
+      let imageClaim
+      let correlation
+      if (priorFlight !== undefined && !priorFlight.settled && priorFlight.handedOff === true) {
+        imageClaim = imagePaHandoffs.get(tokenKey)
+        imagePaHandoffs.delete(tokenKey)
+        if (imageClaim === undefined) {
+          throw new Error('refused-image PA_HANDOFF_LOST — the pre-dispatch PA hand-off of this execution is gone (closed, torn down, or already spent); Part A is never re-run and no fallback lane serves this read_image')
+        }
+        // ONE correlation per token for its whole life: the redemption runs
+        // under the ORIGINAL id Part A asked with, never a fresh one.
+        correlation = priorFlight.correlation
+      } else if (priorFlight !== undefined) {
         throw new Error(`refused-image exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (todo/write/image share ONE token ledger: a registry token spans exactly one flight of one row); one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
+      } else {
+        imageCorrSeq += 1
+        correlation = `plane-image:${realmId}-${String(imageCorrSeq)}`
+        governedTokenLedger.set(tokenKey, { correlation, settled: false })
       }
-      imageCorrSeq += 1
-      const correlation = `plane-image:${realmId}-${String(imageCorrSeq)}`
-      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      // The plan fact this call owns from the pre-dispatch hold; the edge's
+      // finally closes it, and this net closes it on EVERY exit BEFORE the
+      // edge (mismatch, classify faults) — idempotent, never a leak.
+      let imageEdgeRan = false
       const signal = exec?.signal
       try {
       // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, the same authority leg
@@ -2884,7 +2907,33 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }),
         ...(signal === undefined ? {} : { signal }),
       }
-      const opened = await paAdmit.open(walk)
+      if (imageClaim !== undefined) {
+        // BODY FRESH RECHECK (exact-match law, the write row's, verbatim): the
+        // redemption must answer the SAME question Part A asked — the same
+        // call identity and the same full-values digest over the body's OWN
+        // fresh classify. Drift is a REFUSAL, never a re-approval: the front
+        // door opened NOTHING for this call, so an old Ask could not authorize
+        // it even if one were minted. (No arm-side settle: the image arm is
+        // stateless pre-edge — nothing was prepared to cancel.)
+        if (imageClaim.parametersFingerprint !== walk.parametersFingerprint || imageClaim.callId !== correlation) {
+          throw new Error('refused-image PA_HANDOFF_MISMATCH — the redemption does not ask the question the pre-dispatch PA walk was approved for; nothing ran (zero port calls, zero attachment writes)')
+        }
+      }
+      // A redeemed walk SKIPS its own Part A — a second walk would be a second
+      // question (a second Ask waiting on the human). The unspent grant and
+      // its construction tuple ride to the execution edge exactly as Part A
+      // handed them over; the edge re-reads the facts FRESH and performs the
+      // ONE consume. The non-hand-off path keeps the walk below byte-for-byte.
+      const opened = imageClaim !== undefined
+        ? {
+            kind: 'approved',
+            grant: imageClaim.grant,
+            paDurableMint: imageClaim.paDurableMint,
+            request: imageClaim.request,
+            placementName: imageClaim.placementName,
+            paConstructionBinding: imageClaim.paConstructionBinding,
+          }
+        : await paAdmit.open(walk)
       if (opened.kind === 'deny') {
         throw new Error(`refused-image ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (zero port calls, zero attachment writes)`)
       }
@@ -2894,6 +2943,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
       if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
         throw new Error(`refused-image APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
       }
+      // From this line on, the call's plan fact belongs to the edge's own
+      // finally (it closes on every outcome); before it, the net below closes.
+      imageEdgeRan = true
       const edge = await paAdmit.edge({
         ...walk,
         grant: opened.grant,
@@ -2977,6 +3029,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
       return ran.value
       } finally {
+        // A redeemed call owns the plan fact the pre-dispatch Part A left
+        // standing; the edge's finally closes it once the edge RAN, and this
+        // net closes it on every exit BEFORE the edge. Idempotent — never a
+        // leak, never a double verdict.
+        if (imageClaim !== undefined && !imageEdgeRan) paAdmit.closePlan(correlation)
         // Every path settles the token (shared ledger, root ruling @ 9c817:
         // used identities are NEVER evicted; the map dies with the mount).
         governedTokenLedger.set(tokenKey, { correlation, settled: true })
@@ -3059,6 +3116,207 @@ export function createTeamToolPlaneAssembly(input = {}) {
       },
     }),
   })
+  // A5-M2 IMAGE HAND-OFF (root 14:44, the SYMMETRIC third port): the pre-
+  // dispatch face of the governed read_image row. The write hand-off's law
+  // carried VERBATIM where the image row agrees with it, with exactly ONE
+  // disclosed structural difference: the image arm is stateless pre-edge
+  // (the design card's 9-leg law — classify is pure-lexical and mints NO
+  // plan, so there is nothing to cancel and NO arm-cancel leg anywhere in
+  // this face; the shared token ledger, the placeholder-before-await, the
+  // after-await re-check, the single synchronous take and the fresh edge
+  // redemption are byte-for-byte the same law).
+  const imagePaHandoffs = new Map() // token(object|symbol) -> placeholder | unspent claim
+  let imageHandoffSeq = 0
+  let imageRowMounted = true
+  /** The `tools/result` terminal close (mirrors the read/write law):
+   *  idempotent, synchronous, terminal never re-armed. Returns the
+   *  correlation whose plan fact this close still owes the mount — only an
+   *  UNSPENT flight or an in-flight placeholder does; a redeemed one was
+   *  closed by its own edge. */
+  const imageHandoffClose = (token) => {
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) return undefined
+    const flight = imagePaHandoffs.get(token)
+    imagePaHandoffs.delete(token)
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined && !prior.settled) {
+      governedTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+    }
+    return flight?.callId
+  }
+  /** Mount teardown: no image hand-off survives its mount, claimed or not —
+   *  the flight, the unspent grant and the plan fact die with the placement
+   *  (the read/write rows' teardown law, independent of the terminal
+   *  observer; the close lands BEFORE the arm's drain, same ordering). */
+  const imageHandoffCloseAll = () => {
+    imageRowMounted = false
+    for (const token of [...imagePaHandoffs.keys()]) {
+      const callId = imageHandoffClose(token)
+      if (typeof callId === 'string') paAdmit.closePlan(callId)
+    }
+  }
+  const imageHandoffOpen = async (exec) => {
+    if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
+    if (exec.name !== A5_IMAGE_MOUNT_NAME) return { kind: 'no-match' }
+    const token = exec.token
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
+      // The name IS this mount's governed read_image, so the effect-set
+      // question belongs to PA: with no execution identity the call REFUSES,
+      // it never falls back to the pre-hand-off lane.
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read_image carries no execution token, so no PA hand-off can be opened or redeemed for it' }
+    }
+    if (!imageRowMounted || imageArm === null) {
+      return { kind: 'refused', ownsHandoff: false, code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down (or the image arm was never placed) before the hand-off opened; nothing is asked and nothing is authorized' }
+    }
+    const prior = governedTokenLedger.get(token)
+    if (prior !== undefined) {
+      // A TERMINAL token is never re-armed, and a token that already owns a
+      // flight never takes a second open: a side-effect-free refusal that
+      // reuses nothing (an authorization is not transferable, and the first
+      // leg's state is not touched).
+      return {
+        kind: 'refused',
+        ownsHandoff: false,
+        code: prior.settled === true ? 'PA_HANDOFF_TERMINAL' : 'PA_HANDOFF_IN_FLIGHT',
+        detail: prior.settled === true
+          ? 'this execution token is already terminal, so no PA hand-off may be opened on it again'
+          : 'a governed flight already owns this execution token; a second open is refused without touching the in-flight state and no answer is reused',
+      }
+    }
+    const arm = imageArm
+    const signal = exec.signal
+    imageCorrSeq += 1
+    const correlation = `plane-image:${realmId}-${String(imageCorrSeq)}`
+    imageHandoffSeq += 1
+    const mySeq = imageHandoffSeq
+    // The ledger entry and the pending placeholder are taken BEFORE the first
+    // await (write law verbatim): a close landing mid-walk must find this leg,
+    // and the re-check after the walk must find it GONE.
+    governedTokenLedger.set(token, { correlation, settled: false })
+    imagePaHandoffs.set(token, Object.freeze({ pending: true, seq: mySeq, callId: correlation }))
+    const releasePlaceholder = () => {
+      if (imagePaHandoffs.get(token)?.seq === mySeq) imagePaHandoffs.delete(token)
+    }
+    const settleToken = () => {
+      const now = governedTokenLedger.get(token)
+      if (now !== undefined && !now.settled) governedTokenLedger.set(token, { correlation: now.correlation, settled: true })
+    }
+    // OWNER-CURRENT BEFORE THE FREEZE (the fix-4 leg VERBATIM): Part A asks
+    // the whole question, including the fresh-authority walk; a faulting leg
+    // is OBSERVED, never absorbed.
+    if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+      const freshAuthority = await paReadGenerationFresh()
+      if (freshAuthority.ok === true) {
+        try {
+          await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+        } catch (error) {
+          observe(`a5m2-image pa-handoff: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the walk continues on the live tuple and the kernel identity leg answers it`)
+        }
+      }
+    }
+    let classified
+    try {
+      classified = arm.classify(exec.arguments)
+    } catch (error) {
+      releasePlaceholder()
+      settleToken()
+      return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `the governed image arm could not classify this call at the pre-dispatch leg (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to` }
+    }
+    if (classified.ok !== true || classified.targetManifest === undefined) {
+      // Pure-lexical refusals pass their code through (the row body's own
+      // refusal shape, carried to the hand-off leg): zero admission asked,
+      // nothing to settle — the arm is stateless pre-edge.
+      releasePlaceholder()
+      settleToken()
+      return { kind: 'refused', ownsHandoff: true, code: String(classified.code ?? 'P_IMAGE_CLASSIFY_INVALID'), detail: String(classified.detail ?? 'the governed classify refused this call before admission') }
+    }
+    const parsedEffects = parseRequestedEffectSet(classified.effects)
+    if (parsedEffects.ok !== true) {
+      releasePlaceholder()
+      settleToken()
+      return { kind: 'refused', ownsHandoff: true, code: 'EFFECTS_UNPARSABLE', detail: `the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})` }
+    }
+    // The SAME independent, COMPLETE digest the row body computes over its
+    // OWN raw parameters (SEAM #1 law): two spellings of one file are two
+    // fingerprints; the redemption re-derives it and must match exactly.
+    const parametersFingerprint = canonicalJsonFingerprint({
+      realmId,
+      toolName: A5_IMAGE_MOUNT_NAME,
+      parameters: exec.arguments,
+      effects: classified.effects,
+      targetManifest: classified.targetManifest,
+    })
+    const walk = {
+      realmId,
+      callId: correlation,
+      parametersFingerprint,
+      requestedEffects: parsedEffects.value,
+      toolName: A5_IMAGE_MOUNT_NAME,
+      family: Object.freeze({
+        familyId: arm.familyId,
+        adapterRevision: arm.adapterRevision,
+        providerIdentity: arm.providerId,
+        targetManifest: classified.targetManifest,
+      }),
+      ...(signal === undefined ? {} : { signal }),
+    }
+    let opened
+    try {
+      opened = await paAdmit.open(walk)
+    } catch (error) {
+      releasePlaceholder()
+      settleToken()
+      paAdmit.closePlan(correlation)
+      return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_FAULT', detail: `Part A threw and is never treated as an authorization: ${String(error?.message ?? error).slice(0, 180)}` }
+    }
+    // AFTER the await the world is RE-CHECKED, not assumed (write law
+    // verbatim): a close or a teardown landing while PA was being asked
+    // voids the leg; its grant, if one landed, is dropped and NOTHING is
+    // registered. No arm-side settle exists here — the image arm mints no
+    // pre-dispatch plan, so the dropped answer has nothing to cancel.
+    const held = imagePaHandoffs.get(token)
+    if (!imageRowMounted) {
+      releasePlaceholder()
+      settleToken()
+      paAdmit.closePlan(correlation)
+      observe('a5m2-image pa-handoff dropped — mount torn down during the walk')
+      return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized' }
+    }
+    if (held === undefined || held.seq !== mySeq) {
+      settleToken()
+      paAdmit.closePlan(correlation)
+      observe('a5m2-image pa-handoff dropped — the leg was closed while PA was being asked')
+      return { kind: 'refused', ownsHandoff: true, code: 'PA_HANDOFF_CLOSED', detail: 'this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized' }
+    }
+    if (opened.cancelled === true) {
+      // CANCELLATION IS NOT PERMISSION: zero consumption, zero body; the
+      // adapter's cancelled branch denies without ever reaching the row.
+      releasePlaceholder()
+      settleToken()
+      return { kind: 'cancelled', detail: 'the PA walk answered this invocation cancelled before dispatch (zero port calls, zero attachment writes)' }
+    }
+    if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+      releasePlaceholder()
+      settleToken()
+      observe(`a5m2-image pa-handoff refused code=${String(opened.code ?? opened.kind ?? 'unknown')}`)
+      return { kind: 'refused', ownsHandoff: true, code: String(opened.code ?? 'PA_HANDOFF_REFUSED'), detail: String(opened.detail ?? 'the pre-dispatch PA walk refused this read_image') }
+    }
+    // THE HOLD (write law verbatim): 'approved' buys ONLY release — the
+    // grant stays UNSPENT and rides the flight to the body, which still owes
+    // the whole fresh recheck and the single edge. The plan fact STAYS (the
+    // redemption edge re-reads it and closes it).
+    imagePaHandoffs.set(token, Object.freeze({
+      callId: correlation,
+      parametersFingerprint: String(parametersFingerprint),
+      grant: opened.grant,
+      paDurableMint: opened.paDurableMint,
+      request: opened.request,
+      placementName: opened.placementName,
+      paConstructionBinding: opened.paConstructionBinding,
+    }))
+    governedTokenLedger.set(token, { correlation, settled: false, handedOff: true })
+    observe(`a5m2-image pa-handoff OPEN call=${correlation}`)
+    return { kind: 'authorized', correlation }
+  }
   if (imageDef !== null) {
     // THE PLACEMENT MOMENT (central-card ②): the arm is constructed HERE,
     // over the def THIS plane actually placed — the factory binds
@@ -3169,6 +3427,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
           if (typeof correlation === 'string') livePaPlan.delete(correlation)
         },
       }) }),
+      /** A5-M2 (root 14:44): the governed-IMAGE hand-off face for THIS mount —
+       *  the THIRD port, the SAME audited shape and the SAME presence law:
+       *  no governed read_image row = the field is OMITTED (never
+       *  `undefined`); a declared one rides fail-closed to the adapter; every
+       *  other name and world keeps the pre-hand-off path byte-identically. */
+      ...(imageInject === null ? {} : { paImageHandoff: Object.freeze({
+        open: (exec) => imageHandoffOpen(exec),
+        close: (exec) => {
+          const correlation = imageHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
+          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+        },
+      }) }),
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
       livePaPlan,
       /** 9e fix-3: the CONFIRMED durable generation reader (the root's
@@ -3233,6 +3503,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // hand-off legs' after-await re-check drops any answer that lands
             // after this point.
             if (writeInject !== null) writeHandoffCloseAll()
+            // A5-M2 IMAGE hand-off (root 14:44): the SAME teardown law, the
+            // SAME ordering — before the arm's drain, so a late leg's
+            // after-await re-check drops any answer that lands after this.
+            if (imageInject !== null) imageHandoffCloseAll()
             // A5-M2 B-SESSION: DRAINING is the arm's teardown half — after it,
             // no NEW call reaches any body (an entered body is not rewound,
             // and there is no native to fall back to; the row mask is disposed

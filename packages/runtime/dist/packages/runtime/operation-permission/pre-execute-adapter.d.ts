@@ -611,6 +611,16 @@ export interface InstallParameterPermissionListenerParams {
      */
     readonly paWriteHandoff?: PaReadHandoffPorts;
     /**
+     * A5-M2 PA-IMAGE HAND-OFF (root 14:44, the SYMMETRIC third port): the SAME
+     * audited port shape, supplied only when THIS mount carries the governed
+     * IMAGE row. ABSENT = today exactly. When present, the ONE name the mount
+     * takeover-mounted as its governed read_image asks the effect-set question
+     * at PA here, and the old `parameter-permission` front door opens NOTHING
+     * for it; the port answers `no-match` for every other name — never this
+     * adapter guessing by name.
+     */
+    readonly paImageHandoff?: PaReadHandoffPorts;
+    /**
      * Strict-read + Core-spill (implementation guide §9) — the injected
      * artifact-grant authorization port: for `read` decisions only, it
      * consults the Team's durable artifact-read grants (the

@@ -664,6 +664,16 @@ export interface InstallParameterPermissionListenerParams {
    */
   readonly paWriteHandoff?: PaReadHandoffPorts
   /**
+   * A5-M2 PA-IMAGE HAND-OFF (root 14:44, the SYMMETRIC third port): the SAME
+   * audited port shape, supplied only when THIS mount carries the governed
+   * IMAGE row. ABSENT = today exactly. When present, the ONE name the mount
+   * takeover-mounted as its governed read_image asks the effect-set question
+   * at PA here, and the old `parameter-permission` front door opens NOTHING
+   * for it; the port answers `no-match` for every other name — never this
+   * adapter guessing by name.
+   */
+  readonly paImageHandoff?: PaReadHandoffPorts
+  /**
    * Strict-read + Core-spill (implementation guide §9) — the injected
    * artifact-grant authorization port: for `read` decisions only, it
    * consults the Team's durable artifact-read grants (the
@@ -1288,8 +1298,8 @@ export function installParameterPermissionListener(
   // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
   // before any registration (the same R6 discipline as the missing guard
   // seam): a half hand-off must never silently degrade into the old Ask.
-  // Truly ABSENT (no governed read/write row, no-Team) keeps the pre-hand-off path.
-  for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff]] as const) {
+  // Truly ABSENT (no governed read/write/image row, no-Team) keeps the pre-hand-off path.
+  for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff], ['paImageHandoff', params.paImageHandoff]] as const) {
     if (port === undefined) continue
     const missing = (['open', 'close', 'onTerminal'] as const).filter(
       (k) => typeof port?.[k] !== 'function',
@@ -1298,11 +1308,12 @@ export function installParameterPermissionListener(
       throw new Error(`pa-read-handoff-malformed — ${portName} was supplied without: ${missing.join(', ')}`)
     }
   }
-  // A5-M2 (root 13:38): the arm below runs over EVERY supplied port, read
-  // first then write — each port answers for ITS OWN mounted name and returns
-  // 'no-match' for everything else, so an absent second port changes NOTHING
-  // and the old path stays untouched for every other name and world.
-  const paHandoffPortsList: PaReadHandoffPorts[] = [params.paReadHandoff, params.paWriteHandoff]
+  // A5-M2 (root 13:38 + 14:44): the arm below runs over EVERY supplied port,
+  // read first, then write, then image — each port answers for ITS OWN
+  // mounted name and returns 'no-match' for everything else, so an absent
+  // port changes NOTHING and the old path stays untouched for every other
+  // name and world.
+  const paHandoffPortsList: PaReadHandoffPorts[] = [params.paReadHandoff, params.paWriteHandoff, params.paImageHandoff]
     .filter((p): p is PaReadHandoffPorts => p !== undefined)
   // The execs this install handed off, keyed by the exec OBJECT identity (the
   // same discipline as `authorizedExecutions`). GC is leak insurance, never

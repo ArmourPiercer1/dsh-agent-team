@@ -783,8 +783,8 @@ export function installParameterPermissionListener(agentCtx, params) {
     // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
     // before any registration (the same R6 discipline as the missing guard
     // seam): a half hand-off must never silently degrade into the old Ask.
-    // Truly ABSENT (no governed read/write row, no-Team) keeps the pre-hand-off path.
-    for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff]]) {
+    // Truly ABSENT (no governed read/write/image row, no-Team) keeps the pre-hand-off path.
+    for (const [portName, port] of [['paReadHandoff', params.paReadHandoff], ['paWriteHandoff', params.paWriteHandoff], ['paImageHandoff', params.paImageHandoff]]) {
         if (port === undefined)
             continue;
         const missing = ['open', 'close', 'onTerminal'].filter((k) => typeof port?.[k] !== 'function');
@@ -792,11 +792,12 @@ export function installParameterPermissionListener(agentCtx, params) {
             throw new Error(`pa-read-handoff-malformed — ${portName} was supplied without: ${missing.join(', ')}`);
         }
     }
-    // A5-M2 (root 13:38): the arm below runs over EVERY supplied port, read
-    // first then write — each port answers for ITS OWN mounted name and returns
-    // 'no-match' for everything else, so an absent second port changes NOTHING
-    // and the old path stays untouched for every other name and world.
-    const paHandoffPortsList = [params.paReadHandoff, params.paWriteHandoff]
+    // A5-M2 (root 13:38 + 14:44): the arm below runs over EVERY supplied port,
+    // read first, then write, then image — each port answers for ITS OWN
+    // mounted name and returns 'no-match' for everything else, so an absent
+    // port changes NOTHING and the old path stays untouched for every other
+    // name and world.
+    const paHandoffPortsList = [params.paReadHandoff, params.paWriteHandoff, params.paImageHandoff]
         .filter((p) => p !== undefined);
     // The execs this install handed off, keyed by the exec OBJECT identity (the
     // same discipline as `authorizedExecutions`). GC is leak insurance, never
