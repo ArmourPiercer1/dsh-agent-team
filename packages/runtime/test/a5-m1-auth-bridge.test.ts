@@ -2558,3 +2558,88 @@ describe('A5M2-ROW (byte binding + negative control, NOT the full chain): the ro
     expect((await state()).requests.length).toBe(before)
   })
 })
+
+/* ── A5M2-CHAIN-POS (CENTER): the positive control a family still owes ──────────────
+ * approve -> guard -> consume, end to end, on a registered family, with the CURRENT
+ * family fact answered by a facts source that is the same shape the plane's assembly
+ * answers (the assembly-side wiring is CENTER's own remaining job). Its own
+ * ControlService/verifier instance so the golden legs' counts are untouched; no new
+ * platform, no stub authority. */
+describe('A5M2-CHAIN-POS: a registered family is approved, guarded and consumed', () => {
+  const ctx = directAssembly()
+  const fixture = directFixture(ctx, 'a5m2-chain-pos')
+  const definitionIdentity = String((fixture.input.request as { binding: { definitionIdentity: string } }).binding.definitionIdentity)
+  const familyFacts = { familyId: 'B-SESSION', adapterRevision: 1, providerIdentity: 'prov@1' }
+  const target = {
+    operation: 'replace-list',
+    agentId: 'agent-a',
+    sessionHeaderId: 'header-1',
+    todosDigest: 'sha256:todo',
+    counts: { pending: 1, inProgress: 0, completed: 0 },
+    allowParallelPolicy: false,
+    paramFingerprint: 'sha256:todo',
+  }
+  const family = { ...familyFacts, targetManifest: target }
+
+  // the current trusted registration, answered through the SAME facts path the plane
+  // uses - the assembly-side fill is CENTER's job, here it is the same shape.
+  const factsSource: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
+    const facts = await fakeReadCallFacts(input)
+    return facts === undefined ? undefined : { ...facts, governedFamily: familyFacts }
+  }
+  const verifier = createPaEffectsVerifier({ readCallFacts: factsSource })
+  const service2: ControlService = createControlService({
+    teamDomain: domain,
+    blueprintCatalog: catalog,
+    externalPolicyFacts: async () => makeExternalPolicyFacts(),
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 5,
+    paEffectsVerifier: verifier,
+  })
+  const leg = createPaControlLeg({
+    controlService: service2,
+    rootSessionId: P6T4_ROOT,
+    caller: memberCaller(WORKER),
+    beneficiaryAuthority: 'member',
+    governedFamilies: { [definitionIdentity]: familyFacts },
+  })
+  const port = createPaGuardVerifyPort({ controlService: service2, rootSessionId: P6T4_ROOT, verifier })
+  async function state2() {
+    return service2.listControlState(P6T4_ROOT)
+  }
+  async function waitRow2(correlation: string): Promise<ControlRequestRecord> {
+    const deadline = Date.now() + 20_000
+    for (;;) {
+      const found = (await state2()).requests.find((r) => r.correlation === correlation)
+      if (found !== undefined) return found
+      if (Date.now() > deadline) throw new Error('the family control row never appeared')
+      await sleep(25)
+    }
+  }
+
+  it('durable family row -> real allow -> guard allows once -> exactly one consumption', async () => {
+    const pending = leg({ ...fixture.input, family })
+    const row = await waitRow2(fixture.correlation)
+    expect(parsePaControlManifest(row.reviewPayload)?.targetManifest).toEqual(target)
+
+    await service2.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const decided = await pending
+    if (decided.decision !== 'approve') {
+      // keep the first real failure verbatim instead of dressing it up as a pass
+      throw new Error(`POSITIVE CONTROL refused to approve: ${JSON.stringify(decided)}`)
+    }
+    expect(decided.decision).toBe('approve')
+
+    // WHERE the consumption happens, measured rather than assumed: returning the approval
+    // IS the guard consume - the bridge spends the allow exactly once at that moment, so
+    // the port afterwards answers allow-consumed (the golden positive leg answers the same
+    // way) and there is exactly one consumption record for this family row.
+    const probe = probeFor(fixture, row, fixture.input.request.parametersFingerprint)
+    const spent = await port.verify(probe)
+    expect(spent.allowed, JSON.stringify(spent)).toBe(false)
+    if (spent.allowed === false) expect(spent.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.ALLOW_CONSUMED)
+    const consumed = (await state2()).consumptions.filter((c) => c.requestId === row.requestId)
+    expect(consumed.length).toBe(1)
+    expect(String(consumed[0]?.requestId)).toBe(row.requestId)
+  })
+})
