@@ -355,6 +355,14 @@ import { scopeRequirementInputsOf } from '../../../requirements/scope-requiremen
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
 import { publishPaMount, readPaCallFactsForCall, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
+
+// A5-M2 (CENTER): the plane's OWN governed-family registration, keyed by the trusted
+// definition identity of the binding a call actually runs under. It is the single source
+// for two things that must never disagree: which bindings may claim a family at all (the
+// leg's requirement, below) and what the CURRENT registration fact says (the facts fill,
+// below). Empty today because no family is mounted - an unmounted world keeps its exact
+// bytes; mounting a family means adding its entry HERE and nowhere else.
+const A5_GOVERNED_FAMILIES = Object.freeze({})
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
@@ -2623,6 +2631,7 @@ export function createAgentBindings(deps) {
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            governedFamilies: A5_GOVERNED_FAMILIES,
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)
@@ -2688,7 +2697,22 @@ export function createAgentBindings(deps) {
           // M1-D: the binding behind a call is resolved by its bindingId
           // FAMILY inside the entry, and zero/ambiguous answers stale the
           // call instead of falling back to revision 1.
-          readCallFacts: (input) => readPaCallFactsForCall(input),
+          // A5-M2: the current trusted registration is restated onto the call's own facts
+          // from that one table. An unanswered registration is NOT read as "no statement
+          // was made" - the guard treats it as a vanished registration and denies, which is
+          // exactly the fail-closed the family lane was measured needing.
+          readCallFacts: async (input) => {
+            const facts = await readPaCallFactsForCall(input)
+            if (facts === undefined || facts === null) return facts
+            const definitionIdentity = facts.binding === undefined || facts.binding === null
+              ? undefined
+              : facts.binding.definitionIdentity
+            const registered = definitionIdentity === undefined
+              ? undefined
+              : A5_GOVERNED_FAMILIES[String(definitionIdentity)]
+            if (registered === undefined) return facts
+            return { ...facts, governedFamily: registered }
+          },
           plane: planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: { jobs: a5JobsBridge } }),
           onObserve: (row) => observations.push(String(row)),
