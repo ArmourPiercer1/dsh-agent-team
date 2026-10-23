@@ -407,3 +407,105 @@ describe('production admission assembly (createProductionAdmissionAssembly, real
     })).toThrow(TypeError)
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INVOCATION-ONLY SCHEDULE PAIR (Alpha.5 M2, root 20:05 limited card) — the
+// same production assembly over the two schedule names: a denied
+// invocation shows ZERO body and ZERO ledger motion (deny 0 body); an
+// admitted invocation is spent EXACTLY ONCE (permit-once, the same
+// one-shot ledger law as every other class — the class adds no weaker
+// edge); cross-tool identities never cross; no FS provider is involved —
+// the `tool-invoke` arm IS the whole authority.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('production assembly × invocation-only schedule pair (root 20:05)', () => {
+  function invokeEffects(tool: string) {
+    const parsed = parseRequestedEffectSet([{ kind: 'tool-invoke', toolName: tool, resource: null }])
+    if (!parsed.ok) throw new Error(`schedule fixture effect set rejected: ${JSON.stringify(parsed.problems)}`)
+    return parsed.value
+  }
+
+  function scheduleAssembly(permissionPolicy: TemplatePermissionPolicy) {
+    const ledger = createGrantLedger()
+    const built = createProductionAdmissionAssembly({
+      permissionPolicy,
+      realmId: PROD_REALM,
+      templateId: 'tpl-sched',
+      definitionOwnerAuthority: 'human-user',
+      role: 'member',
+      clock: () => FIXED_NOW,
+      authorityGeneration: () => 1,
+      beneficiaryAuthority: 'member',
+      ledger,
+    })
+    return { built, ledger }
+  }
+
+  function invokeRequest(callId: string, tool: string): AdmissionRequest {
+    return {
+      binding: binding({ toolName: tool }),
+      member: MEMBER,
+      callId,
+      realmId: PROD_REALM,
+      parametersFingerprint: PROD_FP,
+      requestedEffects: invokeEffects(tool),
+    }
+  }
+
+  it('deny 0 body: an unnamed schedule_list call under default:deny is DENIED before the kernel — no probe, no mint, no ledger', async () => {
+    const { built, ledger } = scheduleAssembly({ default: 'deny', allow: [], ask: [], deny: [] })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const decision = await built.value.admitCall(invokeRequest('sched-dd-1', 'schedule_list'))
+    expect(decision.ok && decision.value.kind).toBe('denied')
+    if (!decision.ok || decision.value.kind !== 'denied') return
+    expect(decision.value.error.details?.['refusal']).toBe('template-default-deny')
+    expect(ledger.consumedCount()).toBe(0) // ZERO body: nothing was ever minted to spend
+  })
+
+  it('an attributed deny-lane schedule rule is ROUTED (ruling ①), never silence — and still mints nothing', async () => {
+    const { built, ledger } = scheduleAssembly({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_delete', resource: { kind: 'any' } }] })
+    expect(built.ok).toBe(true) // the narrowed any-deny law: the class PROJECTS whole-tool deny
+    if (!built.ok) return
+    expect(built.value.denySources().every((s) => s.sourceRef.startsWith('tpl-sched#deny['))).toBe(true)
+    const decision = await built.value.admitCall(invokeRequest('sched-deny-1', 'schedule_delete'))
+    expect(decision.ok && decision.value.kind).toBe('requires-approval') // attributed ⇒ upgradable Ask, body stays zero
+    expect(ledger.consumedCount()).toBe(0)
+  })
+
+  it('permit-once: an admitted schedule_delete invocation spends its grant EXACTLY once; the second consume refuses', async () => {
+    const { built, ledger } = scheduleAssembly({ default: 'ask', allow: [{ tool: 'schedule_delete', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const asm = built.value
+    const request = invokeRequest('sched-permit-1', 'schedule_delete')
+    const decision = await asm.admitCall(request)
+    expect(decision.ok && decision.value.kind).toBe('admitted')
+    if (!decision.ok || decision.value.kind !== 'admitted') return
+    const grant = decision.value.grant
+    const consume = () => asm.consumeForExecution(grant, {
+      currentAuthorityGeneration: 1,
+      member: MEMBER,
+      callId: 'sched-permit-1',
+      realmId: PROD_REALM,
+      bindingId: grant.bindingId,
+      bindingRevision: grant.bindingRevision,
+      parametersFingerprint: request.parametersFingerprint,
+      requestedEffects: request.requestedEffects,
+    })
+    expect(consume().ok).toBe(true) // the ONE spend
+    expect(ledger.consumedCount()).toBe(1)
+    expect(consume().ok).toBe(false) // a second spend of the SAME grant: refused — the ledger makes "twice" impossible
+    expect(ledger.consumedCount()).toBe(1)
+  })
+
+  it('cross-tool no-cross at the decision door: the schedule_list grant never admits a schedule_delete call', async () => {
+    const { built } = scheduleAssembly({ default: 'ask', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(built.ok).toBe(true)
+    if (!built.ok) return
+    const listDecision = await built.value.admitCall(invokeRequest('sched-list-1', 'schedule_list'))
+    expect(listDecision.ok && listDecision.value.kind).toBe('admitted')
+    const deleteDecision = await built.value.admitCall(invokeRequest('sched-del-1', 'schedule_delete'))
+    expect(deleteDecision.ok && deleteDecision.value.kind).toBe('requires-approval') // schedule_delete stays at its own default — no borrowing
+  })
+})
