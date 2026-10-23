@@ -234,6 +234,13 @@ export async function createG2TeamMount(input = {}) {
           ...(typeof facts.modelOrigin === 'string' ? { modelOrigin: facts.modelOrigin } : {}),
           ...(typeof facts.cdpEndpointOrigin === 'string' ? { cdpEndpointOrigin: facts.cdpEndpointOrigin } : {}),
           ...(typeof facts.domainAuthorityId === 'string' ? { domainAuthorityId: facts.domainAuthorityId } : {}),
+          // root 22:39/22:44 supply path closed (MCP-style passthrough):
+          // the generation facts the connection-owning assembly declares
+          // via mount config REACH the mint verbatim; the mount never
+          // mints or rotates them and never blocks the guarantee the
+          // facts do not carry.
+          ...(typeof facts.connectionIncarnation === 'string' && facts.connectionIncarnation.length > 0 ? { connectionIncarnation: facts.connectionIncarnation } : {}),
+          ...(typeof facts.connectionIncarnationReason === 'string' && facts.connectionIncarnationReason.length > 0 ? { connectionIncarnationReason: facts.connectionIncarnationReason } : {}),
         }),
         // row actuation moved to the port lease BELOW (the map replaces
         // invoke); the adapters still own classify/effects/targetManifest.

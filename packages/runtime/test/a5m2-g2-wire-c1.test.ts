@@ -1218,6 +1218,18 @@ describe('A5M2-G2-WIRE round-28: B-BROWSER table <-> mint-shape grammar (NOT cro
  * every manifest verbatim; 'unobserved' is not passed off as a real
  * binding. screenshot/tabs variants judge their REAL targets too. */
 describe('A5M2-G2-WIRE round-30: the REAL mint validates at the table (positive+negative)', () => {
+  it('mount supply path (root 22:44): declaredServiceFacts.connectionIncarnation REACHES the minted manifest verbatim (mount :231 passthrough closed); absent facts stay the honest unobserved/null', () => {
+    const withGen = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid', connectionIncarnation: 'gen-facts-31', connectionIncarnationReason: 'owner mount generation' })
+    const shot = withGen.stagehand_screenshot!.classify({})
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), shot.targetManifest)).toBeUndefined()
+    expect(shot.targetManifest!.connectionIncarnation).toBe('gen-facts-31')
+    expect(shot.targetManifest!.connectionIncarnationReason).toBe('owner mount generation')
+    const without = mint({ mode: 'launch', modelOrigin: 'https://model.example.invalid' })
+    const shot2 = without.stagehand_screenshot!.classify({})
+    expect(shot2.targetManifest!.connectionIncarnation).toBe('unobserved')
+    expect(shot2.targetManifest!.connectionIncarnationReason).toBeNull()
+  })
+
   const mint = (declared: Record<string, unknown>) => (G2A as unknown as {
     createG2BrowserAdapters: (i: Record<string, unknown>) => Record<string, { classify: (a: Record<string, unknown>) => { ok?: boolean; targetManifest?: Record<string, unknown>; code?: string; detail?: string } }>
   }).createG2BrowserAdapters({
