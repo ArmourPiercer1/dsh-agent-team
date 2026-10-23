@@ -12,6 +12,18 @@ Identity
   branch           : diag/a5-m1-facts-detail   (worktree .worktrees/a5-m1-facts-seam, NOT pushed)
   candidate HEAD   : the commit that contains THIS file — `git rev-parse HEAD` at the tip of
                      diag/a5-m1-facts-detail (one candidate HEAD; the evidence rides inside it)
+  IDENTITY UNDER DIAGNOSIS (PINNED for the one real diagnostic Host run):
+      diagnosed commit : 26cef5681a087e97b9175c86ad6408246b3b6f5f  (= 3f7b4d963c8156a9710d66d2b8ccbbb40d8fe6b1
+                                                   + this delta, on baseline aaa2a65b2)
+      the ONE pack     : pack/dsh-agent-team-0.1.1-alpha.2.tgz
+                         sha256 828e43df02c96eeef62c838f65ede391158e5a4eeeb06576488747535358dc04
+      Nothing else is the diagnosed identity. The remote tip 66e1399d0 is NOT merged into this
+      candidate: it removes the stale ledger row `a5-m1-auth-bridge.test.ts::L1263::v2`, and the
+      ledger under dev/agent-workflow/evidence/a4-pr7/ is the CI ledger writer's surface — this
+      branch never edits it (`git diff --name-only aaa2a65b2..HEAD` lists zero files there).
+      Integration into feat/a5-m1-center-kernel happens AFTER the Host run, on the CI side.
+      Any commit after 26cef5681 on this branch is EVIDENCE-ONLY (no src, no dist, no test, no
+      ledger): it cannot change the pack bytes, and `git show --name-only` on it proves that.
   prior rounds (frozen, unmodified, NOT the base of this delta):
                      091f56d378893555899be87ee2704662671e39c8 / bf8db1d945b0124a11c72eb41f38b5910337afd1
                      / c1a8378bc4a682c1ff532c95967da14a8fff6de4  (branch feat/a5-m1-facts-seam)
@@ -172,6 +184,23 @@ revision now carries the producer's string shape —
   `a5-m1-auth-bridge.test.ts:1264` (`schemaVersion: 2, // fence L1253 …`) by LINE NUMBER, so any
   line added above it re-keys the CI ledger for no reason. Verified after the edit:
   `grep -n "schemaVersion: 2, // fence"` = 1264 and the census says `RESULT unknown(0 files, 0 sites)`.
+
+  CORRECTION (withdraws a wrong statement made in the round's report): the census test is NOT under
+  packages/runtime — it is `packages/testkit/test/a4p7-blueprint-version-clean.test.ts`, and it holds
+  exactly 60 tests (globbing `packages/runtime/test/a4p7*` misses it; the "the 60 was a hand-picked
+  subset" claim was a scope miss and is withdrawn). Measured on this candidate:
+      ❯ packages/testkit/test/a4p7-blueprint-version-clean.test.ts (60 tests | 1 failed)
+      AssertionError: stale ledger row packages/runtime/test/a5-m1-auth-bridge.test.ts::L1263::v2
+        — the site is gone; remove the adjudication        ❯ …a4p7-blueprint-version-clean.test.ts:705:96
+      Tests  1 failed | 59 passed (60)
+  That failure is BASELINE-CARRIED, not this delta's, and the ledger itself records why: the site
+  drifted from :1263 to :1264 long before this branch (the `+1` came from the shell-stdio drain
+  import at :68, landed with `a1ae0dabf`), and the keep-old-key ruling left the stale `::L1263::v2`
+  row in place ("this ledger is append-only, a stale line key can never re-adjudicate a moved site").
+  Root later superseded keep-old-key and the remote removed the row (`b81c18133`, merged as
+  `66e1399d0`), so the assertion is green on a tree that carries that ledger and red on this
+  baseline — independently of anything in this delta. What this delta DID cause at that fence was
+  the L1266 UNKNOWN, and keeping the fixture edit line-neutral removed it (`unknown(0 files, 0 sites)`).
   test/a5-m1-read-c1c2.test.ts / test/a5-m1-seam-enforcement.test.ts (facts blueprint → string)
 plus ONE new pin in the EXISTING file — `B6b` — which drives the real shape and asserts:
   numeric revision  → undefined + cause `bad-tuple-revision-not-a-string`
