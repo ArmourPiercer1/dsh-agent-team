@@ -3589,19 +3589,44 @@ export function createTeamToolPlaneAssembly(input = {}) {
         }
         // The adapter's own review payload — family, adapter revision,
         // provider identity and the FULL-VALUE target manifest — is put on the
-        // record for this call (see the block comment above for why it is
-        // observed rather than legged).
+        // record for this call (the review line below) AND, for the ENABLED
+        // B-INSPECT pair (root 17:55 INSPECT ENABLEMENT over the strict
+        // variant grammar 7529218e5; adapter revision 7), it rides the walk as
+        // the family block: the four P-adds at FULL VALUE, the todo-row
+        // carrier law verbatim, never a second approval. ONE classify call is
+        // the single origin — block, fingerprint and plan all come from THIS
+        // call's answer; the bridge compares the block against the CURRENT
+        // registration keyed by the PLACED definition identity (a claim on an
+        // unregistered identity, a moved provider or a moved revision refuses
+        // BEFORE the durable row, and the execution edge re-checks the same
+        // tuple — a retired revision drifts the consumption, it is never
+        // silently translated). team_list_pending_control (B-CONTROL) is NOT
+        // in the authorized enablement set: its walk stays the plain PA row,
+        // zero movement, until the paired B-CONTROL enablement lands.
         observe(`a5m2-g1-row: review call=${correlation} row=${row.name} family=${String(classified.reviewPayload?.familyId ?? 'unsettled')} rev=${String(classified.reviewPayload?.adapterRevision ?? 'unsettled')} effects=${String((classified.effects ?? []).length)}`)
         const parsedEffects = parseRequestedEffectSet(classified.effects)
         if (parsedEffects.ok !== true) {
           throw new Error(`refused-g1 effects-unparsable — the adapter's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
         }
+        const enabledFamilyBlock = row.familyId === 'B-INSPECT' && classified.reviewPayload !== undefined
+          && typeof classified.reviewPayload.familyId === 'string'
+          && typeof classified.reviewPayload.adapterRevision === 'number'
+          && typeof classified.reviewPayload.providerIdentity === 'string'
+          && classified.reviewPayload.targetManifest !== null && typeof classified.reviewPayload.targetManifest === 'object'
+          ? Object.freeze({
+              familyId: classified.reviewPayload.familyId,
+              adapterRevision: classified.reviewPayload.adapterRevision,
+              providerIdentity: classified.reviewPayload.providerIdentity,
+              targetManifest: classified.reviewPayload.targetManifest,
+            })
+          : undefined
         const walk = {
           realmId,
           callId: correlation,
           parametersFingerprint: classified.parametersFingerprint,
           requestedEffects: parsedEffects.value,
           toolName: row.name,
+          ...(enabledFamilyBlock === undefined ? {} : { family: enabledFamilyBlock }),
           ...(signal === undefined ? {} : { signal }),
         }
         const opened = await paAdmit.open(walk)

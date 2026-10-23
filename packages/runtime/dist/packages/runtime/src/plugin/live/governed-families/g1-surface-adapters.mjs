@@ -99,7 +99,14 @@ import { URL } from 'node:url'
 import { parseResourceRef } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_G1_FAMILY_GROUP = 'G1'
-export const A5_G1_ADAPTER_REVISION = 6
+// Revision 7 (root 17:40 ruling): the B-INSPECT target encoding is the closed
+// discriminated form (inspectVariant + bound variant leaves, paired with
+// PA_FAMILY_TARGET_RULES['B-INSPECT'].variants). The encoding digest moved, so
+// revision-6 approvals are EXPLICITLY stale (the PA walk compares this
+// revision against the approved family block) — retired encodings are never
+// silently translated: classify mints only revision 7 and the edge re-verify
+// refuses any stored target outside the closed variants.
+export const A5_G1_ADAPTER_REVISION = 7
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -615,7 +622,26 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       if (!isRecord(topology) || typeof topology.topologyRevision !== 'number' || typeof topology.topologyDigest !== 'string' || !Array.isArray(topology.allowed)) {
         return { refusal: classifyRefuse(CODES.TOPOLOGY_ABSENT, `${spec.recordIndex}·B-INSPECT·${providerId}: the CURRENT authorized registry topology is not mounted`) }
       }
-      built.target = { topology: { topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest } }
+      /* A5-M2 (root 957 SIGNED the scalar flatten; root 17:40 SIGNED the
+       * minimal strict DISCRIMINATED TARGET for this family only): the claim
+       * carries the signed scalar floor plus ONE closed variant group,
+       * selected by the MINTED leaf inspectVariant — derived here from
+       * spec.recordIndex + the authorized triple's platform (trusted
+       * record/tool truth; the closed parameter grammar keeps model text out
+       * of the target, so the discriminant can never be model-supplied).
+       * PA_FAMILY_TARGET_RULES['B-INSPECT'].variants is the paired rule over
+       * the SAME encoding and the SAME full values: required ∪ selected group
+       * exactly closed; queryPlatform bound to the variant platform (the
+       * exact variant↔platform pairing); clientRoundtrip required iff client
+       * and bound to this very law text (never an arbitrary string); the list
+       * variant carries only this list-law literal. The edge re-verify below
+       * reads the SAME flat leaves. Encoding digest moved -> adapter
+       * revision 7 (revision-6 approvals explicitly stale; retired encodings
+       * are never translated). */
+      built.target = {
+        topologyRevision: topology.topologyRevision,
+        topologyDigest: topology.topologyDigest,
+      }
       if (spec.recordIndex === 54) {
         const claim = { platform: rawArgs.platform, provider: rawArgs.provider, method: rawArgs.method }
         const authorized = topology.allowed.some((entry) => isRecord(entry)
@@ -623,11 +649,15 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (!authorized) {
           return { refusal: classifyRefuse(CODES.INSPECT_TARGET_NOT_AUTHORIZED, `${spec.recordIndex}·B-INSPECT·${providerId}: ${String(claim.platform)}/${String(claim.provider)}/${String(claim.method)} is not in the CURRENT authorized topology; a captured manifest snapshot cannot authorize a query`) }
         }
-        built.target.queryClaim = claim
+        built.target.inspectVariant = claim.platform === 'client' ? 'query-client' : 'query-host'
+        built.target.queryPlatform = claim.platform
+        built.target.queryProvider = claim.provider
+        built.target.queryMethod = claim.method
         if (claim.platform === 'client') {
           built.target.clientRoundtrip = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
         }
       } else {
+        built.target.inspectVariant = 'list'
         built.target.listLaw = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
       }
       break
@@ -712,16 +742,32 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     if (built.refusal !== undefined) return built.refusal
     const facts = bindingFacts()
     const classifiedArgs = deepFreeze(jsonClone(args ?? {}))
-    const targetManifest = deepFreeze({
-      ...built.target,
-      trusted: {
-        memberAgentId: trusted.memberAgentId,
-        sessionHeaderId: trusted.sessionHeaderId,
-        realmId: trusted.realmId,
-        owner: trusted.owner,
-        profileId: trusted.profileId,
-      },
-    })
+    /* A5-M2 (root ruling): the two families whose PA target rule has LANDED
+     * (PA_FAMILY_TARGET_RULES['B-CONTROL'] / ['B-INSPECT']) carry the trusted
+     * TARGETS envelope as FLAT LEAVES — the same five CONFIG facts, one leaf
+     * each, the pairing law's mint side. Every other family keeps the nested
+     * `trusted` envelope BYTE-IDENTICAL (its rule has not landed; its claim
+     * still fails closed at the table — no drift either way). */
+    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT'
+    const targetManifest = deepFreeze(flatTrustedLeaves
+      ? {
+          ...built.target,
+          trustedMemberAgentId: trusted.memberAgentId,
+          trustedSessionHeaderId: trusted.sessionHeaderId,
+          trustedRealmId: trusted.realmId,
+          trustedOwner: trusted.owner,
+          trustedProfileId: trusted.profileId,
+        }
+      : {
+          ...built.target,
+          trusted: {
+            memberAgentId: trusted.memberAgentId,
+            sessionHeaderId: trusted.sessionHeaderId,
+            realmId: trusted.realmId,
+            owner: trusted.owner,
+            profileId: trusted.profileId,
+          },
+        })
     const effects = deepFreeze(built.effects)
     const serviceObligations = deepFreeze(built.obligations ?? spec.obligations ?? [TOOL_NAME_OBLIGATION])
     const generations = deepFreeze({
@@ -777,14 +823,29 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       case 'B-INSPECT': {
         const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
         if (!isRecord(topology) || !Array.isArray(topology.allowed)) return stale('the topology re-verification source is gone')
-        if (canonical(stored.topology) !== canonical({ topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest })) {
+        // Root 17:40: current-facts re-verification UNCHANGED in source,
+        // verdicts and words — over the SAME discriminated encoding the rule
+        // and mint use (one encoding, full-value bound). Topology: the flat
+        // scalar form of the same canonical({topologyRevision,topologyDigest})
+        // fact. Triple: read from the flat variant leaves (queryPlatform/
+        // queryProvider/queryMethod) as ONE correlated triple — the closed
+        // variant group guarantees all three ride together, and the grammar
+        // already bound queryPlatform to the variant. CLOSED switch: a stored
+        // target whose discriminant is not exactly one of the closed values
+        // (a retired pre-revision-7 approval shape included) is stale — the
+        // edge never translates an old encoding forward.
+        if (stored.topologyRevision !== topology.topologyRevision || stored.topologyDigest !== topology.topologyDigest) {
           return stale(`topology now answers revision ${String(topology.topologyRevision)} (${String(topology.topologyDigest)})`)
         }
-        if (stored.queryClaim !== undefined && !topology.allowed.some((entry) => isRecord(entry)
-          && entry.platform === stored.queryClaim.platform && entry.provider === stored.queryClaim.provider && entry.method === stored.queryClaim.method)) {
-          return stale('the query triple is no longer in the CURRENT authorized topology')
+        if (stored.inspectVariant === 'list') return null
+        if (stored.inspectVariant === 'query-host' || stored.inspectVariant === 'query-client') {
+          if (!topology.allowed.some((entry) => isRecord(entry)
+            && entry.platform === stored.queryPlatform && entry.provider === stored.queryProvider && entry.method === stored.queryMethod)) {
+            return stale('the query triple is no longer in the CURRENT authorized topology')
+          }
+          return null
         }
-        return null
+        return stale(`the stored target carries no closed G1 inspect variant ('${String(stored.inspectVariant)}') — pre-revision-7 encodings are retired and never translated`)
       }
       case 'B-DOMAIN': {
         const registry = typeof ports?.domainPortRegistry?.current === 'function' ? ports.domainPortRegistry.current() : undefined

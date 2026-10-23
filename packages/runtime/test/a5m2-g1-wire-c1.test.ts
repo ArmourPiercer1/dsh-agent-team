@@ -33,12 +33,24 @@
  *    never enters native, a cancelled call creates no row, the consumed
  *    stale plan never enters native and never re-runs, every refusal/cancel
  *    settles its token;
- *  - the family-block seam is MEASURED, not papered over: the committed
- *    `PA_FAMILY_TARGET_RULES` registers no structure for the G1 families, so
- *    this round registers NOTHING in the governed-family table and walks the
- *    plain PA row — the FULL family block IS pushed into the durable leg
- *    (both refusal directions measured on a real walk's own leg input, zero
- *    row out), and the named gap rides the report.
+ *  - ENABLEMENT (root 17:55, strict variant source 7529218e5): the two
+ *    B-INSPECT rows are registered at MOUNT time keyed by the RUNTIME
+ *    placement identity (the `publishPaMount` / `placementFeed` /
+ *    `registerA5GovernedFamily` law the agent-bindings mount moment runs) and
+ *    their walk carries the FULL family block; the non-enabled
+ *    `team_list_pending_control` row keeps its plain PA walk with ZERO
+ *    movement; and the two root-required fixed points are pinned over that
+ *    SAME real chain — (1) SAME-CALL IDENTITY (the durable record, the
+ *    registered definition identity and the minted variant leaf all trace to
+ *    ONE classify/plan call; moved/mixed-origin feeds refuse before anything
+ *    durable) and (2) STALE-REVISION REFUSAL (a durable approval carrying the
+ *    retired adapterRevision 6 refuses CONSUMPTION at the PA walk, pinned
+ *    drifted wording, zero consumption — retired encodings are never
+ *    silently translated; the pre-variant shape's refusal is a GRAMMAR fact
+ *    at the validator, measured but never claimed as a consumption event);
+ *  - the three pre-existing target rules (B-SESSION/B-WRITE/B-IMAGE) are
+ *    byte-identical: their own targets still pass, the B-INSPECT leaves are
+ *    refused as foreign keys there.
  *
  * Disclosure (the lane/bridge specs own the REAL halves): the native
  * definitions are host-`defineTool` products whose bodies mirror the pinned
@@ -293,7 +305,14 @@ const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (inp
     ...(family === undefined ? {} : { governedFamily: family }),
   }
 }
-const paVerifier = createPaEffectsVerifier({ readCallFacts: verifierReadCallFacts })
+// The verifier's own observe stream: the ONLY place the drift WORDING is
+// emitted on this chain (the durable row carries the closed reason constant,
+// never prose), so the exact pinned detail must come from here.
+const verifierObserved: Array<Record<string, unknown>> = []
+const paVerifier = createPaEffectsVerifier({
+  readCallFacts: verifierReadCallFacts,
+  onObserve: (row) => { verifierObserved.push(row as unknown as Record<string, unknown>) },
+})
 
 const service: ControlService = createControlService({
   teamDomain: domain,
@@ -547,8 +566,20 @@ async function mountWorld(label: string, over: { plane?: Record<string, unknown>
     // (`a5p5-plane@639ed01539#<name>` above); family/registration keys are
     // ALWAYS the placed-def identity, never the capture identity.
     familyKeys[recordName] = identity
-    // NO family registration — the target grammar measures it (see the family
-    // seam leg); the binding tuple is the ordinary plane placement binding.
+    // ENABLEMENT (root 17:55 INSPECT ENABLEMENT): the two B-INSPECT rows are
+    // registered AT MOUNT TIME keyed by the RUNTIME placement identity — the
+    // same law the todo/image wire worlds and agent-bindings publishPaMount
+    // run (never the capture-side identity, never a hand-spelled key).
+    // team_list_pending_control (B-CONTROL) is NOT enabled: the pending row
+    // stays unregistered and its walk stays the plain PA row.
+    if (recordName === 'cordis_inspect_list' || recordName === 'cordis_inspect_query') {
+      registerA5GovernedFamily(identity, {
+        familyId: 'B-INSPECT',
+        adapterRevision: G1.A5_G1_ADAPTER_REVISION,
+        providerIdentity: PROVIDER_ID,
+      })
+    }
+    // The binding tuple is the ordinary plane placement binding.
     bindingFixtures.set(`${label}:${recordName}`, parseToolBinding({
       bindingId: `a5m2-g1-wire:${label}`,
       agentScopeKey: `a5m2-g1-wire:${label}`,
@@ -756,6 +787,14 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     // placed vs captured identity STRICTLY separated: the feed answers the
     // RUNTIME placed-def identity, never the capture-side string.
     expect(identities.some((id) => id === 'a5p5-plane@639ed01539#cordis_inspect_list')).toBe(false)
+    // ENABLEMENT registration state: the two B-INSPECT rows are registered
+    // AT MOUNT TIME keyed by the PLACED identity; the pending row (B-CONTROL,
+    // not enabled) is not; the capture-side identity never carries a
+    // registration (that would be a second, drift-prone key).
+    expect(a5GovernedFamilyFor(world.familyKeys.cordis_inspect_list)).toEqual({ familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
+    expect(a5GovernedFamilyFor(world.familyKeys.cordis_inspect_query)).toEqual({ familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
+    expect(a5GovernedFamilyFor(world.familyKeys.team_list_pending_control)).toBeUndefined()
+    expect(a5GovernedFamilyFor('a5p5-plane@639ed01539#cordis_inspect_list')).toBeUndefined()
     const truth = world.plane.g1PlacementTruth()
     expect(truth.filter((t) => t.state === 'placed')).toHaveLength(3)
     expect(truth.filter((t) => t.state === 'placed').every((t) => t.adapterRevision === G1.A5_G1_ADAPTER_REVISION)).toBe(true)
@@ -771,11 +810,26 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     const manifest = parsePaControlManifest(row.reviewPayload)
     expect(manifest).toBeDefined()
     expect(String(manifest?.callId)).toBe(correlation)
-    // The plain PA row: the committed target grammar registers no G1 family
-    // structure (family seam leg below) — so NO family block rides, and the
-    // walk carried none (the leg input says so directly).
-    expect(manifest?.familyId).toBeUndefined()
-    expect(world.legInputs[0]).not.toHaveProperty('family')
+    // ENABLED INSPECT pair (root 17:55): the walk carries the family block
+    // and the DURABLE row carries it at FULL VALUE — the rev-7 discriminated
+    // target, byte-exact against the grammar's bound constants (measured via
+    // the pinned validator in the grammar-facts leg). The block, the
+    // fingerprint and the plan all come from the SAME classify call.
+    expect(manifest?.familyId).toBe('B-INSPECT')
+    expect(manifest?.adapterRevision).toBe(G1.A5_G1_ADAPTER_REVISION)
+    expect(manifest?.providerIdentity).toBe(PROVIDER_ID)
+    expect(manifest?.targetManifest).toEqual({
+      topologyRevision: TOPOLOGY_BASE.topologyRevision,
+      topologyDigest: TOPOLOGY_BASE.topologyDigest,
+      inspectVariant: 'list',
+      listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear',
+      trustedMemberAgentId: WORKER,
+      trustedSessionHeaderId: HEADER_ID,
+      trustedRealmId: world.plane.realmId,
+      trustedOwner: P6T4_ROOT,
+      trustedProfileId: 'profile-a5m2-g1',
+    })
+    expect(world.legInputs[0]).toHaveProperty('family')
     expect(String(manifest?.parametersFingerprint)).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(JSON.stringify(manifest?.effects)).toContain('cordis_inspect_list')
     expect(row.status).toBe('pending')
@@ -811,6 +865,17 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
       execFor('call-query'),
     )
     const row = await waitRowForCall(correlation)
+    // The minted variant leaf on the DURABLE row is the grammar-selected
+    // 'query-host' variant, the triple bound to THIS call's args at full
+    // value (same-call origin — see the fixed-point legs).
+    const qManifest = parsePaControlManifest(row.reviewPayload)
+    expect(qManifest?.familyId).toBe('B-INSPECT')
+    expect(qManifest?.targetManifest).toMatchObject({
+      inspectVariant: 'query-host',
+      queryPlatform: 'host',
+      queryProvider: 'dsh_compute',
+      queryMethod: 'compute_health',
+    })
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const value = (await running) as { provider: string; answer: string }
     expect(value).toMatchObject({ platform: 'host', provider: 'dsh_compute', method: 'compute_health', answer: 'provider-answer' })
@@ -827,7 +892,15 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     const row = await waitRowForCall(correlation)
     const manifest = parsePaControlManifest(row.reviewPayload)
     expect(String(manifest?.callId)).toBe(correlation)
+    // ZERO MOVEMENT for the non-enabled row: the B-CONTROL target grammar has
+    // LANDED (root 17:40, flat trusted leaves — the grammar-facts leg pins the
+    // record-85 payload against it), but B-CONTROL ENABLEMENT was NOT part of
+    // the root 17:55 INSPECT ruling and the row is not registered, so NO
+    // family block rides its walk and the durable row carries none. Enabling
+    // it later is the SAME pair of moves this lane ran for INSPECT:
+    // register the placed identity, then carry the block.
     expect(manifest?.familyId).toBeUndefined()
+    expect(world.legInputs[0]).not.toHaveProperty('family')
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const value = (await running) as { status: string; pending: unknown[]; count: number }
     expect(value).toMatchObject({ status: 'pending-control-listed', count: 1 })
@@ -881,79 +954,233 @@ describe('A5M2-G1-WIRE C1: the pure-query adapter rows mount, walk the ONE PA pa
     expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
-  it('the family seam is MEASURED: the committed target grammar refuses every G1 review payload, the wiring registers NOTHING and claims nothing on the walk', async () => {
-    const world = await mountWorld('family')
-    const ROW_ARGS: Record<string, Record<string, unknown>> = {
-      cordis_inspect_list: {},
-      cordis_inspect_query: { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
-      team_list_pending_control: { rootSessionId: P6T4_ROOT, requestToken: 'tok-fam' },
+  it('the grammar facts at rev 7 are MEASURED at the validator: the rev-7 payloads PASS, the retired shapes deny with the pinned wordings, the three existing rules stay byte-identical', () => {
+    // GRAMMAR facts at the validator — structure checks only. NOTHING here
+    // is empirical consumption evidence (that is the two fixed-point legs);
+    // per root the old source-shape refusal is named exactly as what it is.
+    const listTarget = {
+      topologyRevision: 9,
+      topologyDigest: 'sha256;toponine',
+      inspectVariant: 'list',
+      listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear',
+      trustedMemberAgentId: 'inst-1',
+      trustedSessionHeaderId: 'hdr-1',
+      trustedRealmId: 'realm-x',
+      trustedOwner: 'root-1',
+      trustedProfileId: 'prof-1',
     }
-    const payloads = planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES.map((name) => {
-      const row = (world.plane.backends.g1 as G1Row[]).find((r) => r.name === name) as G1Row
-      const classified = row.classify(ROW_ARGS[name] ?? {}, `call-fam-${name}`)
-      expect(classified.ok, `${name}: ${String(classified.code)} ${String(classified.detail)}`).toBe(true)
-      return classified.reviewPayload as NonNullable<G1Classified['reviewPayload']>
+    // The rev-7 minted payloads PASS (measured, not assumed).
+    expect(validatePaFamilyTarget('B-INSPECT', listTarget)).toBeUndefined()
+    expect(validatePaFamilyTarget('B-INSPECT', {
+      topologyRevision: 9, topologyDigest: 'sha256;toponine',
+      inspectVariant: 'query-host', queryPlatform: 'host', queryProvider: 'dsh_compute', queryMethod: 'compute_health',
+      trustedMemberAgentId: 'inst-1', trustedSessionHeaderId: 'hdr-1', trustedRealmId: 'realm-x', trustedOwner: 'root-1', trustedProfileId: 'prof-1',
+    })).toBeUndefined()
+    // The retired PRE-VARIANT shape (rev-6 encoding: nested topology) denies
+    // with the absent-discriminant-side wording — the flat leaves are
+    // required by the typed plan now.
+    expect(validatePaFamilyTarget('B-INSPECT', {
+      topology: { topologyRevision: 9, topologyDigest: 'd' },
+      queryClaim: { platform: 'host', provider: 'p', method: 'm' },
+      trusted: { memberAgentId: 'i' },
+    })).toBe('topologyRevision: required by the B-INSPECT typed plan, absent')
+    // Closed-set extra key; prototype-named discriminant; variant↔platform
+    // pairing; the B-CONTROL legacy nested envelope — all pinned wordings.
+    expect(validatePaFamilyTarget('B-INSPECT', { ...listTarget, rogue: 1 }))
+      .toBe('rogue: not part of the B-INSPECT typed plan')
+    expect(validatePaFamilyTarget('B-INSPECT', { ...listTarget, inspectVariant: 'toString' }))
+      .toBe("inspectVariant: 'toString' selects no B-INSPECT variant group")
+    expect(validatePaFamilyTarget('B-INSPECT', {
+      topologyRevision: 9, topologyDigest: 'd',
+      inspectVariant: 'query-host', queryPlatform: 'client', queryProvider: 'p', queryMethod: 'm',
+      trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
+    })).toBe("queryPlatform: not the 'query-host' variant constant of the B-INSPECT typed plan")
+    expect(validatePaFamilyTarget('B-CONTROL', { trusted: { memberAgentId: 'i', sessionHeaderId: 'h', realmId: 'r', owner: 'o', profileId: 'p' } }))
+      .toBe('trustedMemberAgentId: required by the B-CONTROL typed plan, absent')
+    expect(validatePaFamilyTarget('B-CONTROL', {
+      trustedMemberAgentId: 'i', trustedSessionHeaderId: 'h', trustedRealmId: 'r', trustedOwner: 'o', trustedProfileId: 'p',
+    })).toBeUndefined()
+    // The three EXISTING rules byte-identical: B-SESSION's own law still
+    // accepts its own target and refuses the B-INSPECT leaves as extra keys
+    // (no variant grammar reached, no rule moved).
+    expect(validatePaFamilyTarget('B-SESSION', {
+      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
+    })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SESSION', {
+      operation: 'todo-list', agentId: 'a', sessionHeaderId: 'h', todosDigest: 'sha256:t',
+      counts: { pending: 1, inProgress: 0, completed: 2 }, allowParallelPolicy: false, paramFingerprint: 'sha256:p',
+      inspectVariant: 'list', listLaw: 'x',
+    })).toBe('inspectVariant: not part of the B-SESSION typed plan')
+  })
+
+  it('FIXED POINT 1 — SAME-CALL IDENTITY: the durable row, the registered definition identity and the minted variant leaf come from ONE classify/plan call; moved/mixed-origin feeds refuse with zero row', async () => {
+    const world = await mountWorld('fixedpoint-1')
+    // The positive half: run the REAL chain once and pin that every durable
+    // identity traces back to the single classify call that answered this
+    // execute — the row's own bytes, not a reconstruction.
+    const correlation = `plane-g1:${world.plane.realmId}-cordis_inspect_list-1`
+    const running = world.defs.cordis_inspect_list.execute({}, execFor('call-fp1'))
+    const row = await waitRowForCall(correlation)
+    const manifest = parsePaControlManifest(row.reviewPayload)
+    const listRow = (world.plane.backends.g1 as G1Row[]).find((r) => r.name === 'cordis_inspect_list') as G1Row
+    const sameCall = listRow.classify({}, 'call-fp1')
+    expect(sameCall.ok).toBe(true)
+    // (a) the registration key IS the placement identity the feed answers,
+    //     and the durable record's binding tuple carries the SAME identity —
+    //     never the capture-side string.
+    const fed = String(world.plane.placementFeed('cordis_inspect_list')?.definitionIdentity ?? '')
+    expect(String(manifest?.binding?.definitionIdentity)).toBe(fed)
+    expect(a5GovernedFamilyFor(fed)).toEqual({
+      familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID,
     })
-    for (const payload of payloads) {
-      const violation = validatePaFamilyTarget(payload.familyId, payload.targetManifest)
-      expect(String(violation)).toContain('no target structure is registered')
-    }
-    // The wiring therefore registered NOTHING for the placed identities (a
-    // registration without a leg claim is durable-verifier DRIFT — the
-    // named gap the integrator/center closes together with the target table):
-    for (const name of planeModule.A5_G1_PURE_QUERY_MOUNT_NAMES) {
-      expect(a5GovernedFamilyFor(world.familyKeys[name])).toBeUndefined()
-    }
-    // Both leg directions are MEASURED on a REAL walk's own leg input.
-    // First drive one real (denied) walk to produce it:
-    const settle = world.defs.cordis_inspect_list.execute({}, execFor('call-fam-walk'))
-    const row = await waitRowForCall(`plane-g1:${world.plane.realmId}-cordis_inspect_list-1`)
-    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'deny' })
-    await expect(settle).rejects.toThrow(/APPROVAL_DENIED/)
-    const realLegInput = world.legInputs[0] as Record<string, unknown>
-    const probeLeg = (family: Record<string, unknown> | undefined) => createPaControlLeg({
+    expect(a5GovernedFamilyFor('a5p5-plane@639ed01539#cordis_inspect_list')).toBeUndefined()
+    // (b) the minted variant leaf and target bytes on the durable row equal
+    //     the review payload of the row's OWN classify over the same args —
+    //     one classify, byte-exact (the plane adds nothing, translates nothing).
+    expect(manifest?.targetManifest).toEqual(sameCall.reviewPayload?.targetManifest)
+    expect(manifest?.targetManifest).toMatchObject({ inspectVariant: 'list' })
+    // (c) the parameters fingerprint on the durable row is the fingerprint
+    //     the SAME classify computed for these args (full-value, not a name).
+    expect(String(manifest?.parametersFingerprint)).toBe(String(sameCall.parametersFingerprint))
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(1)
+
+    // The negatives ride a REAL walk's own leg inputs (produced by two
+    // DENIED real walks — zero consumptions spent), so every probe below is
+    // the same shape the production walk carries.
+    const denyWalk = world.defs.cordis_inspect_list.execute({}, execFor('call-fp1-deny'))
+    const denyRow = await waitRowForCall(`plane-g1:${world.plane.realmId}-cordis_inspect_list-2`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: denyRow.requestId, decision: 'deny' })
+    await expect(denyWalk).rejects.toThrow(/APPROVAL_DENIED/)
+    const inspectLegInput = world.legInputs[world.legInputs.length - 1] as Record<string, unknown>
+    const pendWalk = world.defs.team_list_pending_control.execute({ rootSessionId: P6T4_ROOT, requestToken: 'tok-fp1' }, execFor('call-fp1-pend'))
+    // ONE counter for the whole mount: this is the THIRD flight on it
+    // (positive list -1, denied list -2, pending -3).
+    const pendRow = await waitRowForCall(`plane-g1:${world.plane.realmId}-team_list_pending_control-3`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: pendRow.requestId, decision: 'deny' })
+    await expect(pendWalk).rejects.toThrow(/APPROVAL_DENIED/)
+    const pendingLegInput = world.legInputs[world.legInputs.length - 1] as Record<string, unknown>
+    const probeLeg = (legInput: Record<string, unknown>, probeCallId: string, family: Record<string, unknown> | undefined) => createPaControlLeg({
       controlService: service,
       rootSessionId: P6T4_ROOT,
       caller: memberCaller(WORKER),
       beneficiaryAuthority: 'member',
       governedFamilies: familyTable,
     })({
-      ...realLegInput,
-      callId: 'call-family-probe',
+      ...legInput,
+      callId: probeCallId,
       ...(family === undefined ? {} : { family }),
     } as unknown as PaControlLegInput)
-    // Direction 1: a claim on THIS (unregistered) binding is refused before
-    // anything durable — zero row.
-    const claimProbe = await probeLeg({
+    const good = inspectLegInput.family as Record<string, unknown>
+    const moved: Array<[string, Record<string, unknown>, Record<string, unknown>, string]> = [
+      // the whole block moved onto the NON-enabled binding's real walk:
+      ['fp1-moved-identity', pendingLegInput, good, 'family-claim-on-unregistered-binding'],
+      // the provider leaf mixed in from elsewhere:
+      ['fp1-moved-provider', inspectLegInput, { ...good, providerIdentity: 'other-plane' }, 'family-provider-identity-mismatch'],
+      // the family leaf mixed in from elsewhere:
+      ['fp1-moved-family', inspectLegInput, { ...good, familyId: 'B-SESSION' }, 'family-mismatch'],
+      // the revision leaf mixed in from elsewhere:
+      ['fp1-moved-revision', inspectLegInput, { ...good, adapterRevision: G1.A5_G1_ADAPTER_REVISION - 1 }, 'family-adapter-revision-mismatch'],
+      // the minted variant leaf moved to a prototype name (own-key law):
+      ['fp1-moved-leaf', inspectLegInput, { ...good, targetManifest: { ...(good.targetManifest as Record<string, unknown>), inspectVariant: 'toString' } }, 'family-target-invalid'],
+    ]
+    for (const [probeCallId, legInput, family, expectString] of moved) {
+      const res = await probeLeg(legInput, probeCallId, family)
+      expect(JSON.stringify(res), probeCallId).toContain(expectString)
+    }
+    const state = await stateNow()
+    for (const [probeCallId] of moved) {
+      expect(state.requests.some((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === probeCallId), probeCallId).toBe(false)
+    }
+  })
+
+  it('FIXED POINT 2 — STALE-REVISION REFUSAL: a durable approval carrying the retired adapterRevision 6 REFUSES consumption at the PA walk (pinned drifted wording, zero consumption); the pre-variant shape never even reaches durable (grammar fact)', async () => {
+    const world = await mountWorld('fixedpoint-2')
+    // Produce one REAL leg input through a denied walk (the shape the
+    // production walk carries, zero consumptions spent).
+    const denyWalk = world.defs.cordis_inspect_list.execute({}, execFor('call-fp2-deny'))
+    const denyRow = await waitRowForCall(`plane-g1:${world.plane.realmId}-cordis_inspect_list-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: denyRow.requestId, decision: 'deny' })
+    await expect(denyWalk).rejects.toThrow(/APPROVAL_DENIED/)
+    const legInput = world.legInputs[world.legInputs.length - 1] as Record<string, unknown>
+    const good = legInput.family as Record<string, unknown>
+    const probeLeg = (probeCallId: string, family: Record<string, unknown>) => createPaControlLeg({
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER),
+      beneficiaryAuthority: 'member',
+      governedFamilies: familyTable,
+    })({ ...legInput, callId: probeCallId, family } as unknown as PaControlLegInput)
+
+    // GRAMMAR FACT (at the leg, pre-durable): a PRE-VARIANT (rev-6 nested)
+    // target on the CURRENT revision cannot even create the row — retired
+    // encodings are never translated. Pinned; this is structure, not a
+    // consumption claim.
+    const preVariant = await probeLeg('fp2-pre-variant', {
       familyId: 'B-INSPECT',
       adapterRevision: G1.A5_G1_ADAPTER_REVISION,
       providerIdentity: PROVIDER_ID,
-      targetManifest: payloads[0]?.targetManifest ?? {},
+      targetManifest: {
+        topology: { topologyRevision: TOPOLOGY_BASE.topologyRevision, topologyDigest: TOPOLOGY_BASE.topologyDigest },
+        queryClaim: { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+        trusted: { memberAgentId: WORKER, sessionHeaderId: HEADER_ID, realmId: world.plane.realmId, owner: P6T4_ROOT, profileId: 'profile-a5m2-g1' },
+      },
     })
-    expect(claimProbe.decision).toBe('deny')
-    expect(JSON.stringify(claimProbe)).toContain('family-claim-on-unregistered-binding')
-    // Direction 2: with the binding registered (exactly what the center/
-    // integrator step would do), the FULL family block STILL lands on the
-    // committed grammar wall — PA_FAMILY_TARGET_RULES registers no structure
-    // for a G1 family, so the row can never be created. Registration is
-    // undone right after the probe; the production wiring keeps nothing.
+    expect(JSON.stringify(preVariant)).toContain('family-target-invalid: topologyRevision: required by the B-INSPECT typed plan, absent')
+
+    // THE EMPIRICAL CONSUMPTION REFUSAL: mint a durable approval that
+    // genuinely carries the RETIRED adapterRevision 6 (the block matches a
+    // registration temporarily at 6 — a mount still on the retired build),
+    // let the human allow it with the CURRENT truth (7) restored BEFORE the
+    // decision lands, and pin that consumption itself refuses.
+    // The registry refuses a SECOND claim on one identity (a re-mount is a
+    // config defect, never a paper-over), so the temporary retired-mount
+    // state is written as delete-then-register and restored the same way.
     const listKey = world.familyKeys.cordis_inspect_list
-    registerA5GovernedFamily(listKey, { familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
-    try {
-      const targetProbe = await probeLeg({
-        familyId: 'B-INSPECT',
-        adapterRevision: G1.A5_G1_ADAPTER_REVISION,
-        providerIdentity: PROVIDER_ID,
-        targetManifest: payloads[0]?.targetManifest ?? {},
-      })
-      expect(targetProbe.decision).toBe('deny')
-      expect(JSON.stringify(targetProbe)).toContain('family-target-invalid')
-    } finally {
+    const register7 = () => {
       delete familyTable[listKey]
+      registerA5GovernedFamily(listKey, { familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
     }
-    expect(a5GovernedFamilyFor(listKey)).toBeUndefined()
-    const state = await stateNow()
-    expect(state.requests.some((r) => String((r.reviewPayload as Record<string, unknown> | undefined)?.callId ?? '') === 'call-family-probe')).toBe(false)
+    const register6 = () => {
+      delete familyTable[listKey]
+      registerA5GovernedFamily(listKey, { familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION - 1, providerIdentity: PROVIDER_ID })
+    }
+    register6()
+    try {
+      const stale = probeLeg('fp2-rev6-row', { ...good, adapterRevision: G1.A5_G1_ADAPTER_REVISION - 1 })
+      const row = await waitRowForCall('fp2-rev6-row')
+      expect(parsePaControlManifest(row.reviewPayload)?.adapterRevision).toBe(G1.A5_G1_ADAPTER_REVISION - 1)
+      // The retired encoding is retired: the CURRENT registration goes back
+      // to the module truth BEFORE the human decides.
+      register7()
+      // The decision gate (the first gate that fronts the consumption write)
+      // converts the stale-revision allow into a DURABLE DENY carrying the
+      // closed reason — never a silent skip, never an allow.
+      const decision = await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+      expect(JSON.stringify(decision)).toContain('pa-authority-drift')
+      const res = await stale.catch((error: unknown) => ({ refused: String((error as Error)?.message ?? error) }))
+      // The walk never reaches a spent approval: it reads the durable deny.
+      expect(JSON.stringify(res)).toContain('the approval was denied')
+      // The pinned drifted wording itself, observed at the PA walk's verifier
+      // gate for exactly this row — the refusal says WHY, in the grammar's
+      // own words, and says nothing else moved.
+      expect(verifierObserved.filter((o) => String(o.requestId) === String(row.requestId)
+        && o.gate === 'resolve' && o.outcome === 'drift'
+        && o.detail === 'the family adapter moved (approved revision 6, current 7)')).toHaveLength(1)
+      const state = await stateNow()
+      // The approval died unconsumed: ZERO consumption rows for it — the
+      // retired revision is never silently translated into a fresh one.
+      expect(state.consumptions.filter((c) => String(c.requestId) === String(row.requestId))).toHaveLength(0)
+    } finally {
+      register7()
+    }
+    expect(a5GovernedFamilyFor(listKey)).toEqual({ familyId: 'B-INSPECT', adapterRevision: G1.A5_G1_ADAPTER_REVISION, providerIdentity: PROVIDER_ID })
+    // Zero native entry for the stale flight: the probe walks the bridge, and
+    // the plane never reached delegate on this flight — the world's native
+    // count is exactly the one real allow-flight it never ran (zero here).
+    expect(world.nativeCalls.cordis_inspect_list).toHaveLength(0)
   })
 
   it('the adapter swapped-execution guard stays live under the plane identity law: a foreign host callId refuses the consumed-plan entry with zero native', async () => {
