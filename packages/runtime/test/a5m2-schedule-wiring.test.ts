@@ -49,17 +49,18 @@
  *  (f) C1 at the row face: the list row's parameters are the captured closed
  *      face (a caller-passed sessionId is refused with zero admission), and
  *      the service-call sessionId is the BOUND owner's — never a caller string;
- *  (g) GRAMMAR-STATE PIN (re-anchored at the REGISTERED base): the signed
- *      family-chain landing put the closed 'B-SCHEDULE' rule into
- *      PA_FAMILY_TARGET_RULES (nine families at this base; the
+ *  (g) GRAMMAR-STATE PIN (re-anchored per root 23:09 at int a985a3401):
+ *      the signed family-chain landing put the closed 'B-SCHEDULE' rule
+ *      into PA_FAMILY_TARGET_RULES (TEN families at this base since the
+ *      joint batch landed B-SUBAGENT at cc6a0f643; the
  *      nullableString/stringArray kinds carry the measured taskId leaf —
  *      the round-3 escalation was SIGNED, not worked around). The mint →
  *      durable-pending path is therefore OPEN: validatePaFamilyTarget
  *      ACCEPTS BOTH minted shapes (list taskId null, delete the exact
  *      validated id) — the eleven lossless leaves pass the signed rule
- *      instead of denying. B-TERMINAL/B-SUBAGENT keys are NOT here (G3
- *      BLOCKED, spawn entry-scoped). Wiring is proved at this file's
- *      factory level; the real-plane pass-through lives in
+ *      instead of denying. B-TERMINAL is STILL not here (G3 BLOCKED);
+ *      unknown-family refusal stays asserted. Wiring is proved at this
+ *      file's factory level; the real-plane pass-through lives in
  *      a5m2-schedule-production.test.ts; end-to-end on Host is claimed
  *      nowhere (候选接线未测).
  *
@@ -459,10 +460,10 @@ describe('a5m2-schedule-wiring — the controlled list/delete wiring over the re
   })
 
   describe('(g) GRAMMAR-STATE PIN: mount+registration+consumption are wired; the B-SCHEDULE table is REGISTERED at this base — both minted shapes PASS the signed rule (the mint to durable-pending path is open)', () => {
-    it('PA_FAMILY_TARGET_RULES answers the nine landed families (B-TERMINAL/B-SUBAGENT are NOT among them — G3 BLOCKED, spawn entry-scoped) and validatePaFamilyTarget ACCEPTS both minted shapes: the lossless eleven leaves with taskId null (list) and the exact validated id (delete)', async () => {
-      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+    it('PA_FAMILY_TARGET_RULES answers the ten landed families (re-anchored per root 23:09: the joint batch landed B-SUBAGENT at int cc6a0f643 — ten by name; B-TERMINAL is STILL not among them — G3 BLOCKED, spawn entry-scoped) and validatePaFamilyTarget ACCEPTS both minted shapes: the lossless eleven leaves with taskId null (list) and the exact validated id (delete)', async () => {
+      expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
       expect(PA_FAMILY_TARGET_RULES['B-TERMINAL' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
-      expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT' as keyof typeof PA_FAMILY_TARGET_RULES]).toBeUndefined()
+      expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT']).toBeDefined()
       const world = makeWorld()
       const wiring = unwrap(WIRING_MODULE.createScheduleWiring(world.base))
       await wiring.definitions.find((d) => d.name === 'schedule_list')!.execute({}, execFor(world.capturedAgent))
