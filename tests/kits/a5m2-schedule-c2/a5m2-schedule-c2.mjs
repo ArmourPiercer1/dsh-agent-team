@@ -576,7 +576,8 @@ async function main() {
   currentRoot = created?.sessionId
   if (typeof currentRoot !== 'string') throw new Error(`session/create value shape: ${JSON.stringify(created).slice(0, 300)}`)
   const team = await remoteCallReady('team.create', { rootSessionId: currentRoot, blueprintId: BP_ID }, 'c2-create', 1)
-  if (resultErr(team.body) !== null) throw new Error(`team.create: ${JSON.stringify(resultErr(team.body)).slice(0, 400)}`)
+  const teamErr = resultError(team.body)
+  if (teamErr !== null) throw new Error(`team.create: ${JSON.stringify(teamErr).slice(0, 400)}`)
   log(`team created at root session ${currentRoot}`)
 
   await apiPrompt(currentRoot, `A5M2-C2-LEADER ${NONCE}`, 'c2-leader')
