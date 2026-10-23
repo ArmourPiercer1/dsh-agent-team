@@ -88,6 +88,10 @@ export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'tea
  *  PLANE_SUPPORTED_NATIVE_TAKEOVERS and the todo gate in the assembly). */
 export const A5_TODO_MOUNT_NAME = 'todo_write'
 export const A5_WRITE_MOUNT_NAME = 'write'
+// A5-M2 B-IMAGE (CENTER vertical): the governed image-read row mounts at the
+// FIXED native spelling 'read_image' (a PLANE_RESERVED_NATIVE name, pinned to
+// the 639 host face) behind the closed `imageEnabled` key.
+export const A5_IMAGE_MOUNT_NAME = 'read_image'
 
 /**
  * The host registration law (measured at the pinned host: core tools
@@ -500,6 +504,14 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // O_CREAT — the new-file path stays HELD); no native body is re-entered
   // and no authority lives below this line.
   write: Object.freeze(['write']),
+  // A5-M2 B-IMAGE (CENTER vertical): the governed image row mounts at the
+  // FIXED native spelling 'read_image' behind the closed `imageEnabled` key
+  // plus an injected arm. Same-name, same-meaning: classify is pure-lexical,
+  // admission walks THIS plane's PA, and the BODY is the reviewed consumption
+  // arm (real final edge first, one port read cap+1 on the consumed
+  // credential, commit through the injected attachment adapter). No native
+  // body is re-entered; no authority lives below this line.
+  read_image: Object.freeze(['read_image']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -905,6 +917,55 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
+  // Gate 0e (A5-M2 B-IMAGE, CENTER vertical): the SAME-shaped CLOSED boolean
+  // gate as the write row (root authorization @10:25Z: 实际接线; constraints
+  // restated @ the port round): pairing law BOTH directions — `imageEnabled`
+  // with no injected arm refuses (the mount would mask the reserved native
+  // name with nothing behind it), an injected arm with the gate off refuses
+  // (config is law, not wiring — the glob-gate ④ discipline). The arm's own
+  // construction (port × attachment adapter × governed root namespace) sits
+  // in the placing assembly (agent-bindings.mjs): a mount that cannot
+  // honestly build the triple builds NO arm, and a gate-on mount then
+  // refuses HERE — never a half-wired row.
+  const imageEnabledRaw = input.plane?.imageEnabled
+  if (imageEnabledRaw !== undefined && typeof imageEnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CFG_INVALID',
+      message: `planeCfg.imageEnabled must be a boolean when present — got ${JSON.stringify(imageEnabledRaw) ?? String(imageEnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const imageEnabled = imageEnabledRaw === true
+  const imageInjectRaw = input.backends?.image
+  const imageInjectInvalid = (why) => ({ ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${why}` })
+  if (imageEnabled && imageInjectRaw === undefined) {
+    return imageInjectInvalid('imageEnabled is true but no governed image arm is injected - the mount would mask the reserved native name with nothing behind it; there is no fallback row and no silent disable')
+  }
+  if (!imageEnabled && imageInjectRaw !== undefined) {
+    return imageInjectInvalid('an arm is injected while imageEnabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let imageInject = null
+  if (imageInjectRaw !== undefined) {
+    const arm = imageInjectRaw.arm
+    const bad = arm === undefined || arm === null
+      ? 'an enabled image row requires the governed arm object'
+      : (typeof arm.classify !== 'function' || typeof arm.execute !== 'function' || typeof arm.drain !== 'function'
+              || typeof arm.familyId !== 'string' || arm.familyId !== 'B-IMAGE' || typeof arm.adapterRevision !== 'number'
+              || typeof arm.definitionIdentity !== 'string' || typeof arm.providerId !== 'string'
+              || typeof arm.reference !== 'function')
+        ? 'backends.image.arm must be the governed B-IMAGE arm surface (classify/execute/reference/drain + family facts) — nothing less drives this row'
+        : (typeof imageInjectRaw.description !== 'string' || imageInjectRaw.description.length === 0)
+          ? 'backends.image.description must be a non-empty string (the CAPTURED native description bytes)'
+          : (imageInjectRaw.parameters === undefined || imageInjectRaw.parameters === null || typeof imageInjectRaw.parameters !== 'object')
+            ? 'backends.image.parameters must be the CAPTURED native parameters schema — the three-way definitionIdentity tie (durable row / this call / arm) can only hold when the mount IS the native definition face; a plane-invented schema drifts the identity'
+            : undefined
+    if (bad !== undefined) return imageInjectInvalid(bad)
+    imageInject = Object.freeze({ arm, description: imageInjectRaw.description, parameters: imageInjectRaw.parameters })
+    if (readName === A5_IMAGE_MOUNT_NAME || writeInject !== null && A5_WRITE_MOUNT_NAME === A5_IMAGE_MOUNT_NAME) {
+      return imageInjectInvalid(`'${A5_IMAGE_MOUNT_NAME}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
+    }
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -1096,6 +1157,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // undefined here exactly as before (zero flip).
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
+    if (imageInject !== null && spelling === A5_IMAGE_MOUNT_NAME) return A5_IMAGE_MOUNT_NAME
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -1126,6 +1188,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const governedTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
   let todoCorrSeq = 0
   let writeCorrSeq = 0
+  let imageCorrSeq = 0
   // A5-M2: `family` (optional) is the governed-family review block THIS call
   // carries, sourced ONLY from the arm's classify output the row drove (never
   // model input, never a plane invention). It rides to the durable Control leg
@@ -2394,14 +2457,225 @@ export function createTeamToolPlaneAssembly(input = {}) {
       presentResult: readRowPresentResult,
     }),
   ])
+  // A5-M2 B-IMAGE (CENTER vertical): the governed read_image row. Same
+  // machinery as todo/write: the SHARED token ledger (one registry token,
+  // one governed flight across the rows), THIS plane's PA admission (open →
+  // REAL final edge → consumedProof), and the reviewed B-IMAGE arm as the
+  // BODY. The arm owns the consumption-context law (ask receipt vs all-allow
+  // REAL grant, the five-way binding, the required family carrier, full
+  // typed-plan equality, the ONE port read and the commit); the ROW owns the
+  // single flight, the walk, the final edge, and the trusted this-call facts
+  // the arm re-ties against — every callFacts field is taken from OUTSIDE
+  // the arm (the provider-side placement record, the plane's confirmed fresh
+  // generation read, the kernel-admitted member), never self-attested. The
+  // arm's structured fields (sideEffectPossible where present) ride the
+  // plain-Error in-band protocol, write-row shape verbatim: no new code, no
+  // new gate.
+  const imageDefs = imageInject === null ? [] : [Object.freeze({
+    name: A5_IMAGE_MOUNT_NAME,
+    // The CAPTURED native description + parameters bytes (Gate 0e): same
+    // name, same meaning — never a plane-invented wording or schema.
+    description: imageInject.description,
+    parameters: imageInject.parameters,
+    execute: async (raw, exec) => {
+      const arm = imageInject.arm
+      // Identity law (fix-1, SHARED ledger): the REAL registry token; absent
+      // is a typed front refusal — zero classify, zero walk, zero row.
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+      if (tokenKey === undefined) {
+        throw new Error('refused-image exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
+      }
+      const priorFlight = governedTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-image exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (todo/write/image share ONE token ledger: a registry token spans exactly one flight of one row); one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
+      }
+      imageCorrSeq += 1
+      const correlation = `plane-image:${realmId}-${String(imageCorrSeq)}`
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      try {
+      // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, the same authority leg
+      // as todo/write and paAdmitPartA): a faulting leg is OBSERVED, never
+      // absorbed. The fresh read ALSO refreshes the plane's confirmed
+      // generation — the value handed to the arm as a trusted fact below.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-image-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
+      let classified
+      try {
+        classified = arm.classify(raw)
+      } catch (error) {
+        throw new Error(`refused-image arm-unavailable — the governed image arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
+      }
+      if (classified.ok !== true || classified.targetManifest === undefined) {
+        // Pure-lexical refusals (outside-root, undeclared mediaType, closed
+        // argument set) land HERE with zero fs calls and zero admission —
+        // there is no plan to cancel: the image arm is stateless pre-edge
+        // by design (the design card's 9-leg law, leg 9).
+        throw new Error(`refused-image ${classified.code ?? 'P_IMAGE_CLASSIFY_INVALID'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+      }
+      const parsedEffects = parseRequestedEffectSet(classified.effects)
+      if (parsedEffects.ok !== true) {
+        throw new Error(`refused-image effects-unparsable — the arm's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+      }
+      const walk = {
+        realmId,
+        callId: correlation,
+        // SEAM #1 CLOSED (root ruling 10:37Z 收接缝, kernel source open):
+        // the exact-scope fingerprint is the DOMAIN's own canonical digest
+        // over THIS call's typed plan facts. The kernel NEVER recomputes it
+        // from raw arguments — pa-control-bridge carries it verbatim into
+        // the durable manifest (:483) and re-verifies equality at the
+        // execution edge (:1119), so the same walk object across open→edge
+        // IS the pairing consistency, exactly the write arm's discipline
+        // (opaque per-plan identity) with the digest derived from facts the
+        // row holds, no invented hash.
+        parametersFingerprint: canonicalJsonFingerprint({
+          realmId,
+          toolName: A5_IMAGE_MOUNT_NAME,
+          effects: classified.effects,
+          targetManifest: classified.targetManifest,
+        }),
+        requestedEffects: parsedEffects.value,
+        toolName: A5_IMAGE_MOUNT_NAME,
+        family: Object.freeze({
+          familyId: arm.familyId,
+          adapterRevision: arm.adapterRevision,
+          providerIdentity: arm.providerId,
+          targetManifest: classified.targetManifest,
+        }),
+        ...(signal === undefined ? {} : { signal }),
+      }
+      const opened = await paAdmit.open(walk)
+      if (opened.kind === 'deny') {
+        throw new Error(`refused-image ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (zero port calls, zero attachment writes)`)
+      }
+      if (opened.cancelled === true) {
+        throw new Error('read_image · cancelled — the call was cancelled at the PA edge before admission (zero port calls, zero attachment writes)')
+      }
+      if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+        throw new Error(`refused-image APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; internal arm state never substitutes for the kernel answer`)
+      }
+      const edge = await paAdmit.edge({
+        ...walk,
+        grant: opened.grant,
+        paDurableMint: opened.paDurableMint,
+        request: opened.request,
+        placementName: opened.placementName,
+        paConstructionBinding: opened.paConstructionBinding,
+      })
+      if (edge.kind === 'deny') {
+        throw new Error(`refused-image ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (zero port calls, zero attachment writes)`)
+      }
+      if (edge.cancelled === true) {
+        throw new Error('read_image · cancelled — the call was cancelled at the execution edge (the approval stays unspent and is never replayed)')
+      }
+      // `consumed: true` is produced ONLY from the REAL final edge's success
+      // witness (write-row law verbatim): an allow shape without its
+      // one-shot consume witness refuses; the arm never receives a
+      // self-attested consumption, never a grant backfilled from the
+      // pre-edge copy.
+      const proof = edge.consumedProof
+      if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+        throw new Error('refused-image CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the body does not run')
+      }
+      // The NAMED race (fix-3 law): between the REAL consume and the body's
+      // first microtask an abort can still land. The consumed grant is
+      // ledger truth and NEVER rolls back; the body that never started did
+      // ZERO port calls and ZERO attachment writes. The image arm is
+      // stateless pre-edge (no cancel law to link — the write arm's cancel
+      // belongs to its pending-write fact, which has no image analogue).
+      if (signal?.aborted === true) {
+        throw new Error('read_image · cancelled — the call was aborted after the execution edge consumed the grant and before the body began (the consumption is a settled fact and is never rolled back; zero port calls, zero attachment writes)')
+      }
+      // SEAM #2 CLOSED (root ruling 10:37Z 收接缝): the two legal worlds are
+      // told apart by the DURABLE FACT of a Control row — `paDurableMint
+      // .requestId` exists only where the ask lane's durable request was
+      // really created (paAdmitPartA sets it from the leg answer and
+      // NOWHERE else); the all-allow lane never carries one. The receipt is
+      // a pure VIEW of the leg's own durable bytes (requestId + manifest +
+      // the consumed credential): NOTHING synthesized. If the durable
+      // manifest lacks a field the arm checks, the arm refuses that world
+      // honestly — the row supplies no stand-in. Every callFacts field is
+      // trusted and EXTERNAL to the arm: member from the kernel-admitted
+      // request facts, definition identity from the PROVIDER-SIDE placement
+      // record, the generation from the plane's confirmed fresh read, the
+      // provider identity being the plane's own constant (the same one the
+      // request-binding projection carries).
+      const placement = placementFeed(A5_IMAGE_MOUNT_NAME)
+      const durableRequestId = typeof opened.paDurableMint?.requestId === 'string' ? opened.paDurableMint.requestId : ''
+      const askWorld = durableRequestId.length > 0
+      const callFacts = Object.freeze({
+        approval: askWorld ? 'ask' : 'all-allow',
+        ...(askWorld ? {} : { grant: proof.grant }),
+        member: Object.freeze({ teamSessionId: String(input.teamSessionId ?? ''), instanceId: String(input.instanceId ?? '') }),
+        callId: correlation,
+        definitionIdentity: placement?.definitionIdentity,
+        providerIdentity: 'a5p5-plane',
+        authorityGeneration: paAuthorityGeneration(),
+      })
+      const receipt = askWorld
+        ? Object.freeze({
+          decision: 'approve',
+          requestId: durableRequestId,
+          manifest: opened.paDurableMint.manifest,
+          grant: proof.grant,
+        })
+        : undefined
+      const ran = await arm.execute(raw, receipt, callFacts, signal)
+      if (ran.ok !== true) {
+        // The in-band risk protocol (f609c1b law): the arm's structured
+        // fields ride the message VERBATIM — the side-effect class must not
+        // be truncated away from the model-facing surface.
+        const risk = []
+        if (ran.sideEffectPossible === true) risk.push('side-effect-possible=true')
+        if (typeof ran.cfClass === 'string') risk.push(`cf-class=${ran.cfClass}`)
+        if (typeof ran.cfReason === 'string') risk.push(`cf-reason=${ran.cfReason}`)
+        const error = new Error(`refused-image ${ran.code ?? 'P_IMAGE_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the body'}${risk.length > 0 ? ` · ${risk.join(' · ')}` : ''}`)
+        if (ran.sideEffectPossible === true) error.sideEffectPossible = true
+        if (typeof ran.cfClass === 'string') error.cfClass = ran.cfClass
+        if (typeof ran.cfReason === 'string') error.cfReason = ran.cfReason
+        throw error
+      }
+      return ran.value
+      } finally {
+        // Every path settles the token (shared ledger, root ruling @ 9c817:
+        // used identities are NEVER evicted; the map dies with the mount).
+        governedTokenLedger.set(tokenKey, { correlation, settled: true })
+      }
+    },
+    output: Object.freeze({
+      schema: Object.freeze({
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          path: Object.freeze({ type: 'string', required: true }),
+          image: Object.freeze({ type: 'object', required: true }),
+        },
+      }),
+    }),
+    presentCall: (args) => ({ card: 'generic', title: 'Read image (governed)', kind: 'other', rawInput: args?.file_path }),
+    render: (_args, value) => [{
+      type: 'text',
+      text: `Read image ${String(value?.path ?? 'the approved target')} (governed attachment ${String(value?.image?.attachmentId ?? '')}).`,
+    }],
+  })]
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -2532,6 +2806,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // rewound and no native fallback exists), and a call whose token
             // already settled can never be re-armed by the later clear.
             if (writeInject !== null) writeInject.arm.drain()
+            // A5-M2 B-IMAGE: same teardown law — drain BEFORE any state
+            // clears; an entered body is not rewound, no native fallback.
+            if (imageInject !== null) imageInject.arm.drain()
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the
