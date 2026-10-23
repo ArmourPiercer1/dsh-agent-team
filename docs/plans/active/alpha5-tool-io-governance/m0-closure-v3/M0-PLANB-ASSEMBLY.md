@@ -2,6 +2,8 @@
 
 状态：ROOT-ADJUDICATION-INPUT（供裁决）；PROPOSED_NOT_FROZEN；**M0 不可冻结，freezeEligible=false 不变**。本件=文档装配+工程排期，零产品/Host/发布动作；全部证据=静态源码核对/附件原件静态核对，零"实测"声称。P3 有限 44 例机器件已由根接纳：不改规则、不加测试、不重跑。
 
+> **三态指针（2026-10-23 追加，当前态；上方原状态条为裁决输入时点记录，不删不改）**：**M0 已冻结**（历史基线 9b2 及历史事实原样保留，本件固定输入与 hash 锚不改写）／**M1 已合入 master** `929fc4af23725a1de4cda9206eb7abb149b1bf12`（已审 tree == `7a3540937e39aa5b90abec6eac6ea2a30c78deeb`）／**M2 进行中**。
+
 ## 0. 固定输入（hash 锚，全部只读引用）
 | 输入 | 值 |
 |---|---|
@@ -21,7 +23,7 @@
 1. **行身份不变**：index 93 records 与 v3c 93 行 `(name,scope)` 键集 1:1 全等（本次一次性只读集合差分 both-∅；非 P3 checker 操作，未动 expected）。record 身份锚仍=v3c（index header sourceRecordsSha256 直指）。
 2. **family 轴（新权威）**：27 个封闭 `B-*`（B-FS/IMAGE/SEARCH/PROCESS/TERMINAL/JOB/LSP/WEB/SKILL/DEPENDENCY/SESSION/SCHEDULE/SESSIONQUERY/SUBAGENT/ORCHESTRATION/HUMAN/PRESENT/PLUGIN/INSPECT/MCP/BROWSER/PTC/UPSTREAMTEAM/TEAM/CONTROL/DOMAIN/ISOLATION）取代 v3c `targetGovernedRoute` 十值枚举作为归属引用；历史枚举不删。
 3. **owner 轴（新权威）**：`implementationOwnerRole` 六角色封闭集 CENTER(1)/FS-PROC(23)/SERVICE(38)/CONNECTOR(14)/CONTROL(15)/PLUGIN(2)=93；`sharedSeamOwnerRole≡CENTER`、`authorizationSeamOwnerRole≡AUTH`（全 93 行恒定）。旧 P4 切片 writer 人排语义并入 §3 工作包。
-4. **装载轴（新权威，双射可验）**：`mountCondition` 四值封闭集与 v3c `req` 逐行对应：**REQ 49→always 49；REQ-COND 39→declared_mount 39；REQ-COND-win32 1→win32_and_declared_mount 1；N-A-TOOL(surface) 4→surface_invariant 4**；`onMountObligation≡FULL_GOVERNANCE`。无一 required 被清零。
+4. **装载轴（新权威，双射可验）**：`mountCondition` 四值封闭集与 v3c `req` 逐行对应：**REQ 49→always 49；REQ-COND 39→declared_mount 39；REQ-COND-win32 1→win32_and_declared_mount 1；N-A-TOOL(surface) 4→surface_invariant 4**；`onMountObligation≡FULL_GOVERNANCE`。无一 required 被清零。（口径注：`declared_mount` 计数 = 93-record 索引的 `(name,scope)` **记录行分类**（实测 tally：`always:49 / declared_mount:39 / win32_and_declared_mount:1(pwsh) / surface_invariant:4`），**不等于** web-app 三 preset 的声明挂载名数；后者 2026-10-23 在 pin639 逐名亲读实测 = `standard 32 / ptc 32 / cordis 34`，**并集 34、交集 32**；两口径不可互换。证据=`dev/agent-workflow/evidence/alpha5/m2-mount-audit/`）
 5. **acceptance 轴（新权威）**：`acceptance{C1,C2,C3=BASE.*+family.*+§5 finite adapter seam,recordPositiveObligation,recordEffectDeltaFromInventory,requiredNegative,executionEvidence:"NOT_RUN"}` 取代旧逐行 acc/gap 账作验收引用；v3c `acc(F/W1/W2)` 分布（F33/W1 23/W2 37）与 index `legacyAcceptanceWaveNotCondition` 分布**完全一致**——同标签、语义降级为历史波次且字段名自证"NotCondition"。
 6. **旧 accept-pending/GAP 不当目标**：v3c `openDeliverable`/`routeFormPending`(Q5 形式定夺)/ceiling 条款留账本原文；index 目标列一律 `PROPOSED_NOT_IMPLEMENTED_NOT_ACCEPTED`，不携带旧未决为义务。record 52 plugin_manager 未决已收敛为 `scopeClarification: USER_SCOPE_CLARIFIED`（用户产品边界，见 §4）；包内技术待裁清零，Q5 形式定夺维持非阻塞既有项。
 7. **evidenceLevel 双值**：E1 行 29=§5 定点重读集（recordIndex 12–17,21,52,58–63,74–88；与 supplementalContractRef 行集一致），其余 64 行 E2_prior_fixed_source_research；E2 行实现时按合同 §5 对应行定点重读升级（计入 M2 工作量，非新调研线）。
