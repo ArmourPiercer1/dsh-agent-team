@@ -1278,3 +1278,51 @@ describe('A5M2-G2-WIRE round-30: the REAL mint validates at the table (positive+
     expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), swapped))).toContain('modelDestinationOrigin')
   })
 })
+
+/* CENTER dispatch (root 00:3x) — the Team-scoped FIXED web provider fork
+ * + disposer registration block. DISCLOSED STAND-INS: the transport
+ * stand-in answers the exported HttpFetchProvider shape; the web-service
+ * stand-in speaks the host's PUBLIC register-then-dispose vocabulary. The
+ * WebRuntime selection semantics (configured id恒取; MISSING/UNAVAILABLE
+ *专码不静默换) are the HOST's own behavior — NOT re-proved here; the
+ * four-stage status (fork done / block done / NOT wired / no E2E) is
+ * stated in g2-web-supply.mjs, not claimed green. */
+describe('A5M2-G2-WIRE round-32: g2-web-supply — fixed fork + disposer block (NOT wired, no E2E)', () => {
+  const WEB = async () => (await import(new URL('../src/plugin/live/governed-families/g2-web-supply.mjs', import.meta.url).href)) as {
+    createG2TeamWebProviders: (i: Record<string, unknown>) => { fetchProvider: { id: string; available: () => boolean; fetch: (r: Record<string, unknown>) => Promise<unknown> }; searchProvider: { id: string } | null }
+    registerG2TeamWebProviders: (i: Record<string, unknown>) => { ids: readonly string[]; dispose: () => boolean }
+  }
+  it('the fork pins the id and DELEGATES transport by construction (no re-selection point); missing transport refuses typed, never mints a fallback', async () => {
+    const m = await WEB()
+    const calls: unknown[] = []
+    const transport = { id: 'team-web-fixed', available: () => true, fetch: (r: unknown) => { calls.push(r); return { ok: true } } }
+    const { fetchProvider, searchProvider } = m.createG2TeamWebProviders({ providerId: 'team-web-fixed', transport })
+    expect(fetchProvider.id).toBe('team-web-fixed')
+    expect(fetchProvider.available()).toBe(true)
+    expect(await fetchProvider.fetch({ url: 'https://example.invalid' })).toEqual({ ok: true })
+    expect(calls).toHaveLength(1)
+    expect(searchProvider).toBeNull()
+    expect(() => m.createG2TeamWebProviders({ providerId: 'x' })).toThrow(/G2_WEB_TRANSPORT_ABSENT/)
+    expect(() => m.createG2TeamWebProviders({ transport })).toThrow(/providerId/)
+  })
+  it('the registration block rides the PUBLIC disposer shape, unwinds search-side refusal fully, double-dispose is idempotent, and an absent service registers NOTHING', async () => {
+    const m = await WEB()
+    const registered: string[] = []; const disposed: string[] = []
+    const web = {
+      registerFetchProvider: (p: { id: string }) => { registered.push(p.id); return () => disposed.push(p.id) },
+      registerSearchProvider: (p: { id: string }) => { registered.push(p.id); return () => disposed.push(p.id) },
+    }
+    const { fetchProvider } = m.createG2TeamWebProviders({ providerId: 'team-web-fixed', transport: { fetch: async () => ({}) } })
+    const mount = m.registerG2TeamWebProviders({ web, fetchProvider, searchProvider: { id: 'team-web-fixed-search' } })
+    expect(registered).toEqual(['team-web-fixed', 'team-web-fixed-search'])
+    expect(mount.ids).toEqual(['team-web-fixed', 'team-web-fixed-search'])
+    expect(mount.dispose()).toBe(true)
+    expect(disposed).toEqual(['team-web-fixed-search', 'team-web-fixed'])
+    expect(mount.dispose()).toBe(false)
+    expect(() => m.registerG2TeamWebProviders({ fetchProvider })).toThrow(/G2_WEB_SERVICE_ABSENT/)
+    const noSearchApi = { registerFetchProvider: web.registerFetchProvider }
+    const before = disposed.length
+    expect(() => m.registerG2TeamWebProviders({ web: noSearchApi, fetchProvider, searchProvider: { id: 's2' } })).toThrow(/registerSearchProvider/)
+    expect(disposed.length).toBeGreaterThan(before) // the fetch registration was UNWOUND — nothing half-mounts
+  })
+})
