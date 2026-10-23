@@ -85,3 +85,32 @@ export { runToolCall, type AdmissionVerdict, type RunToolCallDeps, type SpillPoi
 // which order) stays with the assembler — GLUE-4 owns the scoped-mount
 // ruling; this lane only produces the definitions and never registers.
 export { createGovernedToolDefinitions, REFUSAL_PREFIX, type A5P5Assembly, type GovernedToolDefinition } from './register.js'
+
+// M2-WRITE-01 — the governed WRITE slice (B-FS lane): pure lexical anchoring +
+// argument view + the admission-gated executor port. Like the rest of this
+// barrel it only PRODUCES; registration/mount stays with the assembler.
+export {
+  WRITE_SLICE_REFUSAL_CLASSES,
+  parseWriteSliceArgs,
+  lexicalWriteAnchor,
+  createGovernedWriteExecutor,
+  type WriteSliceRefusalClass,
+  type WriteSliceRefusal,
+  type WriteSliceWritten,
+  type WriteSliceOutcome,
+  type WriteToolArgsView,
+  type SliceResourceRefView,
+  type SliceEffectSetView,
+  type SliceEffectParser,
+  type SliceGatedWriteResult,
+  type SliceGatedControlledFs,
+  type SliceAdmissionPort,
+  type SliceGatedLaneConfig,
+  type SlicePaVerdict,
+  type SlicePaRequest,
+  type SlicePolicyRule,
+  type SlicePolicyView,
+  type SliceLaneVerdict,
+  type GovernedWriteExecutorDeps,
+  type GovernedWriteCall,
+} from './write-slice.js'
