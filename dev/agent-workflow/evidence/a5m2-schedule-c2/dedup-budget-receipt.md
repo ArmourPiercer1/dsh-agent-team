@@ -87,3 +87,14 @@ WINDOW FIT: next window install exclusive ≈ 46.5 MB blocks + state ≤100 MB
 10,312,256 KB (~10.3 GB).
 Note: one earlier spot-check confused find's %h (path prefix) with link
 count; corrected field is %n; the shared/exclusive split above uses %n.
+
+## Real Node resolution of the 15 pins (root 00:0x, one read-only pass)
+Lock DECLARATION vs Node ACTUAL resolution are separate columns in
+real-resolution-15-ab05f5c2f.json: createRequire anchored at the reuse
+install (resolution starts at its node_modules; upward-leak guard = every
+realpathSync must stay under the reuse install) + package.json version +
+realpath per package. Result 15/15: declared == resolved (12x dsh
+0.2.0-rc.2, cordis 4.0.4 [include@1.0.9/loader@1.0.5 peer suffix in the
+.pnpm path], yaml 2.9.0, zod 4.4.3), 0 leaks to the main repo.
+WORDING: the fresh reuse-world figure 1,591 B is LOGICAL BYTES (stat %s
+sum), not allocated blocks; no re-scan performed on account of it.

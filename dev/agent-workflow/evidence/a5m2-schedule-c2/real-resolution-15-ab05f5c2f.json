@@ -1,0 +1,112 @@
+{
+  "anchor": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/anchor.cjs (createRequire; resolution starts at reuse node_modules; upward-leak guard = realpath must stay under reuse node_modules)",
+  "rows": [
+    {
+      "name": "@deepseek-ai/dsh",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh@0.2.0-rc.2_3ad1343bffe811af62c25ff848cf56ac/node_modules/@deepseek-ai/dsh/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-agent@0.2.0-rc.2_29054241a3ce07cdca0372a35ea8d411/node_modules/@deepseek-ai/dsh-agent/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-llm@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-llm/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-mcp-client",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-mcp-client@0.2.0-rc.2_d097ce8e588485c57e760bdea1944a91/node_modules/@deepseek-ai/dsh-mcp-client/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-schedule",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-schedule@0.2.0-rc.2_820f27980881640181bf672ee2289877/node_modules/@deepseek-ai/dsh-schedule/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-scope",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-scope@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-invariants_0d6b19188928ab894325adc32e18b0b5/node_modules/@deepseek-ai/dsh-scope/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-session",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-session@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-scope@0._c9dee8deba3bd498ce58eb9c566c157f/node_modules/@deepseek-ai/dsh-session/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-spill",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-spill@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-brand@0.2._df5a9238af857300b3d71400c1968966/node_modules/@deepseek-ai/dsh-spill/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-spill-local",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-spill-local@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-spil_b16f5c9476445e95b067f2cbec48e025/node_modules/@deepseek-ai/dsh-spill-local/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-storage-domain",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-storage-domain@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-i_a9d0a33fe7835dbdf4640037e502e9d7/node_modules/@deepseek-ai/dsh-storage-domain/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-system-prompt",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-system-prompt@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-in_af0aba1f40fabd5fd7c0d5c00aaf1202/node_modules/@deepseek-ai/dsh-system-prompt/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-fs-search",
+      "lockDeclared": "0.2.0-rc.2",
+      "nodeResolvedVersion": "0.2.0-rc.2",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+dsh-tool-fs-search@0.2.0-rc.2_19ae92f88305f5ec913ec6cb5c28fcb7/node_modules/@deepseek-ai/dsh-tool-fs-search/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "@deepseek-ai/cordis",
+      "lockDeclared": "4.0.4",
+      "nodeResolvedVersion": "4.0.4",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/@deepseek-ai+cordis@4.0.4_@deepseek-ai+cordis-plugin-include@1.0.9_@deepseek-ai+cordis-plugin-loader@1.0.5/node_modules/@deepseek-ai/cordis/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "yaml",
+      "lockDeclared": "2.9.0",
+      "nodeResolvedVersion": "2.9.0",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/yaml@2.9.0/node_modules/yaml/package.json",
+      "withinReuseInstall": true
+    },
+    {
+      "name": "zod",
+      "lockDeclared": "4.4.3",
+      "nodeResolvedVersion": "4.4.3",
+      "realpath": "/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/a5m2-sched-c2-dry-2026-10-23T22-56-05-203ZZ/install-eda06b4a7/node_modules/.pnpm/zod@4.4.3/node_modules/zod/package.json",
+      "withinReuseInstall": true
+    }
+  ],
+  "allMatchAndWithin": true,
+  "leaks": []
+}
