@@ -1,6 +1,7 @@
 /**
  * governed-families/g1-surface-adapters.mjs — A5-M2 module group G1 (root
- * 706fd FINAL RULING round, rev.5): the captured-native-delegate adapter
+ * 706fd FINAL RULING round + 89a9 P1 round, rev.6): the captured-native-
+ * delegate adapter
  * rows for the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT /
  * B-PLUGIN / B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
  * (frozen dispatch index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json, records
@@ -8,7 +9,11 @@
  * §3). NARROW REAL-TOOL UNITS (no generic whole-group wrapper loops); KEEP
  * the closed work (pre-abort refusal, optional face params, the retired fake
  * success, manager async contract, CURRENT-facts re-verify, inspect list
- * topology filter, present witness); UNWIRED by ruling.
+ * topology filter, present witness); UNWIRED by ruling. The 89a9 P1 unit:
+ * the policy scope passes through EXACTLY as the host computes it (L5) —
+ * the real Session is an OBJECT and rides BY REFERENCE; and the dependency
+ * arm records its reused-path residual gaps instead of letting the
+ * 'controlledInstall' name imply a closed family contract.
  *
  * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
  * the audit, so these path facts never live in values) ─────────────────────
@@ -38,7 +43,12 @@
  *     classify refuses the plan typed, zero native entry.
  *  L4 domainAuthorityId is ONLY the mounted-port registry's CURRENT fact.
  *  L5 plugin install = THE REAL HOST GATE CHAIN (tools.ts:38-44): mounted
- *     sandboxPolicy.resolve scope from exec.agent.session, the EXPORTED
+ *     sandboxPolicy.resolve with the scope computed EXACTLY as the host
+ *     computes it — exec.agent === undefined ? {} : { session:
+ *     exec.agent.session } — the real Session is an OBJECT and passes
+ *     through BY REFERENCE (string-gating the scope silently drops the
+ *     session override for every real session; a string-shaped fixture
+ *     double masks exactly that defect and is forbidden), the EXPORTED
  *     approveEscalation adjudicator judging {requestedMode, effectiveMode,
  *     subject, justification} over {approver, agent, callId, toolName,
  *     signal} — no invented always-approved channel; a non-grant THROW is a
@@ -59,8 +69,13 @@
  *     (the EXPORTED installPrimaryRuntime path) the arm refuses typed before
  *     any fs of its own and before native entry — no post-hoc 'BLOCKED'
  *     label over an executed copy; with it mounted the arm RUNS the real
- *     controlled path (its manifest gate, payload validation and rename
- *     commit do the verification) and never self-hashes.
+ *     path. NAMING DISCIPLINE (89a9): the reused path copies via fs.cp with
+ *     dereference, validates payload entry SHAPES (files/directories), and
+ *     rename-commits — that is NOT ControlledFs enforcement, NOT a
+ *     full-payload digest check (the manifest's payloadDigest stays
+ *     optional), NOT owner-scoped single-flight and NOT cancellable; those
+ *     family-contract dimensions stay OPEN and are reported on every result
+ *     — the port name never downgrades or closes them.
  *  L10 plugin network spec + FS scope are REAL parse work: the install spec
  *     parses through the npm-name grammar (@scope/pkg[/@version]) or a
  *     relative local path (absolute/drive paths refuse); entry-set/remove
@@ -84,7 +99,7 @@ import { URL } from 'node:url'
 import { parseResourceRef } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_G1_FAMILY_GROUP = 'G1'
-export const A5_G1_ADAPTER_REVISION = 5
+export const A5_G1_ADAPTER_REVISION = 6
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -158,7 +173,7 @@ const SPEC_TABLE = {
     requiredTopLevel: [], parameters: NO_PARAMS, nativeFaceRef: 'ledger:load_workspace_dependencies',
     effectDeltaNotes: Object.freeze([
       'F: the flow envelope over the trusted install facts: the CONTROLLED installPrimaryRuntime path enumerates the source, gates the manifest (compatibleManifest), stages under the parent, validates the payload entries and rename-commits the root (plus the .previous slot) — every one of these resources is enumerated here',
-      'FAIL-CLOSED ARM: the delegate refuses P_G1_DEPENDENCY_ARM_CLOSED (zero fs of its own, zero native entry) until the EXPORTED controlled install/verify path (installPrimaryRuntime, the flow body itself) is mounted as the controlledInstall port; when mounted the REAL path runs and performs the verification — the row never stages/hashes of its own and never labels an already-executed copy BLOCKED post-hoc',
+      'FAIL-CLOSED ARM: the delegate refuses P_G1_DEPENDENCY_ARM_CLOSED (zero fs of its own, zero native entry) until the EXPORTED controlled install/verify path (installPrimaryRuntime, the flow body itself) is mounted as the controlledInstall port; when mounted the REAL path runs — and REUSE ≠ CONTRACT (89a9): its fs.cp-dereference copy + validatePayloadEntries entry-shape checks are not ControlledFs enforcement, not a full-payload digest (payloadDigest optional), no owner single-flight, not cancellable — those dimensions ride every result as residualGap; the row never stages/hashes of its own and never labels an already-executed copy BLOCKED post-hoc',
     ]),
   },
   ask_user_question: {
@@ -464,7 +479,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       )
       built.target = {
         installFacts: { sourceLocator: facts.sourceLocator, rootLocator: facts.rootLocator, parentLocator: parent },
-        armLaw: 'the CONTROLLED path is the EXPORTED installPrimaryRuntime(source, root): compatibleManifest gate, staging copy under the parent, validatePayloadEntries, previous-slot swap, rename-commit; the delegate runs that mounted path or FAILS CLOSED before any fs of its own and before native entry — it never stages/hashes of its own and never labels an executed copy BLOCKED',
+        armLaw: 'the REUSED path is the EXPORTED installPrimaryRuntime(source, root): compatibleManifest gate, fs.cp-dereference staging copy under the parent, validatePayloadEntries entry-shape checks, previous-slot swap, rename-commit; the delegate runs that mounted path or FAILS CLOSED before any fs of its own and before native entry — it never stages/hashes of its own, never labels an executed copy BLOCKED, and reports the reused-path residual (no ControlledFs, no full-payload digest, no owner single-flight, no cancel) instead of letting the port name imply a closed contract',
       }
       break
     }
@@ -870,8 +885,10 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     /* L9 — dependency: FAIL CLOSED unless the exported controlled install/
      * verify path is mounted; the arm refuses before any fs of its own and
      * before native entry, and when mounted RUNS the real path (its manifest
-     * gate + validatePayloadEntries + rename-commit perform the verification
-     * — the row never self-hashes, never labels an executed copy BLOCKED). */
+     * gate, entry-shape validation and rename-commit — while the reused-path
+     * residual NO ControlledFs / NO full-payload digest / NO owner
+     * single-flight / NO cancel rides every result; the row never self-hashes
+     * and never labels an executed copy BLOCKED). */
     if (spec.recordIndex === 25) {
       if (!isRecord(controlledInstall) || typeof controlledInstall.installPrimaryRuntime !== 'function') {
         entry.state = 'REFUSED-ARM-CLOSED'
@@ -889,7 +906,8 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         ok: true,
         settled: 'CONTROLLED-INSTALL-RESOLVED',
         value: paths,
-        verifiedBy: 'the mounted controlled path itself (compatibleManifest + validatePayloadEntries + rename-commit); the row reports its real return and hashes nothing of its own',
+        verifiedBy: 'the mounted path itself (compatibleManifest gate, fs.cp-dereference staging copy, validatePayloadEntries entry-shape checks, rename-commit); the row reports its real return and hashes nothing of its own',
+        residualGap: 'REUSED path ≠ family contract closed (89a9): fs.cp with dereference is not ControlledFs enforcement; validatePayloadEntries checks entry SHAPES, not a full-payload digest (manifest payloadDigest stays optional); no owner-scoped single-flight lock; the copy is not cancellable — these governance dimensions stay OPEN',
       }
     }
 
@@ -919,7 +937,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         entry.state = 'FAILED-UNKNOWN'
         return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted escalation adjudicator moved after bind; the stale plan is not re-run`)
       }
-      const policyScope = isRecord(exec.agent) && typeof exec.agent.session === 'string' ? { session: exec.agent.session } : {}
+      const policyScope = exec.agent === undefined ? {} : { session: exec.agent.session }
       let effectiveMode
       try {
         effectiveMode = escalation.sandboxPolicy.resolve(policyScope)?.mode

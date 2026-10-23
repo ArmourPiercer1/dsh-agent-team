@@ -1,5 +1,5 @@
 /**
- * A5M2-G1-SURFACE (root 706fd FINAL RULING round, rev.5) — the 14 G1 records
+ * A5M2-G1-SURFACE (root 706fd FINAL RULING + 89a9 P1 round, rev.6) — the 14 G1 records
  * (B-CONTROL×5, B-HUMAN×2, B-PRESENT, B-PLUGIN, B-INSPECT×2, B-SKILL,
  * B-DEPENDENCY, B-DOMAIN) proven against the REAL where it exists and
  * doubles where it does not:
@@ -25,6 +25,15 @@
  *     are legal and ride as GOVERNED absolute-path effects (kind-routed
  *     through the lane grammar), relative '..' stays refused — neither
  *     blanket-refuse nor silent allow.
+ *  P1 (89a9) the policy scope is host-verbatim pass-through: the REAL Host
+ *     Session is an OBJECT; sandboxPolicy.resolve must receive
+ *     exec.agent === undefined ? {} : { session: exec.agent.session } with
+ *     the session BY REFERENCE (a narrower session configuration only
+ *     resolves when the object survives); the fixtures carry the real shape
+ *     — string-shaped AGENT doubles are forbidden, they mask the drop. The
+ *     dependency result additionally reports the reused-path residual gaps
+ *     (no ControlledFs / no full-payload digest / no owner single-flight /
+ *     no cancel): the 'controlledInstall' name never closes the contract.
  *
  * DISCLOSURE (honest labels): the escalation legs run the REAL exported host
  * approveEscalation against a fixture approver (the approver is the
@@ -82,6 +91,7 @@ type DelegateResult = {
   code?: string
   completionImplied?: boolean
   verifiedBy?: string
+  residualGap?: string
   commitLaw?: string
   commitWitness?: (witness: unknown) => Record<string, unknown>
   lifecycle?: LifecycleHandle
@@ -145,7 +155,10 @@ const TRUSTED = {
   profileId: 'profile-live-1',
 }
 const BINDINGS = () => ({ bindingId: 'binding-3', bindingRevision: 7, policyGeneration: 3, authorityGeneration: 2 })
-const AGENT = { session: 'session-header-77' }
+/* REAL Host shape (89a9): Agent.session is a Session OBJECT — a
+ * string-shaped AGENT double masked the scope-drop defect, forbidden. */
+const SESSION = { header: { id: 'session-header-77', root: '/dsh/agents/agent-member-1' }, sandboxMode: 'workspace-write' }
+const AGENT = { id: 'agent-member-1', session: SESSION }
 
 const PLUGIN_FACTS = {
   profileConfigLocator: '/dsh/profile/package.json',
@@ -207,6 +220,7 @@ const PORTS: Record<string, unknown> = {
  * made by the real approveEscalation (its real THROWs surface verbatim). */
 function makeGate(over: {
   mode?: string
+  modeFor?: (scope: Record<string, unknown>) => string
   outcome?: 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'
   approverPresent?: boolean
   duringGate?: () => void
@@ -215,6 +229,7 @@ function makeGate(over: {
   const outcome = over.outcome ?? 'allowed-once'
   const approverPresent = over.approverPresent ?? true
   const approverRequests: Array<Record<string, unknown>> = []
+  const scopes: Array<Record<string, unknown>> = []
   const approver = approverPresent
     ? {
         async request(req: Record<string, unknown>): Promise<string> {
@@ -225,11 +240,16 @@ function makeGate(over: {
       }
     : undefined
   const port = {
-    sandboxPolicy: { resolve: (scope: unknown) => ({ scope, mode }) },
+    sandboxPolicy: {
+      resolve: (scope: Record<string, unknown>): { scope: Record<string, unknown>; mode: string } => {
+        scopes.push(scope)
+        return { scope, mode: over.modeFor !== undefined ? over.modeFor(scope) : mode }
+      },
+    },
     approver,
     approveEscalation: HOST_SANDBOX.approveEscalation,
   }
-  return { port, approverRequests }
+  return { port, approverRequests, scopes }
 }
 const CONTROLLED_PORT = { installPrimaryRuntime: HOST_WORKDEP.installPrimaryRuntime }
 
@@ -423,7 +443,7 @@ function bareMount(name: string, ports: Record<string, unknown> = {}): G1Row {
   })
 }
 
-describe('a5m2-g1-surface-adapters rev.5: REAL seams where they exist — NOT C2 (100+ component legs, not records)', () => {
+describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records)', () => {
   it('the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges)', () => {
     const indexPath = fileURLToPath(new URL(
       '../../../docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json',
@@ -645,6 +665,48 @@ describe('a5m2-g1-surface-adapters rev.5: REAL seams where they exist — NOT C2
       grantedMode: 'danger-full-access', effectiveMode: 'danger-full-access', subject: 'plugin management operation', callId: 'call-rg5',
     })
     mdD.settle(dResult.lifecycle?.requestId as string, { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' })
+  })
+
+  // ── P1 (89a9): host-verbatim scope pass-through, real Session shape ─────
+  it('P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent', async () => {
+    // session override drives the effective mode: composition default
+    // 'read-only', THIS Session's own configuration answers 'workspace-write'.
+    const narrow = makeGate({ modeFor: (scope) => (scope.session === SESSION ? 'workspace-write' : 'read-only') })
+    const mdN = makeManagerDouble()
+    const nMount = mountRecord('plugin_manager', { installFace: mdN.face, escalation: narrow.port })
+    const nPlan = (nMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-sp1') as Success).plan
+    const nResult = await nMount.row.delegate(nPlan, { exec: { agent: AGENT } })
+    expect(nResult.settled).toBe('INSTALL-PENDING')
+    expect(narrow.scopes.length).toBe(1)
+    expect(Object.keys(narrow.scopes[0] as Record<string, unknown>)).toEqual(['session'])
+    expect((narrow.scopes[0] as { session: unknown }).session).toBe(SESSION) // BY REFERENCE — not rebuilt, not dropped
+    expect(nResult.lifecycle?.gateReceipt).toMatchObject({ effectiveMode: 'workspace-write', grantedMode: 'danger-full-access' })
+    mdN.settle(nResult.lifecycle?.requestId as string, { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' })
+
+    // a session-less agent: the host still computes { session: undefined } —
+    // the KEY rides, and the policy answer follows the no-override lane; a
+    // string-gate would have collapsed this scope to {} and silently changed
+    // which configuration resolves:
+    const noSess = makeGate({ modeFor: (scope) => (scope.session === SESSION ? 'workspace-write' : 'read-only') })
+    const mdB = makeManagerDouble()
+    const bMount = mountRecord('plugin_manager', { installFace: mdB.face, escalation: noSess.port })
+    const bPlan = (bMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-sp2') as Success).plan
+    const bResult = await bMount.row.delegate(bPlan, { exec: { agent: { id: 'agent-no-session' } } })
+    expect(bResult.settled).toBe('INSTALL-PENDING')
+    expect(Object.keys(noSess.scopes[0] as Record<string, unknown>)).toEqual(['session'])
+    expect((noSess.scopes[0] as { session: unknown }).session).toBeUndefined()
+    expect(bResult.lifecycle?.gateReceipt).toMatchObject({ effectiveMode: 'read-only' })
+    mdB.settle(bResult.lifecycle?.requestId as string, { changed: true, application: 'applied', stage: 'install', target: 'b@1.0.0' })
+
+    // {} is reserved for the truly agent-less execution (the host ternary):
+    const noAgent = makeGate()
+    const mdA = makeManagerDouble()
+    const aMount = mountRecord('plugin_manager', { installFace: mdA.face, escalation: noAgent.port })
+    const aPlan = (aMount.row.classify({ action: 'install_bundle', target: 'b@1.0.0' }, 'call-sp3') as Success).plan
+    expect(((await aMount.row.delegate(aPlan, { exec: {} })) as unknown as Refusal).detail)
+      .toContain('no agent to route it through')
+    expect(noAgent.scopes.length).toBe(1)
+    expect(Object.keys(noAgent.scopes[0] as Record<string, unknown>)).toEqual([])
   })
 
   it('plugin install gate plumbing: no escalation port mounted refuses GATE_ABSENT; no manager face refuses FACE_ABSENT; the signal re-check and the CURRENT-facts re-verify happen AFTER the awaited gate and BEFORE any manager entry', async () => {
@@ -1037,6 +1099,13 @@ describe('a5m2-g1-surface-adapters rev.5: REAL seams where they exist — NOT C2
     const result = await installer.row.delegate(installPlan, { exec: {} })
     expect(result.settled).toBe('CONTROLLED-INSTALL-RESOLVED')
     expect(result.verifiedBy).toContain('validatePayloadEntries')
+    // 89a9 naming discipline: the reused path REPORTS its residual gaps —
+    // the 'controlledInstall' port name never closes the family contract:
+    expect(String(result.residualGap)).toContain('ControlledFs')
+    expect(String(result.residualGap)).toContain('payloadDigest')
+    expect(String(result.residualGap)).toContain('single-flight')
+    expect(String(result.residualGap)).toContain('not cancellable')
+    expect(String(JSON.stringify(byName('load_workspace_dependencies').effectDeltaNotes))).toContain('REUSE ≠ CONTRACT')
     const paths = result.value as { python: string }
     expect(paths.python).toBe(join(DEP_ROOT, 'dependencies', 'python', 'bin', 'python3'))
     expect(existsSync(join(DEP_ROOT, 'runtime.json'))).toBe(true)
