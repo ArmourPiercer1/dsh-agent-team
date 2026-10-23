@@ -193,7 +193,13 @@ import { createHash } from 'node:crypto'
 
 /** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 74–82, 86). */
 export const A5_B_TEAM_FAMILY_ID = 'B-TEAM'
-export const A5_B_TEAM_ADAPTER_REVISION = 1
+// ROOT 01:0x MECHANICAL MIGRATION: the six-leaf target grammar is landed, so
+// B-TEAM's real adapter revision moves 1 -> 2. This ONE constant is the only
+// source of the version: the descriptor/face below, the familyRegistration
+// entry the mount publishes, and the PA claim this wiring mints all read it, so
+// a durable plan or approval composed under revision 1 fails the existing
+// revision check instead of being translated forward.
+export const A5_B_TEAM_ADAPTER_REVISION = 2
 /** Frozen mount condition of all ten records (always). */
 export const A5_B_TEAM_MOUNT_CONDITION = 'always'
 

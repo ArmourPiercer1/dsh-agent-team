@@ -605,7 +605,7 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
         // The claim's own version face: the adapter stays at its signed 1, the
         // wiring that composed THIS plan is 2.
         expect(WIRING.A5_B_TEAM_WIRING_REVISION).toBe(2)
-        expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(1)
+        expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(2)  // ROOT 01:0x six-leaf migration: real adapter revision 1 -> 2 (one constant, never translated back)
       })
     })
 
@@ -687,9 +687,38 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
     })
   })
 
+  describe('(k2) the producer-side pairing: the claim mints the SAME revision the published registration carries', () => {
+    it('the minted claim and the real registration share one version, and a registration carrying an older version is refused at the edge before the lane', async () => {
+      // The producer shape is the registry's own entry, read back through
+      // `a5GovernedFamilyFor` by the mount arm: { familyId, adapterRevision,
+      // providerIdentity }. The claim mints the very same expression it is
+      // compared against, so the pairing is ONE version on both sides.
+      const CURRENT = ADAPTER.A5_B_TEAM_ADAPTER_REVISION
+      const reg = { adapterRevision: CURRENT, providerIdentity: PROVIDER }
+      const w = makeWorld({ registrationOf: () => reg })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-pair-ok'))
+      const family = walkAt(w, 0).walk.family as { adapterRevision?: number } | undefined
+      expect(family?.adapterRevision, 'the minted claim carries the pairing version itself').toBe(CURRENT)
+      expect(family?.adapterRevision).toBe(reg.adapterRevision)
+      expect(w.delegateEntries).toHaveLength(1)
+      // Same call shape, registration now carrying an OLD version: the approval
+      // this claim would represent is refused where it is consumed, not after.
+      const stale = makeWorld({ registrationOf: () => ({ adapterRevision: CURRENT - 1, providerIdentity: PROVIDER }) })
+      const staleWiring = unwrap(WIRING.buildTeamOpsWiring(stale.base))
+      const outcome = await defOf(staleWiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-pair-stale'))
+        .then((returned): { kind: 'returned'; value: unknown } => ({ kind: 'returned', value: returned }))
+        .catch((error: unknown) => ({ kind: 'refused', code: String((error as { code?: string }).code) }))
+      expect(outcome.kind).toBe('refused')
+      if (outcome.kind === 'refused') expect(outcome.code).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
+      expect(stale.walks, 'a version this claim does not share opens no PA question').toHaveLength(0)
+      expect(stale.delegateEntries).toHaveLength(0)
+    })
+  })
+
   describe('(k) the claim and the published registration are version-paired at BOTH ends of the walk', () => {
     it('a registration that does not match the claim refuses before any PA question opens', async () => {
-      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: 'some-OTHER-provider' }) })
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: ADAPTER.A5_B_TEAM_ADAPTER_REVISION, providerIdentity: 'some-OTHER-provider' }) })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-pre'))
         .then(() => 'no-refusal')
@@ -699,13 +728,13 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(w.delegateEntries).toHaveLength(0)
     })
     it('a registration that moves under an open walk stops at the edge — the grant is never carried into the lane', async () => {
-      let published = { adapterRevision: 1, providerIdentity: PROVIDER }
+      let published = { adapterRevision: ADAPTER.A5_B_TEAM_ADAPTER_REVISION, providerIdentity: PROVIDER }
       const w = makeWorld({ registrationOf: () => published })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       const originalOpen = w.seat.open
       if (typeof originalOpen === 'function') {
         w.seat.open = async (arg: Record<string, unknown>) => {
-          published = { adapterRevision: 2, providerIdentity: PROVIDER }
+          published = { adapterRevision: ADAPTER.A5_B_TEAM_ADAPTER_REVISION - 1, providerIdentity: PROVIDER }
           return (originalOpen as (a: Record<string, unknown>) => Promise<unknown>)(arg)
         }
       }
@@ -716,7 +745,7 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(w.delegateEntries, 'a stale approval never enters the lane').toHaveLength(0)
     })
     it('a matching registration changes nothing about the admitted leg', async () => {
-      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: PROVIDER }) })
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: ADAPTER.A5_B_TEAM_ADAPTER_REVISION, providerIdentity: PROVIDER }) })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
       await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-match'))
       expect(w.delegateEntries).toHaveLength(1)
