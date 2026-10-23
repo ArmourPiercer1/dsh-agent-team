@@ -42,6 +42,14 @@
  * the Alpha.5 admission projection's `tool-invoke` arm. The runtime
  * single source for the third class is
  * {@link INVOCATION_ONLY_PERMISSION_TOOL_VALUES} below.
+ *
+ * Alpha.5 M2 continuation (root 22:13 limited card): the A1 vocabulary
+ * widens the same class with the five G6 session-query names (
+ * `session_search` / `session_event_search` / `session_trace` /
+ * `session_event_trace` / `session_event_read`). Same law: canonicalization
+ * still answers `unsupported` for them (no canonical op, no file matcher,
+ * no fingerprint); they ride the `tool-invoke` arm and their invocation
+ * authority is NOT an I/O exemption.
  */
 export type PermissionTool =
   | 'read'
@@ -53,6 +61,11 @@ export type PermissionTool =
   | 'pwsh'
   | 'schedule_list'
   | 'schedule_delete'
+  | 'session_search'
+  | 'session_event_search'
+  | 'session_trace'
+  | 'session_event_trace'
+  | 'session_event_read'
 
 /** Every {@link PermissionTool} value, for membership checks. */
 export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
@@ -65,6 +78,11 @@ export const PERMISSION_TOOL_VALUES: readonly PermissionTool[] = [
   'pwsh',
   'schedule_list',
   'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
 ]
 
 /**
@@ -132,9 +150,26 @@ export const SHELL_PERMISSION_TOOL_VALUES: readonly ToolLevelPermissionTool[] = 
  *   an approval for one never gates the other);
  * - `schedule_create` / `schedule_update` are NOT enabled — naming them
  *   anywhere in this vocabulary is a defect (the blueprint schema's
- *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror).
+ *   `PERMISSION_INVOCATION_ONLY_TOOL_NAMES` is the authority mirror);
+ * - Alpha.5 M2 continuation (root 22:13 limited card) adds the five G6
+ *   SESSION-QUERY names (`session_search` / `session_event_search` /
+ *   `session_trace` / `session_event_trace` / `session_event_read`, host
+ *   `tool-session-query` @639ed01539 — a host-UNMOUNTED opt-in package
+ *   at baseline, so this is vocabulary + projection law only, no PA
+ *   wiring claimed). Same law: `any` in all three lanes, exact/subtree
+ *   refused, the `tool-invoke` arm is the whole authority, and an
+ *   invocation permission grants NO I/O exemption — these tools read
+ *   only through their own authorized-session seam; every name is a
+ *   DISTINCT authority.
  */
-export type InvocationOnlyPermissionTool = 'schedule_list' | 'schedule_delete'
+export type InvocationOnlyPermissionTool =
+  | 'schedule_list'
+  | 'schedule_delete'
+  | 'session_search'
+  | 'session_event_search'
+  | 'session_trace'
+  | 'session_event_trace'
+  | 'session_event_read'
 
 /**
  * Every {@link InvocationOnlyPermissionTool} value. The single source of
@@ -145,6 +180,11 @@ export type InvocationOnlyPermissionTool = 'schedule_list' | 'schedule_delete'
 export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES: readonly InvocationOnlyPermissionTool[] = [
   'schedule_list',
   'schedule_delete',
+  'session_search',
+  'session_event_search',
+  'session_trace',
+  'session_event_trace',
+  'session_event_read',
 ]
 
 /**

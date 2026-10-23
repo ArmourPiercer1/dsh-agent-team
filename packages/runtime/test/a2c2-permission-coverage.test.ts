@@ -820,10 +820,10 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
     ])
   })
 
-  it('P3 · grep/subagent/web_fetch escape the nine-name managed vocabulary (Alpha.5 M2 pair included) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
+  it('P3 · grep/subagent/web_fetch escape the fourteen-name managed vocabulary (root 20:05 pair + root 22:13 G6 five) (all three are KNOWN_SENSITIVE_UNMANAGED; the surface of exactly those fails)', () => {
     const p3 = R['p3'] as Record<string, any>
     // stable characterization of the pre-fix gap (both trees):
-    expect(p3.managedSet).toEqual(['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'write'])
+    expect(p3.managedSet).toEqual(['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'write'])
     expect(p3.inVocabulary).toEqual([false, false, false])
     expect(p3.classifyKinds).toEqual(['unsupported', 'unsupported', 'unsupported'])
     // the post-fix gate leg (RED on base):
@@ -856,7 +856,7 @@ describe('a2c2 S0 · RED probes (plan §7.6)', () => {
 })
 
 describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
-  it('G1 · the nine-name managed vocabulary (Alpha.5 M2 root 20:05: + invocation-only pair) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
+  it('G1 · the fourteen-name managed vocabulary (root 20:05 pair + root 22:13 G6 five) classifies MANAGED_OPERATION_PERMISSION and PASSES without any explicit rule (invariant §1.3)', () => {
     const g1 = R['g1'] as Record<string, any>
     expect(g1.present).toBe(true)
     expect(g1.ok).toBe(true)
@@ -869,6 +869,11 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'read_image', classification: 'managed-operation-permission' },
       { name: 'schedule_delete', classification: 'managed-operation-permission' },
       { name: 'schedule_list', classification: 'managed-operation-permission' },
+      { name: 'session_event_read', classification: 'managed-operation-permission' },
+      { name: 'session_event_search', classification: 'managed-operation-permission' },
+      { name: 'session_event_trace', classification: 'managed-operation-permission' },
+      { name: 'session_search', classification: 'managed-operation-permission' },
+      { name: 'session_trace', classification: 'managed-operation-permission' },
       { name: 'write', classification: 'managed-operation-permission' },
     ])
     expect(g1.unmanaged).toEqual([])
@@ -1009,6 +1014,11 @@ describe('a2c2 G · the six-class evaluator matrix (plan §7.3)', () => {
       { name: 'read_image', classification: 'managed-operation-permission' },
       { name: 'schedule_delete', classification: 'managed-operation-permission' },
       { name: 'schedule_list', classification: 'managed-operation-permission' },
+      { name: 'session_event_read', classification: 'managed-operation-permission' },
+      { name: 'session_event_search', classification: 'managed-operation-permission' },
+      { name: 'session_event_trace', classification: 'managed-operation-permission' },
+      { name: 'session_search', classification: 'managed-operation-permission' },
+      { name: 'session_trace', classification: 'managed-operation-permission' },
       { name: 'team_delegate', classification: 'other-managed-team-tool' },
       { name: 'team_follow_up', classification: 'other-managed-team-tool' },
       { name: 'todo_write', classification: 'safe-unmanaged' },

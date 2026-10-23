@@ -1704,7 +1704,7 @@ describe('A2C-1 RED probes (plan §5.6 — fail on the base tree)', () => {
 })
 
 describe('A2C-1 GREEN: classification + vocabulary (plan §5.2/§5.5)', () => {
-  it('the shell class: bash+pwsh are tool-level, the shell vocabulary is complete, the domain list has 9 names (Alpha.5 M2 root 20:05: + the invocation-only pair)', () => {
+  it('the shell class: bash+pwsh are tool-level, the shell vocabulary is complete, the domain list has 14 names (root 20:05 pair + root 22:13 G6 five)', () => {
     const p1 = R['p1'] as Record<string, unknown>
     expect(p1['bashKind']).toBe('tool-level')
     expect(p1['bashTool']).toBe('bash')
@@ -1713,7 +1713,7 @@ describe('A2C-1 GREEN: classification + vocabulary (plan §5.2/§5.5)', () => {
     expect(p1['shellValues']).toEqual(['bash', 'pwsh'])
     expect(p1['shellKeys']).toEqual({ bash: 'bash', pwsh: 'pwsh' })
     expect(p1['singleCanonIsFunction']).toBe(true)
-    expect(p1['permToolNames']).toEqual(['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'write'])
+    expect(p1['permToolNames']).toEqual(['bash', 'edit', 'lsp', 'pwsh', 'read', 'read_image', 'schedule_delete', 'schedule_list', 'session_event_read', 'session_event_search', 'session_event_trace', 'session_search', 'session_trace', 'write'])
     expect(p1['toolValues']).toEqual(p1['permToolNames'])
     expect(p1['fileValues']).toEqual(['edit', 'lsp', 'read', 'read_image', 'write'])
     expect(p1['bashResourceKey']).toBe('bash')
