@@ -1,3 +1,4 @@
+import { g2ApprovedTargetMismatches } from '../src/plugin/host.js'
 /**
  * A5M2-G2-WIRE C1 (G2 lane, root ruling 15:28; wiring + assembly legs ONLY):
  * the EXTERNAL-CONNECTION family (WEB / MCP / BROWSER) wired into the
@@ -1084,5 +1085,26 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
     expect(detail).toContain(`no target structure is registered for '${G2A.A5_G2_FAMILY.browser}'`)
     const mount = world.mount as { dispose: () => Promise<{ ok: boolean }> }
     expect((await mount.dispose()).ok).toBe(true)
+  })
+})
+
+/* ROOT 21:14 — exact-shape legs over the REAL assembly transportTarget
+ * shape (:273-278 spawn.{argv0,args,cwd}/endpointUrl FULL URL). The
+ * comparator the host factory consumes, tested directly: no 13-leg
+ * double-proof, no Host. */
+describe('A5M2-G2-WIRE round-22: the same-source comparator over the REAL transportTarget shape', () => {
+  const STDIO_REC = { serverName: 'g2w-server', transport: 'stdio', command: '/usr/bin/true', args: ['-a', '-b'], cwd: '' }
+  const HTTP_REC = { serverName: 'g2w-http', transport: 'streamable-http', url: 'https://mcp.example.invalid/v1/mcp?session=42' }
+  it('positive: the real stdio target (argv0, EVERY arg, RAW empty cwd) and the real http FULL URL (origin+path+query) bind clean', () => {
+    expect(g2ApprovedTargetMismatches({ server: 'g2w-server', transport: 'stdio', spawn: { argv0: '/usr/bin/true', args: ['-a', '-b'], cwd: '' } }, STDIO_REC)).toEqual([])
+    expect(g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v1/mcp?session=42' }, HTTP_REC)).toEqual([])
+  })
+  it('negative: SAME arg COUNT different args and SAME origin different path/query both mismatch BEFORE construction', () => {
+    const badArgs = g2ApprovedTargetMismatches({ server: 'g2w-server', transport: 'stdio', spawn: { argv0: '/usr/bin/true', args: ['-a', '-x'], cwd: '' } }, STDIO_REC)
+    expect(badArgs.some((m: string) => m.includes('args[1]'))).toBe(true)
+    const badPath = g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v2/mcp?session=42' }, HTTP_REC)
+    expect(badPath.some((m: string) => m.includes('path'))).toBe(true)
+    const badQuery = g2ApprovedTargetMismatches({ server: 'g2w-http', transport: 'streamable-http', endpointUrl: 'https://mcp.example.invalid/v1/mcp?session=43' }, HTTP_REC)
+    expect(badQuery.some((m: string) => m.includes('query'))).toBe(true)
   })
 })

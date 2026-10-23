@@ -688,6 +688,38 @@ function registerUpstreamResolverOnce(): void {
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
+/**
+ * ROOT 21:14 — the same-source target-vs-record comparison over the REAL
+ * assembly transportTarget shape (exported for the exact-shape positive/
+ * negative legs; the producer below and nothing else consumes it).
+ */
+export function g2ApprovedTargetMismatches(target: Record<string, unknown>, rec: Record<string, unknown>): string[] {
+  const mismatches: string[] = []
+  if (target?.transport === 'stdio') {
+    const spawn = target.spawn as { argv0?: unknown; args?: unknown; cwd?: unknown } | undefined
+    if (spawn?.argv0 !== rec.command) mismatches.push(`spawn.argv0 '${String(spawn?.argv0)}' vs approved command '${String(rec.command)}'`)
+    const targetArgs = Array.isArray(spawn?.args) ? (spawn!.args as unknown[]) : []
+    const recArgs = Array.isArray(rec.args) ? (rec.args as unknown[]) : []
+    if (targetArgs.length !== recArgs.length) mismatches.push(`spawn.args length ${String(targetArgs.length)} vs approved args length ${String(recArgs.length)}`)
+    else for (let i = 0; i < targetArgs.length; i++) if (targetArgs[i] !== recArgs[i]) mismatches.push(`spawn.args[${i}] '${String(targetArgs[i])}' vs approved args[${i}] '${String(recArgs[i])}'`)
+    if (spawn?.cwd !== (typeof rec.cwd === 'string' ? rec.cwd : '')) mismatches.push(`spawn.cwd ${String(spawn?.cwd)} vs approved cwd ${String(rec.cwd)} (RAW law: '' stays '')`)
+  } else if (target?.transport === 'streamable-http') {
+    let tUrl: { origin: string; pathname: string; search: string } | undefined
+    let rUrl: { origin: string; pathname: string; search: string } | undefined
+    try { const u = new URL(String(target.endpointUrl)) as unknown as { origin: string; pathname: string; search: string }; tUrl = { origin: u.origin, pathname: u.pathname, search: u.search } } catch { tUrl = undefined }
+    try { const u = new URL(String(rec.url)) as unknown as { origin: string; pathname: string; search: string }; rUrl = { origin: u.origin, pathname: u.pathname, search: u.search } } catch { rUrl = undefined }
+    if (tUrl === undefined || rUrl === undefined) mismatches.push('endpointUrl/approved url not a parseable URL')
+    else {
+      if (tUrl.origin !== rUrl.origin) mismatches.push(`endpointUrl origin '${tUrl.origin}' vs approved origin '${rUrl.origin}'`)
+      if (tUrl.pathname !== rUrl.pathname) mismatches.push(`endpointUrl path '${tUrl.pathname}' vs approved path '${rUrl.pathname}'`)
+      if (tUrl.search !== rUrl.search) mismatches.push(`endpointUrl query '${tUrl.search}' vs approved query '${rUrl.search}'`)
+    }
+  } else {
+    mismatches.push(`unknown transport axis '${String(target?.transport)}'`)
+  }
+  return mismatches
+}
+
 export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
   // flow only treats a never-returning call as an abrupt completion when the
@@ -2397,26 +2429,15 @@ async function buildG2TeamSupply(
       if (rec === undefined || rec.transport !== target?.transport) {
         throw new Error(`g2TeamAssembly: no approved ${String(target?.transport)} connection record for server '${String(target?.server)}' — the transport is fixed by approved config, never by row-side facts`)
       }
-      // ROOT 21:01 same-source law: server-name equality is NOT the binding.
-      // The APPROVED record is compared FIELD BY FIELD against the actual
-      // transport target the mount minted from the approved surface config —
-      // spawn (argv0/count/cwd RAW strings, '' stays '') for stdio, the
-      // endpoint ORIGIN for streamable-http — and only a fully matched pair
-      // reaches createTransport. A divergent endpoint/spawn between the two
-      // config faces throws BEFORE any transport object exists (zero open).
-      const mismatches: string[] = []
-      if (target?.transport === 'stdio') {
-        if (target.spawnArgv0 !== rec.command) mismatches.push(`spawnArgv0 '${String(target.spawnArgv0)}' vs approved command '${String(rec.command)}'`)
-        const recArgs = Array.isArray(rec.args) ? rec.args.length : -1
-        if (target.spawnArgCount !== recArgs) mismatches.push(`spawnArgCount ${String(target.spawnArgCount)} vs approved args length ${String(recArgs)}`)
-        if (target.spawnCwd !== (typeof rec.cwd === 'string' ? rec.cwd : '')) mismatches.push(`spawnCwd ${String(target.spawnCwd)} vs approved cwd ${String(rec.cwd)}`)
-      } else if (target?.transport === 'streamable-http') {
-        let recOrigin: string | undefined
-        try { recOrigin = (new URL(String(rec.url)) as unknown as { origin: string }).origin } catch { recOrigin = undefined }
-        if (recOrigin === undefined || target.endpointOrigin !== recOrigin) mismatches.push(`endpointOrigin '${String(target.endpointOrigin)}' vs approved url origin '${String(recOrigin)}'`)
-      } else {
-        mismatches.push(`unknown transport axis '${String(target?.transport)}'`)
-      }
+      // ROOT 21:14 (one narrow fix, assembly interface UNTOUCHED): the
+      // factory consumes the REAL transportTarget the assembly hands it
+      // (g2-team-assembly :273-278: { server, transport, endpointUrl? FULL
+      // URL, spawn? { argv0, args[], cwd RAW } }) — the 21:01 read of the
+      // summary fields (spawnArgv0/... /endpointOrigin) refused even valid
+      // configs. Full compare now: argv0, EVERY args element (not just the
+      // count), RAW cwd, and the FULL URL (origin + path + query) vs the
+      // actual approved record — divergence throws BEFORE construction.
+      const mismatches = g2ApprovedTargetMismatches(target as Record<string, unknown>, rec)
       if (mismatches.length > 0) {
         throw new Error(`g2TeamAssembly: the transport target and the approved ${String(target?.transport)} record for server '${String(target?.server)}' are NOT same-source (${mismatches.join('; ')}) — refusing before construction; no transport object exists`)
       }
