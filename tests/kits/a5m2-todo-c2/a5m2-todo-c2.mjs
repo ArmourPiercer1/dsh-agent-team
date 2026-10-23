@@ -201,7 +201,12 @@ if (ENTRY_DIRECT) {
 //      the kit checked them). Enforced on the candidates AND on any explicit
 //      --host-port/--mock-port the operator passes.
 const WORLD_PREFIX = 'a5m2-img-r18-'
-const FORBIDDEN_PORTS = [3080, 3180, 3181, 3182, 3186, 3497, 3500]
+// OVERLAY-6b (root 17:4x correction): the ORIGINAL image-lane pair 3182/3497 is REUSED after a
+// real free + no-in-flight check — the earlier ban on them was center's mis-exclusion of the image
+// lane, not a root order. What IS off-limits here: the stable dev instance (3080), the family
+// defaults nobody owns (3180/3181), the RSJ-frozen pair (3186/3500), and the two prior INFRA worlds
+// whose quiescence is unproven (3183/3498 and 3184/3499, plus 3185 which root never released).
+const FORBIDDEN_PORTS = [3080, 3180, 3181, 3183, 3184, 3185, 3186, 3498, 3499, 3500]
 if (ENTRY_DIRECT && !HOME.split('/').pop().startsWith(WORLD_PREFIX)) {
   console.error(`FATAL: --world basename must start with "${WORLD_PREFIX}" (this round's exclusive world prefix). NOTHING created, mounted or removed (entry-safety law).`)
   process.exit(1)
@@ -270,8 +275,8 @@ const P6T6_ROW_NAME = pathToFileURL(P6T6_PLUGIN_PATH).href
 // kit binds 127.0.0.1:<port> itself (EADDRINUSE = taken), HELDS that socket while it
 // decides, and releases it only in the instant before the process that will own the
 // port starts (Host / mock). Every probe attempt is recorded in <run>/port-probe.json.
-const HOST_PORT_CANDIDATES = [3183, 3184, 3185]
-const MOCK_PORT_CANDIDATES = [3498]
+const HOST_PORT_CANDIDATES = [3182] // this image lane's OWN historical pair (r11-r17), reused per root 17:4x
+const MOCK_PORT_CANDIDATES = [3497] // nothing else is selectable: infra pairs and RSJ ports are forbidden
 
 const ROOT = `session-a5m2c2-boot-${RUN_STAMP}`
 const ROOT_P = `session-a5m2c2-p-${RUN_STAMP}`
@@ -471,14 +476,24 @@ function noteTranscript(entry) { TRANSCRIPT.push({ at: new Date().toISOString(),
 // is HELD while the rest of the setup runs and released only in the instant before the
 // process that will own the port starts (mock, then Host). Every attempt — including the
 // rejected ones and the explicit --host-port/--mock-port values — is recorded in
-// <run>/port-probe.json, and FORBIDDEN_PORTS is asserted before any probe.
+// <run>/port-probe.json, and FORBIDDEN_PORTS is asserted before any probe. Candidate SET and the
+// forbidden SET are corrected by OVERLAY-6b below; the mechanism is unchanged.
 const PORT_PROBE = []
 const PORT_HELD = new Map()
 async function bindProbeHold(port, label) {
   const srv = createServer()
-  const rec = { at: new Date().toISOString(), label, port, connectProbe: null, bindProbe: null, held: false }
+  const rec = { at: new Date().toISOString(), label, port, connectProbe: null, inFlight: null, bindProbe: null, held: false }
   PORT_PROBE.push(rec)
   rec.connectProbe = (await portInUse(port, 1500)) ? 'listener-seen' : 'no-listener'
+  // "真实空闲/无在途核" (root 17:4x): a listener-free port is not enough — a port can hold ESTABLISHED
+  // or TIME_WAIT sockets of a lane that just quiesced while still accepting a fresh bind. Any TCP
+  // socket in ANY state on this port refuses the candidate; the evidence line is kept either way.
+  try {
+    const lines = execFileSync('ss', ['-Htan'], { encoding: 'utf8' }).split('\n')
+      .filter((l) => new RegExp(`:${port}\b`).test(l))
+    rec.inFlight = lines.length === 0 ? 'no-socket' : `refused: ${lines.length} socket(s) [${lines.slice(0, 3).map((l) => l.trim().split(/\s+/)[0]).join(',')}…]`
+  } catch (e) { rec.inFlight = `ss-unavailable (${e.code ?? e.message}); bind probe only` }
+  if (typeof rec.inFlight === 'string' && rec.inFlight.startsWith('refused')) { try { srv.close() } catch {} ; return false }
   await new Promise((res, rej) => {
     srv.once('error', (e) => { rec.bindProbe = `EADDR/${e.code ?? 'ERR'}`; rej(e) })
     srv.listen(port, '127.0.0.1', () => { rec.bindProbe = 'bound'; res() })
@@ -1631,7 +1646,7 @@ async function main() {
     note('Host639 HEAD == baseline', `${TESTUSE} HEAD=${hostHead} porcelain=${hostDirty}`, hostHead === HOST_BASELINE_SHA && hostDirty === 0)
     note('Host639 runtime entry present', `${HOST_BIN} exists=${existsSync(HOST_BIN)}`, existsSync(HOST_BIN))
     let listeners = []
-    try { listeners = execFileSync('ss', ['-ltn'], { encoding: 'utf8' }).split('\n').filter((l) => /:(3080|3180|3181|3182|3183|3184|3185|3186|3497|3498|3500)\b/.test(l)).map((l) => l.trim().split(/\s+/)[3]) } catch { /* ss unavailable */ }
+    try { listeners = execFileSync('ss', ['-ltn'], { encoding: 'utf8' }).split('\n').filter((l) => new RegExp(`:(${[...new Set([...FORBIDDEN_PORTS, ...HOST_PORT_CANDIDATES, ...MOCK_PORT_CANDIDATES])].join('|')})\\b`).test(l)).map((l) => l.trim().split(/\s+/)[3]) } catch { /* ss unavailable */ }
     note('port plan (READ-ONLY ss -ltn; this kit binds NOTHING here)', `listeners-in-family=[${listeners.join(' ') || 'none'}] host-candidates=[${HOST_PORT_CANDIDATES.join(',')}] mock-candidates=[${MOCK_PORT_CANDIDATES.join(',')}] forbidden=[${FORBIDDEN_PORTS.join(',')}]`, true)
     say('mount-helper-root (executor-created, verified by preflight)', `${join(HOME, 'mount-helper-root')} exists=${existsSync(join(HOME, 'mount-helper-root'))}`)
     log(`VALIDATE-ONLY ${bad.length === 0 ? 'OK — bundle coherent, NOTHING created or mounted' : `FAILED: ${bad.join('; ')}`}`)

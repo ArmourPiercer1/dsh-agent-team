@@ -54,9 +54,11 @@ node tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs \
 
 Defaults (all overridable): `--worktree ../a5-m2-int` (supplies `tests/paths.mjs` Host-baseline pin `639ed015…` + the harness scripts; verified `HEAD==baseline`, porcelain 0, `bin.js` present), `--testuse <worktree>/tests/deepseek-harness-test-use`, `--homes-root` = superproject `tests/homes` (the guard refuses any world under a `.worktrees` segment — see patch OVERLAY-11), `--evidence-dir dev/agent-workflow/evidence/a5m2-img-r18` (inside this worktree).
 
+**Cleanup law (root 17:4x re-stated)**: the kit performs NO recursive cleanup anywhere — no `rm`/`rmSync`/`rmdirSync`/`unlinkSync`/`renameSync`, no `prune`, no `df`, no shell delete. Every filesystem mutation is `mkdir -p`, a file write, `chmod a-w`, or an extract-if-missing tar of the pinned tgz into `tests/homes/<world>/install-2188f15ce/package`; teardown kills only the two processes it started, and the single rewrite of existing files is `scrubDir(RUN_DIR)` (token scrub of the evidence files the kit itself wrote). The world must be pre-created by its one owner and is retained.
+
 **World naming law**: basename must start with `a5m2-img-r18-` or the kit exits 1 before touching disk.
 
-**Ports**: host candidates `3183/3184/3185`, mock candidate `3498`; **forbidden and asserted**: `3080` (stable dev), `3180/3181` (family defaults), `3182/3497` (the r11–r17 pair), `3186/3500` (RSJ-frozen). Selection is an ACTIVE bind-probe on 127.0.0.1, the winning socket is HELD until the moment the mock/Host binds it, and every attempt (including rejected and explicitly-passed ports) lands in `<run>/port-probe.json`. Read-only inventory at 17:36Z: only `127.0.0.1:3080` listens in the family; `3183-3185` and `3498` free.
+**Ports (root 17:4x correction, OVERLAY-6b)**: the image lane's OWN historical pair — host `3182`, mock `3497` — is reused, and only after a real free + **no-in-flight** check (any TCP socket in any state on the port refuses the candidate; recorded in `port-probe.json`). **Forbidden and asserted**: `3080` (stable dev), `3180/3181` (family defaults), `3183/3498` + `3184/3499` (two prior INFRA worlds, quiescence unproven), `3185` (never released), `3186/3500` (RSJ-frozen). Selection is an ACTIVE bind-probe on 127.0.0.1, the winning socket is HELD until the moment the mock/Host binds it, and every attempt (including rejected and explicitly-passed ports) lands in `<run>/port-probe.json`. Read-only inventory at 17:36Z: only `127.0.0.1:3080` listens in the family; `3183-3185` and `3498` free.
 
 ## 4. Root laws, and where each is enforced in code
 
@@ -74,7 +76,7 @@ Defaults (all overridable): `--worktree ../a5-m2-int` (supplies `tests/paths.mjs
 
 ## 5. Deliverables in this tree
 
-* `tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs` — sha256 `62c4aa0ce965ab2eeabf7963c7824d9bac077ef7fe08543e034506ab8c01c43a` (base `aa242e37451d2e58944ff26af7a1069fbb1786392dfc80ad114a84f9b1069fd2`; diff = 319 insertions / 35 deletions, every patch named — `KIT-OVERLAY-DIFF.md`)
+* `tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs` — sha256 `549d5a9b95e58a407c846f1c6339e5bde7e717d2c3ad740261d7b56096224a63` (includes OVERLAY-6b: port selection back to this lane's own 3182/3497) (base `aa242e37451d2e58944ff26af7a1069fbb1786392dfc80ad114a84f9b1069fd2`; diff = 319 insertions / 35 deletions, every patch named — `KIT-OVERLAY-DIFF.md`)
 * `packages-pins/2188f15ce…/` — tgz + plugin.mjs + three manifests + `MANIFEST-2188f15ce.txt` + `artifact0-readonly-2188f15ce.txt`
 * `dev/agent-workflow/evidence/a5m2-img-r18/` — this README, `KIT-OVERLAY-DIFF.md`, `LEGS-INVENTORY.md`, `run-2026-10-23T17-36-29/` (the read-only validate-only receipt), `pin-audit/` (the four read-only scripts + drift corroboration + the validate-only receipt)
 * Lineage note: the kit base is the **full successor** `aa242e37…` of the lost uncommitted `5b039e9b…` asset (incident asset, unrecoverable locally — recorded in `dev/agent-workflow/evidence/a5-world-safety/README.md`); this is minimal reuse/reconstruction, **not** a recovery.
