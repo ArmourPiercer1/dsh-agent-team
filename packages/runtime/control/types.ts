@@ -1285,6 +1285,105 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
+  /* A5-M2 B-SCHEDULE (root 19:06: rule mapping lands on the ALREADY-APPROVED
+   * 18:42 structure; the two kinds are signed). The MINT this entry pairs
+   * with (read-only fixed-commit measurement, never copied): the wire lane
+   * feat/a5m2-wire-schedule @3e88b2822 — adapter
+   * schedule-adapters.mjs A5_B_SCHEDULE_ADAPTER_REVISION = 2, and the claim
+   * target is that lane's OWN lossless flat projection
+   * (schedule-wiring.mjs mintTargetManifest, :150-203): the 11 measured
+   * leaves below, every one a non-empty string EXCEPT taskId, which rides
+   * exactly as measured - null (schedule_list; id-law-refused delete
+   * answers) or the validated id string (admitted schedule_delete) -
+   * 'nullableString' types precisely that union; the non-empty +
+   * trim-stable id law stays that lane's BUSINESS edge (:511-517), never
+   * encoded here (root 18:42 (2)). ONE shared closed key set for both
+   * signable rows - no variant needed (measured). ENABLEMENT IS NOT THIS
+   * TABLE: the ruled subset is schedule_delete(31)/schedule_list(32) only;
+   * schedule_create(30)/schedule_update(33) stay disabled by that lane's
+   * A5_B_SCHEDULE_WIRING_SUBSET + registration - a grammar entry is a type
+   * gate, not a mount, and nothing here enables Host or claims C2. */
+  'B-SCHEDULE': Object.freeze({
+    required: Object.freeze({
+      contract: 'string',
+      ownerKind: 'string',
+      ownerSessionId: 'string',
+      action: 'string',
+      taskId: 'nullableString',
+      revision: 'string',
+      timerNamespace: 'string',
+      timerEffect: 'string',
+      destinationSessionId: 'string',
+      destinationPath: 'string',
+      destinationWake: 'string',
+    }),
+    currentFields: Object.freeze(['ownerSessionId', 'destinationSessionId']),
+  }),
+  /* A5-M2 B-SESSION-QUERY (root 19:06: approved 18:42 structure, real
+   * rev-4 mint measured read-only on the wire lane feat/a5m2-wire-g6
+   * @fe63dec9e - A5_G6_ADAPTER_REVISION = 4, targetManifest :1346-1355).
+   * Base leaves exactly as approved: toolName is the variant LEAF (a strict
+   * 'string', minted from the row's own identity - never model text);
+   * operation/portFamily/portMethod are 'string';
+   * effectiveTargetSessionId is 'string' (measured: the mint ternary's
+   * ': null' arm is UNREACHABLE - validateCapturedArgs enforces the
+   * captured compiled schema's string type for session_id (:1312-1316,
+   * "nothing is coerced") and requireCaller enforces a non-empty
+   * caller.id string, so the fallback is always a string);
+   * callerWorkspaceCwd is 'nullableString' (string INCLUDING '' or null -
+   * the 18:42 (1) law, missing stays a distinct denial); disclosures is
+   * 'stringArray'. PER-ROW-GROUP DIFFERENCE rides the already-signed
+   * closed variants (root 18:42 (4)): BOTH search rows (session_search,
+   * session_event_search) REQUIRE maxSearchResults (strict
+   * nonNegativeInt - null never accepted); the three always-mount rows
+   * (session_trace, session_event_trace, session_event_read) EXPLICITLY
+   * FORBID the key through the own-key extra-key law (presence of ANY
+   * value, null included, denies 'not part of the typed plan'). PAIRING
+   * DISCLOSURE: that lane's :1353 still sets maxSearchResults: undefined
+   * on non-search rows - a key-with-undefined fails closed here exactly
+   * as at the lossless walk; the routed 1-line mint fix (key OMISSION)
+   * belongs to that lane - this table never translates it. The disclosure
+   * LAW (rev-4 mints disclosures === [SESSION_HISTORY_RESOURCE_KIND] on
+   * every row, :1354, never droppable) is MINT-side; 'stringArray' types
+   * it without weakening or enforcing it (18:42 (3)). currentFields is
+   * the approved pure-data subset. No Host enablement, no C2 claim. */
+  'B-SESSION-QUERY': Object.freeze({
+    required: Object.freeze({
+      toolName: 'string',
+      operation: 'string',
+      portFamily: 'string',
+      portMethod: 'string',
+      effectiveTargetSessionId: 'string',
+      callerWorkspaceCwd: 'nullableString',
+      disclosures: 'stringArray',
+    }),
+    variant: Object.freeze({
+      leaf: 'toolName',
+      by: Object.freeze({
+        'session_search': Object.freeze({
+          adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+          binds: Object.freeze({}),
+        }),
+        'session_event_search': Object.freeze({
+          adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+          binds: Object.freeze({}),
+        }),
+        'session_trace': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+        'session_event_trace': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+        'session_event_read': Object.freeze({
+          adds: Object.freeze({}),
+          binds: Object.freeze({}),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['toolName', 'operation', 'portFamily', 'portMethod']),
+  }),
 } as const)
 
 function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): boolean {
