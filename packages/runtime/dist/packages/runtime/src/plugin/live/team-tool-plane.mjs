@@ -1218,7 +1218,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return { ok: true, grant, paDurableMint, request, placementName, paConstructionBinding }
   }
 
-  const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+  const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, signal }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
     if (signal?.aborted === true) {

@@ -469,7 +469,7 @@ describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', (
     // bug terminalised the token underneath the first leg, so the first call
     // refused with the very grant it had earned. It still redeems here.
     const body = await read.execute({ file_path: file }, { token })
-    expect(joined(body), 'the owning leg still redeems after a refused duplicate').toContain('alpha5-m1-read-line-1')
+    expect(joined(body as ReadOk), 'the owning leg still redeems after a refused duplicate').toContain('alpha5-m1-read-line-1')
     expect(plane.livePaPlan.size, 'the redeemed call leaves no plan fact behind').toBe(0)
   })
 

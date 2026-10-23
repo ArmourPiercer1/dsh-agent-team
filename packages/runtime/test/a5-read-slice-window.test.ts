@@ -1516,7 +1516,7 @@ describe('A5RSW-HANDOFF — the governed read row under the PA hand-off', () => 
     const walk = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'walk')
     const open = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'open')
     const edge = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'edge')
-    const pa: Record<string, unknown> = Object.assign(walk, { open, edge })
+    const pa = Object.assign(walk, { open, edge })
     return m.createGovernedReadExecutor({
       realmId: REALM, rootDir: HROOT, policy: handoffPolicy,
       decide: () => ({ kind: 'allow' }), observe: () => {}, pa,
