@@ -1,0 +1,12 @@
+PASS M2W.N0.mount-and-schemas — ctx.web.fetch=function ctx.web.search=function schemas=["web_search","web_fetch"] (production tool-web, both tools on)
+PASS M2W.N1.loopback-blocked-before-transport — typed原文="Error: URL hostname \"127.0.0.1\" resolves to a non-public IP address"; 实测(loopback): fixture accessLog +0, TCP钩子 +0, fetch钩子 +0 — 服务端 access-log +0 为实证
+PASS M2W.N2.private-ip-typed-refusal-static-prefix — typed原文="Error: URL hostname \"10.255.255.1\" resolves to a non-public IP address"; 辅助观测(仅进程内): TCP钩子 +0; 边界声明: 非 loopback 外部零连接不可实证 — 断言=typed(实测)+校验前置(静态 path:line)
+PASS M2W.N3.credentials-blocked — typed原文="Error: credentials in URLs are not allowed"; accessLog +0
+PASS M2W.N4.bad-scheme-refusal — typed原文="Error: unsupported URL scheme \"ftp:\" (only http and https are allowed)"; TCP钩子 +0
+PASS M2W.N5.search-credential-missing-before-endpoint — typed原文="Error: DeepSeek search has no API key for \"DEEPSEEK_API_KEY\"; store it through the credentials service (the web Models page writes it), export it in the launchi"; fetch钩子对 deepseek 目标=0, 本腿 fetch/TCP 增量=+0/+0
+FATAL(environment) Cannot assign to read only property 'name' of function '(inner) => {
+      inner.web.registerFetchProvider(stubFetch)
+      inner.web.registerSearchProvider(stubSearch)
+    }'
+RESULT_JSON dev/agent-workflow/evidence/alpha5/m2-web/runs/2026-10-23T06-48-32Z/result.json
+SUMMARY total=6 pass=6 fail=0 exit=2

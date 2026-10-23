@@ -1,0 +1,80 @@
+# m2-web — M2-WEB-01 (Alpha.5 M2 首批, web 族) 证据目录
+
+Owner: M2-WEB-01 (web 族唯一 owner)。目录为本卡独占。
+
+## 内容
+
+- `m2w-c1-runner.mjs` — C1 fixture runner（plain-node，p00/p09 runner 先例；非新测试平台）。
+  两相十腿：N 相 = 生产 provider（`web-fetch-http`/`web-search-deepseek`，test-use 预构建 lib 直挂）
+  fail-closed 负控；P 相 = 离线 provider 桩（seam 公开注册面 `ctx.web.registerFetchProvider/
+  registerSearchProvider`，@639ed01539 `packages/web/web/src/index.ts:103/:114`）下的成功路径 +
+  两层对象（搜索目标 ≠ 结果 URL）。
+- `runs/<UTC>/` — 每次实跑的 `stdout.log`/`stderr.log`/`result.json`（含 typed 码原文、计数器、
+  监听释放记录、边界披露）。
+
+## 实跑命令
+
+```bash
+STAMP=$(date -u +%Y-%m-%dT%H-%M-%SZ)
+RUNDIR="dev/agent-workflow/evidence/alpha5/m2-web/runs/$STAMP"; mkdir -p "$RUNDIR"
+M2W_RUN_DIR="$RUNDIR" node dev/agent-workflow/evidence/alpha5/m2-web/m2w-c1-runner.mjs \
+  > "$RUNDIR/stdout.log" 2> "$RUNDIR/stderr.log"; echo "RUNNER_EXIT=$?"
+```
+
+Exit：0=全腿过；1=断言失败；2=环境。幂等（finally 关监听 + 重写 result.json）。
+
+## 已落定运行
+
+- `runs/2026-10-23T06-59-48Z/` — **12/12 PASS，RUNNER_EXIT=0**（承重运行；含 P3/P4
+  "未知顶层键不拒且照常执行"当前形态实证腿，BASE.C1 家族 cross-check，todo 先例）。
+- `runs/2026-10-23T06-51-19Z/` — 10/10 PASS，RUNNER_EXIT=0（P3/P4 加入前的承重运行）。
+- `runs/2026-10-23T06-50-21Z/`、`runs/2026-10-23T06-51-07Z/` — **首次真实失败原文保留**：
+  P1 挂我的观测钩子（`net.Socket.prototype.connect` 钩未识别 undici 的数组形 apply-style 调用，
+  `argTypes:"array"` → 误 destroy → `Error: fetch failed`），非生产代码缺陷；修复=钩子按数组展开解析。
+
+## 生产 vs 测试替身（披露）
+
+- **钉死生产代码**（test-use @`639ed01539`，porcelain 空，零写入）：`dsh-web` seam、`tool-web`
+  （web_fetch/web_search schema+注册）、`web-fetch-http`（生产 fetch provider：policy/network）、
+  `web-search-deepseek`（生产 search provider：credential fail-closed）。
+- **Team 桩/夹具**：P 相 offline stub providers（经 seam 公开注册面注册、id `m2w-offline-stub`、
+  seam 自身 selection config 钉定）、127.0.0.1:3187 合成页服务器、TCP/fetch 钩子。
+
+## 零连接证据边界（根裁 2026-10-23 修订 2，原文照此执行）
+
+- loopback 目标：fixture 服务端 access-log +0/+1 = **实证**。
+- 非 loopback（`10.255.255.1`、结果 URL `m2w-result.invalid`）：断言 = **typed 拒绝（实测）+
+  校验前置（静态：`policy.ts:31-36/47-52`、`network.ts` 字面 IP 无 DNS、验证先于连接）**；
+  进程内 TCP connect 钩 + global-fetch tripwire 计数为**辅助观测**。**不写"外部零连接实证"**。
+- 观测面限制：钩子在进程内；undici 内部 DNS（`systemLookup` 为 destructure import）不可钩；
+  无 sandbox 级系统调用观测。不可解析目标不设腿（真实 DNS 查询本身=网络行为，外网无授权=ENV_BLOCK）。
+
+## 端口/环境纪律
+
+只绑 `127.0.0.1:3187`（避开 Host 腿固定端口 3183/3184；**:3080 永不触碰**）；proxy env 进程内剥离并
+记录；`DEEPSEEK_API_KEY` 仅记录存在性后即进程内删除（挂载前），无真实凭据可外带。
+机制性 side effect：`p00-fixture.ensureResolvable()` 在 worktree 根 gitignored
+`node_modules/@deepseek-ai/` 建 5 个 junction（cordis/dsh-scope/dsh-system-prompt/dsh-tools/dsh-llm
+→ test-use），为 alpha5-adapter-p0 家族既有机制。
+
+## 共享件复用（零复制纪律）
+
+ledger/tripwire/envHeader/stripProxyEnv/libUrl ← `../../alpha5-adapter-p0/09-web-jobs-mcp/p09-shared.mjs`；
+makeFixture/tag ← `../../alpha5-adapter-p0/00-baseline/p00-fixture.mjs`（只读 import，正本唯一）。
+
+## ENV_BLOCK（无授权，不跑；交 CENTER 排唯一 Host owner）
+
+1. 真实外网 `web_fetch`（目的地认证）。
+2. 真实 search provider（DeepSeek/Exa/Perplexity）端点认证。
+3. web preset 真实 Host 装配复跑。
+4. `*.invalid` 类真实 DNS 解析腿（DNS 查询=网络行为）。
+
+## 后续（按根裁路线）
+
+新功能必要测试进**正式测试系统**：C1 classify/manifest 腿（B-WEB effects 闭集
+`tool-invoke/connect@network-destination/domain-ref`，`tool-governance/src/effects.ts:43`、
+`resource.ts:72`）+ 伪造/未知目的地/不可解析 target typed 拒 = 正式位
+`packages/runtime/test/a5m2w-web-c1.test.ts`（登记项已报 CENTER：census +1 文件、registered legs +N、
+p4t6 exact-count pin +1）。P 层 provider 装配提案见 COORDINATION/交付消息（B-WEB：owner=CONNECTOR，
+接真实已安装 Host provider；`interfaces.ts:196 ProviderGateway` 为 E 面）。本目录 runner 保持
+fixture 级证据身份，不冒充生产接线验收。

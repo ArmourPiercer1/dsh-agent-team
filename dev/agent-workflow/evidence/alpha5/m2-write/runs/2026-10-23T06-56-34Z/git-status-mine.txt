@@ -1,0 +1,3 @@
+?? dev/agent-workflow/evidence/alpha5/m2-write/
+?? packages/tools/a5p5-tools/src/write-slice.ts
+?? packages/tools/a5p5-tools/test/a5m2-write-slice.test.ts
