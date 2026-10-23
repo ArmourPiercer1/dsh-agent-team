@@ -27,23 +27,35 @@ export type BSubagentPaAnswer = {
 
 /** The frozen walk input (plane write-row shape :2365-2378): realmId + live
  *  callId + the FROZEN PLAN's parametersFingerprint (the same value the row
- *  re-checks at delegate — one value across open→edge) + the closed
- *  `tool-invoke`-only effect set + the family block. */
+ *  re-checks at delegate — one value across open→edge) + the PARSED
+ *  canonical `RequestedEffectSet` (`parseRequestedEffectSet().value`, the
+ *  plane's own requestedEffects shape — { effects, fingerprint }) + the
+ *  family block. The signal rides BY REFERENCE and is NEVER frozen. */
 export interface BSubagentPaWalk {
   readonly realmId: string
   readonly callId: string
   readonly parametersFingerprint: string
-  readonly requestedEffects: readonly { readonly kind: string; readonly toolName: string; readonly resource: null }[]
+  /** parseRequestedEffectSet's canonical value (domain effects.ts
+   *  RequestedEffectSet): the plane reads `requestedEffects.effects`. */
+  readonly requestedEffects: {
+    readonly effects: readonly { readonly kind: string; readonly toolName?: string; readonly resource: unknown }[]
+    readonly fingerprint: string
+  }
   readonly toolName: string
   readonly family: {
     readonly familyId: string
     readonly adapterRevision: number
     readonly providerIdentity: string
+    /** Lossless CLASSIFIED target (root 20:39 FIX 2): the plan's own frozen
+     *  target object + full classified args ride alongside the labels — the
+     *  fingerprint pairs, it never substitutes for the auditable target. */
     readonly targetManifest: {
       readonly recordIndex: number
       readonly operation: string
       readonly effectDelta: string
       readonly namedGaps: Readonly<Record<string, string>>
+      readonly target: unknown
+      readonly args: Readonly<Record<string, unknown>>
     }
   }
   readonly signal?: AbortSignal
@@ -72,10 +84,11 @@ export type BSubagentWiringAssembly = Pick<
 
 /** Mount result (jobs-row law): success carries the shared dispose; a
  *  register failure already rolled back reversed+best-effort and names the
- *  refused tool. */
+ *  refused tool; a SECOND mount is refused outright (the first mount's
+ *  disposers are the only ones dispose() runs — no re-registration leak). */
 export type BSubagentWiringMount =
   | { readonly ok: true; readonly dispose: () => { readonly event: string } }
-  | { readonly ok: false; readonly code: string; readonly name: string; readonly message: string }
+  | { readonly ok: false; readonly code: string; readonly name?: string; readonly message: string }
 
 export interface BSubagentWiringValue extends BSubagentWiringAssembly {
   readonly ok: true

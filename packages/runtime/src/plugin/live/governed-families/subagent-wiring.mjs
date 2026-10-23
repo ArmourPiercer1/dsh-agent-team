@@ -28,13 +28,13 @@
  *    delegate pairing re-checks; open and edge see ONE value (the pairing
  *    consistency law, plane :2891). `callId` is the live exec.callId, never
  *    a minted constant. `realmId` is the placement feed's live fact.
- *  - THE EFFECTS ARE THE FROZEN VOCABULARY: exactly
- *    `[{ kind: 'tool-invoke', toolName, resource: null }]` — the same
- *    single-effect set the todo arm's payload law carries (todo.mjs §PAYLOAD:
- *    `tool-invoke` ONLY). The adapter carries no effects face (disclosed
- *    root 20:02), so the wiring derives this set from the CLOSED per-record
- *    fact (the invoked tool's own name) — deterministic, pinned by spec,
- *    never a widened set (a second effect would be a second permission ask).
+ *  - THE EFFECTS ARE THE REAL CONTRACT (root 20:39 FIX 1): the raw request
+ *    is `[{ kind: 'tool-invoke', toolName, resource: null }]` (the same
+ *    single-effect set the todo arm's payload law carries) but the WALK
+ *    rides `parseRequestedEffectSet`'s canonical `{ effects, fingerprint }`
+ *    VALUE — the exact parsedEffects.value shape the plane itself walks
+ *    (:2360-2365) — an unparsable set refuses with the parser's own
+ *    problems, zero PA entry.
  *  - THE ANSWER LAWS (plane :1449-1713 measured):
  *      · `cancelled === true` IS NOT PERMISSION: zero consumption claim,
  *        zero service entry; an aborted signal BEFORE the walk never opens.
@@ -83,6 +83,13 @@ import {
   A5_B_SUBAGENT_RECORD_SPECS,
   createSubagentAdapterAssembly,
 } from './subagent-adapters.mjs'
+// THE REAL EFFECT CONTRACT (root 20:39 FIX 1): the canonical effect-set
+// grammar is domain-owned and the plane walks with parseRequestedEffectSet's
+// OWN parsed value (team-tool-plane :2360-2365, paAdmit reads
+// requestedEffects.effects). This wiring reuses the SAME parser and rides
+// its canonical `{ effects, fingerprint }` struct — never a self-invented
+// effect envelope.
+import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_B_SUBAGENT_WIRING_REVISION = 1
 
@@ -99,6 +106,8 @@ export const A5_B_SUBAGENT_WIRING_CODES = Object.freeze({
   DISPOSED: 'P_B_SUBAGENT_WIRE_DISPOSED',
   CALL_ID_ABSENT: 'P_B_SUBAGENT_WIRE_CALL_ID_ABSENT',
   REALM_ABSENT: 'P_B_SUBAGENT_WIRE_REALM_ABSENT',
+  EFFECTS_UNPARSABLE: 'P_B_SUBAGENT_WIRE_EFFECTS_UNPARSABLE',
+  MOUNT_ALREADY_PLACED: 'P_B_SUBAGENT_WIRE_MOUNT_ALREADY_PLACED',
   PLACEMENT_CONFLICT: 'P_B_SUBAGENT_WIRE_PLACEMENT_CONFLICT',
 })
 
@@ -117,10 +126,12 @@ function deepFreeze(value) {
   return value
 }
 
-/** THE EFFECT DERIVATION (closed, pinned by spec): the invoked tool itself —
- *  `tool-invoke` ONLY, resource null (todo.mjs §PAYLOAD vocabulary). The
- *  per-record name is the whole source; nothing is ever added to the set. */
-const effectsFor = (toolName) => deepFreeze([{ kind: 'tool-invoke', toolName, resource: null }])
+/** THE RAW EFFECT REQUEST (closed, pinned by spec): the invoked tool itself
+ *  — `tool-invoke` ONLY, resource null (todo.mjs §PAYLOAD vocabulary). This
+ *  is only the parser's INPUT; the WALK rides parseRequestedEffectSet's
+ *  canonicalized `{ effects, fingerprint }` VALUE (root 20:39 FIX 1 — the
+ *  real PA contract shape, the plane's own parsedEffects.value). */
+const rawEffectsFor = (toolName) => [{ kind: 'tool-invoke', toolName, resource: null }]
 
 /**
  * Assembly-time wiring factory: mounts the frozen adapter VERBATIM and
@@ -181,11 +192,27 @@ export function createBSubagentControlWiring(input = {}) {
     const fed = input.placementFeed(name)
     const realmId = isRecord(fed) && typeof fed.realmId === 'string' && fed.realmId.length > 0 ? fed.realmId : null
     if (realmId === null) return refuse(CODES.REALM_ABSENT, `the placement feed answered no realmId for '${name}' — the walk's realm is a live placement fact, never a guessed constant`)
-    const walk = deepFreeze({
+    // FIX 1 (root 20:39): the REAL effect contract — parse through the
+    // domain's canonical parser and ride ITS value (the plane's exact
+    // :2360-2365 walk: parse → parsedEffects.value with {effects,
+    // fingerprint}); an unparsable set is the plane's EFFECTS_UNPARSABLE
+    // posture: refuse with the parser's own problems, zero PA entry.
+    const parsedEffects = parseRequestedEffectSet(rawEffectsFor(name))
+    if (parsedEffects.ok !== true) {
+      return refuse(CODES.EFFECTS_UNPARSABLE, `the derived effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)}) — the wiring never walks a malformed effect set`)
+    }
+    // FIX 2 (root 20:39): the manifest carries the LOSSLESS CLASSIFIED
+    // TARGET (the plan's own frozen target object — address.claim/relation/
+    // adjudication and every leaf — plus the full classified args: the real
+    // agent_id and, for send_message, the message itself per the family
+    // contract's send-is-not-memory-write obligation). The fingerprint
+    // pairs; it NEVER substitutes for the auditable target — labels are not
+    // targets.
+    const payload = deepFreeze({
       realmId,
       callId,
       parametersFingerprint: plan.parametersFingerprint,
-      requestedEffects: effectsFor(name),
+      requestedEffects: parsedEffects.value,
       toolName: name,
       family: {
         familyId,
@@ -196,10 +223,16 @@ export function createBSubagentControlWiring(input = {}) {
           operation: A5_B_SUBAGENT_RECORD_SPECS[name].operation,
           effectDelta: A5_B_SUBAGENT_EFFECT_LABELS[name],
           namedGaps: A5_B_SUBAGENT_NAMED_GAPS,
+          target: plan.target,
+          args: plan.args,
         },
       },
-      ...(signal === undefined ? {} : { signal }),
     })
+    // FIX 4 (root 20:39): freeze ONLY the wiring's own JSON payload. The
+    // caller's AbortSignal rides BY REFERENCE unfrozen — deep-freezing it
+    // would break abort during the PA wait (the signal is the caller's
+    // live object, not part of the reviewed payload).
+    const walk = signal === undefined ? payload : Object.freeze({ ...payload, signal })
     state.walks += 1
     observe({ event: 'b-subagent:wire:open', name, callId })
     let opened
@@ -224,8 +257,16 @@ export function createBSubagentControlWiring(input = {}) {
       return refuse(CODES.CANCELLED, `the signal aborted while PA was being asked (call ${callId}): this leg enters nothing; if the kernel had consumed at the edge the grant stays spent there — never rewound, never re-armed here`)
     }
     if (opened?.kind !== 'allow') {
-      // The funnel's OWN bytes ride verbatim (no re-coding, plane :2440 idiom).
-      return { ok: false, code: String(opened?.code ?? CODES.PA_REFUSED), detail: `${String(opened?.detail ?? 'the PA walk refused this invocation')} (B-SUBAGENT control wiring: the PA walk refused; nothing entered the service)` }
+      // The funnel's OWN bytes ride VERBATIM (root 20:39 accuracy fix): the
+      // detail passes through UNTOUCHED — nothing is appended to it while
+      // the seat claims fidelity, and nothing is re-coded (L6 posture).
+      // Only where the funnel OMITS a field does a typed fallback name the
+      // absence; our words never join the funnel's own words.
+      return {
+        ok: false,
+        code: String(opened?.code ?? CODES.PA_REFUSED),
+        detail: typeof opened?.detail === 'string' ? opened.detail : 'the PA walk refused this invocation without a detail',
+      }
     }
     if (opened.consumedProof === undefined || opened.consumedProof === null) {
       return refuse(CODES.PROOF_ABSENT, `allow WITHOUT the one-shot consumedProof witness (call ${callId}) — the witness is emitted only on the consume-ok branch (plane :1650-1657); proceeding without it would be self-attestation, so this leg refuses with zero service entry`)
@@ -268,9 +309,18 @@ export function createBSubagentControlWiring(input = {}) {
     familyRegistrations: assembly.familyRegistrations,
     inFlight: assembly.inFlight,
     /** The jobs-row placement law (:3470-3496): register every placed def,
-     *  collect disposers, roll back reversed+best-effort on failure. */
+     *  collect disposers, roll back reversed+best-effort on failure.
+     *  FIX 3 (root 20:39): a SECOND successful mount is REFUSED — a re-mount
+     *  would re-register every name and overwrite the first mount's
+     *  disposers, leaking the first registration with no handle. The first
+     *  mount's disposers stay the ONLY ones dispose() runs. (A FAILED mount
+     *  rolled its own placements back and stays retryable — nothing was
+     *  left holding.) */
     mount: (agentCtx) => {
       if (state.disposed) return refuseAssembly(CODES.DISPOSED, 'mount after dispose is refused — the wiring is closed')
+      if (state.mountDisposers !== null) {
+        return Object.freeze({ ok: false, code: CODES.MOUNT_ALREADY_PLACED, message: 'this wiring is already placed — a second mount would re-register every name and orphan the first mount\'s disposers; unmount (dispose) first, or use a new wiring' })
+      }
       const disposers = []
       for (const definition of assembly.definitions) {
         try {

@@ -44,7 +44,7 @@ type PaWalk = {
   realmId: string
   callId: string
   parametersFingerprint: string
-  requestedEffects: { kind: string; toolName: string; resource: null }[]
+  requestedEffects: { effects: { kind: string; toolName?: string; resource: unknown }[]; fingerprint: string }
   toolName: string
   family: { familyId: string; adapterRevision: number; providerIdentity: string; targetManifest: Record<string, unknown> }
   signal?: AbortSignal
@@ -67,7 +67,7 @@ type WiringValue = {
   subset: string
   definitions: Definition[]
   placementNames: string[]
-  rowOf: (name: string) => { name: string } | undefined
+  rowOf: (name: string) => { name: string; classify: (args: unknown) => { ok: boolean; plan?: { target?: unknown } } } | undefined
   familyRegistrations: () => { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }[]
   inFlight: () => { dispatches: number; refuses: number }
   mount: (agentCtx: { tools: { register: (definition: Definition) => unknown } }) => { ok: boolean; code?: string; name?: string; dispose?: () => unknown }
@@ -323,7 +323,11 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     expect(walk.realmId).toBe(REALM)
     expect(walk.callId).toBe('call-w1')
     expect(walk.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
-    expect(walk.requestedEffects).toEqual([{ kind: 'tool-invoke', toolName: 'send_message', resource: null }])
+    // FIX 1 (root 20:39): the walk rides parseRequestedEffectSet's OWN
+    // canonical value (the plane's requestedEffects.effects shape) — never
+    // a bare array:
+    expect(walk.requestedEffects.effects).toEqual([{ kind: 'tool-invoke', resource: null, toolName: 'send_message' }])
+    expect(walk.requestedEffects.fingerprint, 'the domain parser minted the canonical digest').toMatch(/^[0-9a-f]{64}$|^sha256:/)
     expect(walk.toolName).toBe('send_message')
     expect(walk.family.familyId).toBe('B-SUBAGENT')
     expect(walk.family.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
@@ -334,6 +338,20 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     expect(walk.family.targetManifest.operation).toBe(sendSpec.operation)
     expect(walk.family.targetManifest.effectDelta).toBe(ADAPTER.A5_B_SUBAGENT_EFFECT_LABELS.send_message)
     expect(walk.family.targetManifest.namedGaps).toBe(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS) // the row's frozen gap facts, whole
+    // FIX 2 (root 20:39): the manifest carries the LOSSLESS CLASSIFIED
+    // TARGET — the real target leaves, not labels: the plan's own frozen
+    // target object (equal to a fresh classify of the same args) plus the
+    // full classified args (the actual agent_id AND the message content).
+    const sendRow = wiring.rowOf('send_message')
+    if (sendRow === undefined) throw new Error('no send row')
+    const expectedPlan = sendRow.classify({ agent_id: 'agent-child-1', message: 'down' })
+    expect(walk.family.targetManifest.target).toEqual(expectedPlan.ok === true ? expectedPlan.plan?.target : 'NO-PLAN')
+    expect(walk.family.targetManifest.args).toEqual({ agent_id: 'agent-child-1', message: 'down' })
+    // FIX 4 (root 20:39): the payload is frozen; the CALLER'S AbortSignal
+    // rides by reference and is NEVER frozen (deep-freezing it would break
+    // abort during the PA wait):
+    expect(Object.isFrozen(walk.family), 'own payload frozen').toBe(true)
+    expect(Object.isFrozen(walk.signal), 'caller signal untouched').toBe(false)
     expect(walk.signal, 'the live signal rides BY REFERENCE').toBe(SIGNAL)
     expect(fixture.calls).toEqual(['sendMessage'])
     // second identical call: fresh walk, SAME fingerprint VALUE (open→edge
@@ -355,9 +373,9 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     if (interruptDef === undefined || listDef === undefined) throw new Error('trio incomplete')
     await interruptDef.execute({ agent_id: 'agent-child-1' }, execFor('call-wi'))
     await listDef.execute({}, execFor('call-wl'))
-    expect(pa.walks.map((w) => [w.toolName, w.requestedEffects])).toEqual([
-      ['interrupt_agent', [{ kind: 'tool-invoke', toolName: 'interrupt_agent', resource: null }]],
-      ['list_agents', [{ kind: 'tool-invoke', toolName: 'list_agents', resource: null }]],
+    expect(pa.walks.map((w) => [w.toolName, w.requestedEffects.effects])).toEqual([
+      ['interrupt_agent', [{ kind: 'tool-invoke', resource: null, toolName: 'interrupt_agent' }]],
+      ['list_agents', [{ kind: 'tool-invoke', resource: null, toolName: 'list_agents' }]],
     ])
     // and the rows SERVED through the consumed edge (the proof-allowed path):
     expect(fixture.calls).toEqual(['interrupt', 'listChildren'])
@@ -388,12 +406,13 @@ describe('a5m2-subagent-wiring (d/e/f) the answer laws', () => {
     expect((second.out as { v?: unknown }).v).toEqual({ messageId: 'msg-ack-7' })
     expect(pa.walks).toHaveLength(2) // a SECOND walk happened — no self-minted blocklist
   })
-  it('a DENY rides the funnel OWN bytes verbatim (no re-coding) with zero service entry', async () => {
+  it('a DENY rides the funnel OWN bytes EXACTLY (root 20:39: the detail passes through untouched, no appended gloss) with zero service entry', async () => {
     const pa = makePa({ kind: 'deny', code: 'GRANT_CONSUMPTION_REFUSED', detail: 'edge said no' })
-    const res = await served(pa) as { out: { ok: boolean; error?: Error & { code?: string; subagentRefusal?: { code?: string } } }; fixture: Fixture }
+    const res = await served(pa) as { out: { ok: boolean; error?: Error & { code?: string; subagentRefusal?: { code?: string; detail?: string } } }; fixture: Fixture }
     expect(res.out.ok).toBe(false)
     expect(res.out.error?.code, 'the funnel code rides, NOT a P_B_SUBAGENT_WIRE_* re-code').toBe('GRANT_CONSUMPTION_REFUSED')
     expect(res.out.error?.subagentRefusal?.code).toBe('GRANT_CONSUMPTION_REFUSED')
+    expect(res.out.error?.subagentRefusal?.detail, 'the funnel detail BYTES, not bytes-plus-commentary').toBe('edge said no')
     expect(res.out.error?.message).toContain('edge said no')
     expect(res.fixture.calls).toEqual([])
   })
@@ -413,6 +432,28 @@ describe('a5m2-subagent-wiring (d/e/f) the answer laws', () => {
     expect(error?.subagentRefusal?.code).toBe(WCODES.CANCELLED)
     expect(pa2.walks, 'an already-aborted call never opens the walk').toHaveLength(0)
     expect(fixture.calls).toEqual([])
+  })
+  it('PA-pending → abort (root 20:39 FIX 4 local leg): the caller signal stays LIVE during the wait — abort lands, the leg refuses CANCELLED with zero service entry', async () => {
+    const pa = makePa()
+    const fixture = makeFixture()
+    const wiring = okValue(mountWiring(pa, { subagentService: fixture.service, liveSubagentService: () => fixture.service, agentsRegistry: registryDouble, liveAgentsRegistry: () => registryDouble }))
+    const controller = new AbortController()
+    let release: () => void = () => {}
+    pa.setGate(() => new Promise<void>((resolve) => {
+      release = resolve
+    }))
+    const send = wiring.definitions.find((d) => d.name === 'send_message')
+    if (send === undefined) throw new Error('no def')
+    const inflight = send.execute({ agent_id: 'agent-child-1', message: 'hi' }, { agent: AGENT_REF, signal: controller.signal, callId: 'call-wa' }).then(() => null, (e: unknown) => asError(e))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(pa.walks, 'the walk is open and WAITING').toHaveLength(1)
+    controller.abort() // the signal rode UNFROZEN — the abort must actually land
+    expect(controller.signal.aborted, 'the caller signal was never frozen by the walk (a frozen signal cannot abort)').toBe(true)
+    release()
+    const error = await inflight
+    expect(error?.subagentRefusal?.code).toBe(WCODES.CANCELLED)
+    expect(pa.closePlanCalls, 'the funnel completed its own walk; its finally owns the plan fact').toEqual([])
+    expect(fixture.calls, 'the aborted leg enters nothing').toEqual([])
   })
   it('a THROWN walk is never an authorization: PA_FAULT refusal + closePlan ends the plan fact, zero service entry', async () => {
     const pa = makePa()
@@ -489,13 +530,32 @@ describe('a5m2-subagent-wiring (g) mount/dispose: the jobs-row placement law', (
     expect(mounted.name).toBe('list_agents')
     expect(rolled).toEqual(['interrupt_agent'])
   })
+  it('a SECOND mount is REFUSED outright (root 20:39 FIX 3): the first mount stays the ONLY registration — no re-register, no orphaned disposers', () => {
+    const wiring = okValue(mountWiring(makePa()))
+    const order: string[] = []
+    const agentCtx = {
+      tools: {
+        register: (definition: Definition) => {
+          order.push(`register:${definition.name}`)
+          return () => order.push(`dispose:${definition.name}`)
+        },
+      },
+    }
+    expect(wiring.mount(agentCtx).ok).toBe(true)
+    const twice = wiring.mount(agentCtx)
+    expect(twice.ok).toBe(false)
+    expect(twice.code).toBe(WCODES.MOUNT_ALREADY_PLACED)
+    expect(order.filter((o) => o.startsWith('register:')), 'ZERO re-registration by the refused mount').toHaveLength(3)
+    wiring.dispose()
+    expect(order.filter((o) => o.startsWith('dispose:')), 'the FIRST mount\'s disposers ran, exactly once').toHaveLength(3)
+  })
 })
 
 describe('a5m2-subagent-wiring (h) honesty pins', () => {
-  it('the import closure is EXACTLY one project module: the frozen adapter (no plane, no kernel, no crypto)', () => {
+  it('the import closure is the frozen adapter PLUS the domain effect grammar ONLY (root 20:39 FIX 1): no plane, no kernel, no crypto', () => {
     const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'plugin', 'live', 'governed-families', 'subagent-wiring.mjs'), 'utf8')
     const specifiers = [...source.matchAll(/^import[\s\S]*?from '(.+)'$/gm)].map((m) => String(m[1]))
-    expect(specifiers).toEqual(['./subagent-adapters.mjs'])
+    expect(specifiers).toEqual(['./subagent-adapters.mjs', '../../../../../domain/tool-governance/src/index.js'])
   })
   it('missing live exec.callId or a feed with no realmId refuses with ZERO PA entry (never a minted constant)', async () => {
     const pa = makePa()
