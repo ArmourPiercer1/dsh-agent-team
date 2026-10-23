@@ -1,5 +1,15 @@
 /**
- * A5M2-FAMILY-RULES C1 — round 8 (root 19:06 card) lands at the bottom: the
+ * A5M2-FAMILY-RULES C1 — round 9 (root 21:20 joint approval; ONE table
+ * writer for this entry) lands at the bottom: the B-SUBAGENT joint map -
+ * EIGHT minted operations discriminated by the operation leaf, per-group
+ * action binds (the signed guard law keeps binds over adds only; DELTA
+ * reported in the entry comment), the two lane adds-sets closed per row,
+ * argsCanonical/namedGapsCanonical typed as COMPLETE canonical JSON leaves
+ * (lane sorted-key law; reversible, not a digest). Constants generated
+ * VERBATIM from spawn @8c314fb9 + controls @61663441. No new family/kind/
+ * any; joint-mint fields fail closed until each lane lands its own mint.
+ *
+  * A5M2-FAMILY-RULES C1 — round 8 (root 19:06 card) lands at the bottom: the
  * B-TEAM closed map over the seat's lossless FLAT 10-leaf projection
  * (measured read-only @fc072d5c2 wiring + @88ad3cf37 adapter rev 1).
  * 'operation' is a MINTED string leaf discriminating TEN bound rows
@@ -430,12 +440,12 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(closed)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(closed)
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM', 'B-SUBAGENT'])
     // The discriminated variant grammar is carried by B-INSPECT,
     // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card) -
     // and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM'
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM' || familyId === 'B-SUBAGENT'
       expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
@@ -1128,5 +1138,214 @@ describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed
       .toBe('guardCleared: not part of the B-TEAM typed plan')
     expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, contract: '' }))
       .toBe('contract: not a string')
+  })
+})
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ROUND 9 (root 21:20 joint limited-encoding approval; this lane is the ONE
+ * table writer of this entry): the B-SUBAGENT joint closed map - ONE
+ * operation-discriminated entry over the EIGHT real operations of the two
+ * lanes (5 spawn + 3 controls), no new family/kind/any/ledger. Measured
+ * read-only at spawn @8c314fb94b3a694f0cc1acd14c9b9b73a36ff10b and controls
+ * @6166344117088870799f6f64c915f872dd7e3b41; the constant blocks below are
+ * generated VERBATIM from those pinned sources (contract/parent/caller/
+ * revision/budget/model/depth/relation/adjudication sentences + both real
+ * NAMED_GAPS and EFFECT_LABELS objects). argsCanonical/namedGapsCanonical
+ * ride each lane's OWN canonicalJson (sorted-key JSON, law copied verbatim
+ * from the controls module :234-238) - complete reversible JSON, not a
+ * hash: full text, unknown legal keys, null and '' survive. DELTA per card
+ * (reported in the entry's own comment): `action` rides per-group adds+binds
+ * (the signed guard law allows binds only over adds; the round-7 B-MCP
+ * pattern), presence still enforced for all eight rows. Joint-mint fields
+ * (argsCanonical/namedGapsCanonical) and the controls-side flatten are each
+ * lane's OWN mint change (root 21:18); until those land, joint claims fail
+ * at the absent-leaf denial - no silent translation of the old approved
+ * shapes. Table passage proves the type gate ONLY; no C2, no wiring tier.
+ * ROOT 21:33 CARRIED: this lane owns the B-SUBAGENT ENTRY ONLY (not the
+ * whole table); the round-9 legs below are the type gate over TRANSCRIBED
+ * real constants - they do not impersonate a lane emit; the required
+ * real-new-mint -> same-validator pairing belongs to the two mint owners
+ * (handoff: evidence/a5m2-family-rules/a5m2-subagent-mint-owner-handoff.md).
+ * ───────────────────────────────────────────────────────────────────────── */
+describe('A5M2-FAMILY-RULES C1 round 9 (root 21:20 joint): the B-SUBAGENT map - eight minted operations, per-group action binds, complete canonical JSON leaves; both lanes real mint shapes through the SAME validator', () => {
+  const SPAWN_NAMED_GAPS = {
+      "PRE_SPAWN_CLOSED_WORLD": "THE PRE-SPAWN CLOSED WORLD IS A CENTER OBLIGATION THIS SEAM CANNOT EXPRESS (contract §B-SUBAGENT: P child创建前安装同一CENTER closed world，不能先spawn再补Guard; census existing entry path agent-bindings.mjs, createTeamAgent route per the contract E2 anchor): WHICH governed services a child receives is minted by CENTER before the child starts, not by this row; the body carries maxDepth (runtimeCtx.subagents.resolveMaxDepth), persona/toolFilter from plugin Config and the provider capability asserts — the row verifies NONE of the child's installed governance and claims none. C2's 未安装治理child不得启动 obligation belongs to the CENTER pre-spawn install plus the paired Host acceptance, NOT to this row.",
+      "PROVIDER_ENVELOPE": "EXTERNAL PROVIDER REALITY (records 41/42: 真实外部Codex provider且权限可强制) IS NOT A TOOL-FACE FACT: the codex/claude provider packages register PROVIDERS (their src runs on ctx.subagents + subprocess lanes; measured zero tool registration), and the published mint produces the SAME definition shape for any declared provider (measured). Permission enforceability over the external process (sandbox, secrets, network) rides the provider driver + Host mount; this row cannot observe it, certifies it, or replace the real-provider C2 acceptance with its doubles.",
+      "FORK_SEED": "FORK SEEDING (record 40: 真实seed fork, and the contract C3 dimension 冷恢复不可复制fork) IS A PROVIDER/DRIVER FACT (inheritsParentContext wording at the mint; the seeded conversation + cold-recovery non-reproducibility live in the fork driver and the durable Session layer): the row observes only the body answer and the fork wording of the captured face — never whether a seed actually happened.",
+      "MODEL_ROUTES_FRESHNESS": "MODEL ROUTE TRUTH (record 43) is captured-policy + LIVE-llm-service INSIDE the body: the policy (allowed routes) is sampled at install time per Session and the provider catalog is read live at execute; the family contract's 模型/provider/预算/seed内容摘要 dimensions for the spawn records likewise ride the body + CENTER. The row observes the returned text and claims no freshness.",
+      "PLAN_ONCE_MEMO": "PLAN-ONCE IS AN INTERNAL MEMO — AND SPAWN IS NON-IDEMPOTENT: consumedPlans refuses replaying the SAME plan OBJECT with zero delegate entry, but a caller that COPIES the plan fields RE-SPAWNS — a SECOND CHILD is created (the spec pins this boundary). There is NO idempotency carrier at this seam (no requestToken; a spawn has no pre-child identity to dedupe); the real one-shot consumedProof is the CENTER PA wiring edge. The row never claims once-closure."
+  } as const
+  const SPAWN_EFFECT_LABELS = {
+      "subagent": "I + S(child-agent-spawn-resource-cost): 受治理child实际任务并继续 — the row observes ONLY the delegated body answer ({kind, subagentId|jobId|runId,output}); child governance INSTALL rides the CENTER pre-spawn closed world (NAMED GAP PRE_SPAWN_CLOSED_WORLD) and the run lives in the SERVICE",
+      "subagent_fork": "I + S(child-agent-spawn-seeded-resource-cost): 真实seed fork且child受治理 — the seed/context-inheritance is a PROVIDER (inheritsParentContext) + driver fact (NAMED GAP FORK_SEED); the row observes only the body answer",
+      "subagent_codex": "I + S(external-codex-child-agent): 真实外部Codex provider且权限可强制 — the external provider reality and permission enforcement are PROVIDER-DRIVER facts invisible at the tool face (NAMED GAP PROVIDER_ENVELOPE); the row observes only the body answer",
+      "subagent_claude_code": "I + S(external-claude-code-child-agent): 真实外部Claude provider且权限可强制 — same boundary as record 41 (NAMED GAP PROVIDER_ENVELOPE)",
+      "list_subagent_models": "S(model-routes-read): 准确当前provider可选模型列表 — the row observes only the body answer; route freshness/advisory membership ride on the captured policy + the live `llm` service inside the body (NAMED GAP MODEL_ROUTES_FRESHNESS)"
+  } as const
+  const CTRL_NAMED_GAPS = {
+      "SPAWN_SIDE_CLOSED_WORLD": "SPAWN SIDE (census records 39–43: subagent / subagent_fork / subagent_codex / subagent_claude_code / list_subagent_models) IS NOT COVERED HERE and cannot be honestly adapted at this seam: the contract law P child创建前安装同一CENTER closed world，不能先spawn再补Guard is a PRE-SPAWN CENTER obligation (existing entry path agent-bindings createTeamAgent route), the external codex/claude envelopes are provider-mount dimensions (\"不能把外部模型当已治理native工具\"), and NOTHING in this trio spawns — its three bodies reach ONLY ALREADY-EXISTING children through ctx.subagents. The family C2 dimension 未安装治理child不得启动 is therefore NOT observable, NOT claimed, and NOT weakened by this subset landing.",
+      "LINEAGE_AUTHORITY": "ADJACENCY IS THE MEASURED send_message LAW AND ALL AUTHORITY IS SERVICE-SIDE (root 19:24: the row performs NO business pre-adjudication). The published face addresses a DIRECT continuable child or — for a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal; the plan carries BOTH directions as facts); siblings/uncles are NOT adjacent (list_agents lineage rows carry parent id + depth: adjacency = parent or direct child only). The row forwards the SAME live exec.agent reference and the raw claim and adjudicates NOTHING: a non-adjacent, non-resident or cross-tree target is refused by the SERVICE with the published SubagentError (code UNAUTHORIZED), which propagates verbatim; interrupt unknown/absent/one-shot targets are an ACCEPTED NO-OP, not a deny. C2's 跨owner拒 obligation lives with the service, not this row.",
+      "INTERRUPT_COMPLETION": "INTERRUPT IS FIRE-AND-FORGET: {accepted:true} is REQUEST ACCEPTANCE — not a stopped turn, not drained descendants, not a destroyed child (census 44: 不得误称销毁; the published description says the call returns WITHOUT waiting, deeper children keep running). Awaiting child resource evidence (C3) is not observable at this seam and is never reported.",
+      "DELIVERY_CONTINUATION": "SEND IS NOT AN IN-MEMORY WRITE — and the row sees only its ACK: the messageId is the service acceptance; durable delivery, the continuation/liveness semantics (the marked standard tool participates in the continuation-delivery check), and the resource-budget implication of a waking send ride INSIDE the service. The row never restates them.",
+      "PLAN_ONCE_MEMO": "PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root ④): consumedPlans refuses replaying the SAME plan OBJECT with zero service entry; a caller that COPIES a plan's fields re-dispatches (the fingerprint law re-runs the whole law on the copy). Delivery idempotency is the SERVICE's (messageId semantics); the real one-shot consumedProof is the CENTER PA wiring edge. This row mints neither and never claims once-closure.",
+      "UPSTREAM_NON_RECOGNITION": "FAMILY IDENTITY NEVER CROSSES PROVIDERS (contract: exact host-provider身份不得与上游实验Team同名trio互认): packages/experimental/tool-agent-team registers SAME-NAMED tools; for send_message the assembly marker gate ENFORCES non-recognition (an unmarked same-name capture is refused NON_HOST_SEND_MESSAGE); for interrupt_agent/list_agents no marker exists in the published face — non-recognition rides the placement feed's realm identity for THIS mount's placed definitions, never name equality. A row here is only ever the host-provider identity of the mount that fed the capture."
+  } as const
+  const CTRL_EFFECT_LABELS = {
+      "interrupt_agent": "I + S(cancel-target-child-turn): the row observes ONLY the fire-and-forget REQUEST acceptance ({accepted:true} = accepted, NOT stopped, NOT destroyed — census: 停止准确所属child当前turn；不得误称销毁); child-resource evidence and turn convergence are NOT observable at this seam",
+      "list_agents": "S(registry-read): the durable child catalog through the service projection + the live Agent-registry status read; the row claims nothing beyond the projected answer",
+      "send_message": "I + S(message-inject-into-child-agent): the row observes ONLY the service-ack messageId; the durable delivery, continuation semantics and resource budget ride INSIDE the service (census: send不是仅内存write — the ACK is the seam-visible fact, not the whole obligation)"
+  } as const
+  const CONTRACT_SPAWN = "M0-B-FAMILY-TARGET-CONTRACTS §B-SUBAGENT — 目标I+S(parent member+child instance,spawn/fork/message/interrupt/read/model-list) — THIS ROW: the SPAWN/FORK/READ face of the family (the control trio is the sibling module)"
+  const PARENT_SPAWN = "the LIVE exec.agent reference at dispatch (identity by reference, per-call; the spawn bodies put this reference INTO the durable spawn request as the child owner — the row never binds or trusts an id string)"
+  const CHILD_ADJ_MODELS = "no child addressed (model-routes-read)"
+  const CHILD_ADJ_SPAWN = "the child is a NEW identity the SERVICE mints at start/acceptance (subagentId/jobId/runId in the body answer); which governed services the child receives is the CENTER PRE-SPAWN closed world (NAMED GAP PRE_SPAWN_CLOSED_WORLD) — never decided here"
+  const REVISION_SPAWN = "no revision carrier at this seam — a spawn is NON-IDEMPOTENT by nature (NAMED GAP PLAN_ONCE_MEMO); the body answer carries the minted child/job/run identity as the SERVICE records it"
+  const MODEL_MODELS = "the read itself: provider ids/advertised models/efforts from the captured policy + the LIVE llm service INSIDE the body (NAMED GAP MODEL_ROUTES_FRESHNESS)"
+  const DEPTH_MODELS = "n/a (read)"
+  const CONTRACT_CTRL = "M0-B-FAMILY-TARGET-CONTRACTS §B-SUBAGENT — 目标I+S(parent member+child instance,spawn/fork/message/interrupt/read/model-list) — THIS ROW: message/interrupt/read over an EXISTING Agent only (spawn side is NAMED GAP SPAWN_SIDE_CLOSED_WORLD)"
+  const CALLER_CTRL = "the LIVE exec.agent reference at dispatch (identity by reference, per-call; the trio binds no Agent at register time — L4)"
+  const RELATION_SEND = "ADJACENT ONLY (measured published face): a DIRECT continuable child of the caller, or — when the caller is a RESIDENT continuable child — its DIRECT PARENT (child→parent is legal); siblings, uncles and deeper descendants are NOT adjacent"
+  const RELATION_INTERRUPT = "the caller's live ANCESTRY: a direct child or deeper descendant (the caller itself is refused by the service)"
+  const RELATION_LIST = "the caller's own TREE: children = direct; descendants = rows carry parent id + depth (entries deeper than 1 accept only interrupt_agent)"
+  const ADJ_SEND = "the SERVICE adjudicates EVERY address (root 19:24 — the row performs NO lineage pre-check and adds NO authority semantics): it forwards the caller REFERENCE and the raw claim; a non-adjacent, non-resident or cross-tree target is answered by the service with the published SubagentError (code UNAUTHORIZED), which propagates verbatim — NAMED GAP LINEAGE_AUTHORITY"
+  const ADJ_INTERRUPT = "the SubagentService authorizes the exact live caller against the target's RECORDED live ancestry: an UNKNOWN/ABSENT/ONE-SHOT target is an ACCEPTED NO-OP, not a deny (measured); only a LIVE target lacking the caller in its ancestry answers SubagentError UNAUTHORIZED; the row forwards the reference and adjudicates nothing"
+  const ADJ_LIST = "the SubagentService projects the caller's own tree from durable data; the row forwards the caller id and adjudicates nothing (NAMED GAP LINEAGE_AUTHORITY)"
+  const REVISION_CTRL = "no revision carrier at this seam — messageId is the service delivery ACK for send; interrupt answers request-acceptance only; list is read-only (NAMED GAPS DELIVERY_CONTINUATION / INTERRUPT_COMPLETION)"
+  const BUDGET_CTRL = "模型/provider/预算/最大深度/工作区/新child权限上限 are SPAWN/ENVELOPE dimensions (39–43) — invisible and NOT claimed at this seam"
+  const DEPTH_SEND = "one addressed ADJACENT instance per call — a direct child OR the caller's direct parent (not \"child\" only; the ADJACENT law, not enforcement)"
+  const DEPTH_INTERRUPT = "one addressed instance in the caller's live ancestry per call (the service accepts absent targets as no-ops)"
+  const MODEL_SPAWN = "模型/provider/预算/最大深度/seed内容摘要/工作区/新child权限上限 are resolved INSIDE the body (Config agentOptions/persona/toolFilter/maxDepth + the route preflight against the llm service) — the row mirrors NONE of them and claims none"
+  const DEPTH_SPAWN = "maxDepth is resolved by the body via ctx.subagents.resolveMaxDepth from the plugin Config — a SERVICE/CENTER dimension, not a row law"
+  const DEPTH_LIST_TAIL = "— descendants rows carry parent/depth for the caller's own tree; entries deeper than 1 accept only interrupt_agent (published face law, restated here as fact not enforcement)"
+  // the lane's OWN canonicalJson law (controls module :234-238, verbatim):
+  const canonicalJson = (value: unknown): string => JSON.stringify(value, (_k, v) => (
+    v !== null && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.keys(v as object).sort().map((k) => [k, (v as Record<string, unknown>)[k]]))
+      : v
+  ))
+  // real args snapshots (published-face laws: '' is legal at the trio's
+  // type-only face and at the spawn dispatcher-shape mirror; unknown legal
+  // keys ride the snapshot; null rides):
+  const SPAWN_ARGS = { description: 'wire-me', prompt: '完整 full text: keep "" quotes, CJK and newlines verbatim\nsecond line', provider: '', model: 'deepseek-x', unknownKey: null }
+  const CTRL_ARGS = { agent_id: 'agent-7', message: '完整 full text: keep "" verbatim\nsecond line', unknownKey: null, emptyOk: '' }
+  const SPAWN_GAPSCANON = canonicalJson(SPAWN_NAMED_GAPS)
+  const CTRL_GAPSCANON = canonicalJson(CTRL_NAMED_GAPS)
+  const SPAWN_ARGSCANON = canonicalJson(SPAWN_ARGS)
+  const CTRL_ARGSCANON = canonicalJson(CTRL_ARGS)
+  const spawnRow = (op: string, eff: string, over: Record<string, unknown> = {}) => ({
+    operation: op,
+    action: op,
+    contract: CONTRACT_SPAWN,
+    parent: PARENT_SPAWN,
+    childClaim: null,
+    childAdjudication: op === 'subagent-model-routes-read' ? CHILD_ADJ_MODELS : CHILD_ADJ_SPAWN,
+    revision: REVISION_SPAWN,
+    effect: eff,
+    model: op === 'subagent-model-routes-read' ? MODEL_MODELS : MODEL_SPAWN,
+    depth: op === 'subagent-model-routes-read' ? DEPTH_MODELS : DEPTH_SPAWN,
+    argsCanonical: SPAWN_ARGSCANON,
+    namedGapsCanonical: SPAWN_GAPSCANON,
+    ...over,
+  })
+  const SPAWN_ROWS = [
+    spawnRow('subagent-spawn', SPAWN_EFFECT_LABELS.subagent),
+    spawnRow('subagent-fork-spawn', SPAWN_EFFECT_LABELS.subagent_fork),
+    spawnRow('subagent-spawn-external-codex', SPAWN_EFFECT_LABELS.subagent_codex),
+    spawnRow('subagent-spawn-external-claude-code', SPAWN_EFFECT_LABELS.subagent_claude_code),
+    spawnRow('subagent-model-routes-read', SPAWN_EFFECT_LABELS.list_subagent_models),
+  ]
+  const CTRL_ROWS = [
+    { operation: 'subagent-interrupt', action: 'subagent-interrupt', contract: CONTRACT_CTRL, revision: REVISION_CTRL, effect: CTRL_EFFECT_LABELS.interrupt_agent, depth: DEPTH_INTERRUPT, argsCanonical: CTRL_ARGSCANON, namedGapsCanonical: CTRL_GAPSCANON, caller: CALLER_CTRL, addressClaim: 'di-9', addressRelation: RELATION_INTERRUPT, addressAdjudication: ADJ_INTERRUPT, budget: BUDGET_CTRL, effectDelta: CTRL_EFFECT_LABELS.interrupt_agent, recordIndex: 44 },
+    { operation: 'subagent-list', action: 'subagent-list', contract: CONTRACT_CTRL, revision: REVISION_CTRL, effect: CTRL_EFFECT_LABELS.list_agents, depth: `scope descendants${DEPTH_LIST_TAIL}`, argsCanonical: canonicalJson({ scope: 'descendants' }), namedGapsCanonical: CTRL_GAPSCANON, caller: CALLER_CTRL, addressClaim: null, addressRelation: RELATION_LIST, addressAdjudication: ADJ_LIST, budget: BUDGET_CTRL, effectDelta: CTRL_EFFECT_LABELS.list_agents, recordIndex: 45 },
+    { operation: 'subagent-send-message', action: 'subagent-send-message', contract: CONTRACT_CTRL, revision: REVISION_CTRL, effect: CTRL_EFFECT_LABELS.send_message, depth: DEPTH_SEND, argsCanonical: CTRL_ARGSCANON, namedGapsCanonical: CTRL_GAPSCANON, caller: CALLER_CTRL, addressClaim: 'agent-7', addressRelation: RELATION_SEND, addressAdjudication: ADJ_SEND, budget: BUDGET_CTRL, effectDelta: CTRL_EFFECT_LABELS.send_message, recordIndex: 46 },
+  ]
+
+  const FIRST_SPAWN = SPAWN_ROWS[0]
+  if (FIRST_SPAWN === undefined) throw new Error('spawn rows table empty')
+  const SEND = CTRL_ROWS[2]
+  if (SEND === undefined) throw new Error('ctrl rows table empty')
+
+  it('TYPE-GATE ACCEPT for all EIGHT joint-card projections (transcribed from the pinned REAL constants - hand-built flat views, not the emitted manifests of either lane; the REQUIRED real-new-mint to same-validator pairing legs are obligations of the two mint owners per root 21:33, handed off in a5m2-subagent-mint-owner-handoff.md): the minted operation discriminates and the two lane key sets equal required plus the group adds EXACTLY', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-SUBAGENT']).toBeDefined()
+    for (const row of [...SPAWN_ROWS, ...CTRL_ROWS]) expect(validatePaFamilyTarget('B-SUBAGENT', row), String(row.operation)).toBeUndefined()
+    expect(keysOf(FIRST_SPAWN).sort()).toEqual(['action', 'argsCanonical', 'childAdjudication', 'childClaim', 'contract', 'depth', 'effect', 'model', 'namedGapsCanonical', 'operation', 'parent', 'revision'])
+    expect(keysOf(SEND).sort()).toEqual(['action', 'addressAdjudication', 'addressClaim', 'addressRelation', 'argsCanonical', 'budget', 'caller', 'contract', 'depth', 'effect', 'effectDelta', 'namedGapsCanonical', 'operation', 'recordIndex', 'revision'])
+  })
+
+  it('完整值往返: canonicalJson is complete reversible JSON, not a digest - full text, unknown keys, null and "" survive; namedGapsCanonical carries the whole real gaps object', () => {
+    const claim = SEND
+    expect(validatePaFamilyTarget('B-SUBAGENT', claim)).toBeUndefined()
+    expect(claim.argsCanonical).toContain('完整 full text: keep')
+        expect(claim.argsCanonical).toContain('verbatim') // the quotes themselves ride JSON-escaped; the toEqual round-trip below is the byte-exact proof
+    expect(JSON.parse(claim.argsCanonical)).toEqual(CTRL_ARGS)
+    expect(JSON.parse(claim.namedGapsCanonical)).toEqual(CTRL_NAMED_GAPS)
+    expect(Object.keys(JSON.parse(claim.namedGapsCanonical))).toEqual([ // the lane helper normalizes KEY ORDER (sorted-key JSON.stringify) - content-complete, spelling-normalized:
+      'DELIVERY_CONTINUATION', 'INTERRUPT_COMPLETION', 'LINEAGE_AUTHORITY', 'PLAN_ONCE_MEMO', 'SPAWN_SIDE_CLOSED_WORLD', 'UPSTREAM_NON_RECOGNITION',
+    ])
+    const spawnClaim = FIRST_SPAWN
+    expect(JSON.parse(spawnClaim.argsCanonical)).toEqual(SPAWN_ARGS)
+    expect(JSON.parse(spawnClaim.namedGapsCanonical)).toEqual(SPAWN_NAMED_GAPS)
+    // the canonical form is content, never a hash: reversible by definition.
+    expect(claim.argsCanonical.startsWith('{')).toBe(true) // an object, not a digest
+    expect(claim.namedGapsCanonical.length).toBeGreaterThan(3000) // the WHOLE gaps object travels (a sha256 hex would be 64)
+  })
+
+  it('per-row action binds + the closed discriminant: a foreign action is not a synonym; unknown operations select no row; the two lane adds-sets refuse each other\'s keys', () => {
+        expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, action: 'subagent-spawn' }))
+      .toBe(`action: not the 'subagent-send-message' variant constant of the B-SUBAGENT typed plan`)
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...FIRST_SPAWN, action: 'subagent-send-message' }))
+      .toBe(`action: not the 'subagent-spawn' variant constant of the B-SUBAGENT typed plan`)
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...FIRST_SPAWN, operation: 'subagent-fork' }))
+      .toBe(`operation: 'subagent-fork' selects no B-SUBAGENT variant group`)
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...FIRST_SPAWN, operation: 'toString' }))
+      .toBe(`operation: 'toString' selects no B-SUBAGENT variant group`)
+    // cross-lane keys: the closed per-group key law (extra-key loop):
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...FIRST_SPAWN, caller: CALLER_CTRL }))
+      .toBe('caller: not part of the B-SUBAGENT typed plan')
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, parent: PARENT_SPAWN }))
+      .toBe('parent: not part of the B-SUBAGENT typed plan')
+    // absent leaves are absent (the joint-mint additions fail CLOSED until
+    // each lane's own mint carries them - no silent translation):
+    expect(validatePaFamilyTarget('B-SUBAGENT', without(FIRST_SPAWN, 'argsCanonical')))
+      .toBe('argsCanonical: required by the B-SUBAGENT typed plan, absent')
+    expect(validatePaFamilyTarget('B-SUBAGENT', without(SEND, 'action')))
+      .toBe('action: required by the B-SUBAGENT typed plan, absent')
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, recordIndex: '46' }))
+      .toBe('recordIndex: not a nonNegativeInt')
+  })
+
+  it('null / "" / absent stay three outcomes on both nullable claims; kinds stay closed', () => {
+        expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, addressClaim: null })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, addressClaim: '' })).toBeUndefined() // grammar admits '' (18:42(1)); the lane's id laws stay the business edge
+    expect(validatePaFamilyTarget('B-SUBAGENT', without(SEND, 'addressClaim')))
+      .toBe('addressClaim: required by the B-SUBAGENT typed plan, absent')
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...FIRST_SPAWN, childClaim: 'svc-mints-nothing-here' })).toBeUndefined()
+    expect(validatePaFamilyTarget('B-SUBAGENT', without(FIRST_SPAWN, 'childClaim')))
+      .toBe('childClaim: required by the B-SUBAGENT typed plan, absent')
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, contract: '' }))
+      .toBe('contract: not a string')
+    expect(validatePaFamilyTarget('B-SUBAGENT', { ...SEND, budget: 5 }))
+      .toBe('budget: not a string')
+  })
+
+  it('table law: EIGHT groups, the two adds-sets per the card, currentFields widened by NOTHING', () => {
+    const rule = PA_FAMILY_TARGET_RULES['B-SUBAGENT']
+    if (rule === undefined) throw new Error('B-SUBAGENT rule absent')
+    const groups = Object.keys(rule.variant?.by ?? {})
+    expect(groups.length).toBe(8)
+    for (const op of ['subagent-spawn', 'subagent-fork-spawn', 'subagent-spawn-external-codex', 'subagent-spawn-external-claude-code', 'subagent-model-routes-read']) {
+      const adds = rule.variant?.by[op]?.adds ?? {}
+      expect(Object.keys(adds).sort(), op).toEqual(['action', 'childAdjudication', 'childClaim', 'model', 'parent'])
+      expect(adds.childClaim).toBe('nullableString')
+      expect(rule.variant?.by[op]?.binds.action, op).toBe(op)
+    }
+    for (const op of ['subagent-interrupt', 'subagent-list', 'subagent-send-message']) {
+      const adds = rule.variant?.by[op]?.adds ?? {}
+      expect(Object.keys(adds).sort(), op).toEqual(['action', 'addressAdjudication', 'addressClaim', 'addressRelation', 'budget', 'caller', 'effectDelta', 'recordIndex'])
+      expect(adds.addressClaim).toBe('nullableString')
+      expect(adds.recordIndex).toBe('nonNegativeInt')
+      expect(rule.variant?.by[op]?.binds.action, op).toBe(op)
+    }
+    expect(rule.currentFields).toEqual(['operation', 'action'])
   })
 })
