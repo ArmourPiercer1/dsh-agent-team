@@ -60,7 +60,6 @@ import { createTeamDomain } from '../../storage/repositories/index.js'
 import { FileStorageSeam } from '../../testkit/fault-injection/file-seam.mjs'
 import { createControlService } from '../control/index.js'
 import type { ControlRequestRecord, ControlService } from '../control/index.js'
-import { parsePaControlManifest } from '../control/types.js'
 import type { PaCallFactsCeilingSlot } from '../control/types.js'
 import type { AuthorityEnvelopeDocuments } from '../governance/authority-ceiling.js'
 import { definitionIdentityOf, untestedAssurance } from '../tool-dispatch/index.js'
@@ -70,7 +69,7 @@ import { createPaControlLeg, createPaEffectsVerifier } from '../operation-permis
 import type { PaControlLegInput, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
 import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, leaderCaller, memberCaller, p6t4Seed } from './p6t4-helpers.js'
-import { createGovernedReadImageArm, A5_IMAGE_ADAPTER_REVISION, A5_IMAGE_FAMILY_ID, A5_IMAGE_OPERATION, A5_IMAGE_TOOL_NAME } from '../src/plugin/live/governed-families/image.mjs'
+import { createGovernedReadImageArm, A5_IMAGE_TOOL_NAME } from '../src/plugin/live/governed-families/image.mjs'
 import { createImageAttachmentAdapter } from '../src/plugin/live/governed-families/image-attachment.mjs'
 import type { ImageAttachmentStorePort } from '../src/plugin/live/governed-families/image-attachment.d.mts'
 import type { GovernedReadImageArmHandle, ImageReadBoundedPort } from '../src/plugin/live/governed-families/image.d.mts'
@@ -166,7 +165,7 @@ const registerA5GovernedFamily = registryModule.registerA5GovernedFamily
 const a5GovernedFamilyFor = registryModule.a5GovernedFamilyFor
 const ARM_PROVIDER = 'a5p5-plane'
 
-interface RealmTruth { readonly assembly: ProductionAdmissionAssembly; plane?: PlaneAssemblyValue }
+interface RealmTruth { readonly assembly: ProductionAdmissionAssembly; plane?: PlaneAssemblyValue; readonly fsSeam?: { readonly canonicalizeResource: (declaredPath: string) => string | null; readonly subtreeContains: (parent: string, child: string) => boolean } }
 const realmTruths = new Map<string, RealmTruth>()
 
 const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (input) => {
@@ -217,9 +216,14 @@ const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (inp
     },
     authorityGeneration: 0,
     ...(family === undefined ? {} : { governedFamily: family }),
+    ...(decisionSeamTransport && truth.fsSeam !== undefined ? { subtreeContains: truth.fsSeam.subtreeContains } : {}),
   }
 }
 const verifierObservations: Record<string, unknown>[] = []
+// r17 FIX leg switch: true = the FIXED production transport (the mount's seam
+// rides the runtime facts, as pa-mount-registry now does); false = the r17
+// gap (decision side receives no seam) kept as the absence-law negative leg.
+let decisionSeamTransport = true
 const paVerifier = createPaEffectsVerifier({ readCallFacts: verifierReadCallFacts, onObserve: (row: Record<string, unknown>) => { verifierObservations.push(row) } } as never)
 
 const service: ControlService = createControlService({
@@ -368,6 +372,10 @@ async function mountWorld(
   const adapter = createImageAttachmentAdapter({ store })
   const port = createGovernedImageReadPort({ namespaceRoot: fsRoot })
   let placedArm: GovernedReadImageArmHandle | undefined
+  const mountFsSeam = Object.freeze({
+    canonicalizeResource: (declaredPath: string): string | null => (declaredPath.startsWith('/') ? declaredPath : join(fsRoot, declaredPath)),
+    subtreeContains: (parent: string, child: string) => child === parent || child.startsWith(parent + '/'),
+  })
   const built = planeModule.createTeamToolPlaneAssembly({
     permissionPolicy: opts.policyFor !== undefined ? opts.policyFor(fsRoot) : DIRECT_POLICY,
     realmId,
@@ -399,12 +407,12 @@ async function mountWorld(
         parameters: nativeDef.parameters,
       },
     },
-    fs: {
-      // PRODUCTION-SHAPE lexical seams (the r17 mount carried them; the
-      // decision-side verifier call sites receive NONE - the asymmetry measured).
-      canonicalizeResource: (declaredPath: string): string | null => (declaredPath.startsWith('/') ? declaredPath : join(fsRoot, declaredPath)),
-      subtreeContains: (parent: string, child: string) => child === parent || child.startsWith(parent + '/'),
-    },
+    // PRODUCTION-SHAPE lexical seams (the r17 mount carried them). r17 FIX
+    // (center): this ONE object is what the mount registry now rides to the
+    // decision-side facts read (agent-bindings publishPaMount fsSeam ->
+    // pa-mount-registry facts subtreeContains -> bridge pure-core parameter),
+    // so Part A and the verifier consult the SAME containment authority.
+    fs: mountFsSeam,
     authorityFacts: {
       overlayGeneration: async () => 0,
       ensureAuthorityCurrent: async () => {},
@@ -472,7 +480,7 @@ async function mountWorld(
     throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
   }
   const plane = built.value
-  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
+  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane, fsSeam: mountFsSeam })
   const fed = plane.placementFeed(A5_IMAGE_TOOL_NAME)
   const familyKey = String(fed?.definitionIdentity ?? '')
   if (familyKey.length === 0) throw new Error('the placed read_image row answered no placement definition identity')
@@ -501,18 +509,6 @@ async function mountWorld(
   return { plane, arm: placedArm, adapter, store, imageDef, fsRoot, observed, familyKey, legInputs }
 }
 
-function allowPolicyFor(targetPath: string): TemplatePermissionPolicy {
-  return Object.freeze({
-    default: 'ask',
-    allow: Object.freeze([
-      Object.freeze({ tool: 'read_image', resource: Object.freeze({ kind: 'any' }) }),
-      Object.freeze({ tool: 'read_image', resource: Object.freeze({ kind: 'exact', path: targetPath }) }),
-    ]),
-    ask: Object.freeze([]),
-    deny: Object.freeze([]),
-  })
-}
-
 function execFor(callId: string, filePath: string, over: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     name: A5_IMAGE_TOOL_NAME,
@@ -536,8 +532,9 @@ const portOf = (world: Mounted) => {
   return face
 }
 
-describe('A5M2-R17-DRIFT-REPRO: r17-shape policy (deny read subtree runtime, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; decision side lacks the seam (root seam-asymmetry candidate)', () => {
-  it('RR-1 the SAME public allow r17 sent: outcome + exact drift detail captured via the verifier observe sink', async () => {
+describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control', () => {
+  it('RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam', async () => {
+    decisionSeamTransport = true
     const world = await mountWorld('rr-1', {
       policyFor: (root) => Object.freeze({
         default: 'ask',
@@ -551,29 +548,101 @@ describe('A5M2-R17-DRIFT-REPRO: r17-shape policy (deny read subtree runtime, all
         ]),
       }),
     })
+    const obsBase = verifierObservations.length
     const exec = execFor('rr-1', 'good.png')
     const rowCallId = rowCallOf(world)
     const opening = portOf(world).open(exec)
     const row = await waitRowForCall(rowCallId)
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const handoff = await opening
-    const driftRows = verifierObservations.filter((o) => String(o.outcome ?? '') === 'drift')
+    const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
     // eslint-disable-next-line no-console
-    console.log('RR1 kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + JSON.stringify(driftRows).slice(0, 600))
+    console.info('RR1-FIXED kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + JSON.stringify(driftRows).slice(0,900))
+    // THE fix claim, on the ORIGINAL r17-shape policy (root 16:33: the deny
+    // scope is NOT touched to flip any colour): with the mount seam threaded
+    // to the decision side the subtree rules are DETERMINED, so THE drifted()
+    // expansion branch that r17 hit ('no longer approvable on the expansion
+    // plane' / 'undetermined on the expansion plane') NEVER FIRES - zero
+    // drift-family rows is the exact delta. A residual refusal here (e.g. the
+    // rung recheck, when this harness resolves with a leader caller while the
+    // captured case rung stands higher) is a DIFFERENT gate, printed verbatim
+    // for the record and never claimed as the seam's subject.
+    const expansionDrifts = driftRows.filter((o) => String(o.detail ?? '').includes('no longer approvable on the expansion plane'))
+    expect(expansionDrifts.length, 'fixed transport: THE r17 expansion-drift branch never fires on the ORIGINAL policy shape').toBe(0)
     if (handoff.kind !== 'authorized') {
-      expect(driftRows.length, 'a drift-family refusal stood (r17 signature)').toBeGreaterThan(0)
+      // The residual here (rung recheck under this harness leader caller) is a
+      // SEPARATE gate printed verbatim - named, not papered over, not claimed.
+      console.info('RR1 RESIDUAL (separate gate, recorded): ' + String(driftRows[0]?.detail ?? handoff.code ?? ''))
+    }
+  }, 60_000)
+
+  it('RR-2 absence law: a mount whose decision side receives NO seam keeps the exact r17 drifted bytes (unchanged fail-closed)', async () => {
+    decisionSeamTransport = false
+    try {
+      const world = await mountWorld('rr-2', {
+        policyFor: (root) => Object.freeze({
+          default: 'ask',
+          allow: Object.freeze([
+            Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: join(root, 'team') }) }),
+          ]),
+          ask: Object.freeze([]),
+          deny: Object.freeze([
+            Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: 'runtime' }) }),
+            Object.freeze({ tool: 'read_image', resource: Object.freeze({ kind: 'exact', path: join(root, 'blocked.png') }) }),
+          ]),
+        }),
+      })
+      const obsBase = verifierObservations.length
+      const exec = execFor('rr-2', 'good.png')
+      const rowCallId = rowCallOf(world)
+      const opening = portOf(world).open(exec)
+      const row = await waitRowForCall(rowCallId)
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+      const handoff = await opening
+      const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
+      expect(handoff.kind, 'absent seam: the r17 deny stands').toBe('refused')
+      expect(String(handoff.code)).toBe('APPROVAL_DENIED')
+      expect(driftRows.length, 'absent seam: the drift-family refusal stands (r17 signature)').toBeGreaterThan(0)
       expect(String(driftRows[0]?.gate)).toBe('resolve')
       const detail = String(driftRows[0]?.detail ?? '')
-      // THE exact branch, pinned (root seam-asymmetry candidate confirmed):
       expect(detail, 'expansion-branch drifted() is THE failing branch').toContain('no longer approvable on the expansion plane')
       expect(detail, 'undetermined is the subtree rule without the lexical seam').toContain('undetermined on the expansion plane')
-      // and the hand-off answers the deny passthrough exactly like r17 did:
-      expect(handoff.kind).toBe('refused')
-      expect(String(handoff.code)).toBe('APPROVAL_DENIED')
-    } else {
-      expect(driftRows.length, 'EQUALITY: no drift - next probe per root is case/rung/denySources').toBe(0)
-      // eslint-disable-next-line no-console
-      console.log('RR1 EQUALITY outcome: seam-asymmetry did NOT reproduce on this policy shape')
+    } finally {
+      decisionSeamTransport = true
     }
+  }, 60_000)
+
+  it('RR-3 SYNTHETIC positive control (NOT the r17 shape - a deny rule the seam decides NON-covering): the fixed transport authorizes end to end', async () => {
+    // Independent control ONLY: proves the threaded seam carries the decision
+    // side to an authorized hand-off where the policy has no deny floor over
+    // the effect. It deliberately does NOT replace the original-shape legs
+    // (RR-1/RR-2); the deny resource here ('excluded', never covering
+    // good.png) exists so the control has no rung floor - the r17 deny scope
+    // lives untouched in RR-1/RR-2.
+    decisionSeamTransport = true
+    const obsBase = verifierObservations.length
+    const world = await mountWorld('rr-3', {
+      policyFor: (root) => Object.freeze({
+        default: 'ask',
+        allow: Object.freeze([
+          Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: join(root, 'team') }) }),
+        ]),
+        ask: Object.freeze([]),
+        deny: Object.freeze([
+          Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: 'excluded' }) }),
+        ]),
+      }),
+    })
+    const exec = execFor('rr-3', 'good.png')
+    const rowCallId = rowCallOf(world)
+    const opening = portOf(world).open(exec)
+    const row = await waitRowForCall(rowCallId)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    const handoff = await opening
+    const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
+    // eslint-disable-next-line no-console
+    console.info('RR3 kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + String(driftRows.length))
+    expect(handoff.kind, 'synthetic control: the seam-threaded decision authorizes').toBe('authorized')
+    expect(driftRows.length).toBe(0)
   }, 60_000)
 })

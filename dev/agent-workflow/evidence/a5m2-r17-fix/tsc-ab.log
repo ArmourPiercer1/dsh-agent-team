@@ -1,0 +1,1204 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+node_modules/.pnpm/@deepseek-ai+dsh-session@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-scope@0._c9dee8deba3bd498ce58eb9c566c157f/node_modules/@deepseek-ai/dsh-session/lib/types/preparation.d.ts(17,52): error TS2304: Cannot find name 'Disposable'.
+node_modules/.pnpm/@deepseek-ai+dsh-session@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4_@deepseek-ai+dsh-scope@0._c9dee8deba3bd498ce58eb9c566c157f/node_modules/@deepseek-ai/dsh-session/lib/types/preparation.d.ts(31,13): error TS2550: Property 'dispose' does not exist on type 'SymbolConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'esnext' or later.
+node_modules/.pnpm/@deepseek-ai+dsh-typert-protocol@0.2.0-rc.2_@deepseek-ai+cordis@4.0.4/node_modules/@deepseek-ai/dsh-typert-protocol/lib/types/owned-value.d.ts(5,50): error TS2304: Cannot find name 'Disposable'.
+node_modules/.pnpm/@modelcontextprotocol+client@2.0.0/node_modules/@modelcontextprotocol/client/dist/index-D4xIIEF6.d.mts(2432,17): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/artifact-read/digest.ts(25,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/bounded-bytes-read.ts(49,33): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(25,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(34,8): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(35,49): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(36,27): error TS2591: Cannot find name 'node:util'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(37,23): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(318,28): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/controlled-fs.ts(340,28): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/controlled-fs.ts(440,22): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/controlled-fs.ts(579,62): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/governed-image-read-port.ts(37,81): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/governed-image-read-port.ts(38,32): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/governed-image-read-port.ts(39,18): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/open-at-exec.ts(33,44): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/open-at-exec.ts(34,33): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/open-at-exec.ts(35,23): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(106,67): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(107,32): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(108,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(109,18): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(266,98): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(288,30): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(312,116): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(340,30): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(359,30): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(417,69): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/controlled-fs/src/post-consume-write.ts(427,27): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/controlled-fs/src/post-consume-write.ts(451,64): error TS2503: Cannot find namespace 'NodeJS'.
+packages/runtime/governance-warning/service.ts(28,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/permission-notification/binding.ts(240,23): error TS2322: Type '"plugin:dsh-agent-team"' is not assignable to type '"user" | "model" | "tool" | "system-prompt" | "model-selection" | "user-approval" | "ptc-mode" | "tool-registry"'.
+packages/runtime/sandbox-provider/probe-abi.ts(25,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/probe-abi.ts(26,41): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/probe-abi.ts(27,27): error TS2591: Cannot find name 'node:child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(28,68): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(29,44): error TS2591: Cannot find name 'node:child_process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(30,46): error TS2591: Cannot find name 'node:stream'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(31,43): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(32,31): error TS2591: Cannot find name 'node:url'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/sandbox-provider/provider.ts(423,29): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/sandbox-provider/provider.ts(423,35): error TS7006: Parameter 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/blueprint-source-index.ts(45,43): error TS2591: Cannot find name 'fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/blueprint-source-index.ts(144,39): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/blueprint-source-index.ts(173,16): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/plugin/blueprint-source-index.ts(174,13): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(338,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/agent-bindings.mjs(356,10): error TS2305: Module '"./pa-mount-registry.mjs"' has no exported member 'A5_GOVERNED_FAMILIES'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(356,72): error TS2305: Module '"./pa-mount-registry.mjs"' has no exported member 'registerA5GovernedFamily'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(466,10): error TS2305: Module '"./plane-effect-backends.mjs"' has no exported member 'createGovernedJobsBridge'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(530,66): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(532,18): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Context'.
+  Type '{}' is missing the following properties from type 'Context': root, events, logger, reflect, and 35 more.
+packages/runtime/src/plugin/live/agent-bindings.mjs(579,77): error TS2339: Property 'content' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(620,71): error TS2339: Property 'ownEvents' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(621,17): error TS2339: Property 'ownEvents' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(634,24): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(634,30): error TS7006: Parameter 'message' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(635,19): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(635,25): error TS7006: Parameter 'message' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(759,49): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(789,31): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,11): error TS2339: Property 'agents' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,19): error TS2339: Property 'sessionPersistence' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,39): error TS2339: Property 'domain' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,47): error TS2339: Property 'config' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,55): error TS2339: Property 'teamToolsRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,69): error TS2339: Property 'agentPresets' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,83): error TS2339: Property 'controlServiceRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,102): error TS2339: Property 'fsBackend' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,113): error TS2339: Property 'resolveBoundBlueprint' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,136): error TS2339: Property 'artifactAuthorityRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,158): error TS2339: Property 'permissionPlaneRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,178): error TS2339: Property 'permissionOverlay' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,197): error TS2339: Property 'permissionAuthorityFacts' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,223): error TS2339: Property 'activationFence' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,240): error TS2339: Property 'policyReaderRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,257): error TS2339: Property 'resolvePersonaSubstrate' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(815,282): error TS2339: Property 'ptcEscalationRef' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(832,42): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(832,57): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(851,17): error TS2339: Property 'writerHandoffTimeoutMs' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(851,61): error TS2339: Property 'writerHandoffTimeoutMs' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(852,14): error TS2339: Property 'writerHandoffTimeoutMs' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1006,7): error TS7034: Variable 'personaSlot' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1155,19): error TS7006: Parameter 'agentCtx' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1155,29): error TS7006: Parameter 'setupAgent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1250,15): error TS2339: Property 'name' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1251,15): error TS2339: Property 'code' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1252,22): error TS2339: Property 'message' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1252,52): error TS2339: Property 'message' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1331,48): error TS2339: Property 'teamRootSessionId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1338,55): error TS2339: Property 'instanceId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1355,59): error TS2339: Property 'appliedRecordIds' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1385,62): error TS2345: Argument of type 'object' is not assignable to parameter of type 'BlueprintTemplate'.
+  Type '{}' is missing the following properties from type 'BlueprintTemplate': templateId, persona
+packages/runtime/src/plugin/live/agent-bindings.mjs(1386,71): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'TeamBlueprint'.
+  Type 'null' is not assignable to type 'TeamBlueprint'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1422,17): error TS2339: Property 'appliedRecordIds' does not exist on type '{ policy: any; transitions: PolicyStateTransitionRecord[]; rootSessionId: any; instanceId: any; overrides: any; baseline: any; } | { templateValues?: { mcp?: PolicyEntry | undefined; model?: PolicyEntry | undefined; } | undefined; ... 4 more ...; baseline: any; }'.
+  Property 'appliedRecordIds' does not exist on type '{ policy: any; transitions: PolicyStateTransitionRecord[]; rootSessionId: any; instanceId: any; overrides: any; baseline: any; }'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1432,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1454,47): error TS2322: Type '{}' is not assignable to type 'Record<string, object>'.
+  Index signature for type 'string' is missing in type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1471,31): error TS2339: Property 'pendingNextBoundary' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1473,41): error TS2339: Property 'pendingNextBoundary' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1474,13): error TS2339: Property 'appliedRecordIds' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1523,17): error TS2339: Property 'capabilityTelemetry' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1523,59): error TS2339: Property 'capabilityTelemetry' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1554,37): error TS2339: Property 'reason' does not exist on type '{ kind: string; capabilityType: string; capabilityName: string; verdict: string; source: string; observedAt: string; attempt: number; }'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1556,39): error TS2339: Property 'teamRootSessionId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1590,23): error TS2339: Property 'mcpMountCtx' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1625,26): error TS2339: Property 'mcpToolWitness' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1628,11): error TS2339: Property 'mcpToolWitness' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1655,25): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1660,24): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1662,11): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1666,11): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1667,11): error TS2339: Property 'mcpActivationErrors' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1668,11): error TS2339: Property 'mcpToolWitness' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1707,25): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1719,26): error TS2339: Property 'mcpToolWitness' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1729,15): error TS2339: Property 'mcpIntentionalRemoval' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1732,15): error TS2339: Property 'mcpViews' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1732,47): error TS2339: Property 'mcpViews' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1806,34): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1808,27): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1817,13): error TS2339: Property 'mcpIntentionalRemoval' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1823,13): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1824,13): error TS2339: Property 'mcpActivationErrors' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1825,13): error TS2339: Property 'mcpToolWitness' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1826,13): error TS2339: Property 'mcpIntentionalRemoval' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1830,90): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1844,26): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1865,29): error TS2339: Property 'mcpMountCtx' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1879,15): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1892,13): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1899,15): error TS2339: Property 'mcpActivationErrors' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(1913,15): error TS2339: Property 'mcpActivationErrors' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2036,32): error TS2339: Property 'leader' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2047,31): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2048,9): error TS7034: Variable 'templateId' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2058,34): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2067,32): error TS2339: Property 'members' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2067,46): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2067,85): error TS7005: Variable 'templateId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2086,38): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2086,49): error TS7006: Parameter 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2086,61): error TS7006: Parameter 'templateIdHint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2086,77): error TS7006: Parameter 'teamRootSid' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2086,90): error TS7006: Parameter 'bindPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2092,7): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'TeamBlueprint'.
+  Type 'null' is not assignable to type 'TeamBlueprint'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2156,56): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'object | undefined'.
+  Type 'null' is not assignable to type 'object | undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2165,58): error TS2339: Property 'boundTemplate' does not exist on type '{ instanceId: string; teamRoot: string; modelView: object; mcpViews: Record<string, object>; }'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2195,49): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'TeamBlueprint'.
+  Type 'null' is not assignable to type 'TeamBlueprint'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2197,40): error TS2339: Property 'selection' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2197,108): error TS2339: Property 'selection' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2263,17): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Context'.
+  Type '{}' is missing the following properties from type 'Context': root, events, logger, reflect, and 35 more.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2265,43): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Context'.
+  Type '{}' is missing the following properties from type 'Context': root, events, logger, reflect, and 35 more.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2266,9): error TS2322: Type 'Scope' is not assignable to type 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2270,48): error TS2345: Argument of type 'object' is not assignable to parameter of type 'Context'.
+  Type '{}' is missing the following properties from type 'Context': root, events, logger, reflect, and 35 more.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2362,11): error TS7034: Variable 'a5p1Guard' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2368,13): error TS7034: Variable 'a5PlaneOwnedNames' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2382,11): error TS7034: Variable 'a5PlaneValue' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2399,11): error TS7034: Variable 'paMountIdentity' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2407,11): error TS7034: Variable 'a5p1MaskDisposer' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2421,32): error TS7006: Parameter 'label' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2421,39): error TS7006: Parameter 'read' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2425,114): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2430,72): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2431,87): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2468,49): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2468,90): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2477,100): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2496,108): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2500,11): error TS2741: Property 'tools' is missing in type '{}' but required in type 'ScopedGuardAgentCtx'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2510,31): error TS7005: Variable 'a5PlaneOwnedNames' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2518,13): error TS7005: Variable 'a5PlaneValue' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2520,17): error TS7005: Variable 'a5PlaneValue' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2533,19): error TS7005: Variable 'a5p1MaskDisposer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2533,51): error TS7005: Variable 'a5p1MaskDisposer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2546,30): error TS7005: Variable 'a5p1Guard' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2560,17): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2577,51): error TS2345: Argument of type 'object' is not assignable to parameter of type '{ tools: { restrict: (opts: { deny: string[]; }) => () => void; }; }'.
+  Property 'tools' is missing in type '{}' but required in type '{ tools: { restrict: (opts: { deny: string[]; }) => () => void; }; }'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2581,57): error TS2345: Argument of type 'ToolRestrictionDisposer' is not assignable to parameter of type '() => void'.
+  Type 'ToolRestrictionDisposer' provides no match for the signature '(): void'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2591,11): error TS7034: Variable 'selectedTeamToolNames' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2603,39): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2617,11): error TS7034: Variable 'a5PlaneOwnNames' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2643,29): error TS7005: Variable 'a5PlaneValue' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2644,38): error TS2339: Property 'jobs' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2644,65): error TS2339: Property 'jobs' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2645,23): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2681,31): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2685,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2702,52): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2702,89): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2704,120): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2713,58): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2713,90): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2713,119): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2714,60): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2714,109): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2715,28): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2755,25): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2758,86): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2776,32): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2780,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2797,53): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2797,90): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2799,121): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2808,59): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2808,91): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2808,120): error TS2339: Property 'id' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2809,61): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2809,110): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2810,28): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2848,25): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2851,87): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2873,32): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2877,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2889,53): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2889,90): error TS2339: Property 'tools' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2891,121): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2914,38): error TS2339: Property 'attachments' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2914,72): error TS2339: Property 'attachments' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2916,106): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2936,91): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2952,46): error TS7006: Parameter 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2953,44): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2954,66): error TS2339: Property 'options' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2955,60): error TS2339: Property 'options' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2956,46): error TS2339: Property 'llm' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2956,72): error TS2339: Property 'llm' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(2967,27): error TS7006: Parameter 'placedDef' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3000,39): error TS7006: Parameter 'legInput' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3049,31): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3056,36): error TS7006: Parameter 'declaredPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3057,31): error TS7006: Parameter 'rulePath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3057,41): error TS7006: Parameter 'locator' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3089,33): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3089,48): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3103,38): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3103,53): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3103,71): error TS7006: Parameter 'generation' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3147,23): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3153,17): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3157,24): error TS18048: 'built.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3162,17): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3166,31): error TS18048: 'built.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3173,28): error TS18048: 'built.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3174,57): error TS18048: 'built.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3175,80): error TS18048: 'built.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3181,63): error TS7005: Variable 'paMountIdentity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3182,18): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3203,29): error TS7006: Parameter 'o' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3208,129): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3210,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3211,104): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3226,33): error TS2339: Property 'web' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3228,25): error TS7006: Parameter 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3228,57): error TS2339: Property 'web' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3229,26): error TS7006: Parameter 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3229,58): error TS2339: Property 'web' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3238,25): error TS7006: Parameter 'o' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3263,27): error TS7006: Parameter 'o' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3282,127): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3284,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3285,96): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3368,50): error TS2345: Argument of type 'object' is not assignable to parameter of type 'SkillAgentContext'.
+  Property 'get' is missing in type '{}' but required in type 'SkillAgentContext'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3373,28): error TS2345: Argument of type 'SkillRegistrationDisposer' is not assignable to parameter of type '() => void'.
+  Type 'SkillRegistrationDisposer' provides no match for the signature '(): void'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3415,87): error TS2339: Property 'allowed' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3423,9): error TS2322: Type 'any[]' is not assignable to type 'undefined'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3458,30): error TS7005: Variable 'selectedTeamToolNames' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3458,56): error TS7005: Variable 'a5PlaneOwnNames' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3488,30): error TS7005: Variable 'selectedTeamToolNames' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3488,56): error TS7005: Variable 'a5PlaneOwnNames' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3494,17): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3508,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3531,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3552,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3575,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3579,61): error TS2339: Property 'definitionIdentity' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3583,19): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3588,40): error TS2339: Property 'familyId' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3589,47): error TS2339: Property 'adapterRevision' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3590,48): error TS2339: Property 'providerId' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3592,166): error TS2339: Property 'familyId' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3610,15): error TS2304: Cannot find name 'a5PlaneFsSeam'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3610,60): error TS2304: Cannot find name 'a5PlaneFsSeam'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3616,33): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3616,48): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3620,35): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3620,50): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3633,37): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3633,52): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3637,38): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3637,53): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3639,40): error TS7006: Parameter 'teamSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3639,55): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3647,17): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3755,89): error TS2345: Argument of type 'object' is not assignable to parameter of type 'TeamBlueprint'.
+  Type '{}' is missing the following properties from type 'TeamBlueprint': schemaVersion, blueprintId, revision, contentHash, and 6 more.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3773,38): error TS7006: Parameter 'path' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3775,28): error TS2339: Property 'session' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3805,34): error TS7006: Parameter 'parent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3805,42): error TS7006: Parameter 'child' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3855,37): error TS7006: Parameter 'subtreeRootKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3855,53): error TS7006: Parameter 'childKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3900,70): error TS2345: Argument of type 'object' is not assignable to parameter of type 'AgentPreExecuteCtx'.
+  Type '{}' is missing the following properties from type 'AgentPreExecuteCtx': on, tools
+packages/runtime/src/plugin/live/agent-bindings.mjs(3935,35): error TS7006: Parameter 'subtreeRootKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3935,51): error TS7006: Parameter 'target' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3987,104): error TS2339: Property 'displayPath' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(3988,40): error TS2339: Property 'displayPath' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4056,54): error TS2339: Property 'on' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4080,54): error TS2339: Property 'on' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4097,54): error TS2339: Property 'on' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4119,67): error TS2345: Argument of type 'object' is not assignable to parameter of type 'AgentShellResultCtx'.
+  Property 'on' is missing in type '{}' but required in type 'AgentShellResultCtx'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4164,35): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4164,46): error TS7006: Parameter 'agentCtx' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4164,56): error TS7006: Parameter 'identity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4195,26): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4195,37): error TS7006: Parameter 'identity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4210,26): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4238,29): error TS7006: Parameter 'presetSeam' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4255,28): error TS2339: Property 'leader' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4262,29): error TS2339: Property 'members' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4262,43): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4320,9): error TS7005: Variable 'personaSlot' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4320,43): error TS7005: Variable 'personaSlot' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4348,43): error TS7006: Parameter 'rootSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4448,41): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4448,52): error TS7006: Parameter 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4448,64): error TS7006: Parameter 'templateIdHint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4448,80): error TS7006: Parameter 'bindPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4448,90): error TS7006: Parameter 'teamRootSid' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4487,33): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4669,24): error TS2339: Property 'dispose' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4739,25): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4763,20): error TS18047: 'blueprint' is possibly 'null'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4763,30): error TS2339: Property 'leader' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4766,33): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4769,45): error TS2345: Argument of type 'object | null' is not assignable to parameter of type 'TeamBlueprint'.
+  Type 'null' is not assignable to type 'TeamBlueprint'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4795,36): error TS7006: Parameter 'subject' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4795,45): error TS7006: Parameter 'scopeKeyStr' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4833,60): error TS7006: Parameter 'scopeKeyStr' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4861,164): error TS1005: ';' expected.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4910,39): error TS7006: Parameter 'observationKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4910,55): error TS7006: Parameter 'teamRootSid' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4910,68): error TS7006: Parameter 'memberInstanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4910,86): error TS7006: Parameter 'generation' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4916,31): error TS2339: Property 'dispatcher' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4919,17): error TS18046: 'guard' is of type 'unknown'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4927,26): error TS18046: 'guard' is of type 'unknown'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4944,45): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4944,56): error TS7006: Parameter 'teamRootSid' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4949,84): error TS2339: Property 'instanceId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4951,92): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4954,69): error TS2339: Property 'instanceId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4957,41): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4957,52): error TS7006: Parameter 'teamRootSid' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4957,65): error TS7006: Parameter 'recovery' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4971,33): error TS2339: Property 'selection' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4971,101): error TS2339: Property 'selection' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4972,15): error TS2339: Property 'ref' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4972,68): error TS2339: Property 'ref' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4973,13): error TS2339: Property 'ref' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4985,63): error TS2339: Property 'instanceId' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(4991,76): error TS2339: Property 'allowed' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5000,7): error TS2322: Type '{ blocked: boolean; failedServers: string[]; blockedServers: string[]; degradedServers: string[]; recoveryCoveredServers: string[]; }' is not assignable to type '{ blocked: boolean; failedServers: never[]; blockedServers: never[]; degradedServers: never[]; recoveryCoveredServers: never[]; }'.
+  Types of property 'failedServers' are incompatible.
+    Type 'string[]' is not assignable to type 'never[]'.
+      Type 'string' is not assignable to type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5003,11): error TS2339: Property 'modelView' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5004,11): error TS2339: Property 'mcpViews' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5011,30): error TS7006: Parameter 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5073,25): error TS7006: Parameter 'childSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5078,58): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5129,64): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5150,62): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5190,62): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5201,23): error TS7006: Parameter '_sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5202,20): error TS7006: Parameter '_sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5202,32): error TS7006: Parameter '_slot' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5203,18): error TS7006: Parameter '_sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5203,30): error TS7006: Parameter '_scope' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5204,24): error TS7006: Parameter '_sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5204,36): error TS7006: Parameter '_event' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5227,33): error TS7006: Parameter 'input' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5258,14): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5272,19): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5313,14): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5322,18): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5328,20): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5334,38): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5339,22): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5347,58): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5355,43): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5443,56): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5514,12): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5515,18): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5516,56): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5730,17): error TS2322: Type '"plugin:dsh-agent-team"' is not assignable to type '"user" | "model" | "tool" | "system-prompt" | "model-selection" | "user-approval" | "ptc-mode" | "tool-registry"'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5741,16): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5742,14): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5744,14): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5758,28): error TS7006: Parameter 'target' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5760,8): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5764,12): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5773,38): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5773,49): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5775,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5788,39): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5788,50): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5790,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5805,37): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5805,48): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5807,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5822,41): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5822,52): error TS7006: Parameter 'details' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5828,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5829,11): error TS2339: Property 'reason' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5830,49): error TS2339: Property 'instanceId' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5831,49): error TS2339: Property 'templateId' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5844,43): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5844,54): error TS7006: Parameter 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5850,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5851,41): error TS2339: Property 'instanceId' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5865,52): error TS7006: Parameter 'policy' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5891,47): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5891,58): error TS7006: Parameter 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5897,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5898,41): error TS2339: Property 'instanceId' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5905,41): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5905,52): error TS7006: Parameter 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5911,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5912,41): error TS2339: Property 'instanceId' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5927,49): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5927,60): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5929,11): error TS2339: Property 'code' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5949,33): error TS7006: Parameter 'agentCtx' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5949,43): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(5949,54): error TS7006: Parameter 'runtimeAgent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6019,18): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6021,28): error TS2339: Property 'subagents' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6031,59): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6041,62): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6055,9): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6057,18): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6058,19): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6067,14): error TS2339: Property 'dispose' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6067,31): error TS7006: Parameter 'error' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6084,32): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6127,14): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6153,36): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6153,64): error TS2339: Property 'mcpIntentionalRemoval' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6157,20): error TS2339: Property 'dispose' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6169,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6169,33): error TS7006: Parameter 'message' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6204,27): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6208,23): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6238,22): error TS2339: Property 'dispose' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6252,66): error TS2339: Property 'dispose' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6252,92): error TS2339: Property 'dispose' does not exist on type 'never'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6270,72): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6295,32): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6295,56): error TS2339: Property 'mcpIntentionalRemoval' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6296,37): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6299,13): error TS2339: Property 'mcpFibers' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6300,13): error TS2339: Property 'mcpActivationErrors' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6303,13): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6307,35): error TS2339: Property 'mcpMountScope' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6310,15): error TS2339: Property 'mcpMountScope' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6320,15): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6321,18): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6340,20): error TS7006: Parameter 'identity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6370,14): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6376,54): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6380,31): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6383,44): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6389,44): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6399,43): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6405,25): error TS2339: Property 'agent' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6412,27): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6419,25): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6422,36): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6423,28): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6424,67): error TS2339: Property 'mcpMaterialization' does not exist on type 'object'.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6443,36): error TS7006: Parameter 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6443,47): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6497,12): error TS7006: Parameter 'rootSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6504,26): error TS7006: Parameter 'rootSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/agent-bindings.mjs(6505,25): error TS7006: Parameter 'rootSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(49,75): error TS2591: Cannot find name 'node:timers'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/cancel-leg.mjs(71,29): error TS7006: Parameter 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(76,19): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(91,23): error TS7006: Parameter 'settled' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(140,7): error TS7034: Variable 'held' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/cancel-leg.mjs(141,7): error TS7034: Variable 'raw' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/cancel-leg.mjs(142,7): error TS7034: Variable 'classified' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/cancel-leg.mjs(145,9): error TS7005: Variable 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(146,11): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(146,35): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(152,44): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(155,12): error TS7005: Variable 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(159,11): error TS7006: Parameter 'child' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(160,11): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(172,18): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(177,11): error TS7005: Variable 'classified' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(178,13): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(181,27): error TS7005: Variable 'held' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(187,14): error TS7005: Variable 'classified' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(207,38): error TS7031: Binding element 'exited' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(207,46): error TS7031: Binding element 'timeoutMs' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(207,57): error TS7031: Binding element 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(209,7): error TS7034: Variable 'onAbort' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/cancel-leg.mjs(210,7): error TS7034: Variable 'timer' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/cancel-leg.mjs(229,9): error TS7005: Variable 'timer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(229,27): error TS7005: Variable 'timer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(230,22): error TS7005: Variable 'timer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(234,23): error TS7005: Variable 'onAbort' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/cancel-leg.mjs(235,24): error TS7005: Variable 'onAbort' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(195,81): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/glob-backend.mjs(196,32): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/glob-backend.mjs(197,67): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/glob-backend.mjs(198,70): error TS2591: Cannot find name 'node:timers'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/glob-backend.mjs(222,20): error TS7006: Parameter 'path' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(225,5): error TS7034: Variable 'lib64Present' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(227,7): error TS7005: Variable 'lib64Present' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(234,10): error TS7005: Variable 'lib64Present' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(316,20): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(326,18): error TS7006: Parameter 'cls' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(326,23): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(329,62): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(337,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Readonly<{ 'anchor-law-unavailable': "a5glb-refused/anchor-law"; 'locator-rejected': "a5glb-refused/request"; 'root-symlink-alias': "a5glb-refused/anchor-identity"; 'root-unavailable': "a5glb-refused/anchor-identity"; ... 24 more ...; 'internal-error': "a5glb-refused/internal"; }>'.
+packages/runtime/src/plugin/live/glob-backend.mjs(338,15): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Readonly<{ 'anchor-law-unavailable': "this platform cannot honor the anchored open law"; 'locator-rejected': "the target locator is not a filesystem locator"; 'root-symlink-alias': "the governed root path is an alias, not a directory"; ... 25 more ...; 'internal-error': "an unexpected internal fault stopped the walk...'.
+packages/runtime/src/plugin/live/glob-backend.mjs(345,20): error TS7006: Parameter 'debug' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(345,27): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(345,33): error TS7006: Parameter 'text' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(373,31): error TS7006: Parameter 'anchor' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(373,39): error TS7006: Parameter 'candidate' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(379,26): error TS7006: Parameter 'p' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(391,17): error TS7006: Parameter 'fd' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(396,26): error TS7006: Parameter 'p' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(414,44): error TS7006: Parameter 'rootDir' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(414,53): error TS7006: Parameter 'target' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(416,66): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(419,65): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(422,96): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(423,92): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(424,95): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(425,91): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(438,32): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(440,80): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(441,89): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(442,65): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(452,71): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(452,127): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(465,56): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(468,56): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(472,66): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(476,69): error TS7006: Parameter 'c' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(485,34): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(494,89): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(495,106): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(496,105): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(497,67): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(499,74): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(507,75): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(511,66): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(543,48): error TS7006: Parameter 'anchor' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(543,56): error TS7006: Parameter 'entries' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(545,74): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(559,74): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(562,75): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(579,56): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(579,133): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(588,83): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(597,107): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(612,36): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(620,123): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(624,123): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(630,116): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(632,118): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(634,120): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(635,126): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(644,130): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(650,121): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(653,130): error TS2345: Argument of type '() => void' is not assignable to parameter of type 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(692,26): error TS7006: Parameter 'parsed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(719,33): error TS7006: Parameter 'stdout' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(738,6): error TS1005: '}' expected.
+packages/runtime/src/plugin/live/glob-backend.mjs(802,7): error TS7034: Variable 'probed' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(803,7): error TS7034: Variable 'rgPath' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(805,7): error TS7034: Variable 'trace' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(806,9): error TS7034: Variable 'lastRuns' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(810,35): error TS7005: Variable 'trace' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(813,5): error TS7005: Variable 'lastRuns' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(815,15): error TS7006: Parameter 'call' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(815,21): error TS7006: Parameter 'io' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(823,21): error TS7005: Variable 'trace' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(825,111): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(825,134): error TS2339: Property 'stack' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(825,150): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(831,30): error TS7006: Parameter 'call' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(831,36): error TS7006: Parameter 'io' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(842,80): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(866,38): error TS7006: Parameter 'stage' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(872,23): error TS7005: Variable 'trace' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(891,13): error TS7005: Variable 'rgPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(895,87): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(904,13): error TS7005: Variable 'probed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(920,56): error TS2339: Property 'failure' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'failure' does not exist on type '{ ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { dev: number; ino: number; }; rootIdentity: { dev: number; ino: number; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(920,86): error TS2339: Property 'failure' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'failure' does not exist on type '{ ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { dev: number; ino: number; }; rootIdentity: { dev: number; ino: number; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(926,24): error TS2339: Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(947,24): error TS2339: Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(950,26): error TS7005: Variable 'rgPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(950,42): error TS7005: Variable 'rgPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(956,18): error TS7005: Variable 'rgPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(959,23): error TS2339: Property 'anchorPath' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'anchorPath' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(965,28): error TS2339: Property 'rootReal' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'rootReal' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(970,50): error TS2345: Argument of type '{ grantFingerprint: string; realmId: any; bindingId: string; memberScope: any; argv: any[]; cwd: any; env: string[][]; allowPaths: ({ path: any; accessBits: { execute: boolean; readFile: boolean; readDir: boolean; }; } | { ...; })[]; }' is not assignable to parameter of type 'SpawnRequest'.
+  Types of property 'env' are incompatible.
+    Type 'string[][]' is not assignable to type 'readonly (readonly [string, string])[]'.
+      Type 'string[]' is not assignable to type 'readonly [string, string]'.
+        Target requires 2 element(s) but source may have fewer.
+packages/runtime/src/plugin/live/glob-backend.mjs(972,24): error TS2339: Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(974,83): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/glob-backend.mjs(977,24): error TS2339: Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1011,15): error TS7034: Variable 'streamsWatch' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(1012,33): error TS7006: Parameter 'chunk' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1028,33): error TS7006: Parameter 'chunk' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1060,17): error TS7005: Variable 'stdoutWatch' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1061,28): error TS7005: Variable 'stdoutWatch' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1067,17): error TS7005: Variable 'streamsWatch' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1068,29): error TS7005: Variable 'streamsWatch' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/glob-backend.mjs(1111,15): error TS7034: Variable 'stdoutWatch' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/glob-backend.mjs(1240,47): error TS2339: Property 'streams' does not exist on type 'never'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1241,50): error TS2339: Property 'handlers' does not exist on type 'never'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1389,68): error TS2448: Block-scoped variable 'records' used before its declaration.
+packages/runtime/src/plugin/live/glob-backend.mjs(1389,68): error TS18048: 'records' is possibly 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1389,100): error TS2339: Property 'detail' does not exist on type '{ ok: boolean; code: string; entries?: undefined; } | { ok: boolean; entries: string[]; code?: undefined; }'.
+  Property 'detail' does not exist on type '{ ok: boolean; code: string; entries?: undefined; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1403,66): error TS2339: Property 'failure' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'failure' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1403,97): error TS2339: Property 'failure' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'failure' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1403,158): error TS18048: 'records' is possibly 'undefined'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1410,33): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1427,92): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1427,124): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1428,131): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1428,172): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1436,37): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1437,34): error TS2339: Property 'entries' does not exist on type '{ ok: boolean; } | { ok: boolean; verified: number; entries: any[]; }'.
+  Property 'entries' does not exist on type '{ ok: boolean; }'.
+packages/runtime/src/plugin/live/glob-backend.mjs(1447,24): error TS2339: Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; } | { ok: boolean; handle: any; rootDir: any; rootReal: any; anchorPath: any; anchorReal: any; walkRel: any; identity: { ...; }; rootIdentity: { ...; }; }'.
+  Property 'handle' does not exist on type '{ ok: boolean; failure: { class: any; code: any; family: any; detail: any; counts: {}; }; }'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(58,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(67,63): error TS1003: Identifier expected.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(90,17): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(90,23): error TS7006: Parameter 'detail' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(92,24): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(98,17): error TS7006: Parameter 'text' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(101,21): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(114,20): error TS8032: Qualified name 'deps.nativeDefinition' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(116,20): error TS8032: Qualified name 'deps.definitionIdentity' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(118,20): error TS8032: Qualified name 'deps.providerId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(119,20): error TS8032: Qualified name 'deps.memberAgentId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(121,20): error TS8032: Qualified name 'deps.sessionHeaderId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(123,119): error TS8032: Qualified name 'deps.bindingFacts' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(126,21): error TS8032: Qualified name 'deps.allowParallelInProgress' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(128,83): error TS8032: Qualified name 'deps.observe' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(132,3): error TS7031: Binding element 'nativeDefinition' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(133,3): error TS7031: Binding element 'definitionIdentity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(134,3): error TS7031: Binding element 'providerId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(135,3): error TS7031: Binding element 'memberAgentId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(136,3): error TS7031: Binding element 'sessionHeaderId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(137,3): error TS7031: Binding element 'bindingFacts' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(138,3): error TS7031: Binding element 'allowParallelInProgress' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(183,25): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(191,21): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(191,27): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(191,33): error TS7006: Parameter 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(299,20): error TS7006: Parameter 'type' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(299,26): error TS7006: Parameter 'data' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(309,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(315,20): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(315,26): error TS7006: Parameter 'grant' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(325,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(335,20): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(335,26): error TS7006: Parameter 'consumed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(370,47): error TS7006: Parameter 't' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(379,16): error TS2339: Property 'a5Edge' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(384,16): error TS2339: Property 'a5Edge' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(388,17): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(396,19): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(397,19): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(405,21): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(410,21): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(416,19): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(424,19): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/todo.mjs(439,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(39,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/governed-families/write.mjs(40,30): error TS2591: Cannot find name 'node:fs'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/governed-families/write.mjs(41,18): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/governed-families/write.mjs(68,17): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(68,23): error TS7006: Parameter 'detail' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(68,31): error TS7006: Parameter 'extra' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(70,24): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(76,17): error TS7006: Parameter 'text' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(78,21): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(89,24): error TS7006: Parameter 'rootDir' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(89,33): error TS7006: Parameter 'rawPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(103,28): error TS7006: Parameter 'error' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(124,20): error TS8032: Qualified name 'deps.definitionIdentity' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(126,20): error TS8032: Qualified name 'deps.providerId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(127,20): error TS8032: Qualified name 'deps.realmId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(128,20): error TS8032: Qualified name 'deps.memberAgentId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(129,20): error TS8032: Qualified name 'deps.sessionHeaderId' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(131,20): error TS8032: Qualified name 'deps.instanceRootDir' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(133,119): error TS8032: Qualified name 'deps.bindingFacts' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(136,83): error TS8032: Qualified name 'deps.observe' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(139,3): error TS7031: Binding element 'definitionIdentity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(140,3): error TS7031: Binding element 'providerId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(141,3): error TS7031: Binding element 'realmId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(142,3): error TS7031: Binding element 'memberAgentId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(143,3): error TS7031: Binding element 'sessionHeaderId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(144,3): error TS7031: Binding element 'instanceRootDir' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(145,3): error TS7031: Binding element 'bindingFacts' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(180,7): error TS7034: Variable 'approvedRootReal' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/governed-families/write.mjs(184,146): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(205,25): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(212,21): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(212,27): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(212,33): error TS7006: Parameter 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(294,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(300,20): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(300,26): error TS7006: Parameter 'grant' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(310,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(322,20): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(322,26): error TS7006: Parameter 'consumed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(359,15): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(371,13): error TS7005: Variable 'approvedRootReal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(383,17): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(384,123): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(389,17): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(390,17): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(396,9): error TS2322: Type '"P_WRITE_EXECUTION_UNCONFIRMED"' is not assignable to type '"P_WRITE_CLOSURE_REFUSED"'.
+packages/runtime/src/plugin/live/governed-families/write.mjs(400,15): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/governed-families/write.mjs(407,19): error TS7006: Parameter 'plan' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/governed-families/write.mjs(417,13): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(66,45): error TS7006: Parameter 'domain' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(66,53): error TS7006: Parameter 'rootSessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(69,15): error TS7006: Parameter 'claimed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(74,32): error TS7006: Parameter 'm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(91,16): error TS7006: Parameter 'scopeKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(91,26): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(93,16): error TS7006: Parameter 'scopeKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(93,26): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(93,32): error TS7006: Parameter 'identity' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(96,18): error TS7006: Parameter 'scopeKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(96,28): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(99,25): error TS7006: Parameter 'scopeKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(99,35): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(117,49): error TS2339: Property 'teamRoot' does not exist on type '{}'.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(117,59): error TS2339: Property 'rootSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(117,74): error TS2339: Property 'onObserve' does not exist on type '{}'.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(121,9): error TS7034: Variable 'ledger' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(122,17): error TS7006: Parameter 'o' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(138,20): error TS7006: Parameter 'input' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(149,32): error TS7031: Binding element 'hostJobId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(149,43): error TS7031: Binding element 'owner' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(149,50): error TS7031: Binding element 'scopeKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(163,31): error TS7031: Binding element 'jobId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(163,38): error TS7031: Binding element 'viewer' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(174,67): error TS1003: Identifier expected.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(179,25): error TS7006: Parameter 'jobId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(188,25): error TS7005: Variable 'ledger' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/jobs-gateway-assembly.mjs(191,14): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(75,28): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(88,39): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(96,24): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(96,32): error TS7006: Parameter 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(96,40): error TS7006: Parameter 'toolName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(96,50): error TS7006: Parameter 'mode' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(96,56): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(137,22): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(147,19): error TS7006: Parameter 'agent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(147,26): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(147,34): error TS7006: Parameter 'assembly' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(164,13): error TS7006: Parameter 'reqAgent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(178,17): error TS7006: Parameter 'req' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(178,22): error TS7006: Parameter 'next' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(194,21): error TS7006: Parameter 'agent' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(220,48): error TS7006: Parameter 'deps' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(237,7): error TS7034: Variable 'boot' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(239,24): error TS7006: Parameter 'member' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(239,32): error TS7006: Parameter 'fact' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(239,38): error TS7006: Parameter 'mode' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(239,44): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,22): error TS7031: Binding element 'sessionId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,33): error TS7031: Binding element 'instanceId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,45): error TS7031: Binding element 'realmId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,54): error TS7031: Binding element 'isLeader' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,64): error TS7031: Binding element 'isResident' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(274,76): error TS7031: Binding element 'isAdmissible' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(313,14): error TS2339: Property 'revoke' does not exist on type '{ memberKey: string; ref: Readonly<{ teamSessionId: string; instanceId: string; }>; realmId: string; isLeader: boolean; live: boolean; }'.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(333,19): error TS7006: Parameter 'ctxLike' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(337,55): error TS7006: Parameter 'req' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(337,60): error TS7006: Parameter 'next' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(337,74): error TS2339: Property 'adjudicate' does not exist on type '{ memberKey: string; revoke: () => void; isRoutable(): boolean; installOn(ctxLike: any): () => void; }'.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(349,22): error TS7006: Parameter 'memberKey' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(349,33): error TS7006: Parameter 'req' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(349,38): error TS7006: Parameter 'next' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(420,108): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(427,39): error TS2339: Property 'code' does not exist on type '{}'.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(434,105): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(489,19): error TS7006: Parameter 'b' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(490,11): error TS7005: Variable 'boot' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/ptc-escalation-row.mjs(500,9): error TS7005: Variable 'boot' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(80,10): error TS2305: Module '"./plane-effect-backends.mjs"' has no exported member 'createAnchoredSearchBackend'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(80,39): error TS2305: Module '"./plane-effect-backends.mjs"' has no exported member 'createConfinedShellBackend'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(80,95): error TS2305: Module '"./plane-effect-backends.mjs"' has no exported member 'READ_ROW_LINE_CAP'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(140,12): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(140,19): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(159,30): error TS7006: Parameter 'displayPath' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(159,43): error TS7006: Parameter 'outcome' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(170,29): error TS7006: Parameter 'line' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(179,32): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(188,30): error TS7006: Parameter 'meta' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(234,12): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(234,18): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(252,22): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(252,29): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(255,31): error TS7031: Binding element 'number' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(255,39): error TS7031: Binding element 'text' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(265,31): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(265,38): error TS7006: Parameter 'result' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(294,47): error TS7006: Parameter 'confined' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(516,34): error TS7006: Parameter 'names' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(516,41): error TS7006: Parameter 'readName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(529,23): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Readonly<{ bash: readonly string[]; read: readonly string[]; grep: readonly never[]; glob: readonly never[]; jobs: readonly string[]; todo: readonly string[]; write: readonly string[]; read_image: readonly string[]; }>'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(539,28): error TS7006: Parameter 'effectSet' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(541,35): error TS7006: Parameter 'e' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(541,73): error TS7006: Parameter 'e' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(542,34): error TS7006: Parameter 'e' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(559,34): error TS7006: Parameter 'permissionPolicy' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(559,52): error TS7006: Parameter 'planeNames' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(559,64): error TS7006: Parameter 'subtreeContains' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(575,21): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(581,32): error TS7006: Parameter 'rule' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(581,38): error TS7006: Parameter 'effect' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(605,23): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(605,29): error TS7006: Parameter 'toolClass' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(605,40): error TS7006: Parameter 'effect' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(609,20): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(609,26): error TS7006: Parameter 'toolClass' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(612,11): error TS7006: Parameter 'effectSet' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(653,28): error TS7006: Parameter 'backendId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(677,25): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(699,33): error TS7031: Binding element 'admittedFacts' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(699,48): error TS7031: Binding element 'admittedFactsFault' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(699,68): error TS7031: Binding element 'admittedFactsCause' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(699,88): error TS7031: Binding element 'entryFacts' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(699,100): error TS7031: Binding element 'entryBinding' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(705,16): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(705,22): error TS7006: Parameter 'note' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(763,11): error TS2339: Property 'permissionPolicy' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(763,29): error TS2339: Property 'realmId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(763,38): error TS2339: Property 'templateId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(763,50): error TS2339: Property 'role' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(763,56): error TS2339: Property 'onObserve' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(764,20): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(774,55): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(777,53): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(778,26): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(795,32): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(811,32): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(834,32): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(843,31): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(844,30): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(880,33): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(889,32): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(890,31): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(930,33): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(939,32): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(940,31): error TS7006: Parameter 'why' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(971,69): error TS2367: This comparison appears to be unintentional because the types '"write"' and '"read_image"' have no overlap.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(984,7): error TS7034: Variable 'paGenerationConfirmed' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(985,36): error TS2339: Property 'authorityFacts' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(998,35): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(998,70): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1001,95): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1010,39): error TS7005: Variable 'paGenerationConfirmed' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1033,42): error TS2339: Property 'authorityFacts' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1045,37): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1069,15): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1069,91): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1070,15): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1070,81): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1093,35): error TS2339: Property 'controlLeg' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1093,69): error TS2339: Property 'controlLeg' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1098,13): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1098,50): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1098,89): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1102,33): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1103,30): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1117,32): error TS7006: Parameter 'toolName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1152,32): error TS2339: Property 'currentFacts' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1158,33): error TS2339: Property 'readCallFacts' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1166,30): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,37): error TS7031: Binding element 'callRealm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,48): error TS7031: Binding element 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,56): error TS7031: Binding element 'parametersFingerprint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,79): error TS7022: 'requestedEffects' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,79): error TS7031: Binding element 'requestedEffects' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,139): error TS7006: Parameter 'e' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,195): error TS7031: Binding element 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1214,203): error TS7031: Binding element 'family' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,42): error TS7031: Binding element 'callRealm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,53): error TS7031: Binding element 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,61): error TS7031: Binding element 'parametersFingerprint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,84): error TS7031: Binding element 'requestedEffects' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,102): error TS7031: Binding element 'toolName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,112): error TS7031: Binding element 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1229,120): error TS7031: Binding element 'family' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1287,24): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1288,24): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1292,107): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1341,22): error TS7006: Parameter 'cause' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1349,44): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,32): error TS7031: Binding element 'grant' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,39): error TS7031: Binding element 'paDurableMint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,54): error TS7031: Binding element 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,63): error TS7031: Binding element 'placementName' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,78): error TS7031: Binding element 'paConstructionBinding' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,110): error TS7031: Binding element 'callRealm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,121): error TS7031: Binding element 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,129): error TS7031: Binding element 'parametersFingerprint' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,152): error TS7031: Binding element 'requestedEffects' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1449,170): error TS7031: Binding element 'signal' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1476,20): error TS7006: Parameter 'detail' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1524,22): error TS7006: Parameter 'cause' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1531,108): error TS2339: Property 'code' does not exist on type 'never'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1590,66): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1595,13): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1595,71): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1596,96): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1598,13): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1599,14): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1602,47): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1603,43): error TS7006: Parameter 'rung' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1603,49): error TS7006: Parameter 'i' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1603,64): error TS18048: 'recheck.value' is possibly 'undefined'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1615,29): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1617,100): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1619,108): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1660,30): error TS7006: Parameter 'input' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1678,30): error TS7006: Parameter 'requestedEffects' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1678,84): error TS7006: Parameter 'e' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1679,25): error TS7006: Parameter 'input' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1713,24): error TS7006: Parameter 'callId' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1714,25): error TS7006: Parameter 'state' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1733,13): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1733,54): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1737,27): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1741,19): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1741,85): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1744,80): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1749,66): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1772,28): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1773,29): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1779,23): error TS7006: Parameter 'prefix' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1779,35): error TS7006: Parameter 'row' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1833,32): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1841,32): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1842,85): error TS2339: Property 'plane' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1858,30): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1863,48): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1863,72): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1864,29): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1873,5): error TS2322: Type '(effectSet: any) => { kind: string; code: string; } | { kind: string; code?: undefined; }' is not assignable to type '(effectSet: RequestedEffectSet) => AdmissionVerdict'.
+  Type '{ kind: string; code: string; } | { kind: string; code?: undefined; }' is not assignable to type 'AdmissionVerdict'.
+    Type '{ kind: string; code: string; }' is not assignable to type 'AdmissionVerdict'.
+      Type '{ kind: string; code: string; }' is not assignable to type '{ readonly kind: "deny"; readonly code: string; }'.
+        Types of property 'kind' are incompatible.
+          Type 'string' is not assignable to type '"deny"'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1874,5): error TS2322: Type '{ ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal, family }: { realmId: any; callId: any; parametersFingerprint: any; requestedEffects: any; toolName?: any; signal: any; family: any; }): Promise<{ kind: string; cancelled: boolean; code?: undefined; detail?: undefined; ... 5 m...' is not assignable to type 'PaAdmitEdge'.
+  Types of parameters '__0' and 'request' are incompatible.
+    Type '{ readonly realmId: string; readonly callId: string; readonly parametersFingerprint: string; readonly requestedEffects: RequestedEffectSet; }' is missing the following properties from type '{ realmId: any; callId: any; parametersFingerprint: any; requestedEffects: any; toolName?: any; signal: any; family: any; }': signal, family
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1879,40): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1898,17): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1898,83): error TS2339: Property 'fs' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1915,28): error TS2339: Property 'backends' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1918,34): error TS2554: Expected 0 arguments, but got 1.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1934,23): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1934,29): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1941,23): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1941,30): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1955,23): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(1955,29): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2004,14): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2004,21): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2043,21): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2043,26): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2087,57): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2087,92): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2089,110): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2101,125): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2141,48): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2141,88): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'detail' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2143,18): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2160,114): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2178,46): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'code' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2178,78): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'detail' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2180,16): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2191,26): error TS2339: Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2229,19): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2259,30): error TS7006: Parameter 'token' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2279,35): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2307,17): error TS18047: 'writeInject' is possibly 'null'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2335,57): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2335,92): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2337,118): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2347,182): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2391,160): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2413,18): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2425,69): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2426,74): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2426,130): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'detail' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2481,21): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2481,26): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2532,57): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2532,92): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2534,111): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2542,127): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2601,49): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2601,89): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'detail' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2603,18): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2617,115): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2636,47): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'code' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2636,79): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'detail' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2638,16): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2644,26): error TS2339: Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2677,52): error TS2339: Property 'cfClass' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2678,53): error TS2339: Property 'cfReason' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2679,52): error TS2339: Property 'sideEffectPossible' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2718,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2718,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2727,19): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2757,23): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2757,28): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2769,72): error TS2339: Property 'kind' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2770,34): error TS2339: Property 'path' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2770,56): error TS2339: Property 'offset' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2770,79): error TS2339: Property 'lines' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2770,106): error TS2339: Property 'totalLines' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2772,72): error TS2339: Property 'kind' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2778,88): error TS2339: Property 'text' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2779,21): error TS2339: Property 'text' does not exist on type 'object'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2801,7): error TS7034: Variable 'imageArm' implicitly has type 'any' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2808,21): error TS7006: Parameter 'raw' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2808,26): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2809,19): error TS7005: Variable 'imageArm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2857,57): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2857,92): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2859,111): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2867,127): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2938,49): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2938,89): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; }'.
+  Property 'detail' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2940,18): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; grant: any; paDurableMint: any; request: any; placementName: any; paConstructionBinding: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2958,47): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'code' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2958,79): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'detail' does not exist on type '{ kind: string; cancelled: boolean; consumedProof?: undefined; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2960,16): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(2968,26): error TS2339: Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; } | { kind: string; cancelled: boolean; consumedProof?: undefined; } | { kind: string; cancelled?: undefined; consumedProof?: undefined; } | { kind: string; consumedProof: { ...; }; cancelled?: undefined; }'.
+  Property 'consumedProof' does not exist on type '{ kind: string; code: string; detail: any; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3001,61): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3001,108): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3025,52): error TS2339: Property 'sideEffectPossible' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3026,52): error TS2339: Property 'cfClass' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3027,53): error TS2339: Property 'cfReason' does not exist on type 'Error'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3042,19): error TS7006: Parameter 'args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3070,16): error TS7006: Parameter '_args' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3070,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3102,13): error TS2353: Object literal may only specify known properties, and 'attachment' does not exist in type '{ type: string; text: string; }'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3136,30): error TS7006: Parameter 'token' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3157,35): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3167,29): error TS7005: Variable 'imageArm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3185,17): error TS7005: Variable 'imageArm' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3210,55): error TS2339: Property 'teamSessionId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3210,90): error TS2339: Property 'instanceId' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3212,116): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3222,180): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3269,158): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3290,16): error TS2339: Property 'cancelled' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'cancelled' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3300,67): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3301,72): error TS2339: Property 'code' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'code' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3301,125): error TS2339: Property 'detail' does not exist on type '{ kind: string; code: string; detail: string; cancelled?: undefined; ok?: undefined; grant?: undefined; paDurableMint?: undefined; request?: undefined; placementName?: undefined; paConstructionBinding?: undefined; } | { ...; } | { ...; } | { ...; }'.
+  Property 'detail' does not exist on type '{ kind: string; grant: any; paDurableMint: { requestId: string; manifest: any; } | undefined; request: Readonly<{ binding: any; member: Readonly<{ teamSessionId: string; instanceId: string; }>; callId: any; realmId: any; parametersFingerprint: any; requestedEffects: any; }>; placementName: any; paConstructionBinding...'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3328,18): error TS18047: 'imageInject' is possibly 'null'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3330,143): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3364,26): error TS7006: Parameter 'name' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3393,22): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3408,17): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3424,16): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3425,17): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3436,16): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3437,17): error TS7006: Parameter 'exec' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3471,15): error TS7006: Parameter 'agentCtx' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3472,15): error TS7034: Variable 'disposers' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3486,84): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3487,106): error TS2339: Property 'message' does not exist on type '{}'.
+packages/runtime/src/plugin/live/team-tool-plane.mjs(3532,29): error TS7005: Variable 'disposers' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(62,13): error TS1003: Identifier expected.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(79,11): error TS8032: Qualified name 'src.readLaunchEnv' is not allowed without a leading '@param {object} src'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(80,11): error TS8032: Qualified name 'src.packageDefault' is not allowed without a leading '@param {object} src'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(82,43): error TS2339: Property 'readConfig' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(82,55): error TS2339: Property 'readLaunchEnv' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(82,70): error TS2339: Property 'packageDefault' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(104,11): error TS8032: Qualified name 'deps.ctxWeb' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(106,11): error TS8032: Qualified name 'deps.grantAuthority' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(108,11): error TS8032: Qualified name 'deps.factsSource' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(110,11): error TS8032: Qualified name 'deps.resolveSearchOrigin' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(113,11): error TS8032: Qualified name 'deps.readDomainVeto' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(115,11): error TS8032: Qualified name 'deps.onObserve' is not allowed without a leading '@param {object} deps'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,48): error TS2339: Property 'webEnabledRaw' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,63): error TS2339: Property 'ctxWeb' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,71): error TS2339: Property 'grantAuthority' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,87): error TS2339: Property 'factsSource' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,100): error TS2339: Property 'resolveSearchOrigin' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,121): error TS2339: Property 'readDomainVeto' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(117,137): error TS2339: Property 'onObserve' does not exist on type '{}'.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(137,9): error TS7034: Variable 'ledger' implicitly has type 'any[]' in some locations where its type cannot be determined.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(146,17): error TS7006: Parameter 'o' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(167,15): error TS7006: Parameter 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(167,24): error TS7006: Parameter 'options' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(170,12): error TS7006: Parameter 'request' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(183,25): error TS7005: Variable 'ledger' implicitly has an 'any[]' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(187,19): error TS7006: Parameter 'code' implicitly has an 'any' type.
+packages/runtime/src/plugin/live/web-gateway-assembly.mjs(187,25): error TS7006: Parameter 'detail' implicitly has an 'any' type.
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
