@@ -1052,6 +1052,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // `planSnapshot` + `effects` source for the call-level facts adapter —
   // the SAME canonical identity the approval walked, never a re-parse.
   const livePaPlan = new Map()
+  // A5-M2 fix-1 (root ruling 09:19): the governed todo row's OWN token→
+  // correlation ledger — the SAME single-flight law the read row carries
+  // (plane-effect-backends `readTokenLedger`): ONE correlation per registry
+  // execution token for its whole life, and a settled token is never re-armed.
+  // `exec.tokenKey` is NOT a public Host field (fixed 639 `ToolExecution` =
+  // token/callId/rootCallId/signal/agent; the trio runner derives its own
+  // local name from `exec.token` and nothing else), and the todo row registers
+  // directly with the registry — so the row keys identity on the REAL
+  // `exec.token` (object|symbol, never stringified) and allocates its own
+  // correlation string for the PA walk. No name/model-call field is ever
+  // composed into an identity here.
+  const todoTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
+  let todoCorrSeq = 0
   // A5-M2: `family` (optional) is the governed-family review block THIS call
   // carries, sourced ONLY from the arm's classify output the row drove (never
   // model input, never a plane invention). It rides to the durable Control leg
@@ -1879,18 +1892,76 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // law the PA walk already states.
     execute: async (raw, exec) => {
       const arm = todoInject.arm
+      // fix-1 (root ruling 09:19): the identity is the registry-assigned
+      // execution token — the fixed-639 public contract (`ToolExecution.token`,
+      // the one identity the guard, the hand-off and the result observers share
+      // for one flight). `exec.tokenKey` is NOT a public Host field (639
+      // ToolExecution = token/callId/rootCallId/signal/agent; the trio runner
+      // derives only its OWN local name from `exec.token`), and this row
+      // registers straight with the registry — so an absent token is a typed
+      // front refusal: zero classify, zero plan fact, zero walk, zero row.
+      // The row invents no identity from name or model-call fields.
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+      if (tokenKey === undefined) {
+        throw new Error('refused-todo exec-token-unbound — this execution carries no registry token (object|symbol); the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields')
+      }
+      const priorFlight = todoTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-todo exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed todo_write call; one token runs one governed flight and a settled token is never re-armed (the read row's single-flight law, verbatim)`)
+      }
+      todoCorrSeq += 1
+      // The allocation carries the mount's OWN realm (one flight, one id —
+      // durable rows live in a service shared by mounts, so a per-mount seq
+      // alone could collide across mounts; the read lane's nonce plays the
+      // same role there).
+      const correlation = `plane-todo:${realmId}-${String(todoCorrSeq)}`
+      todoTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      let abortListener
+      try {
+      // fix-4 (root ruling 09:19): OWNER-CURRENT BEFORE THE FREEZE. The arm
+      // freezes the binding generations into the plan AT classify; the very same
+      // authority leg paAdmitPartA runs ("bring this scope's governed bindings
+      // onto the generation THIS call just read") is asked HERE, before that
+      // freeze — a revision that moves mid-call then legitimately republishes
+      // BEFORE the plan captures one, not after the grant was minted against it
+      // (a post-freeze republish paired a pre-refresh plan against a
+      // post-refresh grant and refused a legal call with P_TODO_GRANT_MISMATCH).
+      // A faulting leg is OBSERVED, never absorbed (the kernel's identity leg
+      // answers that call itself); the row never re-stamps a generation.
+      if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+        const freshAuthority = await paReadGenerationFresh()
+        if (freshAuthority.ok === true) {
+          try {
+            await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+          } catch (error) {
+            observe(`a5m2-todo-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+          }
+        }
+      }
       let classified
       try {
-        // The correlation is the a5p5 LEDGER's allocated string the dispatcher
-        // carries (exec.tokenKey — the same identity the read/shell rows use);
-        // whatever is present goes to the ARM, which answers its own typed
-        // refusal for a missing one. The row invents nothing.
-        classified = arm.classify(raw, exec, typeof exec?.tokenKey === 'string' ? exec.tokenKey : '')
+        // fix-1: the correlation is THIS mount's ledger-allocated string for this
+        // execution token (the read row's law) — every identity derived from it
+        // (the plan fingerprint, the walk, the live-plan key, the durable row)
+        // then speaks ONE identity for ONE flight.
+        classified = arm.classify(raw, exec, correlation)
       } catch (error) {
         throw new Error(`refused-todo arm-unavailable — the governed todo arm could not classify this call (${String(error?.message ?? error).slice(0, 160)}); there is no native fallback to fall back to`)
       }
       if (classified.ok !== true || classified.plan === undefined) {
         throw new Error(`refused-todo ${classified.code ?? 'P_TODO_CLASSIFY_INVALID_ARGUMENTS'} — ${classified.detail ?? 'the governed classify refused this call before admission'}`)
+      }
+      // fix-3 (root ruling 09:19, the belt): once a PLAN exists, an abort landing
+      // in any later wait is linked to the arm's own cancel law (the cancelled
+      // call is the arm's zero-append settle, never a row-side guess). The
+      // listener is removed in the finally at the end of this call — it never
+      // outlives the flight it guards (the B-WEB lane's per-call leak finding,
+      // not repeated here).
+      if (signal !== undefined && typeof signal.addEventListener === 'function') {
+        abortListener = () => { arm.cancel(classified.plan) }
+        signal.addEventListener('abort', abortListener, { once: true })
       }
       const parsedEffects = parseRequestedEffectSet(classified.effects)
       if (parsedEffects.ok !== true) {
@@ -1898,7 +1969,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       }
       const walk = {
         realmId,
-        callId: typeof exec?.tokenKey === 'string' ? exec.tokenKey : '',
+        callId: correlation,
         parametersFingerprint: classified.parametersFingerprint,
         requestedEffects: parsedEffects.value,
         toolName: A5_TODO_MOUNT_NAME,
@@ -1912,7 +1983,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
           providerIdentity: classified.reviewPayload.providerIdentity,
           targetManifest: classified.reviewPayload.targetManifest,
         }),
-        ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+        ...(signal === undefined ? {} : { signal }),
       }
       const opened = await paAdmit.open(walk)
       if (opened.kind === 'deny') {
@@ -1972,11 +2043,35 @@ export function createTeamToolPlaneAssembly(input = {}) {
         const settled = arm.cancel(classified.plan)
         throw new Error(`refused-todo CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the row never self-attests consumption from a missing denial and the body does not run (arm settle: ${String(settled.settled ?? settled.code ?? 'n/a')})`)
       }
+      // fix-3 (root ruling 09:19, the NAMED race): between the edge's REAL
+      // consume and the body's first microtask an abort can still land. The
+      // consumed grant is ledger truth and NEVER rolls back; the body that never
+      // started appends ZERO — the row links the abort to the arm's cancel law
+      // and stops with the cancelled fact, and no native entry runs.
+      if (signal?.aborted === true) {
+        const settled = arm.cancel(classified.plan)
+        throw new Error(`todo_write · cancelled — the call was aborted after the execution edge consumed the grant and before the body began (the consumption is a settled fact and is never rolled back; ${String(settled.appendOutcome ?? 'zero append')})`)
+      }
       const ran = await arm.execute(classified.plan, { consumed: true, grant: proof.grant })
       if (ran.ok !== true) {
         throw new Error(`refused-todo ${ran.code ?? 'P_TODO_NOT_ADMITTED'} — ${ran.detail ?? 'the governed execution edge refused the body'}`)
       }
       return ran.value
+      } finally {
+        // fix-3: the abort listener never outlives this call.
+        if (abortListener !== undefined && typeof signal?.removeEventListener === 'function') {
+          signal.removeEventListener('abort', abortListener)
+        }
+        // fix-1: every path (success, typed refusal, throw) settles the token's
+        // flight — a settled token is never re-armed; the ledger stays bounded
+        // (the oldest settled entry prunes first, Map insertion order).
+        todoTokenLedger.set(tokenKey, { correlation, settled: true })
+        if (todoTokenLedger.size > 256) {
+          for (const [settledToken, settledEntry] of todoTokenLedger) {
+            if (settledEntry.settled) { todoTokenLedger.delete(settledToken); break }
+          }
+        }
+      }
     },
     output: TODO_ROW_PRESENTATION_FACE,
     presentCall: (args) => ({ card: 'generic', title: 'Update todo list', kind: 'other', rawInput: args?.todos }),

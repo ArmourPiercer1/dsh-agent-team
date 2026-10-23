@@ -6,13 +6,21 @@
  * (a5-m1-auth-bridge c812 owns that): it proves the ASSEMBLY the lane tests
  * could not reach —
  *
- *  - trusted actual-definition registration: the mount-time family table is
- *    keyed by the RUNTIME placement definition identity the seam minted
- *    (read back through the plane's own placementFeed, the same law
- *    agent-bindings applies after publish);
- *  - SAME-SOURCE family facts: the leg's `governedFamilies` and BOTH facts
- *    paths (the plane-side call-level read and the verifier's current-facts
- *    read) answer from ONE object — no second registration exists to drift;
+ *  - trusted actual-definition registration THROUGH THE PRODUCTION TABLE: the
+ *    mount-time write goes through the registry's own `registerA5GovernedFamily`
+ *    keyed by the RUNTIME placement definition identity the seam minted (read
+ *    back through the plane's own placementFeed, the same law agent-bindings
+ *    applies after publish); the leg's gate and both facts paths answer through
+ *    the registry's own accessors — the spec owns NO table (root fix-2 round:
+ *    "registration reached the actual callfacts AND the durable verifier" is a
+ *    property of production code, not a fixture self-proof);
+ *  - the real Host exec identity (fix-1 round): execs carry the 639 public
+ *    shape (`token`, a fresh branded symbol per call — NO `tokenKey`, a field
+ *    that does not exist on the public surface and whose hand-made fixture
+ *    copy masked the original defect); the row allocates ONE correlation per
+ *    token (single-flight: in-flight and settled tokens both refuse), the
+ *    walk/leg/durable row all speak that ONE allocation, and the owner-current
+ *    leg provably runs BEFORE the classify freeze (fix-4 ordering);
  *  - the same immutable typed plan end to end: the row feeds the arm's
  *    classify output (effects / full-value parametersFingerprint / the family
  *    block's four P-adds) into the plane's ONE PA walk; the DURABLE row's
@@ -103,6 +111,7 @@ interface PlaneAssemblyValue {
     execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
   }>
   placementFeed: (name: string) => { definitionIdentity?: string; realmId: string } | undefined
+  livePaPlan: Map<string, { approvalCaseId: string; effectSetFingerprint: string; perEffectRequired: unknown[]; requestedEffects?: unknown }>
   realmId: string
   assembly: ProductionAdmissionAssembly
   mount: (agentCtx: unknown) => { ok: boolean; name?: string; message?: string; code?: string; dispose?: () => void }
@@ -177,17 +186,26 @@ function factSlot(slot: unknown): PaCallFactsCeilingSlot | undefined {
   return slot as PaCallFactsCeilingSlot
 }
 
-/** The mount-time family table — the SPEC-side shape of the single
- *  `A5_GOVERNED_FAMILIES` production table. In production the write happens
- *  in agent-bindings after publish, keyed by `placementFeed('todo_write')`'s
- *  RUNTIME identity; here the world fixture performs the SAME write with the
- *  SAME source, and every reader below (the leg's governedFamilies, the
- *  plane-side call-level facts fill, the verifier's current-family fact)
- *  answers from THIS object. There is no second registration anywhere. */
-const familyTable: Record<string, { familyId: string; adapterRevision: number; providerIdentity: string }> = Object.create(null)
+/** THE PRODUCTION registration table (root fix-2 round). The spec keeps NO
+ *  table of its own any more: the write below goes through the registry's own
+ *  `registerA5GovernedFamily`, every reader (the leg's governedFamilies, both
+ *  facts fakes) answers through the registry's own accessors, and the
+ *  production shared read (`readCallAuthorityFacts`) fills the durable path
+ *  from this same table. "Registration reached both the actual call-level
+ *  facts and the durable verifier" is then a property of PRODUCTION code,
+ *  not a spec-side self-proof. */
+const registryModule = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
+  A5_GOVERNED_FAMILIES: Record<string, { familyId: string; adapterRevision: number; providerIdentity: string }>
+  registerA5GovernedFamily: (definitionIdentity: string, entry: { familyId: string; adapterRevision: number; providerIdentity: string }) => void
+  a5GovernedFamilyFor: (definitionIdentity: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
+  readPaCallFacts: (input: Record<string, unknown>) => Promise<unknown>
+}
+const familyTable = registryModule.A5_GOVERNED_FAMILIES
+const registerA5GovernedFamily = registryModule.registerA5GovernedFamily
+const a5GovernedFamilyFor = registryModule.a5GovernedFamilyFor
 const ARM_PROVIDER = 'a5p5-plane'
 
-interface RealmTruth { readonly assembly: ProductionAdmissionAssembly }
+interface RealmTruth { readonly assembly: ProductionAdmissionAssembly; plane?: PlaneAssemblyValue }
 const realmTruths = new Map<string, RealmTruth>()
 
 /** The verifier-side CURRENT facts (the same law as the bridge lane's fake):
@@ -217,7 +235,7 @@ const verifierReadCallFacts: PaEffectsVerifierDeps['readCallFacts'] = async (inp
   const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
   const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
   if (hard === undefined || mutation === undefined) return undefined
-  const family = familyTable[String(binding.value.definitionIdentity)]
+  const family = a5GovernedFamilyFor(String(binding.value.definitionIdentity))
   return {
     policySource: { staticLayerRefs: ['a5m2-todo-asm-tpl:directive-policy'], overlayGeneration: 0 },
     realmId: input.manifest.realmId,
@@ -371,6 +389,8 @@ interface Mounted {
   nativeCalls: Array<{ args: { todos: unknown[] } }>
   observed: string[]
   familyKey: string
+  authorityLog: string[]
+  legInputs: Record<string, unknown>[]
 }
 async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}): Promise<Mounted> {
   const { def: nativeDef, calls: nativeCalls } = makeNativeTodo(NATIVE_DESCRIPTION)
@@ -380,18 +400,29 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
     providerId: ARM_PROVIDER,
     memberAgentId: WORKER,
     sessionHeaderId: HEADER_ID,
-    bindingFacts: () => ({
-      bindingId: `a5m2-todo-asm:${label}`,
-      bindingRevision: 1,
-      policyGeneration: 0,
-      authorityGeneration: 0,
-    }),
+    bindingFacts: () => {
+      // fix-4 probe: the arm reads the live binding AT CLASSIFY (that is the
+      // freeze the plan carries); the ordering leg proves the owner-current
+      // leg ran BEFORE this read.
+      authorityLog.push('freeze')
+      return {
+        bindingId: `a5m2-todo-asm:${label}`,
+        bindingRevision: 1,
+        policyGeneration: 0,
+        authorityGeneration: 0,
+      }
+    },
     allowParallelInProgress: false,
     observe: () => {},
   })
   if (opts.drainOnMount === true) arm.drain()
   const realmId = `a5m2-todo-asm-${label}`
   const observed: string[] = []
+  // fix-4 probe log ('ensure' = the OWNER's republish leg, 'freeze' = the
+  // arm's classify-time binding capture) and the leg-input capture the
+  // identity assertions read (the walk's OWN request, never a re-derivation).
+  const authorityLog: string[] = []
+  const legInputs: Record<string, unknown>[] = []
   const built = planeModule.createTeamToolPlaneAssembly({
     permissionPolicy: DIRECT_POLICY,
     realmId,
@@ -401,21 +432,36 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
     teamSessionId: P6T4_ROOT,
     plane: { todoEnabled: true },
     backends: { todo: { arm, description: nativeDef.description } },
-    authorityFacts: { overlayGeneration: async () => 0 },
-    controlLeg: async (legInput: unknown) => createPaControlLeg({
-      controlService: service,
-      rootSessionId: P6T4_ROOT,
-      caller: memberCaller(WORKER),
-      beneficiaryAuthority: 'member',
-      governedFamilies: familyTable,
-    })(legInput as PaControlLegInput),
+    authorityFacts: {
+      overlayGeneration: async () => 0,
+      // fix-4 seam: the OWNER's republish leg (the same injected leg partA
+      // asks per walk). The ordering leg proves the ROW asks it before the
+      // classify freeze, so no post-freeze revision move can pair a stale
+      // plan against a fresh grant.
+      ensureAuthorityCurrent: async () => { authorityLog.push('ensure') },
+    },
+    controlLeg: async (legInput: unknown) => {
+      legInputs.push(legInput as Record<string, unknown>)
+      return createPaControlLeg({
+        controlService: service,
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(WORKER),
+        beneficiaryAuthority: 'member',
+        // THE production table object (registry-owned): the same one the
+        // mount-time write below writes and the shared read fills.
+        governedFamilies: familyTable,
+      })(legInput as PaControlLegInput)
+    },
     readCallFacts: async (input: Record<string, unknown>) => {
-      // The PLANE-side one-shot call facts — the spec shape of CENTER's
-      // readPaCallFactsForCall fill: same binding tuple the arm reads, effects
-      // re-canonicalized through the domain parser, the live plan re-derived,
-      // the durable attribution from the real repository, and governedFamily
-      // answered from the ONE family table (the production fill is the same
-      // object read by the leg — fea48203 wiring).
+      // The PLANE-side call facts — the SPEC WIRING of the registry's own
+      // shared read (root fix-2 round): the CURRENT binding tuple, effects
+      // re-canonicalized through the domain parser, the live plan read from
+      // the mount's OWN livePaPlan under this call's correlation (a
+      // construction-time read precedes the plan row and production answers
+      // that as `no-approval-question` — mirrored here, never a spec-side
+      // re-derivation), the durable attribution from the real repository, and
+      // governedFamily answered through the registry's own accessor. No
+      // spec-side table, no fingerprint the spec brings from elsewhere.
       const truth = realmTruths.get(String(input.realmId))
       if (truth === undefined) return undefined
       if (String(input.rootSessionId) !== P6T4_ROOT) return undefined
@@ -423,33 +469,23 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
       if (durable === undefined) return undefined
       const binding = bindingOf(label)
       if (binding === undefined) return undefined
-      const family = familyTable[String(binding.definitionIdentity)]
-      if (family === undefined) return undefined
       const rawEffects = (input.requestedEffects as { effects?: unknown[] } | undefined)?.effects ?? input.requestedEffects
       const effects = parseRequestedEffectSet(rawEffects as unknown[])
       if (!effects.ok) return undefined
-      const planInput: AdmissionRequest = Object.freeze({
-        binding,
-        member: Object.freeze({ teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) }),
-        callId: String(input.callId),
-        realmId: String(input.realmId),
-        parametersFingerprint: callFingerprints.get(String(input.callId)) ?? '',
-        requestedEffects: effects.value as RequestedEffectSet,
-      })
-      const livePlan = truth.assembly.planApproval(planInput)
-      if (!livePlan.ok) return undefined
       const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
       const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
       if (hard === undefined || mutation === undefined) return undefined
+      const family = a5GovernedFamilyFor(String(binding.definitionIdentity))
+      const livePlan = truth.plane?.livePaPlan.get(String(input.callId))
       return {
-        kind: 'call-facts',
+        kind: livePlan === undefined ? 'no-approval-question' : 'call-facts',
         facts: {
           policySource: { staticLayerRefs: ['a5m2-todo-asm-tpl:directive-policy'], overlayGeneration: 0 },
           realmId: String(input.realmId),
           ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
           policyDocument: truth.assembly.policyDocument(),
           denySources: truth.assembly.denySources(),
-          effects: effects.value as RequestedEffectSet,
+          effects: (livePlan?.requestedEffects as RequestedEffectSet | undefined) ?? (effects.value as RequestedEffectSet),
           member: { teamSessionId: P6T4_ROOT, instanceId: String(durable.instanceId) },
           beneficiaryAuthority: 'member',
           binding,
@@ -460,13 +496,15 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
             cwd: CHAIN_WORLD,
             providerVersion: ARM_PROVIDER,
           },
-          planSnapshot: {
-            approvalCaseId: livePlan.value.approvalCaseId,
-            effectSetFingerprint: livePlan.value.effectSetFingerprint,
-            perEffectRequired: livePlan.value.perEffectRequired,
-          },
+          ...(livePlan === undefined ? {} : {
+            planSnapshot: {
+              approvalCaseId: livePlan.approvalCaseId,
+              effectSetFingerprint: livePlan.effectSetFingerprint,
+              perEffectRequired: livePlan.perEffectRequired,
+            },
+          }),
           authorityGeneration: 0,
-          governedFamily: family,
+          ...(family === undefined ? {} : { governedFamily: family }),
         },
       }
     },
@@ -476,13 +514,13 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
     throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
   }
   const plane = built.value
-  realmTruths.set(plane.realmId, { assembly: plane.assembly })
+  realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
   const fed = plane.placementFeed(A5_TODO_TOOL_NAME)
   const familyKey = String(fed?.definitionIdentity ?? '')
   if (familyKey.length === 0) throw new Error('the placed todo row answered no placement definition identity')
-  // THE mount-time registration write (the agent-bindings law, performed here
-  // with the SAME source): key = the runtime identity the seam minted.
-  familyTable[familyKey] = Object.freeze({
+  // THE mount-time registration write — the PRODUCTION function (the
+  // agent-bindings law), keyed by the runtime identity the seam minted.
+  registerA5GovernedFamily(familyKey, {
     familyId: arm.familyId,
     adapterRevision: arm.adapterRevision,
     providerIdentity: arm.providerId,
@@ -503,20 +541,22 @@ async function mountWorld(label: string, opts: { drainOnMount?: boolean } = {}):
   }))
   const todoDef = plane.definitions.find((d) => d.name === A5_TODO_TOOL_NAME)
   if (todoDef === undefined) throw new Error('the mounted plane carries no todo_write definition')
-  return { plane, arm, todoDef, binding: bindingOf(label) as ToolBinding, nativeCalls, observed, familyKey }
+  return { plane, arm, todoDef, binding: bindingOf(label) as ToolBinding, nativeCalls, observed, familyKey, authorityLog, legInputs }
 }
 const bindingFixtures = new Map<string, ReturnType<typeof parseToolBinding>>()
 function bindingOf(label: string): ToolBinding | undefined {
   const parsed = bindingFixtures.get(label)
   return parsed !== undefined && parsed.ok ? parsed.value : undefined
 }
-/** The full-value parameter fingerprints per call id. THE law is the ARM's
- *  (generations + callId + effects + reviewPayload under the canonical digest)
- *  — the spec NEVER re-derives it independently: `prepCall` below runs the
- *  arm's own classify and records what it returned, which is exactly the
- *  value the row's walk carries and what the plane-side facts must answer
- *  with for the approval identities to re-derive identically. */
-const callFingerprints = new Map<string, string>()
+/** The ARM'S OWN review-payload values per call. THE law is the arm's
+ *  (generations + callId + effects + reviewPayload under the canonical
+ *  digest) — the spec NEVER re-derives anything: `prepCall` runs the arm's
+ *  own classify and records what it returned. NOTE (fix-1 round): the row
+ *  classifies with ITS OWN ledger correlation, so this fixture classify
+ *  serves only the call-identity-INDEPENDENT review facts (the targetManifest
+ *  carries no call identity) and the `sha256:` grammar; the POS row assertion
+ *  reads the fingerprint the WALK actually carried, captured on the leg
+ *  input — one identity for one flight, end to end. */
 interface ClassifiedFixture {
   parametersFingerprint: string
   targetManifest: Record<string, unknown>
@@ -527,7 +567,6 @@ function prepCall(world: Mounted, callId: string, todos: Array<{ content: string
   if (classified.ok !== true || classified.parametersFingerprint === undefined || classified.reviewPayload === undefined) {
     throw new Error(`fixture classify must pass (${callId}): ${JSON.stringify(classified)}`)
   }
-  callFingerprints.set(callId, String(classified.parametersFingerprint))
   return {
     parametersFingerprint: String(classified.parametersFingerprint),
     targetManifest: JSON.parse(JSON.stringify(classified.reviewPayload.targetManifest)) as Record<string, unknown>,
@@ -544,7 +583,12 @@ function execFor(callId: string, events: Array<{ type: string; data: unknown }>,
         append: (type: string, data: unknown) => { events.push({ type, data }) },
       },
     },
-    tokenKey: callId,
+    // THE real Host exec shape (fixed 639 `ToolExecution`): the registry
+    // mints ONE branded symbol per execution (`token`), the row keys its
+    // single-flight on it. NO `tokenKey` — that field does not exist on the
+    // public exec surface (the old fixture shipped it and masked the defect;
+    // a fresh symbol per call id, replay legs reuse the SAME exec object).
+    token: Symbol(`exec-${callId}`),
     ...over,
   }
 }
@@ -605,9 +649,17 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
     const world = await mountWorld('mount')
     expect(world.plane.ownNames.includes(A5_TODO_TOOL_NAME)).toBe(true)
     expect(world.familyKey.length).toBeGreaterThan(0)
-    // the one table answers BOTH readers with the SAME object (same source):
+    // the ONE PRODUCTION table answers BOTH readers with the SAME object
+    // (registry-owned: written by the registry's own register call above,
+    // read through the registry's own accessor — no spec-side table exists):
     expect(familyTable[world.familyKey]).toBe(familyTable[world.plane.placementFeed(A5_TODO_TOOL_NAME)?.definitionIdentity ?? ''])
+    expect(a5GovernedFamilyFor(world.familyKey)).toBe(familyTable[world.familyKey])
     expect(familyTable[world.familyKey]).toEqual({ familyId: A5_TODO_FAMILY_ID, adapterRevision: A5_TODO_ADAPTER_REVISION, providerIdentity: ARM_PROVIDER })
+    expect(Object.isFrozen(familyTable[world.familyKey])).toBe(true)
+    // the durable path is filled by the PRODUCTION shared read (fix-2): the
+    // registry function that the Control verifier's adapter awaits exists and
+    // answers this identity from the same table.
+    expect(typeof registryModule.readPaCallFacts).toBe('function')
     // the row mounts the CAPTURED native description bytes verbatim
     expect(world.todoDef.description).toBe(NATIVE_DESCRIPTION)
   })
@@ -615,14 +667,19 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
   it('FORMAL POSITIVE: real leader allow -> durable row carries the live list field-for-field -> one consume witness -> exactly one native append', async () => {
     const world = await mountWorld('pos')
     const events: Array<{ type: string; data: unknown }> = []
-    const callId = 'call-pos'
-    const classified = prepCall(world, callId, VALID_TODOS.map((t) => ({ content: t.content, status: t.status })))
+    // fix-1: the row's correlation is allocated BY THE MOUNT's ledger (one
+    // per execution token, realm-qualified so one flight has one id across
+    // the shared service); the first flight of a fresh mount is
+    // `plane-todo:<realm>-1` — the spec OBSERVES the allocation, it does
+    // not supply it.
+    const rowCallId = `plane-todo:${world.plane.realmId}-1`
+    const classified = prepCall(world, 'call-pos-prep', VALID_TODOS.map((t) => ({ content: t.content, status: t.status })))
     // the arm's grant-layer fingerprint carries the frozen `sha256:<hex64>`
     // grammar (the VALUE includes the prefix — the lane legs hit this live).
     expect(classified.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
 
-    const running = world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, execFor(callId, events))
-    const row = await waitRowForCall(callId)
+    const running = world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, execFor('call-pos', events))
+    const row = await waitRowForCall(rowCallId)
 
     // the durable row carries the WHOLE family block at full value, and the
     // target manifest is the live list: digest and counts move with content
@@ -643,6 +700,18 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
     })
     expect(String((manifest?.targetManifest as Record<string, unknown> | undefined)?.paramFingerprint ?? ''))
       .toBe(String(classified.targetManifest.paramFingerprint))
+    // fix-1 identity end-to-end: the walk, the leg and the DURABLE ROW all
+    // speak the ONE ledger correlation, and the manifest's fingerprint is the
+    // row's OWN classify answer captured on the leg input — never a fixture
+    // value (the row classified under its allocated correlation, which no
+    // spec-side call ever knew).
+    expect(world.legInputs.length).toBe(1)
+    const legInput = world.legInputs[0] as { callId?: string; request?: { callId?: string; parametersFingerprint?: string } }
+    expect(legInput.callId).toBe(rowCallId)
+    expect(legInput.request?.callId).toBe(rowCallId)
+    expect(String(legInput.request?.parametersFingerprint ?? '')).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(String(manifest?.callId)).toBe(rowCallId)
+    expect(String(manifest?.parametersFingerprint)).toBe(String(legInput.request?.parametersFingerprint))
 
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const result = await running
@@ -665,15 +734,15 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
   it('digest/counts are CONTENT-bound: a second list moves the manifest fields', async () => {
     const world = await mountWorld('pos2')
     const events: Array<{ type: string; data: unknown }> = []
-    const callId = 'call-pos2'
+    const rowCallId = `plane-todo:${world.plane.realmId}-1`
     const list = [
       { content: 'gamma', status: 'in_progress' },
       { content: 'alpha', status: 'pending' },
     ]
     const other = prepCall(world, 'call-pos2-other', VALID_TODOS.map((t) => ({ content: t.content, status: t.status })))
-    const classified = prepCall(world, callId, list)
-    const running = world.todoDef.execute({ todos: list }, execFor(callId, events))
-    const row = await waitRowForCall(callId)
+    const classified = prepCall(world, 'call-pos2-prep', list)
+    const running = world.todoDef.execute({ todos: list }, execFor('call-pos2', events))
+    const row = await waitRowForCall(rowCallId)
     const manifest = parsePaControlManifest(row.reviewPayload)
     expect(JSON.parse(JSON.stringify(manifest?.targetManifest ?? null))).toEqual(classified.targetManifest)
     expect(manifest?.targetManifest).toMatchObject({ counts: todoCounts(list) })
@@ -832,6 +901,114 @@ describe('A5M2-ASSEMBLY: the todo vertical mounts, registers once, walks the one
     expect(String((decided as { detail?: string }).detail ?? '')).toContain('family-claim-on-unregistered-binding')
     // refused BEFORE the durable write: no row exists for the claim.
     expect((await stateNow()).requests.length).toBe(before)
+  })
+
+  it('single-flight (fix-1): no token is a front refusal; one token runs ONE flight, settled is never re-armed', async () => {
+    const world = await mountWorld('sf')
+    const events: Array<{ type: string; data: unknown }> = []
+    const before = (await stateNow()).requests.length
+    // (a) an exec without the registry token: typed front refusal — zero
+    // classify, zero rows, zero appends (the row composes no identity itself).
+    const noToken = execFor('call-sf-none', events)
+    delete noToken.token
+    await expect(world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, noToken))
+      .rejects.toThrow(/exec-token-unbound/)
+    expect(events.length).toBe(0)
+    expect(world.nativeCalls.length).toBe(0)
+    expect((await stateNow()).requests.length).toBe(before)
+    // (b) IN FLIGHT: a second call on the SAME token is refused without
+    // touching the walking leg — the first flight still completes.
+    const exec = execFor('call-sf-replay', events)
+    const running = world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, exec)
+    await expect(world.todoDef.execute({ todos: [{ content: 'other', status: 'pending' }] }, exec))
+      .rejects.toThrow(/exec-token-replay/)
+    const row = await waitRowForCall(`plane-todo:${world.plane.realmId}-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    expect(events.length).toBe(1)
+    // (c) SETTLED: the same terminal token never re-arms — no new correlation,
+    // no new walk, no second row (the read row's ledger law, verbatim).
+    await expect(world.todoDef.execute({ todos: [{ content: 'later', status: 'pending' }] }, exec))
+      .rejects.toThrow(/exec-token-replay/)
+    expect(events.length).toBe(1)
+    expect(world.nativeCalls.length).toBe(1)
+    expect((await stateNow()).requests.length).toBe(before + 1)
+  })
+
+  it('fix-4 ordering: the owner-current leg runs BEFORE the classify freeze (no post-freeze revise pairs a stale plan)', async () => {
+    const world = await mountWorld('order')
+    const events: Array<{ type: string; data: unknown }> = []
+    world.authorityLog.push('row-start')
+    const running = world.todoDef.execute({ todos: VALID_TODOS.map((t) => ({ ...t })) }, execFor('call-order', events))
+    const row = await waitRowForCall(`plane-todo:${world.plane.realmId}-1`)
+    const after = world.authorityLog.slice(world.authorityLog.indexOf('row-start') + 1)
+    // the OWNER's republish leg answers first, then — and only then — the arm
+    // captures the live binding into the plan; the walk's own per-walk leg
+    // keeps running afterwards (partA's law, unchanged).
+    expect(after[0]).toBe('ensure')
+    expect(after[1]).toBe('freeze')
+    expect(after.slice(2)).toContain('ensure')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await running
+    expect(events.length).toBe(1)
+  })
+
+  it('race (fix-3): abort between the REAL consume and the body microtask — consumption stands, ZERO append, no body, listener removed', async () => {
+    // A FAITHFUL SIMULATION of the race state (the frozen production assembly
+    // is not patched, and it will not be): a real signal CAN flip between the
+    // kernel consume's synchronous block and the row's re-check microtask;
+    // the double below replays exactly that state. The signal reads on this
+    // path are POSITIONALLY FIXED (partA entry, the Control-wait setup — the
+    // wait is event-driven, so no timing-dependent polls —, the post-wait and
+    // edge checks, consume's `cancelRequested`, the row's re-check), so the
+    // flip arms on the LAST read: every earlier read answers false (consume
+    // really happens), the row's re-check answers true (the abort landed in
+    // the named window). If internal check positions ever shift, the leg
+    // fails LOUDLY — the run either takes the edge's cancelled path (zero
+    // consumption, the consumption assertion fails) or completes (the rejects
+    // assertion fails). There is no silent pass.
+    const mkRaceSignal = (flipAt: number) => {
+      const state = { reads: 0, added: 0, removed: 0 }
+      return {
+        sig: {
+          get aborted() { state.reads += 1; return state.reads >= flipAt },
+          addEventListener: (_type: string, _fn: unknown, _opts?: unknown) => { state.added += 1 },
+          removeEventListener: (_type: string, _fn: unknown, _opts?: unknown) => { state.removed += 1 },
+        },
+        state,
+      }
+    }
+    const list = VALID_TODOS.map((t) => ({ ...t }))
+    // CALIBRATION RUN: a fresh world, the SAME flight, never flipping — it
+    // measures the fixed read count of one full governed call.
+    const cal = await mountWorld('race-cal')
+    const calEvents: Array<{ type: string; data: unknown }> = []
+    const calSig = mkRaceSignal(Number.POSITIVE_INFINITY)
+    const calRunning = cal.todoDef.execute({ todos: list }, execFor('call-race-cal', calEvents, { signal: calSig.sig }))
+    const calRow = await waitRowForCall(`plane-todo:${cal.plane.realmId}-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: calRow.requestId, decision: 'allow' })
+    await calRunning
+    expect(calEvents.length).toBe(1)
+    expect(calSig.state.reads).toBeGreaterThan(2)
+    // THE RACE RUN: flip armed at the LAST read = the row's re-check.
+    const world = await mountWorld('race')
+    const events: Array<{ type: string; data: unknown }> = []
+    const race = mkRaceSignal(calSig.state.reads)
+    const running = world.todoDef.execute({ todos: list }, execFor('call-race', events, { signal: race.sig }))
+    const row = await waitRowForCall(`plane-todo:${world.plane.realmId}-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await expect(running).rejects.toThrow(/aborted after the execution edge consumed the grant and before the body began/)
+    // the consumed grant is LEDGER TRUTH: never rolled back…
+    const consumed = (await stateNow()).consumptions.filter((c) => String(c.requestId) === String(row.requestId))
+    expect(consumed.length).toBe(1)
+    // …while the body that never started appended NOTHING and reached no
+    // native entry (arm.cancel answered the abort — zero append is its law).
+    expect(events.length).toBe(0)
+    expect(world.nativeCalls.length).toBe(0)
+    // the abort listener discipline (fix-3 finally): every listener this call
+    // added came off before the row threw.
+    expect(race.state.added).toBeGreaterThanOrEqual(1)
+    expect(race.state.removed).toBe(race.state.added)
   })
 
   it('cancel (pre-aborted): the call stops before admission — zero rows, zero appends, zero consumption', async () => {

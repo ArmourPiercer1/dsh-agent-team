@@ -353,7 +353,7 @@ import { initialMcpGrantOf, staticCapabilitiesOf } from '../../../../domain/poli
 // blueprint's in-scope requirements, never by a second copy of semantics.
 import { scopeRequirementInputsOf } from '../../../requirements/scope-requirements.js'
 import { createPaControlLeg } from '../../../operation-permission/pa-control-bridge.js'
-import { publishPaMount, readPaCallFactsForCall, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
+import { A5_GOVERNED_FAMILIES, publishPaMount, readPaCallFactsForCall, registerA5GovernedFamily, resolvePaMount, revokePaMount } from './pa-mount-registry.mjs'
 // A5-M2 B-SESSION (CENTER vertical): the governed todo arm this assembly BOUNDS at
 // mount time over the bind-time captured native definition (the arm itself carries
 // no authority: admission lives in the M1 A assembly, the durable answers in the
@@ -361,38 +361,16 @@ import { publishPaMount, readPaCallFactsForCall, resolvePaMount, revokePaMount }
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
 
-// A5-M2 (CENTER): the plane's OWN governed-family registration, keyed by the trusted
-// definition identity of the binding a call actually runs under. It is the single source
-// for two things that must never disagree: which bindings may claim a family at all (the
-// leg's requirement, below) and what the CURRENT registration fact says (the facts fill,
-// below). MOUNT-TIME law (the B-SESSION vertical, first real family): the table starts
-// EMPTY — an unmounted world keeps its exact bytes, it never writes and neither reader
-// answers — and an entry is written by the setup itself, keyed by the RUNTIME definition
-// identity the seam's install pass minted for the placed row (the same identity the
-// Guard's binding feed answers; read through `a5PlaneValue.placementFeed` AFTER
-// publish). One identity, one family: a second DIFFERENT claim on the same identity is
-// a config defect and fails the setup, never a replacement.
-const A5_GOVERNED_FAMILIES = Object.create(null)
-
-/** Write ONE mount-time family registration into the single table both halves read
- *  (the leg's `governedFamilies`, and the `readCallFacts` governedFamily fill). */
-function registerA5GovernedFamily(definitionIdentity, entry) {
-  if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) {
-    throw new TypeError('A5 governed-family registration: the runtime definition identity must be a non-empty string (keying on anything else is a second identity system)')
-  }
-  if (entry === null || typeof entry !== 'object'
-    || typeof entry.familyId !== 'string' || entry.familyId.length === 0
-    || !Number.isInteger(entry.adapterRevision) || entry.adapterRevision < 0
-    || typeof entry.providerIdentity !== 'string' || entry.providerIdentity.length === 0) {
-    throw new TypeError('A5 governed-family registration: {familyId, adapterRevision, providerIdentity} is the frozen registration shape (the leg compares exactly these three fields)')
-  }
-  const existing = A5_GOVERNED_FAMILIES[definitionIdentity]
-  if (existing !== undefined) {
-    if (existing.familyId === entry.familyId && existing.adapterRevision === entry.adapterRevision && existing.providerIdentity === entry.providerIdentity) return
-    throw new Error(`A5 governed-family registration: definition identity '${definitionIdentity}' is already governed as family '${existing.familyId}'; a second different claim ('${entry.familyId}') on one identity is a config defect, never a re-mount to paper over`)
-  }
-  A5_GOVERNED_FAMILIES[definitionIdentity] = Object.freeze({ ...entry })
-}
+// A5-M2 (CENTER; moved by the root fix-2 round): the governed-family registration
+// table lives in `pa-mount-registry.mjs` (`A5_GOVERNED_FAMILIES` /
+// `registerA5GovernedFamily` / `a5GovernedFamilyFor`) — the ONE place where BOTH
+// readers already resolve the live binding, so the registration fact rides the
+// actual call-level facts AND the durable verifier through a single fill. The
+// leg's `governedFamilies` gate below and the mount-time write further down both
+// speak that same table; nothing here keeps a local copy (a caller-private table
+// left the durable verifier permanently reading "no registration" — the drift
+// this move removes). Mount-time law is unchanged: an unmounted world writes
+// nothing and neither reader answers.
 import { initialTemplateModelGrantOf } from '../../../agent-setup/model/index.js'
 import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // alpha.1 (plan §10): the capability wiring adapters — the team tool
@@ -2828,22 +2806,16 @@ export function createAgentBindings(deps) {
           // M1-D: the binding behind a call is resolved by its bindingId
           // FAMILY inside the entry, and zero/ambiguous answers stale the
           // call instead of falling back to revision 1.
-          // A5-M2: the current trusted registration is restated onto the call's own facts
-          // from that one table. An unanswered registration is NOT read as "no statement
-          // was made" - the guard treats it as a vanished registration and denies, which is
-          // exactly the fail-closed the family lane was measured needing.
-          readCallFacts: async (input) => {
-            const facts = await readPaCallFactsForCall(input)
-            if (facts === undefined || facts === null) return facts
-            const definitionIdentity = facts.binding === undefined || facts.binding === null
-              ? undefined
-              : facts.binding.definitionIdentity
-            const registered = definitionIdentity === undefined
-              ? undefined
-              : A5_GOVERNED_FAMILIES[String(definitionIdentity)]
-            if (registered === undefined) return facts
-            return { ...facts, governedFamily: registered }
-          },
+          // A5-M2 (root fix-2 round): the entry passes VERBATIM. The previous
+          // wrapper here read `facts.binding` off the entry's `{ kind, facts }`
+          // answer — a flat read of a wrapped shape that is permanently
+          // undefined — so its governedFamily fill NEVER fired, and the
+          // durable path filled nothing either: every governed row would have
+          // answered DRIFT at the verifier's family check. The registration
+          // fill now lives in the registry's shared read (the one place both
+          // paths resolve the live binding); a wrapper here would be a second
+          // source, and second sources are what this move removes.
+          readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5JobsBridge === null && a5TodoInject === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
