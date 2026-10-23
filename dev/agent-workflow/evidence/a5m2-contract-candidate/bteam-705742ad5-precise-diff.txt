@@ -1,0 +1,1857 @@
+commit 705742ad5b76aac3b14115ba8be6efe530cfda50
+Author: armourpiercer1 <gtx21@mails.tsinghua.edu.cn>
+Date:   Fri Oct 23 18:05:39 2026 +0000
+
+    feat(a5-m2): B-TEAM governed-adapter family — records 74-82+86 member operations (UNWIRED; DELEGATES the existing governed chain per contract, revision 1)
+    
+    ROOT 17:51 ASSIGNMENT, CANDIDATE 1 (taskID bc81187e-b93e-4817-a590-eb8abd2a27c5).
+    Read-only collection at int tip 3da21a16a3 FIRST: none of the three candidate
+    surfaces landed; overlap gate CHECKED FIRST: g1-surface-adapters owns the
+    B-CONTROL five (83/84/85/87/88 request/resolve/pending/grant/revoke) — NOT
+    re-adapted; the ten member-operation records 74-82+86 = family B-TEAM are
+    uncovered anywhere on int tip. New exclusive files only; census proposed path
+    team.mjs superseded by the accepted house naming schedule-adapters.mjs uses
+    (-adapters suffix); no shared-file bytes, no types.ts, no census.
+    
+    DELEGATION MODE (the family's honest core — contract §B-TEAM rules it):
+    B-TEAM's natives are our OWN lane products — the REAL createTeamTools(options)
+    definitions (packages/tools/src/tools.ts:1524, fifteen-tool factory). The
+    contract says 全部采用既有Team service角色/归属校验，P再接A and 不得重复建立
+    同义service层 — so the rows capture the REAL governed definitions, keep EVERY
+    face verbatim BY REFERENCE (root 8b4 law), replace ONLY execute, and delegate
+    each admitted call BACK into the same captured governed execute: caller-root
+    binding (tools.ts:459-477), resolveToolCaller per-call identity (:261-316),
+    the Leader-gate, the last-mile guard, the facade/messaging/activity
+    satellites — NOTHING re-implemented (NAMED GAP SERVICE_ENTRY_DELEGATION
+    states the boundary: the row VERIFIES NONE of that at its seam; family C2
+    stays the paired acceptance's obligation). What the row ADDS: the REQUIRED
+    admit seat (L10, no unadmitted path), the pure argument mirror answering the
+    LANE'S OWN rejected-value bytes {status:'rejected',code:TEAM_TOOL_BAD_
+    ARGUMENTS,message,details?} byte-identically with zero delegate entry (L5,
+    ORDER NOTE recorded), the plan memo (L8 + PLAN_ONCE_MEMO), per-dispatch drift
+    refusals (L7: liveNative def identity + liveTeamDelegates object + rebound
+    method), the L3 capture/delegate PAIRING (teamDelegates[name] must BE the
+    captured native execute — a rebuilt set behind a stale capture is TEAM_SET_
+    SPLIT at assembly), unexpected errors thrown through (L6, no value
+    fabrication), drain = new-call prohibition (L9), and familyRegistrations()
+    with placement-feed keys only (PLACEMENT_KEY_ABSENT/MOVED throw; CENTER owns
+    team registration agent-bindings.mjs:2444-2456 — this module registers
+    nothing, UNWIRED).
+    
+    CALLER LAW (contrast B-SCHEDULE, NAMED GAP CALLER_IDENTITY): the lane surface
+    resolves the caller PER CALL from exec.agent — the row binds no Agent object,
+    passes exec BY REFERENCE, and a rootSessionId argument stays a CLAIM the
+    delegated caller-root gate adjudicates (C1: never trusted from the string).
+    
+    SPEC 21 legs: REAL createTeamTools over recorded port doubles (facade/
+    controlService/messaging/activity/resolveCaller) — C1-grade real defs,
+    disclosed doubles, NOT C2 (no Host, no durable storage, no real Team);
+    every-face-by-reference + only-execute-replaced parity vs the REAL factory
+    products; real minimum-entry shape; ten honest DECLARED rows with zero
+    captures; the assembly-refusal matrix incl. TEAM_SET_SPLIT (rebuild behind a
+    stale capture) and the split-mount ordering; the byte-mirror matrix (missing/
+    empty/over-long fields, the delegate exactly-one law, collect token-array
+    law, progress closed enum — lane bytes, zero delegate entry); admit deny/
+    envelope legs; delegated-governance legs PROVE the existing chain runs
+    (cross-root → TEAM_TOOL_CALLER_ROOT_MISMATCH with zero facade entry, caller-
+    unresolved value, guard-blocked value passthrough with requestId, member
+    caller → TEAM_TOOL_ARCHIVE_NOT_LEADER before guard, unexpected error REJECTS,
+    tool-law miss answers the lane VALUE not a throw); plan memo incl. the
+    PINNED copy-reuse boundary; drift matrix zero-entry; drain; registration
+    keys/throws; mutual non-recognition (the B-CONTROL five + team_resolve_control
+    cannot ride: NON_FAMILY_CAPTURE); module closure exactly [node:crypto].
+    
+    GATES (verbatim): node --check = 0; TRUE VITEST_EXIT=0 (team 21/21 +
+    schedule-regression 29/29 = "Tests 50 passed (50)"); tsc -p packages/runtime
+    --noEmit: my three files contribute ZERO (94 total = known baseline);
+    eslint three files = 0 errors 0 warnings. Windows: NOT RUN, not claimed.
+
+diff --git a/packages/runtime/src/plugin/live/governed-families/team-adapters.d.mts b/packages/runtime/src/plugin/live/governed-families/team-adapters.d.mts
+new file mode 100644
+index 000000000..735510c84
+--- /dev/null
++++ b/packages/runtime/src/plugin/live/governed-families/team-adapters.d.mts
+@@ -0,0 +1,212 @@
++/**
++ * team-adapters.d.mts — the tsc type surface of `team-adapters.mjs` (the
++ * same `.mjs` + adjacent `.d.mts` pattern as `schedule-adapters`,
++ * `g1-query-wiring`, `g5-goal-service`, `g6-session-query`: only `.mjs`
++ * files load at runtime, and tsc (NodeNext) resolves THESE declarations for
++ * typed importers of the `.mjs`).
++ *
++ * SCOPE HONESTY: this is the MINIMAL surface actually consumed by the shared
++ * PAIRED registration writer and `test/a5m2-team-adapters.test.ts` — NOT the
++ * module's full runtime shape. The LANE VALUES (TeamToolsResult, the facade
++ * outcomes, guard/blocked shapes) stay structurally opaque here: their bytes
++ * are published by `packages/tools/src/types.ts` and this surface
++ * deliberately does NOT restate them (contract §B-TEAM: no synonymous
++ * service layer — that law covers the TYPE surface too). Widening beyond the
++ * consumed members requires real signatures (never `any`).
++ *
++ * @module @dsh-agent-team/runtime/src/plugin/live/governed-families/team-adapters (type surface)
++ */
++
++/** One B-TEAM record spec (census recordIndex + closed operation). */
++export interface BTeamRecordSpec {
++  readonly recordIndex: number
++  readonly operation: string
++}
++
++/** The mandatory output face of a registration-ready definition (the
++ *  makeDefinition product carries `output: {schema, render}`; schema
++ *  SEMANTICS stay owned by the lane's own types, never restated here). */
++export interface BTeamOutputFace {
++  readonly schema: unknown
++  readonly render: (...args: never[]) => unknown
++  readonly presentationMeta?: (...args: never[]) => unknown
++}
++
++/** The lane execution context (TeamToolExecContext): the row holds it
++ *  OPEN — it never reads or restates it (the delegated chain resolves the
++ *  live caller from it per call, L4). */
++export type BTeamExec = Record<string, unknown>
++
++/** One placed definition: the COMPLETE captured governed definition — every
++ *  presentation face (`parameters`, `output`, any future face) riding
++ *  VERBATIM by reference — with ONLY `execute` replaced by the wired
++ *  classify -> admit -> delegate body (root 8b4 law). The open index stands
++ *  for "every captured face travels"; the named members are the real
++ *  registration minimum-entry law the assembly gate mirrors. */
++export interface BTeamDefinition {
++  readonly [face: string]: unknown
++  readonly name: string
++  readonly description: string
++  readonly output: BTeamOutputFace
++  readonly parameters?: Record<string, unknown>
++  readonly timeoutMs?: number
++  readonly execute: (args: unknown, exec: BTeamExec) => Promise<unknown>
++}
++
++/** The captured governed face — a COMPLETE registration-ready
++ *  createTeamTools definition plus the identity the integrator minted for
++ *  the CAPTURE, which is NEVER the family key (placed vs captured stay
++ *  visibly separate). */
++export interface BTeamNativeCapture {
++  readonly native: {
++    readonly [face: string]: unknown
++    readonly name: string
++    readonly description: string
++    readonly output: BTeamOutputFace
++    readonly parameters?: unknown
++    readonly timeoutMs?: number
++    readonly execute: (args: unknown, exec: unknown) => Promise<unknown>
++  }
++  readonly definitionIdentity: string
++}
++
++/** The name -> CURRENT governed implementation port. At assembly each entry
++ *  MUST BE the captured native execute (L3 pairing — one createTeamTools
++ *  set); per dispatch `liveTeamDelegates()` must answer this SAME object. */
++export type BTeamDelegates = {
++  readonly [name: string]: (args: unknown, exec: BTeamExec) => Promise<unknown>
++}
++
++/** The contract §B-TEAM target facts every plan carries: the durable object
++ *  the operation addresses, the root/member CLAIMS with where each is
++ *  ADJUDICATED (always the delegated chain — never the row), the request-
++ *  token revision law, and the effect delta label. */
++export interface BTeamPlanTarget {
++  readonly contract: string
++  readonly root: { readonly claim: string | null; readonly adjudication: string }
++  readonly member: unknown
++  readonly object: string
++  readonly action: string
++  readonly revision: string
++  readonly effect: string
++  readonly face: string
++}
++
++/** One frozen classify plan (the ONLY thing delegate ever runs). */
++export interface BTeamPlan {
++  readonly rowName: string
++  readonly recordIndex: number
++  readonly operation: string
++  readonly target: BTeamPlanTarget
++  readonly args: Readonly<Record<string, unknown>>
++  readonly toolError?: {
++    readonly status: 'rejected'
++    readonly code: string
++    readonly message: string
++    readonly details?: Record<string, unknown>
++  }
++  readonly parametersFingerprint: string
++  readonly namedGaps: Readonly<Record<string, string>>
++}
++
++/** Typed refusal (the module's own closed codes, P_B_TEAM_*). */
++export interface BTeamRefusal {
++  readonly ok: false
++  readonly code: string
++  readonly detail: string
++}
++
++/** The presentation row (ACTIVE rows carry the captured faces; DECLARED rows
++ *  are honest inactive placeholders). */
++export interface BTeamRow {
++  readonly name: string
++  readonly familyId: 'B-TEAM'
++  readonly recordIndex: number
++  readonly mountCondition: 'always'
++  readonly active: boolean
++  readonly capturePresent: boolean
++  readonly description: string | null
++  readonly parameters: Record<string, unknown> | null
++  readonly outputSchema: unknown
++  readonly definitionIdentity: string | null
++  readonly effectDelta?: string
++  readonly namedGaps: Readonly<Record<string, string>>
++  readonly classify: (rawArgs: unknown) => { ok: true; plan: BTeamPlan } | BTeamRefusal
++  readonly delegate: (
++    plan: BTeamPlan,
++    ctx: { readonly exec?: BTeamExec },
++  ) => Promise<{ ok: true; settled: 'tool-law-value' | 'delegated'; value: unknown } | BTeamRefusal>
++}
++
++export interface BTeamAdmitContext {
++  readonly name: string
++  readonly recordIndex: number
++  readonly familyId: 'B-TEAM'
++  readonly classified: { ok: true; plan: BTeamPlan } | BTeamRefusal
++  readonly exec: unknown
++}
++export type BTeamAdmitAnswer = { ok: boolean; code?: string; detail?: string }
++export type BTeamAdmit = (ctx: BTeamAdmitContext) => Promise<BTeamAdmitAnswer>
++
++/** Factory input (everything REQUIRED that a capture is presented:
++ *  liveNative, teamDelegates, liveTeamDelegates, placementFeed, admit). */
++export interface BTeamAssemblyInput {
++  readonly providerId?: string
++  readonly captured?: Readonly<Record<string, BTeamNativeCapture>>
++  readonly liveNative?: (name: string) => unknown
++  readonly teamDelegates?: BTeamDelegates
++  readonly liveTeamDelegates?: () => unknown
++  readonly placementFeed?: (
++    name: string,
++  ) => { readonly definitionIdentity?: string; readonly realmId?: string } | undefined
++  readonly admit?: BTeamAdmit
++  readonly observe?: (row: unknown) => void
++}
++
++/** One mount-moment registration entry (paired writer -> registerA5GovernedFamily). */
++export interface BTeamFamilyRegistration {
++  readonly name: string
++  readonly recordIndex: number
++  readonly definitionIdentity: string
++  readonly entry: {
++    readonly familyId: 'B-TEAM'
++    readonly adapterRevision: number
++    readonly providerIdentity: string
++  }
++}
++
++export interface BTeamAssembly {
++  readonly ok: true
++  readonly familyId: 'B-TEAM'
++  readonly revision: number
++  readonly mountCondition: 'always'
++  readonly providerId: string
++  readonly placementNames: readonly string[]
++  readonly definitions: readonly BTeamDefinition[]
++  readonly rows: Readonly<Record<string, { readonly status: string; readonly row: BTeamRow }>>
++  readonly declared: readonly {
++    readonly name: string
++    readonly recordIndex: number
++    readonly familyId: 'B-TEAM'
++    readonly status: 'DECLARED-INACTIVE'
++    readonly reason: string
++    readonly captureReportedIgnored: boolean
++  }[]
++  readonly rowOf: (name: string) => BTeamRow | undefined
++  readonly drain: () => { readonly event: string; readonly semantics: string }
++  readonly inFlight: () => { readonly dispatches: number; readonly refuses: number }
++  readonly familyRegistrations: () => readonly BTeamFamilyRegistration[]
++}
++
++export type BTeamAssemblyResult = BTeamAssembly | { readonly ok: false; readonly code: string; readonly message: string }
++
++export declare const A5_B_TEAM_FAMILY_ID: 'B-TEAM'
++export declare const A5_B_TEAM_ADAPTER_REVISION: number
++export declare const A5_B_TEAM_MOUNT_CONDITION: 'always'
++export declare const A5_B_TEAM_RECORD_SPECS: Readonly<Record<string, BTeamRecordSpec>>
++export declare const A5_B_TEAM_TOOL_NAMES: readonly string[]
++export declare const A5_B_TEAM_EFFECT_LABELS: Readonly<Record<string, string>>
++export declare const A5_B_TEAM_CODES: Readonly<Record<string, string>>
++export declare const A5_B_TEAM_NAMED_GAPS: Readonly<Record<string, string>>
++
++export declare function createTeamAdapterAssembly(input?: BTeamAssemblyInput): BTeamAssemblyResult
+diff --git a/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs b/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs
+new file mode 100644
+index 000000000..c9d3ef279
+--- /dev/null
++++ b/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs
+@@ -0,0 +1,851 @@
++/**
++ * governed-families/team-adapters.mjs — A5-M2 governed-adapter rows for the
++ * TEN B-TEAM member-operation records (frozen dispatch index
++ * M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json records 74–82, 86; family law
++ * M0-B-FAMILY-TARGET-CONTRACTS.md §B-TEAM). UNWIRED by ruling: NOTHING here
++ * registers or mounts anything; the PAIRED registration writer feeds
++ * `familyRegistrations()` entries at the mount moment exactly as the
++ * B-SCHEDULE family does (schedule-adapters.mjs is the settled house style).
++ *
++ * ── THE DELEGATION-MODE DECISION (read this first) ─────────────────────────
++ * B-TEAM's "native" is NOT a Host defineTool product: the ten tools are our
++ * OWN lane products built by `createTeamTools(options)`
++ * (packages/tools/src/tools.ts:1524, the closed fifteen-tool factory; the
++ * five B-CONTROL siblings records 83/84/85/87/88 are g1-surface-adapters'
++ * landed facts and are NOT re-adapted here — the families are mutually
++ * UNRECOGNIZED). §B-TEAM rules the mechanism twice over: "全部采用既有Team
++ * service角色/归属校验，P再接A" (run ALL existing Team-service role/ownership
++ * checks; P re-walks A) and "不得重复建立同义service层" (do NOT re-establish
++ * a synonymous service layer). Therefore THIS family captures the REAL
++ * createTeamTools definitions, keeps every face verbatim, replaces ONLY
++ * `execute`, and delegates each admitted call to the SAME captured governed
++ * execute — the existing chain (makeDefinition's common entry → caller-root
++ * binding → per-spec service role checks → last-mile guard → facade/
++ * messaging/activity satellites). The row never re-implements any of it:
++ * what the row ADDS is exactly the REQUIRED admit seat (L10), the pure
++ * argument-law mirror answering the LANE's OWN typed rejected VALUES (L5),
++ * the plan memo (L8), and the per-dispatch drift refusals (L7) — each with
++ * zero delegate entry and NO native-fallback path. The prior B-SCHEDULE
++ * pattern delegated to a service port because the host kept service and
++ * tool-body separate; here the tool body IS the sanctioned service entry
++ * (NAMED GAP SERVICE_ENTRY_DELEGATION states the boundary honestly).
++ *
++ * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
++ * the audit, so these path facts never live in values) ─────────────────────
++ * all ten        LANE pkg @dsh-agent-team/tools, packages/tools/src/tools.ts:
++ *                createTeamTools(options) @:1524 → makeDefinition(options, spec)
++ *                @:425: the COMMON ENTRY every tool runs — isArgsRecord gate
++ *                :447 (TeamToolArgsError 'team-tools: the tool arguments must
++ *                be a JSON object'), requireStringField(rootSessionId, 255)
++ *                :449, validateRequestToken(requestToken, 128) :454,
++ *                resolveToolCaller(options, exec) :455 (reads exec.agent.id
++ *                PER CALL :265-269, options.resolveCaller(sessionId) :284,
++ *                malformed/throwing resolver → TEAM_TOOL_CALLER_UNRESOLVED
++ *                rejected VALUE :269-313), the P0 CALLER-ROOT BINDING gate
++ *                :459-477 (caller's OWNING root must equal the requested
++ *                root → TEAM_TOOL_CALLER_ROOT_MISMATCH rejected VALUE with
++ *                {callerRootSessionId, requestedRootSessionId} details),
++ *                then spec.run(ctx, args); rejectFromError @:198 maps the
++ *                typed lane errors to {status:'rejected', code, message,
++ *                details?} and RE-THROWS anything unexpected. Argument law
++ *                bytes: packages/tools/src/tokens.ts — TeamToolArgsError
++ *                (code TEAM_TOOL_BAD_ARGUMENTS), requireStringField throws
++ *                `team-tools: required argument '<f>' is missing` /
++ *                `team-tools: argument '<f>' must be non-empty` /
++ *                `team-tools: argument '<f>' exceeds <n> characters` with
++ *                {field}/{field,maxLength,length} details, optionalStringField
++ *                treats empty as ABSENT, validateRequestToken = ≤128.
++ *                Lengths (tools.ts :136-150): root 255, body 8192, subject
++ *                256, summary 512, lastAction 256, correlation 128,
++ *                taskSummary 512, prompt 16384, attachedContext 32768,
++ *                label 256, templateId 256, instanceId 256.
++ * per-tool faces (spec @line, closed required + run-time argument law this
++ * module MIRRORS as pure VALUES):
++ *   team_list_members    :496 — required rootSessionId, requestToken; no run-side law
++ *   team_list_templates  :518 — same
++ *   team_inspect_config  :540 — + targetInstanceId (requireStringField 256) :570
++ *   team_create_member   :570 — + delegationTemplateId (256), label (256); optional
++ *                          groupId (256), workspace (512) — empty = absent
++ *   team_delegate        :612 — label (256), prompt (16384) required; EXACTLY ONE of
++ *                          delegationTemplateId / delegationInstanceId (both/neither →
++ *                          TeamToolArgsError, messages mirrored verbatim); optional
++ *                          groupId 256, workspace 512, taskSummary 512, attachedContext
++ *                          32768; `async:false` = sync, ABSENT = async (2026-09-27 ruling)
++ *   team_follow_up       :708 — + targetInstanceId (256), prompt (16384); optional
++ *                          taskSummary 512, attachedContext 32768; async law same
++ *   team_collect         :770 — requestTokens: non-empty array ≤64 non-empty strings
++ *                          each ≤128 (three closed TeamToolArgsError messages mirrored)
++ *   team_send_message    :815 — recipientInstanceId (256), body (8192); optional
++ *                          subject (256); guarded on the target (executeGuarded)
++ *   team_report_progress :854 — instanceId (256), subject (256), progress (closed enum
++ *                          in-progress|completed|blocked, ≤32 — enum miss mirrored);
++ *                          optional summary 512, lastAction 256, correlation 128;
++ *                          guarded; ONE bounded retry on ACTIVITY_SEQUENCE_STALE
++ *   team_archive_member  :1195 — targetInstanceId (256); Leader-gate (caller.kind ===
++ *                          'instance' && caller.instanceId === LEADER_INSTANCE_ID else
++ *                          TEAM_TOOL_ARCHIVE_NOT_LEADER rejected VALUE BEFORE guard and
++ *                          any effect) is CALLER-DEPENDENT → it runs in the delegated
++ *                          chain, never mirrored here (the row holds no caller facts)
++ * registration         CENTER-owned: packages/runtime/src/plugin/live/
++ *                      agent-bindings.mjs:2444-2456 (the member/leader tool
++ *                      binding) — this module registers nothing (L11).
++ * guard               executeGuarded (tools.ts, SD-GUARD): well-formed
++ *                      instance ids ALWAYS consult the last-mile guard before
++ *                      the satellite call; blocked verdicts are VALUES — all
++ *                      inside the delegated chain.
++ *
++ * ── LAW INDEX ──────────────────────────────────────────────────────────────
++ *  L1 HONEST DECLARED ROWS: mountCondition is `always` for all ten records,
++ *     so the ONLY activation gate is a COMPLETE capture — an absent capture
++ *     leaves an honest DECLARED-INACTIVE row whose classify/delegate refuse
++ *     typed with zero delegate entry; a half-capture is an ASSEMBLY refusal
++ *     (the real registration minimum-entry shape law: name/description/
++ *     output{schema,render}/execute/definitionIdentity), never a demoted row.
++ *  L2 ONLY EXECUTE IS REPLACED (root 8b4 law): the placed definition spreads
++ *     the COMPLETE captured definition and swaps ONLY `execute`; name/
++ *     description/compiled parameters/output{schema,render}/every
++ *     presentation face ride verbatim BY REFERENCE (the spec checks every
++ *     untouched face is === the captured object).
++ *  L3 CAPTURE/PORT PAIRING: the REQUIRED `teamDelegates` port answers each
++ *     family name with the CURRENT governed implementation, and at assembly
++ *     `teamDelegates[name]` MUST BE the captured native execute itself (the
++ *     capture and the port are two reads of the SAME createTeamTools set —
++ *     a rebuilt set is a split mount, refused TEAM_SET_SPLIT before any row
++ *     exists). No lane import: the module takes ONLY the injected faces
++ *     (node:crypto is its only import, exactly as schedule-adapters).
++ *  L4 CALLER IDENTITY IS THE DELEGATED CHAIN'S (contrast B-SCHEDULE): the
++ *     lane surface resolves the caller PER CALL from exec.agent
++ *     (tools.ts:265-269) and enforces the durable caller-root binding
++ *     (:459-477) — live facts by construction. The row binds NO agent object,
++ *     mints NO identity claim, and passes `exec` through BY REFERENCE; an
++ *     unresolvable caller answers the lane's own TEAM_TOOL_CALLER_UNRESOLVED
++ *     VALUE from inside the delegated chain (NAMED GAP CALLER_IDENTITY).
++ *  L5 PURE ARGUMENT MIRROR, LANE BYTES: classify runs the common-entry law
++ *     (args record → rootSessionId ≤255 → requestToken ≤128) and the per-tool
++ *     spec.run pure law (required fields, lengths, the delegate exactly-one
++ *     law, the collect token-array law, the progress closed enum) answering
++ *     the LANE'S OWN rejected-VALUE shape {status:'rejected',
++ *     code:'TEAM_TOOL_BAD_ARGUMENTS', message, details?} with byte-identical
++ *     messages — the lane never throws these at the model (rejectFromError
++ *     maps them), so the row answers them as VALUES too, never throws them.
++ *     ORDER NOTE (recorded): the common-entry mirror runs where the lane
++ *     runs it (before the caller path); the per-tool mirror runs EARLIER
++ *     than the lane (the lane checks inside spec.run, after caller
++ *     resolution) — a strict tightening that can only turn a would-be
++ *     caller-error or later rejection into an earlier ARG rejection with the
++ *     lane's own bytes; it never turns a lane rejection into an accept, and
++ *     the delegated chain re-runs the full order anyway. Caller-dependent
++ *     gates (Leader-gate, guard, roles, quotas, envelope) are NEVER mirrored.
++ *  L6 UNEXPECTED ERRORS PASS THROUGH: the delegated chain maps every TYPED
++ *     lane error to a rejected VALUE (rejectFromError) and re-throws only
++ *     the unexpected; the row catches NOTHING and fabricates no error map —
++ *     no duck-coding against error shapes (root ③ spirit: no foreign error
++ *     bytes ever enter a value the row mints; the row mints no values from
++ *     errors at all).
++ *  L7 PER-DISPATCH EDGE RE-VERIFY: before any delegate entry the row
++ *     re-answers REQUIRED `liveNative(name)` — the definition OBJECT
++ *     identity, its description bytes, its compiled parameters, and its
++ *     execute function must match the bind-time capture — and REQUIRED
++ *     `liveTeamDelegates()`, which must answer the SAME bound port OBJECT
++ *     whose `name` method is still the frozen delegate. Any drift refuses
++ *     typed with ZERO delegate entry: there is no replacement-body path and
++ *     no native fallback (the governed row IS the only path it serves).
++ *  L8 PLAN MEMO, RUN THE FRESH PLAN (root ④ boundary stated honestly):
++ *     classify freezes {args snapshot, operation, target,
++ *     parametersFingerprint, toolError?}; delegate re-derives classify on the
++ *     snapshot, requires an equal fingerprint, refuses a foreign plan, a
++ *     mutated/stale plan, and a REPLAY OF THE SAME CONSUMED PLAN OBJECT with
++ *     zero delegate entry — an INTERNAL MEMO, NOT the one-shot ledger
++ *     (NAMED GAP PLAN_ONCE_MEMO: real consumedProof is the CENTER PA edge).
++ *     The requestToken (the durable facade idempotency identity) rides in
++ *     the snapshot untouched — retry discipline stays the model's, the
++ *     facade adjudicates (target.revision law).
++ *  L9 DRAIN = NEW-CALL PROHIBITION ONLY. The lane's durable commits (ad-
++ *     missions, messages, activity rows, lifecycle facts) stay durable;
++ *     drain settles nothing, rolls nothing back, revives nothing.
++ *  L10 NO UNADMITTED PATH: the factory REQUIRES `admit` — every placed
++ *     definition runs classify → admit → delegate; any refusal throws with
++ *     the refusing side's OWN typed bytes and zero delegate entry. The
++ *     plane's PA walk occupies the seat; this module performs no PA walk.
++ *  L11 UNWIRED / CENTER OWNS REGISTRATION (§B-TEAM): registration is
++ *     agent-bindings.mjs:2444-2456 territory (CENTER); this module registers
++ *     nothing, mounts nothing, imports nothing outside node:crypto. The
++ *     PAIRED registration writer feeds familyRegistrations() entries to
++ *     registerA5GovernedFamily at the mount moment (AFTER publish); the
++ *     registration key is the placement feed's RUNTIME identity of the
++ *     PLACED definition, read fresh — a guessed key throws, never skips.
++ *
++ * NAMED GAPS (carried verbatim on every plan, never faked closed) — see
++ * A5_B_TEAM_NAMED_GAPS below.
++ *
++ * Windows dimensions: NOT RUN on this Linux harness, never claimed.
++ *
++ * @module @dsh-agent-team/runtime/plugin/live/governed-families/team-adapters
++ */
++import { createHash } from 'node:crypto'
++
++/** Census family (M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX records 74–82, 86). */
++export const A5_B_TEAM_FAMILY_ID = 'B-TEAM'
++export const A5_B_TEAM_ADAPTER_REVISION = 1
++/** Frozen mount condition of all ten records (always). */
++export const A5_B_TEAM_MOUNT_CONDITION = 'always'
++
++/** The ten records: census recordIndex + the row's closed operation. */
++export const A5_B_TEAM_RECORD_SPECS = Object.freeze({
++  team_list_members: Object.freeze({ recordIndex: 74, operation: 'team-list-members' }),
++  team_list_templates: Object.freeze({ recordIndex: 75, operation: 'team-list-templates' }),
++  team_inspect_config: Object.freeze({ recordIndex: 76, operation: 'team-inspect-config' }),
++  team_create_member: Object.freeze({ recordIndex: 77, operation: 'team-create-member' }),
++  team_delegate: Object.freeze({ recordIndex: 78, operation: 'team-delegate' }),
++  team_follow_up: Object.freeze({ recordIndex: 79, operation: 'team-follow-up' }),
++  team_collect: Object.freeze({ recordIndex: 80, operation: 'team-collect' }),
++  team_send_message: Object.freeze({ recordIndex: 81, operation: 'team-send-message' }),
++  team_report_progress: Object.freeze({ recordIndex: 82, operation: 'team-report-progress' }),
++  team_archive_member: Object.freeze({ recordIndex: 86, operation: 'team-archive-member' }),
++})
++export const A5_B_TEAM_TOOL_NAMES = Object.freeze([
++  'team_list_members', 'team_list_templates', 'team_inspect_config',
++  'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
++  'team_send_message', 'team_report_progress', 'team_archive_member',
++])
++
++/**
++ * The lane's per-target read/write effect-delta label per record (§B-TEAM:
++ * create/delegate/followup含child运行及预算, collect含返回状态读, send/report
++ * 含durable消息写, archive含成员生命周期). Comment-side ledger values ride
++ * the plan as the contract label; the row OBSERVES none of it (the delegated
++ * chain adjudicates — SERVICE_ENTRY_DELEGATION).
++ */
++export const A5_B_TEAM_EFFECT_LABELS = Object.freeze({
++  team_list_members: 'S(read) — the durable Team roster through the existing facade action',
++  team_list_templates: 'S(read) — the bound blueprint templates through the existing facade action',
++  team_inspect_config: 'S(read) — ONE member\'s durable effective-policy view (config object)',
++  team_create_member: 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)',
++  team_delegate: 'I + S(durable work-unit admission; create-form additionally mints the member-lifecycle fact; child run + budget INSIDE the delegated chain; requestToken = the facade idempotency identity)',
++  team_follow_up: 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)',
++  team_collect: 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing',
++  team_send_message: 'I + S(durable message write to the member\'s bound session via the messaging coordinator; relay policy + guard INSIDE the delegated chain; message-commit uncertainty is NOT blindly retried — that law lives in the coordinator)',
++  team_report_progress: 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)',
++  team_archive_member: 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)',
++})
++
++/** Typed refusal codes OWNED by this module (closed set). */
++export const A5_B_TEAM_CODES = Object.freeze({
++  INPUT_INVALID: 'P_B_TEAM_INPUT_INVALID',
++  CAPTURE_ABSENT: 'P_B_TEAM_CAPTURE_ABSENT',
++  CAPTURE_INCOMPLETE: 'P_B_TEAM_CAPTURE_INCOMPLETE',
++  NON_FAMILY_CAPTURE: 'P_B_TEAM_NON_FAMILY_CAPTURE',
++  LIVE_NATIVE_ABSENT: 'P_B_TEAM_LIVE_NATIVE_ABSENT',
++  PORT_ABSENT: 'P_B_TEAM_PORT_ABSENT',
++  PORT_METHOD_ABSENT: 'P_B_TEAM_PORT_METHOD_ABSENT',
++  TEAM_SET_SPLIT: 'P_B_TEAM_TEAM_SET_SPLIT',
++  PORT_DRIFT: 'P_B_TEAM_PORT_DRIFT',
++  DEFINITION_DRIFT: 'P_B_TEAM_DEFINITION_DRIFT',
++  ADMISSION_ABSENT: 'P_B_TEAM_ADMISSION_ABSENT',
++  NOT_OWN_PLAN: 'P_B_TEAM_NOT_OWN_PLAN',
++  PLAN_STALE: 'P_B_TEAM_PLAN_STALE',
++  ALREADY_DISPATCHED: 'P_B_TEAM_ALREADY_DISPATCHED',
++  DRAINING: 'P_B_TEAM_DRAINING',
++  PLACEMENT_KEY_ABSENT: 'P_B_TEAM_PLACEMENT_KEY_ABSENT',
++  PLACEMENT_KEY_MOVED: 'P_B_TEAM_PLACEMENT_KEY_MOVED',
++})
++const CODES = A5_B_TEAM_CODES
++
++/**
++ * The dimensions this adapter can NEVER serve through its seam — carried
++ * verbatim on every plan instead of being faked closed.
++ */
++export const A5_B_TEAM_NAMED_GAPS = Object.freeze({
++  SERVICE_ENTRY_DELEGATION: 'THE DELEGATE IS THE EXISTING GOVERNED CHAIN, NOT A RE-IMPLEMENTATION (§B-TEAM: 全部采用既有Team service角色/归属校验 / 不得重复建立同义service层): every role/ownership/quota/envelope check, the last-mile guard (blocked VALUES), the create/delegate single-flight, the follow-up no-double-start law, the archive drain-then-commit lifecycle, and the message-commit-uncertainty no-blind-retry law run INSIDE the delegated createTeamTools execution (tools.ts makeDefinition:425-493 → resolveToolCaller:261 → caller-root binding:459-477 → executeGuarded → facade/messaging/activity). This row VERIFIES NONE of that at its seam — what it adds is the REQUIRED admit seat, the pure argument mirror, the plan memo, and the per-dispatch drift refusals, each with zero delegate entry. The family C2 (10/10 positives + cross-root/member/role negatives through the REAL services) is the paired acceptance\'s obligation, not this module\'s.',
++  CALLER_IDENTITY: 'CALLER IDENTITY AND THE CALLER-ROOT BINDING ARE THE DELEGATED CHAIN\'S PER-CALL FACTS (tools.ts:265-269 reads exec.agent.id every call; :459-477 compares the resolver\'s OWNING root against the requested root — TEAM_TOOL_CALLER_UNRESOLVED / TEAM_TOOL_CALLER_ROOT_MISMATCH are the lane\'s own rejected VALUES). The row binds no Agent object and mirrors no caller facts: a rootSessionId ARGUMENT is always a CLAIM the delegated chain adjudicates against durable ownership — never trusted from the caller string (C1). (Contrast B-SCHEDULE: the host tool bound an Agent at register time, so that row re-checks the reference; this lane surface is per-call by construction.)',
++  PLAN_ONCE_MEMO: 'PLAN-ONCE IS AN INTERNAL MEMO, NOT THE ONE-SHOT LEDGER (root ④): consumedPlans refuses replaying the SAME plan OBJECT with zero delegate entry; a caller that COPIES a plan\'s fields re-dispatches (the fingerprint law re-runs the whole argument law on the copy). The real one-shot edge is TWOFOLD and neither half is this row: the CENTER PA consume-for-execution proof, and the lane\'s OWN requestToken idempotency (the facade admits the same logical operation once — durable, INSIDE the delegated chain). This row mints no consumedProof and never claims once-closure.',
++  GUARD_AND_LIFECYCLE: 'GUARD BLOCKS AND LIFECYCLE OUTCOMES ARE DELEGATED VALUES: pending-control blocks (blocked + requestId), the Leader-gate (TEAM_TOOL_ARCHIVE_NOT_LEADER), CREATED/ARCHIVED/DISPOSED archive rejections, guard blocked semantics on async completions, and the async admission receipt (workStatus \'admitted\', settled false) all arrive as VALUES from the existing chain — the row passes them through verbatim and claims no authority over them.',
++})
++
++const DRAIN_SEMANTICS = 'drain = NEW-CALL PROHIBITION: the lane\'s durable commits (admissions, messages, activity rows, lifecycle facts) stay durable; drain settles nothing, rolls nothing back, revives nothing'
++
++/* ── small internal primitives (sibling house, schedule-adapters) ─────── */
++
++const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value)
++const deepFreeze = (value) => {
++  if (value !== null && typeof value === 'object' && !Object.isFrozen(value)) {
++    for (const child of Object.values(value)) deepFreeze(child)
++    Object.freeze(value)
++  }
++  return value
++}
++const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
++  v !== null && typeof v === 'object' && !Array.isArray(v)
++    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
++    : v
++))
++const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex')
++const refuse = (code, detail) => deepFreeze({ ok: false, code, detail })
++/** The sibling house clone (args are dispatcher-parsed JSON data). */
++const jsonClone = (value) => JSON.parse(JSON.stringify(value))
++
++/* ── L5 mirror: the lane's OWN argument law, mirrored for the pure half ── */
++
++/** The lane closed argument code (tokens.ts:24). */
++const TEAM_TOOL_BAD_ARGUMENTS = 'TEAM_TOOL_BAD_ARGUMENTS'
++const ROOT_SESSION_MAX_LENGTH = 255
++const REQUEST_TOKEN_MAX_LENGTH = 128
++const BODY_MAX_LENGTH = 8192
++const SUBJECT_MAX_LENGTH = 256
++const SUMMARY_MAX_LENGTH = 512
++const LAST_ACTION_MAX_LENGTH = 256
++const CORRELATION_MAX_LENGTH = 128
++const TASK_SUMMARY_MAX_LENGTH = 512
++const WORK_PROMPT_MAX_LENGTH = 16384
++const ATTACHED_CONTEXT_MAX_LENGTH = 32768
++const LABEL_MAX_LENGTH = 256
++const TEMPLATE_ID_MAX_LENGTH = 256
++const INSTANCE_ID_MAX_LENGTH = 256
++const PROGRESS_VALUES = Object.freeze(['in-progress', 'completed', 'blocked'])
++
++/** The lane rejected-VALUE shape (rejectFromError maps TeamToolArgsError to
++ *  exactly this — tools.ts:225-232); the row answers the SAME shape. */
++const badArgs = (message, details) => (details === undefined
++  ? { status: 'rejected', code: TEAM_TOOL_BAD_ARGUMENTS, message }
++  : { status: 'rejected', code: TEAM_TOOL_BAD_ARGUMENTS, message, details })
++
++/** readStringField mirror (tokens.ts:92-104): a PRESENT non-string refuses. */
++function readString(args, field) {
++  const value = args[field]
++  if (value === undefined) return { value: undefined }
++  if (typeof value !== 'string') {
++    return { error: badArgs(`team-tools: argument '${field}' must be a string`, { field }) }
++  }
++  return { value }
++}
++
++/** requireStringField mirror (tokens.ts:114-131) — byte-identical messages. */
++function requireString(args, field, maxLength) {
++  const read = readString(args, field)
++  if (read.error !== undefined) return read
++  if (read.value === undefined) {
++    return { error: badArgs(`team-tools: required argument '${field}' is missing`, { field }) }
++  }
++  if (read.value.length === 0) {
++    return { error: badArgs(`team-tools: argument '${field}' must be non-empty`, { field }) }
++  }
++  if (read.value.length > maxLength) {
++    return {
++      error: badArgs(`team-tools: argument '${field}' exceeds ${maxLength} characters`, { field, maxLength, length: read.value.length }),
++    }
++  }
++  return { value: read.value }
++}
++
++/** optionalStringField mirror (tokens.ts:141-152): empty string = ABSENT. */
++function optionalString(args, field, maxLength) {
++  const read = readString(args, field)
++  if (read.error !== undefined) return read
++  if (read.value === undefined || read.value.length === 0) return { value: undefined }
++  if (read.value.length > maxLength) {
++    return {
++      error: badArgs(`team-tools: argument '${field}' exceeds ${maxLength} characters`, { field, maxLength, length: read.value.length }),
++    }
++  }
++  return { value: read.value }
++}
++
++/** The per-tool pure argument law (L5): returns the lane's rejected VALUE
++ *  or undefined. ONLY pure checks the mirrored spec.run code performs with
++ *  the pure shape requireStringField/optionalStringField/closed checks have;
++ *  caller-dependent gates are NEVER mirrored (L5 ORDER NOTE in the header). */
++function teamArgsLaw(name, args) {
++  // Common entry (makeDefinition:449/:454) — the lane runs these FIRST.
++  const root = requireString(args, 'rootSessionId', ROOT_SESSION_MAX_LENGTH)
++  if (root.error !== undefined) return root.error
++  const token = requireString(args, 'requestToken', REQUEST_TOKEN_MAX_LENGTH)
++  if (token.error !== undefined) return token.error
++  switch (name) {
++    case 'team_list_members':
++    case 'team_list_templates':
++      return undefined
++    case 'team_inspect_config':
++    case 'team_archive_member': {
++      const target = requireString(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH)
++      return target.error
++    }
++    case 'team_create_member': {
++      const templateId = requireString(args, 'delegationTemplateId', TEMPLATE_ID_MAX_LENGTH)
++      if (templateId.error !== undefined) return templateId.error
++      const label = requireString(args, 'label', LABEL_MAX_LENGTH)
++      if (label.error !== undefined) return label.error
++      const groupId = optionalString(args, 'groupId', 256)
++      if (groupId.error !== undefined) return groupId.error
++      const workspace = optionalString(args, 'workspace', 512)
++      return workspace.error
++    }
++    case 'team_delegate': {
++      const label = requireString(args, 'label', LABEL_MAX_LENGTH)
++      if (label.error !== undefined) return label.error
++      const prompt = requireString(args, 'prompt', WORK_PROMPT_MAX_LENGTH)
++      if (prompt.error !== undefined) return prompt.error
++      const templateId = optionalString(args, 'delegationTemplateId', TEMPLATE_ID_MAX_LENGTH)
++      if (templateId.error !== undefined) return templateId.error
++      const instanceId = optionalString(args, 'delegationInstanceId', INSTANCE_ID_MAX_LENGTH)
++      if (instanceId.error !== undefined) return instanceId.error
++      // The closed exactly-one law (delegateSpec — messages byte-verbatim).
++      if (templateId.value === undefined && instanceId.value === undefined) {
++        return badArgs('team-tools: delegate requires exactly one of delegationTemplateId / delegationInstanceId')
++      }
++      if (templateId.value !== undefined && instanceId.value !== undefined) {
++        return badArgs('team-tools: delegate accepts exactly one of delegationTemplateId / delegationInstanceId, not both')
++      }
++      const groupId = optionalString(args, 'groupId', 256)
++      if (groupId.error !== undefined) return groupId.error
++      const workspace = optionalString(args, 'workspace', 512)
++      if (workspace.error !== undefined) return workspace.error
++      const taskSummary = optionalString(args, 'taskSummary', TASK_SUMMARY_MAX_LENGTH)
++      if (taskSummary.error !== undefined) return taskSummary.error
++      const attachedContext = optionalString(args, 'attachedContext', ATTACHED_CONTEXT_MAX_LENGTH)
++      return attachedContext.error
++    }
++    case 'team_follow_up': {
++      const target = requireString(args, 'targetInstanceId', INSTANCE_ID_MAX_LENGTH)
++      if (target.error !== undefined) return target.error
++      const prompt = requireString(args, 'prompt', WORK_PROMPT_MAX_LENGTH)
++      if (prompt.error !== undefined) return prompt.error
++      const taskSummary = optionalString(args, 'taskSummary', TASK_SUMMARY_MAX_LENGTH)
++      if (taskSummary.error !== undefined) return taskSummary.error
++      const attachedContext = optionalString(args, 'attachedContext', ATTACHED_CONTEXT_MAX_LENGTH)
++      return attachedContext.error
++    }
++    case 'team_collect': {
++      // collectSpec: a non-empty array of at most 64 non-empty strings ≤128.
++      const raw = args.requestTokens
++      if (!Array.isArray(raw) || raw.length === 0 || raw.length > 64) {
++        return badArgs('team-tools: argument \'requestTokens\' must be a non-empty array of at most 64 work request tokens')
++      }
++      for (const entryToken of raw) {
++        if (typeof entryToken !== 'string' || entryToken.length === 0) {
++          return badArgs("team-tools: argument 'requestTokens' entries must be non-empty strings")
++        }
++        if (entryToken.length > REQUEST_TOKEN_MAX_LENGTH) {
++          return badArgs(`team-tools: argument 'requestTokens' entries exceed ${REQUEST_TOKEN_MAX_LENGTH} characters`, { length: entryToken.length })
++        }
++      }
++      return undefined
++    }
++    case 'team_send_message': {
++      const recipient = requireString(args, 'recipientInstanceId', INSTANCE_ID_MAX_LENGTH)
++      if (recipient.error !== undefined) return recipient.error
++      const body = requireString(args, 'body', BODY_MAX_LENGTH)
++      if (body.error !== undefined) return body.error
++      const subject = optionalString(args, 'subject', SUBJECT_MAX_LENGTH)
++      return subject.error
++    }
++    case 'team_report_progress': {
++      const instanceId = requireString(args, 'instanceId', INSTANCE_ID_MAX_LENGTH)
++      if (instanceId.error !== undefined) return instanceId.error
++      const subject = requireString(args, 'subject', SUBJECT_MAX_LENGTH)
++      if (subject.error !== undefined) return subject.error
++      const progress = requireString(args, 'progress', 32)
++      if (progress.error !== undefined) return progress.error
++      if (!PROGRESS_VALUES.includes(progress.value)) {
++        return badArgs("team-tools: argument 'progress' must be one of in-progress | completed | blocked", { progress: progress.value })
++      }
++      const summary = optionalString(args, 'summary', SUMMARY_MAX_LENGTH)
++      if (summary.error !== undefined) return summary.error
++      const lastAction = optionalString(args, 'lastAction', LAST_ACTION_MAX_LENGTH)
++      if (lastAction.error !== undefined) return lastAction.error
++      const correlation = optionalString(args, 'correlation', CORRELATION_MAX_LENGTH)
++      return correlation.error
++    }
++    default:
++      return undefined
++  }
++}
++
++/* ── the factory ────────────────────────────────────────────────────── */
++
++const refuseAssembly = (code, message) => deepFreeze({ ok: false, code, message })
++
++const refusalToThrow = (refusal) => {
++  const error = new Error(`refused-b-team ${String(refusal?.code ?? CODES.INPUT_INVALID)} — ${String(refusal?.detail ?? 'the adapter refused without a detail')}`)
++  error.code = refusal?.code
++  error.teamRefusal = deepFreeze({ ...refusal })
++  return error
++}
++
++/**
++ * Assembly-time factory for the ten B-TEAM rows.
++ *
++ * @param input {{
++ *   providerId?: string,
++ *   captured?: Record<string, { native: object, definitionIdentity: string }>,
++ *       // native = the COMPLETE captured createTeamTools definition (every
++ *       // face verbatim); the placed def spreads it and replaces ONLY execute
++ *   liveNative: (name: string) => unknown,   // REQUIRED placement feed re-read
++ *   teamDelegates: Record<string, Function>, // REQUIRED: name -> the CURRENT
++ *       // governed implementation; at assembly each entry MUST BE the
++ *       // captured native execute (L3 pairing — one createTeamTools set)
++ *   liveTeamDelegates: () => unknown,        // REQUIRED per-dispatch live
++ *       // re-read of the CURRENT delegates object (L7)
++ *   placementFeed: (name: string) => { definitionIdentity?: string, realmId?: string } | undefined,
++ *   admit: (ctx: object) => Promise<{ ok: boolean, code?: string, detail?: string }>,
++ *   observe?: (row: unknown) => void,
++ * }} input
++ * @returns a frozen `{ ok: true, assembly }` or a frozen `{ ok: false, code, message }`.
++ */
++export function createTeamAdapterAssembly(input = {}) {
++  if (!isRecord(input)) return refuseAssembly(CODES.INPUT_INVALID, 'the factory takes one input record')
++  const knownInput = new Set(['providerId', 'captured', 'liveNative', 'teamDelegates', 'liveTeamDelegates', 'placementFeed', 'admit', 'observe'])
++  for (const key of Object.keys(input)) {
++    if (!knownInput.has(key)) {
++      return refuseAssembly(CODES.INPUT_INVALID, `unknown input '${key}' — the factory takes exactly {providerId, captured, liveNative, teamDelegates, liveTeamDelegates, placementFeed, admit, observe}`)
++    }
++  }
++  const providerId = typeof input.providerId === 'string' && input.providerId.length > 0 ? input.providerId : 'b-team'
++  if (typeof input.placementFeed !== 'function') {
++    return refuseAssembly(CODES.INPUT_INVALID, 'placementFeed (name) => {definitionIdentity, realmId} | undefined is REQUIRED — the family key is the runtime identity the seam minted for the PLACED definition, never a hand-spelled string (the settled registration law)')
++  }
++  if (typeof input.admit !== 'function') {
++    return refuseAssembly(CODES.ADMISSION_ABSENT, 'admit is REQUIRED — this module ships NO unadmitted path to the governed team tools (the plane\'s PA walk occupies this seam at integration; L10)')
++  }
++  if (typeof input.liveTeamDelegates !== 'function') {
++    return refuseAssembly(CODES.INPUT_INVALID, 'liveTeamDelegates () => the CURRENT delegates object is REQUIRED — the row re-reads the live governed implementation at every dispatch edge (L7); a bind-time constant compared against itself proves nothing (sibling root ② law)')
++  }
++  const delegates = input.teamDelegates
++  if (!isRecord(delegates)) {
++    return refuseAssembly(CODES.PORT_ABSENT, 'teamDelegates is REQUIRED — the name -> governed-execute port of the SAME createTeamTools set the capture came from (production: the live tool set); this adapter holds no team implementation')
++  }
++  if (input.liveTeamDelegates() !== delegates) {
++    return refuseAssembly(CODES.PORT_DRIFT, 'liveTeamDelegates() does not answer the bound teamDelegates — the mount is already split between two implementation sets; refuse at assembly, never dispatch into a split mount')
++  }
++  const capturedIn = input.captured ?? {}
++  if (!isRecord(capturedIn)) return refuseAssembly(CODES.INPUT_INVALID, 'captured must be a record (name -> {native, definitionIdentity}) or absent')
++  for (const key of Object.keys(capturedIn)) {
++    if (!Object.prototype.hasOwnProperty.call(A5_B_TEAM_RECORD_SPECS, key)) {
++      return refuseAssembly(CODES.NON_FAMILY_CAPTURE, `'${key}' is not a B-TEAM record (the family is exactly ${A5_B_TEAM_TOOL_NAMES.join(', ')}); the B-CONTROL five and every other family's face never ride this module`)
++    }
++  }
++  const captureKeys = Object.keys(capturedIn)
++  if (captureKeys.length > 0 && typeof input.liveNative !== 'function') {
++    return refuseAssembly(CODES.LIVE_NATIVE_ABSENT, 'liveNative is REQUIRED whenever a capture is presented — without the placement feed re-read the per-dispatch identity check is self-attestation (L7)')
++  }
++  // THE CAPTURE SHAPE LAW mirrors the REAL registration minimum entry — the
++  // makeDefinition product face (name/description/parameters/
++  // output{schema,render}/execute) plus the mount identity (L1).
++  const frozenDelegates = {}
++  for (const [key, capture] of Object.entries(capturedIn)) {
++    const native = isRecord(capture) ? capture.native : undefined
++    const output = isRecord(native) ? native.output : undefined
++    if (!isRecord(capture)
++      || !isRecord(native) || native.name !== key || typeof native.description !== 'string' || typeof native.execute !== 'function'
++      || !isRecord(output) || output.schema === undefined || typeof output.render !== 'function'
++      || (native.timeoutMs !== undefined && (!Number.isFinite(native.timeoutMs) || native.timeoutMs <= 0))
++      || typeof capture.definitionIdentity !== 'string' || capture.definitionIdentity.length === 0) {
++      return refuseAssembly(CODES.CAPTURE_INCOMPLETE, `captured.${key} must be a COMPLETE captured definition — {native: {name:'${key}', description, parameters, output:{schema, render}, execute, ...every presentation face verbatim}, definitionIdentity: non-empty string} (the real registration minimum-entry shape law; a half-capture is refused, never demoted)`)
++    }
++    if (typeof delegates[key] !== 'function') {
++      return refuseAssembly(CODES.PORT_METHOD_ABSENT, `teamDelegates answers no function for the captured family member '${key}' — a partial delegate set is a config defect, never a degraded row`)
++    }
++    // L3 PAIRING: the capture and the port must be two reads of the SAME
++    // tool set — the delegate IS the captured execute.
++    if (delegates[key] !== native.execute) {
++      return refuseAssembly(CODES.TEAM_SET_SPLIT, `teamDelegates['${key}'] is not the captured native execute — the capture and the delegate port come from different createTeamTools builds (a rebuilt set behind a stale capture is a split mount; refuse at assembly, L3)`)
++    }
++    frozenDelegates[key] = delegates[key]
++  }
++  const observe = typeof input.observe === 'function' ? input.observe : () => {}
++
++  const rows = new Map()
++  const declared = []
++  const definitions = []
++  const consumedPlans = new WeakSet()
++  const state = { draining: false, dispatches: 0, refuses: 0 }
++  /** Bind-time bindings live in this PRIVATE side table, never on the row
++   *  face a consumer may spread or serialize (the row stays the honest
++   *  presentation surface its .d.mts declares). */
++  const boundOf = new WeakMap()
++
++  const refuseWith = (name, code, detail) => {
++    state.refuses += 1
++    observe({ event: 'b-team:refusal', name, code })
++    return refuse(code, detail)
++  }
++
++  /** L7 edge integrity. Returns a refusal or null. */
++  const edgeIntegrity = (row) => {
++    if (state.draining) {
++      return refuse(CODES.DRAINING, `${row.name}: draining — new calls are refused, durable lane commits stay durable (${DRAIN_SEMANTICS})`)
++    }
++    const bound = boundOf.get(row)
++    if (bound === undefined) {
++      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: no bind-time binding exists — a row assembled outside this factory dispatches nothing`)
++    }
++    const live = input.liveNative(row.name)
++    if (live !== bound.def) {
++      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the face behind liveNative is no longer the captured object — the governed call refuses; there is no replacement-body path and no native fallback`)
++    }
++    if (live.description !== bound.descriptionBytes || canonicalJson(live.parameters) !== canonicalJson(bound.parameters)) {
++      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's description or compiled parameter bytes moved since bind time`)
++    }
++    if (live.execute !== bound.execute) {
++      return refuse(CODES.DEFINITION_DRIFT, `${row.name}: the captured definition's execute function is no longer the bound function value`)
++    }
++    const current = input.liveTeamDelegates()
++    if (current !== bound.port) {
++      return refuse(CODES.PORT_DRIFT, `${row.name}: the CURRENT team delegates read is not the bound port object — a rebuilt/replaced implementation set underneath this mount is drift, full stop (L7)`)
++    }
++    if (current[row.name] !== frozenDelegates[row.name]) {
++      return refuse(CODES.PORT_DRIFT, `${row.name}: the delegate '${row.name}' was rebound underneath the frozen bind — a rebound implementation is drift, full stop`)
++    }
++    return null
++  }
++
++  const buildActiveRow = (name, capture) => {
++    const spec = A5_B_TEAM_RECORD_SPECS[name]
++    const def = capture.native
++    const descriptionBytes = def.description
++    const parameters = def.parameters === undefined ? Object.freeze({}) : def.parameters
++    const row = {
++      name,
++      familyId: A5_B_TEAM_FAMILY_ID,
++      recordIndex: spec.recordIndex,
++      mountCondition: A5_B_TEAM_MOUNT_CONDITION,
++      active: true,
++      capturePresent: true,
++      description: descriptionBytes,
++      parameters,
++      outputSchema: def.output.schema,
++      definitionIdentity: capture.definitionIdentity,
++      effectDelta: A5_B_TEAM_EFFECT_LABELS[name],
++      namedGaps: A5_B_TEAM_NAMED_GAPS,
++      classify: (rawArgs) => classify(row, rawArgs),
++      delegate: (plan, ctx) => delegate(row, plan, ctx),
++    }
++    boundOf.set(row, Object.freeze({ def, descriptionBytes, parameters, execute: def.execute, port: delegates }))
++    return row
++  }
++
++  /** Contract §B-TEAM target facts every plan carries (目标I+S(可信durable
++   *  root/member/template/config/消息/归档对象,exact operation)). All values
++   *  are READS of captured/lane facts; every CLAIM-bearing adjudication is
++   *  labelled where it actually runs (the delegated chain), never here. */
++  const TARGET_OBJECT = Object.freeze({
++    team_list_members: 'the durable Team roster (member instances + lifecycle + bound child session ids)',
++    team_list_templates: 'the bound blueprint\'s member templates',
++    team_inspect_config: 'ONE member\'s durable effective-policy / requirement / recovery facts',
++    team_create_member: 'a NEW member instance from a blueprint template (the member-lifecycle object)',
++    team_delegate: 'a NEW work unit (+ create-form: a NEW member instance)',
++    team_follow_up: 'a NEW work unit on an EXISTING member (same bound child session)',
++    team_collect: 'the durable work-unit states behind the submitted request tokens',
++    team_send_message: 'one durable attributed message on the recipient\'s bound session',
++    team_report_progress: 'one durable activity row on the per-subject lane',
++    team_archive_member: 'ONE member\'s lifecycle (quiesce-then-archive durable commits)',
++  })
++  const mintTarget = (name, law, snapshot) => Object.freeze({
++    contract: 'M0-B-FAMILY-TARGET-CONTRACTS §B-TEAM — 目标I+S(可信durable root/member/template/config/消息/归档对象,exact operation)',
++    root: Object.freeze({
++      claim: snapshot.rootSessionId ?? null,
++      adjudication: 'the caller-root binding gate INSIDE the delegated chain (tools.ts:459-477, TEAM_TOOL_CALLER_ROOT_MISMATCH) compares the resolver\'s durable OWNING root against this claim — the row never trusts the argument string (C1)',
++    }),
++    member: Object.freeze(
++      'targetInstanceId' in snapshot || 'recipientInstanceId' in snapshot || 'instanceId' in snapshot
++        ? { claim: snapshot.targetInstanceId ?? snapshot.recipientInstanceId ?? snapshot.instanceId ?? null, adjudication: 'durable instance resolution INSIDE the delegated chain (labels/template ids are rejected; INSTANCE_ID addressing law)' }
++        : (name === 'team_create_member' || name === 'team_delegate'
++          ? { claim: snapshot.delegationTemplateId ?? null, adjudication: 'the activation authority resolves the template DURABLY inside the delegated chain' }
++          : 'no member addressed'),
++    ),
++    object: TARGET_OBJECT[name],
++    action: A5_B_TEAM_RECORD_SPECS[name].operation,
++    revision: 'requestToken = the durable facade idempotency identity (reuse = retry of the SAME logical operation — the facade/messaging lanes adjudicate); the row carries the token as data and claims no idempotency authority (NAMED GAP PLAN_ONCE_MEMO)',
++    effect: A5_B_TEAM_EFFECT_LABELS[name],
++    face: law === undefined ? 'the mirrored pure argument law passed' : 'the mirrored pure argument law REFUSED (lane bytes) — see plan.toolError',
++  })
++
++  /** L8 classify: PURE over the arguments; the frozen plan is the ONLY thing
++   *  delegate will ever run. No delegate, no clock, no caller facts here. */
++  const classify = (row, rawArgs) => {
++    if (state.draining) {
++      return refuseWith(row.name, CODES.DRAINING, `${row.name}: draining — new calls are refused (${DRAIN_SEMANTICS})`)
++    }
++    if (rawArgs !== undefined && rawArgs !== null && !isRecord(rawArgs)) {
++      // Sibling house law: the real dispatcher always hands an object; a
++      // non-record is a MOUNT ANOMALY (the lane's own JSON-object defense
++      // stays armed behind it inside the delegated chain).
++      return refuseWith(row.name, CODES.INPUT_INVALID, `${row.name}: arguments must be a record (the real dispatcher always hands an object; anything else is a mount anomaly)`)
++    }
++    const args = rawArgs === undefined || rawArgs === null ? {} : rawArgs
++    const law = teamArgsLaw(row.name, args)
++    const snapshot = deepFreeze(jsonClone(args))
++    const plan = deepFreeze({
++      rowName: row.name,
++      recordIndex: row.recordIndex,
++      operation: A5_B_TEAM_RECORD_SPECS[row.name].operation,
++      target: mintTarget(row.name, law, snapshot),
++      args: snapshot,
++      ...(law === undefined ? {} : { toolError: deepFreeze({ ...law }) }),
++      parametersFingerprint: `sha256:${sha256(canonicalJson({ name: row.name, args: snapshot }))}`,
++      namedGaps: A5_B_TEAM_NAMED_GAPS,
++    })
++    observe({ event: 'b-team:classified', name: row.name, toolError: law !== undefined })
++    return deepFreeze({ ok: true, plan })
++  }
++
++  /** L5/L6/L7/L8 dispatch. `exec` is LIVE and rides BY REFERENCE (the lane
++   *  resolves the caller from it per call — L4); nothing is taken from the
++   *  plan closure. */
++  const delegate = async (row, plan, ctx) => {
++    const integrity = edgeIntegrity(row)
++    if (integrity !== null) return refuseWith(row.name, integrity.code, integrity.detail)
++    if (!isRecord(plan) || plan.rowName !== row.name || plan.recordIndex !== row.recordIndex) {
++      return refuseWith(row.name, CODES.NOT_OWN_PLAN, `${row.name}: the presented plan belongs to another row — governed dispatch never runs a foreign plan`)
++    }
++    const fresh = classify(row, plan.args)
++    if (fresh.ok !== true) return refuseWith(row.name, fresh.code, fresh.detail)
++    if (fresh.plan.parametersFingerprint !== plan.parametersFingerprint) {
++      return refuseWith(row.name, CODES.PLAN_STALE, `${row.name}: the plan's fingerprint does not match a fresh classification of its own snapshot — a mutated/stale plan never dispatches (L8)`)
++    }
++    if (consumedPlans.has(plan)) {
++      return refuseWith(row.name, CODES.ALREADY_DISPATCHED, `${row.name}: this plan OBJECT was already dispatched — INTERNAL MEMO refusal only (NAMED GAP PLAN_ONCE_MEMO): the real one-shot edges are the center PA consumedProof and the lane's own requestToken idempotency INSIDE the delegated chain; the row claims no once-closure (L8/④)`)
++    }
++    const answerToolError = (value) => {
++      consumedPlans.add(plan)
++      observe({ event: 'b-team:tool-law-value', name: row.name, code: value.code })
++      return deepFreeze({ ok: true, settled: 'tool-law-value', value })
++    }
++    // L5: the mirrored pure argument law answers the LANE'S OWN rejected
++    // VALUE with zero delegate entry (the lane never throws these at the
++    // model — rejectFromError maps them to the same shape).
++    if (fresh.plan.toolError !== undefined) return answerToolError(fresh.plan.toolError)
++    consumedPlans.add(plan)
++    state.dispatches += 1
++    const exec = isRecord(ctx) ? ctx.exec : undefined
++    observe({ event: 'b-team:delegate-call', name: row.name })
++    // L6: NO catch here — the delegated chain maps every TYPED lane error to
++    // a rejected VALUE itself (rejectFromError) and re-throws only the
++    // unexpected; the row passes the value or the throw through verbatim,
++    // fabricating no error map (no duck-coding, root ③ spirit). L4: exec
++    // rides BY REFERENCE — the chain resolves the live caller from it.
++    const current = input.liveTeamDelegates()
++    return Promise.resolve(current[row.name].call(current, fresh.plan.args, exec)).then((value) => {
++      observe({ event: 'b-team:dispatched', name: row.name })
++      // SHALLOW freeze: the wrapper is ours; the lane's result may carry
++      // lane-owned objects — the row never freezes the lane's own data.
++      return Object.freeze({ ok: true, settled: 'delegated', value })
++    })
++  }
++
++  const buildDeclaredRow = (name, reason, code) => {
++    const spec = A5_B_TEAM_RECORD_SPECS[name]
++    const refusal = refuse(code, `${name}: honest ${A5_B_TEAM_MOUNT_CONDITION} declared row (${reason}) — no captured governed team-tool face was mounted; every classify/delegate refuses typed with zero delegate entry, zero substitution, no definition, no registration`)
++    return Object.freeze({
++      name,
++      familyId: A5_B_TEAM_FAMILY_ID,
++      recordIndex: spec.recordIndex,
++      mountCondition: A5_B_TEAM_MOUNT_CONDITION,
++      active: false,
++      capturePresent: false,
++      description: null,
++      parameters: null,
++      outputSchema: null,
++      definitionIdentity: null,
++      namedGaps: A5_B_TEAM_NAMED_GAPS,
++      classify: () => refusal,
++      delegate: () => refusal,
++    })
++  }
++
++  for (const name of A5_B_TEAM_TOOL_NAMES) {
++    const capture = capturedIn[name]
++    if (capture === undefined) {
++      const row = buildDeclaredRow(name, 'capture-absent', CODES.CAPTURE_ABSENT)
++      rows.set(name, Object.freeze({ status: 'DECLARED-INACTIVE', reason: 'capture-absent', row }))
++      declared.push(Object.freeze({ name, recordIndex: row.recordIndex, familyId: A5_B_TEAM_FAMILY_ID, status: 'DECLARED-INACTIVE', reason: 'capture-absent', captureReportedIgnored: false }))
++      observe({ event: 'b-team:declared', name, reason: 'capture-absent' })
++      continue
++    }
++    const row = buildActiveRow(name, capture)
++    // THE CAPTURED DEFINITION TRAVELS COMPLETE (root 8b4 law): every face
++    // rides verbatim BY REFERENCE; ONLY `execute` is replaced (the classify →
++    // admit → delegate body).
++    const definition = Object.freeze({ ...capture.native, execute: async (args, exec) => {
++      const classified = row.classify(args)
++      if (classified.ok !== true) throw refusalToThrow(classified)
++      const admitted = await input.admit(Object.freeze({ name, recordIndex: row.recordIndex, familyId: A5_B_TEAM_FAMILY_ID, classified, exec }))
++      if (admitted?.ok !== true) {
++        throw refusalToThrow(admitted ?? { code: CODES.ADMISSION_ABSENT, detail: 'the admission seam refused this call' })
++      }
++      // The mirrored argument law answers VALUES (the lane's own rejected
++      // shape) — a tool-law miss is NOT an error, it is the lane's answer;
++      // delegate settles it with zero delegate entry.
++      const settled = await row.delegate(classified.plan, { exec })
++      if (settled?.ok !== true) throw refusalToThrow(settled)
++      return settled.value
++    } })
++    rows.set(name, Object.freeze({ status: 'ACTIVE', row, definition, captureDefinitionIdentity: capture.definitionIdentity }))
++    definitions.push(definition)
++    observe({ event: 'b-team:mounted', name, recordIndex: row.recordIndex })
++  }
++
++  // THE MOUNT-MOMENT REGISTRATION (the settled agent-bindings law, post
++  // publish): the key is the placement feed's RUNTIME identity of the PLACED
++  // definition, read fresh, never cached, never hand-spelled. The shared
++  // PAIRED writer hands each entry to registerA5GovernedFamily — THIS module
++  // registers nothing itself (L11; CENTER owns team registration).
++  const mountedKeys = new Map()
++  const familyRegistrations = () => Object.freeze(definitions.map((definition) => {
++    const fed = input.placementFeed(definition.name)
++    const key = isRecord(fed) && typeof fed.definitionIdentity === 'string' && fed.definitionIdentity.length > 0
++      ? fed.definitionIdentity
++      : null
++    if (key === null) {
++      throw new Error(`${CODES.PLACEMENT_KEY_ABSENT}: the placed row '${definition.name}' answered no definition identity through the placement feed — the family registration has no trusted key; a guessed key is forbidden and an unobserved silent skip is the drift the family gate measures`)
++    }
++    const seen = mountedKeys.get(definition.name)
++    if (seen !== undefined && seen !== key) {
++      throw new Error(`${CODES.PLACEMENT_KEY_MOVED}: the placement identity of '${definition.name}' moved between mount reads (${seen} -> ${key}) — a placed definition's identity does not float; the mount is broken and re-registers nothing`)
++    }
++    mountedKeys.set(definition.name, key)
++    return Object.freeze({
++      name: definition.name,
++      recordIndex: A5_B_TEAM_RECORD_SPECS[definition.name].recordIndex,
++      definitionIdentity: key,
++      entry: Object.freeze({
++        familyId: A5_B_TEAM_FAMILY_ID,
++        adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
++        providerIdentity: providerId,
++      }),
++    })
++  }))
++
++  const rowsView = Object.freeze(Object.fromEntries([...rows.entries()]))
++  // SHALLOW freeze of the assembly: the captured presentation faces and the
++  // delegate set belong to their owners — the assembly REPORTS them by
++  // reference and never freezes through them (only the plans/refusals/
++  // declared entries, which this module mints, are deep-frozen).
++  const assembly = Object.freeze({
++    ok: true,
++    familyId: A5_B_TEAM_FAMILY_ID,
++    revision: A5_B_TEAM_ADAPTER_REVISION,
++    mountCondition: A5_B_TEAM_MOUNT_CONDITION,
++    providerId,
++    placementNames: Object.freeze(definitions.map((definition) => definition.name)),
++    /** ToolDefinition faces for the ACTIVE rows: the COMPLETE captured
++     *  governed definitions with ONLY execute replaced (classify → admit →
++     *  delegate). The plane places these verbatim; the real registration
++     *  minimum-entry shape law accepts them (spec-verified). */
++    definitions: Object.freeze(definitions),
++    rows: rowsView,
++    declared: Object.freeze(declared),
++    rowOf: (name) => rows.get(name)?.row,
++    /** L9: new-call prohibition ONLY — settles nothing, rolls nothing back. */
++    drain: () => {
++      state.draining = true
++      return deepFreeze({ event: 'b-team:drain', semantics: DRAIN_SEMANTICS })
++    },
++    inFlight: () => deepFreeze({ dispatches: state.dispatches, refuses: state.refuses }),
++    /** THE family registration face — call it at the mount moment (AFTER
++     *  publish); the PAIRED registration writer feeds each entry to
++     *  registerA5GovernedFamily. Throws PLACEMENT_KEY_ABSENT /
++     *  PLACEMENT_KEY_MOVED instead of guessing or skipping. */
++    familyRegistrations,
++  })
++  return assembly
++}
+diff --git a/packages/runtime/test/a5m2-team-adapters.test.ts b/packages/runtime/test/a5m2-team-adapters.test.ts
+new file mode 100644
+index 000000000..26a6fcaf5
+--- /dev/null
++++ b/packages/runtime/test/a5m2-team-adapters.test.ts
+@@ -0,0 +1,708 @@
++/**
++ * A5M2-TEAM-ADAPTERS — the B-TEAM family spec (census records 74–82, 86;
++ * family B-TEAM, ownerRole CONTROL, mountCondition always; contract
++ * M0-B-FAMILY-TARGET-CONTRACTS.md §B-TEAM).
++ *
++ * THE DELEGATION MODE (read with the module header): B-TEAM's natives are
++ * our OWN lane products — the REAL `createTeamTools(options)` definitions
++ * built HERE over real port DOUBLES (facade/controlService/messaging/
++ * activity/resolveCaller) — and the governed row delegates each admitted
++ * call BACK into that same captured governed execute (contract: 全部采用既有
++ * Team service角色/归属校验 / 不得重复建立同义service层). So the legs below
++ * measure BOTH sides honestly: the ROW's added law (admit seat, argument
++ * mirror answering the LANE'S OWN rejected-value bytes, plan memo, drift
++ * refusals, zero-delegate on every refusal) AND the fact that the existing
++ * chain's governance actually RUNS behind it (caller-root binding,
++ * caller-unresolved, the Leader-gate, the last-mile guard, unexpected-error
++ * rethrow) — never re-implemented here.
++ *
++ * HONEST DISCLOSURE (per ruling): REAL definitions from the REAL factory +
++ * DOUBLES for the five runtime ports + a double admit/placementFeed = C1-
++ * grade real-surface measurement, NOT C2 (no Host, no durable storage, no
++ * real Team). The family C2 (10/10 + cross-root/member/role negatives
++ * through the real services) is the paired acceptance's obligation —
++ * NAMED GAP SERVICE_ENTRY_DELEGATION carries it. The B-CONTROL five (83/84/
++ * 85/87/88, g1-surface-adapters' landed facts) are a DIFFERENT family: a
++ * mutual non-recognition leg proves they cannot ride this module.
++ * Windows dimensions: NOT RUN, never claimed.
++ */
++import { describe, it, expect } from 'vitest'
++import { readFileSync } from 'node:fs'
++import { dirname, join } from 'node:path'
++import { fileURLToPath } from 'node:url'
++
++import { createTeamTools } from '../../tools/src/index.js'
++
++// ── the production module under spec (hand-cast, house idiom) ─────────────
++type PlanTarget = {
++  contract: string
++  root: { claim: string | null; adjudication: string }
++  member: { claim?: string | null; adjudication?: string } | string
++  object: string
++  action: string
++  revision: string
++  effect: string
++  face: string
++}
++type ToolErrorValue = { status: 'rejected'; code: string; message: string; details?: Record<string, unknown> }
++type Plan = {
++  rowName: string
++  recordIndex: number
++  operation: string
++  target: PlanTarget
++  args: Record<string, unknown>
++  toolError?: ToolErrorValue
++  parametersFingerprint: string
++  namedGaps: Record<string, string>
++}
++type ClassifyResult = { ok: boolean; code?: string; detail?: string; plan?: Plan }
++type DelegateResult = { ok?: boolean; code?: string; detail?: string; settled?: string; value?: unknown }
++type Row = {
++  name: string
++  familyId: string
++  recordIndex: number
++  mountCondition: string
++  active: boolean
++  capturePresent: boolean
++  description: string | null
++  parameters: Record<string, unknown> | null
++  definitionIdentity: string | null
++  effectDelta?: string
++  namedGaps: Record<string, string>
++  classify: (args: unknown) => ClassifyResult
++  delegate: (plan: Plan, ctx?: { exec?: unknown }) => Promise<DelegateResult>
++}
++type Definition = {
++  [face: string]: unknown
++  name: string
++  description: string
++  output: { schema: unknown; render: unknown }
++  parameters?: Record<string, unknown>
++  execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
++}
++type Registration = { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }
++type AssemblyValue = {
++  ok: true
++  familyId: string
++  revision: number
++  mountCondition: string
++  providerId: string
++  placementNames: string[]
++  definitions: Definition[]
++  rows: Record<string, { status: string; reason?: string; row: Row; definition?: Definition }>
++  declared: Array<{ name: string; recordIndex: number; familyId: string; status: string; reason: string }>
++  rowOf: (name: string) => Row | undefined
++  drain: () => { event: string; semantics: string }
++  inFlight: () => { dispatches: number; refuses: number }
++  familyRegistrations: () => Registration[]
++}
++type AssemblyResult = AssemblyValue | { ok: false; code: string; message: string }
++type AdapterModule = {
++  A5_B_TEAM_FAMILY_ID: string
++  A5_B_TEAM_ADAPTER_REVISION: number
++  A5_B_TEAM_MOUNT_CONDITION: string
++  A5_B_TEAM_RECORD_SPECS: Record<string, { recordIndex: number; operation: string }>
++  A5_B_TEAM_TOOL_NAMES: string[]
++  A5_B_TEAM_EFFECT_LABELS: Record<string, string>
++  A5_B_TEAM_CODES: Record<string, string>
++  A5_B_TEAM_NAMED_GAPS: Record<string, string>
++  createTeamAdapterAssembly: (input?: Record<string, unknown>) => AssemblyResult
++}
++
++const ADAPTER_PATH = new URL('../src/plugin/live/governed-families/team-adapters.mjs', import.meta.url)
++const ADAPTER = (await import(ADAPTER_PATH.href)) as AdapterModule
++const CODES = ADAPTER.A5_B_TEAM_CODES
++const NAMES = ADAPTER.A5_B_TEAM_TOOL_NAMES
++
++// ── the REAL lane factory over recorded port doubles (the sanctioned
++//    service entries — C1-grade real defs; the ports are disclosed doubles) ─
++type Harness = {
++  calls: string[]
++  toolset: { tools: readonly Definition[] }
++  byName: Map<string, Definition>
++  setGuardBlock: (value: boolean) => void
++  setRuntimeError: (error: Error | undefined) => void
++  setCallerRoot: (root: string) => void
++  setCallerInstance: (instanceId: string) => void
++  setCallerResolvable: (value: boolean) => void
++}
++
++const ROOT = 'session-root-team-1'
++const OTHER_ROOT = 'session-root-OTHER-1'
++const LEADER_SESSION = 'session-leader-live-1'
++
++function makeHarness(): Harness {
++  const calls: string[] = []
++  const state = {
++    guardBlock: false,
++    runtimeError: undefined as Error | undefined,
++    callerRoot: ROOT,
++    callerInstance: 'inst-leader',
++    callerResolvable: true,
++  }
++  const options = {
++    teamRuntime: {
++      performAction: async (request: Record<string, unknown>) => {
++        calls.push(`performAction:${String(request.action)}`)
++        if (state.runtimeError !== undefined) throw state.runtimeError
++        return {
++          action: String(request.action),
++          rootSessionId: String(request.rootSessionId),
++          callerRole: 'leader',
++          ...(request.targetInstanceId !== undefined ? { targetInstanceId: String(request.targetInstanceId) } : {}),
++          effect: { kind: 'fact-recorded', factType: 'fixture-effect', sequence: 1 },
++          requestToken: String(request.requestToken),
++        }
++      },
++    },
++    controlService: {
++      guardOperation: async (scope: Record<string, unknown>) => {
++        calls.push(`guardOperation:${String(scope.targetInstanceId)}`)
++        return state.guardBlock
++          ? { allowed: false, reason: 'pending-approval', requestId: 'req-control-9' }
++          : { allowed: true }
++      },
++    },
++    messaging: {
++      sendTeamMessage: async (request: Record<string, unknown>) => {
++        calls.push('sendTeamMessage')
++        return {
++          rootSessionId: String(request.rootSessionId),
++          action: 'send_message',
++          callerRole: 'leader',
++          recipientInstanceId: String(request.recipientInstanceId),
++          deliveryMode: 'direct',
++          deliveredToInstanceId: String(request.recipientInstanceId),
++          deliveredToSessionId: 'session-child-live-1',
++          factSequence: 7,
++          deliveredSequence: 8,
++          requestToken: String(request.requestToken),
++        }
++      },
++    },
++    activity: {
++      listActivityFacts: () => {
++        calls.push('listActivityFacts')
++        return []
++      },
++      recordProgress: async (row: Record<string, unknown>) => {
++        calls.push('recordProgress')
++        return { sequence: Number(row.sequence), progress: String(row.progress) }
++      },
++    },
++    resolveCaller: async (sessionId: string) => {
++      calls.push(`resolveCaller:${sessionId}`)
++      if (!state.callerResolvable) throw new Error('fixture: session is not a team caller')
++      return {
++        caller: { kind: 'instance', instanceId: state.callerInstance },
++        rootSessionId: state.callerRoot,
++      }
++    },
++  }
++  const toolset = createTeamTools(options as unknown as Parameters<typeof createTeamTools>[0]) as unknown as { tools: readonly Definition[] }
++  const byName = new Map(toolset.tools.map((tool) => [tool.name, tool]))
++  if (byName.size !== 15) throw new Error(`fixture: createTeamTools answered ${byName.size} tools — the real fifteen-tool factory moved; failing closed`)
++  for (const name of NAMES) {
++    if (!byName.has(name)) throw new Error(`fixture: the real factory no longer answers '${name}' — failing closed`)
++  }
++  return {
++    calls,
++    toolset,
++    byName,
++    setGuardBlock: (value) => {
++      state.guardBlock = value
++    },
++    setRuntimeError: (error) => {
++      state.runtimeError = error
++    },
++    setCallerRoot: (root) => {
++      state.callerRoot = root
++    },
++    setCallerInstance: (instanceId) => {
++      state.callerInstance = instanceId
++    },
++    setCallerResolvable: (value) => {
++      state.callerResolvable = value
++    },
++  }
++}
++
++const CAPTURE_FOR = (harness: Harness, names: readonly string[] = NAMES): Record<string, { native: Definition; definitionIdentity: string }> =>
++  Object.fromEntries(names.map((name) => {
++    const native = harness.byName.get(name)
++    if (native === undefined) throw new Error(`no real '${name}' definition`)
++    return [name, { native, definitionIdentity: `cap:${name}` }]
++  }))
++
++type MountOverrides = Record<string, unknown>
++function mount(harness: Harness, overrides: MountOverrides = {}): AssemblyValue {
++  const delegates: Record<string, Definition['execute']> = {}
++  for (const name of NAMES) {
++    const native = harness.byName.get(name)
++    if (native === undefined) throw new Error(`no real '${name}' definition`)
++    delegates[name] = native.execute
++  }
++  const input: Record<string, unknown> = {
++    captured: CAPTURE_FOR(harness),
++    liveNative: (name: string) => harness.byName.get(name),
++    teamDelegates: delegates,
++    liveTeamDelegates: () => delegates,
++    placementFeed: (name: string) => ({ definitionIdentity: `placed-${name}` }),
++    admit: async () => {
++      harness.calls.push('admit')
++      return { ok: true }
++    },
++    ...overrides,
++  }
++  const result = ADAPTER.createTeamAdapterAssembly(input)
++  if (result.ok !== true) throw new Error(`mount fixture refused: ${result.code} — ${result.message}`)
++  return result
++}
++
++const EXEC = { agent: { id: LEADER_SESSION }, callId: 'call-1' }
++const VALID_ARGS: Record<string, Record<string, unknown>> = {
++  team_list_members: { rootSessionId: ROOT, requestToken: 'tok-list-1' },
++  team_list_templates: { rootSessionId: ROOT, requestToken: 'tok-tpl-1' },
++  team_inspect_config: { rootSessionId: ROOT, requestToken: 'tok-cfg-1', targetInstanceId: 'inst-a1' },
++  team_create_member: { rootSessionId: ROOT, requestToken: 'tok-new-1', delegationTemplateId: 'tpl-worker', label: 'builder' },
++  team_delegate: { rootSessionId: ROOT, requestToken: 'tok-del-1', delegationTemplateId: 'tpl-worker', label: 'builder', prompt: 'do the work' },
++  team_follow_up: { rootSessionId: ROOT, requestToken: 'tok-fup-1', targetInstanceId: 'inst-a1', prompt: 'continue' },
++  team_collect: { rootSessionId: ROOT, requestToken: 'tok-col-1', requestTokens: ['tok-del-1'] },
++  team_send_message: { rootSessionId: ROOT, requestToken: 'tok-msg-1', recipientInstanceId: 'inst-a1', body: 'hello' },
++  team_report_progress: { rootSessionId: ROOT, requestToken: 'tok-rep-1', instanceId: 'inst-a1', subject: 'lane-1', progress: 'in-progress' },
++  team_archive_member: { rootSessionId: ROOT, requestToken: 'tok-arc-1', targetInstanceId: 'inst-a1' },
++}
++
++// ── (a) frozen census facts + module purity ────────────────────────────────
++describe('a5m2-team-adapters (a) frozen facts + purity', () => {
++  it('census/contract facts and the ten-record closed family (B-CONTROL five NEVER ride)', () => {
++    expect(ADAPTER.A5_B_TEAM_FAMILY_ID).toBe('B-TEAM')
++    expect(ADAPTER.A5_B_TEAM_ADAPTER_REVISION).toBe(1)
++    expect(ADAPTER.A5_B_TEAM_MOUNT_CONDITION).toBe('always')
++    expect([...NAMES].sort()).toEqual([
++      'team_archive_member', 'team_collect', 'team_create_member', 'team_delegate',
++      'team_follow_up', 'team_inspect_config', 'team_list_members', 'team_list_templates',
++      'team_report_progress', 'team_send_message',
++    ])
++    const indices = Object.fromEntries(Object.entries(ADAPTER.A5_B_TEAM_RECORD_SPECS).map(([k, v]) => [k, v.recordIndex]))
++    expect(indices).toEqual({
++      team_list_members: 74, team_list_templates: 75, team_inspect_config: 76,
++      team_create_member: 77, team_delegate: 78, team_follow_up: 79, team_collect: 80,
++      team_send_message: 81, team_report_progress: 82, team_archive_member: 86,
++    })
++    // The landed B-CONTROL five (g1-surface-adapters records 83/84/85/87/88).
++    for (const foreign of ['team_request_control', 'team_resolve_control', 'team_list_pending_control', 'team_grant_permission', 'team_revoke_permission']) {
++      expect(NAMES).not.toContain(foreign)
++    }
++  })
++  it('module closure: exactly [node:crypto], zero lane/host imports, no dynamic import', () => {
++    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'plugin', 'live', 'governed-families', 'team-adapters.mjs'), 'utf8')
++    const statics = [...source.matchAll(/^import .* from '(.+)'$/gm)].map((m) => String(m[1]))
++    expect(statics).toEqual(['node:crypto'])
++    expect(source).not.toContain('import(')
++    expect(source).not.toMatch(/require\(/)
++  })
++})
++
++// ── (b) real capture parity: the COMPLETE face travels, ONLY execute is
++//        replaced (root 8b4 law) ────────────────────────────────────────────
++describe('a5m2-team-adapters (b) real captured definition parity', () => {
++  it('every placed definition keeps EVERY real makeDefinition face by reference; only execute is replaced', () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    expect(assembly.definitions).toHaveLength(10)
++    expect(assembly.placementNames.length).toBe(10)
++    expect(assembly.declared).toEqual([])
++    for (const definition of assembly.definitions) {
++      const native = harness.byName.get(definition.name)
++      if (native === undefined) throw new Error('no native')
++      expect(definition.description).toBe(native.description)
++      expect(definition.parameters).toBe(native.parameters) // SAME compiled object
++      expect(definition.output).toBe(native.output)
++      expect(definition.output.render).toBe(native.output.render) // the REAL render
++      expect(definition.execute).not.toBe(native.execute) // ONLY execute
++      // the REAL minimum-entry shape rides (schema defined, render function):
++      expect(native.output.schema).toBeDefined()
++      expect(typeof native.output.render).toBe('function')
++    }
++  })
++  it('no captures ⇒ ten honest DECLARED-INACTIVE rows, zero definitions, zero registrations', async () => {
++    const harness = makeHarness()
++    const delegates: Record<string, unknown> = {}
++    for (const name of NAMES) {
++      const native = harness.byName.get(name)
++      if (native !== undefined) delegates[name] = native.execute
++    }
++    const result = ADAPTER.createTeamAdapterAssembly({
++      teamDelegates: delegates,
++      liveTeamDelegates: () => delegates,
++      placementFeed: (name: string) => ({ definitionIdentity: `placed-${name}` }),
++      admit: async () => ({ ok: true }),
++    })
++    expect(result.ok).toBe(true)
++    if (result.ok !== true) return
++    expect(result.definitions).toEqual([])
++    expect(result.declared).toHaveLength(10)
++    expect(result.familyRegistrations()).toEqual([])
++    const row = result.rowOf('team_delegate')
++    if (row === undefined) throw new Error('no row')
++    expect(row.active).toBe(false)
++    expect(row.classify(VALID_ARGS.team_delegate)).toEqual({ ok: false, code: CODES.CAPTURE_ABSENT, detail: expect.stringContaining('capture-absent') })
++    // (declared rows answer the SAME refusal synchronously — await-proof)
++    expect(await row.delegate({} as Plan, {})).toMatchObject({ ok: false, code: CODES.CAPTURE_ABSENT })
++    expect(harness.calls).toEqual([])
++  })
++  it('assembly refusals: split set (rebuild behind a stale capture), missing/foreign/partial inputs', () => {
++    const harness = makeHarness()
++    const delegates: Record<string, unknown> = {}
++    for (const name of NAMES) {
++      const native = harness.byName.get(name)
++      if (native !== undefined) delegates[name] = native.execute
++    }
++    const base = {
++      captured: CAPTURE_FOR(harness),
++      liveNative: (name: string) => harness.byName.get(name),
++      teamDelegates: delegates,
++      liveTeamDelegates: () => delegates,
++      placementFeed: (name: string) => ({ definitionIdentity: `placed-${name}` }),
++      admit: async () => ({ ok: true }),
++    }
++    const refuse = (overrides: MountOverrides): string => {
++      const result = ADAPTER.createTeamAdapterAssembly({ ...base, ...overrides })
++      if (result.ok === true) throw new Error('expected refusal')
++      return result.code
++    }
++    expect(refuse({ admit: undefined })).toBe(CODES.ADMISSION_ABSENT)
++    expect(refuse({ placementFeed: undefined })).toBe(CODES.INPUT_INVALID)
++    expect(refuse({ liveTeamDelegates: undefined })).toBe(CODES.INPUT_INVALID)
++    expect(refuse({ teamDelegates: 'nope' })).toBe(CODES.PORT_ABSENT)
++    expect(refuse({ liveTeamDelegates: () => ({ ...delegates }) })).toBe(CODES.PORT_DRIFT)
++    expect(refuse({ captured: { ...base.captured, team_request_control: CAPTURE_FOR(harness, ['team_list_members']).team_list_members! } }))
++      .toBe(CODES.NON_FAMILY_CAPTURE)
++    const half = CAPTURE_FOR(harness, ['team_delegate'])
++    const noOutput = { ...half.team_delegate!.native } as Record<string, unknown>
++    delete noOutput.output
++    expect(refuse({ captured: { team_delegate: { ...half.team_delegate!, native: noOutput as unknown as Definition } } })).toBe(CODES.CAPTURE_INCOMPLETE)
++    expect(refuse({ liveNative: undefined })).toBe(CODES.LIVE_NATIVE_ABSENT)
++    // A partial delegate set must ALSO ride the live read (otherwise the
++    // split-mount check fires first — that ordering is itself pinned below).
++    const partial: Record<string, unknown> = { team_delegate: delegates.team_delegate }
++    expect(refuse({ teamDelegates: partial, liveTeamDelegates: () => partial })).toBe(CODES.PORT_METHOD_ABSENT)
++    expect(refuse({ teamDelegates: partial })).toBe(CODES.PORT_DRIFT) // split-mount ordering
++    expect(refuse({ stranger: 1 })).toBe(CODES.INPUT_INVALID)
++    // THE SPLIT SET (L3): delegates rebuilt from a SECOND createTeamTools
++    // run — every face matches BY VALUE but the execute is a DIFFERENT
++    // function object behind a stale capture → refused at assembly.
++    const second = makeHarness()
++    const rebuilt: Record<string, unknown> = {}
++    for (const name of NAMES) {
++      const native = second.byName.get(name)
++      if (native !== undefined) rebuilt[name] = native.execute
++    }
++    expect(refuse({ teamDelegates: rebuilt, liveTeamDelegates: () => rebuilt })).toBe(CODES.TEAM_SET_SPLIT)
++  })
++})
++
++// ── (d) classify mirrors the LANE'S OWN argument law (bytes) with zero
++//        delegate entry ────────────────────────────────────────────────────
++describe('a5m2-team-adapters (d) the argument mirror answers lane bytes', () => {
++  it('the real compiled required arrays equal the frozen face law', () => {
++    const harness = makeHarness()
++    const expected: Record<string, string[]> = {
++      team_list_members: ['rootSessionId', 'requestToken'],
++      team_list_templates: ['rootSessionId', 'requestToken'],
++      team_inspect_config: ['rootSessionId', 'requestToken', 'targetInstanceId'],
++      team_create_member: ['rootSessionId', 'requestToken', 'delegationTemplateId', 'label'],
++      team_delegate: ['rootSessionId', 'requestToken', 'label', 'prompt'],
++      team_follow_up: ['rootSessionId', 'requestToken', 'targetInstanceId', 'prompt'],
++      team_collect: ['rootSessionId', 'requestToken', 'requestTokens'],
++      team_send_message: ['rootSessionId', 'requestToken', 'recipientInstanceId', 'body'],
++      team_report_progress: ['rootSessionId', 'requestToken', 'instanceId', 'subject', 'progress'],
++      team_archive_member: ['rootSessionId', 'requestToken', 'targetInstanceId'],
++    }
++    const assembly = mount(harness)
++    for (const [name, required] of Object.entries(expected)) {
++      const row = assembly.rowOf(name)
++      if (row === undefined) throw new Error('no row')
++      const parameters = row.parameters as { required?: string[] } | null
++      expect(parameters?.required, name).toEqual(required)
++    }
++  })
++  it('byte-identical lane rejections answered as plan toolError VALUES with zero delegate entry', () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const cases: Array<[string, Record<string, unknown>, ToolErrorValue]> = [
++      ['team_list_members', { requestToken: 't' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: required argument 'rootSessionId' is missing", details: { field: 'rootSessionId' } }],
++      ['team_list_members', { rootSessionId: 'r'.repeat(256), requestToken: 't' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: argument \'rootSessionId\' exceeds 255 characters', details: { field: 'rootSessionId', maxLength: 255, length: 256 } }],
++      ['team_list_members', { rootSessionId: ROOT, requestToken: 't'.repeat(129) }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: argument \'requestToken\' exceeds 128 characters', details: { field: 'requestToken', maxLength: 128, length: 129 } }],
++      ['team_list_members', { rootSessionId: ROOT, requestToken: '' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: argument 'requestToken' must be non-empty", details: { field: 'requestToken' } }],
++      ['team_inspect_config', { rootSessionId: ROOT, requestToken: 't' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: required argument 'targetInstanceId' is missing", details: { field: 'targetInstanceId' } }],
++      ['team_delegate', { rootSessionId: ROOT, requestToken: 't', label: 'l', prompt: 'p' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: delegate requires exactly one of delegationTemplateId / delegationInstanceId' }],
++      ['team_delegate', { rootSessionId: ROOT, requestToken: 't', label: 'l', prompt: 'p', delegationTemplateId: 'a', delegationInstanceId: 'inst-a1' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: delegate accepts exactly one of delegationTemplateId / delegationInstanceId, not both' }],
++      ['team_collect', { rootSessionId: ROOT, requestToken: 't', requestTokens: [] }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: argument 'requestTokens' must be a non-empty array of at most 64 work request tokens" }],
++      ['team_collect', { rootSessionId: ROOT, requestToken: 't', requestTokens: [''] }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: argument 'requestTokens' entries must be non-empty strings" }],
++      ['team_report_progress', { rootSessionId: ROOT, requestToken: 't', instanceId: 'inst-a1', subject: 's', progress: 'done' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: argument 'progress' must be one of in-progress | completed | blocked", details: { progress: 'done' } }],
++      ['team_send_message', { rootSessionId: ROOT, requestToken: 't', recipientInstanceId: 'inst-a1', body: 'b'.repeat(8193) }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: 'team-tools: argument \'body\' exceeds 8192 characters', details: { field: 'body', maxLength: 8192, length: 8193 } }],
++      ['team_follow_up', { rootSessionId: ROOT, requestToken: 't', targetInstanceId: 7, prompt: 'p' }, { status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS', message: "team-tools: argument 'targetInstanceId' must be a string", details: { field: 'targetInstanceId' } }],
++    ]
++    for (const [name, args, expectedError] of cases) {
++      const row = assembly.rowOf(name)
++      if (row === undefined) throw new Error('no row')
++      const classified = row.classify(args)
++      expect(classified.ok, `${name} ${JSON.stringify(args)}`).toBe(true)
++      expect(classified.plan?.toolError, name).toEqual(expectedError)
++      expect(classified.plan?.target.face, name).toContain('REFUSED')
++    }
++    // an OPTIONAL empty string is ABSENT (lane law), not an error:
++    const row = assembly.rowOf('team_delegate')
++    if (row === undefined) throw new Error('no row')
++    const ok = row.classify({ rootSessionId: ROOT, requestToken: 't', delegationTemplateId: 'tpl', label: 'l', prompt: 'p', groupId: '' })
++    expect(ok.ok).toBe(true)
++    expect(ok.plan?.toolError).toBeUndefined()
++    expect(harness.calls).toEqual([]) // every mirror answered with ZERO delegate entry
++  })
++  it('plans are frozen, fingerprinted, gap-carrying, and carry the §B-TEAM TARGET', () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const row = assembly.rowOf('team_create_member')
++    if (row === undefined) throw new Error('no row')
++    const classified = row.classify(VALID_ARGS.team_create_member)
++    const plan = classified.plan
++    if (plan === undefined) throw new Error('no plan')
++    expect(Object.isFrozen(plan)).toBe(true)
++    expect(plan.parametersFingerprint).toMatch(/^sha256:[0-9a-f]{64}$/)
++    expect(Object.keys(plan.namedGaps).sort()).toEqual(['CALLER_IDENTITY', 'GUARD_AND_LIFECYCLE', 'PLAN_ONCE_MEMO', 'SERVICE_ENTRY_DELEGATION'])
++    expect(plan.target.contract).toContain('§B-TEAM')
++    expect(plan.target.root.claim).toBe(ROOT)
++    expect(plan.target.root.adjudication).toContain('TEAM_TOOL_CALLER_ROOT_MISMATCH')
++    expect(plan.target.member).toEqual({ claim: 'tpl-worker', adjudication: expect.stringContaining('activation authority') })
++    expect(plan.target.action).toBe('team-create-member')
++    expect(plan.target.revision).toContain('facade idempotency identity')
++    expect(plan.target.effect).toBe(ADAPTER.A5_B_TEAM_EFFECT_LABELS.team_create_member)
++    // the gap text states the boundary honestly (never faked closed):
++    expect(ADAPTER.A5_B_TEAM_NAMED_GAPS.SERVICE_ENTRY_DELEGATION).toContain('不得重复建立同义service层')
++    expect(ADAPTER.A5_B_TEAM_NAMED_GAPS.SERVICE_ENTRY_DELEGATION).toContain('VERIFIES NONE')
++    expect(ADAPTER.A5_B_TEAM_NAMED_GAPS.CALLER_IDENTITY).toContain('never trusted from the caller string')
++    // non-record args are a MOUNT ANOMALY refusal (sibling house law), not a value:
++    expect(row.classify('nope')).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
++    expect(row.classify([1, 2])).toMatchObject({ ok: false, code: CODES.INPUT_INVALID })
++  })
++})
++
++// ── (e) the admit seat (L10) ──────────────────────────────────────────────
++describe('a5m2-team-adapters (e) required admit seat', () => {
++  it('a DENY throws the refusing side\'s own bytes with zero delegate entry', async () => {
++    const harness = makeHarness()
++    const assembly = mount(harness, {
++      admit: async () => ({ ok: false, code: 'PA_DENY', detail: 'the walk stopped here' }),
++    })
++    const definition = assembly.definitions.find((d) => d.name === 'team_delegate')
++    if (definition === undefined) throw new Error('no def')
++    const error = await definition.execute(VALID_ARGS.team_delegate, EXEC).then(() => undefined, (e: unknown) => e as Error & { teamRefusal?: { code: string; detail: string } })
++    expect(error).toBeInstanceOf(Error)
++    expect(error?.teamRefusal).toEqual({ ok: false, code: 'PA_DENY', detail: 'the walk stopped here' })
++    expect(harness.calls).toEqual([])
++  })
++  it('admit receives the governed envelope (name, recordIndex, familyId, plan, live exec)', async () => {
++    const harness = makeHarness()
++    let seen: Record<string, unknown> = {}
++    const assembly = mount(harness, {
++      admit: async (ctx: Record<string, unknown>) => {
++        seen = ctx
++        return { ok: true }
++      },
++    })
++    const definition = assembly.definitions.find((d) => d.name === 'team_list_members')
++    if (definition === undefined) throw new Error('no def')
++    await definition.execute(VALID_ARGS.team_list_members, EXEC)
++    expect(seen.name).toBe('team_list_members')
++    expect(seen.recordIndex).toBe(74)
++    expect(seen.familyId).toBe('B-TEAM')
++    expect(seen.classified).toMatchObject({ ok: true })
++    expect(seen.exec).toBe(EXEC) // LIVE, by reference (L4)
++  })
++})
++
++// ── (f) the DELEGATED existing chain actually governs (the contract law
++//        runs there; the row passes its values through, zero fabrication) ──
++describe('a5m2-team-adapters (f) delegated existing-chain governance', () => {
++  it('the P0 caller-root binding RUNS behind the row: cross-root caller rejected, ZERO facade entry', async () => {
++    const harness = makeHarness()
++    harness.setCallerRoot(OTHER_ROOT)
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_list_members')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute(VALID_ARGS.team_list_members, EXEC) as ToolErrorValue & { details?: Record<string, unknown> }
++    expect(value.status).toBe('rejected')
++    expect(value.code).toBe('TEAM_TOOL_CALLER_ROOT_MISMATCH')
++    expect(value.details).toEqual({ callerRootSessionId: OTHER_ROOT, requestedRootSessionId: ROOT })
++    expect(harness.calls.filter((c) => c.startsWith('performAction'))).toEqual([])
++    expect(harness.calls).toContain(`resolveCaller:${LEADER_SESSION}`) // live per-call identity (L4)
++  })
++  it('an unresolvable caller is the lane\'s TEAM_TOOL_CALLER_UNRESOLVED VALUE (never a row invention)', async () => {
++    const harness = makeHarness()
++    harness.setCallerResolvable(false)
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_collect')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute(VALID_ARGS.team_collect, EXEC) as ToolErrorValue
++    expect(value).toMatchObject({ status: 'rejected', code: 'TEAM_TOOL_CALLER_UNRESOLVED' })
++  })
++  it('happy path settles as the REAL lane result (executed) through facade doubles', async () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_list_members')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute(VALID_ARGS.team_list_members, EXEC) as { status: string; rootSessionId: string; requestToken: string }
++    expect(value.status).toBe('executed')
++    expect(value.rootSessionId).toBe(ROOT)
++    expect(value.requestToken).toBe('tok-list-1')
++    expect(harness.calls.filter((c) => c.startsWith('performAction'))).toHaveLength(1)
++  })
++  it('guard-blocked VALUES pass through verbatim (follow-up guarded on the target, zero facade entry)', async () => {
++    const harness = makeHarness()
++    harness.setGuardBlock(true)
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_follow_up')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute(VALID_ARGS.team_follow_up, EXEC) as { status: string; reason: string; requestId?: string }
++    expect(value.status).toBe('blocked')
++    expect(value.reason).toBe('pending-approval')
++    expect(value.requestId).toBe('req-control-9')
++    expect(harness.calls).toContain('guardOperation:inst-a1')
++    expect(harness.calls.filter((c) => c.startsWith('performAction'))).toEqual([])
++  })
++  it('the Leader-gate is the DELEGATED chain\'s (member caller rejected before guard, zero effects)', async () => {
++    const harness = makeHarness()
++    harness.setCallerInstance('inst-a1') // a MEMBER caller
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_archive_member')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute(VALID_ARGS.team_archive_member, EXEC) as ToolErrorValue
++    expect(value).toMatchObject({ status: 'rejected', code: 'TEAM_TOOL_ARCHIVE_NOT_LEADER' })
++    expect(harness.calls.filter((c) => c.startsWith('guardOperation') || c.startsWith('performAction'))).toEqual([])
++  })
++  it('an UNEXPECTED error is a THROW passed through — the row mints no error value (L6)', async () => {
++    const harness = makeHarness()
++    harness.setRuntimeError(new Error('boom-unexpected'))
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_list_templates')
++    if (definition === undefined) throw new Error('no def')
++    await expect(definition.execute(VALID_ARGS.team_list_templates, EXEC)).rejects.toThrow(/boom-unexpected/)
++  })
++  it('a mirrored tool-law miss ANSWERS the lane value through execute (settled, not a throw) with zero facade entry', async () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const definition = assembly.definitions.find((d) => d.name === 'team_inspect_config')
++    if (definition === undefined) throw new Error('no def')
++    const value = await definition.execute({ rootSessionId: ROOT, requestToken: 't' }, EXEC) as ToolErrorValue
++    expect(value).toMatchObject({ status: 'rejected', code: 'TEAM_TOOL_BAD_ARGUMENTS' })
++    // admit RAN (it sits before the delegate seat), the delegated chain did NOT:
++    expect(harness.calls.filter((c) => !c.startsWith('admit'))).toEqual([])
++  })
++})
++
++// ── (g) plan memo (L8), (h) drift (L7), (i) drain, (j) registration ──────
++describe('a5m2-team-adapters (g) plan memo', () => {
++  it('consumed/foreign/stale plans refuse with zero delegate entry; the COPY boundary is pinned honestly', async () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const row = assembly.rowOf('team_list_members')
++    if (row === undefined) throw new Error('no row')
++    const first = row.classify(VALID_ARGS.team_list_members)
++    const plan = first.plan
++    if (plan === undefined) throw new Error('no plan')
++    const settled = await row.delegate(plan, { exec: EXEC })
++    expect(settled).toMatchObject({ ok: true, settled: 'delegated' })
++    const callsAfterFirst = harness.calls.length
++    const replay = await row.delegate(plan, { exec: EXEC })
++    expect(replay).toMatchObject({ ok: false, code: CODES.ALREADY_DISPATCHED })
++    expect(replay.detail).toContain('INTERNAL MEMO')
++    expect(harness.calls).toHaveLength(callsAfterFirst) // zero added entry
++    // PINNED HONEST BOUNDARY (root ④): copied fields RE-dispatch — the real
++    // one-shot edges are the center PA consumedProof + the facade's OWN
++    // requestToken idempotency INSIDE the delegated chain.
++    const copied = { ...plan }
++    const again = await row.delegate(copied, { exec: EXEC })
++    expect(again).toMatchObject({ ok: true, settled: 'delegated' })
++    expect(harness.calls).toHaveLength(callsAfterFirst + 2) // admit is inside execute, not here: facade + resolveCaller
++    const foreign = await row.delegate({ ...plan, rowName: 'team_delegate' }, { exec: EXEC })
++    expect(foreign).toMatchObject({ ok: false, code: CODES.NOT_OWN_PLAN })
++    const stale = await row.delegate({ ...plan, parametersFingerprint: 'sha256:deadbeef' }, { exec: EXEC })
++    expect(stale).toMatchObject({ ok: false, code: CODES.PLAN_STALE })
++  })
++})
++describe('a5m2-team-adapters (h) per-dispatch drift (L7)', () => {
++  it('liveNative object drift, delegates-object replacement, and a rebound method all refuse with zero delegate entry', async () => {
++    const harness = makeHarness()
++    let mode = 'bound'
++    const delegates: Record<string, Definition['execute']> = {}
++    for (const name of NAMES) {
++      const native = harness.byName.get(name)
++      if (native !== undefined) delegates[name] = native.execute
++    }
++    const result = ADAPTER.createTeamAdapterAssembly({
++      captured: CAPTURE_FOR(harness),
++      liveNative: (name: string) => {
++        const native = harness.byName.get(name)
++        if (native === undefined) return undefined
++        return mode === 'def-drift' ? { ...native } : native
++      },
++      teamDelegates: delegates,
++      liveTeamDelegates: () => {
++        if (mode === 'port-drift') return { ...delegates }
++        if (mode === 'method-drift') {
++          // SAME object identity, a REBOUND method (the live mount mutated it).
++          return delegates
++        }
++        return delegates
++      },
++      placementFeed: (name: string) => ({ definitionIdentity: `placed-${name}` }),
++      admit: async () => ({ ok: true }),
++    })
++    if (result.ok !== true) throw new Error('mount failed')
++    const row = result.rowOf('team_report_progress')
++    if (row === undefined) throw new Error('no row')
++    const plan = (row.classify(VALID_ARGS.team_report_progress).plan) as Plan
++    const callsBefore = harness.calls.length
++    mode = 'def-drift'
++    expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: false, code: CODES.DEFINITION_DRIFT })
++    mode = 'port-drift'
++    expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: false, code: CODES.PORT_DRIFT })
++    mode = 'bound'
++    const rebound = delegates.team_report_progress
++    const replacement = async () => ({ status: 'executed' })
++    Object.defineProperty(delegates, 'team_report_progress', { value: replacement, writable: true, configurable: true, enumerable: true })
++    expect(await row.delegate(plan, { exec: EXEC })).toMatchObject({ ok: false, code: CODES.PORT_DRIFT })
++    Object.defineProperty(delegates, 'team_report_progress', { value: rebound, writable: true, configurable: true, enumerable: true })
++    expect(harness.calls).toHaveLength(callsBefore) // ZERO delegate entry on every drift
++  })
++})
++describe('a5m2-team-adapters (i/j) drain + registration', () => {
++  it('drain = new-call prohibition only', async () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    assembly.drain()
++    const row = assembly.rowOf('team_list_members')
++    if (row === undefined) throw new Error('no row')
++    expect(row.classify(VALID_ARGS.team_list_members)).toMatchObject({ ok: false, code: CODES.DRAINING })
++    expect(harness.calls).toEqual([])
++  })
++  it('familyRegistrations: placement-feed keys only; ABSENT/MOVED keys throw (never guess, never skip)', () => {
++    const harness = makeHarness()
++    const assembly = mount(harness)
++    const registrations = assembly.familyRegistrations()
++    expect(registrations).toHaveLength(10)
++    expect(registrations[0]?.entry).toEqual({ familyId: 'B-TEAM', adapterRevision: 1, providerIdentity: 'b-team' })
++    expect(registrations.map((r) => r.definitionIdentity).sort()).toEqual(NAMES.map((n) => `placed-${n}`).sort())
++    expect(registrations.find((r) => r.name === 'team_archive_member')?.recordIndex).toBe(86)
++    // absent key:
++    const moved = mount(harness, { placementFeed: () => undefined })
++    expect(() => moved.familyRegistrations()).toThrow(new RegExp(`^${CODES.PLACEMENT_KEY_ABSENT}:`))
++    // moved key (each read floats):
++    let tick = 0
++    const floating = mount(harness, { placementFeed: (name: string) => ({ definitionIdentity: `placed-${name}-${(tick += 1)}` }) })
++    floating.familyRegistrations()
++    expect(() => floating.familyRegistrations()).toThrow(new RegExp(`^${CODES.PLACEMENT_KEY_MOVED}:`))
++  })
++})

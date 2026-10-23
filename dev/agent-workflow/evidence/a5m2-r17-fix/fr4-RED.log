@@ -1,0 +1,145 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+ ✓ test/a5m2-family-rules-c1.test.ts (10 tests) 13ms
+ ❯ test/a5m2-g1-surface-adapters.test.ts (103 tests | 1 failed) 162ms
+     ✓ the record set equals the frozen dispatch index (family-filtered, recordIndex-exact); spec VALUES carry no lane paths (string literals are audit edges) 4ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 4ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 1ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 1ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 2ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 22ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 1ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+       ✓ REAL contract effects: REAL closed-grammar parse; §3 kind multiset; trusted target + generations ride the plan 0ms
+       ✓ trusted targets are CONFIG faces: a model-smuggled memberAgentId refuses at the closed root 0ms
+       ✓ capture-absent: every entry refuses P_G1_NATIVE_CAPTURE_ABSENT typed, zero native entry, no re-resolution 0ms
+       ✓ delegate-once, plan-bound: only own plans, at most once; the body receives the PLAN's frozen clone (args unswappable); dependency runs the REAL controlled path, never its double 0ms
+       ✓ definition drift after bind: the delegate refuses typed and never runs a moved body 0ms
+       ✓ full VALUES: one argument byte changes the parametersFingerprint 0ms
+     ✓ pre-aborted signal: the row refuses P_G1_PRE_ABORTED before admission — no gate call, no manager entry, no native entry (mirrors tools.ts:44 throwIfAborted BEFORE the entry) 1ms
+     ✓ rg: the install gate runs the REAL EXPORTED host approveEscalation — rejected/cancelled/no-approver/no-agent are the real THROWs surfacing as refusals with ZERO manager entry; the effective-mode repeat needs no approval 1ms
+     ✓ P1 89a9: sandboxPolicy.resolve receives EXACTLY the host scope — the Session OBJECT by reference for agent calls (a narrower session configuration resolves only when the object survives), { session: undefined } for a session-less agent, {} only when exec.agent is absent 1ms
+     ✓ plugin install gate plumbing: no escalation port mounted refuses GATE_ABSENT; no manager face refuses FACE_ABSENT; the signal re-check and the CURRENT-facts re-verify happen AFTER the awaited gate and BEFORE any manager entry 1ms
+     ✓ consumption-edge re-verify: post-classify mutation of the catalog / topology / domain registry / profile facts / install facts refuses the plan typed, zero native entry 1ms
+     ✓ inspect list: the all-providers answer is CONSTRAINED to the authorized topology (unauthorized providers never appear; methods filtered); unknown shapes fail closed 0ms
+     × inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse 8ms
+     ✓ plugin: per-action effect sets on the manager code paths; REAL npm-name/relative-path spec parse and REAL URL registry envelope; @scope/pkg entry targets are LEGAL; the exemption lane needs package-name@version and is never derivable 2ms
+     ✓ plugin face declares the REAL parameter list (tools.ts:22-31): offset/limit ride, there is NO bundle parameter 0ms
+     ✓ plugin install on the REAL async manager contract: invocation-owned requestId minted BEFORE the call and passed in options; settle OBSERVED BY LISTENER (waitForInstall answers null — the changeResult can only be the listener's); cancel AWAITED to the closed status; abort never claims copying stopped 2ms
+     ✓ present: read+meta per deliverable + the expose WRITE obligation; the commit witness is the same-exec append carrying the exec callId AND the native result's OWN turn — arbitrary integers refuse 1ms
+     ✓ present legality: relative deliverables ride workspace, OS-absolute deliverables are LEGAL and ride GOVERNED absolute-path effects (approval semantics at the commit lane, not a blanket refuse); relative .. stays refused THROUGH THE GRAMMAR 0ms
+     ✓ team faces keep their REAL optional fields: toolName+summary / note / limit classify as declared face params (unknown params still refuse) 0ms
+     ✓ dependency: no controlledInstall mount ⇒ the arm FAILS CLOSED before any fs of its own and before native entry; with the REAL EXPORTED installPrimaryRuntime mounted the arm RUNS the controlled path (its own manifest gate + validatePayloadEntries + rename-commit verify the payload) — no fixture copy/rename, no post-hoc BLOCKED, no self-hash claims 5ms
+     ✓ skill: classify consults the trusted catalog CURRENT facts — port absent, unknown name, catalog facts on the plan 1ms
+     ✓ domain surface: a model-supplied domainAuthorityId is a CLAIM verified against the mounted-port CURRENT registry 0ms
+     ✓ a present-but-wrong capture (name mismatch) or a capture without its definitionIdentity is a config defect: throws at assembly 0ms
+     ✓ r9: the passed-through nested-required face IS a canonical host registration face — REAL Host639 validator, no property-level markers, constraints bind 81ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-g1-surface-adapters.test.ts > a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2 (100+ component legs, not records) > inspect query: CURRENT topology revision/digest ride the plan; claims outside the authorized triples refuse
+AssertionError: expected undefined to match object { platform: 'host', …(2) }
+
+- Expected:
+{
+  "method": Any<String>,
+  "platform": "host",
+  "provider": Any<String>,
+}
+
++ Received:
+undefined
+
+ ❯ test/a5m2-g1-surface-adapters.test.ts:849:50
+    847|     expect(classified.targetManifest.topologyRevision).toBe(9)
+    848|     expect(classified.targetManifest.topologyDigest).toBe('sha256;topo…
+    849|     expect(classified.targetManifest.queryClaim).toMatchObject({ platf…
+       |                                                  ^
+    850|     const client = row.classify({ platform: 'client', provider: 'slot-…
+    851|     expect(client.ok).toBe(true)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 112 passed (113)
+   Start at  17:51:09
+   Duration  935ms (transform 1.02s, setup 0ms, import 1.19s, tests 175ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -711,32 +711,411 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
     }),
-    // A5-M2 B-INSPECT (root ruling, pure-equivalence leaf flatten; the same lane
-    // module produces this claim: records 53 cordis_inspect_list and 54
-    // cordis_inspect_query). topologyRevision/topologyDigest are the CURRENT
-    // authorized-topology facts (the edge re-verify owns them post-approval,
-    // unchanged); `inspectTarget` is the SINGLE-ITEM array that keeps each
-    // record's VARIANT facts together - rec 53: [{ listLaw }], rec 54:
-    // [{ platform, provider, method(, clientRoundtrip) }] - so the correlated
-    // query triple stays correlated (the edge reads it as one triple) and the
-    // closed-key law is satisfiable by ONE rule although the records' nested
-    // shapes differed. The 'obligations' kind is used STRUCTURALLY (non-empty
-    // array of plain objects): notation for the approved question, never a
-    // second permission layer (rule doc above).
+    // A5-M2 B-INSPECT (root 957 SIGNED the trusted/topology scalar flatten; root
+    // 17:40 SIGNED the minimal strict DISCRIMINATED TARGET for THIS family only
+    // - a technical encoding ruling, not a security-semantics change). The
+    // claim shape is minted by src/plugin/live/governed-families/
+    // g1-surface-adapters.mjs records 53 cordis_inspect_list and 54
+    // cordis_inspect_query at revision 7 (the encoding digest moved - revision-6
+    // approvals are EXPLICITLY stale; retired encodings are never translated).
+    // required ∪ the selected variant group is the EXACT closed key set:
+    //   'list' (rec 53): listLaw - BOUND to the list-law literal (never an
+    //     arbitrary string);
+    //   'query-host' (rec 54): the triple queryPlatform/queryProvider/queryMethod,
+    //     queryPlatform BOUND 'host' - the exact variant↔platform pairing;
+    //   'query-client' (rec 54): the triple, queryPlatform BOUND 'client', plus
+    //     clientRoundtrip BOUND to the roundtrip-law literal - the law is
+    //     required iff client (the closed set excludes it from every other
+    //     variant) and can never be an arbitrary string.
+    // The discriminant inspectVariant is minted from spec.recordIndex + the
+    // authorized triple's platform (trusted record/tool truth - the closed
+    // parameter grammar keeps model text out of the target), and the
+    // variant↔platform pairing is grammar-bound via `binds` (module-load guard
+    // below keeps every group's structure legal). All facts stay at FULL VALUE
+    // inside the target - the approved question and its fingerprint keep every
+    // one (nothing moved out, no effects/provider-scope extension, no new
+    // ledger, no schema generalization: existing kinds + closed sets only).
+    // currentFields stays the signed trusted trio (current-facts law unmoved);
+    // the topology facts stay the edge re-verify's own (unchanged source,
+    // verdicts, words) - now over THIS same flat encoding (rule/mint/edge one
+    // encoding). The variant-value lookup is OWN-KEY only: 'toString',
+    // 'constructor', '__proto__' and any unknown select nothing and deny.
     'B-INSPECT': Object.freeze({
         required: Object.freeze({
             topologyRevision: 'nonNegativeInt',
             topologyDigest: 'string',
-            inspectTarget: 'obligations',
+            inspectVariant: 'string',
             trustedMemberAgentId: 'string',
             trustedSessionHeaderId: 'string',
             trustedRealmId: 'string',
             trustedOwner: 'string',
             trustedProfileId: 'string',
         }),
+        variant: Object.freeze({
+            leaf: 'inspectVariant',
+            by: Object.freeze({
+                'list': Object.freeze({
+                    adds: Object.freeze({ listLaw: 'string' }),
+                    binds: Object.freeze({ listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear' }),
+                }),
+                'query-host': Object.freeze({
+                    adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string' }),
+                    binds: Object.freeze({ queryPlatform: 'host' }),
+                }),
+                'query-client': Object.freeze({
+                    adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string', clientRoundtrip: 'string' }),
+                    binds: Object.freeze({
+                        queryPlatform: 'client',
+                        clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel',
+                    }),
+                }),
+            }),
+        }),
         currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
     }),
+    /* A5-M2 B-SCHEDULE (root 19:06: rule mapping lands on the ALREADY-APPROVED
+     * 18:42 structure; the two kinds are signed). The MINT this entry pairs
+     * with (read-only fixed-commit measurement, never copied): the wire lane
+     * feat/a5m2-wire-schedule @3e88b2822 — adapter
+     * schedule-adapters.mjs A5_B_SCHEDULE_ADAPTER_REVISION = 2, and the claim
+     * target is that lane's OWN lossless flat projection
+     * (schedule-wiring.mjs mintTargetManifest, :150-203): the 11 measured
+     * leaves below, every one a non-empty string EXCEPT taskId, which rides
+     * exactly as measured - null (schedule_list; id-law-refused delete
+     * answers) or the validated id string (admitted schedule_delete) -
+     * 'nullableString' types precisely that union; the non-empty +
+     * trim-stable id law stays that lane's BUSINESS edge (:511-517), never
+     * encoded here (root 18:42 (2)). ONE shared closed key set for both
+     * signable rows - no variant needed (measured). ENABLEMENT IS NOT THIS
+     * TABLE: the ruled subset is schedule_delete(31)/schedule_list(32) only;
+     * schedule_create(30)/schedule_update(33) stay disabled by that lane's
+     * A5_B_SCHEDULE_WIRING_SUBSET + registration - a grammar entry is a type
+     * gate, not a mount, and nothing here enables Host or claims C2. */
+    'B-SCHEDULE': Object.freeze({
+        required: Object.freeze({
+            contract: 'string',
+            ownerKind: 'string',
+            ownerSessionId: 'string',
+            action: 'string',
+            taskId: 'nullableString',
+            revision: 'string',
+            timerNamespace: 'string',
+            timerEffect: 'string',
+            destinationSessionId: 'string',
+            destinationPath: 'string',
+            destinationWake: 'string',
+        }),
+        currentFields: Object.freeze(['ownerSessionId', 'destinationSessionId']),
+    }),
+    /* A5-M2 B-SESSION-QUERY (root 19:06: approved 18:42 structure, real
+     * rev-4 mint measured read-only on the wire lane feat/a5m2-wire-g6
+     * @fe63dec9e - A5_G6_ADAPTER_REVISION = 4, targetManifest :1346-1355).
+     * Base leaves exactly as approved: toolName is the variant LEAF (a strict
+     * 'string', minted from the row's own identity - never model text);
+     * operation/portFamily/portMethod are 'string';
+     * effectiveTargetSessionId is 'string' (measured: the mint ternary's
+     * ': null' arm is UNREACHABLE - validateCapturedArgs enforces the
+     * captured compiled schema's string type for session_id (:1312-1316,
+     * "nothing is coerced") and requireCaller enforces a non-empty
+     * caller.id string, so the fallback is always a string);
+     * callerWorkspaceCwd is 'nullableString' (string INCLUDING '' or null -
+     * the 18:42 (1) law, missing stays a distinct denial); disclosures is
+     * 'stringArray'. PER-ROW-GROUP DIFFERENCE rides the already-signed
+     * closed variants (root 18:42 (4)): BOTH search rows (session_search,
+     * session_event_search) REQUIRE maxSearchResults (strict
+     * nonNegativeInt - null never accepted); the three always-mount rows
+     * (session_trace, session_event_trace, session_event_read) EXPLICITLY
+     * FORBID the key through the own-key extra-key law (presence of ANY
+     * value, null included, denies 'not part of the typed plan'). PAIRING
+     * DISCLOSURE: that lane's :1353 still sets maxSearchResults: undefined
+     * on non-search rows - a key-with-undefined fails closed here exactly
+     * as at the lossless walk; the routed 1-line mint fix (key OMISSION)
+     * belongs to that lane - this table never translates it. The disclosure
+     * LAW (rev-4 mints disclosures === [SESSION_HISTORY_RESOURCE_KIND] on
+     * every row, :1354, never droppable) is MINT-side; 'stringArray' types
+     * it without weakening or enforcing it (18:42 (3)). currentFields is
+     * the approved pure-data subset. No Host enablement, no C2 claim. */
+    'B-SESSION-QUERY': Object.freeze({
+        required: Object.freeze({
+            toolName: 'string',
+            operation: 'string',
+            portFamily: 'string',
+            portMethod: 'string',
+            effectiveTargetSessionId: 'string',
+            callerWorkspaceCwd: 'nullableString',
+            disclosures: 'stringArray',
+        }),
+        variant: Object.freeze({
+            leaf: 'toolName',
+            by: Object.freeze({
+                'session_search': Object.freeze({
+                    adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+                    binds: Object.freeze({}),
+                }),
+                'session_event_search': Object.freeze({
+                    adds: Object.freeze({ maxSearchResults: 'nonNegativeInt' }),
+                    binds: Object.freeze({}),
+                }),
+                'session_trace': Object.freeze({
+                    adds: Object.freeze({}),
+                    binds: Object.freeze({}),
+                }),
+                'session_event_trace': Object.freeze({
+                    adds: Object.freeze({}),
+                    binds: Object.freeze({}),
+                }),
+                'session_event_read': Object.freeze({
+                    adds: Object.freeze({}),
+                    binds: Object.freeze({}),
+                }),
+            }),
+        }),
+        currentFields: Object.freeze(['toolName', 'operation', 'portFamily', 'portMethod']),
+    }),
+    /* A5-M2 B-MCP (root 19:28: express on the EXISTING signed grammar NOW -
+     * variant + nullableString + stringArray; root 19:25: one REAL legal +
+     * one REAL error native example, no hand-mirrored constraints). Measured
+     * read-only against the LIVE mount, feat/a5m2-wire-g2
+     * @5c597efea4d2f8e3ef0de5da96460c7ccf0e32c2 (A5_G2_ADAPTER_REVISION = 1,
+     * round-16; targetManifest :730+; the lane's delivered field contract
+     * dev/agent-workflow/evidence/a5m2-g2-wire/b-mcp-target-rule-field-
+     * contract.md measured in full - its own fallback clause authorizes this
+     * lane to substitute the optionality mechanism 1:1 while keeping the KEY
+     * NAMES AND KINDS the row produces, measured). MECHANISM SUBSTITUTIONS
+     * (each a named delta, same class as the signed G6 key-omission routing;
+     * zero new kinds): (D1) the nested `surface` object flattens to its
+     * measured inner key names at top level (record/transport/
+     * connectionIncarnation/endpointOrigin + spawn -> spawnArgv0/
+     * spawnArgCount/spawnCwd) - the signed closed law types exact key sets of
+     * scalar/array leaves and NO signed kind types a nested object (the
+     * round-6 Schedule lane's own lossless FLAT projection precedent,
+     * root-signed 19:28 as the structure-mapping discipline); (D2)
+     * applicability-conditional keys ride ALWAYS-EMITTED 'nullableString'
+     * (cursor on list rows: null = no cursor passed - the signed taskId-null
+     * precedent; connectionIncarnationReason: null once a REAL gen-N
+     * incarnation is up; domainAuthorityId: null when none declared) - the
+     * 18:07 key-omission law stays the G6 row's law; root 19:08/19:28's
+     * nullable-leaf ruling types THIS family's closed law; (D3) the two-axis
+     * structure (transport x method) selects SIX closed groups through ONE
+     * mint-synthesized discriminant 'mcpVariant' = `stdio|http` + ':' +
+     * `list|templates|read` - the SIGNED round-4 B-INSPECT inspectVariant
+     * pattern (derivable from measured facts, no invented data); this is
+     * what makes spawnArgCount a plain 'nonNegativeInt' (measured:
+     * command.length-1 over a non-empty command, exists exactly on stdio
+     * rows - no nullable-int anywhere) and FORBIDS cursor on the read groups
+     * STRUCTURALLY - the mint's own published-face law 'read_mcp_resource
+     * declares no cursor' (:746-748, real error example) now also holds at
+     * the grammar edge. Key/pairing fidelity to the live row: every key NAME
+     * above is the contract's measured name; the family-block twins
+     * (familyId/adapterRevision/providerIdentity) ride the block ABOVE the
+     * target (their mount legs prove it: legInput.family carries them, the
+     * targetManifest does not) - never re-minted into the target; `server`
+     * carries the IDENTITY LAW value (undeclared-server swaps refuse inside
+     * the row BEFORE any walk - real error example, zero leg); bind
+     * constants pin operation+record+transport per group (guard law: bound
+     * leaves live in their group's adds, the signed queryPlatform pattern)
+     * and uriOpacity binds its measured law literal verbatim (:754).
+     * NOT LANDED BY DECISION, pinned: headerCount is not in the rev-1
+     * manifest projection (:733) - a claim carrying it fails closed until a
+     * fingerprint ruling adds it; realmId (speculative in the contract's
+     * optional map) is NOT measured in the live target - this table invents
+     * nothing. UNTIL D1-D3 LAND ON THE MINT (g2 lane's half, routed by this
+     * entry + the pairing report) EVERY REAL B-MCP CLAIM FAILS CLOSED at the
+     * required-leaf law (measured first violation on today's nested claim:
+     * 'mcpVariant: required by the B-MCP typed plan, absent' - pinned); no
+     * silent acceptance, no translation; digest bump + adapter revision
+     * pairing at adoption. No Host enablement, no C2 claim. */
+    'B-MCP': Object.freeze({
+        required: Object.freeze({
+            mcpVariant: 'string',
+            server: 'string',
+            connectionIncarnation: 'string',
+            providerReSelectionLaw: 'string',
+            connectionIncarnationReason: 'nullableString',
+            domainAuthorityId: 'nullableString',
+            businessObligations: 'obligations',
+        }),
+        variant: Object.freeze({
+            leaf: 'mcpVariant',
+            by: Object.freeze({
+                'stdio:list': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', cursor: 'nullableString' }),
+                    binds: Object.freeze({ operation: 'resources/list', record: 'surface:mcp_stdio', transport: 'stdio' }),
+                }),
+                'stdio:templates': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', cursor: 'nullableString' }),
+                    binds: Object.freeze({ operation: 'resources/templates/list', record: 'surface:mcp_stdio', transport: 'stdio' }),
+                }),
+                'stdio:read': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', spawnArgv0: 'string', spawnArgCount: 'nonNegativeInt', spawnCwd: 'nullableString', uriVerbatim: 'string', uriOpacity: 'string' }),
+                    binds: Object.freeze({ operation: 'resources/read', record: 'surface:mcp_stdio', transport: 'stdio', uriOpacity: 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge' }),
+                }),
+                'http:list': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', cursor: 'nullableString' }),
+                    binds: Object.freeze({ operation: 'resources/list', record: 'surface:mcp_http_dynamic', transport: 'streamable-http' }),
+                }),
+                'http:templates': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', cursor: 'nullableString' }),
+                    binds: Object.freeze({ operation: 'resources/templates/list', record: 'surface:mcp_http_dynamic', transport: 'streamable-http' }),
+                }),
+                'http:read': Object.freeze({
+                    adds: Object.freeze({ operation: 'string', record: 'string', transport: 'string', endpointOrigin: 'string', uriVerbatim: 'string', uriOpacity: 'string' }),
+                    binds: Object.freeze({ operation: 'resources/read', record: 'surface:mcp_http_dynamic', transport: 'streamable-http', uriOpacity: 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge' }),
+                }),
+            }),
+        }),
+        currentFields: Object.freeze(['mcpVariant', 'operation', 'record', 'transport']),
+    }),
+    /* A5-M2 B-TEAM (root card 19:4x; the ONLY measured residual was THIS
+     * entry - their seat already mints the exact shape). Measured read-only at
+     * the Team wire lane feat/a5m2-wire-team
+     * @fc072d5c248f008734bdc10b879d313c13625017 (team-wiring.mjs
+     * mintTargetManifest :200-248: the lossless FLAT projection, leaf for
+     * leaf, of the adapter's plan.target; adapter team-adapters.mjs @88ad3cf37
+     * mintTarget :663-708, A5_B_TEAM_ADAPTER_REVISION = 1, records
+     * 74-82+86) and their spec a5m2-team-wiring-c1.test.ts (g) - the 10-key
+     * set their legs pin sorted. NO mint delta, NO synthetic discriminant:
+     * 'operation' is a MINTED string leaf (the per-row operation constant), so
+     * it discriminates TEN closed groups directly - the signed variant
+     * pattern with zero new vocabulary (nullableString, signed since 5d83ed6f6,
+     * types the two string-OR-null claims exactly: rootClaim and memberClaim
+     * ride null AS MEASURED - an un-adjudicated claim is a measured null,
+     * never a sentinel; their own grammar-honesty block predates nullableString
+     * and is superseded BY THIS ENTRY, their fail-closed pin flips to
+     * ACCEPTANCE at merge - expected, disclosed). Per-group adds+binds pin the
+     * row↔object↔effect-label pairing at the grammar edge (guard law: bound
+     * leaves live in adds): a team_collect claim CANNOT wear another row's
+     * durable object or effect label; an unknown operation selects no group.
+     * ASK-lane fidelity, NOT widened: the effect labels are the contract's
+     * comment-side I+S annotations (the closed RESOURCE_KINDS carries NO
+     * Team-object kind - the named residual their lane reports to CENTER);
+     * the call still rides the ONE admitted tool-invoke effect and this table
+     * invents no effect dimension. The two-branch delegate law, the
+     * optionalStringField ''-normalizes-to-absent rule and the branch
+     * correlations (memberClaim null ↔ which adjudication) are their
+     * MINT-SIDE laws - typed here, never mirrored (root 19:25: no
+     * hand-mirrored constraints). contract/rootAdjudication/revisionLaw are
+     * the mint's constant law sentences: kind-typed here, their constancy and
+     * their lane's exactly-one/identity refusals stay lane-side, cited not
+     * encoded. currentFields = the mint-side pure-data constants the edge can
+     * restate. No Host enablement; B-TEAM's four-tier row stays 未接线/接线未测
+     * their own wording until a Host-accepted acceptance leg lands - no C2
+     * claim from table passage. */
+    'B-TEAM': Object.freeze({
+        required: Object.freeze({
+            operation: 'string',
+            contract: 'string',
+            rootClaim: 'nullableString',
+            rootAdjudication: 'string',
+            memberClaim: 'nullableString',
+            memberAdjudication: 'string',
+            revisionLaw: 'string',
+            argumentLawFace: 'string',
+        }),
+        variant: Object.freeze({
+            leaf: 'operation',
+            by: Object.freeze({
+                'team-list-members': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'the durable Team roster (member instances + lifecycle + bound child session ids)', effectLabel: 'S(read) — the durable Team roster through the existing facade action' }),
+                }),
+                'team-list-templates': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: "the bound blueprint's member templates", effectLabel: "S(read) — the bound blueprint templates through the existing facade action" }),
+                }),
+                'team-inspect-config': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: "ONE member's durable effective-policy / requirement / recovery facts", effectLabel: "S(read) — ONE member's durable effective-policy view (config object)" }),
+                }),
+                'team-create-member': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'a NEW member instance from a blueprint template (the member-lifecycle object)', effectLabel: 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)' }),
+                }),
+                'team-delegate': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'a work unit with BOTH real branches (tools.ts:688-701): CONTINUE form = a NEW round on an EXISTING delegation instance (guarded on that target, SD-GUARD), CREATE form = a NEW delegation plus template-resolved member (SD-CREATE, activation authority is the gate)', effectLabel: 'I + S(durable work-unit admission; create-form additionally mints the member-lifecycle fact; child run + budget INSIDE the delegated chain; requestToken = the facade idempotency identity)' }),
+                }),
+                'team-follow-up': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'a NEW work unit on an EXISTING member (same bound child session)', effectLabel: 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)' }),
+                }),
+                'team-collect': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'the durable work-unit states behind the submitted request tokens', effectLabel: 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing' }),
+                }),
+                'team-send-message': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: "one durable attributed message on the recipient's bound session", effectLabel: "I + S(durable message write to the member's bound session via the messaging coordinator; relay policy + guard INSIDE the delegated chain; message-commit uncertainty is NOT blindly retried — that law lives in the coordinator)" }),
+                }),
+                'team-report-progress': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: 'one durable activity row on the per-subject lane', effectLabel: 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)' }),
+                }),
+                'team-archive-member': Object.freeze({
+                    adds: Object.freeze({ targetObject: 'string', effectLabel: 'string' }),
+                    binds: Object.freeze({ targetObject: "ONE member's lifecycle (quiesce-then-archive durable commits)", effectLabel: 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)' }),
+                }),
+            }),
+        }),
+        currentFields: Object.freeze(['operation', 'targetObject', 'effectLabel']),
+    }),
 });
+/* The SIGNED closed kind list - the single source the module-load legality
+ * check reads (root 18:42: guard kind-table SYNCED with 'nullableString' +
+ * 'stringArray'; a rule using any kind outside this closed list still THROWS
+ * at import). */
+export const PA_FAMILY_TARGET_FIELD_KINDS = Object.freeze([
+    'string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations', 'nullableString', 'stringArray',
+]);
+/** One table entry's legality, checked AT MODULE LOAD for every real entry —
+ *  exported ONLY so the fixed-point contract spec can drive SYNTHETIC rules
+ *  through this exact law (no synthetic family is ever added to the real
+ *  table). Throws on: any required/adds leaf whose kind is outside the closed
+ *  list (root 18:37: the two NEW kinds are legal ONLY inside the closed
+ *  required/adds maps — own-key iteration (Object.entries) sees exactly the
+ *  surface the validator reads, no widening); a variant whose discriminant is
+ *  not a required 'string' leaf (a 'nullableString' can never be one); an
+ *  empty group map; a group redeclaring a required leaf; a bound value
+ *  violating its own kind. Same own-key law, zero cost for plain rules. */
+export function assertPaFamilyTargetRuleLegality(familyId, rule) {
+    const own = (record, key) => Object.prototype.hasOwnProperty.call(record, key);
+    const fail = (why) => {
+        throw new Error(`PA_FAMILY_TARGET_RULES['${familyId}']: malformed target grammar - ${why}`);
+    };
+    for (const [field, kind] of Object.entries(rule.required)) {
+        if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind))
+            fail(`required leaf '${field}': unknown kind '${String(kind)}'`);
+    }
+    const variant = rule.variant;
+    if (variant === undefined)
+        return;
+    if (!own(rule.required, variant.leaf) || rule.required[variant.leaf] !== 'string')
+        fail(`'${variant.leaf}' must be a required 'string' leaf`);
+    const names = Object.keys(variant.by);
+    if (names.length === 0)
+        fail('no variant groups');
+    for (const name of names) {
+        const group = variant.by[name];
+        if (group === null || typeof group !== 'object' || Array.isArray(group))
+            fail(`group '${name}': not a leaf map`);
+        for (const [field, kind] of Object.entries(group.adds)) {
+            if (own(rule.required, field))
+                fail(`group '${name}' redeclares required leaf '${field}'`);
+            if (!PA_FAMILY_TARGET_FIELD_KINDS.includes(kind))
+                fail(`group '${name}' leaf '${field}': unknown kind '${String(kind)}'`);
+        }
+        for (const [field, bound] of Object.entries(group.binds)) {
+            const kind = group.adds[field];
+            if (kind === undefined || !isPaFamilyTargetField(kind, bound))
+                fail(`group '${name}' bound value for '${field}' violates its own kind`);
+        }
+    }
+}
+/* Discriminated-target + closed-kind table legality, checked at module load
+ * (root 17:40 "group结构合法"; root 18:42 kind sync). A miswritten table fails
+ * loudly at import, never quietly at a claim. */
+for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES))
+    assertPaFamilyTargetRuleLegality(familyId, rule);
 function isPaFamilyTargetField(kind, value) {
     switch (kind) {
         case 'string': return typeof value === 'string' && value.length > 0;
@@ -755,6 +1134,14 @@ function isPaFamilyTargetField(kind, value) {
                 return false;
             return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item));
         }
+        /* Root 18:42 - the whole new admission surface, two cases, no more.
+         * Root 5d83 residual closure: the stringArray walk runs the TRUSTED
+         * intrinsic (Array.prototype.every.call over canonical indices) - a real
+         * array's OWN or subclass `every` override ([1] + every:()=>true) can no
+         * longer be dispatched through. Only Array.isArray + the intrinsic index
+         * walk + element typeof; the lossless walk is untouched. */
+        case 'nullableString': return value === null || typeof value === 'string';
+        case 'stringArray': return Array.isArray(value) && Array.prototype.every.call(value, (item) => typeof item === 'string');
     }
 }
 /** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
@@ -764,6 +1151,13 @@ export function validatePaFamilyTarget(familyId, target) {
     const rule = PA_FAMILY_TARGET_RULES[familyId];
     if (rule === undefined)
         return `familyId: no target structure is registered for '${familyId}'`;
+    return validatePaFamilyTargetAgainstRule(familyId, rule, target);
+}
+/** The pure law of ONE table entry, split from the registry lookup only so the
+ *  fixed-point contract spec can drive SYNTHETIC rules through this exact code
+ *  (the real table stays closed: unknown families deny above). Production
+ *  validation always enters through validatePaFamilyTarget. */
+export function validatePaFamilyTargetAgainstRule(familyId, rule, target) {
     if (typeof target !== 'object' || target === null || Array.isArray(target))
         return 'target: not an object';
     const record = target;
@@ -773,8 +1167,43 @@ export function validatePaFamilyTarget(familyId, target) {
         if (!isPaFamilyTargetField(kind, record[field]))
             return `${field}: not a ${kind}`;
     }
+    /* Discriminated target (root 17:40): the discriminant leaf (a required
+     * 'string' the loop above just checked) selects its group by OWN-KEY exact
+     * lookup - 'toString'/'constructor'/'__proto__'/unknown select nothing and
+     * deny, no fallback, no coercion. The group's leaves run through the SAME
+     * required check, and every `binds` entry pins its leaf to ONE exact
+     * literal (full-value binding - a paired leaf is never an arbitrary
+     * string). */
+    let group;
+    if (rule.variant !== undefined) {
+        const by = rule.variant.by;
+        const value = record[rule.variant.leaf];
+        const selected = typeof value === 'string' && Object.prototype.hasOwnProperty.call(by, value) ? by[value] : undefined;
+        if (selected === undefined)
+            return `${rule.variant.leaf}: '${String(value)}' selects no ${familyId} variant group`;
+        group = selected.adds;
+        for (const [field, kind] of Object.entries(selected.adds)) {
+            if (!(field in record))
+                return `${field}: required by the ${familyId} typed plan, absent`;
+            if (!isPaFamilyTargetField(kind, record[field]))
+                return `${field}: not a ${kind}`;
+        }
+        for (const [field, bound] of Object.entries(selected.binds)) {
+            if (record[field] !== bound)
+                return `${field}: not the '${String(value)}' variant constant of the ${familyId} typed plan`;
+        }
+    }
+    /* The closed-key law stays EXACT: required ∪ the selected group and nothing
+     * else. For variant families the membership test is OWN-KEY on both maps, so
+     * a prototype-named claim key ('toString', 'constructor', …) denies like any
+     * other extra key; the original law of the other families is byte-identical,
+     * untouched. */
     for (const field of Object.keys(record)) {
-        if (!(field in rule.required))
+        const allowed = rule.variant !== undefined
+            ? (Object.prototype.hasOwnProperty.call(rule.required, field)
+                || (group !== undefined && Object.prototype.hasOwnProperty.call(group, field)))
+            : (field in rule.required);
+        if (!allowed)
             return `${field}: not part of the ${familyId} typed plan`;
     }
     return undefined;

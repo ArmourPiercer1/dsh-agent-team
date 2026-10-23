@@ -1,4 +1,23 @@
 /**
+ * A5M2-FAMILY-RULES C1 — round 8 (root 19:06 card) lands at the bottom: the
+ * B-TEAM closed map over the seat's lossless FLAT 10-leaf projection
+ * (measured read-only @fc072d5c2 wiring + @88ad3cf37 adapter rev 1).
+ * 'operation' is a MINTED string leaf discriminating TEN bound rows
+ * (row↔targetObject↔effectLabel pinned at the edge; ASK-lane effect labels
+ * bound WITHOUT widening the one admitted tool-invoke effect);
+ * nullableString types the two measured string-or-null claims - zero new
+ * kinds, zero mint deltas; the only measured residual was this entry. Their
+ * real minted manifests ACCEPT; their refusals hold at the grammar edge;
+ * their branch pins re-anchor at merge (expected, disclosed).
+ *
+ * A5M2-FAMILY-RULES C1 — round 7 (root 19:28) lands at the bottom: B-MCP
+ * expressed on the EXISTING signed grammar (six closed groups over a
+ * mint-synthesized mcpVariant - the signed inspectVariant pattern; real
+ * mount values from feat/a5m2-wire-g2 @5c597efe; the lane's delivered field
+ * contract measured, its mechanism-substitution clause exercised; until the
+ * lane lands D1-D3 every REAL nested claim fails CLOSED - pinned in the
+ * reworked round-4 leg).
+ *
  * A5M2-FAMILY-RULES C1 — round 6 (root 19:06) lands at the bottom: the REAL
  * closed rule maps for B-SCHEDULE (11 measured leaves; wire @3e88b2822,
  * adapter rev 2; subset delete(31)/list(32) - create/update stay disabled
@@ -73,9 +92,10 @@
  * full-family closure: the request/case/permission-subject/revision/action
  * facts stay the ORIGINAL gap, listed separately in
  * dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md);
- * the three pre-existing rules byte-identical (regression legs 10-12); B-MCP
- * stays the unregistered named gap (its proposal remains NOT approved) and
- * the discriminated target does NOT generalize to it.
+ * the three pre-existing rules byte-identical (regression legs 10-12). B-MCP
+ * was the unregistered named gap THROUGH round 6; root 19:28 ruled it
+ * expressed on the existing signed grammar (round 7), so the round-4 gap leg
+ * is reworked to pin the fail-closed pairing against the live nested mint.
  *
  * LEGS: 1 B-CONTROL ACCEPT (unchanged); 2 B-INSPECT POSITIVE: all three
  * REAL classify outputs validate with exact required∪group key sets and
@@ -230,8 +250,9 @@ const B_MCP_HTTP_DOMAIN = Object.freeze({
     transport: 'streamable-http',
     connectionIncarnation: 'conn-gen-7',
     endpointOrigin: 'https://mcp.example:8443',
-    headerCount: 0,
-  }),
+  }), // headerCount exists on the surface BUILDER (@5c597efe:391) but NOT in the
+  // manifest projection (:733) - a claim carrying it fails closed at this table
+  // until a fingerprint ruling moves it in (nothing invented here).
   providerReSelectionLaw: '… re-selects at REQUEST time …',
   domainAuthorityId: 'da-remote',
   cursor: 'cur-2',
@@ -398,20 +419,24 @@ describe('A5M2-FAMILY-RULES C1 round 4 (root 17:40): B-INSPECT discriminated tar
     expect(listRan.ok, `${listRan.code} ${listRan.detail}`).toBe(true)
   })
 
-  it('B-MCP: STILL no rule registered — every measured variant denies at the table gate with the wire-pinned string (named gap, encoding FROZEN, proposal NOT approved; the discriminated target does NOT generalize to it)', () => {
-    expect(PA_FAMILY_TARGET_RULES['B-MCP']).toBeUndefined()
-    const deny = `familyId: no target structure is registered for 'B-MCP'`
-    expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(deny)
-    expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(deny)
-    expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(deny)
+  it('B-MCP (FLIPPED by root 19:28: expressed on the EXISTING signed grammar): the entry is registered; the REAL live-mint claims (nested surface, key-omitted conditionals, @5c597efe mount) still FAIL CLOSED until the lane lands the named D1-D3 mint deltas — pinned with the measured first violation', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-MCP']).toBeDefined()
+    // fail-closed pairing (root 19:25 组合不能只表绿 - the REAL nested live
+    // shapes deny at the required-leaf law, no silent acceptance, zero
+    // translation; the flip to acceptance happens exactly when g2 lands
+    // D1 flatten + D2 always-emit-null + D3 synthesized mcpVariant):
+    const closed = 'mcpVariant: required by the B-MCP typed plan, absent'
+    expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(closed)
+    expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(closed)
+    expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(closed)
     expect(Object.keys(PA_FAMILY_TARGET_RULES))
-      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY'])
-    // The discriminated variant grammar is carried ONLY by B-INSPECT and
-    // (per root 18:42/19:06) B-SESSION-QUERY - it does NOT generalize to
-    // B-MCP or to any other entry:
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT', 'B-SCHEDULE', 'B-SESSION-QUERY', 'B-MCP', 'B-TEAM'])
+    // The discriminated variant grammar is carried by B-INSPECT,
+    // B-SESSION-QUERY, B-MCP (root 19:28) and B-TEAM (root 19:4x card) -
+    // and nothing else:
     for (const familyId of Object.keys(PA_FAMILY_TARGET_RULES)) {
-      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId)
-        .toBe(familyId !== 'B-INSPECT' && familyId !== 'B-SESSION-QUERY')
+      const carries = familyId === 'B-INSPECT' || familyId === 'B-SESSION-QUERY' || familyId === 'B-MCP' || familyId === 'B-TEAM'
+      expect(PA_FAMILY_TARGET_RULES[familyId]?.variant === undefined, familyId).toBe(!carries)
     }
   })
 
@@ -886,5 +911,222 @@ describe('A5M2-FAMILY-RULES C1 round 6 (root 19:06): the real B-SCHEDULE + B-SES
       .toBe(`toolName: 'session_bogus' selects no B-SESSION-QUERY variant group`)
     expect(validatePaFamilyTarget('B-SESSION-QUERY', { ...G6_TRACE_CLAIM, toolName: 'toString' }))
       .toBe(`toolName: 'toString' selects no B-SESSION-QUERY variant group`)
+  })
+})
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ROUND 7 (root 19:28): B-MCP expressed on the EXISTING signed grammar,
+ * measured against the g2 lane's delivered field contract
+ * (dev/agent-workflow/evidence/a5m2-g2-wire/b-mcp-target-rule-field-
+ * contract.md) and the LIVE mount feat/a5m2-wire-g2
+ * @5c597efea4d2f8e3ef0de5da96460c7ccf0e32c2 (A5_G2_ADAPTER_REVISION = 1).
+ * ROOT 19:25 DISCIPLINE: the legal examples below are the mount's REAL
+ * pinned values transcribed (server 'g2w-server', command
+ * ['/usr/bin/true','-stdio'] -> spawn argv0/argCount, cwd '' per the
+ * measured builder law typeof cwd === 'string' ? cwd : '' (:373 - an
+ * undeclared cwd mints '', which 'nullableString' admits), through the
+ * published row face; the error examples are the published face's REAL
+ * refusals (read-with-cursor :746-748; server swap refuses pre-walk
+ * :723-728, cited not mirrored). Claims ride the D1-D3 projection named by
+ * this table (flatten + always-emit-null + synthesized mcpVariant): the
+ * lane's contract clause pre-authorizes substituting the optionality
+ * mechanism 1:1 keeping the measured key names, and root 19:28 ruled the
+ * nullable-leaf mechanism - so the lane's two mint pins RE-ANCHOR at
+ * adoption (connectionIncarnationReason undefined -> null :962; 'cursor'
+ * in manifest === false -> cursor === null :972). Until D1-D3 land every
+ * real claim fails CLOSED (pinned in the round-4 leg). The http-group
+ * claims carry representative values (no http mount exists in their
+ * fixtures); every KEY and kind is measured. No Host, no C2 claim.
+ * ───────────────────────────────────────────────────────────────────────── */
+describe('A5M2-FAMILY-RULES C1 round 7 (root 19:28): the B-MCP closed map on the signed grammar - real mount claims on the D1-D3 projection; real published-face errors at the grammar edge', () => {
+  const RESELECT_LAW = 'the request leg re-selects the provider from the live exec.agent scope + serverName at REQUEST time (mcp-resources/src/index.ts:120-125 @639ed01539); a stale/unmounted server fails there — this manifest freezes classify-time placement facts only'
+  const URI_OPACITY = 'opaque MCP URI — carried verbatim (mcp-client connection.ts verbatim pass-through @639ed01539); no path/URL interpretation at this edge'
+  const STDIO_OBLIGATION = Object.freeze({
+    service: 'mcp-server(stdio:g2w-server)', action: 'roundtrip', right: 'connect',
+    entry: "captured native resource-tool execute -> McpResourceRuntime.request -> provider.request (mcp-resources tools.ts:27-63 + index.ts:120-125 @639ed01539); the child-process spawn/FS/process envelope is the connection plugin's provider-side obligation",
+  })
+  // THE real stdio mount (@5c597efe MCP_DECLARED + mount-active legs), on the
+  // D1-D3 projection: flat leaves, null for non-applicable, mcpVariant.
+  const STDIO_BASE: Record<string, unknown> = {
+    server: 'g2w-server',
+    record: 'surface:mcp_stdio',
+    transport: 'stdio',
+    connectionIncarnation: 'gen-1', // THE signed-port fact: a REAL generation (:961)
+    providerReSelectionLaw: RESELECT_LAW,
+    connectionIncarnationReason: null, // gen is up: null = measured absence (D2)
+    domainAuthorityId: null,
+    businessObligations: Object.freeze([STDIO_OBLIGATION]),
+    spawnArgv0: '/usr/bin/true',
+    spawnArgCount: 1,
+    spawnCwd: '', // undeclared cwd mints '' (measured builder law :373)
+  }
+  const HTTP_READ_CLAIM: Record<string, unknown> = {
+    // representative values (no http mount in their fixtures); keys/kinds measured
+    mcpVariant: 'http:read',
+    operation: 'resources/read', // every row mints operation (@5c597efe:731); bound per group
+    server: 'remote-api',
+    record: 'surface:mcp_http_dynamic',
+    transport: 'streamable-http',
+    connectionIncarnation: 'gen-3',
+    providerReSelectionLaw: RESELECT_LAW,
+    connectionIncarnationReason: null,
+    domainAuthorityId: 'da-remote',
+    businessObligations: Object.freeze([STDIO_OBLIGATION]),
+    endpointOrigin: 'https://mcp.example:8443',
+    uriVerbatim: 'mcp://remote-api/blob/x',
+    uriOpacity: URI_OPACITY,
+  }
+
+  it('ACCEPT: the mount\'s REAL read/list/list-no-cursor claims ride the projection; key sets = required ∪ group adds exactly; the three-state discipline (null = measured absence, absent = drift denial) holds', () => {
+    const read = { ...STDIO_BASE, mcpVariant: 'stdio:read', operation: 'resources/read', uriVerbatim: 'mcp://res/42', uriOpacity: URI_OPACITY }
+    const listCursor = { ...STDIO_BASE, mcpVariant: 'stdio:list', operation: 'resources/list', cursor: 'page-2' }
+    const listNone = { ...STDIO_BASE, mcpVariant: 'stdio:list', operation: 'resources/list', cursor: null }
+    const templates = { ...STDIO_BASE, mcpVariant: 'stdio:templates', operation: 'resources/templates/list', cursor: null }
+    for (const claim of [read, listCursor, listNone, templates]) {
+      expect(validatePaFamilyTarget('B-MCP', claim), String(claim.mcpVariant)).toBeUndefined()
+    }
+    expect(validatePaFamilyTarget('B-MCP', HTTP_READ_CLAIM)).toBeUndefined()
+    const readGroup = PA_FAMILY_TARGET_RULES['B-MCP']?.variant?.by['stdio:read']
+    if (readGroup === undefined) throw new Error('stdio:read group vanished')
+    expect(keysOf(read)).toEqual([...requiredKeysOf('B-MCP'), ...Object.keys(readGroup.adds)].sort())
+    // 不搬出fingerprint (their machine-pinned law, preserved by this table):
+    for (const key of keysOf(read)) expect(key.toLowerCase()).not.toContain('fingerprint')
+  })
+
+  it('the published face\'s REAL errors hold at the grammar edge: read-with-cursor (:746-748 "read_mcp_resource declares no cursor") is STRUCTURAL; the transport axes stay exclusive; binds pin the real pairings; spawnArgCount never rides null', () => {
+    const read = { ...STDIO_BASE, mcpVariant: 'stdio:read', operation: 'resources/read', uriVerbatim: 'mcp://res/42', uriOpacity: URI_OPACITY }
+    // real error example (mint refuses it pre-walk; the table now refuses too):
+    expect(validatePaFamilyTarget('B-MCP', { ...read, cursor: 'page-2' }))
+      .toBe('cursor: not part of the B-MCP typed plan')
+    // transport axes exclusive (measured: spawn stdio-only, endpointOrigin http-only):
+    expect(validatePaFamilyTarget('B-MCP', { ...HTTP_READ_CLAIM, spawnArgv0: '/usr/bin/true', spawnArgCount: 0, spawnCwd: '' }))
+      .toBe('spawnArgv0: not part of the B-MCP typed plan')
+    expect(validatePaFamilyTarget('B-MCP', { ...read, endpointOrigin: 'https://mcp.example:8443' }))
+      .toBe('endpointOrigin: not part of the B-MCP typed plan')
+    // binds (signed queryPlatform pattern): a claim quoting one group's variant
+    // with another group's constants denies - pairing enforced at the edge:
+    expect(validatePaFamilyTarget('B-MCP', { ...read, operation: 'resources/list' }))
+      .toBe(`operation: not the 'stdio:read' variant constant of the B-MCP typed plan`)
+    expect(validatePaFamilyTarget('B-MCP', { ...read, transport: 'streamable-http' }))
+      .toBe(`transport: not the 'stdio:read' variant constant of the B-MCP typed plan`)
+    expect(validatePaFamilyTarget('B-MCP', { ...read, uriOpacity: 'opaque URI — probably fine' }))
+      .toBe(`uriOpacity: not the 'stdio:read' variant constant of the B-MCP typed plan`)
+    // spawnArgCount is a plain nonNegativeInt - NEVER a nullable int (no D2-kind):
+    for (const bad of [null, -1, 1.5, '1']) {
+      expect(validatePaFamilyTarget('B-MCP', { ...read, spawnArgCount: bad }), String(bad))
+        .toBe('spawnArgCount: not a nonNegativeInt')
+    }
+    // discriminant closure + three-state discipline + identity scalars:
+    expect(validatePaFamilyTarget('B-MCP', { ...read, mcpVariant: 'stdio:write' }))
+      .toBe(`mcpVariant: 'stdio:write' selects no B-MCP variant group`)
+    expect(validatePaFamilyTarget('B-MCP', { ...read, mcpVariant: 'toString' }))
+      .toBe(`mcpVariant: 'toString' selects no B-MCP variant group`)
+    expect(validatePaFamilyTarget('B-MCP', without(read, 'connectionIncarnationReason')))
+      .toBe('connectionIncarnationReason: required by the B-MCP typed plan, absent') // absent ≠ null (D2)
+    expect(validatePaFamilyTarget('B-MCP', { ...read, server: '' }))
+      .toBe('server: not a string')
+    expect(validatePaFamilyTarget('B-MCP', { ...read, businessObligations: [] }))
+      .toBe('businessObligations: not a obligations')
+    // headerCount: not in the rev-1 projection (:733) - FAILS CLOSED until a
+    // fingerprint ruling moves it in; this table invents nothing:
+    expect(validatePaFamilyTarget('B-MCP', { ...read, headerCount: 0 }))
+      .toBe('headerCount: not part of the B-MCP typed plan')
+  })
+})
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * ROUND 8 (root 19:06 card, root reviews): B-TEAM closed map. Measured
+ * read-only at feat/a5m2-wire-team
+ * @fc072d5c248f008734bdc10b879d313c13625017 (team-wiring.mjs
+ * mintTargetManifest :200-248 - the lossless FLAT projection) + adapter
+ * team-adapters.mjs @88ad3cf37 mintTarget :663-708 (A5_B_TEAM_ADAPTER_
+ * REVISION = 1) + their a5m2-team-wiring-c1.test.ts (g) legs (the 10-key
+ * set they pin sorted, the two real delegate branches, the real
+ * no-member-addressed literal, the fail-closed refusal string). NO new kind:
+ * nullableString (signed 5d83ed6f6) types the two string-OR-null claims
+ * (rootClaim, memberClaim) exactly; 'operation' is a MINTED string leaf so
+ * it discriminates the TEN closed groups with NO synthetic discriminant and
+ * NO mint delta - the only measured residual was the missing entry. Real
+ * legal example = their seat's real minted manifest; the ASK-lane effect
+ * labels are bound per row (comment-side I+S annotations - the ONE admitted
+ * effect stays tool-invoke, no Team resource kind invented; the named
+ * residual their lane reports to CENTER). B-TEAM durable claims were
+ * fail-closed at the bridge until this entry and stay 接线未测 either way.
+ * ───────────────────────────────────────────────────────────────────────── */
+describe('A5M2-FAMILY-RULES C1 round 8 (root 19:06 card): the real B-TEAM closed map - operation discriminates ten bound rows; nullableString types the two string|null claims; their real minted manifests ACCEPT, their refusals hold at the grammar edge', () => {
+  const CONTRACT = 'M0-B-FAMILY-TARGET-CONTRACTS §B-TEAM — 目标I+S(可信durable root/member/template/config/消息/归档对象,exact operation)'
+  const ROOT_ADJ = 'the caller-root binding gate INSIDE the delegated chain (tools.ts:459-477, TEAM_TOOL_CALLER_ROOT_MISMATCH) compares the resolver\'s durable OWNING root against this claim — the row never trusts the argument string (C1)'
+  const REVISION = 'requestToken = the durable facade idempotency identity (reuse = retry of the SAME logical operation — the facade/messaging lanes adjudicate); the row carries the token as data and claims no idempotency authority (NAMED GAP PLAN_ONCE_MEMO)'
+  const FACE_PASSED = 'the mirrored pure argument law passed'
+  const LIST_OBJECT = 'the durable Team roster (member instances + lifecycle + bound child session ids)'
+  const LIST_EFFECT = 'S(read) — the durable Team roster through the existing facade action'
+  const DELEGATE_OBJECT = 'a work unit with BOTH real branches (tools.ts:688-701): CONTINUE form = a NEW round on an EXISTING delegation instance (guarded on that target, SD-GUARD), CREATE form = a NEW delegation plus template-resolved member (SD-CREATE, activation authority is the gate)'
+  const DELEGATE_EFFECT = 'I + S(durable work-unit admission; create-form additionally mints the member-lifecycle fact; child run + budget INSIDE the delegated chain; requestToken = the facade idempotency identity)'
+  // the shared required leaves every row carries (the eight non-bound leaves):
+  const base = (over: Record<string, unknown>) => ({
+    contract: CONTRACT,
+    rootClaim: 's-root-wire',
+    rootAdjudication: ROOT_ADJ,
+    revisionLaw: REVISION,
+    argumentLawFace: FACE_PASSED,
+    ...over,
+  })
+
+  it('ACCEPT (their real minted manifests): team-list-members no-member + the two real delegate branches ride field-for-field; key sets = required ∪ bound adds EXACTLY (their 10-key pin)', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']).toBeDefined()
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    expect(validatePaFamilyTarget('B-TEAM', listMembers)).toBeUndefined()
+    expect(keysOf(listMembers).sort()).toEqual(['argumentLawFace', 'contract', 'effectLabel', 'memberAdjudication', 'memberClaim', 'operation', 'revisionLaw', 'rootAdjudication', 'rootClaim', 'targetObject'])
+    const CONTINUE_ADJ = 'CONTINUE form (tools.ts:696-700): work on an EXISTING delegation instance — executeGuarded on THAT target inside the delegated chain (SD-GUARD); the row never resolves or trusts the instance id'
+    const CREATE_ADJ = 'CREATE form (tools.ts:701): NO existing target — the activation authority is the gate inside the delegated chain (SD-CREATE); the template resolves durably there'
+    const cont = base({ operation: 'team-delegate', memberClaim: 'di-7', memberAdjudication: CONTINUE_ADJ, targetObject: DELEGATE_OBJECT, effectLabel: DELEGATE_EFFECT })
+    const create = base({ operation: 'team-delegate', memberClaim: 'tpl-worker', memberAdjudication: CREATE_ADJ, targetObject: DELEGATE_OBJECT, effectLabel: DELEGATE_EFFECT })
+    expect(validatePaFamilyTarget('B-TEAM', cont)).toBeUndefined()
+    expect(validatePaFamilyTarget('B-TEAM', create)).toBeUndefined()
+    // the two claims are string|null as measured: rootClaim rides a string,
+    // memberClaim rides null (list) or the instance/template id (branches):
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.rootClaim).toBe('nullableString')
+    expect(PA_FAMILY_TARGET_RULES['B-TEAM']?.required.memberClaim).toBe('nullableString')
+    // all TEN operations select their bound row (targetObject+effectLabel):
+    const objects: Record<string, [string, string]> = {
+      'team-list-templates': ["the bound blueprint's member templates", 'S(read) — the bound blueprint templates through the existing facade action'],
+      'team-inspect-config': ["ONE member's durable effective-policy / requirement / recovery facts", "S(read) — ONE member's durable effective-policy view (config object)"],
+      'team-create-member': ['a NEW member instance from a blueprint template (the member-lifecycle object)', 'I + S(durable member-lifecycle write: NEW instance; quota/envelope/gates adjudicated by the activation authority INSIDE the delegated chain)'],
+      'team-follow-up': ['a NEW work unit on an EXISTING member (same bound child session)', 'I + S(durable work-unit admission on an EXISTING instance (same bound child session); guard on the target INSIDE the delegated chain)'],
+      'team-collect': ['the durable work-unit states behind the submitted request tokens', 'S(read) — durable work-status read-back by request tokens; writes nothing, delivers nothing'],
+      'team-send-message': ["one durable attributed message on the recipient's bound session", "I + S(durable message write to the member's bound session via the messaging coordinator; relay policy + guard INSIDE the delegated chain; message-commit uncertainty is NOT blindly retried — that law lives in the coordinator)"],
+      'team-report-progress': ['one durable activity row on the per-subject lane', 'I + S(durable activity row on the per-subject lane; sequence + one bounded stale-retry INSIDE the delegated chain)'],
+      'team-archive-member': ["ONE member's lifecycle (quiesce-then-archive durable commits)", 'I + S(member-lifecycle commits: quiesce-then-archive, one or TWO durable commits per the frozen FSM; Leader-gate BEFORE any effect — all INSIDE the delegated chain)'],
+    }
+    for (const [op, [obj, eff]] of Object.entries(objects)) {
+      expect(validatePaFamilyTarget('B-TEAM', base({ operation: op, memberClaim: null, memberAdjudication: 'no member addressed', targetObject: obj, effectLabel: eff })), op).toBeUndefined()
+    }
+  })
+
+  it('their refusals hold at the grammar edge: a foreign row is not a synonym (bound constants), an unknown operation selects no row, the three-way leaf law and null-vs-missing stay distinct', () => {
+    const listMembers = base({ operation: 'team-list-members', memberClaim: null, memberAdjudication: 'no member addressed', targetObject: LIST_OBJECT, effectLabel: LIST_EFFECT })
+    // the ASK-lane binding: list-members may NOT wear the delegate object/effect (no synonym effect widening):
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, effectLabel: DELEGATE_EFFECT }))
+      .toBe(`effectLabel: not the 'team-list-members' variant constant of the B-TEAM typed plan`)
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, targetObject: DELEGATE_OBJECT }))
+      .toBe(`targetObject: not the 'team-list-members' variant constant of the B-TEAM typed plan`)
+    // operation is the closed discriminant - an unknown row selects nothing (own-key, no fallback):
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, operation: 'team-drop-member' }))
+      .toBe(`operation: 'team-drop-member' selects no B-TEAM variant group`)
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, operation: 'toString' }))
+      .toBe(`operation: 'toString' selects no B-TEAM variant group`)
+    // required leaf absent vs null vs wrong-kind stay three distinct outcomes:
+    expect(validatePaFamilyTarget('B-TEAM', without(listMembers, 'rootClaim')))
+      .toBe('rootClaim: required by the B-TEAM typed plan, absent')
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, rootClaim: null })).toBeUndefined() // string|null as measured
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, rootClaim: 7 }))
+      .toBe('rootClaim: not a nullableString')
+    expect(validatePaFamilyTarget('B-TEAM', without(listMembers, 'targetObject')))
+      .toBe('targetObject: required by the B-TEAM typed plan, absent')
+    // closed key set: the durable write cannot smuggle an extra authority leaf:
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, guardCleared: true }))
+      .toBe('guardCleared: not part of the B-TEAM typed plan')
+    expect(validatePaFamilyTarget('B-TEAM', { ...listMembers, contract: '' }))
+      .toBe('contract: not a string')
   })
 })

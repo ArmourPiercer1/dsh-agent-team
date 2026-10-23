@@ -842,15 +842,22 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    // RE-ANCHORED @ 39c029963: the flat topology scalars are the SIGNED floor (kept);
-    // the queryClaim triple is back to its BASE nested encoding (inspectTarget refused).
+    // RE-ANCHORED @ 7529218e5 (round 4 discriminated variant): topology scalars stay the
+    // SIGNED floor; the query triple now rides FLAT variant leaves bound by the closed
+    // group (inspectVariant='query-host' pins queryPlatform='host').
     expect(classified.targetManifest.topologyRevision).toBe(9)
     expect(classified.targetManifest.topologyDigest).toBe('sha256;toponine')
-    expect(classified.targetManifest.queryClaim).toMatchObject({ platform: 'host', provider: expect.any(String), method: expect.any(String) })
+    expect(classified.targetManifest.inspectVariant).toBe('query-host')
+    expect(classified.targetManifest.queryPlatform).toBe('host')
+    expect(typeof classified.targetManifest.queryProvider).toBe('string')
+    expect(typeof classified.targetManifest.queryMethod).toBe('string')
     const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
     expect(client.ok).toBe(true)
-    // RE-ANCHORED @ 39c029963: base nested clientRoundtrip encoding restored
-    if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+    // RE-ANCHORED @ 7529218e5: client variant binds the exact roundtrip law as a flat leaf
+    if (client.ok) {
+      expect(client.targetManifest.inspectVariant).toBe('query-client')
+      expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+    }
   })
 
   // ── U2/U3 + card 5: per-action envelope, REAL parses, REAL shapes ────────
