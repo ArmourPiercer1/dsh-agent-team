@@ -79,6 +79,15 @@ import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/
 import { canonicalJsonFingerprint, parseRequestedEffectSet, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
+// A5-M2 G1 (root ruling 15:28, wiring no longer waits for the center): the
+// closed G1 record law lives in the committed module ITSELF — this plane
+// imports the frozen dispatch-index table instead of restating it, so a
+// mount can never carry a name the frozen 14-record index does not own.
+// The rows are INJECTED over this table (mountG1SurfaceAdapter output); the
+// plane imports no arm authority, only the closed index it validates
+// placements against. Import law (pc §3): the relative specifier resolves
+// inside the committed dist mirror exactly like ./plane-effect-backends.mjs.
+import { A5_G1_RECORD_SPECS, A5_G1_ADAPTER_REVISION } from './governed-families/g1-surface-adapters.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -92,6 +101,28 @@ export const A5_WRITE_MOUNT_NAME = 'write'
 // FIXED native spelling 'read_image' (a PLANE_RESERVED_NATIVE name, pinned to
 // the 639 host face) behind the closed `imageEnabled` key.
 export const A5_IMAGE_MOUNT_NAME = 'read_image'
+
+/** A5-M2 G1 PURE-QUERY (root 15:2x ruling): the FIXED native spellings of the
+ *  three READ-SIDE records of the frozen dispatch index that this round wires
+ *  behind the closed `g1Enabled` key plus the injected mounted adapter rows:
+ *  record 53 `cordis_inspect_list`, record 54 `cordis_inspect_query` and
+ *  record 85 `team_list_pending_control`. The set is CLOSED and it is not a
+ *  slice of the 14 by preference — it is the slice whose adapter needs NO
+ *  mount-time authority that this tree cannot observe (no sandbox-escalation
+ *  chain, no durable commit witness, no exported install path, no live Client):
+ *  53/54 classify + delegate over the injected TRUSTED inspect-registry port
+ *  and the captured native face, 85 is the pure read of the Team pending-
+ *  control queue. The remaining eleven G1 records (skill,
+ *  load_workspace_dependencies, ask_user_question, exit_plan_mode, present,
+ *  plugin_manager, team_request_control, team_resolve_control,
+ *  team_grant_permission, team_revoke_permission, surface:domain_family) stay
+ *  declared/INACTIVE exactly as `g1-surface-adapters.mjs` spells them; Gate 0f
+ *  refuses any mount that tries to place them. */
+export const A5_G1_PURE_QUERY_MOUNT_NAMES = Object.freeze([
+  'cordis_inspect_list',
+  'cordis_inspect_query',
+  'team_list_pending_control',
+])
 
 /**
  * The host registration law (measured at the pinned host: core tools
@@ -512,6 +543,24 @@ const PLANE_SUPPORTED_NATIVE_TAKEOVERS = Object.freeze({
   // credential, commit through the injected attachment adapter). No native
   // body is re-entered; no authority lives below this line.
   read_image: Object.freeze(['read_image']),
+  // A5-M2 G1 PURE-QUERY (root 15:2x ruling: 工具适配不等待中心接线): the three
+  // read-side rows of the frozen dispatch index mount at their FIXED native
+  // spellings behind the closed `g1Enabled` key plus the injected mounted rows
+  // (never the configurable `names` map - same law as the trio above):
+  // `cordis_inspect_list` (record 53), `cordis_inspect_query` (record 54) and
+  // `team_list_pending_control` (record 85). The same-name, same-meaning
+  // implementation this ledger records: the row classifies through the
+  // COMMITTED G1 captured-native-delegate adapter
+  // (`governed-families/g1-surface-adapters.mjs`), walks THIS plane's ONE PA
+  // admission (same token ledger, same open/edge, same durable row), and the
+  // BODY is the captured native definition's OWN face entered by that
+  // adapter's delegate through its bind-time snapshot - 保留原生, with the
+  // family's own read-side laws (current-facts re-verify, the inspect
+  // topology filter, the pending-control read) kept closed in the adapter.
+  // The other eleven G1 records are NOT claimed here: they stay
+  // declared/INACTIVE (four-tier law, Gate 0f), and the gate refuses any
+  // mount that tries to place them.
+  g1_pure_query: Object.freeze(['cordis_inspect_list', 'cordis_inspect_query']),
 })
 export function verifyPlaneNames(names, readName) {
   for (const key of Object.keys(names ?? {})) {
@@ -973,6 +1022,96 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
+  // ── GATE 0f (A5-M2 G1, root ruling 15:28: 工具适配不等待中心接线) ──────
+  // `planeCfg.g1Enabled` is the SAME-shaped CLOSED CONSUMPTION KEY. ABSENT =
+  // FALSE (zero-flip law by absence: every shipped world keeps the pre-G1
+  // mount shape byte-for-byte); a non-boolean value is a config defect refused
+  // on the image gate's existing PLANE_CFG_INVALID spelling. `backends.g1` is
+  // the injection seam and the pairing is enforced BOTH directions (the
+  // glob-gate ④ discipline: config law, not wiring; no silent fallback).
+  //
+  // THE INJECTED ROWS ARE THE COMMITTED MODULE'S OWN OUTPUT. `backends.g1.rows`
+  // is a NON-EMPTY array of `{ row, output }` entries where `row` is a frozen
+  // row returned by `mountG1SurfaceAdapter()` of the committed
+  // `governed-families/g1-surface-adapters.mjs` — the plane validates each row
+  // against the FROZEN DISPATCH INDEX it imports (`A5_G1_RECORD_SPECS`: the
+  // name, family and recordIndex law lives in that module, never restated
+  // here), and against the PLACEMENT TABLE `A5_G1_PURE_QUERY_MOUNT_NAMES`:
+  //  · a name outside the frozen 14-record index → refused (no guessed names);
+  //  · `capturePresent === false` → refused: that is the module's
+  //    DECLARED/INACTIVE posture (a no-capture row refuses every call), and a
+  //    declared row placed as a tool would mask the native name behind an
+  //    always-refusing row — the four-tier law forbids wiring a declared row
+  //    as if it were live;
+  //  · a captured row OUTSIDE the pure-query placement set → refused, named:
+  //    its facts (the host escalation chain, the durable append witness, the
+  //    exported install path, the live Client handle, the prompt/plan-mode
+  //    write faces) are not observable at this wiring point, so it stays
+  //    exactly as the module spells it — declared/INACTIVE;
+  //  · `output` is the integrator-supplied captured `{ schema, render }` face:
+  //    the host register law demands output and the adapter row carries none
+  //    (it captures description/parameters, not output) — the plane invents
+  //    no face.
+  const g1EnabledRaw = input.plane?.g1Enabled
+  if (g1EnabledRaw !== undefined && typeof g1EnabledRaw !== 'boolean') {
+    return {
+      ok: false,
+      code: 'PLANE_CFG_INVALID',
+      message: `planeCfg.g1Enabled must be a boolean when present — got ${JSON.stringify(g1EnabledRaw) ?? String(g1EnabledRaw)} (a non-boolean gate is a config defect: the mount is refused rather than silently defaulting)`,
+    }
+  }
+  const g1Enabled = g1EnabledRaw === true
+  const g1InjectRaw = input.backends?.g1
+  const g1InjectInvalid = (why) => ({ ok: false, code: 'G1_ROW_INJECT_INVALID', message: `backends.g1: ${why}` })
+  if (g1Enabled && g1InjectRaw === undefined) {
+    return g1InjectInvalid('g1Enabled is true but no governed G1 rows are injected - the mount would mask native names with nothing behind them; there is no fallback row and no silent disable')
+  }
+  if (!g1Enabled && g1InjectRaw !== undefined) {
+    return g1InjectInvalid('rows are injected while g1Enabled is off - the gate is config law, not wiring (the glob-gate ④ discipline): refuse the mount instead of mounting around its own key')
+  }
+  let g1Inject = null
+  if (g1InjectRaw !== undefined) {
+    if (!Array.isArray(g1InjectRaw.rows) || g1InjectRaw.rows.length === 0) {
+      return g1InjectInvalid('backends.g1.rows must be a NON-EMPTY array of { row, output } entries — an empty array would mount the gate with no rows behind it (no fallback row, no silent disable)')
+    }
+    const g1Taken = new Set([readName, ...Object.values(names ?? {})])
+    if (todoInject !== null) g1Taken.add(A5_TODO_MOUNT_NAME)
+    if (writeInject !== null) g1Taken.add(A5_WRITE_MOUNT_NAME)
+    if (imageInject !== null) g1Taken.add(A5_IMAGE_MOUNT_NAME)
+    const g1Entries = []
+    for (const entryRaw of g1InjectRaw.rows) {
+      const row = entryRaw?.row
+      const name = typeof row?.name === 'string' ? row.name : ''
+      const spec = A5_G1_RECORD_SPECS[name]
+      const why = spec === undefined
+        ? `'${name === '' ? String(row) : name}' is not one of the 14 frozen G1 records — the closed dispatch index is the ONLY name source (the mounted module owns it); a guessed or re-spelled name is a config defect`
+        : (typeof row.classify !== 'function' || typeof row.delegate !== 'function')
+          ? `record ${String(spec.recordIndex)} '${name}' answers no classify/delegate face — rows are mounted through mountG1SurfaceAdapter of the committed module, never hand-assembled beside it`
+          : (row.familyId !== spec.family || row.recordIndex !== spec.recordIndex)
+            ? `record ${String(spec.recordIndex)} '${name}' carries family '${String(row.familyId)}' / recordIndex ${String(row.recordIndex)} — the row must MATCH the frozen index entry it names (a mismatched row is a config defect, never a re-mount to paper over)`
+            : row.capturePresent !== true
+              ? `record ${String(spec.recordIndex)} '${name}' is a DECLARED/INACTIVE row (capturePresent is not true: the module spells this as a row with no native capture, refusing every call with P_G1_NATIVE_CAPTURE_ABSENT) — a declared row is never placed as a live tool; mount the capture or leave the record declared (four-tier law: 未接线 stays 未接线, it is not wired as if live)`
+              : !A5_G1_PURE_QUERY_MOUNT_NAMES.includes(name)
+                ? `record ${String(spec.recordIndex)} '${name}' is outside this round's CLOSED PURE-QUERY placement set (${A5_G1_PURE_QUERY_MOUNT_NAMES.join(', ')}): its facts are not observable at the wiring point (the host escalation chain, the durable append witness, the exported install path, the live Client, the prompt/plan-mode write faces), so the record stays declared/INACTIVE exactly as the module spells it — wiring it live would be the fake interface the four-tier law forbids`
+                : (typeof row.description !== 'string' || row.description.length === 0)
+                  ? `record ${String(spec.recordIndex)} '${name}' carries no captured native description — the same-name, same-meaning mount has no other source for it (never a plane-invented wording)`
+                  : (row.parameters === null || row.parameters === undefined || typeof row.parameters !== 'object')
+                    ? `record ${String(spec.recordIndex)} '${name}' carries no captured native parameters face — the plane invents no schema face`
+                    : (entryRaw.output === null || typeof entryRaw.output !== 'object' || (entryRaw.output.schema === null || typeof entryRaw.output.schema !== 'object') || typeof entryRaw.output.render !== 'function')
+                      ? `record ${String(spec.recordIndex)} '${name}' has no output face { schema, render } — the host register law demands one, the adapter row carries none (it captures description/parameters only), and the integrator supplies the captured native pair; the plane invents none`
+                      : (g1Taken.has(name))
+                        ? `'${name}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the G1 rows)`
+                        : undefined
+      if (why !== undefined) return g1InjectInvalid(why)
+      g1Taken.add(name)
+      g1Entries.push(Object.freeze({
+        row,
+        output: Object.freeze({ schema: entryRaw.output.schema, render: entryRaw.output.render }),
+      }))
+    }
+    g1Inject = Object.freeze({ rows: Object.freeze(g1Entries) })
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -1174,6 +1313,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
     if (imageInject !== null && spelling === A5_IMAGE_MOUNT_NAME) return A5_IMAGE_MOUNT_NAME
+    // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
+    // ONLY when this mount actually placed them (zero flip otherwise).
+    if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -1205,6 +1347,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
   let todoCorrSeq = 0
   let writeCorrSeq = 0
   let imageCorrSeq = 0
+  // A5-M2 G1 PURE-QUERY: ONE sequence for the whole G1 trio of this mount —
+  // the durable row identity must be unique per FLIGHT, and one token runs one
+  // flight across the shared ledger, so a per-name counter could hand the same
+  // id to two flights of two different G1 names inside one mount.
+  let g1CorrSeq = 0
   // A5-M2: `family` (optional) is the governed-family review block THIS call
   // carries, sourced ONLY from the arm's classify output the row drove (never
   // model input, never a plane invention). It rides to the durable Control leg
@@ -3340,14 +3487,188 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
   }
   const imageDefs = imageDef === null ? [] : [imageDef]
+  // ── A5-M2 G1 PURE-QUERY rows (Gate 0f) ─────────────────────────────────
+  // Each row is a DEFINITION THIS plane places at the record's FIXED native
+  // spelling, and its body is ONE vertical: the injected COMMITTED adapter row
+  // classifies (effects + full-value parameters fingerprint + its own typed
+  // plan) → THIS plane's ONE PA admission walks (Part A + the durable Control
+  // leg) → the ONE-shot execution edge (the kernel's consumption, its witness
+  // carried back) → the SAME adapter row's `delegate` enters the CAPTURED
+  // native definition's own face through its bind-time snapshot (保留原生).
+  // There is no native fallback anywhere below: every refusal path is a typed
+  // throw with zero native entry, and no second authority is invented — the
+  // row's identity is the shared token ledger's allocation, the plan identity
+  // is the adapter's own frozen plan, and the family's read-side laws (CURRENT
+  // facts re-verify, the inspect topology filter, the pending-control read)
+  // stay closed INSIDE the adapter module, which this plane does not patch.
+  //
+  // WHY NO FAMILY BLOCK RIDES THE LEG (disclosed, not hidden): the committed
+  // Control grammar validates a family target against `PA_FAMILY_TARGET_RULES`,
+  // which registers structures for B-SESSION / B-WRITE / B-IMAGE ONLY. The G1
+  // families (B-INSPECT / B-CONTROL …) have no registered target structure
+  // there, so a family claim on these rows would be refused by the leg as
+  // `family-target-invalid` and the durable verifier would then answer DRIFT.
+  // Registering the family in the ONE mount table is therefore NOT done by
+  // this round either: a registration without a leg claim is the same DRIFT,
+  // and adding rows to that shared table is the integrator's merge, not a
+  // wiring lane's. What DOES ride here is the full adapter review payload —
+  // the plane OBSERVES it per call (`a5m2-g1-row: review …`) so the approved
+  // question, the family and its target manifest are on the record, and the
+  // spec pins both halves (the observation present; no family field on the
+  // durable manifest). No generic pseudo-governance row is invented: the
+  // durable row is the ordinary PA row this plane already mints for every
+  // governed call, carrying the adapter's effect set verbatim.
+  const g1RowPresentFace = Object.freeze({
+    card: 'generic',
+    title: 'Governed G1 pure-query row',
+    kind: 'other',
+  })
+  const g1Defs = g1Inject === null ? [] : g1Inject.rows.map(({ row, output }) => Object.freeze({
+    name: row.name,
+    // The CAPTURED native description + parameters bytes carried by the
+    // adapter row itself (Gate 0f refused anything else) — same name, same
+    // meaning, never a plane-invented wording or schema.
+    description: row.description,
+    parameters: row.parameters,
+    execute: async (raw, exec) => {
+      // Identity law (fix-1, SHARED ledger): the REAL registry token; absent
+      // is a typed front refusal — zero classify, zero walk, zero row, zero
+      // native entry.
+      const execToken = exec?.token
+      const tokenKey = (typeof execToken === 'object' && execToken !== null) || typeof execToken === 'symbol' ? execToken : undefined
+      if (tokenKey === undefined) {
+        throw new Error(`refused-g1 exec-token-unbound — '${row.name}' carries no registry token (object|symbol) on this execution; the row keys its single-flight and its correlation on the REAL exec.token and composes no identity from name or model-call fields`)
+      }
+      const priorFlight = governedTokenLedger.get(tokenKey)
+      if (priorFlight !== undefined) {
+        throw new Error(`refused-g1 exec-token-replay — this execution token already ${priorFlight.settled ? 'owns a settled' : 'owns an in-flight'} governed plane call (${row.name}): the G1 rows share the ONE token ledger with todo/write/image/read, so a registry token spans exactly one governed flight and a settled token is never re-armed`)
+      }
+      g1CorrSeq += 1
+      const correlation = `plane-g1:${realmId}-${row.name}-${String(g1CorrSeq)}`
+      governedTokenLedger.set(tokenKey, { correlation, settled: false })
+      const signal = exec?.signal
+      try {
+        // OWNER-CURRENT BEFORE THE FREEZE (fix-4 law, the SAME authority leg
+        // the todo/write/image rows and paAdmitPartA run): the adapter freezes
+        // the CURRENT binding generations into its plan at classify, so the
+        // owner republish leg must answer BEFORE that freeze. A faulting leg is
+        // OBSERVED, never absorbed — the kernel's own identity leg still
+        // answers this call.
+        if (typeof paEnsureAuthorityCurrent === 'function' && typeof paGenerationReader === 'function') {
+          const freshAuthority = await paReadGenerationFresh()
+          if (freshAuthority.ok === true) {
+            try {
+              await paEnsureAuthorityCurrent(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''), freshAuthority.value)
+            } catch (error) {
+              observe(`a5m2-g1-row: ensure-current(g=${String(freshAuthority.value)}) threw (${String(error?.message ?? error).slice(0, 160)}) — the call continues on the live tuple and the kernel identity leg answers it`)
+            }
+          }
+        }
+        let classified
+        try {
+          // The adapter's OWN classify over the CLOSED argument grammar + the
+          // CURRENT facts it consults (the trusted topology read for
+          // B-INSPECT, the bindingFacts() reader for the bound generations).
+          // The callId law has TWO identities and the plane renames NEITHER:
+          // the DURABLE identity of this flight is the ledger-allocated
+          // correlation (the walk, the live-plan key and the Control row all
+          // speak it, the todo row's law verbatim), while the adapter's plan
+          // carries the host's OWN call identity when the execution has one —
+          // that is the identity the module's swapped-execution guard re-
+          // compares below the edge (delegate: exec.callId !== plan.callId is
+          // P_G1_NOT_OWN_PLAN, zero native entry). An execution with no host
+          // callId falls back to the correlation, so both halves stay ONE
+          // identity exactly as in the assembly worlds.
+          const planCallId = typeof exec?.callId === 'string' && exec.callId.length > 0 ? exec.callId : correlation
+          classified = row.classify(raw, planCallId)
+        } catch (error) {
+          throw new Error(`refused-g1 row-unavailable — the committed adapter row could not classify this call (${String(error?.message ?? error).slice(0, 200)}); there is no native fallback to fall back to`)
+        }
+        if (classified.ok !== true || classified.plan === undefined) {
+          throw new Error(`refused-g1 ${classified.code ?? 'P_G1_CLASSIFY_INVALID'} — ${classified.detail ?? 'the committed adapter refused this call before admission'}`)
+        }
+        // The adapter's own review payload — family, adapter revision,
+        // provider identity and the FULL-VALUE target manifest — is put on the
+        // record for this call (see the block comment above for why it is
+        // observed rather than legged).
+        observe(`a5m2-g1-row: review call=${correlation} row=${row.name} family=${String(classified.reviewPayload?.familyId ?? 'unsettled')} rev=${String(classified.reviewPayload?.adapterRevision ?? 'unsettled')} effects=${String((classified.effects ?? []).length)}`)
+        const parsedEffects = parseRequestedEffectSet(classified.effects)
+        if (parsedEffects.ok !== true) {
+          throw new Error(`refused-g1 effects-unparsable — the adapter's effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)})`)
+        }
+        const walk = {
+          realmId,
+          callId: correlation,
+          parametersFingerprint: classified.parametersFingerprint,
+          requestedEffects: parsedEffects.value,
+          toolName: row.name,
+          ...(signal === undefined ? {} : { signal }),
+        }
+        const opened = await paAdmit.open(walk)
+        if (opened.kind === 'deny') {
+          throw new Error(`refused-g1 ${opened.code ?? 'ADMISSION_REFUSED'} — ${opened.detail ?? 'the admission refused this call'} (zero native entry)`)
+        }
+        if (opened.cancelled === true) {
+          throw new Error(`${row.name} · cancelled — the call was cancelled at the PA edge before admission (zero native entry)`)
+        }
+        if (opened.kind !== 'approved' || opened.grant === undefined || opened.grant === null) {
+          paAdmit.closePlan(walk.callId)
+          throw new Error(`refused-g1 APPROVAL_NOT_LANDED — the admission answered ${String(opened.kind ?? 'unsettled')} without a landed grant; no adapter state substitutes for the kernel answer`)
+        }
+        const edge = await paAdmit.edge({
+          ...walk,
+          grant: opened.grant,
+          paDurableMint: opened.paDurableMint,
+          request: opened.request,
+          placementName: opened.placementName,
+          paConstructionBinding: opened.paConstructionBinding,
+        })
+        if (edge.kind === 'deny') {
+          throw new Error(`refused-g1 ${edge.code ?? 'GRANT_STALE'} — ${edge.detail ?? 'the execution edge refused this call'} (zero native entry)`)
+        }
+        if (edge.cancelled === true) {
+          throw new Error(`${row.name} · cancelled — the call was cancelled at the execution edge; nothing ran (zero native entry)`)
+        }
+        // `consumed: true` is produced ONLY from the REAL final edge's success
+        // witness (todo/write/image law verbatim): the one-shot consume
+        // witness rides as `consumedProof`; the row never self-attests.
+        const proof = edge.consumedProof
+        if (proof === undefined || proof === null || typeof proof.grant !== 'object' || proof.grant === null || typeof proof.grant.grantId !== 'string') {
+          throw new Error(`refused-g1 CONSUME_PROOF_MISSING — the execution edge answered allow without its one-shot consume witness; the consumed credential is the ONLY thing this body executes under (the todo row's CONSUME_PROOF_MISSING law, verbatim)`)
+        }
+        let ran
+        try {
+          // THE BODY: the committed adapter's delegate, which re-ties the plan
+          // to THIS call (its own plan table), re-verifies the CURRENT facts
+          // for the second time (the edge law it spells), honours the pre-
+          // abort refusal, and only then enters the CAPTURED native face.
+          ran = await row.delegate(classified.plan, { exec })
+        } catch (error) {
+          throw new Error(`refused-g1 delegate-unavailable — the committed adapter could not run this consumed plan (${String(error?.message ?? error).slice(0, 200)})`)
+        }
+        if (ran === undefined || ran === null || ran.ok !== true) {
+          throw new Error(`refused-g1 ${ran?.code ?? 'P_G1_DELEGATE_INVALID'} — ${ran?.detail ?? 'the committed adapter refused to enter the native face on this consumed plan'}`)
+        }
+        observe(`a5m2-g1-row: settled call=${correlation} row=${row.name} settled=${String(ran.settled ?? 'native')}`)
+        return ran.value
+      } finally {
+        const now = governedTokenLedger.get(tokenKey)
+        if (now !== undefined && now.correlation === correlation) {
+          governedTokenLedger.set(tokenKey, { correlation, settled: true })
+        }
+      }
+    },
+    output,
+    presentCall: (args) => ({ ...g1RowPresentFace, rawInput: args }),
+  }))
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -3459,7 +3780,50 @@ export function createTeamToolPlaneAssembly(input = {}) {
         search: hostedSearch, glob: hostedGlob, shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
         ...(todoInject === null ? {} : { todo: todoInject.arm }),
+        // A5-M2 G1 PURE-QUERY: the placed COMMITTED adapter rows (diagnostics
+        // only — the placement authority is the mount, never this face).
+        ...(g1Inject === null ? {} : { g1: Object.freeze(g1Inject.rows.map((entry) => entry.row)) }),
       }),
+      /**
+       * A5-M2 G1 (root ruling 15:28): the four-tier truth of the closed G1
+       * dispatch index AS THIS MOUNT STANDS, read against the frozen index the
+       * committed adapter module owns (this face copies no table of its own).
+       * Every one of the 14 records answers exactly one state:
+       *  · `placed` — this mount placed the row (the pure-query trio only).
+       *    The four-tier label of a placed row is 接线未测 until the Host
+       *    acceptance runs; assembly-level legs never mint 已测试.
+       *  · `unplaced` — a pure-query record this mount did not place
+       *    (未接线 for this mount: the gate is off or the row was not injected).
+       *  · `declared` — the record exists in the committed adapter module and
+       *    is NOT wired here (the other eleven), with the unobservable fact
+       *    named; Gate 0f refuses any mount that would place one.
+       * The states are read back from the definitions this assembly built and
+       * nothing else — no second authority, no cached fact.
+       */
+      g1PlacementTruth: () => Object.freeze(Object.keys(A5_G1_RECORD_SPECS).map((recordName) => {
+        const spec = A5_G1_RECORD_SPECS[recordName]
+        if (allDefs.some((d) => d.name === recordName)) {
+          return Object.freeze({ recordName, familyId: spec.family, recordIndex: spec.recordIndex, adapterRevision: A5_G1_ADAPTER_REVISION, state: 'placed' })
+        }
+        if (A5_G1_PURE_QUERY_MOUNT_NAMES.includes(recordName)) {
+          return Object.freeze({
+            recordName,
+            familyId: spec.family,
+            recordIndex: spec.recordIndex,
+            state: 'unplaced',
+            why: 'pure-query record this mount did not place (planeCfg.g1Enabled off, or this adapter row was not injected) — 未接线 for this mount',
+          })
+        }
+        return Object.freeze({
+          recordName,
+          familyId: spec.family,
+          recordIndex: spec.recordIndex,
+          state: 'declared',
+          why: spec.capture === 'surface'
+            ? 'a SURFACE capture, not a model-invoked tool row: the facts it governs ride the effect-commit boundary, and the committed module spells it UNWIRED by ruling — this mount wires nothing'
+            : 'the facts this row must consult at its edge are not observable at the wiring point (the host escalation chain, the durable append witness, the exported controlled-install path, the live Client session, the prompt or plan-mode write faces); the row stays exactly as g1-surface-adapters.mjs spells it and Gate 0f refuses any mount that would place it',
+        })
+      })),
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
       placementNames: Object.freeze(allDefs.map((d) => d.name)),
