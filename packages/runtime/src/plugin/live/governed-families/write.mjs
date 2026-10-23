@@ -37,6 +37,7 @@
  */
 
 import { createHash } from 'node:crypto'
+import { realpathSync } from 'node:fs'
 import path from 'node:path'
 
 import { createPostConsumeWriteClosure } from '../../../../controlled-fs/src/post-consume-write.js'
@@ -161,6 +162,26 @@ export function createGovernedWriteArm({
   }
   if (typeof bindingFacts !== 'function') {
     throw new TypeError('governed-families/write: bindingFacts must be the injected reader (the arm mints no generations of its own)')
+  }
+  // THE trusted governed-root identity is established at BIND time (the
+  // root review @1a399 found the execution-time realpath unsound: reading
+  // the CURRENT realpath to "discover" the approved value makes the
+  // closure's drift comparison SELF-ASSERTING — expected ≡ current, so a
+  // root swap could never be caught). The reviewed pattern this arm now
+  // follows is the M1/production-read-port law: the governed root the
+  // TRUSTED assembly hands at construction is resolved ONCE here (and its
+  // existence is a config-defect throw, the jobsEnabled family), frozen as
+  // the approved root real; execution only ever VERIFIES the current
+  // standpoint against this frozen expectation (ANCHOR-DRIFT semantics:
+  // a swapped or moved root makes the approved identity unreachable and
+  // refuses zero-byte BEFORE any open). classify remains pure lexical:
+  // lexical alone never "proves" the object identity — the trusted source
+  // is THIS bind-time resolution, and it is what refusals name.
+  let approvedRootReal
+  try {
+    approvedRootReal = realpathSync(instanceRootDir)
+  } catch (error) {
+    throw new TypeError(`governed-families/write: instanceRootDir does not resolve to a real governed root (${instanceRootDir}): ${String(error?.message ?? error)}`)
   }
 
   const plans = new WeakMap()
@@ -338,11 +359,12 @@ export function createGovernedWriteArm({
       observe({ event: 'backend-start', correlation: entry.correlation, detail: plan.canonicalTarget })
       let closure
       try {
-        // The approved-root REAL identity is a POST-APPROVAL fact: read it
-        // now (never a pre-approval FS read by classify); the closure then
-        // demands the root still STANDS there before any truncation.
-        const { realpath } = await import('node:fs/promises')
-        const approvedRootReal = await realpath(instanceRootDir)
+        // The approved-root REAL identity is the FROZEN bind-time fact (the
+        // trusted governed root the assembly constructed this arm against —
+        // see the bind-time resolution above). NOTHING re-reads the root to
+        // redefine the approval; the closure VERIFIES at the edge that the
+        // root still STANDS at that frozen identity before any truncation
+        // (a swap/move refuses ANCHOR-law, zero bytes, before any open).
         closure = createPostConsumeWriteClosure(
           {
             approvedRootLexical: instanceRootDir,
@@ -359,7 +381,7 @@ export function createGovernedWriteArm({
         // answer: it refuses typed and the closure was never claimed.
         entry.state = 'REFUSED-AT-MINT'
         observe({ event: 'backend-end', correlation: entry.correlation, detail: 'refused-at-mint' })
-        return refuse(CODES.GRANT_MISMATCH, `the post-consume closure refused to mint for this plan fact (${String(error?.message ?? error).slice(0, 200)}) — zero FS`)
+        return refuse(CODES.GRANT_MISMATCH, `the post-consume closure refused to mint for this plan fact (${String(error?.message ?? error).slice(0, 200)}) — the mint is pure now (the root real is the frozen bind-time fact): zero FS on this path, the closure was never claimed`)
       }
       const result = await closure.write()
       if (result.ok === true) {

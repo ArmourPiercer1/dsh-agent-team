@@ -42,7 +42,7 @@
  * @module @dsh-agent-team/runtime/test/a5m2-write-existing-c1
  */
 import { describe, it, expect, afterAll } from 'vitest'
-import { mkdirSync, rmSync, readFileSync, writeFileSync, statSync } from 'node:fs'
+import { mkdirSync, rmSync, readFileSync, writeFileSync, statSync, symlinkSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -85,6 +85,7 @@ interface PlaneAssemblyValue {
     execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
   }>
   placementFeed: (name: string) => { definitionIdentity?: string; realmId: string } | undefined
+  mount: (agentCtx: { tools: { register: (def: unknown) => unknown } }) => { ok: boolean; code?: string; name?: string; message?: string; dispose: () => void }
   livePaPlan: Map<string, { approvalCaseId: string; effectSetFingerprint: string; perEffectRequired: unknown[]; requestedEffects?: unknown }>
   realmId: string
   assembly: ProductionAdmissionAssembly
@@ -619,14 +620,123 @@ describe('A5M2-WRITE-EXISTING: the write vertical mounts, registers once, walks 
     expect(events.length).toBe(0)
   })
 
-  it('DRAINING closes the arm: classify refuses, zero rows, and the target keeps its old bytes', async () => {
-    const world = await mountWorld('drain')
+  it('DISPOSE drains the write arm through the REAL mount teardown (not a hand-called arm.drain): after mount.dispose a new call refuses DRAINING with zero rows and the target untouched', async () => {
+    const world = await mountWorld('dispose')
     const events: Array<{ type: string; data: unknown }> = []
     const before = (await stateNow()).requests.length
-    world.arm.drain()
-    await expect(world.writeDef.execute({ file_path: 'notes.txt', content: 'x' }, execFor('call-drain', events)))
+    // THE real teardown path: place through the plane's own mount (the same
+    // {ok, dispose} surface the production host holds), then dispose.
+    const ctx = { tools: { register: () => () => {} } }
+    const mounted = world.plane.mount(ctx)
+    expect(mounted.ok, JSON.stringify(mounted)).toBe(true)
+    mounted.dispose()
+    await expect(world.writeDef.execute({ file_path: 'notes.txt', content: 'x' }, execFor('call-dispose', events)))
       .rejects.toThrow(/P_WRITE_DRAINING/)
     expect((await stateNow()).requests.length).toBe(before)
     expect(readFileSync(join(world.fsRoot, 'notes.txt'), 'utf8')).toBe('old bytes\n')
+  })
+
+  it('the approved ROOT REAL is the frozen BIND-TIME fact: re-pointing the governed root after bind is caught as the ANCHOR law BEFORE any open (root review @1a399 — no execution-time self-discovery)', async () => {
+    // The root rides a SYMLINK: bind resolves through it (the trusted
+    // bind-time resolution freezes the then-current real root); a later
+    // re-point makes the CURRENT standpoint differ from the APPROVED fact —
+    // the execution path must refuse the swap, never re-derive approval.
+    const base = worldDir('swap-base')
+    const rootA = join(base, 'rootA')
+    const rootB = join(base, 'rootB')
+    mkdirSync(rootA, { recursive: true })
+    mkdirSync(rootB, { recursive: true })
+    writeFileSync(join(rootA, 'notes.txt'), 'old bytes\n', 'utf8')
+    // rootB ALSO has an existing notes.txt: if the execution path failed to
+    // detect the swap, the write would LAND here (existing-file legal), so
+    // a pass can only mean the ANCHOR-DRIFT refusal fired (not an incidental
+    // not-a-file on a missing target).
+    writeFileSync(join(rootB, 'notes.txt'), 'sentinel-B\n', 'utf8')
+    const linkRoot = join(base, 'root')
+    symlinkSync(rootA, linkRoot)
+    const arm = createGovernedWriteArm({
+      definitionIdentity: 'sha256:captured-native-write-identity-swap',
+      providerId: ARM_PROVIDER,
+      realmId: 'a5m2-write-asm-swap',
+      memberAgentId: WORKER,
+      sessionHeaderId: HEADER_ID,
+      instanceRootDir: linkRoot,
+      bindingFacts: () => ({ bindingId: 'a5m2-write-asm:swap', bindingRevision: 1, policyGeneration: 0, authorityGeneration: 0 }),
+      observe: () => {},
+    })
+    const built = planeModule.createTeamToolPlaneAssembly({
+      permissionPolicy: DIRECT_POLICY, realmId: 'a5m2-write-asm-swap', templateId: 'a5m2-write-asm-tpl', role: 'member', instanceId: WORKER, teamSessionId: P6T4_ROOT,
+      plane: { writeEnabled: true },
+      backends: { write: { arm, description: 'swap-world' } },
+      authorityFacts: { overlayGeneration: async () => 0, ensureAuthorityCurrent: async () => {} },
+      controlLeg: async (legInput: unknown) => createPaControlLeg({ controlService: service, rootSessionId: P6T4_ROOT, caller: memberCaller(WORKER), beneficiaryAuthority: 'member', governedFamilies: familyTable })(legInput as PaControlLegInput),
+      readCallFacts: async (input: Record<string, unknown>) => {
+        const truth = realmTruths.get(String(input.realmId))
+        if (truth === undefined) return undefined
+        const hard = factSlot(EMPTY_DOCS.teamHardEnvelope)
+        const mutation = factSlot(EMPTY_DOCS.permissionMutationEnvelope)
+        if (hard === undefined || mutation === undefined) return undefined
+        const livePlan = truth.plane?.livePaPlan.get(String(input.callId))
+        return {
+          kind: 'call-facts',
+          facts: {
+            policySource: { staticLayerRefs: ['a5m2-write-asm-tpl:directive-policy'], overlayGeneration: 0 },
+            realmId: String(input.realmId),
+            ceiling: { teamHardEnvelope: hard, permissionMutationEnvelope: mutation },
+            policyDocument: truth.assembly.policyDocument(),
+            denySources: truth.assembly.denySources(),
+            effects: (livePlan?.requestedEffects as RequestedEffectSet | undefined) ?? (parseRequestedEffectSet((input.requestedEffects as { effects?: unknown[] } | undefined)?.effects ?? input.requestedEffects) as { ok: true; value: RequestedEffectSet }).value,
+            member: { teamSessionId: P6T4_ROOT, instanceId: WORKER },
+            beneficiaryAuthority: 'member',
+            binding: bindingOf('swap') as ToolBinding,
+            blueprint: { revision: String(blueprint.revision), contentHash: String(blueprint.contentHash), templateId: 'a5m2-write-asm-tpl', cwd: CHAIN_WORLD, providerVersion: ARM_PROVIDER },
+            ...(livePlan === undefined ? {} : { planSnapshot: { approvalCaseId: livePlan.approvalCaseId, effectSetFingerprint: livePlan.effectSetFingerprint, perEffectRequired: livePlan.perEffectRequired } }),
+            authorityGeneration: 0,
+            ...(a5GovernedFamilyFor(fedSwap) === undefined ? {} : { governedFamily: a5GovernedFamilyFor(fedSwap) }),
+          },
+        }
+      },
+      onObserve: () => {},
+    })
+    expect(built.ok, JSON.stringify(built)).toBe(true)
+    const swapPlane = built.value
+    if (swapPlane === undefined) throw new Error('unreachable')
+    realmTruths.set(swapPlane.realmId, { assembly: swapPlane.assembly, plane: swapPlane })
+    const fedSwap = String(swapPlane.placementFeed(A5_WRITE_TOOL_NAME)?.definitionIdentity ?? '')
+    if (fedSwap.length === 0) throw new Error('the swap-world write row answered no placement definition identity')
+    // the swap world's OWN binding fixture (realm-true pairing, same law as
+    // every mountWorld world):
+    bindingFixtures.set('swap', parseToolBinding({
+      bindingId: 'a5m2-write-asm:swap',
+      agentScopeKey: 'a5m2-write-asm:swap',
+      toolName: A5_WRITE_TOOL_NAME,
+      definitionIdentity: fedSwap,
+      providerId: ARM_PROVIDER,
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'trusted-host',
+      assurance: untestedAssurance('team-trusted-extension', 'trusted-host', swapPlane.realmId),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    }))
+    // bind-time approved identity = realpath(linkRoot) = rootA (frozen in the
+    // arm). RE-POINT the root BEFORE the approval is answered: the execution
+    // edge now stands at rootB while the approval speaks rootA.
+    rmSync(linkRoot)
+    symlinkSync(rootB, linkRoot)
+    registerA5GovernedFamily(String(fedSwap), { familyId: arm.familyId, adapterRevision: arm.adapterRevision, providerIdentity: ARM_PROVIDER })
+    const swapDef = swapPlane.definitions.find((d) => d.name === A5_WRITE_TOOL_NAME)
+    if (swapDef === undefined) throw new Error('swap world carries no write definition')
+    const running = swapDef.execute({ file_path: 'notes.txt', content: 'swapped\n' }, execFor('call-swap', []))
+    const row = await waitRowForCall(`plane-write:${swapPlane.realmId}-1`)
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
+    await expect(running).rejects.toThrow(/instance root stands at[\s\S]*ANCHOR law|ANCHOR law.*instance root/i)
+    // ZERO FS at BOTH stands: the approved root (A) keeps its bytes and the
+    // swapped root (B) still holds the SENTINEL — the write never followed
+    // the re-pointed root to B's existing file (a pass here can only mean
+    // the ANCHOR-DRIFT refusal fired, not a landing).
+    expect(readFileSync(join(rootA, 'notes.txt'), 'utf8')).toBe('old bytes\n')
+    expect(readFileSync(join(rootB, 'notes.txt'), 'utf8')).toBe('sentinel-B\n')
   })
 })

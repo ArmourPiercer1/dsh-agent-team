@@ -2507,6 +2507,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
             // and there is no native to fall back to; the row mask is disposed
             // with the mount regardless).
             if (todoInject !== null) todoInject.arm.drain()
+            // A5-M2 B-WRITE: the write arm drains with the SAME teardown law
+            // (root review @1a399): the drain lands BEFORE any ledger/plan
+            // state is cleared, so a call that has not entered its closure
+            // yet is refused DRAINING (zero write; an entered body is not
+            // rewound and no native fallback exists), and a call whose token
+            // already settled can never be re-armed by the later clear.
+            if (writeInject !== null) writeInject.arm.drain()
             livePaPlan.clear()
             // The token ledger's ONE release point (root ruling @ 9c817):
             // used exec.token identities live for the WHOLE life of the

@@ -72,13 +72,19 @@
  *
  * MAINTAINED SCOPE (root reviews, do not overclaim): this wiring covers
  * EXISTING files ONLY; (a) the new-file path stays HELD pending the root
- * ruling on the limitation report above; (b) this module is NOT yet created
- * by any production path — the real final-edge assembly (paAdmitEdge →
- * closure construction) is unwired in this commit and its proof belongs to
- * the integration owner; (c) the helper-verified windows (root realpath,
- * fd identity) ride a RESTRICTED deployment under the governed root — this
- * is NOT physical safety for an arbitrary mutable directory tree (no
- * openat2 today, law 4); (d) THE LINE NEITHER OWNER CROSSES: fingerprint
+ * ruling on the limitation report above; (b) the production creation site
+ * LANDED with the B-WRITE row (governed-families/write.mjs): the closure is
+ * minted ONLY below the real final edge — after the arm's pairing law and
+ * the one-shot consumed proof — and called with ZERO arguments; its proof
+ * lives in a5m2-write-existing-c1 (bytes landed, HELD new-file, replay and
+ * drain legs) on kernel AND int; (c) the helper-verified windows (root
+ * realpath, fd identity) ride a RESTRICTED deployment under the governed
+ * root — this is NOT physical safety for an arbitrary mutable directory
+ * tree (no openat2 today, law 4); the approved root REAL the arm supplies
+ * is the arm's FROZEN BIND-TIME resolution of the trusted governed root
+ * (root review @1a399: an execution-time realpath re-read would make the
+ * comparison below SELF-ASSERTING — verification expects a frozen fact,
+ * not a fresh discovery); (d) THE LINE NEITHER OWNER CROSSES: fingerprint
  * equality AT THE FACTORY IS NOT AUTHORIZATION — it only binds one plan to
  * one consumed context. Authorization exists exactly once: the private
  * closure call made AFTER the real M1 complete final edge (`paAdmitEdge`:
