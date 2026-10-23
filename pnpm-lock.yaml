@@ -241,6 +241,9 @@ importers:
       '@deepseek-ai/dsh-agent-preset-registry':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(399ec41987db7050d82ab13a298b41d7)
+      '@deepseek-ai/dsh-schedule':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(4df1b6d718fd8121b65df83e89404710)
       '@deepseek-ai/dsh-scope':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))
