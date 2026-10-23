@@ -1262,12 +1262,19 @@ export function installParameterPermissionListener(
    */
   // A5-M2 ports, resolved ONCE per install. A half-wired port is treated as
   // absent (the old path), never as a partial hand-off.
-  const paHandoffPorts = params.paReadHandoff !== undefined
-    && typeof params.paReadHandoff.open === 'function'
-    && typeof params.paReadHandoff.close === 'function'
-    && typeof params.paReadHandoff.onTerminal === 'function'
-    ? params.paReadHandoff
-    : undefined
+  // ⑤ A PRESENT-but-malformed port is a wiring bug and is refused HERE,
+  // before any registration (the same R6 discipline as the missing guard
+  // seam): a half hand-off must never silently degrade into the old Ask.
+  // Truly ABSENT (no governed read row, no-Team) keeps the pre-hand-off path.
+  if (params.paReadHandoff !== undefined) {
+    const missing = (['open', 'close', 'onTerminal'] as const).filter(
+      (k) => typeof params.paReadHandoff?.[k] !== 'function',
+    )
+    if (missing.length > 0) {
+      throw new Error(`pa-read-handoff-malformed — paReadHandoff was supplied without: ${missing.join(', ')}`)
+    }
+  }
+  const paHandoffPorts = params.paReadHandoff
   // The execs this install handed off, keyed by the exec OBJECT identity (the
   // same discipline as `authorizedExecutions`). GC is leak insurance, never
   // the cleanup mechanism — the mount's plan fact is a strong Map keyed by a
@@ -1369,8 +1376,17 @@ export function installParameterPermissionListener(
     // only release of the end-cap; the grant stays unspent and the row's body
     // still runs the fresh recheck and the single consume, refusing there.
     if (paHandoffPorts !== undefined) {
-      const handoff = await paHandoffPorts.open(exec)
-      if (handoff.kind === 'authorized' || handoff.kind === 'cancelled') {
+      let handoff
+      try {
+        handoff = await paHandoffPorts.open(exec)
+      } catch (error: unknown) {
+        // A leg that never handed off closes what it may have opened.
+        paHandoffExecs.delete(exec)
+        paHandoffPorts.close(exec)
+        observe({ stage: 'pa-handoff-fault', callId, tool: name, detail: String((error as { message?: unknown })?.message ?? error) })
+        return { kind: 'deny', reason: 'PA_HANDOFF_FAULT — the pre-dispatch PA walk could not be completed; nothing ran' }
+      }
+      if (handoff.kind === 'authorized') {
         paHandoffExecs.add(exec)
         authorizedExecutions.add(exec)
         observe({ stage: 'pa-handoff-authorized', callId, tool: name })
@@ -1378,6 +1394,15 @@ export function installParameterPermissionListener(
         // NO close in any `finally` here: the guard stage and the dispatch of
         // the rest of the chain have not happened yet.
         return await next()
+      }
+      if (handoff.kind === 'cancelled') {
+        // ③ CANCELLATION IS NOT PERMISSION: no mark, no `next()`, no body. The
+        // PA edge answered this invocation cancelled with zero consumption, so
+        // nothing is dispatched and nothing is authorized.
+        paHandoffExecs.delete(exec)
+        paHandoffPorts.close(exec)
+        observe({ stage: 'pa-handoff-cancelled', callId, tool: name })
+        return { kind: 'deny', reason: 'cancelled — the PA edge answered this invocation cancelled before dispatch; zero consumption, zero body' }
       }
       if (handoff.kind === 'refused') {
         // Mismatch or PA fault: FAIL CLOSED, in place. No native Ask is
