@@ -880,6 +880,48 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       const served = String(await plain.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-steady' }))
       expect(served).toContain('s-a')
     })
+
+    it('h3: the REAL supply-shape acceptance — current-session event_search rides the turnBoundary state lastStepStartSeq (workspace-access.ts:56-69 @639ed01539), never a silent whole-corpus read', async () => {
+      const w = makeWorld({ tag: 'h3' })
+      const reqs: Array<Record<string, unknown>> = []
+      const base = w.qp as unknown as { searchQueryPort: { searchEvents: (a: unknown, b: unknown) => Promise<unknown>, searchSessions: (a: unknown, b: unknown) => Promise<unknown> } }
+      const wrappedQp = {
+        ...w.qp,
+        searchQueryPort: Object.freeze({
+          searchSessions: base.searchQueryPort.searchSessions,
+          // TWO named formals (the placement arity law).
+          searchEvents: async function spy (a: unknown, b: unknown): Promise<unknown> {
+            reqs.push(a as Record<string, unknown>)
+            return await base.searchQueryPort.searchEvents(a, b)
+          },
+        }),
+      }
+      // (a) NO boundary → the ROW'S OWN guard refuses the current-session
+      // default (root 18:58: a production current-session event_search
+      // without the projection answers NO_CURRENT_STEP) — the searchEvents
+      // port is NEVER entered.
+      const noBoundaryAsm = w.build({ queryPorts: wrappedQp })
+      expect(noBoundaryAsm.ok).toBe(true)
+      const searchDef = noBoundaryAsm.definitions.find((d) => d.name === 'session_event_search')!
+      const refusal = await asRefusal(searchDef.execute({ query: 'alpha needle' }, { callId: 'exec-current-nostep' }))
+      expect(refusal.code).toBe('SESSION_QUERY_TOOL_NO_CURRENT_STEP')
+      expect(reqs.length, 'the unbounded current-session read never reached searchEvents').toBe(0)
+      // (b) the actual projection STATE (lastStepStartSeq — the same field
+      // the host caller law carries, core/agent/src/types.ts:82) → served,
+      // with the readable window CLAMPED to the step start.
+      w.setCallerBoundary({ lastStepStartSeq: 6 })
+      const steppedAsm = w.build({ queryPorts: wrappedQp })
+      expect(steppedAsm.ok).toBe(true)
+      const searchDef2 = steppedAsm.definitions.find((d) => d.name === 'session_event_search')!
+      const served = String(await searchDef2.execute({ query: 'alpha needle' }, { callId: 'exec-current-step' }))
+      expect(typeof served).toBe('string')
+      expect(reqs.length).toBe(1)
+      // the clamp rides the REAL filter face (buildEventFilters — a
+      // {kind:'seq', from?, to?} entry, adapter :593-607): seq.to is capped
+      // at lastStepStartSeq - 1 — the loop never reads outside the step.
+      const filters = reqs[0]!.filters as Array<{ kind: string, to?: number }>
+      expect(filters.find((f) => f.kind === 'seq')?.to, 'the window clamps to lastStepStartSeq - 1').toBe(5)
+    })
   })
 
   describe('(i) REAL SUPPLY (root 992 ②): the facets map OFF the live sessionQuery service — absent/incomplete are honest census, never fake supply', () => {
@@ -963,6 +1005,26 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       const served = String(await def.execute(TRACE_ARGS, { callId: 'exec-real-supply' }))
       expect(served).toContain('s-a')
       expect(w.nativeBodies.length).toBe(0)
+    })
+
+    it('i6: the supply IS the approved handle — a later method swap on the service can NOT ride the face the adapter pins (no wrapper masking)', () => {
+      const callsA: string[] = []
+      const callsB: string[] = []
+      const engine = engineFace({
+        traceSession: async function originalA (id: unknown, signal: unknown) { callsA.push(`A:${String(id)}:${String(signal)}`); return 'E:A' },
+      })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const tracePort = supply.queryPorts.traceQueryPort as { traceSession: (a: unknown, b: unknown) => Promise<unknown> }
+      // the swap AFTER supply-build: the service face changes…
+      engine.traceSession = async function swappedB () { callsB.push('B'); return 'E:B' }
+      // …but the SUPPLIED face is the build-time handle bound to its
+      // receiver: the adapter pins this stable face and what it pins IS the
+      // approved method, so drift can never hide behind a wrapper.
+      void tracePort.traceSession('s-a', 'sig')
+      expect(callsA).toEqual(['A:s-a:sig'])
+      expect(callsB.length, 'the swapped method never rides the approved supply').toBe(0)
     })
   })
 })

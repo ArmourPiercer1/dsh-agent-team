@@ -816,7 +816,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQuery: sessionQueryBackend } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, controlServiceRef, fsBackend, resolveBoundBlueprint, artifactAuthorityRef, permissionPlaneRef, permissionOverlay, permissionAuthorityFacts, activationFence, policyReaderRef, resolvePersonaSubstrate, ptcEscalationRef, sessionQuery: sessionQueryBackend, sessionProjections: sessionProjectionsBackend } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -3139,6 +3139,7 @@ export function createAgentBindings(deps) {
               g6Captured.set(name, captured === null ? undefined : captured)
               return g6Captured.get(name)
             }
+            let g6BoundaryAbsentObserved = false
             const g6ReadCaller = () => {
               const header = runtimeAgent.session?.header
               const ownId = header?.id
@@ -3147,9 +3148,36 @@ export function createAgentBindings(deps) {
                 // classify, no port entry — never a guessed caller.
                 throw new Error(`agent-bindings: the actual exec owner of '${sessionId}' answers no session identity — the governed session-query caller law never guesses a caller`)
               }
+              // The STEP BOUNDARY (root 18:58 residual 1): the actual exec
+              // owner's OWN turnBoundary projection, through the host
+              // public law verbatim — workspace-access.ts:56-69 @639ed01539
+              // builds the caller as { id: agent.session.id, header:
+              // agent.session.header, boundary: ctx.sessionProjections.
+              // stateOf(agent.session, 'turnBoundary') } (the projection
+              // state carries lastStepStartSeq, core/agent/src/types.ts:82
+              // — nullable). Without it the CURRENT-SESSION default
+              // (no explicit session_id) refuses with the row's own
+              // SESSION_QUERY_TOOL_NO_CURRENT_STEP at its own guard
+              // (g6-session-query.mjs:1600-1604) — NEVER a fabricated
+              // boundary here, and explicit-target reads are unaffected.
+              let boundary
+              try {
+                const projections = typeof sessionProjectionsBackend === 'function' ? sessionProjectionsBackend() : undefined
+                if (projections !== null && typeof projections === 'object' && typeof projections.stateOf === 'function') {
+                  const state = projections.stateOf(runtimeAgent.session, 'turnBoundary')
+                  if (state !== null && typeof state === 'object') boundary = state
+                }
+              } catch {
+                boundary = undefined
+              }
+              if (boundary === undefined && !g6BoundaryAbsentObserved) {
+                g6BoundaryAbsentObserved = true
+                observations.push(`a5m2-g6: turnBoundary projection unavailable for ${sessionId} — current-session searches will refuse NO_CURRENT_STEP at the row (explicit targets unaffected)`)
+              }
               return Object.freeze({
                 id: String(ownId),
                 ...(typeof header.cwd === 'string' && header.cwd !== '' ? { cwd: String(header.cwd) } : {}),
+                ...(boundary === undefined ? {} : { boundary }),
               })
             }
             const g6TeamCeiling = (target) => {

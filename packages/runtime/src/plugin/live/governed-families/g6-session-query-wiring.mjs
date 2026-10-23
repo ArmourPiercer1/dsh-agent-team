@@ -540,12 +540,29 @@ export function buildG6QuerySupplyFromService (service) {
   if (missing.length > 0) {
     return wiringRefuse(A5_G6_QUERY_WIRING_CODES.SUPPLY_INCOMPLETE, `the registered sessionQuery service implements no ${missing.join(', ')} — the family mounts no partial supply (fail-closed; the natives stay untouched)`)
   }
-  // The adapter's signature law is PART of the declared face (facets must
-  // carry the real 2 formal parameters — session-query/src/index.ts
-  // :153-167/:206-213/:251-259/:327-361 @639ed01539): bind in the explicit
-  // (first, signal) shape — a rest-param wrapper would be length 0 and the
-  // row itself refuses that signature drift.
-  const bind = (name) => (first, signal) => service[name](first, signal)
+  // THE APPROVED HANDLE, BOUND AT BUILD TIME (root 18:58 residual 2): the
+  // adapter's placement law pins the STABLE port face — a wrapper that
+  // re-reads `service[name]` on every call would let a LATER method swap on
+  // the service ride the supply while the adapter keeps pinning only the
+  // (unchanged) wrapper, masking the drift. `method.bind(service)` freezes
+  // the receiver AND the exact method object observed right now into the
+  // face the adapter pins: what is supplied IS the approved handle, and a
+  // swap afterwards cannot leak through it. bind(thisArg) preserves the
+  // method's own `length`, so the adapter's 2-parameter signature law
+  // (facets carry the real formal parameters — session-query/src/index.ts
+  // :153-167/:206-213/:251-259/:327-361 @639ed01539) still measures the
+  // REAL face, not a wrapper's (a rest-param wrapper is length 0 and the
+  // row itself refuses that signature drift — measured).
+  const bind = (name) => {
+    const method = service[name]
+    if (typeof method !== 'function') {
+      // Unreachable by construction (core names validated above; the search
+      // names are bound only inside the `searchPresent` branch) — stated
+      // because the face must NEVER fall back to a late re-resolution.
+      throw new Error(`buildG6QuerySupplyFromService: '${String(name)}' vanished between validation and binding — the approved handle must exist at build time`)
+    }
+    return method.bind(service)
+  }
   const searchPresent = typeof service.searchSessions === 'function' && typeof service.searchEvents === 'function'
   return deepFreeze({
     ok: true,

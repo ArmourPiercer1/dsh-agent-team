@@ -581,6 +581,18 @@ interface GlueModule {
      * service keep the family DECLARED-INACTIVE (honest census, zero flip).
      */
     readonly sessionQuery?: () => unknown
+    /**
+     * A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1, the step-boundary
+     * line): the LAZY DSH public `sessionProjections` accessor — the
+     * caller law supplies the actual exec owner's OWN turnBoundary
+     * projection exactly as the host workspace-access law does
+     * (workspace-access.ts:56-69 @639ed01539: stateOf(agent.session,
+     * 'turnBoundary'), the state carrying lastStepStartSeq). Additive
+     * optional, never hard-injected: without it the current-session
+     * default refuses with the row's own NO_CURRENT_STEP guard — explicit
+     * targets keep serving; nothing is fabricated.
+     */
+    readonly sessionProjections?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2343,6 +2355,14 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // injected through config — the glue maps them off THIS service
     // (buildG6QuerySupplyFromService).
     sessionQuery: () => ctx.get('sessionQuery'),
+    // A5M2-G6 B-SESSION-QUERY (root 18:58 residual 1): the LAZY public
+    // `sessionProjections` accessor — the caller law reads the actual exec
+    // owner's own turnBoundary projection (stateOf(agent.session,
+    // 'turnBoundary'), workspace-access.ts:56-69 @639ed01539); the
+    // current-session default rides it and refuses with the row's own
+    // NO_CURRENT_STEP guard when the projection is unavailable — never a
+    // fabricated boundary. Additive optional, never a hard inject.
+    sessionProjections: () => ctx.get('sessionProjections'),
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
     // service is absent). Additive optional dep: never in the hard inject
