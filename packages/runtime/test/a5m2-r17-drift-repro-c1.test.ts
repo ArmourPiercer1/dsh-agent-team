@@ -68,7 +68,7 @@ import type { AdmissionRequest, RequestedEffectSet } from '../../domain/tool-gov
 import { createPaControlLeg, createPaEffectsVerifier } from '../operation-permission/pa-control-bridge.js'
 import type { PaControlLegInput, PaEffectsVerifierDeps } from '../operation-permission/pa-control-bridge.js'
 import { P6T1_FIXTURE, makeExternalPolicyFacts } from './p6t1-helpers.js'
-import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, leaderCaller, memberCaller, p6t4Seed } from './p6t4-helpers.js'
+import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, leaderCaller, memberCaller, p6t4Seed, humanCaller } from './p6t4-helpers.js'
 import { createGovernedReadImageArm, A5_IMAGE_TOOL_NAME } from '../src/plugin/live/governed-families/image.mjs'
 import { createImageAttachmentAdapter } from '../src/plugin/live/governed-families/image-attachment.mjs'
 import type { ImageAttachmentStorePort } from '../src/plugin/live/governed-families/image-attachment.d.mts'
@@ -533,7 +533,7 @@ const portOf = (world: Mounted) => {
 }
 
 describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, allow read subtree team, deny read_image exact blocked.png) kept verbatim - RR-1 threads the mount seam (drifted() branch gone), RR-2 keeps the seam-absent r17 bytes (absence law); RR-3 is a clearly-separated SYNTHETIC no-floor control', () => {
-  it('RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam', async () => {
+  it('RR-1 SYNTHETIC-HISTORICAL (root 16:56: NOT a replay of the real r17 - the read_image-exact deny is NOT in the real policy and its covering deny raises a human-admin floor the real row NEVER had; kept as the 337 historical material): seam-on stops the expansion branch on this synthetic shape', async () => {
     decisionSeamTransport = true
     const world = await mountWorld('rr-1', {
       policyFor: (root) => Object.freeze({
@@ -556,7 +556,6 @@ describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, al
     await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: row.requestId, decision: 'allow' })
     const handoff = await opening
     const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
-    // eslint-disable-next-line no-console
     console.info('RR1-FIXED kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + JSON.stringify(driftRows).slice(0,900))
     // THE fix claim, on the ORIGINAL r17-shape policy (root 16:33: the deny
     // scope is NOT touched to flip any colour): with the mount seam threaded
@@ -644,5 +643,83 @@ describe('A5M2-R17-FIX: ORIGINAL r17-shape policy (deny read subtree runtime, al
     console.info('RR3 kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + String(driftRows.length))
     expect(handoff.kind, 'synthetic control: the seam-threaded decision authorizes').toBe('authorized')
     expect(driftRows.length).toBe(0)
+  }, 60_000)
+
+  // ---- TRUE-r17 REPLAY (root 16:56): the REAL policy snapshot from
+  // tests/homes/a5m2-c2-r17-20261023T15-03-57Z/blueprints/a5m2c2-todo.yaml
+  // (default ask; allow read subtree 'team'; ask bash any; deny read subtree
+  // 'runtime' - NO read_image deny of any kind) and the REAL effects from
+  // api-transcript entry 4 (read of <root>/examples/minimal/.sessions/...png
+  // + tool-invoke read_image), captured requiredAuthority 'leader' /
+  // perEffectRequired ['leader','leader'] / deniedEffects [] , and the REAL
+  // durable decider identity kind 'human' (api-transcript entry 5 result
+  // .decision.decider = {kind:'human', humanId:<team session>}) -> bridge
+  // deciderAuthority 'human-user', which the closed reviewer map (control/
+  // types.ts:334) pairs with a 'leader' case. Inputs are checked BEFORE any
+  // verdict is read (input-identity-first). Nothing here re-floors or swaps
+  // callers: it is the raw identity and the raw policy, minimally replayed.
+  const REAL_R17_POLICY = (_root: string) => Object.freeze({
+    default: 'ask',
+    allow: Object.freeze([Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: 'team' }) })]),
+    ask: Object.freeze([Object.freeze({ tool: 'bash', resource: Object.freeze({ kind: 'any' }) })]),
+    deny: Object.freeze([Object.freeze({ tool: 'read', resource: Object.freeze({ kind: 'subtree', path: 'runtime' }) })]),
+  })
+
+  it('RR-4 TRUE-r17 REPLAY seam-on: input identity checked first, then the same public allow resolves with the seam threaded (the real root cause closes on the real shape)', async () => {
+    decisionSeamTransport = true
+    // Same LEXICAL relation as the raw row: the read effect sits OUTSIDE both
+    // named roots (raw: .sessions path vs the 'team'/'runtime' parameter
+    // roots), which is why the real row carries default-ask required 'leader'
+    // and deniedEffects [] - neither rule covers it, only the seam can even
+    // DECIDE that non-coverage.
+    const world = await mountWorld('rr-4', { policyFor: REAL_R17_POLICY })
+    const obsBase = verifierObservations.length
+    const exec = execFor('rr-4', 'good.png')
+    const rowCallId = rowCallOf(world)
+    const opening = portOf(world).open(exec)
+    const row = await waitRowForCall(rowCallId)
+    // INPUT IDENTITY FIRST (raw fields, asserted before any resolve):
+    const rp = (row as unknown as { reviewPayload?: Record<string, unknown> }).reviewPayload ?? {}
+    expect(String(rp.requiredAuthority), 'raw r17 row: requiredAuthority leader').toBe('leader')
+    expect(JSON.stringify(rp.perEffectRequired ?? []), 'raw r17 row: perEffectRequired [leader, leader]').toBe('["leader","leader"]')
+    expect(JSON.stringify(rp.deniedEffects ?? []), 'raw r17 row: deniedEffects empty').toBe('[]')
+    const effects = (rp.effects ?? []) as Array<Record<string, unknown>>
+    expect(effects.length, 'raw r17 row: exactly the two effects').toBe(2)
+    expect(String(effects[0]?.kind)).toBe('read')
+    expect(String((effects[0]?.resource as Record<string, unknown> | undefined)?.kind)).toBe('absolute-path')
+    expect(String(effects[1]?.kind)).toBe('tool-invoke')
+    expect(String(effects[1]?.toolName)).toBe('read_image')
+    await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: humanCaller('session-a5m2c2-replay'), requestId: row.requestId, decision: 'allow' })
+    const handoff = await opening
+    const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
+    console.info('RR4-REAL kind=' + handoff.kind + ' code=' + String(handoff.code ?? '') + ' drift=' + JSON.stringify(driftRows).slice(0, 900))
+    // On the REAL shape the whole drift family must be silent - expansion AND
+    // rung (human-user reviews a leader case; no deny floor exists to raise):
+    expect(driftRows.length, 'true replay: NO drift-family row with the seam').toBe(0)
+    expect(handoff.kind, 'true replay: the real identity + real policy authorizes with the seam').toBe('authorized')
+  }, 60_000)
+
+  it('RR-5 TRUE-r17 REPLAY seam-off: the real policy snapshot without the decision-side seam reproduces the exact r17 deny bytes (absence law on the REAL shape)', async () => {
+    decisionSeamTransport = false
+    try {
+      const world = await mountWorld('rr-5', { policyFor: REAL_R17_POLICY })
+      const obsBase = verifierObservations.length
+      const exec = execFor('rr-5', 'good.png')
+      const rowCallId = rowCallOf(world)
+      const opening = portOf(world).open(exec)
+      const row = await waitRowForCall(rowCallId)
+      const rp = (row as unknown as { reviewPayload?: Record<string, unknown> }).reviewPayload ?? {}
+      expect(String(rp.requiredAuthority), 'raw field again: leader').toBe('leader')
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: humanCaller('session-a5m2c2-replay'), requestId: row.requestId, decision: 'allow' })
+      const handoff = await opening
+      const driftRows = verifierObservations.slice(obsBase).filter((o) => String(o.outcome ?? '') === 'drift')
+      expect(handoff.kind).toBe('refused')
+      expect(String(handoff.code)).toBe('APPROVAL_DENIED')
+      const detail = String(driftRows[0]?.detail ?? '')
+      expect(detail).toContain('no longer approvable on the expansion plane')
+      expect(detail).toContain('undetermined on the expansion plane')
+    } finally {
+      decisionSeamTransport = true
+    }
   }, 60_000)
 })
