@@ -119,6 +119,9 @@ const WIRE = (await import(new URL('../src/plugin/live/governed-families/g6-sess
   A5_G6_QUERY_WIRING_REVISION: number
   A5_G6_QUERY_WIRING_CODES: Record<string, string>
   buildG6SessionQueryWiring: (input?: Record<string, unknown>) => Assembly
+  buildG6QuerySupplyFromService: (service?: unknown) =>
+    | { ok: true, providerId: string, queryPorts: Record<string, unknown>, declaredMount: Record<string, unknown> }
+    | { ok: false, code: string, detail: string }
 }
 const ADAPTER = (await import(new URL('../src/plugin/live/governed-families/g6-session-query.mjs', import.meta.url).href)) as {
   A5_G6_FAMILY: string
@@ -285,7 +288,8 @@ function makeWorld (opts: WorldOpts) {
 
   const readNative = (name: string) => (hidden.has(name) ? undefined : natives.get(name))
   let callerNow = CALLER_ID
-  const readCaller = () => ({ id: callerNow, ...(cwd === undefined ? {} : { cwd }) })
+  let boundaryNow: Record<string, unknown> | undefined
+  const readCaller = () => ({ id: callerNow, ...(cwd === undefined ? {} : { cwd }), ...(boundaryNow === undefined ? {} : { boundary: boundaryNow }) })
   const teamCeiling = (target: string) => ceiling.has(target)
   const declaredMount = { searchBackend: opts.searchBackend ?? { present: true as const } }
 
@@ -329,6 +333,7 @@ function makeWorld (opts: WorldOpts) {
     /** The caller face is swappable so the drift legs can move the caller
      *  A→B inside the PA-await window (root 18:2x TOCTOU legs). */
     setCaller: (id: string) => { callerNow = id },
+    setCallerBoundary: (boundary: Record<string, unknown> | undefined) => { boundaryNow = boundary },
     portCalls: () => calls.length,
     build (over: Record<string, unknown> = {}) {
       // the adapter's own contradiction law: evidence of NO backend with a
@@ -809,6 +814,155 @@ describe('A5M2-G6-WIRING — thin bridge over the REAL adapter factory + registr
       expect(w.paCalls.length).toBe(0)
       expect(w.calls.length).toBe(0)
       expect(w.closePlanCalls()).toBe(0)
+    })
+  })
+
+  describe('(h) approved callerSnapshot FULL-VALUE binding (root 992: the fingerprint does not cover the caller id or the step boundary)', () => {
+    it('h1: explicit-target same-cwd caller A→B during the PA wait — the fingerprint does NOT move, yet the full callerSnapshot refuses (this is the leak the fingerprint re-compare alone missed)', async () => {
+      const w = makeWorld({ tag: 'h1' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const obs: Array<Record<string, unknown>> = []
+      const driftingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          const answered = await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+          // SAME workspace cwd (the world's cwd face is caller-independent),
+          // EXPLICIT target in the args: the targetManifest — and with it
+          // the parametersFingerprint — is byte-identical under caller B.
+          w.setCaller('caller-B-same-cwd')
+          return answered
+        },
+      })
+      const asm = w.build({ pa: driftingPa, observe: (e: Record<string, unknown>) => { obs.push(e) } })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_event_trace')!
+      const refusal = await asRefusal(def.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-caller-swap' }))
+      expect(refusal.code).toBe(CODES.PLAN_DRIFT)
+      // the DRIFT detail pins WHY: not the fingerprint (it did not move) —
+      // the approved callerSnapshot's own value.
+      expect(obs.some((e) => e.event === 'g6-wire:plan-DRIFT' && e.code === 'caller-snapshot-moved'), 'the drift line names the caller snapshot').toBe(true)
+      expect(obs.some((e) => e.code === 'fingerprint-moved'), 'the fingerprint itself did not move').toBe(false)
+      expect(w.calls.length, 'zero port entry').toBe(0)
+      expect(w.nativeBodies.length).toBe(0)
+      expect(w.closePlanCalls()).toBe(1)
+    })
+
+    it('h2: step-boundary tick during the PA wait (id and cwd unchanged) — the readable window never widens through the old grant', async () => {
+      const w = makeWorld({ tag: 'h2' })
+      const methods = w.baseInput.pa as Record<string, unknown>
+      const obs: Array<Record<string, unknown>> = []
+      w.setCallerBoundary({ visibleThrough: 10 })
+      const tickingPa = Object.freeze({
+        ...methods,
+        open: async (walk: Record<string, unknown>) => {
+          const answered = await (methods.open as (x: Record<string, unknown>) => Promise<unknown>)(walk)
+          // the boundary tick 10→20 widens what the body WOULD read; the
+          // fingerprint does not contain the boundary and does not move.
+          w.setCallerBoundary({ visibleThrough: 20 })
+          return answered
+        },
+      })
+      const asm = w.build({ pa: tickingPa, observe: (e: Record<string, unknown>) => { obs.push(e) } })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_event_read')!
+      const refusal = await asRefusal(def.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-boundary-tick' }))
+      expect(refusal.code).toBe(CODES.PLAN_DRIFT)
+      expect(obs.some((e) => e.event === 'g6-wire:plan-DRIFT' && e.code === 'caller-snapshot-moved')).toBe(true)
+      expect(w.calls.length, 'the widened window never reached the ports').toBe(0)
+      expect(w.closePlanCalls()).toBe(1)
+      // the same call under a STEADY caller serves normally (the leg proves
+      // the refusal is the tick, not the tool) — on a CLEAN seat (the
+      // ticking pa would of course tick again):
+      w.setCallerBoundary({ visibleThrough: 10 })
+      const steadyAsm = w.build()
+      expect(steadyAsm.ok).toBe(true)
+      const plain = steadyAsm.definitions.find((d) => d.name === 'session_event_read')!
+      const served = String(await plain.execute({ session_id: 's-a', seq: 5 }, { callId: 'exec-steady' }))
+      expect(served).toContain('s-a')
+    })
+  })
+
+  describe('(i) REAL SUPPLY (root 992 ②): the facets map OFF the live sessionQuery service — absent/incomplete are honest census, never fake supply', () => {
+    const engineFace = (over: Record<string, unknown> = {}) => Object.assign({
+      name: 'sessionQuery',
+      searchSessions: async () => 'E:searchSessions',
+      searchEvents: async () => 'E:searchEvents',
+      traceSession: async () => 'E:traceSession',
+      traceEvent: async () => 'E:traceEvent',
+      readEvent: async () => 'E:readEvent',
+      filterSessions: async () => 'E:filterSessions',
+      readTitleSnapshots: async () => 'E:readTitleSnapshots',
+    }, over)
+
+    it('i1: no service registered — SUPPLY_ABSENT typed census (never a fake stand-in)', () => {
+      const supply = WIRE.buildG6QuerySupplyFromService(undefined)
+      expect(supply.ok).toBe(false)
+      if (supply.ok === true) return
+      expect(supply.code).toBe(CODES.SUPPLY_ABSENT)
+    })
+
+    it('i2: core facet missing — SUPPLY_INCOMPLETE naming the facet, no partial supply', () => {
+      const engine = engineFace({ readEvent: undefined })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine)
+      expect(supply.ok).toBe(false)
+      if (supply.ok === true) return
+      expect(supply.code).toBe(CODES.SUPPLY_INCOMPLETE)
+      expect(supply.detail).toContain('readEvent')
+    })
+
+    it('i3: live service — provider identity off the registration, facets bound to the SAME live methods, search evidence present', async () => {
+      const seen: Array<{ name: string, call: unknown[] }> = []
+      const engine = engineFace({
+        traceSession: async (...call: unknown[]) => { seen.push({ name: 'traceSession', call }); return 'E:live-trace' },
+      })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      expect(supply.providerId).toBe('sessionQuery')
+      const tracePort = supply.queryPorts.traceQueryPort as { traceSession: (a: unknown, b: unknown) => Promise<unknown> }
+      expect(await tracePort.traceSession('s-a', 'signal-x')).toBe('E:live-trace')
+      expect(seen[0]!.call).toEqual(['s-a', 'signal-x'])
+      expect(supply.declaredMount.searchBackend).toEqual({ present: true })
+    })
+
+    it('i4: service WITHOUT search facets — ok supply, no searchQueryPort, honest present:false evidence (the two search names keep their natives)', () => {
+      const engine = engineFace({ searchSessions: undefined, searchEvents: undefined })
+      const supply = WIRE.buildG6QuerySupplyFromService(engine)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      expect(Object.keys(supply.queryPorts)).not.toContain('searchQueryPort')
+      expect((supply.declaredMount.searchBackend as { present?: unknown }).present).toBe(false)
+      expect(String((supply.declaredMount.searchBackend as { evidence?: string }).evidence ?? '')).toContain('observed at mount')
+    })
+
+    it('i5: service→supply→wiring→serve end to end with NOTHING injected from config', async () => {
+      const w = makeWorld({ tag: 'i5' })
+      const ports = w.qp as unknown as {
+        searchQueryPort: { searchSessions: (a: unknown, b: unknown) => Promise<unknown>, searchEvents: (a: unknown, b: unknown) => Promise<unknown> }
+        traceQueryPort: { traceSession: (a: unknown, b: unknown) => Promise<unknown>, traceEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        eventReadQueryPort: { readEvent: (a: unknown, b: unknown) => Promise<unknown> }
+        authorizationQueryPort: { filterSessions: (a: unknown, b: unknown) => Promise<unknown> }
+        titlesQueryPort: { readTitleSnapshots: (a: unknown, b: unknown) => Promise<unknown> }
+      }
+      const engine = {
+        name: 'sessionQuery',
+        searchSessions: ports.searchQueryPort.searchSessions,
+        searchEvents: ports.searchQueryPort.searchEvents,
+        traceSession: ports.traceQueryPort.traceSession,
+        traceEvent: ports.traceQueryPort.traceEvent,
+        readEvent: ports.eventReadQueryPort.readEvent,
+        filterSessions: ports.authorizationQueryPort.filterSessions,
+        readTitleSnapshots: ports.titlesQueryPort.readTitleSnapshots,
+      }
+      const supply = WIRE.buildG6QuerySupplyFromService(engine)
+      expect(supply.ok).toBe(true)
+      if (supply.ok !== true) return
+      const asm = w.build({ providerId: supply.providerId, queryPorts: supply.queryPorts, declaredMount: supply.declaredMount })
+      expect(asm.ok).toBe(true)
+      const def = asm.definitions.find((d) => d.name === 'session_trace')!
+      const served = String(await def.execute(TRACE_ARGS, { callId: 'exec-real-supply' }))
+      expect(served).toContain('s-a')
+      expect(w.nativeBodies.length).toBe(0)
     })
   })
 })
