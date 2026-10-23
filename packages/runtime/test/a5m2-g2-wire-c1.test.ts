@@ -1,3 +1,4 @@
+import { PA_FAMILY_TARGET_RULES, assertPaFamilyTargetRuleLegality, validatePaFamilyTargetAgainstRule } from '../control/types.js'
 import { g2ApprovedTargetMismatches } from '../src/plugin/host.js'
 /**
  * A5M2-G2-WIRE C1 (G2 lane, root ruling 15:28; wiring + assembly legs ONLY):
@@ -1079,13 +1080,16 @@ describe('A5M2-G2-WIRE mount legs round-17: the signed Team ports behind the pla
     expect(factsSeen[0]?.approvedCallId).toBe('plane-g2:w-browser-supply-7') // the ONE correlation fact rides the lease facts
     expect((factsSeen[0]?.consumedProof as { grant?: { grantId?: string } })?.grant?.grantId).toBe('gr-7') // the kernel witness struct rides unchanged
     expect(world.nativeCalls.stagehand_navigate?.length ?? 0).toBe(0)
-    // the PLANE leg: B-BROWSER has no PA_FAMILY_TARGET_RULES entry (the
-    // browser rule map is ANOTHER lane) — the walk fail-closes there, zero
-    // worker entry beyond the invoke-level proof above.
+    // the PLANE leg (updated @ root 21:57 table round): the B-BROWSER rule
+    // EXISTS now (this lane's table entry) — the walk fail-closes on the
+    // rowset's OLD hand-written nested claim (no flat browserVariant mint
+    // until the adapters' browser mint joins the table, the same pairing
+    // law B-MCP followed). Closed refusal, zero worker entry beyond the
+    // invoke-level proof above — still no fake green.
     const def = world.plane.definitions.find((d) => d.name === 'stagehand_observe')
-    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1'))).rejects.toThrow(/refused-g2 APPROVAL_DENIED/)
+    await expect(def?.execute({ instruction: 'what is on this page' }, execFor('browser-1'))).rejects.toThrow(/refused-g2/)
     const detail = String((world.legResults[world.legResults.length - 1] as { detail?: string })?.detail ?? '')
-    expect(detail).toContain(`no target structure is registered for '${G2A.A5_G2_FAMILY.browser}'`)
+    expect(detail).toContain('family-target-invalid')
     const mount = world.mount as { dispose: () => Promise<{ ok: boolean }> }
     expect((await mount.dispose()).ok).toBe(true)
   })
@@ -1151,5 +1155,48 @@ describe('A5M2-G2-WIRE round-26: createG2ConsumedProofApproval — the real fina
     expect(await boundary({ consumedProof: { grant: null } })).toBe('refused')
     expect(await boundary({ consumedProof: { grant: { grantId: '' } } })).toBe('refused')
     expect(await boundary({ approvedCallId: 'plane-g2:r-1' })).toBe('refused')
+  })
+})
+
+/* ROOT 21:57 table round — the B-BROWSER CLOSED TABLE, authored as this
+ * family's entry on the EXISTING signed grammar; the entry's fields are
+ * enumerated from the already-written refusal law (mode pair, attach
+ * endpoint origin, modelOrigin REQUIRED for act/observe/extract because
+ * page content rides the model, NOT for navigate). Shared validator and
+ * the closed kinds are UNTOUCHED; B-TEAM/B-SUBAGENT entries untouched. */
+describe('A5M2-G2-WIRE round-27: the B-BROWSER closed table entry', () => {
+  const rule = () => {
+    const entry = PA_FAMILY_TARGET_RULES['B-BROWSER']
+    if (entry === undefined) throw new Error('B-BROWSER table entry missing — the closed table MUST carry this family (root 21:57)')
+    return entry
+  }
+  const base = {
+    browserVariant: 'launch:observe',
+    connectionIncarnation: 'gen-1',
+    providerReSelectionLaw: 'the mount generation owns the provider; captured-native re-selection is gone',
+    connectionIncarnationReason: null,
+    domainAuthorityId: null,
+    businessObligations: [{}],
+    operation: 'observe',
+    record: 'surface:browser_owned',
+    mode: 'launch',
+    modelOrigin: 'https://model.example.invalid',
+  }
+  it('passes module-load legality for the entry and validates the exact required+group key sets (launch:observe and attach:act)', () => {
+    expect(() => assertPaFamilyTargetRuleLegality('B-BROWSER', rule())).not.toThrow()
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), base)).toBeUndefined()
+    const attachAct = { ...base, browserVariant: 'attach:act', mode: 'attach', operation: 'act', cdpEndpointOrigin: 'http://127.0.0.1:9222' }
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), attachAct)).toBeUndefined()
+  })
+  it('the N leg stays visible: modelOrigin missing on observe refuses; navigate needs NO modelOrigin; attach without cdpEndpointOrigin refuses; a launch claim with attach mode refuses (bound literal)', () => {
+    const noModel = { ...base } as Record<string, unknown>
+    delete noModel.modelOrigin
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), noModel))).toContain('modelOrigin')
+    const nav = { ...base, browserVariant: 'launch:navigate', operation: 'navigate' } as Record<string, unknown>
+    delete nav.modelOrigin
+    expect(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), nav)).toBeUndefined()
+    const attachNoCdp = { ...base, mode: 'attach', browserVariant: 'attach:act', operation: 'act' }
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), attachNoCdp))).toContain('cdpEndpointOrigin')
+    expect(String(validatePaFamilyTargetAgainstRule('B-BROWSER', rule(), { ...base, mode: 'attach' }))).toContain('mode')
   })
 })

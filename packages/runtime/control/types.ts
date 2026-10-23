@@ -1553,6 +1553,70 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['mcpVariant', 'operation', 'record', 'transport']),
   }),
+  /* A5-M2 B-BROWSER (root 21:57 table round; entry authored by THIS lane's
+   * family, shared validator/kinds UNTOUCHED — closed kinds only). EVERY
+   * required field below is ENUMERATED FROM THE ALREADY-WRITTEN refusal
+   * law, not invented here: the mode closed pair (g2-connector-adapters
+   * browser mint :838, stagehand Config.mode @639ed01539); the attach
+   * endpoint being a REAL network target with its origin REQUIRED
+   * (:840-841, index.ts:99-103 cdpEndpoint); modelOrigin REQUIRED for
+   * act/observe/extract because PAGE CONTENT RIDES THE MODEL — the N leg
+   * is never hidden and never gets a fake destination (mount refusal
+   * P_G2_NO_DECLARED_DESTINATION wording), and NOT required for navigate
+   * (no content leg) exactly as the law spells it; the connection
+   * incarnation + reason + domainAuthorityId trio mirrors the signed
+   * B-MCP base law; obligations carry the outbound-model + worker-
+   * ownership duties. The discriminant is mint-synthesized
+   * 'browserVariant' = `launch|attach` + ':' + `navigate|act|observe|
+   * extract` (never a model argument). */
+  'B-BROWSER': Object.freeze({
+    required: Object.freeze({
+      browserVariant: 'string',
+      connectionIncarnation: 'string',
+      providerReSelectionLaw: 'string',
+      connectionIncarnationReason: 'nullableString',
+      domainAuthorityId: 'nullableString',
+      businessObligations: 'obligations',
+    }),
+    variant: Object.freeze({
+      leaf: 'browserVariant',
+      by: Object.freeze({
+        'launch:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string' }),
+          binds: Object.freeze({ operation: 'navigate', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'act', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'observe', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'launch:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'extract', record: 'surface:browser_owned', mode: 'launch' }),
+        }),
+        'attach:navigate': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'navigate', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:act': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'act', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:observe': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'observe', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+        'attach:extract': Object.freeze({
+          adds: Object.freeze({ operation: 'string', record: 'string', mode: 'string', cdpEndpointOrigin: 'string', modelOrigin: 'string' }),
+          binds: Object.freeze({ operation: 'extract', record: 'surface:browser_owned', mode: 'attach' }),
+        }),
+      }),
+    }),
+    currentFields: Object.freeze(['browserVariant', 'operation', 'record', 'mode']),
+  }),
 } as const)
 
 /* The SIGNED closed kind list - the single source the module-load legality
