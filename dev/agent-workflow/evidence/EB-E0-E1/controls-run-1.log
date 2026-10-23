@@ -57,4 +57,10 @@ PASS  NEG-22 probe survives a contract-index change without crashing
       probe: clean, observed rules=
 PASS  NEG-23 probe enforces ratification on a changed contract index
       probe: refused with ID_RATIFIED_WITHOUT_DECISION
-controls=29 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
+PASS  POS-7 changed source resolves to its declared owner document
+      probe: clean, observed DOC_IMPACT_OWNED
+PASS  NEG-24 owner map naming a document that does not exist
+      probe: refused with DOC_OWNER_DOC_MISSING
+PASS  NEG-25 source with no owner rule is reported as unowned coverage
+      probe: clean, observed DOC_IMPACT_UNOWNED
+controls=32 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)

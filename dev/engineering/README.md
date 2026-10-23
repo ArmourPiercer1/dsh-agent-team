@@ -38,3 +38,5 @@ consequence of these files existing.
 
 Regenerate: `pnpm docs:sync --write` (or the generator directly).
 Verify freshness in CI: `pnpm docs:sync --check`.
+
+`doc-ownership.yaml` maps changed source paths to the current-state documents that should be read with them. Matching a rule turns `docs:probe`'s advisory into a named document list; matching nothing is reported as unowned coverage instead of being guessed at. No rule here is blocking today — blocking belongs to the CI-wiring decision (EB3-B), and an owner document that does not exist is a hard finding (`DOC_OWNER_DOC_MISSING`).

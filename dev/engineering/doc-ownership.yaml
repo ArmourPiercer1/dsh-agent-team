@@ -1,0 +1,45 @@
+# Source-to-owning-document map (EB1-E support, v0)
+#
+# Why this file exists: `docs:probe` reports which documents a source change
+# should be read against. Without a map the answer is "some docs somewhere", which
+# is not actionable, and the honest alternative — failing every product PR that
+# forgot a sentence — would train people to ignore the check. So the map declares
+# owners where an owner is actually known, and says "unowned" everywhere else.
+#
+# Semantics (scripts/docs-probe.mjs):
+#   * a changed source path is matched by the FIRST glob that matches, in order;
+#   * matching an entry turns the advisory into a named document list;
+#   * matching nothing yields `DOC_IMPACT_UNOWNED` — a coverage measurement, not a
+#     failure;
+#   * nothing here is blocking in v0. Blocking belongs to CI wiring (EB3-B), which
+#     is a coordination decision and has not been taken.
+#
+# Entries must name documents that exist. That is checked (`CONTRACT_ANCHOR_MISSING`
+# style refusal happens in docs:sync via the anchor rule for contract files; here a
+# missing owner doc is reported as `DOC_OWNER_DOC_MISSING`).
+
+schema_version: 1
+owners:
+  - glob: scripts/docs-*.mjs
+    docs:
+      - tests/doc-consistency/README.md
+      - docs/contracts/engineering-baseline/README.md
+  - glob: scripts/doc-checks.mjs
+    docs:
+      - tests/doc-consistency/README.md
+      - docs/terminology.md
+  - glob: scripts/gen-current-state.mjs
+    docs:
+      - dev/engineering/README.md
+  - glob: scripts/verify-agent-notes.mjs
+    docs:
+      - .agents/notes/README.md
+  - glob: scripts/doc-consistency-controls.mjs
+    docs:
+      - tests/doc-consistency/README.md
+  - glob: docs/contracts/engineering-baseline/**
+    docs:
+      - docs/contracts/engineering-baseline/README.md
+  - glob: dev/engineering/**
+    docs:
+      - dev/engineering/README.md

@@ -29,13 +29,14 @@ import {
   checkIdUniqueness,
   checkContractAnchors,
   checkPlanCitationBlocks,
+  selectOwningDocs,
   checkRatification,
 } from './doc-checks.mjs';
 import { run as runNotes } from './verify-agent-notes.mjs';
 import { build as buildStateView, renderView } from './gen-current-state.mjs';
 
 const BLOCKING = [
-  'NOTE', 'ID_', 'PLAN_CITATION', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
+  'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
   'ID_DUPLICATE', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'REGISTRY', 'FAKE_VERIFICATION', 'ARTIFACT_MISSING',
 ];
 const LIMITS = [
@@ -160,10 +161,26 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
   // R9 source change -> which owning document should be looked at (advisory in v0)
   if (buckets.source.length) {
     selectedRules.push('doc-ownership-impact');
+    const ownership = selectOwningDocs(root, buckets.source, docTargets);
+    findings.push(...ownership.findings);
+    const staleOwners = ownership.owned.filter((o) => !o.touched);
+    if (ownership.owned.length) {
+      advisories.push({
+        code: 'DOC_IMPACT_OWNED',
+        detail: `${ownership.owned.length} source path(s) have declared owner documents`,
+        review_needed: staleOwners.map((o) => ({ source: o.source, docs: o.docs })),
+      });
+    }
+    if (ownership.unowned.length) {
+      advisories.push({
+        code: 'DOC_IMPACT_UNOWNED',
+        detail: `${ownership.unowned.length} source path(s) match no owner rule; coverage of dev/engineering/doc-ownership.yaml is ${ownership.owned.length}/${buckets.source.length}`,
+        candidates: ownership.unowned.slice(0, 12),
+      });
+    }
     advisories.push({
       code: 'SOURCE_CHANGED_DOC_IMPACT',
-      detail: `${buckets.source.length} source path(s) changed; owning-document selection is advisory in v0 and becomes blocking with CI wiring (EB-ADR-0001)`,
-      candidates: buckets.source.slice(0, 12),
+      detail: 'owning-document selection is advisory in v0 and becomes blocking only with CI wiring (EB-ADR-0001)',
     });
   }
 

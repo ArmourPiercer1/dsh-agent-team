@@ -366,3 +366,33 @@ export function checkRatification(root) {
   }
   return findings;
 }
+
+
+/** EB1-E support: source-to-owning-document map (dev/engineering/doc-ownership.yaml).
+ *  A missing owner document is a finding; matching nothing is not — it is reported as
+ *  unowned coverage, which is a measurement rather than a failure. */
+export function selectOwningDocs(root, sourcePaths, changedDocs) {
+  const file = join(root, 'dev/engineering/doc-ownership.yaml');
+  if (!existsSync(file)) return { findings: [], owned: [], unowned: sourcePaths };
+  const entries = [];
+  let cur = null;
+  readFileSync(file, 'utf8').split(/\r?\n/).forEach((line) => {
+    const g = line.match(/^\s*-?\s*glob:\s*(\S+)/);
+    if (g) { cur = { glob: g[1], docs: [] }; entries.push(cur); return; }
+    const doc = line.match(/^\s+-\s+(\S+)/);
+    if (doc && cur) cur.docs.push(doc[1]);
+  });
+  const toRe = (glob) => new RegExp('^' + glob.split('**').join('\u0000').split('*').join('[^/]*').split('\u0000').join('.*').replace(/\./g, '\\.') + '$');
+  const findings = [];
+  const owned = [];
+  const unowned = [];
+  for (const p of sourcePaths) {
+    const hit = entries.find((e) => toRe(e.glob).test(p));
+    if (!hit) { unowned.push(p); continue; }
+    for (const doc of hit.docs) {
+      if (!existsSync(join(root, doc))) findings.push({ code: 'DOC_OWNER_DOC_MISSING', detail: `doc-ownership.yaml: ${hit.glob} -> ${doc} (owner document does not exist)` });
+    }
+    owned.push({ source: p, docs: hit.docs, touched: hit.docs.some((x) => changedDocs.includes(x)) });
+  }
+  return { findings, owned, unowned };
+}

@@ -116,6 +116,12 @@ We did it.
 ## Consequences
 It holds.
 `,
+  'dev/engineering/doc-ownership.yaml': `schema_version: 1
+owners:
+  - glob: scripts/doc-checks.mjs
+    docs:
+      - docs/glossary.md
+`,
   'dev/agent-workflow/evidence/CTL/artifact.txt': 'fixture evidence artifact\n',
   'README.md': '# fixture\n\nSee the [glossary](docs/glossary.md).\n',
 };
@@ -344,6 +350,23 @@ control('NEG-22 probe survives a contract-index change without crashing', (d) =>
 control('NEG-23 probe enforces ratification on a changed contract index', (d) => {
   writeFile(d, 'docs/contracts/engineering-baseline/ids.yaml', read(d, 'docs/contracts/engineering-baseline/ids.yaml').replace('normative_status: proposed-not-ratified', 'normative_status: ratified'));
   return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'ID_RATIFIED_WITHOUT_DECISION')];
+});
+
+
+control('POS-7 changed source resolves to its declared owner document', (d) => {
+  writeFile(d, 'scripts/doc-checks.mjs', 'export const touched = 1;\n');
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'DOC_IMPACT_OWNED')];
+});
+
+control('NEG-24 owner map naming a document that does not exist', (d) => {
+  writeFile(d, 'scripts/doc-checks.mjs', 'export const touched = 1;\n');
+  writeFile(d, 'dev/engineering/doc-ownership.yaml', 'schema_version: 1\nowners:\n  - glob: scripts/doc-checks.mjs\n    docs:\n      - docs/deleted-owner.md\n');
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'DOC_OWNER_DOC_MISSING')];
+});
+
+control('NEG-25 source with no owner rule is reported as unowned coverage', (d) => {
+  writeFile(d, 'scripts/orphan-tool.mjs', 'export const orphan = 1;\n');
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'DOC_IMPACT_UNOWNED')];
 });
 
 // ------------------------------ run ------------------------------
