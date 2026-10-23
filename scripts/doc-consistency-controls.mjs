@@ -18,14 +18,23 @@
 // ReferenceError exit 1 nearly got logged as a successful negative control).
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
+import { GENERATED_FILES } from './generated-write.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
-const SCRATCH = join(ROOT, '.worktrees', 'eb1-controls-scratch');
+// P1 safety fix: the fixture root used to be a FIXED path, and every scenario began
+// by rmSync-ing it recursively. A second concurrent run, or a previous `--keep` run
+// someone wanted to inspect, was therefore destroyed by whoever got there first, and
+// `force: true` silenced the fact. Fixtures now live in a root created by mkdtemp for
+// THIS invocation, and this process deletes nothing that it did not create.
+const SCRATCH_PARENT = join(ROOT, '.worktrees');
+mkdirSync(SCRATCH_PARENT, { recursive: true });
+const RUN_ROOT = mkdtempSync(join(SCRATCH_PARENT, `eb1-controls-${process.pid}-`));
+const OWNED = new Set([RUN_ROOT]);
 const argv = process.argv.slice(2);
 const KEEP = argv.includes('--keep');
 const ONLY = (() => { const i = argv.indexOf('--only'); return i > -1 ? argv[i + 1].toLowerCase() : null; })();
@@ -148,8 +157,10 @@ function run(script, a) {
 }
 
 function makeFixture(slug) {
-  const dir = join(SCRATCH, slug);
-  rmSync(dir, { recursive: true, force: true });
+  // Created exclusively: an existing directory is a collision to be reported, never
+  // content to be deleted.
+  const dir = mkdtempSync(join(RUN_ROOT, `${slug}-`));
+  OWNED.add(dir);
   for (const [rel, content] of Object.entries(BASE_FILES)) writeFile(dir, rel, content);
   gitIn(dir, ['init', '-q', '-b', 'main']);
   gitIn(dir, ['add', '-A']);
@@ -186,7 +197,8 @@ function control(name, fn) {
   } catch (e) {
     results.push({ name, ok: false, why: `control crashed: ${(e && e.message) || e}`.slice(0, 400) });
   } finally {
-    if (dir && !KEEP) rmSync(dir, { recursive: true, force: true });
+    // Only ever the directory this run created, and never when --keep asked for it.
+    if (dir && !KEEP && OWNED.has(dir)) rmSync(dir, { recursive: true, force: true });
   }
 }
 
@@ -369,13 +381,118 @@ control('NEG-25 source with no owner rule is reported as unowned coverage', (d) 
   return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 0, 'DOC_IMPACT_UNOWNED')];
 });
 
+
+// ---- P1/P2 negative controls. Every one of these runs ONLY inside a fixture that
+// this invocation created with mkdtemp. Nothing here touches the real repository:
+// the "normative" files they attack are fake copies inside the fixture.
+
+control('POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted', (d) => {
+  writeFile(d, 'dev/agent-workflow/evidence/CTL/run.log', 'run 1 ok\n');
+  writeFile(d, 'dev/agent-workflow/evidence/CTL/notes.txt', 'observed\n');
+  writeFile(d, 'dev/agent-workflow/evidence/CTL/report.md', '# observed\n');
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('verification_status: not_verified', 'verification_status: verified_local').replace('verification_artifacts: []', 'verification_artifacts: [dev/agent-workflow/evidence/CTL/run.log, dev/agent-workflow/evidence/CTL/notes.txt, dev/agent-workflow/evidence/CTL/report.md]'));
+  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 0, 'regenerated'),
+          expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 0, 'findings=0')];
+});
+
+control('NEG-26 generated path replaced by a symlink to a normative file', (d) => {
+  const before = 'AGENTS.md';
+  writeFile(d, before, '# FAKE normative file inside the fixture only\n');
+  rmSync(join(d, 'dev/engineering/current-state.json'));
+  symlinkSync('../../../AGENTS.md', join(d, 'dev/engineering/current-state.json'));
+  const res = run(SYNC, ['--write', '--root', d]);
+  return [expectRun('sync --write', res, 2, 'SYMLINK_TARGET'),
+          { ok: read(d, before).includes('FAKE normative file'), why: 'target file content survived the refused write' }];
+});
+
+control('NEG-27 generated area reached through a symlinked parent directory', (d) => {
+  mkdirSync(join(d, 'outside'), { recursive: true });
+  writeFile(d, 'outside/AGENTS.md', '# FAKE normative file inside the fixture only\n');
+  rmSync(join(d, 'dev/engineering/current-state.json'));
+  symlinkSync('../../outside', join(d, 'dev/engineering'));
+  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 2, 'SYMLINK_ANCESTOR')];
+});
+
+control('NEG-28 probe is not green when the derived view is missing', (d) => {
+  rmSync(join(d, 'dev/engineering/current-state.json'));
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'STALE_GENERATED_VIEW')];
+});
+
+control('NEG-29 probe is not green when the registry is missing', (d) => {
+  rmSync(join(d, 'dev/engineering/registry.yaml'));
+  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'STATE_BRIDGE_UNAVAILABLE')];
+});
+
+control('NEG-30 duplicate key in one registry entry is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('    title: control fixture', '    title: control fixture\n    title: control fixture (duplicate key)'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'registry-duplicate-key')];
+});
+
+control('NEG-31 refs written as a bare scalar is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('    refs: [EB-ADR-0001]', '    refs: REQ-EB-0001'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'REGISTRY_REF_SCALAR')];
+});
+
+control('NEG-32 owners written as a scalar is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('    owners: [EB-CTL]', '    owners: EB-CTL'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'REGISTRY_OWNER_TYPE')];
+});
+
+control('NEG-33 an id-shaped ref that resolves nowhere is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('    refs: [EB-ADR-0001]', '    refs: [INV-EB-9999]'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'REGISTRY_REF_UNRESOLVED')];
+});
+
+control('NEG-34 a verification artifact outside the controlled evidence tree', (d) => {
+  writeFile(d, 'tmp-evidence.txt', 'claims to be evidence\n');
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('verification_status: not_verified', 'verification_status: verified_local').replace('verification_artifacts: []', 'verification_artifacts: [tmp-evidence.txt]'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'ARTIFACT_LOCATION_UNCONTROLLED')];
+});
+
+// ---- delivery-claim binding: a claim must cite metadata that exists elsewhere ----
+control('NEG-35 verified_ci with no commit cited is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('verification_status: not_verified', 'verification_status: verified_ci'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'CLAIM_UNBOUND')];
+});
+
+control('NEG-36 C1 evidence asserted as verified_host is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml')
+    .replace('verification_status: not_verified', 'verification_status: verified_host')
+    .replace('    refs: [EB-ADR-0001]', '    refs: [EB-ADR-0001]\n    verified_tier: C1'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'CLAIM_TIER_MISMATCH')];
+});
+
+control('NEG-37 implementation_status merged with no corroborating commit', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('implementation_status: implemented_in_branch', 'implementation_status: merged'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'MERGED_CLAIM_UNCORROBORATED')];
+});
+
+control('NEG-38 release_status released without host verification at C3', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('release_status: not_released', 'release_status: released'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'RELEASE_CLAIM_UNCORROBORATED')];
+});
+
+control('NEG-39 a wrong (non-existent) verification commit is refused', (d) => {
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml')
+    .replace('verification_status: not_verified', 'verification_status: verified_ci')
+    .replace('    refs: [EB-ADR-0001]', '    refs: [EB-ADR-0001]\n    verification_commit: deadbeefdeadbeefdeadbeefdeadbeefdeadbeef'));
+  return [expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 1, 'is not a commit in this repository')];
+});
 // ------------------------------ run ------------------------------
-try {
-  mkdirSync(SCRATCH, { recursive: true });
-} catch (e) {
-  console.log(`SETUP FAILURE cannot create scratch dir: ${e.message}`);
-  process.exit(2);
-}
+// RUN_ROOT already exists: mkdtempSync created it at import time and owns it.
+
+const boundary = [
+  { path: 'dev/engineering/current-state.json', ok: true },
+  { path: 'dev/engineering/registry.yaml', ok: false },
+  { path: 'docs/STATUS.md', ok: false },
+  { path: 'AGENTS.md', ok: false },
+].map(({ path, ok }) => (GENERATED_FILES.includes(path) === ok)
+  ? { ok: true, why: `${path} ${ok ? 'inside the generated area' : 'outside the generated area'}` }
+  : { ok: false, why: `${path} boundary mismatch` });
+const boundaryBad = boundary.filter((b) => !b.ok);
+results.unshift({ name: 'POS-0b write boundary allow-list', ok: boundaryBad.length === 0, why: boundaryBad.length ? boundaryBad.map((b) => b.why).join(' | ') : 'generated-write.mjs names exactly the generated view' });
+
+console.log(`doc-consistency controls   run_root=${relative(ROOT, RUN_ROOT)} (owned by pid ${process.pid})${KEEP ? '   --keep: left in place, nothing deleted' : ''}`);
 
 const allowList = [
   { path: 'docs/contracts/engineering-baseline/ids.yaml', writable: false },
@@ -391,12 +508,13 @@ const allowList = [
 const bad = allowList.filter((a) => !a.ok);
 results.unshift({ name: 'POS-0 write authority allow-list', ok: bad.length === 0, why: bad.length ? bad.map((b) => b.why).join(' | ') : 'only the generated view is writable' });
 
-console.log(`doc-consistency controls   fixture=${SCRATCH}${KEEP ? ' (kept)' : ''}`);
 let failed = 0;
 for (const r of results) {
   if (!r.ok) failed += 1;
   console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.name}\n      ${r.why}`);
 }
-if (!KEEP) rmSync(SCRATCH, { recursive: true, force: true });
+// Sweep only our own run root. An older root, a --keep root, or anything a parallel
+// run created is never touched: there is no fixed shared path any more.
+if (!KEEP && OWNED.has(RUN_ROOT)) rmSync(RUN_ROOT, { recursive: true, force: true });
 console.log(`controls=${results.length} failed=${failed}  scope: static document checks only (no C1/C2/C3, no runtime behaviour)`);
 process.exit(failed ? 1 : 0);

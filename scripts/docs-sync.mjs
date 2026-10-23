@@ -13,7 +13,8 @@
 //
 // Exit codes: 0 ok | 1 findings | 2 REFUSED
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { writeGenerated } from './generated-write.mjs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as runNotes } from './verify-agent-notes.mjs';
@@ -92,7 +93,10 @@ if (invokedDirectly) {
       console.log(`REFUSED ${built.refused}`);
       process.exit(2);
     }
-    const blocking = built.findings.filter((f) => f.code === 'FAKE_VERIFICATION' || f.code.startsWith('REGISTRY'));
+    // The derived view is a record OF the registry. Writing it while the registry
+    // fails its own integrity rules would launder the defect into a generated file
+    // that reads like a verified statement.
+    const blocking = built.findings.filter((f) => /^(REGISTRY|FAKE_VERIFICATION|ARTIFACT_|REF_|STATE_BRIDGE)/.test(f.code));
     if (blocking.length) {
       for (const f of blocking) console.log(`FAIL ${f.code}: ${f.detail}`);
       console.log('REFUSED write: findings above');
@@ -109,7 +113,11 @@ if (invokedDirectly) {
       console.log(`docs:sync --write: ${target} already fresh`);
       process.exit(0);
     }
-    writeFileSync(join(root, target), next);
+    const written = writeGenerated(root, target, next);
+    if (!written.ok) {
+      console.log(`REFUSED WRITE_BOUNDARY: ${written.why}`);
+      process.exit(2);
+    }
     const beforeLines = before.split('\n').length;
     console.log(`docs:sync --write: regenerated ${target} (${beforeLines} -> ${next.split('\n').length} lines); normative files untouched`);
     process.exit(0);

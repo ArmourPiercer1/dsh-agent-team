@@ -19,9 +19,15 @@ inferred from silence.
 
 ## Conditions NOT satisfied (open, by design or by lack of authority)
 
-1. **No merge, no push, no PR.** Commits exist only on this local branch. Promotion
-   needs the coordination owner's go-ahead; the E1 entry condition is a coordination
-   decision, not a technical one I can grant myself.
+1. **Superseded 2026-10-23, kept visible because this file is a record.** This item
+   read "no merge, no push, no PR — commits exist only on this local branch", which was
+   true when written. Under the same-day authorization the branch was pushed for
+   read-only review and **draft PR #362** was opened (base `929fc4af2`, `merged=false`).
+   Unchanged: no merge, no authority switch, and PR #361 plus both of its plans stay
+   exactly where they are.
+1a. Promotion of this line's content into any shared gate still needs the coordination
+   owner's go-ahead; the E1 entry condition is a coordination decision, not a technical
+   one I can grant myself.
 2. **E1 entry conditions for CI are unmet.** `docs:probe` / `docs:sync` are **not**
    wired into `scripts/ci-pr-gate.mjs` or any workflow. That file is shared execution
    infrastructure owned by the Alpha.5 line, and its state-freshness leg already owns

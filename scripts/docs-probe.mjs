@@ -37,7 +37,8 @@ import { build as buildStateView, renderView } from './gen-current-state.mjs';
 
 const BLOCKING = [
   'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED', 'CLAIM_WITHOUT_EVIDENCE',
-  'ID_DUPLICATE', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'REGISTRY', 'FAKE_VERIFICATION', 'ARTIFACT_MISSING',
+  'ID_DUPLICATE', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STATE_BRIDGE', 'REGISTRY', 'FAKE_VERIFICATION',
+  'ARTIFACT_', 'REF_',
 ];
 const LIMITS = [
   'T0 only: proves document facts, id/reference integrity and artifact existence; proves no runtime behaviour',
@@ -124,14 +125,16 @@ export function probe(root, { base = null, worktreeOnly = false, strict = false 
     const built = buildStateView(root);
     viewMirror = built.refused ? null : built.view.legacy_authority;
     if (built.refused) {
-      advisories.push({ code: 'DERIVED_VIEW_UNAVAILABLE', detail: built.refused });
+      // A missing or unreadable registry/view is never a green run: the probe would
+      // otherwise report "no findings" exactly when the record it checks has gone.
+      findings.push({ code: 'STATE_BRIDGE_UNAVAILABLE', detail: `derived view cannot be built (${built.refused}); a probe without registry + derived view cannot report green` });
     } else {
       findings.push(...built.findings.map((f) => ({ code: f.code, detail: f.detail })));
       const viewPath = join(root, 'dev/engineering/current-state.json');
-      if (existsSync(viewPath) && existsSync(join(root, 'dev/engineering/registry.yaml'))) {
-        if (readFileSync(viewPath, 'utf8') !== renderView(built)) {
-          findings.push({ code: 'STALE_GENERATED_VIEW', detail: 'dev/engineering/current-state.json does not match registry+git; run pnpm docs:sync --write' });
-        }
+      if (!existsSync(viewPath)) {
+        findings.push({ code: 'STALE_GENERATED_VIEW', detail: 'dev/engineering/current-state.json is missing; run pnpm docs:sync --write' });
+      } else if (readFileSync(viewPath, 'utf8') !== renderView(built)) {
+        findings.push({ code: 'STALE_GENERATED_VIEW', detail: 'dev/engineering/current-state.json does not match registry+git; run pnpm docs:sync --write' });
       }
     }
   }

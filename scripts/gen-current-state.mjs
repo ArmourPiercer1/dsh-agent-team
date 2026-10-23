@@ -12,7 +12,8 @@
 // Exit codes: 0 ok | 1 findings (stale view, schema violation, FAKE_VERIFICATION)
 //             | 2 REFUSED (unusable input: no registry, not a git repo)
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { writeGenerated } from './generated-write.mjs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -43,6 +44,7 @@ function unquote(s) {
 export function parseRegistryStrict(text) {
   const doc = { entries: [] };
   const errors = [];
+  const keysSeen = new WeakMap(); // a repeated key in one mapping is a defect, not last-write-wins
   const lines = text.split(/\r?\n/);
   let cur = null;
   let entryIndent = null; // column of the current entry's "-"
@@ -88,6 +90,10 @@ export function parseRegistryStrict(text) {
       errors.push(`registry-unsupported-syntax:L${i + 1}:${trimmed}`);
       continue;
     }
+    let seen = keysSeen.get(target);
+    if (!seen) { seen = new Set(); keysSeen.set(target, seen); }
+    if (seen.has(key)) errors.push(`registry-duplicate-key:L${i + 1}:${key}`);
+    seen.add(key);
     if (value === '') {
       target[key] = [];
       pendingList = { obj: target, key, itemIndent: indent + 2 };
@@ -99,6 +105,30 @@ export function parseRegistryStrict(text) {
     }
   }
   return { doc, errors };
+}
+
+const ID_REF_RE = /^(REQ|INV|AC|IDEA)-EB-[A-Z0-9-]+$|^EB-ADR-\d{4}$/;
+const EVIDENCE_ROOTS = ['dev/agent-workflow/evidence/'];
+const ARTIFACT_EXT = /\.(log|txt|md|json|jsonl|csv)$/i;
+
+/** Ids that actually exist: the contract index plus every agent note in any lifecycle
+ *  directory. Answering "does this cited id resolve?" is all it is used for. */
+function knownContractIds(root) {
+  const ids = new Set();
+  const index = join(root, 'docs/contracts/engineering-baseline/ids.yaml');
+  if (existsSync(index)) {
+    for (const m of readFileSync(index, 'utf8').matchAll(/^\s*-?\s*id:\s*([A-Z]+-EB-[A-Z0-9-]+)/gm)) ids.add(m[1]);
+  }
+  for (const dir of ['proposed', 'implemented', 'rejected', 'archived']) {
+    const d = join(root, '.agents/notes', dir);
+    if (!existsSync(d)) continue;
+    for (const name of readdirSync(d)) {
+      if (!name.endsWith('.md')) continue;
+      const m = readFileSync(join(d, name), 'utf8').match(/^id:\s*(\S+)\s*$/m);
+      if (m) ids.add(m[1]);
+    }
+  }
+  return ids;
 }
 
 export function validateRegistry(doc, root) {
@@ -124,6 +154,19 @@ export function validateRegistry(doc, root) {
       }
     }
     const artifacts = Array.isArray(e.verification_artifacts) ? e.verification_artifacts : [];
+    if (e.verification_artifacts !== undefined && !Array.isArray(e.verification_artifacts)) {
+      findings.push({ code: 'REGISTRY_ARTIFACTS_TYPE', detail: `${id}: verification_artifacts must be a list` });
+    }
+    if (e.owners !== undefined && !Array.isArray(e.owners)) {
+      findings.push({ code: 'REGISTRY_OWNER_TYPE', detail: `${id}: owners must be a list of accountable roles, got ${typeof e.owners}` });
+    }
+    for (const p of artifacts) {
+      if (typeof p !== 'string' || !EVIDENCE_ROOTS.some((r) => p.startsWith(r))) {
+        findings.push({ code: 'ARTIFACT_LOCATION_UNCONTROLLED', detail: `${id}: ${p} must live under ${EVIDENCE_ROOTS.join(' or ')}: a verification artifact is a kept record, not an inline assertion` });
+      } else if (!ARTIFACT_EXT.test(p)) {
+        findings.push({ code: 'ARTIFACT_TYPE_UNSUPPORTED', detail: `${id}: ${p} (supported: log, txt, md, json, jsonl, csv)` });
+      }
+    }
     const claimsVerified = String(e.verification_status || '').startsWith('verified');
     if (claimsVerified) {
       const present = artifacts.filter((p) => existsSync(join(root, p)));
@@ -134,9 +177,60 @@ export function validateRegistry(doc, root) {
         if (!existsSync(join(root, p))) findings.push({ code: 'ARTIFACT_MISSING', detail: `${id}: ${p}` });
       }
     }
-    for (const ref of Array.isArray(e.refs) ? e.refs : []) {
-      const isId = /^(REQ|INV|AC|IDEA)-[A-Z0-9-]+$/.test(ref) || /^EB-ADR-\d{4}$/.test(ref);
-      if (isId) continue; // resolved by the doc checks; keep generator free of that coupling
+    // A delivery claim has to be bound to metadata that already exists outside this
+    // file: a commit object in this repository, and for merge/release claims, actual
+    // ancestry in origin/master. This is not a proof system — it refuses claims that
+    // cite nothing, which is the exact hole where "verified_host" could be typed into
+    // a YAML file next to a C1 log and read as real-environment evidence.
+    const tier = e.verified_tier;
+    if (tier !== undefined && !['C1', 'C2', 'C3'].includes(tier)) {
+      findings.push({ code: 'CLAIM_TIER_UNKNOWN', detail: `${id}: verified_tier=${tier} (expected C1|C2|C3)` });
+    }
+    if (claimsVerified && e.verification_status !== 'verified_local') {
+      const commit = String(e.verification_commit || '');
+      if (!/^[0-9a-f]{40}$/.test(commit)) {
+        findings.push({ code: 'CLAIM_UNBOUND', detail: `${id}: ${e.verification_status} requires verification_commit (40-hex); local work must stay verified_local` });
+      } else if (git(root, ['cat-file', '-t', commit]) !== 'commit') {
+        findings.push({ code: 'CLAIM_UNBOUND', detail: `${id}: verification_commit ${commit} is not a commit in this repository` });
+      }
+    }
+    if (claimsVerified && e.verification_status === 'verified_host') {
+      if (tier === 'C1') {
+        findings.push({ code: 'CLAIM_TIER_MISMATCH', detail: `${id}: verified_host asserts real-environment behaviour; C1 static/local evidence cannot stand in for it` });
+      } else if (tier !== 'C2' && tier !== 'C3') {
+        findings.push({ code: 'CLAIM_TIER_MISSING', detail: `${id}: verified_host requires verified_tier C2 or C3` });
+      }
+    }
+    if (e.implementation_status === 'merged') {
+      const mc = String(e.merged_commit || e.verification_commit || '');
+      const ok = /^[0-9a-f]{40}$/.test(mc) && git(root, ['cat-file', '-t', mc]) === 'commit' && git(root, ['merge-base', '--is-ancestor', mc, 'origin/master']) !== null;
+      if (!ok) findings.push({ code: 'MERGED_CLAIM_UNCORROBORATED', detail: `${id}: implementation_status=merged needs merged_commit that exists and is an ancestor of origin/master` });
+    }
+    if (e.release_status === 'candidate' || e.release_status === 'released') {
+      const needed = e.release_status === 'released' ? ['C3'] : ['C2', 'C3'];
+      const hostVerified = e.verification_status === 'verified_host' && needed.includes(tier);
+      const merged = git(root, ['merge-base', '--is-ancestor', 'HEAD', 'origin/master']) !== null;
+      if (!hostVerified || !merged) {
+        findings.push({ code: 'RELEASE_CLAIM_UNCORROBORATED', detail: `${id}: release_status=${e.release_status} requires verified_host at ${needed.join('/')} plus a head that is an ancestor of origin/master` });
+      }
+    }
+    const refs = Array.isArray(e.refs) ? e.refs : [];
+    if (typeof e.refs === 'string' && e.refs) {
+      findings.push({ code: 'REGISTRY_REF_SCALAR', detail: `${id}: refs must be a list, got scalar "${e.refs}"` });
+      refs.push(e.refs);
+    }
+    const knownIds = knownContractIds(root);
+    for (const ref of refs) {
+      if (typeof ref !== 'string' || !ref.trim()) {
+        findings.push({ code: 'REGISTRY_REF_TYPE', detail: `${id}: every ref must be a non-empty string` });
+        continue;
+      }
+      if (ID_REF_RE.test(ref)) {
+        if (!knownIds.has(ref)) {
+          findings.push({ code: 'REGISTRY_REF_UNRESOLVED', detail: `${id}: ${ref} has id grammar but is declared nowhere (ids.yaml or an agent note)` });
+        }
+        continue;
+      }
       if (!existsSync(join(root, ref))) findings.push({ code: 'REF_MISSING', detail: `${id}: ${ref}` });
     }
   }
@@ -248,7 +342,11 @@ if (invokedDirectly) {
       console.log('REFUSED write: findings above (a fake verification claim is never written into the derived view)');
       process.exit(1);
     }
-    writeFileSync(target, rendered);
+    const written = writeGenerated(root, 'dev/engineering/current-state.json', rendered);
+    if (!written.ok) {
+      console.log(`REFUSED WRITE_BOUNDARY: ${written.why}`);
+      process.exit(2);
+    }
     console.log(`wrote dev/engineering/current-state.json entries=${result.view.entries.length}`);
     process.exit(0);
   }

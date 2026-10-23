@@ -54,8 +54,12 @@ session started there can believe an abolished route is live.
 
 ## EB0-2 — script, test and CI surface (`@929`)
 
-Root `package.json:34-46` = 12 scripts; **no docs check existed** (this branch adds
-`docs:probe` / `docs:sync` / `docs:controls`, additive, not wired into CI).
+Root `package.json:34-46` = 12 scripts; **no general document-consistency check
+existed** (this branch adds `docs:probe` / `docs:sync` / `docs:controls`, additive, not
+wired into CI). Wording corrected 2026-10-23: the absence of a *general* docs check says
+nothing about the *freshness* leg — `ci-pr-gate.mjs` has a state-freshness leg at `@929`,
+and a `phase_status` checker exists on the in-progress `feat/a5m2-*` refs. "No docs check"
+must not be read as "no freshness check".
 `scripts/ci-pr-gate.mjs` = 8 legs (graph-parse, state-freshness, install, blueprint-fence,
 typecheck, lint-identities, artifacts-at-head, census) with a verdict algebra of
 pass/fail/skip/refused, missing-token⇒fail, and identity-set differencing
@@ -108,6 +112,15 @@ rule `packages/runtime/src/plugin/live/pa-mount-registry.mjs:103-145`, governed 
 clean-up belongs to the a356 line, not here — this line adds only small text and Node files.
 The live master checkout being 757 behind means porcelain in that checkout would
 misclassify ~10k trunk-committed files as untracked: never read dirt from it.
+
+## Execution-hold timing, corrected 2026-10-23
+
+The hold instruction was delivered at **19:49:23Z while the controls run was still in
+flight**; that run finished at **19:49:42Z**. The accurate description is "the pause
+arrived while the command was running", not "the run completed before the pause". That
+run's own end-of-run sweep then removed its scratch directory — the fixed-path recursive
+cleanup the independent review had just flagged as unsafe, which is why the runner now
+creates a per-invocation `mkdtemp` root that it owns and deletes nothing else.
 
 ## EB0-5 — performance, with corrections
 
