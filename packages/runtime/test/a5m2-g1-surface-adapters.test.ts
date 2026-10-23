@@ -842,10 +842,11 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    // RE-ANCHORED @ 957a5f526: topology flattens to scalar leaves (same source, same verdict)
+    // RE-ANCHORED @ 39c029963: the flat topology scalars are the SIGNED floor (kept);
+    // the queryClaim triple is back to its BASE nested encoding (inspectTarget refused).
     expect(classified.targetManifest.topologyRevision).toBe(9)
     expect(classified.targetManifest.topologyDigest).toBe('sha256;toponine')
-    expect((classified.targetManifest.inspectTarget as Array<Record<string, unknown>>)[0]).toMatchObject({ platform: 'host', provider: expect.any(String), method: expect.any(String) })
+    expect(classified.targetManifest.queryClaim).toMatchObject({ platform: 'host', provider: expect.any(String), method: expect.any(String) })
     const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
     expect(client.ok).toBe(true)
     // RE-ANCHORED @ 39c029963: base nested clientRoundtrip encoding restored
