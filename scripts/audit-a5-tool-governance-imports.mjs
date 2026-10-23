@@ -152,7 +152,8 @@ const PR1_CONSUMERS = Object.freeze([
   // the takeover-table row plus the imageEnabled key - is deliberately NOT applied,
   // so no production face reaches it yet; the attachment adapter reaches the store
   // through injected ports only. Zero lane edits, zero new ledger.
-  'runtime/src/plugin/live/governed-families/image.mjs',])
+  'runtime/src/plugin/live/governed-families/image.mjs',
+])
 
 const SPECIFIER_PATTERNS = [
   /\bfrom\s+['"]([^'"]+)['"]/g,
