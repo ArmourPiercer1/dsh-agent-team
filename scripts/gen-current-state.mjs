@@ -26,6 +26,9 @@ export const ENUMS = {
 };
 const KINDS = ['work-package', 'implementation-pr', 'gate', 'migration'];
 const REQUIRED = ['id', 'kind', 'title', 'decision_status', 'implementation_status', 'verification_status', 'release_status', 'owners'];
+// Closed field set. registry.schema.json says additionalProperties:false; before this
+// rule nothing enforced it, so a typo'd field silently carried no meaning.
+const KNOWN_FIELDS = [...REQUIRED, 'refs', 'verification_artifacts', 'verified_tier', 'verification_commit', 'merged_commit'];
 const ID_RE = /^EB[0-9]-[A-Z0-9-]+$/;
 
 function git(root, args) {
@@ -45,6 +48,7 @@ export function parseRegistryStrict(text) {
   const doc = { entries: [] };
   const errors = [];
   const keysSeen = new WeakMap(); // a repeated key in one mapping is a defect, not last-write-wins
+  const seenTop = new Set(); // top-level keys already assigned, including `entries`
   const lines = text.split(/\r?\n/);
   let cur = null;
   let entryIndent = null; // column of the current entry's "-"
@@ -83,7 +87,14 @@ export function parseRegistryStrict(text) {
       key = field[1];
       value = field[2].trim();
     } else if (field && entryIndent === null) {
-      if (field[1] === 'entries') continue; // top-level key introducing the list
+      if (field[1] === 'entries') {
+        // Same class as the other duplicate-key refusal, and the same silent-loss
+        // bug: a second top-level entries: restarted the list, so the first block
+        // of records disappeared from the view without any complaint.
+        if (seenTop.has('entries')) errors.push(`registry-duplicate-key:L${i + 1}:entries`);
+        seenTop.add('entries');
+        continue;
+      }
       // A repeated top-level key used to overwrite silently, so a registry carrying two
       // legacy_execution_authority lines kept whichever came last.
       if (Object.prototype.hasOwnProperty.call(doc, field[1])) errors.push(`registry-duplicate-key:L${i + 1}:${field[1]}`);
@@ -142,6 +153,11 @@ export function validateRegistry(doc, root) {
   const seen = new Set();
   for (const e of doc.entries) {
     const id = String(e.id || '<no-id>');
+    for (const key of Object.keys(e)) {
+      if (!KNOWN_FIELDS.includes(key)) {
+        findings.push({ code: 'REGISTRY_UNKNOWN_FIELD', detail: `${id}: ${key} is not a field of the registry subset (typo or unsupported extension)` });
+      }
+    }
     for (const key of REQUIRED) {
       if (e[key] === undefined || e[key] === '' || (Array.isArray(e[key]) && e[key].length === 0 && key !== 'refs')) {
         findings.push({ code: 'REGISTRY_SCHEMA', detail: `${id}: required field ${key} missing or empty` });

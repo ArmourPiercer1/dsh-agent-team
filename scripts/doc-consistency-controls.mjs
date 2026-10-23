@@ -187,6 +187,29 @@ function expectRun(label, res, wantCode, want) {
     : { ok: true, why: want ? `${label}: ${wantCode === 0 ? 'clean, observed' : 'refused with'} ${want}` : `${label}: exit ${wantCode}` };
 }
 
+/** Root's objection to the earlier form: rc=1 plus a substring match is satisfied by a
+ *  WARN line even when rc=1 came from something else. This reads the printed
+ *  classification instead — the code must appear on a FAIL line — and the reason line
+ *  reports the whole blocking set, so a false pass would still be visible in the log. */
+function expectBlocking(label, res, code, opts = {}) {
+  const { detailIncludes = null } = opts;
+  const bad = [];
+  const codes = (prefix) => (res.out.match(new RegExp('^' + prefix + ' ([A-Z_]+)', 'gm')) || []).map((l) => l.slice(prefix.length + 1));
+  const failCodes = codes('FAIL');
+  const warnCodes = codes('WARN');
+  if (res.code !== 1) bad.push('exit ' + res.code + ' != 1');
+  if (!failCodes.includes(code)) {
+    bad.push(code + ' not in blocking set [' + (failCodes.join(',') || 'empty') + ']' + (warnCodes.includes(code) ? ' (present only as WARN)' : ''));
+  }
+  if (detailIncludes && !((res.out.split('\n').find((l) => l.startsWith('FAIL ' + code)) || '').includes(detailIncludes))) {
+    bad.push('detail lacks "' + detailIncludes + '"');
+  }
+  if (/at .*\.mjs:\d+|ReferenceError|TypeError:/.test(res.out)) bad.push('crash text in output');
+  return bad.length
+    ? { ok: false, why: label + ': ' + bad.join('; ') }
+    : { ok: true, why: label + ': blocking=[' + failCodes.join(',') + ']' };
+}
+
 const results = [];
 function control(name, fn) {
   if (ONLY && !name.toLowerCase().includes(ONLY)) return;
@@ -537,17 +560,32 @@ const badClaim = (d) => writeFile(d, 'dev/engineering/registry.yaml', read(d, 'd
 
 control('NEG-42 verified_ci without a commit: --write refuses, not warns', (d) => {
   badClaim(d);
-  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 1, 'CLAIM_UNBOUND')];
+  return [expectBlocking('sync --write', run(SYNC, ['--write', '--root', d]), 'CLAIM_UNBOUND')];
 });
 
 control('NEG-43 verified_ci without a commit: probe blocks', (d) => {
   badClaim(d);
-  return [expectRun('probe', run(PROBE, ['--worktree-only', '--root', d]), 1, 'CLAIM_UNBOUND')];
+  return [expectBlocking('probe', run(PROBE, ['--worktree-only', '--root', d]), 'CLAIM_UNBOUND')];
 });
 
 control('NEG-44 release claim without host verification: --write refuses', (d) => {
   writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('release_status: not_released', 'release_status: released'));
-  return [expectRun('sync --write', run(SYNC, ['--write', '--root', d]), 1, 'RELEASE_CLAIM_UNCORROBORATED')];
+  return [expectBlocking('sync --write', run(SYNC, ['--write', '--root', d]), 'RELEASE_CLAIM_UNCORROBORATED')];
+});
+
+control('NEG-46 a second top-level entries: is refused and names the key', (d) => {
+  // Same silent-loss class as a duplicated scalar, and it used to slip through because
+  // the branch for this key continued before the duplicate check could see it.
+  const reg = read(d, 'dev/engineering/registry.yaml');
+  writeFile(d, 'dev/engineering/registry.yaml', reg + '\nentries:\n  - id: EB1-CTL-2\n    kind: gate\n    title: second block\n    decision_status: accepted\n    implementation_status: not_started\n    verification_status: not_verified\n    release_status: not_released\n    owners: [EB-CTL]\n    refs: [EB-ADR-0001]\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'REGISTRY_PARSE', { detailIncludes: ':entries' })];
+});
+
+control('NEG-47 an entry field outside the closed set is refused', (d) => {
+  // registry.schema.json has always claimed additionalProperties:false; this is the
+  // rule that makes that claim true rather than aspirational.
+  writeFile(d, 'dev/engineering/registry.yaml', read(d, 'dev/engineering/registry.yaml').replace('    owners: [EB-CTL]', '    ownerz: [EB-CTL]'));
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'REGISTRY_UNKNOWN_FIELD')];
 });
 
 control('NEG-45 duplicate top-level registry key is refused, not overwritten', (d) => {

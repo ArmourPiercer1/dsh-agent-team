@@ -1,15 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "dev/engineering/registry.yaml (strict subset)",
-  "description": "Descriptive schema for the hand-maintained registry. Enforcement is hand-rolled inside scripts/gen-current-state.mjs so that it runs with no node_modules; the rule list there is authoritative over this file, and this file exists so a reviewer can read the shape in one place.",
+  "description": "Descriptive schema for the hand-maintained registry. Enforcement is hand-rolled inside scripts/gen-current-state.mjs so that it runs with no node_modules; that code is authoritative and this file is kept aligned with it field by field. Where the two disagree the validator wins, and the disagreement is a defect in this file. Three things are enforced that a draft-07 reader cannot see: a repeated key inside one mapping, a repeated TOP-LEVEL key (including a second entries:), and this closed field set itself (REGISTRY_UNKNOWN_FIELD). Claim binding rules (CLAIM_TIER_*, MERGED_CLAIM_*, RELEASE_CLAIM_*) are cross-field and live only in the validator.",
   "type": "object",
-  "required": ["schema_version", "entries"],
+  "required": [
+    "schema_version",
+    "entries"
+  ],
   "additionalProperties": true,
   "properties": {
-    "schema_version": { "const": 1 },
-    "generated_view": { "type": "string" },
-    "legacy_execution_authority": { "type": "string" },
-    "migration_of_legacy_consumers": { "type": "string" },
+    "schema_version": {
+      "const": 1
+    },
+    "generated_view": {
+      "type": "string"
+    },
+    "legacy_execution_authority": {
+      "type": "string"
+    },
+    "migration_of_legacy_consumers": {
+      "type": "string"
+    },
     "entries": {
       "type": "array",
       "minItems": 1,
@@ -23,27 +34,91 @@
           "implementation_status",
           "verification_status",
           "release_status",
-          "owners",
-          "refs"
+          "owners"
         ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string", "pattern": "^EB[0-9]-[A-Z0-9-]+$" },
-          "kind": { "enum": ["work-package", "implementation-pr", "gate", "migration"] },
-          "title": { "type": "string" },
+          "id": {
+            "type": "string",
+            "pattern": "^EB[0-9]-[A-Z0-9-]+$"
+          },
+          "kind": {
+            "enum": [
+              "work-package",
+              "implementation-pr",
+              "gate",
+              "migration"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
           "decision_status": {
-            "enum": ["proposed", "accepted", "rejected", "superseded", "pending_coordination"]
+            "enum": [
+              "proposed",
+              "accepted",
+              "rejected",
+              "superseded",
+              "pending_coordination"
+            ]
           },
           "implementation_status": {
-            "enum": ["not_started", "in_progress", "implemented_in_branch", "merged"]
+            "enum": [
+              "not_started",
+              "in_progress",
+              "implemented_in_branch",
+              "merged"
+            ]
           },
           "verification_status": {
-            "enum": ["not_verified", "verified_local", "verified_ci", "verified_host"]
+            "enum": [
+              "not_verified",
+              "verified_local",
+              "verified_ci",
+              "verified_host"
+            ]
           },
-          "release_status": { "enum": ["not_released", "candidate", "released"] },
-          "owners": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-          "refs": { "type": "array", "items": { "type": "string" } },
-          "verification_artifacts": { "type": "array", "items": { "type": "string" } }
+          "release_status": {
+            "enum": [
+              "not_released",
+              "candidate",
+              "released"
+            ]
+          },
+          "owners": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verification_artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verified_tier": {
+            "enum": [
+              "verified_local",
+              "verified_ci",
+              "verified_host"
+            ]
+          },
+          "verification_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{7,40}$"
+          },
+          "merged_commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{7,40}$"
+          }
         }
       }
     }
@@ -51,6 +126,8 @@
   "x-invariants": {
     "INV-EB-0009": "the four status fields are independent; no value of one field implies a value of another",
     "FAKE_VERIFICATION": "verification_status starting with 'verified' requires at least one existing path in verification_artifacts; otherwise generation is refused",
-    "NO_WALL_CLOCK": "the generated view contains no wall-clock timestamp, so --check is byte-reproducible for identical inputs"
+    "NO_WALL_CLOCK": "the generated view contains no wall-clock timestamp, so --check is byte-reproducible for identical inputs",
+    "DUPLICATE_KEY": "a repeated key in one mapping, or a repeated top-level key such as a second entries:, is refused rather than last-write-wins",
+    "CLOSED_FIELDS": "any entry field outside the list above is refused (REGISTRY_UNKNOWN_FIELD), which is what additionalProperties:false means in practice"
   }
 }
