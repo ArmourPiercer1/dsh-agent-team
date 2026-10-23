@@ -1,61 +1,144 @@
 /**
  * Adjacent tsc type surface for the already-counted
- * `packages/runtime/src/plugin/live/governed-families/image.mjs` — minimal,
- * consumed-only (the plane-effect-backends.d.mts / persona-probe.d.mts /
- * pa-mount-registry.d.mts pattern booked by the root 9e CI test-declaration
- * round). It types ONLY what the lane fixture
- * `packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts` consumes; the runtime
- * law lives in the `.mjs`.
+ * `packages/runtime/src/plugin/live/governed-families/image.mjs` (REVISION 2
+ * — receipt-driven consumption over the strict-manifest chain). Minimal,
+ * consumed-only (the plane-effect-backends.d.mts pattern): it types ONLY
+ * what the lane fixture `packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts`
+ * consumes; the runtime law lives in the `.mjs`. The manifest is typed
+ * STRUCTURALLY (a runtime .mjs never imports the host .ts class; the arm
+ * pins `schema` by literal at runtime).
  */
+import type { ImageAttachmentAdapterHandle } from './image-attachment.d.mts'
+
+export interface ImageReadBoundedGrantRef {
+  grant: { grantId?: string } & Record<string, unknown>
+  realmId: string
+  canonicalLocator: string
+}
+
+export interface ImageReadBoundedValue {
+  bytes: Uint8Array
+  observedKind: string
+  byteLength: number
+}
+
+export type ImageReadBoundedOutcome =
+  | { ok: true, value: ImageReadBoundedValue }
+  | { ok: false, code?: string, detail?: string, drift?: boolean }
+
+/** The CENTER-owned FS-PROC port (root ruling): the M1-verified read binary
+ *  boundary — same-FD re-anchor, O_NOFOLLOW, final-FD check, cap+1 stop,
+ *  cancellation honored inside the port. The production implementation is
+ *  CENTER's shared face; the arm only ever consumes this shape. */
+export type ImageReadBoundedPort = (
+  grantRef: ImageReadBoundedGrantRef,
+  opts: { maxBytes: number, signal?: AbortSignal },
+) => Promise<ImageReadBoundedOutcome>
+
+/** The durable strict manifest AS PROJECTED TODAY (control/types.ts). The
+ *  family four fields are OPTIONAL exactly because the projection does not
+ *  carry them yet (root 07:38 measurement; CENTER closure pending): the arm
+ *  pins them when present and discloses the pending state when absent. */
+export interface ImageConsumptionManifest {
+  schema: string
+  approvalCaseId: string
+  requiredAuthority: string
+  perEffectRequired: readonly string[]
+  deniedEffects: readonly { effectIndex: number, requiredAuthority: string }[]
+  authorityGeneration: number
+  realmId: string
+  callId: string
+  parametersFingerprint: string
+  effects: { fingerprint: string, effects: readonly Record<string, unknown>[] }
+  binding: Record<string, unknown> & { bindingId: string, toolName: string, definitionIdentity: string, providerId: string }
+  member: { teamSessionId: string, instanceId: string }
+  familyId?: string
+  adapterRevision?: number
+  providerIdentity?: string
+  targetManifest?: Record<string, unknown>
+}
+
+/** The strict-chain `approve` result (PaControlLegResult approve arm,
+ *  structural mirror — the bridge .ts is never imported by the .mjs). */
+export interface ImageConsumptionReceipt {
+  decision: 'approve' | 'deny' | 'unsettled'
+  requestId?: string
+  grant?: { grantId?: string } & Record<string, unknown>
+  manifest?: ImageConsumptionManifest
+}
+
+/** The plane's trusted per-call facts (the same trusted source that built
+ *  the leg input; the arm re-checks them at the consumption point). */
+export interface ImageCallFacts {
+  member: { teamSessionId: string, instanceId: string }
+  callId: string
+  authorityGeneration: number
+  definitionIdentity: string
+  providerIdentity: string
+}
+
+export interface ImageTargetManifest {
+  readonly familyId: string
+  readonly adapterRevision: number
+  readonly operation: string
+  readonly realmId: string
+  readonly canonicalTarget: string
+  readonly declaredMediaType: string
+  readonly byteCap: number
+  readonly byteCapSource: string
+  readonly businessObligations: readonly Record<string, string>[]
+}
+
+export interface ImageArmOutcome {
+  readonly ok: boolean
+  readonly code?: string
+  readonly detail?: string
+  readonly sideEffectPossible?: boolean
+  readonly portCode?: string
+  readonly classifyRefused?: boolean
+  readonly disclosure?: string
+  readonly value?: {
+    readonly path: string
+    readonly image: {
+      readonly attachmentId: string
+      readonly sourceSha256: string
+      readonly normalizedEqualsSource: boolean
+      readonly mediaType: string
+      readonly bytes: number
+      readonly width?: number
+      readonly height?: number
+      readonly name?: string
+    }
+  }
+}
+
+export interface GovernedReadImageArmDeps {
+  definitionIdentity: string
+  providerId: string
+  realmId: string
+  namespaceRoot: string
+  readBounded: ImageReadBoundedPort
+  attachments: ImageAttachmentAdapterHandle
+  observe?: (row: Record<string, unknown>) => void
+}
+
 export interface GovernedReadImageArmHandle {
   readonly familyId: string
   readonly adapterRevision: number
   readonly definitionIdentity: string
   readonly providerId: string
   readonly byteCap: number
-  classify: (args: unknown, ctx: unknown) => ImageArmOutcome
-  prepare: (plan: object) => ImageArmOutcome
-  execute: (ticket: object, exec: unknown) => Promise<ImageArmOutcome>
-  cancel: (planOrTicket: object) => ImageArmOutcome
+  classify: (args: unknown) => { ok: true, effects: unknown, targetManifest: ImageTargetManifest } | { ok: false, code: string, detail: string }
+  execute: (args: unknown, receipt: ImageConsumptionReceipt | undefined, callFacts: ImageCallFacts, signal?: AbortSignal) => Promise<ImageArmOutcome>
+  reference: (attachmentId: string, namespace: { realmId: string, teamSessionId: string, instanceId: string }, signal?: AbortSignal) => Promise<Record<string, unknown>>
   drain: () => void
+  stats: () => { classifyRefused: number, consumptionRefused: number, consumed: number, portCalls: number, commits: number, lawRefused: number, boundaryUnknown: number }
 }
 
-export interface ImageArmOutcome {
-  readonly ok?: boolean
-  readonly code?: string
-  readonly detail?: string
-  readonly plan?: unknown
-  readonly effects?: readonly unknown[]
-  readonly manifest?: Record<string, unknown>
-  readonly ticket?: unknown
-  readonly value?: { readonly path?: string; readonly image?: Record<string, unknown> }
-  readonly settled?: string
-  readonly attachmentOutcome?: string
-  readonly sideEffectPossible?: boolean
-  readonly note?: string
-}
-
-export interface GovernedReadImageArmDeps {
-  readonly definitionIdentity: string
-  readonly providerId: string
-  readonly realmId: string
-  readonly namespaceRoot: string
-  readonly resolveNamespaceRoot?: (rawPath: string) => string | null
-  readonly readPort: {
-    stat: (path: string, opts: { signal?: AbortSignal }) => Promise<{ size: number; isFile: boolean }>
-    readFile: (path: string, opts: { maxBytes?: number; signal?: AbortSignal }) => Promise<Uint8Array>
-  }
-  readonly attachments: {
-    commitImage: (input: { bytes: Uint8Array; mediaType: string; name: string; namespace: { realmId: string; sessionIncarnation: string }; correlation?: string }) => Promise<{ attachmentId: string; fingerprint: string; mediaType: string; bytes: number; width?: number; height?: number; name?: string }>
-    imageLimits: { maxImageBytes: number; maxMessageImageBytes: number; mediaTypes?: readonly string[] }
-  }
-  readonly trustedIdentities: readonly string[]
-  readonly observe?: (row: Record<string, unknown>) => void
-}
-
-export declare const A5_IMAGE_FAMILY_ID: string
-export declare const A5_IMAGE_TOOL_NAME: string
-export declare const A5_IMAGE_OPERATION: string
-export declare const A5_IMAGE_ADAPTER_REVISION: number
+export declare const A5_IMAGE_FAMILY_ID: 'B-IMAGE'
+export declare const A5_IMAGE_TOOL_NAME: 'read_image'
+export declare const A5_IMAGE_OPERATION: 'read-exact-file'
+export declare const A5_IMAGE_ADAPTER_REVISION: 2
+export declare const A5_IMAGE_MANIFEST_SCHEMA: 'a5m1.pa-control-manifest.v2'
 export declare const A5_IMAGE_TYPED_CODES: Readonly<Record<string, string>>
 export declare function createGovernedReadImageArm(deps: GovernedReadImageArmDeps): GovernedReadImageArmHandle

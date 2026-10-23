@@ -1,0 +1,41 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (15 tests | 1 failed) 835ms
+     × C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact 141ms
+     ✓ no receipt, no execution: undefined/deny/manifest-less/grant-less receipts all refuse typed with ZERO port calls 23ms
+     ✓ the five-way binding refuses PAIR BY PAIR on the real durable manifest (callId / member / authorityGeneration / definition / provider), zero port calls each 28ms
+     ✓ approved target ≠ executed target refuses typed (swap the arguments after approval; the tie runs on TODAY'S projected effects) 26ms
+     ✓ thin family surface both ways: today'S absent projection is DISCLOSED never skipped silently; once carried it is PINNED (wrong familyId / stale revision / tampered targetManifest all refuse by value) 88ms
+     ✓ capacity lands at READ time: the port answers the cap+1 fact against a 32-byte deployment cap and the arm refuses BEFORE the commit — zero objects 35ms
+     ✓ the port refusal comes back VERBATIM (ANCHOR-DRIFT / fd-recycled are the CENTER law's words, not remapped), zero attachment writes 35ms
+     ✓ cancellation at all three points is zero-write: pre-flight (0 port calls), mid-read (AbortError), and AFTER the read BEFORE the commit (the commit-boundary re-check catches it) 123ms
+     ✓ no ledger, by construction: replaying the same receipt double-calls the PORT (which the one-shot consumed view refuses — the durable law lives outside the arm) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face 35ms
+     ✓ ownership is NEVER content-addressed: two namespaces committing identical bytes get TWO independent entitlements over ONE store object (positive control), a foreign namespace never fetches (zero store calls, negative control), and the original owner keeps working after the second mint (no owner overwrite — the rev-1 defect) 32ms
+     ✓ the store owns the image law and the boundary law: a dimension-capped deployment refuses PRE-WRITE (store law code, no sideEffectPossible); a codeless throw is an UNRESOLVED boundary (sideEffectPossible stays true, never downgraded, nothing deleted) 74ms
+     ✓ classify stays PURE-LEXICAL (root ruling: 审批前一律纯 lexical): closed argument root, traversal refuses before any fs act, undeclared media refuses, and the frozen I+F effect set parses through the domain itself 5ms
+     ✓ DRAINING is terminal and faceless: after drain every stage refuses typed and the handle exposes no native/fallback/delegate face 4ms
+     ✓ assembly fails closed: no port, no arm; no store, no arm (缺 store 只算条件不可用 — never a fallback face, never a half-wired mount) 0ms
+     ✓ row-7 contrast — pre-fix repro vs post-fix typed refusal: the UNTOUCHED native face reads an out-of-root absolute image SUCCESSFULLY (the measured primary gap, alive at pin639), while the governed arm refuses the SAME absolute target with zero port calls 177ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double) > C2 positive on the REAL chain: durable approve receipt (row + human allow + guard-consumed) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact
+ControlError: ControlService: request 'ctrl-0v8thuf0a2csre1d59oul1gy' already carries a durable decision (the first decision is authoritative)
+ ❯ packages/runtime/control/service.ts:2613:15
+    2611|       }
+    2612|       if (state.decisions.some((d) => d.payload.requestId === args.req…
+    2613|         throw new ControlError(
+       |               ^
+    2614|           CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED,
+    2615|           `ControlService: request '${args.requestId}' already carries…
+ ❯ packages/runtime/action-router/effects.ts:336:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 14 passed (15)
+   Start at  08:02:50
+   Duration  2.63s (transform 1.42s, setup 0ms, import 1.66s, tests 835ms, environment 0ms)
+

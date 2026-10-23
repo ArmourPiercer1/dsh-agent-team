@@ -1,0 +1,9 @@
+$ tsc -p tsconfig.json
+test/a5m2-readimg-arm-c2c3.test.ts(816,46): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(url: string | URL, options?: FileUrlToPathOptions | undefined): string', gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string | URL'.
+      Type 'URL' is missing the following properties from type 'URL': hash, host, hostname, origin, and 7 more.
+  Overload 2 of 2, '(path: string | URL): string', gave the following error.
+    Argument of type 'URL' is not assignable to parameter of type 'string | URL'.
+      Type 'URL' is missing the following properties from type 'URL': hash, host, hostname, origin, and 7 more.
+[ELIFECYCLE] Command failed with exit code 2.
