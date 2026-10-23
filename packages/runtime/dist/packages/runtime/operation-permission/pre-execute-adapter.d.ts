@@ -432,6 +432,38 @@ export type DynamicPermissionDecision = {
  * one agent ctx (the A6 glue builds these per agent lifecycle from the
  * bound template, the session cwd, and the team's control service).
  */
+/**
+ * A5-M2 — the outcome of the PRE-DISPATCH PA walk for one execution.
+ *
+ * `authorized` says ONE thing and nothing more: the full PA effect-set
+ * question was answered and a real Control guard consumed the durable Ask.
+ * It is NOT a consumption — the PA grant is unspent, and the row's own body
+ * still owes the fresh recheck and the one-shot consume. `no-match` means
+ * this execution is not the mount's governed read and the pre-existing
+ * pipeline below runs, byte for byte.
+ */
+export type PaReadHandoffOutcome = {
+    readonly kind: 'no-match';
+} | {
+    readonly kind: 'authorized';
+    readonly correlation?: string;
+} | {
+    readonly kind: 'cancelled';
+} | {
+    readonly kind: 'refused';
+    readonly code: string;
+    readonly detail: string;
+};
+/** The A5-M2 hand-off ports, supplied by the glue from ONE plane mount. */
+export interface PaReadHandoffPorts {
+    /** Run the plane's full PA admission (Part A) for THIS exec, pre-dispatch. */
+    readonly open: (exec: object) => Promise<PaReadHandoffOutcome>;
+    /** Void everything this exec still holds (idempotent, synchronous). */
+    readonly close: (exec: object) => void;
+    /** The terminal leg: `'tools/result'` — the one funnel every pipeline
+     *  branch reaches with the SAME exec object that traversed the waterfall. */
+    readonly onTerminal: (observer: (exec: object, result: unknown) => undefined) => () => void;
+}
 export interface InstallParameterPermissionListenerParams {
     /**
      * The bound template's static permission policy (A1 — deep-frozen,
@@ -552,6 +584,13 @@ export interface InstallParameterPermissionListenerParams {
         readonly staticDefault: 'ask' | 'deny';
     }) => Promise<DynamicPermissionDecision | undefined>;
     readonly execEnvelopeOps?: readonly string[];
+    /**
+     * A5-M2 PA-READ HAND-OFF. ABSENT (or any member missing) = the pipeline
+     * below runs exactly as it does today, including the `parameter-permission`
+     * request — this port only ever REPLACES the native Ask for the ONE name the
+     * mount takeover-mounted as its governed read, and never adds an Ask.
+     */
+    readonly paReadHandoff?: PaReadHandoffPorts;
     /**
      * Strict-read + Core-spill (implementation guide §9) — the injected
      * artifact-grant authorization port: for `read` decisions only, it

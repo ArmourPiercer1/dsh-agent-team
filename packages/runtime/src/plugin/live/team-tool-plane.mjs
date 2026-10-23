@@ -992,7 +992,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       livePaPlan.delete(String(callId))
     }
   }
-  const paAdmitBody = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+  // A5-M2: ONE PA walk, split at its natural seam so the pre-execute leg can
+  // stop at the approval. `paAdmitPartA` is the full PA verification (fresh
+  // generation, same-turn authority leg, call-level facts, admitCall, the
+  // plan and the DURABLE Control leg whose guard consumption mints the grant);
+  // `paAdmitEdge` is the execution edge that used to follow it inline, line
+  // for line. `paAdmitBody` runs the two in sequence, exactly as before.
+  const paAdmitPartA = async ({ realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
     // 9e-3: THIS call's durable mint (row id + the exact manifest bytes the
     // row carries, handed back by the AUTH leg). Per-call by construction:
     // concurrent calls never see each other's mint.
@@ -1206,6 +1212,13 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // manifest identity — what the verifier will parse), plus the row id.
       paDurableMint = { requestId: String(leg.requestId ?? ''), manifest: leg.manifest }
     }
+    // Part A is complete: a grant exists and (on the ask lane) a real Control
+    // guard consumed the approval that minted it. Nothing past this line runs
+    // on a pre-execute leg — the hand-off stops here with the grant in hand.
+    return { ok: true, grant, paDurableMint, request }
+  }
+
+  const paAdmitEdge = async ({ grant, paDurableMint, request, realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
     if (signal?.aborted === true) {
@@ -1406,6 +1419,30 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
     return { kind: 'allow' }
   }
+
+  const paAdmitBody = async (input) => {
+    const opened = await paAdmitPartA(input)
+    if (opened.ok !== true) return opened
+    return await paAdmitEdge({
+      ...input,
+      grant: opened.grant,
+      paDurableMint: opened.paDurableMint,
+      request: opened.request,
+    })
+  }
+  // A5-M2 lifecycle halves of the SAME walk, for the governed-read row's
+  // pre-dispatch hand-off (the row owns the token→correlation law and the
+  // one-shot flight; the plane owns the walk). A caller that does not use
+  // them keeps `paAdmit` above, unchanged.
+  paAdmit.open = async (input) => {
+    const opened = await paAdmitPartA(input)
+    if (opened.ok !== true) return opened
+    // 'approved' says ONLY: the full PA effect-set question was answered and a
+    // real Control guard consumed the Ask. It is NOT a consumption — the grant
+    // is unspent and the body still owes the whole execution edge.
+    return { kind: 'approved', grant: opened.grant, paDurableMint: opened.paDurableMint, request: opened.request }
+  }
+  paAdmit.edge = (state) => paAdmitEdge(state)
 
   // Gate 2: the C-FS production provider (pa §1.2/§4). ABSENT fsInstance
   // (no governed file root declared by the row) = no provider — the search
@@ -1731,6 +1768,29 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /** A5-M2: the governed-read hand-off face for THIS mount. The plane
+       *  stores nothing here: the row holds the token-keyed flight and the
+       *  correlation law, and the adapter's `tools/result` observer is what
+       *  drives open/close. Absent when the mount carries no governed read
+       *  row — every other world and every other name keeps the old path. */
+      paReadHandoff: readExecutor === null ? undefined : Object.freeze({
+        open: async (exec) => {
+          if (exec === null || typeof exec !== 'object') return { kind: 'no-match' }
+          if (exec.name !== readName) return { kind: 'no-match' }
+          const token = exec.token
+          if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
+            return { kind: 'no-match' }
+          }
+          return await readExecutor.paHandoffOpen(exec.arguments, {
+            token,
+            ...(exec.signal === undefined ? {} : { signal: exec.signal }),
+          })
+        },
+        close: (exec) => {
+          const correlation = readExecutor.paHandoffClose(exec === null || typeof exec !== 'object' ? undefined : exec.token)
+          if (typeof correlation === 'string') livePaPlan.delete(correlation)
+        },
+      }),
       /** PR358-B: the mount's live PA plans (see `livePaPlan` above). */
       livePaPlan,
       /** 9e fix-3: the CONFIRMED durable generation reader (the root's
@@ -1782,6 +1842,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
         return {
           ok: true,
           dispose: () => {
+            // A5-M2: no hand-off survives its mount — claimed or not, the
+            // flight, the unspent grant and the plan fact die with the
+            // placement (teardown law, independent of the terminal observer).
+            readExecutor?.paHandoffCloseAll?.()
+            livePaPlan.clear()
             for (const d of disposers) {
               try {
                 if (typeof d === 'function') d()
