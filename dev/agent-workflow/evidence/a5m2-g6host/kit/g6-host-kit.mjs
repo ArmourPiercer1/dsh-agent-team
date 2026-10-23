@@ -51,7 +51,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSync, statfsSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL, fileURLToPath } from 'node:url'
 import { startMockModel } from '../../../../../packages/tools/harness/mock-deepseek.mjs'
@@ -92,6 +92,17 @@ const LOCK_SHA_EXPECTED = '26bf7e77050090eaf194e4a06904ce26c6eb9972c4e260f807e8d
 const PACK_TGZ = '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-874f3ae0d-20261023T213601Z/dsh-agent-team-0.1.1-alpha.2.tgz'
 const PACK_SHA_EXPECTED = 'eda06b4a78bba180c0acef1b25237f3f741917385cd0728ee66adc737b1cd09d'
 const BUDGET_CAP_BYTES = 200 * 1024 * 1024
+// Root 23:2x: the 200MB cap is THIS recovery's increment; total test budget
+// and projected run growth must be verified BEFORE launch, not only found at
+// teardown. Preflight therefore refuses when free space is under the floor
+// and records the ledger of known heavy scenes.
+const MIN_FREE_BYTES = Number(argValue('--min-free-bytes', 5 * 1024 * 1024 * 1024))
+const SCENE_LEDGER = [
+  ['frozen-512-scene-dev-pnp-store', '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/.pnp-store'],
+  ['frozen-512-scene-plugin-install', '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5m2-wire-g6/dev/plugin-install'],
+  ['approved-install-874-fixture', FIXTURE_INSTALL],
+  ['r18-store(protected)', '/srv/workspace/dsh-plugins/dsh-agent-team/tests/homes/.pnpmm-r18-store'],
+]
 
 const PACK_ROOT = realpathSync(join(FIXTURE_INSTALL, 'node_modules/dsh-agent-team'))
 const INSTALLED_HOST_JS = realpathSync(join(PACK_ROOT, 'packages/runtime/dist/packages/runtime/src/plugin/host.js'))
@@ -376,11 +387,20 @@ async function runPrechecks() {
     }
     return undefined
   }
+  const st = statfsSync(REPO_ROOT)
+  const freeBytes = Number(st.bavail) * Number(st.bsize)
+  ck('disk-free-floor', freeBytes >= MIN_FREE_BYTES, `free=${freeBytes} floor=${MIN_FREE_BYTES}`)
+  const sceneLedger = SCENE_LEDGER.map(([name, path]) => {
+    let bytes = 0
+    try { bytes = allocatedFootprint(path).totalAllocated } catch { /* absent = 0 */ }
+    return { name, path, allocatedApprox: bytes }
+  })
+  ck('scene-ledger-recorded', true, JSON.stringify(sceneLedger.map((x) => `${x.name}=${x.allocatedApprox}B`)).slice(0, 280))
   const port = await freePort([BASE_PORT, BASE_PORT + 1])
   if (port === undefined) throw new Error(`no free non-blacklisted port in [${BASE_PORT}, ${BASE_PORT + 1}] (3080 dev / 3180-3184 p6t6 / 3182,3497 image owner)`)
   const mockPort = await freePort([3191, 3192, 3193, 3194, 3195])
   if (mockPort === undefined) throw new Error('no free mock provider port 3191-3195')
-  return { port, mockPort, hostTree: HOST_TREE, checks, row: { name: PRODUCTION_ROW_NAME, glue: INSTALLED_GLUE, seam: INSTALLED_SEAM }, rootSessionId: ROOT_G6 }
+  return { port, mockPort, hostTree: HOST_TREE, freeBytes, minFreeBytes: MIN_FREE_BYTES, sceneLedger, checks, row: { name: PRODUCTION_ROW_NAME, glue: INSTALLED_GLUE, seam: INSTALLED_SEAM }, rootSessionId: ROOT_G6 }
 }
 const WORLD_NAME_CLEAN = `.a5m2-g6host-${RUN_STAMP}Z`.replace(/^\./, '')
 
