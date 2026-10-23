@@ -62,7 +62,7 @@
 | G2 BROWSER 装配 | 未开发（组件独审 BLOCK） | team-assembly 候选独审 BLOCK：MCP pending connect 未计 close/inflight、失败无 rollback、并发 reconnect 覆盖 client/吞 close 失败/提前 closed（需串行轮换+按 generation 跟踪+失败 ownership）；Browser 直连 openNativeBrowser 的 Stagehand.create 失败无清理且 execute 忽略 signal（按公开 worker/真实连接所有权修半开，无 ownedChromium 不得假清理）；makeTransport 须实际 endpoint/spawn/config 同源；真 Team scoped register+close 绑定，不靠 server 名 | 生命周期修复=原 G2 组件 owner 独占 g2-team-assembly.*（int 树两文件，进行中）；接线 `e78dee2a` 只续自身 plane/glue 且 browser 行 fail-closed 钉 BLOCK | 未修组件严禁升 Host/C2；533 组件已关不重开；不 Core/global |
 | G3 fsproc/shell 适配面 | 未接线 | 适配器+33 腿可交付未生产装配 | 原 owner 续写中（int 树） | 合并归 center |
 | G3 受控 PTY per-open 真实供给 | 未开发 | 真实 Host 供给实现中（现仅 integrator-supplied perOpenRegistration(callId)），§5.1 未完成 | 原 owner | 无同名 API≠无实现路（root 15:08） |
-| create_goal/get_goal/update_goal | 未开发 | 639 真接口适配实现中（无交付不落"未接线"） | 适配 `8722db94` | packages/goal/tool-goal 锚点 |
+| create_goal/get_goal/update_goal | 未接线 | g5 三型别行适配已交付（GoalService 七签名逐一对表、真编译产物 fixed point、20 腿+红除实测，center 实测并入）未生产装配；具名实缺口随行不冒闭：AUTHORITY（authority.ts:80-118 UNOBSERVED）/WRAPUP（exec.deferContext）/AGENT_AUTH | 适配 `8722db94`（已停笔交付） | census 27/28/29 无需改表 |
 | session_search/trace/event_read/event_search/event_trace | 未接线 | g6 五型别行适配已交付（639 file:line 全锚，26 腿+红除实测，center 实测并入）未生产装配；search 二行 declared_mount INACTIVE（抽象后端组合+SESSION_QUERY_SEARCH_DISABLED） | 适配 `8e6e7788`（已停笔交付） | 残差具名导出：TARGET_PREAUTH/PARENT_FILTER/TITLES_PRESENTATION/SESSION_HISTORY_RESOURCE_KIND |
 
 适配不等待中心接线（用户 15:4x 原话）；同物理树/integration ref 禁并写，隔离树完成后由 center 解冲突并核组合 SHA；空接口/声明不得记"未接线"。
