@@ -218,6 +218,8 @@ interface WorldOpts {
   searchBackend?: unknown
   provideSearchFacet?: boolean
   readCallerOverride?: () => unknown
+  teamCeilingFn?: (targetSessionId: string) => boolean
+  afterPort?: (method: string, nthCallOfMethod: number) => void
 }
 
 const DEFAULT_SESSIONS: SeedSession[] = [
@@ -454,6 +456,24 @@ async function makeWorld (opts: WorldOpts = {}): Promise<World> {
     },
   }
 
+  // ROOT-16:47 legs need a post-port RESOLUTION hook (fires after the fake
+  // service resolves, before the row's await resumption recheck). Wrapping
+  // keeps the SAME svc object and stable function identities, so the port
+  // identity law still pins exactly what the row sees.
+  if (opts.afterPort !== undefined) {
+    for (const name of ['filterSessions', 'searchSessions', 'searchEvents', 'traceSession', 'traceEvent', 'readEvent', 'readTitleSnapshots']) {
+      const original = svc[name] as (...a: unknown[]) => Promise<unknown>
+      // TWO named formal params: the placement arity law counts them, and a
+      // rest-only wrapper would read as signature drift.
+      const wrapped = async (arg0: unknown, arg1: unknown, ...rest: unknown[]): Promise<unknown> => {
+        const out = await original.call(svc, arg0, arg1, ...rest)
+        opts.afterPort?.(name, calls.filter((entry) => entry.method === name).length)
+        return out
+      }
+      Object.defineProperty(svc, name, { value: wrapped, writable: true, enumerable: true, configurable: true })
+    }
+  }
+
   const captured = new Map<string, NativeFace>()
   const ctx = {
     tools: { register: (tool: NativeFace) => { captured.set(tool.name, tool); return () => {} } },
@@ -479,7 +499,7 @@ async function makeWorld (opts: WorldOpts = {}): Promise<World> {
     readNative: (name: string) => captured.get(name),
     queryPorts: qp,
     readCaller: opts.readCallerOverride ?? (() => ({ ...caller })),
-    teamCeiling: (targetSessionId: string) => ceiling === 'all' || ceiling.includes(targetSessionId),
+    teamCeiling: opts.teamCeilingFn ?? ((targetSessionId: string) => ceiling === 'all' || ceiling.includes(targetSessionId)),
     declaredMount: { searchBackend: backend },
     ...(opts.maxSearchResults === undefined ? {} : { maxSearchResults: opts.maxSearchResults }),
   })
@@ -1218,7 +1238,7 @@ describe('a5m2-g6 row facts — five typed rows, captured bytes, evidence mount'
     expect(S.A5_G6_PORT_FAMILIES['authorization']?.facet).toBe('authorizationQueryPort')
     expect(S.A5_G6_PORT_FAMILIES['titles']?.facet).toBe('titlesQueryPort')
     expect(S.A5_G6_PORT_FAMILIES['search']?.required).toBe(false)
-    expect(S.A5_G6_ADAPTER_REVISION).toBe(2)
+    expect(S.A5_G6_ADAPTER_REVISION).toBe(3)
   })
 
   it('classify stays pure and closed-surface: unknown/missing params refused; effects are the single tool-invoke; the fingerprint is canonical', async () => {
@@ -1268,5 +1288,127 @@ describe('a5m2-g6 row facts — five typed rows, captured bytes, evidence mount'
       ...base,
       queryPorts: { ...w.qp, searchQueryPort: { ...w.svc, searchSessions: async function (request: unknown) { return request } } },
     })).toThrow(/2 formal parameters/u)
+  })
+})
+
+/* ══ 9. REV-3 CLOSURE — target/title/lineage ceiling × cross-await freshness ══ */
+describe('a5m2-g6 rev-3 — ceiling intersection (event_search/trace lanes) and per-await recheck', () => {
+  it('session_event_search — the search-FAMILY target row still answers the Team ceiling at classify AND invoke with zero port entry', async () => {
+    const w = await makeWorld({ ceiling: [CALLER_ID] })
+    const classified = w.adapter.rows['session_event_search'].classify({ session_id: 's-a', query: 'needle' })
+    expect(classified['ok']).toBe(false)
+    expect(classified['code']).toBe(SC.TEAM_CEILING_DENY)
+    const mark = w.calls.length
+    const out = await w.rowCall('session_event_search', { session_id: 's-a', query: 'needle' })
+    expect(out.refusal?.['code']).toBe(SC.TEAM_CEILING_DENY)
+    expect(out.refusal?.['detail']).toContain('zero port entry')
+    expect(w.calls.length).toBe(mark)
+  })
+
+  it('session_trace ANCESTOR lane: a ceiling-denied ancestor stops at the boundary note and NEVER enters the title port (native names it; the row does not)', async () => {
+    const w = await makeWorld({ ceiling: [CALLER_ID, 's-a'] })
+    const native = await w.nativeCall('session_trace', { session_id: 's-a' })
+    expect(String(native.value)).toContain('p-root — Root')
+    const mark = w.calls.length
+    const row = await w.rowCall('session_trace', { session_id: 's-a' })
+    expect(String(row.value)).toContain('[outside workspace boundary]')
+    expect(String(row.value)).not.toContain('p-root')
+    const titleTuple = w.callsSince(mark).find((entry) => entry.method === 'readTitleSnapshots')
+    expect(titleTuple?.args[0]).toEqual(['s-a'])
+  })
+
+  it('session_trace DESCENDANT lane: a ceiling-denied descendant rides the null under-disclosure and never reaches visibleIds/title reads', async () => {
+    const seeds = defaultSessions()
+    seeds.push({ id: 's-kid', cwd: CWD, parentSession: 's-a', createdAt: 1500, events: [] })
+    const w = await makeWorld({ sessions: seeds, ceiling: [CALLER_ID, 's-a', 'p-root'] })
+    const native = await w.nativeCall('session_trace', { session_id: 's-a' })
+    expect(String(native.value)).toContain('s-kid')
+    const mark = w.calls.length
+    const row = await w.rowCall('session_trace', { session_id: 's-a' })
+    expect(String(row.value)).not.toContain('s-kid')
+    expect(String(row.value)).toContain('[outside workspace subtree]')
+    const titleTuple = w.callsSince(mark).find((entry) => entry.method === 'readTitleSnapshots')
+    expect(titleTuple?.args[0]).toEqual(['s-a', 'p-root'])
+  })
+
+  it('ceiling REVOKED between entry and the first dispatch (live decision port, no stale snapshot): typed refusal BEFORE any port entry', async () => {
+    let decisions = 0
+    const w = await makeWorld({ teamCeilingFn: () => { decisions += 1; return decisions <= 2 } })
+    const mark = w.calls.length
+    const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(out.error?.code).toBe(SC.TEAM_CEILING_DENY)
+    expect(String(out.error?.message)).toContain('after admission')
+    expect(w.calls.length).toBe(mark)
+  })
+
+  it('caller moved ACROSS THE AUTHORIZATION AWAIT: the resumption recheck refuses CALLER_DRIFT — the read port is never entered', async () => {
+    let moved = false
+    const w = await makeWorld({
+      readCallerOverride: () => (moved
+        ? { id: CALLER_ID, cwd: '/moved-after-await', boundary: { lastStepStartSeq: 50 } }
+        : { id: CALLER_ID, cwd: CWD, boundary: { lastStepStartSeq: 50 } }),
+      afterPort: (method) => { if (method === 'filterSessions') moved = true },
+    })
+    const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(out.error?.code).toBe(SC.CALLER_DRIFT)
+    expect(String(out.error?.message)).toContain('resumption authorizationQueryPort.filterSessions')
+    expect(out.value).toBeUndefined()
+    expect(w.calls.filter((entry) => entry.method === 'filterSessions').length).toBe(1)
+    expect(w.calls.filter((entry) => entry.method === 'readEvent').length).toBe(0)
+  })
+
+  it('caller moved at the LAST AWAIT BEFORE SERVE: the titles-resumption recheck refuses — effects not rewound, NOTHING IS SERVED', async () => {
+    let moved = false
+    const w = await makeWorld({
+      readCallerOverride: () => (moved
+        ? { id: CALLER_ID, cwd: '/moved-before-serve', boundary: { lastStepStartSeq: 50 } }
+        : { id: CALLER_ID, cwd: CWD, boundary: { lastStepStartSeq: 50 } }),
+      afterPort: (method) => { if (method === 'readTitleSnapshots') moved = true },
+    })
+    const out = await w.rowCall('session_event_read', { session_id: 's-a', seq: 5 })
+    expect(out.error?.code).toBe(SC.CALLER_DRIFT)
+    expect(String(out.error?.message)).toContain('resumption titlesQueryPort.readTitleSnapshots')
+    expect(out.value).toBeUndefined()
+    expect(w.calls.filter((entry) => entry.method === 'readEvent').length).toBe(1)
+    expect(w.calls.filter((entry) => entry.method === 'readTitleSnapshots').length).toBe(1)
+  })
+
+  it('mid-PAGING caller revocation: page 1 resolves, the resumption recheck refuses — the continuation request is never built or sent', async () => {
+    let moved = false
+    const w = await makeWorld({
+      readCallerOverride: () => (moved
+        ? { id: CALLER_ID, cwd: '/moved-mid-paging', boundary: { lastStepStartSeq: 50 } }
+        : { id: CALLER_ID, cwd: CWD, boundary: { lastStepStartSeq: 50 } }),
+      afterPort: (method) => { if (method === 'searchSessions') moved = true },
+    })
+    w.pages.searchSessions.push(
+      { items: [{ header: { id: 's-a', cwd: CWD, createdAt: 4000 }, live: true, persisted: true, bestMatch: { seq: 5, type: 'user/message', time: 3900, surface: 'current', snippet: 'alpha needle' } }], nextCursor: 'c-1' },
+      { items: [] },
+    )
+    const out = await w.rowCall('session_search', { query: 'needle' })
+    expect(out.error?.code).toBe(SC.CALLER_DRIFT)
+    expect(String(out.error?.message)).toContain('resumption searchQueryPort.searchSessions')
+    expect(out.value).toBeUndefined()
+    expect(w.calls.filter((entry) => entry.method === 'searchSessions').length).toBe(1)
+  })
+
+  it('the CURSOR-CONTINUATION REQUEST CONSTRUCTION is its own revalidation point (freshness gate, not the port edge)', async () => {
+    let reads = 0
+    const w = await makeWorld({
+      readCallerOverride: () => {
+        reads += 1
+        return reads >= 8
+          ? { id: CALLER_ID, cwd: '/moved-before-construction', boundary: { lastStepStartSeq: 50 } }
+          : { id: CALLER_ID, cwd: CWD, boundary: { lastStepStartSeq: 50 } }
+      },
+    })
+    w.pages.searchEvents.push(
+      { session: { id: CALLER_ID, cwd: CWD, createdAt: 5000 }, items: [{ seq: 5, type: 'user/message', time: 3900, surface: 'current', snippet: 'alpha needle' }], nextCursor: 'e-1' },
+      { items: [] },
+    )
+    const out = await w.rowCall('session_event_search', { query: 'needle' })
+    expect(out.error?.code).toBe(SC.CALLER_DRIFT)
+    expect(String(out.error?.message)).toContain('cursor-continuation request')
+    expect(w.calls.filter((entry) => entry.method === 'searchEvents').length).toBe(1)
   })
 })

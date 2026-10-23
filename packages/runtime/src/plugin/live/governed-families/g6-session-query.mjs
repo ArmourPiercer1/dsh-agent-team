@@ -57,6 +57,26 @@
  *     an assembly without a search backend constructs the adapter WITHOUT
  *     providing fake search methods. (PARENT_FILTER residual CLOSED.)
  *
+ * Rev 3 (root-1eea concentrated review delta — three residual over-reach
+ * paths closed, the six rev-2 items above STAND CLOSED and are not reopened):
+ *  ① EVERY hasTarget row (ALL FOUR session_id-taking tools, the search-family
+ *     session_event_search included — family is no excuse) carries the Team
+ *     ceiling on its effective target (classify + entry + per-dispatch),
+ *     intersected with the service pre-authorization; cwd agreement never
+ *     substitutes for the ceiling.
+ *  ② session_trace's lineage lanes intersect the ceiling too: a
+ *     ceiling-denied ancestor stops display at the boundary note, a
+ *     ceiling-denied descendant subtree rides the same null under-disclosure
+ *     as an unauthorized one, and denied ids never reach visibleIds/title
+ *     reads (cwd-only filtering is closed).
+ *  ③ REVOCATION CONTRACT: from entry admission on, every service dispatch
+ *     (each page, each title read) AND the final serve re-verify the CURRENT
+ *     caller id/cwd/step-boundary, the pinned receiver + method objects and
+ *     the live Team ceiling decision — a revocation across an await never
+ *     serves on the stale authorization (typed G6SessionQueryRefusal throws,
+ *     same codes; entered effects not rewound per the drain semantics). No
+ *     stale revision snapshot is trusted; the decision port stays live.
+ *
  * UNWIRED: nothing here mounts itself; placement/registration is the CENTER's.
  * No Host boot, no network. Legs in a5m2-g6-session-query-c1.test.ts run the
  * REAL captured native faces (the built tool plugin's apply() is executed to
@@ -185,7 +205,7 @@ import { createHash } from 'node:crypto'
 import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 import { g3CanonicalRegistrationFace } from './g3-fsproc-adapters.mjs'
 
-export const A5_G6_ADAPTER_REVISION = 2
+export const A5_G6_ADAPTER_REVISION = 3
 export const A5_G6_FAMILY = 'B-SESSION-QUERY'
 
 /** The five tool names, exactly as the host registers them (index.ts:66/:76/:86/:96/:109 @639ed01539). */
@@ -383,6 +403,9 @@ function renderFullErrorChain (error) {
 }
 
 function sanitizeServiceError (observe, operation, error) {
+  // Governance-plane integrity refusals (guardFacts, result-shape guards)
+  // are NOT service failures — they pass through unsanitized.
+  if (error instanceof G6SessionQueryRefusal) throw error
   // sanitizeError mirror (service-boundary.ts:116-141): full diagnostic is
   // OBSERVED (never model-served); the model sees only safe {code, message}.
   observe({ event: 'service-failure', operation, diagnostic: renderFullErrorChain(error) })
@@ -638,15 +661,20 @@ function assertObservedTargetAuthorized (caller, target, observed) {
   }
 }
 
-/** authorizeDescendants mirror (:175-205): iterative; unauthorized → null. */
-function authorizeDescendants (nodes, caller) {
+/**
+ * authorizeDescendants mirror (:175-205): iterative; unauthorized → null.
+ * Root-1eea delta ②: the Team ceiling intersects the SAME lane — a
+ * ceiling-denied subtree is under-disclosed through the same null mechanism
+ * (its ids never reach visibleIds/titles and are never named in the output).
+ */
+function authorizeDescendants (nodes, caller, ceilingAllows = () => true) {
   const result = []
   let pending
   for (const node of [...nodes].reverse()) pending = { node, target: result, next: pending }
   while (pending !== undefined) {
     const current = pending
     pending = current.next
-    if (!recordAuthorized(current.node.session, caller)) {
+    if (!recordAuthorized(current.node.session, caller) || !ceilingAllows(current.node.session.header.id)) {
       current.target.push(null)
       continue
     }
@@ -892,12 +920,17 @@ function formatEventRead (sessionId, title, window) {
 
 /* ── the collectPages mirror (operations.ts:244-277 @639ed01539) ────────── */
 
-async function collectPages (maxResults, signal, request, accept) {
+async function collectPages (maxResults, signal, request, accept, revalidate) {
   const items = []
   const seen = new Set()
   let cursor
   for (;;) {
     signal?.throwIfAborted?.()
+    // ROOT-16:47 delta ③: every continuation REQUEST CONSTRUCTION — the
+    // second page and beyond — is itself a revalidation point: the cursor
+    // is only baked into a new request after the current caller/boundary/
+    // service/ceiling passed the freshness gate.
+    revalidate?.(cursor === undefined ? 'page request' : 'cursor-continuation request')
     const page = await request(cursor)
     signal?.throwIfAborted?.()
     if (!isRecord(page) || !Array.isArray(page.items)) {
@@ -922,10 +955,16 @@ async function collectPages (maxResults, signal, request, accept) {
 /* ── the five typed tool specs ───────────────────────────────────────────── */
 
 const TOOL_SPECS = Object.freeze({
+  // hasTarget: the tool resolves an EFFECTIVE TARGET SESSION (explicit
+  // session_id or the caller) that the Team allow ceiling must intersect —
+  // all four session_id-taking tools, session_event_search INCLUDED
+  // (root-1eea delta ①); the cross-session search has no single target and
+  // rides the ceiling per result/parent instead.
   session_search: Object.freeze({
     operation: 'search-across-sessions',
     portFamily: 'search',
     portMethod: 'searchSessions',
+    hasTarget: false,
     mountCondition: 'declared_mount',
     nativeCite: 'tool-session-query/src/index.ts:65-73 @639ed01539',
     serviceCite: 'ctx.sessionQuery.searchSessions — abstract @session-query/src/index.ts:153-156, concrete @session-query-sqlite/src/index.ts:268 @639ed01539',
@@ -939,6 +978,7 @@ const TOOL_SPECS = Object.freeze({
     operation: 'search-within-session',
     portFamily: 'search',
     portMethod: 'searchEvents',
+    hasTarget: true,
     mountCondition: 'declared_mount',
     nativeCite: 'tool-session-query/src/index.ts:75-83 @639ed01539',
     serviceCite: 'ctx.sessionQuery.searchEvents — abstract @session-query/src/index.ts:164-167, concrete @session-query-sqlite/src/index.ts:296 @639ed01539',
@@ -952,6 +992,7 @@ const TOOL_SPECS = Object.freeze({
     operation: 'trace-session-lineage',
     portFamily: 'trace',
     portMethod: 'traceSession',
+    hasTarget: true,
     mountCondition: 'always',
     nativeCite: 'tool-session-query/src/index.ts:85-93 @639ed01539',
     serviceCite: 'ctx.sessionQuery.traceSession — concrete @session-query/src/index.ts:327-331 @639ed01539',
@@ -965,6 +1006,7 @@ const TOOL_SPECS = Object.freeze({
     operation: 'trace-event-relationships',
     portFamily: 'trace',
     portMethod: 'traceEvent',
+    hasTarget: true,
     mountCondition: 'always',
     nativeCite: 'tool-session-query/src/index.ts:95-106 @639ed01539',
     serviceCite: 'ctx.sessionQuery.traceEvent — concrete @session-query/src/index.ts:340-347 @639ed01539',
@@ -978,6 +1020,7 @@ const TOOL_SPECS = Object.freeze({
     operation: 'read-event-window',
     portFamily: 'eventRead',
     portMethod: 'readEvent',
+    hasTarget: true,
     mountCondition: 'always',
     nativeCite: 'tool-session-query/src/index.ts:108-121 @639ed01539',
     serviceCite: 'ctx.sessionQuery.readEvent — concrete @session-query/src/index.ts:355-361 @639ed01539',
@@ -1280,7 +1323,11 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         throw error
       }
       const effectiveTarget = args.session_id ?? caller.caller.id
-      if (spec.portFamily !== 'search' && teamCeiling(effectiveTarget, caller.caller) !== true) {
+      // hasTarget rows (ALL FOUR session_id-taking tools — session_event_search
+      // included; root-1eea delta ①: port family is no excuse) ride the Team
+      // ceiling on their effective target. The cross-session search has no
+      // single target and rides the ceiling in the result/parent lanes.
+      if (spec.hasTarget && teamCeiling(effectiveTarget, caller.caller) !== true) {
         return refuse(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, teamCeilingDetail(effectiveTarget))
       }
       seq += 1
@@ -1356,17 +1403,65 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
       }
       const caller = callerNow.caller
       const effectiveTarget = plan.plan.actualArgs.session_id ?? caller.id
-      if (spec.portFamily !== 'search' && teamCeiling(effectiveTarget, caller) !== true) {
+      if (spec.hasTarget && teamCeiling(effectiveTarget, caller) !== true) {
         return refuse(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, teamCeilingDetail(effectiveTarget))
       }
+      // REVOCATION LAW (root-1eea delta ③): from entry admission on, EVERY
+      // service dispatch — every page, every title read — AND the final serve
+      // re-verify the CURRENT caller id/cwd/step-boundary, the pinned
+      // receiver objects + method objects, and the Team ceiling decision. A
+      // revocation landing across an await is NEVER served on the stale
+      // authorization: the row throws the SAME governance codes through
+      // G6SessionQueryRefusal (the entry envelope shape only fronts failures
+      // observable before admission). Already-entered port calls are not
+      // rewound (the drain semantics); nothing further enters and nothing
+      // serves. The contract here is the LIVE decision port — no stale
+      // revision snapshot is trusted.
+      const planCallerSnapshot = plan.plan.callerSnapshot
+      const guardFacts = (stage) => {
+        for (const [guardFacet, guardMethod] of spec.facetsUsed) {
+          const ref = facetRefs[guardFacet]
+          if (ref === undefined || queryPorts[guardFacet] !== ref.object) {
+            throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_RECEIVER_MOVED, `${stage}: the live ${guardFacet} is no longer the RECEIVER OBJECT pinned at placement — zero further forwarding`)
+          }
+          if (ref.object[guardMethod] !== ref.methods[guardMethod]) {
+            throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.PORT_METHOD_MOVED, `${stage}: the live ${guardFacet}.${guardMethod} is no longer the function OBJECT pinned at placement — zero further forwarding`)
+          }
+        }
+        const now = requireCaller(readCaller, toolName)
+        if (now.refusal !== undefined) throw new G6SessionQueryRefusal(now.refusal.code, `${stage}: ${now.refusal.detail}`)
+        if (now.caller.id !== planCallerSnapshot.id
+          || (now.caller.cwd ?? null) !== planCallerSnapshot.cwd
+          || canonicalJson(now.caller.boundary ?? null) !== canonicalJson(planCallerSnapshot.boundary)) {
+          throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.CALLER_DRIFT, `${stage}: the caller identity/workspace/step-boundary moved after this call was admitted — the authorization is revoked; in-flight effects are not rewound, but no further port entry and nothing is served`)
+        }
+        if (spec.hasTarget && teamCeiling(effectiveTarget, now.caller) !== true) {
+          throw new G6SessionQueryRefusal(A5_G6_TYPED_CODES.TEAM_CEILING_DENY, `${stage}: the Team ceiling revoked the effective target '${String(effectiveTarget)}' after admission — nothing is served`)
+        }
+      }
       let portCalls = 0
-      const call = (facetName, method, operation, ...portArgs) => {
+      const call = async (facetName, method, operation, ...portArgs) => {
+        guardFacts(`dispatch ${facetName}.${method}`)
         const ref = facetRefs[facetName]
         portCalls += 1
         // this === the pinned receiver object, always (fix 5).
-        return serviceCall(observe, signal, operation, () => ref.methods[method].call(ref.object, ...portArgs))
+        const answered = await serviceCall(observe, signal, operation, () => ref.methods[method].call(ref.object, ...portArgs))
+        // ROOT-16:47 delta ②: EVERY await resumption re-reads the CURRENT
+        // caller id/cwd/step-boundary, the pinned receiver + method objects
+        // and the live Team ceiling. Drift across an await is a ZERO-FORWARD
+        // refusal with the closed codes: the entered effect is not rewound
+        // (drain semantics), nothing further dispatches, nothing serves.
+        guardFacts(`resumption ${facetName}.${method}`)
+        return answered
       }
-      const readTitleSnapshots = async (ids) => {
+      const readTitleSnapshots = async (requestedIds) => {
+        // ROOT-16:47 delta ①: title lookups that cross into ANCESTOR /
+        // DESCENDANT / hit sessions pass the SAME live teamCeiling decision
+        // gate as targets — a denied id never enters the title port at all.
+        // (The classify+invoke target double-gate and the per-dispatch guard
+        // remain the earlier gates; this is the title lane's own gate.)
+        const ids = requestedIds.filter((id) => teamCeiling(id, caller) === true)
+        if (ids.length === 0) return new Map()
         const observations = await call('titlesQueryPort', 'readTitleSnapshots', 'title observation', ids, signal)
         const titles = new Map()
         if (!Array.isArray(observations)) {
@@ -1430,6 +1525,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         observe({ event: 'dispatch', facts: lastDispatch })
       }
       const serve = (value) => {
+        guardFacts('final serve')
         observeFacts({ served: 'string' })
         return deepFreeze({ ok: true, value, plan: plan.plan })
       }
@@ -1461,6 +1557,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
           signal,
           (cursor) => call('searchQueryPort', 'searchSessions', 'session search', { ...request, ...(cursor === undefined ? {} : { cursor }) }, { signal }),
           (hit) => isRecord(hit?.header) && hit.header.id !== caller.id && headerAuthorized(hit.header, caller) && ceilingOpen(hit.header.id),
+          guardFacts,
         )
         const parentIds = collected.items
           .map((hit) => hit.header.parentSession)
@@ -1506,6 +1603,7 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
             return page
           },
           () => true,
+          guardFacts,
         )
         return serve(formatEventSearch(effectiveTarget, title, collected))
       }
@@ -1516,14 +1614,17 @@ function buildG6Row ({ toolName, spec, realmId, providerId, readNative, queryPor
         const ancestors = []
         let ancestorBoundary = false
         for (const ancestor of trace.ancestors) {
-          if (!recordAuthorized(ancestor, caller)) {
+          // Root-1eea delta ②: the ancestor lane intersects the Team ceiling
+          // — a ceiling-denied ancestor stops the display at the boundary
+          // note and never reaches visibleIds/title reads.
+          if (!recordAuthorized(ancestor, caller) || !ceilingOpen(ancestor.header.id)) {
             ancestorBoundary = true
             break
           }
           ancestors.push(ancestor)
         }
         if (ancestors.length === trace.ancestors.length && !trace.complete) ancestorBoundary = true
-        const descendants = authorizeDescendants(trace.descendants, caller)
+        const descendants = authorizeDescendants(trace.descendants, caller, ceilingOpen)
         const visibleIds = [
           trace.target.header.id,
           ...ancestors.map((record) => record.header.id),
