@@ -336,6 +336,54 @@ export function checkCurrentContract({ graphText, readFile, fileExists, revExist
   else if (!revExists(baseline)) findings.push(`Q4: baseline ${baseline} does not resolve to a commit object — FAIL, an unresolvable anchor is never green`)
   else if (!baselineCurrent(baseline)) findings.push(`Q4: baseline ${baseline} is neither HEAD nor an ancestor of HEAD — the pointer names a revision this tree cannot produce`)
 
+  // Q9 — the phase_status milestone pointer must agree, BY VALUE, with the active plan's
+  // 当期三态指针 line (card M2-CI-PHASE-STATUS-01; the fields were added to the block by
+  // M2-DOCS-01). Minimal caliber, no new leg and no second audit layer: both collected fields
+  // are REQUIRED members of the block; phase_status is a single-line string scalar whose
+  // milestones read `M<n>-<STATE>` from a CLOSED vocabulary; phase_status_collected carries the
+  // exact baseline_collected grammar; every disagreement names the milestone with both
+  // spellings (graph state and plan word), because a red that cannot say which milestone moved
+  // is a re-investigation, not a pointer. A silently dropped pointer is the failure mode this
+  // rule exists for: absence and non-scalar shapes are red, never ignored.
+  {
+    const PS_STATES = { FROZEN: /^已冻结$/, MERGED: /^已\S*合入$/, 'IN-PROGRESS': /^进行中$/ }
+    const psCount = count(/^ {2}phase_status:/gm, ccBlock)
+    const pscCount = count(/^ {2}phase_status_collected:/gm, ccBlock)
+    const ps = field('phase_status')
+    const psc = field('phase_status_collected')
+    if (ps === null) findings.push('Q9: current_contract.phase_status is missing — the milestone pointer is a required current field (found 0 inside the block)')
+    else if (psCount > 1) findings.push(`Q9: current_contract.phase_status must appear exactly once inside the block (found ${String(psCount)}; two active claims for one pointer)`)
+    else if (/^[{[|>]/.test(ps)) findings.push(`Q9: current_contract.phase_status must be a single-line string scalar, got a flow/block value (${ps.slice(0, 48)})`)
+    else {
+      const seen = new Map()
+      for (const m of ps.matchAll(/\bM(\d+)-([A-Z][A-Z-]*)/g)) {
+        if (seen.has(m[1])) findings.push(`Q9: phase_status declares M${m[1]} twice (${String(seen.get(m[1]))} then ${m[2]}) — one state per milestone`)
+        else seen.set(m[1], m[2])
+      }
+      if (seen.size === 0) findings.push('Q9: phase_status names no milestone — expected M<n>-<STATE> tokens (e.g. M0-FROZEN / M1-MERGED / M2-IN-PROGRESS)')
+      for (const [n, st] of seen) if (PS_STATES[st] === undefined) findings.push(`Q9: phase_status M${n} state "${st}" is outside the closed vocabulary {${Object.keys(PS_STATES).join(', ')}} — extend the vocabulary in the checker, never in the pointer`)
+      const planText = activePlan === null ? null : readFile(activePlan)
+      const planLine = planText === null ? undefined : planText.split('\n').find((l) => l.includes('当期三态指针'))
+      if (planText === null) findings.push('Q9: the active plan is unreadable; phase_status cannot be compared to the plan pointer it must agree with')
+      else if (planLine === undefined) findings.push('Q9: the active plan carries no 当期三态指针 line — the plan side of the milestone comparison is absent')
+      else {
+        const plan = new Map()
+        for (const m of planLine.matchAll(/M(\d+)\s*(已冻结|已\S*合入|进行中)/g)) plan.set(m[1], m[2])
+        if (plan.size === 0) findings.push('Q9: the plan 当期三态指针 line declares no milestone word (M<n> followed by 已冻结 / 已…合入 / 进行中)')
+        const gk = [...seen.keys()].sort().join(' ')
+        const pk = [...plan.keys()].sort().join(' ')
+        if (seen.size > 0 && plan.size > 0 && gk !== pk) findings.push(`Q9: phase_status milestones {M${gk.replace(/ /g, ' M')}} do not match the plan 当期三态指针 milestones {M${pk.replace(/ /g, ' M')}}`)
+        else for (const [n, st] of seen) {
+          const word = plan.get(n)
+          if (word !== undefined && (PS_STATES[st] === undefined || !PS_STATES[st].test(word))) findings.push(`Q9: phase_status says M${n}-${st} but the plan 当期三态指针 says M${n} ${word} — the milestone moved in one carrier only; update plan and pointer in the same commit`)
+        }
+      }
+    }
+    if (psc === null) findings.push('Q9: current_contract.phase_status_collected is missing — every collected pointer owes its own timestamp')
+    else if (pscCount > 1) findings.push(`Q9: current_contract.phase_status_collected must appear exactly once inside the block (found ${String(pscCount)})`)
+    else if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/.test(psc)) findings.push('Q9: phase_status_collected must be an ISO8601Z timestamp (same grammar as baseline_collected)')
+  }
+
   // Q1 — active wording must agree with the contract; retired wording is a stale pointer.
   const phase = /^current_phase:\s*(.*)$/m.exec(g)
   if (!phase) findings.push('Q1: current_phase missing')

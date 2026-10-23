@@ -1,0 +1,5 @@
+DSH-CI-RUN head=c978eb2fc mode=default node=v24.21.0 cwd=/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel store-dir=default allow-refused=none
+DSH-CI-LEG leg=graph-parse verdict=pass seconds=0.3 detail=dev/agent-workflow/graph.yaml parses: OK mapping-keys 52
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.1 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 179 commits); current contract ok (phase_id alpha5-tool-io-governance, baseline 9b2ee57bc5af…, matrix rows 26 claimed 0, drift 101 path(s))
+DSH-CI-VERDICT pass pass=2 fail=0 skip=0 skipped=none legs=2 refused=0 refusedlegs=none seconds=0.4
+RC=0
