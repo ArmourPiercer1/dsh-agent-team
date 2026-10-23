@@ -1382,8 +1382,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : teamOpsInjectRaw.callerGate !== undefined && typeof teamOpsInjectRaw.callerGate !== 'function'
-                  ? 'callerGate, when supplied, must be (exec, requestedRootSessionId) => Promise<{ok:true, caller, rootSessionId} | {ok:false, result}> — the SAME shared gate the native common entry runs (packages/tools resolveTeamToolCallerRootGate); the bridge consults it before any durable fact is read, and a refusal carries the native rejected VALUE verbatim'
+                : teamOpsInjectRaw.registrationOf !== undefined && typeof teamOpsInjectRaw.registrationOf !== 'function'
+                  ? 'registrationOf, when supplied, must be () => { adapterRevision, providerIdentity } — the version the PUBLISHED family registration carries; the bridge compares it against every claim it composes and again at the edge, so a claim never rides a registration it does not match'
+                  : teamOpsInjectRaw.callerGate !== undefined && typeof teamOpsInjectRaw.callerGate !== 'function'
+                  ? 'callerGate, when supplied, must be (exec, requestedRootSessionId) => Promise<{ok:true, caller, rootSessionId} | {ok:false, result}> — the SAME shared gate the native common entry runs (packages/tools resolveTeamToolCallerRootGate); the bridge consults it before any durable fact is read; a well-formed rejected VALUE the gate returns is handed back to the caller through the private settled-value return on the adapter execute (zero PA entry, zero durable read, zero port entry), and any other answer stays an ordinary seat refusal (this layer re-mints no value)'
                   : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
                   ? 'queryFacts, when supplied, must expose resolve (toolName, addressedInstanceId) => facts — the published durable reads the three QUERY rows mint their target leaves from. OPTIONAL on purpose: a mount arming only the write rows is never forced to supply a roster/blueprint read; without it a query claim simply mints nothing and the bridge refuses it at composition.'
                   : undefined
@@ -1401,6 +1403,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      ...(teamOpsInjectRaw.registrationOf === undefined ? {} : { registrationOf: teamOpsInjectRaw.registrationOf }),
       ...(teamOpsInjectRaw.callerGate === undefined ? {} : { callerGate: teamOpsInjectRaw.callerGate }),
       ...(teamOpsInjectRaw.queryFacts === undefined ? {} : { queryFacts: teamOpsInjectRaw.queryFacts }),
     })
@@ -4353,6 +4356,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        ...(teamOpsInject.registrationOf === undefined ? {} : { registrationOf: teamOpsInject.registrationOf }),
         ...(teamOpsInject.callerGate === undefined ? {} : { callerGate: teamOpsInject.callerGate }),
         ...(teamOpsInject.queryFacts === undefined ? {} : { queryFacts: teamOpsInject.queryFacts }),
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.

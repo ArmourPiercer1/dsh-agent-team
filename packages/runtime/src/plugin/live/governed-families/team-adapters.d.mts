@@ -145,7 +145,14 @@ export interface BTeamAdmitContext {
   readonly classified: { ok: true; plan: BTeamPlan } | BTeamRefusal
   readonly exec: unknown
 }
-export type BTeamAdmitAnswer = { ok: boolean; code?: string; detail?: string }
+export type BTeamAdmitAnswer = { ok: boolean; code?: string; detail?: string,
+  /** The ONE private settled-value return (root 24:2x): a seam holding the
+   *  shared caller/root rule answers the call by handing back, by reference,
+   *  the typed rejected VALUE it holds. Reachable only as the exact shape
+   *  `{ ok: true, settled: true, value }`; execute returns it immediately and
+   *  never enters the delegate. Ordinary refusals keep `ok: false` + the
+   *  exception path. */
+  settled?: boolean; value?: unknown }
 export type BTeamAdmit = (ctx: BTeamAdmitContext) => Promise<BTeamAdmitAnswer>
 
 /** Factory input (everything REQUIRED that a capture is presented:

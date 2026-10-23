@@ -636,32 +636,46 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
   })
 
   describe('(j) the shared caller/root gate answers BEFORE any durable fact', () => {
-    it('a gate refusal reaches the caller as the NATIVE typed rejected VALUE, with zero PA entry and zero fact read', async () => {
+    it('the first gate refusal RETURNS the typed rejected VALUE; the later identity recovery never reaches the delegate', async () => {
       let factsRead = 0
-      const native = {
+      let gateCalls = 0
+      const native = Object.freeze({
         status: 'rejected',
         code: 'TEAM_TOOL_CALLER_ROOT_MISMATCH',
         message: "team-tools: caller session belongs to Team root 's-other', but the tool request targets root 's-root-wire'",
         details: { callerRootSessionId: 's-other', requestedRootSessionId: 's-root-wire' },
-      }
+      })
       const w = makeWorld({
-        callerGate: async () => ({ ok: false, result: native }),
+        // Refuse ONCE, then would succeed: a design that re-entered the native
+        // would silently run the call, so any delegate entry fails this leg.
+        callerGate: async () => {
+          gateCalls += 1
+          return gateCalls === 1
+            ? { ok: false, result: native }
+            : { ok: true, caller: { kind: 'leader' }, rootSessionId: 's-root-wire' }
+        },
         queryFacts: { resolve: () => { factsRead += 1; return { rosterMemberIds: [], rosterFingerprint: 'x' } } },
       })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
-      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
-        .then(() => 'no-refusal')
-        .catch((error: unknown) => error as { code?: string; teamRefusal?: { detail?: string; nativeValue?: unknown } })
-      expect(typeof outcome === 'string' ? outcome : outcome.code).toBe('TEAM_TOOL_CALLER_ROOT_MISMATCH')
-      if (typeof outcome !== 'string') {
-        expect(String(outcome.teamRefusal?.detail)).toContain('belongs to Team root')
-        expect(outcome.teamRefusal?.nativeValue).toEqual(native)
-      }
-      expect(factsRead, 'no durable read runs behind a call the caller/root gate already answered').toBe(0)
-      expect(w.walks).toHaveLength(0)
-      expect(w.delegateEntries).toHaveLength(0)
+      const value = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-settled'))
+      expect(value, 'execute returns the trusted gate VALUE itself, by reference - no catch, no wrapped refusal').toBe(native)
+      expect(factsRead, 'no durable read runs behind a caller/root refusal').toBe(0)
+      expect(w.walks, 'no PA question opens').toHaveLength(0)
+      expect(w.delegateEntries, 'the lane is never entered, before or after the gate answer').toHaveLength(0)
+      expect(gateCalls, 'no retry through the native').toBe(1)
       expect(wiring.claimStats().callerGateRefusals).toBe(1)
     })
+    it('a gate answer that is NOT a well-formed rejected VALUE stays an ordinary seat refusal', async () => {
+      const w = makeWorld({ callerGate: async () => ({ ok: false, result: { note: 'caller looked wrong' } }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const outcome: { kind: 'returned'; value: unknown } | { kind: 'refused'; code: string } = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-malformed'))
+        .then((returned): { kind: 'returned'; value: unknown } => ({ kind: 'returned', value: returned }))
+        .catch((error: unknown) => ({ kind: 'refused', code: String((error as { code?: string }).code) }))
+      expect(outcome.kind).toBe('refused')
+      if (outcome.kind === 'refused') expect(outcome.code).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
+      expect(w.delegateEntries).toHaveLength(0)
+    })
+
     it('a passing gate changes nothing about the admitted leg', async () => {
       const w = makeWorld({ callerGate: async () => ({ ok: true, caller: { kind: 'leader' }, rootSessionId: 's-root-wire' }) })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
@@ -670,6 +684,42 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       expect(w.walks).toHaveLength(2)
       expect(w.delegateEntries).toHaveLength(1)
       expect(wiring.claimStats().callerGateRefusals).toBe(0)
+    })
+  })
+
+  describe('(k) the claim and the published registration are version-paired at BOTH ends of the walk', () => {
+    it('a registration that does not match the claim refuses before any PA question opens', async () => {
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: 'some-OTHER-provider' }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-pre'))
+        .then(() => 'no-refusal')
+        .catch((error: unknown) => String((error as { code?: string }).code))
+      expect(outcome).toBe('P_B_TEAM_WIRE_ADMISSION_CANCELLED')
+      expect(w.walks, 'a claim is never minted on a registration it does not match').toHaveLength(0)
+      expect(w.delegateEntries).toHaveLength(0)
+    })
+    it('a registration that moves under an open walk stops at the edge — the grant is never carried into the lane', async () => {
+      let published = { adapterRevision: 1, providerIdentity: PROVIDER }
+      const w = makeWorld({ registrationOf: () => published })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      const originalOpen = w.seat.open
+      if (typeof originalOpen === 'function') {
+        w.seat.open = async (arg: Record<string, unknown>) => {
+          published = { adapterRevision: 2, providerIdentity: PROVIDER }
+          return (originalOpen as (a: Record<string, unknown>) => Promise<unknown>)(arg)
+        }
+      }
+      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-edge'))
+        .then(() => 'no-refusal')
+        .catch((error: unknown) => String((error as { code?: string }).code))
+      expect(outcome).toBe('P_B_TEAM_WIRE_EDGE_CANCELLED')
+      expect(w.delegateEntries, 'a stale approval never enters the lane').toHaveLength(0)
+    })
+    it('a matching registration changes nothing about the admitted leg', async () => {
+      const w = makeWorld({ registrationOf: () => ({ adapterRevision: 1, providerIdentity: PROVIDER }) })
+      const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
+      await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-reg-match'))
+      expect(w.delegateEntries).toHaveLength(1)
     })
   })
 

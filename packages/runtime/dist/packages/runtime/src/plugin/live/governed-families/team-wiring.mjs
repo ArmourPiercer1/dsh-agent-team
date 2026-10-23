@@ -382,13 +382,13 @@ const defaultCorrelationOf = (exec) => (isRecord(exec) && nonEmptyString(exec.ca
  */
 export function buildTeamOpsWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(WIRE.INPUT_INVALID, 'the wiring bridge takes one input record')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts', 'callerGate'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts', 'callerGate', 'registrationOf'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
       return wiringRefuse(WIRE.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, liveNative, teamSet, placementFeed, definitionIdentityOf, correlationOf, pa, observe}`)
     }
   }
-  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts, callerGate } = input
+  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts, callerGate, registrationOf } = input
   if (!nonEmptyString(realmId)) return wiringRefuse(WIRE.INPUT_INVALID, 'realmId is REQUIRED (non-empty string) — the walk has no realm without it')
   if (!nonEmptyString(providerId)) return wiringRefuse(WIRE.INPUT_INVALID, 'providerId is REQUIRED (non-empty string) — the durable family gate compares the provider identity the owner published, and this bridge invents none')
   if (typeof readNative !== 'function') return wiringRefuse(WIRE.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the MEMBER-SCOPED capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)')
@@ -587,27 +587,59 @@ export function buildTeamOpsWiring (input = {}) {
     // own message, its `details`), with zero PA entry, zero fact read and zero
     // port entry; success falls through untouched. A world that publishes no
     // gate behaves exactly as it did before this seam existed.
+    // ④ CLOSED PER ROOT's NARROW REVIEW (67e90): the wrapped refusal this lane
+    // used to return was still an EXCEPTION by the time it reached the caller
+    // (the adapter's `refusalToThrow`), and reading it back meant catching a
+    // thrown error to find a value - which is hiding, and it would also accept
+    // any object claiming to be a native VALUE. Now the trusted gate's native
+    // failure takes an EXPLICIT DIRECT-RETURN CHANNEL: nothing is minted, no
+    // fact is read, no PA question opens, and the seat answers "this layer
+    // forwards nothing" ({ok:true}) so the ADAPTER'S OWN delegate - the real
+    // native tool - settles the call with its OWN typed rejected VALUE at its
+    // :496 gate, before `spec.run` and therefore with zero downstream effect.
+    // The caller thus receives the native's bytes because they ARE the
+    // native's bytes: this layer invents none and carries none, so a forged
+    // `nativeValue` has no path into the answer. Ordinary PA / admission
+    // refusals keep their existing exception semantics untouched.
     if (typeof callerGate === 'function') {
       const target = isRecord(plan.target) ? plan.target : undefined
       const rootLeaf = isRecord(target) ? target.root : undefined
       const rootClaim = isRecord(rootLeaf) && typeof rootLeaf.claim === 'string' ? rootLeaf.claim : ''
       const gate = await callerGate(ctx.exec, rootClaim)
       if (gate?.ok !== true) {
-        const result = isRecord(gate) && isRecord(gate.result) ? gate.result : undefined
+        // ROOT 24:0x: the ok:true FORWARD design is BLOCKED, not an authorized
+        // answer - the native re-enters its own identity resolution and then
+        // `spec.run`, so the call would run past the PA walk. Until the signed
+        // adapter offers the explicit private settled-value return at execute
+        // (`if (admitted?.settled === true) return admitted.value`, the two-line
+        // delta at team-adapters.mjs:817-823 that this seam is waiting on), the
+        // refusal stays an ordinary seat refusal: the caller's answer is this
+        // seat's OWN code, the native is never re-entered, and nothing is
+        // carried as a "native value" (no forged-value path, no fake ok:true,
+        // no swallowing of unrelated admission refusals).
         stats.callerGateRefusals += 1
+        const value = isRecord(gate) ? gate.result : undefined
+        const trusted = isRecord(value) && value.status === 'rejected'
+          && typeof value.code === 'string' && value.code.length > 0
+          && typeof value.message === 'string'
         observe({
           event: 'b-team-wire:caller-gate-refused',
           name,
-          code: result?.code,
+          code: trusted ? value.code : undefined,
           paEntry: false,
           factsRead: false,
+          minted: false,
+          delegateEntry: false,
+          settledReturn: trusted,
         })
-        return Object.freeze({
-          ok: false,
-          code: result?.code ?? WIRE.INPUT_INVALID,
-          detail: String(result?.message ?? 'the shared caller/root gate refused the call'),
-          nativeValue: result,
-        })
+        // The private settled-value channel (adapter execute): the trusted
+        // internal gate's OWN typed rejected VALUE goes back to the caller by
+        // reference, with zero PA entry, zero durable read and zero port
+        // entry. A gate answer that is not a well-formed rejected VALUE is
+        // never smuggled through that channel - it stays an ordinary seat
+        // refusal, and no caller-supplied data ever forms it.
+        if (trusted) return Object.freeze({ ok: true, settled: true, value })
+        return wiringRefuse(WIRE.ADMISSION_CANCELLED, `${String(name)}: the shared caller/root gate refused this call with an answer that is not a well-formed rejected VALUE — zero PA entry, zero durable fact read, zero port entry`)
       }
     }
     const callBox = { facts: undefined, claim: undefined, fault: undefined }
@@ -624,6 +656,30 @@ export function buildTeamOpsWiring (input = {}) {
       stats.admissionRefusals += 1
       observe({ event: 'b-team-wire:call-id-ABSENT', name })
       return wiringRefuse(WIRE.CALL_ID_ABSENT, `${String(name)}: the execution answered no ISSUED call identity — the PA walk has no single-flight key and a guessed correlation is forbidden; zero port entry`)
+    }
+    // ⑤ (root 23:5x) THE VERSION PAIRING, at the two real points: the
+    // registration the mount PUBLISHES and the claim this seat COMPOSES must
+    // agree, and they are compared again at the edge, after the grant landed.
+    // This is the adapter revision the durable row carries (the adapter's own
+    // fact) against the identity the registration owner published — NOT the
+    // wiring revision, which vouches for nothing. A mismatch answers with the
+    // seat's own existing admission / edge cancellation codes (no new refusal
+    // vocabulary): before the composition no PA question opens, after the
+    // grant the lane is never entered.
+    const published = typeof registrationOf === 'function' ? registrationOf() : undefined
+    const registrationMismatch = (where) => {
+      if (!isRecord(published)) return undefined
+      if (published.adapterRevision === A5_B_TEAM_ADAPTER_REVISION
+        && published.providerIdentity === providerId) return undefined
+      return `${String(name)}: the ${where} carries adapterRevision ${JSON.stringify(published.adapterRevision)} / providerIdentity ${JSON.stringify(published.providerIdentity)} while this claim composes under ${String(A5_B_TEAM_ADAPTER_REVISION)} / ${JSON.stringify(providerId)} — a claim is never minted, and never forwarded to the lane, on a registration this claim does not match`
+    }
+    {
+      const mismatch = registrationMismatch('published registration')
+      if (mismatch !== undefined) {
+        stats.admissionRefusals += 1
+        observe({ event: 'b-team-wire:registration-claim-MISMATCH', name, stage: 'pre-pa', paEntry: false })
+        return wiringRefuse(WIRE.ADMISSION_CANCELLED, mismatch)
+      }
     }
     const parsedEffects = parseRequestedEffectSet([Object.freeze({ kind: 'tool-invoke', toolName: name, resource: null })])
     if (parsedEffects.ok !== true) {
@@ -706,6 +762,19 @@ export function buildTeamOpsWiring (input = {}) {
           drifted,
         }))
         observe({ event: 'b-team-wire:query-facts', name: String(name), drifted })
+      }
+      {
+        // Same comparison, after the grant landed: a registration that moved
+        // under a walk that was opened against the old one stops here — the
+        // approval is not carried into the lane on a stale version.
+        const current = typeof registrationOf === 'function' ? registrationOf() : undefined
+        const stale = isRecord(current)
+          && (current.adapterRevision !== A5_B_TEAM_ADAPTER_REVISION || current.providerIdentity !== providerId)
+        if (stale) {
+          stats.admissionRefusals += 1
+          observe({ event: 'b-team-wire:registration-claim-MISMATCH', name, stage: 'post-grant', laneEntry: false })
+          return wiringRefuse(WIRE.EDGE_CANCELLED, registrationMismatch('registration at the edge'))
+        }
       }
       admittedPlans.add(plan)
       stats.admits += 1
