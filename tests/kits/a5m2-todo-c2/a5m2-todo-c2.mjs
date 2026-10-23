@@ -10,10 +10,11 @@
  *       EMPIRICALLY opening ZERO parameter-permission rows, and the member model surface
  *       carrying read_image with the captured native description bytes.
  *   C2  PENDING with ZERO store objects: while row1 is pending, the attachment store gains
- *       nothing and the synthetic 2048x1536 PNG is byte-untouched.
+ *       nothing and the synthetic 1024x768 PNG is byte-untouched.
  *   C3  PUBLIC ALLOW -> exactly ONE control-allow-consumed for that live requestId, exactly
  *       ONE new store object whose name-sha equals its byte-sha, REAL normalization
- *       (2048x1536 -> 1024x768 via storeCapOverride maxImageDimension 1024) and the
+ *       (1024x768 -> 512x384 via the INDEPENDENT normalizationPolicy
+ *       normalizedImageMaxDimension 512, with the INPUT cap maxImageDimension 1024 unchanged) and the
  *       model-visible two-block envelope carrying the ORIGINAL dimensions text + image part
  *       with byte-identity to the stored object; PNG byte-untouched.
  *   C4  PUBLIC DENY of the SAME image (second read_image, fresh callId -> row2 / lane-2,
@@ -362,18 +363,46 @@ const WF_TGT = `{"phase":"written","stamp":"${RUN_STAMP}","marker":"a5m2c2-write
 const WF_DENY = `{"phase":"deny-should-not-land","stamp":"${RUN_STAMP}"}\n`
 const WF_CANCEL = `{"phase":"cancel-should-not-land","stamp":"${RUN_STAMP}"}\n`
 const WF_TGT_SHA = createHash('sha256').update(Buffer.from(WF_TGT)).digest('hex')
-// ── A5M2 IMAGE fixture (root 14:57): synthetic 2048x1536 PNG under the ANCHORED root,
-// under the gitignored `examples/*/.sessions/` pattern (L15 of the test-use .gitignore —
-// Host .gitignore untouched, H1 porcelain law intact). Deterministic bytes: filter-0
-// RGB scanlines, zlib level 9, single IDAT. maxImageDimension=1024 (profile override)
-// makes the store NORMALIZE: 1024x768 preview, originalDimensions 2048x1536 rides the receipt.
-const IMG_W = 2048
-const IMG_H = 1536
+// ── A5M2 IMAGE fixture. OVERLAY-19 (root 21:41): the image leg is now the NEW INDEPENDENT LEGAL
+// POSITIVE CONTROL — input 1024x768 INSIDE the input cap, output policy 512, so the store must
+// NORMALIZE to exactly 512x384. This is a NEW input identity (new PNG bytes, new sha, new run dir),
+// deliberately NOT a re-spun version of the recorded 2048x1536-vs-cap-1024 case: that over-limit
+// input (2411037 B, sha256 d6bfd5ebba2b067a58d9532c40b4162574075cd6dca14467892a47c16add48b8) is still
+// refused today by the same fixed Host code with IMAGE_DIMENSION_TOO_LARGE, and its raw + hashes stay
+// as the unfalsified record — nothing here washes it green. Input admission rule measured in the Host
+// (attachment-local/lib/types/image.js:86-89): refuses only when max(w,h) > maxDimension, so an input
+// whose long side EQUALS the 1024 cap is legal. PNG lives under the ANCHORED root in the gitignored
+// `examples/*/.sessions/` pattern (L15 of the test-use .gitignore — Host .gitignore untouched, H1
+// porcelain law intact). Deterministic bytes: filter-0 RGB scanlines, zlib level 9, single IDAT
+// (this size: 1092684 B, sha256 59c5e468a161bb7833c0062f9935d4d0c48e9a5e37d42c7c73964f78427d1516).
+const IMG_W = 1024
+const IMG_H = 768
 const IMG_NAME = `a5m2c2-im-${RUN_STAMP}.png`
 const IMG_REL = `examples/minimal/.sessions/${IMG_NAME}`
 const IMG_ABS = join(TESTUSE, 'examples', 'minimal', '.sessions', IMG_NAME)
-const IMG_NORM_W = 1024
-const IMG_NORM_H = 768
+const IMG_NORM_W = 512
+const IMG_NORM_H = 384
+// The full effective store limit set for THIS control, field by field from the FIXED Host639 schema
+// (packages/attachment/attachment-local/lib/index.js:971-983 LocalAttachmentStore.Config; defaults
+// measured at :896-916). Only two fields carry this control's identity: the INPUT cap
+// maxImageDimension 1024 (unchanged from the recorded window — the product/input hard cap was NOT
+// touched) and the INDEPENDENT output policy normalizedImageMaxDimension 512. Every other field is
+// the Host default, restated verbatim so the wholesale config replacement silently changes nothing:
+// pixels 4194304 >= 786432 and bytes 4194304 >= 1092684 keep those two caps non-binding, which is what
+// makes maxDimension the single driver of the resample (initialDimensions: scale 512/1024 = 0.5 ->
+// floor(1024*.5)=512 x floor(768*.5)=384). dshHome stays supplied by the Host, as in every previous
+// image run — this patch has never carried it.
+const IMG_STORE_CONFIG = {
+  maxImageBytes: 20971520,
+  maxImagesPerMessage: 20,
+  maxMessageImageBytes: 209715200,
+  maxImagePixels: 64000000,
+  maxImageDimension: 1024,
+  normalizedImageMaxPixels: 4194304,
+  normalizedImageMaxDimension: 512,
+  normalizedImageMaxBytes: 4194304,
+  imageCompressionConcurrency: 2,
+}
 function crc32(buf) {
   let c, table = crc32.table
   if (table === undefined) {
@@ -452,7 +481,7 @@ const CRITERIA = [
   // reads like a todo round (the legs themselves are unchanged; write keeps the r16 wording).
   { id: 'C1', name: FIXTURE === 'image' ? 'GOVERNED read_image row binding: durable row on lane plane-image (B-IMAGE rev2 manifest, canonicalTarget + declaredMediaType + byteCap), requiredAuthority leader x2, ZERO old parameter-permission rows for read_image (the hand-off EMPIRICALLY opens the old front door at zero) + the member surface carries read_image with the CAPTURED NATIVE description bytes' : FIXTURE === 'write' ? 'REAL write registration (captured native description bytes) + governed durable row bound to the live callId' : 'REAL todo_write registration (captured native description bytes) + governed durable row with plane-todo callId grammar' },
   { id: 'C2', name: FIXTURE === 'image' ? 'PENDING with ZERO side effects: no consumption, ZERO new attachment-store objects, source PNG byte-untouched' : FIXTURE === 'write' ? 'Ask PENDING with ZERO effect (fixture file bytes unchanged, zero consumption)' : 'Ask PENDING with ZERO append (member session log has zero todo/write entries while pending)' },
-  { id: 'C3', name: FIXTURE === 'image' ? 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE new store object (name-sha == byte-sha) + REAL normalization 1024x768 with the ORIGINAL 2048x1536 dimensions in the model-visible text and the stored bytes as the image part' : FIXTURE === 'write' ? 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + the fixture file bytes equal the submitted content' : 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE todo/write append, field-for-field equal' },
+  { id: 'C3', name: FIXTURE === 'image' ? `PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE new store object (name-sha == byte-sha) + REAL normalization ${IMG_NORM_W}x${IMG_NORM_H} with the ORIGINAL ${IMG_W}x${IMG_H} dimensions in the model-visible text and the stored bytes as the image part` : FIXTURE === 'write' ? 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + the fixture file bytes equal the submitted content' : 'PUBLIC ALLOW -> exactly ONE control-allow-consumed + EXACTLY ONE todo/write append, field-for-field equal' },
   { id: 'C4', name: FIXTURE === 'image' ? 'PUBLIC DENY of the SAME image (fresh callId -> row2 on lane plane-image): ZERO consumptions, ZERO new store objects, structural callId-paired refusal surfaced to the member' : FIXTURE === 'write' ? 'REAL DENY with ZERO effect (bytes unchanged, zero consumption, refusal surfaced to member)' : 'REAL DENY with ZERO append (log total stays 1, zero consumption, refusal surfaced to member)' },
   { id: 'C5', name: FIXTURE === 'image' ? 'PUBLIC ABANDON via the existing p6t6 abandonControlRequest route: one abandon fact, ZERO consumptions, store unchanged, callId-paired refusal to the member' : FIXTURE === 'write' ? 'cancel via the existing p6t6 abandon fixture (one abandon fact, zero consumption, zero effect)' : 'cancel via the existing p6t6 abandon fixture (one abandon fact, zero consumption, zero append)' },
   { id: 'H1', name: 'test-use porcelain EMPTY + HEAD baseline before and after; :3080 zero-touch BY CONSTRUCTION' },
@@ -1357,11 +1386,12 @@ function writeTeamPatchFile(patchPath, bootPhase) {
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig({ bootPhase }) }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
-    // image mode (root 14:57): REAL normalization via the public profile seam — override
-    // the base-bundle attachment-local row (base cordis.patch.yml:138, NO config there, so
-    // the wholesale config replacement restates nothing else) to maxImageDimension=1024.
-    // 2048x1536 -> store downscales to 1024x768; originalDimensions rides the receipt.
-    ...(FIXTURE === 'image' ? ['- id: attachment-local', "  name: '@deepseek-ai/dsh-attachment-local'", '  config:', '    maxImageDimension: 1024'] : []),
+    // image mode: REAL normalization via the public profile seam — the base-bundle attachment-local
+    // row (base cordis.patch.yml:138) carries NO config, so this replacement states the WHOLE limit +
+    // policy set (IMG_STORE_CONFIG, in schema declaration order) instead of resting on defaults.
+    // Input 1024x768 passes the 1024 input cap, then the independent policy (512) downscales it to
+    // 512x384; the receipt carries originalDimensions 1024x768 — that pair is the positive control.
+    ...(FIXTURE === 'image' ? ['- id: attachment-local', "  name: '@deepseek-ai/dsh-attachment-local'", '  config:', ...Object.entries(IMG_STORE_CONFIG).map(([k, v]) => `    ${k}: ${v}`)] : []),
     '',
   ]
   writeFileSync(patchPath, lines.join('\n'))
@@ -1681,7 +1711,9 @@ process.exit(fail === 0 ? 0 : 1)
     writeFileSync(join(RUN_DIR, 'fixture-evidence.json'), JSON.stringify({
       relPath: IMG_REL, absPath: IMG_ABS, mode: FIXTURE,
       synthetic: { width: IMG_W, height: IMG_H, generator: 'kit synthPng (filter-0 RGB scanlines, zlib level 9, single IDAT, deterministic)', sha256: sha, size: png.length },
-      storeCapOverride: { maxImageDimension: 1024, seam: 'profile patch override id=attachment-local (base row carries NO config; wholesale replace restates nothing)' },
+      imageLimitsAndPolicy: IMG_STORE_CONFIG,
+      controlIdentity: 'NEW independent legal positive control (root 21:41): input 1024x768 inside input cap maxImageDimension 1024, INDEPENDENT policy normalizedImageMaxDimension 512 -> expected 512x384. NOT the recorded 2048x1536 over-cap case (2411037 B, sha256 d6bfd5ebba2b067a58d9532c40b4162574075cd6dca14467892a47c16add48b8, still refused IMAGE_DIMENSION_TOO_LARGE), whose raw and hashes stay as the record.',
+      seam: 'profile patch override id=attachment-local; whole limit+policy set restated from the fixed Host639 LocalAttachmentStore.Config schema (index.js:971-983, defaults :896-916)',
       expectedNormalization: { width: IMG_NORM_W, height: IMG_NORM_H, originalDimensions: { width: IMG_W, height: IMG_H } },
       storeCensusBaseline: storeBaseline,
     }, null, 2))
@@ -1708,7 +1740,7 @@ async function main() {
   if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') await dieFatal(`--fixture invalid: ${FIXTURE}`)
   mkdirSync(RUN_DIR, { recursive: true })
   RUN_LOG = join(RUN_DIR, 'run.log')
-  log(`RUN IDENTITY (r18 image C2 re-verification of the r17 lexical-seam fix): MOUNT SURFACE = ROOT package pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA} (${EXPECT_ENTRIES} file records, install-surface gate 473 lines, tree INFO ${EXPECT_SURFACE_SHA} of the install-surface manifest / ${EXPECT_TREE_SHA} of the full per-file manifest); pin law: PACKAGE == COMMITTED TREE at that SHA except package.json pack normalization (measured 1812/1813), glue 16/16 dist-vs-src drift 0, fsSeam present on the dist face (2+1), the six TS mirrors committed by a real build (center check:artifacts:head verdict=ok compared=1788 drift=0) — see ${'packages-pins/' + SOURCE_PIN_SHA}/MANIFEST-2188f15ce.txt; DELTA vs the r17 mount surface = the r17 lexical-seam fix (agent-bindings / pa-mount-registry / pa-control-bridge dist) + the compiled B-CONTROL/B-INSPECT leaf-flatten table (control/types dist) + pack normalization, path-set otherwise byte-identical, and C1 is the discriminator for the second one; SCOPE: image verifies the already-reviewed r17 image scope ONLY — the 957 INSPECT/CONTROL rules and the B-MCP gap are UNWIRED candidates on this surface, not enabled; helper row = ${INSTALL_DIR}-adjacent mount-helper-root plugin.mjs == ${EXPECT_PLUGIN_SHA} (file + blob at ${SOURCE_PIN_SHA}); IMAGE fixture invariants: synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored, Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image, PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE, never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible ORIGINAL dimensions text + image part byte-identical to the stored object, deny/public-abandon ZERO commits, abandon through the p6t6 abandonControlRequest authority (NOT nativeAbort); ROOT LAWS: ONE round; a criterion's failures stop the run AT that criterion (finishCriterion throws once its checks are recorded — checks themselves record, they do not each throw), and OVERLAY-8a/8b additionally stop inside C3 before any further wait so the run never advances to the next criterion or keeps blind-waiting after a side-effecting dead fact, NO todo emission in image mode (asserted on ledger + session storage + model wire at every leg boundary), requestIds always live from the ledger, forbidden ports [${FORBIDDEN_PORTS.join(', ')}], bind-probed and held until start (port-probe.json), world prefix ${WORLD_PREFIX} under tests/homes only, world + install surface RETAINED (this kit contains no rm/prune/df); r1-r17 pins and evidence KEPT byte-for-byte`)
+  log(`RUN IDENTITY (r18 image C2 re-verification of the r17 lexical-seam fix): MOUNT SURFACE = ROOT package pin ${SOURCE_PIN_SHA} tgz ${EXPECT_TGZ_SHA} (${EXPECT_ENTRIES} file records, install-surface gate 473 lines, tree INFO ${EXPECT_SURFACE_SHA} of the install-surface manifest / ${EXPECT_TREE_SHA} of the full per-file manifest); pin law: PACKAGE == COMMITTED TREE at that SHA except package.json pack normalization (measured 1812/1813), glue 16/16 dist-vs-src drift 0, fsSeam present on the dist face (2+1), the six TS mirrors committed by a real build (center check:artifacts:head verdict=ok compared=1788 drift=0) — see ${'packages-pins/' + SOURCE_PIN_SHA}/MANIFEST-2188f15ce.txt; DELTA vs the r17 mount surface = the r17 lexical-seam fix (agent-bindings / pa-mount-registry / pa-control-bridge dist) + the compiled B-CONTROL/B-INSPECT leaf-flatten table (control/types dist) + pack normalization, path-set otherwise byte-identical, and C1 is the discriminator for the second one; SCOPE: image verifies the already-reviewed r17 image scope ONLY — the 957 INSPECT/CONTROL rules and the B-MCP gap are UNWIRED candidates on this surface, not enabled; helper row = ${INSTALL_DIR}-adjacent mount-helper-root plugin.mjs == ${EXPECT_PLUGIN_SHA} (file + blob at ${SOURCE_PIN_SHA}); IMAGE fixture invariants: synthetic ${IMG_W}x${IMG_H} PNG under examples/*/.sessions/ (gitignored, Host .gitignore UNTOUCHED), full store limit+policy set restated via profile-patch override of id=attachment-local (INPUT cap maxImageDimension=${IMG_STORE_CONFIG.maxImageDimension}, INDEPENDENT policy normalizedImageMaxDimension=${IMG_STORE_CONFIG.normalizedImageMaxDimension}) -> REAL normalization ${IMG_NORM_W}x${IMG_NORM_H} + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image, PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE, never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible ORIGINAL dimensions text + image part byte-identical to the stored object, deny/public-abandon ZERO commits, abandon through the p6t6 abandonControlRequest authority (NOT nativeAbort); ROOT LAWS: ONE round; a criterion's failures stop the run AT that criterion (finishCriterion throws once its checks are recorded — checks themselves record, they do not each throw), and OVERLAY-8a/8b additionally stop inside C3 before any further wait so the run never advances to the next criterion or keeps blind-waiting after a side-effecting dead fact, NO todo emission in image mode (asserted on ledger + session storage + model wire at every leg boundary), requestIds always live from the ledger, forbidden ports [${FORBIDDEN_PORTS.join(', ')}], bind-probed and held until start (port-probe.json), world prefix ${WORLD_PREFIX} under tests/homes only, world + install surface RETAINED (this kit contains no rm/prune/df); r1-r17 pins and evidence KEPT byte-for-byte`)
   REALM_ESC = REALM.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
   // OVERLAY-12 (read-only validation mode, purely additive). `--validate-only` re-verifies the
@@ -2196,7 +2228,7 @@ async function main() {
       }, 180_000, 'C3 model-visible image result (native two-block envelope with the ORIGINAL-frame clause), or the terminal is_error result paired to this call')
       if (terminalImgErr2 !== null) c3TerminalStop(terminalImgErr2, terminalBinding2, 'model-visible wait')
       if (imgPair === null) {
-        check('C3', 'the allowed read_image surfaced to the model: callId-paired tool_result text carries <type>image</type> + "downscaled from 2048x1536 px" (the model-visible text names the ORIGINAL frame)', false, 'no model-visible image tool_result observed')
+        check('C3', `the allowed read_image surfaced to the model: callId-paired tool_result text carries <type>image</type> + "downscaled from ${IMG_W}x${IMG_H} px" (the model-visible text names the ORIGINAL frame)`, false, 'no model-visible image tool_result observed')
         finishCriterion('C3')
       }
       const bodyStr = JSON.stringify(imgReq?.body ?? {})
@@ -2213,7 +2245,7 @@ async function main() {
       check('C3', 'the NORMALIZED raster is real and identity-bound (root 14:57 真实normalized ref): exactly ONE new attachment-store object; file-name sha256 == stored-bytes sha256 (store law); the model-visible request carries an image part whose base64 is EXACTLY those stored bytes (the model sees the normalized object, not the source)',
         wireForm !== null && added.length === 1 && objSha !== null && objSha === nameSha && b64InBody,
         `wireForm=${wireForm} added=${jstr(added, 400)} nameSha=${nameSha} objSha=${objSha} objSize=${objBytes?.length ?? -1} b64IdentityInModelRequest=${b64InBody}`)
-      check('C3', 'the model-visible text carries BOTH frames (模型text原尺寸): normalized "1024x768 px" AND original clause "downscaled from 2048x1536 px" (store receipt originalDimensions rides the envelope verbatim)',
+      check('C3', `the model-visible text carries BOTH frames (模型text原尺寸): normalized "${IMG_NORM_W}x${IMG_NORM_H} px" AND original clause "downscaled from ${IMG_W}x${IMG_H} px" (store receipt originalDimensions rides the envelope verbatim)`,
         imgPair.text.includes(`${IMG_NORM_W}x${IMG_NORM_H} px`) && imgPair.text.includes(`downscaled from ${IMG_W}x${IMG_H} px`) && imgPair.text.includes('<type>image</type>'),
         `callId=${imgPair.callId} text=${jstr(imgPair.text, 600)}`)
       let fxPrevI = {}
