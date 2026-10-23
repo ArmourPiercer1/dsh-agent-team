@@ -1,81 +1,125 @@
 /**
- * A5M2-FAMILY-RULES C1 — the B-MCP / B-INSPECT / B-CONTROL PA_FAMILY_TARGET_RULES
- * gap: MEASURED, and the three rules REFUSED as NAMED gaps (root card: measure,
- * do not invent; never guess-close).
+ * A5M2-FAMILY-RULES C1 — round 2: the B-CONTROL and B-INSPECT PA_FAMILY_TARGET_RULES
+ * entries LAND paired with their mint side (root ruling: pure-equivalence leaf
+ * flattening); B-MCP stays the NAMED GAP with a proposal-only correction.
  *
- * THE CARD asked to add the three missing target rules using ONLY the existing
- * typed-plan field vocabulary (kind union `string | boolean | nonNegativeInt |
- * countsTriple | obligations`, control/types.ts:1178-1180), derived from the real
- * claim shapes the lanes produce. Every key set below was RUNTIME-VERIFIED under
- * vitest against the committed lane modules themselves (temporary probe, since
- * deleted):
+ * ROUND 1 (commit 2ffdd89b7, three rules refused-as-named-gaps) measured every
+ * real claim shape against the committed lane modules (runtime-verified):
+ *   B-CONTROL (records 83/84/85/87/88): EXACTLY { trusted: {memberAgentId,
+ *     sessionHeaderId, realmId, owner, profileId} } — one nested object.
+ *   B-INSPECT: rec 53 [topology{topologyRevision,topologyDigest}, listLaw
+ *     <law string>, trusted]; rec 54 [topology, queryClaim{platform,provider,
+ *     method}, trusted]; rec 54 client additionally [clientRoundtrip <law
+ *     string>] — nested objects, and the two records DISAGREE on key sets.
+ *   B-MCP: nested `surface` object on EVERY claim + per-call conditional keys
+ *     cursor/uriVerbatim/uriOpacity/connectionIncarnationReason/domainAuthorityId
+ *     (g2-connector-adapters.mjs:730-762).
+ * The closed kind union (control/types.ts PaFamilyTargetFieldKind +
+ * isPaFamilyTargetField) has no plain-object kind and the closed-key law
+ * demands ONE exact key set per family — a rule over the NESTED shapes was
+ * impossible (round-1 refusal, root-accepted: center's quoted field names were
+ * summary wording, void as spec; pure equivalence pins to the measured source).
  *
- *  - B-MCP — src/plugin/live/governed-families/g2-connector-adapters.mjs:730-762.
- *    EVERY claim carries the nested OBJECT `surface` (:733), and the key set
- *    varies per call:
- *      stdio + unobserved incarnation:
- *        [operation, server, surface, providerReSelectionLaw,
- *         connectionIncarnationReason, businessObligations]
- *      read_mcp_resource:            + [uriVerbatim, uriOpacity]  (:753-754)
- *      list with cursor:             + [cursor]                   (:760)
- *      http + injected incarnation + declared domain: drops connectionIncarnationReason,
- *                                                     adds domainAuthorityId (:739-740)
- *  - B-INSPECT — src/plugin/live/governed-families/g1-surface-adapters.mjs:613-633
- *    + the trusted envelope at :715-724. The two records DISAGREE on key sets:
- *      rec 53 cordis_inspect_list:   [topology, listLaw, trusted]
- *      rec 54 cordis_inspect_query:  [topology, queryClaim, trusted]
- *      rec 54 with platform 'client': [topology, queryClaim, clientRoundtrip, trusted]
- *  - B-CONTROL — g1-surface-adapters.mjs:426 (effectsFor builds no B-CONTROL
- *    target) + :715-724: EVERY claim (records 83/84/85/87/88) is EXACTLY
- *    `[trusted]` — one nested object.
+ * ROUND 2 (root ruling, this commit): CONTROL + INSPECT proceed INDEPENDENTLY
+ * with PURE-EQUIVALENCE LEAF FLATTENING, both sides PAIRED in one change:
+ *   MINT  src/plugin/live/governed-families/g1-surface-adapters.mjs — classify
+ *     mints flat leaves for the two landed families ONLY (every other family
+ *     keeps the nested `trusted` envelope BYTE-IDENTICAL; no rule landed for
+ *     them, their claims still fail closed — no drift either way). The
+ *     B-INSPECT edge re-verify (reVerifyAtEdge) reads the flat leaves from the
+ *     SAME CURRENT-facts source with the SAME verdicts and byte-identical
+ *     stale strings; parametersFingerprint keeps its digest-of-input binding
+ *     verbatim (it rides the plan outside the target, untouched); no fact
+ *     added, none dropped — the encoding is a bijection of the measured
+ *     nested shape (the MEASURED MAPPING TABLE, nested path -> flat field ->
+ *     existing kind):
+ *       trusted.memberAgentId     -> trustedMemberAgentId   ('string')
+ *       trusted.sessionHeaderId   -> trustedSessionHeaderId ('string')
+ *       trusted.realmId           -> trustedRealmId         ('string')
+ *       trusted.owner             -> trustedOwner           ('string')
+ *       trusted.profileId         -> trustedProfileId       ('string')
+ *       topology.topologyRevision -> topologyRevision       ('nonNegativeInt')
+ *       topology.topologyDigest   -> topologyDigest         ('string')
+ *       listLaw (rec 53)          -> inspectTarget[0].listLaw
+ *       queryClaim.platform       -> inspectTarget[0].platform   ('obligations'
+ *       queryClaim.provider       -> inspectTarget[0].provider    kind used
+ *       queryClaim.method         -> inspectTarget[0].method      STRUCTURALLY:
+ *                                    non-empty array of plain objects)
+ *       clientRoundtrip (client)  -> inspectTarget[0].clientRoundtrip
+ *     `inspectTarget` is the ONE single-item array that keeps each record's
+ *     VARIANT facts TOGETHER — the correlated query triple stays one object
+ *     (the edge reads it as one triple) — so ONE closed rule serves both
+ *     records although their nested key sets differed. Nothing invented:
+ *     every leaf is a measured fact at the same check order.
+ *   RULE  PA_FAMILY_TARGET_RULES gains 'B-CONTROL' and 'B-INSPECT' — the TABLE
+ *     key MUST equal the claim's familyId string as the module spells it (the
+ *     card's PA-B-* wording is prose naming; a PA- prefixed key could never be
+ *     found by validatePaFamilyTarget's familyId lookup) — using ONLY the
+ *     existing kinds, exactly the leaves above.
  *
- * WHY EACH RULE IS REFUSED (the measurement, not a judgment):
- *  (1) The kind union is CLOSED and no kind accepts a plain nested object:
- *      'countsTriple' accepts ONLY {pending,inProgress,completed} non-negative
- *      integers (types.ts:1247-1253); 'obligations' accepts ONLY a NON-EMPTY
- *      ARRAY of objects (:1254-1257). `surface`, `topology`, `queryClaim` and
- *      `trusted` carry no expressible kind — pinned behaviorally below through
- *      the EXISTING rules (leg 4), never through an invented kind.
- *  (2) validatePaFamilyTarget's closed-key law (:1272-1278) rejects BOTH a
- *      missing required key AND an extra key, so any partial rule (the flat
- *      keys only) would deny EVERY real claim anyway — and would change the
- *      deny text the wire lanes pinned verbatim as this round's landing point
- *      (branch feat/a5m2-wire-merge: bc6cf5ed6 test/a5m2-g2-wire-c1.test.ts:771-772
- *      'family-target-invalid' + 'no target structure is registered for B-MCP';
- *      afc671e64 test/a5m2-g1-wire-c1.test.ts family-seam leg measures the same
- *      gate for B-INSPECT). A rule that no real claim can satisfy is durable-
- *      verifier theatre; closing it that way IS the guess the card forbids.
- *  (3) Closing the three lanes therefore needs a CENTER decision this card
- *      cannot pre-empt: EITHER a field-kind ruling (e.g. a plain-object kind)
- *      landed as its own change, OR lane-side flattened claims PAIRED with each
- *      lane's mint side. Until then all three families stay UNREGISTERED and
- *      every full-family claim fails closed at the validator — fail-closed is
- *      preserved, drift is impossible.
+ * B-MCP REMAINS THE NAMED GAP (root FROZE any MCP encoding change): the five
+ * variant keys and the nested surface object may not move to layers that do
+ * not participate in the full-manifest digest/current facts, and nothing is
+ * deleted to please closed-key. The ONE minimal contract correction (exact
+ * validator/closed-key accommodation + its M0 semantic-equivalence argument)
+ * is PROPOSAL-ONLY:
+ * dev/agent-workflow/evidence/a5m2-family-rules/a5m2-mcp-closed-key-proposal.md
  *
- * PAIRING LAW (root ruling, restated because this commit changes NOTHING in
- * control/types.ts): a PA_FAMILY_TARGET_RULES entry and its
- * registerA5GovernedFamily mint side land TOGETHER, one pair per change; this
- * change registers no rule and mints nothing, and no lane may mint a
- * B-MCP/B-INSPECT/B-CONTROL registration without its paired rule (a claim on
- * an unregistered structure is exactly the durable-verifier drift the wire
- * lanes name).
+ * PAIRING LAW (root ruling): a PA_FAMILY_TARGET_RULES entry and its
+ * registerA5GovernedFamily mint side land TOGETHER, one pair per change. This
+ * change pairs each new RULE with its CLAIM-SHAPE mint (the classify flatten);
+ * it still registers NOTHING in pa-mount-registry — the governed-family
+ * registration for the G1 rows lands WITH the wire lane, against exactly these
+ * shapes, and no lane may mint a registration without its paired rule.
  *
- * LEGS: 1-3 pin each measured real-shape claim (mirrored field by field from
- * the lane output above) landing on the exact unregistered-structure deny the
- * wire lanes pin; 4 pins the vocabulary impossibility through the existing
- * rules' behaviour; 5-7 are byte-identical regression legs of the three
- * REGISTERED rules against their lanes' real shapes (todo.mjs:234-246,
- * write.mjs:246-258, image.mjs:249-268).
+ * LEGS: 1-2 ACCEPT: the REAL adapter's classify output (mounted rows, real
+ * CURRENT-facts ports) validates and the claim's key set equals the rule's
+ * required set byte-for-field; 3 the closed law still bites on the new rules
+ * (foreign key / absent leaf / wrong kind) and the PRE-RULE nested forms now
+ * deny explicitly (migration honesty: they never landed either way);
+ * 4 the B-INSPECT current-facts re-verify stays live over the flat leaves —
+ * fresh delegate runs the captured face, moved topology / de-authorized triple
+ * refuse with byte-identical stale words, and the classify-time authorization
+ * law itself is unchanged; 5 B-MCP stays the named gap with the wire lanes'
+ * pinned deny string untouched; 6 the closed kind union still refuses plain
+ * nested objects (why the flatten was needed — pinned through the PRE-EXISTING
+ * rules' behaviour, never an invented kind); 7-9 byte-identical regression
+ * legs of the three pre-existing rules against their lanes' real shapes
+ * (todo.mjs:234-246, write.mjs:246-258, image.mjs:249-268).
  */
 import { describe, expect, it } from 'vitest'
 import { PA_FAMILY_TARGET_RULES, validatePaFamilyTarget } from '../control/types.js'
 
-// ── measured real-shape claims (field-by-field mirrors of the lane output) ──
+interface G1Row {
+  classify: (args: Record<string, unknown> | undefined, callId?: string) => {
+    ok?: boolean
+    code?: string
+    detail?: string
+    plan?: unknown
+    targetManifest?: Record<string, unknown>
+  }
+  delegate: (plan: unknown, ctx: Record<string, unknown>) => Promise<{
+    ok?: boolean
+    code?: string
+    detail?: string
+    settled?: string
+  }>
+}
+interface G1Module {
+  mountG1SurfaceAdapter: (recordName: string, deps: Record<string, unknown>) => G1Row
+}
+const G1 = (await import(new URL('../src/plugin/live/governed-families/g1-surface-adapters.mjs', import.meta.url).href)) as unknown as G1Module
 
 /** The validator's `absent` leg needs the key GONE, not present-and-undefined
- *  (types.ts:1273 checks `field in record`). */
+ *  (validatePaFamilyTarget checks `field in record`). */
 const without = (target: Record<string, unknown>, key: string): Record<string, unknown> =>
   Object.fromEntries(Object.entries(target).filter(([name]) => name !== key))
+
+/** key-set equality claim -> rule, byte-for-field. */
+const keysOf = (record: Record<string, unknown> | undefined): string[] =>
+  Object.keys(record ?? {}).slice().sort()
+const requiredKeysOf = (familyId: string): string[] =>
+  Object.keys(PA_FAMILY_TARGET_RULES[familyId]?.required ?? {}).slice().sort()
 
 const TRUSTED = Object.freeze({
   memberAgentId: 'agent-a5m2',
@@ -84,6 +128,31 @@ const TRUSTED = Object.freeze({
   owner: 'owner-a5m2',
   profileId: 'profile-a5m2',
 })
+
+const TRUSTED_LEAVES = Object.freeze({
+  trustedMemberAgentId: 'agent-a5m2',
+  trustedSessionHeaderId: 'sess-a5m2',
+  trustedRealmId: 'realm-a5m2',
+  trustedOwner: 'owner-a5m2',
+  trustedProfileId: 'profile-a5m2',
+})
+
+const LIST_LAW = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
+const CLIENT_ROUNDTRIP = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
+
+/** Mount one G1 row over a MUTABLE CURRENT-facts topology bag — the same
+ *  trustedTopology.current seam the adapter itself consults. */
+function mountRow(recordName: string, current: () => unknown): G1Row {
+  return G1.mountG1SurfaceAdapter(recordName, {
+    native: { name: recordName, description: 'captured face for the family-rules pairing legs', execute: async () => ({ providers: [] }) },
+    definitionIdentity: 'provider@sha#entry#hash',
+    trusted: TRUSTED,
+    ports: { trustedTopology: { current } },
+    bindingFacts: () => ({ bindingId: 'b1', bindingRevision: 1, policyGeneration: 1, authorityGeneration: 1 }),
+  })
+}
+
+// ── measured REAL-SHAPE claims for the family that STAYS a gap ──
 
 /** g2-connector-adapters.mjs:730-762 — declared stdio mount, unobserved
  *  incarnation (the honest default), list_mcp_resources. */
@@ -126,82 +195,163 @@ const B_MCP_HTTP_DOMAIN = Object.freeze({
   businessObligations: B_MCP_STDIO_LIST.businessObligations,
 })
 
-/** g1-surface-adapters.mjs:613-633 + :715-724 — record 53 (list). */
-const B_INSPECT_LIST = Object.freeze({
-  topology: Object.freeze({ topologyRevision: 9, topologyDigest: 'sha256;topo' }),
-  listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear',
-  trusted: TRUSTED,
-})
+describe('A5M2-FAMILY-RULES C1 round 2: B-CONTROL/B-INSPECT paired rule+mint ACCEPT over flattened leaves; B-MCP stays the named gap', () => {
+  it('B-CONTROL ACCEPT: the REAL classify output of records 85 and 83 validates, field-for-field against the paired rule', () => {
+    expect(PA_FAMILY_TARGET_RULES['B-CONTROL']).toBeDefined()
+    const list = mountRow('team_list_pending_control', () => undefined)
+    const c85 = list.classify({ rootSessionId: 'root-1', requestToken: 'tok-1' }, 'call-85')
+    expect(c85.ok, `${c85.code} ${c85.detail}`).toBe(true)
+    expect(c85.targetManifest).toEqual({ ...TRUSTED_LEAVES })
+    expect(keysOf(c85.targetManifest)).toEqual(requiredKeysOf('B-CONTROL'))
+    expect(validatePaFamilyTarget('B-CONTROL', c85.targetManifest)).toBeUndefined()
+    const req = mountRow('team_request_control', () => undefined)
+    const c83 = req.classify({ rootSessionId: 'root-1', requestToken: 'tok-1', kind: 'approval', targetInstanceId: 'inst-1', actionName: 'a' }, 'call-83')
+    expect(c83.ok, `${c83.code} ${c83.detail}`).toBe(true)
+    expect(c83.targetManifest).toEqual({ ...TRUSTED_LEAVES })
+    expect(validatePaFamilyTarget('B-CONTROL', c83.targetManifest)).toBeUndefined()
+    // the PRE-RULE nested form never landed before (no rule) and denies
+    // explicitly now — the flat leaves are the only accepted shape.
+    expect(validatePaFamilyTarget('B-CONTROL', { trusted: TRUSTED }))
+      .toBe('trustedMemberAgentId: required by the B-CONTROL typed plan, absent')
+  })
 
-/** record 54 host query; the client variant carries clientRoundtrip ON TOP
- *  (g1-surface-adapters.mjs:627-629) — the third key set of one family. */
-const B_INSPECT_QUERY = Object.freeze({
-  topology: Object.freeze({ topologyRevision: 9, topologyDigest: 'sha256;topo' }),
-  queryClaim: Object.freeze({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }),
-  trusted: TRUSTED,
-})
+  it('B-INSPECT ACCEPT: all THREE measured variants of the REAL classify output validate, field-for-field against the one rule', () => {
+    const topology = () => ({
+      topologyRevision: 9,
+      topologyDigest: 'sha256;topo',
+      allowed: [
+        { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
+        { platform: 'client', provider: 'dsh_compute', method: 'compute_health' },
+      ],
+    })
+    const list = mountRow('cordis_inspect_list', topology)
+    const c53 = list.classify({}, 'call-53')
+    expect(c53.ok, `${c53.code} ${c53.detail}`).toBe(true)
+    expect(c53.targetManifest).toEqual({
+      topologyRevision: 9, topologyDigest: 'sha256;topo', inspectTarget: [{ listLaw: LIST_LAW }],
+      ...TRUSTED_LEAVES,
+    })
+    expect(keysOf(c53.targetManifest)).toEqual(requiredKeysOf('B-INSPECT'))
+    expect(validatePaFamilyTarget('B-INSPECT', c53.targetManifest)).toBeUndefined()
 
-const B_INSPECT_QUERY_CLIENT = Object.freeze({
-  ...B_INSPECT_QUERY,
-  queryClaim: Object.freeze({ platform: 'client', provider: 'dsh_compute', method: 'compute_health' }),
-  clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel',
-})
+    const query = mountRow('cordis_inspect_query', topology)
+    const c54 = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-54')
+    expect(c54.ok, `${c54.code} ${c54.detail}`).toBe(true)
+    expect(c54.targetManifest).toEqual({
+      topologyRevision: 9, topologyDigest: 'sha256;topo',
+      inspectTarget: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
+      ...TRUSTED_LEAVES,
+    })
+    expect(keysOf(c54.targetManifest)).toEqual(requiredKeysOf('B-INSPECT'))
+    expect(validatePaFamilyTarget('B-INSPECT', c54.targetManifest)).toBeUndefined()
 
-/** g1-surface-adapters.mjs:426 + :715-724 — every B-CONTROL record, e.g. 85
- *  team_list_pending_control: the trusted envelope is the WHOLE target. */
-const B_CONTROL_TRUSTED_ONLY = Object.freeze({ trusted: TRUSTED })
+    const c54c = query.classify({ platform: 'client', provider: 'dsh_compute', method: 'compute_health' }, 'call-54c')
+    expect(c54c.ok, `${c54c.code} ${c54c.detail}`).toBe(true)
+    expect(c54c.targetManifest).toEqual({
+      topologyRevision: 9, topologyDigest: 'sha256;topo',
+      inspectTarget: [{ platform: 'client', provider: 'dsh_compute', method: 'compute_health', clientRoundtrip: CLIENT_ROUNDTRIP }],
+      ...TRUSTED_LEAVES,
+    })
+    expect(validatePaFamilyTarget('B-INSPECT', c54c.targetManifest)).toBeUndefined()
+    // the PRE-RULE nested form denies explicitly now (migration honesty).
+    expect(validatePaFamilyTarget('B-INSPECT', {
+      topology: { topologyRevision: 9, topologyDigest: 'sha256;topo' }, listLaw: LIST_LAW, trusted: TRUSTED,
+    })).toBe('topologyRevision: required by the B-INSPECT typed plan, absent')
+  })
 
-describe('A5M2-FAMILY-RULES C1: the B-MCP / B-INSPECT / B-CONTROL target rules stay absent as NAMED gaps; real-shape claims keep landing on the pinned unregistered-structure gate', () => {
-  it('B-MCP: no rule is registered, and every measured variant (stdio / read / http+cursor+domain) denies at the table gate with the wire-pinned string', () => {
+  it('the new rules enforce the closed law: foreign key, absent leaf and wrong kind deny with the closed codes', () => {
+    const flatControl = { ...TRUSTED_LEAVES }
+    expect(validatePaFamilyTarget('B-CONTROL', { ...flatControl, surface: { transport: 'stdio' } }))
+      .toBe('surface: not part of the B-CONTROL typed plan')
+    expect(validatePaFamilyTarget('B-CONTROL', without(flatControl, 'trustedOwner')))
+      .toBe('trustedOwner: required by the B-CONTROL typed plan, absent')
+    expect(validatePaFamilyTarget('B-CONTROL', { ...flatControl, trustedProfileId: 7 }))
+      .toBe('trustedProfileId: not a string')
+
+    const flatInspect = {
+      topologyRevision: 9,
+      topologyDigest: 'sha256;topo',
+      inspectTarget: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
+      ...TRUSTED_LEAVES,
+    }
+    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, queryClaim: { platform: 'host' } }))
+      .toBe('queryClaim: not part of the B-INSPECT typed plan')
+    expect(validatePaFamilyTarget('B-INSPECT', without(flatInspect, 'topologyDigest')))
+      .toBe('topologyDigest: required by the B-INSPECT typed plan, absent')
+    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, topologyRevision: 'nine' }))
+      .toBe('topologyRevision: not a nonNegativeInt')
+    expect(validatePaFamilyTarget('B-INSPECT', { ...flatInspect, inspectTarget: [] }))
+      .toBe('inspectTarget: not a obligations')
+  })
+
+  it('current-facts re-verification stays live over the flat leaves: fresh delegate runs the captured face; moved topology / de-authorized triple refuse with byte-identical stale words; the classify-time authorization law is unchanged', async () => {
+    const state = {
+      revision: 9,
+      allowed: [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }],
+    }
+    const query = mountRow('cordis_inspect_query', () => ({ topologyRevision: state.revision, topologyDigest: 'sha256;topo', allowed: state.allowed }))
+    // fresh: same CURRENT facts at the edge → the captured face runs once.
+    const fresh = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-fresh')
+    expect(fresh.ok).toBe(true)
+    const ran = await query.delegate(fresh.plan, { exec: { callId: 'call-fresh' } })
+    expect(ran.ok, `${ran.code} ${ran.detail}`).toBe(true)
+    // classify on the CURRENT facts, THEN the CURRENT fact moves → stale,
+    // byte-identical words (the plan is classified at revision 9 and the edge
+    // answers revision 10 — the same order the nested edge verified in).
+    const moved = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-moved')
+    expect(moved.ok).toBe(true)
+    state.revision = 10
+    const staleTopo = await query.delegate(moved.plan, { exec: { callId: 'call-moved' } })
+    expect(staleTopo.ok).toBe(false)
+    expect(staleTopo.code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(String(staleTopo.detail)).toContain('topology now answers revision 10 (sha256;topo)')
+    // the authorization law itself is unchanged: de-authorized at CLASSIFY
+    // still refuses at classify, before any plan exists.
+    state.revision = 9
+    state.allowed = []
+    const unauthorized = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-unauth')
+    expect(unauthorized.ok).not.toBe(true)
+    expect(unauthorized.code).toBe('P_G1_INSPECT_TARGET_NOT_AUTHORIZED')
+    // classify WHILE authorized, then de-authorize → the same stale refusal,
+    // the same words, over inspectTarget[0] as one correlated triple.
+    state.allowed = [{ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }]
+    const ok2 = query.classify({ platform: 'host', provider: 'dsh_compute', method: 'compute_health' }, 'call-ok2')
+    expect(ok2.ok).toBe(true)
+    state.allowed = []
+    const staleTriple = await query.delegate(ok2.plan, { exec: { callId: 'call-ok2' } })
+    expect(staleTriple.ok).toBe(false)
+    expect(staleTriple.code).toBe('P_G1_TRUSTED_FACTS_STALE')
+    expect(String(staleTriple.detail)).toContain('the query triple is no longer in the CURRENT authorized topology')
+  })
+
+  it('B-MCP: STILL no rule registered — every measured variant denies at the table gate with the wire-pinned string (named gap, encoding FROZEN, proposal-only correction)', () => {
     expect(PA_FAMILY_TARGET_RULES['B-MCP']).toBeUndefined()
     const deny = `familyId: no target structure is registered for 'B-MCP'`
-    // The g2 wire lane pins this exact deny at its landing point
-    // (bc6cf5ed6 test/a5m2-g2-wire-c1.test.ts:771-772).
     expect(validatePaFamilyTarget('B-MCP', B_MCP_STDIO_LIST)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_READ)).toBe(deny)
     expect(validatePaFamilyTarget('B-MCP', B_MCP_HTTP_DOMAIN)).toBe(deny)
-    // The named gap, at the table itself: a minted B-MCP claim today has NO
-    // durable target structure — rule and mint side must land paired.
-    expect(Object.keys(PA_FAMILY_TARGET_RULES)).toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE'])
+    // the table itself: the paired CONTROL/INSPECT entries landed, MCP did not.
+    expect(Object.keys(PA_FAMILY_TARGET_RULES))
+      .toEqual(['B-SESSION', 'B-IMAGE', 'B-WRITE', 'B-CONTROL', 'B-INSPECT'])
   })
 
-  it('B-INSPECT: no rule is registered, and BOTH record shapes (list / host query / client query) deny at the table gate — the records do not even share a key set', () => {
-    expect(PA_FAMILY_TARGET_RULES['B-INSPECT']).toBeUndefined()
-    const deny = `familyId: no target structure is registered for 'B-INSPECT'`
-    expect(validatePaFamilyTarget('B-INSPECT', B_INSPECT_LIST)).toBe(deny)
-    expect(validatePaFamilyTarget('B-INSPECT', B_INSPECT_QUERY)).toBe(deny)
-    expect(validatePaFamilyTarget('B-INSPECT', B_INSPECT_QUERY_CLIENT)).toBe(deny)
-  })
-
-  it('B-CONTROL: no rule is registered, and the measured single-key trusted claim denies at the table gate', () => {
-    expect(PA_FAMILY_TARGET_RULES['B-CONTROL']).toBeUndefined()
-    expect(validatePaFamilyTarget('B-CONTROL', B_CONTROL_TRUSTED_ONLY))
-      .toBe(`familyId: no target structure is registered for 'B-CONTROL'`)
-  })
-
-  it('the refusal is the VOCABULARY, measured through the existing rules: no kind of the closed union accepts the plain nested objects the lanes carry', () => {
-    // `trusted` / `surface` style objects: 'countsTriple' is ONLY the exact
-    // {pending,inProgress,completed} triple (types.ts:1247-1253) — a topology
-    // pair or a query triple does not ride it.
+  it('the closed kind union has no plain-object kind (why the flatten was needed) — pinned through the PRE-EXISTING rules: countsTriple is ONLY the todo triple, obligations ONLY non-empty object arrays', () => {
     expect(validatePaFamilyTarget('B-SESSION', {
       ...B_SESSION_REAL,
-      counts: B_INSPECT_LIST.topology,
+      counts: { topologyRevision: 9, topologyDigest: 'sha256;topo' },
     })).toBe('counts: not a countsTriple')
     expect(validatePaFamilyTarget('B-SESSION', {
       ...B_SESSION_REAL,
-      counts: B_INSPECT_QUERY.queryClaim,
+      counts: { platform: 'host', provider: 'dsh_compute', method: 'compute_health' },
     })).toBe('counts: not a countsTriple')
-    // 'obligations' is ONLY a non-empty ARRAY of objects (:1254-1257) — the
-    // trusted object itself has no kind.
     expect(validatePaFamilyTarget('B-IMAGE', {
       ...B_IMAGE_REAL,
-      businessObligations: TRUSTED,
+      businessObligations: { memberAgentId: 'agent-a5m2' },
     })).toBe('businessObligations: not a obligations')
     expect(validatePaFamilyTarget('B-IMAGE', {
       ...B_IMAGE_REAL,
       businessObligations: [],
     })).toBe('businessObligations: not a obligations')
-    // The closed-key law itself (:1276-1278): an unregistered extra key denies.
     expect(validatePaFamilyTarget('B-SESSION', { ...B_SESSION_REAL, surface: B_MCP_STDIO_LIST.surface }))
       .toBe('surface: not part of the B-SESSION typed plan')
   })
@@ -237,7 +387,7 @@ describe('A5M2-FAMILY-RULES C1: the B-MCP / B-INSPECT / B-CONTROL target rules s
   })
 })
 
-// ── the three REGISTERED lanes' real shapes (mirrors of the committed plans) ──
+// ── the three PRE-EXISTING lanes' real shapes (mirrors of the committed plans) ──
 
 /** todo.mjs:234-246 (A5_TODO_FAMILY_ID 'B-SESSION', operation 'replace-list'). */
 const B_SESSION_REAL = {

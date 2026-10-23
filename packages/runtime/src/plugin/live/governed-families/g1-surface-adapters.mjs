@@ -615,7 +615,20 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       if (!isRecord(topology) || typeof topology.topologyRevision !== 'number' || typeof topology.topologyDigest !== 'string' || !Array.isArray(topology.allowed)) {
         return { refusal: classifyRefuse(CODES.TOPOLOGY_ABSENT, `${spec.recordIndex}·B-INSPECT·${providerId}: the CURRENT authorized registry topology is not mounted`) }
       }
-      built.target = { topology: { topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest } }
+      /* A5-M2 (root ruling, pure-equivalence leaf flatten; PA_FAMILY_TARGET_RULES
+       * ['B-INSPECT'] is the paired rule): every leaf the old nested target carried
+       * rides the SAME facts at the SAME check order, expressed for ONE closed rule
+       * set. topologyRevision/topologyDigest are flat; the record's VARIANT facts
+       * (rec 53 the list-law notation, rec 54 the query triple + the client
+       * roundtrip law) ride as the ONE object of the single-item `inspectTarget`
+       * array — the correlated triple stays together (the edge re-verify reads it
+       * as one triple), the 'obligations' kind is STRUCTURAL notation (non-empty
+       * array of plain objects), never a second permission layer. No fact added,
+       * no fact dropped: the encoding is a bijection of the measured nested shape. */
+      built.target = {
+        topologyRevision: topology.topologyRevision,
+        topologyDigest: topology.topologyDigest,
+      }
       if (spec.recordIndex === 54) {
         const claim = { platform: rawArgs.platform, provider: rawArgs.provider, method: rawArgs.method }
         const authorized = topology.allowed.some((entry) => isRecord(entry)
@@ -623,12 +636,13 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (!authorized) {
           return { refusal: classifyRefuse(CODES.INSPECT_TARGET_NOT_AUTHORIZED, `${spec.recordIndex}·B-INSPECT·${providerId}: ${String(claim.platform)}/${String(claim.provider)}/${String(claim.method)} is not in the CURRENT authorized topology; a captured manifest snapshot cannot authorize a query`) }
         }
-        built.target.queryClaim = claim
-        if (claim.platform === 'client') {
-          built.target.clientRoundtrip = 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel'
-        }
+        built.target.inspectTarget = claim.platform === 'client'
+          ? [{ ...claim, clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel' }]
+          : [{ ...claim }]
       } else {
-        built.target.listLaw = 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear'
+        built.target.inspectTarget = [{
+          listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear',
+        }]
       }
       break
     }
@@ -712,16 +726,32 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     if (built.refusal !== undefined) return built.refusal
     const facts = bindingFacts()
     const classifiedArgs = deepFreeze(jsonClone(args ?? {}))
-    const targetManifest = deepFreeze({
-      ...built.target,
-      trusted: {
-        memberAgentId: trusted.memberAgentId,
-        sessionHeaderId: trusted.sessionHeaderId,
-        realmId: trusted.realmId,
-        owner: trusted.owner,
-        profileId: trusted.profileId,
-      },
-    })
+    /* A5-M2 (root ruling): the two families whose PA target rule has LANDED
+     * (PA_FAMILY_TARGET_RULES['B-CONTROL'] / ['B-INSPECT']) carry the trusted
+     * TARGETS envelope as FLAT LEAVES — the same five CONFIG facts, one leaf
+     * each, the pairing law's mint side. Every other family keeps the nested
+     * `trusted` envelope BYTE-IDENTICAL (its rule has not landed; its claim
+     * still fails closed at the table — no drift either way). */
+    const flatTrustedLeaves = spec.family === 'B-CONTROL' || spec.family === 'B-INSPECT'
+    const targetManifest = deepFreeze(flatTrustedLeaves
+      ? {
+          ...built.target,
+          trustedMemberAgentId: trusted.memberAgentId,
+          trustedSessionHeaderId: trusted.sessionHeaderId,
+          trustedRealmId: trusted.realmId,
+          trustedOwner: trusted.owner,
+          trustedProfileId: trusted.profileId,
+        }
+      : {
+          ...built.target,
+          trusted: {
+            memberAgentId: trusted.memberAgentId,
+            sessionHeaderId: trusted.sessionHeaderId,
+            realmId: trusted.realmId,
+            owner: trusted.owner,
+            profileId: trusted.profileId,
+          },
+        })
     const effects = deepFreeze(built.effects)
     const serviceObligations = deepFreeze(built.obligations ?? spec.obligations ?? [TOOL_NAME_OBLIGATION])
     const generations = deepFreeze({
@@ -777,11 +807,16 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       case 'B-INSPECT': {
         const topology = typeof ports?.trustedTopology?.current === 'function' ? ports.trustedTopology.current() : undefined
         if (!isRecord(topology) || !Array.isArray(topology.allowed)) return stale('the topology re-verification source is gone')
-        if (canonical(stored.topology) !== canonical({ topologyRevision: topology.topologyRevision, topologyDigest: topology.topologyDigest })) {
+        // The SAME CURRENT-facts source and the SAME verdicts as the nested
+        // target carried, now over the flat leaves (root ruling: current-facts
+        // re-verification unchanged — only the leaf paths moved).
+        if (stored.topologyRevision !== topology.topologyRevision || stored.topologyDigest !== topology.topologyDigest) {
           return stale(`topology now answers revision ${String(topology.topologyRevision)} (${String(topology.topologyDigest)})`)
         }
-        if (stored.queryClaim !== undefined && !topology.allowed.some((entry) => isRecord(entry)
-          && entry.platform === stored.queryClaim.platform && entry.provider === stored.queryClaim.provider && entry.method === stored.queryClaim.method)) {
+        const targetEntry = Array.isArray(stored.inspectTarget) ? stored.inspectTarget[0] : undefined
+        if (targetEntry !== undefined && typeof targetEntry.platform === 'string'
+          && !topology.allowed.some((entry) => isRecord(entry)
+            && entry.platform === targetEntry.platform && entry.provider === targetEntry.provider && entry.method === targetEntry.method)) {
           return stale('the query triple is no longer in the CURRENT authorized topology')
         }
         return null
