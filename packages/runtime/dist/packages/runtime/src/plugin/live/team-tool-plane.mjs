@@ -1275,7 +1275,9 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
+                : teamOpsInjectRaw.callerGate !== undefined && typeof teamOpsInjectRaw.callerGate !== 'function'
+                  ? 'callerGate, when supplied, must be (exec, requestedRootSessionId) => Promise<{ok:true, caller, rootSessionId} | {ok:false, result}> — the SAME shared gate the native common entry runs (packages/tools resolveTeamToolCallerRootGate); the bridge consults it before any durable fact is read, and a refusal carries the native rejected VALUE verbatim'
+                  : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
                   ? 'queryFacts, when supplied, must expose resolve (toolName, addressedInstanceId) => facts — the published durable reads the three QUERY rows mint their target leaves from. OPTIONAL on purpose: a mount arming only the write rows is never forced to supply a roster/blueprint read; without it a query claim simply mints nothing and the bridge refuses it at composition.'
                   : undefined
     if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
@@ -1292,6 +1294,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      ...(teamOpsInjectRaw.callerGate === undefined ? {} : { callerGate: teamOpsInjectRaw.callerGate }),
       ...(teamOpsInjectRaw.queryFacts === undefined ? {} : { queryFacts: teamOpsInjectRaw.queryFacts }),
     })
   }
@@ -4227,6 +4230,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        ...(teamOpsInject.callerGate === undefined ? {} : { callerGate: teamOpsInject.callerGate }),
         ...(teamOpsInject.queryFacts === undefined ? {} : { queryFacts: teamOpsInject.queryFacts }),
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
         // Nothing else poses as the admission seat.

@@ -382,13 +382,13 @@ const defaultCorrelationOf = (exec) => (isRecord(exec) && nonEmptyString(exec.ca
  */
 export function buildTeamOpsWiring (input = {}) {
   if (!isRecord(input)) return wiringRefuse(WIRE.INPUT_INVALID, 'the wiring bridge takes one input record')
-  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts'])
+  const knownInput = new Set(['realmId', 'providerId', 'readNative', 'liveNative', 'teamSet', 'placementFeed', 'definitionIdentityOf', 'correlationOf', 'pa', 'observe', 'queryFacts', 'callerGate'])
   for (const key of Object.keys(input)) {
     if (!knownInput.has(key)) {
       return wiringRefuse(WIRE.INPUT_INVALID, `unknown wiring input '${key}' — the bridge takes exactly {realmId, providerId, readNative, liveNative, teamSet, placementFeed, definitionIdentityOf, correlationOf, pa, observe}`)
     }
   }
-  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts } = input
+  const { realmId, providerId, readNative, liveNative: liveNativeSeam, teamSet, placementFeed, pa, observe = () => {}, queryFacts, callerGate } = input
   if (!nonEmptyString(realmId)) return wiringRefuse(WIRE.INPUT_INVALID, 'realmId is REQUIRED (non-empty string) — the walk has no realm without it')
   if (!nonEmptyString(providerId)) return wiringRefuse(WIRE.INPUT_INVALID, 'providerId is REQUIRED (non-empty string) — the durable family gate compares the provider identity the owner published, and this bridge invents none')
   if (typeof readNative !== 'function') return wiringRefuse(WIRE.INPUT_INVALID, 'readNative (name) => definition | undefined is REQUIRED — the MEMBER-SCOPED capture seam (the agentCtx.tools.get(name, runtimeAgent) law the todo/write/image captures obey; the global face is NOT a fallback)')
@@ -498,7 +498,7 @@ export function buildTeamOpsWiring (input = {}) {
   // consumedProof, the lane's requestToken idempotency lives INSIDE the
   // delegated chain (NAMED GAP PLAN_ONCE_MEMO, never closed here).
   const admittedPlans = new WeakSet()
-  const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
+  const stats = { admits: 0, admittedOnce: 0, admissionRefusals: 0, callerGateRefusals: 0, mintRefusals: 0, toolLawValues: 0, walks: 0, edges: 0, witnessed: 0 }
 
   // ROOT 21:24 — the QUERY target's durable facts, read through the OWNER's
   // published authority queries (the lane's own root resolution, the durable
@@ -578,6 +578,37 @@ export function buildTeamOpsWiring (input = {}) {
       stats.toolLawValues += 1
       observe({ event: 'b-team-wire:tool-law-value', name, code: plan.toolError.code, paEntry: false })
       return Object.freeze({ ok: true })
+    }
+    // ④ (root 23:2x): THE CALLER/ROOT GATE runs HERE, before any durable fact
+    // is read and before the claim is minted — the SAME rule the native common
+    // entry runs, reached through the exported shared helper in packages/tools
+    // (no second identity rule, no second error vocabulary). A refusal is the
+    // NATIVE typed rejected VALUE carried through verbatim (its own code, its
+    // own message, its `details`), with zero PA entry, zero fact read and zero
+    // port entry; success falls through untouched. A world that publishes no
+    // gate behaves exactly as it did before this seam existed.
+    if (typeof callerGate === 'function') {
+      const target = isRecord(plan.target) ? plan.target : undefined
+      const rootLeaf = isRecord(target) ? target.root : undefined
+      const rootClaim = isRecord(rootLeaf) && typeof rootLeaf.claim === 'string' ? rootLeaf.claim : ''
+      const gate = await callerGate(ctx.exec, rootClaim)
+      if (gate?.ok !== true) {
+        const result = isRecord(gate) && isRecord(gate.result) ? gate.result : undefined
+        stats.callerGateRefusals += 1
+        observe({
+          event: 'b-team-wire:caller-gate-refused',
+          name,
+          code: result?.code,
+          paEntry: false,
+          factsRead: false,
+        })
+        return Object.freeze({
+          ok: false,
+          code: result?.code ?? WIRE.INPUT_INVALID,
+          detail: String(result?.message ?? 'the shared caller/root gate refused the call'),
+          nativeValue: result,
+        })
+      }
     }
     const callBox = { facts: undefined, claim: undefined, fault: undefined }
     mintFactsBox = callBox
