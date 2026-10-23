@@ -955,6 +955,27 @@ export interface PaFamilyTargetRule {
      * execution edge, which checks the effectful result against the approved target.
      */
     readonly currentFields: readonly string[];
+    /**
+     * DISCRIMINATED TARGET (root 17:40 ruling, INSPECT only - the ONE entry that
+     * uses it): claims share `required` and differ by exactly ONE closed variant
+     * group, selected by the value of `leaf` (itself a required 'string' leaf,
+     * minted by the lane from classify-time truth - never model text). The law is
+     * the SAME closed law: `required` ∪ the selected group's leaves is the EXACT
+     * key set (anything else denies); every group leaf is typed by the EXISTING
+     * kinds; `binds` pins a leaf to ONE exact literal (full-value binding - a
+     * paired leaf can never be an arbitrary string). The variant value is looked
+     * up by OWN KEY only - 'toString'/'constructor'/'__proto__'/unknown select
+     * nothing and deny; no fallback, no coercion. No nesting, no optionality, no
+     * new kind: the group map and the bindings are static table data checked by
+     * the existing scalar law (module-load guard below).
+     */
+    readonly variant?: Readonly<{
+        readonly leaf: string;
+        readonly by: Readonly<Record<string, Readonly<{
+            readonly adds: Readonly<Record<string, PaFamilyTargetFieldKind>>;
+            readonly binds: Readonly<Record<string, string | number | boolean>>;
+        }>>>;
+    }>;
 }
 export declare const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>>;
 /** The pure-data structure check the leg runs BEFORE the durable row: unknown family,

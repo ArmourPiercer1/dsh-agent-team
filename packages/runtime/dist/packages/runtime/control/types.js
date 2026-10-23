@@ -711,32 +711,107 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
     }),
-    // A5-M2 B-INSPECT (root ruling, pure-equivalence leaf flatten; the same lane
-    // module produces this claim: records 53 cordis_inspect_list and 54
-    // cordis_inspect_query). topologyRevision/topologyDigest are the CURRENT
-    // authorized-topology facts (the edge re-verify owns them post-approval,
-    // unchanged); `inspectTarget` is the SINGLE-ITEM array that keeps each
-    // record's VARIANT facts together - rec 53: [{ listLaw }], rec 54:
-    // [{ platform, provider, method(, clientRoundtrip) }] - so the correlated
-    // query triple stays correlated (the edge reads it as one triple) and the
-    // closed-key law is satisfiable by ONE rule although the records' nested
-    // shapes differed. The 'obligations' kind is used STRUCTURALLY (non-empty
-    // array of plain objects): notation for the approved question, never a
-    // second permission layer (rule doc above).
+    // A5-M2 B-INSPECT (root 957 SIGNED the trusted/topology scalar flatten; root
+    // 17:40 SIGNED the minimal strict DISCRIMINATED TARGET for THIS family only
+    // - a technical encoding ruling, not a security-semantics change). The
+    // claim shape is minted by src/plugin/live/governed-families/
+    // g1-surface-adapters.mjs records 53 cordis_inspect_list and 54
+    // cordis_inspect_query at revision 7 (the encoding digest moved - revision-6
+    // approvals are EXPLICITLY stale; retired encodings are never translated).
+    // required ∪ the selected variant group is the EXACT closed key set:
+    //   'list' (rec 53): listLaw - BOUND to the list-law literal (never an
+    //     arbitrary string);
+    //   'query-host' (rec 54): the triple queryPlatform/queryProvider/queryMethod,
+    //     queryPlatform BOUND 'host' - the exact variant↔platform pairing;
+    //   'query-client' (rec 54): the triple, queryPlatform BOUND 'client', plus
+    //     clientRoundtrip BOUND to the roundtrip-law literal - the law is
+    //     required iff client (the closed set excludes it from every other
+    //     variant) and can never be an arbitrary string.
+    // The discriminant inspectVariant is minted from spec.recordIndex + the
+    // authorized triple's platform (trusted record/tool truth - the closed
+    // parameter grammar keeps model text out of the target), and the
+    // variant↔platform pairing is grammar-bound via `binds` (module-load guard
+    // below keeps every group's structure legal). All facts stay at FULL VALUE
+    // inside the target - the approved question and its fingerprint keep every
+    // one (nothing moved out, no effects/provider-scope extension, no new
+    // ledger, no schema generalization: existing kinds + closed sets only).
+    // currentFields stays the signed trusted trio (current-facts law unmoved);
+    // the topology facts stay the edge re-verify's own (unchanged source,
+    // verdicts, words) - now over THIS same flat encoding (rule/mint/edge one
+    // encoding). The variant-value lookup is OWN-KEY only: 'toString',
+    // 'constructor', '__proto__' and any unknown select nothing and deny.
     'B-INSPECT': Object.freeze({
         required: Object.freeze({
             topologyRevision: 'nonNegativeInt',
             topologyDigest: 'string',
-            inspectTarget: 'obligations',
+            inspectVariant: 'string',
             trustedMemberAgentId: 'string',
             trustedSessionHeaderId: 'string',
             trustedRealmId: 'string',
             trustedOwner: 'string',
             trustedProfileId: 'string',
         }),
+        variant: Object.freeze({
+            leaf: 'inspectVariant',
+            by: Object.freeze({
+                'list': Object.freeze({
+                    adds: Object.freeze({ listLaw: 'string' }),
+                    binds: Object.freeze({ listLaw: 'the real list enumerates ALL providers; the row constrains that answer to the CURRENT authorized topology — unauthorized providers never appear' }),
+                }),
+                'query-host': Object.freeze({
+                    adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string' }),
+                    binds: Object.freeze({ queryPlatform: 'host' }),
+                }),
+                'query-client': Object.freeze({
+                    adds: Object.freeze({ queryPlatform: 'string', queryProvider: 'string', queryMethod: 'string', clientRoundtrip: 'string' }),
+                    binds: Object.freeze({
+                        queryPlatform: 'client',
+                        clientRoundtrip: 'the query rides the Client page response (pending-until-response); host-side cancellation of the tool call is NOT a transport cancel',
+                    }),
+                }),
+            }),
+        }),
         currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
     }),
 });
+/* Discriminated-target table legality, checked at module load (root 17:40:
+ * "group结构合法"). A miswritten variant table must fail loudly at import,
+ * never quietly at a claim: the discriminant must be a required 'string'
+ * leaf; every group is a plain leaf map over the EXISTING kinds; every bound
+ * leaf satisfies its own kind; group leaves never redeclare a required leaf
+ * (one leaf, one law). Zero cost for families without `variant` (all but
+ * B-INSPECT). */
+for (const [familyId, rule] of Object.entries(PA_FAMILY_TARGET_RULES)) {
+    const variant = rule.variant;
+    if (variant === undefined)
+        continue;
+    const own = (record, key) => Object.prototype.hasOwnProperty.call(record, key);
+    const fail = (why) => {
+        throw new Error(`PA_FAMILY_TARGET_RULES['${familyId}']: malformed variant grammar - ${why}`);
+    };
+    if (!own(rule.required, variant.leaf) || rule.required[variant.leaf] !== 'string')
+        fail(`'${variant.leaf}' must be a required 'string' leaf`);
+    const names = Object.keys(variant.by);
+    if (names.length === 0)
+        fail('no variant groups');
+    for (const name of names) {
+        const group = variant.by[name];
+        if (group === null || typeof group !== 'object' || Array.isArray(group))
+            fail(`group '${name}': not a leaf map`);
+        for (const [field, kind] of Object.entries(group.adds)) {
+            if (own(rule.required, field))
+                fail(`group '${name}' redeclares required leaf '${field}'`);
+            const kinds = ['string', 'boolean', 'nonNegativeInt', 'countsTriple', 'obligations'];
+            if (!kinds.includes(kind))
+                fail(`group '${name}' leaf '${field}': unknown kind '${String(kind)}'`);
+        }
+        for (const [field, bound] of Object.entries(group.binds)) {
+            const kind = group.adds[field];
+            if (kind === undefined || !isPaFamilyTargetField(kind, bound))
+                fail(`group '${name}' bound value for '${field}' violates its own kind`);
+        }
+    }
+}
 function isPaFamilyTargetField(kind, value) {
     switch (kind) {
         case 'string': return typeof value === 'string' && value.length > 0;
@@ -773,8 +848,43 @@ export function validatePaFamilyTarget(familyId, target) {
         if (!isPaFamilyTargetField(kind, record[field]))
             return `${field}: not a ${kind}`;
     }
+    /* Discriminated target (root 17:40): the discriminant leaf (a required
+     * 'string' the loop above just checked) selects its group by OWN-KEY exact
+     * lookup - 'toString'/'constructor'/'__proto__'/unknown select nothing and
+     * deny, no fallback, no coercion. The group's leaves run through the SAME
+     * required check, and every `binds` entry pins its leaf to ONE exact
+     * literal (full-value binding - a paired leaf is never an arbitrary
+     * string). */
+    let group;
+    if (rule.variant !== undefined) {
+        const by = rule.variant.by;
+        const value = record[rule.variant.leaf];
+        const selected = typeof value === 'string' && Object.prototype.hasOwnProperty.call(by, value) ? by[value] : undefined;
+        if (selected === undefined)
+            return `${rule.variant.leaf}: '${String(value)}' selects no ${familyId} variant group`;
+        group = selected.adds;
+        for (const [field, kind] of Object.entries(selected.adds)) {
+            if (!(field in record))
+                return `${field}: required by the ${familyId} typed plan, absent`;
+            if (!isPaFamilyTargetField(kind, record[field]))
+                return `${field}: not a ${kind}`;
+        }
+        for (const [field, bound] of Object.entries(selected.binds)) {
+            if (record[field] !== bound)
+                return `${field}: not the '${String(value)}' variant constant of the ${familyId} typed plan`;
+        }
+    }
+    /* The closed-key law stays EXACT: required ∪ the selected group and nothing
+     * else. For variant families the membership test is OWN-KEY on both maps, so
+     * a prototype-named claim key ('toString', 'constructor', …) denies like any
+     * other extra key; the original law of the other families is byte-identical,
+     * untouched. */
     for (const field of Object.keys(record)) {
-        if (!(field in rule.required))
+        const allowed = rule.variant !== undefined
+            ? (Object.prototype.hasOwnProperty.call(rule.required, field)
+                || (group !== undefined && Object.prototype.hasOwnProperty.call(group, field)))
+            : (field in rule.required);
+        if (!allowed)
             return `${field}: not part of the ${familyId} typed plan`;
     }
     return undefined;
