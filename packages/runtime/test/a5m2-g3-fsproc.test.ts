@@ -1328,7 +1328,13 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         return {
           done,
           readOutput: () => ({ delta: '', truncated: false }),
-          cancel: () => { settle({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
+          // CARD 5 (root central adjudication): the REAL TerminalWaitReason
+          // @639ed01539 is exactly 'stdin_read' | 'inferred_idle' | 'timeout'
+          // | 'session_exit' — the host NEVER answers 'cancelled' (a SIGINT
+          // cancel wakes the wait; the wait still returns a real enum word).
+          // The double answers a REAL member; the KILLED fact rides the
+          // arm's own cancelRequested fact, never a fabricated waitReason.
+          cancel: () => { settle({ viewport: '^C', waitReason: 'stdin_read', sessionStatus: { kind: 'running' }, truncated: false }); return true },
         }
       },
       read: (owner: Record<string, unknown>, id: string, request?: Record<string, unknown>) => {
@@ -1372,7 +1378,7 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     }
   }
 
-  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; deferredSpawn?: boolean; autoSettleSend?: unknown } = {}) {
+  async function handleWorld(deps: { jobs?: unknown; noOwner?: boolean; brokenPort?: boolean; noCapability?: boolean; deferredSpawn?: boolean; autoSettleSend?: unknown; terminateRefusals?: number } = {}) {
     const terminals = makeTerminalsDouble({ autoSettleSend: deps.autoSettleSend })
     const binding = makeBinding()
     const natives = {} as Record<TerminalName, NativeDouble>
@@ -1425,6 +1431,17 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         launches.push(spec)
         if (deps.deferredSpawn === true) await deferredGate.settled
         const h = makeTerminalHandle(`42${String(40 + launches.length)}`).handle
+        // CARD 2 world: a provider that REFUSES the terminate — the real
+        // terminal-bash closeOnce RE-THROWS a terminate failure (`PTY
+        // cleanup failed`, session.ts @639), it never answers closed:false.
+        if (deps.terminateRefusals !== undefined) {
+          let refusals = deps.terminateRefusals
+          const realTerminate = h.terminate.bind(h)
+          h.terminate = async () => {
+            if (refusals > 0) { refusals -= 1; throw new Error('P_QUIESCENCE_REFUSED (test): the provider refused the awaited terminate') }
+            return realTerminate()
+          }
+        }
         lastAnsweredPid = Number(h.pid)
         return h
       },
@@ -1611,12 +1628,13 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     // The real service settles `done` on readiness/timeout/exit; this world
     // drives the committed-value shape with an auto-settling operation —
     // same TerminalSendOperation contract.
-    const w = await handleWorld({ autoSettleSend: { viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false } })
+    const w = await handleWorld({ autoSettleSend: { viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false } })
     const record: string[] = (w.terminals as unknown as { log: string[] }).log
     const { x } = await runPass(w.arms.terminal_send, w.binding, { sessionId: 'pty-1', text: 'python3\n', submit: true }, 'h-send-2')
     expect(x.ok).toBe(true)
-    // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo:
-    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'idle', sessionStatus: 'running', truncated: false })
+    // THE COMMITTED VALUE IS THE HANDLE'S ANSWER — not a re-shaped echo
+    // (the waitReason rides the REAL enum spelling @639ed01539):
+    expect(x.value).toEqual({ viewport: '>>> ', waitReason: 'inferred_idle', sessionStatus: { kind: 'running' }, truncated: false })
     expect(w.natives.terminal_send.calls.length).toBe(0)
     expect(record).toEqual(['send:pty-1:python3\n:true'])
   })
@@ -1637,9 +1655,9 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(Array.isArray(list.x.value)).toBe(true)
     // THEN TERMINATE: the service kill word, answered honestly twice.
     const first = await runPass(w.arms.terminal_close, w.binding, { sessionId }, 'h-c1')
-    expect(first.x.value).toEqual({ outcome: 'closed' })
+    expect(first.x.value).toEqual({ sessionId, outcome: 'closed' }) // CARD 4: the close word names WHICH session the service closed beside its two-valued answer
     const again = await runPass(w.arms.terminal_close, w.binding, { sessionId }, 'h-c2')
-    expect(again.x.value).toEqual({ outcome: 'already-closing' }) // kill FALSE answered honestly — never 'closed'
+    expect(again.x.value).toEqual({ sessionId, outcome: 'already-closing' }) // kill FALSE answered honestly — never 'closed'
     // A DEAD session refuses at the SERVICE entry (NO_SESSION through the
     // port) — zero invoke past a dead handle, zero body, always.
     expect(Object.values(w.natives).every((n) => n.calls.length === 0)).toBe(true)
@@ -1707,7 +1725,12 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
         return {
           done: operationDone,
           readOutput: () => ({ delta: 'out', truncated: false }),
-          cancel: () => { log.push('operation.cancel'); settleOperation({ viewport: '^C', waitReason: 'cancelled', sessionStatus: 'running', truncated: false }); return true },
+          // CARD 5: a SIGINT cancel wakes the wait — the REAL host answers a
+          // TerminalWaitReason enum member ('stdin_read' here), NEVER a
+          // fabricated 'cancelled'; the cancelled FACT of this operation
+          // rides the adapter's own word (cancelled:true / cancelRequested),
+          // and the awaited TerminalSendResult rides VERBATIM.
+          cancel: () => { log.push('operation.cancel'); settleOperation({ viewport: '^C', waitReason: 'stdin_read', sessionStatus: { kind: 'running' }, truncated: false }); return true },
         }
       },
       read: () => ({ text: '', truncated: false, oldest: 0, newest: 0 }),
@@ -1762,9 +1785,157 @@ describe('g3 §5.1 REAL HANDLE PLUMBING — createHostTerminalControlPort over a
     expect(fgPrepped.ok).toBe(true)
     const fgHandle = fgPrepped.handle as { terminate: () => Promise<Record<string, unknown>> }
     const fgWord = await fgHandle.terminate()
-    expect(fgWord).toMatchObject({ cancelled: true })
-    expect((fgWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ waitReason: 'cancelled' })
+    expect(fgWord).toMatchObject({ cancelled: true }) // the cancelled FACT rides the adapter's own word…
+    // …and the awaited TerminalSendResult rides VERBATIM with the REAL enum
+    // waitReason (CARD 5: the host never answers 'cancelled' — the KILLED/
+    // cancelled fact is the caller's own distinct fact, never an overloaded
+    // waitReason value).
+    expect((fgWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ waitReason: 'stdin_read' })
     expect(log.filter((l) => l.startsWith('service.kill')).length).toBe(0) // cancelling an async send NEVER kills the persistent PTY
+  })
+
+  it('CARD 2 — a REFUSED terminate is NOT a closed:false success: the close row REJECTS with the provider refusal observable, the session stays open, and the close stays RETRYABLE through the same entry', async () => {
+    const w = await handleWorld({ terminateRefusals: 1 })
+    const opened = await runPass(w.arms.terminal_open, w.binding, { type: 'shell' }, 'c2-open')
+    expect(opened.x.ok, JSON.stringify(opened.x).slice(0, 200)).toBe(true)
+    const sessionId = String((opened.x.value as Record<string, unknown>).sessionId)
+    w.ptyService.recordMinted(sessionId)
+    // THE REFUSAL: the provider REJECTS the awaited terminate — the real
+    // terminal-bash closeOnce RE-THROWS a terminate failure ('PTY cleanup
+    // failed', session.ts @639ed01539); the published contract carries no
+    // closed:false word. The row must REJECT with that refusal (typed
+    // failure observable at the row), never resolve a fabricated success.
+    const c = w.arms.terminal_close.classify({ sessionId }, makeExec().exec, 'c2-refused')
+    const plan = c.plan as Record<string, unknown>
+    expect(w.arms.terminal_close.prepare(plan, { grantId: 'grant-1' }).ok).toBe(true)
+    await expect(w.arms.terminal_close.execute(plan, { consumed: true, grant: grantFor(c, plan, w.binding, 'grant-1') })).rejects.toThrow(/refused the awaited terminate/)
+    // REFUSED ≠ SETTLED: the service did NOT mark the session closed, and
+    // the arm keeps the failure visible (FAILED-UNKNOWN, never COMMITTED).
+    const inflight = JSON.stringify(w.arms.terminal_close.inFlight())
+    expect(inflight).toMatch(/FAILED-UNKNOWN/)
+    expect(inflight).not.toMatch(/"closed":false/) // no fabricated closed:false shape anywhere
+    // THE REFUSAL IS RETRYABLE: a SECOND close re-enters the real terminate
+    // (the refused attempt is NOT cached as a permanent answer) and commits
+    // the REAL close word — sessionId + the two-valued service answer.
+    const retry = await runPass(w.arms.terminal_close, w.binding, { sessionId }, 'c2-retry')
+    expect(retry.x.ok, JSON.stringify(retry.x).slice(0, 200)).toBe(true)
+    expect(retry.x.value).toEqual({ sessionId, outcome: 'closed' })
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([`kill:${sessionId}`]) // exactly one real close; the refused attempt logged NO kill
+  })
+
+  it('CARD 3 — a cancel of ONE in-flight send cleans its OWN operation: the recorded intent kind survives the handle commit, so the cleanup routes operation.cancel with its REAL settle awaited — the persistent PTY is NEVER killed', async () => {
+    const w = await handleWorld()
+    // pty-1 is a SEEDED service session whose operation settles ONLY when
+    // cancelled (the double's contract) — the send stays in flight until the
+    // cleanup law cancels exactly that operation.
+    const c = w.arms.terminal_send.classify({ sessionId: 'pty-1', text: 'sleep 30\n', submit: true }, makeExec().exec, 'c3-cancel-send')
+    expect(c.ok, `${c.code} ${c.detail}`).toBe(true)
+    const plan = c.plan as Record<string, unknown>
+    expect(w.arms.terminal_send.prepare(plan, { grantId: 'grant-1' }).ok).toBe(true)
+    const running = w.arms.terminal_send.execute(plan, { consumed: true, grant: grantFor(c, plan, w.binding, 'grant-1') })
+    await new Promise((resolve) => setImmediate(resolve)) // the operation started, the handle is mid-invoke on the real settle
+    const word = w.arms.terminal_send.cancel(plan)
+    expect(word.settled, JSON.stringify(word).slice(0, 200)).toBe('UNKNOWN-IN-FLIGHT') // cancel is not close — it never claims the outcome
+    const cleanup = await (word as { cleanupSettled?: Promise<Record<string, unknown>> }).cleanupSettled
+    // THE INTENT'S OWN FACE: the send-operation kind recorded at start rides
+    // the cleanup routing (before the card-3 fix the generic handle CLOBBERED
+    // it and this fell through to the session-level branch).
+    expect(cleanup).toMatchObject({ routed: true, face: 'operation.cancel' })
+    expect((cleanup as { settled?: Record<string, unknown> }).settled).toMatchObject({ waitReason: 'stdin_read' }) // the REAL awaited TerminalSendResult
+    const x = await running
+    expect(x.ok, JSON.stringify(x).slice(0, 200)).toBe(true) // the cancelled operation ANSWERED — its word commits
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // the persistent PTY survives one cancelled send
+  })
+
+  it('CARD 3 — a cancel while EXECUTING with NO resource answered still REGISTERS the pending cancellation, and it SETTLES with the execution outcome (never dropped bookkeeping, never a speculative kill)', async () => {
+    const w = await handleWorld({ deferredSpawn: true })
+    const c = w.arms.terminal_open.classify({ type: 'shell' }, makeExec().exec, 'c3-pending')
+    expect(c.ok, `${c.code} ${c.detail}`).toBe(true)
+    const plan = c.plan as Record<string, unknown>
+    expect(w.arms.terminal_open.prepare(plan, { grantId: 'grant-1' }).ok).toBe(true)
+    const running = w.arms.terminal_open.execute(plan, { consumed: true, grant: grantFor(c, plan, w.binding, 'grant-1') })
+    await new Promise((resolve) => setImmediate(resolve)) // parked inside the controlled capability — NOTHING has been answered back yet
+    const word = w.arms.terminal_open.cancel(plan)
+    expect(word.settled).toBe('UNKNOWN-IN-FLIGHT')
+    expect((word as { cancelPending?: boolean }).cancelPending).toBe(true) // REGISTERED on the no-resource path (before the fix this word dropped the bookkeeping)
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // nothing is killed speculatively — an unstarted resource is nobody's kill
+    expect(JSON.stringify(w.arms.terminal_open.inFlight())).toMatch(/"cancelPending":true/) // visible in the live inventory (observability, never authority)
+    w.gate.settle()
+    const x = await running
+    expect(x.ok, JSON.stringify(x).slice(0, 200)).toBe(true) // the provider ANSWERED — the real result commits (a cancel never retracts answered work)
+    const inflightAfter = JSON.stringify(w.arms.terminal_open.inFlight())
+    expect(inflightAfter).toMatch(/settled-by-execution-commit/) // SETTLED with the outcome, evidence attached
+    expect(inflightAfter).not.toMatch(/"cancelPending":true/)
+    expect(w.terminals.log.filter((l: string) => l.startsWith('kill'))).toEqual([]) // and still no speculative kill
+  })
+
+  it('CARD 5 — a REJECTING job done STILL SETTLES the row: JobHooks.done resolves the published terminal JobOutcome (never rejects, never leaves the awaited settle hanging), and the killed fact rides the DISTINCT cancelRequested fact', async () => {
+    const build = (opts: { selfReject: boolean }) => {
+      const log: string[] = []
+      let rejectDone: (e: Error) => void = () => {}
+      const terminals = {
+        spawn: async () => { throw new Error('unused: opens are not part of this leg') },
+        registerBackend: () => () => {},
+        startSend: () => {
+          log.push('startSend')
+          const done = new Promise<Record<string, unknown>>((_resolve, reject) => { rejectDone = reject })
+          if (opts.selfReject) queueMicrotask(() => rejectDone(new Error('transport died mid-send (test)')))
+          return {
+            done,
+            readOutput: () => ({ delta: 'out', truncated: false }),
+            cancel: () => { log.push('operation.cancel'); rejectDone(new Error('transport died mid-send (test)')); return true },
+          }
+        },
+        read: () => ({ text: '', truncated: false }),
+        signal: async () => ({ delivered: true, targetPgid: 1 }),
+        kill: async () => { log.push('service.kill — FORBIDDEN on a send cancel'); return true },
+        list: () => [],
+        log,
+      }
+      let hooksDone: Promise<Record<string, unknown>> | null = null
+      let hooksCancel: ((r?: string) => void) | null = null
+      const jobs = {
+        start: (spec: Record<string, unknown>) => {
+          const hooks = (spec.run as (j: unknown) => { cancel: (r?: string) => void; done: Promise<Record<string, unknown>> })({ append: () => {} })
+          hooksCancel = hooks.cancel
+          hooksDone = hooks.done
+          return 'job-c5-1'
+        },
+        kill: (_id: string, _caller?: string) => {
+          hooksCancel?.('registry kill') // the real registry forwards the cancel; the double then REJECTS the operation's done
+          return 'requested'
+        },
+      }
+      const port = G3.createHostTerminalControlPort({
+        terminals,
+        resolveOwner: (exec: Record<string, unknown>) => (exec as { agent?: unknown }).agent ?? null,
+        jobs,
+        ownerSessionId: (agentId: string) => `session-${String(agentId)}`,
+        subprocess: { spawnTerminal: async () => { throw new Error('unused') } },
+      }) as unknown as { prepare: (spec: Record<string, unknown>) => Promise<Record<string, unknown>> }
+      return { port, log, takeHooksDone: () => { const h = hooksDone; hooksDone = null; return h } }
+    }
+    const bgSpec = { toolName: 'terminal_send', canonical: { sessionId: 'pty-1', text: 'long\n', submit: true, run_in_background: true }, callId: 'c5', correlation: 'c5', isCancelled: () => false }
+    // UNCANCELLED REJECTION → the published conversion: `failed` (jobs types
+    // .d.ts JobHooks.done: must not reject; the runtime converts a rejection
+    // to failed). The row SETTLES — it is never left unsettled.
+    const a = build({ selfReject: true })
+    const prepA = await a.port.prepare({ ...bgSpec, exec: makeExec().exec })
+    expect(prepA.ok).toBe(true)
+    const settledA = await (a.takeHooksDone() as Promise<Record<string, unknown>>) // resolves — a rejecting done NEVER surfaces as a rejected hook
+    expect(settledA).toMatchObject({ status: 'failed' })
+    expect(String(settledA.detail)).toMatch(/settle failed/)
+    // CANCELLED REJECTION → the DISTINCT fact decides the killed status (the
+    // real host never answers waitReason:'cancelled'); the awaited control
+    // word carries it — a rejection cannot hang registry.kill's follow.
+    const b = build({ selfReject: false })
+    const prepB = await b.port.prepare({ ...bgSpec, exec: makeExec().exec })
+    expect(prepB.ok).toBe(true)
+    const termWord = await (prepB.handle as { terminate: () => Promise<Record<string, unknown>> }).terminate()
+    expect(termWord).toMatchObject({ kill: 'requested' })
+    expect((termWord as { settled?: Record<string, unknown> }).settled).toMatchObject({ status: 'killed' }) // cancelRequested — not an overloaded waitReason
+    expect(String((termWord as { settled?: Record<string, unknown> }).settled?.detail)).toMatch(/cancelRequested/)
+    expect(b.log.filter((l: string) => l.startsWith('service.kill')).length).toBe(0) // the persistent PTY is never killed for a cancelled background send
   })
 
   it('an unanswered handle NEVER executes: a port that fails to answer a real handle refuses at the entry typed with zero invoke and zero body; an owner the adapter cannot answer refuses before any service call', async () => {
