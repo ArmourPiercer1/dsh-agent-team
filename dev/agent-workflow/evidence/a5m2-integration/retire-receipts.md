@@ -27,3 +27,12 @@ ordinary per-tree path after root's immediate pre-admission checks (no force/pru
 - Center never deletes; empty diagnostic .git under pack-int surface-bf4e89e1-… stays
   as-scene per root 20:46 (root never authorized its removal; center's mis-sent relay
   authorization was withdrawn before any rm; f86 executed read-only checks only).
+
+## Closure (root-routed a356 execution, 21:1x)
+
+All four owner-receipted trees were removed by the dedicated patrol with ordinary,
+RC-guarded per-tree removal (root 21:12: all four remove RC=0; branch refs AND remotes
+retained and rebuildable; final df 13,586,227,200 B). g6fix was NOT part of the removal
+surface. Center registrations stand verbatim above; dispatch to g1fix/g2fix/g3a/g3b paths
+is prohibited (trees gone, receipts archived here). ACTIVE protected during current work:
+.pnr18-home / .pnpmm-r18-store / bf4fixture / the 307c Host kit pack.
