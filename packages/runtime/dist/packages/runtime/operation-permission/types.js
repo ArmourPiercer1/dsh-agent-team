@@ -25,6 +25,11 @@ export const PERMISSION_TOOL_VALUES = [
     'pwsh',
     'schedule_list',
     'schedule_delete',
+    'session_search',
+    'session_event_search',
+    'session_trace',
+    'session_event_trace',
+    'session_event_read',
 ];
 /** Every {@link FilePermissionTool} value, for membership checks. */
 export const FILE_PERMISSION_TOOL_VALUES = [
@@ -53,5 +58,10 @@ export const SHELL_PERMISSION_TOOL_VALUES = [
 export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES = [
     'schedule_list',
     'schedule_delete',
+    'session_search',
+    'session_event_search',
+    'session_trace',
+    'session_event_trace',
+    'session_event_read',
 ];
 //# sourceMappingURL=types.js.map

@@ -1059,6 +1059,93 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
         }),
         currentFields: Object.freeze(['operation', 'targetObject', 'effectLabel']),
     }),
+    /* A5-M2 B-SUBAGENT (root 21:20 JOINT limited-encoding approval; this lane
+     * is the ONE table writer of this entry - root 21:20; the spawn lane's
+     * earlier flat entry (feat/a5m2-new-family tree) is SUPERSEDED by this
+     * joint entry at merge - a VISIBLE re-anchor of their key-set/currentFields
+     * legs, never a silent translation). ONE operation-discriminated entry
+     * over the EIGHT real operations of the two lanes - no new family, kind,
+     * `any` or ledger. Measured read-only at the two pins: SPAWN lane
+     * feat/a5m2-new-family @8c314fb94b3a694f0cc1acd14c9b9b73a36ff10b
+     * (subagent-spawn-adapters.mjs mintTarget :347-366 + RECORD_SPECS
+     * :111-116 records 39-43 + subagent-spawn-wiring.mjs targetManifest
+     * :154-165; adapter rev 1, wiring rev 1) and CONTROLS lane
+     * feat/a5m2-subagent-fix @6166344117088870799f6f64c915f872dd7e3b41
+     * (subagent-adapters.mjs mintTarget :490-520, trio rows 44-46, adapter
+     * rev 1, UNWIRED by their ruling - the card's field names map 1:1 onto
+     * their minted caller/address{claim,relation,adjudication}/budget leaves).
+     * argsCanonical/namedGapsCanonical are the joint MINT additions both
+     * lanes carry per the coordination (neither projection emits them at the
+     * measured pins - each lane changes ONLY its own mint, root 21:18): the
+     * lane's OWN canonicalJson (sorted-key JSON.stringify, controls module
+     * :234-238) - a COMPLETE reversible canonical JSON, explicitly not a
+     * hash/digest: full message/prompt text, unknown legal args keys, null
+     * and '' survive the round-trip (grammar-side this leaf is a plain
+     * 'string'; completeness is the mint's law, not encoded here). KEY
+     * ORDER is deterministically normalized by that measured helper - the
+     * leaf carries content, not spelling. DELTA REPORTED (card vs measured,
+     * nothing fabricated): the card lists `action` among the shared required
+     * leaves, but the SIGNED guard law (module-load legality) permits binds
+     * ONLY over a group's own adds - so `action` rides every group's
+     * adds+binds, exactly the round-7 signed B-MCP pattern; presence is
+     * still enforced for ALL eight rows (the adds loop) and the bind pins
+     * action to the row's own operation at the edge (measured true: both
+     * lanes mint target.action === plan.operation). effectDelta is REAL on
+     * both lanes (row-level EFFECT_LABELS: controls :471, spawn :337) -
+     * control-side per the card. recordIndex rides the EXISTING
+     * nonNegativeInt kind, control-side per the card. currentFields
+     * ['operation','action']: the mint-side row-identity constants the mount
+     * edge can restate - no truth-claim widened. No Host, no registration,
+     * no C2 claim from table passage. */
+    'B-SUBAGENT': Object.freeze({
+        required: Object.freeze({
+            operation: 'string',
+            contract: 'string',
+            revision: 'string',
+            effect: 'string',
+            depth: 'string',
+            argsCanonical: 'string',
+            namedGapsCanonical: 'string',
+        }),
+        variant: Object.freeze({
+            leaf: 'operation',
+            by: Object.freeze({
+                'subagent-spawn': Object.freeze({
+                    adds: Object.freeze({ action: 'string', parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' }),
+                    binds: Object.freeze({ action: 'subagent-spawn' }),
+                }),
+                'subagent-fork-spawn': Object.freeze({
+                    adds: Object.freeze({ action: 'string', parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' }),
+                    binds: Object.freeze({ action: 'subagent-fork-spawn' }),
+                }),
+                'subagent-spawn-external-codex': Object.freeze({
+                    adds: Object.freeze({ action: 'string', parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' }),
+                    binds: Object.freeze({ action: 'subagent-spawn-external-codex' }),
+                }),
+                'subagent-spawn-external-claude-code': Object.freeze({
+                    adds: Object.freeze({ action: 'string', parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' }),
+                    binds: Object.freeze({ action: 'subagent-spawn-external-claude-code' }),
+                }),
+                'subagent-model-routes-read': Object.freeze({
+                    adds: Object.freeze({ action: 'string', parent: 'string', childClaim: 'nullableString', childAdjudication: 'string', model: 'string' }),
+                    binds: Object.freeze({ action: 'subagent-model-routes-read' }),
+                }),
+                'subagent-interrupt': Object.freeze({
+                    adds: Object.freeze({ action: 'string', caller: 'string', addressClaim: 'nullableString', addressRelation: 'string', addressAdjudication: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+                    binds: Object.freeze({ action: 'subagent-interrupt' }),
+                }),
+                'subagent-list': Object.freeze({
+                    adds: Object.freeze({ action: 'string', caller: 'string', addressClaim: 'nullableString', addressRelation: 'string', addressAdjudication: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+                    binds: Object.freeze({ action: 'subagent-list' }),
+                }),
+                'subagent-send-message': Object.freeze({
+                    adds: Object.freeze({ action: 'string', caller: 'string', addressClaim: 'nullableString', addressRelation: 'string', addressAdjudication: 'string', budget: 'string', effectDelta: 'string', recordIndex: 'nonNegativeInt' }),
+                    binds: Object.freeze({ action: 'subagent-send-message' }),
+                }),
+            }),
+        }),
+        currentFields: Object.freeze(['operation', 'action']),
+    }),
 });
 /* The SIGNED closed kind list - the single source the module-load legality
  * check reads (root 18:42: guard kind-table SYNCED with 'nullableString' +
