@@ -19,6 +19,9 @@ Integration tips: **signed-source SHAs and center merge SHAs listed separately**
 - **4 红全为落地时各 owner 枚举/前提针（产品零回归）**：team-wiring (g)=10-leaf 翻针对未落六叶（9c 配对批候审中）；schedule-wiring (g)="九族无 B-SUBAGENT"枚举过时（schedule lane）；g6-plane-mount (a2)=session_* 投影拒针前提被根签 AUTH 词表改变（G6 owner 重锚 + 语义已根签）；provider-identity FP-E 常量计数 5→7（两新合法族挂载，provider-identity owner eb4d6466）。
 - G2 r29 `acc4d8d3b`：无条件 rotation 保证删（源码+spec 同删，镜像 B-MCP 缺席法）；公开面无 browser 代际 token 精确披露（owner-gated）；手写 manifest 腿改标 GRAMMAR 腿。Schedule：根八项硬错**全项对真合同核实成立**，集中卡一次修 + 无 boot dry-到边界路径承诺在册。均候根。
 
+## 22:5x 容量纪律（root，即时生效）
+r5 已实删（a356）；22:38:43 可用 10,819,141,632B（远<20GB，删后即时 +677498880B 非独占承诺）。**禁**：新增全 archive/全 tracked 证据、整 deps/Host 复制（无需等申请即执行）。各 lane：复用已核只读 store/基座 + 独占小 state；不上行泄漏 peer。保护：active/g6fix/pack/307cworld/.pnr18-home/.pnpmm-r18-store/恢复源。清理只 a356（核旧 a5-m1-host 退役候选），无新增删除许可。源码/既定小预算准备不中断，不全串行。中心足迹声明：两联合候选树=source-only+共享 node_modules 符号链接；`.worktrees/a5m2-joint-cand-probe/`（controls 探针留存，含其自建 node_modules）列 a356 未来退役候选，中心不删；日志均 KB 级。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
