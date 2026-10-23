@@ -96,11 +96,7 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // carries). The adapter's factory is reached ONLY through the bridge; the
 // plane edits none of it.
 import { A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION, A5_B_TEAM_TOOL_NAMES } from './governed-families/team-adapters.mjs'
-import { buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
-// A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the family's FROZEN census
-// facts are the single source of the trio's closed spellings — the plane
-// never carries a second name list.
-import { A5_B_SUBAGENT_RECORD_SPECS, A5_B_SUBAGENT_FAMILY_ID } from './governed-families/subagent-adapters.mjs'
+import { A5_B_TEAM_WIRING_REVISION, buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
 
 /** The lane-default plane names (GLUE-5 alias ruling; see header). */
 export const DEFAULT_PLANE_NAMES = Object.freeze({ grep: 'team_grep', glob: 'team_glob', bash: 'team_bash' })
@@ -1046,38 +1042,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
-  // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; this
-  // block is the spawn writer's, the row laws live in governed-families/
-  // subagent-spawn-adapters.mjs): the `backends.spawn` face is the VALUE of
-  // createSubagentSpawnWiring — the adapter assembly already seated on the
-  // mount's ONE PA walk and this plane's OWN placementFeed (supplied as
-  // lazy closures by the assembly owner; this plane never learns a second
-  // key source). ZERO-FLIP: absent = byte-identical world. Present =
-  // strictly validated (family facts + placed definitions carrying the REAL
-  // registration minimum name/execute/output + the registration/drain face)
-  // and merged into `allDefs` below, so the placement feed, the Guard's
-  // bindingFeed and the family registration cover the spawn rows through
-  // the SAME machinery every other row rides. A half object is refused,
-  // never partially mounted; row SEMANTICS are not rechecked here — the
-  // wiring module and the adapter own them, the plane owns placement.
-  const spawnInjectRaw = input.backends?.spawn
-  let spawnInject = null
-  if (spawnInjectRaw !== undefined && spawnInjectRaw !== null) {
-    const spawnWiring = spawnInjectRaw
-    const spawnBad = (typeof spawnWiring !== 'object' || spawnWiring === null || Array.isArray(spawnWiring))
-      ? 'the injected spawn face is not the wiring value (the createSubagentSpawnWiring wiring object is the injected face)'
-      : (spawnWiring.familyId !== 'B-SUBAGENT')
-        ? 'the wiring value does not claim the B-SUBAGENT family'
-        : (!Number.isInteger(spawnWiring.adapterRevision) || spawnWiring.adapterRevision < 0 || typeof spawnWiring.providerId !== 'string' || spawnWiring.providerId.length === 0 || typeof spawnWiring.realmId !== 'string' || spawnWiring.realmId.length === 0)
-          ? 'the wiring value carries no complete family facts (adapterRevision/providerId/realmId)'
-          : (!Array.isArray(spawnWiring.definitions) || spawnWiring.definitions.length === 0 || !spawnWiring.definitions.every((d) => d !== null && typeof d === 'object' && typeof d.name === 'string' && d.name.length > 0 && typeof d.execute === 'function' && typeof d.output === 'object' && d.output !== null))
-            ? 'the wiring value carries no complete placed definitions (name + execute + the mandatory output face — the real registration minimum; a row this plane cannot register is never merged)'
-            : (typeof spawnWiring.familyRegistrations !== 'function' || typeof spawnWiring.inFlight !== 'function' || typeof spawnWiring.drain !== 'function')
-              ? 'the wiring value carries no familyRegistrations/inFlight/drain face'
-              : undefined
-    if (spawnBad !== undefined) return { ok: false, code: 'SPAWN_WIRING_INJECT_INVALID', message: `backends.spawn: ${spawnBad}` }
-    spawnInject = Object.freeze({ wiring: spawnWiring })
-  }
   // ── GATE 0f (A5-M2 G1, root ruling 15:28: 工具适配不等待中心接线) ──────
   // `planeCfg.g1Enabled` is the SAME-shaped CLOSED CONSUMPTION KEY. ABSENT =
   // FALSE (zero-flip law by absence: every shipped world keeps the pre-G1
@@ -1273,75 +1237,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     })
   }
 
-  // ── A5-M2 B-SUBAGENT CONTROL injection law (this lane's block, root 21:01 card) ──
-  // The control trio (census 44/45/46) arrives as the wiring's OWN built
-  // definitions (captured native faces with ONLY execute replaced) — the
-  // plane PLACES them into the ONE placement machinery (allDefs/placedByName/
-  // ownNames/the Guard feed/the PA placement attribution): no second ledger,
-  // the wiring never self-registers. The gate is config law, not wiring (the
-  // ④ discipline, verbatim from the schedule law above): enabled-without-
-  // inject masks reserved natives with nothing behind; inject-with-gate-off
-  // refuses the mount.
-  const subagentControlEnabledRaw = input.plane?.subagentControlEnabled
-  const subagentControlEnabled = subagentControlEnabledRaw === true
-  const subagentControlInjectRaw = input.backends?.subagentControl
-  const subagentControlInjectInvalid = (why) => ({ ok: false, code: 'SUBAGENT_CONTROL_INJECT_INVALID', message: `backends.subagentControl: ${why}` })
-  if (subagentControlEnabled && subagentControlInjectRaw === undefined) {
-    return subagentControlInjectInvalid('subagentControlEnabled is true but the control wiring injects nothing - the mount would mask the reserved native trio names with nothing behind them; there is no fallback row and no silent disable')
-  }
-  if (!subagentControlEnabled && subagentControlInjectRaw !== undefined) {
-    return subagentControlInjectInvalid('a control trio is injected while subagentControlEnabled is off - the gate is config law, not wiring: refuse the mount instead of mounting around its own key')
-  }
-  let subagentControlInject = null
-  if (subagentControlInjectRaw !== undefined) {
-    if (!isRecord(subagentControlInjectRaw)) {
-      return subagentControlInjectInvalid('the inject must be a record with exactly the closed keys {definitions, familyId, providerId, placementNames, familyRegistrations, dispose}')
-    }
-    const injectKeys = Object.keys(subagentControlInjectRaw).slice().sort()
-    const wantKeys = ['definitions', 'dispose', 'familyId', 'familyRegistrations', 'placementNames', 'providerId']
-    if (injectKeys.length !== wantKeys.length || injectKeys.some((k, i) => k !== wantKeys[i])) {
-      return subagentControlInjectInvalid(`the inject carries the closed key set {${wantKeys.join(', ')}} and NOTHING else - answered [${Object.keys(subagentControlInjectRaw).join(', ')}]`)
-    }
-    if (subagentControlInjectRaw.familyId !== A5_B_SUBAGENT_FAMILY_ID) {
-      return subagentControlInjectInvalid(`the inject claims familyId '${String(subagentControlInjectRaw.familyId)}' - the control trio's frozen family is ${A5_B_SUBAGENT_FAMILY_ID}`)
-    }
-    if (typeof subagentControlInjectRaw.providerId !== 'string' || subagentControlInjectRaw.providerId.length === 0) {
-      return subagentControlInjectInvalid('the inject needs the wiring providerId (the trusted owner fact rides the family registrations)')
-    }
-    const subagentControlTrioNames = Object.keys(A5_B_SUBAGENT_RECORD_SPECS)
-    const subagentControlDefsRaw = subagentControlInjectRaw.definitions
-    if (!Array.isArray(subagentControlDefsRaw) || subagentControlDefsRaw.length !== subagentControlTrioNames.length) {
-      return subagentControlInjectInvalid(`the inject carries exactly the three control definitions (${subagentControlTrioNames.join(', ')}) - answered ${Array.isArray(subagentControlDefsRaw) ? subagentControlDefsRaw.length : 'no array'}`)
-    }
-    const subagentControlDefNames = subagentControlDefsRaw.map((d) => (isRecord(d) ? d.name : undefined)).slice().sort()
-    if (subagentControlDefNames.join(',') !== subagentControlTrioNames.slice().sort().join(',')) {
-      return subagentControlInjectInvalid(`the definitions' names are the frozen census spellings [${subagentControlTrioNames.join(', ')}] and NOTHING else - answered [${subagentControlDefNames.join(', ')}]`)
-    }
-    for (const d of subagentControlDefsRaw) {
-      if (!isRecord(d) || typeof d.name !== 'string' || typeof d.execute !== 'function' || d.parameters === null || typeof d.parameters !== 'object') {
-        return subagentControlInjectInvalid(`definition '${String(isRecord(d) ? d.name : '?')}' is not a full placed face (name + execute + parameters schema) - the same-name governed mount IS the definition face`)
-      }
-    }
-    if (typeof subagentControlInjectRaw.familyRegistrations !== 'function' || typeof subagentControlInjectRaw.dispose !== 'function') {
-      return subagentControlInjectInvalid('familyRegistrations and dispose must be the wiring faces (the mount writer registers AFTER publish; the drain rides THIS mount\'s teardown law)')
-    }
-    const subagentControlPlacementNames = subagentControlInjectRaw.placementNames
-    if (!Array.isArray(subagentControlPlacementNames) || subagentControlPlacementNames.slice().sort().join(',') !== subagentControlDefNames.join(',')) {
-      return subagentControlInjectInvalid('placementNames must name exactly the injected definitions (one name, one placement)')
-    }
-    if (subagentControlTrioNames.includes(readName)) {
-      return subagentControlInjectInvalid(`'${readName}' is already claimed on this mount - one name, one placement (the verifyPlaneNames law, carried to the fixed-spelling rows)`)
-    }
-    subagentControlInject = Object.freeze({
-      definitions: Object.freeze(subagentControlDefsRaw.slice()),
-      familyId: subagentControlInjectRaw.familyId,
-      providerId: subagentControlInjectRaw.providerId,
-      placementNames: Object.freeze(subagentControlPlacementNames.slice()),
-      familyRegistrations: subagentControlInjectRaw.familyRegistrations,
-      dispose: subagentControlInjectRaw.dispose,
-    })
-  }
-
   // A5M2-B-TEAM-WIRE — the B-TEAM MEMBER-OPERATION injection law (this lane's
   // block; the G6 pair above is the house pattern it copies). The owner
   // publishes the evidence for the ten member operations (records 74–82 + 86)
@@ -1380,7 +1275,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : undefined
+                : teamOpsInjectRaw.callerGate !== undefined && typeof teamOpsInjectRaw.callerGate !== 'function'
+                  ? 'callerGate, when supplied, must be (exec, requestedRootSessionId) => Promise<{ok:true, caller, rootSessionId} | {ok:false, result}> — the SAME shared gate the native common entry runs (packages/tools resolveTeamToolCallerRootGate); the bridge consults it before any durable fact is read, and a refusal carries the native rejected VALUE verbatim'
+                  : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
+                  ? 'queryFacts, when supplied, must expose resolve (toolName, addressedInstanceId) => facts — the published durable reads the three QUERY rows mint their target leaves from. OPTIONAL on purpose: a mount arming only the write rows is never forced to supply a roster/blueprint read; without it a query claim simply mints nothing and the bridge refuses it at composition.'
+                  : undefined
     if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
     for (const teamName of A5_B_TEAM_TOOL_NAMES) {
       if (teamName === readName || teamName === A5_TODO_MOUNT_NAME || teamName === A5_WRITE_MOUNT_NAME || teamName === A5_IMAGE_MOUNT_NAME
@@ -1395,6 +1294,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      ...(teamOpsInjectRaw.callerGate === undefined ? {} : { callerGate: teamOpsInjectRaw.callerGate }),
+      ...(teamOpsInjectRaw.queryFacts === undefined ? {} : { queryFacts: teamOpsInjectRaw.queryFacts }),
     })
   }
 
@@ -1599,12 +1500,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
     if (imageInject !== null && spelling === A5_IMAGE_MOUNT_NAME) return A5_IMAGE_MOUNT_NAME
-    // A5-M2 B-SUBAGENT spawn rows mount at the NATIVE spellings (the closed
-    // name list the wiring value carries); the name resolves here ONLY when
-    // this mount actually placed that row — an unmounted world answers
-    // undefined exactly as before (zero flip).
-    if (spawnInject !== null && spawnInject.wiring.mountNames.includes(spelling)
-      && spawnInject.wiring.definitions.some((d) => d.name === spelling)) return spelling
     // A5-M2 G1 PURE-QUERY: the three fixed spellings resolve to themselves,
     // ONLY when this mount actually placed them (zero flip otherwise).
     if (g1Inject !== null && A5_G1_PURE_QUERY_MOUNT_NAMES.includes(spelling)) return spelling
@@ -1618,12 +1513,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // live tuple, and the edge refuses `TOOL_BINDING_UNVERIFIED` when the
     // entry cannot answer; no fake binding path exists on this family).
     if (teamOpsWiring !== null && teamOpsWiring.placementNames.includes(spelling)) return spelling
-    // A5-M2 B-SUBAGENT CONTROL (root 21:01 card, this lane's block): the
-    // control trio mounts at its OWN native spellings — placed by THIS plane
-    // through the shared machinery — ONLY while this mount actually wired it
-    // (zero flip otherwise); the trust read downstream is then the REAL
-    // call-level binding behind the placed row, never a stand-in.
-    if (subagentControlInject !== null && Object.keys(A5_B_SUBAGENT_RECORD_SPECS).includes(spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -4012,10 +3901,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
     scheduleArms = Object.freeze(built)
   }
   const imageDefs = imageDef === null ? [] : [imageDef]
-  // The B-SUBAGENT spawn rows ride the SAME placement/feed/dispose machinery
-  // (their def#N identities mint through the seam's install pass like the
-  // rest); zero-flip law: with no backends.spawn this is byte-identical.
-  const spawnDefs = spawnInject === null ? [] : Object.freeze([...spawnInject.wiring.definitions])
   // ── A5-M2 G1 PURE-QUERY rows (Gate 0f) ─────────────────────────────────
   // Each row is a DEFINITION THIS plane places at the record's FIXED native
   // spelling, and its body is ONE vertical: the injected COMMITTED adapter row
@@ -4345,6 +4230,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        ...(teamOpsInject.callerGate === undefined ? {} : { callerGate: teamOpsInject.callerGate }),
+        ...(teamOpsInject.queryFacts === undefined ? {} : { queryFacts: teamOpsInject.queryFacts }),
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
         // Nothing else poses as the admission seat.
         pa: paAdmit,
@@ -4362,21 +4249,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
   const g6Defs = g6Wiring === null ? [] : g6Wiring.definitions
-  // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the trio definitions the
-  // control WIRING built (captured native faces, ONLY execute replaced; each
-  // body walks its own open→edge→consumedProof path through THIS plane's
-  // paAdmit) join THIS placement — def#N identities mint through the seam's
-  // install pass like every other row; zero-flip law holds (gate off = the
-  // empty list = baseDefs shape untouched).
-  const subagentControlDefs = subagentControlInject === null ? [] : [...subagentControlInject.definitions]
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && scheduleDefs.length === 0 && spawnDefs.length === 0 && subagentControlDefs.length === 0
+const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && g1Defs.length === 0 && g6Defs.length === 0 && scheduleDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...scheduleDefs, ...spawnDefs, ...subagentControlDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...g1Defs, ...g6Defs, ...scheduleDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -4421,22 +4301,6 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         declared: g6Wiring.declared,
         familyRegistrations: g6Wiring.familyRegistrations,
       }) }),
-      /** A5-M2 B-SUBAGENT CONTROL (this lane's block, root 21:01 card): the
-       *  control trio's wiring face for THIS mount (omitted, NOT set to
-       *  `undefined`, when the family is not deployed — the presence law the
-       *  other faces obey). The defs are PLACED here (allDefs/placedByName:
-       *  ownNames, the Guard's assembly-owned bind and bindingFeed, and the
-       *  PA placement attribution all resolve them through the existing
-       *  machinery); the mount writer reads familyRegistrations() AFTER
-       *  publish (keys fresh through THIS plane's placement feed, the G6
-       *  law) and pairs each entry with registerA5GovernedFamily; the drain
-       *  rides this mount's dispose, never the writer's. */
-      ...(subagentControlInject === null ? {} : { subagentControl: Object.freeze({
-        familyId: subagentControlInject.familyId,
-        providerId: subagentControlInject.providerId,
-        placementNames: subagentControlInject.placementNames,
-        familyRegistrations: subagentControlInject.familyRegistrations,
-      }) }),
       // A5M2-B-TEAM-WIRE — THE B-TEAM CLAIM FACE (this lane's block): the
       // rows the registration owner PLACES (each the complete captured face
       // with ONLY execute replaced), and the mount-moment family
@@ -4449,6 +4313,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       ...(teamOpsWiring === null ? {} : { teamOps: Object.freeze({
         familyId: A5_B_TEAM_FAMILY_ID,
         adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        // ⑤ (root 22:58) the revision THIS family's claims were composed under,
+        // published next to the adapter's own revision on the mount face. The
+        // adapter stays at its signed 1 (its business is untouched); the wiring
+        // moved to 2 with the six durable query leaves, and a plan composed
+        // under 1 no longer satisfies the closed table, so an OLD approved plan
+        // refuses at the durable leg. No ledger: this is the same registration
+        // state the mount already publishes.
+        wiringRevision: A5_B_TEAM_WIRING_REVISION,
         providerIdentity: teamOpsWiring.providerId,
         placementNames: teamOpsWiring.placementNames,
         definitions: teamOpsWiring.definitions,
@@ -4536,7 +4408,6 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
         search: hostedSearch, glob: hostedGlob, shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
         ...(todoInject === null ? {} : { todo: todoInject.arm }),
-        ...(spawnInject === null ? {} : { spawn: spawnInject.wiring }),
         // A5-M2 G1 PURE-QUERY: the placed COMMITTED adapter rows (diagnostics
         // only — the placement authority is the mount, never this face).
         ...(g1Inject === null ? {} : { g1: Object.freeze(g1Inject.rows.map((entry) => entry.row)) }),
@@ -4584,15 +4455,6 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,
       placementNames: Object.freeze(allDefs.map((d) => d.name)),
-      // THE REAL SEAT for the owner-built SPAWN wiring (production-leg law,
-      // found by a5m2-subagent-spawn-plane-mount-c1): the other lanes get
-      // paAdmit IN at assembly (the plane builds their bridge); the spawn
-      // wiring is built by its owner BEFORE this mount exists, so this mount
-      // hands the seat OUT — paAdmit ITSELF, the callable + open/edge/
-      // closePlan, the one funnel every governed call passes. Nothing else
-      // poses as the seat. Zero flip: the key rides ONLY a spawn-carrying
-      // mount; every other world stays byte-identical.
-      ...(spawnInject === null ? {} : { spawnPaSeat: paAdmit }),
       /**
        * RA ② invariant 1+3: THIS function performs the placement. Any
        * register failure rolls back what it already placed and returns the
@@ -4668,13 +4530,6 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
               scheduleArms.list.drain()
               scheduleArms.delete.drain()
             }
-            // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the SAME teardown
-            // law — the wiring's dispose is its new-call prohibition + the
-            // in-flight drain (adapter semantics: an entered body is not
-            // rewound, no native fallback exists, the trio refuses typed
-            // DISPOSED after); the placed defs' own disposers run with the
-            // mount like every other row. Idempotent (the wiring's law).
-            if (subagentControlInject !== null) subagentControlInject.dispose()
             // A5M2-B-TEAM-WIRE (this lane's block): the same drain semantics
             // the G6 row obeys — a NEW-CALL PROHIBITION only (the adapter's
             // own DRAIN_SEMANTICS: durable lane commits stay durable, no

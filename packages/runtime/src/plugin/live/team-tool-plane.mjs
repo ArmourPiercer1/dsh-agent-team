@@ -96,7 +96,9 @@ import { buildG6SessionQueryWiring } from './governed-families/g6-session-query-
 // carries). The adapter's factory is reached ONLY through the bridge; the
 // plane edits none of it.
 import { A5_B_TEAM_FAMILY_ID, A5_B_TEAM_ADAPTER_REVISION, A5_B_TEAM_TOOL_NAMES } from './governed-families/team-adapters.mjs'
-import { buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
+// Center keep-both (root 23:17 full-chain merge): the lane's WIRING_REVISION
+// import joins the B-SUBAGENT frozen-census import that landed earlier.
+import { A5_B_TEAM_WIRING_REVISION, buildTeamOpsWiring } from './governed-families/team-wiring.mjs'
 // A5-M2 B-SUBAGENT CONTROL (root 21:01 card): the family's FROZEN census
 // facts are the single source of the trio's closed spellings — the plane
 // never carries a second name list.
@@ -1380,7 +1382,11 @@ export function createTeamToolPlaneAssembly(input = {}) {
               ? 'definitionIdentityOf (definition) => string | null is required — the seam\'s own capture-side mint (pb 6); the bridge hand-spells no identity'
               : typeof teamOpsInjectRaw.placementFeed !== 'function'
                 ? 'placementFeed (name) => {definitionIdentity, realmId} | undefined is required — the RUNTIME placement identity of the GOVERNED row once the registration owner has placed it (pb 6); no key is ever hand-spelled or guessed'
-                : undefined
+                : teamOpsInjectRaw.callerGate !== undefined && typeof teamOpsInjectRaw.callerGate !== 'function'
+                  ? 'callerGate, when supplied, must be (exec, requestedRootSessionId) => Promise<{ok:true, caller, rootSessionId} | {ok:false, result}> — the SAME shared gate the native common entry runs (packages/tools resolveTeamToolCallerRootGate); the bridge consults it before any durable fact is read, and a refusal carries the native rejected VALUE verbatim'
+                  : teamOpsInjectRaw.queryFacts !== undefined && typeof teamOpsInjectRaw.queryFacts.resolve !== 'function'
+                  ? 'queryFacts, when supplied, must expose resolve (toolName, addressedInstanceId) => facts — the published durable reads the three QUERY rows mint their target leaves from. OPTIONAL on purpose: a mount arming only the write rows is never forced to supply a roster/blueprint read; without it a query claim simply mints nothing and the bridge refuses it at composition.'
+                  : undefined
     if (teamBad !== undefined) return teamOpsInjectInvalid(teamBad)
     for (const teamName of A5_B_TEAM_TOOL_NAMES) {
       if (teamName === readName || teamName === A5_TODO_MOUNT_NAME || teamName === A5_WRITE_MOUNT_NAME || teamName === A5_IMAGE_MOUNT_NAME
@@ -1395,6 +1401,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
       teamSet: teamOpsInjectRaw.teamSet,
       definitionIdentityOf: teamOpsInjectRaw.definitionIdentityOf,
       placementFeed: teamOpsInjectRaw.placementFeed,
+      ...(teamOpsInjectRaw.callerGate === undefined ? {} : { callerGate: teamOpsInjectRaw.callerGate }),
+      ...(teamOpsInjectRaw.queryFacts === undefined ? {} : { queryFacts: teamOpsInjectRaw.queryFacts }),
     })
   }
 
@@ -4345,6 +4353,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // familyRegistrations and THROWS on a silent or moved key — never a
         // guessed def#, never a silent skip).
         placementFeed: teamOpsInject.placementFeed,
+        ...(teamOpsInject.callerGate === undefined ? {} : { callerGate: teamOpsInject.callerGate }),
+        ...(teamOpsInject.queryFacts === undefined ? {} : { queryFacts: teamOpsInject.queryFacts }),
         // THE REAL SEAT: paAdmit itself — callable + open/edge/closePlan.
         // Nothing else poses as the admission seat.
         pa: paAdmit,
@@ -4449,6 +4459,14 @@ const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.leng
       ...(teamOpsWiring === null ? {} : { teamOps: Object.freeze({
         familyId: A5_B_TEAM_FAMILY_ID,
         adapterRevision: A5_B_TEAM_ADAPTER_REVISION,
+        // ⑤ (root 22:58) the revision THIS family's claims were composed under,
+        // published next to the adapter's own revision on the mount face. The
+        // adapter stays at its signed 1 (its business is untouched); the wiring
+        // moved to 2 with the six durable query leaves, and a plan composed
+        // under 1 no longer satisfies the closed table, so an OLD approved plan
+        // refuses at the durable leg. No ledger: this is the same registration
+        // state the mount already publishes.
+        wiringRevision: A5_B_TEAM_WIRING_REVISION,
         providerIdentity: teamOpsWiring.providerId,
         placementNames: teamOpsWiring.placementNames,
         definitions: teamOpsWiring.definitions,
