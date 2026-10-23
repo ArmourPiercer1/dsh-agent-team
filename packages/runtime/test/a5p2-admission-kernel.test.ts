@@ -995,7 +995,7 @@ describe('invocation-only class: schedule_list / schedule_delete projection law 
   it('the original seven names did not move: file any-deny still refuses, file any-lanes still disclose, member shell allow still refuses', () => {
     const fileAnyDeny = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] })
     expect(fileAnyDeny.ok).toBe(false)
-    if (!fileAnyDeny.ok) return
+    if (fileAnyDeny.ok) return // expected refusal holds → CONTINUE to the byte-stable pins (root 20:57: inverted-guard fix)
     expect(fileAnyDeny.error.code).toBe('IO_POLICY_UNSUPPORTED')
     expect(fileAnyDeny.error.details?.['refusal']).toBe('projection-deny-unprojectable')
     expect(String(fileAnyDeny.error.message)).toContain("file-class tool 'read'") // byte-stable wording
@@ -1004,7 +1004,7 @@ describe('invocation-only class: schedule_list / schedule_delete projection law 
     if (fileAnyAsk.ok) expect(fileAnyAsk.value.notes.some((n) => /TIGHTER than declared/.test(n))).toBe(true) // file disclosure intact
     const memberShellAllow = projOf({ default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'member' })
     expect(memberShellAllow.ok).toBe(false)
-    if (!memberShellAllow.ok) return
+    if (memberShellAllow.ok) return // expected refusal holds → CONTINUE to the dual-gate pin (root 20:57: inverted-guard fix)
     expect(memberShellAllow.error.details?.['refusal']).toBe('projection-shell-allow-non-leader') // the dual-gate branch untouched
     const leaderShellAllow = projOf({ default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'leader' })
     expect(leaderShellAllow.ok).toBe(true)
