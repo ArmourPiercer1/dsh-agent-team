@@ -129,29 +129,35 @@ async function loadHarness() {
 // p6t6 helper row now resolves INSIDE the same pin dir; its bytes are unchanged and the
 // existing double gate (file sha + `git show <SHA>:packages/tools/harness/plugin.mjs`
 // blob sha) is kept verbatim, so a substituted helper still cannot ride the run.
-// IDENTITY (root 17:30 FINAL): source-HEAD 2188f15ce953977c681dedeb079a36ca27ddbbd7 — the int tip
-// whose six TS dist mirrors are committed by a real build (center: `check:artifacts:head`
-// verdict=ok compared=1788 drift=0, "HEAD carries its own build"). Re-measured in THIS lane, no
-// build: PACKAGE == COMMITTED TREE for 1812/1813 files (the one drift is package.json pack
-// normalization: pnpm pack drops "packageManager", every other parsed-JSON key equal); glue audit
-// 16/16 with committed-dist-vs-src drift 0; fsSeam present on the mounted dist face (2 + 1); the
-// control/types.js dist that was STALE at d5454cb23 now carries its src's fields (x4 / x3 vs 0 / 0).
-// Path-set is BYTE-IDENTICAL to the r17 pin (entries digest 5263586e… unchanged), so the path-set
-// and digest gates keep their r17 expected values. The 126b12cc / d5454cb23 dirs stay in this
-// branch as the unfalsified audit trail, and PIN_HOLDOUT_FILE below is what stopped this lane
-// from mounting either one.
-const SOURCE_PIN_SHA = '2188f15ce953977c681dedeb079a36ca27ddbbd7'
-const PIN_SHA = SOURCE_PIN_SHA // helper bytes == the 34c6680d helper pin (471475b9…), asserted twice below
+// IDENTITY (root 21:15/21:16 LIMITED AUTHORIZATION — b23 successor pin): source-HEAD
+// bf4e89e108620479d1a43344a8ea74d82cfde229, i.e. the b23 surface (2188f15ce) plus the center landings
+// after it: the family-chain dist mirrors (G1/G3/G6/B-SCHEDULE/B-TEAM), the artifacts fixup of
+// control/types, the G6 mount-site block, the team-plane placement/seat, and the PROVIDER-IDENTITY
+// supply the r18 failure needed (P_IMAGE_CONSUMPTION_BINDING_MISMATCH was a provider-side defect).
+// Measured in THIS lane, read-only, NO build (full record: packages-pins/<SHA>/MANIFEST-bf4e89e1.txt):
+// PACKAGE == COMMITTED TREE compared=1821 missingBlobs=0 drift=1 — the single drift is package.json pack
+// normalization (keys-only-in-committed = ["packageManager"], no common key differs in value); glue
+// audit 24/24 placements with committed-dist-vs-src drift 0 AND tarball-vs-committed-src drift 0; the
+// r17 lexical seam is still on the mounted dist face (fsSeam: agent-bindings 2, pa-mount-registry 1;
+// subtreeContains 6). NO check:artifacts:head was run here — it requires a build, unauthorized here.
+// The path-set is NOT byte-identical to b23's (+8 dist mirrors, 0 removed, 8 changed), so the entries
+// digest and both manifest digests below are the NEW measured values. Only pin IDENTITY moved: every
+// gate mechanism, stop, same-call rule and negative control is byte-unchanged, and each value was read
+// off the delivered tarball's own bytes (measured first, constants set afterwards). The 126b12cc /
+// d5454cb23 / 249eb65ec / 2188f15ce dirs stay in this branch as the unfalsified audit trail, and
+// PIN_HOLDOUT_FILE below is still what refuses a pin whose identity is not final.
+const SOURCE_PIN_SHA = 'bf4e89e108620479d1a43344a8ea74d82cfde229'
+const PIN_SHA = SOURCE_PIN_SHA // helper bytes are STILL 471475b9… (byte-identical to the b23 pin's), asserted twice below
 const PIN_DIR = join(REPO, 'packages-pins', SOURCE_PIN_SHA)
 const PIN_TGZ = join(PIN_DIR, 'dsh-agent-team-0.1.1-alpha.2.tgz')
 const PIN_PLUGIN = join(PIN_DIR, 'plugin.mjs') // helper bytes (blob at SOURCE_PIN_SHA, verified)
 const PIN_HOLDOUT_FILE = join(PIN_DIR, 'STATUS-PROVISIONAL.txt') // presence = identity not final -> REFUSE
-const EXPECT_TGZ_SHA = '5a9aa54c372f55e68855198e4b1a9930a399ed52ad670a732a4edd4964613360'
+const EXPECT_TGZ_SHA = 'b999dfe100d18f0831af5093021d4d2106b21d8218625ea80e49ea77d27d67cf'
 const EXPECT_PLUGIN_SHA = '471475b96e70f05a178f6006cf7b256765533313092b7c4689553c7c8d0ee784'
-const EXPECT_TREE_SHA = 'cc8d02643237129975d02f9ab17fe30b15749831a8d4fdb04fb4f0a6ced6ebcb' // sha256 OF manifest-tgz-dist-hashes.txt (the recipe that reproduces r17's f8d5622a…; non-gating INFO)
-const EXPECT_SURFACE_SHA = '66cd31e8b9ff80bcc1f15b8c8bf70a0836bb0e235f1b03cac2807576f27e91c8' // sha256 OF manifest-installsurface-hashes.txt (473 lines)
-const EXPECT_ENTRIES = 1813 // path-set BYTE-IDENTICAL to the r17 pin (entries digest 5263586e… unchanged)
-const INSTALL_DIR = 'install-2188f15ce' // fresh surface for THIS run; r17's install-249eb65ec is never touched
+const EXPECT_TREE_SHA = '3b136adf67f000806757cbe0d63343dead37940d7308a042626c37af70897709' // sha256 OF manifest-tgz-dist-hashes.txt (same recipe, re-measured on THIS tarball; non-gating INFO)
+const EXPECT_SURFACE_SHA = '9b91cdca2813a467c8b46e850503869f8198c3a7660ddcc942ea6a8eb972a7e8' // sha256 OF manifest-installsurface-hashes.txt (481 lines; 473 at b23)
+const EXPECT_ENTRIES = 1821 // +8 dist mirrors over b23, 0 removed; entries digest a7d35916… measured from the tarball
+const INSTALL_DIR = 'install-bf4e89e1' // fresh surface for THIS pin; earlier install-* surfaces are never touched
 
 function sha256File(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex')
@@ -1468,7 +1474,7 @@ async function preflight() {
   // "extraction file-set unchanged"). Both sides are FILE-ONLY filtered (dir records
   // carry a trailing '/'; manifest lines never do — removing those lines removes
   // exactly the dir records). Equal-strength on both sides; not a fixture change.
-  const EXPECT_C_DIGEST = '5263586e8eee5ea645d3764dd90917c5ec5d500d9ee27649412b7c5f81704569'
+  const EXPECT_C_DIGEST = 'a7d35916e6a9b1e67bb351ddec116fa4effe11550e24a0d73a08ff6ab9d9a9ea'
   const rawEntries = execFileSync('tar', ['-tzf', PIN_TGZ], { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }).trim().split('\n')
   const dirRecords = rawEntries.filter((p) => p.endsWith('/')).length
   const entries = rawEntries.filter((p) => !p.endsWith('/'))

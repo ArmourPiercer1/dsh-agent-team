@@ -1,0 +1,73 @@
+# ROOT plugin package pin — dsh-agent-team@0.1.1-alpha.2 (A5M2 b23-successor MOUNT SURFACE for the next
+# bounded real-Host window; prepared read-only by the kit lane, NO build, NO Host, NO world touched)
+source-HEAD: bf4e89e108620479d1a43344a8ea74d82cfde229 ("center landing fixup (artifacts)", 2026-10-23T20:33:23Z).
+  Authorized as the b23 successor pin by ROOT 21:15/21:16 (limited authorization: this dir = the only new
+  inputs; old pin dirs are NOT overwritten; one kit writer kept).
+pack: delivered by center at
+  /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/pack-int/out-bf4e89e1-20261023T203544Z/dsh-agent-team-0.1.1-alpha.2.tgz
+  This lane copied those exact bytes and RE-MEASURED every hash from them (nothing taken on trust, nothing
+  expected-first: the numbers below were produced first, the kit constants were set from them afterwards).
+
+(A) PACKAGE == COMMITTED TREE AT THIS SHA — measured file by file, nothing trusted
+  All 1821 package files compared against `git cat-file --batch` blobs of bf4e89e1: compared=1821,
+  missingBlobs=0, drift=1. The one drift is `package.json`, and it is pnpm pack normalization only:
+  keys-only-in-committed = ["packageManager"], keys-only-in-tarball = [], and ZERO common keys differ.
+  Glue-placement audit at this SHA (read-only, GIT BLOBS, no build): 24/24 placements (the table grew
+  16 -> 24 in this delta), committed-dist-vs-committed-src drift 0, and TARBALL-dist-vs-committed-src
+  drift 0 — i.e. the package carries the committed mirror bytes for every glue leg.
+  NOTE ON THAT MEASUREMENT (honest correction): the earlier helper .pinbuild-verify/glue-drift.mjs has a
+  HARDCODED extraction root (.pinbuild-verify/x/package) from an older extraction; pointed at it, bf4e89e1
+  falsely reported tarball drift 11. Re-measured against THIS pin's own extraction with
+  .pinbuild-verify/glue-drift2.mjs <SHA> <extraction-root> (new file; the old tool is left in place), the
+  number is 0. The old tool's 2188 "0" was right only because that hardcoded dir held that era's copy.
+  The r17 lexical-seam fix is still on the MOUNTED (dist) face of THIS package: fsSeam appears 2x in
+  dist/.../live/agent-bindings.mjs (with subtreeContains 6x) and 1x in dist/.../live/pa-mount-registry.mjs.
+  The image plane face also carries the provider-identity supply candidate that the r18 failure
+  (P_IMAGE_CONSUMPTION_BINDING_MISMATCH, a provider-side defect) needs: dist/.../governed-families/image.mjs
+  contains providerIdentity at L46, "provider identity" at L235/L250 and "consumption-point" at L382.
+  CONCLUSION: the mounted product is the committed tree at bf4e89e1 (modulo the package.json normalization).
+
+(B) DELTA vs THE b23 MOUNT SURFACE (packages-pins/2188f15ce…/) — 1813 -> 1821 records, +8 / -0 / ~8
+  ADDED (8, all dist mirrors of the family-chain blocks that landed after 2188):
+    + dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs
+    + dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs
+  CHANGED (8): package.json (pack normalization, as in A) + control/types.js / .js.map / .d.ts / .d.ts.map
+    (the artifacts fixup of this very commit) + live/agent-bindings.mjs, live/team-tool-plane.mjs and
+    governed-families/image.mjs (G6 mount-site block / team plane placement+seat / provider-identity supply).
+  REMOVED: none. So the install path layout, every gate input and every prior file hash are unchanged
+  except those 8; the kit's assertions were NOT relaxed — only the pin identity constants moved.
+  Scope law unchanged and NOT upgraded by this pin: the newly shipped families are MOUNTED candidates;
+  whether a row is exercised is decided by the run's C1 field-by-field row assertion, not by this file.
+  Audit trail kept unfalsified: 126b12cc… (seam mirrors absent), d5454cb23… (check:artifacts:head RC=1,
+  drift=6), 249eb65ec… (r17 surface), 2188f15ce… (b23 surface) — all still present, none modified.
+  Holdout law intact: this dir contains NO STATUS-PROVISIONAL.txt, and the kit still refuses to mount any
+  pin dir that carries one.
+
+tgz-sha256: b999dfe100d18f0831af5093021d4d2106b21d8218625ea80e49ea77d27d67cf (dsh-agent-team-0.1.1-alpha.2.tgz,
+  3846119 bytes, 1821 FILE records, 0 directory records — matches the values root stated).
+tgz-entries: 1821 — manifest-tgz-entries-C.txt sha256 = a7d35916e6a9b1e67bb351ddec116fa4effe11550e24a0d73a08ff6ab9d9a9ea
+  (FILE-only records, code-unit = LC_ALL=C sort, `package/` prefix; recipe unchanged since r17).
+tree-sha256 (all 1821 per-file "hash  package/path" lines): manifest-tgz-dist-hashes.txt sha256 =
+  3b136adf67f000806757cbe0d63343dead37940d7308a042626c37af70897709
+install-surface (481 js/mjs/json lines, same format; 473 at 2188): manifest-installsurface-hashes.txt sha256 =
+  9b91cdca2813a467c8b46e850503869f8198c3a7660ddcc942ea6a8eb972a7e8
+  Both manifest recipes are the ones already proven against r17 (reproducing its recorded digests exactly),
+  so EXPECT_TREE_SHA / EXPECT_SURFACE_SHA in the kit are the sha256 OF these two files.
+plugin.mjs (git show bf4e89e1…:packages/tools/harness/plugin.mjs) sha256 =
+  471475b96e70f05a178f6006cf7b256765533313092b7c4689553c7c8d0ee784 — BYTE-IDENTICAL to the helper mounted
+  at 2188f15ce and to the tarball's own copy (checked three ways: file, git blob, extracted package).
+package.json (packed form) sha256 = fa70199f91702224e991488668f581fdada8986c6f01ed19ede1d921326d5b83;
+  cordis.patch.yml sha256 = 6eaf46a9ddcfe427bd1345c1d4cb82931262b3de67858ec4eeadcef079ec89bc.
+
+usage (unchanged law; execution belongs to 307c, NOT to this lane): fixed Host639 @
+  639ed015397290b3745d163aafe02ffee4aa3f84 pristine porcelain 0 before AND after; plugin mounted ONLY from
+  this pin dir's tgz, extracted to the world as tests/homes/<world>/install-bf4e89e1/package (chmod -R a-w)
+  plus tests/homes/<world>/mount-helper-root/package; the standard already-installed fixture is REUSED, not
+  reinstalled; nothing mounts from .worktrees/; CORE PATCH BUDGET 0; ports only 3182/3497 after a real
+  free+no-in-flight probe; never 3080 / 3186/3500 / 3183/3498 / 3184/3499.
