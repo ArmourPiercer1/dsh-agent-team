@@ -16,6 +16,21 @@ import type { PaCallFacts } from '../../../control/types.js'
 /** The named call-level facts the ONE injected PA verifier awaits per gate. */
 export type PaCallFactsResult = PaCallFacts | undefined
 
+/**
+ * A5-M1-D (presentation only): the ONE binding-identity arm a call-level read
+ * reports through the OPTIONAL `diagnose` sink while it is already returning
+ * `undefined`. Output-only: no code path reads it back, no answer or `kind`
+ * depends on it, and a sink that throws cannot reach a verdict. `code` is the
+ * literal the failing line produced (see `readPaCallFactsForCall`); the durable
+ * row entry takes no such sink — its answer shape is untouched.
+ */
+export interface PaCallDiagnostic {
+  readonly code: string
+}
+
+/** The sink shape accepted by both fact entries. */
+export type PaCallDiagnosticSink = (cause: PaCallDiagnostic) => void
+
 /** What agent-bindings publishes per mounted member (references ONLY — this
  *  is deliberately not an authority ledger; see the module header). */
 export interface PaMountEntry {
@@ -102,6 +117,11 @@ export interface ReadPaCallFactsForCallInput {
   readonly callId: string
   readonly requestedEffects: unknown
   readonly placementName?: string
+  /** A5-M1-D: output-only cause sink — the only way a caller learns WHICH
+   *  binding-identity arm failed, and the only reason this signature moves. It
+   *  cannot steer the read: every arm it names is an arm the read was already
+   *  taking, and each still returns `undefined` exactly as before. */
+  readonly diagnose?: PaCallDiagnosticSink
 }
 
 /** THE public call-level entry (A5-M1 B): the CURRENT facts of one live call

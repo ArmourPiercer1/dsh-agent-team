@@ -100,10 +100,10 @@ async function readCeiling(readers, teamSessionId, instanceId) {
  * under a seed still has to be the unique carrier of `family`. Zero or
  * ambiguous candidates ⇒ `undefined`: never a guess, never "first wins".
  */
-function matchUniqueBindingEntry(surface, { family, seedNames = [] }) {
-  if (surface === null || typeof surface !== 'object') return undefined
-  if (typeof surface.entryOf !== 'function') return undefined
-  if (typeof family !== 'string' || family.length === 0) return undefined
+function matchUniqueBindingEntry(surface, { family, seedNames = [] }, report) {
+  if (surface === null || typeof surface !== 'object') { report?.('no-surface'); return undefined }
+  if (typeof surface.entryOf !== 'function') { report?.('surface-no-entry-of'); return undefined }
+  if (typeof family !== 'string' || family.length === 0) { report?.('no-binding-family'); return undefined }
   const names = [...new Set([
     ...seedNames,
     ...(typeof surface.names === 'function' ? surface.names() ?? [] : []),
@@ -112,7 +112,23 @@ function matchUniqueBindingEntry(surface, { family, seedNames = [] }) {
     .map((n) => surface.entryOf(n))
     .filter((e) => e !== undefined && e?.verified === true && e?.binding?.status === 'ACTIVE'
       && e?.binding?.bindingId === family)
-  if (candidates.length !== 1) return undefined
+  if (candidates.length !== 1) {
+    if (report !== undefined) {
+      // A5-M1-D, report-only: the verdict is ALREADY fixed (this branch returns
+      // what it always returned). A reader that asked gets the one fact this line
+      // can see — no carrier of the family at all, a carrier the surface has not
+      // verified, a carrier that is no longer ACTIVE, or more than one carrier of
+      // one family (which this matcher refuses to arbitrate). The second look is
+      // a filter over the same `names`, never a new candidate rule.
+      const carriers = candidates.length > 1 ? null : names.map((n) => surface.entryOf(n)).filter((e) => e?.binding?.bindingId === family)
+      report(candidates.length > 1
+        ? `ambiguous-family:${String(candidates.length)}`
+        : carriers.length === 0
+          ? 'no-entry-for-placement'
+          : carriers.every((e) => e.verified !== true) ? 'entry-not-verified' : 'binding-not-active')
+    }
+    return undefined
+  }
   return candidates[0]
 }
 
@@ -126,11 +142,16 @@ function matchUniqueBindingEntry(surface, { family, seedNames = [] }) {
  *  and a foreign one must never steer the read. Callers that need to verify a
  *  row COMPARE the row's binding afterwards (`readPaCallFacts` does exactly
  *  that, against the tuple this read answered). Unresolvable ⇒ undefined. */
-function bindingFamilyOf(surface, { placementName }) {
-  if (typeof placementName !== 'string' || placementName.length === 0) return undefined
+function bindingFamilyOf(surface, { placementName }, report) {
+  if (typeof placementName !== 'string' || placementName.length === 0) { report?.('no-placement-name'); return undefined }
   const seed = surface?.entryOf?.(placementName)
+  if (seed === undefined) { report?.('no-seed-entry'); return undefined }
   const family = seed?.binding?.bindingId
-  return typeof family === 'string' && family.length > 0 ? family : undefined
+  if (typeof family === 'string' && family.length > 0) return family
+  // A5-M1-D: the seed EXISTS and still answered no family — that is a fact of its
+  // own, and it is the only thing this line can see.
+  report?.('seed-no-binding-id')
+  return undefined
 }
 
 /**
@@ -149,14 +170,14 @@ function bindingFamilyOf(surface, { placementName }) {
  * stated absence, never a synthesized snapshot; with `requireApprovalPlan`
  * the row path fails closed exactly as before.
  */
-async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamily, bindingSeeds, callEffects, requireApprovalPlan }) {
+async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamily, bindingSeeds, callEffects, requireApprovalPlan, report }) {
   // binding: the CURRENT dispatcher entry under the call's binding family.
   const surface = m.guard?.dispatcher?.surface
-  const entry = matchUniqueBindingEntry(surface, { family: bindingFamily, seedNames: bindingSeeds })
-  if (entry === undefined) return undefined
+  const entry = matchUniqueBindingEntry(surface, { family: bindingFamily, seedNames: bindingSeeds }, report)
+  if (entry === undefined) return undefined // the matcher named WHICH arm of its own law
   const entryBinding = entry.binding
-  if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) return undefined
-  if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) return undefined
+  if (typeof entryBinding.revision !== 'number' || entryBinding.revision < 1) { report?.('bad-binding-revision'); return undefined }
+  if (typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0) { report?.('bad-definition-identity'); return undefined }
   // one governed lane: the plane the mount answers for must BE the call's realm.
   if (m.plane?.realmId === undefined || m.plane.realmId !== realmId) return undefined
   // beneficiary: the mount's DURABLE attribution ONLY (the manifest carries
@@ -312,7 +333,23 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
  *    the facts law (the caller fails closed; there is no defaulted shape).
  */
 export async function readPaCallFactsForCall(input = {}) {
-  const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, placementName } = input
+  const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, placementName, diagnose } = input
+  // A5-M1-D: one LOCAL sink for the ONE question a caller cannot answer from an
+  // `undefined` answer — which binding-identity arm this call failed. Output-only
+  // by construction: it is called on the branch that is already returning
+  // `undefined`, nothing reads it back, it holds no state between calls, and a
+  // sink that throws is swallowed here so it can never reach the verdict. Every
+  // other refusal on this path — the input guards, the permission lane, the
+  // overlay, the ceiling, the policy projection, the plan, the generation reader
+  // — keeps answering plain `undefined` EXACTLY as before: this delta does not
+  // narrate the whole facts protocol, only the identity of the call's binding.
+  const report = typeof diagnose !== 'function' ? undefined : (code) => {
+    try {
+      diagnose({ code })
+    } catch {
+      // never the verdict's problem
+    }
+  }
   if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
   if (typeof instanceId !== 'string' || instanceId.length === 0) return undefined
   if (typeof realmId !== 'string' || realmId.length === 0) return undefined
@@ -320,12 +357,12 @@ export async function readPaCallFactsForCall(input = {}) {
   if (requestedEffects === null || typeof requestedEffects !== 'object' || !Array.isArray(requestedEffects.effects)) return undefined
   if (typeof requestedEffects.fingerprint !== 'string' || requestedEffects.fingerprint.length === 0) return undefined
   const m = mount ?? resolvePaMount(rootSessionId, instanceId)
-  if (m === undefined) return undefined
+  if (m === undefined) { report?.('no-mount'); return undefined }
   const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
-  if (member.instanceId !== String(instanceId)) return undefined
+  if (member.instanceId !== String(instanceId)) { report?.('mount-instance-mismatch'); return undefined }
   const surface = m.guard?.dispatcher?.surface
-  const bindingFamily = bindingFamilyOf(surface, { placementName })
-  if (bindingFamily === undefined) return undefined
+  const bindingFamily = bindingFamilyOf(surface, { placementName }, report)
+  if (bindingFamily === undefined) return undefined // bindingFamilyOf named its own arm
   const read = await readCallAuthorityFacts({
     m,
     member,
@@ -335,6 +372,7 @@ export async function readPaCallFactsForCall(input = {}) {
     bindingSeeds: [placementName],
     callEffects: requestedEffects,
     requireApprovalPlan: false,
+    report,
   })
   if (read === undefined) return undefined
   if (read.planSnapshot === undefined) {
