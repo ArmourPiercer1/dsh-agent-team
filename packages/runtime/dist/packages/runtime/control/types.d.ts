@@ -943,7 +943,7 @@ export declare function parsePaManifestFamilyBlock(v: Record<string, unknown>): 
  * to a family's plan means adding it here in the same change - and the closed key set
  * makes a silent extra field fail instead of ride along unvalidated.
  */
-export type PaFamilyTargetFieldKind = 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations';
+export type PaFamilyTargetFieldKind = 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations' | 'nullableString' | 'stringArray';
 export interface PaFamilyTargetRule {
     /** The exact required key set of this family's typed plan target. */
     readonly required: Readonly<Record<string, PaFamilyTargetFieldKind>>;
@@ -978,10 +978,27 @@ export interface PaFamilyTargetRule {
     }>;
 }
 export declare const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>>;
+export declare const PA_FAMILY_TARGET_FIELD_KINDS: readonly PaFamilyTargetFieldKind[];
+/** One table entry's legality, checked AT MODULE LOAD for every real entry —
+ *  exported ONLY so the fixed-point contract spec can drive SYNTHETIC rules
+ *  through this exact law (no synthetic family is ever added to the real
+ *  table). Throws on: any required/adds leaf whose kind is outside the closed
+ *  list (root 18:37: the two NEW kinds are legal ONLY inside the closed
+ *  required/adds maps — own-key iteration (Object.entries) sees exactly the
+ *  surface the validator reads, no widening); a variant whose discriminant is
+ *  not a required 'string' leaf (a 'nullableString' can never be one); an
+ *  empty group map; a group redeclaring a required leaf; a bound value
+ *  violating its own kind. Same own-key law, zero cost for plain rules. */
+export declare function assertPaFamilyTargetRuleLegality(familyId: string, rule: PaFamilyTargetRule): void;
 /** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
  *  missing field, wrong field type, extra key - each returns the offending field so the
  *  refusal names what the family's own typed plan asked for. Zero effect, zero I/O. */
 export declare function validatePaFamilyTarget(familyId: string, target: unknown): string | undefined;
+/** The pure law of ONE table entry, split from the registry lookup only so the
+ *  fixed-point contract spec can drive SYNTHETIC rules through this exact code
+ *  (the real table stays closed: unknown families deny above). Production
+ *  validation always enters through validatePaFamilyTarget. */
+export declare function validatePaFamilyTargetAgainstRule(familyId: string, rule: PaFamilyTargetRule, target: unknown): string | undefined;
 /** The guard's current-target comparison: the approved target's pure-data fields
  *  restated by THIS call's trusted facts must still hold. Facts never come from the
  *  approved manifest (that would be the row quoting itself); fields outside the
