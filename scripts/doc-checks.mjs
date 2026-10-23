@@ -181,7 +181,7 @@ export function checkDeprecatedTerms(root, relFiles) {
  *  written by one tool and only warned about by another. */
 export const BLOCKING_PREFIXES = [
   'NOTE', 'ID_', 'PLAN_CITATION', 'DOC_OWNER', 'LINK_DANGLING', 'TERMINOLOGY_DEPRECATED',
-  'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STATE_BRIDGE', 'REGISTRY',
+  'CLAIM_', 'CONTRACT_ANCHOR_MISSING', 'STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG', 'STATE_BRIDGE', 'REGISTRY',
   'FAKE_VERIFICATION', 'ARTIFACT_', 'REF_', 'MERGED_CLAIM_', 'RELEASE_CLAIM_', 'SCHEMA_',
 ];
 export function isBlockingFinding(f) {

@@ -17,6 +17,9 @@ import { writeGenerated } from './generated-write.mjs';
 import { join, resolve, dirname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+// One blocking classification for all three entry points; doc-checks owns the list and
+// does not import this file, so the dependency stays one-directional.
+import { isBlockingFinding } from './doc-checks.mjs';
 
 export const ENUMS = {
   decision_status: ['proposed', 'accepted', 'rejected', 'superseded', 'pending_coordination'],
@@ -527,6 +530,11 @@ if (invokedDirectly) {
     console.log('FAIL STALE_GENERATED_VIEW: derived view does not match registry+git; run pnpm docs:sync --write');
     process.exit(1);
   }
-  console.log(`gen-current-state: view fresh entries=${result.view.entries.length} findings=${result.findings.length}`);
-  process.exit(result.findings.length ? 1 : 0);
+  // Same classification as docs:sync --check and docs:probe. This entry point exited on
+  // any finding at all, so it called a recorded non-blocking gap a refusal while the
+  // probe reported the very same input as non_blocking — and it printed the gap as FAIL.
+  const blocking = result.findings.filter(isBlockingFinding);
+  for (const f of result.findings) console.log(`${isBlockingFinding(f) ? 'FAIL' : 'WARN'} ${f.code}: ${f.detail}`);
+  console.log(`gen-current-state: view fresh entries=${result.view.entries.length} findings=${result.findings.length} blocking=${blocking.length}`);
+  process.exit(blocking.length ? 1 : 0);
 }

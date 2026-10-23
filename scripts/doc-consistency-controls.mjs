@@ -41,6 +41,7 @@ const KEEP = argv.includes('--keep');
 const ONLY = (() => { const i = argv.indexOf('--only'); return i > -1 ? argv[i + 1].toLowerCase() : null; })();
 const SYNC = 'scripts/docs-sync.mjs';
 const PROBE = 'scripts/docs-probe.mjs';
+const GEN = 'scripts/gen-current-state.mjs';
 
 const BASE_FILES = {
   'dev/engineering/registry.yaml': `schema_version: 1
@@ -672,6 +673,43 @@ control('NEG-53 enforcement stays per rule, not blanket', (d) => {
   return [
     expectRun('probe', res, 0, 'DOC_IMPACT_OWNED'),
     { ok: !failCodes.includes('DOC_OWNER_UPDATE_MISSING'), why: 'blocking set: [' + (failCodes.join(',') || 'empty') + ']' },
+  ];
+});
+
+control('POS-13 the catalog index lists the catalog and is accepted as fresh', (d) => {
+  const idx = read(d, CATALOG_INDEX_PATH);
+  const ids = (read(d, 'docs/contracts/engineering-baseline/ids.yaml').match(/id:\s*([A-Z]+-EB-\S+)/g) || []).map((s) => s.split(/[:\s]+/)[1]);
+  const missing = ids.filter((id) => id && !idx.includes(id));
+  return [
+    { ok: ids.length > 0 && missing.length === 0, why: missing.length ? 'index lacks ' + missing.join(', ') : 'index names all ' + ids.length + ' catalog ids in the fixture' },
+    expectRun('sync --check', run(SYNC, ['--check', '--root', d]), 0, 'blocking=0'),
+  ];
+});
+
+control('NEG-55 a hand-edited catalog index is refused as stale', (d) => {
+  // Someone "fixing a typo" in the generated file is the realistic form of this drift,
+  // so the control edits the file rather than deleting it.
+  // Any byte of divergence is staleness, so the edit appends rather than betting on a
+  // particular rendered line: an earlier version of this control replaced a string the
+  // fixture does not render, quietly became a no-op, and reported a passing-looking
+  // exit 0. Appending cannot degrade that way.
+  writeFile(d, CATALOG_INDEX_PATH, read(d, CATALOG_INDEX_PATH) + 'hand-edited line\n');
+  return [expectBlocking('sync --check', run(SYNC, ['--check', '--root', d]), 'STALE_GENERATED_CATALOG')];
+});
+
+control('NEG-56 an ungenerated catalog index is visible and agrees across entry points', (d) => {
+  rmSync(join(d, CATALOG_INDEX_PATH));
+  const res = run(SYNC, ['--check', '--root', d]);
+  const failCodes = (res.out.match(/^FAIL ([A-Z_]+)/gm) || []).map((l) => l.slice(5));
+  const warnCodes = (res.out.match(/^WARN ([A-Z_]+)/gm) || []).map((l) => l.slice(5));
+  return [
+    { ok: warnCodes.includes('CATALOG_NOT_GENERATED'), why: 'warn set: [' + (warnCodes.join(',') || 'empty') + ']' },
+    { ok: !failCodes.includes('CATALOG_NOT_GENERATED'), why: 'a recorded gap is not a refusal until the path is on the write allow-list' },
+    // All three entry points must reach the same verdict on the same input. This
+    // assertion exists because the generator's own --check was found exiting 1 on the
+    // very finding the probe called non_blocking — and that discrepancy was then
+    // reported as a pass. Asserted now rather than trusted.
+    expectRun('gen-current-state --check', run(GEN, ['--check', '--root', d]), 0, 'blocking=0'),
   ];
 });
 

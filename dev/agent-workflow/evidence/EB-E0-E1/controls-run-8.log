@@ -1,0 +1,142 @@
+doc-consistency controls   run_root=.worktrees/eb1-controls-20-lxA6Bp (owned by pid 20)
+PASS  POS-0 write authority allow-list
+      only the generated view is writable
+PASS  POS-0b write boundary allow-list
+      generated-write.mjs names exactly the generated view
+PASS  POS-1 clean fixture passes the complete check
+      sync --check: clean, observed findings=0
+PASS  POS-2 probe covers untracked and committed changes
+      worktree scope: clean, observed LIMIT T0 only; committed scope: clean, observed changed=1
+PASS  POS-3 Idea and Proposed text needs no runtime evidence
+      proposal exemption: clean, observed findings=0
+PASS  POS-4 --write regenerates the view only
+      --write: clean, observed regenerated; check after write: clean, observed findings=0; normative file byte-identical
+PASS  NEG-1 note status does not match its directory
+      sync: refused with NOTE_note-status-dir-mismatch
+PASS  NEG-2 duplicate note id
+      sync: refused with NOTE_note-id-duplicate
+PASS  NEG-3 implemented note whose evidence artifact is gone
+      sync: refused with NOTE_note-verified-by-missing
+PASS  NEG-4 proposal carrying a delivery claim
+      sync: refused with NOTE_note-false-delivery-claim
+PASS  NEG-5 duplicate stable id in the contract index
+      sync: refused with ID_DUPLICATE
+PASS  NEG-6 contract anchor pointing at a removed file
+      sync: refused with CONTRACT_ANCHOR_MISSING
+PASS  NEG-7 registry claims verification with no artifact
+      check: refused with FAKE_VERIFICATION; --write refuses: refused with REFUSED write
+PASS  NEG-8 registry names an artifact that does not exist
+      check: refused with ARTIFACT_MISSING
+PASS  NEG-9 derived view left stale after a registry edit
+      check: refused with STALE_GENERATED_VIEW
+PASS  NEG-10 deprecated synonym in a current-state document
+      sync: refused with TERMINOLOGY_DEPRECATED
+PASS  NEG-11 dangling relative link in a changed document
+      probe: refused with LINK_DANGLING
+PASS  NEG-12 current-behaviour claim with no citable artifact
+      sync: refused with CLAIM_WITHOUT_EVIDENCE
+PASS  NEG-13 probe refuses an unresolvable base instead of going green
+      bogus base: refused with REFUSED BASE_UNRESOLVABLE
+PASS  NEG-14 probe refuses a missing base rather than assuming no changes
+      no base: refused with REFUSED BASE_REQUIRED
+PASS  NEG-15 docs:sync requires an explicit mode
+      no mode: refused with usage
+PASS  NEG-16 probe catches an uncommitted broken note
+      probe: refused with NOTE_note-archived-needs-successor
+PASS  POS-6 plan declaring a valid citation block passes
+      sync: clean, observed findings=0
+PASS  NEG-17 plan citation pointing at a path that is not there
+      sync: refused with PLAN_CITATION_MISSING
+PASS  NEG-18 plan phase_id contradicting the graph mirror
+      sync: refused with PLAN_CITATION_CONFLICT
+PASS  NEG-19 id ratified without naming a decision
+      sync: refused with ID_RATIFIED_WITHOUT_DECISION
+PASS  NEG-20 ratification citing a note that does not exist
+      sync: refused with ID_RATIFIED_BY_UNKNOWN_NOTE
+PASS  NEG-21 plan without a citation block is not a finding
+      sync: clean, observed plans=1(0 declaring) findings=0
+PASS  NEG-22 probe survives a catalog edit and reports the staleness it implies
+      probe: blocking=[STALE_GENERATED_VIEW]; reached rule selection (the crash this control guards happened before it)
+PASS  NEG-23 probe enforces ratification on a changed contract index
+      probe: refused with ID_RATIFIED_WITHOUT_DECISION
+PASS  POS-7 changed source resolves to its declared owner document
+      probe: clean, observed DOC_IMPACT_OWNED
+PASS  NEG-24 owner map naming a document that does not exist
+      probe: refused with DOC_OWNER_DOC_MISSING
+PASS  NEG-25 source with no owner rule is reported as unowned coverage
+      probe: clean, observed DOC_IMPACT_UNOWNED
+PASS  POS-8 a .log/.txt/.md artifact inside the evidence dir is accepted
+      sync --write: clean, observed regenerated; sync --check: clean, observed findings=0
+PASS  NEG-26 generated path replaced by a symlink to a normative file
+      sync --write: refused with SYMLINK_TARGET; link resolves to AGENTS.md of the fixture; fixture AGENTS.md bytes unchanged by the refused write
+PASS  NEG-27 generated area reached through a symlinked parent directory
+      sync --write: refused with SYMLINK_ANCESTOR; no bytes written through the linked parent while the write was refused
+PASS  NEG-28 probe is not green when the derived view is missing
+      probe: refused with STALE_GENERATED_VIEW
+PASS  NEG-29 probe is not green when the registry is missing
+      probe: refused with STATE_BRIDGE_UNAVAILABLE
+PASS  NEG-30 duplicate key in one registry entry is refused
+      sync --check: refused with registry-duplicate-key
+PASS  NEG-31 refs written as a bare scalar is refused
+      sync --check: refused with REGISTRY_REF_SCALAR
+PASS  NEG-32 owners written as a scalar is refused
+      sync --check: refused with REGISTRY_OWNER_TYPE
+PASS  NEG-33 an id-shaped ref that resolves nowhere is refused
+      sync --check: refused with REGISTRY_REF_UNRESOLVED
+PASS  NEG-34 a verification artifact outside the controlled evidence tree
+      sync --check: refused with ARTIFACT_LOCATION_UNCONTROLLED
+PASS  NEG-35 verified_ci with no commit cited is refused
+      sync --check: refused with CLAIM_UNBOUND
+PASS  NEG-36 C1 evidence asserted as verified_host is refused
+      sync --check: refused with CLAIM_TIER_MISMATCH
+PASS  NEG-37 implementation_status merged with no corroborating commit
+      sync --check: refused with MERGED_CLAIM_UNCORROBORATED
+PASS  NEG-38 release_status released without host verification at C3
+      sync --check: refused with RELEASE_CLAIM_UNCORROBORATED
+PASS  NEG-39 a wrong (non-existent) verification commit is refused
+      sync --check: refused with is not a commit in this repository
+PASS  POS-9 wildcard owner rule matches a path across directories
+      probe: clean, observed DOC_IMPACT_OWNED; matched by the wildcard, nothing left unowned
+PASS  NEG-40 a glob must not match across a path separator
+      unowned line: ADVISORY DOC_IMPACT_UNOWNED: 1 source path(s) match no owner rule; coverage of dev/engineering/doc-ownership.yaml is 0/1; e.g. packages/client/tools/behaviour.ts
+PASS  POS-10 a current-state document citing an existing run log is clean
+      sync --check: clean, observed findings=0
+PASS  NEG-41 citing an evidence log that was never produced
+      sync --check: refused with CLAIM_WITHOUT_EVIDENCE
+PASS  NEG-42 verified_ci without a commit: --write refuses, not warns
+      sync --write: blocking=[FAKE_VERIFICATION,CLAIM_UNBOUND]
+PASS  NEG-43 verified_ci without a commit: probe blocks
+      probe: blocking=[FAKE_VERIFICATION,CLAIM_UNBOUND,STALE_GENERATED_VIEW]
+PASS  NEG-44 release claim without host verification: --write refuses
+      sync --write: blocking=[RELEASE_CLAIM_UNCORROBORATED]
+PASS  POS-11 schema and validator agree in a clean fixture
+      sync --check: clean, observed findings=0
+PASS  NEG-48 schema drifting from the enforced enum is refused
+      sync --check: blocking=[SCHEMA_ENUM_MISMATCH]
+PASS  NEG-50 a schema that drops an enum keyword is refused
+      sync --check: blocking=[SCHEMA_KEYWORD_MISSING]
+PASS  NEG-51 a schema that drops a pattern keyword is refused
+      sync --check: blocking=[SCHEMA_KEYWORD_MISSING]
+PASS  NEG-49 a documented field the validator does not accept is refused
+      sync --check: blocking=[SCHEMA_FIELD_EXTRA]
+PASS  POS-12 an enforced rule is satisfied when the owner doc moves too
+      probe: clean, observed DOC_IMPACT_OWNED
+PASS  NEG-52 an enforced rule refuses when the owner doc is left behind
+      probe: blocking=[DOC_OWNER_UPDATE_MISSING]
+PASS  NEG-53 enforcement stays per rule, not blanket
+      probe: clean, observed DOC_IMPACT_OWNED; blocking set: [empty]
+PASS  POS-13 the catalog index lists the catalog and is accepted as fresh
+      index names all 1 catalog ids in the fixture; sync --check: clean, observed blocking=0
+PASS  NEG-55 a hand-edited catalog index is refused as stale
+      sync --check: blocking=[STALE_GENERATED_CATALOG]
+PASS  NEG-56 an ungenerated catalog index is visible and agrees across entry points
+      warn set: [CATALOG_NOT_GENERATED]; a recorded gap is not a refusal until the path is on the write allow-list; gen-current-state --check: clean, observed blocking=0
+PASS  NEG-54 an id-catalog edit makes the view stale, not silently fresh
+      sync --check: blocking=[STALE_GENERATED_CATALOG,STALE_GENERATED_VIEW]
+PASS  NEG-46 a second top-level entries: is refused and names the key
+      sync --check: blocking=[REGISTRY_PARSE,STALE_GENERATED_VIEW]
+PASS  NEG-47 an entry field outside the closed set is refused
+      sync --check: blocking=[REGISTRY_UNKNOWN_FIELD,REGISTRY_SCHEMA,STALE_GENERATED_VIEW]
+PASS  NEG-45 duplicate top-level registry key is refused, not overwritten
+      sync --check: refused with registry-duplicate-key
+controls=70 failed=0  scope: static document checks only (no C1/C2/C3, no runtime behaviour)
