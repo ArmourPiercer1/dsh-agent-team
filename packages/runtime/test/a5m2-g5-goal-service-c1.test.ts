@@ -328,7 +328,15 @@ const VIEW = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
   activation: 'armed',
   ...over,
 })
-const EXEC = { agent: { id: 'agent-g5-c1', session: { header: { id: 'session-g5-c1' } } } }
+// EXEC is the ToolRunContext slice the rows consume. The Agent carries ONLY
+// the identity the rows observe: the module reads presence and hands the
+// object to the port BY REFERENCE. A REAL Agent.session is a real Session
+// object that only the real GoalService commits through (goal/src/index.ts:
+// 609-613) — these legs never stub it, and nothing here touches agent.session
+// (a fabricated session shape is a stub pretending to be the domain, which
+// the proven-interface discipline forbids; if any code path needed one,
+// freezing this object without one would throw).
+const EXEC = Object.freeze({ agent: Object.freeze({ id: 'agent-g5-c1' }) })
 
 async function world(opts: {
   current?: Record<string, unknown>
