@@ -21,7 +21,7 @@ export declare const PACKAGE_ID = "tools";
 export { TEAM_TOOL_BAD_ARGUMENTS, TEAM_TOOL_CALLER_UNRESOLVED, TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH, TeamToolArgsError, isTeamToolArgsError, optionalStringField, readStringField, requireStringField, validateRequestToken, } from './tokens.js';
 export { consultGuard } from './guard.js';
 export type { GuardConsultDecision } from './guard.js';
-export { createTeamTools } from './tools.js';
+export { createTeamTools, resolveTeamToolCallerRootGate } from './tools.js';
 export type { TeamToolSet } from './tools.js';
 export { selectTeamTools } from './tool-selector.js';
 export { applyBuiltInToolDeny } from './builtin-deny.js';

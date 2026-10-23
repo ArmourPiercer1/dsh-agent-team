@@ -410,7 +410,7 @@ import { createPersonaOverlaySlot } from '../../../agent-setup/persona/index.js'
 // selector + built-in tool deny (T2) and the skill/MCP adapters + catalog
 // (T3) — consumed VERBATIM by the live setup (no re-implemented selector
 // or resolver in the glue; the static source is the T1 domain module).
-import { applyBuiltInToolDeny, selectTeamTools } from '../../../../tools/src/index.js'
+import { applyBuiltInToolDeny, resolveTeamToolCallerRootGate, selectTeamTools } from '../../../../tools/src/index.js'
 import {
   InMemorySkillCatalog,
   filterMcpServers,
@@ -3677,6 +3677,14 @@ export function createAgentBindings(deps) {
           }
           a5TeamOpsInject = Object.freeze({
             providerId: a5TeamOpsCfg.providerId,
+            // ROOT 23:17 (center close-out): the SAME shared caller/root gate the
+            // native common entry runs, supplied HERE from the ONE real identity
+            // source this factory owns - the very `resolveCaller` the root builds
+            // createTeamTools with (root.ts passes live.resolveCaller; live IS this
+            // object, returned at the factory foot). The seam is consulted by the
+            // bridge before any durable fact; absent-gate behavior is unchanged.
+            callerGate: (exec, requestedRootSessionId) =>
+              resolveTeamToolCallerRootGate({ resolveCaller }, exec, requestedRootSessionId),
             // ROOT 21:24/21:33: the QUERY rows' durable target is resolved
             // through the lane's OWN published authority queries — nothing is
             // invented, cached or mirrored into a second store:
