@@ -12,7 +12,7 @@
  * refuses a replay on the same correlation at the chain, so no second
  * execution authority exists IN THIS LANE'S WORLD. Control consume is NOT
  * PA consume: the unified PA final edge and the execToken CONCURRENCY
- * single flight are CENTER's law and are NOT_PROVEN here (root ruling on
+ * single flight are CENTER's law, are NOT WIRED IN THIS LANE, and are NOT_PROVEN here (root ruling on
  * f3864b24 — vocabulary kept exact on purpose). The arm itself holds NO
  * ledger (measured by what it does NOT own: no WeakMap, no per-id
  * ownership, no identity self-report).
@@ -25,12 +25,17 @@
  * consumed-view replay guard, port's own refusal words verbatim from
  * plane-effect-backends) to prove the ARM's consumption discipline against
  * the contract. The double's consumed set is a sequential lane guard only —
- * NOT concurrent single flight (that law is CENTER's, see above); the
+ * NOT concurrent single flight (that law is CENTER's and not wired here, see above); the
  * port's internal same-FD race law is likewise CENTER's leg — NOT_VERIFIED
  * here.
  *
  * NOT_PROVEN (disclosed, asserted nowhere):
  *  - the attach-vision session-log ride + render face (Host dispatch leg);
+ *  - the UNIFIED PA FINAL EDGE (assembly.consumeForExecution, plane :1406)
+ *    and the exec-token single flight are NOT WIRED in this lane: the
+ *    injected port is a STAND-IN consumption face with a lane ledger. The
+ *    all-allow PA grant is REAL at the seam (decision.grant shape, plane
+ *    :1166-1168) but its production issuance→edge ride is CENTER's round;
  *  - the durable cross-restart entitlement ledger (in-life binding only);
  *  - the placement masking of the native spelling under the real Guard/
  *    Control/PA mount (CENTER's mount round);
@@ -377,7 +382,8 @@ function chainCase(arm: GovernedReadImageArmHandle, ctx: { assembly: ProductionA
   return { input, plan: planned.value, callFacts, correlation: paCorrelation(planned.value.approvalCaseId, callId) }
 }
 
-/** Drive the REAL chain to an approve receipt (human allow, guard-consumed). */
+/** Drive the Control-harness chain (in-process services, NO Host) to an
+ *  approve receipt (LEADER allow decision + Control-side check-and-reserve). */
 /** The plane's BOUND-family registration (center discriminator, keyed on
  *  the trusted definition identity — never on a caller-chosen name). */
 const GOVERNED: Record<string, { familyId: string, adapterRevision: number, providerIdentity: string }> = {
@@ -423,11 +429,20 @@ function makePort(opts: {
    *  the arm's commit-boundary re-check must catch it (fix card 3). */
   abortBeforeReturn?: { controller: AbortController }
   oneShotGrants?: boolean
+  /** Closed set of grant ids THIS stand-in consumption face honors; any
+   *  other grant was never issued here. Omitted = the ask-lane legs keep
+   *  their prior shape (the REAL unified PA final edge is CENTER's and is
+   *  not wired in this lane — this ledger is a lane witness, nothing more). */
+  issuedGrants?: readonly string[]
 } = {}): PortHandle {
   const counters = { calls: 0 }
   const grants: string[] = []
   const consumed = new Set<string>()
   const port: ImageReadBoundedPort = async (grantRef, { maxBytes, signal }) => {
+    const probedGrantId = String(grantRef.grant?.grantId ?? '')
+    if (opts.issuedGrants !== undefined && !opts.issuedGrants.includes(probedGrantId)) {
+      return { ok: false, code: 'unknown-grant', detail: `grant '${probedGrantId}' was never issued by this consumption face — the edge refuses; zero reads (the real unified PA final edge is CENTER's consumeForExecution)` }
+    }
     counters.calls += 1
     // a closure on purpose: abort state MUTATES asynchronously, so the
     // property-access narrowing TS keeps across awaits must not decide this
@@ -437,7 +452,8 @@ function makePort(opts: {
     if (opts.oneShotGrants === true && consumed.has(grantId)) {
       // SEQUENTIAL consumed view IN THIS DOUBLE only — a lane replay guard.
       // It is NOT concurrent single flight: that law (execToken / unified PA
-      // final edge) belongs to CENTER and is not claimed anywhere here.
+      // final edge) belongs to CENTER, is not wired in this lane, and is
+      // not claimed anywhere here.
       return { ok: false, code: 'grant-consumed', detail: `grant ${grantId} is spent: the double's sequential consumed view refuses the sequential replay (the real consumed-view law is CENTER's)` }
     }
     if (opts.refuse !== undefined) return { ...opts.refuse, ok: false }
@@ -615,8 +631,8 @@ async function nativeWorld(cwd: string): Promise<NativeWorld> {
 }
 
 // ═══ the legs ═══
-describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durable center (real chain + real store; CENTER port = contract double)', () => {
-  it('C2 positive on the REAL chain (ask world): durable approve receipt (row + LEADER allow decision + durable check-and-reserve) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact', async () => {
+describe('a5m2-readimg arm rev2 — Control-harness consumption over the durable center (in-process real Control/guard services + real store; NO Host, NO mount; CENTER port = contract double)', () => {
+  it('ASK-WORLD POSITIVE at component level (Control-harness chain — NOT Host, NOT the real mount): durable approve receipt (row + LEADER allow decision + Control-side check-and-reserve) executes through the arm to one capped read and one commit; the receipt separates sourceSha256 from the store identity; the same-namespace reference is byte-exact; the second leg attempt on the same correlation dies at the durable consumption fact', async () => {
     const w = await armWorld({}, { oneShotGrants: true })
     try {
       const target = join(w.govRoot, 'photo.png')
@@ -786,8 +802,8 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
     } finally { await w.dispose() }
   }, 120_000)
 
-  it('world (a) all-allow is a LEGAL world (root ruling on f3864b24 item 1): no Control row, no requestId, receipt undefined EXECUTES on the trusted consumption context; a receipt presented there is a synthesized approval and refuses; an unclassified context never reaches a backend', async () => {
-    const w = await armWorld()
+  it('world (a) all-allow (root re-review on f3864b24-fix3): NO Control row but a REAL PA grant — positive consumes the real grantId through the edge with ZERO durable rows; self-made empty grant and grantless context refuse TYPED with zero backend; a well-formed UNISSUED grant dies VERBATIM at the consumption face; a receipt presented here is a synthesized approval; an unclassified context never reaches a backend', async () => {
+    const w = await armWorld({}, { issuedGrants: ['grant-tadm-allow-1'] })
     try {
       const target = join(w.govRoot, 'photo.png')
       writeFileSync(target, PNG_1X1)
@@ -799,17 +815,50 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
         definitionIdentity: ARM_DEFINITION,
         providerIdentity: ARM_PROVIDER,
         approval: 'all-allow',
+        // THE REAL decision.grant the trusted face holds in this world
+        // (plane :1166-1168); 'grant-tadm-allow-1' is in the stand-in
+        // face's issued set, exactly as a real grant would be.
+        grant: Object.freeze({ grantId: 'grant-tadm-allow-1', bindingId: 'img-allow-binding-1' }),
       }
       const ran = await w.arm.execute({ file_path: 'photo.png' }, undefined, facts)
       expect(ran.ok, ran.detail).toBe(true)
       expect(w.port.counters.calls).toBe(1)
+      expect(w.port.grants).toContain('grant-tadm-allow-1') // the REAL id rode the edge, unmodified
       expect(w.adapter.stats().commits).toBe(1)
       // no Control row was ever needed or created by this execution
       expect((await service.listControlState(P6T4_ROOT)).requests.length).toBe(rowsBefore)
       // a receipt in world (a) can only be SYNTHESIZED: 伪 requestId/占位 id
-      // are refused — the all-allow fact is the ABSENCE, never a fake approve
+      // are refused — the all-allow fact is the ABSENCE of a row, never a
+      // fake approve.
       const forged = { decision: 'approve', requestId: 'ctrl-placeholder-0', grant: { grantId: 'grant-placeholder' } } as unknown as ImageConsumptionReceipt
       expect((await w.arm.execute({ file_path: 'photo.png' }, forged, facts)).code).toBe(A5_IMAGE_TYPED_CODES.RECEIPT_INCOMPLETE)
+      // THE FABRICATED-CREDENTIAL SHAPES ARE DEAD (root re-review): the
+      // empty grant object — THIS revision's prior bug form — and a
+      // grantless all-allow context both refuse TYPED at the arm; the port
+      // is never reached (calls stays 1, commits stays 1).
+      const emptyGrant = { ...facts, grant: Object.freeze({}) } as unknown as ImageCallFacts
+      expect((await w.arm.execute({ file_path: 'photo.png' }, undefined, emptyGrant)).code).toBe(A5_IMAGE_TYPED_CODES.CONSUMPTION_CONTEXT_UNKNOWN)
+      const noGrant = { ...facts } as Partial<ImageCallFacts>
+      delete noGrant.grant
+      expect((await w.arm.execute({ file_path: 'photo.png' }, undefined, noGrant as ImageCallFacts)).code).toBe(A5_IMAGE_TYPED_CODES.CONSUMPTION_CONTEXT_UNKNOWN)
+      expect(w.port.counters.calls).toBe(1)
+      // A WELL-FORMED BUT UNISSUED grant passes the arm's shape law and
+      // dies AT THE CONSUMPTION FACE with its verbatim refusal — nothing
+      // executes, no commit, no read.
+      const unissued: ImageCallFacts = {
+        member: { teamSessionId: P6T4_ROOT, instanceId: WORKER },
+        callId: 'img-allow-2',
+        authorityGeneration: 0,
+        definitionIdentity: ARM_DEFINITION,
+        providerIdentity: ARM_PROVIDER,
+        approval: 'all-allow',
+        grant: Object.freeze({ grantId: 'grant-self-minted-9' }),
+      }
+      const ranUnissued = await w.arm.execute({ file_path: 'photo.png' }, undefined, unissued)
+      expect(ranUnissued.code).toBe(A5_IMAGE_TYPED_CODES.PORT_REFUSAL)
+      expect(ranUnissued.detail).toContain('was never issued by this consumption face')
+      expect(w.adapter.stats().commits).toBe(1)
+      expect(w.port.counters.calls).toBe(1)
       // no context, no backend: the arm never guesses the world
       const noCtx = { ...facts } as Partial<ImageCallFacts>
       delete noCtx.approval
@@ -899,7 +948,7 @@ describe('a5m2-readimg arm rev2 — real strict-chain consumption over the durab
     }
   }, 60_000)
 
-  it('no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER\'s execToken law, not claimed here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face', async () => {
+  it('no ledger, by construction: replaying the same receipt double-calls the PORT (whose SEQUENTIAL consumed-view guard refuses the sequential replay — concurrency single flight is CENTER\'s execToken law, NOT wired here) and the store commits once; the arm owns no WeakMap/stat/readFile/ticket face', async () => {
     const w = await armWorld({}, { oneShotGrants: true })
     try {
       const target = join(w.govRoot, 'photo.png')

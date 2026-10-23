@@ -208,7 +208,7 @@ export function createImageAttachmentAdapter({ store, observe = () => {} }) {
       // drift against the ORIGINAL commitment; refuse, never serve.
       counters.commitDrift += 1
       observe({ event: 'attachment-refuse', detail: 'commit-drift' })
-      return { ok: false, code: A5_IMAGE_ATTACHMENT_CODES.COMMIT_DRIFT, detail: `the re-read bytes (${rereadSha256.slice(0, 12)}) match neither the original source digest nor the store object identity — refused as drift, never served` }
+      return { ok: false, code: A5_IMAGE_ATTACHMENT_CODES.COMMIT_DRIFT, detail: `the re-read bytes (${rereadSha256.slice(0, 12)}) do not hash to the COMMITTED normalized object identity — that is the ONLY accept condition (no source/store either-or); refused as drift, never served` }
     }
     counters.references += 1
     return {

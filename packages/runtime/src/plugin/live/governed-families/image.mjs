@@ -8,11 +8,14 @@
  *  1/2. NO local ticket ledger, NO self-reported exec identity: execution
  *     requires the strict-manifest CHAIN receipt — the durable pa-control
  *     leg's own `approve` result (requestId + minted one-shot grant + the
- *     DURABLE-row manifest the guard consumed through). The durable guard
- *     consumption IS the correlation-level single flight (control service
- *     check-and-reserve under the team lock; the deterministic per-call
- *     grantId means a replay answers the SAME grant against an
- *     ALREADY-CONSUMED durable fact). The arm holds no ledger and adds no
+ *     DURABLE-row manifest the guard consumed through). That durable guard
+ *     consumption is the CONTROL-SIDE reserve / one-shot view under the
+ *     team lock (the deterministic per-call grantId means a replay answers
+ *     the SAME grant against an ALREADY-CONSUMED durable fact). The unified
+ *     PA final edge and the exec-token single flight are CENTER's and are
+ *     NOT WIRED in this lane (root re-review on f3864b24 — the Control-side
+ *     reserve must not be called single flight; NOT_PROVEN here).
+ *     The arm holds no ledger and adds no
  *     protocol ("edge 唯一 consume"; the center owns the chain). The
  *     five-way binding — member / callId / authorityGeneration /
  *     definition / provider — is re-checked AT THE CONSUMPTION POINT
@@ -354,10 +357,13 @@ export function createGovernedReadImageArm({
    * The consumption point. `receipt` is the strict-manifest chain's OWN
    * approve result — decision/requestId/grant/manifest exactly as the
    * durable leg answered (PaControlLegResult). NO ticket, NO ledger: the
-   * durable guard consumption is the single flight OUTSIDE this arm (a
-   * replayed correlation never yields a second approve; a replayed receipt
-   * object hits the center port's one-shot consumed view and the refusal
-   * comes back verbatim). `callFacts` = trusted this-call identity facts;
+   * durable guard consumption is the CONTROL-SIDE RESERVE / one-shot view
+   * OUTSIDE this arm (a replayed correlation never yields a second approve;
+   * a replayed receipt object hits the injected consumption face's
+   * sequential one-shot view and the refusal comes back verbatim). The
+   * UNIFIED PA FINAL EDGE and the exec-token single flight are CENTER's
+   * and are NOT WIRED HERE. `callFacts` = trusted this-call identity facts
+   * (world (a) additionally carries the REAL PA grant — see below);
    * `signal` = the parameter-level cancellation signal of THIS invocation.
    */
   async function execute(args, receipt, callFacts, signal) {
@@ -369,7 +375,12 @@ export function createGovernedReadImageArm({
     // guessed by the arm:
     //  (a) 'all-allow': policy admitted every effect, so NO Control row and
     //      NO requestId ever existed — there is no approval to present, and
-    //      demanding one (or accepting a fabricated one) is a defect;
+    //      demanding one (or accepting a fabricated one) is a defect. BUT
+    //      NO CONTROL ROW ≠ NO PA GRANT: the trusted face holds the real
+    //      policy-admitted decision.grant (team-tool-plane.mjs :1166-1168)
+    //      and the unified PA final edge consumes it (:1406, CENTER's law).
+    //      The arm receives THAT grant on callFacts and never synthesizes
+    //      one (root re-review on f3864b24-fix3);
     //  (b) 'ask': the durable strict-chain approve receipt is the ONLY
     //      execution authority (approve + durable requestId + strict
     //      manifest + minted grant), exactly as the leg answered it.
@@ -381,6 +392,10 @@ export function createGovernedReadImageArm({
       return refuseExecution(CODES.CONSUMPTION_CONTEXT_UNKNOWN, `callFacts.approval must be the consumption execution context ('ask' or 'all-allow'), got ${JSON.stringify(approval ?? null)} — the arm never guesses which world a call belongs to, and an unclassified call reaches no backend`)
     }
     let manifest = undefined
+    // The REAL execution credential of whichever world, resolved once:
+    // ask → the durable leg's minted grant (on the receipt); all-allow →
+    // the policy-admitted decision.grant the trusted face hands over.
+    let executionGrant
     if (approval === 'all-allow') {
       if (receipt !== undefined && receipt !== null) {
         return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the all-allow world has no approval to present (no Control row exists by construction): a receipt presented HERE is a synthesized approval — refused; 伪 requestId/占位 id/自造 approval are refused in both worlds')
@@ -395,6 +410,17 @@ export function createGovernedReadImageArm({
       if (callFacts.definitionIdentity !== definitionIdentity) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, `definition (call ${String(callFacts.definitionIdentity)} vs arm ${definitionIdentity})`)
       if (callFacts.providerIdentity !== providerId) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, `provider (call ${String(callFacts.providerIdentity)} vs arm ${providerId})`)
       if (typeof callFacts.authorityGeneration !== 'number' || !Number.isInteger(callFacts.authorityGeneration)) return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, 'all-allow consumption still carries the trusted authorityGeneration')
+      // NO CONTROL ROW ≠ NO PA GRANT (root re-review on f3864b24-fix3):
+      // the all-allow call holds the REAL decision.grant from the trusted
+      // face, WITH its real grantId. A missing grant, an empty object, or
+      // any grantId-less shape is a fabricated-credential shape — refused
+      // typed, ZERO port calls, ZERO attachment writes. 不空值、不假
+      // approve、不占位 id: the arm never builds a credential.
+      const allowGrant = callFacts.grant
+      if (allowGrant === undefined || typeof allowGrant.grantId !== 'string' || allowGrant.grantId.length === 0) {
+        return refuseExecution(CODES.CONSUMPTION_CONTEXT_UNKNOWN, 'the all-allow context carries no REAL PA grant from the trusted face (missing grant or missing grantId): no Control row means no durable approval, NEVER no execution credential — the arm does not synthesize one: zero port calls, zero attachment writes')
+      }
+      executionGrant = allowGrant
     } else {
     if (receipt?.decision !== 'approve' || typeof receipt?.requestId !== 'string' || receipt.requestId.length === 0) {
       return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the ask world requires the strict-chain approve receipt (decision=approve + durable requestId): a deny/unsettled/no-receipt call never executes and never reaches the port')
@@ -406,6 +432,7 @@ export function createGovernedReadImageArm({
     if (typeof receipt?.grant?.grantId !== 'string' || receipt.grant.grantId.length === 0) {
       return refuseExecution(CODES.RECEIPT_INCOMPLETE, 'the approve receipt carries no minted grantId (the mint/landing edge never completed) — nothing executes on an unbuilt grant')
     }
+    executionGrant = receipt.grant
     const mismatch = bindingMismatch(manifest, callFacts)
     if (mismatch !== null) {
       return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, `the consumption-point five-way binding refused (${mismatch}): the durable row, THIS call, and this arm's mount must be the same invocation — a receipt is not transferable across member/call/token-generation/definition/provider`)
@@ -447,17 +474,15 @@ export function createGovernedReadImageArm({
     let read
     try {
       counters.portCalls += 1
-      // The port's reference input: the minted grant when one exists (ask
-      // world); in the all-allow world there is NO grant (nothing was ever
-      // minted) — the reference carries the trusted callId instead. An
-      // empty grant object is stated openly; a fabricated grantId never is.
+      // The port's reference input rides the REAL execution credential of
+      // this call's world: the minted durable grant (ask) or the trusted
+      // face's policy-admitted decision.grant (all-allow). There is NO
+      // third shape — the empty-grant/callId-stand-in form was THIS
+      // revision's fabricated credential and is deleted (root re-review on
+      // f3864b24-fix3). The credential's consumption edge is the UNIFIED
+      // PA FINAL EDGE — CENTER's, not this arm's (not wired in this lane).
       read = await readBounded(
-        {
-          grant: receipt?.grant ?? Object.freeze({}),
-          realmId,
-          canonicalLocator: plan.targetManifest.canonicalTarget,
-          ...(manifest === undefined ? { callId: callFacts.callId } : {}),
-        },
+        { grant: executionGrant, realmId, canonicalLocator: plan.targetManifest.canonicalTarget },
         { maxBytes: plan.targetManifest.byteCap, ...(signal === undefined ? {} : { signal }) },
       )
     } catch (error) {

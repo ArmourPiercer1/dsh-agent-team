@@ -10,14 +10,20 @@
  */
 import type { ImageAttachmentAdapterHandle } from './image-attachment.d.mts'
 
+/** The REAL PA execution credential the trusted face holds in EITHER
+ *  world: the durable leg's minted grant (ask) or the policy-admitted
+ *  decision.grant (all-allow; team-tool-plane.mjs :1166-1168). The unified
+ *  PA final edge (CENTER's consumeForExecution, :1406) consumes it — the
+ *  arm never builds, widens, or synthesizes one (root re-review on
+ *  f3864b24-fix3: no empty-object shape, no placeholder id, no omission). */
+export interface ImagePaGrant { grantId: string, [key: string]: unknown }
+
 export interface ImageReadBoundedGrantRef {
-  /** The minted grant (ask world) — an explicitly EMPTY object in the
-   *  all-allow world (nothing was ever minted; never a fabricated id). */
-  grant: { grantId?: string } & Record<string, unknown>
+  /** Required and REAL in EVERY world: a missing grant is a TYPE error
+   *  here AND a runtime refusal in the arm (fail-closed in both shapes). */
+  grant: ImagePaGrant
   realmId: string
   canonicalLocator: string
-  /** Present only when there is no grant to ride: the trusted this-call id. */
-  callId?: string
 }
 
 export interface ImageReadBoundedValue {
@@ -81,14 +87,25 @@ export interface ImageConsumptionReceipt {
  *  f3864b24): 'ask' demands the durable approve receipt; 'all-allow' is the
  *  world where policy admitted every effect, so no Control row and no
  *  requestId ever existed. The arm never guesses it. */
-export interface ImageCallFacts {
+export interface ImageCallFactsBase {
   member: { teamSessionId: string, instanceId: string }
   callId: string
   authorityGeneration: number
   definitionIdentity: string
   providerIdentity: string
-  approval: 'ask' | 'all-allow'
 }
+
+/** THE CONSUMPTION EXECUTION CONTEXT — a DISCRIMINATED pair (root
+ *  re-review on f3864b24-fix3): 'ask' rides the durable receipt (its
+ *  credential comes ON the receipt — `grant?: undefined` keeps the
+ *  discrimination honest); 'all-allow' has NO Control row but MUST carry
+ *  the real PA grant the trusted face holds. A missing all-allow grant is
+ *  a type error here, mirroring the arm's runtime refusal (fail-closed in
+ *  both shapes; the former "approval flag only" flat interface is dead). */
+export type ImageCallFacts = ImageCallFactsBase & (
+  | { approval: 'ask', grant?: undefined }
+  | { approval: 'all-allow', grant: ImagePaGrant }
+)
 
 export interface ImageTargetManifest {
   readonly familyId: string
