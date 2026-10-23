@@ -244,3 +244,48 @@ Two segments that differ from what I had asserted, reported rather than smoothed
    `proposed-not-ratified`", which is not true of `IDEA-EB-0001` at line 143
    (`idea-no-execution-authority`). That file is normative and outside this line's write
    grant, so the discrepancy is recorded here for its owner; nothing was edited.
+
+## 12. The cold-read exit test: result, and the 11 gaps it found
+
+A fresh agent (`0dc2b363-6101-41a7-a1aa-86dae5214652`) was sent the E1 exit question with a
+restricted reading path -- `dev/engineering` entry surfaces → `doc-ownership.yaml` / `docs:probe`
+→ the semantic documents those name → package READMEs -- and explicitly forbidden from git
+history, PR text, `SESSION_ROUTER_LOG.md` and this evidence directory. Seven questions, each
+requiring a citation.
+
+**Result: 7/7 ANSWERED**, one with a documented ambiguity (which single file is the effect-parse
+law), and one answered only from secondary surfaces because the canonical document is absent
+here (gap 3). It independently recovered, from the entry surfaces alone: the thirteen-tool public
+surface and which packages a new tool touches; `team_domain` as the single public storage surface
+and L1–L3 as what a shape change must respect; the corrected C1/C2/C3 reading including "a real
+CI run must actually have produced that evidence"; the `main`-versus-mounted-file difference for
+runtime and client. That is the E1 exit clause about a new agent explaining a permission-related
+change, now measured rather than asserted. Its caveats are kept, not smoothed: the
+change-type→package matrix for remote/storage/contracts/client was **composed** from §Responsible
+and §Owner prose because no entry surface states one, and it had to *guess* the fidelity of the
+C-tier paraphrase (gap 2).
+
+**Gaps, and who owns each.** "Fixed here" means files this line may write; nothing else was
+touched.
+
+| # | gap | disposition |
+| --- | --- | --- |
+| 1 | `registry.schema.json:113` still described tiers as "C1 local, C2 hosted CI, C3 real environment" -- the exact machine-vocabulary reading the README retracted, in the file the README calls the machine check | **fixed here**: description now states Adapter-local / real-Host-integration-at-a-fixed-SHA / fixed-candidate, and says levels are not machines |
+| 2 | the C1/C2/C3 citation pointed at `docs/plans/active/alpha5-convergence/PLAN-B-20261022.md`, which exists only at PR #355 head -- no such path in this tree, and no link check catches a backticked path | **fixed here**: the README now says the file is not in this tree, gives the PR head SHA and the exact fetch/show commands; three `registry.yaml` comments marked the same way |
+| 3 | the four frozen 20260829 documents are absent from this environment, so `TaskDoc §11` / `Development Plan §17.2` pointers dangle and the Architecture doc behind the object model is unreadable; root `README.md:34` and `AGENTS.md` disagree about whether `docs/plans/paused/` is tracked | **reported, not touched**: environment/owner issue outside this line's write grant; the object model was still recoverable from `AGENTS.md` red lines |
+| 4 | `packages/domain/tool-governance/src/index.ts` claims *"no shipped source anywhere in `packages` imports this barrel"*, and my domain README repeated it. Measured: **22 production files** import it, across `runtime/control`, `tool-dispatch`, `tool-admission`, `operation-permission`, `controlled-fs/src`, `src/plugin/live` and `tools/a5p5-tools/src` | **my README fixed here** (states the 22 measured importers, per-directory); the source header itself is product source → **reported**. Contrast kept: `vnext-field-mapping`'s "zero production consumers" is true -- its only 2 importers are tests |
+| 5 | `doc-ownership.yaml:38` said "the five rules below" while seven carry `enforce: true` | **fixed here**: the comment names the flag instead of a count that rots |
+| 6 | my runtime README said "30 lane directories", listed `activation` twice, counted `mutation/$internal` as a lane and named a `permission-overlay*` directory that does not exist | **fixed here**: 34, the exact `ls -d … \| grep -vE "/(src\|test\|dist)/$"` command printed, and the false entries called out as test-file families |
+| 7 | the tools README pointed at `parse-util.ts` for "THE PARSE LAW" while the *effect* laws are in `effects.ts` | **fixed here**: both named, with `EFFECT_KINDS` at :43 and `parseRequestedEffectSet` at :163 |
+| 8 | README said "Verify freshness in CI" while the same file and the map say nothing is wired into CI | **fixed here**: it is now an instruction to a reviewer, with EB3-B stated as not built |
+| 9 | root `README.md:197` still labels a 2026-10-02 master pointer "CURRENT" in a 2026-10-22 phase, which is the pointer rot `AGENTS.md` forbids for itself | **reported, not touched**: root README is not in this line's write grant |
+| 10 | my README told readers that a package's accountable role is "whatever its registry entry's `owners` says", while no registry entry names any package -- a pointer to a mapping that does not exist | **fixed here**: it now says plainly that no accountable role is recorded for any of the nine packages |
+| 11 | `packages/domain/**` in the map named only the domain README, so a probe on the file that actually holds effect law named no permission contract at all | **fixed here** + pinned by **NEG-79**, which runs against the *shipped* map: an `effects.ts` change must name a document outside `packages/domain/`, and every document named must exist |
+
+Nine of eleven fixed inside this line's grant, two reported with the exact line and the reason
+they are not mine. Nothing was fixed by weakening a control, and no gap was closed by editing a
+normative or product file.
+
+Controls after this round: **94/0, RC=0** (`controls-run-22.log`).
+`docs:sync --write` 0 → `docs:sync --check` 0, `docs:probe --base origin/master` 0, eslint on the
+touched scripts 0.

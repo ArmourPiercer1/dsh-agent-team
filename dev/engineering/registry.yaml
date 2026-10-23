@@ -92,7 +92,7 @@ entries:
     # Sub-items bound here, not the whole card: the schema/validator cross-check gained
     # `type` and `minItems` (run-10), and the generator's CLI was made to honour `--root`
     # instead of accepting and ignoring it (run-11). C1 here is the Adapter-local level
-    # (PLAN-B 157-159): static/contract-level checks on this surface. No C2 real-Host
+    # (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree): static/contract-level checks on this surface. No C2 real-Host
     # integration verification and no C3 candidate verification is claimed or implied.
     # Narrow review pending as of the 2026-10-23 21:38 instruction.
     verified_tier: C1
@@ -130,7 +130,7 @@ entries:
     # Sub-item bound here: the write surface now carries a second derivative
     # (docs/contracts/engineering-baseline/INDEX.md) through the same boundary helper,
     # with the exact-file rule ahead of the area rule and a hard-link target refused
-    # (run-9). C1 = Adapter-local level (PLAN-B 157-159), no C2/C3 claimed; not merged, not released.
+    # (run-9). C1 = Adapter-local level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree), no C2/C3 claimed; not merged, not released.
     # Narrow review pending as of the 2026-10-23 21:38 instruction.
     verified_tier: C1
     verification_commit: f44e0c3eaabd4ef83facaa9acfbf3a28d35e59b4
@@ -145,7 +145,7 @@ entries:
     # borrowing a requirement that does not say this. Unpaired declarations stay
     # NOT_CHECKED and are counted, not counted as passing: 20 of 34 compared.
     # Narrow review pending as of the 2026-10-23 21:38 instruction. C1 = Adapter-local
-    # level (PLAN-B 157-159); no C2/C3 claimed.
+    # level (PLAN-B:157-159 @ PR#355 head 8f84a784, file not in this tree); no C2/C3 claimed.
     owners: [Tooling Owner]
     refs: [scripts/contracts-field-agreement.mjs, tests/doc-consistency/README.md]
     verification_artifacts: [dev/agent-workflow/evidence/EB-E0-E1/contracts-field-agreement-1.log, dev/agent-workflow/evidence/EB-E0-E1/controls-run-12.log]

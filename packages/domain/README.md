@@ -24,12 +24,24 @@ Eight lanes, each with its own barrel and its own `tsconfig.json`:
 | `lifecycle/src` | transitions, operations, errors — the five-state MemberInstance FSM, over the contract's `MEMBER_LIFECYCLE_STATES` |
 | `member/src` | instance, roster, context-policy, workspace |
 | `authority-envelope/src` | declared-AST / runtime / matcher families; one-way dependency direction |
-| `tool-governance/src` | grant, lease, placement, planes, effects, assurance, binding — **DORMANT** |
-| `vnext-field-mapping/src` | field-mapping, v4-authoring-map — **DORMANT** |
+| `tool-governance/src` | grant, lease, placement, planes, effects, assurance, binding — **consumed by production code**, see the note below |
+| `vnext-field-mapping/src` | field-mapping, v4-authoring-map — **dormant** (2 importers, both tests) |
 
-Dormant is a contract, not an oversight: `tool-governance/src/index.ts` says *"DORMANT BY
-CONTRACT: no shipped source anywhere in `packages` imports this barrel — the lane is wired by
-PR1+ as a reviewed change"*.
+**One "DORMANT" label in this package is stale, and this line did not write it.**
+`tool-governance/src/index.ts` opens with *"DORMANT BY CONTRACT: no shipped source anywhere in
+`packages` imports this barrel — the lane is wired by PR1+ as a reviewed change (the
+`a5p0-layer-audit` test fails the moment production touches it)"*. It is no longer true:
+**22 production files import that barrel today**, in `runtime/control`, `runtime/tool-dispatch`,
+`runtime/tool-admission`, `runtime/operation-permission`, `runtime/controlled-fs/src`,
+`runtime/src/plugin/live` (including the team tool plane and the effect backends) and
+`tools/a5p5-tools/src`. `vnext-field-mapping`'s claim (*"zero production consumers"*) does hold —
+its only two importers are `runtime/test/a5p7-lane-hygiene.test.ts` and
+`testkit/test/p4t6-session-event-scan.test.ts`.
+
+Read the label as history, not as current wiring: the lane is live, which is exactly what
+`packages/tools/README.md` describes when it says the effect parse law is imported from the
+domain. The source header, not this README, is what should be corrected — it is product source
+and outside this line's write grant, so the discrepancy is reported rather than edited.
 
 ## NOT responsible for
 

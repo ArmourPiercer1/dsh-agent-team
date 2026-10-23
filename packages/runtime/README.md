@@ -19,18 +19,12 @@ dsh-agent-team Cordis plugin (see ./plugin/host.ts)."*
   `permission-plane.ts`, `blueprint-*`, `team-session-*`, `effective-config-view.ts`,
   `seams.ts`, `upstream-resolver.mjs`, and `src/plugin/live/` (agent bindings, tool plane,
   effect backends, jobs gateway assembly, PA mount registry).
-- 30 **lane** directories at the package root, each listed in `tsconfig.build.json` and each
-  typically fronted by an `index.ts` facade. Named after the phase that produced them, e.g.
-  `activation` (ActivationProvider facade), `admission` (authority/envelope/quota/compat
-  admission), `control` (durable control/approval plane), `action-router` (unified authority
-  router), `activity` (activity ledger), `projection`, `mutation`, `lifecycle`
-  (Archive/Restore), `handoff`, `fork-reconciliation`, `requirements`, `readiness`,
-  `effective-policy`, `governance`, `coordination`, `messaging`, `member-residency`,
-  `root-binding`, `tool-dispatch`, `tool-admission`, `controlled-fs`, `sandbox-provider`,
-  `jobs-gateway`, `permission-governance` / `permission-lifecycle` / `permission-notification` /
-  `permission-overlay*`, `operation-permission`, `governance-warning`, `intervention`,
-  `compatibility`, `requirement-facts`, `work-completion-notification`, `artifact-read`,
-  `activation`, `agent-setup`, `mutation/$internal`.
+- **34 lane directories** at the package root, each listed in `tsconfig.build.json`. Named after the phase that produced them; the full set, counted with `ls -d packages/runtime/*/ | grep -vE "/(src|test|dist)/$`:
+
+  `action-router`, `activation`, `activity`, `admission`, `agent-setup`, `artifact-read`, `compatibility`, `control`, `controlled-fs`, `coordination`, `effective-policy`, `fork-reconciliation`, `governance`, `governance-warning`, `handoff`, `intervention`, `jobs-gateway`, `lifecycle`, `member-residency`, `messaging`, `mutation`, `operation-permission`, `permission-governance`, `permission-lifecycle`, `permission-notification`, `projection`, `readiness`, `requirement-facts`, `requirements`, `root-binding`, `sandbox-provider`, `tool-admission`, `tool-dispatch`, `work-completion-notification`.
+
+  A few carry their own tests or docs (`controlled-fs/test/` + its README, `member-residency/README.md`, `root-binding/harness/`, `member-residency/harness/`). Earlier text here said 30, listed `activation` twice and named a `permission-overlay*` directory that does not exist -- those were test-file families, not lanes.
+
 - Launching confined processes is a genuine responsibility, not an accident: `child_process`
   appears in production-lane code — `sandbox-provider/provider.ts`,
   `sandbox-provider/probe-abi.ts`, `src/plugin/live/plane-effect-backends.mjs`. **Do not**

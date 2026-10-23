@@ -37,7 +37,10 @@ consumers is a separate, coordinated migration (E1 exit condition), not a
 consequence of these files existing.
 
 Regenerate: `pnpm docs:sync --write` (or the generator directly).
-Verify freshness in CI: `pnpm docs:sync --check`.
+The command that verifies freshness: `pnpm docs:sync --check` (run it before review; it is the
+gate this line's own controls exercise). **Nothing wires it into CI on this branch** -- that
+wiring is EB3-B, not built here -- so "run `docs:sync --check`" is an instruction to a
+reviewer, not a claim that a pipeline enforces it.
 
 ## What these tools do, and what they do not do
 
@@ -107,8 +110,13 @@ a gap. Corrected per the responsibility layering, and the rule was not touched:
   environment — and therefore which corroboration the rules demand of it.
 - `verified_tier` names **the verification responsibility and coverage** of the evidence
   recorded in `verification_artifacts`, following the established acceptance levels
-  (PR #355 `8f84a7845944964ef17e167aebfde8e2d9617570`,
-  `docs/plans/active/alpha5-convergence/PLAN-B-20261022.md` lines 157–159):
+  established acceptance levels as written in PR #355 at head
+  `8f84a7845944964ef17e167aebfde8e2d9617570`, file
+  `docs/plans/active/alpha5-convergence/PLAN-B-20261022.md` lines 157–159. **That file is not in
+  this tree** -- the PR is open and unmerged, so the path resolves nowhere locally and no link
+  check catches it. Read it as fetched:
+  `git fetch origin refs/pull/355/head && git show 8f84a7845944964ef17e167aebfde8e2d9617570:docs/plans/active/alpha5-convergence/PLAN-B-20261022.md`.
+  The three levels below are what that text says:
   - **C1** — Adapter-local verification: one surface's interface, arguments, effects, native
     parity and the exact security negatives around it. A CI run may well execute C1.
   - **C2** — real-Host integration verification: the surface wired into the running assembly,
@@ -156,9 +164,11 @@ Contracts pairings are **data inside `scripts/contracts-field-agreement.mjs`** (
 script prints what it compared; the list is not copied into any document, because a second
 copy is a second thing that can drift from the first. It compares names only — type,
 `minItems`, length, uniqueness and cross-field rules live in the `packages/contracts` parse
-functions and **no check here guards them**; the accountable role for that package is
-whatever its registry entry's `owners` says, and there is no separate role roster on this
-branch.
+functions and **no check here guards them**. There is no role roster on this branch, and no
+registry entry names `packages/contracts` either -- so for that package, as for the other
+eight, **no accountable role is recorded anywhere**. The package READMEs say the same thing;
+this line does not appoint anyone, and a reader who follows the usual pointer
+("ask the registry entry's `owners`") reaches nothing.
 
 Ratification, as far as tooling reaches: an id in `ids.yaml` marked `proposed-not-ratified`
 stays that way until the Contract Owner records a decision. Nothing here promotes an id, and

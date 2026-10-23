@@ -35,9 +35,13 @@ In the frozen 9-package structure (TaskDoc §11), this is the model-facing tool 
   `permission-lifecycle`, `action-router`, `coordination`, `lifecycle`, `operation-permission`,
   `permission-governance`), `domain/tool-governance`, `domain/policy`, and `contracts`.
   **No** `storage/`, `remote/`, `client/` or `legacy/` import exists in this package.
-- Its own parse laws for governance: `a5p5-tools/src/effects-schema.ts` imports them from
-  `domain/tool-governance/src/parse-util.js` — *"THE PARSE LAW IS IMPORTED, NOT RESTATED."*
-  Changing an effect rule means changing the domain, not this layer.
+- Its own governance laws. Two files, and the distinction matters when an effect rule is the
+  thing changing: `domain/tool-governance/src/parse-util.js` holds the **generic** parse
+  discipline (*"THE PARSE LAW IS IMPORTED, NOT RESTATED"*), while the **effect** laws live in
+  `domain/tool-governance/src/effects.ts` — header *"THE LAWS ENCODED HERE (plan §3)"*, with the
+  closed `EFFECT_KINDS` at line 43 and `parseRequestedEffectSet` at line 163 (dedup, fingerprint,
+  effect-to-resource coupling). `a5p5-tools/src/effects-schema.ts` imports from both. Changing an
+  effect rule means changing that domain lane, not this layer.
 - Node built-ins and network in the tool layer: grep over `src/*.ts` for `node:` and `fetch(`
   returns **empty**; `child_process` appears in **no** file under `src/`, `a5p5-tools/src/` or
   `harness/`. `fetch(` and `node:http` occur only in `harness/*.mjs` (including a mock DeepSeek

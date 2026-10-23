@@ -899,6 +899,27 @@ control('NEG-78 enforce belongs to the rule that matched, not to the broadest on
   ];
 });
 
+control('NEG-79 the map must lead an effect-law change to a permission contract, not only to a README', () => {
+  // A cold reader who asked "what do I read before touching an effect rule?" was sent by the
+  // map to packages/domain/README.md and nowhere else: effect and permission law physically
+  // lives in `domain/tool-governance`, but unlike runtime/tools/remote the rule named no
+  // semantic document. The probe was technically correct and practically useless. This
+  // control runs against the *shipped* map rather than a fixture, because the thing being
+  // pinned is the shipped configuration; if the alpha5 documents move, this fails loudly
+  // instead of silently pointing newcomers at prose alone.
+  const res = selectOwningDocs(process.cwd(), ['packages/domain/tool-governance/src/effects.ts'], []);
+  const hit = res.owned[0];
+  const docs = hit ? hit.docs : [];
+  const outside = docs.filter((x) => !x.startsWith('packages/domain/'));
+  return [
+    { ok: !!hit && hit.source === 'packages/domain/tool-governance/src/effects.ts', why: 'the effects file must resolve to a rule, got: ' + (hit ? hit.source : '(none)') },
+    { ok: docs.includes('packages/domain/README.md'), why: 'the package README should still be named: [' + docs.join(', ') + ']' },
+    { ok: outside.length > 0, why: `a change to effect law must name at least one document outside the package: [${docs.join(', ') || '(none)'}]` },
+    { ok: outside.every((x) => existsSync(process.cwd() + '/' + x)), why: 'named semantic documents must exist: ' + outside.join(', ') },
+    { ok: res.findings.length === 0, why: 'resolving must not itself produce findings: ' + res.findings.map((f) => f.code).join(',') },
+  ];
+});
+
 control('NEG-76 docs:probe names and refuses a flag it does not implement', (d) => {
   // `--strict` used to be parsed from argv, passed to probe(), destructured and dropped on
   // the floor: the command ran the ordinary check and its exit was read as the strict

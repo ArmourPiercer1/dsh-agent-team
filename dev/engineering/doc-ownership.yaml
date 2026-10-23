@@ -35,7 +35,8 @@
 
 schema_version: 1
 owners:
-  # The five rules below name the tooling this line writes. They are self-imposed:
+  # The rules below that carry `enforce: true` name the tooling this line writes. They are
+  # self-imposed:
   # change the tool, change the document that describes it.
   - glob: scripts/docs-*.mjs
     docs:
@@ -79,6 +80,11 @@ owners:
   - glob: packages/domain/**
     docs:
       - packages/domain/README.md
+      # Effect and permission law physically lives in the domain lanes, so the rule that
+      # points there has to name the semantic documents too; without them a one-shot probe
+      # on `tool-governance/src/effects.ts` would name no permission contract at all.
+      - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+      - docs/plans/active/alpha5-tool-io-governance/ALPHA5-EFFECTIVE-BACKLOG.md
   - glob: packages/storage/**
     docs:
       - packages/storage/README.md

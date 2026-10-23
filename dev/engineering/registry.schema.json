@@ -110,7 +110,7 @@
               "C2",
               "C3"
             ],
-            "description": "the tier this claim was earned in; C1 local, C2 hosted CI, C3 real environment. Not the same vocabulary as verification_status."
+            "description": "verification responsibility and coverage of this claim: C1 Adapter-local verification, C2 real-Host integration verification at a fixed SHA, C3 final verification of a fixed candidate. Levels are not machines -- CI can execute C1. Not the same vocabulary as verification_status."
           },
           "verification_commit": {
             "type": "string",
