@@ -1,22 +1,23 @@
 /**
  * governed-families/g1-surface-adapters.mjs — A5-M2 module group G1 (root
- * FINAL RULING round, rev.4): the captured-native-delegate adapter rows for
- * the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT / B-PLUGIN /
- * B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
+ * 706fd FINAL RULING round, rev.5): the captured-native-delegate adapter
+ * rows for the 14 records of families B-CONTROL / B-HUMAN / B-PRESENT /
+ * B-PLUGIN / B-INSPECT / B-SKILL / B-DEPENDENCY / B-DOMAIN
  * (frozen dispatch index M0-B-RECORD-FAMILY-ACCEPTANCE-INDEX.json, records
  * 24, 25, 49–54, 83–85, 87, 88, 91; family law M0-B-FAMILY-TARGET-CONTRACTS.md
- * §3). NARROW REAL-TOOL UNITS on the real manager/host contract; KEEP the
- * closed work (manager async contract, CURRENT-facts edge re-verify, inspect
- * list topology filter, present witness matching); UNWIRED by ruling.
+ * §3). NARROW REAL-TOOL UNITS (no generic whole-group wrapper loops); KEEP
+ * the closed work (pre-abort refusal, optional face params, the retired fake
+ * success, manager async contract, CURRENT-facts re-verify, inspect list
+ * topology filter, present witness); UNWIRED by ruling.
  *
  * ── NATIVE-FACE LEDGER (comment-side ONLY: a string literal IS an edge to
  * the audit, so these path facts never live in values) ─────────────────────
  * skill                        HOST pkg dsh-tool-skill, tool-skill/src/index.ts: register @:161 of defineTool @:81; body ctx.skills.list/get(lookup) + isModelInvocable gates :138/:145
- * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, tool-workspace-dependencies/src/index.ts: register @:249; body memoized installPrimaryRuntime(source, root) @:204-229 — readdir(source) enumeration + compatibleManifest(source/runtime.json) are the flow's own first reads and the row mirrors them as REAL pre-flight reads; the COPY + rename-commit + payload validation run INSIDE that controlled path: the row does NOT stage or hash anything itself and keeps payload verification a NAMED BLOCKER (not wired to the real controlledFS install/payload-verify) rather than claim it
+ * load_workspace_dependencies  HOST pkg dsh-tool-workspace-dependencies, skill/tool-workspace-dependencies/src/index.ts: register @:249; the CONTROLLED install/verify path is the EXPORTED installPrimaryRuntime(source, root) @:204 (compatibleManifest platform/arch gate + staging copy + validatePayloadEntries + rename-commit + previous-slot restore) and the use-in-place sibling resolvePrimaryRuntime @:192 — NOT package-internal. The row's dependency arm therefore FAILS CLOSED (typed refusal, zero fs of its own, zero native entry) until that exported path is MOUNTED as the controlledInstall port, and when mounted it RUNS the real path instead of any double; the row never stages/hashes of its own and never labels an already-executed copy 'BLOCKED' post-hoc
  * ask_user_question            HOST pkg dsh-tool-ask-user, tool-ask-user/src/index.ts: register @:38; body ctx.userQuestions.ask({questions, agent, signal})
  * exit_plan_mode               HOST pkg dsh-plan-mode, plan-mode/src/index.ts: const EXIT_PLAN_MODE @:67, register @:278; body PlanModeController.loggedActive + ctx.get('userQuestions').ask(plan-review)
- * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); PATH LEGALITY is the lane's EXISTING resource grammar (domain/tool-governance/src/resource.ts parseResourceRef :166; workspace locator must be relative :116; relative '..' refused on every fs kind :107-110) — the row reuses that parse and never invents its own path rule; durable commit = the tools/result listener's session.append('deliverables/presented') — the SAME-EXEC append carrying the exec callId and the native result's OWN turn is the commit witness; an arbitrary integer is not
- * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19; THE HOST GATE CHAIN every action runs BEFORE any manager touch: sandboxPolicy.resolve then await approveEscalation({requestedMode:'danger-full-access', effectiveMode, subject:'plugin management operation', justification:'plugin_manager <args>. Profile changes persist across sessions; installed Host code runs outside the workspace sandbox.'}, {approver: ctx.get('approval'), agent, callId, toolName:'plugin_manager', signal}) @:39-43, then exec.signal.throwIfAborted() @:44. The escalation helper is a package-internal import from the sandbox pkg (tools.ts:7) — NOT a public seam this row can call without the tool ctx: the row therefore REQUIRES a mounted hostApprovalGate answering the SAME ctx.get('approval') channel and treats it as a hard precondition (absence refuses the install — bypass is impossible by construction). Team PA NEVER replaces this gate; both must be satisfiable. Tool face params (tools.ts:22-31): action,target,enabled,runtimeVersion,acceptRisk,approvedBuilds,registry,offset,limit — offset/limit REAL on the list actions, validated @:66-69 (offset a non-negative integer, limit 1..100); install spec may be an npm name (incl. @scope/pkg) or a LOCAL PATH RELATIVE to the invocation dir (index.ts:458 doc); MANAGER ASYNC CONTRACT (src/index.ts, src/types.ts @ 639ed01539): installBundle(spec, InstallBundleOptions) @:462 with CALLER-supplied options.requestId (:463-466; types.ts:144), settled installs deleted @:566, waitForInstall @:570-576 ("null establishes neither success nor cancellation"), cancelInstall @:585-593 AWAITED to PluginInstallCancellation {status:'cancelled'|'too-late'|'not-running'} (types.ts:208-210). Settle is OBSERVED BY A LISTENER on the install promise — the row never reads a return it fabricated. GAP reported (tools.ts:80-85): the model tool path supplies no requestId — governed installs mount the manager face directly, gate FIRST.
+ * present                      HOST pkg dsh-tool-present, tool-present/src/index.ts: register @:38; body ctx.fs.lstat/resolve/stat + sessionProjections.stateOf(turnBoundary); PATH LEGALITY = the lane's resource grammar with its KINDS: relative locators ride 'workspace', OS-absolute locators (POSIX '/'-rooted, Windows drive) are LEGAL deliverables and ride 'absolute-path' (domain/tool-governance/src/resource.ts parseResourceRef :166; rules :107-123) — refusing all absolute paths would break a real working function; the governance is that out-of-workspace deliverables ride as GOVERNED absolute-path read+meta effects the effect-commit approval lane decides, never a silent allow; relative '..' stays refused; durable commit = the tools/result listener's session.append('deliverables/presented') — the SAME-EXEC append carrying the exec callId and the native result's OWN turn is the commit witness; an arbitrary integer is not
+ * plugin_manager               HOST pkg dsh-boot-plugin-manager, plugin-manager/src/tools.ts: register @:19; THE HOST GATE CHAIN every action runs BEFORE any manager touch (:38-44): const policy = ctx.sandboxPolicy.resolve(exec.agent === undefined ? {} : { session: exec.agent.session }); await approveEscalation({ requestedMode:'danger-full-access', effectiveMode: policy.mode, subject:'plugin management operation', justification:'plugin_manager <json args>. Profile changes persist across sessions; installed Host code runs outside the workspace sandbox.' }, { approver: ctx.get('approval'), agent: exec.agent, callId: exec.callId, toolName:'plugin_manager', signal: exec.signal }); exec.signal.throwIfAborted(). approveEscalation is a PUBLIC export (packages/sandbox/sandbox: src/escalation.ts:171-205, lib export list index.js:289): effective-mode repeat returns without approval; non-strictly-wider targets, missing approver/agent, and every non-grant outcome THROW before execution. The row therefore mounts the REAL exported adjudicator plus the two tool-ctx ingredients it cannot reach itself (ctx.sandboxPolicy, ctx.get('approval')) — the precise seam list, not an invented requireApproval channel. Post-await the row re-checks the signal (the throwIfAborted mirror) and the CURRENT profile facts before ANY manager entry. Tool face params (tools.ts:22-31): action,target,enabled,runtimeVersion,acceptRisk,approvedBuilds,registry,offset,limit — offset/limit REAL on the list actions, validated @:66-69; entry-set/remove targets are package names — '@scope/pkg' is a LEGAL entry name (npm grammar); set_version_exemption targets must be manifest package-name@version (tools.ts:47-52 + face doc); install spec may be an npm name (incl. @scope/pkg) or a LOCAL PATH RELATIVE to the invocation dir (index.ts:458 doc); MANAGER ASYNC CONTRACT (src/index.ts, src/types.ts @ 639ed01539): installBundle(spec, InstallBundleOptions) @:462 with CALLER-supplied options.requestId (:463-466; types.ts:144), settled installs deleted @:566, waitForInstall @:570-576 ("null establishes neither success nor cancellation"), cancelInstall @:585-593 AWAITED to PluginInstallCancellation {status:'cancelled'|'too-late'|'not-running'} (types.ts:208-210). Settle is OBSERVED BY A LISTENER on the install promise — the row never reads a return it fabricated. GAP reported (tools.ts:80-85): the model tool path supplies no requestId — governed installs mount the manager face directly, gate FIRST.
  * cordis_inspect_list          HOST pkg dsh-tool-cordis, tool-cordis/src/index.ts: register @:22; body ctx.cordisInspect.list() — the REAL list enumerates ALL providers ({platform, id, purpose, methods[]} host-then-client, cordis-host-runner/src/inspect-registry.ts:101-105); this row CONSTRAINS that answer to the CURRENT authorized topology
  * cordis_inspect_query         same file register @:41; body ctx.cordisInspect.query(platform, provider, method, input, agent, signal) over cordis-host-runner/src/inspect-registry.ts
  * team_request_control         LANE face packages/tools/src/tools.ts requestControlSpec :958 — properties rootSessionId, requestToken, kind, targetInstanceId, actionName, toolName(OPTIONAL), summary(OPTIONAL); required EXACTLY the first five (:985)
@@ -27,57 +28,63 @@
  * surface:domain_family        NOT a model tool by record design: the mounted Domain port {name, description, decide(request)} consulted AT the effect-commit boundary; the domain-ref effect kind it decides for is domain/tool-governance effects.ts:43,72-113; the kernel has NO public domain-authority registry — that gap is reported, never faked
  * ───────────────────────────────────────────────────────────────────────────
  *
- * ROOT LAWS (round-2 card + FINAL RULING units; module UNWIRED; the spec is
- * NOT C2 — every leg runs on doubles and fixture ports):
+ * ROOT LAWS (706fd ruling; module UNWIRED; the spec is NOT C2 — legs run on
+ * the REAL exported host adjudicator/controlled path where they exist and on
+ * doubles elsewhere):
  *  L1 REAL EFFECTS per family §3 — never a uniform tool-invoke shell.
  *  L2 TRUSTED TARGETS enter ONLY as the mount-time CONFIG face.
  *  L3 SAME-SOURCE RE-VERIFY AT THE CONSUMPTION EDGE (catalog/topology/
  *     domain-port registry/profile facts/install facts) — a move since
  *     classify refuses the plan typed, zero native entry.
  *  L4 domainAuthorityId is ONLY the mounted-port registry's CURRENT fact.
- *  L5 plugin install = HOST GATE CHAIN FIRST (mounted hostApprovalGate
- *     answering the ctx.get('approval') escalation — absence refuses), THEN
- *     the invocation-owned requestId minted before installBundle(spec,
+ *  L5 plugin install = THE REAL HOST GATE CHAIN (tools.ts:38-44): mounted
+ *     sandboxPolicy.resolve scope from exec.agent.session, the EXPORTED
+ *     approveEscalation adjudicator judging {requestedMode, effectiveMode,
+ *     subject, justification} over {approver, agent, callId, toolName,
+ *     signal} — no invented always-approved channel; a non-grant THROW is a
+ *     refusal with zero manager entry; AFTER the await the row re-checks the
+ *     signal (throwIfAborted mirror) and the CURRENT facts before the
+ *     manager; a PRE-ABORTED signal refuses before the call is admitted;
+ *     then the invocation-owned requestId minted before installBundle(spec,
  *     {requestId}), settle OBSERVED BY LISTENER, cancel AWAITED to the
- *     closed PluginInstallCancellation status, a PRE-ABORTED signal refuses
- *     before the row admits the call at all (zero startup), and an aborted
- *     install never claims the copying auto-stopped.
+ *     closed PluginInstallCancellation status, and an aborted install never
+ *     claims the copying auto-stopped.
  *  L6 present: the SAME-EXEC session append carrying the exec callId AND the
  *     native result's OWN turn is the commit witness.
  *  L7 the delegate runs ONLY the plan its own classify produced, once, with
  *     the plan's frozen arguments.
  *  L8 the inspect pair's target is the CURRENT authorized topology; the list
  *     row CONSTRAINS the real all-providers answer to it.
- *  L9 dependency performs the flow's REAL pre-flight reads (source
- *     enumeration, real manifest reads) at the edge; the payload body is
- *     produced ONLY inside the controlled install path, so payload
- *     verification is a NAMED BLOCKER (not wired to controlledFS real
- *     install/payload verify) — the row never stages/hashes anything of its
- *     own and never claims PAYLOAD-VERIFIED.
+ *  L9 dependency FAILS CLOSED: without the mounted controlledInstall port
+ *     (the EXPORTED installPrimaryRuntime path) the arm refuses typed before
+ *     any fs of its own and before native entry — no post-hoc 'BLOCKED'
+ *     label over an executed copy; with it mounted the arm RUNS the real
+ *     controlled path (its manifest gate, payload validation and rename
+ *     commit do the verification) and never self-hashes.
  *  L10 plugin network spec + FS scope are REAL parse work: the install spec
  *     parses through the npm-name grammar (@scope/pkg[/@version]) or a
- *     relative local path (absolute/drive paths refuse); registry claims
- *     parse through URL with https-only and compare CANONICAL href against
- *     the trusted allow-list envelope.
+ *     relative local path (absolute/drive paths refuse); entry-set/remove
+ *     targets are package names (@scope/pkg legal, paths refuse); registry
+ *     claims parse through URL with https-only and compare CANONICAL href
+ *     against the trusted allow-list envelope.
  *  L11 capture law: absent capture ⇒ typed refusal, zero native entry.
  *
  * Honest boundaries: NO C2 here; the real PA edge, the real append listener,
- * the real approval channel, the real manager and the real product fs are
- * integrator-side — this thin row exposes exactly those seams (exec signal,
- * the approval gate port, the append witness, the manager face, the install
- * facts). Windows dimensions: NOT RUN on this Linux harness, never claimed.
+ * the real tool ctx (sandboxPolicy/approval channel), the real manager and
+ * the real product fs are integrator-side — this thin row exposes exactly
+ * those seams (exec signal, the hostEscalation port, the controlledInstall
+ * port, the append witness, the manager face, the install facts). Windows
+ * dimensions: NOT RUN on this Linux harness, never claimed.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g1-surface-adapters
  */
 import { createHash, randomUUID } from 'node:crypto'
-import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
 import { URL } from 'node:url'
 
 import { parseResourceRef } from '../../../../../domain/tool-governance/src/index.js'
 
 export const A5_G1_FAMILY_GROUP = 'G1'
-export const A5_G1_ADAPTER_REVISION = 4
+export const A5_G1_ADAPTER_REVISION = 5
 
 const CODES = {
   CAPTURE_ABSENT: 'P_G1_NATIVE_CAPTURE_ABSENT',
@@ -89,6 +96,7 @@ const CODES = {
   NOT_OWN_PLAN: 'P_G1_NOT_OWN_PLAN',
   ALREADY_DELEGATED: 'P_G1_ALREADY_DELEGATED',
   PRE_ABORTED: 'P_G1_PRE_ABORTED',
+  ABORTED_AFTER_GATE: 'P_G1_ABORTED_AFTER_GATE',
   TRUSTED_CATALOG_ABSENT: 'P_G1_TRUSTED_CATALOG_ABSENT',
   SKILL_NAME_NOT_TRUSTED: 'P_G1_SKILL_NAME_NOT_TRUSTED',
   TOPOLOGY_ABSENT: 'P_G1_TRUSTED_TOPOLOGY_ABSENT',
@@ -104,7 +112,7 @@ const CODES = {
   HOST_APPROVAL_NOT_GRANTED: 'P_G1_HOST_APPROVAL_NOT_GRANTED',
   INSTALL_FACE_ABSENT: 'P_G1_INSTALL_FACE_ABSENT',
   DEPENDENCY_FACTS_ABSENT: 'P_G1_DEPENDENCY_FACTS_ABSENT',
-  DEPENDENCY_SOURCE_INVALID: 'P_G1_DEPENDENCY_SOURCE_INVALID',
+  DEPENDENCY_ARM_CLOSED: 'P_G1_DEPENDENCY_ARM_CLOSED',
   PRESENT_COMMIT_WITNESS_MISMATCH: 'P_G1_PRESENT_COMMIT_WITNESS_MISMATCH',
 }
 export const A5_G1_TYPED_CODES = Object.freeze({ ...CODES })
@@ -149,8 +157,8 @@ const SPEC_TABLE = {
     recordIndex: 25, family: 'B-DEPENDENCY', scope: 'host-sdk-app-env-only', ownerRole: 'PLUGIN', capture: 'tool',
     requiredTopLevel: [], parameters: NO_PARAMS, nativeFaceRef: 'ledger:load_workspace_dependencies',
     effectDeltaNotes: Object.freeze([
-      'F: the flow envelope over the trusted install facts: enumerate the source dir, read the source runtime.json (the compatibleManifest gate — a REAL pre-flight read the delegate performs), read the installed old manifest, write the parent (the controlled path stages there), write the root (rename-commit), write the .previous slot',
-      'PAYLOAD VERIFICATION IS A NAMED BLOCKER: the staged body exists only inside the controlled install path; the row does NOT stage or hash anything of its own and keeps verification as not-wired-to-controlledFS-real-install/payload-verify — it never claims PAYLOAD-VERIFIED',
+      'F: the flow envelope over the trusted install facts: the CONTROLLED installPrimaryRuntime path enumerates the source, gates the manifest (compatibleManifest), stages under the parent, validates the payload entries and rename-commits the root (plus the .previous slot) — every one of these resources is enumerated here',
+      'FAIL-CLOSED ARM: the delegate refuses P_G1_DEPENDENCY_ARM_CLOSED (zero fs of its own, zero native entry) until the EXPORTED controlled install/verify path (installPrimaryRuntime, the flow body itself) is mounted as the controlledInstall port; when mounted the REAL path runs and performs the verification — the row never stages/hashes of its own and never labels an already-executed copy BLOCKED post-hoc',
     ]),
   },
   ask_user_question: {
@@ -172,7 +180,7 @@ const SPEC_TABLE = {
     recordIndex: 51, family: 'B-PRESENT', scope: 'host-preset-on', ownerRole: 'SERVICE', capture: 'tool',
     requiredTopLevel: ['files'], parameters: params('files'), nativeFaceRef: 'ledger:present', commitLaw: 'session-append',
     effectDeltaNotes: Object.freeze([
-      'F: NOT read-only — reading/metadata is observed over each EXACT deliverable (path legality = the lane resource grammar parseResourceRef — no invented rule), and the row carries the expose WRITE obligation (artifact identity/version + visible audience)',
+      'F: NOT read-only — reading/metadata is observed over each EXACT deliverable (path legality = the lane resource grammar WITH ITS KINDS: relative → workspace, OS-absolute → absolute-path as a GOVERNED effect the commit approval lane decides — neither an invented blanket-refuse nor a silent allow), and the row carries the expose WRITE obligation (artifact identity/version + visible audience)',
       'commit law: the native promise resolving is NOT the commit; the SAME-EXEC session append (deliverables/presented) carrying the exec callId AND the native result\'s own turn witnesses it; an arbitrary integer is no witness',
     ]),
   },
@@ -183,10 +191,10 @@ const SPEC_TABLE = {
     nativeFaceRef: 'ledger:plugin_manager',
     effectDeltaNotes: Object.freeze([
       'PER-ACTION: each of the 8 actions carries its own closed effects+targets, mapped to the manager code paths under the SAME envelope (profile config path, install root, npm cache, exemptions file, registry allow-list); out-of-envelope targets refuse',
-      'HOST GATE FIRST: the ctx.get(\'approval\') escalation (requestedMode danger-full-access, subject \'plugin management operation\') is a HARD PRECONDITION of the install entry — a mounted hostApprovalGate answers it (the helper itself is package-internal, the gap is reported); absence refuses; Team PA never replaces it; the approvedBuilds user-approval chain stays the Host business gate',
+      'HOST GATE FIRST (tools.ts:38-44): the mounted hostEscalation port (the EXPORTED approveEscalation adjudicator + the tool-ctx sandboxPolicy + the ctx.get(\'approval\') channel — the exact seams a row cannot reach itself) judges {requestedMode danger-full-access, effectiveMode, subject, justification} over {approver, agent, callId, toolName, signal}; non-grant outcomes THROW and are refusals with zero manager entry; Team PA never replaces it; the approvedBuilds user-approval chain stays the Host business gate',
       'install: S (query) + F (N registry destinations = the request-or-allowed ones plus the configured fallbacks, connect, REAL URL parse + canonical-href envelope compare) + writes (npm cache, install root, profile package.json) + the script-process envelope + activation; settle observed by LISTENER',
-      'install lifecycle: invocation-owned requestId minted BEFORE installBundle(spec, {requestId}); cancelInstall AWAITED to {status: cancelled|too-late|not-running}; PRE-ABORTED signal refuses before the row admits the call (zero startup)',
-      'the version-exemption lane is a SEPARATE action+target — never derivable from install',
+      'install lifecycle: AFTER the awaited gate the signal is re-checked (throwIfAborted mirror) and the CURRENT facts re-verified before the manager; invocation-owned requestId minted BEFORE installBundle(spec, {requestId}); cancelInstall AWAITED to {status: cancelled|too-late|not-running}; PRE-ABORTED signal refuses before the row admits the call (zero startup)',
+      'the version-exemption lane is a SEPARATE action+target with a manifest package-name@version target — never derivable from install',
     ]),
   },
   cordis_inspect_list: {
@@ -302,6 +310,7 @@ const deepFreeze = (value) => {
 const dirRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'directory', canonicalLocator, rights })
 const pathRes = (realmId, canonicalLocator, rights) => ({ realmId, kind: 'absolute-path', canonicalLocator, rights })
 const TOOL_NAME_OBLIGATION = Object.freeze({ target: 'host-tool-dispatch', operation: 'invoke-captured-body', right: 'read' })
+const SANDBOX_MODES = Object.freeze(['read-only', 'workspace-write', 'danger-full-access'])
 
 function classifyRefuse(code, detail) {
   return Object.freeze({ ok: false, code, detail })
@@ -408,12 +417,18 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         if (!isRecord(file) || typeof file.path !== 'string' || file.path.length === 0) {
           return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: every presented file needs a non-empty path`) }
         }
-        const parsed = parseResourceRef({ realmId, kind: 'workspace', canonicalLocator: file.path, rights: ['read', 'meta'] })
+        const isAbsolute = file.path.startsWith('/') || /^[a-zA-Z]:[\\/]/.test(file.path)
+        const parsed = parseResourceRef({
+          realmId,
+          kind: isAbsolute ? 'absolute-path' : 'workspace',
+          canonicalLocator: file.path,
+          rights: ['read', 'meta'],
+        })
         if (parsed.ok !== true) {
           const first = parsed.problems[0]
-          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: path '${file.path}' is not a legal workspace deliverable per the lane resource grammar (${first === undefined ? 'resource grammar refused' : first.detail})`) }
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PRESENT·${providerId}: path '${file.path}' is not a legal deliverable per the lane resource grammar (${first === undefined ? 'resource grammar refused' : first.detail})`) }
         }
-        deliverables.push({ path: file.path, ...(typeof file.description === 'string' ? { description: file.description } : {}) })
+        deliverables.push({ path: file.path, governedKind: parsed.value.kind, ...(typeof file.description === 'string' ? { description: file.description } : {}) })
         effects.push(
           { kind: 'read', resource: parsed.value },
           { kind: 'meta', resource: parsed.value },
@@ -424,7 +439,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         audience: { kind: 'current-session', sessionHeaderId: trusted.sessionHeaderId },
         artifactVersion: 'turn-scoped-at-result',
         readOnly: false,
-        legalityLaw: 'path legality is the lane resource grammar (parseResourceRef): workspace locators relative to the immutable workspace root, relative .. refused — no invented rule',
+        legalityLaw: 'path legality is the lane resource grammar with its kinds: relative → workspace (relative .. refused), OS-absolute → absolute-path — an ABSOLUTE deliverable is legal functionality riding as a GOVERNED read+meta effect the effect-commit approval lane decides (neither blanket-refuse nor silent allow)',
       }
       built.obligations = [{
         target: 'current-session-audience',
@@ -449,8 +464,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       )
       built.target = {
         installFacts: { sourceLocator: facts.sourceLocator, rootLocator: facts.rootLocator, parentLocator: parent },
-        flowLaw: 'the CONTROLLED path (installPrimaryRuntime) enumerates + compatibleManifest-checks the source, stages under the parent, swaps the previous slot and rename-commits the root; the row mirrors the REAL pre-flight reads at the edge and performs no staging or hashing of its own',
-        payloadVerification: 'BLOCKED — not wired to the controlledFS real install/payload verify; the row never claims PAYLOAD-VERIFIED for a body it cannot observe',
+        armLaw: 'the CONTROLLED path is the EXPORTED installPrimaryRuntime(source, root): compatibleManifest gate, staging copy under the parent, validatePayloadEntries, previous-slot swap, rename-commit; the delegate runs that mounted path or FAILS CLOSED before any fs of its own and before native entry — it never stages/hashes of its own and never labels an executed copy BLOCKED',
       }
       break
     }
@@ -482,8 +496,9 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
       }
       const targetClaim = typeof rawArgs.target === 'string' && rawArgs.target.length > 0 ? rawArgs.target : null
       if (['set_plugin', 'set_bundle', 'remove_bundle'].includes(action)) {
-        if (targetClaim === null || targetClaim.includes('/') || targetClaim.includes('\\') || targetClaim.startsWith('.')) {
-          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${action}' needs one entry-name target inside the profile envelope; paths are outside it`) }
+        const parsedEntry = targetClaim === null ? null : parseInstallSpec(targetClaim)
+        if (parsedEntry === null || parsedEntry.kind !== 'npm-name' || parsedEntry.version !== null) {
+          return { refusal: classifyRefuse(CODES.PLUGIN_TARGET_NOT_ENVELOPED, `${spec.recordIndex}·B-PLUGIN·${providerId}: '${action}' targets one installed entry's PACKAGE NAME (the '@scope/pkg' shape is legal); version-qualified and path-shaped targets ride outside the entry-name face`) }
         }
       }
       if (action === 'install_bundle') {
@@ -504,7 +519,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         )
         built.obligations = [
           TOOL_NAME_OBLIGATION,
-          { target: 'host-approval-escalation-channel', operation: 'danger-full-access-approval', right: 'read', note: 'the ORIGINAL Host gate (approveEscalation over ctx.get(\'approval\'), subject \'plugin management operation\') is a HARD PRECONDITION of the install entry: the row mounts a hostApprovalGate answering that channel and refuses when it is absent or the answer is not an approval; Team PA never stands in for it' },
+          { target: 'host-approval-escalation-channel', operation: 'danger-full-access-approval', right: 'read', note: 'the REAL Host gate chain (sandboxPolicy.resolve + the EXPORTED approveEscalation adjudicator over {approver: ctx.get(\'approval\'), agent, callId, toolName, signal}, tools.ts:38-44) is a HARD PRECONDITION of the install entry: the row mounts those exact seams as hostEscalation and refuses when they are absent or the adjudicator does not grant; Team PA never stands in for it' },
           { target: 'profile-package-manager-channel', operation: 'pnpm-run-under-profile-env', right: 'write', note: 'the pnpm run executes as a child process under the profile package-manager env (the script-process envelope); the resolved build-scripts set is only known AFTER the run — targets beyond this envelope stale the plan, never ride silently' },
           { target: 'host-approvedBuilds-channel', operation: 'build-script-runner-permission', right: 'write', note: 'approvedBuilds is a PERSISTENT permission write into the profile pnpm settings gated by the user\'s explicit conversation approval of the pendingBuilds names — recorded, never re-decided here' },
           { target: 'trusted-profile', operation: 'configure-activation', right: 'write', note: 'install writes the profile config and may activate or restart the live profile (scopeImpact: every session of the profile)' },
@@ -523,6 +538,13 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         break
       }
       if (action === 'set_version_exemption') {
+        const parsedTarget = targetClaim === null ? null : parseInstallSpec(targetClaim)
+        if (parsedTarget === null || parsedTarget.kind !== 'npm-name' || parsedTarget.version === null) {
+          return { refusal: classifyRefuse(CODES.CLASSIFY_INVALID_ARGUMENTS, `${spec.recordIndex}·B-PLUGIN·${providerId}: set_version_exemption needs the target as manifest package-name@version (the face doc + tools.ts:47-52 require the exact pair; aliases and ranges are refused)`) }
+        }
+        if (typeof rawArgs.runtimeVersion !== 'string' || rawArgs.runtimeVersion.length === 0) {
+          return { refusal: classifyRefuse(CODES.CLASSIFY_MISSING_PARAMETER, `${spec.recordIndex}·B-PLUGIN·${providerId}: set_version_exemption needs runtimeVersion (the exact DSH version) with the target`) }
+        }
         effects.push({ kind: 'write', resource: pathRes(realmId, facts.exemptionsLocator, ['read', 'write', 'meta']) })
         built.obligations = [
           TOOL_NAME_OBLIGATION,
@@ -531,7 +553,7 @@ function effectsFor(spec, rawArgs, realmId, ports, providerId, trusted) {
         built.target = {
           action,
           exemptionLocator: facts.exemptionsLocator,
-          exactPairClaim: { target: targetClaim, runtimeVersionClaim: typeof rawArgs.runtimeVersion === 'string' ? rawArgs.runtimeVersion : null },
+          exactPairClaim: { target: targetClaim, parsedName: parsedTarget.name, parsedVersion: parsedTarget.version, runtimeVersionClaim: rawArgs.runtimeVersion },
           acceptRiskClaim: rawArgs.acceptRisk === true,
           derivableFromInstall: false,
         }
@@ -650,8 +672,17 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
   const bindBody = captured ? (spec.capture === 'surface' ? native.decide : native.execute) : undefined
   const installFace = deps.installFace
   const bindInstall = installFace !== undefined && installFace !== null ? installFace.installBundle : undefined
-  const approvalGate = deps.hostApprovalGate
-  const bindGate = approvalGate !== undefined && approvalGate !== null ? approvalGate.requireApproval : undefined
+  /* The host escalation seams the row cannot reach itself (tools.ts:38-44):
+   *   approveEscalation — the EXPORTED adjudicator (sandbox package public
+   *     export; non-grant outcomes THROW);
+   *   sandboxPolicy      — ctx.sandboxPolicy.resolve(scope) at :39;
+   *   approver           — ctx.get('approval') at :42.
+   * Mounting all three is the precise integrator obligation; a missing
+   * mount FAILS CLOSED before any manager entry. */
+  const escalation = deps.hostEscalation
+  const bindEscalate = escalation !== undefined && escalation !== null ? escalation.approveEscalation : undefined
+  const controlledInstall = deps.controlledInstall
+  const bindControlled = controlledInstall !== undefined && controlledInstall !== null ? controlledInstall.installPrimaryRuntime : undefined
   const realmId = trusted.realmId
   const plans = new WeakMap()
 
@@ -778,14 +809,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
   }
 
-  const digestFile = (path) => {
-    try {
-      return `sha256:${sha256(readFileSync(path, 'utf8'))}`
-    } catch {
-      return null
-    }
-  }
-
   function commitWitness(plan, witness) {
     const entry = plans.get(plan)
     if (entry === undefined) {
@@ -844,8 +867,45 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
     }
     entry.state = 'DELEGATED'
 
-    /* L5 — plugin install: HOST GATE FIRST, then the manager async contract. */
+    /* L9 — dependency: FAIL CLOSED unless the exported controlled install/
+     * verify path is mounted; the arm refuses before any fs of its own and
+     * before native entry, and when mounted RUNS the real path (its manifest
+     * gate + validatePayloadEntries + rename-commit perform the verification
+     * — the row never self-hashes, never labels an executed copy BLOCKED). */
+    if (spec.recordIndex === 25) {
+      if (!isRecord(controlledInstall) || typeof controlledInstall.installPrimaryRuntime !== 'function') {
+        entry.state = 'REFUSED-ARM-CLOSED'
+        return classifyRefuse(CODES.DEPENDENCY_ARM_CLOSED, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the controlled install/verify path is not mounted (the EXPORTED installPrimaryRuntime — compatibleManifest gate + staging copy + validatePayloadEntries + rename-commit); the arm FAILS CLOSED: zero fs of the row, zero native entry, no executed copy to relabel afterwards`)
+      }
+      if (controlledInstall.installPrimaryRuntime !== bindControlled) {
+        entry.state = 'FAILED-UNKNOWN'
+        return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the mounted controlled path moved after bind; the stale plan is not re-run`)
+      }
+      const facts = plan.targetManifest.installFacts
+      const paths = await controlledInstall.installPrimaryRuntime(facts.sourceLocator, facts.rootLocator)
+      entry.state = 'CONTROLLED_RESOLVED'
+      entry.facts.controlledPaths = paths
+      return {
+        ok: true,
+        settled: 'CONTROLLED-INSTALL-RESOLVED',
+        value: paths,
+        verifiedBy: 'the mounted controlled path itself (compatibleManifest + validatePayloadEntries + rename-commit); the row reports its real return and hashes nothing of its own',
+      }
+    }
+
+    /* L5 — plugin install: THE REAL HOST GATE CHAIN (tools.ts:38-44) FIRST:
+     * sandboxPolicy.resolve scope → the EXPORTED approveEscalation
+     * adjudicator judges the request over the approval ingredients; every
+     * non-grant outcome THROWS (missing approver/agent, non-wider target,
+     * rejected/cancelled/unavailable) and is a refusal with ZERO manager
+     * entry. AFTER the await: signal re-check (throwIfAborted mirror @:44),
+     * then the CURRENT-facts re-verify, then — and only then — the manager. */
     if (spec.recordIndex === 52 && args.action === 'install_bundle') {
+      if (!isRecord(escalation) || typeof escalation.approveEscalation !== 'function'
+        || typeof escalation.sandboxPolicy?.resolve !== 'function') {
+        entry.state = 'REFUSED-NO-ESCALATION-PORT'
+        return classifyRefuse(CODES.HOST_APPROVAL_GATE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the Host gate chain (tools.ts:38-44: ctx.sandboxPolicy.resolve + the EXPORTED approveEscalation adjudicator over {approver: ctx.get('approval'), agent, callId, toolName, signal}) is a hard precondition of the install entry; the hostEscalation port is not mounted, so entering the manager would BYPASS the Host business gate — Team PA never stands in for it; zero manager entry happened`)
+      }
       if (!isRecord(installFace) || typeof installFace.installBundle !== 'function'
         || typeof installFace.cancelInstall !== 'function' || typeof installFace.waitForInstall !== 'function') {
         entry.state = 'REFUSED-NO-INSTALL-FACE'
@@ -855,32 +915,54 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         entry.state = 'FAILED-UNKNOWN'
         return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted manager face moved after bind; the stale plan is not re-run`)
       }
-      if (!isRecord(approvalGate) || typeof approvalGate.requireApproval !== 'function' || approvalGate.requireApproval !== bindGate) {
-        entry.state = 'REFUSED-NO-APPROVAL-GATE'
-        return classifyRefuse(CODES.HOST_APPROVAL_GATE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the ORIGINAL Host gate chain (approveEscalation over the approval channel, tools.ts:39-43 — the helper is package-internal, the gap is reported) MUST gate any manager entry; the hostApprovalGate port is not mounted, so entering the manager would BYPASS the Host business gate — Team PA never stands in for it; zero manager entry happened`)
+      if (escalation.approveEscalation !== bindEscalate) {
+        entry.state = 'FAILED-UNKNOWN'
+        return classifyRefuse(CODES.DEFINITION_DRIFT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted escalation adjudicator moved after bind; the stale plan is not re-run`)
       }
-      const gateRequest = {
+      const policyScope = isRecord(exec.agent) && typeof exec.agent.session === 'string' ? { session: exec.agent.session } : {}
+      let effectiveMode
+      try {
+        effectiveMode = escalation.sandboxPolicy.resolve(policyScope)?.mode
+      } catch (error) {
+        entry.state = 'REFUSED-NO-ESCALATION-PORT'
+        return classifyRefuse(CODES.HOST_APPROVAL_GATE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted sandboxPolicy failed to resolve the call's effective mode (${String(error)}); no manager entry`)
+      }
+      if (typeof effectiveMode !== 'string' || !SANDBOX_MODES.includes(effectiveMode)) {
+        entry.state = 'REFUSED-NO-ESCALATION-PORT'
+        return classifyRefuse(CODES.HOST_APPROVAL_GATE_ABSENT, `${spec.recordIndex}·B-PLUGIN·${providerId}: the mounted sandboxPolicy must answer one of the closed SandboxMode values (read-only|workspace-write|danger-full-access); got '${String(effectiveMode)}' — no manager entry`)
+      }
+      const escalationRequest = {
         requestedMode: 'danger-full-access',
+        effectiveMode,
         subject: 'plugin management operation',
         justification: `plugin_manager ${canonical(args)}. Profile changes persist across sessions; installed Host code runs outside the workspace sandbox.`,
-        action: 'install_bundle',
-        target: args.target,
-        toolName: 'plugin_manager',
+      }
+      const escalationApproval = {
+        approver: escalation.approver,
+        agent: exec.agent,
         callId: plan.callId,
-        ...(isRecord(exec.agent) ? { agent: exec.agent } : {}),
+        toolName: 'plugin_manager',
         ...(exec.signal !== undefined ? { signal: exec.signal } : {}),
       }
-      let approval
+      let grantedMode
       try {
-        approval = await approvalGate.requireApproval(gateRequest)
+        grantedMode = await escalation.approveEscalation(escalationRequest, escalationApproval)
       } catch (error) {
-        entry.state = 'FAILED-UNKNOWN'
-        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the Host approval gate errored (${String(error)}); an ungated manager entry is refused — zero manager entry happened`)
-      }
-      if (!isRecord(approval) || approval.decision !== 'approved') {
         entry.state = 'REFUSED-NO-HOST-APPROVAL'
-        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the Host approval gate answered '${isRecord(approval) ? String(approval.decision) : 'malformed'}'; without the Host approval the install never starts — zero manager entry happened`)
+        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the real escalation adjudicator did not grant (its own THROW passes through verbatim — missing approver/agent, non-wider target, rejected/cancelled/unavailable): ${String(error)} — zero manager entry happened`)
       }
+      if (grantedMode !== 'danger-full-access') {
+        entry.state = 'REFUSED-NO-HOST-APPROVAL'
+        return classifyRefuse(CODES.HOST_APPROVAL_NOT_GRANTED, `${spec.recordIndex}·B-PLUGIN·${providerId}: the adjudicator granted '${String(grantedMode)}', not 'danger-full-access' — zero manager entry happened`)
+      }
+      /* throwIfAborted mirror (tools.ts:44) AFTER the await, then the
+       * CURRENT-facts re-verify — and only then the manager. */
+      if (typeof exec.signal?.aborted === 'boolean' && exec.signal.aborted) {
+        entry.state = 'REFUSED-ABORTED-AFTER-GATE'
+        return classifyRefuse(CODES.ABORTED_AFTER_GATE, `${spec.recordIndex}·B-PLUGIN·${providerId}: the signal aborted DURING the awaited gate (the throwIfAborted mirror at tools.ts:44); the granted escalation is consumed by nothing — zero manager entry happened`)
+      }
+      const postGateStale = reVerifyAtEdge(plan)
+      if (postGateStale !== null) return postGateStale
       const requestId = `g1-install-${randomUUID()}`
       const options = {
         requestId,
@@ -891,7 +973,7 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       entry.state = 'INSTALL_PENDING'
       entry.facts.requestId = requestId
       entry.facts.boundTo = { owner: trusted.owner, correlation: plan.correlation, callId: plan.callId }
-      entry.facts.gateReceipt = { decision: 'approved', subject: gateRequest.subject, requestedMode: gateRequest.requestedMode, callId: plan.callId }
+      entry.facts.gateReceipt = { grantedMode, effectiveMode, subject: escalationRequest.subject, callId: plan.callId }
       const pending = installFace.installBundle(args.target, options)
       /* Settle is OBSERVED BY THE LISTENER below — the row never reads a
        * return value it fabricated; wait() only reports what this listener
@@ -964,30 +1046,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
       }
     }
 
-    /* L9 — dependency: the flow's REAL pre-flight reads at the edge (the
-     * compatibleManifest gate is the flow's own first read; entering the
-     * body past a source that cannot even be read would fake the envelope).
-     * The staged PAYLOAD BODY exists only inside the controlled install
-     * path: the row does NOT stage or hash anything and reports payload
-     * verification as the NAMED BLOCKER. */
-    let depPre = null
-    if (spec.recordIndex === 25) {
-      const facts = plan.targetManifest.installFacts
-      try {
-        const sourceEntries = readdirSync(facts.sourceLocator)
-        const sourceManifestDigest = digestFile(join(facts.sourceLocator, 'runtime.json'))
-        if (sourceManifestDigest === null) {
-          entry.state = 'REFUSED-SOURCE-INVALID'
-          return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the source payload has no readable runtime.json — the compatibleManifest gate cannot run; the native flow was NOT entered`)
-        }
-        const oldManifestDigest = digestFile(join(facts.rootLocator, 'runtime.json'))
-        depPre = { sourceEntries, sourceManifestDigest, oldManifestDigest }
-      } catch (error) {
-        entry.state = 'REFUSED-SOURCE-INVALID'
-        return classifyRefuse(CODES.DEPENDENCY_SOURCE_INVALID, `${spec.recordIndex}·B-DEPENDENCY·${providerId}: the real pre-entry reads failed (${String(error)}); nothing was claimed and the native flow was NOT entered`)
-      }
-    }
-
     let value
     try {
       value = await bindBody.call(native, args, exec)
@@ -1010,21 +1068,6 @@ export function mountG1SurfaceAdapter(recordName, deps = {}) {
         commitLaw: turn === null
           ? 'the native result carried no integer turn — the commit cannot be witnessed; treat as FAILED-UNKNOWN'
           : `the SAME-EXEC session append (deliverables/presented) carrying callId '${plan.callId}' and the native result's own turn '${String(turn)}' is the commit witness; the resolving promise alone is NOT`,
-      }
-    }
-
-    if (spec.recordIndex === 25) {
-      return {
-        ok: true,
-        settled: 'PAYLOAD-VERIFICATION-BLOCKED',
-        completionImplied: false,
-        value,
-        edgeFacts: {
-          sourceEntries: depPre.sourceEntries,
-          sourceManifestDigest: depPre.sourceManifestDigest,
-          oldManifestDigest: depPre.oldManifestDigest,
-        },
-        blocker: 'not wired to the controlledFS real install/payload verify: the staged payload body exists only inside installPrimaryRuntime, so the row reports the REAL pre-flight reads and never claims PAYLOAD-VERIFIED',
       }
     }
 
