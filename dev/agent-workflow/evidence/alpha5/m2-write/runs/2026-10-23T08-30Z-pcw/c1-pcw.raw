@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5m2-post-consume-write-c1.test.ts (13 tests) 35ms
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  08:29:21
+   Duration  569ms (transform 310ms, setup 0ms, import 385ms, tests 35ms, environment 0ms)
+
+RUNNER_EXIT=0
