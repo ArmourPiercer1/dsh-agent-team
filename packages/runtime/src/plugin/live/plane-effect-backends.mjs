@@ -1115,6 +1115,12 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
   // ONLY in `readTokenLedger` above (and nothing here stores a callId/name
   // as authority).
   const paHandoffs = new Map()
+  // A5-M2 ④: an OPEN leg that is still awaiting its walk is owned by THAT leg
+  // (a placeholder, so `close`/teardown can void a pending A too), and the row
+  // knows whether its mount is still alive — a grant that lands after the
+  // mount is gone is dropped, never registered.
+  let rowMounted = true
+  let paOpenSeq = 0
   const readSignalForSettled = (token) => (typeof token === 'symbol'
     ? { aborted: true, reason: 'exec-token-terminal', addEventListener: (_t, _l) => {}, removeEventListener: (_t, _l) => {} }
     : (() => {
@@ -1130,13 +1136,29 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
     // hand-off path); 'open' is the pre-execute Part-A leg, which returns at
     // the PA edge and must NOT terminalise the token (its body redeems it).
     let holdOpen = false
+    let takenCallId
     try {
     // resolve THIS execution's identity: real token → ledger correlation
     const token = corr?.token
     const tokenKey = (typeof token === 'object' && token !== null) || typeof token === 'symbol' ? token : undefined
     let handoffClaim
+    let reuseAuthorized
     if (tokenKey !== undefined) {
       const prior = readTokenLedger.get(tokenKey)
+      if (mode === 'open' && prior !== undefined && prior.settled) {
+        // A TERMINAL token is never re-armed: no new correlation, no new walk,
+        // no revival of a hand-off this execution already ended.
+        return { kind: 'refused', code: 'PA_HANDOFF_TERMINAL', detail: 'this execution token is already terminal, so no PA hand-off may be opened on it again' }
+      }
+      if (mode === 'open' && prior !== undefined && prior.handedOff === true) {
+        const held = paHandoffs.get(tokenKey)
+        if (held !== undefined && held.pending !== true) {
+          // single flight: the approved answer for this token IS reused, and
+          // NOTHING is minted or walked a second time.
+          return { kind: 'authorized', correlation: prior.correlation, reused: true }
+        }
+        return { kind: 'refused', code: 'PA_HANDOFF_IN_FLIGHT', detail: 'a PA hand-off is already being opened for this execution token; the in-flight state is never re-minted' }
+      }
       if (prior !== undefined && !prior.settled && prior.handedOff !== true) {
         return refused('admission', 'exec-token-replay', 'this host execution already owns an in-flight governed read')
       }
@@ -1238,8 +1260,29 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         if (typeof pa.open !== 'function') {
           return { kind: 'refused', code: 'PA_HANDOFF_UNAVAILABLE', detail: 'this plane mounts no PA admission-open entry, so no pre-dispatch hand-off can be opened' }
         }
+        paOpenSeq += 1
+        const mySeq = paOpenSeq
+        if (tokenKey !== undefined) paHandoffs.set(tokenKey, Object.freeze({ pending: true, seq: mySeq }))
         gate = await pa.open(paCall)
+        // ④ AFTER the await the world is re-checked, not assumed: the mount
+        // must still be this row's mount, and this leg must still own the
+        // placeholder (a close/teardown in between voided the leg — its grant,
+        // if one landed, is dropped and NOTHING is registered).
+        if (tokenKey !== undefined) {
+          const held = paHandoffs.get(tokenKey)
+          if (!rowMounted) {
+            readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation ?? 'unknown', settled: true })
+            observe('governed-read pa-handoff dropped — mount torn down during the walk')
+            return { kind: 'refused', code: 'PA_HANDOFF_MOUNT_GONE', detail: 'the mount was torn down while PA was being asked; the answer is dropped and nothing is authorized' }
+          }
+          if (held === undefined || held.seq !== mySeq) {
+            readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation ?? 'unknown', settled: true })
+            observe('governed-read pa-handoff dropped — the leg was closed while PA was being asked')
+            return { kind: 'refused', code: 'PA_HANDOFF_CLOSED', detail: 'this hand-off leg was closed while PA was being asked; the answer is dropped and nothing is authorized' }
+          }
+        }
       } else if (handoffClaim !== undefined) {
+        takenCallId = handoffClaim.callId
         if (typeof pa.edge !== 'function') {
           return refused('admission', 'PA_HANDOFF_UNAVAILABLE', 'this plane mounts no PA execution-edge entry, so a handed-off grant is never spent through the admission call')
         }
@@ -1249,7 +1292,14 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
           // edge; this compares the identity of the call itself.
           return refused('admission', 'PA_HANDOFF_MISMATCH', 'the redemption does not ask the question the pre-dispatch PA walk was approved for; nothing runs')
         }
-        gate = await pa.edge({ ...paCall, grant: handoffClaim.grant, paDurableMint: handoffClaim.paDurableMint, request: handoffClaim.request })
+        gate = await pa.edge({
+          ...paCall,
+          grant: handoffClaim.grant,
+          paDurableMint: handoffClaim.paDurableMint,
+          request: handoffClaim.request,
+          placementName: handoffClaim.placementName,
+          paConstructionBinding: handoffClaim.paConstructionBinding,
+        })
       } else {
         gate = await pa(paCall)
       }
@@ -1266,6 +1316,11 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
             grant: gate.grant,
             paDurableMint: gate.paDurableMint,
             request: gate.request,
+            // Part A's private construction state, carried EXPLICITLY to the
+            // edge (no free identifiers across the split, no relaxed facts
+            // check: the edge re-reads fresh and DRIFTS against this tuple).
+            placementName: gate.placementName,
+            paConstructionBinding: gate.paConstructionBinding,
           }))
           readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation, settled: false, handedOff: true })
           holdOpen = true
@@ -1396,6 +1451,13 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       // is not an execution and must not terminalise the token. (Guarded
       // rather than `return`ed: a `return` in a finally would swallow the
       // leg's own answer.)
+      if (takenCallId !== undefined) {
+        // ② the redemption leg closes with its OWN handle (the flight is gone
+        // the moment it is taken, so the correlation is the handle): whatever
+        // the outcome, this call's plan fact and in-flight state end here.
+        const closeFn = typeof pa === 'function' ? pa.closePlan : undefined
+        if (typeof closeFn === 'function') closeFn(takenCallId)
+      }
       if (!holdOpen && (typeof corr?.token === 'object' && corr.token !== null || typeof corr?.token === 'symbol')) {
         const prior = readTokenLedger.get(corr.token)
         if (prior !== undefined && !prior.settled) readTokenLedger.set(corr.token, { correlation: prior.correlation, settled: true })
@@ -1423,6 +1485,7 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
   }
   /** Mount teardown: no hand-off survives its mount, claimed or not. */
   executor.paHandoffCloseAll = () => {
+    rowMounted = false
     const open = []
     for (const token of paHandoffs.keys()) open.push(token)
     for (const token of open) executor.paHandoffClose(token)

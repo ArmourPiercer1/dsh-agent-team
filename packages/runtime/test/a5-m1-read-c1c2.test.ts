@@ -349,3 +349,112 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
     for (const askedRow of asked) expect(askedRow.bindingId).toBeUndefined()
   })
 })
+
+// ===========================================================================
+// A5-M2 PA-READ HAND-OFF on the REAL chain: production Part A (the pre-execute
+// hand-off the plane opens) and production Part B (the execution edge the body
+// redeems). No stub stands between them: the same assembly, the same call-level
+// facts entry, the same fresh-recheck/drift law, the same one-shot consume.
+// ===========================================================================
+describe('a5-m1-read-c1c2 — A5-M2 hand-off through the production A/B pair', () => {
+  type HandoffFace = {
+    open: (exec: object) => Promise<{ kind: string; correlation?: string; code?: string; detail?: string }>
+    close: (exec: object) => void
+  }
+  const factsWorld = (planeValue: { governance: { policyDocument: () => unknown; denySources: () => unknown } }) => ({
+    ceiling: { teamHardEnvelope: { rules: [] }, permissionMutationEnvelope: { status: 'absent' } },
+    policyDocument: planeValue.governance.policyDocument(),
+    denySources: planeValue.governance.denySources(),
+    effects: undefined,
+    member: { teamSessionId: 'a5m1-test-team-root', instanceId: 'a5m1-instance' },
+    beneficiaryAuthority: 'member',
+    binding: {
+      bindingId: `team-own:${ROOT_SCOPE}:read`,
+      agentScopeKey: ROOT_SCOPE,
+      toolName: 'read',
+      definitionIdentity: 'sha256:placed-definition',
+      providerId: 'dsh-agent-team',
+      implementationOrigin: 'team-trusted-extension',
+      executionBoundary: 'trusted-host',
+      assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
+      policyGeneration: 0,
+      authorityGeneration: 0,
+      revision: 1,
+      status: 'ACTIVE',
+    },
+    blueprint: { revision: '1', contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
+    authorityGeneration: 0,
+  })
+  const handoffMount = () => {
+    const asked: Array<Record<string, unknown>> = []
+    const built = mount(POLICY_ALLOW, {
+      readCallFacts: async (input: Record<string, unknown>) => {
+        asked.push(input)
+        // the world is answered PER CALL, exactly as the entry does: the realm
+        // of the asked call rides the answer.
+        // The entry answers the CALL: its realm AND the effect set it was asked
+        // about (the edge re-evaluates the CURRENT policy over exactly that set).
+        return { kind: 'no-approval-question', facts: { ...factsWorld(planeValue), realmId: input.realmId, effects: input.requestedEffects } }
+      },
+    })
+    if (!built.ok) throw new Error(`mount refused: ${JSON.stringify(built)}`)
+    const planeValue = built.value as unknown as {
+      governance: { policyDocument: () => unknown; denySources: () => unknown }
+      definitions: Array<{ name: string; execute: (raw: unknown, exec?: unknown) => Promise<unknown> }>
+      paReadHandoff?: HandoffFace
+      livePaPlan: Map<string, unknown>
+    }
+    const read = planeValue.definitions.find((d) => d.name === 'read')
+    if (!read || !planeValue.paReadHandoff) throw new Error('no read row / no hand-off face on this mount')
+    return { plane: planeValue, read, handoff: planeValue.paReadHandoff, asked }
+  }
+
+  it('M1 production A→B: the open leg authorizes on the REAL walk, the body redeems through the REAL edge and the bytes arrive', async () => {
+    const { plane, read, handoff, asked } = handoffMount()
+    const file = join(ROOT_DIR, 'target.txt')
+    const token = Symbol('a5m2-handoff-m1')
+    const execLike = { name: 'read', token, arguments: { file_path: file } }
+    const opened = await handoff.open(execLike)
+    expect(opened.kind, JSON.stringify(opened)).toBe('authorized')
+    expect(typeof opened.correlation, 'the row mints the correlation').toBe('string')
+    // This world answers ALL-ALLOW, so Part A opens no approval plan (the ask
+    // lane is the one that carries a plan fact into the redemption); what Part
+    // A did do is read this call's level facts.
+    expect(plane.livePaPlan.size, 'an all-allow answer creates no plan fact').toBe(0)
+    const askedAfterOpen = asked.length
+    expect(askedAfterOpen, 'Part A read the call-level facts for THIS call').toBeGreaterThanOrEqual(1)
+    const body = await read.execute({ file_path: file }, execLike)
+    expect(joined(body as ReadOk), 'the redemption runs the real execution edge and reads').toContain('alpha5-m1-read-line-1')
+    expect(asked.length, 'Part B re-read the facts FRESH — the edge never trusts Part A\'s read').toBeGreaterThan(askedAfterOpen)
+    expect(plane.livePaPlan.size, 'the redemption is the end of this call\'s plan fact').toBe(0)
+  })
+
+  it('M2 close before the body: the plan fact and the flight both die, and the late body delivers ZERO bytes', async () => {
+    const { plane, read, handoff } = handoffMount()
+    const file = join(ROOT_DIR, 'target.txt')
+    const token = Symbol('a5m2-handoff-m2')
+    const execLike = { name: 'read', token, arguments: { file_path: file } }
+    const opened = await handoff.open(execLike)
+    expect(opened.kind).toBe('authorized')
+    handoff.close(execLike)
+    expect(plane.livePaPlan.size, 'the close drops the plan fact of the call that never arrived').toBe(0)
+    const late = await read.execute({ file_path: file }, execLike)
+    const text = String((late as { content?: Array<{ text?: string }> }).content?.[0]?.text ?? '')
+    expect(text + JSON.stringify(late), 'a terminal token answers cancelled — never the bytes, never a re-walk').not.toContain('alpha5-m1-read-line-1')
+    expect(text, 'the honest word is cancellation').toContain('cancelled')
+  })
+
+  it('M3 a second open on the same token reuses the ORIGINAL state — nothing is re-minted, nothing is re-walked', async () => {
+    const { handoff, asked } = handoffMount()
+    const file = join(ROOT_DIR, 'target.txt')
+    const token = Symbol('a5m2-handoff-m3')
+    const execLike = { name: 'read', token, arguments: { file_path: file } }
+    const first = await handoff.open(execLike)
+    expect(first.kind).toBe('authorized')
+    const askedAfterFirst = asked.length
+    const second = await handoff.open(execLike)
+    expect(second.kind, 'the duplicate is still an authorization, not a refusal').toBe('authorized')
+    expect(second.correlation, 'the SAME correlation, never a second one').toBe(first.correlation)
+    expect(asked.length, 'the duplicate asked the facts entry ZERO extra times').toBe(askedAfterFirst)
+  })
+})

@@ -1215,10 +1215,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // Part A is complete: a grant exists and (on the ask lane) a real Control
     // guard consumed the approval that minted it. Nothing past this line runs
     // on a pre-execute leg — the hand-off stops here with the grant in hand.
-    return { ok: true, grant, paDurableMint, request }
+    return { ok: true, grant, paDurableMint, request, placementName, paConstructionBinding }
   }
 
-  const paAdmitEdge = async ({ grant, paDurableMint, request, realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
+  const paAdmitEdge = async ({ grant, paDurableMint, request, placementName, paConstructionBinding, realmId: callRealm, callId, parametersFingerprint, requestedEffects, toolName, signal }) => {
     // THE execution edge (one-shot): fresh clock/generation recheck, consume,
     // optional lease. Every failure below is zero-body by construction.
     if (signal?.aborted === true) {
@@ -1428,21 +1428,56 @@ export function createTeamToolPlaneAssembly(input = {}) {
       grant: opened.grant,
       paDurableMint: opened.paDurableMint,
       request: opened.request,
+      placementName: opened.placementName,
+      paConstructionBinding: opened.paConstructionBinding,
     })
   }
   // A5-M2 lifecycle halves of the SAME walk, for the governed-read row's
   // pre-dispatch hand-off (the row owns the token→correlation law and the
   // one-shot flight; the plane owns the walk). A caller that does not use
   // them keeps `paAdmit` above, unchanged.
+  // The same toolName normalization `paAdmit` itself applies — the hand-off
+  // entries are the SAME walk, never a second vocabulary for the call.
+  const paHandoffToolName = (requestedEffects) => requestedEffects?.effects?.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown'
   paAdmit.open = async (input) => {
-    const opened = await paAdmitPartA(input)
-    if (opened.ok !== true) return opened
+    const opened = await paAdmitPartA({ ...input, toolName: input.toolName ?? paHandoffToolName(input.requestedEffects) })
+    if (opened.ok !== true) {
+      // A leg that never handed off ends here: its plan fact dies with it,
+      // exactly as `paAdmit`'s own finally ends the plan fact of a completed
+      // call. An APPROVED leg must keep it — the execution edge re-reads it.
+      livePaPlan.delete(String(input.callId))
+      return opened
+    }
     // 'approved' says ONLY: the full PA effect-set question was answered and a
     // real Control guard consumed the Ask. It is NOT a consumption — the grant
     // is unspent and the body still owes the whole execution edge.
-    return { kind: 'approved', grant: opened.grant, paDurableMint: opened.paDurableMint, request: opened.request }
+    return {
+      kind: 'approved',
+      grant: opened.grant,
+      paDurableMint: opened.paDurableMint,
+      request: opened.request,
+      placementName: opened.placementName,
+      paConstructionBinding: opened.paConstructionBinding,
+    }
   }
-  paAdmit.edge = (state) => paAdmitEdge(state)
+  // ② the redemption leg's own close handle: the row holds the correlation
+  // after it takes the flight, and ends this call's plan fact from its own
+  // finally (idempotent with the wrapper above).
+  paAdmit.closePlan = (callId) => { livePaPlan.delete(String(callId)) }
+  paAdmit.edge = async (state) => {
+    try {
+      return await paAdmitEdge({
+        ...state,
+        toolName: state.toolName ?? paHandoffToolName(state.requestedEffects),
+        placementName: state.placementName,
+        paConstructionBinding: state.paConstructionBinding,
+      })
+    } finally {
+      // the redemption is the end of this call's plan fact (the same law
+      // `paAdmit`'s finally carries for the un-split path)
+      livePaPlan.delete(String(state.callId))
+    }
+  }
 
   // Gate 2: the C-FS production provider (pa §1.2/§4). ABSENT fsInstance
   // (no governed file root declared by the row) = no provider — the search
@@ -1779,7 +1814,10 @@ export function createTeamToolPlaneAssembly(input = {}) {
           if (exec.name !== readName) return { kind: 'no-match' }
           const token = exec.token
           if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) {
-            return { kind: 'no-match' }
+            // The name IS this mount's governed read, so the effect-set question
+            // belongs to PA: with no execution identity the call REFUSES, it
+            // never falls back to the pre-hand-off lane.
+            return { kind: 'refused', code: 'PA_HANDOFF_UNBOUND', detail: 'this governed read carries no execution token, so no PA hand-off can be opened or redeemed for it' }
           }
           return await readExecutor.paHandoffOpen(exec.arguments, {
             token,
