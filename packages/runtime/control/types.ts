@@ -1194,8 +1194,10 @@ export type PaFamilyTargetFieldKind =
    *   grammar-legal. The G6 disclosure law (disclosures always carries
    *   SESSION_HISTORY_RESOURCE_KIND - g6-session-query.mjs:799-800/:853) is
    *   the family contract enforced MINT-side; this kind neither weakens nor
-   *   enforces it. Implemented with Array.isArray + element typeof ONLY: no
-   *   instanceof, no symbol-trusting path. */
+   *   enforces it. Implemented with Array.isArray + element typeof ONLY,
+   *   walked by the TRUSTED intrinsic Array.prototype.every (root 5d83: an
+   *   own/subclass `every` override cannot be dispatched through): no
+   *   instanceof, no symbol-trusting path, lossless walk untouched. */
   | 'nullableString' | 'stringArray'
 
 export interface PaFamilyTargetRule {
@@ -1426,9 +1428,14 @@ function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): b
       if (!Array.isArray(value) || value.length === 0) return false
       return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item))
     }
-    /* Root 18:42 - the whole new admission surface, two cases, no more: */
+    /* Root 18:42 - the whole new admission surface, two cases, no more.
+     * Root 5d83 residual closure: the stringArray walk runs the TRUSTED
+     * intrinsic (Array.prototype.every.call over canonical indices) - a real
+     * array's OWN or subclass `every` override ([1] + every:()=>true) can no
+     * longer be dispatched through. Only Array.isArray + the intrinsic index
+     * walk + element typeof; the lossless walk is untouched. */
     case 'nullableString': return value === null || typeof value === 'string'
-    case 'stringArray': return Array.isArray(value) && value.every((item) => typeof item === 'string')
+    case 'stringArray': return Array.isArray(value) && Array.prototype.every.call(value, (item: unknown) => typeof item === 'string')
   }
 }
 
