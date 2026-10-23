@@ -1,0 +1,15 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime/test/a5m2-r17-drift-repro-c1.test.ts
+  559:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  643:5   warning  Unused eslint-disable directive (no problems were reported from 'no-console')
+  662:28  error    'root' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+
+✖ 3 problems (1 error, 2 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

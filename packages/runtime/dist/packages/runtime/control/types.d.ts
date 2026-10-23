@@ -943,7 +943,7 @@ export declare function parsePaManifestFamilyBlock(v: Record<string, unknown>): 
  * to a family's plan means adding it here in the same change - and the closed key set
  * makes a silent extra field fail instead of ride along unvalidated.
  */
-export type PaFamilyTargetFieldKind = 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations';
+export type PaFamilyTargetFieldKind = 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations' | 'nullableString' | 'stringArray';
 export interface PaFamilyTargetRule {
     /** The exact required key set of this family's typed plan target. */
     readonly required: Readonly<Record<string, PaFamilyTargetFieldKind>>;
@@ -955,12 +955,50 @@ export interface PaFamilyTargetRule {
      * execution edge, which checks the effectful result against the approved target.
      */
     readonly currentFields: readonly string[];
+    /**
+     * DISCRIMINATED TARGET (root 17:40 ruling, INSPECT only - the ONE entry that
+     * uses it): claims share `required` and differ by exactly ONE closed variant
+     * group, selected by the value of `leaf` (itself a required 'string' leaf,
+     * minted by the lane from classify-time truth - never model text). The law is
+     * the SAME closed law: `required` ∪ the selected group's leaves is the EXACT
+     * key set (anything else denies); every group leaf is typed by the EXISTING
+     * kinds; `binds` pins a leaf to ONE exact literal (full-value binding - a
+     * paired leaf can never be an arbitrary string). The variant value is looked
+     * up by OWN KEY only - 'toString'/'constructor'/'__proto__'/unknown select
+     * nothing and deny; no fallback, no coercion. No nesting, no optionality, no
+     * new kind: the group map and the bindings are static table data checked by
+     * the existing scalar law (module-load guard below).
+     */
+    readonly variant?: Readonly<{
+        readonly leaf: string;
+        readonly by: Readonly<Record<string, Readonly<{
+            readonly adds: Readonly<Record<string, PaFamilyTargetFieldKind>>;
+            readonly binds: Readonly<Record<string, string | number | boolean>>;
+        }>>>;
+    }>;
 }
 export declare const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>>;
+export declare const PA_FAMILY_TARGET_FIELD_KINDS: readonly PaFamilyTargetFieldKind[];
+/** One table entry's legality, checked AT MODULE LOAD for every real entry —
+ *  exported ONLY so the fixed-point contract spec can drive SYNTHETIC rules
+ *  through this exact law (no synthetic family is ever added to the real
+ *  table). Throws on: any required/adds leaf whose kind is outside the closed
+ *  list (root 18:37: the two NEW kinds are legal ONLY inside the closed
+ *  required/adds maps — own-key iteration (Object.entries) sees exactly the
+ *  surface the validator reads, no widening); a variant whose discriminant is
+ *  not a required 'string' leaf (a 'nullableString' can never be one); an
+ *  empty group map; a group redeclaring a required leaf; a bound value
+ *  violating its own kind. Same own-key law, zero cost for plain rules. */
+export declare function assertPaFamilyTargetRuleLegality(familyId: string, rule: PaFamilyTargetRule): void;
 /** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
  *  missing field, wrong field type, extra key - each returns the offending field so the
  *  refusal names what the family's own typed plan asked for. Zero effect, zero I/O. */
 export declare function validatePaFamilyTarget(familyId: string, target: unknown): string | undefined;
+/** The pure law of ONE table entry, split from the registry lookup only so the
+ *  fixed-point contract spec can drive SYNTHETIC rules through this exact code
+ *  (the real table stays closed: unknown families deny above). Production
+ *  validation always enters through validatePaFamilyTarget. */
+export declare function validatePaFamilyTargetAgainstRule(familyId: string, rule: PaFamilyTargetRule, target: unknown): string | undefined;
 /** The guard's current-target comparison: the approved target's pure-data fields
  *  restated by THIS call's trusted facts must still hold. Facts never come from the
  *  approved manifest (that would be the row quoting itself); fields outside the

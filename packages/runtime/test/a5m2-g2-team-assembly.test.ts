@@ -1,7 +1,10 @@
 /**
- * A5M2-G2-TEAM-ASSEMBLY (revision 2, lifecycle round per the assembly review
- * of 6f9aec9782) — the two Team assembly ports proven on the REAL pinned
- * public entries at Host 639ed01539:
+ * A5M2-G2-TEAM-ASSEMBLY (revision 4; rev2 = lifecycle round per the assembly
+ * review of 6f9aec9782, rev3 = root 4afa MCP residuals — persistent retained
+ * ownership, close keeps ownership on failure, SYNCHRONOUS admission cutoff —
+ * rev4 = root 6875: generation ownership carries the REAL transport + close
+ * handle; failed cleanup really touches that owned handle) — the two Team
+ * assembly ports proven on the REAL pinned public entries at Host 639ed01539:
  *
  *  BROWSER port: the REAL public modules are LOADED by these legs
  *  (browser-use-stagehand-native src/launch.ts + src/worker-client.ts via the
@@ -89,7 +92,7 @@ const ASM = (await import(new URL('../src/plugin/live/governed-families/g2-team-
   createG2TeamBrowserPort: (d: Record<string, unknown>) => BrowserPort
   createG2TeamMcpPort: (d: Record<string, unknown>) => McpPort
 }
-interface McpStats { server: string, generation: string | null, connected: boolean, disposed: boolean, inflight: number, transportsBuilt: number, transportsClosed: number, transportsCloseFailed: number, pendingGenerations: number, retainedRotations: number, scopeBound: boolean, dispatch: { dispatchCount: number, driftRejects: number }, lastDispatch: Record<string, unknown> | null }
+interface McpStats { server: string, generation: string | null, connected: boolean, disposed: boolean, inflight: number, transportsBuilt: number, transportsClosed: number, transportsCloseFailed: number, pendingGenerations: number, retainedGenerations: number, scopeBound: boolean, dispatch: { dispatchCount: number, driftRejects: number }, lastDispatch: Record<string, unknown> | null }
 interface McpPort {
   request: (req: unknown, exec?: unknown) => Promise<Record<string, unknown>>
   provider: { request: (r: unknown, e: unknown) => Promise<unknown> }
@@ -379,6 +382,45 @@ describe('a5m2-g2-assembly MCP port', () => {
     expect(port.captureConnection()['client']).toBe(first)
     expect(Object.keys(await port.request({ method: 'resources/list' }, EXEC)).length).toBeGreaterThan(0) // and it still serves
     expect(brokenCloseAttempted).toBe(true) // the half-open generation got its real close
+    expect(port.stats().retainedGenerations).toBe(0) // a SUCCESSFUL rollback retains nothing
+    // …and a rollback that ALSO fails keeps the half-open reference PERSISTENTLY owned (real reference, not an error string)
+    let broken2Closes = 0
+    const broken2 = { start: async () => { throw new Error('wire down twice') }, send: async () => {}, close: async () => { broken2Closes += 1; throw new Error('refusing rollback close') } }
+    let useBroken2 = false
+    const port2 = ASM.createG2TeamMcpPort({
+      declaredSurfaceConfig: surface,
+      resourceServerName: 'team-g2-remote',
+      entries: { Client: sdk.Client },
+      makeTransport: () => { if (useBroken2) { useBroken2 = false; return broken2 } return pair1.a },
+      toolCallTimeoutMs: TIMEOUT,
+    })
+    await port2.reconnect() // gen-1 live
+    useBroken2 = true
+    const rbErr = await asyncError(() => port2.reconnect())
+    expect(rbErr.code).toBe(AC.CONNECT_FAILED)
+    expect(rbErr.message).toMatch(/RETAINED/) // the refusal states the truth: real ownership was taken
+    expect(port2.stats()).toMatchObject({ connected: true, generation: 'gen-1', pendingGenerations: 0, retainedGenerations: 1 }) // the half-open lives on in stats as a REAL retained reference
+    const rbClose = await asyncError(() => port2.close())
+    expect(rbClose.message).toMatch(/retained-connect-rollback-close/) // the owned failure re-surfaces at close…
+    expect(rbClose.message).toMatch(/refusing rollback close/) // …with its underlying reason
+    // REAL reach order (root 17:0x ruling: assert the REAL sequence, hide no
+    // resource): THREE legitimate reaches on the retained close handle -
+    //   1) the SDK's own cleanup on the failed-connect path (client.close ->
+    //      transport.close exactly once there; later client.close() no-ops),
+    //   2) the PORT'S OWNED connect-rollback settle reaching the retained
+    //      transport handle directly (keeping the Client alone would NOT keep
+    //      the unclosed transport closed), and
+    //   3) the NEXT close() RE-ATTEMPT of the retained entry (scope-close
+    //      settle) - an intentional owned re-reach, not a leak: the very next
+    //      close below proves the re-attempt is bounded (cached, zero touch).
+    expect(broken2Closes).toBe(3)
+    // the re-attempt is BOUNDED: a further close() returns the CACHED
+    // rejection and touches the handle ZERO further times (no hidden retry,
+    // no unbounded loop, ownership still real):
+    const rbClose2 = await asyncError(() => port2.close())
+    expect(rbClose2.message).toMatch(/retained-connect-rollback-close/)
+    expect(broken2Closes).toBe(3)
+    expect(port2.stats()).toMatchObject({ disposed: true, connected: false, retainedGenerations: 1 }) // a failed close keeps REAL ownership (never dropped for an error string)
   }, 30000)
 
   it('concurrent reconnects are SERIALIZED on the chain: both settle, exactly one rotation happens, the rotated-out generation closes, no client is overwritten-and-leaked', async () => {
@@ -417,12 +459,12 @@ describe('a5m2-g2-assembly MCP port', () => {
     await port.reconnect() // gen-1 on pair1 (its close is poisoned)
     const rotErr = await asyncError(() => port.reconnect()) // rotation to gen-2: gen-1 close FAILS
     expect(rotErr.message).toMatch(/CLOSE_FAILED/)
-    expect(port.stats()).toMatchObject({ generation: 'gen-2', connected: true, retainedRotations: 1, transportsClosed: 0, transportsCloseFailed: 1 }) // new gen live; old RETAINED; nothing counted closed that isn't
+    expect(port.stats()).toMatchObject({ generation: 'gen-2', connected: true, retainedGenerations: 1, transportsClosed: 0, transportsCloseFailed: 1 }) // new gen live; old RETAINED; nothing counted closed that isn't
     await port.request({ method: 'resources/list' }, EXEC) // the live generation still serves
     const closeErr = await asyncError(() => port.close())
     expect(closeErr.message).toMatch(/retained-rotated-generation-close/) // owned failure re-surfaced at close, with the retained label
     expect(closeErr.message).toMatch(/refuses to die/) // and the underlying reason
-    expect(port.stats()).toMatchObject({ disposed: true, connected: false, retainedRotations: 0 }) // re-attempted at close; the account is told the truth either way
+    expect(port.stats()).toMatchObject({ disposed: true, connected: false, retainedGenerations: 1 }) // re-attempted at close and STILL OWNED — ownership reduced only on real close success, never dropped on failure
   }, 30000)
 
   it('close COUNTS a pending connect: close joins the serial chain, the connecting generation settles (never truncated mid-handshake) and is then really closed — nothing survives the scope', async () => {
@@ -437,16 +479,23 @@ describe('a5m2-g2-assembly MCP port', () => {
       toolCallTimeoutMs: TIMEOUT,
     })
     await port.reconnect() // gen-1
+    let disposedFaces = 0
+    port.register({ register: () => () => { disposedFaces += 1 } })
     const rotating = port.reconnect() // gen-2 connect PENDING (handshake unanswered)
     await Promise.resolve()
     const closing = port.close() // close must WAIT for the pending connect (counts it), then close it for real
-    expect(await settled(closing)).toBe(false) // NOT settled while the connect is mid-handshake
-    expect(port.stats().pendingGenerations).toBe(1) // the connecting generation IS tracked
-    pair2.peer.release() // the handshake completes
-    await rotating
-    await closing
-    expect(port.stats()).toMatchObject({ disposed: true, connected: false, pendingGenerations: 0, transportsClosed: 2 }) // BOTH generations really closed — the connecting one included
+    // …but the ADMISSION CUTOFF is immediate AT ENTRY — it does not wait on the pending connect
+    expect(port.stats().disposed).toBe(true) // requests/registrations/captures refuse from THIS tick
     expect(() => port.captureConnection()).toThrow(/CAPTURE_INCOMPLETE/)
+    expect(disposedFaces).toBe(1) // the bound scope face is unregistered SYNCHRONOUSLY at close entry
+    expect((await asyncError(() => port.request({ method: 'resources/list' }, EXEC))).code).toBe(AC.SCOPE_CLOSED) // nothing is admitted mid-teardown
+    expect(await settled(closing)).toBe(false) // yet the teardown itself is NOT done — the connect is mid-handshake
+    expect(port.stats().pendingGenerations).toBe(1) // the connecting generation IS tracked (close counts it)
+    pair2.peer.release() // the handshake completes
+    await expect(rotating).rejects.toThrow(/P_G2_ASM_SCOPE_CLOSED/) // the connecting generation sees the closed scope and is really closed, not published
+    await closing
+    expect(port.stats()).toMatchObject({ disposed: true, connected: false, pendingGenerations: 0, retainedGenerations: 0, transportsClosed: 2 }) // BOTH generations really closed — the connecting one included
+    expect(disposedFaces).toBe(1) // and the face was unregistered exactly once
   }, 30000)
 
   it('scope isolation is the FACE BINDING, not the server name: two ports on the SAME server name register into two scope faces independently; close unregisters exactly the bound face', async () => {

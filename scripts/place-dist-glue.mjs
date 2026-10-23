@@ -158,6 +158,61 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/image-attachment.mjs',
   },
+  // A5M2 B-TEAM COMBINATION (center, atomic pair per the wiring owner's
+  // disclosure): the wiring module statically imports the adapter module
+  // and bindings statically import the wiring - placing ONE alone leaves a
+  // dangling import on the strict files:[dist] install face, so BOTH join
+  // in this single round; bytes ride unchanged.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/team-wiring.mjs',
+  },
+  // A5M2 COMBINATION INTEGRITY (center 2026-10-23): the G6 + B-SCHEDULE
+  // production blocks added STATIC relative imports that no placement
+  // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
+  // `files: ["dist"]` install face (exact failure class documented for
+  // todo.mjs). Four modules join the list; bytes ride unchanged.
+  // CASCADE (same closure round, center): the G6 adapter statically imports
+  // the G3 canonical-registration face (g6-session-query.mjs :212), so the
+  // module joins the list too; its only relative import (../ptc-escalation-row.mjs)
+  // is ALREADY placed; its two deeper relative .js targets exist in dist
+  // (tool-admission/grant-mint.js, domain/tool-governance/src/index.js — measured).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query-wiring.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-adapters.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/schedule-wiring.mjs',
+  },
+  // A5M2-G1-WIRE (root ruling 15:28 工具适配不等待中心接线): the plane now
+  // imports the committed G1 adapter module by relative specifier (Gate 0f
+  // reads `A5_G1_RECORD_SPECS` / the adapter-revision constant off the
+  // frozen dispatch index — no arm authority crosses). Without this
+  // placement the dist copy of the plane dies with ERR_MODULE_NOT_FOUND on
+  // the strict `files: ["dist"]` install face; the module's own cross-module
+  // leg lands on tsc's OWN emit of the domain tool-governance index — inside
+  // the mirror, the same closure law as `image.mjs` above.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g1-surface-adapters.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative

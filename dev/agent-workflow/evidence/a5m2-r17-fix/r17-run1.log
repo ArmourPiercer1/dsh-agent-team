@@ -1,0 +1,55 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m2-int/packages/runtime
+
+stdout | test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-DRIFT-REPRO: r17-shape policy (deny read subtree runtime, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; decision side lacks the seam (root seam-asymmetry candidate) > RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam
+RR1-FIXED kind=refused code=APPROVAL_DENIED drift=1
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts (2 tests | 2 failed) 92ms
+     × RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam 53ms
+     × RR-2 absence law: a mount whose decision side receives NO seam keeps the exact r17 drifted bytes (unchanged fail-closed) 37ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-DRIFT-REPRO: r17-shape policy (deny read subtree runtime, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; decision side lacks the seam (root seam-asymmetry candidate) > RR-1 r17 FIX (production transport): the SAME public allow now resolves - the verifier expansion plane consults the mount seam
+AssertionError: fixed transport: the hand-off is authorized: expected 'refused' to be 'authorized' // Object.is equality
+
+Expected: "authorized"
+Received: "refused"
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts:576:73
+    574|     // rules are DETERMINED on the expansion plane - no drifted() bran…
+    575|     // APPROVAL_DENIED; the hand-off is authorized like r11/r16 answer…
+    576|     expect(handoff.kind, 'fixed transport: the hand-off is authorized'…
+       |                                                                         ^
+    577|     expect(driftRows.length, 'fixed transport: zero drift-family refus…
+    578|   }, 60_000)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/a5m2-r17-drift-repro-c1.test.ts > A5M2-R17-DRIFT-REPRO: r17-shape policy (deny read subtree runtime, allow read subtree team, default ask) over the real image hand-off with production-shape fs seams; decision side lacks the seam (root seam-asymmetry candidate) > RR-2 absence law: a mount whose decision side receives NO seam keeps the exact r17 drifted bytes (unchanged fail-closed)
+AssertionError: expansion-branch drifted() is THE failing branch: expected 'the execution-boundary re-check refus…' to contain 'no longer approvable on the expansion…'
+
+Expected: "no longer approvable on the expansion plane"
+Received: "the execution-boundary re-check refuses at the resolve gate (admission refused: the presented approval does not cover this execution (effect 0: the reviewer position leader may not review at the case's required rung human-admin (self-approval and same-level review are never legal)))"
+
+ ❯ test/a5m2-r17-drift-repro-c1.test.ts:608:74
+    606|       expect(String(driftRows[0]?.gate)).toBe('resolve')
+    607|       const detail = String(driftRows[0]?.detail ?? '')
+    608|       expect(detail, 'expansion-branch drifted() is THE failing branch…
+       |                                                                          ^
+    609|       expect(detail, 'undetermined is the subtree rule without the lex…
+    610|     } finally {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  16:35:32
+   Duration  2.12s (transform 1.47s, setup 0ms, import 1.89s, tests 92ms, environment 0ms)
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

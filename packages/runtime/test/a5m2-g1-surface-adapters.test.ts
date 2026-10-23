@@ -483,7 +483,19 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
         const parsed = parseRequestedEffectSet(classified.effects)
         expect(parsed.ok === true ? [] : (parsed as unknown as { problems: Array<{ detail: string }> }).problems).toEqual([])
         expect(kindsOf(classified.effects)).toEqual(EXPECT_KINDS[name] as string[])
-        expect(classified.targetManifest.trusted).toEqual({ ...TRUSTED })
+        // RE-ANCHORED @ 957a5f526 (family-rules round 2): B-CONTROL/B-INSPECT mint
+        // FLAT leaves (bijection mapping in the commit); every other family keeps
+        // the nested trusted envelope. Both spellings assert the SAME five truths.
+        const tm = classified.targetManifest as Record<string, unknown>
+        if (tm.trusted !== undefined) {
+          expect(tm.trusted).toEqual({ ...TRUSTED })
+        } else {
+          expect(tm.trustedMemberAgentId).toBe(TRUSTED.memberAgentId)
+          expect(tm.trustedSessionHeaderId).toBe(TRUSTED.sessionHeaderId)
+          expect(tm.trustedRealmId).toBe(TRUSTED.realmId)
+          expect(tm.trustedOwner).toBe(TRUSTED.owner)
+          expect(tm.trustedProfileId).toBe(TRUSTED.profileId)
+        }
         expect(classified.generations).toMatchObject({
           bindingId: 'binding-3', bindingRevision: 7, policyGeneration: 3, authorityGeneration: 2, definitionIdentity: `def-${name}`,
         })
@@ -805,6 +817,8 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify({}, 'call-l1')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
+    // RE-ANCHORED @ 39c029963 (root-957 revert): the obligations-carrier flattening was
+    // REFUSED; rec53 law rides the BASE top-level encoding again.
     expect(classified.targetManifest.listLaw).toContain('constrains')
     const result = await row.delegate(classified.plan, { exec: {} })
     expect(result.settled).toBe('NATIVE-RESOLVED-AUTHORIZED-CONSTRAINED')
@@ -828,10 +842,22 @@ describe('a5m2-g1-surface-adapters rev.6: REAL seams where they exist — NOT C2
     const classified = row.classify(goodArgs('cordis_inspect_query'), 'c3')
     expect(classified.ok).toBe(true)
     if (!classified.ok) return
-    expect(classified.targetManifest.topology).toEqual({ topologyRevision: 9, topologyDigest: 'sha256;toponine' })
+    // RE-ANCHORED @ 7529218e5 (round 4 discriminated variant): topology scalars stay the
+    // SIGNED floor; the query triple now rides FLAT variant leaves bound by the closed
+    // group (inspectVariant='query-host' pins queryPlatform='host').
+    expect(classified.targetManifest.topologyRevision).toBe(9)
+    expect(classified.targetManifest.topologyDigest).toBe('sha256;toponine')
+    expect(classified.targetManifest.inspectVariant).toBe('query-host')
+    expect(classified.targetManifest.queryPlatform).toBe('host')
+    expect(typeof classified.targetManifest.queryProvider).toBe('string')
+    expect(typeof classified.targetManifest.queryMethod).toBe('string')
     const client = row.classify({ platform: 'client', provider: 'slot-tree', method: 'list_slots' }, 'c4')
     expect(client.ok).toBe(true)
-    if (client.ok) expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+    // RE-ANCHORED @ 7529218e5: client variant binds the exact roundtrip law as a flat leaf
+    if (client.ok) {
+      expect(client.targetManifest.inspectVariant).toBe('query-client')
+      expect(client.targetManifest.clientRoundtrip).toContain('NOT a transport cancel')
+    }
   })
 
   // ── U2/U3 + card 5: per-action envelope, REAL parses, REAL shapes ────────
