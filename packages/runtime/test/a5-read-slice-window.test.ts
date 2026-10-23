@@ -1476,3 +1476,110 @@ describe('A5RSW D9 outer permission layer (mustfix2)', () => {
     }
   })
 })
+
+// ===========================================================================
+// A5-M2 PA-READ HAND-OFF — the ROW legs (row-level laws only). Scope honesty:
+// every claim here is about THIS executor against a stub `pa` that mirrors the
+// plane's own two laws (an aborted signal answers cancelled before anything
+// else; Part A answers 'approved' with a grant). The plane's split walk, the
+// adapter's mark/close pair and the real Host chain are evidenced elsewhere.
+// ===========================================================================
+describe('A5RSW-HANDOFF — the governed read row under the PA hand-off', () => {
+  const handoffPolicy = { default: 'allow', allow: [], ask: [], deny: [] }
+  // OWN fixture root: this block must not depend on another describe's
+  // beforeAll/afterAll ordering (its own realpath, its own files, its own
+  // teardown).
+  const HROOT_DIR = join(WORLD, 'handoff-root')
+  let HROOT = HROOT_DIR
+  beforeAll(() => {
+    rmSync(HROOT_DIR, { recursive: true, force: true })
+    mkdirSync(HROOT_DIR, { recursive: true })
+    HROOT = realpathSync(HROOT_DIR)
+    writeFileSync(join(HROOT, 'w1.txt'), 'A5RSW-HANDOFF-1\n')
+    writeFileSync(join(HROOT, 'w2.txt'), 'A5RSW-HANDOFF-2\n')
+  })
+  afterAll(() => { rmSync(HROOT_DIR, { recursive: true, force: true }) })
+  const target = (name: string) => join(HROOT, name)
+
+  type PaEvent = { callId: string; kind: string }
+  const handoffRow = async (log: PaEvent[]) => {
+    const m = await import('../src/plugin/live/plane-effect-backends.mjs')
+    // The stub mirrors `paAdmit`: an already-aborted call is answered at the
+    // edge, before any walk (team-tool-plane.mjs:1025).
+    const answer = (input: { callId: string; signal?: { aborted?: boolean } }, kind: string) => {
+      // Mirrors team-tool-plane.mjs:1025 — an already-aborted call is answered
+      // AT the edge, before any admission work, so it logs no walk either.
+      if (input.signal?.aborted === true) return { kind: 'allow', cancelled: true }
+      log.push({ callId: input.callId, kind })
+      return kind === 'open' ? { kind: 'approved', grant: { bindingId: 'b-1' }, request: {} } : { kind: 'allow' }
+    }
+    const walk = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'walk')
+    const open = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'open')
+    const edge = (input: { callId: string; signal?: { aborted?: boolean } }) => answer(input, 'edge')
+    const pa: Record<string, unknown> = Object.assign(walk, { open, edge })
+    return m.createGovernedReadExecutor({
+      realmId: REALM, rootDir: HROOT, policy: handoffPolicy,
+      decide: () => ({ kind: 'allow' }), observe: () => {}, pa,
+    })
+  }
+
+  it('H1: open authorizes on the token with ZERO bytes, and the body redeems the SAME correlation through the edge only', async () => {
+    const log: PaEvent[] = []
+    const exec = await handoffRow(log)
+    const token = Symbol('a5rsw-handoff-h1')
+    const opened = await exec.paHandoffOpen({ file_path: target('w1.txt') }, { token }) as { kind: string; correlation?: string }
+    expect(opened.kind, 'Part A answers authorized').toBe('authorized')
+    expect(typeof opened.correlation, 'the row mints the correlation, not the adapter').toBe('string')
+    expect(exec.execCount(), 'the pre-dispatch leg never enters the byte stage').toBe(0)
+    expect(log.map((e) => e.kind), 'open walks ONCE, through the open half only').toEqual(['open'])
+    const ran = await settle(() => exec({ file_path: target('w1.txt') }, { token }))
+    expect(ran.ok, JSON.stringify(ran)).toBe(true)
+    expect(log.map((e) => e.kind), 'the body runs the edge; Part A is never re-run').toEqual(['open', 'edge'])
+    expect(new Set(log.map((e) => e.callId)).size, 'ONE correlation for the whole life of the token').toBe(1)
+  })
+
+  it('H2: two concurrent claims on one token — the second finds no flight and fails closed (zero body, no walk)', async () => {
+    const log: PaEvent[] = []
+    const exec = await handoffRow(log)
+    const token = Symbol('a5rsw-handoff-h2')
+    await exec.paHandoffOpen({ file_path: target('w1.txt') }, { token })
+    const both = await Promise.all([
+      settle(() => exec({ file_path: target('w1.txt') }, { token })),
+      settle(() => exec({ file_path: target('w1.txt') }, { token })),
+    ])
+    const texts = both.map((r) => refusalText(r) ?? '')
+    expect(texts.some((t) => t.includes('PA_HANDOFF_LOST')), `the single take leaves nothing to re-enter: ${JSON.stringify(texts)}`).toBe(true)
+    expect(exec.execCount(), 'exactly one redemption may reach the byte stage').toBe(1)
+    expect(log.filter((e) => e.kind === 'walk'), 'Part A is never re-run on a redemption leg').toHaveLength(0)
+  })
+
+  it('H3: close is idempotent, terminal, and leaves nothing a same-token call can revive', async () => {
+    const log: PaEvent[] = []
+    const exec = await handoffRow(log)
+    const token = Symbol('a5rsw-handoff-h3')
+    const opened = await exec.paHandoffOpen({ file_path: target('w1.txt') }, { token }) as { correlation: string }
+    expect(exec.paHandoffClose(token), 'close hands back the correlation whose plan fact to drop').toBe(opened.correlation)
+    expect(exec.paHandoffClose(token), 'close is idempotent').toBeUndefined()
+    expect(exec.paHandoffClose('not-a-token'), 'a non-token never closes').toBeUndefined()
+    const late = await settle(() => exec({ file_path: target('w1.txt') }, { token }))
+    expect(((late as unknown as { value?: { kind?: string } }).value ?? {}).kind, 'a closed token is TERMINAL: its original id answers cancelled, it never re-walks').toBe('cancelled')
+    expect(exec.execCount(), 'zero bytes after the close').toBe(0)
+    expect(log.map((e) => e.kind), 'no walk, no edge after the close').toEqual(['open'])
+  })
+
+  it('H4: a redemption that asks a DIFFERENT question mismatches (zero body); teardown claims every flight', async () => {
+    const log: PaEvent[] = []
+    const exec = await handoffRow(log)
+    const token = Symbol('a5rsw-handoff-h4')
+    await exec.paHandoffOpen({ file_path: target('w1.txt') }, { token })
+    const other = await settle(() => exec({ file_path: target('w2.txt') }, { token }))
+    const text = refusalText(other)
+    expect(text, 'the redemption must ask the approved question').toBeDefined()
+    expect(text).toContain('PA_HANDOFF_MISMATCH')
+    expect(exec.execCount(), 'a mismatch never opens a file').toBe(0)
+    exec.paHandoffCloseAll()
+    const late = await settle(() => exec({ file_path: target('w1.txt') }, { token }))
+    expect(((late as unknown as { value?: { kind?: string } }).value ?? {}).kind, 'teardown leaves the same terminal state').toBe('cancelled')
+    expect(log.map((e) => e.kind), 'nothing walked on either leg').toEqual(['open'])
+  })
+})

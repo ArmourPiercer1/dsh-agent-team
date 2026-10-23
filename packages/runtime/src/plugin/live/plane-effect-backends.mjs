@@ -1106,6 +1106,15 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
   // zero consumption); an IN-FLIGHT replay is refused outright; a stringy
   // token is not an identity (mount-unique fallback, never String(token)).
   const readTokenLedger = new Map() // token(object|symbol) -> { correlation, settled }
+  // A5-M2 PA-READ HAND-OFF: a PRE-DISPATCH PA walk that settled on this token
+  // and waits for its body. Keyed by the host execution token (a symbol or a
+  // frozen object — never an execution reference, never a String() of it), so
+  // it pins no execution. An entry leaves through the body's single take,
+  // through the `tools/result` terminal close, or through mount teardown.
+  // This is NOT a second identity ledger: the token→correlation law stays
+  // ONLY in `readTokenLedger` above (and nothing here stores a callId/name
+  // as authority).
+  const paHandoffs = new Map()
   const readSignalForSettled = (token) => (typeof token === 'symbol'
     ? { aborted: true, reason: 'exec-token-terminal', addEventListener: (_t, _l) => {}, removeEventListener: (_t, _l) => {} }
     : (() => {
@@ -1116,15 +1125,31 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       return settled
     })())
   const settledTokenSignals = new WeakMap()
-  const executor = async (raw, corr) => {
+  const rowMain = async (raw, corr, mode) => {
+    // A5-M2: 'run' is the row's own invocation (byte-identical to the pre
+    // hand-off path); 'open' is the pre-execute Part-A leg, which returns at
+    // the PA edge and must NOT terminalise the token (its body redeems it).
+    let holdOpen = false
     try {
     // resolve THIS execution's identity: real token → ledger correlation
     const token = corr?.token
     const tokenKey = (typeof token === 'object' && token !== null) || typeof token === 'symbol' ? token : undefined
+    let handoffClaim
     if (tokenKey !== undefined) {
       const prior = readTokenLedger.get(tokenKey)
-      if (prior !== undefined && !prior.settled) {
+      if (prior !== undefined && !prior.settled && prior.handedOff !== true) {
         return refused('admission', 'exec-token-replay', 'this host execution already owns an in-flight governed read')
+      }
+      // A5-M2: for a handed-off token the ONE in-flight flight IS this body's
+      // redemption, so it is not a replay. The take is synchronous and single:
+      // a re-entrant second redemption finds no flight and fails closed.
+      if (prior !== undefined && !prior.settled && prior.handedOff === true && mode !== 'open') {
+        const flight = paHandoffs.get(tokenKey)
+        paHandoffs.delete(tokenKey)
+        if (flight === undefined) {
+          return refused('admission', 'PA_HANDOFF_LOST', 'the pre-dispatch PA hand-off of this execution is gone (closed or already spent); Part A is never re-run and no fallback lane serves this read')
+        }
+        handoffClaim = flight
       }
     }
     const execCorrelation = corr && typeof corr.correlation === 'string' && corr.correlation.length > 0 ? corr.correlation : undefined
@@ -1190,6 +1215,10 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         if (prior !== undefined && prior.settled) {
           ledgerCorrelation = prior.correlation
           replaySettled = true
+        } else if (prior !== undefined && prior.handedOff === true && mode !== 'open') {
+          // ONE correlation per token for its whole life: the redemption runs
+          // under the ORIGINAL id Part A asked with, never a fresh one.
+          ledgerCorrelation = prior.correlation
         } else {
           paSeq += 1
           ledgerCorrelation = `plane-read:${mountNonce}-${String(paSeq)}`
@@ -1197,13 +1226,56 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
         }
       }
       const readSignal = replaySettled && tokenKey !== undefined ? readSignalForSettled(tokenKey) : execSignal
-      const gate = await pa({
+      const paCall = {
         realmId,
         callId: ledgerCorrelation ?? execCorrelation ?? `plane-read-${mountNonce}-${String(paSeq)}`,
         ...(readSignal === undefined ? {} : { signal: readSignal }),
         parametersFingerprint: set.value.fingerprint,
         requestedEffects: set.value,
-      })
+      }
+      let gate
+      if (mode === 'open') {
+        if (typeof pa.open !== 'function') {
+          return { kind: 'refused', code: 'PA_HANDOFF_UNAVAILABLE', detail: 'this plane mounts no PA admission-open entry, so no pre-dispatch hand-off can be opened' }
+        }
+        gate = await pa.open(paCall)
+      } else if (handoffClaim !== undefined) {
+        if (typeof pa.edge !== 'function') {
+          return refused('admission', 'PA_HANDOFF_UNAVAILABLE', 'this plane mounts no PA execution-edge entry, so a handed-off grant is never spent through the admission call')
+        }
+        if (handoffClaim.parametersFingerprint !== set.value.fingerprint || handoffClaim.callId !== paCall.callId) {
+          // exact-match law: the redemption answers the SAME question Part A
+          // asked. Member/binding/effects are re-verified FRESH inside the
+          // edge; this compares the identity of the call itself.
+          return refused('admission', 'PA_HANDOFF_MISMATCH', 'the redemption does not ask the question the pre-dispatch PA walk was approved for; nothing runs')
+        }
+        gate = await pa.edge({ ...paCall, grant: handoffClaim.grant, paDurableMint: handoffClaim.paDurableMint, request: handoffClaim.request })
+      } else {
+        gate = await pa(paCall)
+      }
+      if (mode === 'open') {
+        // Part A ends here: no lexical resolve, no anchor, no open, no byte,
+        // and the token stays IN-FLIGHT (never terminal) for its redemption.
+        if (gate.kind === 'approved') {
+          if (tokenKey === undefined || ledgerCorrelation === undefined) {
+            return { kind: 'refused', code: 'PA_HANDOFF_UNBOUND', detail: 'the approved PA walk carries no execution token to redeem it, so the approval is dropped and nothing is authorized' }
+          }
+          paHandoffs.set(tokenKey, Object.freeze({
+            callId: ledgerCorrelation,
+            parametersFingerprint: String(set.value.fingerprint),
+            grant: gate.grant,
+            paDurableMint: gate.paDurableMint,
+            request: gate.request,
+          }))
+          readTokenLedger.set(tokenKey, { correlation: ledgerCorrelation, settled: false, handedOff: true })
+          holdOpen = true
+          observe(`governed-read pa-handoff OPEN call=${ledgerCorrelation}`)
+          return { kind: 'authorized', correlation: ledgerCorrelation }
+        }
+        if (gate.kind === 'allow' && gate.cancelled === true) return { kind: 'cancelled' }
+        observe(`governed-read pa-handoff refused code=${String(gate.code ?? 'unknown')}`)
+        return { kind: 'refused', code: String(gate.code ?? 'PA_HANDOFF_REFUSED'), detail: String(gate.detail ?? 'the pre-dispatch PA walk refused this read') }
+      }
       if (gate.kind === 'deny') {
         observe(`governed-read pa-refused code=${String(gate.code)}`)
         return refused('admission', String(gate.code), String(gate.detail ?? 'the PA execution edge refused this read'))
@@ -1320,13 +1392,41 @@ export function createGovernedReadExecutor({ realmId, rootDir, policy, decide, p
       // 9e-1: the token's correlation goes TERMINAL when the execution
       // settles (terminal is never re-armed; a later re-use of the token
       // answers the ORIGINAL correlation as `cancelled`).
-      if (typeof corr?.token === 'object' && corr.token !== null || typeof corr?.token === 'symbol') {
+      // A5-M2: an OPEN leg holds the token IN-FLIGHT for its redemption — it
+      // is not an execution and must not terminalise the token. (Guarded
+      // rather than `return`ed: a `return` in a finally would swallow the
+      // leg's own answer.)
+      if (!holdOpen && (typeof corr?.token === 'object' && corr.token !== null || typeof corr?.token === 'symbol')) {
         const prior = readTokenLedger.get(corr.token)
         if (prior !== undefined && !prior.settled) readTokenLedger.set(corr.token, { correlation: prior.correlation, settled: true })
       }
     }
   }
+  const executor = (raw, corr) => rowMain(raw, corr, 'run')
   executor.execCount = () => executed
+  /** A5-M2 pre-dispatch leg: run Part A only, on this token, and hold the
+   *  answer for the body. Returns `authorized` / `refused` / `cancelled`. */
+  executor.paHandoffOpen = (raw, corr) => rowMain(raw, corr, 'open')
+  /** The `tools/result` terminal close: idempotent, synchronous, and it
+   *  leaves a state a same-token call cannot revive (the record goes TERMINAL
+   *  and terminal is never re-armed). Returns the correlation so the caller
+   *  can drop the mount's plan fact for the same call. */
+  executor.paHandoffClose = (token) => {
+    if (!((typeof token === 'object' && token !== null) || typeof token === 'symbol')) return undefined
+    const flight = paHandoffs.get(token)
+    paHandoffs.delete(token)
+    const prior = readTokenLedger.get(token)
+    if (prior !== undefined && !prior.settled) readTokenLedger.set(token, { correlation: prior.correlation, settled: true })
+    // Only an UNSPENT flight owes the mount a plan-fact drop: a spent one
+    // was cleared by the walk's own finally.
+    return flight?.callId
+  }
+  /** Mount teardown: no hand-off survives its mount, claimed or not. */
+  executor.paHandoffCloseAll = () => {
+    const open = []
+    for (const token of paHandoffs.keys()) open.push(token)
+    for (const token of open) executor.paHandoffClose(token)
+  }
   return executor
 }
 
