@@ -105,7 +105,7 @@ import {
 // The A5-M1 (PR358 fix) manifest/verifier surface: imported from the
 // module's types file directly (the barrel predates the additive surface;
 // the module declares the closed vocabulary and the strict parser there).
-import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, isLosslessJsonValue } from '../control/types.js'
+import { PA_CONTROL_MANIFEST_RUNGS, PA_CONTROL_MANIFEST_SCHEMA, paManifestClassOf, isLosslessJsonValue, validatePaFamilyTarget } from '../control/types.js'
 import type {
   ControlDecisionRecord,
   ControlGuardVerdict,
@@ -443,6 +443,16 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     // into null, so a check placed after it would bless bytes nobody ever presented.
     if (input.family !== undefined && !isLosslessJsonValue(input.family.targetManifest)) {
       return deny('family-target-manifest-not-lossless-json')
+    }
+    // A5-M2 (root, narrowed): the target must match the family's OWN typed plan
+    // structure - the minimal field/binding shape the implemented plan defines, not a
+    // copied-out fact set and not a re-frozen schema. Unknown family, missing field,
+    // wrong field type, extra key: refused here, before anything durable, with zero I/O.
+    // What the target MEANS is enforced by the same immutable plan downstream: approval
+    // and execution read that one plan, and the consumption invariants are unchanged.
+    if (input.family !== undefined) {
+      const targetViolation = validatePaFamilyTarget(input.family.familyId, input.family.targetManifest)
+      if (targetViolation !== undefined) return deny(`family-target-invalid: ${targetViolation}`)
     }
     const familyFacts = input.family === undefined ? {} : {
       familyId: input.family.familyId,

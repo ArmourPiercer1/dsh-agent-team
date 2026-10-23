@@ -1111,7 +1111,15 @@ export function isLosslessJsonValue(value: unknown): boolean {
     case 'number':
       return Number.isFinite(value)
     case 'object': {
-      if (Array.isArray(value)) return value.every((item) => isLosslessJsonValue(item))
+      if (Array.isArray(value)) {
+        // By INDEX, not Array.every: every skips holes, and JSON.stringify renders a
+        // hole as null - the exact silent rewrite this walk exists to refuse.
+        for (let index = 0; index < value.length; index += 1) {
+          if (!(index in value)) return false
+          if (!isLosslessJsonValue(value[index])) return false
+        }
+        return true
+      }
       if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) return false
       return Object.entries(value as Record<string, unknown>).every(
         ([key, item]) => key.length > 0
@@ -1156,6 +1164,107 @@ export function parsePaManifestFamilyBlock(
     targetManifest: v.targetManifest as Readonly<Record<string, unknown>>,
   }
 }
+
+/**
+ * A5-M2 (root ruling): a family's target "schema" is NOT a deep-frozen constant and not
+ * a named schema that already exists somewhere - it is the STRUCTURE and REQUIRED FIELDS
+ * of the family's own typed plan, as implemented. These tables are that structure,
+ * written field-for-field against the two implemented typed plans (todo `replace-list`,
+ * image `read-exact-file`), and they carry no security semantics of their own: they say
+ * what a well-formed target of this family looks like and nothing else. Adding a field
+ * to a family's plan means adding it here in the same change - and the closed key set
+ * makes a silent extra field fail instead of ride along unvalidated.
+ */
+export type PaFamilyTargetFieldKind =
+  | 'string' | 'boolean' | 'nonNegativeInt' | 'countsTriple' | 'obligations'
+
+export interface PaFamilyTargetRule {
+  /** The exact required key set of this family's typed plan target. */
+  readonly required: Readonly<Record<string, PaFamilyTargetFieldKind>>
+  /**
+   * The subset a CURRENT-call fact can legitimately restate from pure data alone - the
+   * immutable parameter plan and the real member/session/binding/provider config
+   * version. Resource-derived truth (what the file's bytes or an attachment's
+   * normalised id actually are) is NEVER here: it belongs to the post-approval
+   * execution edge, which checks the effectful result against the approved target.
+   */
+  readonly currentFields: readonly string[]
+}
+
+export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>> = Object.freeze({
+  'B-SESSION': Object.freeze({
+    required: Object.freeze({
+      operation: 'string',
+      agentId: 'string',
+      sessionHeaderId: 'string',
+      todosDigest: 'string',
+      counts: 'countsTriple',
+      allowParallelPolicy: 'boolean',
+      paramFingerprint: 'string',
+    }),
+    currentFields: Object.freeze(['operation', 'agentId', 'sessionHeaderId']),
+  }),
+  'B-IMAGE': Object.freeze({
+    required: Object.freeze({
+      familyId: 'string',
+      adapterRevision: 'nonNegativeInt',
+      operation: 'string',
+      realmId: 'string',
+      canonicalTarget: 'string',
+      declaredMediaType: 'string',
+      byteCap: 'nonNegativeInt',
+      byteCapSource: 'string',
+      businessObligations: 'obligations',
+    }),
+    currentFields: Object.freeze(['operation', 'realmId', 'canonicalTarget', 'declaredMediaType']),
+  }),
+} as const)
+
+function isPaFamilyTargetField(kind: PaFamilyTargetFieldKind, value: unknown): boolean {
+  switch (kind) {
+    case 'string': return typeof value === 'string' && value.length > 0
+    case 'boolean': return typeof value === 'boolean'
+    case 'nonNegativeInt': return typeof value === 'number' && Number.isInteger(value) && value >= 0
+    case 'countsTriple': {
+      if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+      const keys = Object.keys(value as Record<string, unknown>)
+      if (keys.length !== 3) return false
+      return ['pending', 'inProgress', 'completed'].every(
+        (k) => isPaFamilyTargetField('nonNegativeInt', (value as Record<string, unknown>)[k]))
+    }
+    case 'obligations': {
+      if (!Array.isArray(value) || value.length === 0) return false
+      return value.every((item) => typeof item === 'object' && item !== null && !Array.isArray(item))
+    }
+  }
+}
+
+/** The pure-data structure check the leg runs BEFORE the durable row: unknown family,
+ *  missing field, wrong field type, extra key - each returns the offending field so the
+ *  refusal names what the family's own typed plan asked for. Zero effect, zero I/O. */
+export function validatePaFamilyTarget(
+  familyId: string,
+  target: unknown,
+): string | undefined {
+  const rule = PA_FAMILY_TARGET_RULES[familyId]
+  if (rule === undefined) return `familyId: no target structure is registered for '${familyId}'`
+  if (typeof target !== 'object' || target === null || Array.isArray(target)) return 'target: not an object'
+  const record = target as Record<string, unknown>
+  for (const [field, kind] of Object.entries(rule.required)) {
+    if (!(field in record)) return `${field}: required by the ${familyId} typed plan, absent`
+    if (!isPaFamilyTargetField(kind, record[field])) return `${field}: not a ${kind}`
+  }
+  for (const field of Object.keys(record)) {
+    if (!(field in rule.required)) return `${field}: not part of the ${familyId} typed plan`
+  }
+  return undefined
+}
+
+/** The guard's current-target comparison: the approved target's pure-data fields
+ *  restated by THIS call's trusted facts must still hold. Facts never come from the
+ *  approved manifest (that would be the row quoting itself); fields outside the
+ *  family's currentFields are not compared here by design - they are the execution
+ *  edge's business, after approval. */
 
 export function parsePaControlManifest(value: unknown): PaControlManifest | undefined {
   if (typeof value !== 'object' || value === null) return undefined

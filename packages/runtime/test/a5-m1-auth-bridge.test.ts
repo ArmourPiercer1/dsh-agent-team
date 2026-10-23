@@ -2430,7 +2430,11 @@ describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every lev
       targetManifest: raw,
     })).toBe('invalid')
   })
-  it('L8 a deep table of illegal raw target manifests is refused end to end', () => {
+  it('L8 a deep table of illegal raw target manifests is refused by the strict block parse - NOT the durable chain, which needs its own isolated-service leg', () => {
+    const withHoles: unknown[] = [1, 2]
+    withHoles.length = 4 // indexes 2 and 3 exist as holes, not as values
+    expect(withHoles.every((item) => item !== undefined)).toBe(true) // what every() sees
+    expect(JSON.stringify(withHoles)).toBe('[1,2,null,null]') // what JSON turns them into
     const table: Record<string, unknown> = {
       'undefined at depth 3': { a: { b: [{ c: undefined }] } },
       'NaN in array of arrays': { a: [[Number.NaN]] },
@@ -2443,6 +2447,9 @@ describe('A5M2-FAMILY-RAW: losslessness is decided on the raw value at every lev
       'null top': null,
       'array top': [{ a: 1 }],
       'string top': 'append',
+      // the sparse hole below: Array.every SKIPS holes, JSON.stringify renders them
+      // as null - so a walk built on every() would bless a value that loses a member.
+      'sparse array hole': { list: withHoles },
     }
     for (const [name, targetManifest] of Object.entries(table)) {
       expect(parsePaManifestFamilyBlock({
