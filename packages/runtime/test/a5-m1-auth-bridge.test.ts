@@ -65,6 +65,7 @@ import { describe, it, expect, afterAll } from 'vitest'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { Readable, Writable } from 'node:stream'
 import { fileURLToPath } from 'node:url'
 
 import {
@@ -1944,5 +1945,387 @@ describe('B (plane integration): ask → durable approval → exactly one body',
     expect(outcome.text).toContain('AUTH-BRIDGE-READ-BODY')
     const st = await state()
     expect(st.consumptions.filter((c) => c.requestId === row.requestId).length).toBe(1)
+  }, 60_000)
+})
+
+// ── B4 DRAIN-ON-EXIT: deterministic pins for the shell row's capture law ──
+// These legs are DETERMINISTIC COVERAGE OF THE CANDIDATE MECHANISM for the CI
+// 间歇红 (the row reading its capture buffers in the microtask-only continuation
+// of the EXIT settle, while Node's stream-end contract is 'end'/'close', never
+// 'exit'). Disclosure stands: the original flake did NOT reproduce in this
+// environment (0/40 bounded retries, stopped per root ruling) — nothing here
+// claims a reproduced root cause; the legs pin the row's LAW under hand-controlled
+// timing instead of betting on a timing lottery. They drive the row through the
+// provider's EXISTING test seam (`deps`, forwarded verbatim by the row; the
+// mount never carries one): the fake settles `exited` and delivers stream bytes
+// in a hand-sequenced order, and every assertion stands on that ordering, not
+// on wall-clock luck.
+interface B4ShellAnswer {
+  ok: boolean
+  failure?: { class: string; code: string; detail: string }
+  outcome?: { exitCode: number | null; stdout: string; stderr: string; timedOut: boolean; cancelled: boolean; truncated: boolean }
+  settlement?: { kind: string; event?: string }
+}
+interface B4ShellBackend {
+  backendId: string
+  execCount: () => number
+  lastRuns: Array<{ callId: string; stdoutBytes: number; cancelled: boolean; exit: number | null }>
+  run: (call: { callId: string; parsedArgs: Record<string, unknown>; signal?: AbortSignal }, io: Record<string, unknown>) => Promise<B4ShellAnswer>
+}
+interface B4Proc {
+  pid: number
+  stdin: Writable
+  stdout: Readable
+  stderr: Readable
+  handshake: Readable
+  kill: (signal?: string | number) => boolean
+  exit: Promise<{ code: number | null; signal: string | null }>
+  resolveExit: (info: { code: number | null; signal: string | null }) => void
+  alive: { value: boolean }
+  signals: string[]
+  onTerminate: (() => void) | null
+}
+
+function b4FakeProc(): B4Proc {
+  let resolveExit: (info: { code: number | null; signal: string | null }) => void = () => {}
+  const exit = new Promise<{ code: number | null; signal: string | null }>((r) => { resolveExit = r })
+  const handshake = new Readable({ read() {} })
+  handshake.push('{"stream":true,"pid":4242}\n')
+  const proc: B4Proc = {
+    pid: 4242,
+    stdin: new Writable({ write(_c, _e, cb) { cb() } }),
+    stdout: new Readable({ read() {} }),
+    stderr: new Readable({ read() {} }),
+    handshake,
+    kill: () => true,
+    exit,
+    resolveExit: (info) => { proc.alive.value = false; resolveExit(info) },
+    alive: { value: true },
+    signals: [],
+    onTerminate: null,
+  }
+  return proc
+}
+
+function b4RowBackend(scratch: string, proc: B4Proc, observeSink: string[]): B4ShellBackend {
+  const deps = {
+    availability: () => ({ rows: [{ subject: 'python3', present: true, note: 'B4 fake injected' }] }),
+    run: () => { throw new Error('B4 fake: the one-shot arm must never run') },
+    probeFacts: () => ({
+      abiVersion: 4,
+      legs: {
+        selective: { leg: 'selective', verdict: 'ENFORCE-CONFIRMED', rc: 0, checks: [] },
+        denyall: { leg: 'denyall', verdict: 'ENFORCE-CONFIRMED', rc: 0, checks: [] },
+        badhandled: { leg: 'badhandled', verdict: 'DEMO-CONFIRMED', rc: 0, checks: [] },
+      },
+    }),
+    spawnStream: () => ({ ok: true, value: proc }),
+    signalProcess: (_pid: number, signal: 'SIGTERM' | 'SIGKILL') => {
+      proc.signals.push(signal)
+      // The payload's death IS the pipe EOF (the launcher law, faked here):
+      // whatever the leg booked into onTerminate lands at the moment of death.
+      if (proc.onTerminate !== null) proc.onTerminate()
+      proc.resolveExit({ code: null, signal })
+      return true
+    },
+    pidAlive: () => proc.alive.value,
+  }
+  const backendsRow = B4_BACKENDS_MODULE
+  return backendsRow.createConfinedShellBackend({
+    realmId: 'a5m1-b4-drain-realm',
+    templateId: 'a5m1-b4-tpl',
+    instanceId: WORKER,
+    cwdRoot: ROOT_DIR,
+    confined: { trustRoot: null, scratchRoot: scratch, assembly: {}, deps },
+    observe: (line: string) => { observeSink.push(line) },
+  }) as B4ShellBackend
+}
+
+// top-level-await import — the file's existing idiom (planeRow above)
+const B4_BACKENDS_MODULE: {
+  createConfinedShellBackend: (input: Record<string, unknown>) => unknown
+  drainShellStdio: (input: { stdout: unknown; stderr: unknown; boundMs: number; sleep?: (cb: () => void, ms: number) => unknown }) => Promise<{ complete: boolean; shortOf: 'bound' | 'stdio' | null }>
+  SHELL_STREAM_DRAIN_MS: number
+} = await import(new URL('../src/plugin/live/plane-effect-backends.mjs', import.meta.url).href)
+
+async function b4WaitFor(cond: () => boolean, what: string, budgetMs = 5_000): Promise<void> {
+  const t0 = Date.now()
+  while (!cond()) {
+    if (Date.now() - t0 > budgetMs) throw new Error(`B4 fixture timeout: ${what}`)
+    await new Promise((r) => setTimeout(r, 1))
+  }
+}
+
+describe('B4 (drain-on-exit): the shell row captures what the pipes delivered, not what had arrived by the death event', () => {
+  it('D1 exit settles FIRST, bytes arrive LATER (macrotask): the row still answers the FULL body — deterministic coverage of the candidate mechanism', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d1'), proc, observed)
+    // independent witness: counts what the stream DELIVERED, so the premise is
+    // measured, not assumed (the row keeps its own capture; this is a third eye)
+    let witnessBytes = 0
+    proc.stdout.on('data', (c) => { witnessBytes += String(c).length })
+    const running = backend.run({ callId: 'b4-d1', parsedArgs: { tool: 'bash', command: 'printf auth-bridge-body' } }, {})
+    // >= 2 data listeners: the witness above + the row's own capture listener
+    await b4WaitFor(() => proc.stdout.listenerCount('data') >= 2, 'the row attached its stdout listener')
+    // The premise, MEASURED at the death instant: `exited` settles while ZERO
+    // payload bytes have been delivered — the shape the candidate mechanism
+    // produces. A capture taken here is necessarily EMPTY, so the pin below
+    // holds by construction, never by scheduling luck.
+    proc.resolveExit({ code: 0, signal: '' })
+    const deliveredAtExit = witnessBytes
+    // the last chunks land one macrotask later, exactly as a starved event
+    // loop delivers the still-queued pipe read after the exit notification
+    setTimeout(() => {
+      proc.stdout.push('auth-bridge-body')
+      proc.stdout.push(null)
+      proc.stderr.push(null)
+    }, 0)
+    const answer = await running
+    expect(answer.ok).toBe(true)
+    expect(deliveredAtExit, 'the premise: exit settled with nothing delivered').toBe(0)
+    expect(answer.outcome?.stdout).toBe('auth-bridge-body') // pre-fix this assertion is the CI red itself
+    expect(answer.outcome?.exitCode).toBe(0)
+    expect(answer.outcome?.timedOut).toBe(false)
+    expect(answer.outcome?.cancelled).toBe(false)
+    expect(answer.outcome?.truncated).toBe(false)
+    expect(answer.settlement).toEqual({ kind: 'completed' })
+    expect(backend.lastRuns.at(-1)?.stdoutBytes).toBe('auth-bridge-body'.length)
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
+    expect(backend.execCount()).toBe(1)
+  }, 60_000)
+
+  it('D2 streams already ended BEFORE the exit: the row pays zero extra wait and the bound is never armed (normal cadence, no 2s anywhere)', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d2'), proc, observed)
+    const running = backend.run({ callId: 'b4-d2', parsedArgs: { tool: 'bash', command: 'printf early-body' } }, {})
+    await b4WaitFor(() => proc.stdout.listenerCount('data') > 0, 'the row attached its stdout listener')
+    proc.stdout.push('early-body')
+    proc.stdout.push(null)
+    proc.stderr.push(null)
+    await b4WaitFor(() => proc.stdout.readableEnded === true && proc.stderr.readableEnded === true, 'both streams ended before the death event')
+    const t0 = Date.now()
+    proc.resolveExit({ code: 0, signal: '' })
+    const answer = await running
+    const waited = Date.now() - t0
+    expect(answer.ok).toBe(true)
+    expect(answer.outcome?.stdout).toBe('early-body')
+    expect(answer.outcome?.truncated).toBe(false)
+    // the ended-stream path must resolve through the real end events — the
+    // production bound (2000ms) must NOT be what this leg completes on.
+    expect(waited, `post-exit wait was ${String(waited)}ms; the bound is ${String(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS)}ms`).toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
+  }, 60_000)
+
+  it('D3 a pipe held open past the death (the descendant case): ONE bound, then the row answers SHORT AND SAYING SO — truncated + DRAIN-INCOMPLETE, settlement law untouched', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d3'), proc, observed)
+    const running = backend.run({ callId: 'b4-d3', parsedArgs: { tool: 'bash', command: 'printf partial' } }, {})
+    await b4WaitFor(() => proc.stdout.listenerCount('data') > 0, 'the row attached its stdout listener')
+    proc.stdout.push('partial') // bytes before the bound are kept, honest partial
+    // no push(null) anywhere: a writer this row never owns holds BOTH pipes —
+    // the exact shape the bound exists for (the glob row's measured hole).
+    proc.resolveExit({ code: 0, signal: '' })
+    const t0 = Date.now()
+    const answer = await running
+    const waited = Date.now() - t0
+    expect(answer.ok).toBe(true)
+    expect(answer.outcome?.stdout).toBe('partial')
+    expect(answer.outcome?.truncated, 'an expired drain may never masquerade as a complete capture').toBe(true)
+    expect(answer.outcome?.exitCode).toBe(0) // the settle race already decided the form: the bound does NOT rewrite it
+    expect(answer.settlement).toEqual({ kind: 'completed' })
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=bound')), `the audit must name the cause: ${observed.join(' | ')}`).toBe(true)
+    expect(waited, 'exactly ONE bounded wait, never a hang').toBeGreaterThanOrEqual(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS - 50)
+  }, 60_000)
+
+  it('D4 the cancel arm drains too: the SIGTERM-EOF bytes land in the answer, the cancelled law stands, nothing hangs', async () => {
+    const proc = b4FakeProc()
+    // what the payload had already written when the host withdrew arrives at
+    // the moment of death (signalProcess fake hook) — strictly AFTER the
+    // aborted settlement won the race, so the pre-fix row could never have
+    // seen these bytes.
+    proc.onTerminate = () => {
+      proc.stdout.push('bytes-at-death')
+      proc.stdout.push(null)
+      proc.stderr.push(null)
+    }
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d4'), proc, observed)
+    const controller = new AbortController()
+    controller.abort({ kind: 'user' }) // the host's closed cause union: user
+    const answer = await backend.run(
+      { callId: 'b4-d4', parsedArgs: { tool: 'bash', command: 'printf never-completes' }, signal: controller.signal },
+      {},
+    )
+    expect(answer.ok).toBe(true)
+    expect(proc.signals).toContain('SIGTERM') // the frozen terminate arm ran
+    expect(answer.outcome?.stdout).toBe('bytes-at-death') // the drain took the death-time bytes
+    expect(answer.outcome?.cancelled).toBe(true)
+    expect(answer.outcome?.exitCode).toBe(null) // not-observed stays not-observed
+    expect(answer.settlement).toEqual({ kind: 'cancelled', event: 'dispatcher-call-terminated-after-body-start' })
+    expect(answer.outcome?.truncated).toBe(false) // the streams ended: complete capture of what existed
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
+  }, 60_000)
+
+  it('D5 drainShellStdio truth table (helper, DEFERRED fake sleep — zero wall clock): completeness is EOF-ONLY — early destroy / close-without-end / error answer NOT complete and answer FAST; the bound branch stays exactly for the held pipe', async () => {
+    // The fake sleep NEVER fires on its own: it records the arm so each case
+    // can prove WHICH leg answered (stream law vs bound) and that an incomplete
+    // teardown answer arrives WITHOUT paying the bound.
+    const arms: Array<{ ms: number; fire: () => void; fired: () => boolean }> = []
+    const fakeSleep = (cb: () => void, ms: number) => {
+      let done = false
+      arms.push({ ms, fire: () => { done = true; cb() }, fired: () => done })
+      return undefined
+    }
+    const openFake = () => { const s = new Readable({ read() {} }); s.on('data', () => {}); return s }
+    const endFake = async (s: Readable, token?: string) => {
+      let ended = false
+      s.on('data', () => {})
+      s.once('end', () => { ended = true })
+      if (token !== undefined) s.push(token)
+      s.push(null)
+      await b4WaitFor(() => ended, 'fake stream reached its real end')
+      return s
+    }
+    const armCount = () => arms.length
+    const lastArm = () => { const a = arms.at(-1); if (a === undefined) throw new Error('B4 D5: no bound armed'); return a }
+
+    // (1) BOTH streams at their real EOF: complete — and the bound is NEVER armed.
+    const out1 = await endFake(new Readable({ read() {} }), 'body')
+    const err1 = await endFake(new Readable({ read() {} }))
+    expect(await B4_BACKENDS_MODULE.drainShellStdio({ stdout: out1, stderr: err1, boundMs: 2_000, sleep: fakeSleep })).toEqual({ complete: true, shortOf: null })
+    expect(armCount(), 'a completed drain must never arm the bound').toBe(0)
+
+    // (2) ENDED and destroyed AFTER still complete: a routine post-end teardown
+    // must not downgrade a healthy capture (root ruling 3).
+    out1.destroy()
+    expect((await B4_BACKENDS_MODULE.drainShellStdio({ stdout: out1, stderr: err1, boundMs: 2_000, sleep: fakeSleep })).complete).toBe(true)
+    expect(armCount()).toBe(0)
+
+    // (3) destroyed BEFORE its end (checked at drain entry): NOT complete, and it
+    // answers through the EOF law — the bound is not even armed (no 2s paid).
+    const torn = openFake()
+    torn.destroy()
+    expect(await B4_BACKENDS_MODULE.drainShellStdio({ stdout: torn, stderr: err1, boundMs: 2_000, sleep: fakeSleep })).toEqual({ complete: false, shortOf: 'stdio' })
+    expect(armCount(), 'a destroyed stream must answer incomplete IMMEDIATELY, not off the bound').toBe(0)
+
+    // (4) 'close' WITHOUT a prior 'end' while draining: NOT complete, FAST — the
+    // bound was armed (stream still open at entry) but the answer predates it.
+    const closing = openFake()
+    const p4 = B4_BACKENDS_MODULE.drainShellStdio({ stdout: closing, stderr: err1, boundMs: 2_000, sleep: fakeSleep })
+    await b4WaitFor(() => armCount() === 1, 'the drain armed the bound while awaiting the real end')
+    closing.emit('close')
+    expect(await p4).toEqual({ complete: false, shortOf: 'stdio' })
+    expect(lastArm().fired(), 'close-without-end answers via the stream law, never via an expired bound').toBe(false)
+
+    // (5) 'error' before the end: also NOT complete (an error is not an EOF), also FAST.
+    const broken = openFake()
+    const p5 = B4_BACKENDS_MODULE.drainShellStdio({ stdout: broken, stderr: err1, boundMs: 2_000, sleep: fakeSleep })
+    await b4WaitFor(() => armCount() === 2, 'the drain armed the bound for the second stream set')
+    broken.emit('error', new Error('EIO: the pipe broke'))
+    expect(await p5).toEqual({ complete: false, shortOf: 'stdio' })
+    expect(lastArm().fired()).toBe(false)
+
+    // (6) the TWO-STREAM COMPLETENESS IS AN AND (root ruling 4): one stream ended
+    // clean, one torn before its end ⇒ the drain as a whole is INCOMPLETE.
+    const out6 = await endFake(new Readable({ read() {} }), 'good-stdout')
+    const torn6 = openFake()
+    torn6.destroy()
+    expect(await B4_BACKENDS_MODULE.drainShellStdio({ stdout: out6, stderr: torn6, boundMs: 2_000, sleep: fakeSleep })).toEqual({ complete: false, shortOf: 'stdio' })
+
+    // (7) the HELD pipe (writer this drain never owns): the bound branch, semantics
+    // unchanged — armed exactly once, and only when it fires does it answer 'bound'.
+    const held = openFake()
+    const p7 = B4_BACKENDS_MODULE.drainShellStdio({ stdout: held, stderr: err1, boundMs: 2_000, sleep: fakeSleep })
+    await b4WaitFor(() => armCount() === 3, 'the drain armed exactly one bound for the held pipe')
+    expect(arms.at(-2)?.fired(), 'one bound per drain call, never more').toBe(false)
+    lastArm().fire()
+    expect(await p7).toEqual({ complete: false, shortOf: 'bound' })
+    expect(lastArm().ms, 'armed at the production bound').toBe(2_000)
+  }, 60_000)
+
+  it('D6 (root narrow-review): a pipe torn down BEFORE its EOF is INCOMPLETE AT THE ROW — fast (never pays the bound), truncated=true, the audit names the cause, the settlement law stands', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d6'), proc, observed)
+    let witnessBytes = 0
+    proc.stdout.on('data', (c) => { witnessBytes += String(c).length })
+    const running = backend.run({ callId: 'b4-d6', parsedArgs: { tool: 'bash', command: 'printf cut-short' } }, {})
+    await b4WaitFor(() => proc.stdout.listenerCount('data') >= 2, 'the row attached its stdout listener')
+    proc.stdout.push('cut-short')
+    await b4WaitFor(() => witnessBytes >= 'cut-short'.length, 'the bytes reached the live listeners before the teardown (else this leg would test buffer loss, not the completeness law)')
+    // the teardown WITHOUT EOF: whatever still owed can never arrive — a row that
+    // called this complete would be passing off an incomplete capture.
+    proc.stdout.destroy()
+    proc.stderr.destroy()
+    proc.resolveExit({ code: 0, signal: '' })
+    const t0 = Date.now()
+    const answer = await running
+    const waited = Date.now() - t0
+    expect(answer.ok).toBe(true)
+    expect(answer.outcome?.stdout).toBe('cut-short') // bytes that made it stay (honest partial)
+    expect(answer.outcome?.truncated, 'destroy-without-end may never masquerade as a complete capture').toBe(true)
+    expect(answer.outcome?.exitCode).toBe(0) // the settle race decided the form; the drain only annotates completeness
+    expect(answer.settlement).toEqual({ kind: 'completed' })
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio')), `the audit must name the cause: ${observed.join(' | ')}`).toBe(true)
+    expect(waited, `a teardown answers through the stream law, not the ${String(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS)}ms bound (waited ${String(waited)}ms)`).toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
+  }, 60_000)
+})
+
+// D7 completes the root's completeness matrix AT THE ROW (D6 covered only the
+// both-torn shape): a healthy run's post-end teardown must NOT be downgraded,
+// while the AND over the two streams must hold even when only ONE is short.
+describe('B4 (drain-on-exit) continued: the completeness AND holds at the row in both directions', () => {
+  it('D7a end-then-destroy stays COMPLETE at the row (a normal run whose teardown destroys after EOF is never downgraded to truncated)', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d7a'), proc, observed)
+    const running = backend.run({ callId: 'b4-d7a', parsedArgs: { tool: 'bash', command: 'printf full-body' } }, {})
+    await b4WaitFor(() => proc.stdout.listenerCount('data') > 0, 'the row attached its stdout listener')
+    proc.stdout.push('full-body')
+    proc.stdout.push(null)
+    proc.stderr.push(null)
+    await b4WaitFor(() => proc.stdout.readableEnded === true && proc.stderr.readableEnded === true, 'both streams reached their real EOF')
+    // THEN the teardown destroys them (the launcher/provider path's normal order
+    // after EOF): the EOFs already stand — completeness must not be re-broken.
+    proc.stdout.destroy()
+    proc.stderr.destroy()
+    const t0 = Date.now()
+    proc.resolveExit({ code: 0, signal: '' })
+    const answer = await running
+    expect(answer.ok).toBe(true)
+    expect(answer.outcome?.stdout).toBe('full-body')
+    expect(answer.outcome?.truncated, 'post-end destroy must not downgrade a completed capture').toBe(false)
+    expect(answer.settlement).toEqual({ kind: 'completed' })
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE'))).toBe(false)
+    expect(Date.now() - t0).toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
+  }, 60_000)
+
+  it('D7b ONE stream short is enough (AND): stdout at EOF, stderr torn before its end ⇒ truncated=true, cause=stdio, exit law untouched', async () => {
+    const proc = b4FakeProc()
+    const observed: string[] = []
+    const backend = b4RowBackend(join(WORLD, 'b4-d7b'), proc, observed)
+    let witnessBytes = 0
+    proc.stdout.on('data', (c) => { witnessBytes += String(c).length })
+    const running = backend.run({ callId: 'b4-d7b', parsedArgs: { tool: 'bash', command: 'printf stdout-complete' } }, {})
+    await b4WaitFor(() => proc.stdout.listenerCount('data') >= 2, 'the row attached its stdout listener')
+    proc.stdout.push('stdout-complete')
+    proc.stdout.push(null)
+    await b4WaitFor(() => proc.stdout.readableEnded === true && witnessBytes >= 'stdout-complete'.length, 'stdout reached its real EOF and the bytes landed')
+    // stderr NEVER ends — it is torn down before EOF: one short stream makes the
+    // whole capture incomplete, no matter how clean stdout was.
+    proc.stderr.destroy()
+    proc.resolveExit({ code: 0, signal: '' })
+    const t0 = Date.now()
+    const answer = await running
+    expect(answer.ok).toBe(true)
+    expect(answer.outcome?.stdout).toBe('stdout-complete') // the complete stream keeps its full bytes
+    expect(answer.outcome?.truncated, 'completeness is an AND over the two streams').toBe(true)
+    expect(answer.outcome?.exitCode).toBe(0)
+    expect(answer.settlement).toEqual({ kind: 'completed' })
+    expect(observed.some((l) => l.includes('DRAIN-INCOMPLETE') && l.includes('shortOf=stdio'))).toBe(true)
+    expect(Date.now() - t0, 'the torn stream answers through the stream law, not the bound').toBeLessThan(B4_BACKENDS_MODULE.SHELL_STREAM_DRAIN_MS / 4)
   }, 60_000)
 })
