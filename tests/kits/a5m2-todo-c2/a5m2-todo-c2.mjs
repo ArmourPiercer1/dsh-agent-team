@@ -1064,16 +1064,19 @@ function imageTurnDoneAfterDenial(reply, msgs, row2RequestId) {
  * No evidence is accepted more weakly than before: the caller still runs denialPairSeen, which binds a
  * tool_use(read_image, IMG_REL) to a tool_result for THAT SAME callId with is_error true, and the row3
  * requestId must still appear in the text, so a foreign row can never satisfy it. And a denial wording is
- * NOT hereby declared an abandon: the abandon is proven separately and durably — exactly ONE
+ * NOT hereby declared an abandon: the abandon is proven separately and durably — exactly ONE (root 22:55
+ * tightened two points: the added branch also requires the APPROVAL_DENIED marker in the same text, and it is
+ * reachable ONLY from the image leg — the write leg keeps the original wording set byte-for-byte.)
  * control-request-abandoned fact for row3 in the ledger AND in the durable file, ZERO control-allow-consumed
  * for row3, store census unchanged vs leg-3 start. Row 2's public denial carries the identical wording with
  * row2's OWN requestId, which is exactly why the requestId binding plus those durable cross-checks are the
  * discriminator and why an ordinary deny cannot masquerade as an abandon. */
-function c5SettleTextOk(text, row3RequestId) {
+function c5SettleTextOk(text, row3RequestId, imageLeg) {
   const t = String(text ?? '')
   if (!t.includes(row3RequestId)) return false
-  return /answered (?:abandoned|unsettled)|APPROVAL_NOT_RESOLVED|PA walk|PA edge|cancelled/i.test(t)
-    || t.includes(`durable Control request ${row3RequestId} answered deny`)
+  if (/answered (?:abandoned|unsettled)|APPROVAL_NOT_RESOLVED|PA walk|PA edge|cancelled/i.test(t)) return true
+  return imageLeg === true && t.includes('APPROVAL_DENIED')
+    && t.includes(`durable Control request ${row3RequestId} answered deny`)
 }
 
 /** Model-visible ALLOWED image result: callId-paired tool_use(read_image, IMG_REL) ->
@@ -2419,7 +2422,7 @@ async function main() {
       const msgs = r.body?.messages ?? []
       if (FIXTURE === 'write' || FIXTURE === 'image') {
         const wantC = FIXTURE === 'image' ? { tool: 'read_image', file: IMG_REL } : { tool: 'write', content: WF_CANCEL }
-        const pair = denialPairSeen(msgs, wantC, (t) => c5SettleTextOk(t, row3.payload.requestId))
+        const pair = denialPairSeen(msgs, wantC, (t) => c5SettleTextOk(t, row3.payload.requestId, FIXTURE === 'image'))
         if (pair !== null) cancelSeen = pair
         return pair !== null
       }

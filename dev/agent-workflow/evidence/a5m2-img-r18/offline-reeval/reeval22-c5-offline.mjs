@@ -7,6 +7,10 @@
 // NOT a claim that the original run passed — summary.json still says exitCode 2 with C5 3/4, and this file
 // quotes that verbatim instead of re-attributing it. Nothing in the run dir is modified or deleted.
 //
+// HONESTY OF METHOD (root 22:55): this script does NOT call the kit's denialPairSeen — it runs its OWN
+// structural pair scan (tool_use(read_image, IMG_REL) -> tool_result with the SAME tool_use_id and is_error
+// true) and imports only the kit's toolResultText + c5SettleTextOk bytes. So it demonstrates the pair the
+// criterion needs, judged by the kit's text rule; it is not a claim that the same function was executed.
 // Predicate sources: the CURRENT kit (fixed c5SettleTextOk) and the RETAINED pre-fix snapshot
 // .pinbuild-verify/kit-c5prefix-1c3d2642.mjs, from which the OLD inline predicate is extracted exactly as
 // written — so the false negative is reproduced with the bytes that were actually in force, not paraphrased.
@@ -29,7 +33,7 @@ const fixture = JSON.parse(loadTxt(join(RUN, 'fixture-evidence.json'), 'fixture-
 const todoLaw = JSON.parse(loadTxt(join(RUN, 'zero-todo-law-public-abandon.json'), 'zero-todo-law-public-abandon.json'))
 const summary = JSON.parse(loadTxt(join(RUN, 'summary.json'), 'summary.json (the runner outcome, quoted, never rewritten)'))
 const runLog = loadTxt(join(RUN, 'run.log'), 'run.log')
-const kitNew = loadTxt(join(root, 'tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs'), 'kit CURRENT (OVERLAY-22) tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs')
+const kitNew = loadTxt(join(root, 'tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs'), 'kit CURRENT (OVERLAY-22b) tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs')
 const kitOldPath = join(root, '.pinbuild-verify/kit-c5prefix-1c3d2642.mjs')
 const kitOld = loadTxt(kitOldPath, `kit PRE-FIX snapshot .pinbuild-verify/${kitOldPath.split('/').pop()}`)
 const sessionFile = join(RUN, 'session-logs', `on-stop__--srv-workspace-dsh-plugins-dsh-agent-team-.worktrees-a5-m2-int-tests-deepseek-harness-test-use--__session-team-child-976d16bfee62d2a7378e60e13b081e8f__session.v4.jsonl.zstd.txt`)
@@ -76,8 +80,8 @@ const scan = (rid, pred) => reqs.flatMap((r) => {
 const sessionEvents = sessionTxt.split('\n').map((l) => { try { return JSON.parse(l) } catch { return null } }).filter((o) => o?.type === 'tool/result')
 const sessOf = (rid) => sessionEvents.find((o) => JSON.stringify(o?.data?.message ?? '').includes(rid))
 
-let bad = 0
-const line = (name, ok, detail) => { if (!ok) bad += 1; console.log(`${ok ? 'PASS' : 'FAIL'} ${name}\n       ${detail}`) }
+let bad = 0, total = 0
+const line = (name, ok, detail) => { total += 1; if (!ok) bad += 1; console.log(`${ok ? 'PASS' : 'FAIL'} ${name}\n       ${detail}`) }
 
 console.log('=== OVERLAY-22 OFFLINE RE-EVALUATION OF C5 — original run raw, read-only ===')
 console.log(`run dir      : ${RUN}`)
@@ -85,6 +89,10 @@ console.log(`fixture      : ${IMG_REL}  (mode=${fixture.mode} synthetic=${JSON.s
 console.log(`wire         : ${reqs.length} requests, seq ${reqs[0].seq}..${reqs[reqs.length - 1].seq}`)
 console.log(`identities   : row1(allow)=${row1}  row2(deny)=${row2}  row3(abandon)=${row3}  read_image rows in durable ledger=${ridOrder.length}`)
 console.log(`durable facts: recorded=${(ledger.recorded ?? []).length} decisions=${(ledger.decisions ?? []).length} consumptions=${(ledger.consumptions ?? []).length} abandonments=${(ledger.abandonments ?? []).length}`)
+console.log('method (root 22:55): this script runs its OWN structural pair scan over the raw (tool_use(read_image, IMG_REL) -> '
+  + 'tool_result with the SAME tool_use_id and is_error true) and imports only the kit\'s toolResultText and '
+  + 'c5SettleTextOk bytes; it does NOT call the kit\'s denialPairSeen, so nothing here claims same-function '
+  + 'verification — it shows the pair the criterion needs, judged by the kit\'s own text rule.')
 console.log(`original outcome (quoted, NOT re-attributed): summary.exitCode=${summary.exitCode} criteria=${JSON.stringify((summary.criteria ?? []).map((c) => [c.id, c.status, (c.checks ?? []).filter((k) => k.ok === true).length + '/' + (c.checks ?? []).length]))}`)
 
 const census = (fixture.afterAllow ?? {}).storeCensus ?? []
@@ -96,10 +104,10 @@ line('C5-2 cancel ran through the EXISTING p6t6 abandon fixture = production aba
   !!abVal && (abMatch[0].includes('status=200')) && abVal.requestId === row3 && typeof abVal.abandonmentSequence === 'number' && /a5m2c2-c5 cancel-via-existing-fixture/.test(abVal.reason ?? ''),
   `${(/status=\d+/.exec(abMatch[0] ?? '') ?? ['status=n/a'])[0]} requestId=${abVal?.requestId} abandonmentSequence=${abVal?.abandonmentSequence} reason=${abVal?.reason} abandonedAt=${abVal?.abandonedAt}`)
 
-line('C5-3 exactly ONE durable abandon fact for row3, ZERO consumptions for row3, store census unchanged by the abandon (baseline 0 -> 1 object from the allow leg only)',
+line("C5-3 ONE durable abandon fact for row3 and ZERO consumptions for row3, re-derived here from ledger-dump; the post-abandon CENSUS comparison is read from the run's own recorded afterAllow snapshot — this script does not re-measure the census at that instant",
   cnt(ledger.abandonments, row3) === 1 && cnt(ledger.consumptions, row3) === 0
   && census.length === (fixture.storeCensusBaseline ?? []).length + 1 && census.every((o) => o.rel === (fixture.afterAllow ?? {}).addedObject),
-  `abandonFacts(row3)=${cnt(ledger.abandonments, row3)} consumptions(row3)=${cnt(ledger.consumptions, row3)} baseline=${JSON.stringify(fixture.storeCensusBaseline)} afterAllow=${JSON.stringify(census)} addedObject=${(fixture.afterAllow ?? {}).addedObject}`)
+  `abandonFacts(row3)=${cnt(ledger.abandonments, row3)} consumptions(row3)=${cnt(ledger.consumptions, row3)} | recorded census baseline=${JSON.stringify(fixture.storeCensusBaseline)} afterAllow=${JSON.stringify(census)} addedObject=${(fixture.afterAllow ?? {}).addedObject} | LAYERED: "the abandon added no object" rests on the original run's own C5 PASS and its C2 baseline-0 / C3 +1 / C4 store-1 raw, not on a re-measurement here`)
 
 line('C5-3x CROSS — the row2 public DENY produced NO abandon fact and NO consumption, so a plain deny cannot masquerade as an abandon; row1 keeps its single consumption',
   cnt(ledger.abandonments, row2) === 0 && cnt(ledger.consumptions, row2) === 0 && cnt(ledger.consumptions, row1) === 1
@@ -107,15 +115,15 @@ line('C5-3x CROSS — the row2 public DENY produced NO abandon fact and NO consu
   `abandonFacts(row2)=${cnt(ledger.abandonments, row2)} consumptions(row2)=${cnt(ledger.consumptions, row2)} consumptions(row1)=${cnt(ledger.consumptions, row1)} durableFileAbandonFacts(row3)=${runLog.match(/durableFileAbandonFacts=(\d+)/)?.[1]} consumptionEvidence.requestId=${conseq.requestId}`)
 
 const oldHits3 = scan(row3, oldPred)
-const newHits3 = scan(row3, (t, rr) => mod.c5SettleTextOk(t, rr))
-const newHits2 = scan(row2, (t, rr) => mod.c5SettleTextOk(t, rr))
+const newHits3 = scan(row3, (t, rr) => mod.c5SettleTextOk(t, rr, true))
+const newHits2 = scan(row2, (t, rr) => mod.c5SettleTextOk(t, rr, true))
 const wireUses27 = (() => { const r = reqs.find((x) => x.seq === 27); const ids = []
   for (const m of msgsOf(r)) if (m?.role === 'assistant' && Array.isArray(m.content)) for (const b of m.content) if (b?.type === 'tool_use' && b?.name === 'read_image' && !ids.includes(b.id)) ids.push(b.id)
   return ids })()
 const s50 = sessOf(row3)
 line('C5-4a the OLD predicate reproduces the recorded FALSE NEGATIVE exactly — zero hits over all 28 requests (the raw settle was there, the wording set missed it)',
   oldHits3.length === 0, `oldPredicate(row3) hits=${oldHits3.length}; runner recorded: "${(runLog.match(/no callId-paired is_error tool_result bound to row3 requestId observed/) ?? ['n/a'])[0]}" after "${(runLog.match(/mock wait timed out: C5 member-visible cancel settle[^\n(]*/) ?? ['n/a'])[0]}…)"`)
-line('C5-4b the FIXED predicate (kit bytes, sliced) finds the row3 settle — same callId, is_error true, IMG_REL tool_use paired, row3 requestId bound, and no row2 bleed',
+line('C5-4b the FIXED predicate (kit bytes, sliced) finds the row3 settle with the IMAGE leg set (root 22:55: the denial branch is image-only and also requires APPROVAL_DENIED) — same callId, is_error true, IMG_REL tool_use paired, row3 requestId bound, no row2 bleed',
   newHits3.length === 1 && newHits3[0].seq === 27 && newHits3[0].callId === wireUses27[wireUses27.length - 1] && newHits3[0].text.includes(row3) && !newHits3[0].text.includes(row2),
   `seq=${newHits3[0]?.seq} at=${newHits3[0]?.at} callId=${newHits3[0]?.callId} (third and last read_image call on that wire: ${wireUses27[wireUses27.length - 1]}) text=${JSON.stringify(String(newHits3[0]?.text).slice(0, 130))}`)
 const denyCallId = newHits2[0]?.callId
@@ -138,5 +146,5 @@ console.log('--- runner outcome lines, quoted verbatim (original failure preserv
 for (const l of runLog.split('\n')) if (/C4: |C5: |C5 FAIL|FIRST-FAILURE-STOP/.test(l)) console.log('  ' + l.trim())
 console.log('--- inputs, hashed read-only by this receipt (full sha256) ---')
 for (const [k, v] of Object.entries(hashes)) console.log(`  ${v}  ${k}`)
-console.log(`RECEIPT bad=${bad} — scope: 真实正 / deny / abandon + C5 谓词假阴性 的离线复核. The original runner exit (summary.exitCode=${summary.exitCode}, C5 ${(summary.criteria ?? []).find((c) => c.id === 'C5')?.checks?.filter((k) => k.ok === true).length}/4) stands as recorded; this receipt does not declare the original run passed and wrote nothing into the run dir.`)
+console.log(`RECEIPT PASS=${total - bad}/${total} bad=${bad} — scope: 真实正 / deny / abandon + C5 谓词假阴性 的离线复核. The original runner exit (summary.exitCode=${summary.exitCode}, C5 ${(summary.criteria ?? []).find((c) => c.id === 'C5')?.checks?.filter((k) => k.ok === true).length}/4) stands as recorded; this receipt does not declare the original run passed and wrote nothing into the run dir.`)
 process.exit(bad === 0 ? 0 : 1)
