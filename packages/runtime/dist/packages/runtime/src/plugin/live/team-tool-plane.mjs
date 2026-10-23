@@ -76,7 +76,7 @@ import { createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/
 import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
-import { parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
+import { canonicalJsonFingerprint, parseToolBinding } from '../../../../domain/tool-governance/src/index.js'
 import { createAnchoredSearchBackend, createConfinedShellBackend, createGovernedReadExecutor, READ_ROW_LINE_CAP } from './plane-effect-backends.mjs'
 import { createAnchoredGlobBackend } from './glob-backend.mjs'
 
@@ -701,26 +701,43 @@ export function createTeamToolPlaneAssembly(input = {}) {
   }
   const jobsEnabled = jobsEnabledRaw === true
 
-  // 9e fix-3: ONE durable-generation reader for this mount. `current` is
-  // the last CONFIRMED generation (undefined = never confirmed); preflight
-  // re-reads at mount and before each admission that lacks one. No cache
-  // semantics beyond the confirmed-latest value of the ONE overlay port.
+  // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
+  // generation read for this mount, asked FRESH at every point that needs an
+  // authority generation — the mount kick, EACH admission's construction, and
+  // the execution edge. `paGenerationConfirmed` is never a value that gets
+  // CARRIED: it only ever holds what the most recent SUCCESSFUL read answered,
+  // and a read that faults or answers a non-generation invalidates it
+  // (`undefined`) instead of leaving the previous number in place — a new
+  // admission never runs on a generation it did not read this time.
   let paGenerationConfirmed
   const paGenerationReader = input.authorityFacts?.overlayGeneration
-  const paReadGeneration = async () => {
+  /** The ONE strict durable read. `{ ok: true, value }` only after a
+   *  successful read (which also CONFIRMS that exact value for the assembly's
+   *  own `authorityGeneration()`); `{ ok: false, detail }` when the read
+   *  faulted or answered something that is not a generation — and then the
+   *  previously confirmed value is WITHDRAWN, never reused. A mount with no
+   *  overlay port has no overlay lane at all: the rev.0 lane, which the
+   *  assembly itself answers 0 for (never a value invented here). */
+  const paReadGenerationFresh = async () => {
     const read = paGenerationReader
-    if (typeof read !== 'function') return
+    if (typeof read !== 'function') return { ok: true, value: undefined }
+    let g
     try {
-      const g = await read(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
-      if (typeof g === 'number' && Number.isFinite(g) && g >= 0) paGenerationConfirmed = g
-    } catch {
-      // a faulting read CONFIRMS nothing; the previous confirmed value (if
-      // any) stays current, admissions keep answering it or refusing.
+      g = await read(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
+    } catch (error) {
+      paGenerationConfirmed = undefined
+      return { ok: false, detail: `the durable overlay generation read threw (${String(error?.message ?? error).slice(0, 160)})` }
     }
+    if (typeof g !== 'number' || !Number.isFinite(g) || g < 0) {
+      paGenerationConfirmed = undefined
+      return { ok: false, detail: `the durable overlay generation answered ${JSON.stringify(g) ?? String(g)} — not a generation number (a malformed durable row is never read as generation 0)` }
+    }
+    paGenerationConfirmed = g
+    return { ok: true, value: g }
   }
   const paAuthorityGeneration = () => paGenerationConfirmed
   if (typeof paGenerationReader === 'function') {
-    void paReadGeneration()
+    void paReadGenerationFresh()
   }
   // Gate 1 (pa §4): the production admission assembly over the REAL policy.
   const built = createProductionAdmissionAssembly({
@@ -781,8 +798,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
     teamSessionId: String(input.teamSessionId),
     instanceId: String(input.instanceId ?? templateId),
   })
+  // ── THE rev.0 ROW LANE ONLY (NOT the identity of a governed call) ──
+  // Reachable ONLY where no call-level entry is mounted, i.e. worlds that
+  // carry no dispatcher surface at all (this file's unit/lane fixtures). It is
+  // a row-lane tuple the plane declares for itself — `plane-row:…` is exactly
+  // the shape the Control plane does NOT own, so it is never the identity a
+  // production call is admitted under: production wires `readCallFacts`
+  // unconditionally (agent-bindings), and with that entry mounted the request
+  // binding is read from the live surface above. When the live seam IS mounted
+  // but the entry cannot answer, the call is refused (TOOL_BINDING_UNVERIFIED
+  // at construction, GRANT_STALE at the execution edge) — this tuple is never
+  // a fallback for a failed read.
   const bindingCache = new Map()
-  const paBindingFor = (toolName) => {
+  const paRev0RowBindingFor = (toolName) => {
     if (!bindingCache.has(toolName)) {
       const parsed = parseToolBinding({
         bindingId: `plane-row:${templateId}:${toolName}`,
@@ -865,20 +893,23 @@ export function createTeamToolPlaneAssembly(input = {}) {
     // row carries, handed back by the AUTH leg). Per-call by construction:
     // concurrent calls never see each other's mint.
     let paDurableMint
-    // 9e fix-3: the generation is answerable BEFORE any admission work:
-    // await the durable read once when nothing is confirmed yet (no
-    // constant ever answers the kernel).
-    if (typeof paGenerationReader === 'function' && paGenerationConfirmed === undefined) {
-      await paReadGeneration()
+    // 9e fix-3 + A5-M1: the generation is answerable BEFORE any admission
+    // work, and it is read AGAIN for THIS call — never taken from what an
+    // earlier call confirmed (the kernel's identity leg compares the binding's
+    // generation against THIS assembly's answer, so a carried-over number
+    // would admit a call under a generation nobody read for it). A read that
+    // faults or answers a non-generation refuses the call here, before
+    // admitCall, with zero grant and zero Control row.
+    if (typeof paGenerationReader === 'function') {
+      const freshAuthority = await paReadGenerationFresh()
+      if (freshAuthority.ok !== true) {
+        return {
+          kind: 'deny',
+          code: 'TOOL_BINDING_UNVERIFIED',
+          detail: `this admission opens on no read authority generation — ${freshAuthority.detail}; the previously confirmed value is withdrawn rather than reused`,
+        }
+      }
     }
-    const request = Object.freeze({
-      binding: paBindingFor(toolName),
-      member: paMember,
-      callId,
-      realmId: callRealm,
-      parametersFingerprint,
-      requestedEffects,
-    })
     // PR358 fix-4: an invocation ALREADY cancelled never enters governance at
     // all — zero PA consumption, zero Control row. It stays the BACKEND's
     // settled fact: the shell row's frozen spawn-then-terminate witness and
@@ -893,6 +924,74 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // dead invocation into a backend.)
       return { kind: 'allow', cancelled: true }
     }
+    // ── A5-M1 (root ruling on 091f56d37): the AdmissionRequest carries the
+    // REAL binding this call stands on, read NOW through the ONE public
+    // call-level entry — never a synthesized row identity.
+    // The trust INPUT is the plane's OWN placement spelling (`paPlacementNameOf`
+    // over this plane's `names`/`readName`); the registry resolves it to the
+    // UNIQUE verified+ACTIVE carrier of that binding family and answers its
+    // live tuple. The durable manifest is NEVER an input to this read (the
+    // row's bindingId is only COMPARED at the final edge below): a correct
+    // manifest may never be a precondition for reading the real binding —
+    // that is the circularity the ruling forbids.
+    // Unanswerable here = this call has NO verifiable binding identity at all,
+    // so it is refused with the kernel's own identity code BEFORE any
+    // admission work: zero admitCall, zero grant, zero Control row, zero body.
+    // DISCLOSED pairing law (not bent here): the live tuple carries the
+    // DISPATCHER's generations (`tool-dispatch/install.ts:1160`, production 0
+    // until PR2 feeds the overlay/authority generations into the Binding)
+    // while the admission kernel's identity leg compares
+    // `binding.authorityGeneration` against THIS assembly's durable overlay
+    // generation (`tool-admission/admission-kernel.ts:245-254`). So a world
+    // with a permission-overlay row (generation ≥ 1) refuses at admission
+    // with `authority-generation-drift` — the kernel's documented law
+    // ("stale generation: re-assembly, not admission"). The plane states the
+    // real tuple verbatim and never re-stamps a generation to make a pair.
+    const placementName = paPlacementNameOf(toolName)
+    let paRequestBinding = paRev0RowBindingFor(toolName)
+    let paConstructionBinding
+    if (typeof paReadCallFacts === 'function') {
+      let admittedFacts
+      try {
+        admittedFacts = await paReadCallFacts({
+          rootSessionId: paMember.teamSessionId,
+          instanceId: paMember.instanceId,
+          realmId: callRealm,
+          callId,
+          requestedEffects,
+          ...(placementName === undefined ? {} : { placementName }),
+        })
+      } catch {
+        admittedFacts = undefined
+      }
+      const entryFacts = admittedFacts?.kind === 'call-facts' || admittedFacts?.kind === 'no-approval-question'
+        ? admittedFacts.facts
+        : undefined
+      const entryBinding = entryFacts?.binding
+      if (
+        entryBinding === null || typeof entryBinding !== 'object'
+        || typeof entryBinding.bindingId !== 'string' || entryBinding.bindingId.length === 0
+        || typeof entryBinding.definitionIdentity !== 'string' || entryBinding.definitionIdentity.length === 0
+        || typeof entryBinding.revision !== 'number' || !Number.isInteger(entryBinding.revision) || entryBinding.revision < 1
+        || entryBinding.status !== 'ACTIVE'
+      ) {
+        return {
+          kind: 'deny',
+          code: 'TOOL_BINDING_UNVERIFIED',
+          detail: `the live dispatcher binding behind this call (${String(placementName ?? toolName ?? '?')}) could not be answered by the call-level facts entry — no admission, no grant, and no Control row is opened on an identity that was never read (never a synthesized \`plane-row:\` stand-in)`,
+        }
+      }
+      paConstructionBinding = entryBinding
+      paRequestBinding = entryBinding
+    }
+    const request = Object.freeze({
+      binding: paRequestBinding,
+      member: paMember,
+      callId,
+      realmId: callRealm,
+      parametersFingerprint,
+      requestedEffects,
+    })
     const admitted = await assembly.admitCall(request)
     if (admitted.ok !== true) {
       return { kind: 'deny', code: String(admitted.error?.code ?? 'ADMISSION_CALL_REFUSED'), detail: String(admitted.error?.message ?? 'admitCall refused') }
@@ -997,25 +1096,19 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // CONFIRMED value is never carried over the execution edge.
       let durableGenerationNow
       if (typeof paGenerationReader === 'function') {
-        try {
-          const g = await paGenerationReader(String(input.teamSessionId ?? ''), String(input.instanceId ?? ''))
-          if (typeof g === 'number' && Number.isFinite(g) && g >= 0) {
-            paGenerationConfirmed = g
-            durableGenerationNow = g
-          }
-        } catch {
-          durableGenerationNow = undefined
+        const freshDurable = await paReadGenerationFresh()
+        if (freshDurable.ok !== true) {
+          return stale(`the durable authority generation could not be re-read at the execution edge (${freshDurable.detail}); the previously confirmed value is never carried over, and this call runs nothing`)
         }
-        if (durableGenerationNow === undefined) {
-          return stale('the durable authority generation could not be re-read at the execution edge; the previously confirmed value is never carried over, and this call runs nothing')
-        }
+        durableGenerationNow = freshDurable.value
       }
-      // (3) await the CURRENT call-level facts for THIS call (call identity
-      // only: no row is implied, which is exactly why the all-allow path can
-      // ask the same question). The row path additionally rides the row's
-      // OWN binding identity, so the facts must answer for the binding the
-      // approval covers.
-      const placementName = paPlacementNameOf(toolName)
+      // (3) await the CURRENT call-level facts for THIS call — the SAME read
+      // the request's binding was taken from, asked the SAME question: the
+      // call identity plus the plane's OWN placement spelling. Nothing from
+      // the durable row is an input here (the row's bindingId is compared
+      // AFTERWARDS, never used to go looking for the binding — reading the
+      // real binding through the manifest would make the manifest the
+      // authority and the read a formality).
       const rowBindingId = paDurableMint?.manifest?.binding?.bindingId
       let answer
       try {
@@ -1025,7 +1118,6 @@ export function createTeamToolPlaneAssembly(input = {}) {
           realmId: callRealm,
           callId,
           requestedEffects,
-          ...(typeof rowBindingId === 'string' && rowBindingId.length > 0 ? { bindingId: rowBindingId } : {}),
           ...(placementName === undefined ? {} : { placementName }),
         })
       } catch {
@@ -1034,6 +1126,25 @@ export function createTeamToolPlaneAssembly(input = {}) {
       const facts = answer?.kind === 'call-facts' || answer?.kind === 'no-approval-question' ? answer.facts : undefined
       if (facts === undefined) {
         return stale('no complete call-level facts could be read for this call — the entry answers undefined for ANY missing or contradicting source, and coverage is never assumed')
+      }
+      // (3a) the row's own manifest, COMPARED (post-read) against the live
+      // family the entry answered: an approval written under another binding
+      // family is not this call's approval.
+      if (typeof rowBindingId === 'string' && rowBindingId.length > 0 && facts.binding?.bindingId !== rowBindingId) {
+        return stale(`the Control row was written under binding '${rowBindingId}', but the live carrier of this call's placement is '${String(facts.binding?.bindingId)}' — the approval covers a binding this call does not stand on`)
+      }
+      // (3b) construction ↔ execution drift: the tuple the AdmissionRequest
+      // was built from must still be the tuple standing now (the same
+      // field-by-field law the Control verifier applies to a durable row).
+      if (paConstructionBinding !== undefined) {
+        for (const field of ['bindingId', 'agentScopeKey', 'toolName', 'definitionIdentity', 'providerId', 'implementationOrigin', 'executionBoundary', 'status', 'policyGeneration', 'authorityGeneration', 'revision']) {
+          if (facts.binding?.[field] !== paConstructionBinding[field]) {
+            return stale(`the binding behind this call moved between admission and execution (${field}: ${JSON.stringify(paConstructionBinding[field])} → ${JSON.stringify(facts.binding?.[field])}) — the call was admitted as the binding IT WAS, and a moved identity is re-assembly, not consumption`)
+          }
+        }
+        if (canonicalJsonFingerprint(facts.binding?.assurance) !== canonicalJsonFingerprint(paConstructionBinding.assurance)) {
+          return stale('the binding assurance cell moved between admission and execution — the assurance this call was admitted under is not the assurance standing now')
+        }
       }
       if (facts.realmId !== callRealm) {
         return stale(`the call-level facts answer for realm '${String(facts.realmId)}', not this call's '${callRealm}' — these are not this call's facts`)

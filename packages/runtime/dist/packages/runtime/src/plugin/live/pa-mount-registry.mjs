@@ -116,12 +116,17 @@ function matchUniqueBindingEntry(surface, { family, seedNames = [] }) {
   return candidates[0]
 }
 
-/** Resolve the binding FAMILY one call answers to: the identity the call
- *  carries wins; otherwise the caller's OWN placement spelling seeds the
- *  family through the surface (the seed is never the authority — the matcher
- *  above still has to find it UNIQUE). Unresolvable ⇒ undefined. */
-function bindingFamilyOf(surface, { bindingId, placementName }) {
-  if (typeof bindingId === 'string' && bindingId.length > 0) return bindingId
+/** Resolve the binding FAMILY one call answers to, from the ONE trust input
+ *  this entry takes: the CALLER's own placement spelling (the plane's own row
+ *  name), read through the live surface. The seed is never the authority —
+ *  `matchUniqueBindingEntry` still has to find the family's unique carrier.
+ *  A5-M1 root ruling on 091f56d37: an identity SUPPLIED BY A CALLER (e.g. the
+ *  bindingId a durable row carries) is NOT an input here at all — a correct
+ *  manifest may never become the precondition for reading the real binding,
+ *  and a foreign one must never steer the read. Callers that need to verify a
+ *  row COMPARE the row's binding afterwards (`readPaCallFacts` does exactly
+ *  that, against the tuple this read answered). Unresolvable ⇒ undefined. */
+function bindingFamilyOf(surface, { placementName }) {
   if (typeof placementName !== 'string' || placementName.length === 0) return undefined
   const seed = surface?.entryOf?.(placementName)
   const family = seed?.binding?.bindingId
@@ -283,9 +288,11 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
 /**
  * THE PUBLIC CALL-LEVEL ENTRY (A5-M1 B): the CURRENT facts of ONE live call,
  * keyed by the REAL call identity — realmId, callId, the effect set this call
- * walked, this call's binding identity (the bindingId FAMILY, resolved from
- * the identity the call carries or from the caller's own dispatcher
- * placement), the member/beneficiary attribution and the mount.
+ * walked, the caller's OWN dispatcher placement (which resolves to the binding
+ * family behind the call), the member/beneficiary attribution and the mount.
+ * The placement spelling is the ONLY identity input: a caller-supplied
+ * `bindingId` (the identity a row carries) is not read, never a precondition
+ * and never a steer — the row's binding is COMPARED afterwards.
  *
  * NO durable Control row is required: no `requestId`, no manifest, no row.
  * That is the whole point — the plane's execution edge must be able to await
@@ -305,7 +312,7 @@ async function readCallAuthorityFacts({ m, member, realmId, callId, bindingFamil
  *    the facts law (the caller fails closed; there is no defaulted shape).
  */
 export async function readPaCallFactsForCall(input = {}) {
-  const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, bindingId, placementName } = input
+  const { mount, rootSessionId, instanceId, realmId, callId, requestedEffects, placementName } = input
   if (typeof rootSessionId !== 'string' || rootSessionId.length === 0) return undefined
   if (typeof instanceId !== 'string' || instanceId.length === 0) return undefined
   if (typeof realmId !== 'string' || realmId.length === 0) return undefined
@@ -317,7 +324,7 @@ export async function readPaCallFactsForCall(input = {}) {
   const member = { teamSessionId: String(rootSessionId), instanceId: String(m.instanceId) }
   if (member.instanceId !== String(instanceId)) return undefined
   const surface = m.guard?.dispatcher?.surface
-  const bindingFamily = bindingFamilyOf(surface, { bindingId, placementName })
+  const bindingFamily = bindingFamilyOf(surface, { placementName })
   if (bindingFamily === undefined) return undefined
   const read = await readCallAuthorityFacts({
     m,
@@ -349,6 +356,16 @@ export async function readPaCallFactsForCall(input = {}) {
  * row implies an approval question (no live plan ⇒ undefined). The shared
  * read itself lives in `readCallAuthorityFacts` — the public entry above
  * uses the same implementation, so the two can never drift.
+ *
+ * The row's bindingId is used here as a LOOKUP KEY only, and that is the one
+ * shape in which a row identity may be used at all: the read still has to find
+ * a unique verified+ACTIVE carrier of that family plus every other live
+ * source, so a row that names a family nothing carries — or a family whose
+ * live tuple differs from what the row recorded — answers `undefined` /
+ * answers a tuple the verifier then rejects (`pa-control-bridge.ts` compares
+ * the binding field by field). A row can therefore only ever FAIL here, never
+ * authorize: the authority stays the live surface, exactly as the public
+ * entry has it.
  */
 export async function readPaCallFacts({ rootSessionId, requestId, manifest, decider, stage, mount }) {
   void stage

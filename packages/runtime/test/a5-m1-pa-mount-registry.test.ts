@@ -241,9 +241,14 @@ describe('A5M1-B2 — the public call-level entry (A5-M1 B/D)', () => {
     ;(unverified.guard.dispatcher.surface as { entryOf: (n: string) => unknown }).entryOf = (n: string) =>
       (n === 'team_bash' ? { verified: false, binding: { bindingId: 'team:scope:team_bash', status: 'ACTIVE', revision: 3, definitionIdentity: 'sha256:real-definition' } } : undefined)
     expect(await call(unverified)).toBeUndefined()
-    // (d) the call's OWN binding identity wins and must be the carrier: a row
-    //     from another family never resolves through the placement seed
-    expect(await call(healthyMount(), { bindingId: 'some:other:family' })).toBeUndefined()
+    // (d) ANTI-CIRCULAR (root ruling on 091f56d37): a binding identity the
+    //     CALLER supplies is not an input to this read at all — the caller's
+    //     own placement is the only seed. So an identity arriving WITHOUT a
+    //     placement (the shape of "read the real binding through the row")
+    //     answers nothing, and a foreign one never steers the answer.
+    const noPlacement = call(healthyMount(), { placementName: undefined, bindingId: 'team:scope:team_bash' })
+    expect(await noPlacement).toBeUndefined()
+    expect(await call(healthyMount(), { placementName: 'team_nope', bindingId: 'team:scope:team_bash' })).toBeUndefined()
   })
 
   it('B10: one call, one identity — a conflicting effect set, realm, member, or mount answers undefined', async () => {

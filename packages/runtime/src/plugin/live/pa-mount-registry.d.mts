@@ -87,10 +87,13 @@ export type PaCallLevelAnswer =
   | undefined
 
 /** The public entry's input: the REAL call identity — no `requestId`, no
- *  manifest, no Control row. `bindingId` is the family the call carries (a
- *  durable row's own binding identity, when one exists); `placementName` is
- *  the caller's OWN dispatcher placement spelling, which only SEEDS the
- *  family — the matcher still requires the family to be uniquely carried. */
+ *  manifest, no Control row, and NO caller-supplied binding identity.
+ *  `placementName` is the caller's OWN dispatcher placement spelling; it only
+ *  SEEDS the family, and `matchUniqueBindingEntry` still requires that family
+ *  to have exactly one verified+ACTIVE carrier. A row's `bindingId` is
+ *  deliberately absent: reading the real binding THROUGH a row would make the
+ *  row the authority (the circularity A5-M1 forbids), so a row's binding is
+ *  only ever compared afterwards — see `readPaCallFacts`. */
 export interface ReadPaCallFactsForCallInput {
   readonly mount?: PaMountEntry
   readonly rootSessionId: string
@@ -98,7 +101,6 @@ export interface ReadPaCallFactsForCallInput {
   readonly realmId: string
   readonly callId: string
   readonly requestedEffects: unknown
-  readonly bindingId?: string
   readonly placementName?: string
 }
 

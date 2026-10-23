@@ -26,6 +26,9 @@
  * { path, offset, lines:[{number,text}], totalLines }.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+// the guard's OWN assurance producer: the fixture's live tuple must carry the
+// same shape the guard stamps (`tool-dispatch/install.ts:1150-1163`).
+import { untestedAssurance } from '../tool-dispatch/index.js'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -35,6 +38,7 @@ const REPO = fileURLToPath(new URL('../../../', import.meta.url).href)
 const LAUNCHER = join(REPO, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
 const LAUNCHER_SHA = createHash('sha256').update(readFileSync(LAUNCHER)).digest('hex')
 const WORLD = join(REPO, 'tests/homes', `a5-m1-read-${Date.now().toString(36)}`)
+const ROOT_SCOPE = 'a5m1-c1c2-scope' // the dispatcher agentScopeKey this plane's rows are bound under
 const ROOT_DIR = join(WORLD, 'root')
 const OUTSIDE_DIR = join(WORLD, 'outside')
 const REALM = 'a5-m1-read-realm'
@@ -244,15 +248,22 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
   })
 
   // A5-M1 C: the all-allow path (NO Control row) answers from the fresh
-  // call-level facts too — the SAME public entry the ask path awaits. These
-  // legs pin both sides on the REAL read face: an unanswerable current refuses
-  // with zero bytes, and a complete ALL-ALLOW answer still delivers the real
-  // bytes (fail-closed is not "always refuses").
+  // call-level facts too — the SAME public entry the ask path awaits, now
+  // asked TWICE per call: once to take the AdmissionRequest's binding from
+  // (root ruling on 091f56d37: no synthesized `plane-row:` identity any more)
+  // and once at the execution edge. These legs pin both sides on the REAL
+  // read face: an unanswerable current refuses with zero bytes, and a complete
+  // ALL-ALLOW answer still delivers the real bytes (fail-closed is not
+  // "always refuses").
   it('R-C1-11 all-allow path: unanswerable call-level facts refuse the real read with ZERO bytes', async () => {
     const { read, observe } = buildPlane(POLICY_ALLOW, { readCallFacts: async () => undefined })
     const r = await run(() => read.execute({ file_path: join(ROOT_DIR, 'target.txt') }))
     expect(r.resolved).toBe(false)
-    if (!r.resolved) expect(r.msg).toContain('GRANT_STALE')
+    // the refusal point MOVED, the gate did not lower: with no answerable
+    // binding behind the call there is no identity to admit, so the answer is
+    // the kernel's identity code BEFORE admission — no grant, no Control row,
+    // no consumption, and zero bytes either way.
+    if (!r.resolved) expect(r.msg).toContain('TOOL_BINDING_UNVERIFIED')
     expect(ranLines(observe)).toHaveLength(0)
   })
 
@@ -292,7 +303,29 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
       effects: undefined,
       member: { teamSessionId: 'a5m1-test-team-root', instanceId: 'a5m1-instance' },
       beneficiaryAuthority: 'member',
-      binding: { bindingId: 'plane-row:a5m1-tpl:read', revision: 1, definitionIdentity: 'sha256:def', status: 'ACTIVE' },
+      // THE LIVE DISPATCHER TUPLE of this plane's own row, shaped exactly as
+      // the guard stamps it (`tool-dispatch/install.ts:1150-1163`): the family
+      // is `team-own:<agentScopeKey>:<placed name>`, the generations are the
+      // DISPATCHER's (0 here — production stays 0 until PR2 feeds the overlay
+      // generation into the Binding), the assurance cell comes from the guard's
+      // own producer. The plane takes its AdmissionRequest binding from this
+      // read verbatim (root ruling on 091f56d37): the row identity is no
+      // longer the plane's to invent, and the kernel's identity leg compares
+      // this tuple against the assembly's generation (admission-kernel.ts:245-254).
+      binding: {
+        bindingId: `team-own:${ROOT_SCOPE}:read`,
+        agentScopeKey: ROOT_SCOPE,
+        toolName: 'read',
+        definitionIdentity: 'sha256:placed-definition',
+        providerId: 'dsh-agent-team',
+        implementationOrigin: 'team-trusted-extension',
+        executionBoundary: 'trusted-host',
+        assurance: untestedAssurance('team-trusted-extension', 'trusted-host'),
+        policyGeneration: 0,
+        authorityGeneration: 0,
+        revision: 1,
+        status: 'ACTIVE',
+      },
       blueprint: { revision: 1, contentHash: 'sha256:bp', templateId: 'a5m1-tpl', cwd: ROOT_DIR, providerVersion: 'pv-1' },
       authorityGeneration: 0,
     }
@@ -302,11 +335,16 @@ describe('a5-m1-read-c1c2 — REAL chain: plane mount → admission/lane → gov
     expect(joined(r)).toContain('alpha5-m1-read-line-1')
     expect(ranLines(observe)).toHaveLength(1)
     // the plane asked with the CALL identity: its OWN placement spelling
-    // (never the backend/effect name), plus this call's realm, id and effects.
-    expect(asked.length).toBe(1)
+    // (never the backend/effect name), plus this call's realm, id and effects
+    // — once to build the request, once again at the execution edge.
+    expect(asked.length).toBe(2)
     const askedInput = asked[0] as Record<string, unknown>
     expect(askedInput.placementName).toBe('read')
     expect(askedInput.realmId).toBe(REALM)
     expect(String(askedInput.callId ?? '')).not.toBe('')
+    // the SAME call both times (never a fresh identity for the re-check), and
+    // never a binding identity handed in from outside.
+    expect(asked[1]?.callId).toBe(askedInput.callId)
+    for (const askedRow of asked) expect(askedRow.bindingId).toBeUndefined()
   })
 })
