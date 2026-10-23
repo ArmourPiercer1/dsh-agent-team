@@ -163,6 +163,15 @@ export const PLACEMENTS = [
   // covered — the dist plane would die at ERR_MODULE_NOT_FOUND on the strict
   // `files: ["dist"]` install face (exact failure class documented for
   // todo.mjs). Four modules join the list; bytes ride unchanged.
+  // CASCADE (same closure round, center): the G6 adapter statically imports
+  // the G3 canonical-registration face (g6-session-query.mjs :212), so the
+  // module joins the list too; its only relative import (../ptc-escalation-row.mjs)
+  // is ALREADY placed; its two deeper relative .js targets exist in dist
+  // (tool-admission/grant-mint.js, domain/tool-governance/src/index.js — measured).
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g3-fsproc-adapters.mjs',
+  },
   {
     src: 'packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/g6-session-query.mjs',
