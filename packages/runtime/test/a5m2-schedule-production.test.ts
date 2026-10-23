@@ -538,6 +538,23 @@ async function mountWorld(
  *  await the pending request, assert the family block it carried, and the
  *  LEADER answers deny — the flight refuses through the real approval
  *  answer with the body never running. */
+/** GRANT sibling of denyFirstPending (AUTH pairing pass-through): the
+ *  leader answers ALLOW — the row then dispatches through the REAL
+ *  delegate boundary exactly once. */
+async function allowFirstPending(label: string): Promise<string> {
+  for (let i = 0; i < 400; i++) {
+    const st = await service.listControlState(P6T4_ROOT)
+    const pending = st.requests.find((r) => String((r as { status?: string }).status) === 'pending') as { requestId?: string } | undefined
+    if (pending?.requestId !== undefined) {
+      const requestId = String(pending.requestId)
+      await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId, decision: 'allow', note: `paired-leg grant ${label}` })
+      return requestId
+    }
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  throw new Error(`no pending Control request minted for ${label}`)
+}
+
 async function denyFirstPending(label: string): Promise<string> {
   for (let i = 0; i < 400; i++) {
     const st = await service.listControlState(P6T4_ROOT)
@@ -558,7 +575,7 @@ function execFor(agent: Record<string, unknown>): Record<string, unknown> {
 }
 const delegatedRows = (world: World) => world.observed.filter((r) => r.startsWith('arm:b-schedule-arm:delegated'))
 
-describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — the signed B-SCHEDULE rule table is REGISTERED at this base (family-chain landing bf4e89e108620479d1a43344a8ea74d82cfde229): the validated ask-lane claim MINTS its approval request and the deny-resolve legs answer it', () => {
+describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — the signed B-SCHEDULE rule table is REGISTERED at this base (family-chain landing bf4e89e108620479d1a43344a8ea74d82cfde229): the validated ask-lane claim MINTS its approval request; with the AUTH pairing landed the GRANT answer dispatches exactly once and DENY (policy or leader) never dispatches', () => {
   // ── GROUP A — the real plane flight up to the SIGNED-GRAMMAR BOUNDARY ──
   // Every leg below runs the mounted plane's own row execute: the REAL
   // paAdmit.open, the REAL durable Control leg carrying the walk's four
@@ -654,13 +671,13 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(world.plane.livePaPlan.size).toBe(0)
   })
 
-  it('SP-R5 the rule vocabulary is part of the CLOSED grammar: a per-tool schedule_* policy rule is refused AT PLANE BUILD with the measured core-vocabulary projection refusal (never silently ignored, never half-mounted)', async () => {
-    const built = await mountWorld('r5', {
+  it('SP-R5 FLIPPED-RECORDED (AUTH pairing landed: 3a3c2a076 -> ab52338da + 0e4b7120b -> d9ea1713f on this tree): the very rule the closed core vocabulary used to refuse at plane build — allow schedule_list {kind:any} — now BUILDS the plane; the paired names are invocation-only members of the closed grammar at this base', async () => {
+    const world = await mountWorld('r5', {
       policy: { default: 'ask', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy,
-    }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; code?: string; message?: string } }).built)
-    expect(built?.ok).toBe(false)
-    expect(String(built?.code)).toBe('TOOL_BINDING_UNVERIFIED')
-    expect(String(built?.message)).toContain('must be one of read | read_image | write | edit | lsp | bash | pwsh')
+    })
+    const names = world.plane.definitions.map((d) => d.name)
+    expect(names).toContain(LIST)
+    expect(names).toContain(DELETE)
   })
 
   it('SP-R6 create/update are NOT enabled anywhere on the mount: no schedule_create/schedule_update row is placed, and an inject carrying a create key is refused the WHOLE mount (closed key set, never ignored)', async () => {
@@ -867,4 +884,90 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(twice.code).toBe('P_B_SCHEDULE_ALREADY_DISPATCHED')
     expect(world.serviceCalls.list).toHaveLength(1)
   })
+
+  // ── GROUP C — AUTH PAIRING PASS-THROUGH (root 20:57; vocabulary = the
+  // cherry-picked AUTH closed set ab52338da (3a3c2a076) + d9ea1713f
+  // (0e4b7120b)): the two invocation-only names ride the REAL policy algebra
+  // against the REAL list/delete assembly. Grant dispatches; denial refuses;
+  // when the policy itself decides, NO approval is minted. ──
+
+  it('SP-R9 GRANT pass-through (list): a default-DENY policy whose allow lane carries the whole-tool schedule_list any-rule builds; the claim needs NO Control mint, dispatches through the real raw-service port, and the seeded row comes back (title intact, single conversion)', async () => {
+    const world = await mountWorld('r9', { policy: { default: 'deny', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const out = await world.listDef.execute({}, execFor(world.agent))
+    expect(JSON.stringify(out)).toContain('lane row')
+    expect(world.serviceCalls.list).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R10 GRANT pass-through (delete): the schedule_delete any-rule on the deny-default plane grants exactly ONE dispatch — the id rides the real port verbatim, the service record answers, no second entry exists', async () => {
+    const world = await mountWorld('r10', { policy: { default: 'deny', allow: [{ tool: 'schedule_delete', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const out = await world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))
+    expect(JSON.stringify(out)).toContain('sch_a5m2_prod_1')
+    expect(world.serviceCalls.delete).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R11 cross-tool no-carry: allow schedule_list ONLY — the list row dispatches grant-free while the delete claim on the SAME plane is refused by the deny default with ZERO delete body and NO mint (one rule never gates the sibling)', async () => {
+    const world = await mountWorld('r11', { policy: { default: 'deny', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy })
+    const st0 = await service.listControlState(P6T4_ROOT)
+    const ok = await world.listDef.execute({}, execFor(world.agent))
+    expect(JSON.stringify(ok)).toContain('lane row')
+    await expect(world.deleteDef.execute({ id: 'sch_a5m2_prod_1' }, execFor(world.agent))).rejects.toThrow(/denied|deny/i)
+    expect(world.serviceCalls.delete).toHaveLength(0)
+    const st1 = await service.listControlState(P6T4_ROOT)
+    expect(st1.requests).toHaveLength(st0.requests.length)
+  }, 20_000)
+
+  it('SP-R12 DENY pass-through (measured): the deny-lane whole-tool schedule_list any-rule still OPENS the durable approval request (the family PA edge precedes the policy answer); the deny resolution refuses with zero service entry, zero dispatch, lease clean', async () => {
+    const world = await mountWorld('r12', { policy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_list', resource: { kind: 'any' } }] } as unknown as TemplatePermissionPolicy })
+    const flight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await denyFirstPending('r12')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(delegatedRows(world)).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R12B the deny algebra is NEVER loosened (measured pairing fact, root 20:05 card): with the deny-lane rule in place a leader ALLOW answer does NOT dispatch — the flight still refuses with the APPROVAL_DENIED law wording and the port stayed untouched', async () => {
+    const world = await mountWorld('r12b', { policy: { default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_list', resource: { kind: 'any' } }] } as unknown as TemplatePermissionPolicy })
+    const flight = world.listDef.execute({}, execFor(world.agent))
+    const requestId = await allowFirstPending('r12b')
+    expect(requestId.length).toBeGreaterThan(0)
+    await expect(flight).rejects.toThrow(/APPROVAL_DENIED.*answered deny/)
+    expect(world.serviceCalls.list).toHaveLength(0)
+    expect(delegatedRows(world)).toHaveLength(0)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
+  it('SP-R13 closed-set negatives: (a) an exact resource on the invocation-only pair is REFUSED at plane build (the whole-tool any is its only legal shape); (b) schedule_create is not a permission tool at all — the vocabulary refusal names the closed list', async () => {
+    const exactRefused = await mountWorld('r13a', { policy: { default: 'ask', allow: [{ tool: 'schedule_list', resource: { kind: 'exact', path: '/tmp/a' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; message?: string } }).built)
+    expect(exactRefused?.ok).toBe(false)
+    expect(String(exactRefused?.message)).toContain("gives the invocation-only tool 'schedule_list' a 'exact' resource")
+    expect(String(exactRefused?.message)).toContain("the whole-tool 'any' rule is its only projectable shape")
+    const createRefused = await mountWorld('r13b', { policy: { default: 'ask', allow: [{ tool: 'schedule_create', resource: { kind: 'any' } }], ask: [], deny: [] } as unknown as TemplatePermissionPolicy }).then(() => undefined, (e: unknown) => (e as { built?: { ok: boolean; code?: string; message?: string } }).built)
+    expect(createRefused?.ok).toBe(false)
+    expect(String(createRefused?.message)).toContain('must be one of')
+  })
+
+  it('SP-R14 the GRANT answer pass-through (ask lane → leader allow → real dispatch): the minted request answered allow now runs the FULL body — exactly one raw-service entry, the seeded row back, lease settled', async () => {
+    const world = await mountWorld('r14')
+    const exec = execFor(world.agent)
+    const flight = world.listDef.execute({}, exec)
+    const requestId = await allowFirstPending('r14')
+    expect(requestId.length).toBeGreaterThan(0)
+    const out = await flight
+    expect(world.serviceCalls.list).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
+    expect(world.plane.livePaPlan.size).toBe(0)
+  }, 20_000)
+
 })
