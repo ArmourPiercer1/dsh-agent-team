@@ -13,14 +13,23 @@
  * ControlService; admission rides the REAL paAdmit.open / paAdmit.edge legs,
  * whose success branch carries the ONE consumeForExecution witness the row
  * demands as `consumedProof`; the placement moment binds the REAL
- * definitionIdentityOf of the def the plane actually placed; and the BODY is
- * the host's OWN captured code — `registerScheduleTools` from the published
- * '@deepseek-ai/dsh-schedule' — whose closure resolves `rootCtx.schedule`
- * AFRESH at every dispatch (the live-read law runs inside host code, not a
- * plugin stand-in), whose owner law is the host's own `exec.agent !== agent`
- * REFERENCE comparison, and whose error mirror is the SAME module identity of
- * `ScheduleInputError` the native bodies throw (同Host错误类 is single here by
- * module identity: one import, one class, native and arm alike).
+ * definitionIdentityOf of the def the plane actually placed; and (root
+ * 18:52, 不绕adapter) the arm's execute IS the adapter row's own
+ * `delegate(plan, { exec })` — the FULL signed same-plan execution boundary
+ * (edgeIntegrity: drain / CURRENT native face + execute / CURRENT service +
+ * method identities; NOT_OWN_PLAN; fresh re-classify + PLAN_STALE; the
+ * ALREADY_DISPATCHED plan-object memo; the owner REFERENCE law; the abort
+ * law; the frozen port call; the L6 mirror). Native fidelity (保真native)
+ * rides INSIDE that boundary: the production port is the NATIVE DISPATCH
+ * port — its list/delete forwards run the BOUND `registerScheduleTools`
+ * faces with the owner exec, so the host closure remains the final body
+ * (its per-call `rootCtx.schedule` read, its `exec.agent !== agent`
+ * REFERENCE law and its operationError mirror against the SAME module
+ * identity of `ScheduleInputError` all still run) BEHIND every adapter
+ * check. Drift is anchored on host-visible state: the glue re-derives the
+ * port from the live native pair, so a host re-registration answers a
+ * DIFFERENT port object and the signed drift legs refuse with zero
+ * dispatch — a dynamic replacement never executes (不绕批准).
  *
  * create/update: never mounted, never registered, never armable (the closed
  * inject key set refuses even a test that tries). The trigger gap stays open.
@@ -28,8 +37,7 @@
  * DISCLOSED STAND-INS (never claimed as production): the schedule SERVICE
  * behind the fake rootCtx (the real ScheduleService's persistence order and
  * timer legs are the adapter's named gaps), the durable TeamDomain/Control
- * world itself, and the policy fixtures. The inert port never dispatches in
- * production — if any leg of this spec ever sees a port call it fails loudly.
+ * world itself, and the policy fixtures.
  */
 import { describe, it, expect, afterAll } from 'vitest'
 import { mkdirSync, rmSync } from 'node:fs'
@@ -69,7 +77,7 @@ import { P6T4_BLUEPRINT_SOURCE, P6T4_NOW, P6T4_ROOT, memberCaller, p6t4Seed } fr
 import { ScheduleInputError, registerScheduleTools } from '@deepseek-ai/dsh-schedule'
 import {
   createGovernedScheduleArm,
-  createScheduleInertPort,
+  createScheduleNativeDispatchPort,
   createScheduleWiring,
 } from '../src/plugin/live/governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from '../src/plugin/live/governed-families/schedule-adapters.mjs'
@@ -271,6 +279,7 @@ interface World {
   legInputs: Record<string, unknown>[]
   legResults: { decision?: string; detail?: string; requestId?: string }[]
   throwNextDeleteError: (e: Error | null) => void
+  rereregisterNative: () => void
   arms: {
     schedule_list: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
     schedule_delete: { definitionIdentity: string; classify: (raw: unknown) => Record<string, unknown>; execute: (plan: Record<string, unknown>, exec: Record<string, unknown>) => Promise<Record<string, unknown>>; drain: () => void }
@@ -319,13 +328,27 @@ async function mountWorld(
     },
   }
   const faces = new Map<string, Record<string, unknown>>()
-  registerScheduleTools(rootCtx as never, { tools: { register: (def: Record<string, unknown>) => { faces.set(String(def.name), def); return () => { faces.delete(String(def.name)) } } } } as never, agent as never)
+  const toolCtx = { tools: { register: (def: Record<string, unknown>) => { faces.set(String(def.name), def); return () => { faces.delete(String(def.name)) } } } }
+  registerScheduleTools(rootCtx as never, toolCtx as never, agent as never)
   const nativeList = faces.get(LIST)
   const nativeDelete = faces.get(DELETE)
   if (nativeList === undefined || nativeDelete === undefined) throw new Error('the published registerScheduleTools did not answer the list/delete faces')
 
-  // THE family assembly: the inert port law verbatim from production glue.
-  const inertPort = createScheduleInertPort()
+  // THE family assembly — the PRODUCTION port law mirrored verbatim from
+  // the glue: a native dispatch port over the BOUND faces, with a
+  // liveScheduleService that RE-DERIVES from the live native pair (so the
+  // signed drift check is anchored on host-visible state, never a constant
+  // self-compare).
+  const schedulePort = createScheduleNativeDispatchPort({ nativeList: nativeList as never, nativeDelete: nativeDelete as never, capturedAgent: agent as never })
+  const derivedPort: { key: unknown[]; port: Record<string, unknown> } = { key: [nativeList, nativeDelete], port: schedulePort as unknown as Record<string, unknown> }
+  const liveScheduleService = () => {
+    const pair = [faces.get(LIST), faces.get(DELETE)]
+    if (pair[0] === derivedPort.key[0] && pair[1] === derivedPort.key[1]) return derivedPort.port
+    derivedPort.key = pair
+    derivedPort.port = createScheduleNativeDispatchPort({ nativeList: pair[0] as never, nativeDelete: pair[1] as never, capturedAgent: agent as never }) as unknown as Record<string, unknown>
+    return derivedPort.port
+  }
+  const rereregisterNative = () => { registerScheduleTools(rootCtx as never, toolCtx as never, agent as never) }
   const assemblyWiring = createScheduleWiring({
     providerId: PROVIDER,
     declaredService: Object.freeze({ present: true }),
@@ -334,13 +357,13 @@ async function mountWorld(
       schedule_delete: Object.freeze({ native: nativeDelete, definitionIdentity: `capture-side:${label}:schedule_delete` }),
     }),
     liveNative: (name: string) => faces.get(name),
-    scheduleService: inertPort,
-    liveScheduleService: () => inertPort,
+    scheduleService: schedulePort as never,
+    liveScheduleService,
     capturedAgent: agent,
     ScheduleInputError,
     placementFeed: () => undefined,
     admit: async () => { throw new Error('P_B_SCHEDULE_PRODUCTION_ADMIT_INERT — production admission is the plane PA edge, never this seat') },
-    observe: (row: unknown) => { observed.push(`wire:${String((row as { event?: string })?.event ?? 'event')}`) },
+    observe: (row: unknown) => { const r = row as { event?: string; code?: string }; observed.push(`wire:${String(r?.event ?? 'event')}${r?.code === undefined ? '' : `:${String(r.code)}`}`) },
   } as never)
   if (assemblyWiring.ok !== true) throw new Error(`the family assembly refused: ${String((assemblyWiring as { code?: string }).code)} ${(assemblyWiring as { message?: string }).message}`)
 
@@ -356,7 +379,7 @@ async function mountWorld(
       ScheduleInputError,
       definitionIdentity: identity,
       providerId: PROVIDER,
-      observe: (row: unknown) => { observed.push(`arm:${String((row as { event?: string })?.event ?? 'event')}`) },
+      observe: (row: unknown) => { const r = row as { event?: string; code?: string; settled?: string }; observed.push(`arm:${String(r?.event ?? 'event')}${r?.settled === undefined ? '' : `:${String(r.settled)}`}${r?.code === undefined ? '' : `:${String(r.code)}`}`) },
     } as never)
     if (built.ok !== true) throw new Error(`${String((built as { code?: string }).code)}: ${String((built as { message?: string }).message)}`)
     placedArms[name] = built.arm as unknown as Record<string, unknown>
@@ -453,8 +476,7 @@ async function mountWorld(
   if (built.ok !== true || built.value === undefined) {
     // refusal signalling for the negative legs: the built answer rides the
     // thrown error (a plain object is refused, never a silent fallback).
-    throw Object.assign(new Error('__REFUSAL_EXPECTED__'), { built })
-    throw new Error(`plane assembly refused (${String(built.code)}): ${String(built.message)}`)
+    throw Object.assign(new Error(`__REFUSAL_EXPECTED__ (${String(built.code)}): ${String(built.message)}`), { built })
   }
   const plane = built.value
   realmTruths.set(plane.realmId, { assembly: plane.assembly, plane })
@@ -496,6 +518,7 @@ async function mountWorld(
     rootCtx: rootCtx as unknown as { schedule: Record<string, unknown> },
     rows, serviceCalls, observed, legInputs, legResults, arms: placedArms, listIdentity, deleteIdentity,
     throwNextDeleteError: (e: Error | null) => { throwNextDelete.error = e },
+    rereregisterNative,
   } as unknown as World
 }
 
@@ -503,7 +526,7 @@ function execFor(agent: Record<string, unknown>): Record<string, unknown> {
   const controller = new AbortController()
   return { agent, token: Symbol(`exec-${String(Math.random())}`), signal: controller.signal }
 }
-const nativeSettledRows = (world: World) => world.observed.filter((r) => r.includes('arm:native-settled'))
+const delegatedRows = (world: World) => world.observed.filter((r) => r.startsWith('arm:b-schedule-arm:delegated'))
 
 describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify → open → the durable Control leg → dispose) and the REAL captured host body (arm → native → host error law) — grammar gate CLOSED pending root', () => {
   // ── GROUP A — the real plane flight up to the SIGNED-GRAMMAR BOUNDARY ──
@@ -519,7 +542,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const exec = execFor(world.agent)
     await expect(world.listDef.execute({}, exec)).rejects.toThrow(/refused-schedule_list APPROVAL_DENIED/)
     expect(world.serviceCalls.list).toHaveLength(0)
-    expect(nativeSettledRows(world)).toHaveLength(0)
+    expect(delegatedRows(world)).toHaveLength(0)
     expect(JSON.stringify(await service.listControlState(P6T4_ROOT)), 'the grammar refusal happens BEFORE any pending approval is minted — the call never becomes approvable').toBe(stateBefore)
     expect(world.plane.livePaPlan.size).toBe(0)
     await expect(world.listDef.execute({}, exec)).rejects.toThrow(/exec-token-replay/)
@@ -618,7 +641,7 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
   // closure AT DISPATCH. This is what runs the instant a grant can land —
   // and nothing dumber than the unsigned grammar stands between.
 
-  it('SP-B1 the governed list body IS the captured host closure: classify mints the 11-leaf claim + closed effects, execute returns the REAL scheduleView rows read for the BOUND owner session', async () => {
+  it('SP-B1 the governed list body flies the DELEGATE boundary and settles the REAL scheduleView rows read for the BOUND owner session (frozen port call, settled "service")', async () => {
     const world = await mountWorld('b1')
     const arm = world.arms.schedule_list
     const classified = arm.classify({})
@@ -627,29 +650,37 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const manifest = classified.targetManifest as Record<string, unknown>
     expect(Object.keys(manifest)).toHaveLength(11)
     expect(manifest.taskId).toBeNull()
-    const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown }
+    const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string; value: unknown }
     expect(ran.ok).toBe(true)
+    expect(ran.settled).toBe('service')
     const rows = ran.value as Array<Record<string, unknown>>
     expect(Array.isArray(rows)).toBe(true)
     expect(String(rows[0]?.id)).toBe('sch_a5m2_prod_1')
     expect(String(rows[0]?.deliveryMode)).toBe('host')
     expect((world.serviceCalls.list[0] as { sessionId: string }).sessionId).toBe(String(world.agent.session.id))
-    expect(nativeSettledRows(world)).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B2 live ctx.schedule: the host closure resolves rootCtx.schedule AFRESH per dispatch — swapping the service under the same rootCtx changes what the SAME arm reads (a bind-time snapshot is impossible in host code)', async () => {
+  it('SP-B2 a dynamic replacement NEVER executes: a host re-registration (fresh native faces behind the same mount) answers the signed DEFINITION_DRIFT at the delegate boundary with ZERO further service entry — the drift check is anchored on host-visible state, and the combined RC is carried by BOTH the arm event and the assembly refusal event (root 18:52)', async () => {
     const world = await mountWorld('b2')
     const arm = world.arms.schedule_list
     const c1 = arm.classify({})
-    await arm.execute(c1.plan as Record<string, unknown>, execFor(world.agent))
+    const first = await arm.execute(c1.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string }
+    expect(first.ok).toBe(true)
+    expect(first.settled).toBe('service')
     expect(world.serviceCalls.list).toHaveLength(1)
-    const swapped: unknown[] = []
-    world.rootCtx.schedule = { ...world.rootCtx.schedule, list: async (input: unknown) => { swapped.push(input); return [] } }
+    // the host re-registers the schedule tools behind the mount: liveNative
+    // and the derived port BOTH see new objects — the delegate refuses
+    // BEFORE any port entry, and no replacement body ever runs.
+    world.rereregisterNative()
     const c2 = arm.classify({})
-    const second = await arm.execute(c2.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown[] }
-    expect(second.value).toHaveLength(0)
-    expect(swapped).toHaveLength(1)
+    expect(c2.ok).toBe(true)
+    const second = await arm.execute(c2.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(second.ok).toBe(false)
+    expect(second.code).toBe('P_B_SCHEDULE_DEFINITION_DRIFT')
     expect(world.serviceCalls.list).toHaveLength(1)
+    expect(world.observed.some((r) => r.startsWith('arm:b-schedule-arm:delegated') && r.includes('P_B_SCHEDULE_DEFINITION_DRIFT'))).toBe(true)
+    expect(world.observed.some((r) => r.startsWith('wire:b-schedule:refusal') && r.includes('P_B_SCHEDULE_DEFINITION_DRIFT'))).toBe(true)
   })
 
   it('SP-B3 the admitted delete body reaches the service with the OWNER session and the EXACT branded id and settles the native value — exactly one dispatch', async () => {
@@ -659,22 +690,22 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     expect(classified.ok).toBe(true)
     expect((classified.targetManifest as Record<string, unknown>).taskId).toBe('sch_a5m2_prod_1')
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    expect(ran).toEqual({ ok: true, value: { deleted: true, id: 'sch_a5m2_prod_1' } })
+    expect(ran).toEqual({ ok: true, settled: 'service', value: { deleted: true, id: 'sch_a5m2_prod_1' } })
     expect((world.serviceCalls.delete[0] as { input: unknown }).input).toEqual({ sessionId: String(world.agent.session.id), id: 'sch_a5m2_prod_1' })
-    expect(nativeSettledRows(world)).toHaveLength(1)
+    expect(delegatedRows(world)).toHaveLength(1)
   })
 
-  it('SP-B4 the id law is the CAPTURED host law: a whitespace-padded id settles the host invalid_rule VALUE with ZERO service entry (the refusal wording is the host\u2019s own, not a lane invention)', async () => {
+  it('SP-B4 the id law is the CAPTURED host law at the delegate boundary: a whitespace-padded id settles the host invalid_rule VALUE (settled tool-law-value) with ZERO service entry — the refusal wording is the host\u2019s own, not a lane invention', async () => {
     const world = await mountWorld('b4')
     const arm = world.arms.schedule_delete
     const classified = arm.classify({ id: ' sch_a5m2_prod_1 ' })
     expect(classified.ok, 'the id law is a VALUE inside the admitted call, not a pre-admission refuse (measured mapping: taskId rode null)').toBe(true)
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
-    expect((ran as { value: unknown }).value).toEqual({ code: 'invalid_rule', message: 'schedule_delete id must be non-empty without surrounding whitespace.' })
+    expect(ran).toEqual({ ok: true, settled: 'tool-law-value', value: { code: 'invalid_rule', message: 'schedule_delete id must be non-empty without surrounding whitespace.' } })
     expect(world.serviceCalls.delete).toHaveLength(0)
   })
 
-  it('SP-B5 同Host错误类 by MODULE IDENTITY: a real ScheduleInputError thrown by the service settles its own {code, message} through the host operationError mirror inside the captured closure — not internal_error, not a throw', async () => {
+  it('SP-B5 同Host错误类 by MODULE IDENTITY: a real ScheduleInputError thrown by the service settles its own {code, message} through the host operationError mirror inside the captured closure — the delegate settles it as the settled service VALUE, not internal_error, not a throw', async () => {
     const world = await mountWorld('b5')
     // the code is one of the PUBLIC Schedule input codes (the published
     // d.ts restricts the union — itself a proof the REAL class is in hand)
@@ -683,32 +714,50 @@ describe('A5M2 B-SCHEDULE production: the REAL plane flight (mount → classify 
     const classified = arm.classify({ id: 'sch_a5m2_prod_1' })
     const ran = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent))
     // the mirror ran INSIDE the host closure (its operationError caught the
-    // imported class identity) — the arm sees a settled VALUE, not a throw:
+    // imported class identity); the delegate settles the returned value —
     // one class, one module identity, host law end to end.
-    expect(ran).toEqual({ ok: true, value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
+    expect(ran).toEqual({ ok: true, settled: 'service', value: { code: 'invalid_selector', message: 'The schedule selector is not valid.' } })
   })
 
-  it('SP-B6 owner同Agent is the host REFERENCE law: an id/session-bytes LOOK-ALIKE settles the host internal_error VALUE with ZERO service entry; the bound object itself dispatches', async () => {
+  it('SP-B6 owner同Agent is the delegate\u2019s own REFERENCE law: an id/session-bytes LOOK-ALIKE settles the host internal_error VALUE with ZERO service entry; a FRESH plan by the bound object dispatches (the refused plan rides the same one-shot memo — no re-arm)', async () => {
     const world = await mountWorld('b6')
     const arm = world.arms.schedule_list
     const classified = arm.classify({})
     const lookAlike = { id: world.agent.id, session: { id: String(world.agent.session.id) } }
-    const refusal = await arm.execute(classified.plan as Record<string, unknown>, execFor(lookAlike))
-    expect(refusal).toMatchObject({ ok: true, settled: 'host-identity-value' })
-    expect((refusal as { value: unknown }).value).toEqual({ code: 'internal_error', message: 'The schedule operation failed.' })
+    const refusal = await arm.execute(classified.plan as Record<string, unknown>, execFor(lookAlike)) as { ok: boolean; settled?: string; value: unknown }
+    expect(refusal).toMatchObject({ ok: true, settled: 'tool-law-value' })
+    expect(refusal.value).toEqual({ code: 'internal_error', message: 'The schedule operation failed.' })
     expect(world.serviceCalls.list).toHaveLength(0)
-    const ok = await arm.execute(classified.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; value: unknown }
+    const ok = await arm.execute(arm.classify({}).plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; settled?: string; value: unknown }
+    expect(ok.settled).toBe('service')
     expect(Array.isArray(ok.value)).toBe(true)
     expect(world.serviceCalls.list).toHaveLength(1)
   })
 
-  it('SP-B7 the drain law lands on the production arm: after drain, classify refuses P_B_SCHEDULE_DRAINING (the assembly row refuse rides) and the captured body is unreachable — committed durable state untouched, new-call prohibition only', async () => {
+  it('SP-B7 the drain law lands AT the delegate, not on a re-classify: a plan classified while the PA window was open meets a drain that lands before the body, and the execute refuses P_B_SCHEDULE_DRAINING with ZERO native entry — committed durable state untouched, new-call prohibition only', async () => {
     const world = await mountWorld('b7')
     const arm = world.arms.schedule_list
+    const planned = arm.classify({})
+    expect(planned.ok).toBe(true)
     arm.drain()
+    const ran = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(ran.ok).toBe(false)
+    expect(ran.code).toBe('P_B_SCHEDULE_DRAINING')
+    expect(world.serviceCalls.list).toHaveLength(0)
     const after = arm.classify({})
     expect(after.ok).toBe(false)
     expect(String(after.code)).toBe('P_B_SCHEDULE_DRAINING')
-    expect(world.serviceCalls.list).toHaveLength(0)
+  })
+
+  it('SP-B8 the SAME plan OBJECT never dispatches twice: the re-presented plan answers the adapter\u2019s own ALREADY_DISPATCHED memo with exactly ONE service entry (the plan-once memo lives at the delegate, not in a lane rule)', async () => {
+    const world = await mountWorld('b8')
+    const arm = world.arms.schedule_list
+    const planned = arm.classify({})
+    const first = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean }
+    expect(first.ok).toBe(true)
+    const twice = await arm.execute(planned.plan as Record<string, unknown>, execFor(world.agent)) as { ok: boolean; code?: string }
+    expect(twice.ok).toBe(false)
+    expect(twice.code).toBe('P_B_SCHEDULE_ALREADY_DISPATCHED')
+    expect(world.serviceCalls.list).toHaveLength(1)
   })
 })

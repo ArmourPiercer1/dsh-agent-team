@@ -365,7 +365,7 @@ import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-famil
 // — the SAME module the host's registerScheduleTools throws through at
 // @639ed01539 (同Host错误类 is a MODULE identity, never a look-alike class).
 import { ScheduleInputError } from '@deepseek-ai/dsh-schedule'
-import { createGovernedScheduleArm, createScheduleInertPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
+import { createGovernedScheduleArm, createScheduleNativeDispatchPort, createScheduleWiring } from './governed-families/schedule-wiring.mjs'
 import { A5_B_SCHEDULE_ADAPTER_REVISION } from './governed-families/schedule-adapters.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
@@ -3040,15 +3040,43 @@ export function createAgentBindings(deps) {
             }
             scheduleNatives[scheduleName] = nativeFace
           }
-          // THE INERT PRODUCTION PORT (createScheduleInertPort's own law):
-          // the governed production body is the captured native execute; the
-          // port exists only to keep the adapter's shape/stability laws real
-          // over the assembly — ANY call reaching it is drift and answers
-          // loudly. The wiring seat (`admit`) is inert for the same reason:
-          // PRODUCTION admission is the plane's REAL PA edge inside the row
-          // (paAdmit.open → edge → the ONE consumedProof witness), never a
-          // factory double.
-          const scheduleProductionPort = createScheduleInertPort()
+          // THE NATIVE DISPATCH PORT (root 18:52 不绕adapter + 保真native):
+          // the arm's execute IS the adapter row's own delegate, and the
+          // delegate's frozen port call forwards to the BOUND native faces
+          // with the owner exec — the host closure stays the final body
+          // BEHIND the full signed boundary. Drift is anchored on HOST-
+          // VISIBLE state: liveScheduleService() re-derives from the CURRENT
+          // native pair, so a host re-registration answers a DIFFERENT port
+          // object and the signed DEFINITION_DRIFT/PORT_DRIFT legs refuse
+          // with zero dispatch — a dynamic replacement never executes. The
+          // wiring seat (`admit`) stays inert: PRODUCTION admission is the
+          // plane's REAL PA edge inside the row, never a factory double.
+          const scheduleNativePair = () => {
+            try {
+              return [
+                typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_B_SCHEDULE_LIST_MOUNT_NAME, runtimeAgent) : undefined,
+                typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_B_SCHEDULE_DELETE_MOUNT_NAME, runtimeAgent) : undefined,
+              ]
+            } catch {
+              return [undefined, undefined]
+            }
+          }
+          const scheduleProductionPort = createScheduleNativeDispatchPort({
+            nativeList: scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME],
+            nativeDelete: scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME],
+            capturedAgent: runtimeAgent,
+          })
+          const scheduleDerivedPort = { key: [scheduleNatives[A5_B_SCHEDULE_LIST_MOUNT_NAME], scheduleNatives[A5_B_SCHEDULE_DELETE_MOUNT_NAME]], port: scheduleProductionPort }
+          const liveScheduleProductionService = () => {
+            const pair = scheduleNativePair()
+            if (pair[0] === scheduleDerivedPort.key[0] && pair[1] === scheduleDerivedPort.key[1]) return scheduleDerivedPort.port
+            scheduleDerivedPort.key = pair
+            // the host re-registered behind the mount: answer a FRESHLY
+            // derived port — the signed drift check refuses the dispatch
+            // (never a replacement-body dispatch through a stale port).
+            scheduleDerivedPort.port = createScheduleNativeDispatchPort({ nativeList: pair[0], nativeDelete: pair[1], capturedAgent: runtimeAgent })
+            return scheduleDerivedPort.port
+          }
           const scheduleAssembly = createScheduleWiring({
             providerId: 'a5p5-plane',
             declaredService: Object.freeze({ present: true }),
@@ -3058,7 +3086,7 @@ export function createAgentBindings(deps) {
             }),
             liveNative: (name) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(name, runtimeAgent) : undefined),
             scheduleService: scheduleProductionPort,
-            liveScheduleService: () => scheduleProductionPort,
+            liveScheduleService: liveScheduleProductionService,
             capturedAgent: runtimeAgent,
             ScheduleInputError,
             // The family keys come from the PLANE's placement feed at the
