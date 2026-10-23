@@ -18,10 +18,11 @@
 // ReferenceError exit 1 nearly got logged as a successful negative control).
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isWriteAllowed } from './docs-sync.mjs';
+import { checkGeneratedTarget } from './generated-write.mjs';
 import { GENERATED_FILES } from './generated-write.mjs';
 import { renderContractIndex, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 
@@ -673,6 +674,94 @@ control('NEG-53 enforcement stays per rule, not blanket', (d) => {
   return [
     expectRun('probe', res, 0, 'DOC_IMPACT_OWNED'),
     { ok: !failCodes.includes('DOC_OWNER_UPDATE_MISSING'), why: 'blocking set: [' + (failCodes.join(',') || 'empty') + ']' },
+  ];
+});
+
+control('POS-14 --write renders the index through the helper, then no-ops', (d) => {
+  // Create-from-absent is the case the narrow permission covers, so the control starts
+  // from absent rather than from the fixture's pre-rendered copy.
+  const idx = join(d, CATALOG_INDEX_PATH);
+  rmSync(idx);
+  const first = run(SYNC, ['--write', '--root', d]);
+  const created = existsSync(idx) ? readFileSync(idx, 'utf8') : null;
+  const second = run(SYNC, ['--write', '--root', d]);
+  const after = existsSync(idx) ? readFileSync(idx, 'utf8') : null;
+  return [
+    { ok: first.code === 0, why: `first --write exit ${first.code}` },
+    { ok: created !== null && created === renderContractIndex(d), why: 'file bytes equal renderContractIndex() exactly, not "close enough"' },
+    { ok: created !== null && created.includes('ids.yaml') && created.includes('docs-sync.mjs --write'), why: 'the file states the source it came from and the command that refreshes it' },
+    { ok: second.code === 0 && /no-op/.test(second.out) && after === created, why: 'second --write reports a no-op and leaves the bytes identical' },
+    { ok: (second.out.match(/no-op [^;]+/g) || []).length === 2, why: 'both derivatives report their own no-op by name: ' + (second.out.match(/no-op [^;]+/g) || []).join(' / ') },
+  ];
+});
+
+control('NEG-57 a symlinked ancestor directory is refused and nothing lands', (d) => {
+  const area = join(d, 'docs/contracts/engineering-baseline');
+  const elsewhere = join(d, 'elsewhere');
+  mkdirSync(elsewhere, { recursive: true });
+  for (const f of readdirSync(area)) renameSync(join(area, f), join(elsewhere, f));
+  rmSync(area, { recursive: true, force: true });
+  symlinkSync(relative(dirname(area), elsewhere), area);
+  // The fixture's own pre-rendered index moved into the target directory, so the claim
+  // to test is not "absent afterwards" but "nothing new arrived because of this write".
+  const before = readdirSync(elsewhere).sort().join(',');
+  const res = run(SYNC, ['--write', '--root', d]);
+  return [
+    { ok: res.code === 2, why: `write exit ${res.code} (expected 2 REFUSED)` },
+    { ok: /SYMLINK_ANCESTOR/.test(res.out), why: 'refusal names the symlinked ancestor: ' + (res.out.match(/REFUSED[^\n]*/) || [''])[0] },
+    { ok: readdirSync(elsewhere).sort().join(',') === before, why: 'the directory the link points at gained no file: ' + before + ' -> ' + readdirSync(elsewhere).sort().join(',') },
+  ];
+});
+
+control('NEG-58 a symlinked target is refused and its referent keeps its bytes', (d) => {
+  const idx = join(d, CATALOG_INDEX_PATH);
+  const referent = join(d, 'referent.md');
+  writeFileSync(referent, 'ORIGINAL BYTES\n');
+  rmSync(idx);
+  symlinkSync(relative(dirname(idx), referent), idx);
+  const res = run(SYNC, ['--write', '--root', d]);
+  return [
+    { ok: res.code === 2, why: `write exit ${res.code} (expected 2 REFUSED)` },
+    { ok: /SYMLINK_TARGET/.test(res.out), why: 'refusal names the symlinked target: ' + (res.out.match(/REFUSED[^\n]*/) || [''])[0] },
+    { ok: readFileSync(referent, 'utf8') === 'ORIGINAL BYTES\n', why: 'the file behind the link is byte-identical to what it was before' },
+  ];
+});
+
+control('NEG-59 being inside a named area does not authorize a normative file', (d) => {
+  // The area now contains the generated index, so the area check on its own would let
+  // ids.yaml and README.md through. The exact-file rule is what stops it.
+  const readme = checkGeneratedTarget(d, 'docs/contracts/engineering-baseline/README.md');
+  const ids = checkGeneratedTarget(d, 'docs/contracts/engineering-baseline/ids.yaml');
+  const index = checkGeneratedTarget(d, CATALOG_INDEX_PATH);
+  return [
+    { ok: !readme.ok && /NOT_GENERATED_FILE/.test(readme.why), why: 'README.md: ' + readme.why },
+    { ok: !ids.ok && /NOT_GENERATED_FILE/.test(ids.why), why: 'ids.yaml: ' + ids.why },
+    { ok: index.ok, why: 'only INDEX.md is listed, and it is listed by full path' },
+    { ok: !isWriteAllowed('docs/contracts/engineering-baseline/ids.yaml'), why: 'docs:sync also refuses the catalog source' },
+  ];
+});
+
+control('NEG-60 a hard-linked target is refused, the second name keeps its bytes', (d) => {
+  // Same inode under two names passes every path check: regular file, no symlink, real
+  // parent. It still means the bytes land in a file something else reads.
+  const idx = join(d, CATALOG_INDEX_PATH);
+  const other = join(d, 'other-name.md');
+  linkSync(idx, other);
+  const before = readFileSync(other, 'utf8');
+  const res = run(SYNC, ['--write', '--root', d]);
+  // Add drift through the linked name so the run has a reason to rewrite; the boundary
+  // check runs before any content comparison, so the refusal must come first either way.
+  const drifted = read(d, CATALOG_INDEX_PATH) + 'drift\n';
+  writeFile(d, CATALOG_INDEX_PATH, drifted);
+  const res2 = run(SYNC, ['--write', '--root', d]);
+  return [
+    // Two names of one inode share bytes by definition, so the claim is not "the other
+    // name is unchanged" but "the only bytes present are the ones the control wrote".
+    { ok: res.code === 2 && /HARDLINK_TARGET/.test(res.out), why: `exit ${res.code} with the boundary refusal even when bytes already match: ` + (res.out.match(/REFUSED[^\n]*/) || [''])[0] },
+    { ok: res2.code === 2, why: `write exit ${res2.code} (expected 2 REFUSED) when the bytes differ` },
+    { ok: /HARDLINK_TARGET/.test(res2.out) && /nlink=2/.test(res2.out), why: 'refusal names the hard link and its nlink: ' + (res2.out.match(/REFUSED[^\n]*/) || [''])[0] },
+    { ok: readFileSync(other, 'utf8') === drifted, why: 'the inode holds exactly the drift the control wrote; the generator added nothing' },
+    { ok: readFileSync(idx, 'utf8') === readFileSync(other, 'utf8'), why: `both names still address one inode (was ${before.length} bytes before linking)` },
   ];
 });
 

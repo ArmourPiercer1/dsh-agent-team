@@ -19,8 +19,16 @@ import { dirname, join, relative, sep } from 'node:path';
 
 /** The only locations this module will ever write. Extending this list is a
  *  deliberate, reviewable expansion of the writable surface. */
-export const GENERATED_AREAS = ['dev/engineering'];
-export const GENERATED_FILES = ['dev/engineering/current-state.json'];
+// Widening this list is the only way a new derivative becomes writable, and it takes
+// BOTH lists: an area never authorizes a file on its own (checkGeneratedTarget asks for
+// area membership AND an exact GENERATED_FILES entry), so naming
+// `docs/contracts/engineering-baseline` as an area does not make its README, ids.yaml or
+// promotion-rules.md writable — only INDEX.md is listed, and it is listed by full path.
+export const GENERATED_AREAS = ['dev/engineering', 'docs/contracts/engineering-baseline'];
+export const GENERATED_FILES = [
+  'dev/engineering/current-state.json',
+  'docs/contracts/engineering-baseline/INDEX.md',
+];
 
 class Refused extends Error {}
 
@@ -73,6 +81,14 @@ export function checkGeneratedTarget(root, rel) {
     if (!within || within === '..' || within.startsWith(`..${sep}`)) throw new Refused(`ESCAPE_ROOT: ${rel} resolves outside ${realRoot}`);
 
     assertNoSymlink(realRoot, rel);
+    // A second name for the same inode is the remaining way to write somewhere else
+    // while every path check passes: the target is a regular file, not a link, and the
+    // parent is real, but the bytes land in a file that something else also reads.
+    const existing = lstatOrNull(abs);
+    if (existing) {
+      if (!existing.isFile()) throw new Refused(`NOT_REGULAR_TARGET: ${abs} is neither a regular file nor absent`);
+      if (existing.nlink !== 1) throw new Refused(`HARDLINK_TARGET: ${abs} has nlink=${existing.nlink}, refusing to write through a second name`);
+    }
     const parent = dirname(abs);
     if (existsSync(parent) && realpathSync(parent) !== parent) throw new Refused(`PARENT_NOT_REAL: realpath(${parent}) resolved elsewhere`);
     return { ok: true, realRoot, abs, within };

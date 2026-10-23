@@ -18,7 +18,7 @@ import { checkGeneratedTarget, writeGenerated } from './generated-write.mjs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as runNotes } from './verify-agent-notes.mjs';
-import { build as buildStateView, renderView } from './gen-current-state.mjs';
+import { build as buildStateView, renderContractIndex, renderView, CATALOG_INDEX_PATH } from './gen-current-state.mjs';
 import {
   makeCommitExists,
   checkLinks,
@@ -32,7 +32,15 @@ import {
   allDocsForFullCheck,
 } from './doc-checks.mjs';
 
-const GENERATED_ALLOW_LIST = ['dev/engineering/current-state.json'];
+// Both entries are full paths, and both are mirrored in generated-write.mjs's
+// GENERATED_FILES. Adding an area there is not enough to reach a file, and adding a path
+// here is not enough either: the write goes through checkGeneratedTarget, which demands
+// both lists. That is why ids.yaml, README.md and promotion-rules.md sit inside a named
+// area and are still not writable.
+const GENERATED_ALLOW_LIST = [
+  'dev/engineering/current-state.json',
+  CATALOG_INDEX_PATH,
+];
 const NORMATIVE_PREFIXES = [
   'docs/contracts/', 'docs/plans/', '.agents/notes/', 'dev/agent-workflow/',
   'docs/glossary.md', 'docs/terminology.md', 'docs/STATUS.md', 'AGENTS.md',
@@ -99,40 +107,56 @@ if (invokedDirectly) {
     // that reads like a verified statement.
     // Same classification as docs:sync --check and docs:probe: a claim that cites
     // nothing must not be writable by one entry point and only warned about by another.
-    const blocking = built.findings.filter(isBlockingFinding);
+    // A derivative is a record OF its inputs, so writing one while its inputs fail
+    // their own integrity rules would launder the defect into a file that reads like a
+    // verified statement. Classification is shared with --check and docs:probe.
+    // One carve-out, named: the freshness of the files this command owns may be
+    // repaired by this command. Refusing on STALE_GENERATED_* would block the very
+    // regeneration that fixes them. Everything else still refuses.
+    const SELF_UPDATE_CODES = ['STALE_GENERATED_VIEW', 'STALE_GENERATED_CATALOG'];
+    const blocking = built.findings.filter((f) => isBlockingFinding(f) && !SELF_UPDATE_CODES.includes(f.code));
     if (blocking.length) {
       for (const f of blocking) console.log(`FAIL ${f.code}: ${f.detail}`);
       console.log('REFUSED write: findings above');
       process.exit(1);
     }
-    const target = 'dev/engineering/current-state.json';
-    if (!isWriteAllowed(target)) {
-      console.log(`REFUSED WRITE_TARGET_NORMATIVE: ${target}`);
-      process.exit(2);
+    const DERIVATIVES = [
+      { path: 'dev/engineering/current-state.json', render: () => renderView(built) },
+      { path: CATALOG_INDEX_PATH, render: () => renderContractIndex(root) },
+    ];
+    const actions = [];
+    for (const d of DERIVATIVES) {
+      if (!isWriteAllowed(d.path)) {
+        console.log(`REFUSED WRITE_TARGET_NORMATIVE: ${d.path}`);
+        process.exit(2);
+      }
+      // Boundary BEFORE content. Comparing first let a symlinked target answer
+      // "already fresh" and exit 0 without the location ever being checked — found by
+      // NEG-27 rather than by reading, which is the point of the control.
+      const place = checkGeneratedTarget(root, d.path);
+      if (!place.ok) {
+        console.log(`REFUSED WRITE_BOUNDARY: ${place.why}`);
+        process.exit(2);
+      }
+      const next = d.render();
+      const before = existsSync(join(root, d.path)) ? readFileSync(join(root, d.path), 'utf8') : '';
+      if (before === next) {
+        // Wording matters: this states content equality and that no bytes were
+        // written. It is not a claim that a write was verified safe.
+        actions.push(`no-op ${d.path} (bytes already match the rendered output; nothing written)`);
+        continue;
+      }
+      const written = writeGenerated(root, d.path, next);
+      if (!written.ok) {
+        console.log(`REFUSED WRITE_BOUNDARY: ${written.why}`);
+        process.exit(2);
+      }
+      // "1 -> 153 lines" would imply a one-line file existed. Report creation as
+      // creation: an absent target has no line count.
+      const from = before === '' ? 'absent' : `${before.split('\n').length} lines`;
+      actions.push(`regenerated ${d.path} (${from} -> ${next.split('\n').length} lines)`);
     }
-    // Boundary BEFORE content. Comparing first let a symlinked target answer
-    // "already fresh" and exit 0 without the location ever being checked — found by
-    // NEG-27 rather than by reading, which is the point of the control.
-    const place = checkGeneratedTarget(root, target);
-    if (!place.ok) {
-      console.log(`REFUSED WRITE_BOUNDARY: ${place.why}`);
-      process.exit(2);
-    }
-    const next = renderView(built);
-    const before = existsSync(join(root, target)) ? readFileSync(join(root, target), 'utf8') : '';
-    if (before === next) {
-      // Wording matters: this is a statement about content equality and about the
-      // fact that no bytes were written. It is not a claim that a write was verified.
-      console.log(`docs:sync --write: no-op, ${target} already matches the rendered view; nothing was written`);
-      process.exit(0);
-    }
-    const written = writeGenerated(root, target, next);
-    if (!written.ok) {
-      console.log(`REFUSED WRITE_BOUNDARY: ${written.why}`);
-      process.exit(2);
-    }
-    const beforeLines = before.split('\n').length;
-    console.log(`docs:sync --write: regenerated ${target} (${beforeLines} -> ${next.split('\n').length} lines); normative files untouched`);
+    console.log(`docs:sync --write: ${actions.join('; ')}; normative files untouched`);
     process.exit(0);
   }
 

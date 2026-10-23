@@ -49,10 +49,15 @@ refuses a `verified_host` asserted from C1 evidence; `MERGED_CLAIM_UNCORROBORATE
 `origin/master`; `RELEASE_CLAIM_UNCORROBORATED` refuses `candidate` / `released` without
 `verified_host` at the matching tier plus that ancestry. Delivery claims are therefore
 **bound** to metadata that already exists outside the file — they are not *proven* by it,
-and nothing here is or becomes an authorization ledger. The writable surface is one
-generated file under `dev/engineering/`, reached only through `scripts/generated-write.mjs`,
-which refuses symlinked targets and symlinked ancestors instead of trusting a string
-allow-list. The view names the two inputs it was rendered from — `source_registry` /
+and nothing here is or becomes an authorization ledger. The writable surface is two
+generated files — `dev/engineering/current-state.json` and
+`docs/contracts/engineering-baseline/INDEX.md` — reached only through
+`scripts/generated-write.mjs`, which refuses symlinked targets, symlinked ancestors,
+non-regular targets and a target with more than one name (`nlink != 1`) instead of
+trusting a string allow-list. Authorization needs both lists: the file must sit in a named
+area **and** be named by full path, so widening an area does not open the normative files
+inside it — `ids.yaml` and this directory's `README.md` live in a named area and stay
+unwritable. The view names the two inputs it was rendered from — `source_registry` /
 `source_registry_sha` and `source_catalog` / `source_catalog_sha` — because a registry and
 an id catalog both feed it; naming only the registry let an `ids.yaml` edit leave the view
 claiming to be fresh while the meaning of every `refs` entry inside it had moved.
