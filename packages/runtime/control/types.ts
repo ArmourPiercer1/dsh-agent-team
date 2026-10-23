@@ -1255,23 +1255,28 @@ export const PA_FAMILY_TARGET_RULES: Readonly<Record<string, PaFamilyTargetRule>
     }),
     currentFields: Object.freeze(['trustedMemberAgentId', 'trustedSessionHeaderId', 'trustedRealmId']),
   }),
-  // A5-M2 B-INSPECT (root ruling, pure-equivalence leaf flatten; the same lane
-  // module produces this claim: records 53 cordis_inspect_list and 54
-  // cordis_inspect_query). topologyRevision/topologyDigest are the CURRENT
-  // authorized-topology facts (the edge re-verify owns them post-approval,
-  // unchanged); `inspectTarget` is the SINGLE-ITEM array that keeps each
-  // record's VARIANT facts together - rec 53: [{ listLaw }], rec 54:
-  // [{ platform, provider, method(, clientRoundtrip) }] - so the correlated
-  // query triple stays correlated (the edge reads it as one triple) and the
-  // closed-key law is satisfiable by ONE rule although the records' nested
-  // shapes differed. The 'obligations' kind is used STRUCTURALLY (non-empty
-  // array of plain objects): notation for the approved question, never a
-  // second permission layer (rule doc above).
+  // A5-M2 B-INSPECT (root 957 LIMITED ruling: the trusted/topology SCALAR leaf
+  // flatten is PASS and stays field-for-field; the lane module is
+  // src/plugin/live/governed-families/g1-surface-adapters.mjs, records 53
+  // cordis_inspect_list and 54 cordis_inspect_query; the edge re-verify owns
+  // the topology facts post-approval, unchanged). The VARIANT facts (rec 53
+  // listLaw; rec 54 the query triple, plus the client roundtrip law) are NOT
+  // signable here yet: the root REFUSED the `inspectTarget: 'obligations'`
+  // pairing (957 ruling) because this table's generic obligations check
+  // accepts any non-empty object array - [{}], wrong element types, extra
+  // elements - so the grammar could not verify the triple, and mint/WeakMap
+  // discipline is not the M0 §1 typed target grammar. The mint keeps those
+  // facts INSIDE the target (they ride the approved question and its
+  // fingerprint - moving them out is frozen); with this rule they fail closed
+  // at the grammar gate ('not part of the typed plan'), so NO real B-INSPECT
+  // claim lands until a variant-grammar contract delta is signed. The exact
+  // minimal delta + the proof that no existing closed leaf expresses the
+  // three measured variants / cross-leaf pairing:
+  // dev/agent-workflow/evidence/a5m2-family-rules/a5m2-inspect-variant-grammar-candidate.md
   'B-INSPECT': Object.freeze({
     required: Object.freeze({
       topologyRevision: 'nonNegativeInt',
       topologyDigest: 'string',
-      inspectTarget: 'obligations',
       trustedMemberAgentId: 'string',
       trustedSessionHeaderId: 'string',
       trustedRealmId: 'string',
