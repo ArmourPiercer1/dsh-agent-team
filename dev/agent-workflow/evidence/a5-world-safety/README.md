@@ -28,17 +28,27 @@ S1 import-no-main；S2 14 种非法 --world 全拒且全树零删除/零变更�
 S4 静态律：入口源无 rmSync/rm -rf/prune/df 调用位；S5 guard 单元：父目录 fallback/仓根/兄弟 world/
 未登记 全部拒绝，登记 world 内通过。
 
-## 证据层级（19/19 覆盖的精确边界，勿混级）
-- 19/19 实际测试对象 = **修复后的 `tests/kits/a5m2-todo-c2/a5m2-todo-c2.mjs` 入口**（字节复制到 fixture
-  独立假仓运行，boot 原语全为 tripwire 桩）+ **guard 模块单元（S5）** + **该入口源码静态律（S4）**。
-- **未测**：① `launch-world-infra.mjs`（同 law 接入，仅 `node --check`，未入哨兵场景）；
-  ② RSJ 事故原始 v1 入口（已删不可核，**目前只有本 spec，不得称已修**）；③ 真 Host/产品判据（冻结）。
-- 「错误 df」场景 = **等价预检失败**（S3：合法 world 下 pin 缺失致下游 dieFatal），
-  **不是真实 df 故障注入**——现入口无任何 df/prune/rm 调用位（S4 静态证明），故障注入无对象可注；
-  证明的是"失败路径零越界删除 + 无父目录 fallback"这一层，不是"df 故障被正确响应"那一层。
-- 哨兵原命令真实 RC：run1 崩溃（guard 首版祖先判定过宽，sentinel 自身未捕获抛出，无报告）；
-  run2 verdict=FAIL（S5 同判定 + fixture 证据祖先目录误记 badAdd，非入口缺陷）；
-  run3（当前字节）`sentinel-rc=0` = VERDICT PASS（脚本约定 rc0 仅当 19/19 且零越界删除）。
+## 证据层级 v2（root 1805 独审 BLOCK 整改后；v1 口径作废，勿再引用）
+- **v1 撤回两条**：旧 S3「等价 df 失败路径」说法**不成立**——缺 pin 的抛出被 `main().catch` 吞掉，
+  dieFatal/teardown 从未执行；旧 S3b 传参相同、**从未真正构造 stale**。二者降级为：
+  S3 仅证明「下游未捕获得败路径非破坏（main().catch 层）」；kit 的 dieFatal/stale 支在 fixture 中
+  **不可达**（钉死 tgz sha 不可伪造），**已退役**——freshness/lock/teardown 的真实覆盖移到 launcher 腿。
+- **v2 实测评语**：`kit` 模式 18/18 PASS（rc=0）；`launcher` 模式 28/28 PASS（rc=0）；
+  最终 manifest：deleted=0 / changed=0 / badAdds=0。
+- 覆盖：import+非法CLI argv（kit inert 解析；launcher catchable throw；均零触盘、零 exit 宿主）；
+  14 行 --world 矩阵；guard 单元（严格 registered/registered+SEP 边界、前缀陷阱 w-1/w-10、
+  悬空 symlink、祖先前置换指兄弟、目录替换 identity 漂移 dev/ino/ctimeMs/size 四元、
+  `.worktrees` 段真实 home 拒绝、无登记即拒）；launcher 腿：禁端口、provenance 墙（无 shim）、
+  **外锁场景 = 拒绝且外锁字节级不动**（v1 会删它）、取得前失败零清理、
+  **真实初始化失败 teardown**（取得自有锁→boot 撞 mock tripwire→fatal→shutdown 只清自己的锁；
+  DshInstance tripwire 全程不响）。
+- **仍未测/不存在等价性**：真 df 故障注入（入口无 df 面，S4 静态证明；注入无对象）；
+  真 Host 与产品判据（冻结）；RSJ 原始 v1 入口（已删，只有本 spec，**不得称已修**）。
+- fixture 独占：`mkdtemp`（fixtures/fixture-XXXX），本 run 独建独用，不预删任何传入路径，
+  run 后原样留存供巡检；git shim 仅存在于 fixture 的 PATH 前缀，不触真实 git 行为断言。
+- 命令与 RC：`node sentinel.mjs <fixtures-parent> <entry> <guard> --entry kit|launcher`；
+  kit rc=0、launcher rc=0（rc=0 仅当全场景过且零越界删除/变更）。历史：v1 run1 崩溃、run2 FAIL(自身判定)、
+  run3 rc=0 但覆盖口径错误（上文已撤回）。
 
 ## 覆盖 vs 仍缺（诚实清单）
 - 覆盖：上表 4 源的 law 接入 + 场景证明（空参/import/非法 world/失败路径/guard 单元）。

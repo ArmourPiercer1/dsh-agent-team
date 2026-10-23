@@ -66,13 +66,18 @@ function argValue(name, dflt) {
   if (v === undefined || v.startsWith('--')) throw new Error(`--${name} requires a value`)
   return v
 }
+// ENTRY-SAFETY LAW: harness dependency loading is DEFERRED to main() (direct
+// entry only). An import of this module never loads worktree CLI-dependency
+// modules (root 1805 BLOCK item 3: no pre-positioned CLI/dependency effects).
 const WORKTREE = resolve(argValue('worktree', join(REPO, '.worktrees', 'a5-m2-int')))
-
-const { CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA } = await import(pathToFileURL(join(WORKTREE, 'tests', 'paths.mjs')).href)
-const { startMockModel } = await import(pathToFileURL(join(WORKTREE, 'packages', 'tools', 'harness', 'mock-deepseek.mjs')).href)
-const { DshInstance } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'instance.mjs')).href)
-const { logTail, portInUse, waitForPortFree } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'util.mjs')).href)
-const { captureGitState } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'tree-clean.mjs')).href)
+let CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA, startMockModel, DshInstance, logTail, portInUse, waitForPortFree, captureGitState
+async function loadHarness() {
+  ;({ CLIENT_COMMIT_HASH, TEST_USE_BASELINE_SHA } = await import(pathToFileURL(join(WORKTREE, 'tests', 'paths.mjs')).href))
+  ;({ startMockModel } = await import(pathToFileURL(join(WORKTREE, 'packages', 'tools', 'harness', 'mock-deepseek.mjs')).href))
+  ;({ DshInstance } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'instance.mjs')).href))
+  ;({ logTail, portInUse, waitForPortFree } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'util.mjs')).href))
+  ;({ captureGitState } = await import(pathToFileURL(join(WORKTREE, 'tests', 'characterization', 'lib', 'tree-clean.mjs')).href))
+}
 
 // ── pins (root 14:57 ruling — ROOT-level product package @ source-HEAD 249eb65ec (SYMMETRIC paImageHandoff third port, root 14:44); supersedes 19d54bd72 as the MOUNT SURFACE; 19d54/8b94/31f7 pins KEPT) ──
 const SOURCE_PIN_SHA = '249eb65ec1789ab8bfcf02268d14d3d7060b8c2a'
@@ -116,8 +121,11 @@ if (ENTRY_DIRECT) {
 }
 const FIXTURE = argValue('fixture', 'todo')
 if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') {
-  console.error('FATAL: --fixture must be todo|write|image')
-  process.exit(1)
+  // direct entry only: an import must NEVER exit the importing process
+  if (ENTRY_DIRECT) {
+    console.error('FATAL: --fixture must be todo|write|image')
+    process.exit(1)
+  }
 }
 const ROW_TOOL = FIXTURE === 'image' ? 'read_image' : FIXTURE === 'write' ? 'write' : 'todo_write'
 const REFUSAL_MARK = FIXTURE === 'write' ? 'refused-write' : FIXTURE === 'todo' ? 'refused-todo' : 'STRUCTURAL:image-denial-protocol' // image mode NEVER uses a marker word (root 14:29/14:57 law: structural callId-paired protocol only)
@@ -139,7 +147,7 @@ const RUN_DIR = join(EVIDENCE_DIR, `run-${RUN_STAMP.slice('a5m2c2-'.length)}`)
 const TESTUSE = resolve(argValue('testuse', join(WORKTREE, 'tests', 'deepseek-harness-test-use')))
 const HOST_TREE = TESTUSE
 const HOST_BIN = join(TESTUSE, 'apps', 'cli', 'lib', 'bin.js')
-const HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA // generation lives ONLY in tests/paths.mjs
+let HOST_BASELINE_SHA = null // set by loadHarness() in main(); generation lives ONLY in tests/paths.mjs
 
 // THE MOUNT SURFACE — ROOT-level package at install-495/package (root 10:30 GO)
 // + the pinned helper at mount-helper/packages/tools/harness/plugin.mjs, laid
@@ -1089,6 +1097,7 @@ function writeTeamPatchFile(patchPath, bootPhase) {
 
 // ── world boot / stop ──────────────────────────────────────────────────────
 const liveHosts = new Set()
+let WORLD_IDENTITY = null // {dev,ino} registered at use time (L2): any future cleanup must re-assert via assertCleanupTarget
 async function assertWorld() {
   // L3 defense-in-depth: re-validate the REGISTERED world against the same law at
   // use time (symlink swap / TOCTOU). Any mismatch dies BEFORE any mkdir/write.
@@ -1096,6 +1105,7 @@ async function assertWorld() {
   try {
     const recheck = parseWorldArg({ repoRoot: REPO, homesRoot: HOMES_ROOT, worldArg: WORLD_REL })
     if (recheck.home !== HOME) await dieFatal(`world identity drift: parsed ${recheck.home} != registered ${HOME}`)
+    WORLD_IDENTITY = recheck.identity
   } catch (e) {
     await dieFatal(`world-safety re-validation failed: ${String(e?.message ?? e)}`)
   }
@@ -1104,7 +1114,7 @@ async function assertWorld() {
     if (existsSync(join(HOME, stale))) await dieFatal(`world not fresh: ${HOME}/${stale} exists`)
   }
   mkdirSync(BLUEPRINT_DIR, { recursive: true })
-  writeFileSync(LOCK_FILE, JSON.stringify({ world: HOME, pid: process.pid, kit: 'a5m2-todo-c2.mjs', runStamp: RUN_STAMP, at: new Date().toISOString() }, null, 2))
+  writeFileSync(LOCK_FILE, JSON.stringify({ world: HOME, identity: WORLD_IDENTITY, pid: process.pid, kit: 'a5m2-todo-c2.mjs', runStamp: RUN_STAMP, at: new Date().toISOString() }, null, 2))
 }
 async function bootHost({ label, port, boot, phase }) {
   const instLogDir = join(RUN_DIR, 'instances', label)
@@ -1380,6 +1390,10 @@ process.exit(fail === 0 ? 0 : 1)
 
 // ── main ───────────────────────────────────────────────────────────────────
 async function main() {
+  // direct entry only (main is entry-gated): NOW load harness deps + re-validate CLI
+  await loadHarness()
+  HOST_BASELINE_SHA = TEST_USE_BASELINE_SHA
+  if (FIXTURE !== 'todo' && FIXTURE !== 'write' && FIXTURE !== 'image') await dieFatal(`--fixture invalid: ${FIXTURE}`)
   mkdirSync(RUN_DIR, { recursive: true })
   RUN_LOG = join(RUN_DIR, 'run.log')
   log(`RUN IDENTITY (root 14:57 ruling — IMAGE C2 window): ROOT package pin 249eb65ec1789ab8bfcf02268d14d3d7060b8c2a tgz ca0f4b253fd3e9075e86d772f33ccb21c42c165ff7de3dee5949faf5c780d4b7 (3251993B; SYMMETRIC paImageHandoff third port @root 14:44: adapter third-port lines + plane image hand-off face/redemption + glue presence forwarding + booked 11-leg spec + census round-13 + same-commit dist mirrors; build-at-head ok compared=1788 drift=0; source==dist plane 03b2eb95/glue 1bda93d3 cmp clean; PATHSET-EQUAL-1813 vs 19d54, content delta EXACTLY SIX files; G1/G2/G3 owner files NOT on this commit, cannot ride git-archive BY CONSTRUCTION); install-surface gate 473 lines digest cc3d4b1b…; tree INFO f8d5622a… (MANIFEST@249eb LC_ALL=C per-file recipe); layout REUSED: dual root (${INSTALL_DIR} + mount-helper-root, helper == pin 471475b9); IMAGE fixture invariants (root 14:57): synthetic 2048x1536 PNG under examples/*/.sessions/ (gitignored L15; Host .gitignore UNTOUCHED), store override maxImageDimension=1024 via profile-patch override of id=attachment-local (base row carries no config) -> REAL normalization 1024x768 + originalDimensions on the receipt; image-capable route = shipped catalog model deepseek-flash (inputModalities text+image; assertImageCapableRoute tool-fs/src/read-image.ts:117-130 same position on the governed row); default ask KEPT, original fsroot/15-Team exclusions/19 global denies KEPT, NO user images; PASS BAR: old parameter-permission rows = 0 for read_image (the hand-off EMPIRICALLY opens the old front door at zero), PA PENDING ZERO store objects (direct census; reads only at the audited execution edge = control-flow INFERENCE — never 'independent read 0'), public allow ONE Control consumption + REAL normalized ref + model-visible text ORIGINAL dimensions + image part with byte-identity to the stored object, deny/public-abandon ZERO commits; abandon via p6t6 abandonControlRequest authority (NOT nativeAbort); PA independent evidence ABSENT => audited control-flow INFERENCE wording stays; grep never called; 19d54/8b94 pins + r11-r16 evidence KEPT byte-for-byte; ONE run, first-error-stop`)

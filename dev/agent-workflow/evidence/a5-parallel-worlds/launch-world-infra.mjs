@@ -49,8 +49,11 @@ if (!isDirectEntry(import.meta.url, process.argv[1])) {
 
 const LANE = arg('lane')
 let HOME
+let HOME_IDENTITY = null // {dev,ino} registered from parseWorldArg (L2 identity)
 try {
-  HOME = parseWorldArg({ repoRoot: REPO, homesRoot: join(REPO, 'tests', 'homes'), worldArg: arg('world') }).home
+  const parsed = parseWorldArg({ repoRoot: REPO, homesRoot: join(REPO, 'tests', 'homes'), worldArg: arg('world') })
+  HOME = parsed.home
+  HOME_IDENTITY = parsed.identity
 } catch (e) {
   console.error(`FATAL: ${String(e?.message ?? e)}`)
   process.exit(2)
@@ -174,6 +177,8 @@ function writePatchFile(patchPath) {
 
 let instance = null
 let mock = null
+let lockOwned = false // true ONLY after THIS process wrote LOCK itself
+let stateOwned = false // true ONLY after THIS process wrote STATE itself
 let stopping = false
 async function shutdown(reason, code) {
   if (stopping) return
@@ -197,7 +202,10 @@ async function shutdown(reason, code) {
       } catch { /* gone */ }
     }
   } catch { /* /proc scan best effort */ }
-  for (const f of [STATE, LOCK]) { try { rmSync(f, { force: true }) } catch { /* ok */ } }
+  // ACQUISITION DISCIPLINE (root 1805 BLOCK item 2): clean ONLY resources THIS run
+  // exclusively acquired and owner-verified (lock/state we wrote ourselves).
+  // A failure BEFORE acquisition performs ZERO cleanup — never touch a foreign lock.
+  for (const f of (lockOwned ? [LOCK] : []).concat(stateOwned ? [STATE] : [])) { try { rmSync(f, { force: true }) } catch { /* ok */ } }
   log(`SHUTDOWN ${JSON.stringify(out)}`)
   const fin = { phase: 'final', ...out, at: new Date().toISOString() }
   writeFileSync(join(EVIDENCE, `final-${LANE}.json`), JSON.stringify(fin, null, 2) + '\n')
@@ -226,12 +234,17 @@ for (const [l, p] of [['host.js', PRODUCTION_ROW_PATH], ['glue', GLUE_PATH], ['s
 if (existsSync(join(HOME, 'storages')) || existsSync(join(HOME, 'sessions'))) await fatal(`world not fresh: ${HOME}`)
 if (existsSync(LOCK)) await fatal(`world locked by another writer: ${LOCK}`)
 for (const p of [HOST_PORT, MOCK_PORT]) if (await portInUse(p, 1500)) await fatal(`port ${p} busy before launch`)
-writeFileSync(LOCK, JSON.stringify({ world: HOME, pid: process.pid, kit: 'launch-world-infra.mjs', run: RUN, at: new Date().toISOString() }, null, 2))
+writeFileSync(LOCK, JSON.stringify({ world: HOME, identity: HOME_IDENTITY, pid: process.pid, kit: 'launch-world-infra.mjs', run: RUN, at: new Date().toISOString() }, null, 2))
+lockOwned = true // acquisition point: from here, teardown may remove OUR lock
 
 // token-free port snapshot
 try { writeFileSync(join(EVIDENCE, `ss-ltn-${LANE}-before.txt`), execFileSync('ss', ['-ltn'], { encoding: 'utf8' })) } catch { /* ok */ }
 
 // ── boot ────────────────────────────────────────────────────────────────────
+// ANY failure past acquisition funnels through fatal() → shutdown() so THIS
+// run's acquired resources are always released by its only owner (root 1805
+// BLOCK: init failures must reach controlled teardown, foreign locks untouched).
+try {
 const patch = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
 writePatchFile(patch)
 writeFileSync(join(HOME, 'p6t6-directive.json'), JSON.stringify({ boot: 1, phase: 'create', reportDir: EVIDENCE, runStamp: RUN, rootSessionId: ROOT }, null, 2))
@@ -287,7 +300,11 @@ writeFileSync(STATE, JSON.stringify({
   hostPort: HOST_PORT, origin, bootUrlRedacted: started.url.replace(/token=\S+/, 'token=<SCRUBBED>'),
   health: hb.body, rows: ['dsh-agent-team', 'p6t6-team-tools'], sharedRoot: SHARED,
 }, null, 2) + '\n')
+stateOwned = true // acquisition point: STATE is ours from here
 log('READY — waiting for SIGTERM (infra validator holds the world up)')
 
 // watchdog: never hold a lane forever if something upstream vanished
 setTimeout(() => { void shutdown('watchdog-25min', 3) }, 25 * 60_000).unref?.()
+} catch (e) {
+  await fatal(`boot/verify failed: ${String(e?.stack ?? e).slice(0, 900)}`)
+}
