@@ -1083,3 +1083,72 @@ describe('invocation-only class: G6 session-query projection law (root 22:13)', 
     }
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRODUCTION-CONFIRMED SETS (root 22:4x card) — ten B-TEAM, three G1 pure-
+// query, three B-SUBAGENT controls ride the IDENTICAL invocation-only
+// projection law: list-driven membership, zero new kernel code. Team rows'
+// durable writes adjudicate INSIDE the delegated chain (the template lane
+// never projects them — the tool-invoke arm is the whole authority, so an
+// invocation rule is no I/O exemption); the G1 rows walk the plane's ONE
+// PA admission at their fixed native spellings; the trio's adjacency/
+// ancestor law lives in the service, not in a projected resource.
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('invocation-only class: production-confirmed sets projection law (root 22:4x)', () => {
+  const CONFIRMED = [
+    'team_list_members', 'team_list_templates', 'team_inspect_config',
+    'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
+    'team_send_message', 'team_report_progress', 'team_archive_member',
+    'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
+    'interrupt_agent', 'list_agents', 'send_message',
+  ] as const
+
+  it('allow-lane any projects the single tool-invoke arm as ALLOW for EVERY confirmed name — no notes, no dual gate, no companion effect kind', () => {
+    for (const name of CONFIRMED) {
+      const r = projOf({ default: 'deny', allow: [{ tool: name, resource: { kind: 'any' } }], ask: [], deny: [] }, { leaderExecTokenPresent: () => false })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const spell = r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`)
+      expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`])
+      expect(r.value.notes).toEqual([])
+      expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    }
+  })
+
+  it('deny-lane any projects DENY for all sixteen at once — sixteen R-1a sources, one per ruleIndex (shared algebra, nothing dropped)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: CONFIRMED.map((name) => ({ tool: name, resource: { kind: 'any' } } as TemplatePermissionPolicy['deny'][number])) })
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    const sources = r.value.denySources()
+    expect(sources.length).toBe(CONFIRMED.length)
+    expect(sources.map((s) => s.matcher.resource)).toEqual(CONFIRMED.map((name) => `${REALM}|tool:${name}`))
+    expect(r.value.notes).toEqual([])
+  })
+
+  it('cross-name no-cross: team_delegate authority answers for NO other confirmed name; send_message answers only for itself', () => {
+    const d = projOf({ default: 'deny', allow: [{ tool: 'team_delegate', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(d.ok).toBe(true)
+    if (!d.ok) return
+    for (const name of CONFIRMED) expect(d.value.coversEffect(toolInvokeEffect(name))).toBe(name === 'team_delegate')
+    const m = projOf({ default: 'deny', allow: [{ tool: 'send_message', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(m.ok).toBe(true)
+    if (!m.ok) return
+    expect(m.value.coversEffect(toolInvokeEffect('send_message'))).toBe(true)
+    expect(m.value.coversEffect(toolInvokeEffect('interrupt_agent'))).toBe(false)
+  })
+
+  it('exact/subtree refused for every confirmed name in every lane (fail closed at BOTH gates; no partial projection)', () => {
+    for (const name of CONFIRMED) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const kind of ['exact', 'subtree'] as const) {
+          const r = projOf({ default: 'ask', allow: [], ask: [], deny: [], [lane]: [{ tool: name, resource: { kind, path: '/data/notes' } as unknown as TemplatePermissionPolicy['deny'][number]['resource'] }] } as TemplatePermissionPolicy)
+          expect(r.ok).toBe(false)
+          if (r.ok) return // expected refusal holds → continue (root 20:57 guard law)
+          expect(r.error.details?.['refusal']).toBe('projection-rule-malformed')
+          expect(String(r.error.message)).toContain('invocation-only')
+        }
+      }
+    }
+  })
+})

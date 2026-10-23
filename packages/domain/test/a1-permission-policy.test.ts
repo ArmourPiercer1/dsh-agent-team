@@ -940,7 +940,7 @@ describe('A1: subtree resource kind (A2C-7, plan §9)', () => {
 })
 
 describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
-  it('PERMISSION_TOOL_NAMES pins the closed tool names (A2C-1: the shell class bash/pwsh; Alpha.5 M2 root 20:05: + the invocation-only pair; root 22:13: + the five G6 session-query names)', () => {
+  it('PERMISSION_TOOL_NAMES pins the closed tool names (30 = seven + schedule pair + G6 five + B-TEAM ten + G1 pure-query three + controls trio; root 20:05/22:13/22:4x)', () => {
     expect(PERMISSION_TOOL_NAMES).toEqual([
       'read',
       'read_image',
@@ -956,6 +956,22 @@ describe('A1: export surface for A3 (resolver) and A5 (adapter)', () => {
       'session_trace',
       'session_event_trace',
       'session_event_read',
+      'team_list_members',
+      'team_list_templates',
+      'team_inspect_config',
+      'team_create_member',
+      'team_delegate',
+      'team_follow_up',
+      'team_collect',
+      'team_send_message',
+      'team_report_progress',
+      'team_archive_member',
+      'cordis_inspect_list',
+      'cordis_inspect_query',
+      'team_list_pending_control',
+      'interrupt_agent',
+      'list_agents',
+      'send_message',
     ])
   })
 
@@ -1337,5 +1353,98 @@ describe('invocation-only G6 session-query vocabulary (Alpha.5 M2, root 22:13)',
   it('the original seven names + schedule pair stay byte-identical neighbors of the class (bash deny-any still the shell law)', () => {
     const policy = policyOf(PERMISSION_SOURCE_BASH_ANY)
     expect(policy.deny).toEqual([{ tool: 'bash', resource: { kind: 'any' } }])
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Alpha.5 M2 CONTINUATION 2 (root 22:4x card) — the production-CONFIRMED
+// closed sets join the invocation-only class name by name: TEN B-TEAM
+// (team-adapters.mjs A5_B_TEAM_TOOL_NAMES @int, PA lane = the plane's ONE
+// paAdmit, bindings actualservice 85ccbf9e3), THREE G1 PURE-QUERY
+// (A5_G1_PURE_QUERY_MOUNT_NAMES: "walk THIS plane's ONE PA admission"),
+// THREE B-SUBAGENT controls (A5_B_SUBAGENT_TOOL_NAMES @ the source-signed
+// branch 7c6869879; the spawn-side commits are mint/address encoding, NOT
+// named invocations — subagent/subagent_fork stay OUT). The FOUR Team
+// self-governance controls stay OUT (declared INACTIVE, Gate 0f refuses
+// their mount) — pinned absent. No prefix, no whole-native sweep, no I/O
+// exemption: the tool-invoke arm is the entire authority for every name.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const CONFIRMED_SETS_22 = [
+  'team_list_members', 'team_list_templates', 'team_inspect_config',
+  'team_create_member', 'team_delegate', 'team_follow_up', 'team_collect',
+  'team_send_message', 'team_report_progress', 'team_archive_member',
+  'cordis_inspect_list', 'cordis_inspect_query', 'team_list_pending_control',
+  'interrupt_agent', 'list_agents', 'send_message',
+] as const
+
+describe('production-confirmed invocation-only closed sets (Alpha.5 M2, root 22:4x)', () => {
+  function indentByS2(lines: string[], by: number): string[] {
+    const pad = ' '.repeat(by)
+    return lines.map((line) => (line.length === 0 ? line : `${pad}${line}`))
+  }
+
+  function s2Source(role: 'leader' | 'member', lanes: string[], id: string): string {
+    const caps = ['    permissions:', '      default: deny', ...lanes]
+    const tail = ['requirements: []', 'memberEnvelopes: []', 'policyStates: []', 'permissionMutationEnvelope:', '  rules: []', 'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---', '']
+    if (role === 'leader') {
+      return ['---', `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`, `blueprintId: ${id}`, 'revision: "1"', 'leader:', '  templateId: leader', '  persona: "Lead."', '  capabilities:', '    teamTools:', '      kind: allow', '      items: []', '    builtinToolDeny: []', '    skills:', '      kind: allow', '      items: []', '    mcp:', '      kind: allow', '      items: []', ...caps, 'members: []', ...tail].join('\n')
+    }
+    return ['---', `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`, `blueprintId: ${id}`, 'revision: "1"', 'leader:', '  templateId: leader', '  persona: "Lead."', 'members:', '  - templateId: worker', '    persona: "Worker."', '    capabilities:', '      teamTools:', '        kind: allow', '        items: []', '      builtinToolDeny: []', '      skills:', '        kind: allow', '        items: []', '      mcp:', '        kind: allow', '        items: []', ...indentByS2(caps, 2), ...tail].join('\n')
+  }
+
+  function s2Lanes(lane: string, tool: string, resource: string): string[] {
+    return [
+      `      ${lane}:`,
+      `        - tool: ${tool}`,
+      '          resource:',
+      resource,
+      ...(['allow', 'ask', 'deny'] as const).filter((l) => l !== lane).map((l) => `      ${l}: []`),
+    ]
+  }
+
+  it('membership: all sixteen confirmed names are in; the four INACTIVE controls and the spawn names stay OUT', () => {
+    for (const name of CONFIRMED_SETS_22) expect(PERMISSION_TOOL_NAMES).toContain(name)
+    for (const out of ['team_request_control', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission', 'subagent', 'subagent_fork', 'list_subagent_models', 'workflow']) {
+      expect(PERMISSION_TOOL_NAMES.includes(out)).toBe(false)
+    }
+  })
+
+  it('sixteen names × three lanes × both roles parse (whole-tool any) under default:deny — the named rule is the ONLY exception', () => {
+    for (const tool of CONFIRMED_SETS_22) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const role of ['leader', 'member'] as const) {
+          const blueprint = parseBlueprint(s2Source(role, s2Lanes(lane, tool, '            kind: any'), 'team.s2'))
+          const caps = role === 'leader' ? blueprint.leader.capabilities : (blueprint.members[0]?.capabilities ?? undefined)
+          expect(caps?.permissions?.default).toBe('deny')
+          const rules = caps?.permissions?.[lane] as readonly PermissionRule[]
+          expect(rules.length).toBe(1)
+          expect(rules[0]?.tool).toBe(tool)
+          expect(rules[0]?.resource).toEqual({ kind: 'any' })
+        }
+      }
+    }
+  })
+
+  it('exact/subtree refused for every confirmed name, every lane, both roles (no resource space to project; no cross-name borrowing)', () => {
+    for (const tool of CONFIRMED_SETS_22) {
+      for (const lane of ['allow', 'ask', 'deny'] as const) {
+        for (const role of ['leader', 'member'] as const) {
+          for (const kind of ['exact', 'subtree']) {
+            expectCode(() => parseBlueprint(s2Source(role, s2Lanes(lane, tool, `            kind: ${kind}\n            path: /data/notes`), 'team.s2')), 'MALFORMED_DTO')
+          }
+        }
+      }
+    }
+  })
+
+  it('the frozen envelope carrier refuses a confirmed name as operationClass (seven names, no any-matcher there)', () => {
+    const source = [
+      '---', `schemaVersion: ${ASK_FIXTURE_DECLARED_VERSION}`, 'blueprintId: team.s2', 'revision: "1"',
+      'leader:', '  templateId: leader', '  persona: "Lead."', 'members: []', 'requirements: []', 'memberEnvelopes: []', 'policyStates: []',
+      'permissionMutationEnvelope:', '  rules:', '    - operationClass: team_delegate', '      matcher:', '        kind: exact', '        path: "/data/notes.md"', '      maximumEffect: ask',
+      'teamHardEnvelope:', '  rules: []', 'metadata: {}', '---', '',
+    ].join('\n')
+    expectCode(() => parseBlueprint(source), 'MALFORMED_DTO')
   })
 })
