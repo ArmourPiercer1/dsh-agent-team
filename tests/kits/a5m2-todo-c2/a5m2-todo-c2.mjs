@@ -2025,10 +2025,72 @@ async function main() {
         await new Promise((r) => setTimeout(r, 1000))
       }
     } else if (FIXTURE === 'image') {
+      // OVERLAY-16 (root 18:22:59 narrow fix, driven by the r18 failure run-2026-10-23T18-17-00): the
+      // consumed allow ended in a TERMINAL governance tool error on the SAME call — assistant
+      // tool_use(read_image, IMG_REL) id X -> tool_result{tool_use_id:X, is_error:true,
+      // "Error: refused-image P_…_MISMATCH …"} — visible on the model wire at 18:17:08.044, yet the
+      // kit still sat out the full 120 s store wait, so "stop at the first substantive failure" was
+      // NOT met. The terminal state is now read through the EXISTING callId-paired tool-result entry
+      // point (denialPairSeen over mockRef.requests, the same reader C4/C5 use) and the criterion
+      // ends IMMEDIATELY: no further effects, no store timeout, teardown through the normal finally.
+      // MISATTRIBUTION GUARD (root: another call's error must never be read as this one's): the
+      // refusal counts as terminal only when (i) the wire holds EXACTLY ONE tool_use(read_image,
+      // IMG_REL) id so far — C4's second call cannot exist yet because C4 prompts later — and (ii)
+      // the is_error result's tool_use_id is EXACTLY that id. Anything else keeps the bounded wait.
+      const wireImageCallIds = () => {
+        const ids = new Set()
+        for (const r of mockRef?.requests ?? []) {
+          for (const m of (r?.body?.messages ?? [])) {
+            if (m?.role !== 'assistant' || !Array.isArray(m.content)) continue
+            for (const b of m.content) {
+              if (b?.type === 'tool_use' && b?.name === 'read_image' && b?.input?.file_path === IMG_REL) ids.add(b.id)
+            }
+          }
+        }
+        return ids
+      }
+      const GOV_REFUSAL_PRED = (t) => /^Error:/s.test(t) && /\bP_[A-Z0-9_]{4,}\b/.test(t)
+      const sameCallTerminalError = () => {
+        const ids = [...wireImageCallIds()]
+        if (ids.length !== 1) return { unique: ids.length === 1, observed: ids, hit: null }
+        for (const r of mockRef?.requests ?? []) {
+          const hit = denialPairSeen(r?.body?.messages ?? [], { tool: 'read_image', file: IMG_REL }, GOV_REFUSAL_PRED)
+          if (hit !== null && hit.callId === ids[0]) return { unique: true, observed: ids, hit }
+        }
+        return { unique: true, observed: ids, hit: null }
+      }
+      let terminalImgErr = null
+      let terminalBinding = null
       for (;;) {
         if (storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel)).length >= 1) break
+        const probe = sameCallTerminalError()
+        if (probe.hit !== null) { terminalImgErr = probe.hit; terminalBinding = probe; break }
         if (Date.now() >= appendDeadline) break
         await new Promise((r) => setTimeout(r, 1000))
+      }
+      if (terminalImgErr !== null) {
+        // The RAW wire text is preserved verbatim here (plus mock.log / api-transcript.json). The wire
+        // allow and the ONE Control consumption stay recorded exactly as they happened — both were
+        // true — but C3 is FAILED here and nothing downstream runs: no success is claimed for the
+        // allow leg, and the original failing raw evidence is never rewritten.
+        const codeMatch = /\bP_[A-Z0-9_]{4,}\b/.exec(terminalImgErr.text)
+        writeFileSync(join(RUN_DIR, 'c3-first-failure-stop.json'), JSON.stringify({
+          at: new Date().toISOString(),
+          requestId: row1.payload.requestId,
+          reason: 'OVERLAY-16: terminal governance tool error on THIS call (callId-paired is_error tool_result) -> criterion ended immediately; store wait and all later effects skipped',
+          sameCallBinding: {
+            requiredCallId: terminalImgErr.callId,
+            uniqueImageCallOnWireSoFar: true,
+            observedImageCallIds: terminalBinding?.observed ?? [terminalImgErr.callId],
+            reader: 'denialPairSeen over mockRef.requests[*].body.messages — the same entry point C4/C5 use',
+          },
+          terminalToolError: { callId: terminalImgErr.callId, code: codeMatch ? codeMatch[0] : null, rawText: terminalImgErr.text },
+          storeCensus: storeCensus(), baseline: storeBaseline,
+        }, null, 2))
+        check('C3', 'the consumed allow reached the model as an image (no terminal governance tool error paired to THIS callId)', false,
+          `callId=${terminalImgErr.callId} code=${codeMatch ? codeMatch[0] : 'n/a'} raw=${jstr(terminalImgErr.text, 700)}`)
+        log(`C3 FIRST-SUBSTANTIVE-FAILURE STOP: terminal governance tool error on the SAME call (callId=${terminalImgErr.callId}${codeMatch ? ' code=' + codeMatch[0] : ''}); store wait and model-visible wait skipped`)
+        finishCriterion('C3')
       }
       const gained = storeCensus().filter((o) => !storeBaseline.some((b) => b.rel === o.rel))
       if (gained.length === 0) {
