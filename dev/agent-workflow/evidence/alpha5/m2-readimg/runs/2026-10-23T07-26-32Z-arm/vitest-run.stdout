@@ -1,0 +1,151 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (17 tests | 6 failed) 5488ms
+     × C2 positive (approved path): classify emits the frozen I+F effect set, the ticket consumes to a controlled read + a durable store commit, the receipt identity is fingerprint-verified, and the same-scope reference re-reads byte-exact 66ms
+     ✓ row-7 contrast (pre-fix repro vs post-fix typed refusal, verbatim): the untouched host native face reads an out-of-root absolute target successfully (no root fence); the SAME target on the governed arm refuses P_IMAGE_CLASSIFY_TARGET_OUTSIDE_GOVERNED_ROOT with ZERO readPort calls  341ms
+     ✓ escape via traversal is refused at the pure classify stage with zero fs calls (the containment decision is the governor's own act, never delegated to the mounted backend) 4ms
+     ✓ symlink alias (inside spelling, outside bytes): refused at effect-time re-anchoring BEFORE any content read — zero readFile calls, zero attachment writes 5ms
+     ✓ byte cap lands AT READ TIME: the stat size above min(maxImageBytes, maxMessageImageBytes) refuses before the content read — zero readFile calls, the store never sees the file 5ms
+     × the STORE owns the pixel laws: a dimension-capped deployment refuses through the commit, the durable store keeps zero objects, and the unknowable commit boundary keeps sideEffectPossible (never downgraded) 7ms
+     ✓ Ask-pending writes nothing: classify (+ even a prepared ticket) leaves zero reads, zero store calls, zero objects 5ms
+     × no ticket, no effect: execute without a prepare-issued ticket refuses (rejection/denial face) and a consumed ticket single-claims with ALREADY_CONSUMED on re-fire 6ms
+     ✓ C3 before admission: cancel settles CANCELLED-BEFORE-ADMISSION, zero file reads + zero attachment writes 4ms
+     ✓ C3 after admission (ticket issued, never consumed): zero append-equivalents — no read started, no store call, no object 4ms
+     × C3 mid-read abort: the live read dies before the commit; the report names the mid-read window, cleanup needs nothing (this call committed zero), and only this call had uncommitted work 5003ms
+     × C3 cancel after commit: the honest report names ALREADY-COMMITTED with the attachmentId, and the durable object stays — cancellation never deletes existing attachments (the arm owns no delete face) 10ms
+     × attachment namespace binding: a foreign session incarnation cannot reference the minted attachment (typed refusal, ZERO additional store calls); the minting scope can; an unknown id is UNKNOWN 6ms
+     ✓ the closed argument root: unknown top-level keys refuse P_IMAGE_CLASSIFY_UNKNOWN_PARAMETER with zero effects (the P layer tightens what the host schema layer leaves open — the native ignore-extra-keys face stays measured in a5m2-readimg-c1); no-extension and foreign-extension targets refuse UNDECLARED_MEDIA_TYPE at the pure stage 4ms
+     ✓ DRAINING closes every stage typed and the handle exposes NO native body / fallback face (BASE.C3 by construction) 4ms
+     ✓ conditional unavailability is fail-closed at assembly: no store port ⇒ the arm factory throws (no half-wired arm, no exemption); no read port ⇒ the same 1ms
+     ✓ a store that dies mid-life answers every consumed call with typed P_IMAGE_STORE_UNAVAILABLE (conditional unavailability, not exemption, never a native fallback) and keeps sideEffectPossible standing 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > C2 positive (approved path): classify emits the frozen I+F effect set, the ticket consumes to a controlled read + a durable store commit, the receipt identity is fingerprint-verified, and the same-scope reference re-reads byte-exact
+AssertionError: execute must commit: the attachment store refused the commit: Cannot read properties of undefined (reading 'run'): expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:267:66
+    265|       expect(prepared.ok).toBe(true)
+    266|       const ran = await world.arm.execute(prepared.ticket as object, E…
+    267|       expect(ran.ok, `execute must commit: ${ran.detail ?? ''}`).toBe(…
+       |                                                                  ^
+    268|       const image = ran.value?.image
+    269|       expect(image?.mediaType).toBe('image/png')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > the STORE owns the pixel laws: a dimension-capped deployment refuses through the commit, the durable store keeps zero objects, and the unknowable commit boundary keeps sideEffectPossible (never downgraded)
+AssertionError: expected 'the attachment store refused the comm…' to contain 'exceeds the 2px limit'
+
+Expected: "exceeds the 2px limit"
+Received: "the attachment store refused the commit: Cannot read properties of undefined (reading 'run')"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:371:26
+    369|       expect(ran.ok).toBe(false)
+    370|       expect(ran.code).toBe(A5_IMAGE_TYPED_CODES.STORE_UNAVAILABLE)
+    371|       expect(ran.detail).toContain('exceeds the 2px limit') // the sto…
+       |                          ^
+    372|       expect(ran.sideEffectPossible).toBe(true)
+    373|       expect(world.objects()).toBe(0)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > no ticket, no effect: execute without a prepare-issued ticket refuses (rejection/denial face) and a consumed ticket single-claims with ALREADY_CONSUMED on re-fire
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:406:24
+    404|       const prepared = world.arm.prepare(classified.plan as object)
+    405|       const first = await world.arm.execute(prepared.ticket as object,…
+    406|       expect(first.ok).toBe(true)
+       |                        ^
+    407|       const refire = await world.arm.execute(prepared.ticket as object…
+    408|       expect(refire.ok).toBe(false)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > C3 mid-read abort: the live read dies before the commit; the report names the mid-read window, cleanup needs nothing (this call committed zero), and only this call had uncommitted work
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:448:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > C3 cancel after commit: the honest report names ALREADY-COMMITTED with the attachmentId, and the durable object stays — cancellation never deletes existing attachments (the arm owns no delete face)
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:476:22
+    474|       const prepared = world.arm.prepare(classified.plan as object)
+    475|       const ran = await world.arm.execute(prepared.ticket as object, E…
+    476|       expect(ran.ok).toBe(true)
+       |                      ^
+    477|       const cancelled = world.arm.cancel(prepared.ticket as object)
+    478|       expect(cancelled.settled).toBe('ALREADY-COMMITTED')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts > a5m2-readimg arm C2/C3 — governed B-IMAGE pre-takeover over the real pin639 attachment store > attachment namespace binding: a foreign session incarnation cannot reference the minted attachment (typed refusal, ZERO additional store calls); the minting scope can; an unknown id is UNKNOWN
+AssertionError: expected 'P_IMAGE_ATTACHMENT_UNKNOWN' to be 'P_IMAGE_ATTACHMENT_FOREIGN_NAMESPACE' // Object.is equality
+
+Expected: "P_IMAGE_ATTACHMENT_FOREIGN_NAMESPACE"
+Received: "P_IMAGE_ATTACHMENT_UNKNOWN"
+
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:497:28
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯ Uncaught Exception ⎯⎯⎯⎯⎯
+AbortError: aborted during the content read
+ ❯ AbortSignal.onAbort packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:115:23
+    113|         await new Promise<void>((resolve, reject) => {
+    114|           const onAbort = (): never => {
+    115|             const e = new Error('aborted during the content read')
+       |                       ^
+    116|             e.name = 'AbortError'
+    117|             throw e
+ ❯ AbortSignal.[nodejs.internal.kHybridDispatch] node:internal/event_target:848:20
+ ❯ AbortSignal.dispatchEvent node:internal/event_target:789:26
+ ❯ runAbort node:internal/abort_controller:554:10
+ ❯ abortSignal node:internal/abort_controller:518:3
+ ❯ AbortController.abort node:internal/abort_controller:573:5
+ ❯ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts:457:12
+ ❯ node_modules/.pnpm/@vitest+runner@4.1.11/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+This error originated in "packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "C3 mid-read abort: the live read dies before the commit; the report names the mid-read window, cleanup needs nothing (this call committed zero), and only this call had uncommitted work". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 11 passed (17)
+     Errors  1 error
+   Start at  07:26:33
+   Duration  6.13s (transform 617ms, setup 0ms, import 498ms, tests 5.49s, environment 0ms)
+

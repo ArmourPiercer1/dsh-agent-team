@@ -1,0 +1,18 @@
+$ tsc -p tsconfig.json
+test/a5m2-governed-write-row-c1.test.ts(131,29): error TS7016: Could not find a declaration file for module '../src/plugin/live/governed-write-row.mjs'. '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/packages/runtime/src/plugin/live/governed-write-row.mjs' implicitly has an 'any' type.
+test/a5m2-governed-write-row-c1.test.ts(149,47): error TS2322: Type '"allow"' is not assignable to type '"ask" | "deny"'.
+test/a5m2-governed-write-row-c1.test.ts(298,31): error TS7016: Could not find a declaration file for module '../src/plugin/live/governed-write-row.mjs'. '/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/packages/runtime/src/plugin/live/governed-write-row.mjs' implicitly has an 'any' type.
+../tools/a5p5-tools/src/write-slice.ts(562,39): error TS2345: Argument of type 'SlicePaOpen | { readonly kind: "allow"; readonly cancelled: true; }' is not assignable to parameter of type 'SlicePaOpen'.
+  Type '{ readonly kind: "allow"; readonly cancelled: true; }' is missing the following properties from type 'SlicePaOpen': grant, request
+../tools/a5p5-tools/src/write-slice.ts(568,9): error TS2367: This comparison appears to be unintentional because the types 'false | undefined' and 'true' have no overlap.
+../tools/a5p5-tools/src/write-slice.ts(594,41): error TS2339: Property 'request' does not exist on type 'SlicePaOpen | { readonly kind: "allow"; readonly cancelled: true; }'.
+  Property 'request' does not exist on type '{ readonly kind: "allow"; readonly cancelled: true; }'.
+../tools/a5p5-tools/src/write-slice.ts(594,55): error TS2339: Property 'grant' does not exist on type 'SlicePaOpen | { readonly kind: "allow"; readonly cancelled: true; }'.
+  Property 'grant' does not exist on type '{ readonly kind: "allow"; readonly cancelled: true; }'.
+../tools/a5p5-tools/src/write-slice.ts(598,49): error TS2339: Property 'grant' does not exist on type 'SlicePaOpen | { readonly kind: "allow"; readonly cancelled: true; }'.
+  Property 'grant' does not exist on type '{ readonly kind: "allow"; readonly cancelled: true; }'.
+../tools/a5p5-tools/src/write-slice.ts(608,19): error TS2339: Property 'grant' does not exist on type 'SlicePaOpen | { readonly kind: "allow"; readonly cancelled: true; }'.
+  Property 'grant' does not exist on type '{ readonly kind: "allow"; readonly cancelled: true; }'.
+/srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel/packages/runtime:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/runtime@0.1.1-alpha.2 typecheck: `tsc -p tsconfig.json`
+Exit status 2

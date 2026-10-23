@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /srv/workspace/dsh-plugins/dsh-agent-team/.worktrees/a5-m1-kernel
+
+ ✓ packages/runtime/test/a5m2-readimg-arm-c2c3.test.ts (17 tests) 528ms
+
+ Test Files  1 passed (1)
+      Tests  17 passed (17)
+   Start at  07:28:56
+   Duration  1.20s (transform 646ms, setup 0ms, import 544ms, tests 528ms, environment 0ms)
+
