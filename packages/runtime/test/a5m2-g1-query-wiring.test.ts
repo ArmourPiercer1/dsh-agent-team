@@ -33,19 +33,39 @@
  *      (plane/glue/registry/host-baseline/tool-dispatch/control/g2/g3/todo/
  *      write/image) appears — behaviorally reinforced: presenting a
  *      dependency/plugin resource arm or a non-whitelisted port refuses
- *      P_G1_WIRE_ARM_NOT_ACCEPTED at the factory.
+ *      P_G1_WIRE_ARM_NOT_ACCEPTED at the factory;
+ *  (f) ROOT 8b4 CENTRALIZATION: THE CAPTURED DEFINITION TRAVELS COMPLETE.
+ *      Every presentation face of the captured native definition (output
+ *      {schema, render}, compiled parameters, presentCall, isConcurrencySafe,
+ *      timeoutMs, every face) rides into the placed definition VERBATIM by
+ *      REFERENCE — ONLY execute is replaced; and the emitted definitions are
+ *      verified through the REAL registration minimum entry (真实 register
+ *      最低入口核): the pristine baseline's ToolRuntime over a real Cordis
+ *      Context (Context + SystemPrompt + ToolRuntime plugins — the host's own
+ *      test idiom) ACCEPTS them and stores them verbatim, REJECTS the
+ *      hand-fabricated minimal shape (a definition without the mandatory
+ *      output face), and REJECTS the duplicate the way the real entry does.
+ *      The capture-side identity string never appears as a registration key
+ *      (leg (b)) — placed and captured identities stay visibly separate.
  *
  * DISCLOSED STAND-INS (the adapter spec owns the REAL halves): native faces
- * are test doubles whose execute mirrors the pinned host law shape; the
- * `admit` seam is the PLANE'S seat (paAdmit walk — integrator line) stood in
- * by a recording double. This spec is NOT C2: no Host, no network. Windows
+ * are the REAL host `defineTool` products (compiled by the pristine 639
+ * schema compiler, accepted by the REAL host validator) whose EXECUTE BODIES
+ * are recorded test doubles mirroring the pinned host law shape — the cordis
+ * pair's real delegation rides the live inspect topology, not a unit lane;
+ * the `admit` seam is the PLANE'S seat (paAdmit walk — integrator line) stood
+ * in by a recording double. This spec is NOT C2: no Host, no network. Windows
  * dimensions: not run on this Linux harness, never claimed.
  *
  * @module @dsh-agent-team/runtime/test/a5m2-g1-query-wiring
  */
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
+import { findTestRepoRoot } from '../../../tests/paths.mjs'
 import { definitionIdentityOf } from '../tool-dispatch/index.js'
 import { parseRequestedEffectSet } from '../../domain/tool-governance/src/index.js'
 
@@ -71,7 +91,14 @@ type AdapterModule = {
   g1SurfaceAdapterNames: () => string[]
   mountG1SurfaceAdapter: (name: string, deps?: Record<string, unknown>) => AdapterRow
 }
-type Definition = { name: string; description: string; parameters?: Record<string, unknown>; execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown> }
+type Definition = {
+  [face: string]: unknown
+  name: string
+  description: string
+  output: { schema: unknown; render: unknown; presentationMeta?: unknown }
+  parameters?: Record<string, unknown>
+  execute: (args: unknown, exec: Record<string, unknown>) => Promise<unknown>
+}
 type Registration = { name: string; recordIndex: number; definitionIdentity: string; entry: { familyId: string; adapterRevision: number; providerIdentity: string } }
 type WiringValue = {
   ok: true
@@ -101,6 +128,49 @@ const WIRE = (await import(new URL('../src/plugin/live/governed-families/g1-quer
 const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
   registerA5GovernedFamily: (key: string, entry: { familyId: string; adapterRevision: number; providerIdentity: string }) => void
   a5GovernedFamilyFor: (key: string) => { familyId: string; adapterRevision: number; providerIdentity: string } | undefined
+}
+
+// ── the REAL registration entry from the pristine baseline (r9 pattern; fail
+//    closed): the emitted defs face the REAL ToolRuntime.register minimum
+//    entry (真实 register 最低入口核), never a fabricated registration shape.
+//    ONE consistent module set: both services must resolve the SAME cordis
+//    realpath (pnpm links share realpath), else the DI symbols would not be
+//    the same modules and the harness would test a split brain. ──
+const REPO_ROOT = findTestRepoRoot(dirname(fileURLToPath(import.meta.url)))
+if (REPO_ROOT === null) throw new Error('no repo root carrying tests/deepseek-harness-test-use — failing closed')
+const HOST_PKG = (...rel: string[]): string => join(REPO_ROOT, 'tests', 'deepseek-harness-test-use', 'packages', ...rel)
+const TOOLS_LIB = HOST_PKG('core', 'tools', 'lib', 'index.js')
+const SYS_PROMPT_LIB = HOST_PKG('core', 'system-prompt', 'lib', 'index.js')
+if (!existsSync(TOOLS_LIB)) throw new Error(`pristine tools lib absent (${TOOLS_LIB}); failing closed`)
+if (!existsSync(SYS_PROMPT_LIB)) throw new Error(`pristine system-prompt lib absent (${SYS_PROMPT_LIB}); failing closed`)
+const CORDIS_FROM_TOOLS = createRequire(pathToFileURL(TOOLS_LIB)).resolve('@deepseek-ai/cordis')
+const CORDIS_FROM_SYS_PROMPT = createRequire(pathToFileURL(SYS_PROMPT_LIB)).resolve('@deepseek-ai/cordis')
+if (CORDIS_FROM_TOOLS !== CORDIS_FROM_SYS_PROMPT) {
+  throw new Error(`host module set splits across cordis copies (${CORDIS_FROM_TOOLS} != ${CORDIS_FROM_SYS_PROMPT}); failing closed`)
+}
+type HostToolsLib = {
+  default: unknown // the ToolRuntime plugin/service
+  defineTool: (options: Record<string, unknown>) => Record<string, unknown>
+  assertSupportedJsonSchema: (schema: unknown) => void
+}
+type HostContext = {
+  plugin: (plugin: unknown, config?: Record<string, unknown>) => Promise<void>
+  tools: {
+    register: (definition: Record<string, unknown>) => () => void
+    get: (name: string) => Record<string, unknown> | undefined
+  }
+}
+const HOST_TOOLS = (await import(pathToFileURL(TOOLS_LIB).href)) as unknown as HostToolsLib
+const HOST_CORDIS = (await import(pathToFileURL(CORDIS_FROM_TOOLS).href)) as unknown as { Context: new () => HostContext }
+const HOST_CONTEXT_CTOR = HOST_CORDIS.Context
+const HOST_SYSTEM_PROMPT = ((await import(pathToFileURL(SYS_PROMPT_LIB).href)) as unknown as { default: unknown }).default
+/** The host's own minimal harness idiom (core/tools/tests/ptc.spec.ts):
+ *  a real Context, SystemPrompt, then the ToolRuntime service. */
+async function realRegistrationHarness(): Promise<HostContext> {
+  const ctx = new HOST_CONTEXT_CTOR()
+  await ctx.plugin(HOST_SYSTEM_PROMPT, {})
+  await ctx.plugin(HOST_TOOLS.default, {})
+  return ctx
 }
 
 // ── fixtures: the trusted CONFIG faces + CURRENT-facts ports (the same
@@ -137,7 +207,51 @@ const CAPTURED_DESCRIPTIONS: Record<string, string> = {
   team_list_pending_control: 'CAPTURED-G1-BYTES\tpending read — 保留原生 \u00b6 rev6',
 }
 
+/** The captured answer DTOs as REAL host output schemas in the host's VALUE
+ *  schema DSL (every object face declares additionalProperties explicitly and
+ *  `required` is not a value-DSL keyword — both laws measured, not guessed).
+ *  The delegate answers ride these faces verbatim; registration validates the
+ *  SCHEMA, dispatch is out of lane. */
+const OUTPUT_SCHEMAS: Record<string, Record<string, unknown>> = {
+  cordis_inspect_list: {
+    type: 'object',
+    properties: {
+      providers: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string' },
+            id: { type: 'string' },
+            methods: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' } }, additionalProperties: false } },
+          },
+          additionalProperties: false,
+        },
+      },
+      excludedUnauthorizedProviders: { type: 'integer' },
+    },
+    additionalProperties: false,
+  },
+  cordis_inspect_query: { type: 'object', properties: { payload: { type: 'string' } }, additionalProperties: false },
+  team_list_pending_control: {
+    type: 'object',
+    properties: {
+      requests: { type: 'array', items: { type: 'object', properties: {}, additionalProperties: true } },
+      limit: { type: 'integer' },
+    },
+    additionalProperties: false,
+  },
+}
+const DEFAULT_OUTPUT_SCHEMA = { type: 'object', properties: {}, additionalProperties: true }
+
 type NativeCall = { args: unknown; exec: unknown }
+/** The captured native face as the REAL host `defineTool` product (the
+ *  pristine 639 schema compiler builds the parameters/output faces and the
+ *  host validator owns their semantics) — only the EXECUTE BODY is the
+ *  disclosed recording double. Every presentation face (presentCall,
+ *  isConcurrencySafe, timeoutMs) is carried: this is what a real capture
+ *  hands the wiring, and the COMPLETE-definition-travel legs below measure
+ *  that the wiring drops none of it. */
 function makeNative(name: string, body?: (args: unknown, exec: unknown) => Promise<unknown>): { native: Record<string, unknown>; calls: NativeCall[] } {
   const calls: NativeCall[] = []
   const run = async (args: unknown, exec: unknown): Promise<unknown> => {
@@ -153,15 +267,20 @@ function makeNative(name: string, body?: (args: unknown, exec: unknown) => Promi
     if (name === 'cordis_inspect_query') return { payload: 'topology-authorized-answer' }
     return { requests: [], limit: 50 }
   }
-  return {
-    native: {
-      name,
-      description: CAPTURED_DESCRIPTIONS[name] as string,
-      parameters: { type: 'object', properties: {} },
-      execute: body ?? run,
+  const native = HOST_TOOLS.defineTool({
+    name,
+    description: CAPTURED_DESCRIPTIONS[name] ?? `CAPTURED-G1-BYTES\t${name} — 保留原生 \u00b6 rev6`,
+    parameters: {},
+    output: {
+      schema: OUTPUT_SCHEMAS[name] ?? DEFAULT_OUTPUT_SCHEMA,
+      render: (_args: unknown, value: unknown) => [{ type: 'text', text: JSON.stringify(value) }],
     },
-    calls,
-  }
+    presentCall: () => ({ title: name }),
+    isConcurrencySafe: () => true,
+    timeoutMs: 60000,
+    execute: body ?? run,
+  })
+  return { native, calls }
 }
 
 /** A world: subset captures (default: all three), live placement feed backed
@@ -257,6 +376,37 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
         // the parameters face is the CAPTURED object (identity-tie law)
         expect(definition.parameters).toBe(row?.parameters)
         expect(Object.isFrozen(definition)).toBe(true)
+      }
+    })
+
+    it('the CAPTURED definition travels COMPLETE (root 8b4 law): every presentation face rides verbatim BY REFERENCE, ONLY execute is replaced', () => {
+      const world = makeWorld()
+      const wiring = unwrap(world.wiringResult)
+      for (const definition of wiring.definitions) {
+        const native = world.natives.get(definition.name)?.native
+        expect(native, `capture for ${definition.name}`).toBeDefined()
+        // no face added, NO FACE DROPPED: the key sets agree
+        expect(Object.keys(definition).sort()).toEqual(Object.keys(native as Record<string, unknown>).sort())
+        for (const face of Object.keys(native as Record<string, unknown>)) {
+          if (face === 'execute') continue
+          expect(definition[face], `captured face '${face}' must ride the placed def verbatim by reference`).toBe((native as Record<string, unknown>)[face])
+        }
+        // the mandatory canonical output face — schema + render are the CAPTURED bytes
+        expect(definition.output).toBe((native as { output: unknown }).output)
+        expect(typeof definition.output.render).toBe('function')
+        expect(definition.output.schema).toBe((native as { output: { schema: unknown } }).output.schema)
+        // the presentation faces survive (they are the captured references)
+        expect(definition.presentCall).toBe((native as { presentCall: unknown }).presentCall)
+        expect(definition.isConcurrencySafe).toBe((native as { isConcurrencySafe: unknown }).isConcurrencySafe)
+        expect(definition.timeoutMs).toBe((native as { timeoutMs: unknown }).timeoutMs)
+        // ONLY execute is replaced by the wired classify -> admit -> delegate body
+        expect(definition.execute).not.toBe((native as { execute: unknown }).execute)
+        expect(typeof definition.execute).toBe('function')
+        // the top level is the wiring's own frozen object; nested CAPTURED
+        // faces are NOT re-frozen in place (they belong to the capture and the
+        // real registry keeps the same references) — no host-object mutation
+        expect(Object.isFrozen(definition)).toBe(true)
+        expect(Object.isFrozen(definition.output)).toBe(false)
       }
     })
 
@@ -486,13 +636,30 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
         expect(refused.ok, port).toBe(false)
         expect(refused.ok === false && refused.code, port).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.ARM_NOT_ACCEPTED)
       }
-      // half-captures and unknown inputs are config defects too
+      // half-captures and unknown inputs are config defects too — and the
+      // HALF is measured against the REAL registration minimum-entry shape
+      // law: the pre-8b4 fabricated face (no output face at all) and a broken
+      // render both never reach a definition, never reach the real entry.
+      const fabricatedHalfNative = {
+        name: 'cordis_inspect_list',
+        description: 'fabricated — no output face (the shape the real registration entry refuses)',
+        parameters: { type: 'object', properties: {} },
+        execute: async () => ({}),
+      }
       const halfCapture = WIRE.createG1QueryWiring({
         ...base,
-        captured: { cordis_inspect_list: { native: makeNative('cordis_inspect_list').native } },
+        captured: { cordis_inspect_list: { native: fabricatedHalfNative, definitionIdentity: 'x' } },
       })
       expect(halfCapture.ok).toBe(false)
       expect(halfCapture.ok === false && halfCapture.code).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.INPUT_INVALID)
+      const fullCapture = makeNative('cordis_inspect_list')
+      const brokenRender = {
+        native: { ...(fullCapture.native as Record<string, unknown>), output: { ...((fullCapture.native as { output: Record<string, unknown> }).output as Record<string, unknown>), render: 'not-a-function' } },
+        definitionIdentity: 'x',
+      }
+      const renderRefused = WIRE.createG1QueryWiring({ ...base, captured: { cordis_inspect_list: brokenRender } })
+      expect(renderRefused.ok).toBe(false)
+      expect(renderRefused.ok === false && renderRefused.code).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.INPUT_INVALID)
       const unknownKey = WIRE.createG1QueryWiring({ ...base, definitionIdentity: 'hand-spelled-key' })
       expect(unknownKey.ok).toBe(false)
       expect(unknownKey.ok === false && unknownKey.code).toBe(WIRE.A5_G1_QUERY_WIRING_CODES.INPUT_INVALID)
@@ -535,6 +702,54 @@ describe('a5m2-g1-query-wiring: the pure-query G1 wiring candidate over the VERB
       }
       // the frozen group constant flows from the adapter module itself
       expect(wiring.group).toBe(WIRE.A5_G1_QUERY_WIRING_GROUP)
+    })
+  })
+
+  describe('(f) the REAL registration entry (真实 register 最低入口核): emitted defs face the pristine host ToolRuntime.register, never a fabricated registration shape', () => {
+    it('the REAL registration minimum entry ACCEPTS every emitted definition and stores it verbatim — captured output face and all; the same entry REFUSES the hand-fabricated half shape and the duplicate, as the host spells it', async () => {
+      const world = makeWorld()
+      const wiring = unwrap(world.wiringResult)
+      const ctx = await realRegistrationHarness()
+      const disposers: Array<() => void> = []
+      try {
+        for (const definition of wiring.definitions) {
+          disposers.push(ctx.tools.register(definition as unknown as Record<string, unknown>))
+          const stored = ctx.tools.get(definition.name)
+          // stored VERBATIM: the registry holds the emitted object itself…
+          expect(stored).toBe(definition)
+          // …whose output face is still the CAPTURED object (the placed def
+          // carries the captured bytes into the real registry, not a copy)
+          expect((stored as { output: unknown }).output).toBe((world.natives.get(definition.name)?.native as { output: unknown }).output)
+          // the real entry's own duplicate law fires on the second insert
+          expect(() => ctx.tools.register(definition as unknown as Record<string, unknown>)).toThrow(/already registered/)
+        }
+        // the pre-8b4 fabricated shape (name/description/parameters/execute
+        // and NO output face) could never have been placed: the REAL entry
+        // refuses it with its own TypeError — this leg is the measured bite
+        // of "keep the CAPTURED definition complete, replace only execute".
+        expect(() => ctx.tools.register({
+          name: 'fabricated-half-shape',
+          description: 'hand-built minimal def',
+          parameters: { type: 'object', properties: {}, additionalProperties: false },
+          execute: async () => ({}),
+        })).toThrow(/must declare output \{ schema, render, presentationMeta\? \}/)
+      } finally {
+        for (const dispose of disposers) dispose()
+      }
+    })
+
+    it('the entry law itself is pinned from the pristine baseline SOURCE, and the REAL host validator accepts every captured output schema', () => {
+      const hostSource = readFileSync(HOST_PKG('core', 'tools', 'src', 'index.ts'), 'utf8')
+      // the minimum-entry checks register() performs before any layer effect
+      expect(hostSource).toContain('must declare output { schema, render, presentationMeta? }')
+      expect(hostSource).toContain('assertSupportedJsonSchema(output.schema)')
+      expect(hostSource).toContain('timeoutMs must be a positive finite number')
+      const world = makeWorld()
+      const wiring = unwrap(world.wiringResult)
+      for (const definition of wiring.definitions) {
+        expect(() => HOST_TOOLS.assertSupportedJsonSchema(definition.output.schema), `host validator on ${definition.name} output schema`).not.toThrow()
+        expect(() => HOST_TOOLS.assertSupportedJsonSchema(definition.parameters as never), `host validator on ${definition.name} parameters`).not.toThrow()
+      }
     })
   })
 })
