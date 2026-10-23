@@ -49,6 +49,9 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 
 - **Schedule 预算口径定稿（evidence-only `4dc6b7f57`，候审链不动：72d→fe20→merge→4dc）**：ext4 无 reflink/dedup 实测⇒共享仅 nlink≥2 硬链接；口径=与 kit 运行时 duBytes() 完全一致（find -type f -links 1 求和）。7 个安装前失败世界 0.58-0.61MB×7 + 3 个已装世界 unique 各 45.637-45.640MB；**总 unique 141,136,345B（apparent 1,353,068,959B 系表观膨胀）**；零下载（离线 frozen 链接复制）。kit 机写收据互引（dry-receipts/results/lock-diff/edge-diff）。307c 只读交叉核毕：五项实现本就同乘 pr-d 模式；rpcId（信封级）与 params.requestId（去重身份，每呼自 mint）保持区分；**未复制 p6t6 abandon authority**——C4 只用公开 session/cancel+公开 abandoned fact。五卡线候根限定复审裁决。
 
+- **四红清零（根 23:09 账，int `1c10f75dd`+ 三枚 re-anchor commits）**：R3=cherry-pick -x fe20f1f1a（十族列名）；R4/R1=中心集成复制面重锚（两条 leg 均**只存在于 int 复制**——9c/00270 各自测量 lane 基地非该现实；R1 加真 unknown 词 session_not_a_real_op 负控保拒法被证）；R2=字节取自 provider-id lane tip `477f16fae`（该 lane 临时 sole-writer 按卡**显式枚举两新位** agent-bindings :3254 spawn/:3783 controls，非只数改 7）。四 spec 合并跑 **56/56 RC=0**。00270 lane 侧卡正确阻塞预检（pre-AUTH 基地、8 UU、取字节路 AUTH 自测 21 红）+三选项归根——**未造假绿，记为合规范式**；其 lane 选项候根裁（R1 已由中心在 int 关闭，lane 副本是否同步候裁）。
+- **G6 六卡集中候窗**：kit tip **`e72aa2920a00ca04802458a77572c0a5bd36440f`**、sha256 **`efc768a1b408149f951c1557039b5eb1b5f0c23c0390ea34c2ed258cf2c64727`**；一 commit/一预检 RC0（12/12，3186/3187）/无 boot；capability 模板⇒真 permissionPolicy+sessionQuery 严格位、pairing 只读 durable facts、真内容+相关面判决、C6/C10 天花板先于 NOT_FOUND、统一 await cleanup exit-3、双预算账 pre-boot+per-phase；307c helper 语义并入零 p6t6 字节。候根源审+窗口裁。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
