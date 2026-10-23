@@ -1440,7 +1440,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // entries are the SAME walk, never a second vocabulary for the call.
   const paHandoffToolName = (requestedEffects) => requestedEffects?.effects?.find((e) => e.kind === 'tool-invoke')?.toolName ?? 'unknown'
   paAdmit.open = async (input) => {
-    const opened = await paAdmitPartA({ ...input, toolName: input.toolName ?? paHandoffToolName(input.requestedEffects) })
+    let opened
+    try {
+      opened = await paAdmitPartA({ ...input, toolName: input.toolName ?? paHandoffToolName(input.requestedEffects) })
+    } catch (error) {
+      // ② a Part A that THREW handed nothing off, so its plan fact dies with
+      // it — the same law the non-approved return below carries. There was no
+      // finally here, so a throw used to leave the fact in `livePaPlan` while
+      // the mount kept serving calls.
+      livePaPlan.delete(String(input.callId))
+      throw error
+    }
     if (opened.ok !== true) {
       // A leg that never handed off ends here: its plan fact dies with it,
       // exactly as `paAdmit`'s own finally ends the plan fact of a completed
