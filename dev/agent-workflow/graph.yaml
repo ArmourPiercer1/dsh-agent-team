@@ -61,7 +61,7 @@ exec_autonomy_contract_20260918:
   evidence: "dev/agent-workflow/evidence/exec-contract/（setup-install/baseline-fullsuite/typecheck/build/build-composition/fullsuite/gates 日志）+ live-smoke/exec-live-2026-09-19T11-16-48/（L1/L2/L3 live 三 case 完整 evidence：summary 15/15 + 每 case create/ledger/marker-file/tool-result + L2 resolve-response + blueprint YAML ×3 + instance 日志 + mock corpus + stable 探测）"
   red_lines: "member 契约零改动（H2 pin 字节级保真）；无隐式默认 allow；无 parse 层改动；A3 matcher 零行为改动；无 push（用户授权前禁止）；:3080/:3180 零触碰；冻结锚点未移动"
 
-current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — PRODUCTION INTEGRATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval; authority = current_contract)"
+current_phase: "ALPHA.5 TOOL-IO-GOVERNANCE PHASE — M0 FROZEN (historical baseline and facts preserved as-is) / M1 MERGED INTO MASTER (audited tree verified; the revisions live in current_contract.phase_status, never in this prose) / M2 IN PROGRESS — PRODUCTION INTEGRATION AND PER-TOOL ACCEPTANCE (release blocked until whole-tool approval; authority = current_contract)"
 # state_pointers is the machine-graded recovery pointer, and it exists because the line above used
 # to carry a code revision inside prose: for four rounds and sixteen PRs `current_phase` asserted
 # `master = 606a0be7 (PR #65-#196 all merged)` while presenting itself as the recovery authority, and
@@ -95,6 +95,10 @@ current_contract:
   matrix: docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
   baseline: 9b2ee57bc5afd30e89855e09d1769d2e5ec83912   # exactly 40hex; must exist and be HEAD or an ancestor of HEAD. Equality with HEAD is legal and the checker must require neither equality nor inequality.
   baseline_collected: "2026-10-22T07:20:56Z"
+  # Milestone pointer collected 2026-10-23 (M2-DOCS-01). NOT a second baseline: `baseline` above
+  # stays the single frozen M0 anchor; the SHAs below are merge/audit evidence of the M1 event.
+  phase_status: "M0-FROZEN (historical baseline 9b2 and all historical facts preserved as-is) / M1-MERGED (master merge 929fc4af23725a1de4cda9206eb7abb149b1bf12; audited tree 7a3540937e39aa5b90abec6eac6ea2a30c78deeb — merge tree verified content-identical to the audited commit's tree) / M2-IN-PROGRESS"
+  phase_status_collected: "2026-10-23T06:55:36Z"
 
 state_convergence: "HISTORICAL (Alpha.4 record, NOT current authority; current state = current_contract) — 2026-10-08 round 40, from an external review that caught this file being used as a recovery authority while its top-level pointer had aged: current_phase is refreshed above and is the live pointer; alpha4_governance_20261007.a4_pr7_task7 plus the tail of SESSION_ROUTER_LOG.md carry the per-round truth. The keys integration_branch / integration_sha / p8s_base_sha / p8s_int_tip are FROZEN HISTORICAL ANCHORS of the P8-S closure phase, NOT current integration pointers -- do not resume from them. Rule adopted: any phase-boundary refresh must rewrite current_phase in the same commit that moves the pointer it describes, because a stale authority pointer is worse than no pointer when an agent is resuming unattended."
 integration_branch: int/P9-master-product-closure
