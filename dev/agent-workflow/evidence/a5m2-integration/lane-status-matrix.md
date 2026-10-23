@@ -47,6 +47,8 @@ R1 g6-plane-mount (a2) session_*投影拒针：expected built.ok=false，actual 
 
 - **G6 根 23:05 六错理解卡（本圈零写/零推/零重跑，候完整尾卡一次集中修）**：R1 双侧确证——plane 挂门 `permissionPolicy!==undefined && config?.teamToolPlane`(:2633)+G6 臂需 **sessionQuery===true 严格位**(:3102-3113，值冒充被拒，供给走同 lazy accessor 真服务)；且 permissionPolicy=boundTemplate.capabilities?.permissions(:2207)，蓝图用 legacy 模板（无 capabilities）⇒ 整治理面（含 session-query）**恒不挂**——修法=模板显式声明 capabilities 四子字段+permissions 三泳道，leader teamTools 保审批环/archive 面，严格覆盖门令 builtinToolDeny 带 subagent_fork 不带 subagent；rowConfig 加 teamToolPlane:{sessionQuery:true}（他族位缺省零翻转）。R2 event_trace 必带 seq(:1085-1088/:1669)，C2 链改先 event_search 取 seq 再 trace/read。R3 NO_CURRENT_STEP 只属 event_search caller-clamp 路(:1601-1608)；session_search 是跨会话工作区泳道需 caller.cwd(:1047-1051)——C4/C8 归位，cwd 在 rowConfig 显式钉不靠 default。R4 正控=零 SESSION_QUERY_/P_G6_ 前缀 token+每案形状标记+线上 toolResults≥1。R5 mock 路由扫全部 user 消息文本块（pr-d 先例）。R6 dieFatal best-effort stop+等端口+log 尾捕获。**load-bearing 确认：R1 不修则 C1-C10 全灭于 tool-unknown**——根的错#1即承重。kit 冻结于 42db8c46 候尾卡；307c 复用点只读并入、002 仍该文件唯一 writer。
 
+- **Schedule 预算口径定稿（evidence-only `4dc6b7f57`，候审链不动：72d→fe20→merge→4dc）**：ext4 无 reflink/dedup 实测⇒共享仅 nlink≥2 硬链接；口径=与 kit 运行时 duBytes() 完全一致（find -type f -links 1 求和）。7 个安装前失败世界 0.58-0.61MB×7 + 3 个已装世界 unique 各 45.637-45.640MB；**总 unique 141,136,345B（apparent 1,353,068,959B 系表观膨胀）**；零下载（离线 frozen 链接复制）。kit 机写收据互引（dry-receipts/results/lock-diff/edge-diff）。307c 只读交叉核毕：五项实现本就同乘 pr-d 模式；rpcId（信封级）与 params.requestId（去重身份，每呼自 mint）保持区分；**未复制 p6t6 abandon authority**——C4 只用公开 session/cancel+公开 abandoned fact。五卡线候根限定复审裁决。
+
 ## 维护纪律：不新审计体系；此表每轮只按已有材料更新；历史 PR 不顶当前。
 
 ## 22:25 环境回收登记（root）
