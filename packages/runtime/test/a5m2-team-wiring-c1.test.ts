@@ -105,6 +105,7 @@ type World = ReturnType<typeof makeWorld>
 function makeWorld (over: Record<string, unknown> = {}) {
   session += 1
   const natives: Record<string, Definition> = {}
+  const nativeOverride = over.nativeOverride as ((name: string, args: Record<string, unknown>) => Record<string, unknown>) | undefined
   const delegateEntries: Array<{ name: string; args: Record<string, unknown>; exec: unknown; self: unknown }> = []
   const mkNative = (name: string): Definition => {
     const def = Object.freeze({
@@ -117,6 +118,12 @@ function makeWorld (over: Record<string, unknown> = {}) {
         // createTeamTools execute (L3 pairs the delegate to exactly this
         // reference), so an entry here is a port entry.
         delegateEntries.push({ name, args, exec, self: this })
+        // A world may stand in the NATIVE'S OWN earlier answer (e.g. the shared
+        // caller/root gate refusing at packages/tools:496, before `spec.run`):
+        // the value below then reaches the caller as the native's own object,
+        // which is the only way a native typed VALUE may be asserted - never by
+        // catching an exception this layer threw.
+        if (nativeOverride !== undefined) return Object.freeze(nativeOverride(name, args))
         return Object.freeze({ status: 'executed', name, echoed: { ...args } })
       },
     }) as unknown as Definition
@@ -149,7 +156,7 @@ function makeWorld (over: Record<string, unknown> = {}) {
   )
   // ONLY bridge keys reach the bridge: it refuses an unknown input key, so
   // the world's own knobs (mounted / seat) never ride into it.
-  const { mounted: _mounted, seat: _seatBehaviour, ...bridgeOver } = over
+  const { mounted: _mounted, seat: _seatBehaviour, nativeOverride: _nativeOverride, ...bridgeOver } = over
   const base: Record<string, unknown> = {
     realmId: REALM,
     providerId: PROVIDER,
@@ -636,7 +643,7 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
   })
 
   describe('(j) the shared caller/root gate answers BEFORE any durable fact', () => {
-    it('a gate refusal reaches the caller as the NATIVE typed rejected VALUE, with zero PA entry and zero fact read', async () => {
+    it('a trusted gate refusal answers with the NATIVE typed rejected VALUE as the RETURN object — zero PA entry, zero fact read, nothing minted', async () => {
       let factsRead = 0
       const native = {
         status: 'rejected',
@@ -646,22 +653,22 @@ describe('A5M2-B-TEAM-WIRING — the controlled bridge over the real B-TEAM adap
       }
       const w = makeWorld({
         callerGate: async () => ({ ok: false, result: native }),
+        // The native tool's OWN answer at its shared gate (packages/tools:496,
+        // before spec.run): this is where the caller's VALUE comes from.
+        nativeOverride: () => native,
         queryFacts: { resolve: () => { factsRead += 1; return { rosterMemberIds: [], rosterFingerprint: 'x' } } },
       })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
-      const outcome = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
-        .then(() => 'no-refusal')
-        .catch((error: unknown) => error as { code?: string; teamRefusal?: { detail?: string; nativeValue?: unknown } })
-      expect(typeof outcome === 'string' ? outcome : outcome.code).toBe('TEAM_TOOL_CALLER_ROOT_MISMATCH')
-      if (typeof outcome !== 'string') {
-        expect(String(outcome.teamRefusal?.detail)).toContain('belongs to Team root')
-        expect(outcome.teamRefusal?.nativeValue).toEqual(native)
-      }
+      const value = await defOf(wiring, 'team_list_members').execute({ ...GOOD_ARGS }, execFor('call-gate-refused'))
+      expect(value).toEqual(native)
       expect(factsRead, 'no durable read runs behind a call the caller/root gate already answered').toBe(0)
-      expect(w.walks).toHaveLength(0)
-      expect(w.delegateEntries).toHaveLength(0)
+      expect(w.walks, 'no PA question opens behind a caller/root refusal').toHaveLength(0)
+      expect(w.delegateEntries, 'the answer is the native settling its own call, with zero downstream effect').toHaveLength(1)
       expect(wiring.claimStats().callerGateRefusals).toBe(1)
+      expect(w.events.some((event) => event.event === 'b-team-wire:caller-gate-forwards-to-native'
+        && event.paEntry === false && event.factsRead === false && event.minted === false)).toBe(true)
     })
+
     it('a passing gate changes nothing about the admitted leg', async () => {
       const w = makeWorld({ callerGate: async () => ({ ok: true, caller: { kind: 'leader' }, rootSessionId: 's-root-wire' }) })
       const wiring = unwrap(WIRING.buildTeamOpsWiring(w.base))
