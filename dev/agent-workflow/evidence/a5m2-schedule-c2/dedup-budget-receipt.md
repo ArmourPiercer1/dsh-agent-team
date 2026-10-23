@@ -1,6 +1,13 @@
 # A5M2 sched-C2 — dry-world allocation receipt (caliber + existing receipts)
 
-Root ask: supplement the 141.1MB deduplicated allocated / 45.64MB-per-world
+> WORDING CORRECTION (root 23:3x): "unique" below is the **logical byte
+> sum (Σ stat %s) of uniquely-linked (nlink==1) files** — files not
+> hardlink-shared with the store. It is NOT allocated-blocks and NOT a
+> claim of physical exclusivity. Per-file st_blocks was measured NOWHERE
+> (no existing receipt carries st_blocks; explicitly UNVERIFIED); ext4
+> block accounting (tails/metadata) is not covered. No re-scan performed.
+
+Root ask: supplement the 141.1MB deduplicated logical / 45.64MB-per-world
 figures with exact receipt paths and the measurement caliber. No new scans;
 all numbers below were measured once (read-only) at 22:57-23:0x and quoted
 since; this file persists them. No install, no Host, no deletion.
@@ -10,10 +17,9 @@ since; this file persists them. No install, no Host, no deletion.
   dedup daemon) => on-disk sharing exists ONLY as hardlinks (nlink >= 2).
 - **apparent** = `du -sb <world>` — counts EVERY hardlink path at full
   size (inflates; NOT new disk).
-- **unique (deduplicated new allocation)** = sum of `stat -c %s` over
-  `find <world> -type f -links 1` — files with nlink==1 are the only bytes
-  this world newly allocated; every nlink>=2 file shares extents with the
-  shared warm store (tests/homes/.pnpmm-r18-store) or the fixture and is
+- **unique (deduplicated logical bytes of uniquely-linked files)** = sum of
+  `stat -c %s` over `find <world> -type f -links 1` — nlink==1 files are
+  not hardlink-shared with the shared warm store (tests/homes/.pnpmm-r18-store) or the fixture and is
   NOT new disk. Scope = the world directory only; the store was never
   scanned.
 - kit-side enforcement uses the same unique caliber
@@ -37,16 +43,18 @@ dev/agent-workflow/evidence/a5m2-schedule-c2/run-dry-<stamp>/ directory.
 | 2026-10-23T22-56-05-203          | 449,617,736 | 45,640,198 |
 
 Totals (10 worlds): apparent 1,353,068,959 B (du inflation from hardlinks);
-**unique deduplicated allocated 141,136,345 B (≈141.1 MB)** = 7 × ~0.6 MB
-(pre-install-stage failures) + 3 × ~45.64 MB (installed surfaces; the
-frozen --offline link pass copies ~45.6 MB of non-shared files per world
-from the pinned store, 0 downloads).
+**unique (uniquely-linked) logical bytes total 141,136,345 B (≈141.1 MB)**
+= 7 × ~0.6 MB (pre-install-stage failures) + 3 × ~45.64 MB (installed
+surfaces; the frozen --offline link pass copies ~45.6 MB of non-shared
+files per world from the pinned store, 0 downloads). st_blocks/physical
+block accounting: UNVERIFIED (measured nowhere, per banner).
 
-## Existing machine-written receipts (kit-side, same caliber)
+## Existing machine-written receipts (kit-side)
 - …/run-dry-2026-10-23T22-56-05-203Z/dry-receipts.json → budgetInstallBytes
-  = 45,640,198 (unique caliber, final GREEN dry world).
-- each run-dry-*/results.json → kit `world total` budget line + caps
-  (install ≤ 60,000,000 / world ≤ 250,000,000, unique caliber).
+  = 45,640,198 (unique-logical caliber, final GREEN dry world).
+- each run-dry-*/results.json → rc + results + transcript (budget CAPS are
+  in the kit source; the per-run "world total" line went to console/tool
+  output, NOT into results.json — disclosed).
 - …/run-dry-2026-10-23T22-56-05-203Z/lock-diff.json + committed
   dev/agent-workflow/evidence/a5m2-schedule-c2/edge-diff-72e.json (the
   accepted 79-pkg/112-edge facts).
