@@ -491,7 +491,7 @@ describe('a5m2-subagent-spawn-wiring (e) registration keys = the PLANE FEED only
     const probe: Record<string, string> = {}
     for (const op of OPS) probe[op] = String(validatePaFamilyTarget('B-SUBAGENT', byOp.get(op)))
     for (const op of CTRL_OPS) probe[op] = String(validatePaFamilyTarget('B-SUBAGENT', ctrlShape(op)))
-    globalThis.console?.info(`[eight-op-probe] ${JSON.stringify(probe)}`)
+    ;(globalThis as { console?: { info: (message: string) => void } }).console?.info(`[eight-op-probe] ${JSON.stringify(probe)}`)
     // list_models honesty (carried over, unchanged): it addresses NO child \u2014
     // its per-row truth rides childAdjudication, no manifest fact spells
     // "service-mints":
