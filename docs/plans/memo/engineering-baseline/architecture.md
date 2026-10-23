@@ -91,6 +91,30 @@
 
 关键歧义需要固定：DSH `Agent Scope` ≠ Team `ToolBinding` ≠ `ControlOperationScope`；`ApprovalCase` ≠ Control consumption ≠ PA consumption ≠ Provider settlement；同级 `handoff` ≠ 升权 `escalate`；DSH `turn/step/round` 不允许按 Team 轮次随意重命名；工程 Code Review ≠ 运行时审批。
 
+
+### 3.3 文档—源码一致性机制：通用快探针 + 完整校验
+
+**必须建设，而不是可选增强。** 直接借鉴 DSH 的 `test:docs`（doc-quick）/`doc-sync` 分层、`change-scope` 影响面、`verify-agent-note-format`、`verify-md-links`、`verify-type-equiv`、`verify-doc-budgets` 和从真实注册结果生成目录的机制；遵守上游许可证并按本仓库九包布局适配，不引入 DSH 网站/双语维护等与本项目无关的整个工具链。DSH 同时要求所有涉及命令、默认行为、错误或兼容承诺的当前态文档，**先执行所宣称的操作并核实结果，再宣称其为事实**；这不意味着禁止先写提案，或让每个改动在本地先跑全套 E2E。
+
+拟议入口（**目前不存在**）：
+
+| 入口 | 主要职责 | 触发范围 |
+|---|---|---|
+| `pnpm docs:probe --base <verified-base>` | 快探针：解析真实 Git 变更（含 committed/staged/unstaged）、寻找受影响文档 owner、链接、Agent Note 状态、Glossary/术语、REQ/INV/AC、引用的源符号/配置及验证声明；输出机器可读选择与缺口 | 本地修改后/提交前主动执行；所有 PR 的 `ci-fast` 必需检查，分别在分支及合并候选上复核 |
+| `pnpm docs:sync --check` | 完整文档校验：所有适用静态规则、公开 API/Schema 类型等价、生成工具/配置/注册目录新鲜度、跨包文档关系及必须保留的操作验证证据 | 文档/公共 API/配置/生成器等影响面，CI 根据依赖图触发；完整基线/发布验收 |
+| `pnpm docs:sync --write` | **显式、可审查地**从权威源重新生成派生文档，输出 diff，不自动更改合同、批准状态或测试结果 | 文档维护者主动调用；CI 只用 `--check`，永不自动修绿 |
+
+`docs:probe` 不是格式化脚本，其最小管线必须包含：
+
+1. **变更识别**：借鉴 DSH `scripts/change-scope.ts`，对选定且已核实的 PR base 计算实际 merge-base/HEAD 以及工作树未提交改动；区分纯文档/现有接口兼容变化与真实公共行为/Schema/Registry 变更。基线参数不可默认为未经核实的远端 HEAD。
+2. **归属与语义检查**：从版本化的源码→公共接口→owning 文档→INV/REQ/AC→TEST/PROFILE 映射判断应更新/复核的责任面；一个事实只有一位文档 owner。检验 Agent Note 提案/批准/已实现状态、失效链接、重复 ID、弃用术语和悬空引用。`docs/ideas` 或 proposed 决策可以描述将来行为，但不能自称已交付。
+3. **源码与派生目录核对**：直接对 TypeScript AST/编译器符号及被登记为 source-equivalent 的文档块检查；导出/JSON Schema/工具注册及配置目录由现有代码或真实受信注册源生成，执行无副作用的 freshness check。动态 MCP 与不同 Scope 的目录不能由静态名称枚举“证明全部已测”，与第 4 章 Runtime Census 共用来源身份/digest。
+4. **事实宣称与证据**：已实现/支持/已测试/已发布等声明需指向真实源码、当前 Host/产物及适用的 RUN 或实测步骤；缺失、过期或未执行时标记 `NOT_VERIFIED` / `REFUSED`，在必须证明的正式文档/PR 合并门禁上阻断。机器仅检验可决定的事实；无法证明的行为语义交给 Contract Owner 与实际 T1–T3，**不以正则匹配证明某权限副作用从未发生**。
+
+**负控与边界**：主动破坏一次类型定义、生成工具目录、Agent Note 生命周期、公开行为文档引用及“只有 C1 却宣称 C2 已通过”的记录，快探针/完整校验必须在其承诺的检查范围内正确失败；仅由不可解析的动态 import 驱动的改动必须扩大验证或报告 `UNKNOWN`，不能因测试选择器返回空集合而绿。T0 文档快探针不能替代真正的 Tool/Host C2、C3、安全负控或权限核心。
+
+**性能与纪律**：本地可缓存按文件/符号变化的确定性检查，目标普通变更 10–30 秒、复杂变更约 60 秒以内（拟议性能预算，E0 测量后裁定）；昂贵生成与真实运行移至 `docs:sync --check` 和受影响 T2/T3。Lefthook 风格 Git hook 仅放可重复、低耗时的 staged 基础检查，不把完整同步/E2E 绑到每次 commit；Git hook 不能替代服务器端 CI。凡与已发布产品行为相关的文档声明，都必须由明确的执行命令/外部观察证据核实，不能先写“当前支持”再指望后续测试补证。
+
 ## 4. 动态权威工具基线（第 2 项修正，核心决策）
 
 ### 4.1 基线必须是可变的，但不得由普通发现数据任意放宽
@@ -211,14 +235,14 @@ T2/T3 必须观察文件、网络、进程、TeamDomain 或用户可见响应，
 
 | CI 入口 | 选择器 | 合并约束 |
 |---|---|---|
-| `ci-fast` | 每 PR：T0 + owning T1 + typecheck/构建元信息/文档规范 | 必需 |
+| `ci-fast` | 每 PR：`docs:probe` + T0 + owning T1 + typecheck/构建元信息；相关变更选择 `docs:sync --check` | 必需；必要文档校验缺席不得绿 |
 | `ci-integration` | Host/接口/真实装配变更的相关 T2，关键建包入口 | 相关 PR 必需 |
 | `ci-security` | 权限/工具/Provider/动态来源/取消/恢复变更的真实负控 T2/T3 | 安全相关 PR 必需 |
 | `ci-full` | 完整 T3/T4、平台矩阵、全工具实际来源截面、发布恢复 | 发布候选/指定里程碑必需 |
 
-GitHub PR 验证合成 merge tree，`ci-required` 使用 `always()` 汇总真实依赖检查。依赖缺测、环境阻断、skip/refused 必须如实编码：必需门禁中不能变成 PASS。变更影响图来自源码依赖、模块 Owner、长期合同、动态工具来源差异；未知影响面只可扩大相关检测，不得缩成空集合。
+GitHub PR 验证合成 merge tree，分支内快探针与局部 C2 不能代替该候选下的文档/公共装配检查；`ci-required` 使用 `always()` 汇总真实依赖检查。依赖缺测、环境阻断、skip/refused 必须如实编码：必需门禁中不能变成 PASS。变更影响图来自源码依赖、模块 Owner、长期合同、动态工具来源差异；未知影响面只可扩大相关检测，不得缩成空集合。
 
-目标性能预算（E0 测量后裁剪，非保证）：`ci-fast` p95 ≤5 分钟，本地局部反馈 ≤2 分钟；相关 T2/T3 有界并行。CI 快不能通过删掉唯一真安全验证取得。
+目标性能预算（E0 测量后裁剪，非保证）：`docs:probe` 普通变更 10–30 秒、复杂变更约 60 秒，`ci-fast` p95 ≤5 分钟，本地局部反馈 ≤2 分钟；相关 T2/T3 有界并行。CI 快不能通过删掉唯一真安全验证取得。
 
 ### 7.2 证据 Manifest 与仓库大小
 
@@ -232,15 +256,40 @@ RUN 至少绑定 `sourceSha, syntheticMergeSha?, hostSha, lock/toolchain hashes,
 
 发布维持 `master/stable` 分离；Artifact 有真实 Host/插件/配置来源，冷启动、非 Team 隔离、用户 Home 保护与回退或前滚恢复预案。对不可逆数据迁移不得承诺无条件降级。
 
-## 8. 多 Agent 开发与持续交付纪律
+## 8. 多 Agent 并行变更与持续交付纪律
 
-责任角色：Contract Owner、Center Integrator、Family Adapter Owner、Host/Test World Owner、CI/Release Owner、Independent Reviewer。角色为责任而非需要六个常驻 Agent。一个共享源文件同一时段一个 Writer；工具 Adapter 仅在独立文件和约定端口中并行；中心拥有实际 Host 装配和 C2。
+### 8.1 Writer 的独占单位是语义影响面，而不是物理文件
 
-交付单元为 `contract delta → family adapter + C1 → integration mount + C2 正负控 → CI/独立 Review → merge`。不允许长期积压“C1 PASS、尚未接线”的生产功能，WIP 由实际 Integrator 接线能力控制。独立评审→一次针对性修复→复审仍 BLOCK 则停相关单元作有界裁决，不无限生成新 PR 或弱化安全条件。
+一个交付单元对应**一条任务责任、一个独立分支/Worktree、明确的代码影响面**。**每个 Worktree/集成分支同一时刻只有一个 Writer**；但多个 Worktree 允许独立、并行地修改同一物理源文件。单个中心文件碰巧包含多个工具 family 接线区域，不构成强制让所有 Agent 串行开发的理由。是否可以并行，取决于**共享契约、调用顺序、权限不变量及状态所有权是否耦合**，而不是 `git diff --name-only` 的文件路径是否重合。
 
-DevEx 目标以既有 `pnpm setup`、`pnpm test`、`scripts/ci-pr-gate.mjs`、`tests/paths.mjs` 为入口收敛，未来提供 `verify:changed/verify:host/verify:security/verify:release` 等统一命令（均属目标、非当前已有）。
+| 影响面等级 | 示例 | 并发与 Owner |
+|---|---|---|
+| A：相互独立的 family 实现 | Todo/Write/Image 各自的 Adapter、参数/Effects、业务 Provider、测试 | 各 family 一位实现 Owner，自由并行、独立 Worktree |
+| B：同一源文件中的独立接线增量 | 各 family 在 `agent-bindings.mjs` 捕获自己的 native definition/Arm，在 `team-tool-plane.mjs` 声明自己的注册贡献 | **允许不同 Worktree 并发写同文件**；各自承担工具纵切/C1/局部真实 Host C2；集成后重跑相应范围 |
+| C：共享语义和安全核心 | `paAdmit`、Control/PA 消费、Scope/Binding 可信身份、统一注册顺序、共同 teardown、全局接口/Schema | **唯一契约决策 Owner**；修改前先协调接口与安全证明；不因源文件不同而认定安全独立 |
 
-## 9. 用户已经作出的八项裁决
+**重要区别**：文本冲突≠语义冲突。两个分支都改 `allDefs` 的插入点可能仅是文本重叠；两个分支虽改不同文件但都更改授权消费顺序则是共享语义冲突。不能靠 Git 自动合并零冲突证明两者可组合，也不能因为出现文本冲突而直接取消独立开发。
+
+### 8.2 Center Integrator 拥有集成责任，不垄断工具接线代码
+
+| 角色 | 必需责任 | 不能宣称 |
+|---|---|---|
+| Contract/Security Owner | 审定共享接口、授权/状态/生命周期不变量及可复用验证义务 | 不凭局部 C1/C2 结果放宽核心法律 |
+| Family Owner | 在自己的 Worktree **完成 Adapter + 实际中心接线增量 + C1 + branch-local 真实 Host C2 正负控**，可直接编辑副本中的共享文件 | `branch-local C2` 不等于最终合并候选的 C2 |
+| Center Integrator | 唯一更新集成候选分支，按序合并已验证增量，裁解文本/语义冲突，检查跨 family 的真实装配与统一授权链，组织 merged-head C2 和安全负控 | 不必自己编写所有 family 接线实现，也不应在每批合并后无条件重跑全量 C3 |
+| Independent Reviewer/CI | 审查相关合同、集成 diff、测试的外部事实与合并 SHA，指出未覆盖的关键影响 | 不以自己未验证的分支测试替代合并后证据 |
+
+一条标准交付链为：`Contract/Seam 固定 → 各 family 分支内 Adapter+接线+C1+局部 C2 → Integrator 在最新候选合并（唯一 Writer）→ 影响面分析 → merged-head C1/C2、共享安全负控与必要跨 family 回归 → 独立 Review/CI → merge`。Integrator 的**合并动作可串行化为短事务**；工具开发和独立 Host C2 不需要等待中心逐一代写。每轮合并需要包含完整构建/安装入口与构建产物一致性证据，不能让本地成功掩盖 `dist` 接线缺失。
+
+并发分支显式登记：基底 SHA、family/功能责任、修改的共享契约和可能冲突的关键状态、局部 C2 证明、回归选择器及相关测试资源。发现两支都要修改 C 类核心，则先裁决并冻结该接口（或将其作为前置共用 PR）后再放行分支增量。Integrator 有权拒绝无法解释的同名注册、重复 Provider/Body、Teardown 丢失、Scope 或 Grant 扩权，即使 Git 合并没有冲突。
+
+### 8.3 长期收敛：让 Family Contribution 降低共享文件写入需求
+
+现有 `team-tool-plane.mjs` / `agent-bindings.mjs` 的手工接线是过渡形态；在 E2/E4 审计证明收益后，可将 family 特有的 native definition 捕获、参数/Provider/呈现、回收接口下沉为 **受信 Family Contribution**，由唯一中心装配器组合和验证。此接口只提出注册/执行需求，**不能直接 mint/consume Grant、绕过 ControlService 或制造第二套授权账本**。优先复用已存在的 `registerA5GovernedFamily`、Placement Feed、Scope Binding 以及现有构建清单机制；不为单纯消除 Git 冲突提前重写 Alpha.5 安全内核。
+
+**吞吐与 WIP**：保留高并发 family 开发、分支内 C2 和低延迟合并，但限制的是“未通过合并候选验证的功能积压”，而非编辑某一个文件的 Agent 人数。评审默认独立 Review→一次针对性修复→复审仍 BLOCK 停止自动重复，升级给该语义 Owner。DevEx 使用既有 `pnpm setup`、`pnpm test`、`scripts/ci-pr-gate.mjs`、`tests/paths.mjs` 为基础，拟增加 `verify:changed/verify:host/verify:security/verify:release` 等命令；本节均为未来目标，不表示现已可执行。
+
+## 9. 原八项裁决与本轮新增设计约束
 
 | ID | 已同意的架构决定 | 必须保持的解释 |
 |---|---|---|
@@ -252,14 +301,16 @@ DevEx 目标以既有 `pnpm setup`、`pnpm test`、`scripts/ci-pr-gate.mjs`、`t
 | D6 | Integration Freeze 而非 Alpha.5 全发布成功，作为基线建设切换条件 | 合同和中心共享接口稳定、阻断归属确定，M1 合并不是独自充分 |
 | D7 | 优先沿用 DSH `.agents/notes` 及格式/分类校验 | `accepted` 决策与 `implemented` 交付分轴、Idea 与 ADR 分离 |
 | D8 | M0 93 来源项抽取长期 INV/REQ/AC，原项只保留来源索引 | 正式生效须以批准的规范为准，不能将 Draft 自动转换为法律 |
+| D9 | 并行 Writer 以相对独立的语义影响面为边界，而非文件路径 | 多个 Worktree 可改同一中心文件并独立验证；共享安全契约需唯一 Owner；集成分支单 Writer，merged-head 复验不能跳过 |
+| D10 | DSH 风格通用文档校验为**必建基础设施**，含快速探针 | `docs:probe`/`docs:sync --check` 覆盖源码与文档双向影响；提案允许无产品 RUN，正式行为宣称必须有真实代码/执行证据 |
 
 ## 10. 工程验收标准（EB）
 
 | ID | 可观察的退出证据 |
 |---|---|
-| EB-01 | 九包边界保持；公共 Host 无补丁；各高冲突接缝具有唯一 Writer/代码所有权 |
+| EB-01 | 九包边界保持；公共 Host 无补丁；共享语义有唯一决策 Owner，集成分支有唯一 Writer，但独立 Worktree 对同文件可并行接线 |
 | EB-02 | 四类真值有唯一事实归属；当前状态由可信来源生成，伪造“已测试”不能过门 |
-| EB-03 | DSH 术语与 Team 语义、Idea/Note/Contract/Plan 有独立职责，文档校验具正负控 |
+| EB-03 | DSH 术语与 Team 语义、Idea/Note/Contract/Plan 有独立职责；`docs:probe`/`docs:sync --check` 在源码与文档变更中均可触发，结构、类型/目录、证据声明具正负控 |
 | EB-04 | 任意阶段 `REQ/INV→AC→TEST/PROFILE→RUN` 可追踪；计划归档不退役仍有效测试 |
 | EB-05 | Tool Expected 来源随批准 Host/Team/config 变化再生成，不能手改；新工具进入 UNKNOWN 而非自动放行 |
 | EB-06 | 两个独立真实 Host World 可并行、出错可控清理，不触及 3080、稳定 Home 或其他 World |
@@ -267,14 +318,16 @@ DevEx 目标以既有 `pnpm setup`、`pnpm test`、`scripts/ci-pr-gate.mjs`、`t
 | EB-08 | CI required 真正合并保护，必需 skip/refused/ENV_BLOCK 不被误当绿，精准 SHA/合成提交绑定 |
 | EB-09 | 九包旧红分类完整，关键安全问题没有新增永久豁免，collection/error 不隐藏失败 |
 | EB-10 | RUN Manifest 绑定源码、Host、工具来源、运行目录、测试选择与结果；A 类证据可恢复校验 |
-| EB-11 | 一次代表性工具变更从 Contract/C1 到真实 C2、评审、合并闭合；记录等待/返工时间 |
+| EB-11 | 两个 family 在独立 Worktree **并行修改同一中心文件**、各自完成 C1/局部 C2；由 Integrator 合并并在同一新 SHA 上复核受影响 C2/跨 family 安全，记录等待/返工 |
 | EB-12 | 审批/Grant/Provider 状态可追踪，RC 有用户 World 保护、安装/冷启动/恢复验证及回退预案 |
 | EB-13 | 当前工程基线通过不会使未完成的 Alpha.5 工具变为“已发布”，Alpha.6 仍需单独审定 |
+| EB-14 | 源码 API/Schema/工具目录变更造成文档过期时，快探针能指名相关 owner 并失败；仅 C1 的工具伪称已通过 C2 不能过门，正常 Idea/Proposed 文档可通过 |
+| EB-15 | 文档快探针按真实 merge-base 与工作树影响面选取检查，缺必要检查时明确拒绝，完整 `docs:sync --check` 与产品 T1–T3 责任区分清楚 |
 
 ## 11. 实施阶段、未决的非原则问题与上游参考
 
-**E0（Alpha.5 期间）** 只读审计、必要安全/验证可信度定点修复；**E1** DSH 文档机制、语义与唯一真值；**E2** WorldFactory、动态来源导入/清点和 T0–T3 整顿；**E3** 影响图、四通道 CI/证据和实际分支保护；**E4** 诊断、发布/恢复、DevEx、性能反馈；**E5** 在一套精确 SHA 上完成 EB 验收。依赖/停工/交付卡见同目录 `execution-plan.md`。
+**E0（Alpha.5 期间）** 只读审计、必要安全/验证可信度定点修复；**E1** DSH 文档机制、语义与唯一真值，并建设通用 `docs:probe` 首版；**E2** WorldFactory、动态来源导入/清点和 T0–T3 整顿；**E3** 影响图、`docs:probe` 必需门禁、按影响面 `docs:sync --check`、四通道 CI/证据及实际分支保护；**E4** 诊断、发布/恢复、DevEx、性能反馈；**E5** 在一套精确 SHA 上完成 EB 验收。依赖/停工/交付卡见同目录 `execution-plan.md`。
 
 **无新增用户级原则性待决项。** 实施 PoC 必须验证但不阻塞起草：DSH 当前 Pin 对 Scope 注册的公开查询完整度；动态 MCP 列表/变化事件的可信归属；Windows 子进程树清理能力；外部 Artifact 存储的实际保留 SLA；CI 实际分支保护权限；历史红的分类结果。PoC 失败只能形成具名阻断/替代方案报告，不能自动改变已批准安全法律。
 
-**源锚**（相对仓库根）：`README.md`、`AGENTS.md`、`docs/BRANCHING.md`、`docs/TEST_METHODS.md`、`tests/paths.mjs`、`dev/agent-workflow/graph.yaml`、`scripts/ci-pr-gate.mjs`、`scripts/sanitize-evidence.mjs`、`packages/runtime/src/plugin/live/{agent-bindings,team-tool-plane,pa-mount-registry}.mjs`、`docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/{M0-A-LIFECYCLE-CONTRACT-v1.1,M0-B-FAMILY-TARGET-CONTRACTS}.md`。研究参照：DSH `docs/AGENTS.md`、`docs/glossary.md`、`.agents/notes/README.md`、`scripts/verify-agent-note-format.ts`、`scripts/run-gates.ts`；`openai/codex/.github/workflows/{README,blocking-ci,postmerge-ci}.md/.yml`（按实际文件后缀查阅）、`anomalyco/opencode/CONTRIBUTING.md` 与 `.github/workflows/test.yml`。参考机制不等于现行 Team 契约。
+**源锚**（相对仓库根）：`README.md`、`AGENTS.md`、`docs/BRANCHING.md`、`docs/TEST_METHODS.md`、`tests/paths.mjs`、`dev/agent-workflow/graph.yaml`、`scripts/ci-pr-gate.mjs`、`scripts/sanitize-evidence.mjs`、`packages/runtime/src/plugin/live/{agent-bindings,team-tool-plane,pa-mount-registry}.mjs`、`docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/{M0-A-LIFECYCLE-CONTRACT-v1.1,M0-B-FAMILY-TARGET-CONTRACTS}.md`。研究参照：DSH `docs/AGENTS.md`、`docs/glossary.md`、`.agents/notes/README.md`、`.agents/skills/dsh-doc/SKILL.md`、`.agents/skills/dsh-pre-push-checks/SKILL.md`、`scripts/change-scope.ts`、`scripts/verify-agent-note-format.ts`、`scripts/verify-type-equiv.ts`、`scripts/gen-tool-catalog.ts`、`scripts/run-gates.ts`；`openai/codex/.github/workflows/{README,blocking-ci,postmerge-ci}.md/.yml`（按实际文件后缀查阅）、`anomalyco/opencode/CONTRIBUTING.md` 与 `.github/workflows/test.yml`。参考机制不等于现行 Team 契约。
