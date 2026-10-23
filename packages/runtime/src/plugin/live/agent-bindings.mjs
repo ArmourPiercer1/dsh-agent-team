@@ -2641,9 +2641,21 @@ export function createAgentBindings(deps) {
         // THE TRUSTED INPUTS, all read HERE from this closure's real runtime facts
         // (never a name lookup, never a model path — the same candidate reads the
         // Guard's trusted set performs above):
-        //  · the NATIVE `todo_write` definition OBJECT from the GLOBAL tool face
-        //    (`tools.get(name)` with no scope resolves through the registry's
-        //    global layer — the documented face for what the Host itself mounted);
+        //  · the NATIVE `todo_write` definition OBJECT as THIS member's scope
+        //    resolves it, through the pinned Host's public scope-aware face
+        //    (`tools.get(name, scope)`; Host 0.2.0-rc.2 core/tools index.ts
+        //    "Look up a tool as one scope sees it"). Reading with NO scope was
+        //    the r6-attributed product defect (ATTRIBUTION-R6): the shipped
+        //    web-app profile DISABLES the global `tool-todo` row and
+        //    contributes it through the agent preset, so the global face
+        //    answers nothing while the member's own chain resolves the
+        //    materialized PRESET instance — preset revisions are eagerly
+        //    activated once, BEFORE the Agent setup this closure runs in, so
+        //    the scoped read answers exactly the body the member would
+        //    execute; the arm still captures that bind-time OBJECT, never a
+        //    rebuilt one. A scope restriction that masks the name resolves to
+        //    absent and keeps the refusal below — the permission lane is the
+        //    Host's own view(), unchanged.
         //  · the member's REAL Agent.id and the durable `session.header.id` —
         //    the arm's two INDEPENDENT pairing facts, no otherwise;
         //  · the M1/Guard binding-facts reader over the Guard dispatcher's live
@@ -2666,14 +2678,25 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-todo: arm-REFUSED for ${sessionId}`)
             return error
           }
+          // The SCOPE this read resolves as is the member Agent OBJECT — on the
+          // pinned Host that object IS the registry's scope key (core/agent-loop
+          // agent.ts mints `createScope(loopCtx, this)`, and the executor
+          // resolves every call through `chainLayers(exec.agent)`), so a scoped
+          // read here answers EXACTLY what this member executes: its own layer
+          // last, then the joined preset generation (the materialized native),
+          // then the global layer. No fallback scope, no global-face second
+          // read: an absent Agent object is a refused setup, not a wider read.
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseTodo('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
           let nativeTodoDefinition
           try {
-            nativeTodoDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_TODO_TOOL_NAME) : undefined
+            nativeTodoDefinition = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(A5_TODO_TOOL_NAME, runtimeAgent) : undefined
           } catch (error) {
-            throw refuseTodo(`the global tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
+            throw refuseTodo(`the member-scoped tool face could not be read for the native definition (${String(error?.message ?? error).slice(0, 140)})`)
           }
           if (nativeTodoDefinition === null || typeof nativeTodoDefinition?.execute !== 'function') {
-            throw refuseTodo('no native todo_write definition with an execute function stands on the global tool face — the arm captures the bind-time OBJECT and there is nothing to capture')
+            throw refuseTodo('no native todo_write definition with an execute function is visible to this member scope (global layer, the joined preset generation, and the member own layer all resolve no such body) — the arm captures the bind-time OBJECT and there is nothing to capture')
           }
           const todoNativeIdentity = definitionIdentityOf(nativeTodoDefinition)
           if (typeof todoNativeIdentity !== 'string' || todoNativeIdentity.length === 0) {
