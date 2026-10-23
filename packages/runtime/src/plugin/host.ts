@@ -2359,6 +2359,7 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
  */
 async function buildG2TeamSupply(
   cfg: TeamPluginConfig,
+  scopedMcpResources?: unknown,
 ): Promise<{ ok: boolean; supply?: unknown; code?: string; message?: string } | undefined> {
   const g2Mount = (cfg as { teamToolPlane?: { g2Mount?: Record<string, unknown> } }).teamToolPlane?.g2Mount
   if (g2Mount === null || typeof g2Mount !== 'object') return undefined
@@ -2372,6 +2373,19 @@ async function buildG2TeamSupply(
   const transportEntry = g2Mount.transportEntry
   const serverConfigs = g2Mount.serverConfigs as Array<Record<string, unknown>> | undefined
   const out: Record<string, unknown> = { entryPaths }
+  // ROOT 21:23 — the TEAM-scoped mcpResources face arrives through the
+  // PUBLIC Context injection retrieval (the host's own mcp-client uses
+  // exactly this pattern at server-context.ts:29-31: ctx.inject(
+  // ['mcpResources'], (inner) => inner.mcpResources.register(...)) under
+  // the instance's own fiber ctx — and THIS plugin instance is the Team's
+  // own row instance (per-rootSessionId config), so register() lands on
+  // THIS Team's layer. A global-store read is NOT used: it would bind the
+  // global layer (Team-only violation). Absent/invalid face stays the
+  // producer's typed refusal below — no stand-in, no provider flip.
+  if (scopedMcpResources !== null && typeof scopedMcpResources === 'object'
+    && typeof (scopedMcpResources as { register?: unknown }).register === 'function') {
+    out.mcpResources = scopedMcpResources
+  }
   // ROOT 21:02: the factory is Team-owned and REAL over PUBLIC pieces —
   // StdioClientTransport / StreamableHTTPClientTransport (@modelcontextprotocol
   // /client + /client/stdio, the SDK public face transport.ts itself imports)
@@ -2444,10 +2458,16 @@ async function buildG2TeamSupply(
       return buildTransport!(rec)
     }
   }
-  // The PUBLIC stagehand worker mapping (real face, cited above): rows'
-  // (method, args) ride the worker's own execute dispatcher — no method
-  // table is invented here; the worker entry is the method surface.
-  out.callResource = async (resource: unknown, method: string, args: unknown, signal?: AbortSignal): Promise<unknown> => {
+  // The PUBLIC stagehand worker mapping stays REAL and in place for the
+  // browser half (evidence cited above) — but it may only ride a supply
+  // that ALSO carries the Team PA approval face (the producer's
+  // all-or-nothing pairing): a mapping without its approval edge is a
+  // half-supply, and the per-session consumeApproval is bindings-owned.
+  // The host has no session edge to pass YET, so the mapping is passed
+  // through ONLY when a consumeBrowserApproval arrives on g2Mount's
+  // producer input (test/verification worlds); otherwise browser stays
+  // the typed pairing refusal, unchanged.
+  const g2CallResource = async (resource: unknown, method: string, args: unknown, signal?: AbortSignal): Promise<unknown> => {
     // ROOT 21:01: the port hands the LEASE-OWNED resource ({ value, close }
     // — the lease's law at g2-team-assembly :331 shape contract); the
     // runtime is resource.value; execute binds THAT value, never a swapped
@@ -2457,11 +2477,29 @@ async function buildG2TeamSupply(
     if (typeof execute !== 'function') throw new Error('g2TeamAssembly.callResource: the lease-owned resource.value answers no execute(method, args, signal) (worker-client.ts:70-71 public face on the leased runtime) — refusing, no fallback, no runtime swap')
     return await execute.call(runtime, method, args, signal)
   }
+  const g2ConsumeBrowserApproval = g2Mount.consumeBrowserApproval as ((facts: Record<string, unknown>) => Promise<string> | string) | undefined
+  if (typeof g2ConsumeBrowserApproval === 'function') {
+    out.consumeBrowserApproval = g2ConsumeBrowserApproval
+    out.callResource = g2CallResource
+  }
   // The two faces the host genuinely cannot mint TODAY (gap doc, fork
   // options enumerated): passed ABSENT so the producer's own typed refusal
   // names them at supply time, config-armed world or not.
   return await mountMod.createG2TeamAssemblySupply(out)
 }
+
+  // ROOT 21:23 — the PUBLIC scoped retrieval, host's own precedent shape
+  // (server-context.ts:29-31). Synchronous capture into a local: the
+  // inject callback runs against THIS plugin instance's fiber ctx.
+  function readG2ScopedMcpResources(): unknown {
+    let face: unknown = null
+    try {
+      ;(ctx as unknown as { inject?: (tokens: string[], cb: (inner: { mcpResources?: unknown }) => void) => void }).inject?.(['mcpResources'], (inner) => { face = inner.mcpResources ?? null })
+    } catch {
+      face = null // the mcp-resources service is absent in this world — the producer refuses typed
+    }
+    return face
+  }
 
   const live: TeamAgentBindings = glue.createAgentBindings({
     agents,
@@ -2497,7 +2535,7 @@ async function buildG2TeamSupply(
     // buildG2TeamSupply). Absent `teamToolPlane.g2Mount` config answers
     // undefined — the bindings then refuse typed; NOTHING changes for
     // worlds without the block (additive optional, never a hard inject).
-    g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig)),
+    g2TeamAssembly: () => Promise.resolve(buildG2TeamSupply(resolvedRowConfig, readG2ScopedMcpResources())),
     // A5-M2 B-IMAGE (root narrow review on 233ba, item ①): the lazy public
     // `llm` service — the SAME token native read-image.ts:119-130 answers
     // `resolveModelInfo` through for its image-capability route gate. Resolved
