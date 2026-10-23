@@ -282,7 +282,10 @@ describe('a5m2-subagent-wiring (b) verbatim reuse of the frozen adapter', () => 
   it('placed defs travel COMPLETE (only execute replaced), send_message carries the REAL adjacency mark, registrations ride the assembly face', () => {
     const wiring = okValue(mountWiring(makePa()))
     expect(wiring.familyId).toBe('B-SUBAGENT')
-    expect(wiring.wiringRevision, 'visible bumps: 1→2 root-21:20 union encoding; 2→3 the 9d968 handoff canonical-law switch (frozen adapter revision UNTOUCHED)').toBe(3)
+    expect(wiring.wiringRevision, 'visible bumps: 1→2 root-21:20 union encoding; 2→3 the 9d968 handoff canonical-law switch (frozen adapter revision UNTOUCHED); since root 22:02 this rev is the ONE family-claim revision the real path stamps (PA block + registration face)').toBe(3)
+    // the wiring SURFACE reports the frozen adapter's own capture revision
+    // as its fact (1) — the CLAIM seats (block/registration) carry the live
+    // family-claim revision above; two honest facts, never conflated.
     expect(wiring.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
     expect(wiring.providerId).toBe(PROVIDER)
     expect(wiring.placementNames).toEqual([...NAMES].sort())
@@ -304,7 +307,13 @@ describe('a5m2-subagent-wiring (b) verbatim reuse of the frozen adapter', () => 
       ['send_message', 46, 'placed-send_message'],
     ])
     for (const reg of regs) {
-      expect(reg.entry).toEqual({ familyId: 'B-SUBAGENT', adapterRevision: ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION, providerIdentity: PROVIDER })
+      // ROOT 22:02 revision consistency: the registration CLAIM carries the
+      // ONE revision the real path mints with (the wiring's live family-claim
+      // rev), NOT the frozen adapter's capture revision — and it MUST equal
+      // the PA family block's stamp (measured on the walk leg), so an
+      // earlier-rev claim on an identity REFUSES at the registry's
+      // one-identity law instead of silently translating an old row.
+      expect(reg.entry).toEqual({ familyId: 'B-SUBAGENT', adapterRevision: WIRING.A5_B_SUBAGENT_WIRING_REVISION, providerIdentity: PROVIDER })
     }
   })
 })
@@ -330,7 +339,13 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     expect(walk.requestedEffects.fingerprint, 'the domain parser minted the canonical digest').toMatch(/^[0-9a-f]{64}$|^sha256:/)
     expect(walk.toolName).toBe('send_message')
     expect(walk.family.familyId).toBe('B-SUBAGENT')
-    expect(walk.family.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
+    // ROOT 22:02 revision consistency: the PA family block stamps the SAME
+    // live family-claim revision the registration face carries (measured in
+    // leg (b)) — one number for plan/edge and registration, so any
+    // earlier-rev approval/row REFUSES at the registry's one-identity law
+    // and is never silently translated. The frozen adapter's own capture
+    // revision (1) stays its reported fact on the wiring surface.
+    expect(walk.family.adapterRevision, 'block stamp === registration claim stamp (root 22:02 consistency law)').toBe(WIRING.A5_B_SUBAGENT_WIRING_REVISION)
     expect(walk.family.providerIdentity).toBe(PROVIDER)
     // UNION ENCODING (root 21:20 joint card, control-mint side): the ONE
     // operation-discriminated entry's CONTROL shape — common required strings

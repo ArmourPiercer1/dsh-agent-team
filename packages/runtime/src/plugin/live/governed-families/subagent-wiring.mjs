@@ -119,10 +119,18 @@ const canonicalJson = (value) => JSON.stringify(value, (_k, v) => (
 // agent_id key is never interpreted as an address; args stay whole; the
 // frozen adapter is NOT reopened and the table's nullableString is NOT
 // widened) — a VISIBLE mint change per the pairing rules, never a silent
-// translation of approved revisions. Registration pairs same-round: the
-// adapter stays at its signed A5_B_SUBAGENT_ADAPTER_REVISION (not reopened;
-// the table entry pairs adapter rev 1 at the measured pins); the table
-// entry's own revision pairing belongs to the 9d968 family-rule owner lane.
+// translation of approved revisions. ROOT 22:02 REVISION CONSISTENCY: this
+// revision is no longer a merely-reported constant — it is the ONE family-
+// claim revision the REAL path carries: the PA family block (plan/edge) and
+// the registration face both stamp A5_B_SUBAGENT_WIRING_REVISION, so stale
+// rev-1/rev-2 claims and approvals REFUSE at consumption (the governed-family
+// registry's one-identity law compares the claim's three fields EXACTLY; a
+// different claim on one identity is a config defect, never a silent
+// translation) while the current mint ACCEPTS. The 22:02 card's pairing note
+// ("table entry pairs adapter rev 1 at the measured pins") refers to the
+// frozen adapter's CAPTURE revision, which stays its reported fact
+// (adapterRevision: 1) on the wiring surface — the adapter body is NOT
+// reopened (20:02 freeze holds).
 export const A5_B_SUBAGENT_WIRING_REVISION = 3
 
 /** Typed codes OWNED by this wiring layer (P_B_SUBAGENT_WIRE_*). Funnel and
@@ -288,7 +296,17 @@ export function createBSubagentControlWiring(input = {}) {
       toolName: name,
       family: {
         familyId,
-        adapterRevision: A5_B_SUBAGENT_ADAPTER_REVISION,
+        // ROOT 22:02 REVISION CONSISTENCY: the claim revision this block
+        // carries is the ONE revision the real path actually mints with —
+        // A5_B_SUBAGENT_WIRING_REVISION, the live mint-encoding rev of this
+        // family's claim (the registration face below advances to the SAME
+        // number, so plan/edge and registration answer one value and the
+        // registry's one-identity law REFUSES any earlier-rev claim at
+        // consumption instead of silently translating it). The frozen
+        // adapter's own capture/classification revision stays its reported
+        // fact on the wiring surface (adapterRevision: 1) — NOT reopened,
+        // NOT relabelled; the 20:02 freeze holds.
+        adapterRevision: A5_B_SUBAGENT_WIRING_REVISION,
         providerIdentity: wiringProviderId,
         targetManifest: subagentTargetManifestControl,
       },
@@ -371,7 +389,28 @@ export function createBSubagentControlWiring(input = {}) {
     rows: assembly.rows,
     declared: assembly.declared,
     rowOf: assembly.rowOf,
-    familyRegistrations: assembly.familyRegistrations,
+    // ROOT 22:02 REVISION CONSISTENCY (registration face): the mounted
+    // family CLAIM is spoken by THIS mount path (agent-bindings Block B
+    // registers these entries into the ONE governed-family table), and the
+    // claim now carries the ONE revision the real path actually mints with —
+    // A5_B_SUBAGENT_WIRING_REVISION, the SAME number the PA family block
+    // above stamps — so plan/edge and registration answer one value and any
+    // earlier-rev claim on a definition identity REFUSES at the registry's
+    // one-identity law instead of silently translating an old row. name/
+    // recordIndex/definitionIdentity and the entry's familyId/
+    // providerIdentity travel VERBATIM from the frozen assembly face; the
+    // adapter's PLACEMENT_KEY_ABSENT/MOVED throw law runs UNTOUCHED (the
+    // inner call throws before this map is ever reached). The frozen
+    // adapter's own capture/classification revision is NOT relabelled — it
+    // stays its reported fact (adapterRevision: 1) on the surface below.
+    familyRegistrations: () => assembly.familyRegistrations().map((registration) => Object.freeze({
+      ...registration,
+      entry: Object.freeze({
+        familyId: registration.entry.familyId,
+        adapterRevision: A5_B_SUBAGENT_WIRING_REVISION,
+        providerIdentity: registration.entry.providerIdentity,
+      }),
+    })),
     inFlight: assembly.inFlight,
     /** The jobs-row placement law (:3470-3496): register every placed def,
      *  collect disposers, roll back reversed+best-effort on failure.

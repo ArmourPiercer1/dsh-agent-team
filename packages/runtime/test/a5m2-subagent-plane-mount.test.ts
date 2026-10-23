@@ -60,6 +60,7 @@ const REGISTRY = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs
 }
 const WIRING_ROW = (await import(new URL('../src/plugin/live/governed-families/subagent-wiring.mjs', import.meta.url).href)) as {
   createBSubagentControlWiring: (input: Record<string, unknown>) => Record<string, unknown> & { ok: boolean; code?: string; message?: string }
+  A5_B_SUBAGENT_WIRING_REVISION: number
 }
 const { registerA5GovernedFamily, a5GovernedFamilyFor } = REGISTRY
 
@@ -220,6 +221,18 @@ describe('a5m2-subagent-plane-mount (c/d) placement, registry round-trip, teardo
       registerA5GovernedFamily(registration.definitionIdentity, registration.entry)
       expect(a5GovernedFamilyFor(registration.definitionIdentity)?.familyId).toBe('B-SUBAGENT')
     }
+    // (c3b) ROOT 22:02 revision consistency CONSUMED at the registry: the
+    // claim carries the LIVE family-claim revision, and a re-mount that
+    // disagrees on that number is REFUSED by the one-identity law (config
+    // defect, never a silent translation of an approved row). The live claim
+    // is idempotent, a stale rev is not.
+    const liveRev = registrations[0]?.entry.adapterRevision
+    expect(liveRev, 'the live family claim carries the wiring family-claim revision').toBe(WIRING_ROW.A5_B_SUBAGENT_WIRING_REVISION)
+    const firstIdentity = registrations[0]?.definitionIdentity
+    if (firstIdentity === undefined) throw new Error('no placement identity to re-claim')
+    expect(() => registerA5GovernedFamily(firstIdentity, registrations[0]?.entry ?? {}), 're-claiming the SAME live rev is idempotent').not.toThrow()
+    expect(() => registerA5GovernedFamily(firstIdentity, { familyId: 'B-SUBAGENT', adapterRevision: Number(liveRev) - 1, providerIdentity: PROVIDER }), 'a stale-rev claim on one identity REFUSES at the one-identity law').toThrow(/config defect/)
+    expect(a5GovernedFamilyFor(firstIdentity)?.adapterRevision, 'the stored row was never silently translated').toBe(liveRev)
     // (d) the mount's dispose drives the wiring's dispose: afterwards a trio
     // call is refused by the DISPOSED/DRAINING law with ZERO port entries.
     const disposers: Array<() => unknown> = []
