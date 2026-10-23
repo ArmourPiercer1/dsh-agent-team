@@ -2340,13 +2340,50 @@ async function buildG2TeamSupply(
   const transportEntry = g2Mount.transportEntry
   const serverConfigs = g2Mount.serverConfigs as Array<Record<string, unknown>> | undefined
   const out: Record<string, unknown> = { entryPaths }
-  if (typeof transportEntry === 'string' && transportEntry.length > 0 && Array.isArray(serverConfigs)) {
-    const tMod = (await import(transportEntry)) as unknown as {
-      createTransport?: (config: Record<string, unknown>) => { start: unknown; send: unknown; close: unknown }
+  // ROOT 21:02: the factory is Team-owned and REAL over PUBLIC pieces —
+  // StdioClientTransport / StreamableHTTPClientTransport (@modelcontextprotocol
+  // /client + /client/stdio, the SDK public face transport.ts itself imports)
+  // + the Host PUBLIC scrubbedParentEnv (@deepseek-ai/dsh-subprocess). The
+  // construction mirrors the host's own createTransport (transport.ts:31-49:
+  // command/args/scrubbed+config env/cwd; URL + requestInit.headers) — the
+  // transport.ts UNDERLAY, not its governance. A configured transportEntry
+  // (source-checkout worlds) still wins; otherwise the PUBLIC bare specifiers
+  // resolve through the live install's own module tree (root-21:02 补核).
+  let buildTransport: ((rec: Record<string, unknown>) => { start: unknown; send: unknown; close: unknown }) | undefined
+  if (Array.isArray(serverConfigs)) {
+    if (typeof transportEntry === 'string' && transportEntry.length > 0) {
+      const tMod = (await import(transportEntry)) as unknown as {
+        createTransport?: (config: Record<string, unknown>) => { start: unknown; send: unknown; close: unknown }
+      }
+      if (typeof tMod.createTransport !== 'function') {
+        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the approved transport entry (${transportEntry}) answered no createTransport — minting nothing over a defective entry` }
+      }
+      buildTransport = (rec) => tMod.createTransport!(rec)
+    } else {
+      try {
+        const sdkRootSpecifier = '@modelcontextprotocol/client'
+        const sdkStdioSpecifier = '@modelcontextprotocol/client/stdio'
+        const subprocessSpecifier = '@deepseek-ai/dsh-subprocess'
+        const sdkRoot = (await import(sdkRootSpecifier)) as { StreamableHTTPClientTransport?: new (url: URL, opts: unknown) => { start: unknown; send: unknown; close: unknown } }
+        const sdkStdio = (await import(sdkStdioSpecifier)) as { StdioClientTransport?: new (opts: unknown) => { start: unknown; send: unknown; close: unknown } }
+        const subprocess = (await import(subprocessSpecifier)) as { scrubbedParentEnv?: () => Record<string, string> }
+        if (typeof sdkStdio.StdioClientTransport !== 'function' || typeof sdkRoot.StreamableHTTPClientTransport !== 'function' || typeof subprocess.scrubbedParentEnv !== 'function') {
+          throw new Error('the PUBLIC trio resolved but answered no StdioClientTransport/StreamableHTTPClientTransport/scrubbedParentEnv')
+        }
+        buildTransport = (rec) => rec.transport === 'stdio'
+          ? new sdkStdio.StdioClientTransport!({
+            command: rec.command,
+            args: Array.isArray(rec.args) ? rec.args : [],
+            env: { ...subprocess.scrubbedParentEnv!(), ...((rec.env ?? {}) as Record<string, string>) },
+            cwd: typeof rec.cwd === 'string' ? rec.cwd : '',
+          })
+          : new sdkRoot.StreamableHTTPClientTransport!(new URL(String(rec.url)), { requestInit: { headers: (rec.headers ?? {}) as Record<string, string> } })
+      } catch (error) {
+        return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `no transport producer resolved: neither an approved transportEntry nor the PUBLIC bare trio (@modelcontextprotocol/client, /stdio, @deepseek-ai/dsh-subprocess — the pieces transport.ts:9-12 itself imports): ${String((error as Error)?.message ?? error).slice(0, 200)}` }
+      }
     }
-    if (typeof tMod.createTransport !== 'function') {
-      return { ok: false, code: 'G2_SUPPLY_ENTRY_INVALID', message: `the approved transport entry (${transportEntry}) answered no createTransport — @deepseek/dsh mcp-client/src/transport.ts:31 exports it over the package ./src/* PUBLIC map; minting nothing over a defective entry` }
-    }
+  }
+  if (buildTransport !== undefined && Array.isArray(serverConfigs)) {
     const byServer = new Map<string, Record<string, unknown>>()
     for (const rec of serverConfigs) {
       if (typeof rec?.serverName === 'string') byServer.set(rec.serverName, rec)
@@ -2375,7 +2412,7 @@ async function buildG2TeamSupply(
         if (target.spawnCwd !== (typeof rec.cwd === 'string' ? rec.cwd : '')) mismatches.push(`spawnCwd ${String(target.spawnCwd)} vs approved cwd ${String(rec.cwd)}`)
       } else if (target?.transport === 'streamable-http') {
         let recOrigin: string | undefined
-        try { recOrigin = new URL(String(rec.url)).origin } catch { recOrigin = undefined }
+        try { recOrigin = (new URL(String(rec.url)) as unknown as { origin: string }).origin } catch { recOrigin = undefined }
         if (recOrigin === undefined || target.endpointOrigin !== recOrigin) mismatches.push(`endpointOrigin '${String(target.endpointOrigin)}' vs approved url origin '${String(recOrigin)}'`)
       } else {
         mismatches.push(`unknown transport axis '${String(target?.transport)}'`)
@@ -2383,7 +2420,7 @@ async function buildG2TeamSupply(
       if (mismatches.length > 0) {
         throw new Error(`g2TeamAssembly: the transport target and the approved ${String(target?.transport)} record for server '${String(target?.server)}' are NOT same-source (${mismatches.join('; ')}) — refusing before construction; no transport object exists`)
       }
-      return tMod.createTransport!(rec)
+      return buildTransport!(rec)
     }
   }
   // The PUBLIC stagehand worker mapping (real face, cited above): rows'

@@ -67,3 +67,25 @@ construction on any divergence (zero transport object). LEASE LAW:
 callResource now binds the LEASE-OWNED resource's runtime
 resource.value.execute(method,args,signal) — never a swapped runtime; the
 close owner stays the lease.
+
+## ROUND-21 (root 21:02) — MCP transport REAL via the PUBLIC trio
+The Team-owned small factory now builds transports from the PUBLIC pieces
+transport.ts:9-12 itself imports: StdioClientTransport
+(@modelcontextprotocol/client/stdio), StreamableHTTPClientTransport
+(@modelcontextprotocol/client), and the Host PUBLIC scrubbedParentEnv
+(@deepseek-ai/dsh-subprocess); construction mirrors createTransport
+(transport.ts:31-49: command/args/scrubbed+config env/cwd; URL +
+requestInit.headers) — the underlay, not its governance (no approval/
+supervision/reconnect logic copied). Same full-bind law unchanged: the
+approved record is field-validated against the actual minted target BEFORE
+construction. A configured transportEntry still wins (source-checkout
+verification worlds); no resolution = typed refusal (no fake promise).
+Browser: ordinary installs answer NO launchChromium/openBrowserWorker
+factory (browserUse only register/runtime.SessionResources, open is
+caller-owned) — P2 stays REPORT-ONLY pending root's post-G3 unified
+ruling; source-checkout legs stay labeled as such. consumeApproval for
+browser rows: the durable shape exists (ptc-escalation-row.mjs:407
+requestControl template over the same controlServiceRef seam) but its
+consumption semantics pair with the B-BROWSER rule map (its own lane) —
+NOT minted unilaterally. MCP-row approval is already REAL (the plane PA
+walk: approve -> consume -> dispatch, pinned in the wire spec).
