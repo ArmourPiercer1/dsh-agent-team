@@ -1,55 +1,71 @@
 /**
  * A5M2-G2-TEAM-ASSEMBLY — the two REAL Team assembly ports on the fixed Host
- * `639ed01539` PUBLIC entries (ruling 15:07: implement now, no new
- * architecture, no further wrapper layers). Consumes the reviewed seams
- * (g2-provider-seams.mjs) as-is; writes no shared face.
+ * `639ed01539` PUBLIC entries (ruling 15:07 implement; lifecycle round 2 per
+ * the assembly review of 6f9aec9782: no new architecture, no further wrapper
+ * layers, the reviewed seam components stay closed and are only consumed).
  *
  * PORT 1 — BROWSER. `createG2TeamBrowserPort` wires the pinned PUBLIC faces
  * exactly where the host uses them (experimental/browser-use-stagehand-native
- * src/index.ts:105-106 endpoint flow, via the package's public `./src/*`
- * exports): `launchChromium` (src/launch.ts:24 → real OwnedChromium
- * { endpoint, close() } that kills the owned process tree and removes the
- * profile) supplies the owned process, and `openNativeBrowser`
- * (src/native.ts:95 → NativeBrowserRuntime.close() :86) is opened on the
- * REAL endpoint reported by that exact process (launch mode) or on the
- * configured cdpEndpoint (attach mode). Acquisition/rollback/close law is the
- * reviewed createG2BrowserLaunchOwner (clean rollback stays recoverable;
- * retained failure holds + poisons); admission is the reviewed governed lease
- * (PA-before-open, drain, no fake closed — index.ts:186-197 race replaced).
- * PRE-EFFECT EXCLUSION: the host plugin's SessionResources admission path is
- * plugin-internal; this port never re-enters a second admission around it —
- * exactly ONE owner/lease exists per port, and the module never touches the
- * host browser runtime package (leg-proven).
+ * src/index.ts:105-117): `launchChromium` (src/launch.ts:24 → real
+ * OwnedChromium { endpoint, close() }) supplies the owned process, and the
+ * runtime opens through the PUBLIC WORKER entry `openBrowserWorker`
+ * (src/worker-client.ts:15 — the entry the host's own wiring uses), NOT
+ * through openNativeBrowser directly: the worker entry cancels acquisition on
+ * the connection signal (abort mid-`ready` really terminates the Worker —
+ * worker-client.ts:56-68), a failed Worker init (including the internal
+ * connect→Stagehand.create) terminates instead of leaking a half-open CDP
+ * connection (:58-69), and execute(method, args, operationSignal) honors the
+ * operation signal by closing the connection on abort (:71-87) — cancellation
+ * and half-open law the direct native entry lacks (native.ts execute ignores
+ * the signal). A closed runtime is NOT silently reopened (host's lazy
+ * reopen is its SessionResources lane; a Team retry is a new lease
+ * acquisition). launch mode attaches the runtime to the endpoint reported by
+ * THIS process; attach mode opens the configured endpoint and closes ONLY the
+ * runtime — with no owned Chromium there is nothing to fake-clean.
+ * Acquisition/rollback law is the reviewed createG2BrowserLaunchOwner;
+ * admission is the reviewed governed lease (PA-before-open, drain, no fake
+ * closed). PRE-EFFECT EXCLUSION: the host plugin's SessionResources admission
+ * is never re-entered — exactly one owner/lease per port; this module imports
+ * no host browser runtime package (leg-proven).
  *
  * PORT 2 — MCP. `createG2TeamMcpPort` is the same-source Team-owned
- * connection: THIS port constructs the real SDK Client
- * (@modelcontextprotocol/client 2.0.0, the exact package the host's own
- * connection imports at connection.ts:18; constructor pattern connection.ts:258)
- * per generation and connects it over a config-supplied transport factory.
- * captureConnection therefore answers the generation, the client object and
- * the timeout that THIS port built from the SAME approved config — no capture
- * point exists on the host's own connection (recorded gap; not requested).
- * Registration goes through the PUBLIC scope-layered face
- * `mcpResources.register(server, provider)` shape
- * (mcp/mcp-resources/src/index.ts:47,:85-107 — the same face the host
- * mcp-client plugin uses, server-context.ts:29-31); scope close runs the real
- * close: register-dispose first, in-flight requests drained, then
- * client.close() — and capture afterwards refuses (no dispatch post-close).
- * No credentials are created or escalated; endpoints/commands/timeouts pass
- * through from the supplied approved config only; nothing global — no
- * security or network configuration is touched.
+ * connection with SERIAL lifecycle: every connect/rotate/close runs through
+ * ONE serial chain, so a pending connect is counted by close (close joins
+ * the chain and then really closes every connecting/rotating generation),
+ * concurrent reconnects cannot overwrite-and-leak a client, and a FAILED
+ * connect rolls its own half-open generation closed while the current
+ * generation (if any) stays live and owning nothing half-open. Close failures
+ * are OWNED, never swallowed: a rotated-out generation that refuses to close
+ * is retained (real reference), reported as CLOSE_FAILED at the rotation and
+ * re-attempted/reported by close(), and `transport closed` is marked only
+ * AFTER the real close succeeded (never early-true). The transport is built
+ * by the port FROM the approved config: the factory receives only the
+ * config-derived frozen target (full endpointUrl / spawn argv0+args+cwd) —
+ * same-source by construction, no side-channel endpoint. Registration binds
+ * the SCOPE: `mcpResources.register(server, provider)` runs against the face
+ * instance passed at register (the Team scope-layered McpResourceRuntime the
+ * host plugins also use, mcp-resources/src/index.ts:85-107), the disposer is
+ * captured from THAT face and close() runs exactly that binding — isolation
+ * is per face binding, not by server name (two scopes, same server name,
+ * independent registrations). captureConnection answers the generation,
+ * client object and timeout THIS port built (@modelcontextprotocol/client
+ * 2.0.0, connection.ts:18/258 pattern; the host connection exposes no
+ * capture point — recorded gap). No credentials created or escalated;
+ * endpoints/commands/timeouts pass through the approved config only; nothing
+ * global is read or written.
  *
  * WEB (ruled): FORBIDDEN routes are (a) flipping the global configured
  * provider id / DSH_WEB_SEARCH_PROVIDER|DSH_WEB_FETCH_PROVIDER env
  * (web/web/src/index.ts:92-93) and (b) a new per-realm composition as a
  * bypass. The Team-only route is a tool-level fork at the Team tool plane
- * that calls the seam-pinned provider/factory DIRECTLY — the host `ctx.web`
- * selection path re-resolves globally and may NOT be used for Team routing.
- * The precise gap is exported below.
+ * calling the seam-pinned provider/factory DIRECTLY, never ctx.web
+ * re-selection. The precise gap is exported below.
  *
- * STATUS: UNWIRED (wiring = CENTER via the shared bindings/plane, which this
- * module never writes). Test doubles prove wiring, not real browsers or real
- * MCP servers: NOT C2. Windows dimensions: NOT_RUN_WINDOWS_UNAUTHORIZED.
+ * STATUS: UNWIRED (wiring = CENTER via the shared bindings/plane, never
+ * written here; the e78 wire branch a5m2-wire-g2 mounts plane/glue only and
+ * must not duplicate these functions). Test doubles beyond the loaded real
+ * modules prove wiring, not real browsers/servers: NOT C2. Windows:
+ * NOT_RUN_WINDOWS_UNAUTHORIZED.
  *
  * @module @dsh-agent-team/runtime/plugin/live/governed-families/g2-team-assembly
  */
@@ -64,7 +80,7 @@ import {
   createG2McpProviderSeam,
 } from './g2-provider-seams.mjs'
 
-export const A5_G2_ASSEMBLY_REVISION = 1
+export const A5_G2_ASSEMBLY_REVISION = 2
 
 /** Typed refusals owned by the assembly layer (P_G2_ASM_ prefixed). */
 export const A5_G2_ASSEMBLY_CODES = Object.freeze({
@@ -73,6 +89,7 @@ export const A5_G2_ASSEMBLY_CODES = Object.freeze({
   SCOPE_CLOSED: 'P_G2_ASM_SCOPE_CLOSED',
   ALREADY_REGISTERED: 'P_G2_ASM_ALREADY_REGISTERED',
   FACE_INCOMPLETE: 'P_G2_ASM_FACE_INCOMPLETE',
+  CONNECT_FAILED: 'P_G2_ASM_MCP_CONNECT_FAILED',
 })
 
 /** The precise WEB gap this module reports instead of faking a route. */
@@ -90,25 +107,26 @@ export const A5_G2_WEB_ROUTE_GAP = Object.freeze({
  * Load the REAL Team-lane entries from explicit pinned paths (file URLs or
  * absolute paths). CENTER wires the path values; a spec proves they load at
  * the pin. Entry absence or a non-function export refuses typed — nothing
- * partial ever reaches a port.
+ * partial ever reaches a port. The runtime entry is the PUBLIC WORKER entry
+ * (src/worker-client.ts:15), the one the host's own wiring uses.
  *
- * @param deps {{ launchEntry: string, nativeEntry: string, sdkClientEntry?: string }}
+ * @param deps {{ launchEntry: string, workerEntry: string, sdkClientEntry?: string }}
  */
-export async function loadG2TeamAssemblyEntries ({ launchEntry, nativeEntry, sdkClientEntry } = {}) {
-  if (typeof launchEntry !== 'string' || typeof nativeEntry !== 'string') {
-    throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'launchEntry/nativeEntry paths are REQUIRED — Team lanes import the pinned public faces (browser-use-stagehand-native package "exports" map includes "./src/*"), never hand-rolled lookalikes')
+export async function loadG2TeamAssemblyEntries ({ launchEntry, workerEntry, sdkClientEntry } = {}) {
+  if (typeof launchEntry !== 'string' || typeof workerEntry !== 'string') {
+    throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'launchEntry/workerEntry paths are REQUIRED — Team lanes import the pinned public faces (browser-use-stagehand-native package "exports" map includes "./src/*": src/launch.ts + src/worker-client.ts), never hand-rolled lookalikes and never the host plugin internals')
   }
   const toUrl = (p) => p.startsWith('file://') ? p : pathToFileURL(p).href
   let launchMod
-  let nativeMod
+  let workerMod
   try {
     launchMod = await import(toUrl(launchEntry))
-    nativeMod = await import(toUrl(nativeEntry))
+    workerMod = await import(toUrl(workerEntry))
   } catch (error) {
     throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, `the pinned public entries failed to load (${String(error?.message ?? error).slice(0, 200)}) — the assembly refuses to run on substitutes`)
   }
-  if (typeof launchMod.launchChromium !== 'function' || typeof nativeMod.openNativeBrowser !== 'function') {
-    throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'launchChromium (src/launch.ts:24) and openNativeBrowser (src/native.ts:95) must be functions of the loaded pinned modules — got otherwise')
+  if (typeof launchMod.launchChromium !== 'function' || typeof workerMod.openBrowserWorker !== 'function') {
+    throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, 'launchChromium (src/launch.ts:24) and openBrowserWorker (src/worker-client.ts:15 — the host-used runtime entry with real acquisition cancel + failed-init terminate + operation-signal close) must be functions of the loaded pinned modules')
   }
   let Client
   if (sdkClientEntry !== undefined) {
@@ -123,18 +141,18 @@ export async function loadG2TeamAssemblyEntries ({ launchEntry, nativeEntry, sdk
       throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE, '@modelcontextprotocol/client must answer a constructible Client class — the Team connection must be the REAL SDK generation, not a stand-in')
     }
   }
-  return Object.freeze({ launchChromium: launchMod.launchChromium, openNativeBrowser: nativeMod.openNativeBrowser, ...(Client === undefined ? {} : { Client }) })
+  return Object.freeze({ launchChromium: launchMod.launchChromium, openBrowserWorker: workerMod.openBrowserWorker, ...(Client === undefined ? {} : { Client }) })
 }
 
 /* ------------------------------------------------------------------ */
-/* PORT 1 — Team browser port (public faces + reviewed owner/lease).    */
+/* PORT 1 — Team browser port (worker entry + reviewed owner/lease).    */
 /* ------------------------------------------------------------------ */
 
 /**
  * @param deps {{
  *   mode: 'launch'|'attach',
- *   nativeConfig: object,                    // approved NativeBrowserConfig fields (model/headless/timeouts/…; cdpEndpoint REQUIRED for attach) — passed through ONLY, never invented
- *   entries: { launchChromium: Function, openNativeBrowser: Function },
+ *   nativeConfig: object,                    // approved NativeBrowserConfig fields — passed through ONLY, never invented; cdpEndpoint REQUIRED for attach
+ *   entries: { launchChromium: Function, openBrowserWorker: Function },
  *   consumeApproval: (facts) => unknown,     // the Team PA edge (plane-owned)
  *   launchEnvelope?: object,
  *   observe?: (event) => void
@@ -147,14 +165,14 @@ export function createG2TeamBrowserPort ({ mode, nativeConfig, entries, consumeA
   if (nativeConfig === null || typeof nativeConfig !== 'object') {
     throw new TypeError(`${A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE}: nativeConfig must be the approved config object — the port invents no browser settings, no endpoints, no credentials`)
   }
-  if (entries === null || typeof entries !== 'object' || typeof entries.launchChromium !== 'function' || typeof entries.openNativeBrowser !== 'function') {
-    throw new TypeError(`${A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE}: entries.launchChromium and entries.openNativeBrowser are REQUIRED — the pinned public faces (src/launch.ts:24 / src/native.ts:95 via the package "./src/*" export), never lookalikes`)
+  if (entries === null || typeof entries !== 'object' || typeof entries.launchChromium !== 'function' || typeof entries.openBrowserWorker !== 'function') {
+    throw new TypeError(`${A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE}: entries.launchChromium (src/launch.ts:24) and entries.openBrowserWorker (src/worker-client.ts:15) are REQUIRED — the host-used public faces; openNativeBrowser-direct is REJECTED (its execute ignores the operation signal and its internal connect→Stagehand.create failure has no cleanup; worker-client.ts owns both)`)
   }
   if (mode === 'attach' && typeof nativeConfig.cdpEndpoint !== 'string') {
     throw new G2SeamError(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, `attach mode needs the configured cdpEndpoint string from the approved config (host validates it at plugin config time) — the port will not invent or discover an endpoint`)
   }
   const scope = new globalThis['AbortController']() // node global via the repo's established access pattern (web-gateway-assembly.mjs:142)
-  const calls = { launchChromium: 0, openNativeBrowser: 0, runtimeConfigChecks: 0 }
+  const calls = { launchChromium: 0, openBrowserWorker: 0, workerWarns: 0 }
   const owner = createG2BrowserLaunchOwner({
     mode,
     ...(mode === 'launch' ? {
@@ -164,18 +182,21 @@ export function createG2TeamBrowserPort ({ mode, nativeConfig, entries, consumeA
       },
     } : {}),
     openRuntime: async (owned) => {
-      calls.openNativeBrowser += 1
-      // The host's own endpoint flow (src/index.ts:105-106): the runtime is
-      // opened against the endpoint reported by THIS process in launch mode;
-      // attach mode opens the configured endpoint directly. Public face only.
+      calls.openBrowserWorker += 1
+      // The host's own endpoint flow (src/index.ts:105-110): launch mode
+      // attaches the Worker runtime to the endpoint THIS process reported;
+      // attach mode opens the configured endpoint. The worker entry carries
+      // the real acquisition cancel (abort mid-ready terminates the Worker).
       const connectConfig = mode === 'launch'
         ? { ...nativeConfig, mode: 'attach', cdpEndpoint: owned.endpoint }
         : nativeConfig
       if (typeof connectConfig.cdpEndpoint !== 'string') {
         throw new G2SeamError(A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE, 'launchChromium answered no string endpoint on the OwnedChromium — refusing to open a runtime against nothing')
       }
-      calls.runtimeConfigChecks += 1
-      return await entries.openNativeBrowser(connectConfig)
+      return await entries.openBrowserWorker(connectConfig, scope.signal, (message) => {
+        calls.workerWarns += 1 // worker-client warn lane: SDK cleanup failure after termination → observe, never swallowed silently
+        observe({ event: 'worker-warn', message: String(message) })
+      })
     },
     observe,
   })
@@ -192,35 +213,35 @@ export function createG2TeamBrowserPort ({ mode, nativeConfig, entries, consumeA
     state: lease.state,
     snapshot: lease.snapshot,
     stats: () => Object.freeze({ ...calls, opens: owner.opens(), retained: owner.retained().length, poisoned: owner.poisoned() }),
-    /** Scope dispose: interrupt any still-pending acquisition, then drain the lease (terminal). */
+    /** Scope dispose: cancel any pending acquisition for REAL (worker terminates), then drain the lease (terminal). */
     close: () => {
       if (closing !== null) return closing
       closing = (async () => {
-        scope.abort(new Error('team browser scope closed')) // real abort of a pending launch (launch.ts signal contract)
+        scope.abort(new Error('team browser scope closed')) // real abort: mid-ready acquisition terminates (worker-client.ts:56-68), a pending launch rejects per the launch.ts signal law
         return await lease.drain() // full close law: awaited work, exactly-once close, retained-failure boundary
       })()
       return closing
     },
     assemblyLaws: Object.freeze({
-      entryFlow: 'launchChromium(nativeConfig, scopeSignal) → real OwnedChromium{endpoint, close()} → openNativeBrowser({...nativeConfig, mode:"attach", cdpEndpoint:<that process\'s endpoint>}) — host endpoint flow (src/index.ts:105-106) through the package\'s public faces only (launch.ts:24, native.ts:95 @639ed01539)',
-      preEffect: 'EXCLUDED — the host plugin\'s SessionResources admission is never re-entered by this port: exactly one owner + one lease per port, no second admission around the host runtime, this module imports no host browser runtime package',
-      cleanup: 'half-open rollback, retain+poison, PA-before-open, drain terminality all come from the reviewed owner/lease — this port adds wiring, never new lifecycle law',
+      entryFlow: 'launchChromium(nativeConfig, scopeSignal) → real OwnedChromium{endpoint, close()} → openBrowserWorker({...nativeConfig, mode:"attach", cdpEndpoint:<that process\'s endpoint>}, scopeSignal, warn) — host endpoint flow (src/index.ts:105-117) through the package\'s public faces (launch.ts:24, worker-client.ts:15 @639ed01539)',
+      cancellation: 'acquisition: scope.signal abort mid-ready really terminates the Worker (worker-client.ts:56-68); operation: execute(method, args, operationSignal) abort CLOSES the connection (worker-client.ts:75-76) and a closed runtime is NEVER silently reopened — a Team retry is a new lease acquisition',
+      halfOpen: 'failed Worker init (including the internal connect→Stagehand.create) terminates inside the entry; the reviewed owner then rolls back the owned process before rejecting; attach mode has NO owned process and its close is runtime-only — nothing is faked',
+      preEffect: 'EXCLUDED — the host plugin\'s SessionResources admission is never re-entered by this port: exactly one owner + one lease per port, and this module imports no host browser runtime package',
     }),
   })
 }
 
 /* ------------------------------------------------------------------ */
-/* PORT 2 — Team-owned MCP connection (same-source capture) + register. */
+/* PORT 2 — Team-owned MCP connection: serial, owned-failure lifecycle. */
 /* ------------------------------------------------------------------ */
 
 /**
  * @param deps {{
- *   declaredSurfaceConfig: object,           // the APPROVED surface config (classifyG2McpSurface shape)
- *   resourceServerName: string,              // Team-only server name (slot the host plugins do not own)
+ *   declaredSurfaceConfig: object,           // the APPROVED surface config (classifyG2McpSurface)
+ *   resourceServerName: string,              // Team-only server name
  *   entries: { Client: Function },           // the real @modelcontextprotocol/client 2.0.0 class
- *   makeTransport: () => object,             // transport factory for the SAME approved config (command/url pass-through)
- *   toolCallTimeoutMs: number,               // the original approved timeout CONFIG (connection.ts:370 counterpart) — REQUIRED, never defaulted here
- *   consumeNothing?: undefined,              // (no PA here — resources are read-only operations under the plane)
+ *   makeTransport: (target) => object,       // factory receiving ONLY the frozen config-derived target {server, transport, endpointUrl?|spawn?}
+ *   toolCallTimeoutMs: number,               // the original approved timeout CONFIG — REQUIRED, never defaulted here
  *   observe?: (event) => void
  * }}
  */
@@ -232,7 +253,7 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
     throw new TypeError(`${A5_G2_ASSEMBLY_CODES.ENTRY_INCOMPLETE}: entries.Client must be the real @modelcontextprotocol/client class — the captured generation has to BE the SDK object the Team lane constructed, not a stand-in`)
   }
   if (typeof makeTransport !== 'function') {
-    throw new TypeError(`${A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE}: makeTransport is REQUIRED — built by the Team assembly from the SAME approved config (stdio command/cwd or http endpoint pass-through); no endpoint is invented, no credential is minted or escalated`)
+    throw new TypeError(`${A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE}: makeTransport is REQUIRED — it receives ONLY the frozen target this port derives from the approved config (full endpointUrl or spawn argv0/args/cwd); no endpoint is invented, no credential is minted or escalated`)
   }
   if (typeof toolCallTimeoutMs !== 'number' || !(toolCallTimeoutMs > 0)) {
     throw new TypeError(`${A5_G2_ASSEMBLY_CODES.CONFIG_INCOMPLETE}: toolCallTimeoutMs must be the positive approved CONFIG value (connection.ts:370 counterpart) — the port never defaults a timeout it cannot name as config`)
@@ -244,40 +265,104 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
   const liveSpawn = declared.transport === 'stdio'
     ? Object.freeze({ argv0: declaredSurfaceConfig.command[0], args: Object.freeze([...declaredSurfaceConfig.command.slice(1)]), cwd: typeof declaredSurfaceConfig.cwd === 'string' ? declaredSurfaceConfig.cwd : '' })
     : null
-  const liveEndpoint = declared.transport === 'streamable-http' ? declared.endpointOrigin : null
+  const liveEndpoint = typeof declaredSurfaceConfig.endpointUrl === 'string' ? declaredSurfaceConfig.endpointUrl : null
+  /** The frozen SAME-SOURCE transport target: the ONLY thing a transport may be built from. */
+  const transportTarget = Object.freeze({
+    server: resourceServerName,
+    transport: declared.transport,
+    ...(liveEndpoint !== null ? { endpointUrl: liveEndpoint } : {}),
+    ...(liveSpawn !== null ? { spawn: liveSpawn } : {}),
+  })
+  const liveEndpointOrigin = declared.transport === 'streamable-http' ? declared.endpointOrigin : null
 
   let generation = 0
   let client = null
   let disposed = false
-  let registerDispose = null
+  let registration = null // { face, dispose } — the SCOPE binding, captured at register
   let closing = null
+  /** ONE serial chain: connects, rotations and close never interleave. */
+  let chain = Promise.resolve()
   const inflight = new Set()
-  const transportStates = []
+  const transportStates = [] // { closed (set only AFTER a real close succeeded), closeError }
+  /** Generations connecting OR being rotated out — close() really closes every one. */
+  const pendingGenerations = new Set()
+  /** Real references whose close FAILED — owned, re-attempted at close, never swallowed. */
+  const retainedRotations = new Set()
+  const closeFailures = []
 
-  /** Connect (or reconnect) one REAL SDK generation; old generation truly closes. */
-  const reconnect = async () => {
-    if (disposed) throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope is CLOSED — no generation is built over a disposed scope')
-    const next = new entries.Client(
-      { name: `dsh-agent-team-g2-${resourceServerName}`, version: '0.0.1' },
-      { capabilities: {}, versionNegotiation: { mode: 'auto' } }, // host constructor pattern (connection.ts:258-261 @639ed01539)
-    )
-    const transport = makeTransport()
-    const state = { closed: false }
+  const settleGenerationClose = async (gen, label) => {
+    try {
+      await gen.close()
+      return true
+    } catch (error) {
+      closeFailures.push(`${label}: ${String(error?.message ?? error).slice(0, 120)}`)
+      return false
+    }
+  }
+
+  const buildTransport = () => {
+    const transport = makeTransport(transportTarget) // config-derived target ONLY — same-source by construction
+    if (transport === null || typeof transport !== 'object' || typeof transport.start !== 'function' || typeof transport.send !== 'function' || typeof transport.close !== 'function') {
+      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, `makeTransport must return a Transport object (start/send/close) built from the frozen approved-config target it received (server ${transportTarget.server}, transport ${transportTarget.transport}) — got otherwise`)
+    }
+    const state = { closed: false, closeError: null }
     transportStates.push(state)
     const realClose = transport.close.bind(transport)
-    transport.close = async () => { state.closed = true; return await realClose() }
-    const previous = client
-    await next.connect(transport)
-    if (disposed) { // scope closed while connecting — nothing survives
-      await next.close().catch(() => {})
-      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope closed while a generation was connecting — the half-open client was closed, nothing survives')
+    transport.close = async () => {
+      try {
+        await realClose()
+        state.closed = true // "closed" marks only AFTER the real close succeeded — never early-true
+      } catch (error) {
+        state.closeError = error
+        throw error
+      }
     }
-    next.onclose = () => { if (client === next) client = null }
-    client = next
-    generation += 1
-    if (previous !== null) await previous.close().catch(() => {}) // the rotated generation REALLY closes
-    observe({ event: 'generation-up', server: resourceServerName, generation })
-    return next
+    return transport
+  }
+
+  /** Connect (or rotate to) one REAL SDK generation — serialized with everything else. */
+  const reconnect = () => {
+    const step = chain.then(async () => {
+      if (disposed) throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope is CLOSED — no generation is built over a disposed scope')
+      const next = new entries.Client(
+        { name: `dsh-agent-team-g2-${resourceServerName}`, version: '0.0.1' },
+        { capabilities: {}, versionNegotiation: { mode: 'auto' } }, // host constructor pattern (connection.ts:258-261 @639ed01539)
+      )
+      const transport = buildTransport()
+      pendingGenerations.add(next)
+      try {
+        await next.connect(transport)
+      } catch (cause) {
+        // A failed connect owns its cleanup: the half-open generation REALLY
+        // closes; the CURRENT generation (if any) stays live and untouched.
+        const rolled = await settleGenerationClose(next, 'connect-rollback-close')
+        pendingGenerations.delete(next)
+        throw new G2SeamError(A5_G2_ASSEMBLY_CODES.CONNECT_FAILED, `Team MCP generation connect failed (${String(cause?.message ?? cause).slice(0, 140)}) — rollback close ${rolled ? 'succeeded; the current generation (if any) stays live, nothing half-open survives' : `FAILED and is OWNED (${closeFailures[closeFailures.length - 1] ?? 'unknown'}) — re-attempted and reported by close(), never swallowed`}`)
+      }
+      if (disposed) { // scope closed (queued behind us) while connecting — nothing survives
+        pendingGenerations.delete(next)
+        await settleGenerationClose(next, 'scope-race-close')
+        throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope closed while this generation was connecting — the connecting client was really closed')
+      }
+      next.onclose = () => { if (client === next) client = null }
+      const previous = client
+      client = next
+      generation += 1
+      pendingGenerations.delete(next)
+      if (previous !== null) {
+        pendingGenerations.add(previous)
+        const closedOk = await settleGenerationClose(previous, 'rotated-generation-close')
+        pendingGenerations.delete(previous)
+        if (!closedOk) {
+          retainedRotations.add(previous) // REAL reference held — close() re-attempts and reports
+          throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `generation rotated to gen-${generation}, but the PREVIOUS generation refused to close — it is RETAINED (real reference; close() re-attempts and reports; the port never claims it closed). Failure: ${closeFailures[closeFailures.length - 1] ?? 'unknown'}`)
+        }
+      }
+      observe({ event: 'generation-up', server: resourceServerName, generation })
+      return next
+    })
+    chain = step.then(() => {}, () => {}) // the chain survives failures; each CALLER still sees its own rejection
+    return step
   }
 
   /** The SAME-SOURCE capture the reviewed seam executes on. */
@@ -287,7 +372,7 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
     }
     return {
       transport: declared.transport,
-      ...(liveEndpoint !== null ? { endpointOrigin: liveEndpoint } : {}),
+      ...(liveEndpointOrigin !== null ? { endpointOrigin: liveEndpointOrigin } : {}),
       ...(liveSpawn !== null ? { spawn: liveSpawn } : {}),
       generation: `gen-${generation}`,
       timeout: toolCallTimeoutMs, // the ORIGINAL approved config value (seam preserves it into options)
@@ -296,7 +381,7 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
   }
 
   // The registered slot object (port-owned identity): the seam pins it, so a
-  // re-registration or scope teardown invalidating it is caught as drift.
+  // scope teardown invalidating it is caught as drift.
   const slotGuard = Object.freeze({ teamServer: resourceServerName })
   const seam = createG2McpProviderSeam({ declaredSurfaceConfig, getRealProvider: () => slotGuard, captureConnection, observe })
 
@@ -313,46 +398,62 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
   }
 
   /**
-   * Register through the PUBLIC scope-layered face — `mcpResources.register(
-   * server, provider)` shape (mcp-resources/src/index.ts:85-107 @639ed01539,
-   * the same face server-context.ts:29-31 uses). CENTER passes the value it
-   * obtained via ctx.inject(['mcpResources']); this port never reaches for
-   * it and never touches global state.
+   * Register into the PASSED SCOPE's face: the public scope-layered
+   * `mcpResources.register(server, provider)` face (mcp-resources/src/
+   * index.ts:85-107 @639ed01539 — what ctx.inject(['mcpResources']) answers
+   * inside the Team scope, cf. server-context.ts:29-31). The disposer is
+   * bound to THAT face instance — isolation is the face binding, not the
+   * server name (two scopes may host the same server name independently).
    */
   const register = (mcpResourcesFace) => {
     if (disposed) throw new G2SeamError(A5_G2_ASSEMBLY_CODES.SCOPE_CLOSED, 'the Team MCP scope is closed — nothing registers into a dead scope')
     if (mcpResourcesFace === null || typeof mcpResourcesFace !== 'object' || typeof mcpResourcesFace.register !== 'function') {
-      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'the mcpResources face must carry register(server, provider) — the PUBLIC McpResourceRuntime registration shape; the port registers through no other channel')
+      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'the mcpResources face must carry register(server, provider) — the PUBLIC scope-layered McpResourceRuntime registration of the TEAM SCOPE; the port registers through no other channel and never resolves a face globally')
     }
-    if (registerDispose !== null) throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ALREADY_REGISTERED, `server "${resourceServerName}" is already registered by this port — one slot, one registration`)
-    registerDispose = mcpResourcesFace.register(resourceServerName, Object.freeze({ request }))
-    if (typeof registerDispose !== 'function') {
-      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'mcpResources.register must return its disposer — scope teardown needs the REAL unregister handle')
+    if (registration !== null) throw new G2SeamError(A5_G2_ASSEMBLY_CODES.ALREADY_REGISTERED, 'this port already holds its registration in its bound scope face — one port, one scope registration')
+    const dispose = mcpResourcesFace.register(resourceServerName, Object.freeze({ request }))
+    if (typeof dispose !== 'function') {
+      throw new G2SeamError(A5_G2_ASSEMBLY_CODES.FACE_INCOMPLETE, 'mcpResources.register must return its disposer — scope teardown needs the REAL unregister handle from THIS face; the port refuses to hold an undismissable registration')
     }
+    registration = Object.freeze({ face: mcpResourcesFace, dispose })
     observe({ event: 'registered', server: resourceServerName })
-    return registerDispose
+    return dispose
   }
 
-  /** Scope close: unregister first (no new entry), drain in-flight, then the REAL client.close(). */
+  /**
+   * Scope close, JOINING the serial chain (a pending connect settles first
+   * and is then really closed): unregister the BOUND face first, drain
+   * in-flight, then close the current + every pending/retained generation.
+   * Owned failures re-surface — close never reports clean over a failure.
+   */
   const close = () => {
     if (closing !== null) return closing
-    closing = (async () => {
+    closing = chain.then(async () => {
       disposed = true
       const errors = []
-      if (registerDispose !== null) {
-        try { await registerDispose() } catch (error) { errors.push(`unregister: ${String(error?.message ?? error).slice(0, 120)}`) }
+      if (registration !== null) {
+        try {
+          await registration.dispose() // the disposer captured from the REGISTERED face — the scope binding, not a name lookup
+        } catch (error) { errors.push(`unregister: ${String(error?.message ?? error).slice(0, 120)}`) }
       }
-      await Promise.allSettled([...inflight]) // drain: every dispatched request settles before the client dies
-      const dying = client
+      await Promise.allSettled([...inflight]) // drain: every dispatched request settles before the clients die
+      const dying = new Set(pendingGenerations)
+      pendingGenerations.clear()
+      if (client !== null) dying.add(client)
       client = null
-      if (dying !== null) {
-        try { await dying.close() } catch (error) { errors.push(`client.close: ${String(error?.message ?? error).slice(0, 120)}`) }
+      for (const gen of retainedRotations) dying.add(gen) // re-attempt the retained real references
+      retainedRotations.clear()
+      for (const gen of dying) {
+        const ok = await settleGenerationClose(gen, 'scope-close-generation')
+        if (!ok) errors.push(closeFailures[closeFailures.length - 1] ?? 'generation.close: unknown')
       }
+      for (const failure of closeFailures.splice(0)) errors.push(`retained-${failure}`) // failures owned from earlier rotations/connects
       if (errors.length > 0) {
         throw new G2SeamError(A5_G2_SEAM_CODES.CLOSE_FAILED, `Team MCP scope close FAILED (${errors.join(' | ')}) — never reported clean`)
       }
       observe({ event: 'scope-closed', server: resourceServerName })
-    })()
+    })
+    chain = closing.then(() => {}, () => {})
     return closing
   }
 
@@ -369,16 +470,23 @@ export function createG2TeamMcpPort ({ declaredSurfaceConfig, resourceServerName
       connected: client !== null,
       disposed,
       inflight: inflight.size,
-      transportsClosed: transportStates.filter((s) => s.closed).length,
       transportsBuilt: transportStates.length,
+      transportsClosed: transportStates.filter((s) => s.closed).length, // only real successes count
+      transportsCloseFailed: transportStates.filter((s) => s.closeError !== null).length,
+      pendingGenerations: pendingGenerations.size,
+      retainedRotations: retainedRotations.size, // REAL references still held
+      scopeBound: registration !== null,
       dispatch: seam.stats(),
       lastDispatch: seam.lastDispatch(),
     }),
     assemblyLaws: Object.freeze({
+      serial: 'connects, rotations and close run on ONE serial chain — a pending connect is counted by close, concurrent reconnects cannot overwrite-and-leak, and a failed connect rolls its own half-open generation closed while the current one stays live',
+      failureOwnership: 'close failures are owned, never swallowed: a refusing generation is RETAINED (real reference), reported CLOSE_FAILED at the rotation and re-attempted/reported at close(); transport "closed" marks only AFTER the real close succeeded',
       sameOrigin: 'the captured {generation, client, timeout} are built BY THIS PORT from the SAME approved config — new Client per generation (SDK 2.0.0, connection.ts:18/258 pattern), timeout = the original approved config value; the host connection exposes no capture point at this pin (recorded gap, not requested)',
-      registration: 'PUBLIC scope-layered mcpResources.register(server, provider) face only (mcp-resources/src/index.ts:85-107 @639ed01539), Team-only server name, disposer honored; never a global re-selection, never a host-owned slot',
+      transportSource: 'the transport factory receives ONLY the frozen approved-config target {server, transport, full endpointUrl | spawn argv0/args/cwd} this port derives — same-source by construction; a non-Transport return refuses FACE_INCOMPLETE',
+      registration: 'PUBLIC scope-layered mcpResources.register(server, provider) face bound at register (mcp-resources/src/index.ts:85-107 @639ed01539); the disposer binds to THAT face instance — scope isolation is the face binding, never the server name; close() unregisters exactly the bound face',
       credentialPolicy: 'no credentials created, escalated or transformed; endpoints/commands/cwd/timeouts pass through from the approved config; no global security or network configuration is read or written',
-      scopeClose: 'unregister → drain in-flight → REAL client.close() (transport teardown follows); capture afterwards refuses CAPTURE_INCOMPLETE — no post-close dispatch',
+      scopeClose: 'unregister (bound face) → drain in-flight → real close of current + every pending/retained generation; capture afterwards refuses CAPTURE_INCOMPLETE — no post-close dispatch',
     }),
   })
 }
