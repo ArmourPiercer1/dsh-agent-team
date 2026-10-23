@@ -88,10 +88,22 @@ import {
 // OWN parsed value (team-tool-plane :2360-2365, paAdmit reads
 // requestedEffects.effects). This wiring reuses the SAME parser and rides
 // its canonical `{ effects, fingerprint }` struct — never a self-invented
-// effect envelope.
-import { parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
+// effect envelope. canonicalJsonStringify is the SAME house canonical form
+// the fingerprints are minted over — used here for the UNION-ENCODED target
+// (root 21:20) where argsCanonical/namedGapsCanonical must ride as FULL
+// canonical JSON (never a digest): full message/prompt text, unknown-but-
+// legal args keys, array order, nulls and empty strings all survive.
+import { canonicalJsonStringify, parseRequestedEffectSet } from '../../../../../domain/tool-governance/src/index.js'
 
-export const A5_B_SUBAGENT_WIRING_REVISION = 1
+// Bumped 1→2 with the root-21:20 UNION ENCODING round (the control mint now
+// emits the common-required + control-addition manifest with FULL canonical
+// JSON; an OLD-shape mint is not produced anywhere and a previously reviewed
+// manifest bytes are NOT silently retranslated — every dispatch re-mints from
+// the frozen plan under the new law). Registration pairs this same round:
+// the adapter stays at its signed A5_B_SUBAGENT_ADAPTER_REVISION (not
+// reopened); the table entry's own revision pairing belongs to the 9d968
+// family-rule owner lane.
+export const A5_B_SUBAGENT_WIRING_REVISION = 2
 
 /** Typed codes OWNED by this wiring layer (P_B_SUBAGENT_WIRE_*). Funnel and
  *  adapter refusals keep THEIR OWN bytes — this seat never re-codes them. */
@@ -201,13 +213,41 @@ export function createBSubagentControlWiring(input = {}) {
     if (parsedEffects.ok !== true) {
       return refuse(CODES.EFFECTS_UNPARSABLE, `the derived effect set is not the frozen closed vocabulary (${JSON.stringify(parsedEffects.problems ?? null).slice(0, 200)}) — the wiring never walks a malformed effect set`)
     }
-    // FIX 2 (root 20:39): the manifest carries the LOSSLESS CLASSIFIED
-    // TARGET (the plan's own frozen target object — address.claim/relation/
-    // adjudication and every leaf — plus the full classified args: the real
-    // agent_id and, for send_message, the message itself per the family
-    // contract's send-is-not-memory-write obligation). The fingerprint
-    // pairs; it NEVER substitutes for the auditable target — labels are not
-    // targets.
+    // UNION ENCODING (root 21:20 joint card, control-mint side): the ONE
+    // operation-discriminated family entry's CONTROL mint. Common required
+    // strings (operation/contract/action/revision/effect/depth/
+    // argsCanonical/namedGapsCanonical) + the control additions
+    // (caller/addressRelation/addressAdjudication/budget/effectDelta strings,
+    // addressClaim NULLABLE string, recordIndex the existing nonNegativeInt).
+    // argsCanonical / namedGapsCanonical are FULL canonical JSON — never a
+    // hash summary: the full message/prompt text, unknown-but-legal args
+    // keys, array order, nulls and empty strings survive (pinned by spec
+    // round-trip). The complete plan.target is LOSSLESSLY RECONSTRUCTIBLE
+    // from these leaves (contract/caller/address{claim,relation,adjudication}/
+    // action/revision/depth/budget) — labels never stand in for the target.
+    // operation and action BOTH bind to the record's frozen original
+    // operation (subagent-interrupt / subagent-list / subagent-send-message).
+    // DISCLOSED single-source facts: this seam holds ONE census effect fact
+    // per control record (A5_B_SUBAGENT_EFFECT_LABELS is the inventory's
+    // recordEffectDelta), so `effect` and `effectDelta` carry the SAME census
+    // string — no second truth is invented at this seam.
+    const subagentTargetManifestControl = deepFreeze({
+      operation: A5_B_SUBAGENT_RECORD_SPECS[name].operation,
+      contract: plan.target.contract,
+      action: plan.target.action,
+      revision: plan.target.revision,
+      effect: plan.target.effect,
+      depth: plan.target.depth,
+      argsCanonical: canonicalJsonStringify(plan.args),
+      namedGapsCanonical: canonicalJsonStringify(A5_B_SUBAGENT_NAMED_GAPS),
+      caller: plan.target.caller,
+      addressRelation: plan.target.address.relation,
+      addressAdjudication: plan.target.address.adjudication,
+      addressClaim: plan.target.address.claim,
+      budget: plan.target.budget,
+      effectDelta: A5_B_SUBAGENT_EFFECT_LABELS[name],
+      recordIndex,
+    })
     const payload = deepFreeze({
       realmId,
       callId,
@@ -218,14 +258,7 @@ export function createBSubagentControlWiring(input = {}) {
         familyId,
         adapterRevision: A5_B_SUBAGENT_ADAPTER_REVISION,
         providerIdentity: wiringProviderId,
-        targetManifest: {
-          recordIndex,
-          operation: A5_B_SUBAGENT_RECORD_SPECS[name].operation,
-          effectDelta: A5_B_SUBAGENT_EFFECT_LABELS[name],
-          namedGaps: A5_B_SUBAGENT_NAMED_GAPS,
-          target: plan.target,
-          args: plan.args,
-        },
+        targetManifest: subagentTargetManifestControl,
       },
     })
     // FIX 4 (root 20:39): freeze ONLY the wiring's own JSON payload. The

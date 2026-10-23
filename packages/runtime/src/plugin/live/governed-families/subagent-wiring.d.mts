@@ -46,16 +46,32 @@ export interface BSubagentPaWalk {
     readonly familyId: string
     readonly adapterRevision: number
     readonly providerIdentity: string
-    /** Lossless CLASSIFIED target (root 20:39 FIX 2): the plan's own frozen
-     *  target object + full classified args ride alongside the labels — the
-     *  fingerprint pairs, it never substitutes for the auditable target. */
+    /** UNION ENCODING (root 21:20 joint card, control-mint side): the ONE
+     *  operation-discriminated entry's control shape — common required
+     *  strings (operation/contract/action/revision/effect/depth/
+     *  argsCanonical/namedGapsCanonical) + control additions
+     *  (caller/addressRelation/addressAdjudication/budget/effectDelta
+     *  strings, addressClaim NULLABLE, recordIndex nonNegativeInt).
+     *  argsCanonical/namedGapsCanonical are FULL canonical JSON (never
+     *  digests); the complete plan.target is losslessly reconstructible
+     *  from the leaves. `effect` and `effectDelta` carry the SAME single
+     *  census fact (disclosed — the seam holds one effect truth per record). */
     readonly targetManifest: {
-      readonly recordIndex: number
       readonly operation: string
+      readonly contract: string
+      readonly action: string
+      readonly revision: string
+      readonly effect: string
+      readonly depth: string
+      readonly argsCanonical: string
+      readonly namedGapsCanonical: string
+      readonly caller: string
+      readonly addressRelation: string
+      readonly addressAdjudication: string
+      readonly addressClaim: string | null
+      readonly budget: string
       readonly effectDelta: string
-      readonly namedGaps: Readonly<Record<string, string>>
-      readonly target: unknown
-      readonly args: Readonly<Record<string, unknown>>
+      readonly recordIndex: number
     }
   }
   readonly signal?: AbortSignal

@@ -282,7 +282,7 @@ describe('a5m2-subagent-wiring (b) verbatim reuse of the frozen adapter', () => 
   it('placed defs travel COMPLETE (only execute replaced), send_message carries the REAL adjacency mark, registrations ride the assembly face', () => {
     const wiring = okValue(mountWiring(makePa()))
     expect(wiring.familyId).toBe('B-SUBAGENT')
-    expect(wiring.wiringRevision).toBe(1)
+    expect(wiring.wiringRevision, 'bumped 1→2 WITH the root-21:20 union-encoding round (same-round pairing; the frozen adapter revision is UNTOUCHED)').toBe(2)
     expect(wiring.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
     expect(wiring.providerId).toBe(PROVIDER)
     expect(wiring.placementNames).toEqual([...NAMES].sort())
@@ -332,21 +332,53 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     expect(walk.family.familyId).toBe('B-SUBAGENT')
     expect(walk.family.adapterRevision).toBe(ADAPTER.A5_B_SUBAGENT_ADAPTER_REVISION)
     expect(walk.family.providerIdentity).toBe(PROVIDER)
-    expect(walk.family.targetManifest.recordIndex).toBe(46)
+    // UNION ENCODING (root 21:20 joint card, control-mint side): the ONE
+    // operation-discriminated entry's CONTROL shape — common required strings
+    // + control additions; FULL canonical JSON, never digests; the complete
+    // plan.target losslessly reconstructible from the manifest leaves — a
+    // label never stands in for the target.
+    const manifest = walk.family.targetManifest
     const sendSpec = ADAPTER.A5_B_SUBAGENT_RECORD_SPECS.send_message
     if (sendSpec === undefined) throw new Error('no send spec')
-    expect(walk.family.targetManifest.operation).toBe(sendSpec.operation)
-    expect(walk.family.targetManifest.effectDelta).toBe(ADAPTER.A5_B_SUBAGENT_EFFECT_LABELS.send_message)
-    expect(walk.family.targetManifest.namedGaps).toBe(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS) // the row's frozen gap facts, whole
-    // FIX 2 (root 20:39): the manifest carries the LOSSLESS CLASSIFIED
-    // TARGET — the real target leaves, not labels: the plan's own frozen
-    // target object (equal to a fresh classify of the same args) plus the
-    // full classified args (the actual agent_id AND the message content).
+    expect(manifest.operation).toBe(sendSpec.operation)
+    expect(manifest.action, 'action binds to the record\'s original operation').toBe(sendSpec.operation)
+    expect(manifest.recordIndex).toBe(46)
+    expect(manifest.effectDelta).toBe(ADAPTER.A5_B_SUBAGENT_EFFECT_LABELS.send_message)
+    // The single census effect fact (DISCLOSED): the seam holds ONE effect
+    // truth per control record — plan.target.effect and the row's
+    // effectDelta are the SAME census string, so `effect` and `effectDelta`
+    // carry it identically; no second truth is invented here.
+    expect(manifest.effect, 'effect = the plan target own census leaf').toBe(manifest.effectDelta)
+    expect(manifest.addressClaim, 'the classified target carries the real agent_id').toBe('agent-child-1')
+    expect(typeof manifest.contract).toBe('string')
+    expect(typeof manifest.revision).toBe('string')
+    expect(typeof manifest.depth).toBe('string')
+    expect(typeof manifest.caller).toBe('string')
+    expect(typeof manifest.budget).toBe('string')
+    expect(typeof manifest.addressRelation).toBe('string')
+    expect(typeof manifest.addressAdjudication).toBe('string')
+    // namedGapsCanonical: FULL canonical JSON that round-trips the frozen gap
+    // facts whole (root 21:20: 后两完整规范JSON非hash摘要).
+    expect(JSON.parse(String(manifest.namedGapsCanonical)), 'namedGaps round-trip, whole').toEqual(ADAPTER.A5_B_SUBAGENT_NAMED_GAPS)
+    // LOSSLESS target reconstruction from the manifest leaves, and the FULL
+    // classified args riding as canonical JSON (the real agent_id AND the
+    // message content):
     const sendRow = wiring.rowOf('send_message')
     if (sendRow === undefined) throw new Error('no send row')
     const expectedPlan = sendRow.classify({ agent_id: 'agent-child-1', message: 'down' })
-    expect(walk.family.targetManifest.target).toEqual(expectedPlan.ok === true ? expectedPlan.plan?.target : 'NO-PLAN')
-    expect(walk.family.targetManifest.args).toEqual({ agent_id: 'agent-child-1', message: 'down' })
+    if (expectedPlan.ok !== true || expectedPlan.plan === undefined) throw new Error('NO-PLAN')
+    const reconstructedTarget = {
+      contract: manifest.contract,
+      caller: manifest.caller,
+      address: { claim: manifest.addressClaim, relation: manifest.addressRelation, adjudication: manifest.addressAdjudication },
+      action: manifest.action,
+      revision: manifest.revision,
+      effect: manifest.effect,
+      depth: manifest.depth,
+      budget: manifest.budget,
+    }
+    expect(reconstructedTarget, 'the complete original plan.target rebuilds losslessly').toEqual(expectedPlan.plan.target)
+    expect(JSON.parse(String(manifest.argsCanonical))).toEqual({ agent_id: 'agent-child-1', message: 'down' })
     // FIX 4 (root 20:39): the payload is frozen; the CALLER'S AbortSignal
     // rides by reference and is NEVER frozen (deep-freezing it would break
     // abort during the PA wait):
@@ -379,6 +411,43 @@ describe('a5m2-subagent-wiring (c) the WALK is the frozen plane shape with the p
     ])
     // and the rows SERVED through the consumed edge (the proof-allowed path):
     expect(fixture.calls).toEqual(['interrupt', 'listChildren'])
+  })
+  it('argsCanonical is FULL canonical JSON, not a digest (root 21:20): full message text, unknown-but-legal keys, array order, nulls and empty strings all survive; addressClaim is the NULLABLE leaf', async () => {
+    const fixture = makeFixture()
+    const pa = makePa()
+    const wiring = okValue(mountWiring(pa, { subagentService: fixture.service, liveSubagentService: () => fixture.service, agentsRegistry: registryDouble, liveAgentsRegistry: () => registryDouble }))
+    const send = wiring.definitions.find((d) => d.name === 'send_message')
+    const list = wiring.definitions.find((d) => d.name === 'list_agents')
+    if (send === undefined || list === undefined) throw new Error('trio incomplete')
+    const rich = {
+      agent_id: 'agent-child-1',
+      message: 'multi-line FULL text — 原文全文\nwith "quotes", emoji ✓, tail: ',
+      nilLeaf: null,
+      emptyString: '',
+      orderMatters: [3, 1, 2, 3],
+      unknownButLegal: { nested: ['a', null, ''] },
+    }
+    await send.execute(rich, execFor('call-rt1'))
+    // list_agents carries NO agent_id: the nullable addressClaim law answers
+    // the plan fact NULL — never a fabricated empty string, never absent-key
+    // drift:
+    await list.execute({}, execFor('call-rt2'))
+    const m1 = pa.walks[0]?.family.targetManifest
+    const m2 = pa.walks[1]?.family.targetManifest
+    if (m1 === undefined || m2 === undefined) throw new Error('no walks')
+    expect(JSON.parse(String(m1.argsCanonical)), 'the FULL classified args, value-for-value').toEqual(rich)
+    expect(String(m1.argsCanonical), 'the full message text rides — no summary, no digest').toContain('原文全文')
+    expect(String(m1.argsCanonical), 'unknown-but-legal keys ride').toContain('unknownButLegal')
+    const back = JSON.parse(String(m1.argsCanonical)) as { orderMatters: unknown[]; nilLeaf: unknown; emptyString: unknown }
+    expect(back.orderMatters, 'array order preserved').toEqual([3, 1, 2, 3])
+    expect(back.nilLeaf, 'null survives').toBeNull()
+    expect(back.emptyString, 'empty string survives and is NOT dropped or coerced').toBe('')
+    expect(m1.addressClaim).toBe('agent-child-1')
+    expect(m2.addressClaim, 'nullableString law: no claim is NULL (the plan fact)').toBeNull()
+    expect(m2.operation).toBe('subagent-list')
+    expect(m2.action).toBe('subagent-list')
+    expect(m2.recordIndex).toBe(45)
+    expect(m2.effectDelta).toBe(ADAPTER.A5_B_SUBAGENT_EFFECT_LABELS.list_agents)
   })
 })
 
