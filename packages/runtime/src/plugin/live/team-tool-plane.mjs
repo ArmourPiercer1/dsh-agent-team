@@ -973,6 +973,39 @@ export function createTeamToolPlaneAssembly(input = {}) {
     }
   }
 
+  // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; this
+  // block is the spawn writer's, the row laws live in governed-families/
+  // subagent-spawn-adapters.mjs): the `backends.spawn` face is the VALUE of
+  // createSubagentSpawnWiring — the adapter assembly already seated on the
+  // mount's ONE PA walk and this plane's OWN placementFeed (supplied as
+  // lazy closures by the assembly owner; this plane never learns a second
+  // key source). ZERO-FLIP: absent = byte-identical world. Present =
+  // strictly validated (family facts + placed definitions carrying the REAL
+  // registration minimum name/execute/output + the registration/drain face)
+  // and merged into `allDefs` below, so the placement feed, the Guard's
+  // bindingFeed and the family registration cover the spawn rows through
+  // the SAME machinery every other row rides. A half object is refused,
+  // never partially mounted; row SEMANTICS are not rechecked here — the
+  // wiring module and the adapter own them, the plane owns placement.
+  const spawnInjectRaw = input.backends?.spawn
+  let spawnInject = null
+  if (spawnInjectRaw !== undefined && spawnInjectRaw !== null) {
+    const spawnWiring = spawnInjectRaw
+    const spawnBad = (typeof spawnWiring !== 'object' || spawnWiring === null || Array.isArray(spawnWiring))
+      ? 'the injected spawn face is not the wiring value (the createSubagentSpawnWiring wiring object is the injected face)'
+      : (spawnWiring.familyId !== 'B-SUBAGENT')
+        ? 'the wiring value does not claim the B-SUBAGENT family'
+        : (!Number.isInteger(spawnWiring.adapterRevision) || spawnWiring.adapterRevision < 0 || typeof spawnWiring.providerId !== 'string' || spawnWiring.providerId.length === 0 || typeof spawnWiring.realmId !== 'string' || spawnWiring.realmId.length === 0)
+          ? 'the wiring value carries no complete family facts (adapterRevision/providerId/realmId)'
+          : (!Array.isArray(spawnWiring.definitions) || spawnWiring.definitions.length === 0 || !spawnWiring.definitions.every((d) => d !== null && typeof d === 'object' && typeof d.name === 'string' && d.name.length > 0 && typeof d.execute === 'function' && typeof d.output === 'object' && d.output !== null))
+            ? 'the wiring value carries no complete placed definitions (name + execute + the mandatory output face — the real registration minimum; a row this plane cannot register is never merged)'
+            : (typeof spawnWiring.familyRegistrations !== 'function' || typeof spawnWiring.inFlight !== 'function' || typeof spawnWiring.drain !== 'function')
+              ? 'the wiring value carries no familyRegistrations/inFlight/drain face'
+              : undefined
+    if (spawnBad !== undefined) return { ok: false, code: 'SPAWN_WIRING_INJECT_INVALID', message: `backends.spawn: ${spawnBad}` }
+    spawnInject = Object.freeze({ wiring: spawnWiring })
+  }
+
   // 9e fix-3 + A5-M1 (root ruling on the generation seam): ONE durable
   // generation read for this mount, asked FRESH at every point that needs an
   // authority generation — the mount kick, EACH admission's construction, and
@@ -1174,6 +1207,12 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (todoInject !== null && spelling === A5_TODO_MOUNT_NAME) return A5_TODO_MOUNT_NAME
     if (writeInject !== null && spelling === A5_WRITE_MOUNT_NAME) return A5_WRITE_MOUNT_NAME
     if (imageInject !== null && spelling === A5_IMAGE_MOUNT_NAME) return A5_IMAGE_MOUNT_NAME
+    // A5-M2 B-SUBAGENT spawn rows mount at the NATIVE spellings (the closed
+    // name list the wiring value carries); the name resolves here ONLY when
+    // this mount actually placed that row — an unmounted world answers
+    // undefined exactly as before (zero flip).
+    if (spawnInject !== null && spawnInject.wiring.mountNames.includes(spelling)
+      && spawnInject.wiring.definitions.some((d) => d.name === spelling)) return spelling
     for (const [nativeClass, mounted] of Object.entries(names)) {
       if (nativeClass === spelling || mounted === spelling) return String(mounted)
     }
@@ -3340,14 +3379,18 @@ export function createTeamToolPlaneAssembly(input = {}) {
     if (armBad !== undefined) return { ok: false, code: 'IMAGE_ARM_INJECT_INVALID', message: `backends.image: ${armBad}` }
   }
   const imageDefs = imageDef === null ? [] : [imageDef]
+  // The B-SUBAGENT spawn rows ride the SAME placement/feed/dispose machinery
+  // (their def#N identities mint through the seam's install pass like the
+  // rest); zero-flip law: with no backends.spawn this is byte-identical.
+  const spawnDefs = spawnInject === null ? [] : Object.freeze([...spawnInject.wiring.definitions])
   // The jobs rows ride the SAME placement/feed/dispose machinery as every
   // other row (their def#N identities mint through the seam's install pass
   // like the rest); zero-flip law: with the key off this is byte-identical
   // to `allDefs = baseDefs`. The todo row joins the same machinery under the
   // same zero-flip law (todoEnabled absent = no row = baseDefs returned as-is).
-  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0
+  const allDefs = jobsDefs.length === 0 && todoDefs.length === 0 && writeDefs.length === 0 && imageDefs.length === 0 && spawnDefs.length === 0
     ? baseDefs
-    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs])
+    : Object.freeze([...baseDefs, ...jobsDefs, ...todoDefs, ...writeDefs, ...imageDefs, ...spawnDefs])
 
   // THE PROVIDER-SIDE PLACEMENT RECORD (pb §6): one feed entry per placed
   // name, resolved LAZILY from the same definition objects that mount
@@ -3459,6 +3502,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         search: hostedSearch, glob: hostedGlob, shell: hostedShell,
         ...(readExecutor === null ? {} : { read: readExecutor }),
         ...(todoInject === null ? {} : { todo: todoInject.arm }),
+        ...(spawnInject === null ? {} : { spawn: spawnInject.wiring }),
       }),
       /** pb §6 provider-side feed: (name) -> {definitionIdentity, realmId} (the seam's flat BindingFeedEntry). */
       placementFeed,

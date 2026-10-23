@@ -361,6 +361,13 @@ import { A5_GOVERNED_FAMILIES, publishPaMount, readPaCallFactsForCall, registerA
 import { A5_TODO_TOOL_NAME, createGovernedTodoArm } from './governed-families/todo.mjs'
 import { A5_WRITE_TOOL_NAME, createGovernedWriteArm } from './governed-families/write.mjs'
 import { A5_IMAGE_TOOL_NAME, createGovernedReadImageArm } from './governed-families/image.mjs'
+// A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer; the
+// spawn block below is the spawn writer's): the PRODUCTION WIRING over the
+// reviewed spawn adapter module — the two production seams (the plane PA
+// walk, the plane placement feed) are supplied HERE, the row laws stay in
+// governed-families/subagent-spawn-adapters.mjs verbatim.
+import { A5_B_SUBAGENT_SPAWN_RECORD_SPECS, A5_B_SUBAGENT_SPAWN_TOOL_NAMES } from './governed-families/subagent-spawn-adapters.mjs'
+import { createSubagentSpawnWiring } from './governed-families/subagent-spawn-wiring.mjs'
 import { createImageAttachmentAdapter } from './governed-families/image-attachment.mjs'
 import { createGovernedImageReadPort } from '../../../controlled-fs/src/governed-image-read-port.js'
 import { scopeKey, templateScope, teamScope } from '../../../requirements/types.js'
@@ -2392,6 +2399,7 @@ export function createAgentBindings(deps) {
       // closure for the ONE-table family registration below.
       let a5ImageInject = null
       let a5ImagePlacedArm = null
+      let a5SpawnWiring = null
       // 9e-4: ONE shared per-setup slot for the mount identity — declared
       // in the SAME lexical scope as both the disposer (teardown) and the
       // later publish; a `const` inside the publish block would leave the
@@ -2989,6 +2997,96 @@ export function createAgentBindings(deps) {
             observations.push(`a5m2-image: arm FACTORY wired for ${sessionId} (root=${imageRootDir.slice(0, 32)}) — identity binds at the placement moment`)
           }
         }
+        // A5-M2 B-SUBAGENT SPAWN SIDE (root-approved isolated multi-writer;
+        // this block is the spawn writer's): the governed spawn rows
+        // (census 39-43, family B-SUBAGENT) capture through the SAME
+        // member-scoped face as todo/write/image — the Agent object IS the
+        // scope key, the capture is the definition this member actually
+        // executes, no global-layer fallback — and ride THIS plane's ONE PA
+        // walk (`paAdmit`, read lazily through a5PlaneValue: rows can only
+        // run after placement, a mount consulting it earlier is broken and
+        // answers no key) and ONE placement feed (same lazy law). The
+        // census mount conditions drive the capture honestly: an 'always'
+        // record invisible to the member scope REFUSES the setup (a row
+        // masking a native name with nothing behind it is the plane's own
+        // refused class); a declared-mount record (codex/claude_code/list,
+        // shipped disabled) absent is carried as the adapter's honest
+        // DECLARED-INACTIVE. Zero-flip: planeCfg.spawnGoverned absent =
+        // byte-identical world (no capture, no injection, no registration).
+        if (planeCfg.spawnGoverned === true) {
+          const refuseSpawn = (why) => {
+            const error = new Error(
+              `agent-bindings: alpha.5 governed spawn mount refused for '${sessionId}': ${why}`,
+            )
+            error.code = 'alpha5-spawn-wiring-mount-refused'
+            observations.push(`a5m2-spawn: wiring-REFUSED for ${sessionId}`)
+            return error
+          }
+          if (runtimeAgent === null || typeof runtimeAgent !== 'object') {
+            throw refuseSpawn('the member Agent object is unreadable — the scope-aware native capture has no scope key, and the global face is NOT a fallback')
+          }
+          const spawnCaptured = {}
+          const spawnNativeBodies = {}
+          for (const spawnName of A5_B_SUBAGENT_SPAWN_TOOL_NAMES) {
+            let spawnNative
+            try {
+              spawnNative = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
+            } catch (error) {
+              throw refuseSpawn(`the member-scoped tool face could not be read for '${spawnName}' (${String(error?.message ?? error).slice(0, 140)})`)
+            }
+            if (spawnNative === null || typeof spawnNative !== 'object' || typeof spawnNative.execute !== 'function') {
+              if (A5_B_SUBAGENT_SPAWN_RECORD_SPECS[spawnName].mountCondition === 'always') {
+                throw refuseSpawn(`no native '${spawnName}' definition with an execute body is visible to this member scope — census 'always' records are never masked by a row with nothing behind it`)
+              }
+              continue
+            }
+            const spawnIdentity = definitionIdentityOf(spawnNative)
+            if (typeof spawnIdentity !== 'string' || spawnIdentity.length === 0) {
+              throw refuseSpawn(`the captured native '${spawnName}' answers no definitionIdentityOf identity`)
+            }
+            spawnCaptured[spawnName] = Object.freeze({ native: spawnNative, definitionIdentity: spawnIdentity })
+            spawnNativeBodies[spawnName] = spawnNative.execute
+          }
+          if (Object.keys(spawnCaptured).length === 0) {
+            throw refuseSpawn('this member scope resolves NONE of the spawn-family natives — an all-DECLARED family would register nothing and govern nothing; enabling the key against such a world is a config defect, not a wiring')
+          }
+          const spawnWiringBuilt = createSubagentSpawnWiring({
+            providerId: 'a5p5-plane',
+            realmId: a5PlaneRealmId,
+            captured: spawnCaptured,
+            // THE DRIFT LAW, PRODUCTION SOURCE: the CURRENT member-scoped
+            // read answers per dispatch — a preset generation that moved
+            // swaps the object and the row refuses DRIFT.
+            liveNative: (spawnName) => (typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined),
+            spawnDelegates: Object.freeze({ ...spawnNativeBodies }),
+            // THE VERIFIED-HANDLE LAW: every edge re-reads the CURRENT
+            // member-scoped bodies — the handle the row verifies IS the
+            // handle it invokes (reads=2 law), never a bind-time constant.
+            liveSpawnDelegates: () => Object.freeze(Object.fromEntries(Object.keys(spawnNativeBodies).map((spawnName) => {
+              const current = typeof agentCtx.tools?.get === 'function' ? agentCtx.tools.get(spawnName, runtimeAgent) : undefined
+              return [spawnName, current?.execute]
+            }))),
+            // THE PLANE'S OWN FEED, LAZILY: def#N identities mint AFTER
+            // plane construction; consulting before the plane answers
+            // undefined and the adapter's own PLACEMENT_KEY_ABSENT throws.
+            placementFeed: (spawnName) => a5PlaneValue?.placementFeed?.(spawnName),
+            // THE PLANE'S ONE PA WALK, LAZILY (rows only run placed): a
+            // throw from the walk is the CALL's throw (the adapter catches
+            // nothing).
+            paAdmit: (request) => {
+              if (typeof a5PlaneValue?.paAdmit !== 'function') {
+                throw new Error('the plane PA walk is not mounted on this assembly — the spawn rows have no admission path and enter nothing')
+              }
+              return a5PlaneValue.paAdmit(request)
+            },
+            observe: (row) => observations.push(`a5m2-spawn: ${String(row?.event ?? 'event')} ${String(row?.name ?? '')}`),
+          })
+          if (spawnWiringBuilt?.ok !== true) {
+            throw refuseSpawn(`the wiring module refused assembly (${String(spawnWiringBuilt?.code ?? 'unknown')}): ${String(spawnWiringBuilt?.message ?? 'no detail')}`)
+          }
+          a5SpawnWiring = spawnWiringBuilt.wiring
+          observations.push(`a5m2-spawn: WIRED for ${sessionId} (rows=${Object.keys(spawnCaptured).join(',')} realm=${a5PlaneRealmId.slice(0, 24)})`)
+        }
         // M1 PA→Control production wiring (frozen A): the plane's approval
         // lane becomes FUNCTIONAL only through the AUTH-owned durable bridge
         // (operation-permission/pa-control-bridge.ts) over the session's
@@ -3138,11 +3236,12 @@ export function createAgentBindings(deps) {
           readCallFacts: readPaCallFactsForCall,
           plane: planeCfg,
           ...(a5PlaneFsSeam === undefined ? {} : { fs: a5PlaneFsSeam }),
-          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null ? {} : { backends: {
+          ...(a5JobsBridge === null && a5TodoInject === null && a5WriteInject === null && a5ImageInject === null && a5SpawnWiring === null ? {} : { backends: {
             ...(a5JobsBridge === null ? {} : { jobs: a5JobsBridge }),
             ...(a5TodoInject === null ? {} : { todo: a5TodoInject }),
             ...(a5WriteInject === null ? {} : { write: a5WriteInject }),
             ...(a5ImageInject === null ? {} : { image: a5ImageInject }),
+            ...(a5SpawnWiring === null ? {} : { spawn: a5SpawnWiring }),
           } }),
           onObserve: (row) => observations.push(String(row)),
         })
@@ -3590,6 +3689,19 @@ export function createAgentBindings(deps) {
             providerIdentity: a5ImagePlacedArm.providerId,
           })
           observations.push(`a5m2-image: family REGISTERED for ${sessionId} (placement=${String(imageFed.definitionIdentity).slice(0, 32)} family=${a5ImagePlacedArm.familyId})`)
+        }
+        // A5-M2 B-SUBAGENT registration: same law, same single fill point.
+        // The keys come from the adapter's familyRegistrations(), which
+        // reads the PLANE'S OWN placementFeed fresh (ABSENT/MOVED throw —
+        // never a guessed key, never a silent skip); this loop only feeds
+        // the registry's ONE table. A second different claim on one
+        // identity throws through registerA5GovernedFamily itself (config
+        // defect, never a re-mount to paper over).
+        if (a5SpawnWiring !== null) {
+          for (const spawnReg of a5SpawnWiring.familyRegistrations()) {
+            registerA5GovernedFamily(spawnReg.definitionIdentity, spawnReg.entry)
+            observations.push(`a5m2-spawn: family REGISTERED for ${sessionId} (placement=${String(spawnReg.definitionIdentity).slice(0, 32)} row=${spawnReg.name} family=${spawnReg.entry.familyId})`)
+          }
         }
         // PR358-B: publish the CURRENT mount into the narrow (teamRoot,
         // instanceId) index the root's ONE paEffectsVerifier reads per call.
