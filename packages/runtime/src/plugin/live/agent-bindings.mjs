@@ -2536,10 +2536,24 @@ export function createAgentBindings(deps) {
           // the plane assembly below — a name with no row stays on the
           // pre-feed path (never a weaker verification, just the same one).
           realmId: a5PlaneRealmId,
-          bindingFeed: (name) =>
-            a5PlaneValue === null
+          bindingFeed: (name) => {
+            // ROOT 19:53 ③: a governed B-TEAM name's feed entry is the identity
+            // of the definition THIS owner placed for it — the same object the
+            // Guard binds out of the scoped layer at `bindOwnTools` (read
+            // lazily, after the placement pass, per the pb §6 laziness law the
+            // plane's own feed already obeys). Every other name keeps the
+            // plane's placement map byte-for-byte.
+            const placedTeamOps = a5TeamOpsPlacedByName.get(name)
+            if (placedTeamOps !== undefined) {
+              const placedIdentity = definitionIdentityOf(placedTeamOps)
+              return placedIdentity === null
+                ? undefined
+                : Object.freeze({ definitionIdentity: placedIdentity, realmId: a5PlaneRealmId })
+            }
+            return a5PlaneValue === null
               ? undefined
-              : a5PlaneValue.placementFeed(name),
+              : a5PlaneValue.placementFeed(name)
+          },
           // A5-M1 replaced "Generation 0 until PR2 feeds the overlay /
           // authority generations into the Binding": the awaited durable
           // overlay generation rides the install above, and a later advance is
@@ -2619,6 +2633,12 @@ export function createAgentBindings(deps) {
       let a5TeamOpsClaim = Object.freeze({ names: Object.freeze([]), census: Object.freeze([]) })
       const a5TeamOpsNativeByName = new Map()
       const a5TeamOpsAllowedNames = new Set()
+      // ROOT 19:53 ③: the definitions THIS owner actually placed under the
+      // governed names (the very objects registered into the scoped layer).
+      // The Guard's pb §6 binding feed reads its identities lazily per name —
+      // the SAME object the Guard binds, never the family-scoped registry's
+      // shadow (a scoped feed does not stand in for Guard continuity).
+      const a5TeamOpsPlacedByName = new Map()
       if (teamTools) {
         // alpha.1 (plan §10.5): the team tool selector — SELECTIVE mode
         // registers only the catalog tools the template's teamTools entry
@@ -2645,7 +2665,17 @@ export function createAgentBindings(deps) {
         // under one name in one layer (packages/core/scope/src/store.ts:43,
         // measured), so a double registration is not an option at any point.
         a5TeamOpsCfg = config?.teamToolPlane?.teamMemberOps
-        if (a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null) {
+        // ROOT 19:53 ② UNIFIED QUALIFICATION (atomic handover, no new
+        // exemption): the governed plane mounts only when the member is
+        // GOVERNED (`permissionPolicy !== undefined`, the GLUE-5 gate below)
+        // AND the host row carries `teamToolPlane`. Claiming on the global key
+        // ALONE could withdraw a raw registration for an ungoverned member that
+        // will never mount — the name would answer with NOTHING. The claim and
+        // the mount therefore obey ONE eligibility, read identically here and
+        // at the mount gate: claim ⇔ this member's plane will actually mount.
+        const a5TeamOpsEligible = permissionPolicy !== undefined
+          && a5TeamOpsCfg !== undefined && a5TeamOpsCfg !== null
+        if (a5TeamOpsEligible) {
           for (const def of selected) a5TeamOpsNativeByName.set(def.name, def)
           for (const def of selected) a5TeamOpsAllowedNames.add(def.name)
           a5TeamOpsClaim = claimTeamOpsFamily({
@@ -3365,6 +3395,11 @@ export function createAgentBindings(deps) {
           }
           for (const definition of teamPlaneFace.definitions) {
             toolDisposers.push(agentCtx.tools.register(definition))
+            // ROOT 19:53 ③: record the PLACED object itself — the Guard's
+            // binding feed for this name resolves its identity from this ledger,
+            // so the Guard's continuity reads the very definition the layer
+            // answers under the name (one name, one placement, one identity).
+            a5TeamOpsPlacedByName.set(definition.name, definition)
             a5PlaneOwnNames.push(definition.name)
             a5PlaneOwnedNames.push(definition.name)
             observations.push(`a5m2-b-team: governed row PLACED ${String(definition.name)} for ${sessionId} (raw catalog registration yielded for this name)`)
