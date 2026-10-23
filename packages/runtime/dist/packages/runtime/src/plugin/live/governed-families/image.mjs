@@ -496,11 +496,16 @@ export function createGovernedReadImageArm({
     // built before the Guard binds, so any stored answer would be a permanently
     // stale identity (FP-C). An authority that answers nothing (absent entry /
     // non-string / a throwing reader) refuses with the arm's OWN consumption
-    // code BEFORE anything is consumed — there is no fallback constant to fall
-    // back to, and a durable row is never a supply.
+    // code, and there is no fallback constant to fall back to and no durable
+    // row to borrow an identity from. SCOPE OF THE CLAIM (root narrow review on
+    // bd48): this refusal is upstream of THIS arm's effects only — zero port
+    // reads, zero attachment writes. It does NOT undo anything the PA / Control
+    // edge consumed before the arm was reached: by the time `execute` runs, the
+    // plane's PA final edge has already consumed the grant, and this arm never
+    // claims otherwise.
     const providerId = resolveProviderId()
     if (providerId === undefined) {
-      return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, "provider (this arm resolves no providerId from the live binding authority at the consumption moment) — the arm carries no provider constant, never falls back to the row's value, and consumes nothing: zero port calls, zero attachment writes")
+      return refuseExecution(CODES.CONSUMPTION_BINDING_MISMATCH, "provider (this arm resolves no providerId from the live binding authority at the consumption moment) — the arm carries no provider constant and never falls back to the row's value: this refusal performs zero port reads and writes zero attachments (whatever the PA edge consumed upstream of the arm is not undone here)")
     }
     let manifest = undefined
     // The REAL execution credential of whichever world, resolved once:
