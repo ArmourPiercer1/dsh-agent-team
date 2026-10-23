@@ -23,6 +23,8 @@ export const PERMISSION_TOOL_VALUES = [
     'lsp',
     'bash',
     'pwsh',
+    'schedule_list',
+    'schedule_delete',
 ];
 /** Every {@link FilePermissionTool} value, for membership checks. */
 export const FILE_PERMISSION_TOOL_VALUES = [
@@ -41,5 +43,15 @@ export const FILE_PERMISSION_TOOL_VALUES = [
 export const SHELL_PERMISSION_TOOL_VALUES = [
     'bash',
     'pwsh',
+];
+/**
+ * Every {@link InvocationOnlyPermissionTool} value. The single source of
+ * invocation-only class membership in the runtime: the admission
+ * projection's narrowing (deny/`any` law, exact/subtree refusal) reads
+ * THIS list — never a copied literal.
+ */
+export const INVOCATION_ONLY_PERMISSION_TOOL_VALUES = [
+    'schedule_list',
+    'schedule_delete',
 ];
 //# sourceMappingURL=types.js.map

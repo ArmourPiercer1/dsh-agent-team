@@ -895,3 +895,119 @@ describe('production projection: template capabilities.permissions → PR0 autho
     expect(anyExtras.ok).toBe(false)
   })
 })
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INVOCATION-ONLY CLASS (Alpha.5 M2, root 20:05 limited card) — the
+// schedule_list / schedule_delete pair names the projection with the whole-
+// tool `any` resource in ALL THREE lanes: the rule IS the invocation
+// authority, projected on the `tool-invoke` arm with the SHARED algebra and
+// R-1a deny sources (no new default-allow, no new matcher). exact/subtree
+// refuse; the original seven names do not move (the file any-deny law
+// narrowed to TRULY file tools keeps file/shell behavior byte-identical).
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('invocation-only class: schedule_list / schedule_delete projection law (root 20:05)', () => {
+  const SCHEDULERS = ['schedule_list', 'schedule_delete'] as const
+
+  it('allow-lane any projects the tool-invoke arm as ALLOW with no tightening note and no shell dual gate', () => {
+    for (const name of SCHEDULERS) {
+      const r = projOf({ default: 'deny', allow: [{ tool: name, resource: { kind: 'any' } }], ask: [], deny: [] })
+      expect(r.ok).toBe(true)
+      if (!r.ok) return
+      const spell = r.value.buildDocument().rules.map((rule) => `${rule.effectKind}@${rule.matcher.resource}:${rule.maximumEffect}`)
+      expect(spell).toEqual([`tool-invoke@${REALM}|tool:${name}:allow`]) // the ONE arm — full authority, no companions
+      expect(r.value.notes).toEqual([]) // the TIGHTER note is a file-class fact; nothing is tighter here
+      expect(r.value.coversEffect(toolInvokeEffect(name))).toBe(true)
+    }
+    // Leader or member, with or without the exec-token reader: the class is
+    // NOT shell — the projection never routes it into the dual gate.
+    const leader = projOf({ default: 'deny', allow: [{ tool: 'schedule_delete', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'leader', leaderExecTokenPresent: () => false })
+    expect(leader.ok).toBe(true)
+    if (!leader.ok) return
+    expect(leader.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'allow')).toBe(true)
+    expect(leader.value.notes).toEqual([])
+  })
+
+  it('ask-lane any projects ASK; an absent rule stays no-authority (no implicit allow — 缺省 law)', () => {
+    const asked = projOf({ default: 'deny', allow: [], ask: [{ tool: 'schedule_list', resource: { kind: 'any' } }], deny: [] })
+    expect(asked.ok).toBe(true)
+    if (!asked.ok) return
+    expect(asked.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'ask')).toBe(true)
+    expect(asked.value.coversEffect(toolInvokeEffect('schedule_list'))).toBe(true)
+    const none = projOf({ default: 'deny', allow: [], ask: [], deny: [] })
+    expect(none.ok).toBe(true)
+    if (!none.ok) return
+    expect(none.value.coversEffect(toolInvokeEffect('schedule_list'))).toBe(false)
+    expect(none.value.coversEffect(toolInvokeEffect('schedule_delete'))).toBe(false)
+  })
+
+  it('deny-lane any projects DENY with the shared R-1a deny sources (narrowed law: truly file only)', () => {
+    const r = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'schedule_delete', resource: { kind: 'any' } }] })
+    expect(r.ok).toBe(true) // the OLD condition ("not shell") refused this; the narrowing does NOT
+    if (!r.ok) return
+    expect(r.value.buildDocument().rules.every((rule) => rule.maximumEffect === 'deny' && rule.effectKind === 'tool-invoke')).toBe(true)
+    const sources = r.value.denySources()
+    expect(sources.length).toBe(1)
+    expect(sources[0]?.effectKind).toBe('tool-invoke')
+    expect(sources[0]?.matcher.resource).toBe(`${REALM}|tool:schedule_delete`)
+    expect(sources[0]?.ownerAuthority).toBe('human-user')
+    expect(sources[0]?.sourceRef).toBe('tpl-1#deny[0]') // the SAME algebra names its origin
+    expect(r.value.notes).toEqual([])
+  })
+
+  it('cross-tool no-cross: a schedule_list authority never answers for schedule_delete (and vice versa)', () => {
+    const listOnly = projOf({ default: 'deny', allow: [{ tool: 'schedule_list', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(listOnly.ok).toBe(true)
+    if (!listOnly.ok) return
+    expect(listOnly.value.coversEffect(toolInvokeEffect('schedule_list'))).toBe(true)
+    expect(listOnly.value.coversEffect(toolInvokeEffect('schedule_delete'))).toBe(false)
+    expect(listOnly.value.buildDocument().rules.every((rule) => rule.matcher.resource === `${REALM}|tool:schedule_list`)).toBe(true)
+    const deleteOnly = projOf({ default: 'deny', allow: [{ tool: 'schedule_delete', resource: { kind: 'any' } }], ask: [], deny: [] })
+    expect(deleteOnly.ok).toBe(true)
+    if (!deleteOnly.ok) return
+    expect(deleteOnly.value.coversEffect(toolInvokeEffect('schedule_list'))).toBe(false)
+    expect(deleteOnly.value.coversEffect(toolInvokeEffect('schedule_delete'))).toBe(true)
+  })
+
+  it('exact/subtree resources refuse the projection in every lane (no file matcher exists for the class)', () => {
+    for (const lane of ['allow', 'ask', 'deny'] as const) {
+      for (const name of SCHEDULERS) {
+        for (const kind of ['exact', 'subtree'] as const) {
+          const r = projOf({ default: 'ask', allow: [], ask: [], deny: [], [lane]: [{ tool: name, resource: { kind, path: A_ABS } }] } as unknown as TemplatePermissionPolicy)
+          expect(r.ok).toBe(false)
+          if (r.ok) return
+          expect(r.error.details?.['refusal']).toBe('projection-rule-malformed')
+          expect(String(r.error.message)).toContain('invocation-only')
+        }
+      }
+    }
+  })
+
+  it('schedule_create / schedule_update are NOT enabled permission tools (card: create/update 禁启)', () => {
+    for (const name of ['schedule_create', 'schedule_update']) {
+      const r = projOf({ default: 'ask', allow: [{ tool: name, resource: { kind: 'any' } } as unknown as TemplatePermissionPolicy['allow'][number]], ask: [], deny: [] })
+      expect(r.ok).toBe(false)
+      if (r.ok) return
+      expect(r.error.details?.['refusal']).toBe('projection-rule-malformed')
+    }
+  })
+
+  it('the original seven names did not move: file any-deny still refuses, file any-lanes still disclose, member shell allow still refuses', () => {
+    const fileAnyDeny = projOf({ default: 'ask', allow: [], ask: [], deny: [{ tool: 'read', resource: { kind: 'any' } }] })
+    expect(fileAnyDeny.ok).toBe(false)
+    if (fileAnyDeny.ok) return // expected refusal holds → CONTINUE to the byte-stable pins (root 20:57: inverted-guard fix)
+    expect(fileAnyDeny.error.code).toBe('IO_POLICY_UNSUPPORTED')
+    expect(fileAnyDeny.error.details?.['refusal']).toBe('projection-deny-unprojectable')
+    expect(String(fileAnyDeny.error.message)).toContain("file-class tool 'read'") // byte-stable wording
+    const fileAnyAsk = projOf({ default: 'ask', allow: [], ask: [{ tool: 'write', resource: { kind: 'any' } }], deny: [] })
+    expect(fileAnyAsk.ok).toBe(true)
+    if (fileAnyAsk.ok) expect(fileAnyAsk.value.notes.some((n) => /TIGHTER than declared/.test(n))).toBe(true) // file disclosure intact
+    const memberShellAllow = projOf({ default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'member' })
+    expect(memberShellAllow.ok).toBe(false)
+    if (memberShellAllow.ok) return // expected refusal holds → CONTINUE to the dual-gate pin (root 20:57: inverted-guard fix)
+    expect(memberShellAllow.error.details?.['refusal']).toBe('projection-shell-allow-non-leader') // the dual-gate branch untouched
+    const leaderShellAllow = projOf({ default: 'ask', allow: [{ tool: 'bash', resource: { kind: 'any' } }], ask: [], deny: [] }, { role: 'leader' })
+    expect(leaderShellAllow.ok).toBe(true)
+    if (leaderShellAllow.ok) expect(leaderShellAllow.value.notes.some((n) => /exec dual-gate reader not wired/.test(n))).toBe(true) // exec law intact
+  })
+})
