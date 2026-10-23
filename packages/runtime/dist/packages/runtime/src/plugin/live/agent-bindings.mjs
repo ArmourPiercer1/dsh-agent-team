@@ -464,7 +464,18 @@ import { createGovernedJobsBridge } from './plane-effect-backends.mjs'
 // M2 B-WEB (a5m2w): the governed web connector row. Its gate keys are read RAW
 // here and refused typed inside the assembly; the lane imports no host module
 // statically - the seam arrives through the additive deps.web accessor (host.ts).
-import { createLiveWebGatewayAssembly, deepSeekSearchOriginSource } from './web-gateway-assembly.mjs'
+// The search-origin resolver is NOT constructed here (root ruling @ the product
+// closure): its law (b679590d5, group 4) demands the provider's OWN three
+// real-plane readers (live Volatile config slot / launchEnvironment / the
+// installed package constant) injected BY THE ENTRY, and this entry holds no
+// honest source for them - a bindings-side reader over the plugin config would
+// be exactly the Team-side mirror the law forbids. The named import this line
+// carried (`deepSeekSearchOriginSource`) died in the rename and broke the
+// whole glue at ESM link time; the armed row therefore answers its OWN typed
+// `search-origin-resolver-missing` refusal until the entry exposes the real
+// readers (the integration owner's follow-up card) - never a stub, never a
+// fixed-URL fake.
+import { createLiveWebGatewayAssembly } from './web-gateway-assembly.mjs'
 import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
@@ -2991,9 +3002,12 @@ export function createAgentBindings(deps) {
                 search: (request) => { const seam = deps.web(); return seam?.search?.(request) },
               }
               : undefined,
-            resolveSearchOrigin: deepSeekSearchOriginSource({
-              configBaseURL: typeof config?.webGateway?.searchBaseURL === 'string' ? config.webGateway.searchBaseURL : undefined,
-            }),
+            // NO search-origin resolver is passed here (root product-closure
+            // ruling): the group-4 law needs the provider's OWN three
+            // real-plane readers injected by the entry, which this entry does
+            // not hold. Omitting it is not a stub — when web is enabled the
+            // armed row answers its own typed `search-origin-resolver-missing`
+            // refusal (never a fixed-URL fake); default-off is unchanged.
             onObserve: (o) => observations.push(`a5m2w-live: root=${gatewayRootKey} operation=${String(o?.operation ?? '')} outcome=${String(o?.outcome ?? o?.refusal ?? '')}`),
           }))
         }

@@ -123,6 +123,26 @@ export const PLACEMENTS = [
     src: 'packages/runtime/src/plugin/live/pa-mount-registry.mjs',
     dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/pa-mount-registry.mjs',
   },
+  // A5-M2 (root product-closure ruling @ the C2 mount audit): the mirrored
+  // `agent-bindings.mjs` imports the governed family arms by RELATIVE
+  // specifier, but no entry ever placed `governed-families/**` into the
+  // mirror — on the strict `files: ["dist"]` install face the production row
+  // died at `ERR_MODULE_NOT_FOUND … ./governed-families/todo.mjs` before any
+  // tool ran (and the drift gate cannot see the absence: it only compares
+  // files the build DOES emit — an unplaced module is invisible to it, which
+  // is exactly why the C2 real-host boot exists). Both arms are closed
+  // modules on this surface: `todo.mjs` imports nothing but node builtins;
+  // `write.mjs`'s one cross-module leg (`../../../../controlled-fs/src/
+  // post-consume-write.js`) lands on tsc's OWN emit inside the mirror.
+  // Byte-identical like every entry; drift gate D compares src vs dist.
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/todo.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/todo.mjs',
+  },
+  {
+    src: 'packages/runtime/src/plugin/live/governed-families/write.mjs',
+    dist: 'packages/runtime/dist/packages/runtime/src/plugin/live/governed-families/write.mjs',
+  },
   // GLUE-6 RED-A: the entry's RUNTIME dependencies outside tsc's emit. The
   // resolve hook is registered by `module.register` at apply time and the
   // storage seam is imported by the boot row — both from a relative
