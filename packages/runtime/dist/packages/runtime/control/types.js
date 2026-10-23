@@ -777,13 +777,17 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
     // src/plugin/live/governed-families/g3-fsproc-adapters.mjs over the pinned
     // 639 terminal faces — six verbs, one per-open controlled plan). The
     // durable claim is the adapter CLASSIFY manifest read as FLAT LEAVES
-    // (the B-CONTROL mint law): the wiring's targetManifestForPaRow maps
-    // every admitted target leaf one-for-one at full value; snapshot-only or
-    // null-only leaves (service status detail, process envelopes, the
-    // approvedPlan object behind its envelope digest, the static
-    // backgroundJobTarget literal, optional caller cwd/name) stay OUT of the
-    // table — the entry-time digest re-verification and the service recheck
-    // own those truths, the durable row never restates them.
+    // (the B-CONTROL mint law): the wiring's a5G3PaTargetFlat maps every
+    // admitted target leaf one-for-one at FULL VALUE — root 21:07 全值契约:
+    // the approvedPlan members, the process envelope and the output window
+    // ride the row under the sanctioned REVIEWED ENCODING (a string leaf
+    // carrying the canonical JSON of the original value, 'absent' for a
+    // null/missing one — see the wiring helper; no new table kind). The
+    // digest-only re-verification law is UNCHANGED (the digest rides beside
+    // the full values and the entry still re-verifies it against the actual
+    // launch). Snapshot wobble stays out (service status detail, the static
+    // backgroundJobTarget literal, optional caller cwd/name): the service
+    // recheck owns those, the durable row never restates them.
     'B-TERMINAL': Object.freeze({
         required: Object.freeze({
             operation: 'string',
@@ -801,8 +805,20 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
                         backendPublicType: 'string',
                         backendRegistrationId: 'string',
                         backendIncarnation: 'string',
+                        processEnvelopeJson: 'string',
                         perOpenCallId: 'string',
                         approvedEnvelopeDigest: 'string',
+                        // 全值契约 (root 21:07): the approved controlled plan rides at
+                        // full value beside its digest under the reviewed encoding.
+                        planArgvJson: 'string',
+                        planExecutableJson: 'string',
+                        planArgv0Json: 'string',
+                        planCwd: 'string',
+                        planRows: 'nonNegativeInt',
+                        planCols: 'nonNegativeInt',
+                        planGraceMs: 'nonNegativeInt',
+                        planTerminalType: 'string',
+                        planEnvJson: 'string',
                     }),
                     binds: Object.freeze({}),
                 }),
@@ -818,7 +834,14 @@ export const PA_FAMILY_TARGET_RULES = Object.freeze({
                     binds: Object.freeze({}),
                 }),
                 'output-read': Object.freeze({
-                    adds: Object.freeze({ ptySessionId: 'string', ptyIncarnation: 'string' }),
+                    adds: Object.freeze({
+                        ptySessionId: 'string',
+                        ptyIncarnation: 'string',
+                        // 全值契约 (root 21:07): the window travels at full value under
+                        // the reviewed encoding ('absent' = the unconstrained read).
+                        offsetJson: 'string',
+                        countJson: 'string',
+                    }),
                     binds: Object.freeze({}),
                 }),
                 'signal': Object.freeze({

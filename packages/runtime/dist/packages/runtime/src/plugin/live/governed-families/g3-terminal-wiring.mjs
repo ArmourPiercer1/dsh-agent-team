@@ -144,6 +144,22 @@ const registrationFaceComplete = (native) => {
  *
  * @param input - CLOSED key set, see the file header.
  */
+/* Root 21:07 受审编码 (reviewed encoding) for the flat table: a string leaf
+ * carrying the CANONICAL JSON of the original leaf value (object keys sorted
+ * recursively, arrays order-preserved) or the literal 'absent' for a null /
+ * missing value — the original FULL VALUE rides the durable row verbatim,
+ * leaf-closed, while null-only leaves stay nameable. No table kind changes:
+ * this is the card's sanctioned encoding, not a new kind. */
+const a5G3CanonicalJson = (value) => {
+  if (value === null || value === undefined) return 'absent'
+  const sortDeep = (v) => (Array.isArray(v)
+    ? v.map(sortDeep)
+    : (v !== null && typeof v === 'object'
+      ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortDeep(v[k])]))
+      : v))
+  return JSON.stringify(sortDeep(value))
+}
+
 /** THE B-TERMINAL CLOSED-TABLE FLAT VIEW (root 20:38; the PA_FAMILY_TARGET_
  *  RULES['B-TERMINAL'] entry in control/types.ts is its counterpart). Every
  *  leaf maps ONE-FOR-ONE from the adapter's CLASSIFY manifest at FULL VALUE
@@ -165,13 +181,30 @@ export function a5G3PaTargetFlat(manifest) {
     const bt = manifest.backendTarget
     const pob = manifest.perOpenBackend
     if (!isRecord(bt) || !isRecord(pob)) return manifest
+    const plan = isRecord(pob.approvedPlan) ? pob.approvedPlan : {}
     return Object.freeze({
       ...base,
       backendPublicType: bt.publicType,
       backendRegistrationId: bt.serviceRegistrationId,
       backendIncarnation: bt.serviceIncarnation,
+      processEnvelopeJson: a5G3CanonicalJson(bt.processEnvelope),
       perOpenCallId: manifest.perOpenCorrelationCallId,
       approvedEnvelopeDigest: pob.envelopeDigest,
+      // root 21:07 全值契约: the APPROVED PLAN rides at FULL VALUE next to
+      // its digest (the digest-only law stays — it is RE-VERIFIED against
+      // the actual launch spec; the row now also states the plan).
+      planArgvJson: a5G3CanonicalJson(plan.argv),
+      planExecutableJson: a5G3CanonicalJson(plan.executable),
+      planArgv0Json: a5G3CanonicalJson(plan.argv0),
+      planCwd: plan.cwd,
+      planRows: plan.rows,
+      planCols: plan.cols,
+      planGraceMs: plan.graceMs,
+      // the adapter's OWN canonical default (g3-fsproc-adapters.mjs:2170
+      // `terminalType: plan.terminalType ?? 'dumb'`) — the same law, not a
+      // hand-copied constant.
+      planTerminalType: plan.terminalType ?? 'dumb',
+      planEnvJson: a5G3CanonicalJson(plan.env),
     })
   }
   const pty = (extra) => {
@@ -189,7 +222,10 @@ export function a5G3PaTargetFlat(manifest) {
         inputBytes: manifest.inputBytes,
       })
     }
-    case 'output-read': return pty({})
+    case 'output-read': return pty({
+      offsetJson: a5G3CanonicalJson(manifest.offset),
+      countJson: a5G3CanonicalJson(manifest.count),
+    })
     case 'signal': return pty({ signalName: manifest.signal })
     case 'close': return pty({ settlementEvidence: manifest.settlementEvidence })
     case 'list': return Object.freeze({ ...base, ownerScoped: true })
@@ -307,6 +343,16 @@ export function buildG3TerminalWiring (input = {}) {
       const callId = correlationOf(exec, toolName)
       if (typeof callId !== 'string' || callId.length === 0) {
         throw refusalToThrow(wiringRefuse(A5_G3_TERMINAL_WIRING_CODES.CALL_ID_ABSENT, `${toolName}: the execution answered no ISSUED call identity — the PA walk has no single-flight key; a guessed correlation is forbidden (zero port entry)`))
+      }
+      // root 21:07: the confined open plan is minted ASYNC (the public
+      // SandboxProvider.confine lane) while the adapter reads it
+      // SYNCHRONOUSLY (its claim law refuses before any await). The producer
+      // therefore pre-mints at mount and this row REFRESHES the plan slot
+      // immediately before the arm's classify reads it; a producer without
+      // the confinement lane fails closed INSIDE premint (the slot answers
+      // NOTHING), never here.
+      if (toolName === 'terminal_open' && typeof ptyService.premintOpenPlan === 'function') {
+        await ptyService.premintOpenPlan()
       }
       // ① the arm's OWN classify — the REAL captured definition's parameter
       // surface, the §5.1 service targets, the per-open approved plan: every

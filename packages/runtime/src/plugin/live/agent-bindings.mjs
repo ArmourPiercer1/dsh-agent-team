@@ -3401,23 +3401,45 @@ export function createAgentBindings(deps) {
             throw refuseG3("the live terminals service is NOT an instance of the TerminalSessionService the supplied terminal module answers — the loaded copy is not the own module instance of the Host; a look-alike TerminalBackendCleanupError would cross a service whose instanceof law never catches it, so the mount refuses")
           }
 
-          // THE REAL RESTRICTED PTY PRODUCER (root 20:38: 实际 producer 不能仅消费者外注 —
-          // the CONSUMER lane no longer accepts an external ptyService). The
-          // §5.1 service facts are PRODUCED HERE from (a) the LIVE `terminals`
-          // service public faces (listBackends(): string[] / list(owner):
-          // TerminalSessionSnapshot[] @ terminal/src/index.ts:143/:308 — the
-          // restricted session lane resolves ONLY this member's own sessions)
-          // and (b) the DEPLOYMENT's own controlled-plan evidence on the form
-          // column (backendIdentity registration facts; the composed open plan
-          // over the published resolveConfig/validateConfig law, graceMs as
-          // declared evidence). A fact the mount cannot answer is answered
-          // NOTHING — the adapter's P_TERM_TARGET_UNRESOLVED law then refuses
-          // the row; nothing is guessed, nothing is posed.
+          // THE REAL RESTRICTED PTY PRODUCER (root 20:38 producer 令;
+          // root 21:03/21:07 更正落地): the CONSUMER lane accepts no external
+          // ptyService, and the open plan is a REAL confined plan — never a
+          // raw-shell argv with a digest claim over it.
+          //  · backend(type): live registration EXISTENCE reads the terminals
+          //    public face (listBackends() @ terminal/src/index.ts:143).
+          //    GAP reported (root 21:07): the public face carries NO live
+          //    registration-GENERATION supplier — registerBackend returns only
+          //    a disposer (index.ts:125) and listBackends() answers bare type
+          //    strings, so a same-name re-registration is unobservable from
+          //    any public API. A deployment-declared constant would not sense
+          //    the swap, so the seam answers NOTHING until a public supplier
+          //    exists: terminal_open rides the adapter's P_TERM_TARGET_
+          //    UNRESOLVED law — production stays closed, never a fake
+          //    generation, never a deployment constant.
+          //  · approvedOpenPlan: the controlled plan is PRODUCED through the
+          //    REAL confinement lane, the terminal-bash spawnArgv law verbatim
+          //    (terminal-bash/src/index.ts:103-108/:204-215 @639ed01539): the
+          //    published resolveConfig/validateConfig law MATERIALIZES the base
+          //    Config (zod defaults included — backendType/rows/cols/
+          //    disposeGraceMs come from the published schema, never hand-copied;
+          //    a failing Config is OBSERVED as a diagnostic, never swallowed to
+          //    a silent null), then the exact argv is wrapped by the public
+          //    SandboxProvider.confine(argv, policy) under
+          //    policy = sandboxPolicy.resolve({session}) — argv := confined.argv
+          //    (the runner-wrapped argv, NOT a shell string), cwd :=
+          //    policy.workspaceRoot (terminal-bash's own spawn law). confine is
+          //    ASYNC while the adapter reads the plan SYNCHRONOUSLY (signed
+          //    claim law: refuses before any await), so the plan is PRE-MINTED
+          //    at mount and RE-minted by the wiring before every terminal_open
+          //    row through ptyService.premintOpenPlan; a failed pre-mint
+          //    answers NOTHING (TARGET_UNRESOLVED/PLAN_ABSENT), and the adapter
+          //    still RE-VERIFIES the digest against the ACTUAL launch spec at
+          //    the entry — a claim is never the envelope.
           const g3DeclaredBackends = new Set(Array.isArray(g3Cfg.declaredBackends) ? g3Cfg.declaredBackends : [])
-          const g3BackendIdentity = g3Cfg.backendIdentity !== undefined && g3Cfg.backendIdentity !== null && typeof g3Cfg.backendIdentity === 'object' ? g3Cfg.backendIdentity : {}
-          const g3OpenCompose = (() => {
+          const g3Sandbox = typeof deps.sandbox === 'function' ? deps.sandbox() : undefined
+          const g3SandboxPolicy = typeof deps.sandboxPolicy === 'function' ? deps.sandboxPolicy() : undefined
+          const g3OpenBase = (() => {
             if (g3Cfg.sessionConfig === undefined || g3Cfg.sessionConfig === null) return null
-            if (!Number.isInteger(g3Cfg.graceMs) || g3Cfg.graceMs < 0) return null
             try {
               const resolved = g3Faces.resolveConfig({ ...g3Cfg.sessionConfig })
               g3Faces.validateConfig(resolved)
@@ -3425,25 +3447,63 @@ export function createAgentBindings(deps) {
                 argv: Object.freeze([resolved.shellPath, ...(Array.isArray(resolved.shellArgs) ? resolved.shellArgs.map(String) : [])]),
                 rows: resolved.rows,
                 cols: resolved.cols,
+                graceMs: resolved.disposeGraceMs,
               })
-            } catch {
+            } catch (error) {
+              observations.push(`a5m2-g3: open-plan Config read FAILED for ${sessionId}: ${String(error?.message ?? error).slice(0, 160)} — the published resolveConfig/validateConfig law owns the verdict (no silent null)`)
               return null
             }
           })()
+          let g3OpenPlan = null
+          const g3PremintOpenPlan = async () => {
+            g3OpenPlan = null
+            if (g3OpenBase === null) {
+              observations.push(`a5m2-g3: open-plan pre-mint SKIPPED for ${sessionId} (no readable base Config) — terminal_open answers NO plan`)
+              return
+            }
+            if (g3Sandbox === undefined || g3Sandbox === null || typeof g3Sandbox.confine !== 'function'
+              || g3SandboxPolicy === undefined || g3SandboxPolicy === null || typeof g3SandboxPolicy.resolve !== 'function') {
+              observations.push(`a5m2-g3: open-plan confinement seams ABSENT for ${sessionId} (sandbox=${g3Sandbox === undefined || g3Sandbox === null ? 'absent' : typeof g3Sandbox.confine === 'function' ? 'present' : 'no-confine'} sandboxPolicy=${g3SandboxPolicy === undefined || g3SandboxPolicy === null ? 'absent' : typeof g3SandboxPolicy.resolve === 'function' ? 'present' : 'no-resolve'}) — terminal_open answers NO plan (fail closed, never a raw-shell plan)`
+              )
+              return
+            }
+            try {
+              const policy = g3SandboxPolicy.resolve({ session: runtimeAgent.session })
+              if (policy === null || typeof policy !== 'object' || typeof policy.workspaceRoot !== 'string' || policy.workspaceRoot.length === 0) {
+                observations.push(`a5m2-g3: sandboxPolicy.resolve answered no workspaceRoot for ${sessionId} — no confined plan, terminal_open fails closed`)
+                return
+              }
+              const confined = await g3Sandbox.confine([...g3OpenBase.argv], { ...policy, mode: policy.mode })
+              const argv = confined?.argv
+              if (!Array.isArray(argv) || argv.length === 0 || argv.some((a) => typeof a !== 'string' || a.length === 0)) {
+                observations.push(`a5m2-g3: SandboxProvider.confine answered no usable confined argv for ${sessionId} — no confined plan (fail closed)`)
+                return
+              }
+              g3OpenPlan = Object.freeze({
+                plan: Object.freeze({
+                  argv: Object.freeze([...argv]),
+                  cwd: policy.workspaceRoot,
+                  rows: g3OpenBase.rows,
+                  cols: g3OpenBase.cols,
+                  graceMs: g3OpenBase.graceMs,
+                }),
+                ...(confined.enforcement === 'full' || confined.enforcement === 'partial' ? { enforcement: confined.enforcement } : {}),
+              })
+            } catch (error) {
+              observations.push(`a5m2-g3: open-plan confine THREW for ${sessionId}: ${String(error?.message ?? error).slice(0, 160)} — no plan, terminal_open fails closed`)
+              g3OpenPlan = null
+            }
+          }
+          await g3PremintOpenPlan()
           const g3PtyService = Object.freeze({
             backend: (type) => {
+              // LIVE existence only; the registration GENERATION has no
+              // public supplier (gap above) — NOTHING is answered, so the
+              // governed open row refuses with P_TERM_TARGET_UNRESOLVED.
               if (typeof type !== 'string' || !g3DeclaredBackends.has(type)) return null
               const live = Array.isArray(g3Terminals?.listBackends?.()) ? g3Terminals.listBackends() : []
               if (!live.includes(type)) return null
-              const ident = g3BackendIdentity[type]
-              if (ident === null || typeof ident !== 'object'
-                || typeof ident.registrationId !== 'string' || ident.registrationId.length === 0
-                || typeof ident.incarnation !== 'string' || ident.incarnation.length === 0) return null
-              return Object.freeze({
-                registrationId: ident.registrationId,
-                incarnation: ident.incarnation,
-                ...(ident.processEnvelope === undefined || ident.processEnvelope === null ? {} : { processEnvelope: ident.processEnvelope }),
-              })
+              return null
             },
             session: (ownerAgentId, sessionId) => {
               if (g3Terminals === undefined || g3Terminals === null) return null
@@ -3467,26 +3527,8 @@ export function createAgentBindings(deps) {
                 ...(snap.status === undefined || snap.status === null ? {} : { status: snap.status }),
               })
             },
-            approvedOpenPlan: () => {
-              if (g3OpenCompose === null) return null
-              // THE deployment-level controlled OPEN PLAN: exactly what the
-              // per-open one-shot backend pins into SubprocessRuntime
-              // .spawnTerminal for THIS mount (same resolveConfig-composed
-              // argv/dims the sessionFactory builds). The adapter RE-VERIFIES
-              // the digest against the ACTUAL launch spec at the entry —
-              // a claim is never the envelope; a mount without declared
-              // graceMs evidence answers NOTHING (open rows TARGET_UNRESOLVED).
-              return Object.freeze({
-                plan: Object.freeze({
-                  argv: g3OpenCompose.argv,
-                  cwd: typeof g3Cfg.spawnCwd === 'string' && g3Cfg.spawnCwd.length > 0 ? g3Cfg.spawnCwd : process.cwd(),
-                  rows: g3OpenCompose.rows,
-                  cols: g3OpenCompose.cols,
-                  graceMs: g3Cfg.graceMs,
-                  ...(g3Cfg.terminalType === undefined ? {} : { terminalType: g3Cfg.terminalType }),
-                }),
-              })
-            },
+            approvedOpenPlan: () => g3OpenPlan,
+            premintOpenPlan: () => g3PremintOpenPlan(),
           })
           a5G3TerminalInject = Object.freeze({
             providerId: g3Cfg.providerId,

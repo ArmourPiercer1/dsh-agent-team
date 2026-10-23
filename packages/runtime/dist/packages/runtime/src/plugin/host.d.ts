@@ -18,6 +18,16 @@ export interface TeamPluginHostContext {
     provide(name: string, value: unknown): void;
     effect(factory: () => () => void, label?: string): void;
     /**
+     * A5M2 G3 B-TERMINAL (root 21:07, wiring lane): the shared confinement
+     * POLICY property the real Host context carries beside the service store
+     * (terminal-bash injects the same `sandboxPolicy` face and resolves
+     * `resolve({session})` per spawn — terminal-bash/src/index.ts:204
+     * @639ed01539). Optional in this structural projection (the same
+     * Cordis-type-independence law as `events` above): the B-TERMINAL open-plan
+     * pre-mint reads it, a mount without `planeCfg.terminal` never does.
+     */
+    readonly sandboxPolicy?: unknown;
+    /**
      * Cordis event registration: the listener is owned by this row's fiber
      * and disposed with the row. Optional in this structural projection —
      * the entry keeps Cordis-type independence (plan §19.2) and minimal

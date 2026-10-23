@@ -501,7 +501,21 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
       effectDelta: ['os-pty-spawn-shell', 'process-io-envelope'],
     }
     expect(isLosslessJsonValue(openNested)).toBe(true)
-    expect(validatePaFamilyTarget('B-TERMINAL', flat(openNested))).toBeUndefined()
+    const flatOpen = flat(openNested)
+    expect(validatePaFamilyTarget('B-TERMINAL', flatOpen)).toBeUndefined()
+    // 全值契约 (root 21:07): the approved plan and the process envelope ride
+    // the row under the reviewed canonical-JSON encoding ('absent' = null),
+    // the digest stays beside them:
+    expect(flatOpen.planArgvJson).toBe('["/bin/bash"]')
+    expect(flatOpen.planCwd).toBe('/tmp/g3-wire')
+    expect(flatOpen.planRows).toBe(24)
+    expect(flatOpen.planCols).toBe(80)
+    expect(flatOpen.planGraceMs).toBe(2000)
+    expect(flatOpen.planTerminalType).toBe('dumb')
+    expect(flatOpen.planEnvJson).toBe('absent')
+    expect(flatOpen.planExecutableJson).toBe('absent')
+    expect(flatOpen.processEnvelopeJson).toBe('"sandbox:landlock"')
+    expect(flatOpen.approvedEnvelopeDigest).toBe('sha256:x')
     // The RAW nested manifest is NOT the durable claim shape (closed keys
     // deny, fail closed — the flat view is the only claim the table knows):
     expect(validatePaFamilyTarget('B-TERMINAL', openNested)).toBe('backendPublicType: required by the B-TERMINAL typed plan, absent')
@@ -514,6 +528,11 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     expect(validatePaFamilyTarget('B-TERMINAL', flat({
       ...common('output-read', 'terminal_read'), ptyTarget, offset: null, count: null,
     }))).toBeUndefined()
+    // a windowed read rides its numbers at full value (root 21:07):
+    const flatWin = flat({ ...common('output-read', 'terminal_read'), ptyTarget, offset: 40, count: 800 })
+    expect(validatePaFamilyTarget('B-TERMINAL', flatWin)).toBeUndefined()
+    expect(flatWin.offsetJson).toBe('40')
+    expect(flatWin.countJson).toBe('800')
     expect(validatePaFamilyTarget('B-TERMINAL', flat({
       ...common('signal', 'terminal_signal'), ptyTarget, signal: 'SIGINT', effectDelta: ['os-signal-to-process-group'],
     }))).toBeUndefined()
@@ -530,7 +549,7 @@ describe('A5M2-G3-TERMINAL-WIRING — the B-TERMINAL bridge: closed input, real 
     expect(validatePaFamilyTarget('B-TERMINAL', flat({ ...common('pty-exotic', 'terminal_x') })))
       .toContain('selects no B-TERMINAL variant group')
     // the six-verb leaf sets are CLOSED: a smuggled leaf denies with its own name:
-    expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', smuggled: 'x' }))
+    expect(validatePaFamilyTarget('B-TERMINAL', { ...common('output-read', 'terminal_read'), ptySessionId: 'pty-1', ptyIncarnation: 'pid:4242', offsetJson: 'absent', countJson: 'absent', smuggled: 'x' }))
       .toBe('smuggled: not part of the B-TERMINAL typed plan')
   })
 })

@@ -219,6 +219,16 @@ export interface TeamPluginHostContext {
   provide(name: string, value: unknown): void
   effect(factory: () => () => void, label?: string): void
   /**
+   * A5M2 G3 B-TERMINAL (root 21:07, wiring lane): the shared confinement
+   * POLICY property the real Host context carries beside the service store
+   * (terminal-bash injects the same `sandboxPolicy` face and resolves
+   * `resolve({session})` per spawn — terminal-bash/src/index.ts:204
+   * @639ed01539). Optional in this structural projection (the same
+   * Cordis-type-independence law as `events` above): the B-TERMINAL open-plan
+   * pre-mint reads it, a mount without `planeCfg.terminal` never does.
+   */
+  readonly sandboxPolicy?: unknown
+  /**
    * Cordis event registration: the listener is owned by this row's fiber
    * and disposed with the row. Optional in this structural projection —
    * the entry keeps Cordis-type independence (plan §19.2) and minimal
@@ -582,6 +592,18 @@ interface GlueModule {
      */
     readonly terminals?: () => unknown
     readonly subprocess?: () => unknown
+    /**
+     * A5M2 G3 B-TERMINAL (root 21:07, mirrors `terminals` above): the LAZY
+     * public `sandbox` provider (the 639 public SandboxProvider service —
+     * `confine(argv, policy, signal)` wraps EXACT argv under the call's file-
+     * effect policy, packages/sandbox/sandbox/src/index.ts:159-179
+     * @639ed01539 — the same seam terminal-bash's own spawnArgv uses at
+     * terminal-bash/src/index.ts:103-108) plus the LAZY `sandboxPolicy`
+     * property face. The controlled open plan is PRODUCED through this real
+     * confine lane — never a raw-shell argv with a digest claim over it.
+     */
+    readonly sandbox?: () => unknown
+    readonly sandboxPolicy?: () => unknown
   }): TeamAgentBindings
 }
 
@@ -2345,6 +2367,12 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // run).
     terminals: () => ctx.get('terminals'),
     subprocess: () => ctx.get('subprocess'),
+    // A5M2 G3 B-TERMINAL (root 21:07): the confinement provider + policy
+    // property, resolved at call time through the same public faces the
+    // terminal-bash backend itself consumes (ctx.get('sandbox') is the
+    // 639 global-store token; sandboxPolicy is the ctx property beside it).
+    sandbox: () => ctx.get('sandbox'),
+    sandboxPolicy: () => ctx.sandboxPolicy,
     // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
     // wrapper pattern — resolved per member mount, fail-closed when the
     // service is absent). Additive optional dep: never in the hard inject

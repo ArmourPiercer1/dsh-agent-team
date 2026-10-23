@@ -465,7 +465,7 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
     // the registry's own code paths.
     const registry = (await import(new URL('../src/plugin/live/pa-mount-registry.mjs', import.meta.url).href)) as {
       publishPaMount: (root: string, instance: string, entry: Record<string, unknown>) => Record<string, unknown>
-      revokePaMount: (identity: Record<string, unknown> | string) => void
+      revokePaMount: (root: string, instance: string, identity: Record<string, unknown>) => void
       readPaCallFactsForCall: (input: Record<string, unknown>) => Promise<Record<string, unknown> | undefined>
     }
     const tupleFor = (name: string) => Object.freeze({
@@ -552,9 +552,15 @@ describe('A5M2-G3-PLANE-MOUNT-C1 — the B-TERMINAL block in the REAL plane: pla
         requestedEffects: { effects: [{ kind: 'tool-invoke', toolName: 'terminal_list' }], fingerprint: 'sha256:probe' },
       })
       expect(miss, 'an unplaced placementName answers NOTHING (fail closed, never a name lookup)').toBeUndefined()
-      expect(answerCauses.every((c) => c.length === 0), `no reader refusal crossed the served call (${JSON.stringify(answerCauses)})`).toBe(true)
+      // the MEASURED read law (root 21:07: 明确两次): the shipped entry is
+      // asked the SAME question TWICE per served call — construction + edge.
+      expect(answerCauses.length, `exactly the construction + edge production reads fired (${JSON.stringify(answerCauses)})`).toBe(2)
+      expect(answerCauses.every((c) => c.length === 0), `no reader refusal crossed either read (${JSON.stringify(answerCauses)})`).toBe(true)
     } finally {
-      registry.revokePaMount(identity)
+      // the REAL revoke law (root 21:07): by (teamRoot, instanceId,
+      // identity) — the identity the publish returned for THIS pair; a stale
+      // disposer clears nothing.
+      registry.revokePaMount('g3-plane-team', 'g3-instance', identity)
     }
   })
 })

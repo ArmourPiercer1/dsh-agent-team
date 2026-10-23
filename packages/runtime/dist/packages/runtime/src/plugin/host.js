@@ -1607,6 +1607,12 @@ export async function apply(ctx, config) {
             // run).
             terminals: () => ctx.get('terminals'),
             subprocess: () => ctx.get('subprocess'),
+            // A5M2 G3 B-TERMINAL (root 21:07): the confinement provider + policy
+            // property, resolved at call time through the same public faces the
+            // terminal-bash backend itself consumes (ctx.get('sandbox') is the
+            // 639 global-store token; sandboxPolicy is the ctx property beside it).
+            sandbox: () => ctx.get('sandbox'),
+            sandboxPolicy: () => ctx.sandboxPolicy,
             // D1 (v2): the LAZY agentPresets accessor (the sessionPersistence
             // wrapper pattern — resolved per member mount, fail-closed when the
             // service is absent). Additive optional dep: never in the hard inject

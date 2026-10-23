@@ -68,6 +68,10 @@ export interface G3TerminalWiringInput {
     backend: (type: string) => unknown
     session: (ownerAgentId: string, sessionId: string) => unknown
     approvedOpenPlan: (callId: string) => unknown
+    /** root 21:07: optional async REFRESH of the confined open-plan slot
+     *  (SandboxProvider.confine is async; the adapter reads the plan
+     *  synchronously) — the terminal_open row awaits it before classify. */
+    premintOpenPlan?: () => Promise<void> | void
   }>
   /** THE REAL handle route (§5.1): the adapter's own hard-visit law
    *  validates every member; a control-plane-only pose refuses the mount. */
